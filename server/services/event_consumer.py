@@ -310,12 +310,23 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
     return "—"
 
 
+#: Der erste Knoten NACH der Freigabe durch `evaluate`.
+#:
+#: **Die Freigabe faellt in einer Kante, und Kanten erscheinen nicht im
+#: Stream.** `_after_evaluate` entscheidet zwischen `output`, `fallback` und
+#: `correct`; die ersten beiden fuehren zu diesem Knoten, der dritte zurueck
+#: in den Corrector. Erscheint er also, ist entschieden und der Text steht —
+#: die vier Knoten ab hier aendern ihn nicht mehr.
+_KNOTEN_NACH_FREIGABE: str = "perzeption_assistant"
+
+
 def _graph_streamen(
     compiled_character,
     state: dict,
     loop: asyncio.AbstractEventLoop,
     user_id: str,
     character_id: str = "",
+    bei_freigabe=None,
 ) -> dict:
     """Führt den CharacterGraph als Stream aus und sendet Stages per WebSocket.
 
@@ -335,6 +346,56 @@ def _graph_streamen(
     """
     letzter_state: dict = state
 
+    # **Der Zwischenstand muss die Ausnahme ueberleben.**
+    #
+    # Nach der Freigabe (`evaluate -> output`) folgen vier Knoten, die den
+    # Text nicht mehr aendern: Perzeption, EI-Persistenz, Salienz,
+    # Dispatcher. Reisst einer davon, war die Antwort trotzdem fertig und
+    # von Thinker und Tribunal freigegeben — sie ging bisher nur verloren,
+    # weil die Ausnahme diese Funktion verliess, bevor jemand `letzter_state`
+    # gelesen hatte.
+    #
+    # `[gemessen]` — 25.08.2026, 13:33 UTC: Antwort um :07 erzeugt, um :18
+    # vom Tribunal angenommen, um :24 riss ein `TypeError` in der Salienz den
+    # Graphen. Der Nutzer sah nichts, und die Eingabe wurde freigegeben, als
+    # waere der Turn erledigt. Kennung: `AUSLIEFERUNG-HINTER-DEM-NACHLAUF`.
+    #
+    # **Gerettet wird die Antwort, nicht der Fehler.** Er wird mit Traceback
+    # protokolliert, und der Stand traegt eine Marke — ein abgebrochener Lauf
+    # darf nicht wie ein abgeschlossener aussehen
+    # (`17_NEBENLAEUFIGKEIT/keine-stillen-uebersprunge.md`).
+    traeger: list = [letzter_state]
+    try:
+        _knoten_streamen(compiled_character, state, loop, user_id, character_id,
+                         traeger, bei_freigabe)
+    except Exception as fehler:
+        logger.exception(
+            f"{type(fehler).__name__}: Graph-Lauf abgebrochen — der Stand bis "
+            f"hierher wird ausgeliefert ({user_id}:{character_id})"
+        )
+        abgebrochen: dict = dict(traeger[0])
+        abgebrochen["lauf_unvollstaendig"] = True
+        abgebrochen["lauf_fehler"] = f"{type(fehler).__name__}: {fehler}"
+        return abgebrochen
+
+    return traeger[0]
+
+
+def _knoten_streamen(
+    compiled_character,
+    state: dict,
+    loop: asyncio.AbstractEventLoop,
+    user_id: str,
+    character_id: str,
+    traeger: list,
+    bei_freigabe=None,
+) -> None:
+    """Laeuft den Graphen ab und legt jeden Knotenstand in `traeger[0]`.
+
+    **Der Traeger ist eine Liste, damit der Stand die Ausnahme ueberlebt.**
+    Eine lokale Variable waere mit dem Stack fort; der Aufrufer braucht sie
+    aber gerade dann, wenn der Lauf nicht bis zum Ende kam.
+    """
     for chunk in compiled_character.stream(state):
         # LangGraph liefert nach Subgraph-Return manchmal Listen statt Dicts.
         if not isinstance(chunk, dict):
@@ -345,7 +406,30 @@ def _graph_streamen(
             continue
 
         for node_name, node_state in chunk.items():
-            letzter_state = node_state
+            traeger[0] = node_state
+
+            # **Freigegeben heisst gesendet.** Bis zum 25.08.2026 wartete die
+            # Auslieferung auf END — also hinter Perzeption, EI-Persistenz,
+            # Salienz und Dispatcher. Am 25.08. um 13:33 kostete das eine
+            # Antwort, die das Tribunal siebzehn Sekunden zuvor angenommen
+            # hatte: Ein `TypeError` in der Salienz riss den Graphen, und der
+            # Mensch sah nichts.
+            #
+            # **Der Nachlauf laeuft unveraendert weiter** — er schreibt Novas
+            # Zustand, die Salienz und das Gedaechtnis. Nur wartet niemand
+            # mehr darauf.
+            if (node_name == _KNOTEN_NACH_FREIGABE
+                    and bei_freigabe is not None
+                    and node_state.get("response")):
+                try:
+                    bei_freigabe(node_state)
+                except Exception as fehler:
+                    # Ein Fehler beim Senden darf den Graphen nicht reissen —
+                    # das waere genau der Tausch, den dieser Umbau beseitigt.
+                    logger.exception(
+                        f"{type(fehler).__name__}: Auslieferung bei Freigabe "
+                        f"fehlgeschlagen ({user_id}:{character_id})"
+                    )
 
             # Stage per WebSocket an alle Clients senden (live, während der Graph läuft).
             label:  str = CHARACTER_NODE_LABELS.get(node_name, node_name)
@@ -359,8 +443,6 @@ def _graph_streamen(
             }, ensure_ascii=False)
 
             broadcast_threadsafe(user_id, stage_payload, loop, character_id=character_id)
-
-    return letzter_state
 
 
 async def event_consumer_loop(
@@ -475,6 +557,100 @@ async def event_consumer_loop(
         except Exception as fehler:
             logger.exception(f"{type(fehler).__name__}: Event-Consumer: Unerwarteter Fehler")
             await asyncio.sleep(POLL_INTERVAL)
+
+
+def _antwort_nutzlast_bauen(
+    zustand: dict,
+    turn_id: str,
+    payload: dict,
+    event: dict,
+) -> str:
+    """Baut die `character_response`-Nutzlast aus einem Graphenzustand.
+
+    **Ausgelagert, weil sie an zwei Zeitpunkten gebraucht wird:** bei der
+    Freigabe durch `evaluate` (der Regelfall seit dem 25.08.2026) und am Ende
+    des Laufs als Rueckfall, falls die Freigabe nicht erreicht wurde.
+
+    Die vier Felder aus `internal` beschreiben **Novas Zustand nach ihrer
+    eigenen Antwort** — sie entstehen erst im Nachlauf und sind bei der
+    Freigabe leer. Gemessen am 25.08.2026 liest der Client sieben der acht
+    Zustandsfelder gar nicht; einzig `momentum` wird angezeigt, und das steht
+    schon vor dem Responder.
+
+    Args:
+        zustand: Der Graphenzustand, aus dem gebaut wird.
+        turn_id: Kennung des Reizes, auf den geantwortet wird.
+        payload: Die Nutzlast des Ereignisses (traegt `nachrichten_ids`).
+        event: Das Ereignis selbst (traegt `reiz_herkunft`).
+
+    Returns:
+        Die fertige JSON-Zeichenkette.
+    """
+    zustand_internal = zustand.get("internal")
+
+    # **Was gefuellt war, steht im Log — nicht nur, wie lang die Antwort ist.**
+    # Bis zum 25.08.2026 meldete die Zustellung `342 Zeichen, 2 Clients` und
+    # sonst nichts; welches der acht Zustandsfelder gefehlt hat, war
+    # hinterher nicht feststellbar (`18_NACHVOLLZIEHBARKEIT.md` §3: die
+    # Eingangsgroessen einzeln).
+    _belegung: dict = {
+        "nova_emotion":         bool(zustand.get("nova_emotions_verlauf")),
+        "nova_emotions_vektor": bool(zustand_internal),
+        "intent":               bool(zustand_internal),
+        "tone":                 bool(zustand_internal),
+        "gespraechs_modus":     bool(zustand_internal),
+        "user_intentionen":     bool(zustand.get("user_intentionen")),
+        "momentum":             bool(zustand.get("momentum")),
+        "gespraechsvektor":     bool(zustand.get("gespraechsvektor")),
+    }
+    _fehlend: list = sorted(f for f, da in _belegung.items() if not da)
+    logger.info(
+        "Nutzlast: %d von 8 Zustandsfeldern gefuellt%s (turn_id=%s, %d Zeichen)",
+        sum(_belegung.values()),
+        f" — leer: {', '.join(_fehlend)}" if _fehlend else "",
+        turn_id or "(keine)",
+        len(zustand.get("response", "")),
+    )
+    return json.dumps({
+        "typ":                "character_response",
+        "nachricht":          zustand.get("response", ""),
+        # Der Reiz, auf den diese Antwort antwortet. Leer heisst
+        # "nicht zuordenbar" und ist oben als Fehler gemeldet — der Client
+        # darf daraus nicht schliessen, die Antwort gehoere zur letzten
+        # Nachricht.
+        "turn_id":            turn_id,
+        # Die Kennungen der einzelnen Aeusserungen, die dieser Turn
+        # beantwortet. Ein Turn kann mehrere umfassen: Was innerhalb des
+        # Eingangsfensters eintraf, wurde zu einem Prompt zusammengefasst.
+        # Der Client hat je Aeusserung eine Bestaetigung bekommen und haelt
+        # sie offen, bis eine Antwort sie nennt.
+        "nachrichten_ids":    payload.get("nachrichten_ids", []),
+        # Herkunft des Reizes: "eigener_impuls" bei einem Pixie-Gedanken,
+        # sonst leer. Der Client faerbt danach ein — vor dem Umbau erkannte
+        # er einen Impuls daran, dass der Nachrichtentyp ihm unbekannt war
+        # (shadow_impuls). Jetzt traegt jede Antwort denselben Typ, also
+        # muss das Merkmal ausdruecklich mitreisen.
+        "reiz_herkunft":      (event.get("payload") or {}).get("reiz_herkunft", ""),
+        "modell":             zustand.get("model", ""),
+        "token_total":        zustand.get("token_total", 0),
+        "emotion":            zustand_internal.emotion.emotion              if zustand_internal else "",
+        "arousal":            zustand_internal.emotion.arousal              if zustand_internal else 0.0,
+        "emotions_vektor":    zustand_internal.emotion.emotions_vector      if zustand_internal else "",
+        "emotions_verlauf":   zustand.get("emotions_verlauf", []),
+        "sprach_stil":        zustand_internal.emotion.language_style       if zustand_internal else "",
+        "beziehungs_dynamik": zustand_internal.emotion.relationship_dynamic if zustand_internal else "",
+        "nova_emotion":           zustand.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if zustand.get("nova_emotions_verlauf") else "",
+        "nova_arousal":           zustand.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if zustand.get("nova_emotions_verlauf") else 0.0,
+        "nova_emotions_verlauf":  zustand.get("nova_emotions_verlauf", []),
+        "nova_emotions_vektor":   zustand_internal.emotion.emotions_vector if zustand_internal else "",
+        "nova_emotion_konflikt":  zustand.get("nova_emotion_konflikt", False),
+        "intent":             zustand_internal.emotion.intent if zustand_internal else "",
+        "tone":               zustand_internal.emotion.tone   if zustand_internal else "",
+        "gespraechs_modus":   zustand_internal.emotion.mode   if zustand_internal else "",
+        "user_intentionen":   zustand.get("user_intentionen", []),
+        "momentum":           zustand.get("momentum", ""),
+        "gespraechsvektor":   zustand.get("gespraechsvektor", ""),
+    }, ensure_ascii=False)
 
 
 async def _event_verarbeiten(
@@ -602,10 +778,31 @@ async def _event_verarbeiten(
         )
         return
 
+    # **Die Auslieferung haengt an der Freigabe, nicht am Ende des Laufs.**
+    # `bereits_gesendet` traegt die Auskunft aus dem Arbeitsthread zurueck —
+    # der Rueckruf laeuft dort, nicht im Ereignis-Loop, und darum geht die
+    # Zustellung ueber `broadcast_threadsafe`.
+    bereits_gesendet: list = []
+
+    def _bei_freigabe(zustand: dict) -> None:
+        """Stellt die freigegebene Antwort zu — aus dem Arbeitsthread heraus."""
+        if not websocket_map.get(user_id):
+            return
+        nutzlast: str = _antwort_nutzlast_bauen(zustand, turn_id, payload, event)
+        broadcast_threadsafe(user_id, nutzlast, loop, character_id=character_id)
+        bereits_gesendet.append(True)
+        logger.info(
+            f"Event-Consumer: Antwort bei Freigabe gesendet "
+            f"({len(zustand.get('response', ''))} Zeichen, "
+            f"{len(websocket_map.get(user_id, []))} Clients) — "
+            f"der Nachlauf laeuft weiter"
+        )
+
     try:
         result: dict = await asyncio.to_thread(
             _graph_streamen,
             compiled_character, state, loop, user_id, character_id,
+            _bei_freigabe,
         )
     except Exception as fehler:
         logger.exception(f"{type(fehler).__name__}: Event-Consumer: Graph-Fehler")
@@ -616,51 +813,21 @@ async def _event_verarbeiten(
     # ── Antwort per WebSocket senden ──
     response: str = result.get("response", "")
 
-    if response and websocket_map.get(user_id):
+    if bereits_gesendet:
+        # Der Regelfall seit dem 25.08.2026: Die Antwort ist bei der Freigabe
+        # herausgegangen, der Nachlauf ist seither gelaufen. Hier bleibt
+        # nichts zu tun — eine zweite Zustellung waere eine zweite Antwort.
+        logger.debug(
+            f"Event-Consumer: bereits bei Freigabe zugestellt "
+            f"({user_id}:{character_id}) — kein zweiter Versand"
+        )
+
+    elif response and websocket_map.get(user_id):
         # WebSocket-Payload zeigt Novas Wahrnehmung ihrer eigenen Antwort
         # (internal.emotion, von perzeption_assistant + ei_calc_persist
         # gesetzt). nova_emotions_vector wandert in internal.emotion.
         result_internal = result.get("internal")
-        response_payload: str = json.dumps({
-            "typ":                "character_response",
-            "nachricht":          response,
-            # Der Reiz, auf den diese Antwort antwortet. Leer heisst
-            # "nicht zuordenbar" und ist oben als Fehler gemeldet — der Client
-            # darf daraus nicht schliessen, die Antwort gehoere zur letzten
-            # Nachricht.
-            "turn_id":            turn_id,
-            # Die Kennungen der einzelnen Aeusserungen, die dieser Turn
-            # beantwortet. Ein Turn kann mehrere umfassen: Was innerhalb des
-            # Eingangsfensters eintraf, wurde zu einem Prompt zusammengefasst.
-            # Der Client hat je Aeusserung eine Bestaetigung bekommen und haelt
-            # sie offen, bis eine Antwort sie nennt.
-            "nachrichten_ids":    payload.get("nachrichten_ids", []),
-            # Herkunft des Reizes: "eigener_impuls" bei einem Pixie-Gedanken,
-            # sonst leer. Der Client faerbt danach ein — vor dem Umbau erkannte
-            # er einen Impuls daran, dass der Nachrichtentyp ihm unbekannt war
-            # (shadow_impuls). Jetzt traegt jede Antwort denselben Typ, also
-            # muss das Merkmal ausdruecklich mitreisen.
-            "reiz_herkunft":      (event.get("payload") or {}).get("reiz_herkunft", ""),
-            "modell":             result.get("model", ""),
-            "token_total":        result.get("token_total", 0),
-            "emotion":            result_internal.emotion.emotion              if result_internal else "",
-            "arousal":            result_internal.emotion.arousal              if result_internal else 0.0,
-            "emotions_vektor":    result_internal.emotion.emotions_vector      if result_internal else "",
-            "emotions_verlauf":   result.get("emotions_verlauf", []),
-            "sprach_stil":        result_internal.emotion.language_style       if result_internal else "",
-            "beziehungs_dynamik": result_internal.emotion.relationship_dynamic if result_internal else "",
-            "nova_emotion":           result.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if result.get("nova_emotions_verlauf") else "",
-            "nova_arousal":           result.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if result.get("nova_emotions_verlauf") else 0.0,
-            "nova_emotions_verlauf":  result.get("nova_emotions_verlauf", []),
-            "nova_emotions_vektor":   result_internal.emotion.emotions_vector if result_internal else "",
-            "nova_emotion_konflikt":  result.get("nova_emotion_konflikt", False),
-            "intent":             result_internal.emotion.intent if result_internal else "",
-            "tone":               result_internal.emotion.tone   if result_internal else "",
-            "gespraechs_modus":   result_internal.emotion.mode   if result_internal else "",
-            "user_intentionen":   result.get("user_intentionen", []),
-            "momentum":           result.get("momentum", ""),
-            "gespraechsvektor":   result.get("gespraechsvektor", ""),
-        }, ensure_ascii=False)
+        response_payload: str = _antwort_nutzlast_bauen(result, turn_id, payload, event)
 
         await broadcast(user_id, response_payload, character_id=character_id)
 
@@ -689,6 +856,26 @@ async def _event_verarbeiten(
             f"erreicht den Menschen nicht; welcher Schreiber sie geleert hat, "
             f"steht in den Zeilen 'Antwort-Spur' darueber"
         )
+
+        # **Der Log allein reicht nicht — er hat keinen Leser am anderen Ende.**
+        # Bis hierher wusste der Server vom Ausfall und der Mensch nicht: Der
+        # Client blieb auf der letzten Stufenmeldung stehen, die Eingabe wurde
+        # freigegeben, und das war von einem Haenger nicht zu unterscheiden.
+        # **Ein Turn, der scheitert, darf nicht aussehen wie einer, der
+        # erledigt ist.**
+        if websocket_map.get(user_id):
+            grund: str = result.get("lauf_fehler", "")
+            await broadcast(user_id, json.dumps({
+                "typ":       "turn_gescheitert",
+                "nachricht": (
+                    "Dieser Turn hat keine Antwort erreicht. "
+                    + (f"Abbruch: {grund}. " if grund else "")
+                    + "Der Fehler steht im Serverprotokoll."
+                ),
+                "turn_id":   turn_id,
+                "grund":     grund,
+                "unvollstaendig": bool(result.get("lauf_unvollstaendig")),
+            }, ensure_ascii=False), character_id=character_id)
 
     # ── Self-Trigger prüfen ──
     trigger_count: int = event.get("trigger_count", 0)

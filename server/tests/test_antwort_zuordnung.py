@@ -164,11 +164,29 @@ class FehlendeZuordnungWirdLautTest(_EventVerarbeitenLauf):
         self.assertEqual(len(nutzlasten), 1)
         self.assertTrue(nutzlasten[0]["nachricht"])
 
-    async def test_ohne_antwort_wird_nichts_zugestellt(self) -> None:
-        """Der positive Zwilling zur Negativ-Zusicherung: hier gibt es nichts zu ordnen."""
+    async def test_ohne_antwort_wird_der_ausfall_zugestellt(self) -> None:
+        """Ein gescheiterter Turn meldet sich — er stellt keine Antwort zu, aber auch keine Stille.
+
+        **Diese Zusicherung ist am 25.08.2026 umgedreht worden, nicht
+        geloescht** (`20_TESTS/zusicherung-umdrehen.md`). Sie lautete
+        *„ohne Antwort wird nichts zugestellt"* und hielt damit den Defekt
+        fest: Der Server wusste vom Ausfall, der Mensch nicht. Der Client
+        blieb auf der letzten Stufenmeldung stehen, die Eingabe wurde
+        freigegeben — von einem Haenger nicht zu unterscheiden.
+
+        Was bleibt: **keine Antwort.** Was neu ist: eine Meldung darueber.
+        Der Typ ist ausdruecklich ein anderer, damit der Ausfall nicht als
+        Aeusserung Novas erscheint.
+        """
         nutzlasten: list[dict] = await self._zustellen(_event(), _graph_ergebnis(response=""))
 
-        self.assertEqual(nutzlasten, [])
+        self.assertEqual(len(nutzlasten), 1)
+        self.assertEqual(nutzlasten[0]["typ"], "turn_gescheitert")
+        self.assertNotEqual(
+            nutzlasten[0]["typ"], "character_response",
+            "ein Ausfall darf nicht wie eine Antwort aussehen",
+        )
+        self.assertTrue(nutzlasten[0]["nachricht"], "die Meldung ist leer")
 
 
 class BestaetigungNenntDieNachrichtTest(unittest.TestCase):

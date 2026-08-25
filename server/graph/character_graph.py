@@ -211,8 +211,36 @@ class CharacterGraph(GraphBase):
         return "verfasser"
 
     def _after_evaluate(self, state: ConversationState) -> str:
-        """Entscheidet ob Korrektur nötig oder weiter zur Salienz."""
-        verdict: str = state["tribunal_verdict"]
+        """Entscheidet ob Korrektur nötig oder weiter zur Salienz.
+
+        **Die Eingangsgroessen stehen im Log, bevor entschieden wird**
+        (`18_NACHVOLLZIEHBARKEIT.md` §3). Ohne sie war eine Weiche, die
+        danebengriff, nicht von einer zu unterscheiden, die richtig lag —
+        man sah den Ausgang und nicht, woraus er folgte.
+
+        **Und sie werden mit `.get()` gelesen, nicht mit `[...]`.** Ein
+        fehlendes `tribunal_verdict` warf hier einen `KeyError`, und der
+        traf eine **Kante**: Der Graph erreichte END nicht, ohne dass
+        irgendwo staende, welcher Wert gefehlt hat. Jetzt wird der fehlende
+        Wert benannt und der Lauf faellt auf den sichersten Ausgang.
+        """
+        verdict: str = state.get("tribunal_verdict") or ""
+        runde:   int = state.get("correction_round", 0)
+        grenze:  int = state.get("max_corrections", 0)
+
+        if not verdict:
+            logger.error(
+                "Graph-Weiche `evaluate`: 'tribunal_verdict' fehlt im Zustand "
+                "(correction_round=%s, max_corrections=%s) — die Antwort hat "
+                "keine Freigabe und geht in den Rueckfall",
+                runde, grenze,
+            )
+            return "fallback"
+
+        logger.info(
+            "Graph-Weiche `evaluate`: verdict=%s, correction_round=%s, "
+            "max_corrections=%s", verdict, runde, grenze,
+        )
 
         # ok → Salienz + Dispatcher
         if verdict == "ok":
@@ -220,7 +248,7 @@ class CharacterGraph(GraphBase):
             return "output"
 
         # Max Korrekturen erreicht
-        if state["correction_round"] >= state["max_corrections"]:
+        if runde >= grenze:
 
             if verdict == "warnung":
                 logger.warning("Graph: Max Korrekturen, verdict=warnung — Ausgabe mit Einschränkung")
@@ -235,5 +263,5 @@ class CharacterGraph(GraphBase):
             )
             return "fallback"
 
-        logger.info(f"Graph: verdict={verdict} — Korrektur-Runde {state['correction_round'] + 1}")
+        logger.info(f"Graph: verdict={verdict} — Korrektur-Runde {runde + 1}")
         return "correct"

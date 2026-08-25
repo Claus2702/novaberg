@@ -437,6 +437,22 @@ class StreamHandler:
             GLib.idle_add(self._invoke_impulse, nachricht, data)
             return
 
+        if typ == "turn_gescheitert":
+            # **Ein Turn ohne Antwort sagt es jetzt, statt still zu bleiben.**
+            # Vorher endete dieser Fall in einer Serverzeile, die niemand
+            # sieht: Der Client blieb auf der letzten Stufenmeldung stehen,
+            # die Eingabe wurde frei, und das war von einem Haenger nicht zu
+            # unterscheiden.
+            #
+            # Der eigene Zweig ist noetig, weil der Auffangzweig darunter die
+            # Meldung als Impuls zeigen wuerde — also als etwas, das Nova
+            # gesagt hat. Ein Ausfall ist keine Aeusserung.
+            logger.error(
+                f"WebSocket: Turn ohne Antwort — {data.get('grund') or 'ohne Grundangabe'}"
+            )
+            GLib.idle_add(self._invoke_stage, "Ausfall", nachricht)
+            return
+
         # Alles andere (Pixie-Impulse, Shadow-Delivery, ...) an die UI reichen.
         text: str = nachricht or json.dumps(data, ensure_ascii=False)
         GLib.idle_add(self._invoke_impulse, text, data)
