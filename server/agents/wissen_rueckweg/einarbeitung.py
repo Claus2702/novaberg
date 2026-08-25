@@ -200,6 +200,105 @@ def _saetze(text: str) -> list[str]:
     ]
 
 
+#: Unterhalb dieser Uebereinstimmung wird nicht mehr gefragt.
+#:
+#: **Der Rand ist gemessen und traegt seine eigene Grenze.** Der schwaechste
+#: nachgewiesene Doppelgaenger des Bestandes liegt bei **0,452** — zwei Saetze
+#: mit derselben Aussage und fast keinem gemeinsamen Wort. 0,35 laesst dafuer
+#: rund zehn Hundertstel Rand. **Unterhalb davon gibt es keinen Beleg fuer
+#: einen Doppelgaenger — aber auch keinen dagegen.** Wer weiter unten sucht,
+#: bezahlt mit Aufrufen: Das Band 0,35–0,65 traegt 19 von 232 Faellen (8 %),
+#: das Band ab 0,30 schon 30 (13 %).
+FRAGEN_AB: float = 0.35
+
+
+def _ist_dasselbe_gesagt(neu_satz: str, alt_satz: str) -> bool | None:
+    """Fragt das Modell, ob der neue Satz Sachgehalt mitbringt.
+
+    Vorbedingung: beide Saetze nicht leer.
+    Nachbedingung: True, wenn der Fund **dieselbe Aussage** macht wie der
+        vorhandene Satz; False, wenn er etwas mitbringt. `None`, wenn der
+        Aufruf unbrauchbar war — **und None ist nicht False**: Der Aufrufer
+        muss den Unterschied zwischen *„das Modell sagt, es ist neu"* und
+        *„niemand hat geurteilt"* sehen koennen.
+    Fehlerfaelle: unbrauchbares JSON, Antwort ohne Objekt, fehlendes Feld —
+        jeder gemeldet, Rueckgabe None.
+
+    **Warum ein eigener Aufruf und nicht die bestehende Anweisung.**
+    `rueckweg_einarbeitung.task` sagt dem Modell bereits, es solle `nach` auf
+    null setzen, wenn der Fund schon dasteht — und es tut es nicht
+    zuverlaessig, weil das eine von vier Aufgaben in einem Zug ist und mit
+    *„schreibe einen Absatz"* konkurriert. Hier gibt es nichts zu schreiben,
+    nur zu urteilen.
+
+    **Warum die Zeichenkennzahl das nicht kann.** Sie ordnet die Faelle
+    nachweislich falsch: Am 24.08.2026 lagen im Bestand ein echter
+    Doppelgaenger bei **0,452** und eine echte Ergaenzung bei **0,622** — der
+    Doppelgaenger also *unaehnlicher* als der Fund. Ein Nebensatz verschiebt
+    den Wert weit genug, dass keine Schwelle beide trennt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not neu_satz.strip() or not alt_satz.strip():
+        logger.error("Rückweg-Dublette: leerer Satz — kein Urteil möglich")
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    node_cfg: dict = get_node_config("router")
+    try:
+        antwort = model_service.chat.submit_sync(ChatRequest(
+            messages          = [{"role": "user", "content":
+                                  f"VORHANDEN:\n{alt_satz}\n\nNEU:\n{neu_satz}"}],
+            # **Kein `.format()`.** Der Aufgabenblock zeigt das erwartete
+            # JSON-Objekt als Beispiel, und `str.format` liest dessen
+            # geschweifte Klammern als Platzhalter: `KeyError: '"traegt_neues"'`.
+            # Der Block traegt keine Platzhalter, also wird auch nicht
+            # formatiert. `[gemessen]` — 25.08.2026: Mit `.format()` lieferten
+            # **19 von 19** Aufrufen kein Urteil, und der Riegel liess
+            # folgerichtig alles durch. **Der Ausfall war in der Wirkung
+            # unsichtbar** — nichts wurde faelschlich verworfen, es wurde nur
+            # nie geprueft; gefunden hat es die Messung, nicht der Betrieb.
+            system            = "\n\n".join([
+                PROMPTS["rueckweg_dublette.identity"],
+                PROMPTS["rueckweg_dublette.task"],
+            ]),
+            temperature       = node_cfg.get("temperature", 0.05),
+            expect_json       = True,
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "agent/wissen_rueckweg/dublette",
+        ))
+        ergebnis = antwort.parsed
+    except (json.JSONDecodeError, KeyError, AttributeError) as fehler:
+        logger.exception(
+            "%s: Rückweg-Dublette: Modellantwort unbrauchbar — kein Urteil",
+            type(fehler).__name__,
+        )
+        return None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(ergebnis, dict) or "traegt_neues" not in ergebnis:
+        logger.error(
+            "Rückweg-Dublette: Antwort ohne `traegt_neues` (%r) — kein Urteil",
+            str(ergebnis)[:120],
+        )
+        return None
+
+    traegt = ergebnis["traegt_neues"]
+    if not isinstance(traegt, bool):
+        logger.error(
+            "Rückweg-Dublette: `traegt_neues` ist %s statt bool (%r) — kein "
+            "Urteil, statt einen Wahrheitswert zu erraten",
+            type(traegt).__name__, traegt,
+        )
+        return None
+
+    logger.info(
+        "Rückweg-Dublette: %s — %s",
+        "traegt Neues" if traegt else "sagt dasselbe",
+        str(ergebnis.get("begruendung", ""))[:120],
+    )
+    return not traegt
+
+
 def _bringt_neues(absatz: str, text: str) -> tuple[bool, float]:
     """Traegt `absatz` mindestens einen Satz, der so nicht im Text steht?
 
@@ -226,14 +325,47 @@ def _bringt_neues(absatz: str, text: str) -> tuple[bool, float]:
     if not eigene or not fremde:
         return True, 0.0
 
-    # Je eigenem Satz seine beste Entsprechung im Text; entschieden wird an
+    # Je eigenem Satz seine beste Entsprechung im Text. Entschieden wird an
     # der **schwaechsten** davon: Ein Absatz bringt etwas mit, sobald EIN
-    # Satz keine Entsprechung hat.
-    beste: list[float] = [
-        max(_aehnlichkeit(e, f) for f in fremde) for e in eigene
-    ]
-    schwaechste: float = min(beste)
-    return schwaechste < AEHNLICH_GENUG, schwaechste
+    # Satz nichts Bekanntes trifft.
+    paare: list[tuple[float, str, str]] = []
+    for e in eigene:
+        naehe, partner = max(((_aehnlichkeit(e, f), f) for f in fremde),
+                             key=lambda p: p[0])
+        paare.append((naehe, e, partner))
+
+    schwaechste: float = min(p[0] for p in paare)
+
+    # Drei Zonen, und nur die mittlere kostet einen Aufruf.
+    if schwaechste >= AEHNLICH_GENUG:
+        return False, schwaechste          # Kopie — kein Urteil noetig
+    if schwaechste < FRAGEN_AB:
+        return True, schwaechste           # weit auseinander — kein Urteil noetig
+
+    # **Die Zwischenzone ist die, in der die Zeichen nichts mehr entscheiden.**
+    # Gefragt wird je Satz, und nur solange keiner etwas mitgebracht hat: Der
+    # erste Satz mit eigenem Gehalt macht den ganzen Absatz zu einem Fund.
+    for naehe, eigen, partner in sorted(paare, key=lambda p: -p[0]):
+        if naehe < FRAGEN_AB:
+            return True, schwaechste
+        urteil: bool | None = _ist_dasselbe_gesagt(eigen, partner)
+        if urteil is None:
+            # **Kein Urteil ist nicht dasselbe wie „ist neu" — aber es fuehrt
+            # zur selben Handlung**, und das ist Absicht: Ein ausgefallener
+            # Aufruf darf keinen Fund kosten. Die Zeile macht den Unterschied
+            # im Log sichtbar, damit ein haeufiger Ausfall auffaellt statt
+            # als Sauberkeit durchzugehen.
+            logger.error(
+                "Rückweg-Einarbeitung: kein Dubletten-Urteil bei "
+                "Übereinstimmung %.2f — der Absatz wird eingearbeitet, weil "
+                "ein verlorener Fund teurer ist als ein doppelter Absatz",
+                naehe,
+            )
+            return True, schwaechste
+        if not urteil:
+            return True, schwaechste       # dieser Satz traegt Neues
+
+    return False, schwaechste              # jeder Satz sagt nur Bekanntes
 
 
 def absatz_bestimmen(text: str, kern: str) -> dict | None:

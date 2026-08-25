@@ -33,9 +33,11 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
 import unittest
+from unittest.mock import patch
 
 from agents.wissen_rueckweg.einarbeitung import (
     AEHNLICH_GENUG,
+    FRAGEN_AB,
     SATZ_MINDESTLAENGE,
     _aehnlichkeit,
     _bringt_neues,
@@ -155,33 +157,54 @@ class UmformulierungGiltAlsVorhandenTest(unittest.TestCase):
         self.assertGreater(len(aermer) / len(SATZ_A), 0.70)
         self.assertFalse(bringt_neues(aermer, BESTAND))
 
-    def test_wer_ein_drittel_weglaesst_kommt_durch(self):
-        """Die Grenze des Riegels, ausdruecklich festgehalten statt verschwiegen.
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_wer_ein_drittel_weglaesst_wird_gefragt_statt_gezaehlt(self, urteil):
+        """Was die Zahl frueher entschied und heute nicht mehr entscheidet.
 
-        Bei 0,65 laesst eine Fassung, die rund ein Drittel des Satzes
-        weglaesst, den Riegel passieren — sie ist dann keine Umformulierung
-        mehr, sondern eine kuerzere Aussage, und der Riegel kann nicht
-        entscheiden, ob das Absicht ist. **Das ist bewusst die billigere
-        Seite des Irrtums:** Ein durchgelassener Doppelgaenger ist ein
-        sichtbarer doppelter Absatz; ein abgewiesener Fund ist fort, denn
-        `steht_schon_da` reiht nicht wieder ein.
+        Eine Fassung, die rund ein Drittel des Satzes weglaesst, liegt bei
+        **0,61** — zwischen `FRAGEN_AB` und `AEHNLICH_GENUG`. Solange die
+        Kennzahl allein urteilte, kam sie damit durch, und dieser Zeuge hielt
+        genau das fest: *„wer ein Drittel weglaesst, kommt durch"*.
+
+        **Seit dem 25.08.2026 stimmt der Satz nicht mehr**, und das ist der
+        Zweck des Bandes: Ob eine kuerzere Fassung eine aermere Kopie oder
+        eine eigene Aussage ist, kann keine Zeichenzahl entscheiden. Hier wird
+        gefragt. Der Zeuge prueft deshalb die **Verdrahtung** — dass gefragt
+        wird und wen die Antwort bindet —, nicht mehr das Ergebnis der Zahl.
         """
         stark_gekuerzt: str = (
             "Die Umstellung des vegetativen Nervensystems senkt die "
             "Herzfrequenz ab."
         )
         self.assertLess(len(stark_gekuerzt) / len(SATZ_A), 0.70)
+
+        urteil.return_value = True                  # Modell: sagt dasselbe
+        self.assertFalse(bringt_neues(stark_gekuerzt, BESTAND))
+        self.assertEqual(urteil.call_count, 1)
+
+        urteil.reset_mock()
+        urteil.return_value = False                 # Modell: traegt Neues
         self.assertTrue(bringt_neues(stark_gekuerzt, BESTAND))
+        self.assertEqual(urteil.call_count, 1)
 
     def test_andere_zeichensetzung_gilt_als_vorhanden(self):
         self.assertFalse(bringt_neues(SATZ_B.upper().replace(",", ""), BESTAND))
 
-    def test_eine_echte_ergaenzung_kommt_trotz_aehnlichkeit_durch(self):
-        """Derselbe Satzanfang, aber mit neuer Aussage am Ende."""
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_eine_echte_ergaenzung_kommt_trotz_aehnlichkeit_durch(self, urteil):
+        """Derselbe Satzanfang, aber mit neuer Aussage am Ende — bei 0,60.
+
+        Auch dieser Fall liegt im Band; die Zahl allein wuerde ihn nicht von
+        einer Umformulierung trennen. **Genau das ist der gemessene Grund fuer
+        das Band:** Im Bestand lag ein echter Doppelgaenger bei 0,452 und eine
+        echte Ergaenzung bei 0,622 — der Doppelgaenger also unaehnlicher als
+        der Fund.
+        """
         ergaenzt: str = (
             f"{SATZ_A[:-1]}, waehrend die Atemfrequenz unveraendert bleibt "
             "und der Blutdruck erst mit Verzoegerung folgt."
         )
+        urteil.return_value = False                 # Modell: traegt Neues
         self.assertTrue(bringt_neues(ergaenzt, BESTAND))
 
 
@@ -217,6 +240,82 @@ class DieAehnlichkeitSelbstTest(unittest.TestCase):
     def test_voellig_fremde_saetze_liegen_weit_unter_der_schwelle(self):
         fremd: str = "Der Bahnsteig war leer und der Zug hatte Verspaetung."
         self.assertLess(_aehnlichkeit(SATZ_A, fremd), AEHNLICH_GENUG)
+
+
+#: Ein Satz, der dasselbe sagt wie SATZ_A, in anderen Worten.
+#:
+#: **Die Naehe ist am gemessenen Fall geeicht.** Der schwaechste nachgewiesene
+#: Doppelgaenger des Bestandes liegt bei 0,452; dieser hier bei rund 0,54 und
+#: damit im Band. Ein erster Entwurf tauschte fast jedes Wort und landete bei
+#: **0,094** — weit unter dem Band und damit an dem Pfad vorbei, den er
+#: pruefen sollte. Die Zusicherung in `setUp` hat ihn gefangen; ohne sie waere
+#: der Zeuge gruen gewesen, ohne je einen Aufruf ausgeloest zu haben.
+UMSCHRIEBEN: str = (
+    "Der Uebergang des vegetativen Nervensystems in parasympathische Dominanz "
+    "laesst die Herzfrequenz nachweisbar sinken."
+)
+
+
+class DasBandWirdGefragtTest(unittest.TestCase):
+    """Der Pfad, den die Kennzahl nicht entscheiden kann.
+
+    **Gemessen am 24.08.2026, und die Kennzahl ordnet die Faelle falsch:** Im
+    Bestand lag ein echter Doppelgaenger bei **0,452** — zwei Saetze mit
+    derselben Aussage und fast keinem gemeinsamen Wort — und eine echte
+    Ergaenzung bei **0,622**. Der Doppelgaenger war also *unaehnlicher* als
+    der Fund. Ein Nebensatz verschiebt den Wert weit genug, dass keine
+    Schwelle beide trennt; zwischen `FRAGEN_AB` und `AEHNLICH_GENUG`
+    entscheidet deshalb ein Aufruf.
+
+    Diese Zeugen mocken das Urteil. Sie pruefen die **Verdrahtung** — dass
+    gefragt wird, wen die Antwort bindet, und was bei ihrem Ausbleiben
+    geschieht —, nicht die Urteilskraft des Modells.
+    """
+
+    def setUp(self):
+        naehe = max(_aehnlichkeit(UMSCHRIEBEN, s) for s in _saetze(BESTAND))
+        self.assertGreaterEqual(naehe, FRAGEN_AB, "Testsatz liegt unter dem Band")
+        self.assertLess(naehe, AEHNLICH_GENUG, "Testsatz liegt ueber dem Band")
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_im_band_wird_gefragt(self, urteil):
+        urteil.return_value = False
+        bringt_neues(UMSCHRIEBEN, BESTAND)
+        self.assertEqual(urteil.call_count, 1)
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_sagt_das_modell_dasselbe_faellt_der_absatz(self, urteil):
+        urteil.return_value = True
+        self.assertFalse(bringt_neues(UMSCHRIEBEN, BESTAND))
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_sagt_das_modell_neues_kommt_der_absatz_durch(self, urteil):
+        urteil.return_value = False
+        self.assertTrue(bringt_neues(UMSCHRIEBEN, BESTAND))
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_ohne_urteil_wird_eingearbeitet(self, urteil):
+        """Ein ausgefallener Aufruf darf keinen Fund kosten."""
+        urteil.return_value = None
+        self.assertTrue(bringt_neues(UMSCHRIEBEN, BESTAND))
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_ueber_der_schwelle_wird_nicht_gefragt(self, urteil):
+        """Eine woertliche Kopie braucht kein Urteil — und kostet keinen Aufruf."""
+        self.assertFalse(bringt_neues(SATZ_B, BESTAND))
+        self.assertEqual(urteil.call_count, 0)
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_unter_dem_band_wird_nicht_gefragt(self, urteil):
+        self.assertTrue(bringt_neues(SATZ_NEU, BESTAND))
+        self.assertEqual(urteil.call_count, 0)
+
+    @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
+    def test_ein_satz_mit_eigenem_gehalt_beendet_das_fragen(self, urteil):
+        """Der erste Satz, der etwas mitbringt, macht den Absatz zum Fund."""
+        urteil.return_value = False
+        self.assertTrue(bringt_neues(f"{UMSCHRIEBEN} {SATZ_B}", BESTAND))
+        self.assertEqual(urteil.call_count, 1)
 
 
 if __name__ == "__main__":

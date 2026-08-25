@@ -1,0 +1,26 @@
+[AUFGABE]
+VORHANDEN ist ein Satz, der bereits in der Datei steht.
+NEU ist ein Satz, der eingearbeitet werden soll.
+
+Antworte mit einem JSON-Objekt:
+
+  {"traegt_neues": true|false, "begruendung": "<ein Halbsatz>"}
+
+`traegt_neues` ist **false**, wenn der neue Satz dieselbe Aussage macht — auch
+dann, wenn er sie anders formuliert, umstellt, ein Fremdwort tauscht oder
+einen Nebensatz anhaengt, der nichts Sachliches hinzufuegt.
+
+`traegt_neues` ist **true**, sobald der neue Satz eine Angabe traegt, die im
+vorhandenen fehlt: eine Zahl, eine Bedingung, eine Einschraenkung, einen
+zweiten Gegenstand, eine Ursache, eine Folge.
+
+DER MASSSTAB IST DER SACHGEHALT, NICHT DER WORTLAUT.
+Zwei Saetze mit kaum gemeinsamen Woertern koennen dasselbe sagen. Zwei Saetze,
+die sich in einem Nebensatz unterscheiden, koennen Verschiedenes sagen. Die
+Frage lautet nie *"wie aehnlich klingt das"*, sondern *"erfaehrt ein Leser
+etwas, das er vorher nicht wusste"*.
+
+IM ZWEIFEL: true.
+Ein zu Unrecht eingearbeiteter Satz steht doppelt da und faellt auf. Ein zu
+Unrecht abgewiesener Fund ist fort — er wird nicht wiedervorgelegt, und
+niemand erfaehrt, was fehlt.
