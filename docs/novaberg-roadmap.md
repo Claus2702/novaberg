@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **19:03 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **19:29 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 126 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 127 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,36 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 19:29 UTC — die neue Log-Zeile lief elfmal und meldete elfmal dasselbe
+
+**ZIEL:** Die Belegungszeile der Zustellung sagt ueber jedes gemeldete Feld die Wahrheit.
+**TEST:** `tests/test_nutzlast_belegung.py`, fuenf Zeugen; Gegenproben 2 und 4 rot.
+**MESSUNG:** Suite **2322 → 2327 gruen**, 0 uebersprungen. Im Betriebslog 11 von 11 Turns mit allen drei neuen Zeilen.
+
+**Der Handzettel fragte nach der Anwesenheit, und die war da.** Fenster 16:41 bis 17:03 UTC, elf Turns, jede der drei am Vortag gebauten Zeilen elfmal, in fester Reihenfolge mit zwei bis vier Sekunden Abstand:
+
+| Zeile | Vorkommen | Wert |
+|---|---:|---|
+| `Graph-Weiche 'evaluate': verdict=…` | 11 | `verdict=ok, correction_round=0` — **elfmal identisch** |
+| `Nutzlast: n von 8 Zustandsfeldern gefuellt` | 11 | `8 von 8` — **elfmal identisch** |
+| `Antwort bei Freigabe gesendet` | 11 | 135 bis 911 Zeichen, 2 Clients |
+
+**Der immer gleiche Wert war der Befund.** Beide Zeilen sind gebaut, um den Abweichungsfall sichtbar zu machen — und keine hat ihn je gezeigt.
+
+### `8 von 8` stimmte nicht
+
+Gemessen mit einer frisch angelegten `InternalPersonality`: Die Zeile meldete **8 von 8**, waehrend `nova_emotions_vektor` als leerer String beim Client ankam. Ursache war eine Belegungstabelle **neben** der Nutzlast, in der vier von acht Eintraegen dieselbe Groesse prueften — `bool(zustand_internal)` sagt, ob das Traegerobjekt da ist, nicht ob das Feld belegt ist. Der ausgeloeste Fall ist der haeufige: `Emotion.emotions_vector` traegt `""` als Vorgabewert.
+
+Behoben als `BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`: Die Belegung wird jetzt an der **fertigen Nutzlast** gemessen. Die Zeile kann damit nichts anderes mehr sagen als das, was gesendet wird.
+
+**Der wichtigste der fuenf Zeugen prueft nicht den Defekt, sondern die Liste:** Jeder Name in `GEMESSENE_ZUSTANDSFELDER` muss ein Schluessel der Nutzlast sein. Ein Name ohne Gegenstueck waere bei jedem Turn als leer gemeldet und von einem echten Ausfall nicht zu unterscheiden.
+
+### Fuer `verdict` gibt es den Gegenbeleg, fuer die Nutzlast nicht
+
+Im selben Containerlog steht dreimal `verdict=warnung` — in den **alten** Zeilen von Tribunal, Graph und Corrector. Die Korrekturrunde laeuft im Betrieb; die neue Weichen-Zeile hat sie nur noch nicht gesehen. `correction_round` steht elfmal auf 0 und geht bei einer Warnung auf 1.
 
 ---
 

@@ -18,6 +18,65 @@
 
 ---
 
+## 25.08.2026, abends — eine Log-Zeile, die ihre eigene Aussage nicht halten konnte
+
+#### `BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT` — `8 von 8` bei einem leeren Feld ✅
+
+**Zustand:** behoben am 25.08.2026, mit fuenf Zeugen und zwei Gegenproben.
+
+**Anlass.** Die Zeile war am Vortag gebaut worden, um eine Frage beantwortbar zu
+machen, die der Betrieb nicht beantworten konnte: *welches der Zustandsfelder hat
+gefehlt?* Der Handzettel trug sie als *„erscheint beim naechsten Turn, noch nie
+gelaufen"*. Sie erschien — elfmal in elf Turns, lueckenlos, mit demselben Wert.
+
+**Und genau der immer gleiche Wert war der Befund.** `8 von 8`, elfmal. Gemessen
+mit einer frisch angelegten `InternalPersonality`:
+
+```
+gemeldet : Nutzlast: 8 von 8 Zustandsfeldern gefuellt
+  nova_emotions_vektor     LEER    ''
+```
+
+**Symptom.** Die Zeile fuehrte eine eigene Belegungstabelle neben der Nutzlast,
+und vier ihrer acht Eintraege prueften dieselbe Groesse:
+
+```python
+"nova_emotions_vektor": bool(zustand_internal),
+"intent":               bool(zustand_internal),
+"tone":                 bool(zustand_internal),
+"gespraechs_modus":     bool(zustand_internal),
+```
+
+`bool(zustand_internal)` sagt, **ob das Traegerobjekt existiert** — nicht, ob das
+Feld darin belegt ist. Die Zeile meldete acht unabhaengige Belegungen und mass
+fuenf Groessen, von denen eine viermal gezaehlt wurde.
+
+**Der ausgeloeste Fall ist der haeufige, nicht der konstruierte:**
+`Emotion.emotions_vector` traegt `""` als Vorgabewert. Jeder Turn, in dem der
+Vektor nicht gesetzt wurde, liefert das Feld leer aus — und die Zeile meldete
+Vollstaendigkeit.
+
+**Abhilfe.** Die Belegung wird an der **fertigen Nutzlast** gemessen, nicht an
+einer zweiten Liste daneben. Die Nutzlast entsteht zuerst, dann zaehlt
+`GEMESSENE_ZUSTANDSFELDER` gegen sie. Damit kann die Zeile nichts anderes mehr
+sagen als das, was gesendet wird.
+
+`tests/test_nutzlast_belegung.py`, **fuenf Zeugen**. Der wichtigste ist nicht der
+ueber den Defekt, sondern der ueber die Liste: Er haelt jeden Namen gegen die
+Schluessel der gebauten Nutzlast. **Ein Name ohne Gegenstueck waere unsichtbar
+falsch** — er wuerde bei jedem Turn als leer gemeldet, ununterscheidbar von einem
+echten Ausfall.
+
+Gegenproben: die alte Bauart wiederhergestellt → 2 rot; ein Name ohne
+Gegenstueck in die Liste → 4 rot.
+
+**Was dabei offen bleibt und in der Fundliste steht:** `intent`, `tone` und
+`gespraechs_modus` tragen Vorgabewerte (`smalltalk`, `sachlich`, `alltag`), die
+nicht leer sind. Die Belegungspruefung kann Vorgabe und Messung nicht
+unterscheiden — sie zaehlt sie als gefuellt.
+
+---
+
 ## 25.08.2026, nachmittags — zwei Defekte, die ein Linter-Treffer sichtbar gemacht hat
 
 Beide standen jahrelang gruen und waren mit keinem Zeugen und keiner Messung zu finden:

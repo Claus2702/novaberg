@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 19:03 UTC
-**Offen:** **106 Funde — gezaehlt am 25.08.2026, 19:03 UTC** (114 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **zwei neu aus dem Zeilenlaengen-Durchgang** — die ausgerichteten Dict-Bloecke, bei denen Regel und Bestandsstil gegeneinander stehen, und fuenf Feld-Kommentare bis 390 Zeichen)
+**Stand:** 25. August 2026, 19:29 UTC
+**Offen:** **108 Funde — gezaehlt am 25.08.2026, 19:29 UTC** (116 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **zwei neu aus der Pruefung der neuen Log-Zeilen** — Vorgabewerte, die wie Messwerte zaehlen, und die unbegruendete Auswahl von 8 aus 24 Nutzlastfeldern)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Drei Zustandsfelder tragen Vorgabewerte, die von einer Messung nicht zu unterscheiden sind.** `Emotion.intent` steht auf `"smalltalk"`, `tone` auf `"sachlich"`, `mode` auf `"alltag"` — Vorgabewerte der Klasse, nicht leer und deshalb von jeder Belegungspruefung als **gefuellt** gezaehlt. Aufgefallen bei der Reparatur von `BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`: Die neue Zeile misst am Feldwert und ist damit richtig, **aber sie kann nicht sagen, ob der Wert gemessen oder voreingestellt ist**. Ein Turn, in dem die EI-Berechnung ausfaellt, meldet weiter `8 von 8` und liefert dem Client drei plausible Werte, die niemand berechnet hat. Genau die Klasse aus `22_STILLE_FEHLER` §3 — ein Default, der wie ein Messwert aussieht. Zum Vergleich: `emotions_vector` traegt `""` und faellt deshalb auf, `arousal` traegt `0.5`.
+
+- **2026-08-25** — **Die Belegungszeile misst 8 von 24 Nutzlastfeldern, und die Auswahl ist nirgends begruendet.** Ungemessen bleiben unter anderem `emotion`, `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `nova_arousal`, `nova_emotion_konflikt`, `modell`, `token_total`, `reiz_herkunft`. **Faellt eines davon aus, sagt das Log weiterhin nichts** — dieselbe Lage, aus der die Zeile entstanden ist, nur fuer die anderen sechzehn Felder. Ob die Acht die richtigen sind, ist eine offene Frage; die Konstante nennt sie, ohne sie zu begruenden.
 
 - **2026-08-25** — **Neun ausgerichtete Dict-Eintraege in `services/event_consumer.py` liegen bei 101 bis 105 Zeichen — Regel und Bestandsstil stehen gegeneinander.** Der Block (Zeilen 644 bis 653) schreibt Zustandsfelder spaltenbuendig; genau diese Ausrichtung kostet die letzten ein bis fuenf Zeichen. **Ein Umbruch loest die Regel und zerstoert den Block, ein `noqa` loest den Block und schwaecht die Regel, ein engerer Einzug loest beides und macht die Datei inkonsistent zu den fuenfzehn anderen Bloecken derselben Bauart.** Dieselbe Lage in `agents/delegation/dispatch.py:76` und `graph/nodes/enricher.py:972`. Das ist keine Formatierungsfrage mehr, sondern die Entscheidung, ob die Spaltenausrichtung eine Konvention dieses Bestands ist oder eine Gewohnheit.
 
