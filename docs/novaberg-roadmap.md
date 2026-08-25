@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 20:10 UTC
+**Stand:** 25. August 2026, 21:30 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,24 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 21:30 UTC — Sechs Regeldokumente zeigten noch auf Dateien, die keine Einträge mehr tragen
+
+**Die Frage war, ob alle Dokumente nachgezogen sind. Sie waren es nicht — und die Lücke ist die, die kein Nachzug findet.**
+
+Der Doku-Nachzug leitet seine Kandidaten aus geänderten Produktivdateien ab. Heute hat sich keine geändert; geändert hat sich die **Gestalt der Register** — und die steht in Dokumenten, auf die kein Diff zeigt. **Die Prüfung, die das hätte finden müssen, konnte es nicht.**
+
+**Sechs Regeldokumente wiesen einen Eintrag an einen Ort, der keine mehr trägt** — die Liste der unbedingten Nachzugsziele, die Festlegung dazu, drei Regeln über die Doku-Artefakte und der Weg, auf dem eine Erkenntnis abgelegt wird.
+
+**Der schärfste Fall:** Wer die Backlog-Regel wörtlich befolgt, schreibt einen neuen Eintrag in eine 37-kB-Kopfdatei, die keine trägt.
+
+> **Ein Eintrag in der falschen Datei ist nicht falsch abgelegt, sondern verloren.** Das Findemittel führt ihn unter dem Gegenstand der Datei, in der er steht — und wer ihn unter seinem eigenen sucht, findet ihn nicht.
+
+**Dazu in die Regel über Register mit ID aufgenommen:** Ein geteiltes Register braucht ein erzeugtes Findemittel, und das ist die einzige Stelle, an der es noch ganz zu sehen ist.
+
+**Gegenprobe:** Kein steuerndes Dokument nennt den alten Ort mehr; die drei verbliebenen Erwähnungen sind Prosa, keine Wegweisung. Verweisintegrität 1067 geprüft, **0 neue Befunde**.
 
 ---
 
