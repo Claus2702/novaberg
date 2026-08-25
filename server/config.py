@@ -209,7 +209,7 @@ MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION: bool = (
 )
 
 redis_client:   redis.Redis     = redis.from_url(REDIS_URL, decode_responses=True)
-llm_lock:       threading.Lock  = threading.Lock()
+graph_run_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()
 
 # ─────────────────────────────────────────────

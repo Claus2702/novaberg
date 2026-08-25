@@ -101,7 +101,7 @@ class _EventVerarbeitenLauf(unittest.IsolatedAsyncioTestCase):
                 character_graph  = graph,
                 compiled_character = MagicMock(),
                 websocket_map    = {"meister": ["ws"]},
-                llm_lock         = MagicMock(),
+                graph_run_lock         = MagicMock(),
             )
 
         return zustellung.nutzlasten

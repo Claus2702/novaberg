@@ -23,7 +23,7 @@ import time
 import uuid
 
 from api.websocket import broadcast_threadsafe
-from config import ASSISTANT_USER_ID, llm_lock, redis_client, shutdown_event
+from config import ASSISTANT_USER_ID, graph_run_lock, redis_client, shutdown_event
 from services.events import event_erzeugen, event_wartet
 from services.prompt_eingang import (
     block_zu_prompt,
@@ -219,7 +219,7 @@ async def _block_verarbeiten(
             turn_id      = turn_id,
         )
 
-        # **Kein `with llm_lock` hier.** Ein `threading.Lock` blockierend im
+        # **Kein `with graph_run_lock` hier.** Ein `threading.Lock` blockierend im
         # Event-Loop zu nehmen legt den gesamten Loop still — auch den
         # Event-Consumer, dessen `await` den Riegel freigeben wuerde. Genau so
         # entstand am 01.08.2026 ein Deadlock: Der Loop stand, und mit ihm
@@ -348,7 +348,7 @@ def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
     # nicht kennt: den Pixie- und den Recherche-Pfad, die dasselbe Modell
     # benutzen. Ein blockierendes Warten waere hier toedlich — es liefe im
     # Event-Loop und legte den ganzen Dienst still.
-    if not llm_lock.acquire(blocking=False):
+    if not graph_run_lock.acquire(blocking=False):
         logger.debug(
             f"Prompt-Consumer: Riegel belegt ({user_id}:{character_id}) — "
             f"es wird nichts genommen"
@@ -356,7 +356,7 @@ def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
         return False
 
     if not turn_beginnen(redis_client, user_id, character_id, turn_id):
-        llm_lock.release()
+        graph_run_lock.release()
         return False
 
     if event_wartet(redis_client, user_id, character_id):
@@ -365,7 +365,7 @@ def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
             f"({user_id}:{character_id}) — es wird nichts genommen"
         )
         turn_beenden(redis_client, user_id, character_id)
-        llm_lock.release()
+        graph_run_lock.release()
         return False
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -441,7 +441,7 @@ async def prompt_consumer_loop(
                         human_graph, conversation_graph,
                     )
                 finally:
-                    llm_lock.release()
+                    graph_run_lock.release()
 
         except asyncio.CancelledError:
             logger.info("Prompt-Consumer beendet.")

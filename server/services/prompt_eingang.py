@@ -2,7 +2,7 @@
 Eingangs-Queue vor dem HumanGraph — Nachrichten annehmen und zu Bloecken schneiden.
 
 **Warum vor dem HumanGraph und nicht danach.** Die Ereignis-Queue liegt hinter
-Pfad 1, und Pfad 1 haelt den `llm_lock`: Eine zweite Nachricht wartet dort, bis
+Pfad 1, und Pfad 1 haelt den `graph_run_lock`: Eine zweite Nachricht wartet dort, bis
 der laufende Durchlauf fertig ist. Ihr Ereignis entsteht erst danach, mit rund
 zehn Sekunden Abstand zum ersten. Gemessen am 01.08.2026: 11 bis 13 Sekunden
 bei freiem System, 104 Sekunden waehrend eines Charakter-Laufs.
@@ -355,7 +355,7 @@ def turn_beginnen(
 ) -> bool:
     """Meldet einen Turn als begonnen — oder scheitert, weil schon einer laeuft.
 
-    **Der Marker umspannt den ganzen Turn**, nicht nur Pfad 1. Der `llm_lock`
+    **Der Marker umspannt den ganzen Turn**, nicht nur Pfad 1. Der `graph_run_lock`
     kann das nicht: Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei,
     und in diesen Spalt geriet am 01.08.2026 ein zweiter Durchlauf — dessen
     Modellaufruf lief danach in einen Timeout und der Turn blieb ohne

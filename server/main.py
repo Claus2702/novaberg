@@ -29,7 +29,7 @@ from config import (
     NMCP_ABGLEICH_INTERVALL_SEKUNDEN,
     PIXIE_AKTIV,
     POSTGRES_URL,
-    llm_lock,
+    graph_run_lock,
     redis_client,
     shutdown_event,
 )
@@ -367,7 +367,7 @@ async def lifespan(app: FastAPI):
             shadow_delivery_loop(
                 redis_client         = redis_client,
                 websocket_map        = aktive_verbindungen,
-                llm_lock             = llm_lock,
+                graph_run_lock             = graph_run_lock,
                 compiled_agent_graph = compiled_agent,
                 agent_graph          = agent_graph,
             )
@@ -384,7 +384,7 @@ async def lifespan(app: FastAPI):
             character_graph    = character_graph,
             compiled_character = compiled_character,
             websocket_map      = aktive_verbindungen,
-            llm_lock           = llm_lock,
+            graph_run_lock           = graph_run_lock,
         )
     )
     logger.info("Event-Consumer gestartet.")

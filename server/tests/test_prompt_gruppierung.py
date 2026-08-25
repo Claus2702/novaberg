@@ -3,7 +3,7 @@
 Die Ereignis-Nutzlast trug bisher nur `erstellt_am` — den Zeitpunkt, zu dem das
 Ereignis in die Queue ging, also **nach** Pfad 1. Zwischen Empfang und
 Ereignis liegen 11 bis 13 Sekunden (Perzeption und Salienz), und die zweite
-Nachricht wartet in dieser Zeit am `llm_lock`. Ein Fenster, das auf
+Nachricht wartet in dieser Zeit am `graph_run_lock`. Ein Fenster, das auf
 `erstellt_am` rechnet, misst deshalb die Traegheit des Systems mit und nicht
 den Abstand zwischen zwei Aeusserungen.
 

@@ -458,7 +458,7 @@ async def event_consumer_loop(
     character_graph,
     compiled_character,
     websocket_map: dict,
-    llm_lock,
+    graph_run_lock,
 ) -> None:
     """Endlos-Loop: Pollt Event-Queues, verarbeitet Events, sendet Antworten.
 
@@ -467,7 +467,7 @@ async def event_consumer_loop(
         character_graph: CharacterGraph-Instanz (für create_state).
         compiled_character: Kompilierter CharacterGraph (für invoke).
         websocket_map: Dict {user_id: list[WebSocket]} für Antwort-Delivery.
-        llm_lock: Threading-Lock für GPU-Zugriff.
+        graph_run_lock: Threading-Lock für GPU-Zugriff.
     """
     logger.info("Event-Consumer gestartet.")
 
@@ -547,7 +547,7 @@ async def event_consumer_loop(
                     await _event_verarbeiten(
                         event, user_id, character_id,
                         redis_client, character_graph, compiled_character,
-                        websocket_map, llm_lock,
+                        websocket_map, graph_run_lock,
                     )
                 finally:
                     # Hier endet der Turn — nicht nach Pfad 1. Solange der
@@ -575,7 +575,7 @@ async def event_consumer_loop(
 # Ein Name, der in der Nutzlast nicht vorkommt, waere hier unsichtbar falsch:
 # Er wuerde bei jedem Turn als leer gemeldet. `tests/test_nutzlast_belegung.py`
 # haelt die Liste deshalb gegen die Schluessel der gebauten Nutzlast.
-GEMESSENE_ZUSTANDSFELDER: tuple[str, ...] = (
+MEASURED_STATE_FIELDS: tuple[str, ...] = (
     "nova_emotion",
     "nova_emotions_vektor",
     "intent",
@@ -675,11 +675,11 @@ def _antwort_nutzlast_bauen(
     #
     # Gegen die Nutzlast gemessen kann die Zeile nichts anderes mehr sagen als
     # das, was gesendet wird.
-    _fehlend: list = sorted(f for f in GEMESSENE_ZUSTANDSFELDER if not nutzlast.get(f))
+    _fehlend: list = sorted(f for f in MEASURED_STATE_FIELDS if not nutzlast.get(f))
     logger.info(
         "Nutzlast: %d von %d Zustandsfeldern gefuellt%s (turn_id=%s, %d Zeichen)",
-        len(GEMESSENE_ZUSTANDSFELDER) - len(_fehlend),
-        len(GEMESSENE_ZUSTANDSFELDER),
+        len(MEASURED_STATE_FIELDS) - len(_fehlend),
+        len(MEASURED_STATE_FIELDS),
         f" — leer: {', '.join(_fehlend)}" if _fehlend else "",
         turn_id or "(keine)",
         len(zustand.get("response", "")),
@@ -695,7 +695,7 @@ async def _event_verarbeiten(
     character_graph,
     compiled_character,
     websocket_map: dict,
-    llm_lock,
+    graph_run_lock,
 ) -> None:
     """Verarbeitet ein einzelnes Event — Graph-Stream + WebSocket-Delivery.
 
@@ -711,7 +711,7 @@ async def _event_verarbeiten(
         character_graph: CharacterGraph-Instanz (für create_state).
         compiled_character: Kompilierter CharacterGraph (für stream).
         websocket_map: Dict {user_id: list[WebSocket]} für Delivery.
-        llm_lock: Threading-Lock für GPU-Zugriff.
+        graph_run_lock: Threading-Lock für GPU-Zugriff.
     """
     payload:     dict = event.get("payload", {})
     user_prompt: str  = payload.get("user_prompt", "")
@@ -803,7 +803,7 @@ async def _event_verarbeiten(
         )
 
     # ── Graph-Durchlauf mit Streaming (GPU, braucht Lock) ──
-    acquired: bool = llm_lock.acquire(blocking=True, timeout=60)
+    acquired: bool = graph_run_lock.acquire(blocking=True, timeout=60)
 
     if not acquired:
         logger.warning(
@@ -842,7 +842,7 @@ async def _event_verarbeiten(
         logger.exception(f"{type(fehler).__name__}: Event-Consumer: Graph-Fehler")
         return
     finally:
-        llm_lock.release()
+        graph_run_lock.release()
 
     # ── Antwort per WebSocket senden ──
     response: str = result.get("response", "")

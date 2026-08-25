@@ -2,7 +2,7 @@
 
 **Ein Riegel schuetzt seine Ressource, nicht den Vorgang**
 (`17_NEBENLAEUFIGKEIT/riegel-schuetzt-ressource.md`). Bis zum 25.08.2026 war
-es umgekehrt gebaut: `llm_lock` umschloss in `event_consumer.py` den Lauf des
+es umgekehrt gebaut: `graph_run_lock` umschloss in `event_consumer.py` den Lauf des
 CharakterGraphen — also einen **Aufrufer** — waehrend die Ressource selbst
 offen lag.
 

@@ -211,7 +211,7 @@ def _ereignis_nutzlast(
         # Der Zeitpunkt, zu dem die Aeusserung eintraf — genommen vor jeder
         # Verarbeitung. **Nicht** `erstellt_am`: Das Ereignis entsteht erst
         # nach Pfad 1, also 11 bis 13 Sekunden spaeter, und die zweite
-        # Nachricht wartet in dieser Zeit am `llm_lock`. Wer Abstaende auf
+        # Nachricht wartet in dieser Zeit am `graph_run_lock`. Wer Abstaende auf
         # `erstellt_am` rechnet, misst die Traegheit des Systems mit.
         "empfangen_am": empfangen_am,
         "user_prompt": user_prompt,
@@ -398,7 +398,7 @@ def chat_senden(anfrage: GespraechAnfrage, request: Request):
     """
     # Der Empfang, als erste Anweisung. Er ist die einzige Groesse, die den
     # Abstand zwischen zwei Nutzeraeusserungen misst — jede spaetere Uhr
-    # traegt die Wartezeit am `llm_lock` mit.
+    # traegt die Wartezeit am `graph_run_lock` mit.
     empfangen_am: float = time.time()
 
     try:

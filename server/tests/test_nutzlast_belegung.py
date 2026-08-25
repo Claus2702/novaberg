@@ -17,7 +17,7 @@ import logging
 import unittest
 
 from graph.personality import InternalPersonality
-from services.event_consumer import GEMESSENE_ZUSTANDSFELDER, _antwort_nutzlast_bauen
+from services.event_consumer import MEASURED_STATE_FIELDS, _antwort_nutzlast_bauen
 
 VOLLER_ZUSTAND: dict = {
     "response":              "Antworttext",
@@ -72,17 +72,17 @@ class NutzlastBelegungTest(unittest.TestCase):
         """Ein Name ohne Gegenstueck waere bei jedem Turn als leer gemeldet."""
         zustand = dict(VOLLER_ZUSTAND, internal=_internal_mit_vektor("spirale"))
         nutzlast, _ = self._bauen(zustand)
-        fehlend = [f for f in GEMESSENE_ZUSTANDSFELDER if f not in nutzlast]
+        fehlend = [f for f in MEASURED_STATE_FIELDS if f not in nutzlast]
         self.assertEqual(
             fehlend, [],
-            f"in GEMESSENE_ZUSTANDSFELDER, aber nicht in der Nutzlast: {fehlend}",
+            f"in MEASURED_STATE_FIELDS, aber nicht in der Nutzlast: {fehlend}",
         )
 
     def test_die_zeile_zaehlt_nicht_die_ganze_nutzlast(self) -> None:
         """Die Auswahl ist eine Auswahl — das steht hier, damit es nicht ueberrascht."""
         zustand = dict(VOLLER_ZUSTAND, internal=_internal_mit_vektor("spirale"))
         nutzlast, _ = self._bauen(zustand)
-        self.assertGreater(len(nutzlast), len(GEMESSENE_ZUSTANDSFELDER))
+        self.assertGreater(len(nutzlast), len(MEASURED_STATE_FIELDS))
 
 
 if __name__ == "__main__":

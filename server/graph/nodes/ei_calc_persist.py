@@ -41,7 +41,7 @@ def _aeusserungszeit(
     Genommen wird `empfangen_am` aus dem Ereignis — der Zeitpunkt **vor** jeder
     Verarbeitung. Die Uhr dieses Knotens taugt dafuer nicht: Er laeuft am Ende
     des Durchlaufs, hinter Perzeption, Salienz und den Modellaufrufen, und
-    truege deren Dauer samt Wartezeit am `llm_lock` in den Abstand hinein.
+    truege deren Dauer samt Wartezeit am `graph_run_lock` in den Abstand hinein.
     Dieselbe Begruendung steht an der Quelle in `api/chat.py`, wo `erstellt_am`
     aus genau diesem Grund verworfen wurde.
 

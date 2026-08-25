@@ -900,7 +900,7 @@ def _riegelkette_pruefen(
 async def shadow_delivery_loop(
     redis_client:  redis.Redis,
     websocket_map: dict,
-    llm_lock,
+    graph_run_lock,
     compiled_agent_graph = None,
     agent_graph          = None,
 ) -> None:
@@ -1045,7 +1045,7 @@ async def shadow_delivery_loop(
                     continue
 
                 # ── LLM-Lock prüfen (GPU-Modell nicht blockieren) ──
-                acquired: bool = llm_lock.acquire(blocking=False)
+                acquired: bool = graph_run_lock.acquire(blocking=False)
 
                 if not acquired:
                     logger.debug("Delivery: LLM belegt — verschiebe auf nächsten Zyklus")
@@ -1067,7 +1067,7 @@ async def shadow_delivery_loop(
                         logger.info(f"Delivery: Erfolgreich für '{user_id}' (trigger={trigger})")
 
                 finally:
-                    llm_lock.release()
+                    graph_run_lock.release()
 
         except asyncio.CancelledError:
             logger.info("Shadow Delivery Service beendet.")

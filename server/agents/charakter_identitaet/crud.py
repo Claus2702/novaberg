@@ -17,7 +17,7 @@ from tools.db_manager import db_manager
 logger = logging.getLogger("ki_server.agents.charakter_identitaet.crud")
 
 
-def _vorher_spur(vorher: dict | None) -> dict:
+def _previous_state_trace(vorher: dict | None) -> dict:
     """Der ersetzte Inhalt als Eingangsgroesse der Entscheidung.
 
     Der Datensatz wird vor jedem Schreibvorgang gelesen; ohne diesen Eintrag
@@ -351,7 +351,7 @@ def _update(state: AgentState) -> dict:
             "alte_id": target_id,
             "neue_id": neue_id,
             "verifiziert": verifiziert,
-            "vorher": _vorher_spur(vorher),
+            "vorher": _previous_state_trace(vorher),
         }],
     }
 
@@ -381,7 +381,7 @@ def _delete(state: AgentState) -> dict:
             "ergebnis": "geloescht",
             "id": target_id,
             "verifiziert": verifiziert,
-            "vorher": _vorher_spur(vorher),
+            "vorher": _previous_state_trace(vorher),
         }],
     }
 
@@ -477,7 +477,7 @@ def _reactivate(state: AgentState) -> dict:
             "ergebnis": "reaktiviert",
             "id": target_id,
             "verifiziert": verifiziert,
-            "vorher": _vorher_spur(vorher),
+            "vorher": _previous_state_trace(vorher),
         }],
     }
 

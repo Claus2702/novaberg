@@ -297,7 +297,7 @@ class QueueWaechterTest(unittest.IsolatedAsyncioTestCase):
     """Eingespeist wird erst, wenn der ganze Turn durch ist.
 
     Der Waechter ist die Verdrahtung, nicht der Baustein — und genau dort sass
-    der Defekt: Der `llm_lock` wird zwischen Pfad 1 und CharacterGraph kurz
+    der Defekt: Der `graph_run_lock` wird zwischen Pfad 1 und CharacterGraph kurz
     frei, ein zweiter Block geriet in diesen Spalt, und sein Modellaufruf lief
     am 01.08.2026 in einen Timeout. Der Marker umspannt beide Haelften.
     """
@@ -324,7 +324,7 @@ class QueueWaechterTest(unittest.IsolatedAsyncioTestCase):
         redis, riegel, halt = self._umgebung()
 
         with patch.object(modul, "redis_client", redis), \
-             patch.object(modul, "llm_lock", riegel), \
+             patch.object(modul, "graph_run_lock", riegel), \
              patch.object(modul, "shutdown_event", halt), \
              patch.object(modul, "POLL_INTERVAL", 0.0), \
              patch.object(modul, "turn_beginnen", return_value=turn_frei) as beginn, \
@@ -421,7 +421,7 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
         riegel = MagicMock()
         riegel.acquire.return_value = True
 
-        with patch.object(modul, "llm_lock", riegel), \
+        with patch.object(modul, "graph_run_lock", riegel), \
              patch.object(modul, "turn_beginnen", return_value=True), \
              patch.object(modul, "event_wartet", return_value=True), \
              patch.object(modul, "turn_beenden") as ende:
@@ -440,7 +440,7 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
         riegel = MagicMock()
         riegel.acquire.return_value = True
 
-        with patch.object(modul, "llm_lock", riegel), \
+        with patch.object(modul, "graph_run_lock", riegel), \
              patch.object(modul, "turn_beginnen", return_value=True), \
              patch.object(modul, "event_wartet", return_value=False), \
              patch.object(modul, "turn_beenden") as ende:
@@ -459,7 +459,7 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
         riegel = MagicMock()
         riegel.acquire.return_value = True
 
-        with patch.object(modul, "llm_lock", riegel), \
+        with patch.object(modul, "graph_run_lock", riegel), \
              patch.object(modul, "turn_beginnen", return_value=True), \
              patch.object(modul, "event_wartet", return_value=True), \
              patch.object(modul, "turn_beenden") as ende:
@@ -491,7 +491,7 @@ class KeinBlockierenImEventLoopTest(unittest.IsolatedAsyncioTestCase):
     """Der Riegel wird nie blockierend genommen — das legte den Dienst still.
 
     Am 01.08.2026 stand der Server sieben Minuten ohne eine einzige Logzeile:
-    `_block_verarbeiten` nahm den Riegel mit `with llm_lock` **synchron im
+    `_block_verarbeiten` nahm den Riegel mit `with graph_run_lock` **synchron im
     Event-Loop**. Damit blockierte es nicht nur sich selbst, sondern den ganzen
     Loop — auch den Event-Consumer, dessen `await` den Riegel freigegeben
     haette. Ein Deadlock, aus dem nur ein Neustart herausfuehrte.
@@ -523,10 +523,10 @@ class KeinBlockierenImEventLoopTest(unittest.IsolatedAsyncioTestCase):
             if isinstance(k, ast.With)
             for eintrag in k.items
             if isinstance(eintrag.context_expr, ast.Name)
-            and eintrag.context_expr.id == "llm_lock"
+            and eintrag.context_expr.id == "graph_run_lock"
         ]
 
-        self.assertEqual(riegel_blöcke, [], "`with llm_lock` im Event-Loop")
+        self.assertEqual(riegel_blöcke, [], "`with graph_run_lock` im Event-Loop")
 
     async def test_der_erwerb_ist_nicht_blockierend(self) -> None:
         """Jeder `acquire` traegt `blocking=False` — ein Warten liefe im Loop."""
