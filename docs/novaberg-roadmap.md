@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 12:00 UTC
+**Stand:** 25. August 2026, 12:40 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,30 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 12:40 UTC — Das Backlog bekommt sein Findemittel, und es zählt aus, was ihm fehlt
+
+**Der Schnitt, der beim Bugregister und bei der Chronik ging, geht hier nicht — und das ist der Befund.** Ein Register nach Zustand zu teilen setzt voraus, dass es einen hat. Das Backlog hat ihn an vier Orten und bei zwei Dritteln der Einträge an keinem.
+
+| | |
+|---|---|
+| Einträge mit Kennung | **420** — 233 als Überschrift, 187 als Tabellenzeile |
+| davon offen | 107 |
+| davon abgeschlossen | 42 |
+| **ohne lesbaren Zustand** | **271 (65 %)** |
+| dazu: Zustand **ohne** Kennung | 22 Abschnitte |
+
+**Die vier Träger:** `**Zustand:**`-Zeile · `**Status:**`-Zeile · Marke in der Überschrift · Marke in einer Tabellenzelle. Was in keinem davon steht, gilt als unlesbar — **auch dann, wenn im Fließtext „Erledigt am …" steht.** Das ist Absicht: Ein Zustand, den keine Zählung findet, ist für jede Bestandsaussage keiner.
+
+> **Wie sehr das täuscht, zeigt eine Zahl.** Eine reine Markenzählung über die `##`-Abschnitte hält 163 kB für abgeschlossen. Der größte davon — 54 kB — enthält **genau ein ✅** und darunter 47 Einträge, deren Erledigung als Fließtext dasteht. Wer nach Marken teilt, verschiebt 47 offene Fragen ins Archiv.
+
+**Die zweite Kontrolle wich an drei Stellen ab, und beide Male hatte das Werkzeug recht.** 58 `**Status:**`-Zeilen im Bestand, 37 im Index: Die 21 übrigen stehen unter Überschriften **ohne Kennung** — der Gegenbefund, der jetzt als eigene Liste im Index steht. Und 103 Tabellenzeilen gegen 73 im Prüfmuster: Dort waren die Kennungen in `~~` gesetzt und die Marke stand in einer mittleren Zelle. **Kein einziger `Status:`-Wortlaut war unlesbar formuliert** — die Erkennung ist vollständig für das, was sie abdeckt.
+
+**Zwei Mängel, die sich nicht vermischen dürfen, stehen deshalb als zwei Listen.** Eine Kennung ohne Zustand ist nicht zählbar; ein Zustand ohne Kennung ist nicht verweisbar. Das Werkzeug gibt beide Listen getrennt zurück, und die erste ist die Arbeitsliste für **C18**.
+
+**Was der Index nicht ist:** ein Schnitt. Das Backlog trägt weiterhin 616 kB. Der Schnitt kommt, wenn die 271 einen Zustand haben — vorher würde er die Unlesbarkeit nur auf zwei Dateien verteilen.
 
 ---
 

@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 488 Abschnitte in 5 Dateien — 195 mit eigenem Datum, 292 geerbt, 1 ohne.
+**Umfang:** 489 Abschnitte in 5 Dateien — 196 mit eigenem Datum, 292 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 225 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 226 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 488 Marken, 488 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 489 Marken, 489 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 12:40 UTC — Das Backlog bekommt sein Findemittel, und es zählt aus, was ihm fehlt](novaberg-roadmap.md#25082026-1240-utc--das-backlog-bekommt-sein-findemittel-und-es-zählt-aus-was-ihm-fehlt) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 12:00 UTC — Das falsch beschriftete Kapitel ist aufgelöst, und die Chronik ist nach Monaten geteilt](novaberg-roadmap.md#25082026-1200-utc--das-falsch-beschriftete-kapitel-ist-aufgelöst-und-die-chronik-ist-nach-monaten-geteilt) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 11:10 UTC — Die Chronik bekommt ein Findemittel, und es findet als Erstes einen Fehler in ihr](novaberg-roadmap.md#25082026-1110-utc--die-chronik-bekommt-ein-findemittel-und-es-findet-als-erstes-einen-fehler-in-ihr) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 10:05 UTC — 21 Einträge standen als offen und waren es nicht mehr](novaberg-roadmap.md#25082026-1005-utc--21-einträge-standen-als-offen-und-waren-es-nicht-mehr) |
