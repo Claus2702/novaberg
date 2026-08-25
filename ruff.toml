@@ -69,6 +69,12 @@ select = [
     "PLR09",
 ]
 
+# D415 nachgezogen. Die Konvention pep257 unten schaltet die Regel ab; sie tritt
+# hier an die Stelle von D400 (Begruendung im ignore-Block). Ohne diese Zeile
+# bliebe die Zusammenfassung ohne Satzende voellig ungeprueft — select = ["D"]
+# allein genuegt nicht, weil die Konvention nach der Auswahl greift.
+extend-select = ["D415"]
+
 ignore = [
     # G004 "Logging statement uses f-string"
     # Abgeschaltet, weil f-Strings im Logging in diesem Projekt VORGESCHRIEBEN
@@ -140,6 +146,27 @@ ignore = [
     # Eintrag eine Entscheidung ist. Wird "PLR" je breiter selektiert, bleibt die
     # Entscheidung wirksam.
     "PLR2004",
+
+    # D400 "First line should end with a period"
+    # Abgeschaltet zugunsten von D415, das unten per extend-select nachgezogen
+    # wird. Beide pruefen dieselbe Sache mit einem Zeichen Unterschied: D400
+    # verlangt den Punkt, D415 laesst Punkt, Fragezeichen oder Ausrufezeichen
+    # gelten.
+    #
+    # Gemessen am 25.08.2026 ueber server/: D400 14 Treffer, D415 **null**. Alle
+    # vierzehn sind Docstrings, die als FRAGE formuliert sind und auf "?" enden:
+    #   """Was fuer ein Gespraech ist das?"""                    ei/farbton.py
+    #   """Wie warm oder kalt ist die Stimmung?"""               ei/farbton.py
+    #   """Ergebnis des Vektor-Parsings: Was wurde erkannt?"""   utils/zeitparser.py
+    # Das ist eine durchgehaltene Form dieses Bestands und kein Versehen — ein
+    # Punkt hinter einem Fragezeichen waere schlechteres Deutsch, nicht besseres.
+    # Widerspricht eine Werkzeugregel dem Standard des Projekts, gewinnt der
+    # Standard des Projekts.
+    #
+    # Der Zweck der Regel geht dabei NICHT verloren: D415 faengt weiterhin jede
+    # Zusammenfassung ohne Satzende. Die Null bei D415 ist ein Befund, keine
+    # Abschaltung — nachgemessen mit einem konstruierten Verstoss.
+    "D400",
 ]
 
 [lint.pydocstyle]
@@ -154,6 +181,7 @@ ignore = [
 # Aktiv bleiben unter anderem: D1xx (fehlende Docstrings), D200, D205, D206–D208,
 # D211, D301, D402, D414, D418, D419.
 convention = "pep257"
+
 
 [lint.mccabe]
 # Standardwert, sichtbar gemacht — keine gewählte Grenze.
