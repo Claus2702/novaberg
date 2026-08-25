@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 25. August 2026 — angelegt beim Teilen des Registers.
-**Inhalt:** 102 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
+**Stand:** 25. August 2026, 10:05 UTC — angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Inhalt:** 122 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---
@@ -2691,5 +2691,337 @@ ließ den 45 Minuten alten Blob stehen.
 **Live belegt 29.07.2026, 13:56 UTC:** Zwei Turns, der zweite mit Themenwechsel. `Initiative: wert=0.104 … [M1=— M2=0.729 M3=0.100] fehlend=['wollen']` → `I=0` → Sektor **#14 'Stilles Vertrauen'**, Cluster `glut`. **#14 gehört zu den 32 vorher unerreichbaren.** Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
 
 **Nicht mitbehoben:** Der Charakter-Versatz steht auf 0.0 und ist nicht abgeleitet — dieselbe Lage wie `GV_RAUM_CHARAKTER_FAKTOR` nach Chat 114. Das Rad dafür ist entworfen (`novaberg-gv-initiative_k.md` §6), nicht gebaut. Ebenso fehlt das tote Band: Das Zentrum ist per Konstruktion der Median, also die dichteste Stelle der Verteilung — dort zittert das Bit am stärksten. Die Breite braucht eine eigene Messung.
+
+---
+
+
+## Nachgeprueft am 25.08.2026 — geschlossen beim Durchgang durch die ungeprueften Eintraege
+
+**Diese 20 Eintraege standen als offen im Register und waren es nicht mehr.** Sie sind am 25.08.2026 einzeln gegen den Code und den Bestand gehalten worden; die Zustandszeile je Eintrag nennt, woran das erkennbar ist. Sie stammen aus derselben Pruefung, die den Schnitt zwischen Register und Archiv ausgeloest hat.
+
+**Zwei Ausgaenge sind zu unterscheiden.** *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Der Befund ist nicht widerlegt, aber die Stelle, an der er galt, gibt es nicht mehr — wer sie zurueckholt, holt ihn mit.
+
+---
+#### VERTIEFEN-AUFTRAEGE-OHNE-THEMA — ein Drittel aller `vertiefen`-Auftraege traegt keinen Gegenstand ✅ offen
+
+**Zustand:** geschlossen am 25.08.2026 — **der Befund gilt fuer die genannte Auftragsart nicht mehr, und er ist dabei gewandert.** Ueber `shadow_auftrag` nach Auftragsart gruppiert: `vertiefen` **0 von 75** ohne Thema statt 96 von 269. Die 80 themenlosen Zeilen des heutigen Bestands stehen bei `recherche` — und stammen saemtlich von der Testkennung, nicht aus dem Betrieb (Fundliste, 25.08.2026). **Eine Zaehlung ohne Gruppierung haette 82 gefunden und den Eintrag bestaetigt.**
+
+**Symptom.** **96 der 269 `vertiefen`-Auftraege in `shadow_queue:meister` haben ein leeres Feld `thema`** — 35,7 % dieser Auftragsart. Von 100 themenlosen Eintraegen insgesamt (96 `vertiefen`, 4 `nachfragen`) sind **97 im August entstanden**, der Fehler ist also aktiv und kein Altbestand. `recherche` ist nicht betroffen: kein einziger Eintrag ohne Thema.
+
+**Warum es niemandem auffiel.** Die Auftragsart hat keinen Agenten (`AUFTRAGSARTEN-OHNE-AGENTEN` im Backlog). **Ein Auftrag, den nie jemand ausfuehrt, kann seinen leeren Pflichtwert nicht melden** — die beiden Defekte haben sich gegenseitig verdeckt. Aufgefallen ist es erst, als eine Messung die Themen aller Auftraege einbetten wollte und bei 96 nichts vorfand.
+
+**Warum es zaehlt, auch wenn der Agent fehlt.** Solange der Gegenstand fehlt, ist der Eintrag durch nichts zu retten: Er ist weder ausfuehrbar, wenn der Agent gebaut wird, noch in den Erkenntniszyklus einspeisbar, noch als Altlast beurteilbar. Er belegt Platz in einer Queue, deren Laenge als Kennzahl gelesen wird — **100 von 661 Eintraegen sind damit Fuellmasse, und jede Aussage ueber den Rueckstand traegt sie mit.**
+
+**Reproduktion.** Die Eintraege der Queue lesen und auf ein nichtleeres `thema` pruefen, aufgeteilt nach `aufgabe`.
+
+**Geschlossen, wenn.** Der Erzeuger legt keinen Auftrag ohne Gegenstand mehr an — er scheitert laut statt still —, und der vorhandene Bestand ist entschieden.
+
+---
+
+
+**Nachtrag vom 15.08.2026, aus der Fundliste uebernommen.** **141 `vertiefen`-Aufträge tragen ein leeres `thema`, der Gegenstand steht als Fließtext in `kontext`.** Gemessen um 13:52 UTC: 145 von 1036 Aufträgen ohne Thema (141 `vertiefen`, 4 `nachfragen`). Beide Schreibpfade setzen `thema=themen_str` aus dem KZG-Eintrag — ist die Themenliste dort leer, entsteht ein Auftrag ohne Gegenstand, während `kontext` einen mehrere tausend Zeichen langen Fließtext trägt. **Die Folge zeigt sich erst bei der geplanten Dublettenerkennung:** Über `aufgabe` + `thema` bilden die 141 **eine einzige** Gruppe; alle übrigen Gruppen im Bestand haben höchstens zwei Einträge. `novaberg-queue-verfall_k.md` §6.2 nimmt leere Themen deshalb von der Erkennung aus — eine Notmaßnahme, die den Schreibpfad nicht behebt.
+
+#### QUEUE-PUSH-OHNE-PRIORITAET ✅ offen
+
+**Zustand:** behoben am 15.08.2026 — gegen HEAD `b8e9543` nachgemessen am 25.08.2026. `prioritaet` ist Pflichtparameter **ohne Vorgabewert** (`services/shadow_agent/utils.py`), und `memory/kzg.py` uebergibt die Ausloese-Salienz mit einem Kommentar, der genau diesen Befund nennt. Zeuge: `tests/test_queue_salienz_pflicht.py`. **Am Bestand belegt:** Von den 144 Auftraegen seit dem 17.08.2026 traegt **keiner** mehr die 0; die 233 im Bestand stammen saemtlich aus der Zeit davor und sind Rueckstand, nicht Zufluss.
+
+**Befund (2026-07-27).** `memory/kzg.py` reicht beim `shadow_queue_push` **kein `prioritaet`** und nimmt damit den Default 0.0 — und zwar direkt unter dem Tor `if salienz >= KZG_SALIENZ_HIGH`. Die Zwillingsstelle in `agents/kzg/queues.py` übergibt `prioritaet=neue_salienz` korrekt. Gemessen in `shadow_queue:<user>`: acht `vertiefen`-Aufträge, alle mit `prioritaet: 0.0`, obwohl jeder nur entstand, weil seine Salienz ≥ 0.7 war; die zwei `nachfragen`-Aufträge (aus der anderen Stelle) tragen 0.7. Die beiden Schreiber sind am `kontext`-Feld unterscheidbar — `queues.py` legt den `kern` ab, `kzg.py` die `zusammenfassung`. Wirkung: Ein Auftrag aus hoher Salienz tritt mit 0.0 an und verliert gegen jede periodische Aufgabe.
+
+**Was fertig waere.** Der Schreiber reicht die Prioritaet mit, oder ihr Fehlen scheitert laut.
+
+**Prioritaet:** mittel.
+
+#### DISPATCH-SALIENZ-DEFAULT ✅ offen
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. `services/pixie/dispatch.py` liest den Wert ueber **drei** Namen mit Vorrang: `salienz_decay` → `salienz` → `prioritaet`. Der beschriebene Zweig, der nur `salienz` kannte und deshalb fuer jeden Shadow-Auftrag 0.0 ergab, existiert nicht mehr.
+
+**Befund (2026-07-27).** `services/pixie/dispatch.py` liest beim Bau des `AgentState` `eintrag.get("salienz", 0.0)`. Die Shadow-Queue schreibt das Feld aber als `prioritaet`; `salienz` schreibt nur die Promotion-Queue. `kontext["salienz"]` ist damit für **jeden** Shadow-Auftrag 0.0, auch bei echten 0.7. Eine Datei weiter macht `services/pixie/kandidaten.py` es richtig und liest beide Namen. Zusatzbefund: `kontext["salienz"]` wird nirgends gelesen (Grep leer, Positivkontrolle auf dasselbe Muster mit `user_id` = 34 Treffer).
+
+**Was fertig waere.** Ein fehlender Wert scheitert laut statt auf einen Vorgabewert zu fallen.
+
+**Prioritaet:** mittel.
+
+#### CHARAKTERAGENT-AUSGEHUNGERT ✅ offen — Symptom am 16.08.2026 nicht mehr auffindbar
+
+**Zustand:** geschlossen am 25.08.2026 — **das Symptom war seit dem 16.08.2026 nicht mehr auffindbar, und die Marke wurde neun Tage lang nicht gezogen.** Der Eintrag traegt die Nachmessung seit damals im eigenen Koerper: 22 Gewinne ueber 39 h, zuletzt 0,37 h Wartezeit. Von *vier Heartbeats in Folge leer* ist nichts geblieben. **Die Ursache bleibt unbelegt** — vermutlich die Zwei-Spuren-Trennung vom 09.08.2026; wer sie zurueckbaut, prueft diesen Eintrag erneut.
+
+**Nachgemessen am 16.08.2026 ueber 39 h Laufzeit: 22 Gewinne, zuletzt 0,37 h Wartezeit.** Von *vier Heartbeats in Folge leer* ist nichts mehr zu sehen. Vermutlich eine Folge der Zwei-Spuren-Trennung vom 09.08.2026, die Rechnung und Sprachmodell trennte. **Nicht abschliessend geprueft** — die Messung sagt, dass er drankommt, nicht dass die Ursache verstanden ist.
+
+**Befund (2026-07-27).** `CharakterAgent` (Prio 0.3) wird ausgehungert, solange die Queue läuft: `lzg_promotion` steht bei 0.97, jeder Turn erzeugt welche. Vier Heartbeats in Folge ging der Charakter leer aus, obwohl `hash_dirty` gesetzt war. Vermutlich gewollt (Profil-Destillation ist nicht dringend) — als Verhalten aber nirgends festgehalten.
+
+**Was fertig waere.** Der CharakterAgent kommt zum Zug, auch wenn die Queue voll ist.
+
+**Prioritaet:** hoch.
+
+#### EIGENER-GEDANKE-BEHAUPTET-SCHWEIGEN ✅ offen
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Der Block haengt an einem Tor: `graph/nodes/responder.py` haengt `[EIGENER GEDANKE]` nur an, wenn `reiz_ist_eigener_gedanke(state)` gilt. Ein Nutzer-Turn bekommt ihn nicht mehr, und der Thinker-Retry ebenfalls nicht — beide Faelle sind eigens bezeugt (`tests/test_responder_eigener_gedanke.py`).
+
+**Befund (2026-07-31).** `[EIGENER GEDANKE]` behauptet „der Nutzer hat gerade nichts gesagt, auf das du antwortest", während der Prompt des Nutzers im selben Prompt darunter steht. Beobachtet an einem Turn mit vorhandener Nutzeräußerung.
+
+**Was fertig waere.** Der Block erscheint nur, wenn der Nutzer tatsaechlich nichts gesagt hat.
+
+**Prioritaet:** mittel.
+
+#### CLIENT-OFFENE-FRAGE-UNSICHTBAR ✅ offen
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die fehlende Anzeige ist gebaut: Trifft eine Antwort mit fremder Zuordnung ein, setzt `client/ui/main_window.py` sie als *unzugeordnete Antwort* ab, mit dem Vermerk, dass die letzte Nachricht unbeantwortet blieb. Der Riegel verhinderte die falsche Zuordnung schon vorher; **sichtbar** ist die fehlende Antwort seitdem.
+
+**Befund (2026-08-01).** **Eine nie beantwortete Frage ist im Client als offen vermerkt, aber auf dem Bildschirm unsichtbar.** Nach einem ausgefallenen Turn bleibt ihre Kennung in der Menge der offenen Fragen stehen; die nächste Antwort schließt nur die Kennungen, die sie nennt. Der Riegel verhindert damit die **falsche** Zuordnung, macht die **fehlende** Antwort aber nicht sichtbar — der Nutzer sieht drei Fragen und zwei Antworten und kann nicht erkennen, welche ins Leere ging. Die Daten liegen vor, es fehlt die Anzeige.
+
+**Nachtrag 31.07.2026, die Rate im Messbestand.** In **5 von 19** Turns einer Messreihe trägt der Rohturn **kein** `antwort_inhalt`, der Verfasser hat also nichts geliefert. Das Feld erscheint nur, wenn es belegt ist — die Unterscheidung „nicht gelaufen" gegen „leer" ist damit gewahrt, aber ein Viertel der Turns ohne fachlichen Inhalt ist eine eigene Zahl. Kein Agent war beteiligt, `task_context_cut` also nicht der naheliegende Grund.
+
+**Was fertig waere.** Eine Frage, die als offen gefuehrt wird, ist auf dem Bildschirm auch als offen erkennbar — oder sie wird beim Ausfall geschlossen.
+
+**Prioritaet:** mittel.
+
+#### CRUD-REACTIVATE-STAMP — Reactivate setzt deaktiviert_am nicht auf NULL zurück
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — nicht behoben, sondern ohne Gegenstand. `charakter_anweisungen` traegt heute `id`, `user_id`, `anweisung`, `erstellt_am`, `aktiv` und `geaendert_am`; die Spalte `deaktiviert_am`, um die es geht, gibt es nicht. Die Invariante `aktiv=TRUE ⇒ deaktiviert_am IS NULL` hat damit keinen Traeger mehr. **Der Schwesterbefund `CRUD-REACTIVATE-COEXIST` steht dagegen weiter und ist am 25.08.2026 im Bestand belegt.**
+**Entdeckt:** Chat 49, Test "Reactivate ID 8"
+**Symptom:** Nach `reactivate` steht der Eintrag zwar auf `aktiv=TRUE`, aber `deaktiviert_am` behält den alten Zeitstempel. Invarianz-Verletzung wie bei CHAR-ID4-ORPHAN, nur in die andere Richtung: `aktiv=TRUE` mit `deaktiviert_am IS NOT NULL`.
+**Reproduktion:** Charakter-Eintrag reaktivieren, danach in DB prüfen: ID hat `aktiv=t` und gefüllten `deaktiviert_am`.
+**Ursache (vermutet):** Die Reactivate-Logik in `agents/charakter_identitaet/crud.py` macht nur `UPDATE ... SET aktiv=TRUE WHERE id=X`, ohne `deaktiviert_am = NULL` mitzusetzen.
+**Lösungsansatz:** Ein zusätzliches `deaktiviert_am = NULL` im UPDATE. Trivial. Wird vermutlich beim Umbau im Zuge des Fachabteilungs-Agenten-Epics ohnehin mitgefixt.
+**Prio:** Niedrig — funktional unkritisch, Daten-Integritätsproblem (bi-temporale Invariante verletzt). Für Analyse der Charakter-Historie störend.
+
+---
+
+#### FAK1 — Temporalität in Fakten
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — `fakten` traegt 0 Zeilen. Siehe `FAKTEN-RAUSCH`. Die Frage nach `permanent` gegen `situativ` bleibt offen, sobald der Speicher wieder befuellt wird.
+**Lösung:** Klassifikation: `permanent` → Fakten-Tabelle, `situativ` → nur KZG.
+
+---
+
+#### D9 — Fakten-Deduplizierung
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — `fakten` traegt 0 Zeilen. Siehe `FAKTEN-RAUSCH`. Eine Deduplizierung ohne Bestand hat keinen Gegenstand.
+**Lösung:** Embedding-basierter Ähnlichkeitscheck vor dem Schreiben.
+
+---
+
+#### FAK-LECK — Charakter-Anweisungen als User-Fakten extrahiert
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — `fakten` traegt 0 Zeilen, die Extraktion laeuft nicht. Siehe `FAKTEN-RAUSCH`. Der Befund ist nicht widerlegt: Eine Extraktion, die Anweisung an die Figur und Aussage ueber den Menschen nicht unterscheidet, wuerde dasselbe wieder tun.
+**Entdeckt:** Chat 40
+**Symptom:** "Du bist ein freches Mädel vom Land" wird als Fakt über den User extrahiert: `meister IST junges, freches, lustiges Mädel vom Land`, `meister LIEBT Botanik`.
+**Ursache:** Die Fakten-Extraktion (Salienz/Pixie) kann nicht zwischen "Anweisung an Nova" und "Information über den User" unterscheiden.
+**Workaround:** Manuell bereinigt (`aktiv = FALSE`).
+**Prio:** Niedrig — tritt nur bei Charakter-Anweisungen auf, selten.
+
+---
+
+#### FAKTEN-RAUSCH — Fakten-Enrichment produziert massenhaft Rauschen Deaktiviert
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — nicht behoben, sondern ohne Gegenstand. Die Tabelle `fakten` traegt **0 Zeilen**, und der Anreicherungspfad, der das Rauschen erzeugte, ist stillgelegt. **Wer die Fakten-Anreicherung wieder einschaltet, holt diesen Befund mit** — der Eintrag bleibt deshalb stehen, zusammen mit `FAK-LECK`, `FAK1`, `D9` und `ENRICHER-DUP`, die alle denselben Gegenstand hatten.
+**Entdeckt:** Chat 71
+**Symptom:** Fakten-Enrichment produziert 130+ Einträge für User "meister", davon die meisten Rauschen: `VERWENDET_BELEIDIGUNG = Fotzen`, `HAT_VISITENKARTE = Code`, `BEHERRSCHT = Markdown`, `LEGT_AB = Schwarzweiß-Brille`, `HALTET_SICHER_UND_FEST = schwarzes Geschöpf`.
+**Ursache:** Salienz-Agent extrahiert zu aggressiv Fakten aus Gesprächskontext, ohne Qualitätsfilter. Rollenspiel-Inhalte, einmalige Erwähnungen und metaphorische Sprache werden als Fakten gespeichert.
+**Workaround:** Fakten-Enrichment im Enricher deaktiviert (Chat 71).
+**Fix:** Fakten-Bereinigung (manuelle DB-Cleaning + Salienz-Prompt-Tuning für Fakten-Extraktion). Phase 4 (CRUD gerade ziehen).
+
+---
+
+#### CHAR-ID4-ORPHAN — Charakter-Eintrag mit gebrochener bi-temporaler Invariante
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — nicht behoben, sondern ohne Gegenstand. Die Tabelle `charakter_identitaet`, in der die verletzte Invariante gemessen wurde, existiert nicht mehr; der Agent schreibt heute nach `charakter_anweisungen`, und die kennt weder `deaktiviert_am` noch die bi-temporale Bauart. **Wer die Invariante zurueckholt, holt diesen Befund mit** — der Eintrag bleibt deshalb stehen.
+**Entdeckt:** Chat 49, DB-Inspektion
+**Symptom:** In `charakter_identitaet` existiert ID 4 mit `aktiv=f` und `deaktiviert_am IS NULL`. Die bi-temporale Invariante verlangt: `aktiv=f` ⇒ `deaktiviert_am IS NOT NULL`.
+**Kontext:** ID 4 ("Ein junges, freches, lustiges Mädel vom Land... etwas Besonderes") wurde am 12.04.2026 angelegt und später deaktiviert, ohne dass der Zeitstempel gesetzt wurde.
+**Ursache:** Unklar — vermutlich einmaliger Vorfall. Kandidaten:
+- Ein Agent-Pfad setzt nur `aktiv=FALSE` ohne `deaktiviert_am`
+- Direkter SQL-Eingriff in einer früheren Session (wie bei FAK-LECK-Workaround)
+- Eine Race-Condition zwischen zwei parallel laufenden CRUD-Operationen
+**Lösungsansatz:**
+- Einmalig korrigieren: `UPDATE charakter_identitaet SET deaktiviert_am = <plausibler Zeitpunkt> WHERE id = 4;`
+- Prüfen ob andere Einträge (auch in anderen Tabellen mit bi-temporalem Modell) dieselbe Anomalie haben
+- DB-Constraint einziehen: `CHECK (aktiv = TRUE OR deaktiviert_am IS NOT NULL)`
+**Prio:** Niedrig — isolierter Vorfall, kein aktueller Schaden. Hinweis auf mögliche CRUD-Schwäche an einer Stelle.
+
+---
+
+#### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ✅ Teilweise behoben Chat 84
+
+**Zustand:** behoben — gegen HEAD `b8e9543` und den Bestand nachgemessen am 25.08.2026. Die beiden namentlich genannten Felder kommen im Langzeitgedaechtnis an, und zwar als **abfragbare Spalten**: `lzg_knoten.themen` ist in **2594 von 3027** Knoten gefuellt, `lzg_knoten.gedaechtnistyp` in **3027 von 3027**. Der Pfad, der sie verwarf, existiert nicht mehr — `agents/promotion/` ist von `agents/synapsen_promotion/` abgeloest.
+**Entdeckt:** Chat 75, Promotion-Pipeline-Audit
+**Symptom:** Drei KZG-Hash-Felder kommen niemals im LZG an:
+- `themen` (Salienz Dim 1) — fließt nur als Embedding-Input ein, kein abfragbares Feld in der DB.
+- `gedaechtnistyp` (Salienz Dim 4: episodisch/semantisch/prozedural) — wird im Promotion-Code nicht einmal gelesen.
+- `erstellt_am` (KZG-Original-Zeitstempel) — `langzeitgedaechtnis.erstellt_am` ist DB-Default (Promotion-Zeitpunkt), nicht der ursprüngliche Wahrnehmungszeitpunkt.
+
+**Ursache:** Das LZG-Schema (`db/init.sql:16-37`) hat keine entsprechenden Spalten. Die Promotion-Pipeline wurde 1:1 aus der Legacy-Variante übernommen, ohne Re-Evaluation. Keine Code-Kommentare, keine Doku-Hinweise — wirkt unbemerkt.
+**Auswirkung:** Mittel. Themen-basierte LZG-Verknüpfung ist nicht möglich, episodisch/semantisch/prozedural-Klassifikation für später nicht nutzbar, "Wann hat der User zuerst von X erzählt?" nicht beantwortbar (chronologisch unscharf um die Promotion-Verzögerung). Blockiert Akten-Architektur (Backlog) und Knowledge-Graph-Integration mit LZG.
+**Lösung:** LZG-Schema um drei Spalten erweitern: `themen TEXT[]` (oder JSON), `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`. Promotion-Code in `agents/promotion/agent.py` (beide Pfade — Einzel und Cluster) entsprechend anpassen. Migration für Altbestand: alte Einträge bekommen `NULL` in den neuen Feldern.
+
+**Status Chat 84:** `themen` und `kzg_erstellt_am` ✅ behoben (M3a, Sprint Chat 84 — Promotion-Pfad überträgt beide aus KZG-Hash, Format-Konvertierung trivial). `gedaechtnistyp` weiterhin offen — kein Klassifikator-Pfad vorhanden, wartet auf M5 (Salienz-Pipeline) oder eigenen Klassifikator-Sprint.
+
+**Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL).
+**Prio:** Mittel.
+
+---
+
+#### ENRICHER-DUP — Fakten werden mehrfach in den Enricher-Kontext injiziert
+
+**Zustand:** **gegenstandslos seit dem 25.08.2026** — die mehrfach eingespeisten Fakten kommen aus einer Tabelle, die heute 0 Zeilen traegt; der Weg ist stillgelegt. Siehe `FAKTEN-RAUSCH`.
+**Entdeckt:** Chat 62, Beobachtung im memory_context-Log
+**Symptom:** Einzelne Fakten (beobachtet: `HAT_FREUNDIN`) erscheinen 4–7 Mal hintereinander im destillierten Enricher-Kontext, der an den Responder geht. Der Kontext wird unnoetig aufgeblaeht, und das LLM kann den Fakt als besonders wichtig (weil haeufig genannt) fehldeuten.
+**Ursache (vermutet):** Der Enricher holt Fakten aus mehreren Quellen (KZG, LZG, Knowledge Graph, evtl. Timeline) ohne nachgelagerte Dedup-Stufe. Bei ueberlappenden Retrieval-Treffern wandert derselbe Fakt mehrfach in die Liste.
+**Loesungsansatz:** Deduplizierungs-Schritt im Enricher nach dem Sammeln — einfacher Set-Filter auf `subjekt+attribut+objekt`-Tripel oder Embedding-Aehnlichkeit.
+**Status Chat 74:** Reducer-Erst-Iteration adressiert das Problem teilweise. Beobachtung im Live-Log: bei ~30 Einträgen werden 1-2 Duplikate pro Turn entfernt — also weniger als ursprünglich vermutet. Wichtige Erkenntnis: ENRICHER-DUP ist nicht das Hauptproblem des memory_context, sondern thematisch unpassende Einträge (Embedding-Schrott, Anna im Katzen-Chat). Reducer-Umbau wird beide Aspekte sauberer adressieren.
+**Prio:** Beobachtung — noch kein bestaetigter Funktionsbruch, aber kontext- und qualitaetsrelevant. Bei naechstem Auftreten Details sammeln (welche Quellen liefern den Fakt?).
+
+---
+
+#### ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id` ✅
+
+**Zustand:** behoben — am Schema nachgesehen am 25.08.2026. `ziele` traegt die Spalte `character_id`.
+
+**Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
+
+**Klasse:** Schema-Lücke + offene Skopierungs-Frage, Severity Niedrig — heute kein Live-Problem, aber Foundation-Bug
+
+**Symptom:** `ziele` hat `user_id` mit Default `'nova'` und kein `character_id`. Wirkt wie pro-User-global. 9 Bestandseinträge, alle unter `user_id='nova'`.
+
+**Offene Frage:** Sind Ziele charakter-spezifisch (Nova hat andere Ziele als Aria hätte)? Drive-Konzept (`thinking-drive_k.md`) suggeriert ja — explizite Festlegung fehlt.
+
+**Lösung:** Im Migrations-Konzept zusammen mit den anderen Paar-Lücken klären.
+
+**Ausführliche Beschreibung und Eingruppierung:** novaberg-backlog.md → Bug ZIELE-PAIR-MISSING (Chat 80).
+
+---
+
+#### SHADOW-DELIVERY-DATENVERLUST — Stack-Löschung auf unverifiziertem Send ✅
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die Reihenfolge ist umgedreht: `services/shadow_delivery.py` entfernt den Stack-Eintrag **erst, nachdem** der Impuls seinen Weg genommen hat, und kehrt bei Misserfolg ohne Loeschung zurueck — der Eintrag wird beim naechsten Zyklus erneut versucht. Der Kommentar an der Stelle sagt den Grund: *„Nichts halb Gedachtes verlaesst das System."*
+
+**Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio hoch — DATENVERLUST.**
+
+**Symptom:** Send schlägt fehl → `broadcast()` schweigt → Aufrufer loggt „gesendet" →
+löscht den Stack-Eintrag. Nova wollte etwas sagen, es kam nicht an, und die Erinnerung
+daran ist gelöscht. Der Code-Kommentar sagt sogar *„erst NACH erfolgreichem Senden"* —
+er beschreibt eine Prüfung, die es nicht gibt. Pointe: Bei Totalausfall steht dort
+*„gesendet … 0 Clients"*, weil der Client-Zähler NACH dem Aufräumen der kaputten
+Verbindungen gelesen wird — das Log widerlegt sich selbst in derselben Zeile.
+
+**Beleg:** ~~`services/shadow_delivery.py:514-522` (Log + Löschung)~~, Zähler-Lesung nach
+`broadcast()`-Aufräumen; zusätzlich `_stack_aehnliche_entfernen` direkt danach.
+
+> **Beleg überholt (Chat 110, festgestellt Chat 114).** An den genannten Zeilen steht der
+> beschriebene Pfad nicht mehr — der Chat-110-Umbau hat die Shadow-Delivery neu gebaut:
+> Sie formuliert nichts mehr selbst, sondern speist das Wissensstück in beide Graphen ein.
+> **Das Restrisiko besteht weiter**, aber an anderer Stelle und an
+> `BROADCAST-VERSCHLUCKT-FEHLER` hängend. Vor der Bearbeitung neu erheben; die alten
+> Zeilennummern sind kein Ausgangspunkt.
+
+**Auswirkung:** Stiller Verlust von Shadow-Impulsen bei WebSocket-Störung.
+
+#### PIXIE-DISPATCH-STILLER-VERWURF — Retry-Pfad mit `except: pass` und falschem Kommentar ✅
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Der Zweig traegt heute eine Fehlerzeile und einen Kommentar, der den alten Zustand ausdruecklich benennt: *„Frueher schwieg dieser Zweig (`except Exception: pass`)"*. Ein gescheiterter Auftrag bleibt in der Arbeitsliste und ist danach auffindbar.
+
+**Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio mittel.**
+
+**Symptom:** Im Fehler-Zweig eines Queue-Kandidaten greift ein breites
+`except Exception: pass` mit Kommentar „Im Fehlerfall einfach stehen lassen" — der
+Kommentar stimmt nur VOR dem `lrem`. Wirft `rpush` nach erfolgreichem `lrem`, ist der
+Queue-Eintrag still weg (kein Log, kein Audit). Zusätzlich: Im `PIXIE_AKTIV=False`-Zweig
+ist der Eintrag beim „Retry-Push uebersprungen"-Debug-Log bereits per `lrem` entfernt —
+das Log klingt nach No-op, real ist es ein Löschvorgang.
+
+**Beleg:** `services/pixie/dispatch.py:113-132`.
+
+**Auswirkung:** Möglicher stiller Verlust von Queue-Einträgen (lzg_promotion, recherche, …).
+
+#### KZG-SEGMENT-DUPLIKAT — n Salienz-Segmente erzeugen n identische Gedächtnis-Einträge ✅
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Jedes Segment traegt seinen eigenen Text durch die ganze Kette; der Zeuge `tests/test_segment_durchstich.py` prueft alle drei Stationen einzeln — wer ablegt, wer weiterreicht, wer liest — und sichert die Idempotenz ueber die Segmente ausdruecklich zu.
+
+**Entdeckt:** Chat 110, beim Nachmessen des Impuls-Pfads über die `verbindung`-Tabelle.
+
+**Klasse:** Mengenfehler im Gedächtnis. Severity **hoch** — betrifft **jeden** Turn, nicht nur Impulse, und verfälscht jede Zählung, jede Gewichtung und jede Promotion, die auf KZG-Einträgen aufsetzt.
+
+**Symptom:** Der Salienz-Node zerlegt einen Text in Segmente und ruft `dispatch_kzg` **pro Segment** auf. Die Verdichtung fasst jedes Mal denselben Text zusammen. Ergebnis: *n* KZG-Einträge mit demselben Inhalt, verschiedenen Keys, verschiedenen Themen, jeder mit eigenem Gewicht.
+
+**Mechanismus — korrigiert Chat 111 (27.07.2026), im Code belegt.** ~~weil sie den Gesamtzusammenhang und nicht das Segment zusammenfasst~~ → Die Verdichtung **bekommt das Segment gar nicht.** Der `pending_write` trug in `daten` nur `salienz_obj`; das Segment starb mit der Schleife im Salienz-Node. `agents/kzg/dispatch.py` füllte `parameter` aus dem State mit `user_prompt`/`response`, `agents/kzg/verdichtung.py` las genau die. *n* Segmente ergaben *n* LLM-Aufrufe mit **bitgleicher Eingabe**.
+
+Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zog nicht den Gesamtzusammenhang vor — er hatte kein Segment, aus dem er wählen konnte. Die Unterscheidung entscheidet über den Fix: durchstechen, nicht den Prompt schärfen.
+
+**Korrektur zu „bit-identisch":** Bei `temperature: 0.1` sind die Ausgaben nicht deterministisch. Gemessen an Turn `975ec093…` (27.07.2026): derselbe erste Satz wörtlich, danach drei Umformulierungen desselben Gedankens — Längen 315 / 307 / 315, drei verschiedene MD5. Das ist **schlimmer als identisch**, nicht harmloser: Drei verschiedene Zeichenketten fallen keiner Dublettenprüfung auf.
+
+**Der eigentliche Schaden ist Verlust, nicht Redundanz.** Derselbe Turn: Der Segmentierer schnitt korrekt in 137 / 487 / 222 Zeichen — Novas Reaktion auf den Themenwechsel, der Sachkern, Novas Selbstbezug. Gespeichert wurden dreimal Paraphrasen **nur des Sachkerns**. Verloren gingen die beiden Segmente, die etwas über Nova aussagen. Für Bauteil 3 (`verhaltensweisen` aus der assistant-Partition) wiegt das schwerer als das verfälschte Gewicht: Die Partition behält das Lexikon und wirft den Selbstbezug weg.
+
+**Beleg (gemessen 26.07.2026, 19:5x UTC):**
+
+- Nutzer-Turn `00e6678b…`: 3 `verbindung`-Zeilen → 1× `beobachter='user'`, **2× `assistant` mit identischem `inhalt`**.
+- Impuls-Turn `57b6e84c…`: 6 `verbindung`-Zeilen → **3× identisch** aus dem AgentGraph (Keys `…1785091673813`, `…675576`, `…677332`, im Abstand von je ~1,8 s) und **3× identisch** aus dem CharacterGraph (`…1785091797758`, `…799207`, `…800620`).
+
+**Reproduktion:** Beliebigen Turn nehmen, `verbindung`-Zeilen holen, `HGET <key> inhalt` für alle vergleichen. Duplikate treten auf, sobald die Salienz mehr als ein Segment bildet.
+
+**Auswirkung:** Das Gewicht eines Gedankens skaliert mit der Segmentzahl seines Textes, nicht mit seiner Bedeutung. Ein langer Text erzeugt mehr Einträge desselben Inhalts und damit mehr Verstärkungsmasse — ein zweiter Skalenfehler neben `KZG-SALIENZ-SKALENBRUCH`.
+
+**Nachtrag (Chat 110, abklingend):** Nach dem Verdichtungs-Fix verstärkt der user-Pfad 1–2 Nachbarn je Turn; die Treffer sind genau diese Duplikate aus der Zeit vor dem Fix. Klingt mit deren TTL ab, ist bis dahin aber ein verfälschtes Gewicht.
+
+**Status: Behoben Chat 111 (27.07.2026)** — Bauteil 1a, `novaberg-kzg-salienz_k.md` §11. Der `pending_write` trägt `segment`, `segment_index` und `segment_gesamt`; `dispatch_kzg` reicht sie in den `parameter`-Kanal; `verdichtung.py` zieht das Segment dem Volltext vor und meldet einen Rückfall ausdrücklich. Das `[LAGEBILD]` bleibt die andere Turn-Hälfte und wurde **nicht** um den Volltext erweitert — sonst stünde der ganze Text wieder im Prompt.
+
+**Abnahme:** Turn `cb8f02e5…`, 11:14 UTC. Drei Segmente (118 / 375 / 699 Zeichen) → drei Einträge mit drei verschiedenen MD5, jeder Kern erkennbar zu seinem Absatz. Im Log viermal `quelle=segment`, null Rückfall-Warnungen, `bewertungs_laenge` je gleich der Segmentlänge statt der 1192 des Volltexts.
+
+**Was der Fix NICHT behebt:** Die Salienz-Bewertung selbst. Im Abnahme-Turn erhielten alle drei inhaltlich verschiedenen Segmente erneut **0.3**. Der Verdacht, dass auch die Bewertung den Gesamtzusammenhang statt des Segments liest, steht in `novaberg-fundliste.md` und ist ein eigener Befund.
+
+**Verwandt:** KZG-SALIENZ-SKALENBRUCH, IMPULS-DOPPELTE-SPUR.
+
+---
+
+#### PROMO-QUEUE-DUBLETTEN — derselbe KZG-Key wird mehrfach eingereiht ✅
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. `promotion_queue_push` prueft die Queue vor dem Einreihen auf denselben Schluessel und gibt `False` zurueck, statt ein zweites Mal zu schreiben. Ein unlesbarer Fremdeintrag bricht die Pruefung dabei nicht ab, sondern wird benannt und uebergangen — die Dublettenpruefung kann nicht durch einen fremden Datensatz blockiert werden.
+
+**Entdeckt:** Chat 111, im selben Audit.
+
+**Klasse:** Fehlende Idempotenz beim Einreihen. Severity **niedrig** — kein Datenfehler, aber unnötige Queue-Last und ein verzerrtes Bild beim Debuggen.
+
+**Symptom:** Drei Stellen schreiben `lzg_promotion`-Aufträge, **keine** prüft, ob für denselben `key` bereits einer liegt:
+
+| Ort | Anlass |
+|---|---|
+| `agents/kzg/queues.py:74` | neu angelegter KZG-Eintrag über `KZG_SALIENZ_HIGH` |
+| `agents/kzg/queues.py:101` | verstärkter Nachbar, der die Schwelle überschreitet |
+| `memory/kzg.py:370` | Bestandspfad |
+
+**Warum die Dublette nachweislich nichts beiträgt:** Der Agent liest die Salienz **frisch aus dem Hash**, nicht aus dem Auftrag (`agents/synapsen_promotion/agent.py:236-240`, ausdrücklich kommentiert). Ein zweiter Auftrag für denselben Key kann also keine neuere Information transportieren — der erste holt den gestiegenen Wert ohnehin ab.
+
+**Auswirkung:** Die Queue füllt sich mit Einträgen, die beim Lauf zu No-Ops werden. Kein Mengenproblem für den Agenten (er leert vollständig), aber jeder Dublette kostet einen Peek, und beim Debuggen sieht eine Queue voller gleicher Keys nach einem Stau aus, der keiner ist.
+
+**Status: Behoben Chat 111** — `promotion_queue_push()` in `services/shadow_agent/utils.py` prüft vor dem Einreihen auf einen bestehenden Auftrag mit demselben `key` und schreibt nur, wenn keiner da ist. Alle drei Schreiber gehen über den Helfer.
+
+**Verwandt:** PIXIE-QUEUE-LAUF-DISSENS.
+
+---
+
+#### GV-DREISCHICHT-BLOCK-OHNE-AUFTRAG — Werkzeuge im Prompt, aber kein Auftrag, sie zu benutzen ✅
+
+**Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Der Block wird nicht mehr unbedingt gebaut: `graph/nodes/gespraechsvektor.py` haengt ihn nur an, wenn die Strategie aktiv **und** die Aufnahmebereitschaft groesser null ist. Werkzeuge ohne Auftrag stehen damit nicht mehr im Prompt.
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** Der Dreischicht-Block wird unbedingt gebaut und angehängt, auch wenn
+`strategie_aktiv=False` (Vektorlänge < `GV_STRATEGIE_MIN_LAENGE`). Dann sieht das LLM
+`[WERKZEUGE]` und `[ABSICHTEN]`, bekommt aber die Anweisung *„Beschreibe die LANDSCHAFT —
+nicht die Route"* und kein Ausgabeformat, weil `gv.strategie` fehlt.
+
+**Beleg:** Zwei Turns mit Länge 1 (28.07.2026, 12:34 und 13:03). Beide Male antwortete das
+LLM trotzdem mit Absicht- und Strategie-Zeilen, aber ohne Vehikel — der Prompt fragt es
+in diesem Zweig nicht.
+
+**Auswirkung:** Widersprüchlicher Prompt. Entweder der Block gehört hinter dieselbe
+Bedingung wie der Strategie-Auftrag, oder der Auftrag gehört zum Block.
+
+### `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` — zeitweise kein Name
+
+**Zustand:** **gegenstandslos seit dem 24.08.2026** — der Telegram-Kanal ist abgeschaltet, der Behaelter `ki_telegram` gestoppt und entfernt. Der Befund ist damit **nicht behoben, sondern ohne Gegenstand**: `_nachricht_senden` faengt weiter jede Ausnahme und kehrt zurueck, aber der Pfad laeuft nicht mehr. **Wer den Kanal zurueckholt, holt diesen Defekt mit** — der Eintrag bleibt deshalb stehen statt geschlossen zu werden. Davor: offen, gegen HEAD `00c16b6` gehalten am 20.08.2026.
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Die Namensauflösung im Telegram-Behälter fällt zeitweise aus.** `httpx.ConnectError: [Errno -3] Temporary failure in name resolution` beim Griff nach `api.telegram.org`, zweimal im beobachteten Fenster: 14.08. 23:06 und 15.08. 07:22 (dort vier Zeilen). Beim Abholen von Nachrichten ist das folgenlos — die Bibliothek wiederholt. **Ungeprüft ist der Sendepfad:** `_nachricht_senden` fängt jede Ausnahme, protokolliert sie und kehrt zurück; eine Nachricht, die in dieses Fenster fällt, wäre damit verloren, ohne dass jemand sie erneut zustellt. Beobachtet, nicht reproduziert.
+
+**Geschlossen, wenn** Die Namensaufloesung im Telegram-Behaelter faellt laut aus statt still.
 
 ---

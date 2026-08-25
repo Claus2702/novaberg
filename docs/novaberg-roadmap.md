@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 09:20 UTC
+**Stand:** 25. August 2026, 10:05 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,26 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 25.08.2026, 10:05 UTC — 21 Einträge standen als offen und waren es nicht mehr
+
+**Der Durchgang, der den Schnitt ausgelöst hat, ist jetzt eingetragen.** Von 116 Einträgen, die seit ihrem Befund nie wieder gegen den Code gehalten worden waren, sind 75 nachgeprüft; **21 sind geschlossen**, 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen.
+
+| Ausgang | Zahl | was er heißt |
+|---|---|---|
+| **behoben** | 13 | die Abhilfe steht im Code, mit Fundstelle oder Bestandszahl |
+| **gegenstandslos** | 8 | der Befund ist nicht widerlegt, aber die Stelle, an der er galt, gibt es nicht mehr |
+| **offen, Beleg bewegt** | 15 | verschärft, zur Hälfte erledigt, überholt oder nicht mehr belegbar |
+
+**Die sieben Fakten-Einträge sind ein Klumpen mit einer Ursache:** `fakten` trägt 0 Zeilen und der Anreicherungspfad ist stillgelegt. `FAKTEN-RAUSCH`, `FAK-LECK`, `FAK1`, `D9`, `ENRICHER-DUP` und `GV-WERT-FAKTEN-BLIND` messen alle denselben leeren Speicher. Wer ihn wieder befüllt, holt sie mit — deshalb bleiben sie stehen statt zu verschwinden.
+
+**Zwei Befunde haben sich beim Nachmessen verschärft, nicht erledigt.** `KANON-FELDER-NEHMEN-FREMDWERTE` stand bei 9 % Kanonverstößen und liegt heute bei **21,3 % (99 von 464)**. `ZEIT-EINZAHL-GREIFT-DANEBEN` ist unverändert reproduzierbar — und dabei fiel ein zweiter Fall an, den der Eintrag nicht nennt: `in einem Monat` löst **29 Tage rückwärts** auf. Die Klasse ist größer als der Eintrag: nicht die Einzahl greift daneben, sondern die Einzahl vor einer Einheit, die zugleich ein Datumsteil ist.
+
+> **Die Prüfung hat dabei einen Fehler in der Arbeit gefunden, die sie prüfen sollte — und einen älteren mit.** Sieben frisch geschlossene Einträge galten ihr als offen, weil ihre Zustandszeile das Wort fett setzt und sie `**gegenstandslos` statt `gegenstandslos` las. Dieselbe Lücke betraf einen Eintrag vom 24.08.2026, den der Schnitt eine Stunde zuvor deshalb im offenen Register hatte liegen lassen. **Eine Prüfung, die nur die eigene Schreibweise kennt, bestätigt den Bestand statt ihn zu messen.**
+
+**Was der Durchgang nicht entscheiden konnte, ist eine eigene Klasse.** 41 der 116 sind Verhaltensbefunde ohne Codeort — Therapeutenton, Emote-Inflation, halluzinierte Bestätigung. Für keinen gibt es eine Stelle, an der man nachsähe; jeder braucht einen Turn. Sie werden nicht dadurch aktueller, dass sie im Register stehen.
+
+---
 
 ### 25.08.2026, 09:20 UTC — Das Bugregister wird geteilt, weil seine Größe den Zustand seiner Einträge altern ließ
 
