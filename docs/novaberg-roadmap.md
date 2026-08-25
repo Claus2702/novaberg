@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 13:20 UTC
+**Stand:** 25. August 2026, 14:10 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,43 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 14:10 UTC — Zweite Etappe: 51 Backlog-Einträge, und die Prüfung trifft auf ihren eigenen Vortag
+
+**Der ganze Block der Fundlisten-Klassifikation vom 20.08.2026, 50 Einträge, plus einer.** Alle als `####`-Überschrift — dort geht die richtige Form, eine eigene `**Zustand:**`-Zeile, statt einer Tabellenzelle.
+
+| Ausgang | Zahl |
+|---|---|
+| **offen, belegt** | 20 |
+| **offen, unbelegt — braucht eine Messung** | 28 |
+| **abgeschlossen** | 3 |
+
+**Der erste Eintrag des Blocks ist heute früh erledigt worden, und er wusste es nicht.** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` verlangte, dass der Zustand eines Defekts an genau einer Stelle steht und auszählbar ist — genau das ist das Defektregister seit dem Schnitt von heute Vormittag. Sein Nachbar `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` nannte **166** Einträge ohne Zustandsangabe; heute sind es **45**.
+
+**Vier Befunde sind unter derselben Prüfung gewachsen, mit der sie erhoben wurden.**
+
+| Befund | damals | heute |
+|---|---|---|
+| private Member ohne Zusicherung | 276 | **299** |
+| Funktionen tiefer als vier Ebenen | 19 | **21** |
+| Klassen ohne gemeinsames Feld | 10 | **13** |
+| Abdeckung des Kanalzwangs | 22 % | **21 %** |
+
+**Ein geduldeter Bestand ist keine Konstante** — das ist heute der dritte Beleg dafür an einem Tag.
+
+**Einer war erledigt und ist es nur halb.** `WERKZEUGSCHICHT-DATEIEN-OHNE-RUFER` hat Rufer bekommen. `ZEILEN-LESEN-OHNE-AUFRUFER` sieht dadurch erledigt aus — die Funktion wird gerufen —, **aber ihr Aufrufer hat außer Zeugen selbst keinen.** Der Befund ist nicht weg, er ist eine Ebene höher gewandert. Wer nur die genannte Funktion greppt, schließt ihn zu Unrecht.
+
+**Ein Befund ist nicht fortschreibbar, und das ist die ehrlichere Antwort als eine Zahl.** `BEISPIELE-OHNE-HERKUNFTSMARKE` nannte 9 von 150 Dokumenten. Eine Nachzählung mit einem anderen Muster ergibt 52 von 162 — und ist deshalb **keine** Fortschreibung. Das Instrument des Befundes ist nicht mit überliefert worden.
+
+**Zwei Befunde stehen unter je zwei Kennungen.** Die Recherche, die ihre eigene Bibliothek nicht liest, und die Cluster-Beschreibung, die Szene und Regieanweisung mischt — beide je zweimal erfasst, an verschiedenen Tagen, beim Umzug aus der Fundliste. Eine Erledigung schlösse jeweils nur die Hälfte.
+
+**Und einer hat seine Zahl verloren, ohne seine Frage zu beantworten.** Der `repeat_penalty` von 1.3 ist im Bestand nicht mehr zu finden; an der einzigen verbliebenen Stelle steht 1.1 — **ebenfalls ohne Begründung**.
+
+**Belegt:** +102 Zeilen, genau 51 × (Leerzeile + Zustandszeile), **keine verlorene Zeile**. Das Findemittel zählt danach 200 statt 251 ohne lesbaren Zustand, 169 offen, 51 abgeschlossen.
+
+> **Die 28 „unbelegt" sind kein Ausweichen, sondern das Ergebnis.** Sie beschreiben Verhalten, Kosten oder Trennschärfe — Größen, die kein Codeblick hergibt. Sie als `offen` zu führen, ohne das zu sagen, wäre dieselbe Verwechslung, die das Register bei den Bugs schon einmal teuer gemacht hat: **nicht widerlegt ist nicht gemessen.**
 
 ---
 

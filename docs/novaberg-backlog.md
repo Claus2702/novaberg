@@ -11,6 +11,8 @@
 
 ## DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhalt statt aus den Stichwörtern (23.08.2026)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Ein Schreiber, der Entitaeten aus dem Dateiinhalt zieht, ist nicht gebaut; die Nulllinien des Eintrags (18 bzw. 37 Dateien) stehen unveraendert als Vergleichsmass.
+
 **Anlass:** `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` ist am 23.08.2026 durch eine **Statusmarke** geschlossen worden, nicht durch einen Schreiber — weil die Messung gegen den naheliegenden Schreiber entschied. Dieser Eintrag hält fest, was ein tragfähiger wäre.
 
 **Was gemessen wurde** (`labor/2026-08-23_dateiindex_graphkanal.sql`, 175 Indexzeilen gegen die 690 Entitäten, die der Auflöser für dieses Paar sieht): Die je Datei erhobenen Stichwörter gegen den Entitätenbestand aufzulösen ergibt aus 843 verschiedenen Stichwörtern **10 Treffer**. 122 Dateien bekämen eine Kante, **116 davon zur Entität `Novaberg` — 95,1 %.** Ohne sie 18 von 175. Eine Kante an zwei Dritteln des Bestands sortiert nicht.
@@ -388,6 +390,8 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 
 #### BUGREGISTER-ZUSTAND-NICHT-LESBAR — offen oder behoben ist nicht auszaehlbar
 
+**Zustand:** abgeschlossen — nachgeprueft am 25.08.2026. Jeder Eintrag des Defektregisters traegt seinen Zustand an genau einer Stelle, und ein Werkzeug prueft die Bilanz zwischen offenem Register und Archiv. Gemessen: 273 Eintraege, 0 Kennungen in beiden Dateien.
+
 **Erledigt am 21.08.2026, 22:50 UTC.** Alle **82** Abschnitte tragen die Zeile `**Zustand:**` unmittelbar unter ihrer Ueberschrift, mit geschlossener Wertemenge, Pruefdatum und dem HEAD, gegen den geprueft wurde. Auszaehlbar mit `grep -cE '^\*\*Zustand:\*\* offen'`: **64 offen, 18 behoben**. Die zwoelf zuletzt fehlenden sind nicht uebertragen, sondern **einzeln gegen HEAD `62560cf` geprueft** — sechs waren behoben, sechs offen. **Der Rest ist benannt und traegt eine eigene Kennung:** `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND`. Dabei kam heraus, warum die Uebertragung nicht genuegt haette: `NOVA-SPRICHT-VON-FACHABTEILUNG` trug *behoben* in der Ueberschrift und benannte im selben Eintrag die ausstehende Schlussbedingung.
 
 ~~**Die Form steht seit dem 20.08.2026, 19:32 UTC — der Eintrag bleibt trotzdem offen.**~~ Der Rest des damaligen Absatzes ist mit der Erledigung gegenstandslos: Es fehlte nicht die Form, sondern der Nachzug der uebrigen zwoelf Abschnitte, und der steht.
@@ -401,6 +405,8 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 **Prioritaet:** mittel. Kein laufender Verlust — aber jede Zahl ueber offene Defekte bleibt bis dahin eine Schaetzung.
 
 #### BUGREGISTER-ALTEBENE-OHNE-ZUSTAND — 166 Eintraege zaehlen nicht mit
+
+**Zustand:** offen, stark gefallen — am Bestand gemessen am 25.08.2026. Von **166** Eintraegen ohne Zustandsangabe sind **45** geblieben. Gefallen ist die Zahl durch die Teilung des Registers und 21 nachgetragene Zustandszeilen, nicht durch einen Durchgang ueber die Altebene selbst — die 45 stehen unveraendert aus.
 
 **Befund (21.08.2026), aus einem Abgleich der Feature-Ampeln gegen die Registerzustaende.**
 `novaberg-bugs.md` fuehrt Defekte auf **zwei** Ueberschriftenebenen. Die Klassifikations-Sektion
@@ -423,6 +429,8 @@ nicht ist, ist teurer als eine, die als Schaetzung kenntlich bleibt.
 
 #### QUERY-REWRITING-QUELLE-STEHT — der Verlauf liegt vor, bevor eingebettet wird
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Der Befund beschreibt eine **Moeglichkeit** (der Verlauf liegt vor, bevor eingebettet wird), keinen Defekt. Ob Query Rewriting traegt, ist eine Messung und keine Codestelle; sie ist nicht gefahren.
+
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Der Gesprächsverlauf liegt im Enricher vollständig vor, bevor eingebettet wird — Query Rewriting braucht deshalb keine neue Datenquelle.** Der Enricher lädt in seinem ersten Abschnitt (*„Session-Kontext, immer, als erstes"*) die rohen Turns aus Redis: bis **20 Stück** (`SESSION_MAX_TURNS`), ab 25 werden die ältesten zu einer Summary verdichtet, die er daneben lädt; TTL 4 Stunden. `_create_prompt_embedding` läuft **danach** und bettet allein `reiz_text(state)` ein. **Warum das die Bauart entscheidet:** Ein Rewriter braucht weder einen neuen Knoten noch einen zusätzlichen Speicherzugriff — und er braucht **kein festes Fenster**. Ein `k` müsste raten, wie weit ein Thema zurückreicht; ein Modell, das den Verlauf sieht, muss nicht raten und schreibt beim Themenwechsel den neuen Gegenstand. Gemessen am 20.08.2026 am Code, nicht geschätzt.
 
 **Was fertig waere:** Der Rewriter liest den vorhandenen Verlauf aus dem Enricher — ohne neuen Knoten, ohne festes Fenster.
@@ -430,6 +438,8 @@ nicht ist, ist teurer als eine, die als Schaetzung kenntlich bleibt.
 **Prioritaet:** mittel
 
 #### INTERNE-PROMPTS-SPRACHGEBRAUCH — fuehren interne Prompts dieselbe Sprache?
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Eine Sprachfrage ueber Prompts, die nur ein Durchgang durch alle Prompt-Dateien beantwortet. Nicht gefahren.
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Der Router-Prompt nennt weiter „die Fachabteilung", und das ist bewusst stehen geblieben.** Bei der Behebung von `NOVA-SPRICHT-VON-FACHABTEILUNG` sind die Blöcke der Figur umgestellt worden; `graph/nodes/router.py` sagt unverändert *„die Fachabteilung urteilt selbst und kann begründet ablehnen"*. **Der Grund für das Stehenlassen:** Der Router spricht nicht als Nova — er ist ein interner Klassifizierer, der Aushänge gegen eine Äußerung hält, und dort beschreibt der Begriff einen Mechanismus ohne Wirkung auf ein Selbstbild. **Der Grund, es trotzdem zu notieren:** Es ist dieselbe Metapher am selben Tag, und wer sie später sucht, findet eine Stelle, die anders lautet als die anderen. Zu entscheiden ist, ob interne Prompts denselben Sprachgebrauch führen sollen wie die der Figur.
 
@@ -439,6 +449,8 @@ nicht ist, ist teurer als eine, die als Schaetzung kenntlich bleibt.
 
 #### RESPONDER-BRAUCHT-FRAGEN-DRAENGEN — dieselbe Groesse in zwei Stufen
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Der Befund fragt, ob dieselbe Groesse in zwei Stufen gehoert; das ist eine Absicht und keine Messung. Unentschieden.
+
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **`fragen` und `draengen` stehen jetzt in beiden Prompts — inhaltlich beim Verfasser, als Tonwort beim Responder.** Seit dem Bau vom selben Tag liest der Verfasser die drei fachlichen Größen (`[MASS]`), der Responder liest weiterhin **alle fünf**: Seine Schleife in `regie_zeilen` gibt jede Größe aus, die vom Grundwert der Landschaft abweicht, also auch `fragen` („nachhakend") und `draengen` („drängend"). **Gefunden von der zweiten Kontrolle** über ein Kriterium statt einer Aufzählung — wer liest welche Größe, als Auswertung des Quelltextes beider Knoten. **Es ist keine Doppelung im selben Prompt**, sondern dieselbe Zahl in zwei Stufen mit verschiedener Aufgabe: Der Verfasser setzt die Rückfrage, der Responder färbt ihren Ton. **Zu entscheiden ist, ob der Responder sie noch braucht.** Dafür spricht, dass er den Ton der bereits gesetzten Rückfrage formt; dagegen, dass genau diese Sorte Wiederholung am 13.08.2026 an anderer Stelle als Doppelung entfernt wurde. `umfang` steht bewusst in beiden — die Mengenangabe muss beide Stufen erreichen, und sie bedeutet dort Verschiedenes (*wie viel Stoff* gegen *wie viel Rede*).
 
 **Was fertig waere:** Entschieden ist, ob der Responder `fragen` und `draengen` noch braucht, nachdem der Verfasser sie inhaltlich setzt.
@@ -446,6 +458,8 @@ nicht ist, ist teurer als eine, die als Schaetzung kenntlich bleibt.
 **Prioritaet:** niedrig
 
 #### ~~SUCHSCHLUESSEL-OHNE-VERLAUF~~ — umgesetzt am 20.08.2026
+
+**Zustand:** abgeschlossen am 20.08.2026 — die Ueberschrift traegt es bereits durchgestrichen, die Zeile macht es zaehlbar.
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Der Suchschlüssel des Gedächtnisses trägt ausschließlich den aktuellen Turn.** `_create_prompt_embedding` bettet `reiz_text(state)` ein, also `user_prompt` bzw. `eigener_gedanke` — kein Verlauf. Verschoben wird der Vektor danach durch `wahrnehmung_verschieben`, aber Richtung **Ziele**, nicht Richtung Gespräch; vom Vorturn erreicht die Suche genau ein Datum, seinen *Cluster*, und der steuert nur die Mischstärke, nicht den Inhalt. **Folge:** Ein Turn wie *„und wie weist man das nach?“* sucht ohne den Gegenstand, den der Turn davor genannt hat — KZG, LZG und Bibliothek gleichermaßen, denn alle drei bekommen denselben `such_vektor`. **Entscheidung des Meisters, 20.08.2026: Der Weg ist Query Rewriting** — ein Modellaufruf formt aus den letzten Turns eine eigenständige Suchanfrage. Verlaufsvektor, HyDE-Variante und Mehrfachsuche mit Fusion sind ausdrücklich verworfen. **Offen ist der Wirkungsbereich:** alle drei Speicher oder zunächst nur die Bibliothek — heute ist der Schlüssel für alle derselbe, und das ist eine ausdrücklich begründete Eigenschaft (`enricher.py`, Kommentar zu `state["such_vektor"]`).
 
@@ -461,6 +475,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### ZUSAMMENFASSUNG-ALS-ZWEITER-ARM — der Vektor liegt, der Leser fehlt
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Der Vektor liegt, der zweite Leser fehlt; ob er trifft, ist ungemessen.
+
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Die eingebettete Zusammenfassung liegt gefüllt im Bestand und wird vom Suchweg der Bibliothek nicht benutzt.** `autonomous_wissen.themen_embedding` ist trotz des Namens der Vektor der **Zusammenfassung** — `embed_text_bauen` ist die Identität auf `zusammenfassung` (Ø 583 Zeichen). **Gemessen am 20.08.2026: 320 von 320** aktiven Ausarbeitungen vom Typ `wissen` tragen ihn. Der Rückweg nutzt ihn (25 von 25 unter den ersten acht, `db/init.sql`); `AutonomousWissenRepository.suchen` joint dagegen ausschließlich auf `autonomous_wissen_thema` und sieht ihn nie. **Warum es zählt:** Die Bauart *„Zusammenfassung je Ausarbeitung einbetten“* — bis dahin als offene Entwurfsfrage geführt — ist damit kein Bau, sondern ein zweiter Arm in einer vorhandenen Abfrage — der Vergleichsgegenstand auf Inhaltshöhe existiert bereits.
 
 **Was fertig waere:** Die Suche der Bibliothek hat einen zweiten Arm auf Inhaltshoehe; der Vergleichsgegenstand existiert bereits.
@@ -468,6 +484,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### AUFSTELLUNG-NICHT-VERSIONIERT — der Aufbau von null verliert die Freigabe
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Ein Aufbau von null ist seither nicht gefahren worden, die Luecke damit unveraendert.
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Die Freigabe von `docs/` überlebt keinen Aufbau von null.** Beide Hälften der Zusicherung — der lesende Einhängepunkt und der Außenrand `/files,/docs` — stehen in `docker-compose.yml`, und diese Datei liegt **außerhalb des Git-Roots**. Wer das System aus dem Repositorium neu aufsetzt, bekommt einen Dienst, dessen Doku eine Freigabe beschreibt, die es nicht gibt; das Tor wiese sie ab, und der Grund stünde in keiner versionierten Datei. **Das berührt `F-SCHEMA-2`** (Aufbau von null muss reproduzierbar funktionieren) — dort allerdings für das Datenbankschema formuliert, während die Lücke hier in der Aufstellung liegt. **Nicht neu, aber neu wirksam:** Der Zustand galt auch für `/files`, `/knowledge` und `/logs`; erst mit einer Freigabe, die in der Repo-Doku ausführlich beschrieben ist, wird aus der Eigenschaft ein Widerspruch. **Zu entscheiden ist, ob der Harness eine Aufstellungsbeschreibung bekommt** — die Compose-Datei selbst gehört nicht ins öffentliche Repositorium, ihre Wirkung aber in eine Datei, die jemand findet.
 
@@ -477,6 +495,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### SCHREIBPFAD-BIBLIOTHEK-UNGEMESSEN — vier Embeddings je Ablage, Kosten unbekannt
 
+**Zustand:** offen und weiterhin ungemessen — nachgesehen am 25.08.2026. Der Eintrag verlangt eine Kostenmessung; sie ist nicht angesetzt worden.
+
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Der Schreibpfad der Bibliothek ist seit dem Umbau teurer, und um wie viel ist nicht gemessen.** Jeder `speichern()`-Aufruf baut jetzt die Themenvektoren — bei Ø 4,37 Themen je Ausarbeitung sind das rund vier zusätzliche Embedding-Aufrufe je Ablage, auf dem kleinen Modell (0,6 GB). Beobachtet am 19.08. um 20:36 UTC, als 31 Rückweg-Aufträge in Serie liefen: GPU zu **100 %** ausgelastet, VRAM 89 %, 83 Modellaufrufe in sechs Minuten. **Der Beitrag der Themenvektoren daran ist nicht isoliert** — die 83 Aufrufe sind Chat-Aufrufe von `zuordnung` und `einarbeitung`, die Embeddings kommen zusätzlich. Wer die Kosten des Schreibwegs beziffern will, misst sie eigens.
 
 **Was fertig waere:** Die Kosten des Schreibwegs sind eigens gemessen, getrennt von den Chat-Aufrufen daneben.
@@ -484,6 +504,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### RUECKWEG-VORAUSWAHL-OHNE-TRENNSCHAERFE — acht Kandidaten, 0,066 Abstand
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die genannte Trennschaerfe ist seit dem Befund nicht nachgemessen worden.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Vorauswahl des Rückwegs wählt kaum vor: acht Kandidaten liegen im Median 0,066 Kosinus auseinander.** `kandidaten_laden` kappt bei `KANDIDATEN_KAPPUNG = 8` und hat **keine Schwelle**; die acht gehen an ein Modell, das eines auswählt. Gemessen über 25 echte Kontexte (Ø 833 Zeichen): Abstand Rang 1 zu Rang 8 **0,0664** beim heutigen Ziel, 0,0718 bei Themenvektoren. **Wenn alle acht praktisch gleich nah sind, trägt die Rangfolge die Auswahl nicht** — das Modell entscheidet dann über den Text, nicht über die Nähe, und die Vorauswahl ist eine Kappung ohne Aussage. Ob das schadet, hängt daran, wie gut das Modell aus acht ähnlichen wählt; gemessen ist das nicht.
 
@@ -493,6 +515,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### BEZUG-ID-NIE-AUSGELOEST — 0 von 904, die Absicherung ist unbelegt
 
+**Zustand:** offen, am Bestand bestaetigt am 25.08.2026. **0 von 697** Auftraegen tragen ein `bezug_id` — die Absicherung ist gebaut und weiterhin nie ausgeloest worden. Der Befund nannte 0 von 904; die Grundmenge ist kleiner geworden, der Zaehler nicht.
+
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Ausschluss-Absicherung des Verweiswegs ist gebaut und im Betrieb nie ausgelöst worden.** `shadow_auftrag.bezug_id` hält die gerade angelegte eigene Bibliothekszeile aus der Kandidatenmenge des Rückwegs; ohne sie verstärkt jedes Recherche-Ergebnis sich selbst. Gemessen: **0 von 904** Aufträgen tragen einen Wert. **Das ist kein Defekt** — die einzige Schreibstelle ist `agents/recherche/agent.py::_verweis_einreihen`, und die drei vorhandenen `wissen_verweis`-Aufträge stammen aus dem Zeitfenster **vor** der Behebung von `VERWEIS-OHNE-WISSEN` (08:03–08:05 UTC, alle mit dem Platzhalter-Thema `Gescheitert <hash>`). Der Befund ist: **Die Absicherung hat noch keinen einzigen echten Lauf gesehen**, und ihre Wirksamkeit ist damit unbelegt — sie steht auf 0 von 0.
 
 **Was fertig waere:** Die Ausschluss-Absicherung hat einen echten Lauf gesehen und ihre Wirksamkeit ist belegt.
@@ -500,6 +524,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### RECHERCHE-REIHT-NICHT-MEHR-EIN — elf Stunden ohne Auftrag
+
+**Zustand:** offen, am Bestand bestaetigt am 25.08.2026 — und schaerfer als der Befund. Ueber zehn Tage traegt das produktive Paar **einen einzigen** Recherche-Auftrag (24.08.). Die 80 juengeren Zeilen stammen saemtlich von der Testkennung und sind kein Betrieb.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Seit elf Stunden wird kein Recherche-Auftrag mehr eingereiht, während weiter Wissenszeilen entstehen.** Gezählt ab 08:06 UTC: **0** neue Aufträge mit `aufgabe='recherche'`, **0** mit `wissen_verweis` — aber **13** neue Zeilen in `autonomous_wissen`, die jüngste um 18:59 UTC. Die Zeilen entstehen also über den Rückweg (`agent/wissen_rueckweg/einarbeitung`), nicht über die Recherche. **Warum das zusammenhängt:** Der Verweis wird ausschließlich vom Recherche-Pfad eingereiht; solange dieser keine Aufträge bekommt, kann der Verweisweg nicht laufen, und keine seiner Absicherungen wird geprüft. Ob das Ausbleiben gewollt ist, ist nicht geklärt.
 
@@ -509,6 +535,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### NACHLAUF-VOR-DER-ZUSTELLUNG — acht Sekunden nach der fertigen Antwort
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die acht Sekunden sind seit dem Befund nicht nachgemessen worden.
+
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Antwort wird erst nach dem vollständigen Durchlauf zugestellt, und der Nachlauf kostet gemessen 8 Sekunden.** Der CharacterGraph ist durchgehend sequenziell verdrahtet (`responder → thinker → tribunal → evaluate → perzeption_assistant → ei_calc_persist → salience → dispatcher → END`), und `_event_verarbeiten` sendet erst danach: erst `await asyncio.to_thread(_graph_streamen, …)`, dann `if response and …`. **Gemessen an einem echten Turn:** Responder fertig 15:29:22,488 — Tribunal mit drei Modellaufrufen bis 15:29:29,310 (**6,8 s**) — Antwort-Perzeption bis 15:29:30,545 (1,2 s) — Durchlauf beendet 15:29:30,559. **Keiner dieser Knoten wird gebraucht, bevor der Mensch liest**; sie brauchen die Antwort, nicht umgekehrt. Ein früher entworfener asynchroner Block ist in `novaberg-ei-dual-emotion_k.md` als *„⚠ Veraltet"* markiert und wurde durch das Event-Modell ersetzt — der Nachlauf ist damit nicht abgeschafft, sondern in die Sequenz gewandert. **Vorbedingung für eine Umstellung ist der Riegel gegen die leere Antwort**, sonst stellt man sie nur schneller zu.
 
 **Was fertig waere:** Der Mensch bekommt die Antwort, bevor der Nachlauf laeuft — Vorbedingung ist der Riegel gegen die leere Antwort.
@@ -516,6 +544,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** hoch
 
 #### REPEAT-PENALTY-OHNE-HERKUNFT — 1.3, und niemand weiss warum
+
+**Zustand:** offen, Zahl nicht mehr auffindbar — nachgesehen am 25.08.2026. Im Bestand steht `repeat_penalty` nur einmal, im Knoten `responder` mit **1.1**; die im Befund genannte 1.3 ist an keiner Stelle mehr zu finden. **Damit ist die Frage nach der Herkunft nicht beantwortet, sondern verschoben:** Auch die 1.1 traegt keine Begruendung.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **`gemma4-gpu` fährt `repeat_penalty 1.3`, und niemand kann sagen, woher die Zahl kommt.** Sie steht als `PARAMETER` im selbstgebauten Modelfile. Zum Vergleich: Ollama hat den Vorgabewert für Modelle **ohne** eigene Angabe am 12.08.2026 von 1.1 auf 1.0 gesenkt (v0.32.10, *„matching other engines"*) — der Bestand liegt also deutlich über beiden Werten, die die Laufzeit je als Vorgabe geführt hat. Ob 1.3 gemessen oder übernommen ist, steht nirgends. Betrifft Antwortlänge und Wortwahl aller Gesprächsknoten und damit jede Messreihe, die gegen sie kalibriert ist.
 
@@ -525,6 +555,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### ANBIETERDAUERN-UNGELESEN — liegen vor, werden nirgends gelesen
 
+**Zustand:** offen — gegen HEAD `ea1667c` geprueft am 25.08.2026. `eval_duration` kommt im ganzen Baum nicht vor; die Dauern des Anbieters werden weiterhin nirgends gelesen.
+
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Dauern des Anbieters liegen seit jeher vor und werden nirgends gelesen.** `eval_duration`, `load_duration`, `prompt_eval_duration` und `total_duration` stehen in jeder Antwort. Wartezeit **am Modell** und Wartezeit **im Graphen** werden heute aus Zeitstempeln zweier Logzeilen erschlossen; mit diesen Feldern wären sie je Aufruf direkt getrennt. Betrifft jede Aussage über den seriellen Platz. Gehört zu `ANBIETER-FELDER-UNGELESEN`.
 
 **Was fertig waere:** Die Dauern des Anbieters gehen in eine Auswertung, oder sie werden nicht mehr erhoben.
@@ -532,6 +564,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### FUNDSTELLE-ERREICHT-DEN-MENSCHEN-NICHT — der Dienst nennt sie, die Antwort nicht
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Der Befund haengt an einer Antwort im Betrieb und ist ohne Messturn nicht zu entscheiden.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Der Dienst nennt seine Fundstelle, und die Antwort an den Menschen nennt sie nicht.** Echter Turn 12:43 UTC: `agents/wissen` liefert fünf Treffer, und sein Text trägt je Treffer den Dateipfad, den Kosinus und den ausdrücklichen Hinweis *„das ist der Stand aus meinen Metadaten — nicht der Wortlaut der Ausarbeitung"*. Die Antwort, die beim Menschen ankommt, ist inhaltlich richtig (ER=EPR, Page-Kurve, Island-Regel) und nennt **weder eine Datei noch die Tiefe** — sie liest sich, als wüsste sie es aus sich. Das ist die Frage aus `novaberg-agent-dateien_k.md` §1a.4 für dieses Silo, und für den Zettel-Weg ist sie unbeantwortet: Beim Dateien-Dienst trägt der Enricher-Block eine Beschriftung, hier läuft die Auskunft über `management_result`. Zu messen: an wie vielen von N Turns die Herkunft den Responder überlebt.
 
@@ -541,6 +575,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### SILO-OHNE-ZUSTAND-IN-DER-MATRIX — gebaut und abgeschaltet ist kein Zustand
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Rollenmatrix kennt weiterhin keinen Zustand *gebaut und abgeschaltet*.
+
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Ein Silo, dessen Lesefunktion gebaut und abgeschaltet ist, hat in der Rollenmatrix keinen Zustand.** `fakten` überschreibt `enrich_entries` und wird im Enricher mit `continue` übersprungen, begründet im Code mit *„produziert 130+ Rausch-Eintraege"*. Die Matrix kennt nur *ja* und *nein*; gebaut-und-stillgelegt ist beides nicht und sieht in jeder Zählung wie eine bewusste Entscheidung aus. Betrifft jede Prüfung, die aus der Anwesenheit einer Methode auf eine Rolle schließt.
 
 **Was fertig waere:** Die Rollenmatrix kennt den Zustand *gebaut und abgeschaltet*.
@@ -548,6 +584,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### BESTAND-ANTWORTET-ANDERS-NACH-90-MIN — 0,9226 gegen 0,4163
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Der Befund ist eine Einzelbeobachtung ohne Wiederholung; ohne zweiten Lauf ist nichts zu entscheiden.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Dasselbe Material fand denselben Bestand neunzig Minuten spaeter voellig anders — bester Kosinus 0,9226 gegen 0,4163.** Zwei Verweis-Laeufe mit **zeichengleichem** `kontext` (08:21 und 09:46). Dazwischen wurde Zeile 8974 verstaerkt (`verstaerkt_am` 08:22:03), und die Verstaerkung **haengt die Ergaenzung an die Zusammenfassung an**, die bei 500 Zeichen gekappt ist — beide Zeilen stehen heute exakt auf dieser Kappung. **Korrelation, keine belegte Ursache**; was fehlt, ist die Antwort auf die Frage, ob `speichern` den Vektor neu rechnet. **Wenn ja, verschlechtert eine Verstaerkung die Auffindbarkeit genau des Materials, das sie ausgeloest hat** — der Mechanismus arbeitete dann gegen sich selbst. Zu messen: derselbe Fund vor und nach einer Verstaerkung, Kosinus beide Male.
 
@@ -557,6 +595,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### KANDIDATENABFRAGE-OHNE-DB-ZEUGEN — eine Verschiebung bliebe gruen
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Ein Zeuge, der die Kandidatenabfrage gegen eine Datenbank faehrt, ist nicht dazugekommen.
+
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Kein Zeuge faehrt die Kandidatenabfrage des Rueckwegs gegen eine Datenbank — eine Verschiebung zwischen Platzhaltern und Parametern bliebe gruen.** Vorhergesagt waren 3 rote Tests beim Entfernen der Ausschlussbedingung, gezaehlt wurden **2**; der dritte war ausdruecklich als unsicher benannt und ist der Befund: Die Attrappe prueft die Parameterzahl nicht, ein echter Lauf gegen Postgres waere gescheitert. Klasse `20_TESTS §4h` — ein Zeuge faehrt den Bestand, nicht seine Nachbildung. **Betrifft nicht nur diese Abfrage:** Wer eine Spalte in eine bestehende Abfrage einfuegt, hat hier keine Wand.
 
 **Was fertig waere:** Ein Zeuge faehrt die Kandidatenabfrage gegen eine echte Datenbank.
@@ -564,6 +604,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### VERSTAERKUNGSPFAD-IM-BETRIEB-UNGETROFFEN — bezeugt, gegengeprobt, nie gelaufen
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Ob der Pfad inzwischen getroffen wurde, sagt nur ein Lauf ueber das Protokoll; er ist nicht gefahren.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Der Verstaerkungspfad von Weg 3 ist bezeugt und gegengeprobt, aber im Betrieb noch nicht getroffen worden.** Vier echte Laeufe am 19.08. endeten alle in *keine Zuordnung* — dreimal begruendet, einmal als unbrauchbarer Aufruf. Der Zweig, der `haeufigkeit` und `gewicht_roh` hebt, ist damit **am Bestand ungemessen**; was vorliegt, ist die Zusicherung und die Gegenprobe. Der Grund ist nicht der Bauteil, sondern der serielle Platz: Der wartende Auftrag steht hinter einem Recherche-Lauf.
 
@@ -573,6 +615,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### DREI-WEGE-EINE-SCHWELLE — zeichengleich mit der Promotions-Schwelle
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Zeichengleichheit der beiden Schwellen besteht unveraendert; entschieden ist nichts.
+
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Die Schwelle des *Einpraegsamen* ist zeichengleich die Schwelle, die schon die Promotions-Queue oeffnet — die drei Wege aus §4b.1a sind nicht drei Kriterien, sondern zwei.** `novaberg-agent-dateien_k.md` §4b.1a nennt fuer den ersten Weg `salienz_roh >= 0,7`; `KZG_SALIENZ_HIGH = 0.94393` traegt im Code den Kommentar `# roh 0.7`, und genau an dieser Konstante haengen die beiden Einreihpunkte der Promotion (`memory/kzg.py`, `agents/kzg/queues.py`). **Der erste Weg feuert damit auf exakt der Menge, aus der der zweite spaeter seine Kandidaten zieht** — nicht ueberlappend, sondern als Obermenge, nur frueher. Gemessen am laufenden Bestand: **2597 von 2942 Eintraegen (88,3 %)** liegen ueber der Schwelle, in den letzten 24 Stunden **108 von 161 neuen**. Der Rueckweg-Auftragsbestand ist heute **3**.
 
 **Was fertig waere:** Die drei Wege tragen drei Kriterien, oder ihre Gleichheit ist als Absicht benannt.
@@ -580,6 +624,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### EINREIHPUNKT-HINTER-DEM-SCHREIBEN — Ergaenzung verlangt, Datei schon geschrieben
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Einreihpunkt liegt unveraendert hinter dem Schreiben.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der dritte Weg verlangt *als Ergaenzung, nicht als neue Datei* — und sein Einreihpunkt liegt hinter dem Schreiben der Datei.** `ergebnis_ablegen` (`services/wissensspeicher.py`) legt Bericht und Wissensdatei an und schreibt die Bibliothekszeile; der Einreihpunkt fuer den Rueckweg kann erst danach liegen, weil der Docstring den Queue-Push ausdruecklich dem Aufrufer zuweist. Wer dort einreiht, bekommt **beides**: die neue Datei **und** denselben Inhalt in eine bestehende eingearbeitet. Der Wortlaut des Konzepts meint das Gegenteil.
 
@@ -589,6 +635,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### SHADOW-AUFTRAG-OHNE-TURNBEZUG — der Rueckweg umgeht es ueber `modus`
 
+**Zustand:** offen, am Schema bestaetigt am 25.08.2026. `shadow_auftrag` traegt **keine** Spalte mit Turnbezug; der Rueckweg behilft sich weiterhin ueber `modus`.
+
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **`shadow_auftrag` hat keine Spalte für den Turnbezug, und der Rückweg umgeht das über `modus`.** Der Auslöser löst deshalb das Material selbst auf und gibt den Wortlaut im `kontext` mit; die Herkunftsmarke reist als `rueckweg_roh` / `rueckweg_verdichtet` im `modus`-Feld. Das trägt, ist aber eine Zweitnutzung: `modus` benennt die Lage, aus der ein Auftrag entstand, nicht die Herkunft seines Textes. Eine eigene Spalte wäre DDL und ist bewusst nicht nebenbei gelegt worden.
 
 **Was fertig waere:** `shadow_auftrag` traegt den Turnbezug als eigene Spalte (DDL, vorher ankuendigen).
@@ -596,6 +644,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### RUECKWEG-HINTER-DEM-RUECKSTAND — nicht messbar bei 714 Auftraegen davor
+
+**Zustand:** offen, Rueckstand halbiert — am Bestand gemessen am 25.08.2026. Vor dem Rueckweg liegen **352** aktive Auftraege statt 714. Messbar ist er damit noch nicht, aber die Bedingung naehert sich.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Rückweg ist über den Pixie-Zeitplan nicht messbar, solange die Queue 714 Aufträge höherer Salienz trägt.** Gemessen beim Einreihen: 497 `recherche`, 172 `vertiefen`, 45 `nachfragen`, alle bis Salienz 1,000 — der Rückweg-Auftrag steht mit 0,920 dahinter. Die beiden Messläufe liefen deshalb am Zeitplan vorbei, mit gestarteten Workern im eigenen Prozess. **Was damit nicht gemessen ist: dass der Auftrag je an die Reihe kommt.** Derselbe Engpass wie `PIXIE-EIN-SLOT-BLOCKIERT-ALLES`, hier zum ersten Mal an einem neuen Bauteil.
 
@@ -605,6 +655,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### DATEIEN-VERBUND-OHNE-MODULDOKUMENT — kein Moduldokument unter `docs/`
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Unter `docs/` gibt es weiterhin kein Moduldokument des Dateien-Verbunds.
+
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der ganze Dateien-Verbund hat kein Moduldokument unter `docs/`.** Gefunden über die Gegenrichtung, nicht über den Bau: Vier Agenten tragen eines (`novaberg-agent-character.md`, `-directives`, `-notes`, `-timeline`), die drei Dateien-Dienste keines — sie haben nur ihr `AGENT.md` neben dem Code und das gemeinsame Konzept `_k`. **Beidseitig gezählt: 4 von 19 Agentenverzeichnissen haben ein Moduldokument.** Das ist kein Versäumnis dieses Aufrufers, sondern der Zustand des Verbunds; zu entscheiden ist, ob das Moduldokument die Sorte ist, die hier fehlt, oder ob `AGENT.md` sie ersetzt.
 
 **Was fertig waere:** Der Dateien-Verbund hat ein Moduldokument, das seinen heutigen Zustand beschreibt.
@@ -612,6 +664,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### RUECKFRAGE-DEKLARIERT-UND-UNGENUTZT — deklariert, nie benutzt
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Ausgang ist weiterhin deklariert und ohne Fall im Betrieb.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der lesende Dienst deklariert die Rückfrage und benutzt sie nie.** `ausgaenge` trägt alle vier, `build_graph` hat keinen Knoten, der `status="rueckfrage"` setzt, und der Dispatch kennt keinen Rückweg. Das ist begründet — der Dienst ändert nichts, also gibt es nichts zu bestätigen —, aber die Deklaration sagt das nicht: Ein Aufrufer, der sie liest, hält einen Ausgang für bedient, den es nicht gibt. Zu klären ist, ob der Kanon der Ausgänge *„kann"* oder *„tut"* bedeutet.
 
@@ -621,6 +675,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### ZEILEN-LESEN-OHNE-AUFRUFER — weiterhin kein Aufrufer
 
+**Zustand:** offen — gegen HEAD `ea1667c` geprueft am 25.08.2026. `zeilen_lesen` wird zwar aus `tools/dateien/hand.py` gerufen, **aber `hand.py` selbst hat ausser Zeugen keinen Aufrufer**. Der Befund ist damit nicht erledigt, sondern eine Ebene hoeher gewandert.
+
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **`zeilen_lesen` hat weiterhin keinen Aufrufer.** Der Zoom des lesenden Dienstes kennt Karte, Block und Nadel; das Zeilenfenster aus `tools/dateien/operationen.py` ruft niemand. Rest von `WIS-8-STUFE-2`, dort benannt.
 
 **Was fertig waere:** `zeilen_lesen` hat einen Aufrufer oder ist entfernt.
@@ -628,6 +684,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### AGENTGRAPH-FAEHRT-VOLLEN-ENRICHER — drei Knoten, voller Enricher
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der AgentGraph faehrt unveraendert den vollen Enricher.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der AgentGraph fährt den vollen Enricher des Charakter-Pfads, obwohl er nur drei Knoten hat.** `services/shadow_delivery.py` setzt für ihn `ei_calc_rolle="character"`; `enrich()` wählt danach `_enrich_character`, und der AgentGraph besteht aus Enricher → Salience → Dispatcher — **ohne Verfasser**. Damit entstehen Kontextgrößen, für die auf diesem Pfad kein Leser existiert; beim Dateien-Index sind es zwei Postgres-Abfragen je Lauf. **Betriebsgewicht gemessen:** `SELECT quelle, count(*) FROM pipeline_log WHERE node='enricher' AND erstellt_am > NOW() - INTERVAL '24 hours'` → `character` 45, `user` 44, **`agent` 0**. Der Pfad ist offen und hat in 24 Stunden nicht gefeuert — deshalb eine Zeile hier und keine Kennung. **Die Frage ist älter als der Dateien-Index und größer:** Welche der Enricher-Quellen der AgentGraph überhaupt braucht, ist nirgends entschieden; er bekommt sie alle, weil er sich als Charakter-Pfad ausweist.
 
@@ -637,6 +695,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### WERKZEUGSCHICHT-DATEIEN-OHNE-RUFER — gebaut, niemand ruft sie
 
+**Zustand:** abgeschlossen — gegen HEAD `ea1667c` geprueft am 25.08.2026. Die Werkzeugschicht hat Rufer bekommen: `plugins/wissen_manager/manager.py` und `services/wissensspeicher.py` greifen darauf zu. **Der Zoom-Weg ueber `hand.py` bleibt davon unberuehrt** — er steht als `ZEILEN-LESEN-OHNE-AUFRUFER` weiter offen.
+
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Die Werkzeugschicht für Dateien ist gebaut und wird von niemandem gerufen.** `tools/dateien/` trägt seit dem 18.08.2026 vier Module mit 88 Zeugen — Karte, Block, Fenster, Fundstelle, chirurgische Schnitte, Versionierung mit Paarungsprüfung, und die Auftragsform `DATEI: {json}`. Gezählt über `grep` auf die Importe: **kein Knoten, kein Agent, kein Plugin importiert eines davon**, und die Anleitung steht in keinem Prompt. Der Werkzeugsatz ist an echten Wissensdateien erprobt (Kette aus Karte, Änderung, Einfügen, Verlauf, Paarung — 0 Befunde), aber Nova kann nichts davon aufrufen. **Kein Defekt, sondern ein Zwischenstand** — festgehalten, weil 88 grüne Zeugen genau darüber nichts sagen und die Lage aus dem Testergebnis nicht ablesbar ist.
 
 **Was fertig waere:** Die Werkzeugschicht fuer Dateien hat einen Eingang von der Nutzerseite.
@@ -644,6 +704,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** hoch
 
 #### RECHERCHE-LIEST-EIGENE-BIBLIOTHEK-NICHT — fuellt sie und liest sie nicht
+
+**Zustand:** offen — gegen HEAD `ea1667c` geprueft am 25.08.2026. `agents/recherche/agent.py` nennt `autonomous_wissen` an keiner Stelle. Deckungsgleich mit `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` — **zwei Kennungen fuer denselben Befund**, und das ist selbst ein Mangel.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Recherche-Pfad liest die Bibliothek nicht, die er selbst füllt — sein „Vorwissen" kommt aus den Assoziationen.** `kontext_paket_bauen` in `agents/recherche/lagebeurteilung.py` aggregiert fünf Quellen — Session-Kontext, LZG-Treffer, KZG-Einträge, Charakter-Hash, Beziehungsdynamik — und `autonomous_wissen` ist **keine davon**. Daraus entsteht `vorwissen_zusammenfassung`, und genau die geht in das Keep/Discard-Gate, dessen Kopf sagt: *„Steht im Destillat etwas, das über Novas Vorwissen hinausgeht?"* **Beurteilt wird damit gegen Assoziationen, nicht gegen ihr ausformuliertes Wissen.** Gezählt über `SELECT ... FROM autonomous_wissen`: Es gibt drei Leser — den Existenz-Vorcheck im Enricher, den Abruf des WissenManagers im Gesprächspfad, und das Repository für Gewicht und Häufigkeit beim Schreiben. **Der Agent, der die Bibliothek schreibt, liest sie nie**; `gate.py` importiert von dort nur den Status-Kanon. Folge: Nova kann zu einem Thema eine Wissensdatei besitzen, und die Lagebeurteilung sieht sie nicht — das Gate kann `echte_tiefe` urteilen, wo `wiederholung` richtig wäre. Das ist die Klasse, gegen die das Gate laut eigenem Kopf gebaut ist (*„die Bibliothek füllt sich mit Wiederholungen, die jede spätere Ähnlichkeitssuche verwässern"*). **Der Schaden ist noch nicht messbar und das gehört dazu:** Über 23.436 Paare liegen nur **6 über 0,70** und 2 über 0,75 — bei einem Bestand von dreizehn Tagen. Die Struktur ist falsch, die Wirkung ist eine Vorhersage und kein Befund; sie wächst mit der Kollisionswahrscheinlichkeit des Korpus. Aufgefallen beim Entwurf des Dateien-Dienstes, weil dort dieselbe Frage — *„habe ich dazu schon Wissen?"* — das Tor vor dem Dateizugriff bilden soll.
 
@@ -653,6 +715,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### RETRIEVAL-SCHWELLE-OHNE-WIRKUNG — die Kappung gibt den Ausschlag
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die Schwelle wird uebergeben (`plugins/wissen_manager/manager.py`); ob sie je den Ausschlag gibt, verlangt eine Verteilung und ist ungemessen. Deckungsgleich mit der Klasse von `KAPPUNG-VOR-GRENZWERT`.
+
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **`WISSEN_RETRIEVAL_SCHWELLE = 0.40` hat noch nie den Ausschlag gegeben; die Kappung gibt ihn — und der Vorbehalt dazu ist auf dem Weg ins Konzept verdunstet.** Der Wissens-Manager sucht mit `WHERE cosine >= 0.40 ... LIMIT WISSEN_RETRIEVAL_TOP_K`, und `WISSEN_RETRIEVAL_TOP_K` ist **3**. Über 42 protokollierte Aufrufe kamen **40 mal genau drei** Treffer zurück — die Obergrenze, nicht die Auswahl. Der Kosinus des dritten Treffers liegt bei min 0,404, **Median 0,588**, max 0,691. Die Geometrie des Korpus erklärt, warum die Schwelle nichts tut: 217 aktive Einträge, 23.436 Paare, **Median-Kosinus 0,369**, und **35,6 % aller Paare liegen über 0,40**. Erst **0,55** liefert gerechnet die drei Treffer, die tatsächlich ankommen; **die wirksame Schwelle ist 0,55 und steht nirgends.** — **Der Bestand ist dabei nicht der Schuldige, und das ist der eigentliche Fund.** `config.py:478` sagt von sich aus *„von `anker_retrieval` uebernommen, NICHT gemessen"*, nennt den Grund (*„die Bibliothek hatte bei ihrer Einfuehrung drei Zeilen"*) und verweist auf den offenen Backlog-Eintrag `WIS-SCHWELLE-MESSEN`. Auch die Quelle trägt ihren Vorbehalt: `lzg_knoten.py:425` führt die Abdeckungsmessung mit (0,50 → 53 %, **0,40 → 82 % bei 4,1 Ankern von 302**, 0,35 → 89 % und Rauschen) und markiert sie als *„begruendeter Startwert, kein Verteilungs-Messergebnis"*. **Beide Code-Stellen sind ehrlich; erst das Konzept nannte den Wert „gemessen"** (`novaberg-agent-dateien_k.md` v0.5/v0.6, in v0.7 berichtigt). Die Zahl gibt der Übernahme quantitativ Unrecht: Im Knotenraum qualifiziert 0,40 rund **1,4 %** des Bestandes, in der Bibliothek **35,6 %** — derselbe Wert, derselbe Embedding-Raum, **Faktor 26 im Trennverhalten**. **Die Klasse ist allgemeiner als der Fall, und sie ist zweiteilig:** Ein Grenzwert, hinter dem eine Kappung steht, ist unbelegt, solange die Kappung greift — und **ein Vorbehalt überlebt das Kopieren einer Zahl nicht**, wenn nur die Zahl kopiert wird.
 
 **Was fertig waere:** Die Schwelle wirkt oder entfaellt; der Vorbehalt steht unverkuerzt im Konzept.
@@ -660,6 +724,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### GRENZE-OHNE-LESER — auf fuenf Diensten deklariert, null Leser
+
+**Zustand:** offen — gegen HEAD `ea1667c` geprueft am 25.08.2026. `grenze` wird ausschliesslich von Zeugen gelesen; im Produktivpfad hat die Eigenschaft weiterhin **null** Leser.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **`grenze` ist auf fünf Diensten deklariert und hat null Leser.** Die Eigenschaft beantwortet *„was tust du ausdrücklich nicht"* und ist nach der NMCP-Konvention Pflicht für alle Dienste; im Bestand tragen sie vier Empfangsdienste mit je drei Einträgen. **Kein Code liest sie** — weder der Aushang-Aggregator, noch die Anmeldeprüfung, noch der vierte Ausgang. Damit ist sie genau die Klasse, gegen die die Konvention gebaut wurde, entstanden am Tag ihrer Einführung. Die Konvention nennt ihren Zweck in §4.9: Trifft die Zustellquote und ist die Ablehnungsquote hoch, dann stimmt der Aushang und **die Grenzangabe fehlt** — dafür muss sie aber irgendwo gelesen werden. Wohin sie gehört, ist eine Entscheidung: ins Brett neben die Negativfälle (dann verhindert sie Zustellungen, die ohnehin abgelehnt würden), oder in den Vorschlag des vierten Ausgangs (dann erklärt sie dem Auftraggeber die Ablehnung).
 
@@ -669,6 +735,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### WISSEN-UND-WEBSUCHE-NICHT-ANSPRECHBAR — ueber den Empfang nicht erreichbar
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Ueber den Empfang sind beide weiterhin nicht als Dienste ansprechbar. Verwandt mit `SILO-OHNE-WERKZEUG`.
+
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Novas eigenes Wissen und die Websuche sind über den Empfang nicht als Dienste ansprechbar.** Eine Äußerung wie *„such mal in deinem Wissen"* oder *„schau im Netz nach"* spricht etwas an, das keinen Aushang hat: Die Bibliothek (`autonomous_wissen`, 463 Zeilen) hängt als Kontextquelle am Enricher und wird nicht gewählt; der Web-Pfad läuft über den Zustandsmerker `needs_web`, den der Empfang setzt und den der Denkknoten liest — ebenfalls kein Dienst. **Damit gibt es drei Wissensbestände mit drei verschiedenen Zugängen** (eigenes Wissen, freigegebene Dateien, Web), von denen nur einer über einen Zettel erreichbar wäre. Ein Mensch, der einen davon ausdrücklich anspricht, bekommt kein Urteil und keine Fehlmeldung, sondern eine Antwort aus dem, was der Enricher ohnehin gelegt hat. Aufgefallen beim Entwurf des Dateien-Dienstes (`novaberg-agent-dateien_k.md` §3.0c); älter als er.
 
 **Was fertig waere:** Novas eigenes Wissen und die Websuche sind als Dienste ansprechbar.
@@ -676,6 +744,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### SELBSTAUSLOESUNG-BUDGET-EINZWECKIG — ein zweiter Grund nimmt der Reparatur Luft
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Das Budget traegt weiterhin nur einen Grund.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Die Selbstauslösung ist als Reparatur gebaut und hat ein Budget, das kein zweiter Grund mitbenutzen kann, ohne der Reparatur Luft zu nehmen.** `MAX_SELF_TRIGGERS = 3` gilt je Turn für **alle** Gründe zusammen; heute setzt genau ein Aufrufer den Merker, der Denkknoten nach einem Doppel-Fehlschlag. Kommt ein zweiter Grund hinzu — etwa eine Vertiefung, die in Dateien nachlesen will —, verbraucht er aus demselben Topf, und die Fehlerbehandlung fällt genau in den Turns aus, in denen viel nachzulesen war. Kein Defekt am Bestand, sondern eine Schranke, die vor dem zweiten Aufrufer eine Entscheidung braucht: getrennte Zähler je Grund oder ein gemeinsamer mit Vorrang. **Nachtrag vom selben Tag — das Budget war die halbe Diagnose, geteilt ist auch das Tor.** Die Lückensuche in `graph/nodes/gespraechsvektor.py` läuft nur bei `aufnahmebereitschaft > 0`; die Zulassung der Selbstauslösung in `services/event_consumer.py` kennt nur den Zähler und einen Riegel auf wartende Agenten — **die Bereitschaft fragt sie nicht**, und bei Krise steht die auf 0,00. Heute ist das richtig, weil der einzige Aufrufer die Reparatur ist und **eine Reparatur in der Krise feuern muss**. Für einen zweiten Grund kehrt sich das um: Eine Vertiefung, die *„lass mich das nachlesen"* ankündigt, ist im Absturz genau das Falsche. **Dieselbe Schranke, die für die Reparatur zu eng wäre, ist für die Vertiefung notwendig** — der Riegel muss deshalb am Grund hängen, nicht am Mechanismus.
 
@@ -685,6 +755,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### ZUSTELLART-EINWERTIG — auf Anfrage UND periodisch geht nicht
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Zustellart ist unveraendert einwertig.
+
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Die Zustellart eines Dienstes ist einwertig und kann einen Dienst nicht beschreiben, der auf Anfrage UND periodisch arbeitet.** Sie wird aus `graph_eignung` und `periodic_task()` abgeleitet: Wer im Nutzergraphen zugelassen ist, gilt als am Empfang; wer eine periodische Aufgabe hat, als am Zeitplan. Ein Dienst, der beides legitim ist — erreichbar über seinen Aushang und zusätzlich mit eigenem Takt —, fällt durch: Die abgeleitete Zustellart ist für die halbe Arbeit falsch, und die Anmeldeprüfung verlangt daraufhin einen Aushang zu viel oder zu wenig. Aufgefallen beim Entwurf des Dateien-Dienstes (`novaberg-agent-dateien_k.md` §3), dort durch Aufteilung in zwei Dienste umgangen — **umgangen, nicht gelöst.**
 
 **Was fertig waere:** Die Zustellart eines Dienstes kann mehrwertig sein.
@@ -692,6 +764,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### AGENT-MD-MIT-STELLWERTEN — ein Einzelfall ohne Entscheidung
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Einzelfall steht, eine Entscheidung darueber gibt es nicht.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **Ein `AGENT.md` mit Stellwerten ist ein Einzelfall, und niemand hat entschieden, ob er einer bleiben soll.** Von zwölf `AGENT.md` trägt genau **eines** einen `## Config`-Abschnitt (`recherche`). Der Charakter-Agent führt an seiner Aufrufstelle ein `timeout_s: 1800` und dokumentiert es dort **nicht**. Damit ist beim Nachzug einer Konfigurationsänderung nicht entscheidbar, ob das Moduldokument sie aufnehmen muss — die Frage ist eine Absicht und steht offen. Aufgekommen, als die neue Frist der Zwischen-Destillation in `novaberg-pixie-research.md` §7 nachgezogen wurde und in `AGENT.md` nicht.
 
@@ -701,6 +775,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### ENDPUNKTE-OHNE-BEDINGUNGEN — 19 von 19 ohne Vor- und Nachbedingung
 
+**Zustand:** offen, zum Teil erledigt — am Bestand gemessen am 25.08.2026. Von 19 Endpunkten tragen inzwischen **4** Vor- **und** Nachbedingung; 15 stehen aus. Der Befund lautete 19 von 19.
+
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **19 von 19 HTTP-Endpunkten sagen weder Vor- noch Nachbedingung.** Gezählt über 315 Funktionen, die an einer Vertrauensgrenze stehen — Routen-Dekorator, Modellantwort, `fetchone`/`execute`, Redis-Zugriff, `open`/`json.loads`. **241 davon (77 %) tragen keine Zusicherung.** Die Endpunkte sind die exponierteste Klasse und zugleich die einzige bei 100 %. Dass eine Funktion privat ist, sagt nichts über ihr Risiko: **66 der 315 sind privat**, darunter `_kzg_laden` (Redis), `_ergebnis_speichern` (Datenbank), `_speichen_lesen` (Datei).
 
 **Was fertig waere:** Jeder HTTP-Endpunkt nennt Vor- und Nachbedingung.
@@ -708,6 +784,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### PRIVATE-MEMBER-OHNE-ZUSICHERUNG — 276 von 461
+
+**Zustand:** offen, gewachsen — am Bestand gemessen am 25.08.2026 mit der Pruefung, die den Befund erhoben hat: **299** statt 276. **Ein geduldeter Bestand ist keine Konstante.**
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **276 von 461 privaten Membern haben weder Zusicherung noch Zeugen.** 13 % tragen beides, 17 % nur eine Zusicherung, 11 % nur einen Test. Für die übrigen 60 % sagt nichts, was sie voraussetzen, und nichts, dass sie tun, was sie behaupten. Die Zahl ist eine **Untergrenze**: Ein Name gilt schon als getestet, wenn er in einer Testdatei vorkommt.
 
@@ -717,6 +795,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### FUNKTIONEN-ZU-TIEF-VERSCHACHTELT — 19 tiefer als vier Ebenen
 
+**Zustand:** offen, gewachsen — am Bestand gemessen am 25.08.2026 mit derselben Pruefung: **21** statt 19 Funktionen tiefer als vier Ebenen.
+
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **19 Funktionen verschachteln tiefer als vier Ebenen.** Spitzenwerte: `ei/dreischicht.py:gv_output_parsen` mit 9, `agents/charakter/agent.py:invoke` und `agents/charakter_identitaet/crud.py:ausfuehren` mit je 8. Die kleinste der Bestandsmengen und damit der erste Kandidat für eine Leerung.
 
 **Was fertig waere:** Keine Funktion verschachtelt tiefer als vier Ebenen.
@@ -724,6 +804,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### KLASSEN-OHNE-GEMEINSAMES-FELD — 10 zerfallen in Methodengruppen
+
+**Zustand:** offen, gewachsen — am Bestand gemessen am 25.08.2026 mit derselben Pruefung: **13** statt 10 Klassen ohne gemeinsames Feld.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **10 Klassen zerfallen in Methodengruppen ohne gemeinsames Feld.** Gemessen über LCOM4 an 118 Produktivklassen. `plugins/notizen_manager/manager.py:NotizenManager` trägt alle Signale gleichzeitig: LCOM4 5, zehn öffentliche Methoden, elf Felder. **Die Zeilenzahl trennt dabei nicht** — von den Klassen über 300 Zeilen zerfallen 27 %, von denen darunter 26 %; `utils/zeitparser.py:MarkerBefund` hat 35 Zeilen und LCOM4 2.
 
@@ -733,6 +815,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### KANALZWANG-NUR-22-PROZENT-PRUEFBAR — statisch kaum pruefbar
 
+**Zustand:** offen, unveraendert — am Bestand gemessen am 25.08.2026: Abdeckung **21 %** (19 Knoten, 13 gepruefte Literale, 48 nicht analysierbare Rueckgaben), 0 Befunde. Bei dieser Abdeckung ist *0 Befunde* keine Aussage — das sagt die Pruefung selbst in ihrer Ausgabe.
+
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **Der Kanalzwang ist statisch nur zu 22 % prüfbar.** Über 19 Knoten gezählt: **45 von 53 Rückgaben** bauen ihr Dict schrittweise auf oder geben es aus einer Hilfsfunktion zurück; dort existiert der Schlüssel zur Analysezeit nicht. Seit dem 16.08.2026 prüft `zustand_verifizieren()` zur Laufzeit — bisher nur im Reducer, die übrigen 18 Knoten sind offen.
 
 **Was fertig waere:** Der Kanalzwang ist maschinell pruefbar, oder der unpruefbare Rest ist beziffert und benannt.
@@ -740,6 +824,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### NODE-LLM-CONFIG-RECHERCHE-OHNE-RUFER — gefuellt, null Aufrufer
+
+**Zustand:** offen — gegen HEAD `ea1667c` geprueft am 25.08.2026. Die Einstellung wird ausser in einem Zeugen an keiner Stelle gelesen.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **`NODE_LLM_CONFIG["recherche"]` ist vollständig gefüllt und hat null Aufrufer.** `temperature` 0.5 und `max_output_tokens` 2048 stehen dort seit langem; `get_node_config("recherche")` wird nirgends im Produktivcode gerufen, und die zehn Aufrufstellen des RechercheAgent trugen ihre Werte fest im Code. Gefunden beim Anlegen von `recherche_zwischen` — die naheliegende Handlung wäre gewesen, den vorhandenen Schlüssel zu benutzen, und sie hätte die Temperatur von 0.1 auf 0.5 verschoben, ohne dass jemand es gemerkt hätte. Dieselbe Klasse wie `SELBSTAUSKUNFT-OHNE-LESER`, nur an einer Konfiguration statt an einer Selbstbeschreibung: **Eine Konfiguration ohne Leser sieht in jedem Wertetest richtig aus.**
 
@@ -749,6 +835,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### ERLEDIGT-MARKE-STATT-STICHWORTLISTE — die Liste wird nie fertig
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Eine Marke, die traegt, ist nicht gebaut worden. **Der heutige Durchgang belegt den Befund:** Ohne Marke ist der Zustand aus dem Fliesstext zu lesen, und dann liest ihn kein Werkzeug.
+
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **Eine Stichwortliste für „als erledigt geführt" wird nie fertig — und die Marke, die trüge, gibt es längst.** Der Erledigt-Filter des Bezeichner-Kriteriums erkannte `~~`, *entfallen*, *widerlegt*, *deprecated*, *nicht mehr*, *existiert nicht*, *nie gebaut*. Beim Abarbeiten der beschreibenden Befunde kamen an einem Tag **sechs weitere Formulierungen** aus dem echten Bestand hinzu: *verworfen*, *archiviert*, *nie existiert*, *die es nicht gibt*, *wurde entfernt*, *noch nicht in `config.py`*, *ersetzt `X`* — dazu die Wortstellung (*„Es gibt keine …"* gegen *„gibt es keine"*) und die Zeilengrenze, weil ein Satz über drei Zeilen die Marke vom Namen trennt. Drei Ergänzungen sind gemacht, danach abgebrochen: **Der Ertrag je Patch sinkt, die Gefahr steigt** — jedes Wort mehr macht echte Befunde unsichtbar, und ein Gerät, das zu wenig meldet, fällt nicht auf. **Der strukturelle Ausweg steht schon im Filter:** `~~` ist eine eindeutige, prüfbare Marke. Die Dokumente benutzen sie nur uneinheitlich. Entweder wird sie zur Konvention für ausgemusterte Bezeichner, oder die Falschmelderate wird beziffert und mitgeführt — heute **6 von 6** verbliebenen Treffern der Klasse `beschreibend`.
 
 **Was fertig waere:** Die vorhandene Marke traegt die Erkennung; die Stichwortliste entfaellt.
@@ -756,6 +844,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** niedrig
 
 #### RUECKWEG-UEBER-DEN-MENSCHEN-OHNE-RIEGEL — in keinem Riegel abgebildet
+
+**Zustand:** offen — nachgesehen am 25.08.2026. In der Riegelkette ist der Weg weiterhin nicht abgebildet.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **Der Rueckweg ueber den Menschen ist in keinem Riegel abgebildet.** Gemessen am 14.08.2026 turngenau: Ein Einwurf hebt ihre Antwortdichte auf 8,40 %, und neun Minuten spaeter kommt die Aeusserung des Menschen mit **10,99 %** auf 91 Zeichen zurueck — er hat das Vokabular des Einwurfs uebernommen. Die sieben Riegel pruefen alle, **ob** ein Gedanke hinausgeht; keiner prueft, was er unterwegs mit dem Gespraech macht.
 
@@ -765,6 +855,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### VERLAUF-REPRODUZIERT-EIGENE-WENDUNGEN — niemand bremst das
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die Beobachtung stammt aus einer Reihe stuendlicher Laeufe und ist seither nicht wiederholt worden.
+
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Verlauf reproduziert seine eigenen Wendungen, und niemand bremst das.** Vierzehn stündliche Impulse eines Tages: fünf begannen wortgleich mit *„Du hast den Anker geworfen. Indem du diesen Block …"*, weitere sieben mit einer Variante desselben Baumusters. Der Mechanismus ist geschlossen: Jeder Beitrag wandert in die Session, der nächste Prompt trägt ihn, das Muster wird bestätigt. Gemessen am Verfasser-Prompt desselben Tages: **22.545 Zeichen Verlauf aus 18 eigenen Beiträgen gegen 1.195 Zeichen Auftrag**; beim Responder ist das Verhältnis besser, aber derselbe Verlauf steht dort ebenfalls. Der Regieblock schreibt seit Chat 114 ausdrücklich dagegen an (*„löse dich von seiner Art zu sprechen"*) — gegen fünf wortgleiche Belege hat er nicht getragen. **Zu klären ist nicht, ob der Verlauf hineingehört, sondern wieviel davon:** Der Verfasser braucht ihn für den Anschluss, der Responder bekommt den Anschluss bereits fertig als `[INHALT]`.
 
 **Was fertig waere:** Die Wiederholung eigener Wendungen ist gemessen und gebremst.
@@ -772,6 +864,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** mittel
 
 #### SCHWELLEN-OHNE-VERGLEICHSGEGENSTAND — zehn Schwellen, keine nennt ihn
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Schwellen nennen ihren Vergleichsgegenstand weiterhin nicht.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Zehn Ähnlichkeits-Schwellen, und keine nennt, was sie vergleicht.** Der Bestand führt zehn Schwellen über Embedding-Kosinus zwischen 0,40 und 0,95 — Bibliotheks-Abruf, Zustellung, Dublettenschutz, Ziel- und Erinnerungs-Gravitation, Charakter-Resonanz, KZG, Delegation, LZG-Knoten, Lücken-Dublette. **Fünf davon stehen auf exakt 0,40, über mindestens vier verschiedene Paarungen.** Das sieht aus wie eine gemeinsame Kalibrierung und ist keine. **Die Herkunft steht überall vorbildlich dabei** — *„begründeter Startwert, kein Messergebnis"*, *„an drei Zeilen ist nichts kalibrierbar"*, bei den LZG-Knoten sogar die Gegenmessung. **Die Paarung steht nirgends**, und ohne sie ist die Herkunft nicht nachprüfbar: Eine an Themenphrasen gemessene Schwelle sagt über Volltexte nichts, auch wenn dieselbe Zahl dasteht. Gemessen am 14.08.2026 an derselben Rechnung: Themenphrase gegen Themenphrase trennt (0,437–0,896), Volltext gegen Volltext misst die Textsorte (Median 0,557), Volltext gegen kurze Äußerung trennt schwach (Median 0,105). **Kein Aufräum-Auftrag** — die zehn sind Bestand; wer eine davon anfasst, schreibt ihre Paarung dazu.
 
@@ -781,6 +875,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### CHARAKTER-BESCHAEDIGT-INHALT — niemand prueft es
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Ohne Messturn mit einer foermlichen Figur ist nichts zu entscheiden.
+
 **Befund (13.08.2026), aus der Fundliste uebernommen.** **Der Charakter kann den Inhalt beschädigen, und niemand prüft es.** Eine Figur mit förmlichem Stil schreibt Zahlen aus — und dabei wurde aus 1400 Lichtjahren dreimal *„vierzehntausend"*. Gemessen über 27 Läufe: In der knappsten Landschaft schrieb dieselbe Figur 6 Zahlen aus und verfälschte 3 von 3 Läufen; von drei Inhaltsmarken des Verfassers kamen dort nur 1,0 korrekt an, während dieselbe Figur in einer Landschaft ohne Ausschreib-Zwang 3,0 von 3 lieferte. **Der Verfasser liefert die Fakten, der Responder formt sie — und die Umformung ist heute ungeprüft.** Die Marken sind maschinell prüfbar, solange sie als Ziffern im Inhalt stehen.
 
 **Was fertig waere:** Eine Pruefung haelt den Inhalt gegen die Charakterfaerbung.
@@ -788,6 +884,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 **Prioritaet:** hoch
 
 #### BEITRAGSTABELLE-SCHLIESST-KOMBINATION-AUS — treu und distanziert geht nicht
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Beitragstabelle laesst die Kombination unveraendert nicht zu.
 
 **Befund (13.08.2026), aus der Fundliste uebernommen.** **Ein treuer, aufmerksamer Diener kann nicht distanziert sein — die Beitragstabelle lässt es nicht zu.** `treue` trägt `naehe +0,20`, `aufmerksamkeit` ebenfalls `+0,20`, `wohlwollen` `+0,10`; zusammen +0,45 bei hoher Ausprägung, gegen `distanz −0,50`. Eine Figur, die pflichtbewusst, verlässlich und aufmerksam **und** höflich distanziert ist, landet im `feuerwerk` bei `naehe 0,82` — praktisch auf dem Grundwert der Landschaft. Gemessen: Unter dieser Haltung wurde ein solcher Charakter dreimal von drei von einem blinden Prüfer als Nova gelesen. **Es ist dieselbe Verrechnung, die `novaberg-haltungsraum_k.md` §3.2 für Misstrauen gegen Wohlwollen ausdrücklich verbietet** — dort wurde sie am 11.08. behoben, hier steht sie unbemerkt ein zweites Mal. Die Frage dahinter ist konzeptionell: Trägt `treue` Nähe, oder trägt sie Verlässlichkeit? Ein Butler ist der Gegenbeweis.
 
@@ -797,6 +895,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 #### CLUSTER-BESCHREIBUNG-MISCHT-BEFEHL — Szene und Regieanweisung in einem Feld
 
+**Zustand:** offen — gegen HEAD `ea1667c` geprueft am 25.08.2026. Die vier Befehle stehen unveraendert in `ei/dreischicht.py` und `ei/haltung.py`. Deckungsgleich mit `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` — **zwei Kennungen, ein Befund**.
+
 **Befund (12.08.2026), aus der Fundliste uebernommen.** `CLUSTER_BESCHREIBUNGEN` mischt **Szene und Regieanweisung** in einem Feld. Vier der vierzehn tragen einen Befehl: `regen` „Halten, da sein", `schmollen` „Nicht drängen", `nebel` „Leise da sein", `gewitter` „Nicht verteidigen". Der Befehl gilt für jeden Charakter gleich und steht **vor** dem Rad — die Haltungsgrößen können ihn nicht bewegen. Dieselbe Drift in `CLUSTER_FRAGEN`, das reine Verhaltensvorgabe ist („Häufig, begeistert") und aus derselben Quelle stammt wie die Rad-Größe `fragen`. **Zwei Leser, zwei Aufgaben:** Der GV-Knoten braucht die Fragen-Zeile für die Strategiewahl, der Responder nicht.
 
 **Was fertig waere:** Szene und Regieanweisung stehen in getrennten Feldern.
@@ -805,6 +905,8 @@ Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorisch
 
 ---
 #### BEISPIELE-OHNE-HERKUNFTSMARKE — 9 von 150 Dokumenten sagen, woher ihr Beispiel stammt
+
+**Zustand:** offen, nicht fortschreibbar — nachgesehen am 25.08.2026. Der Befund nennt 9 von 150; eine Nachzaehlung mit einem **anderen** Muster ergab 52 von 162 und ist deshalb keine Fortschreibung. **Eine Zahl gegen eine aeltere zu halten verlangt dasselbe Instrument, nicht dasselbe Thema** — das Instrument des Befundes ist nicht mit ueberliefert.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **9 von 150 Dokumenten unter `docs/` tragen eine Herkunftsmarke an ihren Beispielen.** Gezählt über das Wortfeld *synthetisch* / *konstruiertes Beispiel* / *konstruierter Turn*. Betroffen ist jedes Dokument, das einen wörtlichen Beispiel-Turn führt: `novaberg-referenz-aufloesung_k.md` §1 trägt drei (Matcha-Pulver, Grillkäse, eine Notiz namens `Einkauf`), `novaberg-haltungsraum_k.md` §1 einen (der Igel-Einzeiler) — keines der beiden Dokumente sagt, ob die Reize echt oder konstruiert sind. **Für den Igel ist die Frage seit dem 31.07.2026 entschieden** (synthetisch), nur steht die Entscheidung nicht im Dokument; sie wurde am 16.08.2026 erneut aufgeworfen. Kein Defekt am System — die Kosten fallen bei jeder Veröffentlichungsprüfung erneut an, und ein Beispiel ohne Vermerk ist von einem echten Gesprächsinhalt nicht unterscheidbar.
 

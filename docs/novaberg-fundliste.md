@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 13:20 UTC
-**Offen:** **84 Funde — gezaehlt am 25.08.2026, 13:20 UTC** (89 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **zwei neu aus der ersten Etappe der Zustandspruefung**; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 25. August 2026, 14:10 UTC
+**Offen:** **86 Funde — gezaehlt am 25.08.2026, 14:10 UTC** (91 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **vier neu aus den ersten beiden Etappen der Zustandspruefung**; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Zwei Befunde stehen im Backlog unter je zwei Kennungen.** `RECHERCHE-LIEST-EIGENE-BIBLIOTHEK-NICHT` und `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` beschreiben dieselbe Stelle; ebenso `CLUSTER-BESCHREIBUNG-MISCHT-BEFEHL` und `SZENE-STATT-REGIE-IN-DEN-CLUSTERN`. Beide Paare entstanden beim Umzug aus der Fundliste an verschiedenen Tagen. **Eine Kennung ist ein Schluessel; zwei Schluessel auf einen Gegenstand heisst, dass eine Erledigung nur die Haelfte schliesst.**
+
+- **2026-08-25** — **Der `repeat_penalty` von 1.3 ist nicht mehr auffindbar, und die Frage danach damit nicht beantwortet, sondern verschoben.** `REPEAT-PENALTY-OHNE-HERKUNFT` nannte 1.3 fuer den GPU-Anbieter; im Bestand steht der Wert nur noch einmal, mit **1.1** im Responder-Knoten. Auch die 1.1 traegt keine Begruendung. **Ein Wert, der sich aendert, ohne dass die Frage nach seiner Herkunft mitwandert, sieht beim naechsten Lesen wie eine Setzung aus.**
 
 - **2026-08-25** — **Die liegengebliebenen `hash_dirty`-Schluessel sind von fuenf auf 13 gewachsen.** Der CharakterAgent raeumt nur das aktive Paar; jede Person, die je einen Bogen hatte, laesst einen Schluessel stehen. `HASH-DIRTY-ALTLASTEN` nannte am 11.08.2026 fuenf. **Ein geduldeter Rest ist keine Konstante** — dieselbe Klasse wie die von 25 auf 36 gewachsenen leeren EVA-Sektionen.
 
