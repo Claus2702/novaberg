@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag 18:20 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **17:16 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 121 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 122 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,36 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 17:16 UTC — 330 Linter-Treffer maschinell abgeraeumt, und eine Wand mehr
+
+**ZIEL:** Der geduldete Linter-Bestand sinkt um alles, was maschinell und ohne Verhaltensaenderung behebbar ist.
+**TEST:** Die Suite, 2312 Zeugen — sie muss nach jeder Etappe unveraendert gruen sein. Dazu `ruff check --config ruff-hart.toml server/` mit Rueckgabewert 0.
+**MESSUNG:** `ruff check --statistics server/` **2675 → 2345**, Suite **2312 gruen, 0 uebersprungen**, 198 Dateien geaendert (843+/751-).
+
+**Fuenf Etappen, jede einzeln gegen die Suite gehalten:**
+
+| Etappe | Regeln | Treffer |
+|---|---|---:|
+| Docstring-Form | D209, D204, D202, D403 | 72 |
+| Leere f-Strings, doppelter Import | F541, F811 | 24 |
+| Ungenutzte Importe | F401 | 46 |
+| Importsortierung | I001 | 162 |
+| Docstring-Kosmetik (unsichere Fixes) | D400, D200, ANN204 | 25 |
+
+**Die Gegenprobe musste nicht konstruiert werden — sie ist gelaufen.** Der F401-Durchgang entfernte in `agents/kzg/dispatch.py` den im Modul ungenutzten Import `redis_client as cfg_redis_client`, und **vier Tests starben mit `AttributeError`**: Zwei Zeugen patchen genau diesen Namen. Der Import steht seither wieder und ist der einzige bewusst geduldete F401-Treffer; der Befund darunter steht in der Fundliste.
+
+**Daraus eine Pruefung, die es vorher nicht gab.** `labor/2026-08-25_f401_patchkollision.py` haelt jeden F401-Kandidaten gegen alle 218 `patch("...")`-Ziele des Bestands. Ihre erste Fassung meldete **null Kollisionen, waehrend vier Tests bereits rot waren** — sie las den Namen aus der Ruff-Meldung, und die nennt bei `import x as y` den **Herkunftspfad** `config.redis_client`, waehrend das Modul `cfg_redis_client` traegt. Der gebundene Name kommt jetzt aus dem AST. Genau ein Treffer, und es ist der richtige.
+
+**I001 steht jetzt bei null und ist hart geschaltet** (`ruff-hart.toml`, sechste Regelgruppe neben LOG, F821, den fuenf W-Regeln und N). Der Anschlag ist im echten Pfad belegt: ein konstruierter Verstoss in `server/api/health.py`, Rueckgabewert 1, danach zurueckgenommen und wieder 0.
+
+**Und das Hartschalten fand sofort einen Fehler in der Konfiguration selbst.** `ruff.toml` setzte keine `src`-Zeile; Ruff suchte den Quellbaum unter `novaberg/` und `novaberg/src/`, waehrend er unter `server/` liegt. **Jeder Projekt-Import galt damit als Fremdimport** und wurde zwischen `redis` und `langgraph` einsortiert. Mit `src = ["server"]` sortieren 142 Dateien anders. Ohne diese Zeile haette die Wand die falsche Ordnung festgeschrieben.
+
+**Die zweite Kontrolle ging einen anderen Weg als Linter und Suite:** Fuer alle 198 geaenderten Dateien wurde die Menge der auf Modulebene gebundenen Namen aus `HEAD` gegen den Arbeitsbaum gehalten (`labor/2026-08-25_modulattribute_vorher_nachher.py`). **44 verlorene Attribute, 0 neue** — alle 44 aus F401. Eine zweite Pruefung suchte, ob einer davon anderswo **aus** seinem Modul geholt wird (Re-Export, den F401 nur in `__init__.py` erkennt): **0 von 44**, bei einer Gegenprobe, die 22 echte Fundstellen findet.
+
+**Was nicht angefasst wurde, und warum:** 375 weitere Treffer sind nur mit unsicheren Fixes behebbar. `T201` (36 print-Aufrufe) und `B905` (`zip` ohne `strict`) aendern Verhalten, `TRY400` (`logger.error` → `logger.exception`) aendert das Log, `F841` kann Zuweisungen mit Seiteneffekt entfernen. Sie sind eine Entscheidung, keine Korrektur.
 
 ---
 

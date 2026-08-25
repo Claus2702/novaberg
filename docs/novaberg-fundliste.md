@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 17:15 UTC
-**Offen:** **89 Funde — gezaehlt am 25.08.2026, 21:00 UTC** (94 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **sieben neu aus der Zustands- und Kategoriepruefung des Backlogs**; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 25. August 2026, 17:16 UTC
+**Offen:** **104 Funde — gezaehlt am 25.08.2026, 17:16 UTC** (108 Fundzeilen im Abschnitt *Offen*, davon **4** durchgestrichen; **drei neu aus dem maschinellen Linter-Durchgang** — ein Zeuge, der ins Leere patcht, eine Fehlkonfiguration der Importsortierung, der Verlust der ausgerichteten Importe). **Die Vorgaengerzahl war 89 bei tatsaechlich 105** — sie war ueber mehrere Zuege fortgeschrieben statt gezaehlt worden, genau der Fall, vor dem der Satz unten warnt
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,12 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Zwei Zeugen patchen einen Namen, den ihr Modul nicht benutzt.** `tests/test_segment_durchstich.py` und `tests/test_reiz_platz.py` setzen `patch("agents.kzg.dispatch.cfg_redis_client", MagicMock())`. In `agents/kzg/dispatch.py` kommt dieser Name **nur in der Importzeile vor** — der Patch ersetzt etwas, das keine Zeile des Moduls liest. Aufgefallen ist es nur, weil der maschinelle F401-Durchgang den ungenutzten Import entfernte und vier Tests mit `AttributeError` starben. **Solange der Import steht, sind die vier gruen, ohne dass der Patch etwas bewirkt** — und die Stelle, die sie zu schuetzen glauben, ist ungeschuetzt. Der Import ist deshalb am 25.08.2026 bewusst stehengeblieben und als einziger F401-Treffer geduldet; die Frage darunter ist, was die Zeugen eigentlich pruefen wollten.
+
+- **2026-08-25** — **Der Linter sortierte einen Monat lang jeden Projekt-Import als Fremdimport ein.** `ruff.toml` setzte keine `src`-Zeile; Ruff suchte den Quellbaum unter `novaberg/` und `novaberg/src/`, waehrend er unter `server/` liegt. Die Folge stand in jeder Datei — `from config import ...` zwischen `redis` und `langgraph`. **Sichtbar wurde es erst beim Hartschalten von I001**, denn im geduldeten Bestand von 2600 Treffern ist eine falsche Sortierung von einer richtigen nicht zu unterscheiden. Die Klasse: **Eine Regel im geduldeten Bestand verbirgt nicht nur Verstoesse, sondern auch die Fehlkonfiguration des Werkzeugs selbst.** Am 25.08.2026 mit `src = ["server"]` behoben, 142 Dateien neu sortiert.
+
+- **2026-08-25** — **Die ausgerichtete Importformatierung des Bestands ist entfallen.** `from fastapi           import APIRouter` und `from graph.nodes.agent_dispatch  import agent_dispatch_node` standen in vielen Dateien spaltenbuendig. Der I001-Durchgang hat das ueber 198 Dateien auf einfachen Abstand gebracht. **Es gab keine Regel dafuer und kein `isort: skip`** — gemessen: null Schutzvermerke im Bestand. Der Stil war Uebung, nicht Festlegung, und ist damit ohne Widerspruch gefallen. Die Zeile steht hier, damit der Verlust benannt ist und nicht spaeter als unerklaerte Aenderung auffaellt.
 
 - **2026-08-25** — **Ein Konzeptdokument hat den Defekt vorhergesagt und wurde nie gelesen.** `novaberg-microservice-modell-queue_k.md` §153 nennt die Ausnahme woertlich: *„Locks brauchen wir nur dort, wo zwei Worker denselben Endpoint anfassen — und das ist genau der Fall beim Embedding-Modell, das von Nova und Pixie geteilt wird."* Genau dieser Fall trat ein und lief unbemerkt (`GPU-LOCK-SCHUETZT-EINEN-VON-FUENF`, 7407 + 2897 Aufrufe in 42 Stunden am selben Client). Zwei Absaetze weiter behauptet dasselbe Dokument das Gegenteil — *„keine Locks, keine Race Conditions"* —, weil die FIFO-Ordnung **je Worker** gilt und nicht je Ressource. **Ein Dokument, das die Bedingung nennt und die Ausnahme daneben, ist ohne eine Pruefung nur eine Notiz**, und beim Bauen wird die Zeile gelesen, die passt. Beide Stellen sind am 25.08.2026 markiert.
 
