@@ -124,7 +124,16 @@ class NotizenAgent(BaseAgent):
             return "resume"
         if action == "create":
             return "ausfuehren"
-        if action in ("read", "update", "delete", "append", "add_content", "remove_content", "clear_content", "rename"):
+        if action in (
+            "read",
+            "update",
+            "delete",
+            "append",
+            "add_content",
+            "remove_content",
+            "clear_content",
+            "rename",
+        ):
             return "suchen"
         return "klassifizieren"
 
@@ -141,7 +150,14 @@ class NotizenAgent(BaseAgent):
         if status in ("fehler", "rueckfrage", "abgeschlossen"):
             return END
         action = state["parameter"].get("action", "")
-        if action in ("update", "delete", "append", "add_content", "remove_content", "clear_content") and not state["parameter"].get("notiz"):
+        if action in (
+            "update",
+            "delete",
+            "append",
+            "add_content",
+            "remove_content",
+            "clear_content",
+        ) and not state["parameter"].get("notiz"):
             return "suchen"
         return "ausfuehren"
 
@@ -161,7 +177,8 @@ class NotizenAgent(BaseAgent):
             return {
                 "status": "fehler",
                 "fehler": "Keine Aktion angegeben",
-                "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "keine_aktion"}],
+                "schritte": state["schritte"]
+                + [{"node": "validieren", "ergebnis": "keine_aktion"}],
             }
 
         gueltige_aktionen = {
@@ -173,10 +190,12 @@ class NotizenAgent(BaseAgent):
             return {
                 "status": "fehler",
                 "fehler": f"Unbekannte Aktion: {action}",
-                "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ungueltige_aktion"}],
+                "schritte": state["schritte"]
+                + [{"node": "validieren", "ergebnis": "ungueltige_aktion"}],
             }
 
         return {
             "status": "laufend",
-            "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ok", "action": action}],
+            "schritte": state["schritte"]
+            + [{"node": "validieren", "ergebnis": "ok", "action": action}],
         }

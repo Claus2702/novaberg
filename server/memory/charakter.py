@@ -17,7 +17,9 @@ def charakter_hash_retrieve(postgres_url: str, user_id: str, character_id: str =
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT kern_hash, adaptive_hash FROM charakter_hash WHERE user_id = %s AND character_id = %s",
+            "SELECT kern_hash, adaptive_hash FROM charakter_hash WHERE user_id = %s AND "
+            "character_id = "
+            "%s",
             (user_id, character_id),
         )
 

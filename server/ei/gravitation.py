@@ -682,7 +682,9 @@ def _lzg_emotionale_eintraege(
         zeit_decay: float = _zeit_decay_faktor(verstaerkt_am, jetzt)
 
         # Gravitation berechnen
-        gravitation: float = similarity * gewicht_decay * zeit_decay * EMOTIONALE_GRAVITATION_FAKTOR_LZG
+        gravitation: float = (
+            similarity * gewicht_decay * zeit_decay * EMOTIONALE_GRAVITATION_FAKTOR_LZG
+        )
 
         if gravitation >= EMOTIONALE_GRAVITATIONS_SCHWELLE:
             kandidaten.append({

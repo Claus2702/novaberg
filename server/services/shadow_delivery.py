@@ -213,7 +213,9 @@ async def _gespraechs_embedding(
     character_id:  str = "",
 ) -> list[float]:
     """Berechnet ein Embedding aus den letzten Session-Turns."""
-    turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id or ASSISTANT_USER_ID)
+    turns: list[dict] = session_turns_retrieve(
+        redis_client, user_id, character_id or ASSISTANT_USER_ID
+    )
 
     if not turns:
         return []
@@ -616,7 +618,10 @@ async def _delivery_ausfuehren(
     turn_id: str = uuid.uuid4().hex
 
     # AgentGraph: das Entstehen des Gedankens — Spiegel zum HumanGraph.
-    logger.info(f"Delivery: AgentGraph-Check — compiled={compiled_agent_graph is not None}, instance={agent_graph is not None}")
+    logger.info(
+        f"Delivery: AgentGraph-Check — compiled={compiled_agent_graph is not None}, "
+        f"instance={agent_graph is not None}"
+    )
 
     if compiled_agent_graph and agent_graph:
         try:
@@ -656,9 +661,15 @@ async def _delivery_ausfuehren(
             # Rueckgabewert wird wie zuvor verworfen — nur Seiteneffekte (Salienz,
             # pending_writes, Dispatcher-Writes) sind relevant.
             await asyncio.to_thread(compiled_agent_graph.invoke, agent_state)
-            logger.info(f"Delivery: AgentGraph — Analyse abgeschlossen für '{eintrag.get('thema', '')[:40]}'")
+            logger.info(
+                "Delivery: AgentGraph — Analyse abgeschlossen für "
+                f"'{eintrag.get('thema', '')[:40]}'"
+            )
         except Exception as agent_fehler:
-            logger.error(f"Delivery: AgentGraph-Fehler — {type(agent_fehler).__name__}: {agent_fehler}", exc_info=True)
+            logger.error(
+                f"Delivery: AgentGraph-Fehler — {type(agent_fehler).__name__}: {agent_fehler}",
+                exc_info=True,
+            )
     else:
         logger.warning("Delivery: AgentGraph NICHT verfügbar — übersprungen")
 
@@ -953,7 +964,9 @@ async def shadow_delivery_loop(
 
                         if inaktiv_seit >= INAKTIVITAET_GRENZE:
                             # Nicht feuern wenn noch kein Gespräch läuft
-                            turns: list = session_turns_retrieve(redis_client, user_id, ASSISTANT_USER_ID)
+                            turns: list = session_turns_retrieve(
+                                redis_client, user_id, ASSISTANT_USER_ID
+                            )
                             if not turns:
                                 continue
 

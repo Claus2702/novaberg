@@ -150,7 +150,9 @@ def session_turn_mark_action(
             turn["aktion_erledigt"] = erledigt
             turn["aktion_erfolgreich"] = erfolgreich
             redis_client.lset(key, idx, json.dumps(turn, ensure_ascii=False))
-            logger.debug(f"Session-Turn {idx} markiert: erledigt={erledigt}, erfolgreich={erfolgreich}")
+            logger.debug(
+                f"Session-Turn {idx} markiert: erledigt={erledigt}, erfolgreich={erfolgreich}"
+            )
             return
 
 

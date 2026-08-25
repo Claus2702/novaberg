@@ -29,7 +29,16 @@ from services.model_services import ChatRequest, model_service
 logger = logging.getLogger("ki_server.agents.charakter_identitaet.klassifikation")
 
 
-GUELTIGE_AKTIONEN: set[str] = {"create", "read", "update", "delete", "reactivate", "replace", "konsolidieren", "rejected"}
+GUELTIGE_AKTIONEN: set[str] = {
+    "create",
+    "read",
+    "update",
+    "delete",
+    "reactivate",
+    "replace",
+    "konsolidieren",
+    "rejected",
+}
 
 
 def _build_classify_prompt(
@@ -91,10 +100,14 @@ def klassifizieren(state: AgentState) -> dict:
     # --- Aktive + Inaktive Anweisungen laden ---
     aktive = _read_aktive(user_id)
     anzahl_aktiv = len(aktive)
-    aktive_text = "\n".join(f"  [{a['id']}] {a['anweisung']}" for a in aktive) if aktive else "(keine)"
+    aktive_text = (
+        "\n".join(f"  [{a['id']}] {a['anweisung']}" for a in aktive) if aktive else "(keine)"
+    )
 
     inaktive = _read_inaktive(user_id)
-    inaktive_text = "\n".join(f"  [{a['id']}] {a['anweisung']}" for a in inaktive) if inaktive else "(keine)"
+    inaktive_text = (
+        "\n".join(f"  [{a['id']}] {a['anweisung']}" for a in inaktive) if inaktive else "(keine)"
+    )
 
     # --- Session-Kontext laden ---
     session_turns: str | None = None
@@ -106,7 +119,9 @@ def klassifizieren(state: AgentState) -> dict:
             logger.warning(f"klassifizieren: Session-Kontext fehlt: {e}")
 
     # --- Stufe C: LLM-Klassifikation ---
-    system_prompt: str = _build_classify_prompt(aktive_text, inaktive_text, anzahl_aktiv, hilfe_block, session_turns)
+    system_prompt: str = _build_classify_prompt(
+        aktive_text, inaktive_text, anzahl_aktiv, hilfe_block, session_turns
+    )
     logger.info(f"klassifizieren: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")

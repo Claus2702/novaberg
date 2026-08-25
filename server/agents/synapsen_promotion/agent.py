@@ -283,7 +283,9 @@ class SynapsenPromotionAgent(BaseAgent):
         dimension: str = auftrag.get("dimension", "kontext")
         aufgabe: str = f"synapsen_promotion:{kzg_key or '?'}"
 
-        eingabe_zsf: str = f"kzg_key='{kzg_key}', themen='{themen_str}', trigger_salienz={trigger_salienz:.3f}"
+        eingabe_zsf: str = (
+            f"kzg_key='{kzg_key}', themen='{themen_str}', trigger_salienz={trigger_salienz:.3f}"
+        )
         logger.info(f"Synapsen-Promotion: gestartet — {eingabe_zsf}")
         self._audit_log(user_id, aufgabe, "gestartet", eingabe_zsf)
         span_id = pipeline_log.span_start(
@@ -356,14 +358,17 @@ class SynapsenPromotionAgent(BaseAgent):
         erstellt_am_raw: str = _hget("erstellt_am")
         try:
             kzg_erstellt_am: float = (
-                float(erstellt_am_raw) if erstellt_am_raw else datetime.now(timezone.utc).timestamp()
+                float(erstellt_am_raw)
+                if erstellt_am_raw
+                else datetime.now(timezone.utc).timestamp()
             )
         except ValueError:
             kzg_erstellt_am = datetime.now(timezone.utc).timestamp()
 
         logger.info(
             f"Synapsen-Promotion: Paar={user_id}:{character_id}, Beobachter={beobachter}, "
-            f"kzg_salienz={salienz:.3f} (0-10), entitaeten={entitaet_ids}, timeline_id={timeline_id}"
+            f"kzg_salienz={salienz:.3f} (0-10), entitaeten={entitaet_ids}, "
+            f"timeline_id={timeline_id}"
         )
 
         # ── Embedding aus inhalt ALLEIN (K9 — keine Themen-Anreicherung) ──────
@@ -410,7 +415,9 @@ class SynapsenPromotionAgent(BaseAgent):
             else:
                 # reactivate_node scheiterte (nicht gefunden / bereits aktiv /
                 # DB-Fehler) — fail-loud im Log, kein Abbruch des Promotion-Laufs.
-                info: str = f"knoten={knoten_id} cosine={match['cosine']:.4f} reaktivierung_fehlgeschlagen"
+                info: str = (
+                    f"knoten={knoten_id} cosine={match['cosine']:.4f} reaktivierung_fehlgeschlagen"
+                )
                 logger.warning(
                     "Halbreaktivierung fehlgeschlagen: knoten=%s paar=%s/%s",
                     knoten_id, user_id, character_id,

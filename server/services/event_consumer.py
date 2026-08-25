@@ -81,7 +81,8 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
             detail += (
                 f" | Modus: {modus or '?'}, "
                 f"Emotion: {emotion or '?'}, "
-                f"Intention: {', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
+                "Intention: "
+                f"{', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
             )
         return detail
 
@@ -141,8 +142,16 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
         if agent_results_list:
             agent_teile: list[str] = []
             for a_result in agent_results_list:
-                a_name:   str = getattr(a_result, "agent_name", "?") if not isinstance(a_result, dict) else a_result.get("agent_name", "?")
-                a_status: str = getattr(a_result, "status", "?") if not isinstance(a_result, dict) else a_result.get("status", "?")
+                a_name: str = (
+                    getattr(a_result, "agent_name", "?")
+                    if not isinstance(a_result, dict)
+                    else a_result.get("agent_name", "?")
+                )
+                a_status: str = (
+                    getattr(a_result, "status", "?")
+                    if not isinstance(a_result, dict)
+                    else a_result.get("status", "?")
+                )
                 agent_teile.append(f"{a_name}: {a_status}")
             return " | ".join(agent_teile)
         return "Ausführung läuft"

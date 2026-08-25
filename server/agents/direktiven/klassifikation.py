@@ -108,7 +108,9 @@ def klassifizieren(state: AgentState) -> dict:
             logger.warning(f"klassifizieren: Session-Kontext fehlt: {e}")
 
     # --- Stufe C: LLM-Klassifikation ---
-    system_prompt: str = _build_classify_prompt(aktive_text, inaktive_text, hilfe_block, session_turns)
+    system_prompt: str = _build_classify_prompt(
+        aktive_text, inaktive_text, hilfe_block, session_turns
+    )
     logger.info(f"klassifizieren: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")

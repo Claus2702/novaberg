@@ -591,7 +591,9 @@ class RechercheAgent(BaseAgent):
 
             # Zwischen-Destillation: bisherige Zusammenfassung + neue Rohtexte komprimieren
             if bisherige_zusammenfassung:
-                destillations_input = bisherige_zusammenfassung + "\n\n" + "\n\n".join(neue_ergebnisse)
+                destillations_input = (
+                    bisherige_zusammenfassung + "\n\n" + "\n\n".join(neue_ergebnisse)
+                )
             else:
                 destillations_input = "\n\n".join(neue_ergebnisse)
 
@@ -749,7 +751,8 @@ class RechercheAgent(BaseAgent):
                         )
                         ziel_emb: list[float] | None = ziel_response.embedding
                         logger.debug(
-                            "Recherche: Ziel-Extrakt Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                            "Recherche: Ziel-Extrakt Embedding via EmbedWorker (Dim: %d, Dauer: "
+                            "%.3fs)",
                             len(ziel_emb),
                             ziel_response.duration_seconds,
                         )

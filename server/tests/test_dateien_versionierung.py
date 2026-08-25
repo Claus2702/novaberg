@@ -169,7 +169,13 @@ class VersionierungTest(unittest.TestCase):
 
     def test_juengster_eintrag_steht_oben(self) -> None:
         absatz_aendern(self.datei, self.wurzel, "Gustav Adolf fiel bei Luetzen.", "A.", self.f22)
-        absatz_aendern(self.datei, self.wurzel, "Der Westfaelische Friede beendete den Krieg 1648.", "B.", self.f23)
+        absatz_aendern(
+            self.datei,
+            self.wurzel,
+            "Der Westfaelische Friede beendete den Krieg 1648.",
+            "B.",
+            self.f23,
+        )
         eintraege = verlauf_lesen(self.datei, self.wurzel)
         self.assertEqual(eintraege[0]["nummer"], 2)
         self.assertEqual(eintraege[0]["version"], "2.3")

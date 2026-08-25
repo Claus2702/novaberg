@@ -77,7 +77,9 @@ def ergebnisse_bewerten(
     if lage is None:
         lage = {}
 
-    kriterien_str = "\n".join(f"- {k}" for k in kriterien) if kriterien else "Keine Kriterien definiert."
+    kriterien_str = (
+        "\n".join(f"- {k}" for k in kriterien) if kriterien else "Keine Kriterien definiert."
+    )
 
     ausschluss_list = lage.get("ausschluss", [])
     ausschluss_str = ", ".join(ausschluss_list) if ausschluss_list else "Keine."

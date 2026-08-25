@@ -94,8 +94,10 @@ class ConversationState(TypedDict):
 
     # ── Enricher ─────────────────────────────
     memory_context:    str
-    memory_entries:    list[ContextEntry]   # Strukturierte Eintraege (vor Reducer-Dedup, vor Formatter)
-    lzg_resonanz: dict | None  # Assoziative Spreading-Resonanz (Synapsen §8.4.2): Enricher schreibt {anker_anzahl, sprung_tiefe, cluster, nova_sektor, erinnerungen[]}, Reducer/Formatter lesen. MUSS als Channel deklariert sein — StateGraph(ConversationState) rekonstruiert den State pro Node aus den Channels; ein undeklarierter Key wird am Node-Uebergang (Enricher → Reducer) still verworfen, nicht durchgereicht.
+    memory_entries: list[ContextEntry]  # Strukturierte Eintraege (vor Reducer-Dedup, vor Formatter)
+    lzg_resonanz: (
+        dict | None
+    )  # Assoziative Spreading-Resonanz (Synapsen §8.4.2): Enricher schreibt {anker_anzahl, sprung_tiefe, cluster, nova_sektor, erinnerungen[]}, Reducer/Formatter lesen. MUSS als Channel deklariert sein — StateGraph(ConversationState) rekonstruiert den State pro Node aus den Channels; ein undeklarierter Key wird am Node-Uebergang (Enricher → Reducer) still verworfen, nicht durchgereicht.
     memory_entries_raw: list[ContextEntry]   # Ungekuerzte Eintraege vor Reducer-Dedup (Debug)
     # Die Treffer des Dateien-Index in diesem Turn — Elemente sind
     # `agents.dateien_index.aufzeichnungen.Aufzeichnung`. Der Enricher
@@ -174,8 +176,8 @@ class ConversationState(TypedDict):
     token_total: int
 
     # ── Thinker / Self-Trigger ───────────────
-    self_trigger:         bool          # True = Folge-Durchlauf zur Klaerung anfordern. MUSS als Channel deklariert sein — StateGraph rekonstruiert den State pro Node aus den Channels. Ohne Deklaration wird der Wert am Node-Uebergang (Thinker → Tribunal) still verworfen und erreicht das finale Result nie. Live belegt Chat 106.
-    self_trigger_payload: dict          # Payload fuer den Folge-Durchlauf (user_prompt, turn_id, ...)
+    self_trigger: bool  # True = Folge-Durchlauf zur Klaerung anfordern. MUSS als Channel deklariert sein — StateGraph rekonstruiert den State pro Node aus den Channels. Ohne Deklaration wird der Wert am Node-Uebergang (Thinker → Tribunal) still verworfen und erreicht das finale Result nie. Live belegt Chat 106.
+    self_trigger_payload: dict  # Payload fuer den Folge-Durchlauf (user_prompt, turn_id, ...)
 
     # ── Tribunal ─────────────────────────────
     tribunal_votes:   list[TribunalVote]
@@ -215,10 +217,14 @@ class ConversationState(TypedDict):
     gv_detail: dict          # GV4 Debug-Info (Neugier, Luecken, Farbton)
 
     # ── Drive / Gravitation (Chat 68) ────────────
-    aktivierte_ziele:  list[dict]   # Ziele über Gravitationsschwelle [{zielsatz, motivation, aktivierungs_staerke, ...}]
+    aktivierte_ziele: list[
+        dict
+    ]  # Ziele über Gravitationsschwelle [{zielsatz, motivation, aktivierungs_staerke, ...}]
     gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
-    emotionale_gravitationspunkte: list[dict]   # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
-    prompt_embedding:  list[float]  # Embedding des aktuellen User-Prompts (768-dim, vom Enricher gesetzt)
+    emotionale_gravitationspunkte: list[dict]  # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
+    prompt_embedding: list[
+        float
+    ]  # Embedding des aktuellen User-Prompts (768-dim, vom Enricher gesetzt)
     # Suchschlüssel der Gedächtnissuche: das Prompt-Embedding nach der
     # Wahrnehmungs-Gravitation (§8.5). KZG, LZG und die Bibliothek suchen
     # damit; gesetzt vom Enricher, nur wenn überhaupt gesucht wird.

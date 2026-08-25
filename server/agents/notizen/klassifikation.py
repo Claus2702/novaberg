@@ -163,7 +163,11 @@ def klassifizieren(state: AgentState) -> dict:
         alle_hints = kw_hints + vm_hints
         konfidenz = konfidenz_berechnen(action, kw_hints, vm_hints, vm_raw)
 
-        logger.info(f"klassifizieren: action='{action}', target='{target}', typ='{target_typ}', konfidenz={konfidenz}, normalisiert='{normalisiert}'")
+        logger.info(
+            f"klassifizieren: action='{action}', target='{target}', typ='{target_typ}', "
+            f"konfidenz={konfidenz}, "
+            f"normalisiert='{normalisiert}'"
+        )
 
         return {
             "parameter": {

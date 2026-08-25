@@ -23,7 +23,10 @@ def dispatch_notizen(state: dict) -> dict:
     user_id = state.get("user_id", "")
     pending_key = f"pending_agent:{user_id}"
 
-    logger.debug(f"dispatch_notizen: Einstieg — action='{state.get('management_action')}', target='{state.get('management_target')}'")
+    logger.debug(
+        f"dispatch_notizen: Einstieg — action='{state.get('management_action')}', "
+        f"target='{state.get('management_target')}'"
+    )
 
     # ── Resume-Flow: Agent wartet auf Antwort ──────
     if state.get("management_action") == "resume":
@@ -31,7 +34,9 @@ def dispatch_notizen(state: dict) -> dict:
         if pending and pending.get("agent_name") == "notizen":
             return _handle_resume(state, pending, pending_key)
         else:
-            logger.warning("dispatch_notizen: Resume angefordert aber kein pending State für 'notizen'")
+            logger.warning(
+                "dispatch_notizen: Resume angefordert aber kein pending State für 'notizen'"
+            )
 
     # ── Normaler Flow ──────────────────────────────
 
@@ -58,7 +63,8 @@ def dispatch_notizen(state: dict) -> dict:
     }
 
     logger.debug(f"dispatch_notizen: AgentState gebaut — aufgabe='{agent_state['aufgabe'][:80]}', "
-                 f"action='{agent_state['parameter']['action']}', target='{agent_state['parameter']['target']}', "
+                 f"action='{agent_state['parameter']['action']}', "
+                 f"target='{agent_state['parameter']['target']}', "
                  f"user_id='{agent_state['kontext']['user_id']}'")
 
     # 2. Agent ausfuehren
@@ -100,7 +106,9 @@ def dispatch_notizen(state: dict) -> dict:
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=(
-                    "Sage, welche Liste gemeint ist und was hinein oder heraus soll, etwa 'setz Milch auf die Einkaufsliste'."
+                    "Sage, welche Liste gemeint ist und was hinein oder heraus soll, etwa 'setz "
+                    "Milch auf die "
+                    "Einkaufsliste'."
                 ),
             ),
         )
@@ -127,7 +135,9 @@ def dispatch_notizen(state: dict) -> dict:
             "parameter": result_state.get("parameter", agent_state["parameter"]),
         }
         redis_manager.set_json(pending_key, pending_data, ttl_seconds=PENDING_TTL_SECONDS)
-        logger.info(f"dispatch_notizen: Pending Agent gespeichert in Redis (TTL={PENDING_TTL_SECONDS}s)")
+        logger.info(
+            f"dispatch_notizen: Pending Agent gespeichert in Redis (TTL={PENDING_TTL_SECONDS}s)"
+        )
 
     # 5. AgentResult in ConversationState schreiben
     return _build_return(state, result)

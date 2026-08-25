@@ -152,7 +152,8 @@ class TimelineAgent(BaseAgent):
             return {
                 "status": "fehler",
                 "fehler": "Keine Aktion angegeben",
-                "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "keine_aktion"}],
+                "schritte": state["schritte"]
+                + [{"node": "validieren", "ergebnis": "keine_aktion"}],
             }
 
         gueltige_aktionen = {"create", "read", "update", "delete", "reschedule", "agent"}
@@ -160,10 +161,12 @@ class TimelineAgent(BaseAgent):
             return {
                 "status": "fehler",
                 "fehler": f"Unbekannte Aktion: {action}",
-                "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ungueltige_aktion"}],
+                "schritte": state["schritte"]
+                + [{"node": "validieren", "ergebnis": "ungueltige_aktion"}],
             }
 
         return {
             "status": "laufend",
-            "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ok", "action": action}],
+            "schritte": state["schritte"]
+            + [{"node": "validieren", "ergebnis": "ok", "action": action}],
         }

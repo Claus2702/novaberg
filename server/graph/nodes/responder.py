@@ -375,7 +375,9 @@ def _build_system_prompt(state: ConversationState) -> str:
         )
 
     if nova_emotions_verlauf:
-        eigene_emo_parts: list[str] = ["[PERSON A — IHRE EMOTION]\nIhr aktueller emotionaler Zustand:"]
+        eigene_emo_parts: list[str] = [
+            "[PERSON A — IHRE EMOTION]\nIhr aktueller emotionaler Zustand:"
+        ]
 
         # Top-Emotionen aus dem Verlauf
         emo_text: str = ", ".join(

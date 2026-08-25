@@ -266,7 +266,9 @@ def _session_turn_schreiben(state: ConversationState) -> None:
     character_id: str = state.get("character_id", "")
 
     if not user_id or not character_id:
-        logger.warning("Dispatcher: Session-Turn nicht geschrieben — user_id oder character_id fehlt")
+        logger.warning(
+            "Dispatcher: Session-Turn nicht geschrieben — user_id oder character_id fehlt"
+        )
         return
 
     # Der AgentGraph schreibt keinen Session-Turn. Er hat keinen Responder,
@@ -603,7 +605,10 @@ def dispatch(
         manager = registry.get(ziel)
 
         if not manager:
-            logger.warning(f"Dispatcher: Kein Manager fuer '{ziel}' registriert — {len(ziel_writes)} Writes verworfen")
+            logger.warning(
+                f"Dispatcher: Kein Manager fuer '{ziel}' registriert — {len(ziel_writes)} Writes "
+                "verworfen"
+            )
             continue
 
         try:

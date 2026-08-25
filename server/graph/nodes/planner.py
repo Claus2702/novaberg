@@ -68,7 +68,8 @@ def _build_task_block(
     ]
     inquiries: list = [
         r for r in agent_results
-        if hasattr(r, "status") and r.status == "rueckfrage" and hasattr(r, "rueckfrage") and r.rueckfrage
+        if hasattr(r, "status") and r.status == "rueckfrage"
+        and hasattr(r, "rueckfrage") and r.rueckfrage
     ]
     errors: list = [
         r for r in agent_results
@@ -360,7 +361,9 @@ def plan(
                 vorheriges = _agent_bereits_gelaufen(state, agent_name)
                 if vorheriges:
                     logger.info(
-                        "Planner: Resume — Agent '%s' lief bereits in diesem Turn (status=%s) — Turn beenden, weiter zum Responder",
+                        "Planner: Resume — Agent '%s' lief bereits in diesem Turn (status=%s) — "
+                        "Turn beenden, weiter zum "
+                        "Responder",
                         agent_name, vorheriges.status,
                     )
                     _write_task_block(state)
@@ -464,7 +467,11 @@ def plan(
             # Agent ist schon gelaufen — nicht nochmal aufrufen
             # Ergebnis liegt bereits in agent_results, management_result ist gesetzt
             # → Kein Manager-Aufruf, kein Agent-Aufruf, weiter zum Responder
-            logger.info(f"Planner: Agent '{agent.name}' bereits gelaufen (status={vorheriges.status}) — weiter zum Responder")
+            logger.info(
+                f"Planner: Agent '{agent.name}' bereits gelaufen (status={vorheriges.status}) — "
+                "weiter zum "
+                "Responder"
+            )
             _write_task_block(state)
             return state
         else:

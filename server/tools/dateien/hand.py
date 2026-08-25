@@ -59,7 +59,7 @@ logger = logging.getLogger("ki_server.tools.dateien.hand")
 # Der Kanon der Aktionen. Geschlossen und geprueft: Ein unbekannter Name ist
 # ein Befund und kein stiller Fehlschlag — sonst ist ein Tippfehler von einer
 # nicht gebauten Aktion nicht zu unterscheiden.
-LESEND:     tuple[str, ...] = ("aktuell", "karte", "block", "zeilen", "suchen", "verlauf", "pruefen")
+LESEND: tuple[str, ...] = ("aktuell", "karte", "block", "zeilen", "suchen", "verlauf", "pruefen")
 SCHREIBEND: tuple[str, ...] = ("aendern", "loeschen", "einfuegen")
 AKTIONEN:   tuple[str, ...] = LESEND + SCHREIBEND
 

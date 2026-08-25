@@ -32,7 +32,9 @@ def dispatch_timeline(state: dict) -> dict:
         if pending and pending.get("agent_name") == "timeline":
             return _handle_resume(state, pending, pending_key)
         else:
-            logger.warning("dispatch_timeline: Resume angefordert aber kein pending State fuer 'timeline'")
+            logger.warning(
+                "dispatch_timeline: Resume angefordert aber kein pending State fuer 'timeline'"
+            )
 
     # ── Normaler Flow ──────────────────────────────
 
@@ -97,7 +99,9 @@ def dispatch_timeline(state: dict) -> dict:
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=(
-                    "Nenne einen Zeitpunkt und das Ereignis, etwa 'Zahnarzt am Donnerstag um 10' — dann trage ich es ein."
+                    "Nenne einen Zeitpunkt und das Ereignis, etwa 'Zahnarzt am Donnerstag um 10' — "
+                    "dann trage ich es "
+                    "ein."
                 ),
             ),
         )
@@ -124,7 +128,9 @@ def dispatch_timeline(state: dict) -> dict:
             "parameter": result_state.get("parameter", agent_state["parameter"]),
         }
         redis_manager.set_json(pending_key, pending_data, ttl_seconds=PENDING_TTL_SECONDS)
-        logger.info(f"dispatch_timeline: Pending Agent gespeichert in Redis (TTL={PENDING_TTL_SECONDS}s)")
+        logger.info(
+            f"dispatch_timeline: Pending Agent gespeichert in Redis (TTL={PENDING_TTL_SECONDS}s)"
+        )
 
     # 5. AgentResult in ConversationState schreiben
     return _build_return(state, result)

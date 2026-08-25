@@ -34,7 +34,9 @@ def _user_entitaet_sicherstellen(user_id: str) -> None:
     if not user_existiert:
         zusammenfassung: str = f"Der User. Login: {user_id}"
         try:
-            request = EmbedRequest(text=EntitaetenRepository.embed_text_bauen(user_id, zusammenfassung))
+            request = EmbedRequest(
+                text=EntitaetenRepository.embed_text_bauen(user_id, zusammenfassung)
+            )
             embed_response = model_service.embed.submit_sync(request)
             embedding: list[float] | None = embed_response.embedding
             logger.debug(
@@ -90,7 +92,9 @@ async def entitaeten_embeddings_sicherstellen() -> None:
             continue
 
         try:
-            request = EmbedRequest(text=EntitaetenRepository.embed_text_bauen(name, zusammenfassung))
+            request = EmbedRequest(
+                text=EntitaetenRepository.embed_text_bauen(name, zusammenfassung)
+            )
             embed_response = await model_service.embed.submit(request)
             embedding: list[float] = embed_response.embedding
             logger.debug(
@@ -262,10 +266,12 @@ def _stage_detail(node_name: str, node_state: dict) -> str:
 
     # ── Verarbeitung ────────────────────────────
     if node_name == "perzeption":
-        emotion:  str = (node_external.emotion.emotion              if node_external else "").capitalize()
+        emotion: str = (node_external.emotion.emotion if node_external else "").capitalize()
         arousal: float = node_external.emotion.arousal              if node_external else 0.0
-        modus:    str = (node_external.emotion.mode                 if node_external else "").capitalize()
-        dynamik:  str = (node_external.emotion.relationship_dynamic if node_external else "").capitalize()
+        modus: str = (node_external.emotion.mode if node_external else "").capitalize()
+        dynamik: str = (
+            node_external.emotion.relationship_dynamic if node_external else ""
+        ).capitalize()
 
         arousal_text: str = (
             "ruhig" if arousal < 0.3
@@ -296,7 +302,8 @@ def _stage_detail(node_name: str, node_state: dict) -> str:
             detail += (
                 f" | Modus: {modus_e or '?'}, "
                 f"Emotion: {emotion_e or '?'}, "
-                f"Intention: {', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
+                "Intention: "
+                f"{', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
             )
         return detail
 

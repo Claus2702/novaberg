@@ -38,7 +38,10 @@ def _verifizieren_termin(termin_id: int, erwartung: dict) -> bool:
         return False
 
     if "aktiv" in erwartung and eintrag["aktiv"] != erwartung["aktiv"]:
-        logger.error(f"Verifikation: Termin ID {termin_id} aktiv={eintrag['aktiv']}, erwartet={erwartung['aktiv']}")
+        logger.error(
+            f"Verifikation: Termin ID {termin_id} aktiv={eintrag['aktiv']}, "
+            f"erwartet={erwartung['aktiv']}"
+        )
         return False
 
     if "invalidiert" in erwartung and erwartung["invalidiert"] and eintrag["aktiv"]:
@@ -147,12 +150,23 @@ def _create(state: AgentState) -> dict:
     if precision_has_time(precision):
         lokale_zeit += f" {event_time.astimezone(tz).strftime('%H:%M')}"
 
-    logger.info(f"TimelineAgent: Termin '{title}' angelegt (ID {termin_id}, {lokale_zeit}), verifiziert={verifiziert}")
+    logger.info(
+        f"TimelineAgent: Termin '{title}' angelegt (ID {termin_id}, {lokale_zeit}), "
+        f"verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Termin '{title}' eingetragen fuer {lokale_zeit}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "erstellt", "termin_id": termin_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "erstellt",
+                "termin_id": termin_id,
+                "verifiziert": verifiziert,
+            }
+        ],
     }
 
 
@@ -246,9 +260,13 @@ def _update(state: AgentState) -> dict:
             hour=neues_datum.hour, minute=neues_datum.minute,
             second=0, microsecond=0,
         )
-        logger.info(f"_update: Uhrzeit neu, Tag vom alten Termin ({alte_zeit.strftime('%d.%m.%Y')})")
+        logger.info(
+            f"_update: Uhrzeit neu, Tag vom alten Termin ({alte_zeit.strftime('%d.%m.%Y')})"
+        )
 
-    precision = "minute" if vektor.uhrzeit_erkannt or alte_zeit.hour > 0 or alte_zeit.minute > 0 else "day"
+    precision = (
+        "minute" if vektor.uhrzeit_erkannt or alte_zeit.hour > 0 or alte_zeit.minute > 0 else "day"
+    )
 
     TimelineRepository.invalidate(POSTGRES_URL, termin_id)
     logger.debug(f"_update: Alter Termin {termin_id} invalidiert")
@@ -316,10 +334,20 @@ def _delete(state: AgentState) -> dict:
 
     verifiziert = _verifizieren_termin(termin_id, {"invalidiert": True})
 
-    logger.info(f"TimelineAgent: Termin '{title}' (ID {termin_id}) invalidiert, verifiziert={verifiziert}")
+    logger.info(
+        f"TimelineAgent: Termin '{title}' (ID {termin_id}) invalidiert, verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Termin '{title}' geloescht",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "geloescht", "termin_id": termin_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "geloescht",
+                "termin_id": termin_id,
+                "verifiziert": verifiziert,
+            }
+        ],
     }

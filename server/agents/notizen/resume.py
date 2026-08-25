@@ -104,7 +104,10 @@ def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -
             "schritte": state["schritte"] + [{"node": "resume", "ergebnis": "kein_match"}],
         }
 
-    logger.info(f"_resume_disambiguierung: Kandidat gewaehlt -- id={match.get('id')}, name='{match['name']}'")
+    logger.info(
+        f"_resume_disambiguierung: Kandidat gewaehlt -- id={match.get('id')}, "
+        f"name='{match['name']}'"
+    )
 
     return {
         "parameter": {
@@ -114,7 +117,8 @@ def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -
             "resume": False,  # Resume abgeschlossen
         },
         "status": "laufend",
-        "schritte": state["schritte"] + [{"node": "resume", "ergebnis": f"gewaehlt: {match['name']}"}],
+        "schritte": state["schritte"]
+        + [{"node": "resume", "ergebnis": f"gewaehlt: {match['name']}"}],
     }
 
 
@@ -130,7 +134,9 @@ def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> d
 
     if any(w in user_lower for w in ["ja", "klar", "mach", "bitte", "okay", "ok", "gerne",
                                       "sure", "jep", "jop", "auf jeden", "logo", "passt"]):
-        logger.info(f"_resume_nicht_gefunden: User bestaetigt -- create '{target}' mit Originaltext")
+        logger.info(
+            f"_resume_nicht_gefunden: User bestaetigt -- create '{target}' mit Originaltext"
+        )
         return {
             "aufgabe": original_aufgabe,
             "parameter": {

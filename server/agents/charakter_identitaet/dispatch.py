@@ -32,7 +32,9 @@ def dispatch_charakter_identitaet(state: dict) -> dict:
         if pending and pending.get("agent_name") == "charakter_identitaet":
             return _handle_resume(state, pending, pending_key)
         else:
-            logger.warning("dispatch_charakter_identitaet: Resume angefordert aber kein pending State")
+            logger.warning(
+                "dispatch_charakter_identitaet: Resume angefordert aber kein pending State"
+            )
 
     # Normaler Flow
     agent_state: AgentState = {
@@ -94,7 +96,9 @@ def dispatch_charakter_identitaet(state: dict) -> dict:
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=(
-                    "Beschreibe den Zug als dauerhafte Eigenschaft, etwa 'sei grundsaetzlich knapper in deinen Antworten'."
+                    "Beschreibe den Zug als dauerhafte Eigenschaft, etwa 'sei grundsaetzlich "
+                    "knapper in deinen "
+                    "Antworten'."
                 ),
             ),
         )
@@ -121,7 +125,9 @@ def dispatch_charakter_identitaet(state: dict) -> dict:
             "parameter": result_state.get("parameter", agent_state["parameter"]),
         }
         redis_manager.set_json(pending_key, pending_data, ttl_seconds=PENDING_TTL_SECONDS)
-        logger.info(f"dispatch_charakter_identitaet: Pending Agent gespeichert (TTL={PENDING_TTL_SECONDS}s)")
+        logger.info(
+            f"dispatch_charakter_identitaet: Pending Agent gespeichert (TTL={PENDING_TTL_SECONDS}s)"
+        )
 
     return _build_return(state, result)
 
@@ -191,7 +197,9 @@ def _handle_resume(state: dict, pending: dict, pending_key: str) -> dict:
             "parameter": agent_state["parameter"],
         }
         redis_manager.set_json(pending_key, pending_data, ttl_seconds=PENDING_TTL_SECONDS)
-        logger.info("dispatch_charakter_identitaet: Erneute Rueckfrage — pending State aktualisiert")
+        logger.info(
+            "dispatch_charakter_identitaet: Erneute Rueckfrage — pending State aktualisiert"
+        )
 
     return _build_return(state, result)
 

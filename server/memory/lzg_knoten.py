@@ -177,11 +177,14 @@ def knoten_embedding_aktualisieren(
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(knoten_id, int) or knoten_id <= 0:
-        logger.error("knoten_embedding_aktualisieren: unplausible knoten_id=%r — verworfen", knoten_id)
+        logger.error(
+            "knoten_embedding_aktualisieren: unplausible knoten_id=%r — verworfen", knoten_id
+        )
         return False
     if not embedding_str or not embedding_str.startswith("["):
         logger.error(
-            "knoten_embedding_aktualisieren: embedding_str ist kein pgvector-Literal (knoten=%s) — verworfen",
+            "knoten_embedding_aktualisieren: embedding_str ist kein pgvector-Literal (knoten=%s) — "
+            "verworfen",
             knoten_id,
         )
         return False
@@ -209,7 +212,9 @@ def knoten_embedding_aktualisieren(
     # ── Ausgabe-Verifikation ────────────────────
     if aktualisiert != 1:
         logger.error(
-            "knoten_embedding_aktualisieren: rowcount=%d fuer knoten=%s (erwartet 1) — Knoten existiert nicht?",
+            "knoten_embedding_aktualisieren: rowcount=%d fuer knoten=%s (erwartet 1) — Knoten "
+            "existiert "
+            "nicht?",
             aktualisiert, knoten_id,
         )
         return False
@@ -257,7 +262,13 @@ def knoten_gewichte_zuruecksetzen(
     {knoten, verletzungen, beispiele, geschrieben, error}.
     """
     # ── Eingabe-Validierung: Bestand laden, Reset-Plan pruefen ─────────
-    ergebnis: dict = {"knoten": 0, "verletzungen": [], "beispiele": [], "geschrieben": 0, "error": None}
+    ergebnis: dict = {
+        "knoten": 0,
+        "verletzungen": [],
+        "beispiele": [],
+        "geschrieben": 0,
+        "error": None,
+    }
     beispiel_menge: set[int] = set(beispiel_ids or [])
 
     conn = psycopg2.connect(postgres_url)
@@ -278,7 +289,9 @@ def knoten_gewichte_zuruecksetzen(
     # execute_batch/mogrify mit IndexError scheitern (Chat 107).
     plan: list[tuple[float, float, float, int]] = []
     for k in knoten:
-        initial_roh: float = k["gewicht_roh"] - (k["haeufigkeit"] - 1) * LZG_KNOTEN_REINFORCEMENT_BOOST
+        initial_roh: float = (
+            k["gewicht_roh"] - (k["haeufigkeit"] - 1) * LZG_KNOTEN_REINFORCEMENT_BOOST
+        )
         if initial_roh <= 0:
             ergebnis["verletzungen"].append(
                 {"id": k["id"], "gewicht_roh": k["gewicht_roh"], "haeufigkeit": k["haeufigkeit"],
@@ -726,7 +739,9 @@ def run_node_decay(
                 (decay_rate,),
             )
             total_processed = cur.rowcount
-            logger.info(f"Decay-Lauf: gewicht_decay materialisiert fuer {total_processed} aktive Knoten")
+            logger.info(
+                f"Decay-Lauf: gewicht_decay materialisiert fuer {total_processed} aktive Knoten"
+            )
 
             # Statement 2: Knoten unter der Schwelle deaktivieren. Liest die in
             # Statement 1 frisch geschriebenen Werte (read-your-writes, selbe TX).
@@ -747,14 +762,16 @@ def run_node_decay(
         deactivated_count = len(deactivated_ids)
         if deactivated_count > total_processed:
             logger.warning(
-                f"Decay-Lauf: deaktiviert ({deactivated_count}) > verarbeitet ({total_processed}) — "
+                f"Decay-Lauf: deaktiviert ({deactivated_count}) > verarbeitet ({total_processed}) "
+                "— "
                 f"unerwartet, bitte pruefen"
             )
         result["total_processed"] = total_processed
         result["deactivated_count"] = deactivated_count
         result["deactivated_ids"] = deactivated_ids
         logger.info(
-            f"Decay-Lauf abgeschlossen: {total_processed} verarbeitet, {deactivated_count} deaktiviert "
+            f"Decay-Lauf abgeschlossen: {total_processed} verarbeitet, {deactivated_count} "
+            "deaktiviert "
             f"(ids={deactivated_ids})"
         )
         return result

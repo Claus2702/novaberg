@@ -94,7 +94,9 @@ def dispatch_direktiven(state: dict) -> dict:
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=(
-                    "Formuliere die Regel als dauerhafte Anweisung, etwa 'sprich mich ab jetzt immer mit Du an'."
+                    "Formuliere die Regel als dauerhafte Anweisung, etwa 'sprich mich ab jetzt "
+                    "immer mit Du "
+                    "an'."
                 ),
             ),
         )

@@ -677,7 +677,15 @@ def _turn_features_bewerten(turn_text: str) -> dict[str, float]:
         scores["jugendlich"] += 1.0
 
     # ── 12. Konjunktiv ──
-    konjunktiv_marker: list[str] = ["hätte", "würde", "könnte", "dürfte", "möchte", "wäre", "sollte"]
+    konjunktiv_marker: list[str] = [
+        "hätte",
+        "würde",
+        "könnte",
+        "dürfte",
+        "möchte",
+        "wäre",
+        "sollte",
+    ]
     konj_treffer: int = sum(1 for m in konjunktiv_marker if f" {m} " in padded)
     if konj_treffer:
         scores["formell"] += 2.0
@@ -1040,7 +1048,8 @@ def _nova_empathie_berechnen(
                 and user_arousal >= EMPATHIE_KONFLIKT_MIN_AROUSAL):
             konflikt = True
             logger.info(
-                f"EI-Calc: Empathie-Konflikt — Nova={nova_dominant}(a={nova_dominant_arousal:.2f}), "
+                "EI-Calc: Empathie-Konflikt — "
+                f"Nova={nova_dominant}(a={nova_dominant_arousal:.2f}), "
                 f"User={user_emotion_kanon}(a={user_arousal:.2f}), Distanz={distanz}"
             )
 

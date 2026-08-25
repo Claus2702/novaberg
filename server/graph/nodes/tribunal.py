@@ -222,7 +222,10 @@ def _agent_vote(
         }
 
     if agent_name == "jurist":
-        logger.info(f"Tribunal [jurist]: score={score:.2f}, dir={direktiven_score:.2f} → vote={vote['vote']}")
+        logger.info(
+            f"Tribunal [jurist]: score={score:.2f}, dir={direktiven_score:.2f} → "
+            f"vote={vote['vote']}"
+        )
     else:
         logger.info(f"Tribunal [{agent_name}]: score={score:.2f} → vote={vote['vote']}")
 

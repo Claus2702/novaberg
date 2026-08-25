@@ -103,7 +103,10 @@ def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -
             "schritte": state["schritte"] + [{"node": "resume", "ergebnis": "kein_match"}],
         }
 
-    logger.info(f"_resume_disambiguierung: Kandidat gewaehlt — id={match.get('id')}, title='{match['title']}'")
+    logger.info(
+        f"_resume_disambiguierung: Kandidat gewaehlt — id={match.get('id')}, "
+        f"title='{match['title']}'"
+    )
 
     return {
         "parameter": {
@@ -113,5 +116,6 @@ def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -
             "resume": False,
         },
         "status": "laufend",
-        "schritte": state["schritte"] + [{"node": "resume", "ergebnis": f"gewaehlt: {match['title']}"}],
+        "schritte": state["schritte"]
+        + [{"node": "resume", "ergebnis": f"gewaehlt: {match['title']}"}],
     }

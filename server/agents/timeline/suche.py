@@ -146,7 +146,8 @@ def suchen(state: AgentState) -> dict:
         return {
             "ergebnis": "\n".join(zeilen),
             "status": "abgeschlossen",
-            "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": f"{len(treffer)} Treffer"}],
+            "schritte": state["schritte"]
+            + [{"node": "suchen", "ergebnis": f"{len(treffer)} Treffer"}],
         }
 
     # ── Update/Delete: Disambiguierung bei mehreren Treffern ──
@@ -171,7 +172,8 @@ def suchen(state: AgentState) -> dict:
             return {
                 "parameter": {**state["parameter"], "termin": termin},
                 "status": "laufend",
-                "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": f"zukunft: {termin['title']}"}],
+                "schritte": state["schritte"]
+                + [{"node": "suchen", "ergebnis": f"zukunft: {termin['title']}"}],
             }
 
         logger.debug(f"suchen: Disambiguierung — {len(kandidaten)} Kandidaten")
@@ -192,5 +194,6 @@ def suchen(state: AgentState) -> dict:
     return {
         "parameter": {**state["parameter"], "termin": termin},
         "status": "laufend",
-        "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": f"gefunden: {termin['title']}"}],
+        "schritte": state["schritte"]
+        + [{"node": "suchen", "ergebnis": f"gefunden: {termin['title']}"}],
     }

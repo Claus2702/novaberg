@@ -257,7 +257,9 @@ def _resonanz_kontext_laden(state: ConversationState) -> str:
         # eine Assoziation gefunden. Der Unterschied gehoert in den Prompt —
         # sonst liest das LLM einen Nachbarn zweiter Ordnung als Kernbezug.
         schale: int = erinnerung.get("schale", 0)
-        herkunft: str = "direkt zum Thema" if schale == 0 else f"assoziiert ueber {schale} Sprung(e)"
+        herkunft: str = (
+            "direkt zum Thema" if schale == 0 else f"assoziiert ueber {schale} Sprung(e)"
+        )
 
         themen_roh = erinnerung.get("themen") or []
         themen: str = ", ".join(str(t) for t in themen_roh if t)
@@ -356,7 +358,10 @@ def _entity_kontext_laden(state: ConversationState) -> str:
     schluessel:        str = management_target or prompt_thema
 
     if not schluessel or not schluessel.strip():
-        logger.debug("GV-Entity-Hop: kein Schluessel (weder management_target noch prompt_topic) — uebersprungen")
+        logger.debug(
+            "GV-Entity-Hop: kein Schluessel (weder management_target noch prompt_topic) — "
+            "uebersprungen"
+        )
         return ""
 
     conn = None
@@ -378,7 +383,9 @@ def _entity_kontext_laden(state: ConversationState) -> str:
         hop1_entitaeten: list[tuple] = cursor.fetchall()
 
         if not hop1_entitaeten:
-            logger.info("GV-Entity-Hop: keine Entitaeten zum Schluessel '%s' — leerer Kontext", schluessel)
+            logger.info(
+                "GV-Entity-Hop: keine Entitaeten zum Schluessel '%s' — leerer Kontext", schluessel
+            )
             return ""
 
         hop1_ids: list[int] = [e[0] for e in hop1_entitaeten]

@@ -32,7 +32,10 @@ def embed_text_bauen(themen: str, zusammenfassung: str = "") -> str:
     hat_themen = bool(themen and themen.strip())
     hat_zusammenfassung = bool(zusammenfassung and zusammenfassung.strip())
     if not hat_themen and not hat_zusammenfassung:
-        raise ValueError("embed_text_bauen(delegation): themen und zusammenfassung sind leer — kein Embed-Text baubar")
+        raise ValueError(
+            "embed_text_bauen(delegation): themen und zusammenfassung sind leer — kein Embed-Text "
+            "baubar"
+        )
     if hat_themen and hat_zusammenfassung:
         return f"{themen}. {zusammenfassung}"
     return themen if hat_themen else zusammenfassung
@@ -228,7 +231,8 @@ def akte_anreichern(state: AgentState) -> dict:
             return {
                 "status": "fehler",
                 "fehler": f"Akte {akte_id} nicht gefunden",
-                "schritte": state["schritte"] + [{"node": "akte_anreichern", "ergebnis": "nicht_gefunden"}],
+                "schritte": state["schritte"]
+                + [{"node": "akte_anreichern", "ergebnis": "nicht_gefunden"}],
             }
 
         alte_seiten:     int   = row[0]

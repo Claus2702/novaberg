@@ -288,7 +288,9 @@ def _ei_calc_character(state: ConversationState) -> None:
     else:
         state["nova_emotions_verlauf"] = nova_verlauf_basis
         state["nova_emotion_konflikt"] = False
-        logger.info("EI-Calc/Character: Nova-Empathie übersprungen (event_source=character, nur Decay)")
+        logger.info(
+            "EI-Calc/Character: Nova-Empathie übersprungen (event_source=character, nur Decay)"
+        )
 
     # Novas Emotions-Vektor (in internal.emotion.emotions_vector)
     #    Kein `inject_current`: Novas Wahrnehmung ihrer eigenen Antwort steht
@@ -365,4 +367,6 @@ def _ei_calc_character(state: ConversationState) -> None:
         logger.info(f"EI-Calc/Character: Nova-Emotion — {nova_top}")
 
     if state["nova_emotion_konflikt"]:
-        logger.info("EI-Calc/Character: Nova-Emotion — Konflikt erkannt (gegenüberliegende Sektoren)")
+        logger.info(
+            "EI-Calc/Character: Nova-Emotion — Konflikt erkannt (gegenüberliegende Sektoren)"
+        )

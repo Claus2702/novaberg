@@ -29,7 +29,9 @@ class FaktenRepository:
         A: der unveränderte fakt_text.
         """
         if not fakt_text or not fakt_text.strip():
-            raise ValueError("embed_text_bauen(fakten): fakt_text ist leer — kein Embed-Text baubar")
+            raise ValueError(
+                "embed_text_bauen(fakten): fakt_text ist leer — kein Embed-Text baubar"
+            )
         return fakt_text
 
     @staticmethod

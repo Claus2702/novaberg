@@ -111,7 +111,16 @@ class CharakterIdentitaetAgent(BaseAgent):
             return END
         if state["parameter"].get("resume"):
             return "resume"
-        if action in ("create", "read", "update", "delete", "delete_alle", "reactivate", "replace", "konsolidieren"):
+        if action in (
+            "create",
+            "read",
+            "update",
+            "delete",
+            "delete_alle",
+            "reactivate",
+            "replace",
+            "konsolidieren",
+        ):
             return "db_validieren"
         return "klassifizieren"
 
@@ -144,20 +153,33 @@ class CharakterIdentitaetAgent(BaseAgent):
             return {
                 "status": "fehler",
                 "fehler": "Keine Aktion angegeben",
-                "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "keine_aktion"}],
+                "schritte": state["schritte"]
+                + [{"node": "validieren", "ergebnis": "keine_aktion"}],
             }
 
-        gueltige_aktionen = {"create", "read", "update", "delete", "delete_alle", "reactivate", "replace", "konsolidieren", "agent"}
+        gueltige_aktionen = {
+            "create",
+            "read",
+            "update",
+            "delete",
+            "delete_alle",
+            "reactivate",
+            "replace",
+            "konsolidieren",
+            "agent",
+        }
         if action not in gueltige_aktionen:
             return {
                 "status": "fehler",
                 "fehler": f"Unbekannte Aktion: {action}",
-                "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ungueltige_aktion"}],
+                "schritte": state["schritte"]
+                + [{"node": "validieren", "ergebnis": "ungueltige_aktion"}],
             }
 
         return {
             "status": "laufend",
-            "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ok", "action": action}],
+            "schritte": state["schritte"]
+            + [{"node": "validieren", "ergebnis": "ok", "action": action}],
         }
 
     # --- DB-Validierung (HITL-Gate) ---
@@ -168,7 +190,8 @@ class CharakterIdentitaetAgent(BaseAgent):
 
         if action == "read":
             return {
-                "schritte": state["schritte"] + [{"node": "db_validieren", "ergebnis": "skip_read"}],
+                "schritte": state["schritte"]
+                + [{"node": "db_validieren", "ergebnis": "skip_read"}],
             }
 
         result = validieren_gegen_db(state)
@@ -193,7 +216,8 @@ class CharakterIdentitaetAgent(BaseAgent):
                 **state_update,
                 "status": "fehler",
                 "fehler": result.grund,
-                "schritte": state["schritte"] + [{"node": "db_validieren", "ergebnis": f"fehler: {result.grund[:40]}"}],
+                "schritte": state["schritte"]
+                + [{"node": "db_validieren", "ergebnis": f"fehler: {result.grund[:40]}"}],
             }
 
         if result.bestaetigung_noetig:
@@ -201,7 +225,8 @@ class CharakterIdentitaetAgent(BaseAgent):
                 **state_update,
                 "status": "rueckfrage",
                 "rueckfrage": result.bestaetigung_text,
-                "schritte": state["schritte"] + [{"node": "db_validieren", "ergebnis": "rueckfrage"}],
+                "schritte": state["schritte"]
+                + [{"node": "db_validieren", "ergebnis": "rueckfrage"}],
             }
 
         return {

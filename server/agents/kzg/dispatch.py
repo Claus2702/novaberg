@@ -142,9 +142,11 @@ def dispatch_kzg(
 
         salienz_obj["arousal"]            = quelle.emotion.arousal              if quelle else 0.5
         salienz_obj["emotions_vektor"]    = quelle.emotion.emotions_vector      if quelle else ""
-        salienz_obj["sprach_stil"]        = quelle.emotion.language_style       if quelle else "neutral"
-        salienz_obj["beziehungs_dynamik"] = quelle.emotion.relationship_dynamic if quelle else "neutral"
-        salienz_obj["tone"]               = quelle.emotion.tone                 if quelle else "sachlich"
+        salienz_obj["sprach_stil"] = quelle.emotion.language_style if quelle else "neutral"
+        salienz_obj["beziehungs_dynamik"] = (
+            quelle.emotion.relationship_dynamic if quelle else "neutral"
+        )
+        salienz_obj["tone"] = quelle.emotion.tone if quelle else "sachlich"
 
         # AgentState bauen
         agent_state: AgentState = {

@@ -116,7 +116,10 @@ def verb_mapping_lernen(user_id: str, agent: str, ausdruck: str, aktion: str) ->
             "UPDATE verb_mappings SET konfidenz = konfidenz + 1 WHERE id = %s",
             (existing["id"],),
         )
-        logger.info(f"verb_mapping: Verstaerkt '{ausdruck}' → {aktion} (konfidenz={existing['konfidenz'] + 1})")
+        logger.info(
+            f"verb_mapping: Verstaerkt '{ausdruck}' → {aktion} "
+            f"(konfidenz={existing['konfidenz'] + 1})"
+        )
     else:
         db_manager.execute(
             "INSERT INTO verb_mappings (user_id, ausdruck, aktion, agent) VALUES (%s, %s, %s, %s)",
@@ -178,7 +181,9 @@ def erkennungshilfe_block(
     if verb_mappings_raw:
         for m in verb_mappings_raw:
             if m["aktion"] in verb_mapping_hints:
-                zeilen.append(f"- {m['aktion']} (Gelernt: \"{m['ausdruck']}\", Konfidenz: {m['konfidenz']})")
+                zeilen.append(
+                    f'- {m["aktion"]} (Gelernt: "{m["ausdruck"]}", Konfidenz: {m["konfidenz"]})'
+                )
 
     if not zeilen:
         return None

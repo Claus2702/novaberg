@@ -523,7 +523,9 @@ def kzg_store(
                     neuer_ttl: int = KZG_TTL_LOW_SEKUNDEN
 
                 verbleibend: int = redis_client.ttl(other_key)
-                redis_client.expire(other_key, max(verbleibend if verbleibend > 0 else 0, neuer_ttl))
+                redis_client.expire(
+                    other_key, max(verbleibend if verbleibend > 0 else 0, neuer_ttl)
+                )
 
                 logger.info(
                     f"KZG: Thematische Verstärkung {other_key} — "

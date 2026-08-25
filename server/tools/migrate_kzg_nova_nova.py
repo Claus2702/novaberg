@@ -100,7 +100,9 @@ def migrieren(commit: bool = False) -> None:
 
         migriert += 1
 
-    logger.info(f"\n{'COMMIT' if commit else 'DRY-RUN'}: {migriert} migriert, {fehler} uebersprungen")
+    logger.info(
+        f"\n{'COMMIT' if commit else 'DRY-RUN'}: {migriert} migriert, {fehler} uebersprungen"
+    )
 
     if commit and migriert > 0:
         # hash_dirty setzen damit CharakterAgent die neuen Daten einliest

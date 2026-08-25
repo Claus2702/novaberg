@@ -42,7 +42,9 @@ def _read_inaktive(user_id: str) -> list[dict]:
 def _read_by_id(direktive_id: int) -> dict | None:
     """Liest eine einzelne Direktive per ID."""
     return db_manager.select_one(
-        "SELECT id, anweisung, kontext, aktiv, erstellt_am, geaendert_am FROM direktiven WHERE id = %s",
+        "SELECT id, anweisung, kontext, aktiv, erstellt_am, geaendert_am FROM direktiven WHERE id "
+        "= "
+        "%s",
         (direktive_id,),
     )
 
@@ -103,7 +105,10 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
     if action == "create":
         aktive = _read_aktive(user_id)
         for d in aktive:
-            if anweisung.lower().strip() in d["anweisung"].lower() or d["anweisung"].lower() in anweisung.lower().strip():
+            if (
+                anweisung.lower().strip() in d["anweisung"].lower()
+                or d["anweisung"].lower() in anweisung.lower().strip()
+            ):
                 return ValidationResult(
                     ok=False,
                     grund=f"Aehnliche Direktive existiert bereits: [{d['id']}] {d['anweisung']}",
@@ -127,7 +132,9 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
         if target_id:
             eintrag = _read_by_id(target_id)
             if not eintrag or not eintrag.get("aktiv"):
-                return ValidationResult(ok=False, grund=f"Direktive ID {target_id} nicht gefunden oder bereits inaktiv")
+                return ValidationResult(
+                    ok=False, grund=f"Direktive ID {target_id} nicht gefunden oder bereits inaktiv"
+                )
 
     # --- reactivate: Inaktiver Eintrag existiert? ---
     if action == "reactivate":
@@ -136,18 +143,24 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
             if not eintrag:
                 return ValidationResult(ok=False, grund=f"Direktive ID {target_id} nicht gefunden")
             if eintrag.get("aktiv"):
-                return ValidationResult(ok=False, grund=f"Direktive ID {target_id} ist bereits aktiv")
+                return ValidationResult(
+                    ok=False, grund=f"Direktive ID {target_id} ist bereits aktiv"
+                )
         else:
             treffer = _suche_inaktive_by_keyword(user_id, anweisung)
             if not treffer:
-                return ValidationResult(ok=False, grund=f"Keine inaktive Direktive gefunden die zu '{anweisung}' passt")
+                return ValidationResult(
+                    ok=False, grund=f"Keine inaktive Direktive gefunden die zu '{anweisung}' passt"
+                )
             if len(treffer) > 1:
                 zeilen = [f"  [{t['id']}] {t['anweisung']}" for t in treffer]
                 return ValidationResult(
                     ok=False,
                     grund="Mehrere inaktive Direktiven passen",
                     bestaetigung_noetig=True,
-                    bestaetigung_text="Mehrere geloeschte Direktiven passen:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
+                    bestaetigung_text="Mehrere geloeschte Direktiven passen:\n"
+                    + "\n".join(zeilen)
+                    + "\nWelche soll ich wiederherstellen?",
                 )
 
     # --- Pflicht-Rueckfrage fuer alle Schreiboperationen ---
@@ -247,13 +260,24 @@ def _create(state: AgentState) -> dict:
 
     verifiziert = _verifizieren("create", direktive_id, {"aktiv": True})
 
-    logger.info(f"DirektivenAgent: Direktive erstellt (ID {direktive_id}), verifiziert={verifiziert}: '{anweisung[:80]}'")
+    logger.info(
+        f"DirektivenAgent: Direktive erstellt (ID {direktive_id}), verifiziert={verifiziert}: "
+        f"'{anweisung[:80]}'"
+    )
 
     kontext_info = f" (Kontext: {kontext})" if kontext else ""
     return {
         "ergebnis": f"Direktive gespeichert: {anweisung}{kontext_info}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "erstellt", "id": direktive_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "erstellt",
+                "id": direktive_id,
+                "verifiziert": verifiziert,
+            }
+        ],
     }
 
 
@@ -281,7 +305,8 @@ def _read(state: AgentState) -> dict:
     return {
         "ergebnis": text,
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "gelesen", "anzahl": len(aktive)}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": "gelesen", "anzahl": len(aktive)}],
     }
 
 
@@ -323,7 +348,10 @@ def _update(state: AgentState) -> dict:
     verifiziert_neu = _verifizieren("create", neue_id, {"aktiv": True})
     verifiziert = verifiziert_alt and verifiziert_neu
 
-    logger.info(f"DirektivenAgent: Direktive {target_id} -> {neue_id} aktualisiert, verifiziert={verifiziert}")
+    logger.info(
+        f"DirektivenAgent: Direktive {target_id} -> {neue_id} aktualisiert, "
+        f"verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Direktive aktualisiert: {neue_anweisung}",
@@ -354,14 +382,18 @@ def _delete(state: AgentState) -> dict:
                 zeilen = [f"  [{t['id']}] {t['anweisung']}" for t in treffer]
                 return {
                     "status": "rueckfrage",
-                    "rueckfrage": "Mehrere Direktiven passen:\n" + "\n".join(zeilen) + "\n\nWelche soll ich entfernen?",
-                    "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
+                    "rueckfrage": "Mehrere Direktiven passen:\n"
+                    + "\n".join(zeilen)
+                    + "\n\nWelche soll ich entfernen?",
+                    "schritte": state["schritte"]
+                    + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
                 }
             else:
                 return {
                     "status": "fehler",
                     "fehler": f"Keine Direktive gefunden die zu '{keyword}' passt",
-                    "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "nicht_gefunden"}],
+                    "schritte": state["schritte"]
+                    + [{"node": "ausfuehren", "ergebnis": "nicht_gefunden"}],
                 }
         else:
             return {
@@ -409,14 +441,18 @@ def _reactivate(state: AgentState) -> dict:
                 zeilen = [f"  [{t['id']}] {t['anweisung']}" for t in treffer]
                 return {
                     "status": "rueckfrage",
-                    "rueckfrage": "Mehrere geloeschte Direktiven passen:\n" + "\n".join(zeilen) + "\n\nWelche soll ich wiederherstellen?",
-                    "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
+                    "rueckfrage": "Mehrere geloeschte Direktiven passen:\n"
+                    + "\n".join(zeilen)
+                    + "\n\nWelche soll ich wiederherstellen?",
+                    "schritte": state["schritte"]
+                    + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
                 }
             else:
                 return {
                     "status": "fehler",
                     "fehler": f"Keine inaktive Direktive gefunden die zu '{keyword}' passt",
-                    "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "nicht_gefunden"}],
+                    "schritte": state["schritte"]
+                    + [{"node": "ausfuehren", "ergebnis": "nicht_gefunden"}],
                 }
         else:
             return {

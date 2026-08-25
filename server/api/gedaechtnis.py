@@ -379,7 +379,15 @@ def fakten_abrufen(user_id: str):
             """, (eid, user_id))
 
             relationen: list = []
-            for attribut, objekt_wert, objekt_id, fakt_text, t_valid, t_invalid, last_touched in cursor.fetchall():
+            for (
+                attribut,
+                objekt_wert,
+                objekt_id,
+                fakt_text,
+                t_valid,
+                t_invalid,
+                last_touched,
+            ) in cursor.fetchall():
                 relationen.append({
                     "attribut":     attribut,
                     "objekt_wert":  objekt_wert or "",
@@ -478,9 +486,13 @@ def emotionen_abrufen(
                         continue
 
                 emotion_raw = daten.get(b"emotion", b"neutral")
-                emotion: str = emotion_raw.decode() if isinstance(emotion_raw, bytes) else emotion_raw
+                emotion: str = (
+                    emotion_raw.decode() if isinstance(emotion_raw, bytes) else emotion_raw
+                )
                 arousal_raw = daten.get(b"arousal", b"0")
-                arousal: float = float(arousal_raw.decode() if isinstance(arousal_raw, bytes) else arousal_raw)
+                arousal: float = float(
+                    arousal_raw.decode() if isinstance(arousal_raw, bytes) else arousal_raw
+                )
                 kzg_eintraege.append({"emotion": emotion, "arousal": arousal})
         except Exception as e:
             logger.warning(f"KZG-Emotionen lesen fehlgeschlagen: {e}")

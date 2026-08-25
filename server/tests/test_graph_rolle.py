@@ -96,8 +96,11 @@ class SalienzBewertungsobjektTest(unittest.TestCase):
         antwort.text = "{}"
         with patch("graph.nodes.salience._prompt_segmentieren", side_effect=lambda t: [t]):
             with patch.object(
-                __import__("services.model_services", fromlist=["model_service"]).model_service.chat,
-                "submit_sync", return_value=antwort,
+                __import__(
+                    "services.model_services", fromlist=["model_service"]
+                ).model_service.chat,
+                "submit_sync",
+                return_value=antwort,
             ) as ruf:
                 analyze(_state("agent", response=""), MagicMock(), "meister")
         nachricht: str = ruf.call_args.args[0].messages[0]["content"]

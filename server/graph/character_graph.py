@@ -251,7 +251,9 @@ class CharacterGraph(GraphBase):
         if runde >= grenze:
 
             if verdict == "warnung":
-                logger.warning("Graph: Max Korrekturen, verdict=warnung — Ausgabe mit Einschränkung")
+                logger.warning(
+                    "Graph: Max Korrekturen, verdict=warnung — Ausgabe mit Einschränkung"
+                )
                 return "output"
 
             logger.warning("Graph: Max Korrekturen, verdict=ablehnen — Fallback")

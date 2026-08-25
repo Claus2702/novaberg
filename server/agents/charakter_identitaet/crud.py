@@ -71,7 +71,9 @@ def _read_inaktive(user_id: str) -> list[dict]:
 def _read_by_id(anweisung_id: int) -> dict | None:
     """Liest eine einzelne Charakter-Anweisung per ID."""
     return db_manager.select_one(
-        "SELECT id, anweisung, aktiv, erstellt_am, geaendert_am FROM charakter_anweisungen WHERE id = %s",
+        "SELECT id, anweisung, aktiv, erstellt_am, geaendert_am FROM charakter_anweisungen WHERE "
+        "id = "
+        "%s",
         (anweisung_id,),
     )
 
@@ -92,34 +94,57 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
         if target_id:
             eintrag = _read_by_id(target_id)
             if not eintrag:
-                return ValidationResult(ok=False, grund=f"Charakter-Anweisung ID {target_id} nicht gefunden")
+                return ValidationResult(
+                    ok=False, grund=f"Charakter-Anweisung ID {target_id} nicht gefunden"
+                )
             if eintrag.get("aktiv"):
-                return ValidationResult(ok=False, grund=f"Charakter-Anweisung ID {target_id} ist bereits aktiv")
+                return ValidationResult(
+                    ok=False, grund=f"Charakter-Anweisung ID {target_id} ist bereits aktiv"
+                )
         else:
             inaktive = _read_inaktive(user_id)
-            treffer = [a for a in inaktive if anweisung.lower() in a["anweisung"].lower() or a["anweisung"].lower() in anweisung.lower()] if anweisung else inaktive
+            treffer = (
+                [
+                    a
+                    for a in inaktive
+                    if anweisung.lower() in a["anweisung"].lower()
+                    or a["anweisung"].lower() in anweisung.lower()
+                ]
+                if anweisung
+                else inaktive
+            )
             if not treffer:
-                return ValidationResult(ok=False, grund="Keine inaktive Charakter-Anweisung gefunden")
+                return ValidationResult(
+                    ok=False, grund="Keine inaktive Charakter-Anweisung gefunden"
+                )
             if len(treffer) > 1:
                 zeilen = [f"  [{a['id']}] {a['anweisung']}" for a in treffer]
                 return ValidationResult(
                     ok=False,
                     grund="Mehrere inaktive Anweisungen passen",
                     bestaetigung_noetig=True,
-                    bestaetigung_text="Mehrere fruehere Charakter-Anweisungen gefunden:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
+                    bestaetigung_text="Mehrere fruehere Charakter-Anweisungen gefunden:\n"
+                    + "\n".join(zeilen)
+                    + "\nWelche soll ich wiederherstellen?",
                 )
 
     # --- delete: Target existiert? ---
     if action == "delete" and target_id:
         eintrag = _read_by_id(target_id)
         if not eintrag or not eintrag.get("aktiv"):
-            return ValidationResult(ok=False, grund=f"Charakter-Anweisung ID {target_id} nicht gefunden oder bereits inaktiv")
+            return ValidationResult(
+                ok=False,
+                grund=f"Charakter-Anweisung ID {target_id} nicht gefunden oder bereits inaktiv",
+            )
 
     # --- create: Pruefen ob inaktive Version existiert → Auto-Korrektur ---
     if action == "create" and anweisung:
         inaktive = _read_inaktive(user_id)
         for a in inaktive:
-            if anweisung.lower().strip() in a["anweisung"].lower() or a["anweisung"].lower() in anweisung.lower().strip():
+            if (
+                anweisung.lower().strip() in a["anweisung"].lower()
+                or a["anweisung"].lower() in anweisung.lower().strip()
+            ):
                 return ValidationResult(
                     ok=True,
                     korrektur="reactivate",
@@ -132,7 +157,8 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
     if action in ("create", "delete", "update", "reactivate", "replace", "konsolidieren"):
         beschreibung = {
             "create": f"Neue Charakter-Anweisung anlegen: '{anweisung}'",
-            "delete": "Charakter-Anweisung loeschen" + (f" (ID {target_id})" if target_id else " (alle)"),
+            "delete": "Charakter-Anweisung loeschen"
+            + (f" (ID {target_id})" if target_id else " (alle)"),
             "update": f"Charakter-Anweisung aendern (ID {target_id}): '{anweisung}'",
             "reactivate": "Charakter-Anweisung wiederherstellen",
             "replace": f"Charakter komplett ersetzen durch: '{anweisung}'",
@@ -231,12 +257,23 @@ def _create(state: AgentState) -> dict:
     anweisung_id = result["id"] if result else None
 
     verifiziert = _verifizieren("create", anweisung_id, {"aktiv": True})
-    logger.info(f"CharakterAgent: Anweisung erstellt (ID {anweisung_id}), verifiziert={verifiziert}: '{anweisung[:80]}'")
+    logger.info(
+        f"CharakterAgent: Anweisung erstellt (ID {anweisung_id}), verifiziert={verifiziert}: "
+        f"'{anweisung[:80]}'"
+    )
 
     return {
         "ergebnis": f"Charakter-Anweisung gespeichert: {anweisung}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "erstellt", "id": anweisung_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "erstellt",
+                "id": anweisung_id,
+                "verifiziert": verifiziert,
+            }
+        ],
     }
 
 
@@ -258,7 +295,8 @@ def _read(state: AgentState) -> dict:
     return {
         "ergebnis": text,
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "gelesen", "anzahl": len(aktive)}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": "gelesen", "anzahl": len(aktive)}],
     }
 
 
@@ -299,7 +337,10 @@ def _update(state: AgentState) -> dict:
     verifiziert_neu = _verifizieren("create", neue_id, {"aktiv": True})
     verifiziert = verifiziert_alt and verifiziert_neu
 
-    logger.info(f"CharakterAgent: Anweisung {target_id} -> {neue_id} aktualisiert, verifiziert={verifiziert}")
+    logger.info(
+        f"CharakterAgent: Anweisung {target_id} -> {neue_id} aktualisiert, "
+        f"verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Charakter-Anweisung aktualisiert: {neue_anweisung}",
@@ -358,12 +399,23 @@ def _delete_alle(state: AgentState) -> dict:
     nachher_count = _count_aktive(user_id)
     verifiziert = nachher_count == 0
 
-    logger.info(f"CharakterAgent: Alle Anweisungen deaktiviert ({affected} Zeilen), verifiziert={verifiziert}")
+    logger.info(
+        f"CharakterAgent: Alle Anweisungen deaktiviert ({affected} Zeilen), "
+        f"verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": "Alle Charakter-Anweisungen entfernt. Standardverhalten wiederhergestellt.",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "alle_geloescht", "anzahl": affected, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "alle_geloescht",
+                "anzahl": affected,
+                "verifiziert": verifiziert,
+            }
+        ],
     }
 
 
@@ -375,21 +427,34 @@ def _reactivate(state: AgentState) -> dict:
 
     if not target_id:
         inaktive = _read_inaktive(user_id)
-        treffer = [a for a in inaktive if anweisung.lower() in a["anweisung"].lower() or a["anweisung"].lower() in anweisung.lower()] if anweisung else inaktive
+        treffer = (
+            [
+                a
+                for a in inaktive
+                if anweisung.lower() in a["anweisung"].lower()
+                or a["anweisung"].lower() in anweisung.lower()
+            ]
+            if anweisung
+            else inaktive
+        )
         if len(treffer) == 1:
             target_id = treffer[0]["id"]
         elif len(treffer) > 1:
             zeilen = [f"  [{a['id']}] {a['anweisung']}" for a in treffer]
             return {
                 "status": "rueckfrage",
-                "rueckfrage": "Mehrere fruehere Anweisungen passen:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
-                "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
+                "rueckfrage": "Mehrere fruehere Anweisungen passen:\n"
+                + "\n".join(zeilen)
+                + "\nWelche soll ich wiederherstellen?",
+                "schritte": state["schritte"]
+                + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
             }
         else:
             return {
                 "status": "fehler",
                 "fehler": "Keine inaktive Charakter-Anweisung gefunden",
-                "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "nicht_gefunden"}],
+                "schritte": state["schritte"]
+                + [{"node": "ausfuehren", "ergebnis": "nicht_gefunden"}],
             }
 
     vorher = _read_by_id(target_id)
@@ -443,12 +508,24 @@ def _replace(state: AgentState) -> dict:
 
     verifiziert = _verifizieren("create", neue_id, {"aktiv": True})
 
-    logger.info(f"CharakterAgent: Replace — {affected} deaktiviert, neue ID {neue_id}, verifiziert={verifiziert}")
+    logger.info(
+        f"CharakterAgent: Replace — {affected} deaktiviert, neue ID {neue_id}, "
+        f"verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Charakter komplett ersetzt durch: {neue_anweisung}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "ersetzt", "deaktiviert": affected, "neue_id": neue_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "ersetzt",
+                "deaktiviert": affected,
+                "neue_id": neue_id,
+                "verifiziert": verifiziert,
+            }
+        ],
     }
 
 
@@ -466,7 +543,9 @@ def _konsolidieren(state: AgentState) -> dict:
         "rueckfrage": (
             f"Du hast bereits {len(aktive)} aktive Charakter-Anweisungen:\n{liste}\n\n"
             f"Neue Anweisung: {neue_anweisung}\n\n"
-            "Soll ich eine bestehende ersetzen, alle zusammenfassen, oder die neue trotzdem hinzufuegen?"
+            "Soll ich eine bestehende ersetzen, alle zusammenfassen, oder die neue trotzdem "
+            "hinzufuegen?"
         ),
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "konsolidierung_rueckfrage"}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": "konsolidierung_rueckfrage"}],
     }

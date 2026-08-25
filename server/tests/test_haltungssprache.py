@@ -342,7 +342,12 @@ class RegieTest(unittest.TestCase):
         werte = dict(haltung.werte)
         del werte["fragen"]
         with self.assertRaises(ValueError):
-            regie_zeilen(Haltung(cluster="werkstatt", werte=werte), arousal=0.3, reiz_zeichen=400, intentionen=())
+            regie_zeilen(
+                Haltung(cluster="werkstatt", werte=werte),
+                arousal=0.3,
+                reiz_zeichen=400,
+                intentionen=(),
+            )
 
     def test_ungueltiges_arousal_ist_fehler(self) -> None:
         with self.assertRaises(ValueError):

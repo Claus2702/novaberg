@@ -59,7 +59,8 @@ def correct(state: ConversationState) -> ConversationState:
         f"DEINE BISHERIGE ANTWORT:\n{state['response']}\n\n"
         f"TRIBUNAL-FEEDBACK:\n{state['tribunal_summary']}\n\n"
         f"Überarbeite die Antwort basierend auf dem Tribunal-Feedback.\n"
-        f"Das Lagebild erklärt den Hintergrund — die Korrektur bezieht sich nur auf das Bewertungsobjekt."
+        "Das Lagebild erklärt den Hintergrund — die Korrektur bezieht sich nur auf das "
+        "Bewertungsobjekt."
     )
 
     node_cfg = get_node_config("corrector")

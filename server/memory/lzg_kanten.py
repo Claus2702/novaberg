@@ -178,7 +178,9 @@ def schichten_ermitteln(neuer: dict, kandidat: dict) -> tuple[dict, dict]:
     }
 
     # Entitaets-Schicht: mindestens eine geteilte Entitaet
-    geteilte_ent = sorted(set(neuer.get("entitaet_ids") or []) & set(kandidat.get("entitaet_ids") or []))
+    geteilte_ent = sorted(
+        set(neuer.get("entitaet_ids") or []) & set(kandidat.get("entitaet_ids") or [])
+    )
     if geteilte_ent:
         schicht_tiefen[SCHICHT_ENTITAET] = 1.0  # binaer (Konzept §7.4)
         freeze["verbindungs_gruende"].append(SCHICHT_ENTITAET)
@@ -386,7 +388,9 @@ def kanten_neuberechnen_fuer_knoten(postgres_url: str, knoten_id: int) -> int:
                 schicht_tiefen = _schicht_tiefen_aus_frozen(kante)
                 if not schicht_tiefen:
                     # Sollte nicht vorkommen — Kante ohne Grund. Defensiv ueberspringen.
-                    logger.error("Kante %s ohne rekonstruierbare Schicht — uebersprungen", kante["id"])
+                    logger.error(
+                        "Kante %s ohne rekonstruierbare Schicht — uebersprungen", kante["id"]
+                    )
                     continue
                 # Richtung der gespeicherten Kante: knoten_a_id -> knoten_b_id.
                 roh_ab, _ = kanten_staerke_berechnen(
@@ -398,7 +402,9 @@ def kanten_neuberechnen_fuer_knoten(postgres_url: str, knoten_id: int) -> int:
                 )
                 aktualisiert += 1
         conn.commit()
-        logger.info("Trigger 2 abgeschlossen: Knoten %s, %d Kanten neu berechnet", knoten_id, aktualisiert)
+        logger.info(
+            "Trigger 2 abgeschlossen: Knoten %s, %d Kanten neu berechnet", knoten_id, aktualisiert
+        )
         return aktualisiert
     except psycopg2.Error as exc:
         conn.rollback()
@@ -478,7 +484,8 @@ def embedding_cosine_alle_aktualisieren(postgres_url: str) -> int:
 
     # ── Ausgabe-Verifikation ────────────────────
     logger.info(
-        "Kanten-Cosine-Refresh: %d Kanten aufgefrischt, %d Gewichts-Neuberechnungen ueber %d Knoten",
+        "Kanten-Cosine-Refresh: %d Kanten aufgefrischt, %d Gewichts-Neuberechnungen ueber %d "
+        "Knoten",
         aufgefrischt, gewichte_gesamt, len(knoten_ids),
     )
     if aufgefrischt == 0 and knoten_ids:
@@ -580,7 +587,12 @@ def kanten_alle_neu_aufbauen(postgres_url: str) -> dict:
         if kandidaten:
             ergebnis["paare"] += kanten_fuer_neuen_knoten_bilden(postgres_url, k, kandidaten)
         if i % 25 == 0:
-            logger.info("Kanten-Rebuild: %d/%d Knoten verarbeitet, %d Paare", i, len(knoten), ergebnis["paare"])
+            logger.info(
+                "Kanten-Rebuild: %d/%d Knoten verarbeitet, %d Paare",
+                i,
+                len(knoten),
+                ergebnis["paare"],
+            )
 
     # ── Ausgabe-Verifikation ────────────────────
     logger.info(
@@ -590,7 +602,8 @@ def kanten_alle_neu_aufbauen(postgres_url: str) -> dict:
     if ergebnis["paare"] == 0:
         logger.error(
             "Kanten-Rebuild: 0 Paare bei %d Knoten — greift keine Schicht? "
-            "Gewichte/Embeddings pruefen (Reihenfolge Re-Embedding -> Reset -> Rebuild eingehalten?)",
+            "Gewichte/Embeddings pruefen (Reihenfolge Re-Embedding -> Reset -> Rebuild "
+            "eingehalten?)",
             ergebnis["knoten"],
         )
     return ergebnis

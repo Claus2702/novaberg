@@ -476,7 +476,11 @@ def _genitiv_bilden(name: str) -> str:
         logger.warning("_genitiv_bilden: leerer Name, gebe unveraendert zurueck")
         return name
     # ── Verarbeitung ──
-    endet_auf_s_laut: bool = name[-1].lower() in ("s", "ß", "x", "z") or name[-2:].lower() == "ss" or name[-2:].lower() == "tz"
+    endet_auf_s_laut: bool = (
+        name[-1].lower() in ("s", "ß", "x", "z")
+        or name[-2:].lower() == "ss"
+        or name[-2:].lower() == "tz"
+    )
     genitiv: str = f"{name}'" if endet_auf_s_laut else f"{name}s"
     # ── Ausgabe ──
     logger.debug("_genitiv_bilden: %s -> %s", name, genitiv)
@@ -711,7 +715,9 @@ def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT
     )
 
 
-def intentions_profil_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
+def intentions_profil_destillieren(
+    lzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID
+) -> str:
     """Destilliert das Kommunikations-Profil aus LZG-Eintraegen."""
     if not lzg_eintraege:
         return ""

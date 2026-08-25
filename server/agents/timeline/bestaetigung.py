@@ -20,7 +20,9 @@ def bestaetigen(state: AgentState) -> dict:
     # Nicht ueberschreiben wenn crud bereits rueckfrage/fehler gesetzt hat
     if aktueller_status in ("rueckfrage", "fehler"):
         logger.debug(f"bestaetigen: Status bleibt '{aktueller_status}'")
-        return {"schritte": state["schritte"] + [{"node": "bestaetigen", "ergebnis": aktueller_status}]}
+        return {
+            "schritte": state["schritte"] + [{"node": "bestaetigen", "ergebnis": aktueller_status}]
+        }
 
     logger.debug("bestaetigen: status → 'abgeschlossen'")
     return {

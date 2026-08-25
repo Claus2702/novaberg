@@ -106,7 +106,8 @@ def reduce_memory(state: dict) -> dict:
 
     logger.info(
         f"Reducer: Abgeschlossen — {eingangsanzahl} → {len(nach_stufe2)} Eintraege "
-        f"({entfernt_stufe1 + entfernt_stufe2} entfernt), Output-Laenge {len(memory_context)} Zeichen"
+        f"({entfernt_stufe1 + entfernt_stufe2} entfernt), Output-Laenge {len(memory_context)} "
+        "Zeichen"
     )
 
     # ── Ausgabe-Verifikation ────────────────────

@@ -126,7 +126,9 @@ class RedaktionTest(unittest.TestCase):
         Ohne diesen Test wäre nicht unterscheidbar, ob die Zusicherungen oben
         prüfen oder nur mitlaufen.
         """
-        self.datei.write_text(VORLAGE.replace("Gustav Adolf fiel bei Luetzen.", ""), encoding="utf-8")
+        self.datei.write_text(
+            VORLAGE.replace("Gustav Adolf fiel bei Luetzen.", ""), encoding="utf-8"
+        )
         self.assertNotIn("Gustav Adolf", self._text())
 
     # ── Zusicherung 2: Mehrdeutigkeit verhindert den Eingriff ───

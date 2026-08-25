@@ -81,4 +81,6 @@ def stack_push(
         json.dumps(eintrag, ensure_ascii=False),
     )
 
-    logger.info(f"Shadow-Stack: '{aufgabe}' für '{user_id}' abgelegt (Embedding: {len(embedding)} dims).")
+    logger.info(
+        f"Shadow-Stack: '{aufgabe}' für '{user_id}' abgelegt (Embedding: {len(embedding)} dims)."
+    )

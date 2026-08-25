@@ -112,7 +112,8 @@ def aufnahmebereitschaft_berechnen(state: ConversationState) -> float:
     logger.info(
         f"GV4-Neugier: {effektiv:.3f} "
         f"(roh={rohwert:.2f}, produkt={produkt:.2f}, "
-        f"emotion='{nova_emotion}' sektor={sektor} dist={distanz if sektor is not None else 'n/a'}, "
+        f"emotion='{nova_emotion}' sektor={sektor} "
+        f"dist={distanz if sektor is not None else 'n/a'}, "
         f"E={faktor_e:.2f}, A={faktor_a:.2f}, V={faktor_v:.2f}, "
         f"M={faktor_m:.2f}, D={faktor_d:.2f}, S={faktor_s:.2f})"
     )

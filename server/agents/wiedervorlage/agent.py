@@ -151,7 +151,9 @@ class WiedervorlageAgent(BaseAgent):
                     "details": row.get("zusammenfassung", "") or row.get("name", ""),
                 })
         except Exception as fehler:
-            logger.warning(f"WiedervorlageAgent: Entitaeten-Wiedervorlage fehlgeschlagen — {fehler}")
+            logger.warning(
+                f"WiedervorlageAgent: Entitaeten-Wiedervorlage fehlgeschlagen — {fehler}"
+            )
 
         # Fakten
         try:
@@ -261,4 +263,6 @@ Nenne den konkreten Inhalt. Formuliere NUR die Erinnerung, kein weiterer Text.""
             )
 
         except Exception as fehler:
-            logger.warning(f"WiedervorlageAgent: Wiedervorlage verschieben fehlgeschlagen — {fehler}")
+            logger.warning(
+                f"WiedervorlageAgent: Wiedervorlage verschieben fehlgeschlagen — {fehler}"
+            )

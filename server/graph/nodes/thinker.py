@@ -101,7 +101,11 @@ def create_tools(
 
         parts: list[str] = []
         for r in rows:
-            zeit = r["event_time"].strftime("%H:%M") if precision_has_time(r.get("precision", "day")) else ""
+            zeit = (
+                r["event_time"].strftime("%H:%M")
+                if precision_has_time(r.get("precision", "day"))
+                else ""
+            )
             detail = f" — {r['details']}" if r.get("details") else ""
             parts.append(f"[{r['event_type']}] {zeit} {r['title']}{detail}".strip())
 

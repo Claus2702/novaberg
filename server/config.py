@@ -408,7 +408,9 @@ PIXIE_AGING_MAX_ZUSCHLAG: float = float(os.getenv("PIXIE_AGING_MAX_ZUSCHLAG", "2
 
 # --- Pixie Agent: Promotion ---
 PIXIE_PROMOTION_PRIORITAET:          float = float(os.getenv("PIXIE_PROMOTION_PRIORITAET", "0.9"))
-PIXIE_PROMOTION_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_PROMOTION_INTERVALL_SEKUNDEN", "300"))   # 5 Minuten
+PIXIE_PROMOTION_INTERVALL_SEKUNDEN: int = int(
+    os.getenv("PIXIE_PROMOTION_INTERVALL_SEKUNDEN", "300")
+)  # 5 Minuten
 
 # Wie oft ein gescheiterter Promotionsauftrag aus der Arbeitsliste in die
 # Warteschlange zurueckgelegt wird, bevor er auf den Fehlerstapel wandert.
@@ -429,7 +431,9 @@ MAX_PROMOTION_RUECKSTELLUNGEN:       int   = int(os.getenv("MAX_PROMOTION_RUECKS
 
 # --- Pixie Agent: Decay ---
 PIXIE_DECAY_PRIORITAET:              float = float(os.getenv("PIXIE_DECAY_PRIORITAET", "0.2"))
-PIXIE_DECAY_INTERVALL_SEKUNDEN:      int   = int(os.getenv("PIXIE_DECAY_INTERVALL_SEKUNDEN", "86400"))     # 24 Stunden
+PIXIE_DECAY_INTERVALL_SEKUNDEN: int = int(
+    os.getenv("PIXIE_DECAY_INTERVALL_SEKUNDEN", "86400")
+)  # 24 Stunden
 
 # --- Pixie Agent: Ziel-Decay ---
 # Wieder aktiv seit Chat 113, nachdem die Formel eine reine Funktion aus Anker
@@ -450,7 +454,9 @@ ZIEL_DECAY_AKTIV: bool = os.getenv("ZIEL_DECAY_AKTIV", "true").lower() == "true"
 
 # --- Pixie Agent: Charakter ---
 PIXIE_CHARAKTER_PRIORITAET:          float = float(os.getenv("PIXIE_CHARAKTER_PRIORITAET", "0.3"))
-PIXIE_CHARAKTER_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_CHARAKTER_INTERVALL_SEKUNDEN", "600"))   # 10 Minuten
+PIXIE_CHARAKTER_INTERVALL_SEKUNDEN: int = int(
+    os.getenv("PIXIE_CHARAKTER_INTERVALL_SEKUNDEN", "600")
+)  # 10 Minuten
 PIXIE_CHARAKTER_LZG_LIMIT:          int   = int(os.getenv("PIXIE_CHARAKTER_LZG_LIMIT", "50"))
 PIXIE_CHARAKTER_KZG_LIMIT:          int   = int(os.getenv("PIXIE_CHARAKTER_KZG_LIMIT", "20"))
 
@@ -480,15 +486,19 @@ PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE: int = int(
 )
 
 # --- Pixie Agent: Wiedervorlage ---
-PIXIE_WIEDERVORLAGE_PRIORITAET:          float = float(os.getenv("PIXIE_WIEDERVORLAGE_PRIORITAET", "0.5"))
-PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN", "43200"))  # 12 Stunden
-PIXIE_WIEDERVORLAGE_SNOOZE_TAGE:         int   = int(os.getenv("PIXIE_WIEDERVORLAGE_SNOOZE_TAGE", "7"))
+PIXIE_WIEDERVORLAGE_PRIORITAET: float = float(os.getenv("PIXIE_WIEDERVORLAGE_PRIORITAET", "0.5"))
+PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN: int = int(
+    os.getenv("PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN", "43200")
+)  # 12 Stunden
+PIXIE_WIEDERVORLAGE_SNOOZE_TAGE: int = int(os.getenv("PIXIE_WIEDERVORLAGE_SNOOZE_TAGE", "7"))
 
 # --- Pixie Agent: Recherche ---
-PIXIE_RECHERCHE_SESSION_TURNS:           int   = int(os.getenv("PIXIE_RECHERCHE_SESSION_TURNS", "10"))
-PIXIE_RECHERCHE_MAX_ITERATIONEN:         int   = int(os.getenv("PIXIE_RECHERCHE_MAX_ITERATIONEN", "3"))
+PIXIE_RECHERCHE_SESSION_TURNS: int = int(os.getenv("PIXIE_RECHERCHE_SESSION_TURNS", "10"))
+PIXIE_RECHERCHE_MAX_ITERATIONEN: int = int(os.getenv("PIXIE_RECHERCHE_MAX_ITERATIONEN", "3"))
 PIXIE_RECHERCHE_MAX_QUERIES:             int   = int(os.getenv("PIXIE_RECHERCHE_MAX_QUERIES", "4"))
-PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE:    int   = int(os.getenv("PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE", "3"))
+PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE: int = int(
+    os.getenv("PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE", "3")
+)
 
 # --- Wissensspeicher (Bibliothek) ---
 # Spezifikation: docs/novaberg-autonomous-wissen_k.md §11.1.
@@ -704,9 +714,15 @@ DATEIEN_INDEX_MAX_PRO_LAUF: int = int(os.getenv("DATEIEN_INDEX_MAX_PRO_LAUF", "5
 KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.41951"))  # roh 0.3
 KZG_SALIENZ_MID:              float = float(os.getenv("KZG_SALIENZ_MID", "0.68302"))      # roh 0.5
 KZG_SALIENZ_HIGH:             float = float(os.getenv("KZG_SALIENZ_HIGH", "0.88078"))     # roh 0.7
-KZG_TTL_LOW_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_LOW_SEKUNDEN", "604800"))       # 7 Tage  — Salienz 0.3–0.5
-KZG_TTL_MID_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_MID_SEKUNDEN", "1209600"))      # 14 Tage — Salienz 0.5–0.7
-KZG_TTL_HIGH_SEKUNDEN:        int   = int(os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000"))     # 30 Tage — Salienz >= 0.7
+KZG_TTL_LOW_SEKUNDEN: int = int(
+    os.getenv("KZG_TTL_LOW_SEKUNDEN", "604800")
+)  # 7 Tage  — Salienz 0.3–0.5
+KZG_TTL_MID_SEKUNDEN: int = int(
+    os.getenv("KZG_TTL_MID_SEKUNDEN", "1209600")
+)  # 14 Tage — Salienz 0.5–0.7
+KZG_TTL_HIGH_SEKUNDEN: int = int(
+    os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000")
+)  # 30 Tage — Salienz >= 0.7
 KZG_VERTIEFUNG_HAEUFIGKEIT:   int   = int(os.getenv("KZG_VERTIEFUNG_HAEUFIGKEIT", "3"))
 
 # Die Abrufschwelle des Kurzzeitgedaechtnisses (`kzg_entries_retrieve`).
@@ -868,7 +884,9 @@ CLUSTER_MIN_EINTRAEGE:              int   = int(os.getenv("CLUSTER_MIN_EINTRAEGE
 # Alt-Cluster-Pfad (deaktiviert seit Chat 98), trotzdem mitgezogen.
 CLUSTER_THEMEN_SIMILARITY:          float = float(os.getenv("CLUSTER_THEMEN_SIMILARITY", "0.82"))
 CLUSTER_LZG_SIMILARITY:             float = float(os.getenv("CLUSTER_LZG_SIMILARITY", "0.75"))
-CLUSTER_WIDERSPRUCH_DECAY_FAKTOR:   float = float(os.getenv("CLUSTER_WIDERSPRUCH_DECAY_FAKTOR", "3.0"))
+CLUSTER_WIDERSPRUCH_DECAY_FAKTOR: float = float(
+    os.getenv("CLUSTER_WIDERSPRUCH_DECAY_FAKTOR", "3.0")
+)
 CLUSTER_BESTAETIGUNG_BOOST:         float = float(os.getenv("CLUSTER_BESTAETIGUNG_BOOST", "0.1"))
 
 # ─── Vertiefung ────────────────────────────────
@@ -882,10 +900,12 @@ PIXIE_VERTIEFUNG_KZG_LIMIT:  int = int(os.getenv("PIXIE_VERTIEFUNG_KZG_LIMIT", "
 DELEGATION_SIMILARITY_SCHWELLE: float = float(os.getenv("DELEGATION_SIMILARITY_SCHWELLE", "0.75"))
 
 # ─── Notizen-Suche ─────────────────────────────
-NOTIZEN_SUCHE_MIN_SIMILARITY:        float = float(os.getenv("NOTIZEN_SUCHE_MIN_SIMILARITY", "0.15"))
+NOTIZEN_SUCHE_MIN_SIMILARITY: float = float(os.getenv("NOTIZEN_SUCHE_MIN_SIMILARITY", "0.15"))
 NOTIZEN_SUCHE_MIN_SCORE:             float = float(os.getenv("NOTIZEN_SUCHE_MIN_SCORE", "0.3"))
 NOTIZEN_SUCHE_LIMIT:                 int   = int(os.getenv("NOTIZEN_SUCHE_LIMIT", "10"))
-NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER: int   = int(os.getenv("NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER", "20"))
+NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER: int = int(
+    os.getenv("NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER", "20")
+)
 
 # ─── Timeline-Suche ────────────────────────────
 TIMELINE_SUCHE_LIMIT:              int = int(os.getenv("TIMELINE_SUCHE_LIMIT", "10"))
@@ -1844,7 +1864,7 @@ GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
 GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.40
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
 GV_SESSION_AKT_CAP:              int   = 25     # Session-Decay: nach 25 Turns = 0
-GV_AUFNAHMEBEREITSCHAFT_CAP:                  float = 2.5    # sin^0.5 Normalisierung: Rohwert-Obergrenze
+GV_AUFNAHMEBEREITSCHAFT_CAP: float = 2.5  # sin^0.5 Normalisierung: Rohwert-Obergrenze
 GV_STRATEGIE_MIN_LAENGE:         int   = 2      # GV3-Strategie nur ab Vektorlaenge >= 2
 GV_LUECKEN_SIM_OBERGRENZE:       float = 0.92   # Zu aehnlich = bereits besprochen
 
@@ -2298,7 +2318,9 @@ def get_node_config(node_name: str) -> dict:
 
     Unbekannte Nodes bekommen sichere Defaults.
     """
-    config: dict = NODE_LLM_CONFIG.get(node_name, {"temperature": 0.3, "max_output_tokens": 1024}).copy()
+    config: dict = NODE_LLM_CONFIG.get(
+        node_name, {"temperature": 0.3, "max_output_tokens": 1024}
+    ).copy()
     return config
 
 
@@ -2505,13 +2527,17 @@ LZG_EMBEDDING_SCHWELLWERT: float = float(os.getenv("LZG_EMBEDDING_SCHWELLWERT", 
 # Faktor zwischen 1.0 (Distanz 0) und 0.0 (Distanz = Toleranz). Ausserhalb
 # der Toleranz greift die Timeline-Schicht nicht. Praezisions-Gleichheit
 # zwischen beiden Knoten ist harte Voraussetzung — siehe Konzept §7.6.
-LZG_TIMELINE_TOLERANZ_MINUTE:   int = int(os.getenv("LZG_TIMELINE_TOLERANZ_MINUTE",   "7"))    # Tage (Sub-Tages-Praezisionen rechnen in Tagen)
-LZG_TIMELINE_TOLERANZ_STUNDE:   int = int(os.getenv("LZG_TIMELINE_TOLERANZ_STUNDE",   "7"))    # Tage
-LZG_TIMELINE_TOLERANZ_TAG:      int = int(os.getenv("LZG_TIMELINE_TOLERANZ_TAG",      "21"))   # Tage
-LZG_TIMELINE_TOLERANZ_WOCHE:    int = int(os.getenv("LZG_TIMELINE_TOLERANZ_WOCHE",    "8"))    # Wochen
-LZG_TIMELINE_TOLERANZ_MONAT:    int = int(os.getenv("LZG_TIMELINE_TOLERANZ_MONAT",    "6"))    # Monate
-LZG_TIMELINE_TOLERANZ_QUARTAL:  int = int(os.getenv("LZG_TIMELINE_TOLERANZ_QUARTAL",  "4"))    # Quartale
-LZG_TIMELINE_TOLERANZ_JAHR:     int = int(os.getenv("LZG_TIMELINE_TOLERANZ_JAHR",     "2"))    # Jahre
+LZG_TIMELINE_TOLERANZ_MINUTE: int = int(
+    os.getenv("LZG_TIMELINE_TOLERANZ_MINUTE", "7")
+)  # Tage (Sub-Tages-Praezisionen rechnen in Tagen)
+LZG_TIMELINE_TOLERANZ_STUNDE: int = int(os.getenv("LZG_TIMELINE_TOLERANZ_STUNDE", "7"))  # Tage
+LZG_TIMELINE_TOLERANZ_TAG: int = int(os.getenv("LZG_TIMELINE_TOLERANZ_TAG", "21"))  # Tage
+LZG_TIMELINE_TOLERANZ_WOCHE: int = int(os.getenv("LZG_TIMELINE_TOLERANZ_WOCHE", "8"))  # Wochen
+LZG_TIMELINE_TOLERANZ_MONAT: int = int(os.getenv("LZG_TIMELINE_TOLERANZ_MONAT", "6"))  # Monate
+LZG_TIMELINE_TOLERANZ_QUARTAL: int = int(
+    os.getenv("LZG_TIMELINE_TOLERANZ_QUARTAL", "4")
+)  # Quartale
+LZG_TIMELINE_TOLERANZ_JAHR: int = int(os.getenv("LZG_TIMELINE_TOLERANZ_JAHR", "2"))  # Jahre
 
 
 # ─────────────────────────────────────────────

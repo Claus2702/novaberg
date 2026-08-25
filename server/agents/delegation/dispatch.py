@@ -90,7 +90,9 @@ def dispatch_delegation(state: dict) -> None:
 
     # Anreicherung erkennen
     ergebnis_dict: dict = result_state.get("ergebnis") or {}
-    anreicherung: bool = ergebnis_dict.get("aktion") == "angereichert" if isinstance(ergebnis_dict, dict) else False
+    anreicherung: bool = (
+        ergebnis_dict.get("aktion") == "angereichert" if isinstance(ergebnis_dict, dict) else False
+    )
 
     # Beruhigungs-Signal: nur bei neuer Akte, nicht bei Anreicherung
     signal: str = ""

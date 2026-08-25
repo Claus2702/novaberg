@@ -329,7 +329,8 @@ class EntityResolutionService:
             embed_response = model_service.embed.submit_sync(request)
             embedding: list[float] = embed_response.embedding
             logger.debug(
-                "Entity-Resolution: Similarity-Suche Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                "Entity-Resolution: Similarity-Suche Embedding via EmbedWorker (Dim: %d, Dauer: "
+                "%.3fs)",
                 len(embedding),
                 embed_response.duration_seconds,
             )

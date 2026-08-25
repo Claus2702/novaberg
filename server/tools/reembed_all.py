@@ -164,7 +164,9 @@ def casing_pruefung() -> None:
             EMBED_MODEL,
         )
         raise SystemExit(1)
-    logger.info("Casing-Pruefung bestanden: embed('Hund') != embed('Katze') (Modell=%s)", EMBED_MODEL)
+    logger.info(
+        "Casing-Pruefung bestanden: embed('Hund') != embed('Katze') (Modell=%s)", EMBED_MODEL
+    )
 
 
 # ─────────────────────────────────────────────
@@ -205,7 +207,9 @@ def _pg_ziel_verarbeiten(
         text = text_bauen(row)
         if text is None:
             stats["uebersprungen"] += 1
-            logger.error("[%s] id=%s: Quelltext leer — uebersprungen (Vektor bleibt alt!)", ziel, row["id"])
+            logger.error(
+                "[%s] id=%s: Quelltext leer — uebersprungen (Vektor bleibt alt!)", ziel, row["id"]
+            )
             continue
 
         if not commit:
@@ -347,7 +351,11 @@ def ziel_kzg(commit: bool) -> dict:
 
         if not inhalt.strip():
             stats["uebersprungen"] += 1
-            logger.error("[kzg] %s: inhalt leer — uebersprungen (Alt-Vektor ohne Quelltext, verfaellt per TTL)", key)
+            logger.error(
+                "[kzg] %s: inhalt leer — uebersprungen (Alt-Vektor ohne Quelltext, verfaellt per "
+                "TTL)",
+                key,
+            )
             continue
 
         text: str = kzg_embed_text_bauen(themen, inhalt)
@@ -382,7 +390,9 @@ def ziel_shadow(commit: bool) -> dict:
             stats["geschrieben"] += 1
             logger.info("[shadow] %s geloescht (%d Eintraege)", key.decode("utf-8"), eintraege)
         else:
-            logger.info("[shadow] %s wuerde geloescht (%d Eintraege)", key.decode("utf-8"), eintraege)
+            logger.info(
+                "[shadow] %s wuerde geloescht (%d Eintraege)", key.decode("utf-8"), eintraege
+            )
     return stats
 
 
@@ -409,12 +419,14 @@ def ziel_reset(commit: bool) -> dict:
 
     for b in ergebnis["beispiele"]:
         logger.info(
-            "[reset] Knoten %s VORHER: roh=%.3f absolut=%.3f decay=%.3f haeufigkeit=%d verstaerkt_am=%s",
+            "[reset] Knoten %s VORHER: roh=%.3f absolut=%.3f decay=%.3f haeufigkeit=%d "
+            "verstaerkt_am=%s",
             b["id"], b["vorher"]["roh"], b["vorher"]["absolut"], b["vorher"]["decay"],
             b["vorher"]["haeufigkeit"], b["vorher"]["verstaerkt_am"],
         )
         logger.info(
-            "[reset] Knoten %s NACHHER: roh=%.3f absolut=%.3f decay=%.3f haeufigkeit=%d verstaerkt_am=%s",
+            "[reset] Knoten %s NACHHER: roh=%.3f absolut=%.3f decay=%.3f haeufigkeit=%d "
+            "verstaerkt_am=%s",
             b["id"], b["nachher"]["roh"], b["nachher"]["absolut"], b["nachher"]["decay"],
             b["nachher"]["haeufigkeit"], b["nachher"]["verstaerkt_am"],
         )
@@ -431,9 +443,14 @@ def ziel_reset(commit: bool) -> dict:
         geloescht: int = lzg_kanten.kanten_alle_loeschen(POSTGRES_URL)
         if geloescht < 0:
             raise SystemExit(1)
-        logger.info("[reset] %d Kanten geloescht — Neuaufbau via --target kanten_rebuild", geloescht)
+        logger.info(
+            "[reset] %d Kanten geloescht — Neuaufbau via --target kanten_rebuild", geloescht
+        )
     else:
-        logger.info("[reset] %d Kanten wuerden geloescht (Neuaufbau via --target kanten_rebuild)", kanten_anzahl)
+        logger.info(
+            "[reset] %d Kanten wuerden geloescht (Neuaufbau via --target kanten_rebuild)",
+            kanten_anzahl,
+        )
     return stats
 
 
@@ -454,7 +471,9 @@ def ziel_kanten_rebuild(commit: bool, reset_dabei: bool) -> dict:
     conn = psycopg2.connect(POSTGRES_URL)
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM lzg_knoten WHERE aktiv = TRUE AND embedding IS NOT NULL")
+            cur.execute(
+                "SELECT COUNT(*) FROM lzg_knoten WHERE aktiv = TRUE AND embedding IS NOT NULL"
+            )
             stats["gelesen"] = cur.fetchone()[0]
             cur.execute("SELECT COUNT(*) FROM lzg_kanten")
             bestand: int = cur.fetchone()[0]
@@ -487,7 +506,9 @@ def ziel_kanten(commit: bool, lzg_dabei: bool) -> dict:
     conn = psycopg2.connect(POSTGRES_URL)
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM lzg_kanten WHERE embedding_cosine_initial IS NOT NULL")
+            cur.execute(
+                "SELECT COUNT(*) FROM lzg_kanten WHERE embedding_cosine_initial IS NOT NULL"
+            )
             stats["gelesen"] = cur.fetchone()[0]
     finally:
         conn.close()
@@ -557,10 +578,14 @@ def selbstkontrolle() -> bool:
 def main() -> int:
     """Kommandozeilen-Einstieg: Ziele aufloesen, Sicherheitsnetze, Lauf, Bilanz."""
     # ── Eingabe-Validierung ─────────────────────
-    parser = argparse.ArgumentParser(description="Re-Embedding aller Vektor-Speicher (A5, Chat 107)")
+    parser = argparse.ArgumentParser(
+        description="Re-Embedding aller Vektor-Speicher (A5, Chat 107)"
+    )
     parser.add_argument("--target", action="append", choices=ZIEL_REIHENFOLGE + ["all"],
                         help="Ziel, mehrfach angebbar. Default: all")
-    parser.add_argument("--commit", action="store_true", help="Tatsaechlich schreiben (sonst Dry-Run)")
+    parser.add_argument(
+        "--commit", action="store_true", help="Tatsaechlich schreiben (sonst Dry-Run)"
+    )
     args = parser.parse_args()
 
     gewaehlt: list[str] = args.target or ["all"]
@@ -597,8 +622,12 @@ def main() -> int:
 
     # ── Ausgabe: Zusammenfassung ────────────────
     logger.info("=" * 70)
-    logger.info("ZUSAMMENFASSUNG (%s)", "COMMIT" if args.commit else "TROCKENLAUF — nichts geschrieben")
-    logger.info("%-12s %9s %9s %12s %14s", "Ziel", "gelesen", "embedded", "geschrieben", "uebersprungen")
+    logger.info(
+        "ZUSAMMENFASSUNG (%s)", "COMMIT" if args.commit else "TROCKENLAUF — nichts geschrieben"
+    )
+    logger.info(
+        "%-12s %9s %9s %12s %14s", "Ziel", "gelesen", "embedded", "geschrieben", "uebersprungen"
+    )
     for ziel, s in bilanz.items():
         logger.info("%-12s %9d %9d %12d %14d",
                     ziel, s["gelesen"], s["embedded"], s["geschrieben"], s["uebersprungen"])

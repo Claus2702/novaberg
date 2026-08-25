@@ -151,7 +151,11 @@ def kzg_kandidaten_suchen(
                 feld_dict: dict = {}
                 for i in range(0, len(felder), 2):
                     k = felder[i].decode("utf-8") if isinstance(felder[i], bytes) else felder[i]
-                    v = felder[i + 1].decode("utf-8") if isinstance(felder[i + 1], bytes) else felder[i + 1]
+                    v = (
+                        felder[i + 1].decode("utf-8")
+                        if isinstance(felder[i + 1], bytes)
+                        else felder[i + 1]
+                    )
                     feld_dict[k] = v
 
                 inhalt:  str   = feld_dict.get("inhalt", "")

@@ -47,7 +47,9 @@ def suchen(state: AgentState) -> dict:
                 "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "keine_notizen"}],
             }
         for n in notizen:
-            logger.debug(f"suchen: Treffer -- id={n['id']}, name='{n['name']}', typ='{n.get('typ', '?')}'")
+            logger.debug(
+                f"suchen: Treffer -- id={n['id']}, name='{n['name']}', typ='{n.get('typ', '?')}'"
+            )
         # Kompakte Uebersicht fuer den Responder
         zeilen = []
         for n in notizen:
@@ -56,11 +58,14 @@ def suchen(state: AgentState) -> dict:
             if zf:
                 zeile += f": {zf}"
             zeilen.append(zeile)
-        logger.debug(f"suchen: Return -- status='abgeschlossen', {len(notizen)} Notizen aufgelistet")
+        logger.debug(
+            f"suchen: Return -- status='abgeschlossen', {len(notizen)} Notizen aufgelistet"
+        )
         return {
             "ergebnis": "Deine Notizen:\n" + "\n".join(zeilen),
             "status": "abgeschlossen",
-            "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": f"{len(notizen)} Notizen"}],
+            "schritte": state["schritte"]
+            + [{"node": "suchen", "ergebnis": f"{len(notizen)} Notizen"}],
         }
 
     # Gewichtete Multi-Feld-Suche mit pg_trgm
@@ -107,7 +112,9 @@ def suchen(state: AgentState) -> dict:
     treffer = db_manager.select(such_query, such_params)
     # Mindest-Score filtern
     treffer = [t for t in treffer if t.get("score", 0) >= NOTIZEN_SUCHE_MIN_SCORE]
-    logger.debug(f"suchen: Gewichtete Suche -- {len(treffer)} Treffer (score >= {NOTIZEN_SUCHE_MIN_SCORE})")
+    logger.debug(
+        f"suchen: Gewichtete Suche -- {len(treffer)} Treffer (score >= {NOTIZEN_SUCHE_MIN_SCORE})"
+    )
 
     # Fallback: Exakter Name-Match wenn gewichtete Suche nichts findet
     if not treffer:
@@ -122,7 +129,9 @@ def suchen(state: AgentState) -> dict:
         logger.debug(f"suchen: Fallback -- {len(treffer)} Treffer")
 
     for t in treffer:
-        logger.debug(f"suchen: Treffer -- id={t['id']}, name='{t['name']}', score={t.get('score', '?')}")
+        logger.debug(
+            f"suchen: Treffer -- id={t['id']}, name='{t['name']}', score={t.get('score', '?')}"
+        )
 
     if not treffer:
         if action == "read":
@@ -206,7 +215,10 @@ def suchen(state: AgentState) -> dict:
             }
             for n in treffer
         ]
-        logger.debug(f"suchen: Return -- status='rueckfrage', {len(kandidaten)} Kandidaten zur Disambiguierung")
+        logger.debug(
+            f"suchen: Return -- status='rueckfrage', {len(kandidaten)} Kandidaten zur "
+            "Disambiguierung"
+        )
         return {
             "status": "rueckfrage",
             "rueckfrage": json.dumps({
@@ -225,13 +237,17 @@ def suchen(state: AgentState) -> dict:
         return {
             "ergebnis": f"[{notiz['name']} ({notiz['typ']})]\n{notiz['text']}",
             "status": "abgeschlossen",
-            "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": f"gefunden: {notiz['name']}"}],
+            "schritte": state["schritte"]
+            + [{"node": "suchen", "ergebnis": f"gefunden: {notiz['name']}"}],
         }
 
     notiz = treffer[0]
-    logger.debug(f"suchen: Return -- status='laufend', notiz_id={notiz['id']}, name='{notiz['name']}'")
+    logger.debug(
+        f"suchen: Return -- status='laufend', notiz_id={notiz['id']}, name='{notiz['name']}'"
+    )
     return {
         "parameter": {**state["parameter"], "notiz": notiz},
         "status": "laufend",
-        "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": f"gefunden: {notiz['name']}"}],
+        "schritte": state["schritte"]
+        + [{"node": "suchen", "ergebnis": f"gefunden: {notiz['name']}"}],
     }

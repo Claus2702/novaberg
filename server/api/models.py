@@ -10,7 +10,7 @@ class GespraechAnfrage(BaseModel):
 
     prompt:     str   = Field(..., min_length=1, description="Benutzereingabe")
     user_id:    str   = Field(default="default",  description="Benutzer-ID")
-    client_id:  str   = Field(default="",         description="Absender-Client (z.B. desktop, telegram)")
+    client_id: str = Field(default="", description="Absender-Client (z.B. desktop, telegram)")
     system: str = Field(
         default=(
             f"Du bist {ASSISTANT_NAME}. Antworte auf deutsch."

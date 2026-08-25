@@ -16,7 +16,9 @@ from config import NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER
 logger = logging.getLogger("ki_server.agents.notizen.crud")
 
 
-def _zusammenfassung_generieren(text: str, max_woerter: int = NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER) -> str:
+def _zusammenfassung_generieren(
+    text: str, max_woerter: int = NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER
+) -> str:
     """Erste N Woerter als Zusammenfassung."""
     woerter = text.split()
     if len(woerter) <= max_woerter:
@@ -37,7 +39,10 @@ def _verifizieren_notiz(notiz_id: int, erwartung: dict) -> bool:
         return False
 
     if "aktiv" in erwartung and eintrag["aktiv"] != erwartung["aktiv"]:
-        logger.error(f"Verifikation: Notiz ID {notiz_id} aktiv={eintrag['aktiv']}, erwartet={erwartung['aktiv']}")
+        logger.error(
+            f"Verifikation: Notiz ID {notiz_id} aktiv={eintrag['aktiv']}, "
+            f"erwartet={erwartung['aktiv']}"
+        )
         return False
 
     if "text_nicht_leer" in erwartung and not eintrag.get("text"):
@@ -92,7 +97,10 @@ def _create(state: AgentState) -> dict:
     user_id = state["kontext"].get("user_id", "")
     prompt = state["aufgabe"]
     normalisiert = state["parameter"].get("normalisiert", "")
-    logger.debug(f"_create: Einstieg -- user_id='{user_id}', prompt='{prompt[:80]}...', normalisiert='{normalisiert}'")
+    logger.debug(
+        f"_create: Einstieg -- user_id='{user_id}', prompt='{prompt[:80]}...', "
+        f"normalisiert='{normalisiert}'"
+    )
 
     if normalisiert:
         user_content = (
@@ -119,11 +127,15 @@ def _create(state: AgentState) -> dict:
             "- Der Name steht nach dem Apostroph in der Anweisung\n"
             "- Der Inhalt steht nach 'mit Inhalt:' oder ist das genannte Element\n"
             "- Der Typ steht in Klammern am Ende\n\n"
-            "Wenn KEINE normalisierte Anweisung vorhanden ist, extrahiere aus dem Original-Prompt.\n\n"
+            "Wenn KEINE normalisierte Anweisung vorhanden ist, extrahiere aus dem "
+            "Original-Prompt.\n\n"
             "WICHTIG fuer 'text': Der Inhalt ist das WAS gespeichert werden soll, "
             "NICHT die Anweisung des Users. "
-            "'Setz Kuemmel auf die Einkaufsliste' -> text = 'Kuemmel', NICHT 'Setz Kuemmel auf die Einkaufsliste'.\n"
-            "'Notiere dir: Durch diese hohle Gasse wird er kommen' -> text = 'Durch diese hohle Gasse wird er kommen'.\n\n"
+            "'Setz Kuemmel auf die Einkaufsliste' -> text = 'Kuemmel', NICHT 'Setz Kuemmel auf die "
+            "Einkaufsliste'.\n"
+            "'Notiere dir: Durch diese hohle Gasse wird er kommen' -> text = 'Durch diese hohle "
+            "Gasse wird er "
+            "kommen'.\n\n"
             "WICHTIG fuer 'name': Verwende den EXAKTEN Wortlaut des Users oder der Anweisung. "
             "Kuerze nicht, optimiere nicht, interpretiere nicht."
         ),
@@ -182,14 +194,26 @@ def _create(state: AgentState) -> dict:
         themen=themen if themen else None,
     )
 
-    verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True}) if notiz_id else False
+    verifiziert = (
+        _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True})
+        if notiz_id
+        else False
+    )
 
     logger.info(f"NotizenAgent: Notiz '{name}' angelegt (ID {notiz_id}), verifiziert={verifiziert}")
 
     return {
         "ergebnis": f"Notiz '{name}' erstellt:\n{text}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "erstellt", "notiz_id": notiz_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [
+            {
+                "node": "ausfuehren",
+                "ergebnis": "erstellt",
+                "notiz_id": notiz_id,
+                "verifiziert": verifiziert,
+            }
+        ],
     }
 
 
@@ -271,12 +295,15 @@ def _update(state: AgentState) -> dict:
 
     verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True})
 
-    logger.info(f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) {action}, verifiziert={verifiziert}")
+    logger.info(
+        f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) {action}, verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Notiz '{notiz_name}' aktualisiert:\n{neuer_text}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": action, "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": action, "verifiziert": verifiziert}],
     }
 
 
@@ -302,12 +329,15 @@ def _delete(state: AgentState) -> dict:
 
     verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": False})
 
-    logger.info(f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) archiviert, verifiziert={verifiziert}")
+    logger.info(
+        f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) archiviert, verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Notiz '{notiz_name}' geloescht",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "archiviert", "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": "archiviert", "verifiziert": verifiziert}],
     }
 
 
@@ -341,12 +371,15 @@ def _append(state: AgentState) -> dict:
 
     verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True})
 
-    logger.info(f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) ergaenzt, verifiziert={verifiziert}")
+    logger.info(
+        f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) ergaenzt, verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Text an '{notiz_name}' angehaengt:\n{kombiniert}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "angehaengt", "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": "angehaengt", "verifiziert": verifiziert}],
     }
 
 
@@ -378,12 +411,15 @@ def _clear_content(state: AgentState) -> dict:
 
     verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_leer": True})
 
-    logger.info(f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) geleert, verifiziert={verifiziert}")
+    logger.info(
+        f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) geleert, verifiziert={verifiziert}"
+    )
 
     return {
         "ergebnis": f"Notiz '{notiz_name}' geleert.",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "geleert", "verifiziert": verifiziert}],
+        "schritte": state["schritte"]
+        + [{"node": "ausfuehren", "ergebnis": "geleert", "verifiziert": verifiziert}],
     }
 
 
