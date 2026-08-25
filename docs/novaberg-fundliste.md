@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 19:29 UTC
-**Offen:** **108 Funde — gezaehlt am 25.08.2026, 19:29 UTC** (116 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **zwei neu aus der Pruefung der neuen Log-Zeilen** — Vorgabewerte, die wie Messwerte zaehlen, und die unbegruendete Auswahl von 8 aus 24 Nutzlastfeldern)
+**Stand:** 25. August 2026, 20:10 UTC
+**Offen:** **109 Funde — gezaehlt am 25.08.2026, 20:10 UTC** (117 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu aus der Aufloesung der doppelten Kennungen** — das Findemittel des Backlogs kennt einen Eintrag nicht)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Das Findemittel des Backlogs kennt `WISSEN-OHNE-ZETTEL` nicht.** Die Kennung steht als Eintrag in `novaberg-backlog-wissen.md` (geschlossen am 19.08.2026), aber in `novaberg-backlog-index.md` kommt sie nicht vor — obwohl der Index 14 andere abgeschlossene Kennungen fuehrt. **Ein Findemittel, das einen Eintrag nicht kennt, ist von einem Findemittel, das ihn korrekt als nicht vorhanden meldet, nicht zu unterscheiden.** Aufgefallen bei der Aufloesung der doppelten Kennungen; ob weitere Eintraege im Index fehlen, ist ungezaehlt — die Gegenrichtung (Index nennt etwas, das es nicht gibt) ebenfalls.
 
 - **2026-08-25** — **Drei Zustandsfelder tragen Vorgabewerte, die von einer Messung nicht zu unterscheiden sind.** `Emotion.intent` steht auf `"smalltalk"`, `tone` auf `"sachlich"`, `mode` auf `"alltag"` — Vorgabewerte der Klasse, nicht leer und deshalb von jeder Belegungspruefung als **gefuellt** gezaehlt. Aufgefallen bei der Reparatur von `BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`: Die neue Zeile misst am Feldwert und ist damit richtig, **aber sie kann nicht sagen, ob der Wert gemessen oder voreingestellt ist**. Ein Turn, in dem die EI-Berechnung ausfaellt, meldet weiter `8 von 8` und liefert dem Client drei plausible Werte, die niemand berechnet hat. Genau die Klasse aus `22_STILLE_FEHLER` §3 — ein Default, der wie ein Messwert aussieht. Zum Vergleich: `emotions_vector` traegt `""` und faellt deshalb auf, `arousal` traegt `0.5`.
 

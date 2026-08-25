@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **19:29 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **20:10 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 127 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 128 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,37 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 20:10 UTC — vier doppelte Kennungen, und nur eine war ein Versehen
+
+**ZIEL:** Kein Schluessel des Backlogs traegt mehr als eine Stelle, an der er als Eintrag gelesen werden kann.
+**TEST:** `labor/2026-08-25_backlog_kennungen.py` — Rueckgabe 0 Dubletten, mit Positivkontrolle **durch** den Vergleich.
+**MESSUNG:** 285 Kennungen ueber sechs Traegerdateien, **4 → 0** mehrfach getragen.
+
+**Der Handzettel sprach von neun**; gemessen waren es vier. Fuenf hat die Teilung des Registers zwischenzeitlich aufgeloest.
+
+### Die erste Zaehlung ergab 27, und 26 davon waren keine
+
+Sie zaehlte `novaberg-backlog-index.md` und `-rangordnung.md` mit — die beiden **Findemittel**, in denen jede Kennung bestimmungsgemaess ein zweites Mal steht. **Erst wird festgelegt, welche Form einen Eintrag ausmacht, dann wird gezaehlt**; die umgekehrte Reihenfolge liefert eine Zahl, die man einzeln nachbeurteilen muss, und genau dabei entsteht die naechste Fehlentscheidung.
+
+Eine fuenfte Meldung war ein Fehlalarm der Pruefung selbst: `### Verhaeltnis zu KZG-VERDICHTER-KONTEXT-VERLUST` ist ein **Querverweis**. Wer ihn „aufloest", entfernt einen Verweis, der gebraucht wird.
+
+### Nur eine der vier war ein Versehen
+
+| Kennung | Was es war | Abhilfe |
+|---|---|---|
+| `WISSEN-OHNE-ZETTEL` | **Dieselbe Tabellenzeile zeichengleich in drei Dateien** (1598 Zeichen, dreimal identisch) — bei der Teilung des Registers ist die erste Tabellenzeile in jede Kopie mitgewandert | Eintrag bleibt in `wissen`, die anderen beiden tragen `→ verlegt:` |
+| `KZG-SALIENZ-NEUBAU` | Zwei Teile **desselben** Sprints (Chat 109 und 114), beide als `##` | zweiter Teil: `### Fortsetzung von …` |
+| `HALTUNG-SPANNENENDEN-OFFEN` | Fortschreibung oben, urspruenglicher Eintrag darunter — **ausdruecklich so gewollt** (*„Der urspruengliche Eintrag bleibt darunter stehen"*), aber in derselben Ueberschriftenebene | unterer Teil: `##### Vorgeschichte zu …` |
+| `KZG-VERDICHTER-KONTEXT-VERLUST` | Querverweis, kein Eintrag | nichts — die **Pruefung** war falsch |
+
+Nebenbei entfernt: In `HALTUNG-SPANNENENDEN-OFFEN` stand `**Kategorie:** [CHA] CHARAKTER` zweimal untereinander.
+
+**Aufgeloest wurde nicht durch Loeschen, sondern durch ein Formmerkmal je Sorte.** Eine Pruefung kann Zeiger, Fortsetzung und Eintrag am Inhalt nicht trennen — alle drei sprechen ueber denselben Gegenstand, mit denselben Worten. Sie kann es nur an der Form.
+
+**Die Positivkontrolle laeuft durch den Vergleich**, nicht daneben: Eine konstruierte Dublette muss als Dublette herauskommen. Die schwaechere Form — *„findet das Muster eine bekannte Kennung?"* — bestaetigt nur die eine Seite; genau daran lief am selben Tag eine andere Pruefung vorbei, waehrend vier Tests bereits rot waren.
 
 ---
 
