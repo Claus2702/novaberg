@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag 15:25 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag 17:30 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 118 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 120 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,73 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 17:30 UTC — Der Riegel vor der GPU kannte vier von fuenf Wegen nicht
+
+**Die Frage kam von aussen und war die richtige:** Kann es eine Race zwischen Threads sein, weil der AgentGraph auch auf die GPU zugreift?
+
+**ZIEL:** Jeder Zugriff auf ein LLM haelt den Riegel seiner Ressource — ohne dass der Aufrufer davon wissen muss.
+**TEST:** `tests/test_llm_riegel.py`, acht Zeugen. Der erste **misst die Ueberlappung**, statt sie zu behaupten: Ein Attrappen-Client zaehlt mit, wie viele Aufrufe gleichzeitig in ihm sind. Dazu die Gegenprobe, dass die Attrappe eine Ueberlappung ueberhaupt zeigen kann.
+**MESSUNG:** Suite 2293 → **2301 gruen**, 0 uebersprungen.
+
+**Was gemessen wurde, bevor gebaut wurde (42 Stunden Betriebslog):**
+
+| Worker | Client | Aufrufe |
+|---|---|---|
+| EmbedWorker | `ollama_gpu_client` | **7407** |
+| ChatWorker | `ollama_gpu_client` | **2897** |
+| BackgroundWorker | `ollama_cpu_client` | 3001 |
+
+**10.304 GPU-Aufrufe aus zwei getrennt serialisierten Warteschlangen, die voneinander nichts wussten** — beide auf **einem** `ollama.Client` und damit auf einem httpx-Verbindungspool. Belegt am Log vom 13:33:21 UTC: Der ChatWorker sendete `send_request_headers` **ohne eigenes `connect_tcp`**, auf einer Verbindung, die der EmbedWorker 77 ms zuvor geoeffnet hatte und noch benutzte.
+
+**Die Serialisierung je Worker war intakt.** `worker_base._run()` ist eine FIFO-Schleife mit einem Verbraucher — der Dienst-Gedanke war gebaut. Die Luecke lag zwischen den Warteschlangen, und `llm_lock` konnte sie nicht sehen: **Es umschloss einen Aufrufer** (den Lauf des CharakterGraphen) **statt der Ressource** — genau der Fall aus `17_NEBENLAEUFIGKEIT/riegel-schuetzt-ressource.md`, den der Harness seit dem 16.08.2026 beschreibt.
+
+**Gebaut:** `services/llm_riegel.py`. Drei Ressourcen, drei Riegel, **drei Verbindungspools** — `ollama_gpu_chat`, `ollama_gpu_embed`, `ollama_cpu_chat`. Der eigene Client je Riegel ist Teil der Abhilfe: Zwei Riegel auf einem Client waeren zwei Schloesser an derselben Tuer.
+
+> **Eine Regel, an die sich jeder halten *muss*, ist keine — sie muss so gebaut sein, dass niemand sie brechen *kann*.** Der rohe Client ist privat, freigegeben sind vier Methoden, jeder andere Zugriff endet im `AttributeError`. Und die Zusicherung laeuft ueber den ganzen Baum: `NiemandGreiftAmRiegelVorbei` wird rot, sobald ein Modul `ollama.Client(` baut oder einen rohen Client importiert. **`scripts/` ist nicht ausgenommen** — ein Messwerkzeug greift auf dieselbe Ressource zu wie der Betrieb.
+
+**Neun Module umgestellt, und drei davon waren gar keine Zugreifer:** Sie importierten den Client, ohne ihn je zu rufen. **Die erste Fassung des Eintrags fuehrte sie als Zugriffswege** — die Korrektur kam aus der Rueckfrage des Auftraggebers, nicht aus der eigenen Pruefung. Ein zehnter kam beim Umstellen dazu: ein Messskript unter `scripts/`, das `test_*` heisst und deshalb im Discover landet.
+
+**Zweite Kontrolle, quer zum Bau:** Andere Modul-Singletons mit geteiltem Verbindungszustand? `redis_client` ist eines — aber `redis.Redis` sichert Thread-Sicherheit ueber seinen ConnectionPool ausdruecklich zu, `ollama.Client` sagt dazu nichts. `postgres_verbinden` verbindet je Aufruf. Ein geprueftes Nein.
+
+**Festgelegt als `F-RIEGEL-1`.** Ausdruecklich **nicht** geregelt: die Vorgangsmarke (*ein CharakterGraph zur Zeit*) und die Gleichzeitigkeit auf der GPU-Hardware — Chat und Embedding teilen weiter die Hardware, aber keinen Prozesszustand mehr.
+
+---
+
+## 25.08.2026, 16:40 UTC — Eine fertige Antwort ging an einer Token-Zaehlung verloren
+
+**Auftrag:** den Stand des Charakter-Graphen pruefen, er haenge vor der Ausgabe.
+
+**Er haengt nicht — er stirbt, vier Sekunden nach der fertigen Antwort.** Aus Nutzersicht ist das dasselbe.
+
+```
+13:33:07  Responder: Antwort generiert (379 Zeichen)
+13:33:18  Tribunal: verdict=ok, 0 Ablehnungen — weiter zu Salienz
+13:33:20  Salienz ruft das Chat-Modell
+13:33:24  TypeError — Graph reisst, Turn beendet, nichts gesendet
+```
+
+**Drei Glieder, aus einem Turn.** Sie sind als eigene Kennungen aufgenommen, weil sie einzeln behoben werden koennen — und weil das zweite und dritte nach der heutigen Behebung stehenbleiben:
+
+| Kennung | |
+|---|---|
+| `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` | **behoben** |
+| `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` | offen — die Ursache |
+| `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` | offen — der Grund, warum es eine Antwort kostet |
+
+**Das behobene Glied:** `output_tokens = response.get("eval_count", 0)`. **Der Vorgabewert greift nur beim fehlenden Schluessel** — der Anbieter schickte ihn mit, auf `null`. Die Eingabezeile darueber kannte den Fall bereits und trug einen Fallback; die Ausgabezeile nicht. Beide gehen jetzt durch `_zaehlerstand()`.
+
+> **Der Zeuge war nicht baubar, bevor die Attrappe den Fall bilden konnte.** `_antwort(eval_count=None)` liess den Schluessel *weg* — genau die Gleichsetzung von *fehlt* und *ist null*, um die es geht. Fuer `thinking` gab es dafuer seit langem einen eigenen Ausdruck, fuer die Zaehler nicht. **Eine Attrappe, die eine Form der Wirklichkeit nicht erzeugen kann, macht den Defekt unbezeugbar und meldet Erfolg** (`20_TESTS/attrappe-grenze.md`).
+
+**Suite:** 2288 → **2293 gruen**, 0 uebersprungen. Gegenprobe: zwei Zeugen vorher rot, mit exakt dem `TypeError` aus dem Betriebslog.
+
+**Haeufigkeit, gemessen ueber 7 Stunden Betriebslog:** **1 von 5868** Antworten trug `done=False` — und genau dieser eine Fall ist der einzige Graph-Abbruch im Zeitraum. Die Korrelation ist 1:1.
+
+> **Die zweite Kontrolle lief quer zum Bau und fand eine zweite Additionsstelle**, die der Stacktrace nicht zeigte: `llm_provider.py:518` im Anthropic-Zweig. **Sie ist nicht betroffen** — Objektattribut des SDK statt `.get` auf einem Dict — und laeuft im Betrieb gar nicht: **5898 von 5898** Aufrufen gingen an Ollama. Ein geprueftes Nein gehoert genauso in den Bericht wie ein Fund.
+
+**Was der Fix nicht tut.** Er entfernt den Ausloeser, nicht die Bedingung. **Solange die Auslieferung hinter dem gesamten Nachlauf steht, ist jede kuenftige Ausnahme in Salienz, Perzeption oder KZG eine verlorene Antwort** — und das sind die Knoten, an denen am haeufigsten gebaut wird.
 
 ---
 

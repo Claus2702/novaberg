@@ -2,7 +2,7 @@
 
 **Stand:** 25. August 2026, 10:05 UTC (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
-**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — 125 abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
+**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — 127 abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
 
 ---
 
@@ -50,6 +50,92 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 > Zwischen dem Pruefstand der Eintraege (`00c16b6`, 20.08.) und dem Tag lagen 15 Commits, aber nur
 > **vier** geaenderte Server-Dateien — ein Kriterium statt 25 Einzelpruefungen. Zwei Eintraege
 > erwiesen sich dabei als laengst erledigt.
+
+---
+
+## 25.08.2026 — ein Turn, dessen Antwort fertig war und nie ankam
+
+Drei Eintraege aus **einem** Turn (13:33 UTC). Sie haengen aneinander wie eine Kette: Der
+Anbieter liefert unfertig, die Zaehlung stolpert darueber, und die Auslieferung steht
+hinter beidem. **Jedes Glied fuer sich ist klein; zusammen kosten sie eine Antwort, die
+das Tribunal bereits angenommen hatte.**
+
+Der Ablauf, aus dem Betriebslog:
+
+```
+13:33:07  Responder: Antwort generiert (379 Zeichen)
+13:33:18  Tribunal: verdict=ok (0 Ablehnungen) — weiter zu Salienz
+13:33:20  Salienz ruft das Chat-Modell
+13:33:24  TypeError — Graph reisst, Turn beendet, nichts gesendet
+```
+
+#### `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` — `done=False` wird protokolliert und nie geprueft
+
+**Zustand:** offen — gegen HEAD `b47e9ec` am 25.08.2026 im Betrieb belegt.
+
+**Symptom.** Der Umschlag des ausloesenden Aufrufs lautet:
+
+```
+Anbieter-Umschlag [salienz]: done=False, done_reason='None',
+    eval_count=0, prompt_eval_count=0, content=797 Z., thinking=0 Z.
+```
+
+**Eine unfertige Antwort mit Inhalt und ohne Zaehlerstaende** — und sie wird verarbeitet wie eine fertige. `done` und `done_reason` werden gelesen, gemeldet und dann fallengelassen; keine Verzweigung haengt an ihnen.
+
+**Der Kommentar ueber der Stelle beschreibt genau diesen Fall als Grund fuer das Feld.** `done_reason` wurde am 19.08.2026 eingefuehrt, damit entscheidbar ist, *ob die Erzeugung sauber endete oder abbrach* — und dann entscheidet niemand danach. **Ein Feld, das nur ins Log geht, beantwortet die Frage, fuer die es gebaut wurde, nicht.**
+
+**Haeufigkeit, ueber alle zehn Log-Generationen gezaehlt (23.08.2026 20:19 bis 25.08.2026 13:59, rund 42 Stunden):** **1 von 5318** Umschlaegen traegt `done=False` — und genau dieser eine Fall ist der einzige Graph-Abbruch im Zeitraum. Die Korrelation ist 1:1, die Haeufigkeit ein Einzelereignis.
+
+**Wer den Wert liefert, ist geklaert; unter welcher Bedingung, nicht.**
+
+Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoerper. Es ist ein echtes `False`, nicht der Vorgabewert des Modells: `ChatResponse.done` traegt `default=None`, und der Melder haette dann `done=None` geschrieben.
+
+**Was dabei ausgeschlossen wurde — damit der naechste Durchgang diese Wege nicht noch einmal geht:**
+
+| Vermutung | Befund |
+|---|---|
+| Der Client vergisst `stream=false`, der Server-Default ist `true` | **nein.** `ChatRequest(...).model_dump(exclude_none=True)` — `False` ist nicht `None` und wird gesendet. Direkt gemessen: ohne das Feld liefert Ollama NDJSON-Broecken mit `done:false`, mit dem Feld eine einzelne Antwort samt Zaehlern |
+| Irgendwo im Baum wird gestreamt | **nein.** `stream` kommt in `server/` ausserhalb der Bibliothek nicht vor |
+| Der Server hat abgebrochen | **nein.** Fuer den zeitlich passenden Request meldet er `200`, `stop processing`, `truncated = 0`. Client 3,517 s, Server 3,516 s |
+| Es war die CPU-Instanz | **nein.** `ollama-cpu` hat im Fenster keinen Eintrag |
+
+**Offen bleibt damit die Frage, die den Eintrag traegt:** Unter welcher Bedingung schickt ein Ollama-Server (0.32.14, Client 0.6.2) bei `stream:false` einen Koerper mit `done:false` und ohne Zaehlerstaende? **Ein Einzelereignis in 42 Stunden ist nicht gezielt reproduzierbar** — was fehlt, ist nicht Analyse, sondern ein zweiter Fall. Bis dahin traegt der Riegel aus `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` die Folge, nicht die Ursache.
+
+**Verwandt, aber nicht dasselbe:** `RESPONDER-LEERE-ANTWORT-STILL` beschreibt eine **leere** Antwort mit `done_reason=stop` und gefuellten Zaehlern. Hier ist es umgekehrt — Inhalt da, Zaehler `None`, `done=False`. Beide Faelle haben gemeinsam, dass der Umschlag die Antwort bereits traegt und niemand sie liest.
+
+**Geschlossen, wenn** Eine Antwort mit `done=False` wird als das behandelt, was sie ist — nicht stillschweigend als fertige.
+
+**Prioritaet:** hoch.
+
+---
+
+#### `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` — jeder Fehler nach dem Responder kostet die fertige Antwort
+
+**Zustand:** offen — gegen HEAD `b47e9ec` am 25.08.2026 am Code belegt.
+
+**Symptom.** In `services/event_consumer.py` steht die Auslieferung **hinter** dem vollstaendigen Graphenlauf:
+
+```python
+try:
+    result: dict = await asyncio.to_thread(_graph_streamen, ...)   # :606
+except Exception as fehler:
+    logger.exception(f"...: Event-Consumer: Graph-Fehler")
+    return                       # ← ueberspringt die Sendestelle
+finally:
+    llm_lock.release()
+
+# ── Antwort per WebSocket senden ──                                # :617 ff.
+```
+
+**Was nach dem Responder noch laeuft, ist Nachlaufarbeit:** Tribunal, Perzeption, EI-Berechnung, Salienz, KZG-Schreibung. Sie bewerten, was der Turn fuer das Gedaechtnis wert ist. **Mit der Antwort an den Nutzer hat davon nichts zu tun** — und trotzdem entscheidet jeder dieser Knoten darueber, ob sie ankommt.
+
+**Am 25.08.2026 belegt:** Die Antwort war um 13:33:07 erzeugt und um 13:33:18 vom Tribunal angenommen. Der Abbruch kam um 13:33:24 aus der Salienz — **siebzehn Sekunden nach der fertigen Antwort und aus einem Knoten, der sie nicht mehr veraendert.** Der Nutzer sah nichts; das Log meldete korrekt *Turn beendet, die Eingabe ist wieder frei*.
+
+**Die Klasse ist groesser als der Ausloeser.** `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` ist ein Fehler, der behoben wird; diese Reihenfolge bleibt danach. **Solange die Auslieferung am Ende steht, ist jede kuenftige Ausnahme im Nachlauf eine verlorene Antwort** — und die Nachlaufknoten sind die, an denen am haeufigsten gebaut wird.
+
+**Geschlossen, wenn** Eine vom Tribunal angenommene Antwort erreicht den Nutzer unabhaengig davon, ob der Nachlauf durchlaeuft.
+
+**Prioritaet:** hoch.
 
 ---
 

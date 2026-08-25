@@ -18,6 +18,93 @@
 
 ---
 
+## 25.08.2026 — der Riegel vor der GPU kannte vier von fuenf Wegen nicht
+
+#### `GPU-LOCK-SCHUETZT-EINEN-VON-FUENF` — das Lock fuer den GPU-Zugriff nimmt nur ein Zugreifer ✅
+
+**Zustand:** **behoben am 25.08.2026**, am Tag des Befundes. Suite **2301 gruen / 0 uebersprungen**, acht neue Zeugen in `tests/test_llm_riegel.py`. Festgelegt als `F-RIEGEL-1`.
+
+**Gebaut:** `services/llm_riegel.py` — `GesperrterOllamaClient`. **Drei Ressourcen, drei Riegel, drei Verbindungspools:** `ollama_gpu_chat`, `ollama_gpu_embed`, `ollama_cpu_chat`. Der rohe Client ist privat; freigegeben sind `chat`, `embed`, `list` und `pull`, jeder andere Zugriff endet in einem `AttributeError` statt in einer stillen Durchreiche.
+
+**Der eigene Client je Riegel ist Teil der Abhilfe, nicht Beiwerk.** Zwei Riegel auf einem `ollama.Client` waeren zwei Schloesser an derselben Tuer — der httpx-Pool bliebe geteilt, und mit ihm der Zustand, den zwei Threads sich teilen.
+
+**Neun Module umgestellt**, drei davon trugen einen **toten Import** (`ei/wissensluecken.py`, `ei/dreischicht.py`, `agents/charakter/agent.py` importierten den Client, ohne ihn je zu rufen — sie standen in der ersten Fassung dieses Eintrags faelschlich als Zugreifer). Ein Messskript unter `scripts/` kam beim Umstellen dazu: Es heisst `test_*`, wird vom Discover eingesammelt und griff ebenfalls direkt zu.
+
+**Die Zusicherung ist maschinell und laeuft ueber den ganzen Baum:** `NiemandGreiftAmRiegelVorbei` wird rot, sobald ein Modul `ollama.Client(` baut oder einen rohen Client importiert. Erlaubt sind zwei Dateien. **`scripts/` ist nicht ausgenommen** — ein Messwerkzeug greift auf dieselbe Ressource zu wie der Betrieb.
+
+> **Eine Regel, an die sich jeder halten *muss*, ist keine.** Der Riegel war vorher da, korrekt und dokumentiert — und vier Wege zur selben Ressource kannten ihn nicht. Keiner umging ihn absichtlich; sie waren gebaut worden, als es ihn schon gab. Deshalb steht die Zusicherung jetzt in der Bauart und nicht in der Verabredung.
+
+**Zweite Kontrolle, quer zum Bau:** Andere Modul-Singletons mit geteiltem Verbindungszustand gesucht. `redis_client` ist eines — aber `redis.Redis` sichert Thread-Sicherheit ueber seinen ConnectionPool ausdruecklich zu, anders als `ollama.Client`, der dazu nichts sagt. `postgres_verbinden` ist eine Funktion und verbindet je Aufruf. **Ein geprueftes Nein, kein zweiter Fall.**
+
+**Nicht behoben und ausdruecklich offen:** die **Vorgangsmarke**. `llm_lock` in `event_consumer.py` leistet *„ein CharakterGraph zur Zeit"* und heisst nach etwas anderem. Er bleibt unangetastet, bis entschieden ist, welche Thread-Sicherheit an seine Stelle tritt — eine andere Groessenordnung und nach `17_NEBENLAEUFIGKEIT/riegel-schuetzt-ressource.md` auch eine andere Bauart.
+
+**Symptom.** `llm_lock` traegt im eigenen Docstring *„Threading-Lock fuer GPU-Zugriff"* (`services/event_consumer.py:380`). **Es serialisiert aber keinen GPU-Zugriff, sondern Graphenlaeufe:** Genommen wird es an genau einer Stelle (`event_consumer.py:596`), und zwar um den gesamten Lauf des CharacterGraphen — von `_graph_streamen` bis zum `finally`. Was es verhindert, ist, dass zwei CharacterGraphen gleichzeitig laufen. Wer sonst ein LLM anspricht, sieht es nie.
+
+**Die Serialisierung je Worker ist intakt.** `worker_base._run()` ist eine FIFO-Schleife mit **einem** Verbraucher: `await self._queue.get()`, dann `await self._call_model(request)`, dann der naechste. Innerhalb eines Workers gibt es keine Nebenlaeufigkeit, und der Aufbau ist genau der beabsichtigte — das LLM als Dienst, die Warteschlange davor.
+
+**Die Luecke liegt zwischen den Workern.** `config.py:234` legt `ollama_gpu_client` als Modul-Singleton an — ein `httpx.Client`, ein Verbindungs-Pool. **Zwei Worker haengen daran, und sie wissen nichts voneinander:**
+
+| Worker | Client | Aufrufe in 42 h |
+|---|---|---|
+| **EmbedWorker** (`embed_worker.py:38`) | `ollama_gpu_client` | **7407** |
+| **ChatWorker** (`registry.py:57`) | `ollama_gpu_client` | **2897** |
+| BackgroundWorker (`registry.py:63`) | `ollama_cpu_client` | 3001 |
+
+**10.304 GPU-Aufrufe aus zwei getrennt serialisierten Warteschlangen.** Jede fuer sich ist korrekt; gemeinsam ist nichts. Dazu zwei Wege, die auch die Warteschlange umgehen und direkt auf dem Client arbeiten: `agents/dateien_index/indizieren.py:153` und `tools/reembed_all.py`.
+
+**Die Threads sind echt, nicht kooperativ.** `chat_worker.py:171` ruft `asyncio.to_thread(self._backend.chat, ...)`. Was sich hier ueberlappt, ueberlappt sich wirklich.
+
+**Im Betrieb belegt (25.08.2026, 13:33:21 UTC), die Ueberlappung an einem Pool:**
+
+```
+21,201  EmbedWorker: connect_tcp.started -> 11434      oeffnet die Verbindung
+21,202  EmbedWorker: send_request_headers
+21,273  response_closed  ->  ChatWorker meldet salienz/segment fertig
+21,278  ChatWorker:  send_request_headers              OHNE eigenes connect_tcp
+21,362  response_closed  ->  EmbedWorker meldet 21,363 Erfolg (0,162 s)
+24,795  response_closed  ->  TypeError, Graph reisst
+```
+
+**Der ChatWorker sendet um 21,278 ohne eigenes `connect_tcp`** — er nimmt eine Verbindung aus dem Pool, den der EmbedWorker 77 ms zuvor geoeffnet hat und noch benutzt.
+
+> **Das Lock sitzt drei Ebenen ueber der Stelle, die es schuetzen soll.** Beabsichtigt war ein Riegel unmittelbar vor dem LLM, damit es sich wie ein Dienst ansprechen laesst. Gebaut ist ein Riegel um den Aufrufer eines von mehreren Wegen dorthin. **Ein Lock, das den Aufrufer umschliesst statt die Ressource, waechst nicht mit** — es kannte den EmbedWorker nie, und es wird jeden weiteren Zugreifer ebenso wenig kennen.
+
+**Was daraus NICHT folgt, und das ist die Grenze dieses Eintrags.** `httpx.Client` ist als thread-sicher dokumentiert. Dass die Ueberlappung den `done=false` aus `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` verursacht hat, ist **plausibel und nicht belegt** — `httpcore` protokolliert seine Ereignisse ohne Verbindungskennung, die Zuordnung *welche Antwort auf welcher Verbindung* ist aus dem Log nicht herstellbar. **Der Eintrag steht auch ohne diesen Zusammenhang:** Ein Lock, das eine Ressource zu schuetzen behauptet und einen von fuenf Zugreifern erfasst, ist keine Serialisierung, sondern eine Zusicherung, auf die sich jemand verlassen koennte.
+
+**Geschlossen, wenn** ~~Entweder ist der GPU-Zugriff durchgehend serialisiert, oder `llm_lock` heisst nach dem, was es tatsaechlich schuetzt.~~ **Erfuellt am 25.08.2026** — durchgehend serialisiert, maschinell bewacht.
+
+**Prioritaet:** hoch — nicht wegen des einen Vorfalls, sondern weil die Zusicherung im Docstring falsch ist und der naechste Bauende sie liest.
+
+---
+
+## 25.08.2026 — ein Buchhaltungswert riss einen Graphen, dessen Antwort fertig war
+
+#### `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` — ein Buchhaltungswert kostet eine fertige Antwort ✅
+
+**Zustand:** **behoben am 25.08.2026**, am Tag des Befundes. Suite **2293 gruen / 0 uebersprungen**, fuenf neue Zeugen in `tests/test_ollama_chat.py`. Gegenprobe: zwei davon waren vorher rot, mit exakt dem `TypeError` aus dem Betriebslog.
+
+**Behoben** ueber `_zaehlerstand()` in `services/llm_provider.py` — beide Zaehler gehen jetzt durch dieselbe Umrechnung, die einen fehlenden, leeren oder untypisierten Wert zu 0 macht. Die Eingabeseite trug ihren Schutz schon als `if not input_tokens`; die Ausgabeseite hatte keinen.
+
+**Der Zeuge war nicht baubar, bevor die Attrappe den Fall bilden konnte.** `_antwort(eval_count=None)` liess den Schluessel *weg* — genau die Gleichsetzung, die den Unterschied verdeckt, um den es geht. Fuer `thinking` gab es dafuer laengst einen eigenen Ausdruck (`THINKING_NULL`), fuer die Zaehler nicht; er heisst jetzt `ZAEHLER_NULL`, und ein eigener Zeuge prueft, dass die Attrappe beide Formen erzeugt (`20_TESTS/attrappe-grenze.md`).
+
+**Zweite Kontrolle, quer zum Bau:** Eine zweite Additionsstelle steht in `llm_provider.py:518` im Anthropic-Zweig. **Sie ist nicht betroffen** — sie liest `response.usage.input_tokens` als Objektattribut des SDK, nicht per `.get` aus einem Dict. Ueber das Betriebslog gezaehlt laeuft der Zweig ausserdem nicht: **5898 von 5898** Aufrufen gingen an `OllamaProvider`. Ein geprueftes Nein, kein Fund.
+
+**Was offen bleibt, sind die beiden anderen Glieder der Kette:** `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` (die Ursache) und `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` (der Grund, warum ein Fehler an dieser Stelle ueberhaupt eine Antwort kostet). **Dieser Eintrag hat den Ausloeser entfernt, nicht die Bedingung.**
+
+**Symptom.** `services/llm_provider.py:318` rechnet `total_tokens = input_tokens + output_tokens` und wirft `TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'`. Die Ausnahme laeuft durch `graph/nodes/salience.py:601` und `graph/base.py:248` bis in den Event-Consumer, der den ganzen Graphen abbricht.
+
+**Ursache.** `output_tokens = response.get("eval_count", 0)` — **`.get` liefert den Vorgabewert nur, wenn der Schluessel fehlt.** Der Anbieter schickte ihn mit, mit dem Wert `None`. Belegt am Umschlag desselben Aufrufs: `schluessel=[..., 'eval_count', ..., 'prompt_eval_count', ...]`, also beide vorhanden.
+
+**Die Zeile darueber kennt den Fall bereits:** `input_tokens` traegt einen `if not input_tokens:`-Fallback, der genau das abfaengt. `output_tokens` hat ihn nicht. Dieselbe Klasse wie `22_STILLE_FEHLER/null-prueft-das-muster.md`, nur mit lautem Ausgang.
+
+**Was den Fall teuer macht, ist nicht der Fehler, sondern sein Ort.** Die Zaehlung ist Buchhaltung — sie geht in ein Log und in keine Entscheidung. Sie steht aber im Pfad jeder Modellantwort, und ein `TypeError` dort nimmt alles mit, was danach kommt.
+
+**Geschlossen, wenn** ~~Ein fehlender oder leerer Zaehlerstand fuehrt zu einer Zahl im Log, nicht zu einer Ausnahme im Graphen.~~ **Erfuellt am 25.08.2026.**
+
+**Prioritaet:** hoch.
+
+---
+
 ## 25.08.2026 — eine Dauer in der Einzahl war ein Monatsname
 
 #### ZEIT-EINZAHL-GREIFT-DANEBEN ✅ behoben
