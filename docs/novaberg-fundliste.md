@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 09:35 UTC
-**Offen:** **82 Funde — gezaehlt am 25.08.2026, 09:35 UTC** (87 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 25. August 2026, 13:20 UTC
+**Offen:** **84 Funde — gezaehlt am 25.08.2026, 13:20 UTC** (89 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **zwei neu aus der ersten Etappe der Zustandspruefung**; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Die liegengebliebenen `hash_dirty`-Schluessel sind von fuenf auf 13 gewachsen.** Der CharakterAgent raeumt nur das aktive Paar; jede Person, die je einen Bogen hatte, laesst einen Schluessel stehen. `HASH-DIRTY-ALTLASTEN` nannte am 11.08.2026 fuenf. **Ein geduldeter Rest ist keine Konstante** — dieselbe Klasse wie die von 25 auf 36 gewachsenen leeren EVA-Sektionen.
+
+- **2026-08-25** — **`autonomous_wissen.thema` traegt heute ⌀ 4,69 Themen je Feld statt 4,37**, und 886 von 890 Feldern tragen mehr als eins statt 558 von 559. Der Verstoss gegen *ein Vektor je Gegenstand* ist derselbe; die Menge, die davon betroffen ist, hat sich in sechs Tagen um zwei Drittel vergroessert.
 
 - **2026-08-25** — **Die Testsuite schreibt in die produktive `shadow_auftrag`-Tabelle.** 80 aktive Zeilen unter der Testkennung, alle ohne `thema`, juengste vom selben Tag — **12 % des Bestands von 683 Zeilen**, und alle in derselben Auftragsart. Jede Rate ueber diese Tabelle ist ohne Filter auf den Schreiber falsch; eine Bestandszaehlung hatte den Befund `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` deshalb beinahe bestaetigt, obwohl er dort nicht mehr gilt.
 

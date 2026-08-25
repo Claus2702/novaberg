@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 420 Eintraege mit Kennung — 107 offen, 42 abgeschlossen, **271 ohne lesbaren Zustand**.
+**Umfang:** 420 Eintraege mit Kennung — 121 offen, 48 abgeschlossen, **251 ohne lesbaren Zustand**.
 **Dazu 22 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Das Backlog:** [`novaberg-backlog.md`](novaberg-backlog.md)
 
@@ -68,40 +68,20 @@
 
 ---
 
-## Ohne lesbaren Zustand — 271 Eintraege
+## Ohne lesbaren Zustand — 251 Eintraege
 
 **Die Arbeitsliste.** Jede Zeile braucht eine `**Zustand:**`-Angabe an genau einer Stelle, aus geschlossener Wertemenge.
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
 | 12 | Ueberschrift ## | `DATEIINDEX-GRAPHKANAL` | DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhalt statt  |
-| 89 | Tabellenzeile | `UNREGISTRIERTER-AGENT-GEWINNT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 112 | Tabellenzeile | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 114 | Tabellenzeile | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 122 | Tabellenzeile | `LAENGENVORGABE-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 123 | Tabellenzeile | `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 136 | Tabellenzeile | `PROFIL-EINMALERHEBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 142 | Tabellenzeile | `PROFIL-KONTRAST-UNGEWACHT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 150 | Tabellenzeile | `HASH-DIRTY-ALTLASTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 151 | Tabellenzeile | `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 156 | Tabellenzeile | `ZUGSCHWELLE-AUF-FREIEN-WERTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 157 | Tabellenzeile | `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 158 | Tabellenzeile | `KERN-EINBETTUNG-NACH-DEM-DECKEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 159 | Tabellenzeile | `MESSREIHE-MISCHT-ZWEI-RASTER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 160 | Tabellenzeile | `RESPONDER-ALS-AUFGABE` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 161 | Tabellenzeile | `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 162 | Tabellenzeile | `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 163 | Tabellenzeile | `FARBTON-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 164 | Tabellenzeile | `PERSON-B-OHNE-BESCHREIBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 165 | Tabellenzeile | `HALTUNG-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 169 | Tabellenzeile | `VERDICHTUNG-UNGEPRUEFT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 194 | Tabellenzeile | `SILO-OHNE-WERKZEUG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
-| 196 | Tabellenzeile | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
 | 216 | Tabellenzeile | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 217 | Tabellenzeile | `EMBED-LISTE-AUTONOMES-WISSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 219 | Tabellenzeile | `EMBED-LISTE-DELEGATIONSAKTEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 220 | Tabellenzeile | `EMBED-RUECKWEG-UNGEMESSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 241 | Tabellenzeile | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
 | 243 | Tabellenzeile | `ANBIETER-FELDER-UNGELESEN` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
 | 251 | Tabellenzeile | `KANAL-OHNE-GEGENSTUECK` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
 | 252 | Tabellenzeile | `SELBSTAUSKUNFT-OHNE-LESER` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
@@ -353,37 +333,37 @@
 | Zeile | Zustand | Quelle | Kennung | Kapitel |
 |---|---|---|---|---|
 | 12 | unlesbar | — | `DATEIINDEX-GRAPHKANAL` | DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhalt statt  |
-| 89 | unlesbar | — | `UNREGISTRIERTER-AGENT-GEWINNT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 112 | unlesbar | — | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 89 | offen | Tabellenspalte | `UNREGISTRIERTER-AGENT-GEWINNT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 112 | abgeschlossen | Tabellenspalte | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 113 | abgeschlossen | Tabellenspalte | `RAD-STABILITAET-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 114 | unlesbar | — | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 114 | abgeschlossen | Tabellenspalte | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 122 | unlesbar | — | `LAENGENVORGABE-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 123 | unlesbar | — | `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 136 | unlesbar | — | `PROFIL-EINMALERHEBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 142 | unlesbar | — | `PROFIL-KONTRAST-UNGEWACHT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 150 | unlesbar | — | `HASH-DIRTY-ALTLASTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 136 | offen | Tabellenspalte | `PROFIL-EINMALERHEBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 142 | offen | Tabellenspalte | `PROFIL-KONTRAST-UNGEWACHT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 150 | offen | Tabellenspalte | `HASH-DIRTY-ALTLASTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 151 | unlesbar | — | `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 156 | unlesbar | — | `ZUGSCHWELLE-AUF-FREIEN-WERTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 157 | unlesbar | — | `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 158 | unlesbar | — | `KERN-EINBETTUNG-NACH-DEM-DECKEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 159 | unlesbar | — | `MESSREIHE-MISCHT-ZWEI-RASTER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 156 | abgeschlossen | Tabellenspalte | `ZUGSCHWELLE-AUF-FREIEN-WERTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 157 | offen | Tabellenspalte | `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 158 | offen | Tabellenspalte | `KERN-EINBETTUNG-NACH-DEM-DECKEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 159 | abgeschlossen | Tabellenspalte | `MESSREIHE-MISCHT-ZWEI-RASTER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 160 | unlesbar | — | `RESPONDER-ALS-AUFGABE` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 161 | unlesbar | — | `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 162 | unlesbar | — | `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 163 | unlesbar | — | `FARBTON-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 161 | offen | Tabellenspalte | `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 162 | offen | Tabellenspalte | `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 163 | abgeschlossen | Tabellenspalte | `FARBTON-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 164 | unlesbar | — | `PERSON-B-OHNE-BESCHREIBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 165 | unlesbar | — | `HALTUNG-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 165 | abgeschlossen | Tabellenspalte | `HALTUNG-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 169 | unlesbar | — | `VERDICHTUNG-UNGEPRUEFT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 194 | unlesbar | — | `SILO-OHNE-WERKZEUG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
+| 194 | offen | Tabellenspalte | `SILO-OHNE-WERKZEUG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
 | 195 | offen | Tabellenspalte | `ROLLENMATRIX-OHNE-PRUEFUNG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
-| 196 | unlesbar | — | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
+| 196 | offen | Tabellenspalte | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
 | 204 | abgeschlossen | Tabellenspalte | `WIS-ENRICHER-UNGEMESSEN` | Block 19.08.2026 — der dritte Konsument der Bibliothek |
 | 216 | unlesbar | — | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 217 | unlesbar | — | `EMBED-LISTE-AUTONOMES-WISSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
+| 217 | offen | Tabellenspalte | `EMBED-LISTE-AUTONOMES-WISSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
 | 218 | abgeschlossen | Tabellenspalte | `EMBED-LISTE-DATEIENINDEX` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 219 | unlesbar | — | `EMBED-LISTE-DELEGATIONSAKTEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 220 | unlesbar | — | `EMBED-RUECKWEG-UNGEMESSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 241 | unlesbar | — | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
+| 219 | offen | Tabellenspalte | `EMBED-LISTE-DELEGATIONSAKTEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
+| 220 | offen | Tabellenspalte | `EMBED-RUECKWEG-UNGEMESSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
+| 241 | offen | Tabellenspalte | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
 | 242 | abgeschlossen | Tabellenspalte | `OLLAMA-VERSION-VIER-MONATE-ALT` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
 | 243 | unlesbar | — | `ANBIETER-FELDER-UNGELESEN` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
 | 251 | unlesbar | — | `KANAL-OHNE-GEGENSTUECK` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |

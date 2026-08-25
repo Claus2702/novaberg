@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 12:40 UTC
+**Stand:** 25. August 2026, 13:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,31 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 13:20 UTC — Erste Etappe der Zustandsprüfung: 20 Backlog-Einträge gegen den Code
+
+**Nicht markiert, was im Eintrag steht, sondern geprüft, was im Code steht.** Zwanzig Einträge aus der Rangordnung und den Blöcken vom 19.08. — dort, wo der Zustand die Reihenfolge steuert und ein falscher am meisten kostet.
+
+| Ausgang | Zahl |
+|---|---|
+| **offen** | 14 |
+| **abgeschlossen** | 6 |
+
+**Zwei Einträge waren erledigt und standen als offen** — beide, weil ein Leser gebaut wurde, nachdem der Eintrag geschrieben war. `FARBTON-OHNE-LESER`: Der Responder liest den Farbton heute aus `gv_detail`. `HALTUNG-OHNE-LESER`: Der Haltungsstand hat **beide** vom Konzept verlangten Leser — und genau dieser Eintrag galt am 20.08.2026 schon einmal als geschlossen, als erst einer gebaut war. **Die Zahl der genannten Stellen ist die Prüfgröße, nicht die Wirkung.**
+
+**Zwei Befunde sind beim Nachmessen gewachsen, nicht verschwunden.** `HASH-DIRTY-ALTLASTEN` stand bei fünf liegengebliebenen Schlüsseln und liegt bei **13**. `EMBED-LISTE-AUTONOMES-WISSEN` stand bei ⌀ 4,37 Themen je Feld und liegt bei **4,69**, betroffen sind 886 von 890 Feldern statt 558 von 559. **Ein geduldeter Rest ist keine Konstante.**
+
+**Einer ist kleiner geworden, ohne dass jemand ihn gemeint hat.** `UNREGISTRIERTER-AGENT-GEWINNT` steht unverändert im Code — `vertiefen` wird auf einen Agenten geroutet, den es nicht gibt. Aber die aktiven Aufträge sind von 192 auf **75** gefallen und ihre mittlere Salienz von 0,750 auf **0,317**. Der Befund ist derselbe, sein Gewicht nicht.
+
+**Die vier abgeschlossenen der anderen Sorte trugen ihren Beleg selbst** und sind hier nur bestätigt worden: die Zwei-Spuren-Trennung hält (`konrad` weiterhin 69 LZG-Knoten), `reihe_laden` gruppiert weiterhin nach Erhebung, die Messungen vom 12.08. stehen.
+
+**Der Zustand steht jetzt in der letzten Zelle der Tabellenzeile** — dort, wo das Findemittel ihn liest. Alle 20 sind Tabellenzeilen; eine `**Zustand:**`-Zeile ist innerhalb einer Tabelle nicht möglich, und eine neue Spalte hätte fünf verschiedene Tabellenformen anfassen müssen.
+
+**Belegt:** genau 20 geänderte Zeilen, Zeilenzahl unverändert, **kein Zeichen alten Textes verloren** — jede Zeile ist nur verlängert. Das Findemittel zählt danach 251 statt 271 ohne lesbaren Zustand, 121 statt 107 offen, 48 statt 42 abgeschlossen.
+
+**Was bleibt:** 251 Einträge. Bei 20 je Etappe sind das dreizehn weitere.
 
 ---
 
