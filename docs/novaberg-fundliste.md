@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 22:30 UTC
-**Offen:** **74 Funde — gezaehlt am 24.08.2026, 22:30 UTC** (78 Fundzeilen im Abschnitt *Offen*, davon **vier** durchgestrichen; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 25. August 2026, 08:35 UTC
+**Offen:** **77 Funde — gezaehlt am 25.08.2026, 08:35 UTC** (81 Fundzeilen im Abschnitt *Offen*, davon **vier** durchgestrichen; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,12 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Der Reiz-Platz ist im `turn_roh` gefuellt, wo das Payload ihn abwesend haelt.** `novaberg-convention-event-model.md` §Reiz-Platz sagt fuer den Eigen-Impuls: `user_prompt` wird **nicht gesetzt** — *„ein gefuelltes Feld waere die Behauptung, jemand habe gesprochen"*. Die Konvention spricht vom **Payload**; die forensische Zeile `turn_roh` traegt es trotzdem: **109 von 109** Impuls-Turns haben dort ein gefuelltes `user_prompt`, im gemessenen Fall den Recherche-Auszug, der den Impuls ausgeloest hat. Ob die Konvention diesen Ort mitmeint, ist eine Frage ihres Geltungsbereichs — **die Begruendung trifft ihn jedenfalls**: Wer die Zeile liest, sieht eine Aeusserung des Nutzers, die es nicht gab. Gefunden beim Halten des Umbaus gegen die Konventionen.
+
+- **2026-08-25** — **Ein Messskript lag unter dem Namen, unter dem ich eines schreiben wollte — und es war nicht meins.** Ein `heredoc` auf `labor/tmp/urteil2.py` landete nicht; an der Stelle stand ein anderes, stimmiges Skript, das eine Achse mehr fuhr als geplant. Sein Ergebnis war brauchbar und wurde **erst nach dem Lesen** uebernommen. Woher es kam, ist ungeklaert. **Der Fund ist nicht das Skript, sondern die Lage:** Ein Messergebnis aus einem Instrument, das man nicht geschrieben hat, sieht von einem eigenen nicht zu unterscheiden aus.
+
+- **2026-08-25** — **Die Schlusspruefung nennt `harness/` und `labor/` „NICHT versioniert".** Beide liegen seit dem 21.08.2026 im privaten Repositorium `ki-assistent`; `git ls-files` zaehlt sie. Die Warnung *„ein Ort ohne Versionierung traegt jede Aenderung genau einmal"* trifft damit nur noch die Protokolle — und auch die nicht, seit sie committet werden. Eine Warnung, die ins Leere zeigt, wird ueberlesen, wenn sie einmal zutrifft.
 
 - **2026-08-24** — **29 nahe Absatzpaare im Wissensbestand, nicht zusammengefaltet.** Nach der Raeumung der woertlichen Dubletten mit derselben Trigramm-Schwelle nachgemessen (0,65): **29 Paare**, bis hinauf zu **0,96**; in `2026-08-16_meister_metaphorik-…` stehen drei fast gleiche Absaetze. **Automatisch geraeumt wird das nicht:** Bei einer woertlichen Kopie sagt die zweite Fassung nachweislich nichts Eigenes, bei 0,80 kann die Differenz der Inhalt sein. Das ist eine Entscheidung je Fall. Der Riegel verhindert **neue**; dieser Bestand ist aelter als er.
 
