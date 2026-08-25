@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag 17:30 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag 18:20 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 120 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 121 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,38 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 18:20 UTC — Die Antwort geht raus, sobald sie freigegeben ist
+
+**ZIEL:** Eine von Thinker und Tribunal freigegebene Antwort erreicht den Menschen — unabhaengig davon, ob der Nachlauf durchlaeuft.
+**TEST:** `tests/test_antwort_ueberlebt_nachlauf.py` und `tests/test_ausgabe_bei_freigabe.py`, elf Zeugen.
+**MESSUNG:** Suite 2301 → **2312 gruen**, 0 uebersprungen. Zehn davon waren vorher rot, mit dem `TypeError` aus dem Betriebslog.
+
+**Das Problem war nicht der Fehler, sondern der Zeitpunkt.** Am 25.08. um 13:33 war die Antwort um :07 fertig, um :18 vom Tribunal angenommen — und um :24 riss ein Fehler in der Salienz den Graphen. Der Mensch sah nichts. Der ausloesende `TypeError` war da schon behoben; **die Reihenfolge blieb**, und mit ihr jeder kuenftige Fehler im Nachlauf.
+
+**Drei Stufen, und die ersten beiden wirken auch ohne die dritte:**
+
+| | |
+|---|---|
+| **1** | Der Zwischenstand ueberlebt die Ausnahme — die freigegebene Antwort ist darin |
+| **2** | Ein gescheiterter Turn meldet sich, statt still zu bleiben |
+| **3** | Die Antwort geht bei der Freigabe raus, nicht am Ende |
+
+**Das Signal fuer die Freigabe ist der erste Knoten nach der Weiche.** Die Entscheidung faellt in einer Kante (`_after_evaluate`), und Kanten erscheinen nicht im Stream. Ueber `output` **und** `fallback` fuehrt der Weg zu `perzeption_assistant` — also genau auf den beiden Wegen, auf denen ausgegeben werden soll.
+
+> **Den Zuschnitt entschieden hat eine Messung am Client, nicht am Server.** Die Nutzlast traegt acht Zustandsfelder, und der Client liest **sieben davon gar nicht**. Einzig `momentum` wird angezeigt — und das steht schon vor dem Responder. **Die Antwort wartete auf Werte, die niemand benutzt.** Die zuvor erwogene zweite Nachricht fuer ein nachgereichtes Zustandsbild entfiel damit ersatzlos.
+
+**Zwei Riegel gegen die Ueberdehnung, beide bezeugt:** Ein Abbruch **vor** der Freigabe stellt nichts zu — wer frueher sendet, sendet irgendwann einen Text, den Thinker und Tribunal nie gesehen haben. Und gesendet wird genau einmal.
+
+**Ein bestehender Zeuge wurde umgedreht statt geloescht** (`20_TESTS/zusicherung-umdrehen.md`): `test_ohne_antwort_wird_nichts_zugestellt` sicherte genau die Stille zu, um die es ging.
+
+**Die Nachvollziehbarkeit kam auf Nachfrage des Auftraggebers dazu — und sie stand laengst im Harness.** `18_NACHVOLLZIEHBARKEIT.md` §3 fordert die Eingangsgroessen einzeln, §7 ist als maschinell pruefbares Gate markiert und **nie gebaut worden**; deshalb hat nie etwas angeschlagen. Drei Luecken sind jetzt zu:
+
+- Die Weiche nennt `verdict`, `correction_round` und `max_corrections`, bevor sie entscheidet.
+- Sie liest sie mit `.get()` statt `[...]`. **Ein fehlendes `tribunal_verdict` warf einen `KeyError` in einer Kante** — der Graph erreichte END nicht, und nirgends stand, welcher Wert gefehlt hatte.
+- Die Nutzlast meldet, wie viele der acht Felder gefuellt waren und welche leer. Bis dahin sagte die Zustellzeile `342 Zeichen, 2 Clients` und sonst nichts.
 
 ---
 

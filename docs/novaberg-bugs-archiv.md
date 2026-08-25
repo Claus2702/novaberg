@@ -18,6 +18,82 @@
 
 ---
 
+## 25.08.2026 — eine fertige Antwort wartete auf Felder, die niemand liest
+
+#### `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` — jeder Fehler nach dem Responder kostet die fertige Antwort ✅
+
+**Zustand:** **behoben am 25.08.2026**, am Tag des Befundes. Suite **2312 gruen / 0 uebersprungen**, elf neue Zeugen in `tests/test_antwort_ueberlebt_nachlauf.py` und `tests/test_ausgabe_bei_freigabe.py`.
+
+**In drei Stufen gebaut, und die ersten beiden wirken unabhaengig von der dritten:**
+
+**1 — Der Zwischenstand ueberlebt die Ausnahme.** `_graph_streamen` fuehrte ohnehin einen `letzter_state` mit; er ging nur verloren, weil die Ausnahme die Funktion verliess, bevor jemand ihn las. Er liegt jetzt in einem Traeger, der die Ausnahme uebersteht, und kommt mit `lauf_unvollstaendig` und dem Fehlertext zurueck. **Gerettet wird die Antwort, nicht der Fehler** — der Traceback steht wie bisher.
+
+**2 — Kein stiller Ausfall mehr.** Wo bisher nur eine Serverzeile stand, geht eine Meldung an den Client: Typ `turn_gescheitert`, mit eigenem Zweig im Client, damit ein Ausfall nicht als Aeusserung Novas erscheint. **Ein bestehender Zeuge musste dafuer umgedreht werden** — `test_ohne_antwort_wird_nichts_zugestellt` sicherte genau die Stille zu, um die es ging (`20_TESTS/zusicherung-umdrehen.md`).
+
+**3 — Die Antwort geht bei der Freigabe raus, nicht am Ende.** Signal ist der erste Knoten nach der Weiche (`perzeption_assistant`): Die Freigabe faellt in einer Kante, und Kanten erscheinen nicht im Stream. Ueber `output` **und** `fallback` fuehrt der Weg dorthin — also genau auf den beiden Wegen, auf denen ausgegeben werden soll. **Der Nachlauf laeuft unveraendert weiter**, er schreibt Novas Zustand, die Salienz und das Gedaechtnis; nur wartet niemand mehr darauf.
+
+**Was den Zuschnitt entschieden hat, war eine Messung am Client:** Von den acht Zustandsfeldern der Nutzlast liest er **sieben gar nicht**. Einzig `momentum` wird angezeigt (`client/ui/main_window.py:392`), und das steht schon vor dem Responder. Eine zweite Nachricht fuer ein Zustandsbild, das niemand liest, waere Aufwand ohne Wirkung gewesen.
+
+**Zwei Riegel gegen die naheliegende Ueberdehnung**, beide bezeugt: Ein Abbruch **vor** der Freigabe stellt nichts zu — wer frueher sendet, sendet irgendwann einen Text, den Thinker und Tribunal nie gesehen haben. Und gesendet wird **genau einmal**; die vier Nachlaufknoten loesen keine vier Zustellungen aus.
+
+**Dabei kam die Nachvollziehbarkeit dazu**, die der Auftraggeber verlangt hat und die `18_NACHVOLLZIEHBARKEIT.md` §3 laengst fordert:
+
+- **Die Weiche nennt ihre Eingangsgroessen**, bevor sie entscheidet: `verdict`, `correction_round`, `max_corrections`.
+- **Sie liest sie mit `.get()` statt `[...]`.** Ein fehlendes `tribunal_verdict` warf einen `KeyError` in einer **Kante** — der Graph erreichte END nicht, und nirgends stand, welcher Wert gefehlt hatte. Jetzt wird er benannt und der Lauf faellt auf den Rueckfall.
+- **Die Nutzlast meldet ihre Feldbelegung:** wie viele der acht Felder gefuellt waren und welche leer.
+
+**Symptom.** In `services/event_consumer.py` steht die Auslieferung **hinter** dem vollstaendigen Graphenlauf:
+
+```python
+try:
+    result: dict = await asyncio.to_thread(_graph_streamen, ...)   # :606
+except Exception as fehler:
+    logger.exception(f"...: Event-Consumer: Graph-Fehler")
+    return                       # ← ueberspringt die Sendestelle
+finally:
+    llm_lock.release()
+
+# ── Antwort per WebSocket senden ──                                # :617 ff.
+```
+
+**Was nach dem Responder noch laeuft, ist Nachlaufarbeit:** Tribunal, Perzeption, EI-Berechnung, Salienz, KZG-Schreibung. Sie bewerten, was der Turn fuer das Gedaechtnis wert ist. **Mit der Antwort an den Nutzer hat davon nichts zu tun** — und trotzdem entscheidet jeder dieser Knoten darueber, ob sie ankommt.
+
+**Am 25.08.2026 belegt:** Die Antwort war um 13:33:07 erzeugt und um 13:33:18 vom Tribunal angenommen. Der Abbruch kam um 13:33:24 aus der Salienz — **siebzehn Sekunden nach der fertigen Antwort und aus einem Knoten, der sie nicht mehr veraendert.** Der Nutzer sah nichts; das Log meldete korrekt *Turn beendet, die Eingabe ist wieder frei*.
+
+**Die Klasse ist groesser als der Ausloeser.** `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` ist ein Fehler, der behoben wird; diese Reihenfolge bleibt danach. **Solange die Auslieferung am Ende steht, ist jede kuenftige Ausnahme im Nachlauf eine verlorene Antwort** — und die Nachlaufknoten sind die, an denen am haeufigsten gebaut wird.
+
+**Geschlossen, wenn** ~~Eine vom Tribunal angenommene Antwort erreicht den Nutzer unabhaengig davon, ob der Nachlauf durchlaeuft.~~ **Erfuellt am 25.08.2026** — dreifach: sie geht bei der Freigabe raus, sie ueberlebt einen Abbruch danach, und ein Ausfall meldet sich.
+
+**Prioritaet:** hoch.
+
+---
+
+## 20.08.2026 — aus der Klassifikation der Fundliste
+
+**70 Eintraege sind aus `novaberg-fundliste.md` hierher gewandert** und haben eine stabile Kennung bekommen. Die Fundliste ist roh und vergaenglich; wer einen Defekt sucht, sucht ihn hier.
+
+> **Der Umzug uebertraegt den Wortlaut, er prueft ihn nicht.** Jeder Befund ist die Diagnose seines Tages — das Datum steht an jedem Eintrag, und die Pflicht, ihn vor der Umsetzung gegen den heutigen Code zu halten, gilt unveraendert. Wer das ueberspringt, baut gegen einen Zustand, den es nicht mehr gibt.
+
+**Die Zeile `Geschlossen, wenn` ist neu und stammt nicht aus der Fundliste.** Sie sagt, woran der Abschluss erkennbar waere — ohne sie ist ein Eintrag nicht abschliessbar, sondern nur ablegbar.
+
+### Der Durchgang vom 20.08.2026 — alle 70 gegen den Code gehalten
+
+**Am 20.08.2026 ist jeder der 70 Eintraege gegen HEAD `00c16b6` geprueft worden**, bevor irgendeiner von ihnen einen Rang bekommt. Das Ergebnis steht je Eintrag in einer eigenen Zeile `**Zustand:**` unmittelbar unter der Ueberschrift:
+
+| Zustand | Zahl | Was er sagt |
+|---|---|---|
+| `offen` | 50 | der Befund steht, mit der Stelle im heutigen Code als Beleg |
+| `offen, unbelegt` | 8 | der Code hat sich nicht bewegt, aber die Aussage haengt an einer Messung, die seit dem Befund niemand wiederholt hat |
+| `behoben` | 12 | der Befund ist erledigt, mit Beleg — der Eintrag bleibt stehen und erklaert, warum der Code so aussieht |
+
+**Die zwoelf erledigten sind nicht nebenbei erledigt worden**, sondern von Auftraegen, die sie nicht kannten: **vier** am Responder-Prompt, zwei am Haltungsraum, zwei an der Bibliothek, zwei in der Doku, einer am Etikett des eigenen Gedankens und einer am Router-Prompt. Das ist der Grund fuer diesen Durchgang — **ein Register, das nicht gegen den Code gehalten wird, sammelt Befunde, die es laengst nicht mehr gibt.**
+
+**Drei Zahlen des Bestandes haben sich seit ihrem Befund bewegt** und stehen jetzt am Eintrag: die Schichtimporte von 39 auf **52**, die leeren EVA-Sektionen von 25 auf **36** (gemessen mit derselben Pruefung; die 20 des Befundes sind anders gezaehlt), die Loeschregeln von 3/3/2 auf **4/3/2**.
+
+> **Warum der Zustand an genau einer Stelle steht.** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` (Backlog) hielt fest, dass jede Zahl ueber offene Defekte eine Schaetzung ist, solange der Zustand nirgends steht. Die Zeile unter der Ueberschrift ist die Antwort darauf: **ein Ort je Eintrag, ein festes Vokabular, mit `grep` zaehlbar.** Sie traegt Datum und HEAD, gegen den geprueft wurde — ohne beides ist ein *offen* von einem *war einmal offen* nicht zu unterscheiden.
+
+---
+
 ## 25.08.2026 — der Riegel vor der GPU kannte vier von fuenf Wegen nicht
 
 #### `GPU-LOCK-SCHUETZT-EINEN-VON-FUENF` — das Lock fuer den GPU-Zugriff nimmt nur ein Zugreifer ✅

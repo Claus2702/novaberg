@@ -2,7 +2,7 @@
 
 **Stand:** 25. August 2026, 10:05 UTC (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
-**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — 127 abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
+**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — 128 abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
 
 ---
 
@@ -106,62 +106,6 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 **Geschlossen, wenn** Eine Antwort mit `done=False` wird als das behandelt, was sie ist — nicht stillschweigend als fertige.
 
 **Prioritaet:** hoch.
-
----
-
-#### `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` — jeder Fehler nach dem Responder kostet die fertige Antwort
-
-**Zustand:** offen — gegen HEAD `b47e9ec` am 25.08.2026 am Code belegt.
-
-**Symptom.** In `services/event_consumer.py` steht die Auslieferung **hinter** dem vollstaendigen Graphenlauf:
-
-```python
-try:
-    result: dict = await asyncio.to_thread(_graph_streamen, ...)   # :606
-except Exception as fehler:
-    logger.exception(f"...: Event-Consumer: Graph-Fehler")
-    return                       # ← ueberspringt die Sendestelle
-finally:
-    llm_lock.release()
-
-# ── Antwort per WebSocket senden ──                                # :617 ff.
-```
-
-**Was nach dem Responder noch laeuft, ist Nachlaufarbeit:** Tribunal, Perzeption, EI-Berechnung, Salienz, KZG-Schreibung. Sie bewerten, was der Turn fuer das Gedaechtnis wert ist. **Mit der Antwort an den Nutzer hat davon nichts zu tun** — und trotzdem entscheidet jeder dieser Knoten darueber, ob sie ankommt.
-
-**Am 25.08.2026 belegt:** Die Antwort war um 13:33:07 erzeugt und um 13:33:18 vom Tribunal angenommen. Der Abbruch kam um 13:33:24 aus der Salienz — **siebzehn Sekunden nach der fertigen Antwort und aus einem Knoten, der sie nicht mehr veraendert.** Der Nutzer sah nichts; das Log meldete korrekt *Turn beendet, die Eingabe ist wieder frei*.
-
-**Die Klasse ist groesser als der Ausloeser.** `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` ist ein Fehler, der behoben wird; diese Reihenfolge bleibt danach. **Solange die Auslieferung am Ende steht, ist jede kuenftige Ausnahme im Nachlauf eine verlorene Antwort** — und die Nachlaufknoten sind die, an denen am haeufigsten gebaut wird.
-
-**Geschlossen, wenn** Eine vom Tribunal angenommene Antwort erreicht den Nutzer unabhaengig davon, ob der Nachlauf durchlaeuft.
-
-**Prioritaet:** hoch.
-
----
-
-## 20.08.2026 — aus der Klassifikation der Fundliste
-
-**70 Eintraege sind aus `novaberg-fundliste.md` hierher gewandert** und haben eine stabile Kennung bekommen. Die Fundliste ist roh und vergaenglich; wer einen Defekt sucht, sucht ihn hier.
-
-> **Der Umzug uebertraegt den Wortlaut, er prueft ihn nicht.** Jeder Befund ist die Diagnose seines Tages — das Datum steht an jedem Eintrag, und die Pflicht, ihn vor der Umsetzung gegen den heutigen Code zu halten, gilt unveraendert. Wer das ueberspringt, baut gegen einen Zustand, den es nicht mehr gibt.
-
-**Die Zeile `Geschlossen, wenn` ist neu und stammt nicht aus der Fundliste.** Sie sagt, woran der Abschluss erkennbar waere — ohne sie ist ein Eintrag nicht abschliessbar, sondern nur ablegbar.
-
-### Der Durchgang vom 20.08.2026 — alle 70 gegen den Code gehalten
-
-**Am 20.08.2026 ist jeder der 70 Eintraege gegen HEAD `00c16b6` geprueft worden**, bevor irgendeiner von ihnen einen Rang bekommt. Das Ergebnis steht je Eintrag in einer eigenen Zeile `**Zustand:**` unmittelbar unter der Ueberschrift:
-
-| Zustand | Zahl | Was er sagt |
-|---|---|---|
-| `offen` | 50 | der Befund steht, mit der Stelle im heutigen Code als Beleg |
-| `offen, unbelegt` | 8 | der Code hat sich nicht bewegt, aber die Aussage haengt an einer Messung, die seit dem Befund niemand wiederholt hat |
-| `behoben` | 12 | der Befund ist erledigt, mit Beleg — der Eintrag bleibt stehen und erklaert, warum der Code so aussieht |
-
-**Die zwoelf erledigten sind nicht nebenbei erledigt worden**, sondern von Auftraegen, die sie nicht kannten: **vier** am Responder-Prompt, zwei am Haltungsraum, zwei an der Bibliothek, zwei in der Doku, einer am Etikett des eigenen Gedankens und einer am Router-Prompt. Das ist der Grund fuer diesen Durchgang — **ein Register, das nicht gegen den Code gehalten wird, sammelt Befunde, die es laengst nicht mehr gibt.**
-
-**Drei Zahlen des Bestandes haben sich seit ihrem Befund bewegt** und stehen jetzt am Eintrag: die Schichtimporte von 39 auf **52**, die leeren EVA-Sektionen von 25 auf **36** (gemessen mit derselben Pruefung; die 20 des Befundes sind anders gezaehlt), die Loeschregeln von 3/3/2 auf **4/3/2**.
-
-> **Warum der Zustand an genau einer Stelle steht.** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` (Backlog) hielt fest, dass jede Zahl ueber offene Defekte eine Schaetzung ist, solange der Zustand nirgends steht. Die Zeile unter der Ueberschrift ist die Antwort darauf: **ein Ort je Eintrag, ein festes Vokabular, mit `grep` zaehlbar.** Sie traegt Datum und HEAD, gegen den geprueft wurde — ohne beides ist ein *offen* von einem *war einmal offen* nicht zu unterscheiden.
 
 ---
 

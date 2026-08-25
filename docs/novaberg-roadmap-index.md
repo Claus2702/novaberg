@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 504 Abschnitte in 5 Dateien — 208 mit eigenem Datum, 295 geerbt, 1 ohne.
+**Umfang:** 505 Abschnitte in 5 Dateien — 209 mit eigenem Datum, 295 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 241 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 242 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 504 Marken, 504 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 505 Marken, 505 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 18:20 UTC — Die Antwort geht raus, sobald sie freigegeben ist](novaberg-roadmap.md#25082026-1820-utc--die-antwort-geht-raus-sobald-sie-freigegeben-ist) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 17:30 UTC — Der Riegel vor der GPU kannte vier von fuenf Wegen nicht](novaberg-roadmap.md#25082026-1730-utc--der-riegel-vor-der-gpu-kannte-vier-von-fuenf-wegen-nicht) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 16:40 UTC — Eine fertige Antwort ging an einer Token-Zaehlung verloren](novaberg-roadmap.md#25082026-1640-utc--eine-fertige-antwort-ging-an-einer-token-zaehlung-verloren) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 15:25 UTC — `in einem Tag` war der Mai, `in einem Monat` war der Montag](novaberg-roadmap.md#25082026-1525-utc--in-einem-tag-war-der-mai-in-einem-monat-war-der-montag) |
