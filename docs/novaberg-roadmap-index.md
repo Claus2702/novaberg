@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 558 Abschnitte in 5 Dateien — 223 mit eigenem Datum, 334 geerbt, 1 ohne.
+**Umfang:** 562 Abschnitte in 5 Dateien — 225 mit eigenem Datum, 336 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 295 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 299 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,15 +19,27 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 558 Marken, 558 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 562 Marken, 562 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
+
+---
+
+## Kapitel, deren Ueberschrift ihren Inhalt nicht mehr trifft
+
+**Gerechnet, nicht beurteilt:** Das Kapitel nennt einen Monat, und keiner seiner datierten Abschnitte liegt darin.
+
+- **26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen** (`novaberg-roadmap.md`) traegt `2026-08`, seine 1 datierten Abschnitte reichen von `2026-07` bis `2026-07`.
 
 ---
 
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-26 | laufend | ## | [26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen](novaberg-roadmap.md#26082026-2124-utc--die-regel-bewacht-die-kleinere-der-beiden-quellen) |
+| (2026-08-26) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung) |
+| 2026-07-30 | laufend | ### | · [Und eine Frage vom 30.07.2026 ist damit beantwortet](novaberg-roadmap.md#und-eine-frage-vom-30072026-ist-damit-beantwortet) |
+| (2026-07-30) | laufend | ### | · [Was daraus folgt und was nicht](novaberg-roadmap.md#was-daraus-folgt-und-was-nicht) |
 | 2026-08-26 | laufend | ## | [26.08.2026, 21:15 UTC — die Drift-Reihe laeuft, und ihr Zeitplan liegt ausserhalb](novaberg-roadmap.md#26082026-2115-utc--die-drift-reihe-laeuft-und-ihr-zeitplan-liegt-ausserhalb) |
 | (2026-08-26) | laufend | ### | · [Der Speicher, und warum es ihn braucht](novaberg-roadmap.md#der-speicher-und-warum-es-ihn-braucht) |
 | (2026-08-26) | laufend | ### | · [Was gemessen wird, ist ein Vergleich zweier Vergleiche](novaberg-roadmap.md#was-gemessen-wird-ist-ein-vergleich-zweier-vergleiche) |
@@ -217,7 +229,7 @@
 | 2026-08-14 | laufend | ## | [Chat 139 (14.08.2026) — Der Reiz-Platz trägt nur noch fremde Rede 🔶](novaberg-roadmap.md#chat-139-14082026--der-reiz-platz-trägt-nur-noch-fremde-rede) |
 | (2026-08-14) | laufend | ### | · [Aus vier Stellen wurden elf](novaberg-roadmap.md#aus-vier-stellen-wurden-elf) |
 | (2026-08-14) | laufend | ### | · [Die Bauart](novaberg-roadmap.md#die-bauart) |
-| (2026-08-14) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung) |
+| (2026-08-14) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung-1) |
 | (2026-08-14) | laufend | ### | · [Der Materialblock — und die Zuschreibung kippt](novaberg-roadmap.md#der-materialblock--und-die-zuschreibung-kippt) |
 | 2026-08-14 | laufend | ## | [Chat 138 (13./14.08.2026) — Der Verfasser bekommt eine Aufgabe, und die Messung dreht den Tag ✅](novaberg-roadmap.md#chat-138-1314082026--der-verfasser-bekommt-eine-aufgabe-und-die-messung-dreht-den-tag) |
 | (2026-08-14) | laufend | ### | · [Ein Wert über den vorigen Turn entschied über diesen](novaberg-roadmap.md#ein-wert-über-den-vorigen-turn-entschied-über-diesen) |

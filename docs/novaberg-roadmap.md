@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **21:15 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **21:24 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 135 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 136 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,41 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen
+
+`F-RAD-2` verlangt drei Rad-Laeufe und den Median. Die Begruendung steht seit dem 11.08.2026 und ist gut: Ein Wert, der einmal geschrieben wird und bis zur naechsten Destillation stehenbleibt, darf nicht von einem unglueklichen Lauf fuer Tage festgelegt werden.
+
+**Alle drei Laeufe lesen denselben Kern-Hash.**
+
+### Die Messung
+
+Turn-Material und Beziehungsprofil **festgehalten**, variiert wurde allein der Kern — viermal frisch destilliert, auf jedem ein Zuwendungs-Rad mit den vorgeschriebenen drei Laeufen und Median.
+
+| | Spanne des Faktors |
+|---|---|
+| Innerhalb eines Kerns, drei Laeufe | **0,0550** im Mittel (groesste 0,1041) |
+| Ueber vier Kerne, je Median aus drei | **0,2908** |
+
+Die vier Mediane: 1,2088 · 1,1426 · 1,0695 · 0,9180. **Bei einer Faktorspanne von 0,5 bis 1,5 sind das 29 % des gesamten Bereichs** — allein daraus, welche Ziehung des Kerns das Rad gerade gelesen hat. Das **5,3-fache** dessen, was die Dreifacherhebung einfaengt.
+
+> **Es trifft ausgerechnet den Faktor, mit dem die Festlegung sich selbst begruendet:** Er geht in die Salienz **jedes** Nutzerbeitrags ein. Und die einzige gespeicherte Verlaesslichkeitsangabe ist die Streuung ueber *einen* Text — sie unterschaetzt die Bewegung des Faktors um etwa Faktor fuenf.
+
+**Die Ursache ist die Messung von 21:00 UTC:** Zwei Destillationen des Kerns aus identischem Material teilen nur 27–32 % ihres Inhaltswortschatzes. Das Rad liest eine Quelle, die selbst nur zu rund einem Drittel wiederholbar ist. Ein Zusammenhang mit der Kernlaenge besteht nicht — der laengste Kern (4850 Zeichen) liefert 1,0695, der kuerzeste (3987) 0,9180.
+
+### Und eine Frage vom 30.07.2026 ist damit beantwortet
+
+`novaberg-charakter-rad-messreihe_k.md` hielt fest, die Drift zwischen zwei Erhebungen erreiche im einen Fall das Dreissigfache der Streuung innerhalb einer — und liess ausdruecklich offen, *„ob sich der zugrundeliegende Profiltext zwischen den beiden Laeufen geaendert hat"*.
+
+**Er muss sich nicht aendern.** Bei festgehaltenem Material genuegt die Neuziehung des Kerns.
+
+### Was daraus folgt und was nicht
+
+**Die Festlegung wird nicht zurueckgenommen.** Sie ist wirksam fuer das, was sie misst, und die Alternative — den Kern mehrfach zu ziehen — ist eine eigene Entscheidung mit eigenem Preis. Sie bekommt eine **Grenze** statt einer Aufhebung. Neue Kennung: **`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`**, Prioritaet hoch.
+
+**Waehrend der Reihe war Pixie abgeschaltet und ist danach wieder an.** Tctl zwischen 57 und 59 °C. Werkzeug: `labor/2026-08-26_rad_kernstreuung.py`. Kein Code geaendert.
 
 ---
 
