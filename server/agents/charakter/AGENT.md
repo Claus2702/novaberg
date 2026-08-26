@@ -9,7 +9,7 @@ Destilliert 5 Charakter-Profile aus LZG (PostgreSQL) und KZG (Redis).
 ## Profile
 | Profil | Quelle | Beschreibt |
 |--------|--------|-----------|
-| kern_hash | ~~LZG~~ → **Wortlaut der Begegnungen** (`pipeline_log`, 40 Turns mit `herkunft='nutzer_turn'`) | Grundpersönlichkeit |
+| kern_hash | ~~LZG~~ → ~~40 Turns~~ → **Wortlaut der Begegnungen** (`pipeline_log`, `herkunft='nutzer_turn'`), **zeitlich geschichtet über die ganze Historie bis `PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN`** | Grundpersönlichkeit |
 | adaptive_hash | KZG | Aktuelle Phase |
 | intentions_profil | LZG | Kommunikationsstil |
 | emotions_profil | LZG | Emotionale Grundtendenz |
@@ -25,6 +25,32 @@ Der Anlass war ein Defekt: Ein Impuls schreibt seinen Text in dasselbe Feld
 `user_prompt` wie eine Nutzeräußerung. Ungefiltert las der Kern die eigenen
 Gedanken der Figur als Äußerungen des Menschen — gemessen **25 von 40 Turns,
 95,4 % des Materials**. Was ausgenommen wird, steht mit seiner Zahl im Log.
+
+## Das Material ist geschichtet, nicht das Ende der Historie (seit 26.08.2026)
+
+`_turns_laden` liest nicht mehr die 40 neuesten Begegnungen, sondern zieht
+**zeitlich gleichmäßig über die ganze Historie**, bis das Zeichenbudget
+`PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN` erschöpft ist. Gelesen wird in zwei
+Schritten: erst Kennung und Zeichenzahl je Begegnung, dann der Wortlaut der
+ausgewählten.
+
+Der Anlass ist gemessen: Mit dem gleitenden Fenster beschrieb der Kern das
+Themenband dieses Fensters und **keine wiedererkennbare Person** — Novas
+sieben Kern-Profile ähnelten einander nicht stärker als die Profile sieben
+verschiedener Menschen (`KERNHASH-TRAEGT-KEINE-PERSON`, 25.08.2026).
+
+**Am produktiven Paar nach dem Umbau:** 98 von 223 Begegnungen, 75 783 von
+80 000 Zeichen; das Material der Figur wuchs von 15 521 auf 68 652 Zeichen,
+das des Menschen von 3 879 auf 9 873. Die Bindung des Kerns an den Wortschatz
+der 40 neuesten Begegnungen fiel dabei über zwei Läufe von **28,4 % auf 15,8 %
+bzw. 10,8 %** (Figur) und von **11,4 % auf 3,1 % bzw. 3,6 %** (Mensch). Ein
+voller Destillationszyklus dauert seither **rund 375 s** statt 261 s, bei einem
+Takt von 600 s.
+
+**Was der Umbau nicht behebt:** Die gemeinsamen Inhaltswörter beider Kerne sind
+nicht gefallen, sondern von 38 auf 43 bzw. 51 gestiegen. Der geteilte
+Gesprächsstoff bleibt; erledigt ist nur die Bindung an dessen jüngsten
+Ausschnitt.
 
 ## Wo Impulse ausgenommen werden — und wo nicht (17.08.2026)
 

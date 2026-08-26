@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **19:42 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **20:05 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 132 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 133 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,56 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 20:05 UTC — das Fenster ist fort, und die Kontrolle steht still
+
+Gebaut wurde, was seit gestern beschlossen und seit heute Mittag begruendet war: Der Kern-Hash liest sein Material nicht mehr als Fenster auf das Ende der Historie, sondern **zeitlich gleichmaessig ueber sie verteilt**, bis ein festes Zeichenbudget erschoepft ist.
+
+### Zwei Schritte statt einem, und der Grund ist derselbe wie beim Fenster
+
+`_turns_laden` holt im ersten Schritt nur Kennung und Zeichenzahl je Begegnung, `geschichtet_waehlen` waehlt daraus verteilte Positionen bis zum Budget, der zweite Schritt holt den Wortlaut genau dieser. **Ein Lesen der ganzen Historie in einem Zug haette das Fenster durch eine unbegrenzt wachsende Lesemenge ersetzt** — dieselbe Sorte stiller Zuwachs, nur an anderer Stelle.
+
+### Der erste Lauf am produktiven Paar
+
+| | vorher | nachher |
+|---|---|---|
+| Ausgewaehlte Begegnungen | 40 von 223 (die neuesten) | **98 von 223** (verteilt) |
+| Zeichen der Auswahl | — | **75 783 von 80 000** |
+| Material der Figur | 15 521 Z. | **68 652 Z.** |
+| Material des Menschen | 3 879 Z. | **9 873 Z.** |
+| Kern-Lauf der Figur | 71,7 s | **186 s** |
+| Voller Zyklus, 10 Calls | 261 s | **rund 375 s** (Takt 600 s) |
+
+**Die Kostenhochrechnung hat getragen:** angesetzt waren 2,55 s je 1000 zusaetzlicher Zeichen und rund 410 s je Zyklus, gemessen wurden **2,11 s** und **375 s**.
+
+### Die zweite Kontrolle hat den Bau geaendert
+
+Die Auswahlzahlen wurden gegen einen frischen SQL-Auszug und eine **eigene** Umsetzung derselben Vorschrift nachgerechnet — und sie stimmten **nicht**: Der Bau nahm 96 Begegnungen, die Nachrechnung fand, dass 104 ins Budget gepasst haetten. Ursache war die proportionale Kuerzung; sie findet *eine* passende Anzahl, nicht die groesste.
+
+Ergaenzt wurde ein einzelnes **Auffuellen**, solange das Budget traegt. Nachrechnung und Lauf stimmen seither auf das Zeichen: **98 Begegnungen, 75 783 Zeichen**.
+
+> **Die Passung ist nicht monoton, und deshalb wird das Maximum nicht gesucht.** k=96 bis 98 passen, **k=99 bis 103 nicht, k=104 wieder**. Ein Durchlauf ueber alle Anzahlen faende 104 mit 79 382 Zeichen — 4,5 % des Budgets mehr — und lieferte ein sprunghaftes Ergebnis: Eine einzige neue Begegnung wirft die Anzahl von 98 auf 104 oder zurueck. **Welche Groesse ueberhaupt die bessere ist — mehr Begegnungen oder mehr Text —, ist ungemessen**, und der Unterschied liegt unter der Aufloesung jeder Messung, die hier vorliegt.
+
+### Und die Bindung an das juengste Themenband faellt
+
+| Traeger | vorher | Lauf 1 | Lauf 2 |
+|---|---|---|---|
+| Figur | 28,4 % | **15,8 %** | **10,8 %** |
+| Mensch | 11,4 % | **3,1 %** | **3,6 %** |
+
+Gemessen als Anteil der Inhaltswoerter des Kerns, die auch im Wortschatz der 40 neuesten Begegnungen vorkommen.
+
+> **Was diese Messung ist und was nicht.** Zwei Nachher-Laeufe je Seite gegen einen Vorher-Wert, und die Destillation selbst streut — derselbe unveraenderte Prompt lieferte ueber drei Laeufe 16,5 / 24,5 / 19,7 % auf einer verwandten Groesse. Was fuer die Wirkung spricht: **beide Seiten in derselben Richtung, beide Laeufe**, und der Abstand liegt ueber der bekannten Streuung. Was fehlt, ist eine Reihe statt zweier Punkte.
+
+### Die Ampel bleibt rot, und der Grund ist eine stillstehende Kontrolle
+
+Das Schliesskriterium des Defekteintrags lautet: Novas Kerne muessen einander messbar staerker aehneln als die Kerne verschiedener Menschen. **Diese Rechnung laesst sich heute nicht wiederholen.** Die sechs Vergleichspaare stammen aus Korpus-Laeufer-Dialogen mit rund 30 Begegnungen; sie liegen **unter** dem Budget, ihre Auswahl aendert sich also nicht. Die Kontrolle steht still, und ein Vorher-Nachher gegen eine unbewegte Kontrolle belegt nichts.
+
+> **Und ein Teilbefund ist nicht gefallen, sondern gestiegen:** Die gemeinsamen Inhaltswoerter beider Kerne gingen von 38 auf **43** und im zweiten Lauf auf **51**. Der geteilte Gespraechsstoff ist damit nicht erledigt — erledigt ist die Bindung an dessen juengsten Ausschnitt. Das sind zwei Dinge, und der Umbau trifft nur eines.
+
+**Suite 2327 → 2341 gruen, 0 uebersprungen.** Gegenprobe: drei Zeugen werden am alten Fensterverhalten rot, nach dem Rueckbau wieder gruen. Harte Wand sauber, Nulllinie unveraendert bei 1143.
 
 ---
 

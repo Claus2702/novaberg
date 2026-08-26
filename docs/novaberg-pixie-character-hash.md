@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 26. August 2026 (**das Auswahlkriterium steht** — festes Zeichenbudget beim **Vierfachen** des heutigen, darin zeitlich geschichtet; §3.1a geschlossen. Drei Kandidaten sind durch Messung ausgeschieden: `gewicht_absolut` korreliert mit **−0,716** gegen die Zeit und verliert im juengsten Zeitblock die Trennschaerfe (σ 0,27) · die Schichtung ist bei gleichem Budget nur **+8,0 %** statt der zunaechst gemessenen +73,4 % · und die Kostenannahme fiel: eine **volle Destillation dauert 261 s**, nicht die behaupteten anderthalb Stunden. Davor: 25. August 2026 (**die Grundlage wird fortgeschrieben, nicht der Text** — der Kern-Hash bleibt eine frische Destillation, aber sein Material ist kuenftig eine wachsende Auswahl rohen Wortlauts ueber die ganze Historie statt der 40 neuesten Turns; neuer §3.1a mit der Messung, die es ausgeloest hat: Novas sieben Kerne aehneln einander **nicht staerker** als die Profile sieben verschiedener Menschen — Ueberdeckung 16,0 % gegen 16,3 %, ein einziges Inhaltswort in allen sieben. **Das Auswahlkriterium ist ausdruecklich offen**, und bis es steht wird nicht gebaut). Davor: 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 26. August 2026 (**gebaut und gemessen** — die geschichtete Auswahl laeuft, 98 von 223 Begegnungen bei 75 783 von 80 000 Zeichen, und die Bindung des Kerns an das Themenband der juengsten Begegnungen faellt ueber zwei Laeufe von 28,4 % auf 15,8 % bzw. 10,8 % (Figur) und von 11,4 % auf 3,1 % bzw. 3,6 % (Mensch); voller Zyklus 261 s → rund 375 s bei Takt 600 s. **Die zweite Kontrolle hat den Bau geaendert** — die proportionale Kuerzung liess Budget liegen, ergaenzt ist ein Auffuellen. Neuer §3.1b. Davor am selben Tag: **das Auswahlkriterium steht** — festes Zeichenbudget beim **Vierfachen** des heutigen, darin zeitlich geschichtet; §3.1a geschlossen. Drei Kandidaten sind durch Messung ausgeschieden: `gewicht_absolut` korreliert mit **−0,716** gegen die Zeit und verliert im juengsten Zeitblock die Trennschaerfe (σ 0,27) · die Schichtung ist bei gleichem Budget nur **+8,0 %** statt der zunaechst gemessenen +73,4 % · und die Kostenannahme fiel: eine **volle Destillation dauert 261 s**, nicht die behaupteten anderthalb Stunden. Davor: 25. August 2026 (**die Grundlage wird fortgeschrieben, nicht der Text** — der Kern-Hash bleibt eine frische Destillation, aber sein Material ist kuenftig eine wachsende Auswahl rohen Wortlauts ueber die ganze Historie statt der 40 neuesten Turns; neuer §3.1a mit der Messung, die es ausgeloest hat: Novas sieben Kerne aehneln einander **nicht staerker** als die Profile sieben verschiedener Menschen — Ueberdeckung 16,0 % gegen 16,3 %, ein einziges Inhaltswort in allen sieben. **Das Auswahlkriterium ist ausdruecklich offen**, und bis es steht wird nicht gebaut). Davor: 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -44,7 +44,7 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 
 ~~**Quelle:** Langzeitgedächtnis (`lzg_knoten`, PostgreSQL), selektiert und gewichtet nach Anker-Stärke `gewicht_absolut` (nicht nach Präsenz/Decay). Seit Synapsen P7 (Chat 103).~~ → **Am 16.08.2026 gegen den Code geprüft und widerlegt.** `agent.py` übergibt an `kern_hash_destillieren` das Ergebnis von `_turns_laden` — **40 Rohturns aus `pipeline_log`** (`art='turn_roh'`), nicht die Langzeit-Knoten. Die Umstellung ist vom 10.08.2026 und im Code begründet: `KERN_HASH_PROMPT` fragt nach dem **WIE** jemand spricht, und die Knoten tragen das WORÜBER — aus einem *„jo"* ist dort *„Der Nutzer weiss nicht, was er hier tun soll"* geworden. Dieses Dokument war bis zum 16.08.2026 nicht nachgezogen; dieselbe falsche Quelle stand in `server/agents/charakter/AGENT.md`.
 
-**Stabilität:** Verändert sich langsam — *als Absicht*. Gemessen am 16.08.2026 liegt dem Profil ein Fenster von 40 Turns zugrunde. → **Am 25.08.2026 gemessen, und die beiden Hälften dieses Absatzes schließen einander aus** (§3.1a): Ein dauerhaftes Wesen kann aus einem gleitenden Fenster nicht entstehen.
+**Stabilität:** Verändert sich langsam — *als Absicht*. ~~Gemessen am 16.08.2026 liegt dem Profil ein Fenster von 40 Turns zugrunde.~~ → **Am 25.08.2026 gemessen, und die beiden Hälften dieses Absatzes schlossen einander aus** (§3.1a): Ein dauerhaftes Wesen kann aus einem gleitenden Fenster nicht entstehen. **Seit dem 26.08.2026 ist das Fenster fort** — die Auswahl zieht zeitlich gleichmäßig über die ganze Historie bis zu einem festen Zeichenbudget (`PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN`, §3.1b).
 
 ---
 
@@ -132,6 +132,46 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 
 **Beispiel:**
 > "Der Nutzer ist ein analytischer Denker, der komplexe Themen ganzheitlich betrachtet und dabei intuitiv von der Sachebene zur emotionalen Bedeutung wechselt. Ihm ist Wohlbefinden und Qualität wichtiger als reine Effizienz. Er kommuniziert direkt, schätzt fundierte Zwischenbestätigungen und hat ein starkes Interesse an der Schnittstelle von Technologie und menschlichem Erleben."
+
+### 3.1b Gebaut am 26.08.2026 — und was der erste Lauf ergab
+
+**`_turns_laden` liest in zwei Schritten.** Der erste holt Kennung und Zeichenzahl jeder Begegnung des Paares, älteste zuerst; `geschichtet_waehlen` wählt daraus zeitlich gleichmäßig verteilte Positionen, bis das Budget erschöpft ist; der zweite holt den Wortlaut genau dieser. **Ein Lesen der ganzen Historie in einem Zug hätte das Fenster durch eine unbegrenzt wachsende Lesemenge ersetzt** — dieselbe Sorte stiller Zuwachs, nur an anderer Stelle.
+
+**Am produktiven Paar, erster Lauf mit dem Umbau:**
+
+| | vorher | nachher |
+|---|---|---|
+| Ausgewählte Begegnungen | 40 von 223 (die neuesten) | **98 von 223** (verteilt) |
+| Zeichen der Auswahl | — | **75 783 von 80 000** |
+| Material der Figur | 15 521 Z. | **68 652 Z.** |
+| Material des Menschen | 3 879 Z. | **9 873 Z.** |
+| Kern-Lauf Figur | 71,7 s | **186 s** |
+| Voller Zyklus, 10 Calls | 261 s | **rund 375 s** (Takt 600 s) |
+
+**Die Kostenhochrechnung hat getragen.** Angesetzt waren 2,55 s je 1000 zusätzlicher Zeichen und rund 410 s für den Zyklus; gemessen wurden **2,11 s** und **375 s**.
+
+**Und die Bindung des Kerns an das Themenband der jüngsten Begegnungen ist gefallen** — gemessen als Anteil der Inhaltswörter des Kerns, die auch im Wortschatz der 40 neuesten Begegnungen vorkommen, über **zwei** Läufe nach dem Umbau:
+
+| Träger | vorher | Lauf 1 | Lauf 2 |
+|---|---|---|---|
+| Figur | 28,4 % | **15,8 %** | **10,8 %** |
+| Mensch | 11,4 % | **3,1 %** | **3,6 %** |
+
+> **Was diese Messung ist und was nicht.** Zwei Nachher-Läufe je Seite gegen einen Vorher-Wert, und die Destillation selbst streut — derselbe unveränderte Prompt lieferte über drei Läufe 16,5 / 24,5 / 19,7 % auf einer verwandten Größe (`PROFIL-EINMALERHEBUNG`). Was für die Wirkung spricht: **beide Seiten in derselben Richtung, beide Läufe**, und der Abstand liegt über der bekannten Streuung. Was fehlt, ist eine Reihe statt zweier Punkte.
+
+> **Was ausdrücklich offen bleibt.** Die entscheidende Rechnung aus `KERNHASH-TRAEGT-KEINE-PERSON` — Novas Kerne untereinander gegen die Kerne verschiedener Menschen — **lässt sich heute nicht wiederholen.** Die sechs Vergleichspaare stammen aus Korpus-Läufer-Dialogen mit rund 30 Begegnungen; sie liegen **unter** dem Budget, ihre Auswahl ändert sich also nicht. Die Kontrolle steht still, und ein Vorher-Nachher gegen eine unbewegte Kontrolle belegt nichts. Der Beleg braucht längere Vergleichskorpora oder eine Messreihe über die Zeit.
+
+> **Und ein Teilbefund ist nicht gefallen, sondern gestiegen:** Die gemeinsamen Inhaltswörter beider Kerne gingen von 38 auf **43** und im zweiten Lauf auf **51**. Der geteilte Gesprächsstoff ist damit **nicht** erledigt — erledigt ist die Bindung an dessen jüngsten Ausschnitt. Das sind zwei Dinge, und der Umbau trifft nur eines.
+
+#### Die zweite Kontrolle hat den Bau geändert
+
+Die Auswahlzahlen wurden gegen einen frischen SQL-Auszug und eine **eigene** Umsetzung derselben Vorschrift nachgerechnet. Sie stimmten zunächst **nicht**: Der Bau nahm 96 Begegnungen, die Nachrechnung fand, dass 104 ins Budget gepasst hätten. Ursache war die proportionale Kürzung — sie findet *eine* passende Anzahl, nicht die größte, und sie springt.
+
+Ergänzt wurde daraufhin ein **einzelnes Auffüllen**, solange das Budget trägt. Die Vorschrift lautet seither: proportional kürzen, dann auffüllen. Nachrechnung und Lauf stimmen jetzt auf das Zeichen überein — **98 Begegnungen, 75 783 Zeichen**.
+
+> **Die Passung ist nicht monoton, und das ist der Grund, warum das Maximum nicht gesucht wird.** Am produktiven Paar passen k=96 bis 98, **k=99 bis 103 passen nicht, k=104 passt wieder**. Ein Durchlauf über alle Anzahlen fände 104 mit 79 382 Zeichen — 4,5 % des Budgets mehr — und lieferte ein **sprunghaftes** Ergebnis: Eine einzige neue Begegnung wirft die Anzahl von 98 auf 104 oder zurück. **Welche der beiden Größen die bessere ist — mehr Begegnungen oder mehr Text —, ist ungemessen**, und der Unterschied liegt unter der Auflösung jeder Messung, die hier vorliegt.
+
+---
 
 ### 3.2 Adaptiv-Hash (KZG, Tage)
 
