@@ -1868,8 +1868,30 @@ NODE_LLM_CONFIG: dict = {
     # Beide Werte sind **Obergrenzen, keine Ziele**: Wer frueher fertig ist,
     # kostet nicht mehr. Sie stehen bewusst weit, weil der teurere Fehler
     # der Abbruch ist — er dauert dieselbe Zeit und liefert nichts.
+    # **Temperatur 0.0 seit dem 26.08.2026, und das ist eine Messung.**
+    # Bis dahin stand hier 0.2 ohne belegte Herleitung. Gemessen am selben
+    # Material, viermal je Temperatur:
+    #
+    #     T=0.2   Ueberdeckung der Laeufe 32.9 % (29.9–36.8), 3026–5045 Zeichen
+    #     T=0.0   Ueberdeckung der Laeufe 100.0 %, viermal 4798 Zeichen
+    #
+    # **Bei 0.0 sind die Laeufe zeichengleich.** Damit ist die Streuung
+    # erklaert, die den Kern-Hash unbrauchbar machte: Zwei Destillationen aus
+    # identischem Material teilten nur 27–32 % ihres Inhaltswortschatzes, und
+    # das bewegte den Zuwendungsfaktor um 29 % seiner Skala
+    # (KERNHASH-TRAEGT-KEINE-PERSON, RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE).
+    #
+    # **Der Knoten versorgt mehr als den Kern:** `_llm_call` liest ihn fuer
+    # alle fuenf Profile und beide Raeder. Die Mehrfacherhebung der Raeder
+    # (F-RAD-2) laeuft damit ins Leere — drei zeichengleiche Laeufe, dreifache
+    # Kosten. Das ist bekannt und gemessen; die Festlegung wird eigens
+    # behandelt, nicht nebenbei.
+    #
+    # **Was diese Zahl nicht sagt:** ob ein Kern bei 0.0 *besser* ist. Gemessen
+    # ist die Wiederholbarkeit, nicht die Guete — ein Profil kann eng
+    # reproduzierbar und dabei gleichmaessig falsch sein.
     "charakter_hash": {
-        "temperature": 0.2,
+        "temperature": 0.0,
         "max_output_tokens": 8192,
         "timeout_s": 1800,
     },
