@@ -9,7 +9,7 @@ Destilliert 5 Charakter-Profile aus LZG (PostgreSQL) und KZG (Redis).
 ## Profile
 | Profil | Quelle | Beschreibt |
 |--------|--------|-----------|
-| kern_hash | ~~LZG~~ → ~~40 Turns~~ → **Wortlaut der Begegnungen** (`pipeline_log`, `herkunft='nutzer_turn'`), **zeitlich geschichtet über die ganze Historie bis `PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN`** | Grundpersönlichkeit |
+| kern_hash | ~~LZG~~ → ~~40 Turns~~ → **Wortlaut der Begegnungen**, `PIXIE_CHARAKTER_KERN_LAEUFE`-fach erhoben (Medoid) (`pipeline_log`, `herkunft='nutzer_turn'`), **zeitlich geschichtet über die ganze Historie bis `PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN`** | Grundpersönlichkeit |
 | adaptive_hash | KZG | Aktuelle Phase |
 | intentions_profil | LZG | Kommunikationsstil |
 | emotions_profil | LZG | Emotionale Grundtendenz |
@@ -51,6 +51,23 @@ Takt von 600 s.
 nicht gefallen, sondern von 38 auf 43 bzw. 51 gestiegen. Der geteilte
 Gesprächsstoff bleibt; erledigt ist nur die Bindung an dessen jüngsten
 Ausschnitt.
+
+## Der Kern wird mehrfach erhoben — mit `PIXIE_CHARAKTER_KERN_LAEUFE` (26.08.2026)
+
+`kern_hash_mehrfach_destillieren` erhebt den Kern `PIXIE_CHARAKTER_KERN_LAEUFE`
+mal und speichert den **Medoid** — den Lauf mit der größten mittleren Nähe zu
+den anderen. Einen Mittelwert von Texten gibt es nicht, und aus drei Fassungen
+eine vierte bilden zu lassen wäre das Umschreiben der eigenen Ausgabe.
+
+**Jeder Lauf geht als `kern_erhebung` ins `pipeline_log`**, auch der einzelne
+und auch die verworfenen. Ein Lauf, den niemand sieht, ist von einem Lauf, den
+es nicht gab, nicht zu unterscheiden.
+
+**Der Vorgabewert ist 1, und das ist eine Messung.** Der Medoid aus drei Läufen
+senkt die Spanne des Zuwendungsfaktors von **0,2908 auf 0,2615** bei
+**dreifacher** Rechenzeit — bei vier Punkten je Reihe nicht von Rauschen zu
+unterscheiden. Der Grund: Der Medoid wählt den zentralsten aus drei Ziehungen
+einer sehr breiten Verteilung, und der ist immer noch fast eine Ziehung.
 
 ## Wo Impulse ausgenommen werden — und wo nicht (17.08.2026)
 

@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **21:24 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **22:25 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 136 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 137 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,37 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 22:25 UTC — der Medoid ist gebaut, und die Messung faellt gegen ihn aus
+
+Gegen `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` lag der naheliegende Griff bereit: denselben Gedanken wie `F-RAD-2` eine Stufe frueher ansetzen. Einen Mittelwert von Texten gibt es nicht, und aus drei Fassungen eine vierte bilden zu lassen waere das Umschreiben der eigenen Ausgabe. Gewaehlt wurde der **Medoid** — der Lauf mit der groessten mittleren Naehe zu den anderen.
+
+### Die Messung
+
+Dieselbe Anordnung wie beim Befund: Material und Beziehungsprofil festgehalten, variiert nur der Kern.
+
+| | Spanne des Faktors | Kosten je Kern |
+|---|---|---|
+| Einzel-Kerne | **0,2908** | rund 110 s |
+| Medoid aus drei Laeufen | **0,2615** | rund **230 s** |
+
+**10 % weniger Streuung fuer das Dreifache an Rechenzeit** — und bei vier Punkten je Reihe ist dieser Unterschied nicht von Rauschen zu unterscheiden. Die vier Medoid-Faktoren: 1,1668 · 0,9735 · 1,2350 · 1,2145.
+
+> **Der Grund ist einsichtig, nachdem man ihn sieht.** Der Medoid waehlt den zentralsten aus **drei** Ziehungen einer sehr breiten Verteilung; bei dieser Breite ist der zentralste von dreien immer noch fast eine Ziehung. Um sie ernsthaft zu verschmaelern, braeuchte es viele Laeufe — und die Kosten wachsen linear.
+
+Live gerechnet waeren es rund 560 s allein fuer den Kern der Figur und ein Zyklus von etwa 900 s gegen einen Takt von 600 s.
+
+### Was bleibt, und warum es bleibt
+
+`PIXIE_CHARAKTER_KERN_LAEUFE` steht auf **1**. Der Mechanismus bleibt gebaut, und mit ihm die Senke: Jeder Lauf steht als `kern_erhebung` im `pipeline_log`, auch der einzelne — im Betrieb belegt, eine Zeile je Traeger. Wer die Streuung ernsthaft verschmaelern will, aendert eine Konstante statt zu bauen, und weiss dank der Messung, was er dafuer bekommt.
+
+> **Was das ausschliesst, ist mehr wert als das, was es liefert.** Die Mehrfacherhebung des Kerns ist als Weg **geprueft und zu teuer fuer ihre Wirkung**. Die Streuung muss dort kleiner werden, wo sie entsteht — bei der Ableitung selbst. `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` bleibt offen, aber um einen begangenen Weg aermer.
+
+**Suite 2341 → 2355 gruen, 0 uebersprungen.** Gegenprobe: **2 vorhergesagt, 3 gezaehlt** — der dritte Zeuge fiel mit, weil bei umgekehrter Wahl der Ausreisser auch die Stellungspruefung trifft. Dazu ein eigener Rueckbau fuer die Verdrahtung: 1 vorhergesagt, 1 gezaehlt. Harte Wand sauber, Nulllinie unveraendert bei 1143.
+
+**Ein bestehender Riegel hat dabei das Testmaterial gefangen:** `test_prompt_beispielnamen` schlug an, weil im Zeugen ein echter Ortsname stand. Er hatte recht; der Name ist ersetzt.
 
 ---
 
