@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 537 Abschnitte in 5 Dateien — 219 mit eigenem Datum, 317 geerbt, 1 ohne.
+**Umfang:** 543 Abschnitte in 5 Dateien — 220 mit eigenem Datum, 322 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 274 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 280 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 537 Marken, 537 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 543 Marken, 543 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,12 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-26 | laufend | ## | [26.08.2026, 19:42 UTC — das Auswahlkriterium, und eine Kostenannahme, die keine war](novaberg-roadmap.md#26082026-1942-utc--das-auswahlkriterium-und-eine-kostenannahme-die-keine-war) |
+| (2026-08-26) | laufend | ### | · [`gewicht_absolut` ist erreichbar, trennt, und bevorzugt das Alte](novaberg-roadmap.md#gewichtabsolut-ist-erreichbar-trennt-und-bevorzugt-das-alte) |
+| (2026-08-26) | laufend | ### | · [Die Schichtung ist die kleinere Haelfte, und die erste Zahl log](novaberg-roadmap.md#die-schichtung-ist-die-kleinere-haelfte-und-die-erste-zahl-log) |
+| (2026-08-26) | laufend | ### | · [Die Kostenannahme, die ein groesseres Budget verbot](novaberg-roadmap.md#die-kostenannahme-die-ein-groesseres-budget-verbot) |
+| (2026-08-26) | laufend | ### | · [Und die Eingabelaenge ist nicht der Treiber](novaberg-roadmap.md#und-die-eingabelaenge-ist-nicht-der-treiber) |
+| (2026-08-26) | laufend | ### | · [Entschieden: Faktor 4](novaberg-roadmap.md#entschieden-faktor-4) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 21:28 UTC — der Auftrag wurde von seiner eigenen Vormessung widerlegt](novaberg-roadmap.md#25082026-2128-utc--der-auftrag-wurde-von-seiner-eigenen-vormessung-widerlegt) |
 | (2026-08-25) | laufend | ### | · [Die naheliegende Reparatur, widerlegt am Material](novaberg-roadmap.md#die-naheliegende-reparatur-widerlegt-am-material) |
 | (2026-08-25) | laufend | ### | · [Die Gegenprobe des Eintrags haelt — und deckte etwas Groesseres auf](novaberg-roadmap.md#die-gegenprobe-des-eintrags-haelt--und-deckte-etwas-groesseres-auf) |

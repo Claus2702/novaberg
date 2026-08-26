@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 25. August 2026 (**die Grundlage wird fortgeschrieben, nicht der Text** — der Kern-Hash bleibt eine frische Destillation, aber sein Material ist kuenftig eine wachsende Auswahl rohen Wortlauts ueber die ganze Historie statt der 40 neuesten Turns; neuer §3.1a mit der Messung, die es ausgeloest hat: Novas sieben Kerne aehneln einander **nicht staerker** als die Profile sieben verschiedener Menschen — Ueberdeckung 16,0 % gegen 16,3 %, ein einziges Inhaltswort in allen sieben. **Das Auswahlkriterium ist ausdruecklich offen**, und bis es steht wird nicht gebaut). Davor: 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 26. August 2026 (**das Auswahlkriterium steht** — festes Zeichenbudget beim **Vierfachen** des heutigen, darin zeitlich geschichtet; §3.1a geschlossen. Drei Kandidaten sind durch Messung ausgeschieden: `gewicht_absolut` korreliert mit **−0,716** gegen die Zeit und verliert im juengsten Zeitblock die Trennschaerfe (σ 0,27) · die Schichtung ist bei gleichem Budget nur **+8,0 %** statt der zunaechst gemessenen +73,4 % · und die Kostenannahme fiel: eine **volle Destillation dauert 261 s**, nicht die behaupteten anderthalb Stunden. Davor: 25. August 2026 (**die Grundlage wird fortgeschrieben, nicht der Text** — der Kern-Hash bleibt eine frische Destillation, aber sein Material ist kuenftig eine wachsende Auswahl rohen Wortlauts ueber die ganze Historie statt der 40 neuesten Turns; neuer §3.1a mit der Messung, die es ausgeloest hat: Novas sieben Kerne aehneln einander **nicht staerker** als die Profile sieben verschiedener Menschen — Ueberdeckung 16,0 % gegen 16,3 %, ein einziges Inhaltswort in allen sieben. **Das Auswahlkriterium ist ausdruecklich offen**, und bis es steht wird nicht gebaut). Davor: 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -82,17 +82,41 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 
 > **Die gewählte Variante hat diese Eigenschaft nicht.** Weil weiterhin jedes Mal aus Material destilliert wird, bleibt jede Zeile auf Turns zurückführbar, und eine Änderung des Profils hat immer eine Änderung des Materials als Ursache. **Dauerhaft wird nicht der Satz, sondern das, woraus er entsteht.**
 
-#### Offen: das Auswahlkriterium
+#### Das Auswahlkriterium — entschieden am 26.08.2026
 
-**Welche Turns in die wachsende Auswahl kommen, ist nicht entschieden.** Das ist keine Implementierungsfrage, sondern die eigentliche Absicht dieses Umbaus — sie entscheidet, was am Ende „dauerhaft" heißt.
+**Ein festes Zeichenbudget beim Vierfachen des heutigen, darin zeitlich geschichtet.** Nicht die ganze Historie: Sie trägt heute 165 138 Zeichen auf der Seite der Figur und wächst weiter — was heute ginge, geht in einem Jahr nicht mehr, und ein Kriterium, das erst später greift, ist keins.
 
-- **`gewicht_absolut` gibt es für Turns nicht.** Es ist eine Eigenschaft der Langzeit-Knoten; der Rohwortlaut trägt keine Anker-Stärke.
-- **`salienz × zeitgewicht`** ist der Maßstab, den §4b für den Adaptiv-Hash herleitet — und er ordnet nach *Aktualität*, also nach genau der Größe, die hier das Problem ist.
-- **„Die N neuesten"** ist der heutige Zustand und damit ausgeschieden.
+**Der Weg dorthin hat drei Kandidaten ausgeschieden, jeden durch eine Messung.**
 
-Zu klären ist außerdem, ob die Auswahl **wächst oder gedeckelt** ist. Wächst sie unbegrenzt, wächst der Prompt mit; ist sie gedeckelt, entscheidet das Verdrängungskriterium erneut dieselbe Frage — nur später und unsichtbarer.
+**`gewicht_absolut` über `verbindung` — ausgeschieden.** Der Handgriff existiert und deckt den Bestand: **221 von 223** Begegnungen tragen eine `verbindung`-Zeile, **159** erreichen einen `lzg_knoten`. Die Ankerstärke trennt auch (3,39 bis 9,40, σ 1,15). **Aber sie korreliert mit −0,716 gegen die Zeit** — sie bevorzugt *alte* Turns —, und geschichtet wird es schlimmer statt besser:
 
-> **Bis das Kriterium steht, wird nichts gebaut.** Ein Umbau, der die Auswahl offen lässt, ersetzt ein unbegründetes Kriterium durch ein anderes und misst hinterher denselben Wert.
+| Zeitblock | Turns | Mittlere Ankerstärke | Streuung |
+|---|---|---|---|
+| 02.–15.08. | 32 | 5,93 | 1,67 |
+| 15.–18.08. | 32 | 4,66 | 0,70 |
+| 18.–21.08. | 32 | 4,21 | 0,55 |
+| 22.–24.08. | 32 | 4,08 | 0,53 |
+| 24.–25.08. | 31 | 3,83 | **0,27** |
+
+**Im jüngsten Block ist die Trennschärfe weg.** Die Ankerstärke ist überwiegend **Reifung**: Ein Knoten braucht Zeit, um sie aufzubauen.
+
+> **Daraus die allgemeine Form, und sie gilt über diesen Fall hinaus:** Jedes Maß, das aus den **nachgelagerten Speichern** stammt — KZG-Salienz, Ankerstärke, Decay —, erbt deren Reifungsbias. Es bevorzugt das Alte, so wie das gleitende Fenster das Neue bevorzugt. **Ein zeitneutrales Kriterium muss am Turn selbst rechenbar sein**, im Moment seines Entstehens.
+
+**Die Schichtung als Haupthebel — ausgeschieden, und die erste Zahl war irreführend.** Bei gleicher **Turn-Zahl** deckt eine über die Historie verteilte Auswahl **+73,4 %** mehr Wortschatz der Figur. Bei gleichem **Zeichenbudget** bleiben davon **+8,0 %** (Figur) und **+14,6 %** (Mensch) — der Rest war schlicht mehr Text, 15 082 → 28 627 Zeichen. **Der Hebel ist die Menge, nicht die Verteilung.** Die Schichtung bleibt richtig; sie ist die kleinere, dafür kostenlose Hälfte.
+
+**Und die Kostenannahme, die gegen ein größeres Budget sprach, hielt der Messung nicht stand.** Gemessen am 26.08.2026 über drei vollständige Zyklen aus dem Server-Log:
+
+| Gegenstand | Zeichen | Median | Spanne |
+|---|---|---|---|
+| Kern-Hash `meister` | 4 390 | **43,2 s** | 37,1–57,3 s |
+| Kern-Hash `nova` | 15 585 | **71,7 s** | 39,1–74,5 s |
+| Volle Destillation, 10 Calls, beide Subjekte | — | **261 s** | 204–395 s |
+
+**Die Eingabelänge ist nicht der Treiber.** Die 3,55-fache Eingabe kostet die 1,66-fache Zeit; über die Rad-Messreihe (222 Läufe zwischen 3 125 und 6 228 Zeichen) liegt die Korrelation von Quellenlänge und Dauer bei **0,221**. Die Zeit geht in die Erzeugung, nicht ins Einlesen — und deshalb ist ein größeres Budget billig.
+
+**Gewählt ist Faktor 4.** Hochgerechnet mit 2,55 s je 1000 zusätzlicher Zeichen liegt die volle Destillation dann bei rund **410 s** gegen einen Takt von 600 s; Faktor 5 liefe auf rund 465 s zu. **Die Hochrechnung ist eine Extrapolation aus zwei Eingabegrößen und keine Messung bei 78 000 Zeichen** — ob Faktor 5 auch trägt, entscheidet ein echter Lauf beim Zielumfang, und der kostet einen Call.
+
+> **Die Deckelung ist damit ausdrücklich beantwortet:** Das Budget ist fest, nicht wachsend. Was wächst, ist die **Grundgesamtheit**, aus der geschichtet gezogen wird — und genau darin liegt die Dauerhaftigkeit: Ein Turn von vor einem Jahr hat dieselbe Chance, gezogen zu werden, wie einer von gestern.
 
 ---
 

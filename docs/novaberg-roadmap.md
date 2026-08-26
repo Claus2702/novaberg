@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **21:28 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **19:42 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 131 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 132 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,60 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 19:42 UTC — das Auswahlkriterium, und eine Kostenannahme, die keine war
+
+Der Riegel vom Vortag lautete: Bis das Auswahlkriterium des Kern-Hash steht, wird nicht gebaut. Er ist heute gefallen — und drei Kandidaten sind dabei ausgeschieden, jeder durch eine Zahl.
+
+### `gewicht_absolut` ist erreichbar, trennt, und bevorzugt das Alte
+
+Der Handgriff existiert: **221 von 223** Begegnungen tragen eine `verbindung`-Zeile, **159** erreichen einen `lzg_knoten`. Die Ankerstaerke spreizt sich von 3,39 bis 9,40 bei σ 1,15 — sie waere ein Selektor.
+
+**Sie korreliert mit −0,716 gegen die Zeit.** Und geschichtet wird es nicht besser, sondern schlechter:
+
+| Zeitblock | Turns | Mittlere Ankerstaerke | Streuung |
+|---|---|---|---|
+| 02.–15.08. | 32 | 5,93 | 1,67 |
+| 15.–18.08. | 32 | 4,66 | 0,70 |
+| 18.–21.08. | 32 | 4,21 | 0,55 |
+| 22.–24.08. | 32 | 4,08 | 0,53 |
+| 24.–25.08. | 31 | 3,83 | **0,27** |
+
+Im juengsten Block ist die Trennschaerfe weg. Die Ankerstaerke ist ueberwiegend **Reifung** — ein Knoten braucht Zeit, um sie aufzubauen.
+
+> **Daraus die allgemeine Form:** Jedes Mass aus den **nachgelagerten Speichern** — KZG-Salienz, Ankerstaerke, Decay — erbt deren Reifungsbias und bevorzugt das Alte, so wie das gleitende Fenster das Neue bevorzugt. Ein zeitneutrales Kriterium muss **am Turn selbst** rechenbar sein.
+
+### Die Schichtung ist die kleinere Haelfte, und die erste Zahl log
+
+Bei gleicher **Turn-Zahl** deckt eine verteilte Auswahl **+73,4 %** mehr Wortschatz der Figur. Bei gleichem **Zeichenbudget** bleiben **+8,0 %** (Figur) und **+14,6 %** (Mensch). Der Rest war schlicht mehr Text — 15 082 gegen 28 627 Zeichen. **Der Hebel ist die Menge, nicht die Verteilung**, und die Schichtung bleibt richtig als die kostenlose Haelfte.
+
+### Die Kostenannahme, die ein groesseres Budget verbot
+
+`PROFIL-EINMALERHEBUNG` haelt seit dem 19.08.2026 die Dreifacherhebung der Profile zurueck, mit dieser Begruendung: *„Ein Profillauf dauert 340 bis 500 s, fuenf Profile je Paar mal drei Laeufe sind rund anderthalb Stunden je Destillation."* Gemessen ueber drei vollstaendige Zyklen im Server-Log:
+
+| Gegenstand | Zeichen | Median | Spanne |
+|---|---|---|---|
+| Kern-Hash `meister` | 4 390 | **43,2 s** | 37,1–57,3 s |
+| Kern-Hash `nova` | 15 585 | **71,7 s** | 39,1–74,5 s |
+| Volle Destillation, 10 Calls, beide Subjekte | — | **261 s** | 204–395 s |
+
+**Die gemessene Gesamtdestillation ist kuerzer als der behauptete Einzellauf.** Die Annahme liegt um Faktor 8 bis 13 zu hoch; dieselbe Zahl steht als Messwert im Kommentar an `timeout_s` in `_llm_call` und behauptet dort *„rund 8 Minuten"* fuer einen Rad-Aufruf, dessen Median ueber 222 Laeufe **28 s** betraegt.
+
+> **Ein Messwert im Kommentar altert wie ein Befund, und niemand haelt ihn nach.** Die Frist selbst ist unberuehrt — eine zu weite Obergrenze kostet nichts. Falsch ist die Begruendung, und sie wird zitiert.
+
+### Und die Eingabelaenge ist nicht der Treiber
+
+Die 3,55-fache Eingabe kostet die 1,66-fache Zeit; ueber die Rad-Messreihe (222 Laeufe zwischen 3 125 und 6 228 Zeichen) liegt die Korrelation von Quellenlaenge und Dauer bei **0,221**. Die Zeit geht in die Erzeugung, nicht ins Einlesen — **deshalb ist ein groesseres Budget billig.**
+
+### Entschieden: Faktor 4
+
+Hochgerechnet mit 2,55 s je 1000 zusaetzlicher Zeichen liegt die volle Destillation bei rund **410 s** gegen einen Takt von 600 s; Faktor 5 liefe auf 465 s zu. **Die Hochrechnung ist eine Extrapolation aus zwei Eingabegroessen und keine Messung bei 78 000 Zeichen** — ob 5 auch traegt, entscheidet ein Lauf beim Zielumfang.
+
+Das Budget ist **fest, nicht wachsend**. Was waechst, ist die Grundgesamtheit, aus der geschichtet gezogen wird — und darin liegt die Dauerhaftigkeit: Ein Turn von vor einem Jahr hat dieselbe Chance wie einer von gestern.
+
+**`KERNAUSWAHL-KRITERIUM-OFFEN` geschlossen, `KERNHASH-TRAEGT-KEINE-PERSON` baubereit, `PROFIL-EINMALERHEBUNG` ohne seinen Sperrgrund. Kein Code geaendert.**
 
 ---
 

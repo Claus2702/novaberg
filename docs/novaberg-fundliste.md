@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 21:33 UTC
-**Offen:** **113 Funde — gezaehlt am 25.08.2026, 21:33 UTC** (121 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **drei Funde aus der Vermessung des Kern-Hash sind noch am selben Tag umgezogen** und stehen unter `KERNHASH-TRAEGT-KEINE-PERSON` bzw. in der Zustandszeile von `KERNHASH-OHNE-PERSPEKTIVTRENNUNG`; **einer neu**: die beiden generierten Findemittel driften ungeprueft)
+**Stand:** 26. August 2026, 19:42 UTC
+**Offen:** **114 Funde — gezaehlt am 26.08.2026, 19:42 UTC** (122 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu**: der Kommentar an der Frist in `_llm_call` nennt Dauern um eine Groessenordnung zu hoch, und dieselbe Zahl haelt `PROFIL-EINMALERHEBUNG` zurueck)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -237,6 +237,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-26** — **Der Kommentar an der Frist in `_llm_call` nennt Dauern, die um eine Groessenordnung zu hoch sind.** `agents/charakter/destillation.py` begruendet `timeout_s = 1800` mit *„gemessen wurden 3288 Zeichen und rund 18 Minuten fuer Kern und Rad zusammen, bei einem einzelnen Rad-Aufruf von rund 8 Minuten"*. **Gemessen am 26.08.2026:** Ein Rad-Lauf dauert im Median **28 s** (222 Laeufe aus `charakter_rad_messung`, Spanne 6–39 s), ein Kern-Lauf **43,2 s** bei 4390 Zeichen und **71,7 s** bei 15 585 Zeichen, und eine **volle Destillation aus zehn Calls ueber beide Subjekte 261 s** (drei Zyklen, Spanne 204–395 s). Die behaupteten 8 Minuten fuer einen Rad-Aufruf sind das **17-fache** des gemessenen Medians. **Die Frist selbst ist davon unberuehrt** — eine Obergrenze, die zu weit steht, kostet nichts. Falsch ist die **Begruendung**, und sie wird zitiert: Dieselbe Zahl steht als Kostengrund in `PROFIL-EINMALERHEBUNG` und hat den Eintrag seit dem 19.08.2026 zurueckgehalten. **Ein Messwert im Kommentar altert wie ein Befund, und niemand haelt ihn nach.**
 
 - **2026-08-25** — **Die beiden generierten Findemittel driften gegen ihre Quellen, und keine Pruefung merkt es.** `roadmap_index.py` und `backlog_index.py` haben je einen `--pruefen`-Modus und stehen als **C22** und **C23** im Aufgabenkatalog — **aber kein Hook und keine Commit-Pruefung ruft sie auf**; die zehn eingetragenen Hooks in `.claude/settings.json` nennen keinen von beiden. Beim ersten Lauf dieser Sitzung sprang die Chronik-Zaehlung von **505 auf 537 Abschnitte** — davon stammen **7 aus dieser Sitzung, 25 waren aelter**. Und das Backlog-Findemittel fuehrte `HALTUNG-SPANNENENDEN-OFFEN` weiterhin als doppelte Kennung, **obwohl der Commit `af14b6d` vom Vortag genau diese Dopplung aufgeloest hat** — die Quelle war repariert, das Findemittel behauptete den Defekt einen Tag laenger. **Ein Findemittel, das seiner Quelle hinterherhinkt, ist von einem falschen nicht zu unterscheiden**, und der Fall ist derselbe wie bei den unbedingten Nachzugszielen: Ein Ziel, dessen Ausloeser *„immer, sobald die Quelle sich aendert"* lautet, ist kein Suchproblem — und darf deshalb nicht gesucht werden.
 
