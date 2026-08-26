@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 25. August 2026 (**die Grundlage wird fortgeschrieben, nicht der Text** — der Kern-Hash bleibt eine frische Destillation, aber sein Material ist kuenftig eine wachsende Auswahl rohen Wortlauts ueber die ganze Historie statt der 40 neuesten Turns; neuer §3.1a mit der Messung, die es ausgeloest hat: Novas sieben Kerne aehneln einander **nicht staerker** als die Profile sieben verschiedener Menschen — Ueberdeckung 16,0 % gegen 16,3 %, ein einziges Inhaltswort in allen sieben. **Das Auswahlkriterium ist ausdruecklich offen**, und bis es steht wird nicht gebaut). Davor: 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -44,7 +44,57 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 
 ~~**Quelle:** Langzeitgedächtnis (`lzg_knoten`, PostgreSQL), selektiert und gewichtet nach Anker-Stärke `gewicht_absolut` (nicht nach Präsenz/Decay). Seit Synapsen P7 (Chat 103).~~ → **Am 16.08.2026 gegen den Code geprüft und widerlegt.** `agent.py` übergibt an `kern_hash_destillieren` das Ergebnis von `_turns_laden` — **40 Rohturns aus `pipeline_log`** (`art='turn_roh'`), nicht die Langzeit-Knoten. Die Umstellung ist vom 10.08.2026 und im Code begründet: `KERN_HASH_PROMPT` fragt nach dem **WIE** jemand spricht, und die Knoten tragen das WORÜBER — aus einem *„jo"* ist dort *„Der Nutzer weiss nicht, was er hier tun soll"* geworden. Dieses Dokument war bis zum 16.08.2026 nicht nachgezogen; dieselbe falsche Quelle stand in `server/agents/charakter/AGENT.md`.
 
-**Stabilität:** Verändert sich langsam — *als Absicht*. Gemessen am 16.08.2026 liegt dem Profil ein Fenster von 40 Turns zugrunde.
+**Stabilität:** Verändert sich langsam — *als Absicht*. Gemessen am 16.08.2026 liegt dem Profil ein Fenster von 40 Turns zugrunde. → **Am 25.08.2026 gemessen, und die beiden Hälften dieses Absatzes schließen einander aus** (§3.1a): Ein dauerhaftes Wesen kann aus einem gleitenden Fenster nicht entstehen.
+
+---
+
+### 3.1a Die Grundlage wird fortgeschrieben, nicht der Text
+
+**Entschieden am 25. August 2026.** Der Kern-Hash wird weiterhin bei jedem Lauf **frisch destilliert** — fortgeschrieben wird nicht sein Text, sondern das **Material**, aus dem er entsteht: statt der 40 neuesten Turns eine **wachsende Auswahl rohen Wortlauts über die ganze Historie**.
+
+#### Der Anlass — die Messung vom 25.08.2026
+
+**Novas Kern-Hash trug keine wiedererkennbare Person.** Gemessen über alle belegten Zeilen von `charakter_hash`, ohne Modell, drei unabhängige Kennzahlen:
+
+| Kennzahl | Novas sieben Kerne | Sieben verschiedene Menschen | Abstand |
+|---|---|---|---|
+| Jaccard über den Inhaltswortschatz | **5,0 %** (2,4–9,2) | 4,3 % (1,4–8,6) | +0,6 Punkte |
+| Überdeckung des kleineren Wortschatzes | **16,0 %** (8,9–22,2) | 16,3 % (5,6–40,0) | **−0,3 Punkte** |
+| Wiederkehr über alle sieben Profile | **1** von 641 Inhaltswörtern | — | 531 in genau einem |
+
+**Der Abstand ist kleiner als die Streuung beider Reihen, und bei der längenunempfindlichen Kennzahl dreht das Vorzeichen.** Das einzige Wort in allen sieben Profilen ist *„geprägt"* — ein Wort der Prompt-Schablone, kein Zug. Die zweite Kennzahl steht daneben, weil die kurzen Korpusprofile (601–839 Zeichen) den Jaccard drücken; sie ist gegen diesen Einwand robust und sagt dasselbe.
+
+**Was stattdessen im Kern steht, ist der Gesprächsstoff.** Beide Kerne des produktiven Paares teilen 47 Inhaltswörter, und die Liste liest sich wie das Themenband der 40 Turns: `kochen, zutaten, geschmack, spiel, node, regeln, ordnung, struktur, effizienz, beständigkeit`. **Das ist genau das, wovor `KERN_HASH_PROMPT` wörtlich warnt** — »Nicht WORÜBER {traeger} spricht charakterisiert {traeger}, sondern WIE«.
+
+> **Die Perspektivtrennung ist daran unschuldig und hält.** Wortgleiche Zitate zwischen beiden Kernen: **0**. Die Zitatlisten sind sauber getrennt — sie: »Rauschen«, »Entropie«, »Frequenzregler«; er: »Hey Kleines«, »Hehe«, »Permadeath«. Die Reparatur vom 17.08.2026 ist damit ein zweites Mal belegt, und der Fund ist **nicht** die große Form von `KERNHASH-OHNE-PERSPEKTIVTRENNUNG`: Dort enthält der Kern zu 42 % die **falsche** Person, hier zu keinem messbaren Anteil **irgendeine**.
+
+#### Die Ursache — der Kern hat kein Gedächtnis seiner selbst
+
+`kern_hash_destillieren(turn_eintraege, user_id)` bekommt den bestehenden `kern_hash` **nicht**; in `agent.py` ist er ausschließlich Schreibziel, nie Eingang. Jeder Lauf liest die neuesten 40 Turns (`_turns_laden`, `grenze=40`) und überschreibt das Ergebnis. Bei `PIXIE_CHARAKTER_INTERVALL_SEKUNDEN = 600` und gesetztem `hash_dirty` heißt das: **alle zehn Minuten ein frisches Urteil aus rund zwei Tagen Gespräch.**
+
+**Der Umbau vom 10.08.2026 hat den richtigen Fehler behoben und die Dauerhaftigkeit ungefragt mitgenommen.** Bis dahin las der Kern über `_lzg_kern_laden` nach `gewicht_absolut` über den **ganzen Bestand** — kumulativ, aber aus Langzeit-Knoten, die das WORÜBER tragen. Der Wechsel auf den Rohwortlaut war richtig und hat die Auswahl gleich mit auf *„die neuesten"* gestellt. **Zwei Eigenschaften wurden getauscht, nicht abgewogen.**
+
+#### Warum nicht die beiden anderen Lesarten von „fortschreiben"
+
+**Anhängen** — der neue Lauf schreibt Zeilen dazu. Fällt aus: Der Kern geht in jeden Antwort-Prompt ein und darf nicht monoton wachsen; zwei widersprüchliche Absätze nebeneinander sind ein Protokoll, kein Profil.
+
+**Den Text fortschreiben** — der alte Kern als zweiter Eingang, das Modell verdichtet ihn mit den neuen Turns. Fällt aus, und der Grund ist nicht der Aufwand: **Jeder Lauf rendert die eigene vorherige Ausgabe erneut.** Nach zwanzig Läufen ist keine Zeile mehr auf einen Turn zurückführbar, und ob eine Änderung aus neuem Material stammt oder aus dem Umschreiben, ist nicht mehr entscheidbar — der Drift hat keine Messgröße. Dazu ist der alte Kern eine fertige, selbstbewusste Aussage und die rohen Turns sind es nicht; das Modell wird ihm mehr glauben als dem Material, und frühe Eindrücke frieren ein.
+
+> **Die gewählte Variante hat diese Eigenschaft nicht.** Weil weiterhin jedes Mal aus Material destilliert wird, bleibt jede Zeile auf Turns zurückführbar, und eine Änderung des Profils hat immer eine Änderung des Materials als Ursache. **Dauerhaft wird nicht der Satz, sondern das, woraus er entsteht.**
+
+#### Offen: das Auswahlkriterium
+
+**Welche Turns in die wachsende Auswahl kommen, ist nicht entschieden.** Das ist keine Implementierungsfrage, sondern die eigentliche Absicht dieses Umbaus — sie entscheidet, was am Ende „dauerhaft" heißt.
+
+- **`gewicht_absolut` gibt es für Turns nicht.** Es ist eine Eigenschaft der Langzeit-Knoten; der Rohwortlaut trägt keine Anker-Stärke.
+- **`salienz × zeitgewicht`** ist der Maßstab, den §4b für den Adaptiv-Hash herleitet — und er ordnet nach *Aktualität*, also nach genau der Größe, die hier das Problem ist.
+- **„Die N neuesten"** ist der heutige Zustand und damit ausgeschieden.
+
+Zu klären ist außerdem, ob die Auswahl **wächst oder gedeckelt** ist. Wächst sie unbegrenzt, wächst der Prompt mit; ist sie gedeckelt, entscheidet das Verdrängungskriterium erneut dieselbe Frage — nur später und unsichtbarer.
+
+> **Bis das Kriterium steht, wird nichts gebaut.** Ein Umbau, der die Auswahl offen lässt, ersetzt ein unbegründetes Kriterium durch ein anderes und misst hinterher denselben Wert.
+
+---
 
 > **Nur Begegnungen zählen — seit dem 16.08.2026.** `_turns_laden` verlangt `herkunft='nutzer_turn'`. Ein **eigener Impuls hat kein Gegenüber**, und beide Räder messen eine Haltung *gegenüber* jemandem; er trägt deshalb zu keinem der beiden Profile bei.
 >

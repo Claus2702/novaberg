@@ -189,9 +189,37 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ---
 
+### `KERNHASH-TRAEGT-KEINE-PERSON` — sieben Profile derselben Figur aehneln einander nicht
+
+**Zustand:** offen — gemessen am 25.08.2026 gegen den Produktivbestand. **Die Absicht ist am 25.08.2026 entschieden** (`novaberg-pixie-character-hash.md` §3.1a: die **Grundlage** wird fortgeschrieben, nicht der Text); **das Auswahlkriterium ist ausdruecklich offen, und bis es steht wird nicht gebaut.**
+
+**Befund (25.08.2026), aus der Fundliste uebernommen.** **Novas Kern-Hash traegt keine wiedererkennbare Person.** Ihre sieben Profile — eines je Gegenueber — aehneln einander nicht staerker als die Profile sieben verschiedener Menschen. Gemessen ueber alle belegten Zeilen von `charakter_hash`, **ohne Modell**, drei unabhaengige Kennzahlen:
+
+| Kennzahl | Novas sieben Kerne | Sieben verschiedene Menschen | Abstand |
+|---|---|---|---|
+| Jaccard ueber den Inhaltswortschatz | **5,0 %** (Spanne 2,4–9,2) | 4,3 % (Spanne 1,4–8,6) | +0,6 Punkte |
+| Ueberdeckung des kleineren Wortschatzes | **16,0 %** (8,9–22,2) | 16,3 % (5,6–40,0) | **−0,3 Punkte** |
+| Wiederkehr ueber alle sieben Profile | **1** von 641 Inhaltswoertern | — | 531 in genau einem |
+
+**Der Abstand ist kleiner als die Streuung beider Reihen, und bei der laengenunempfindlichen Kennzahl dreht das Vorzeichen.** Das einzige Wort in allen sieben Profilen ist *„gepraegt"* — ein Wort der Prompt-Schablone, kein Zug. Die zweite Kennzahl steht neben der ersten, weil die kurzen Korpusprofile (601–839 Zeichen) den Jaccard strukturell druecken; sie ist gegen diesen Einwand robust und sagt dasselbe.
+
+**Was stattdessen im Kern steht, ist der Gespraechsstoff.** Beide Kerne des produktiven Paares teilen 47 Inhaltswoerter, und die Liste ist das Themenband der 40 Turns: `kochen, zutaten, geschmack, spiel, node, regeln, ordnung, struktur, effizienz, bestaendigkeit`. **Das ist genau der Fall, vor dem `KERN_HASH_PROMPT` woertlich warnt** — »Nicht WORUEBER {traeger} spricht charakterisiert {traeger}, sondern WIE«.
+
+**Die Ursache ist die Bauart, nicht der Prompt.** `kern_hash_destillieren(turn_eintraege, user_id)` bekommt den bestehenden `kern_hash` **nicht**; in `agent.py` ist er ausschliesslich Schreibziel (Zeile 1111), nie Eingang. Jeder Lauf liest die **neuesten 40 Turns** (`_turns_laden`, `grenze=40`) und ueberschreibt das Ergebnis — bei `PIXIE_CHARAKTER_INTERVALL_SEKUNDEN = 600` und gesetztem `hash_dirty` alle zehn Minuten ein frisches Urteil aus rund zwei Tagen Gespraech. **Das Konzept nannte beide Haelften des Widerspruchs im selben Absatz** (§3.1: »Veraendert sich langsam — *als Absicht*« neben »ein Fenster von 40 Turns«).
+
+**Der Umbau vom 10.08.2026 hat den richtigen Fehler behoben und die Dauerhaftigkeit ungefragt mitgenommen.** `_lzg_kern_laden` waehlte nach `gewicht_absolut` ueber den ganzen Bestand — kumulativ, aber aus Langzeit-Knoten, die das WORUEBER tragen. Der Wechsel auf den Rohwortlaut war richtig und hat die Auswahl gleich mit auf *„die neuesten"* gestellt. Zwei Eigenschaften wurden getauscht, nicht abgewogen.
+
+> **Abgegrenzt gegen `KERNHASH-OHNE-PERSPEKTIVTRENNUNG`:** Das ist nicht dessen grosse Form. Dort enthaelt der Kern zu **42 %** die **falsche** Person; hier zu keinem messbaren Anteil **irgendeine**. **Die Perspektivtrennung haelt und ist daran unschuldig** — wortgleiche Zitate zwischen beiden Kernen **0**, die Zitatlisten sauber getrennt (sie: »Rauschen«, »Entropie«, »Frequenzregler«; er: »Hey Kleines«, »Hehe«, »Permadeath«). Die Reparatur vom 17.08.2026 ist damit ein zweites Mal belegt.
+
+**Was der Befund nicht entscheidet:** ob der Kern keine Person traegt oder ob die Figur ueber sieben Gegenueber keine stabile Person **hat**. Sechs der sieben Korpora sind Korpus-Laeufer-Dialoge, nur `meister` ist das produktive Paar. **Beide Lesarten widersprechen §3.1** — die zweite verschiebt nur, wo der Widerspruch sitzt.
+
+**Geschlossen, wenn** die sieben Kerne derselben Figur einander messbar staerker aehneln als die Kerne verschiedener Menschen — mit derselben Rechnung, gegen dieselbe Kontrolle.
+
+---
+
 ### `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` — ueber sich und ueber den Nutzer wird eins
 
-**Zustand:** offen — gegen HEAD `12a7c6a` gehalten am 22.08.2026. **Die Absicht ist seit dem 22.08.2026 entschieden, gebaut ist nichts.**
+**Zustand:** offen — gegen HEAD `12a7c6a` gehalten am 22.08.2026. **Die Absicht ist seit dem 22.08.2026 entschieden, gebaut ist nichts.** → **Der Hebel ist am 25.08.2026 benannt** (`KERNHASH-TRAEGT-KEINE-PERSON`): weder der Prompt noch eine Materialfilterung, sondern dass der Kern kein Gedaechtnis seiner selbst hat. **Die naheliegende Filterung ist dabei am Bestand widerlegt, bevor sie gebaut wurde** — die Regel *„Anrede des Gegenuebers ohne Ich-Form"* traefe 21,4 % der Saetze Novas und 30,2 % ihrer Zeichen und faengt dabei **Fragen, Angebote und Possessive**, keine Wesenszuschreibungen. Der Eintrag sagt es seit dem 19.08.2026 selbst — *„falsch ist sein Gegenstand"* —, und die Zahl belegt es jetzt.
 
 > **Die Festlegung:** Der Kern-Hash beschreibt die **Person**. Was die Figur ueber ihr Gegenueber sagt, gehoert ins **Beziehungsprofil** und nicht in ihr Wesen — das relationale Wesen ist der Gegenstand des einen, das ohne das Gegenueber Bleibende der des anderen. Damit ist der Eintrag kein Absichtsloch mehr, sondern ein Bauauftrag.
 >

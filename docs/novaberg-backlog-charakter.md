@@ -16,6 +16,17 @@
 
 ---
 
+## Block 25.08.2026 — aus der Vermessung des Kern-Hash
+
+Ein Eintrag. Er ist **keine Bauarbeit, sondern eine offene Absicht** — und er blockiert die Bauarbeit ausdruecklich, bis sie steht.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `KERNAUSWAHL-KRITERIUM-OFFEN` | **Welche Turns in die wachsende Auswahl des Kern-Hash kommen, ist nicht entschieden.** Am 25.08.2026 ist entschieden, dass die **Grundlage** fortgeschrieben wird und nicht der Text (`novaberg-pixie-character-hash.md` §3.1a) — der Kern bleibt eine frische Destillation, sein Material wird eine wachsende Auswahl rohen Wortlauts ueber die ganze Historie statt der 40 neuesten Turns. **Das Kriterium dieser Auswahl fehlt, und die drei naheliegenden fallen aus:** `gewicht_absolut` ist eine Eigenschaft der Langzeit-Knoten und existiert fuer Rohturns nicht · `salienz x zeitgewicht` (§4b) ordnet nach **Aktualitaet**, also nach genau der Groesse, die hier das Problem ist · *„die N neuesten"* ist der heutige Zustand. **Zweite offene Haelfte:** waechst die Auswahl unbegrenzt — dann waechst der Prompt mit — oder ist sie gedeckelt, dann entscheidet das Verdraengungskriterium dieselbe Frage noch einmal, nur spaeter und unsichtbarer. **Geschlossen, wenn** das Kriterium samt Deckelung im Konzept steht und begruendet ist, warum es nicht nach Aktualitaet ordnet. | [CHA] ungebaendert — ⬜ **offen** — angelegt am 25.08.2026. **Riegel:** Solange dieser Eintrag offen ist, wird `KERNHASH-TRAEGT-KEINE-PERSON` nicht gebaut — ein Umbau ohne Kriterium ersetzt ein unbegruendetes durch ein anderes und misst hinterher denselben Wert. |
+
+---
+
+
 ## Block 14.08.2026 — aus der Eigenzeit-Messung
 
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Kategorien; hier stehen die von **Charakter**. Ueberschrift und Text stehen in jeder empfangenden Datei.

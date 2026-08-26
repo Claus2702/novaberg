@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **20:55 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **21:28 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 130 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 131 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,62 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 21:28 UTC — der Auftrag wurde von seiner eigenen Vormessung widerlegt
+
+**Der Auftrag war zu bauen, nicht zu messen.** `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` traegt seit dem 22.08.2026 eine entschiedene Absicht und den Vermerk *„gebaut ist nichts"*. Gemessen wurde trotzdem zuerst — und die Messung hat den Auftrag ausgeraeumt, bevor eine Zeile Code stand.
+
+### Die naheliegende Reparatur, widerlegt am Material
+
+Der Eintrag laesst den **Hebel** offen: Der Prompt ist keiner (dreimal gemessen), und eine Materialfilterung nach Sprecher greift nicht, weil das Material nach Sprecher bereits richtig gefiltert ist. Der naechste Griff ist eine Filterung nach **Satzgegenstand**: Ein Satz ist eine Zuschreibung, wenn er das Gegenueber anspricht und keine Ich-Form traegt.
+
+**Gegen die 40 produktiven Turns gehalten, traefe diese Regel 21,4 % der Saetze Novas und 30,2 % ihrer Zeichen** — und die Stichprobe zeigt, dass sie das Falsche greift. Was sie faengt, sind Fragen, Angebote und Possessive:
+
+> *„War die Datenstruktur vorher zu unsauber oder hast du den Input einfach nur im Rauschen uebersehen?"* · *„Hier ist deine gesamte Architektur: …"* · *„Moment, dein System scheint gerade kurz zu flackern…"*
+
+Keine davon ist eine Wesenszuschreibung. **Ein Filter auf die Anrede misst die Gespraechsform, nicht den Gegenstand des Satzes.**
+
+### Die Gegenprobe des Eintrags haelt — und deckte etwas Groesseres auf
+
+Der Eintrag nennt ein eigenes, modellfreies Kriterium: Wortschatzueberschneidung beider Kerne und die Zahl wortgleicher Zitate. Nachgerechnet auf den heutigen Werten: **0 wortgleiche Zitate**, die Zitatlisten sauber getrennt — sie: »Rauschen«, »Entropie«, »Frequenzregler«; er: »Hey Kleines«, »Hehe«, »Permadeath«. **Die Reparatur vom 17.08.2026 haelt.**
+
+Was die 47 gemeinsamen Inhaltswoerter dagegen zeigen, ist etwas anderes: `kochen, zutaten, geschmack, spiel, node, regeln, ordnung, struktur, effizienz, bestaendigkeit`. **Das ist das Themenband der 40 Turns, in beiden Profilen als Wesenszug.**
+
+### Die Zahl, die den Befund entschied
+
+Novas Kern steht siebenmal in `charakter_hash`, einmal je Gegenueber. Beschreibt der Kern die **Person**, muessen die sieben einander aehneln. Die Kontrolle liegt daneben und kostet nichts: dieselbe Rechnung ueber sieben **verschiedene** Menschen.
+
+| Kennzahl | Novas sieben Kerne | Sieben verschiedene Menschen | Abstand |
+|---|---|---|---|
+| Jaccard ueber den Inhaltswortschatz | **5,0 %** (2,4–9,2) | 4,3 % (1,4–8,6) | +0,6 Punkte |
+| Ueberdeckung des kleineren Wortschatzes | **16,0 %** (8,9–22,2) | 16,3 % (5,6–40,0) | **−0,3 Punkte** |
+| Wiederkehr ueber alle sieben Profile | **1** von 641 Inhaltswoertern | — | 531 in genau einem |
+
+**Der Abstand ist kleiner als die Streuung beider Reihen, und bei der laengenunempfindlichen Kennzahl dreht das Vorzeichen.** Das einzige Wort in allen sieben Profilen ist »gepraegt« — aus der Prompt-Schablone. Neue Kennung: **`KERNHASH-TRAEGT-KEINE-PERSON`**.
+
+> **Der Fund ist nicht die grosse Form des alten Eintrags.** Dort enthaelt der Kern zu 42 % die **falsche** Person; hier zu keinem messbaren Anteil **irgendeine**.
+
+### Die Ursache steht in der Bauart, und das Konzept nannte sie neben ihrem Gegenteil
+
+`kern_hash_destillieren(turn_eintraege, user_id)` bekommt den bestehenden `kern_hash` **nicht** — in `agent.py` ist er nur Schreibziel, nie Eingang. Jeder Lauf liest die 40 neuesten Turns und ueberschreibt; bei einem Intervall von 600 Sekunden heisst das ein frisches Urteil aus rund zwei Tagen Gespraech, alle zehn Minuten.
+
+**§3.1 trug beide Haelften des Widerspruchs im selben Absatz:** »Veraendert sich langsam — *als Absicht*« und daneben »ein Fenster von 40 Turns«. **Der Umbau vom 10.08.2026 hat den richtigen Fehler behoben und die Dauerhaftigkeit ungefragt mitgenommen** — der Wechsel von den Langzeit-Knoten auf den Rohwortlaut war richtig (die Knoten tragen das WORUEBER) und stellte die Auswahl gleich mit auf *„die neuesten"*. Zwei Eigenschaften wurden getauscht, nicht abgewogen.
+
+### Es trifft das Zuwendungsrad an der Wurzel
+
+`rad_quelle` ist `kern + beziehungsprofil` (`agent.py:300`). **Beide Charakter-Raeder lesen genau diesen Kern.** Solange er keine Person traegt, messen Zuwendungs- und Initiative-Rad den Gespraechsstoff und nicht die Haltung — der Befund liegt damit **unter** `RADSPEICHEN-MESSEN-PROFILTEXT` statt daneben: Dort liest die Bewertung ein Wort statt einer Handlung, hier traegt schon die Quelle keine Person.
+
+### Entschieden: fortgeschrieben wird die Grundlage, nicht der Text
+
+Drei Lesarten von *„fortschreiben"* standen zur Wahl. **Anhaengen** faellt aus — der Kern geht in jeden Antwort-Prompt ein und darf nicht monoton wachsen. **Den Text fortschreiben** faellt aus, und nicht wegen des Aufwands: Jeder Lauf wuerde die eigene vorherige Ausgabe erneut rendern, nach zwanzig Laeufen waere keine Zeile mehr auf einen Turn zurueckfuehrbar, und ob eine Aenderung aus neuem Material stammt oder aus dem Umschreiben, waere nicht mehr entscheidbar.
+
+**Gewaehlt ist die dritte:** Der Kern bleibt eine **frische Destillation**, aber sein Material ist kuenftig eine **wachsende Auswahl rohen Wortlauts ueber die ganze Historie** statt der 40 neuesten Turns. Damit bleibt jede Zeile auf Turns zurueckfuehrbar, und eine Aenderung des Profils hat immer eine Aenderung des Materials als Ursache. Steht als §3.1a im Konzept.
+
+> **Das Auswahlkriterium ist ausdruecklich offen, und bis es steht wird nicht gebaut.** `gewicht_absolut` gibt es fuer Turns nicht, `salienz x zeitgewicht` ordnet nach Aktualitaet — also nach genau der Groesse, die hier das Problem ist —, und *„die N neuesten"* ist der heutige Zustand. Ein Umbau, der die Auswahl offen laesst, ersetzt ein unbegruendetes Kriterium durch ein anderes und misst hinterher denselben Wert.
+
+**Kein Code geaendert, keine Ampel gewechselt.** Drei Fundzeilen entstanden und zogen am selben Tag in das Defektregister um.
 
 ---
 

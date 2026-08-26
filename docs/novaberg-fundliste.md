@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 21:05 UTC
-**Offen:** **112 Funde — gezaehlt am 25.08.2026, 21:05 UTC** (120 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **zwei neu aus dem Abgleich des Verlaufs gegen die Speicher** — der unbegruendete Gegenstandsbereich aller drei Waende und die halb festgehaltene `T201`-Entscheidung)
+**Stand:** 25. August 2026, 21:33 UTC
+**Offen:** **113 Funde — gezaehlt am 25.08.2026, 21:33 UTC** (121 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **drei Funde aus der Vermessung des Kern-Hash sind noch am selben Tag umgezogen** und stehen unter `KERNHASH-TRAEGT-KEINE-PERSON` bzw. in der Zustandszeile von `KERNHASH-OHNE-PERSPEKTIVTRENNUNG`; **einer neu**: die beiden generierten Findemittel driften ungeprueft)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -12,6 +12,11 @@ Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Dat
 Diese Liste ist bewusst roh. Von hier wandern Einträge nach `novaberg-bugs.md` oder `novaberg-backlog.md` und bekommen dort eine stabile ID; die Zeile hier wird beim Umzug entfernt.
 
 ---
+
+## Umgezogen — 25.08.2026, aus der Vermessung des Kern-Hash
+
+- **2026-08-25** — Novas sieben Kern-Profile aehneln einander nicht staerker als die Profile sieben verschiedener Menschen; der Kern wird zudem bei jedem Lauf neu erfunden statt fortgeschrieben → **nach `novaberg-bugs.md` als `KERNHASH-TRAEGT-KEINE-PERSON`.**
+- **2026-08-25** — Die naheliegende Materialfilterung gegen `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` faengt Fragen und Possessive statt Wesenszuschreibungen → **in die Zustandszeile von `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` uebernommen**, wo sie den offenen Hebel benennt.
 
 ## Umgezogen — 23.08.2026, die Naht des Fuehrungsmasses
 
@@ -232,6 +237,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Die beiden generierten Findemittel driften gegen ihre Quellen, und keine Pruefung merkt es.** `roadmap_index.py` und `backlog_index.py` haben je einen `--pruefen`-Modus und stehen als **C22** und **C23** im Aufgabenkatalog — **aber kein Hook und keine Commit-Pruefung ruft sie auf**; die zehn eingetragenen Hooks in `.claude/settings.json` nennen keinen von beiden. Beim ersten Lauf dieser Sitzung sprang die Chronik-Zaehlung von **505 auf 537 Abschnitte** — davon stammen **7 aus dieser Sitzung, 25 waren aelter**. Und das Backlog-Findemittel fuehrte `HALTUNG-SPANNENENDEN-OFFEN` weiterhin als doppelte Kennung, **obwohl der Commit `af14b6d` vom Vortag genau diese Dopplung aufgeloest hat** — die Quelle war repariert, das Findemittel behauptete den Defekt einen Tag laenger. **Ein Findemittel, das seiner Quelle hinterherhinkt, ist von einem falschen nicht zu unterscheiden**, und der Fall ist derselbe wie bei den unbedingten Nachzugszielen: Ein Ziel, dessen Ausloeser *„immer, sobald die Quelle sich aendert"* lautet, ist kein Suchproblem — und darf deshalb nicht gesucht werden.
 
 - **2026-08-25** — **Alle drei Waende dieses Projekts messen nur `server/`, und der Gegenstandsbereich ist nirgends begruendet.** Gemessen am 25.08.2026: ueber das ganze Repositorium **1324 Linter-Treffer**, die Nulllinie nennt **1143** — **181 liegen ausserhalb**, in 30 Python-Dateien: `client/` 116, `matrix_bot/` 56, `telegram_bot/` 9. **`matrix_bot/` laeuft als eigener Dienst im Betrieb** und ist seit dem 24.08.2026 der einzige Fernkanal; seine 56 Treffer zaehlt niemand. Dasselbe gilt fuer `ruff-hart.toml` und die neue Namens-Wand (`F-NAME-1`) — beide laufen gegen `server/`, weil es immer so war. **Eine Wand mit unbegruendetem Gegenstandsbereich sieht aus wie eine Wand und ist eine Tuer**; die Frage ist nicht, ob die Auswahl richtig ist, sondern dass sie nie getroffen wurde.
 

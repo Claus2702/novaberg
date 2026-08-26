@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 505 Abschnitte in 5 Dateien — 209 mit eigenem Datum, 295 geerbt, 1 ohne.
+**Umfang:** 537 Abschnitte in 5 Dateien — 219 mit eigenem Datum, 317 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 242 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 274 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 505 Marken, 505 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 537 Marken, 537 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,38 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 21:28 UTC — der Auftrag wurde von seiner eigenen Vormessung widerlegt](novaberg-roadmap.md#25082026-2128-utc--der-auftrag-wurde-von-seiner-eigenen-vormessung-widerlegt) |
+| (2026-08-25) | laufend | ### | · [Die naheliegende Reparatur, widerlegt am Material](novaberg-roadmap.md#die-naheliegende-reparatur-widerlegt-am-material) |
+| (2026-08-25) | laufend | ### | · [Die Gegenprobe des Eintrags haelt — und deckte etwas Groesseres auf](novaberg-roadmap.md#die-gegenprobe-des-eintrags-haelt--und-deckte-etwas-groesseres-auf) |
+| (2026-08-25) | laufend | ### | · [Die Zahl, die den Befund entschied](novaberg-roadmap.md#die-zahl-die-den-befund-entschied) |
+| (2026-08-25) | laufend | ### | · [Die Ursache steht in der Bauart, und das Konzept nannte sie neben ihrem Gegenteil](novaberg-roadmap.md#die-ursache-steht-in-der-bauart-und-das-konzept-nannte-sie-neben-ihrem-gegenteil) |
+| (2026-08-25) | laufend | ### | · [Es trifft das Zuwendungsrad an der Wurzel](novaberg-roadmap.md#es-trifft-das-zuwendungsrad-an-der-wurzel) |
+| (2026-08-25) | laufend | ### | · [Entschieden: fortgeschrieben wird die Grundlage, nicht der Text](novaberg-roadmap.md#entschieden-fortgeschrieben-wird-die-grundlage-nicht-der-text) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 20:55 UTC — der Nachzug, den die Frage nach den Moduldokumenten fand](novaberg-roadmap.md#25082026-2055-utc--der-nachzug-den-die-frage-nach-den-moduldokumenten-fand) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 20:37 UTC — `graph_run_lock`, und eine Regel, die einen Monat lang gegen sich selbst wuchs](novaberg-roadmap.md#25082026-2037-utc--graphrunlock-und-eine-regel-die-einen-monat-lang-gegen-sich-selbst-wuchs) |
+| (2026-08-25) | laufend | ### | · [Die Bauart stimmte, der Name nicht](novaberg-roadmap.md#die-bauart-stimmte-der-name-nicht) |
+| (2026-08-25) | laufend | ### | · [893 von 1479 — die Zahl war um den Faktor vier zu klein geschaetzt](novaberg-roadmap.md#893-von-1479--die-zahl-war-um-den-faktor-vier-zu-klein-geschaetzt) |
+| (2026-08-25) | laufend | ### | · [Nulllinie statt Aufraeumaktion](novaberg-roadmap.md#nulllinie-statt-aufraeumaktion) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 20:10 UTC — vier doppelte Kennungen, und nur eine war ein Versehen](novaberg-roadmap.md#25082026-2010-utc--vier-doppelte-kennungen-und-nur-eine-war-ein-versehen) |
+| (2026-08-25) | laufend | ### | · [Die erste Zaehlung ergab 27, und 26 davon waren keine](novaberg-roadmap.md#die-erste-zaehlung-ergab-27-und-26-davon-waren-keine) |
+| (2026-08-25) | laufend | ### | · [Nur eine der vier war ein Versehen](novaberg-roadmap.md#nur-eine-der-vier-war-ein-versehen) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 19:29 UTC — die neue Log-Zeile lief elfmal und meldete elfmal dasselbe](novaberg-roadmap.md#25082026-1929-utc--die-neue-log-zeile-lief-elfmal-und-meldete-elfmal-dasselbe) |
+| (2026-08-25) | laufend | ### | · [`8 von 8` stimmte nicht](novaberg-roadmap.md#8-von-8-stimmte-nicht) |
+| (2026-08-25) | laufend | ### | · [Fuer `verdict` gibt es den Gegenbeleg, fuer die Nutzlast nicht](novaberg-roadmap.md#fuer-verdict-gibt-es-den-gegenbeleg-fuer-die-nutzlast-nicht) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 19:03 UTC — 278 zu lange Zeilen umgebrochen, ohne den Stil des Bestands mitzunehmen](novaberg-roadmap.md#25082026-1903-utc--278-zu-lange-zeilen-umgebrochen-ohne-den-stil-des-bestands-mitzunehmen) |
+| (2026-08-25) | laufend | ### | · [Drei Fallen, jede erst beim Messen sichtbar](novaberg-roadmap.md#drei-fallen-jede-erst-beim-messen-sichtbar) |
+| (2026-08-25) | laufend | ### | · [Zwei Durchgaenge, beide mit Aequivalenzpruefung](novaberg-roadmap.md#zwei-durchgaenge-beide-mit-aequivalenzpruefung) |
+| (2026-08-25) | laufend | ### | · [Was bleibt, und warum](novaberg-roadmap.md#was-bleibt-und-warum) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 18:43 UTC — 884 Treffer weniger, und keiner davon war ein Fehler im Produktivcode](novaberg-roadmap.md#25082026-1843-utc--884-treffer-weniger-und-keiner-davon-war-ein-fehler-im-produktivcode) |
+| (2026-08-25) | laufend | ### | · [Erst pruefen, ob die Regel behebbar ist — dann ausnehmen](novaberg-roadmap.md#erst-pruefen-ob-die-regel-behebbar-ist--dann-ausnehmen) |
+| (2026-08-25) | laufend | ### | · [Die Wand bleibt in `tests/` scharf, und das ist gemessen](novaberg-roadmap.md#die-wand-bleibt-in-tests-scharf-und-das-ist-gemessen) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 18:16 UTC — die B-Wand, und zwei Defekte, die ein Linter-Treffer sichtbar gemacht hat](novaberg-roadmap.md#25082026-1816-utc--die-b-wand-und-zwei-defekte-die-ein-linter-treffer-sichtbar-gemacht-hat) |
+| (2026-08-25) | laufend | ### | · [37 der 39 stabilen B-Regeln sind hart — und zwei bewusst nicht](novaberg-roadmap.md#37-der-39-stabilen-b-regeln-sind-hart--und-zwei-bewusst-nicht) |
+| (2026-08-25) | laufend | ### | · [`F841`: von 17 Treffern waren zwei echte Defekte](novaberg-roadmap.md#f841-von-17-treffern-waren-zwei-echte-defekte) |
+| (2026-08-25) | laufend | ### | · [Und einer der vier Funde war beim Nachsehen keiner](novaberg-roadmap.md#und-einer-der-vier-funde-war-beim-nachsehen-keiner) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 17:51 UTC — 29 weitere Treffer, und `F841` zeigte vier Stellen, an denen etwas berechnet und weggeworfen wird](novaberg-roadmap.md#25082026-1751-utc--29-weitere-treffer-und-f841-zeigte-vier-stellen-an-denen-etwas-berechnet-und-weggeworfen-wird) |
+| (2026-08-25) | laufend | ### | · [`F841` ist keine Aufraeumregel, sondern ein Zeiger auf fehlende Leser](novaberg-roadmap.md#f841-ist-keine-aufraeumregel-sondern-ein-zeiger-auf-fehlende-leser) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 17:16 UTC — 330 Linter-Treffer maschinell abgeraeumt, und eine Wand mehr](novaberg-roadmap.md#25082026-1716-utc--330-linter-treffer-maschinell-abgeraeumt-und-eine-wand-mehr) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 18:20 UTC — Die Antwort geht raus, sobald sie freigegeben ist](novaberg-roadmap.md#25082026-1820-utc--die-antwort-geht-raus-sobald-sie-freigegeben-ist) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 17:30 UTC — Der Riegel vor der GPU kannte vier von fuenf Wegen nicht](novaberg-roadmap.md#25082026-1730-utc--der-riegel-vor-der-gpu-kannte-vier-von-fuenf-wegen-nicht) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 16:40 UTC — Eine fertige Antwort ging an einer Token-Zaehlung verloren](novaberg-roadmap.md#25082026-1640-utc--eine-fertige-antwort-ging-an-einer-token-zaehlung-verloren) |
