@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **22:25 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **23:01 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 137 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 138 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,49 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 23:01 UTC — die Ursache war eine Konstante ohne Herleitung
+
+Der Medoid hatte nicht getragen. Er waehlte den zentralsten aus drei Ziehungen — die Frage war aber, **warum ueberhaupt gezogen wird**.
+
+Der Knoten `charakter_hash` lief mit `temperature = 0.2`. Im ganzen Bestand steht keine Stelle, die den Wert begruendet; er steht neben zwei anderen Knoten mit derselben Zahl.
+
+### Die Messung
+
+Dasselbe festgehaltene Material, viermal je Temperatur:
+
+| Temperatur | Ueberdeckung der Laeufe | Zeichen |
+|---|---|---|
+| 0,2 (Bestand) | **32,9 %** (29,9–36,8) | 3026–5045 |
+| 0,0 | **100,0 %** (100–100) | **viermal 4798** |
+
+**Bei 0,0 sind alle vier Laeufe zeichengleich.** Abstand 67,1 Punkte — und die 32,9 % bei 0,2 decken sich mit der Rauschgrenze vom Vortag (31,7 %): dieselbe Groesse, zweimal unabhaengig getroffen.
+
+> **Damit ist die Streuung erklaert, die den Kern unbrauchbar machte.** Zwei Destillationen aus identischem Material teilten nur 27–32 % ihres Inhaltswortschatzes, und das bewegte den Zuwendungsfaktor um 29 % seiner Skala. **Die Ursache war eine Zahl in der Konfiguration** — nicht der Prompt, nicht das Material, nicht die Bauart.
+
+### Was der Wechsel mitnimmt
+
+`_llm_call` liest denselben Knoten fuer alle fuenf Profile **und beide Raeder**. Nachgemessen statt vermutet, drei Rad-Laeufe auf demselben Eingang bei 0,0:
+
+> **1,2977 · 1,2977 · 1,2977** — Spanne **0,0000**, ein einziges verschiedenes Rad von dreien.
+
+**`F-RAD-2` ist damit gegenstandslos geworden** — nicht verletzt, nicht widerlegt. Sie wird nicht geloescht, sondern bekommt ihre Bedingung: *Diese Festlegung gilt, solange die Ableitung streut.* Eine Regel, die man entfernt, weil ihre Bedingung gerade nicht gilt, kommt beim naechsten Konfigurationswechsel nicht von selbst zurueck — und niemand vermisst sie, weil nichts ausfaellt.
+
+### Zwei Folgen fuer laufende Arbeit
+
+**Die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist zu wiederholen.** Ihre 16,0 % gegen 16,3 % standen gegen eine Decke von 32 %; die Decke liegt jetzt bei 100 %. Ob die sieben Kerne einer Figur einander staerker aehneln als die Kerne verschiedener Menschen, ist damit zum ersten Mal **entscheidbar**.
+
+**Und die Drift-Reihe misst ab jetzt etwas anderes als bei ihrem Beginn.** Sie sollte Drift vom Rauschen trennen, indem sie die Ueberdeckung innerhalb eines Tages gegen die zwischen Tagen haelt. Innerhalb eines Tages steht jetzt nichts mehr. **Fassungen vor und nach dem 26.08.2026, 23:00 UTC gehoeren nicht in dieselbe Rechnung.**
+
+### Was ungemessen bleibt
+
+**Ob ein Kern bei 0,0 auch *besser* ist.** Gemessen ist die Wiederholbarkeit, nicht die Guete — ein Profil kann eng reproduzierbar und dabei gleichmaessig falsch sein.
+
+**Der Live-Zyklus stand zum Zeitpunkt dieses Eintrags noch aus:** Der Charakter-Agent hatte seit 22:25 UTC keinen Platz gewonnen. Der Beleg stammt aus einem Laborlauf **durch den Produktionspfad** gegen die Konfiguration des laufenden Containers — `_llm_call` mit `get_node_config('charakter_hash')`, ausgegeben als `{'temperature': 0.0, ...}`.
+
+**Werkzeuge:** `labor/2026-08-26_kern_temperatur.py`, `labor/2026-08-26_rad_bei_null.py`. Suite 2355 gruen, harte Wand sauber, Nulllinie unveraendert 1143.
 
 ---
 
