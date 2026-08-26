@@ -33,18 +33,32 @@ AGENT_LOGGER: str = "ki_server.agents.charakter"
 
 
 class _Bank:
-    """Datenbank-Attrappe: merkt sich jede Abfrage und liefert feste Zeilen."""
+    """Datenbank-Attrappe fuer den zweistufigen Lesepfad.
+
+    Seit dem 26.08.2026 liest `_turns_laden` in zwei Schritten: erst Kennung
+    und Zeichenzahl je Begegnung, dann den Wortlaut der ausgewaehlten. Die
+    Attrappe bildet beide Schritte aus **derselben** Turn-Liste, damit ein
+    Zeuge weiterhin nur Turns hinschreibt — und sie merkt sich, welche
+    Kennungen der zweite Schritt angefordert hat.
+    """
 
     def __init__(self, turns: list[dict], zaehlung: dict | None = None) -> None:
         self.turns = turns
         self.zaehlung = zaehlung or {"impulse": 0, "ohne_marke": 0}
         self.abfragen: list[str] = []
+        self.angefordert: list[int] = []
 
     def select(self, sql: str, params: tuple = ()) -> list[dict]:
         self.abfragen.append(sql)
         if "count(*)" in sql:
             return [self.zaehlung]
-        return self.turns
+        if "length(inhalt" in sql:
+            return [
+                {"id": i, "zeichen": len(t["aeusserung"]) + len(t["antwort"])}
+                for i, t in enumerate(self.turns)
+            ]
+        self.angefordert = list(params[0])
+        return [self.turns[i] for i in self.angefordert]
 
 
 def _turn(aeusserung: str, antwort: str) -> dict:
@@ -65,14 +79,25 @@ class TestHerkunftsFilter(unittest.TestCase):
         return treffer, protokoll.output
 
     def test_abfrage_schraenkt_auf_begegnungen_ein(self) -> None:
-        """Die Zusicherung gilt der Abfrage — die Attrappe filtert nicht selbst."""
+        """Die Zusicherung gilt der Abfrage — die Attrappe filtert nicht selbst.
+
+        Der Filter sitzt seit dem 26.08.2026 im **ersten** Schritt, der die
+        Grundmenge bestimmt. Genau dort muss er stehen: Der zweite Schritt
+        holt nur noch benannte Kennungen und kann nichts mehr ausschliessen,
+        was der erste hereingelassen hat.
+        """
         bank = _Bank([_turn("hi", "hallo")])
         self._laden(bank)
 
-        wortlaut_abfrage = [a for a in bank.abfragen if "user_prompt" in a]
-        self.assertEqual(len(wortlaut_abfrage), 1)
-        self.assertIn("herkunft", wortlaut_abfrage[0])
-        self.assertIn("nutzer_turn", wortlaut_abfrage[0])
+        grundmenge = [a for a in bank.abfragen if "length(inhalt" in a]
+        self.assertEqual(len(grundmenge), 1)
+        self.assertIn("herkunft", grundmenge[0])
+        self.assertIn("nutzer_turn", grundmenge[0])
+
+        wortlaut = [a for a in bank.abfragen if "id = ANY" in a]
+        self.assertEqual(len(wortlaut), 1)
+        self.assertNotIn("LIMIT", wortlaut[0],
+                         "Der zweite Schritt waehlt nicht mehr aus, er holt nur")
 
     def test_impulse_werden_gezaehlt_und_gemeldet(self) -> None:
         bank = _Bank([_turn("hi", "hallo")], {"impulse": 25, "ohne_marke": 318})
@@ -104,12 +129,18 @@ class TestHerkunftsFilter(unittest.TestCase):
         )
 
     def test_reihenfolge_aelteste_zuerst(self) -> None:
-        bank = _Bank([_turn("neu", "a"), _turn("mittel", "b"), _turn("alt", "c")])
+        """Die Nachbedingung ist unveraendert; der Weg dorthin nicht.
+
+        Bis zum 26.08.2026 las die Abfrage absteigend und die Liste wurde
+        umgedreht. Beide Schritte sortieren jetzt aufsteigend, und die
+        Attrappe liefert in derselben Ordnung — die Zusicherung gilt weiter
+        dem Ergebnis, nicht dem Umweg.
+        """
+        bank = _Bank([_turn("alt", "a"), _turn("mittel", "b"), _turn("neu", "c")])
         treffer, _ = self._laden(bank)
 
         self.assertEqual(
             [t["aeusserung"] for t in treffer], ["alt", "mittel", "neu"],
-            "Die Abfrage sortiert absteigend, die Liste wird umgedreht",
         )
 
     def test_leere_felder_fallen_heraus(self) -> None:

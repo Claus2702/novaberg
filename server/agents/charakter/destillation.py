@@ -104,6 +104,139 @@ def alterszone(alter_tage: float) -> str:
     return "TREND"
 
 
+def geschichtet_waehlen(laengen: list[int], budget: int) -> list[int]:
+    """Waehlt zeitlich gleichmaessig verteilte Begegnungen bis zum Zeichenbudget.
+
+    Vorbedingung: `laengen` sind die Zeichenzahlen der Begegnungen eines
+        Paares, **aelteste zuerst**, jede nicht negativ; `budget` ist positiv.
+        Eine leere Liste ist zulaessig und liefert eine leere Auswahl — der
+        Aufrufer meldet sie.
+    Nachbedingung: aufsteigende, verschiedene Positionen in `laengen`. Passt
+        die ganze Historie ins Budget, sind es alle. Passt nicht einmal eine
+        einzelne Begegnung, ist es trotzdem eine — und das wird gemeldet, denn
+        eine leere Auswahl bei vorhandenem Material waere ein stiller Ausfall.
+
+    **Warum gleichmaessig verteilt und nicht "die neuesten".** Bis zum
+    26.08.2026 las der Kern-Hash die 40 neuesten Begegnungen. Gemessen am
+    25.08.2026 beschrieb er damit keine wiedererkennbare Person, sondern das
+    Themenband dieses Fensters: Novas sieben Kern-Profile aehnelten einander
+    **nicht staerker** als die Profile sieben verschiedener Menschen
+    (Ueberdeckung 16.0 % gegen 16.3 %), und von 641 Inhaltswoertern stand
+    **eines** in allen sieben. Ein dauerhaftes Wesen kann aus einem gleitenden
+    Fenster nicht entstehen (`KERNHASH-TRAEGT-KEINE-PERSON`).
+
+    **Warum nicht nach Anker-Staerke ausgewaehlt wird**, obwohl der Handgriff
+    existiert: `gewicht_absolut` der Langzeit-Knoten ist ueber `verbindung`
+    erreichbar und trennt auch — aber es korreliert mit **-0.716** gegen die
+    Zeit und verliert im juengsten Zeitblock die Trennschaerfe (Streuung 0.27
+    gegen 1.67 im aeltesten). Die Anker-Staerke ist ueberwiegend Reifung.
+    **Jedes Mass aus den nachgelagerten Speichern erbt diesen Bias** und
+    bevorzugt das Alte, so wie das Fenster das Neue bevorzugt.
+
+    **Warum ein Budget in Zeichen und nicht in Begegnungen.** Der Hebel ist
+    die Menge, nicht die Verteilung: Bei gleicher Turn-Zahl deckt eine
+    verteilte Auswahl 73.4 % mehr Wortschatz der Figur, bei gleichem
+    **Zeichenbudget** nur 8.0 %. Der Rest war schlicht mehr Text. Eine Grenze
+    in Begegnungen misst deshalb die falsche Groesse — Begegnungen sind
+    zwischen 109 und ueber 1000 Zeichen lang.
+
+    **Zugesichert ist das Budget — weder die groesste Anzahl noch die groesste
+    Zeichensumme.** Die Summe waechst **nicht** streng mit der Anzahl: Eine
+    andere Anzahl trifft andere Begegnungen, und ob die lang oder kurz sind,
+    entscheidet der Zufall der Verteilung. Am produktiven Paar gemessen
+    (26.08.2026, 223 Begegnungen, Budget 80 000): k=96 bis 98 passen, **k=99
+    bis 103 passen nicht, k=104 passt wieder**. Die Vorschrift ist deshalb:
+    proportional kuerzen, dann einzeln auffuellen, solange es traegt — sie
+    haelt beim ersten Nichtpassen an, hier bei **98 Begegnungen mit 75 783
+    Zeichen**.
+
+    **Das ist eine Entscheidung und kein Versehen.** Ein Durchlauf ueber alle
+    Anzahlen (quadratisch in der Groesse der Historie) faende k=104 mit 79 382
+    Zeichen — **3 599 Zeichen oder 4.5 % des Budgets mehr**, und er faende ein
+    **sprunghaftes** Ergebnis: Eine einzige neue Begegnung kann die Anzahl von
+    98 auf 104 oder zurueckwerfen, ohne dass sich am Material etwas
+    Wesentliches aendert.
+
+    **Und welche der beiden Groessen ueberhaupt die bessere waere, ist
+    ungemessen.** 98 Begegnungen mit 75 783 Zeichen gegen 104 mit 79 382 —
+    mehr Begegnungen oder mehr Text, das ist derselbe Zielkonflikt in klein,
+    und der Unterschied liegt unter der Aufloesung jeder Messung, die hier
+    vorliegt. Wer ihn aufloesen will, misst ihn, statt eine der beiden
+    Groessen zu optimieren.
+    """
+    # ── Eingabe-Validierung ──
+    if budget <= 0:
+        logger.error(
+            f"Geschichtete Auswahl: Budget {budget} ist nicht positiv — "
+            "keine Auswahl moeglich"
+        )
+        return []
+
+    negativ = [i for i, laenge in enumerate(laengen) if laenge < 0]
+    if negativ:
+        logger.error(
+            f"Geschichtete Auswahl: {len(negativ)} von {len(laengen)} "
+            f"Zeichenzahlen sind negativ (Positionen {negativ[:5]}) — "
+            "die Quelle ist defekt, keine Auswahl"
+        )
+        return []
+
+    anzahl: int = len(laengen)
+    if anzahl == 0:
+        return []
+
+    # ── Verarbeitung ──
+    def positionen(wieviele: int) -> list[int]:
+        """Verteilt `wieviele` Positionen gleichmaessig ueber die Historie."""
+        return [min(i * anzahl // wieviele, anzahl - 1) for i in range(wieviele)]
+
+    genommen: int = anzahl
+    gewaehlt: list[int] = positionen(genommen)
+    summe: int = sum(laengen[p] for p in gewaehlt)
+
+    while summe > budget and genommen > 1:
+        # Proportional kuerzen statt Schritt fuer Schritt: Die Auswahl ist
+        # nahezu gleichverteilt, ihre Summe skaliert also nahezu mit der
+        # Anzahl. Das `genommen - 1` erzwingt mindestens einen Schritt und
+        # damit das Ende der Schleife.
+        genommen = min(genommen - 1, max(1, genommen * budget // summe))
+        gewaehlt = positionen(genommen)
+        summe = sum(laengen[p] for p in gewaehlt)
+
+    # Die Kuerzung springt und landet deshalb unter dem, was noch hineinpasst.
+    # Aufgefuellt wird einzeln, solange das Budget traegt.
+    while genommen < anzahl:
+        weiter: list[int] = positionen(genommen + 1)
+        weiter_summe: int = sum(laengen[p] for p in weiter)
+        if weiter_summe > budget:
+            break
+        genommen += 1
+        gewaehlt, summe = weiter, weiter_summe
+
+    # ── Ausgabe-Verifikation ──
+    if gewaehlt != sorted(set(gewaehlt)):
+        logger.error(
+            f"Geschichtete Auswahl: {len(gewaehlt)} Positionen sind nicht "
+            f"aufsteigend und verschieden — Auswahl verworfen "
+            f"(Anzahl {anzahl}, Budget {budget})"
+        )
+        return []
+
+    if summe > budget:
+        logger.error(
+            f"Geschichtete Auswahl: die kuerzeste moegliche Auswahl traegt "
+            f"{summe} Zeichen und ueberschreitet das Budget {budget} — sie "
+            f"wird trotzdem genommen, denn eine leere Auswahl bei {anzahl} "
+            "vorhandenen Begegnungen waere ein stiller Ausfall"
+        )
+
+    logger.info(
+        f"Geschichtete Auswahl: {len(gewaehlt)} von {anzahl} Begegnungen, "
+        f"{summe} von {budget} Zeichen"
+    )
+    return gewaehlt
+
+
 # ─────────────────────────────────────────────
 # Charakter-Rad — Gewichtung der Nutzer-Salienz
 # ─────────────────────────────────────────────

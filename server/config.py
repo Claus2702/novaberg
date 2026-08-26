@@ -485,6 +485,33 @@ PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE: int = int(
     os.getenv("PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE", "30")
 )
 
+# Zeichenbudget des Kern-Hash-Materials. Es loest die Grenze "die 40 neuesten
+# Begegnungen" ab, und der Grund ist gemessen: Der Kern-Hash beschrieb keine
+# wiedererkennbare Person, sondern das Themenband des gleitenden Fensters
+# (KERNHASH-TRAEGT-KEINE-PERSON, 25.08.2026). Die Auswahl zieht seither
+# zeitlich gleichmaessig ueber die ganze Historie, und dieses Budget sagt,
+# wieviel Wortlaut sie dabei mitnimmt.
+#
+# Der Wert ist das Vierfache des bisherigen. Die 40 neuesten Begegnungen des
+# produktiven Paares trugen am 26.08.2026 zusammen 19 400 Zeichen; 80 000 ist
+# das Vierfache, aufgerundet. Warum nicht die ganze Historie: Sie trug am
+# selben Tag 184 159 Zeichen und waechst weiter — was heute ginge, ginge in
+# einem Jahr nicht mehr.
+#
+# Warum vier und nicht fuenf: Ein Kern-Lauf dauerte gemessen 43.2 s bei 4390
+# und 71.7 s bei 15 585 Zeichen, eine volle Destillation aus zehn Calls 261 s.
+# Hochgerechnet mit 2.55 s je 1000 zusaetzlicher Zeichen liegt Faktor 4 bei
+# rund 410 s gegen einen Takt von 600 s, Faktor 5 bei rund 465 s. Die
+# Hochrechnung stammt aus zwei Eingabegroessen und ist keine Messung beim
+# Zielumfang — ob 5 auch traegt, entscheidet ein Lauf dort.
+#
+# Das Budget ist fest, nicht wachsend. Was waechst, ist die Grundmenge, aus
+# der geschichtet gezogen wird: Ein Turn von vor einem Jahr hat dieselbe
+# Chance wie einer von gestern.
+PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN: int = int(
+    os.getenv("PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN", "80000")
+)
+
 # --- Pixie Agent: Wiedervorlage ---
 PIXIE_WIEDERVORLAGE_PRIORITAET: float = float(os.getenv("PIXIE_WIEDERVORLAGE_PRIORITAET", "0.5"))
 PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN: int = int(

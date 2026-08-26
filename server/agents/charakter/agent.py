@@ -20,6 +20,7 @@ from agents.charakter.destillation import (
     charakter_rad_destillieren,
     emotions_profil_destillieren,
     flache_reihe_als_raeder,
+    geschichtet_waehlen,
     initiative_rad_destillieren,
     initiative_versatz_berechnen,
     intentions_profil_destillieren,
@@ -44,6 +45,7 @@ from config import (
     ASSISTANT_USER_ID,
     PIXIE_ANALYSE_MODEL,
     PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
+    PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN,
     PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE,
     PIXIE_CHARAKTER_KZG_LIMIT,
     PIXIE_CHARAKTER_LZG_LIMIT,
@@ -483,15 +485,31 @@ class CharakterAgent(BaseAgent):
     # Daten laden
     # ─────────────────────────────────────────
 
-    def _turns_laden(self, user_id: str, grenze: int = 40) -> list[dict]:
+    def _turns_laden(self, user_id: str, budget: int | None = None) -> list[dict]:
         """Laedt den Wortlaut der Begegnungen eines Paares aus `pipeline_log`.
 
         Vorbedingung: `user_id` ist die Kennung des Menschen im Paar — unter
             ihr laufen die Rohturns, unabhaengig davon, wessen Charakter
-            destilliert wird. Die Perspektive macht der Prompt.
+            destilliert wird. Die Perspektive macht der Prompt. `budget` ist
+            das Zeichenbudget der Auswahl; ohne Angabe gilt
+            `PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN`.
         Nachbedingung: Liste von {'aeusserung', 'antwort'}, aelteste zuerst,
-            **ausschliesslich aus Turns mit `herkunft='nutzer_turn'`**.
+            **ausschliesslich aus Turns mit `herkunft='nutzer_turn'`**, und
+            **zeitlich gleichmaessig ueber die ganze Historie verteilt** statt
+            als Fenster auf ihr Ende.
             Leer heisst: keine Begegnung vorhanden, und der Aufrufer meldet es.
+
+        **Die Auswahl ist geschichtet, nicht die neuesten — seit dem
+        26.08.2026.** Der Grund ist gemessen und steht bei
+        `geschichtet_waehlen`: Mit dem gleitenden Fenster von 40 Begegnungen
+        beschrieb der Kern-Hash das Themenband dieses Fensters und keine
+        wiedererkennbare Person (`KERNHASH-TRAEGT-KEINE-PERSON`, 25.08.2026).
+
+        **Gelesen wird in zwei Schritten**, und das ist kein Umweg: Der erste
+        holt nur Kennung und Zeichenzahl je Begegnung, der zweite den Wortlaut
+        der ausgewaehlten. Ein Lesen der ganzen Historie in einem Zug haette
+        das Fenster durch eine unbegrenzt wachsende Lesemenge ersetzt — dieselbe
+        Sorte stiller Zuwachs, nur an anderer Stelle.
 
         **Ein eigener Impuls ist keine Begegnung und gehoert in kein Profil.**
         Beide Raeder messen eine Haltung GEGENUEBER jemandem; bei einem Impuls
@@ -507,18 +525,42 @@ class CharakterAgent(BaseAgent):
         tatsaechlichen Aeusserungen des Menschen trugen 1761 Zeichen (4,6 %).
         Die Marke `herkunft` liegt seit dem 05.08.2026 in derselben Zeile.
         """
+        wirksames_budget: int = (
+            budget if budget is not None else PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN
+        )
+
+        # Schritt 1: nur Kennung und Umfang, aelteste zuerst. Die Reihenfolge
+        # ist die Achse, ueber die geschichtet wird.
+        umfaenge = db_manager.select(
+            """
+            SELECT id,
+                   coalesce(length(inhalt ->> 'user_prompt'), 0)
+                 + coalesce(length(inhalt ->> 'response'),    0) AS zeichen
+            FROM pipeline_log
+            WHERE art = 'turn_roh' AND user_id = %s
+              AND inhalt ->> 'herkunft' = 'nutzer_turn'
+            ORDER BY erstellt_am
+            """,
+            (user_id,),
+        ) or []
+
+        gewaehlt = geschichtet_waehlen(
+            [z["zeichen"] for z in umfaenge], wirksames_budget,
+        )
+        kennungen: list[int] = [umfaenge[p]["id"] for p in gewaehlt]
+
+        # Schritt 2: der Wortlaut genau der ausgewaehlten Begegnungen.
         zeilen = db_manager.select(
             """
             SELECT inhalt ->> 'user_prompt' AS aeusserung,
                    inhalt ->> 'response'    AS antwort
             FROM pipeline_log
-            WHERE art = 'turn_roh' AND user_id = %s
-              AND inhalt ->> 'herkunft' = 'nutzer_turn'
-            ORDER BY erstellt_am DESC
-            LIMIT %s
+            WHERE id = ANY(%s)
+            ORDER BY erstellt_am
             """,
-            (user_id, grenze),
-        ) or []
+            (kennungen,),
+        ) if kennungen else []
+        zeilen = zeilen or []
 
         # Wieviel der Bestand haette liefern koennen — ohne diese Zahl ist
         # "wenig Material" nicht von "viel Material, davon das meiste
@@ -535,9 +577,11 @@ class CharakterAgent(BaseAgent):
             (user_id,),
         ) or [{"impulse": 0, "ohne_marke": 0}]
 
+        # Schritt 2 liefert bereits aelteste zuerst — anders als die fruehere
+        # Abfrage, die absteigend las und hier umdrehen musste.
         eintraege = [
             {"aeusserung": z["aeusserung"] or "", "antwort": z["antwort"] or ""}
-            for z in reversed(zeilen)
+            for z in zeilen
             if (z["aeusserung"] or z["antwort"])
         ]
 
@@ -550,7 +594,8 @@ class CharakterAgent(BaseAgent):
         else:
             logger.info(
                 f"CharakterAgent: Wortlaut geladen fuer '{user_id}' — "
-                f"{len(eintraege)} Begegnungen "
+                f"{len(eintraege)} von {len(umfaenge)} Begegnungen der Historie, "
+                f"geschichtet bei Budget {wirksames_budget} Zeichen "
                 f"({gesamt[0]['impulse']} Impulse ausgenommen, "
                 f"{gesamt[0]['ohne_marke']} ohne Marke)"
             )
