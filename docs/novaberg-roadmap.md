@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **20:05 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **21:00 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 133 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 134 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,41 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 21:00 UTC — die Rauschgrenze, und die Skala, die einer Messung fehlte
+
+Die Absicht in §3.1 lautet, der Kern beschreibe ein **dauerhaftes** Wesen. Dauer ist eine Groesse ueber die Zeit, ihr Beleg also eine Reihe. **Eine Drift-Reihe ist aber unlesbar, solange niemand weiss, wie weit der Kern wandert, wenn sich nichts aendert** — deshalb stand diese Messung vor jener.
+
+Fuenf Destillationen je Traeger auf **festgehaltenem** Material, Pixie abgeschaltet, nichts geschrieben.
+
+| | Bindung ans Themenband | Ueberdeckung zweier Laeufe |
+|---|---|---|
+| Figur | Mittel **12,2 %**, Spanne 9,8–13,7 (Breite 3,9 Punkte) | **31,7 %** (27,0–34,7) |
+| Mensch | Mittel **6,4 %**, Spanne 3,8–8,7 (Breite 4,9 Punkte) | **27,0 %** (22,1–33,3) |
+
+### Die Wirkungsmessung ist halb belegt und halb berichtigt
+
+**Fuer die Figur ist sie belegt.** Der Vorher-Wert 28,4 % liegt **14,7 Punkte ueber** der Obergrenze des Rauschbandes; kein Lauf auf dem neuen Material kommt dorthin.
+
+**Fuer den Menschen ist sie ein Hinweis.** Vorher 11,4 % liegt nur **2,7 Punkte** ueber der Obergrenze 8,7 %, und bei fuenf Laeufen ist die wahre Streuung breiter als die beobachtete Spanne. Die Aussage von 20:05 UTC, der Abstand liege auf **beiden** Seiten ueber der Streuung, war fuer die Menschenseite zu stark und ist hier berichtigt.
+
+### Die zweite Spalte ist der eigentliche Fund
+
+> **Zwei Destillationen aus identischem Material teilen nur 27 bis 32 % ihres Inhaltswortschatzes.**
+
+Das ist die **Decke** jeder Aehnlichkeitsmessung an diesem Kern — und die Skala, die der Ursprungsmessung gefehlt hat. `KERNHASH-TRAEGT-KEINE-PERSON` steht auf: Novas sieben Kerne untereinander **16,0 %**, sieben verschiedene Menschen **16,3 %**. Gegen 100 % gelesen sah das nach sehr wenig aus. Gegen rund 32 % gelesen sind beide die **Haelfte des Moeglichen** — und sie liegen weiter gleichauf.
+
+**Der Befund haelt, und seine Deutung wird schaerfer:** Nicht *„der Kern traegt fast nichts"*, sondern *„von dem, was ueberhaupt wiederholbar ist, traegt der Kern nichts Personenspezifisches"*. Die andere Haelfte zerstoert die Ableitung selbst, bevor irgendetwas ueber Personen gesagt ist.
+
+> **Das ist zugleich das staerkste Argument fuer `PROFIL-EINMALERHEBUNG`** — mehrfach erheben, den mittleren Lauf speichern —, und dessen Kostengrund ist am selben Tag gefallen. Der Kern speist den Responder und beide Raeder; er ist die Stelle, an der eine Streuung dieser Breite am teuersten ist.
+
+### Nebenbefund: die Live-Kosten enthalten die Konkurrenz
+
+Ohne Pixie dauert ein Kern-Lauf der Figur **58 bis 81 s** statt der live gemessenen **186 s**, der des Menschen 36 bis 46 s statt 49 s. Die Live-Zahl misst nicht die Destillation allein, sondern sie **plus** den Wettbewerb um dasselbe CPU-Modell.
+
+**Waehrend der Reihe war Pixie abgeschaltet und ist danach wieder an.** Tctl lag zwischen 55 und 66 °C, der Waechter mit Grenze 85 °C hat nicht angeschlagen. Werkzeug: `labor/2026-08-26_kern_rauschgrenze.py`. Kein Code geaendert.
 
 ---
 

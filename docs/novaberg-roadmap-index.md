@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 549 Abschnitte in 5 Dateien — 221 mit eigenem Datum, 327 geerbt, 1 ohne.
+**Umfang:** 553 Abschnitte in 5 Dateien — 222 mit eigenem Datum, 330 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 286 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 290 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 549 Marken, 549 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 553 Marken, 553 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-26 | laufend | ## | [26.08.2026, 21:00 UTC — die Rauschgrenze, und die Skala, die einer Messung fehlte](novaberg-roadmap.md#26082026-2100-utc--die-rauschgrenze-und-die-skala-die-einer-messung-fehlte) |
+| (2026-08-26) | laufend | ### | · [Die Wirkungsmessung ist halb belegt und halb berichtigt](novaberg-roadmap.md#die-wirkungsmessung-ist-halb-belegt-und-halb-berichtigt) |
+| (2026-08-26) | laufend | ### | · [Die zweite Spalte ist der eigentliche Fund](novaberg-roadmap.md#die-zweite-spalte-ist-der-eigentliche-fund) |
+| (2026-08-26) | laufend | ### | · [Nebenbefund: die Live-Kosten enthalten die Konkurrenz](novaberg-roadmap.md#nebenbefund-die-live-kosten-enthalten-die-konkurrenz) |
 | 2026-08-26 | laufend | ## | [26.08.2026, 20:05 UTC — das Fenster ist fort, und die Kontrolle steht still](novaberg-roadmap.md#26082026-2005-utc--das-fenster-ist-fort-und-die-kontrolle-steht-still) |
 | (2026-08-26) | laufend | ### | · [Zwei Schritte statt einem, und der Grund ist derselbe wie beim Fenster](novaberg-roadmap.md#zwei-schritte-statt-einem-und-der-grund-ist-derselbe-wie-beim-fenster) |
 | (2026-08-26) | laufend | ### | · [Der erste Lauf am produktiven Paar](novaberg-roadmap.md#der-erste-lauf-am-produktiven-paar) |
