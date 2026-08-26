@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Charakter — Profile, Raeder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 66 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 67 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -9,12 +9,23 @@
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 67 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
 
 ---
+
+## Block 26.08.2026 — aus dem Umbau der Kern-Auswahl
+
+Ein Eintrag. Er ist **eine fehlende Messung, keine fehlende Bauarbeit** — das Gebaute steht, nur sein Beleg ist nicht zu fuehren.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `KERNVERGLEICH-KONTROLLE-STEHT-STILL` | **Das Schliesskriterium von `KERNHASH-TRAEGT-KEINE-PERSON` ist mit dem heutigen Bestand nicht messbar.** Es lautet: Die Kerne derselben Figur muessen einander messbar staerker aehneln als die Kerne verschiedener Menschen — dieselbe Rechnung, dieselbe Kontrolle. **Die Kontrolle bewegt sich aber nicht mehr:** Die sechs Vergleichspaare (`sarah`, `mehmet`, `hartmut`, `leon`, `konrad`, `falle`) stammen aus Korpus-Laeufer-Dialogen mit rund **30 Begegnungen**; sie liegen **unter** dem Budget von 80 000 Zeichen, ihre Auswahl aendert sich durch die Schichtung also gar nicht. Nur `meister` mit 223 Begegnungen liegt darueber. **Ein Vorher-Nachher gegen eine unbewegte Kontrolle belegt nichts** — der Umbau kann sich am 26.08.2026 nicht messen lassen, obwohl er laeuft und obwohl die Ersatzgroesse (Bindung an das juengste Themenband, 28,4 % → 10,8 %) auf beiden Seiten und in beiden Laeufen in dieselbe Richtung zeigt. **Zwei Wege stehen offen, und beide sind eigene Auftraege:** (a) laengere Vergleichskorpora — der Korpus-Laeufer erzeugt je Figur rund 30 Begegnungen, gebraucht werden mehr als 80 000 Zeichen, also grob das Vierfache · (b) eine **Messreihe ueber die Zeit** statt eines Vergleichs ueber Figuren: derselbe Kern in Abstaenden erhoben, und die Frage ist dann nicht *„aehneln sich sieben Profile"*, sondern *„bleibt eines ueber Wochen dasselbe"*. **Weg (b) misst naeher an der Absicht** — §3.1 verspricht ein *dauerhaftes* Wesen, und Dauer ist eine Groesse ueber die Zeit, nicht ueber Gespraechspartner. **Geschlossen, wenn** eine der beiden Reihen vorliegt und die Rechnung aus dem Defekteintrag damit ein Ergebnis hat — gleich welches. | [CHA] ungebaendert — ⬜ **offen** — angelegt am 26.08.2026. **Solange dieser Eintrag offen ist, bleibt `KERNHASH-TRAEGT-KEINE-PERSON` offen und die Ampel rot** — nicht weil der Umbau fehlt, sondern weil sein Beleg fehlt. |
+
+---
+
 
 ## Block 25.08.2026 — aus der Vermessung des Kern-Hash
 

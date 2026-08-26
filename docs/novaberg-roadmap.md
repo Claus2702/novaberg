@@ -63,7 +63,7 @@ Gemessen als Anteil der Inhaltswoerter des Kerns, die auch im Wortschatz der 40 
 
 ### Die Ampel bleibt rot, und der Grund ist eine stillstehende Kontrolle
 
-Das Schliesskriterium des Defekteintrags lautet: Novas Kerne muessen einander messbar staerker aehneln als die Kerne verschiedener Menschen. **Diese Rechnung laesst sich heute nicht wiederholen.** Die sechs Vergleichspaare stammen aus Korpus-Laeufer-Dialogen mit rund 30 Begegnungen; sie liegen **unter** dem Budget, ihre Auswahl aendert sich also nicht. Die Kontrolle steht still, und ein Vorher-Nachher gegen eine unbewegte Kontrolle belegt nichts.
+Das Schliesskriterium des Defekteintrags lautet: Novas Kerne muessen einander messbar staerker aehneln als die Kerne verschiedener Menschen. **Diese Rechnung laesst sich heute nicht wiederholen.** Die sechs Vergleichspaare stammen aus Korpus-Laeufer-Dialogen mit rund 30 Begegnungen; sie liegen **unter** dem Budget, ihre Auswahl aendert sich also nicht. Die Kontrolle steht still, und ein Vorher-Nachher gegen eine unbewegte Kontrolle belegt nichts. **Als `KERNVERGLEICH-KONTROLLE-STEHT-STILL` im Backlog aufgenommen**, mit zwei Wegen: laengere Vergleichskorpora, oder eine **Messreihe ueber die Zeit** statt eines Vergleichs ueber Figuren. Der zweite Weg misst naeher an der Absicht — §3.1 verspricht ein *dauerhaftes* Wesen, und Dauer ist eine Groesse ueber die Zeit, nicht ueber Gespraechspartner.
 
 > **Und ein Teilbefund ist nicht gefallen, sondern gestiegen:** Die gemeinsamen Inhaltswoerter beider Kerne gingen von 38 auf **43** und im zweiten Lauf auf **51**. Der geteilte Gespraechsstoff ist damit nicht erledigt — erledigt ist die Bindung an dessen juengsten Ausschnitt. Das sind zwei Dinge, und der Umbau trifft nur eines.
 
