@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **21:00 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 26. August 2026 — juengster Eintrag **21:15 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 134 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 135 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,39 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 26.08.2026, 21:15 UTC — die Drift-Reihe laeuft, und ihr Zeitplan liegt ausserhalb
+
+Weg (b) aus `KERNVERGLEICH-KONTROLLE-STEHT-STILL` ist begonnen. Er brauchte zwei Dinge, die beide heute entstanden sind: eine Nulllinie, gegen die sich eine Aehnlichkeit lesen laesst, und einen Speicher.
+
+### Der Speicher, und warum es ihn braucht
+
+Pixie destilliert alle zehn Minuten und **ueberschreibt** dabei `charakter_hash`. Ohne Mitschrift ist die Historie fort, bevor jemand sie lesen kann. Ein Sammler nimmt alle drei Stunden mit, was gerade dort steht, und schreibt nur bei veraendertem Zeitstempel fort — **kein einziger zusaetzlicher Modellaufruf.**
+
+### Was gemessen wird, ist ein Vergleich zweier Vergleiche
+
+Nicht die Aehnlichkeit zweier Fassungen: Die war nie hoch, zwei Destillationen aus identischem Material teilen 27–32 %.
+
+| | Was zwischen zwei Fassungen steht |
+|---|---|
+| **Innerhalb eines Tages** | nur das Rauschen der Ableitung |
+| **Zwischen zwei Tagen** | das Rauschen **plus** die Veraenderung des Materials |
+
+**Faellt die zweite Zahl unter die erste, wandert der Kern. Bleiben beide gleich, ist er stabil.** Lesbar wird die Reihe, sobald zwei Tage mit je mindestens zwei Fassungen vorliegen; belastbar erst ueber Wochen.
+
+### Der Zeitplan liegt ausserhalb des Repositoriums — und das ist die Schwachstelle
+
+Der Takt steht in der `crontab` der Maschine, auf der Novaberg laeuft. Geprueft wurde er nicht nur eingetragen, sondern in einer **kargen Umgebung** gefahren, wie cron sie stellt (`env -i`, PATH auf `/usr/bin:/bin`) — Rueckgabewert 0.
+
+> **Ein Eintrag, den kein Dokument dieses Repositoriums erzwingt, kann still verschwinden.** Die Reihe hoert dann auf, und nichts faellt aus — dieselbe Klasse wie ein Ziel, dessen Ausloeser *„immer"* lautet und das trotzdem gesucht wird. Wer die Reihe beendet, entfernt die Zeile; die Werkzeuge bleiben.
+
+### Was die Reihe nicht beantwortet
+
+Sie sagt, ob etwas **bleibt** — nicht, ob das Bleibende eine **Person** beschreibt. Diese Frage braucht weiterhin Weg (a) desselben Eintrags: laengere Vergleichskorpora und die Kontrolle ueber verschiedene Menschen. Der bleibt offen.
+
+**Werkzeuge:** `labor/2026-08-26_kern_drift_sammeln.py` und `..._auswerten.py`; Daten in `labor/messreihen/kern_drift.jsonl`, nicht versioniert. Kein Code im Repositorium geaendert.
 
 ---
 
