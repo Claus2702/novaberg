@@ -508,6 +508,43 @@ PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE: int = int(
 # Das Budget ist fest, nicht wachsend. Was waechst, ist die Grundmenge, aus
 # der geschichtet gezogen wird: Ein Turn von vor einem Jahr hat dieselbe
 # Chance wie einer von gestern.
+# Wie oft der Kern-Hash je Destillation erhoben wird. Gespeichert wird der
+# **Medoid** — der Lauf mit der groessten Naehe zu den anderen —, nicht ein
+# gemittelter Text: Einen Mittelwert von Texten gibt es nicht, und das Modell
+# aus drei Fassungen eine vierte bilden zu lassen waere das Umschreiben der
+# eigenen Ausgabe, das §3.1a des Konzepts ausschliesst.
+#
+# Der Grund ist gemessen: Zwei Destillationen aus **identischem** Material
+# teilen nur 27–32 % ihres Inhaltswortschatzes, und diese Ziehung geht
+# ungefiltert in beide Charakter-Raeder. Bei festgehaltenem Material bewegt
+# allein die Neuziehung des Kerns den Zuwendungsfaktor um 0.2908 gegen 0.0550
+# innerhalb eines Kerns — das 5,3-fache und 29 % der Skala 0.5 bis 1.5
+# (RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE, 26.08.2026).
+#
+# **Der Vorgabewert ist 1, und das ist eine Messung und keine Sparsamkeit.**
+# Der Medoid aus drei Laeufen wurde am 26.08.2026 gegen dieselbe Anordnung
+# gehalten, die den Befund erzeugt hat:
+#
+#     Einzel-Kerne  Spanne des Faktors 0.2908, je Kern rund 110 s
+#     Medoid aus 3  Spanne des Faktors 0.2615, je Kern rund 230 s
+#
+# **10 % weniger Streuung fuer das Dreifache an Rechenzeit** — und bei vier
+# Punkten je Reihe ist dieser Unterschied nicht von Rauschen zu unterscheiden.
+# Der Grund ist einsichtig: Der Medoid waehlt den zentralsten aus **drei**
+# Ziehungen einer sehr breiten Verteilung; bei dieser Breite ist der
+# zentralste von dreien immer noch fast eine Ziehung.
+#
+# Live gerechnet waeren es rund 560 s allein fuer den Kern der Figur und ein
+# Zyklus von etwa 900 s gegen einen Takt von 600 s.
+#
+# **Der Mechanismus bleibt trotzdem gebaut**, und mit ihm die Senke: Jeder
+# Lauf steht als `kern_erhebung` im `pipeline_log`. Wer die Streuung ernsthaft
+# verschmaelern will, braucht viele Laeufe — dann steht hier eine groessere
+# Zahl statt eines neuen Bauauftrags.
+PIXIE_CHARAKTER_KERN_LAEUFE: int = int(
+    os.getenv("PIXIE_CHARAKTER_KERN_LAEUFE", "1")
+)
+
 PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN: int = int(
     os.getenv("PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN", "80000")
 )

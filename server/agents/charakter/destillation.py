@@ -9,6 +9,7 @@ Prompts uebernommen aus: services/shadow_agent/tasks/charakter_hash.py
 import json
 import logging
 import math
+import re
 import time
 from collections.abc import Callable
 
@@ -21,6 +22,7 @@ from config import (
     INITIATIVE_RAD_NABE,
     INITIATIVE_RAD_SPANNE,
     PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE,
+    PIXIE_CHARAKTER_KERN_LAEUFE,
     RAD_MAX,
     RAD_MIN,
     RAD_NABE,
@@ -31,6 +33,24 @@ from services.model_services import BackgroundRequest, model_service
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
+
+
+# ─────────────────────────────────────────────
+# Wortschatz-Vergleich der Profiltexte
+# ─────────────────────────────────────────────
+# Funktionswoerter und die Traegernamen. Sie stehen in **jeder** Fassung und
+# wuerden die Naehe zweier Laeufe nach oben ziehen, ohne etwas ueber ihre
+# Uebereinstimmung zu sagen — ein Medoid, der sie mitzaehlt, waehlt zwischen
+# fast gleich grossen Zahlen und damit fast zufaellig.
+_PROFIL_STOPPWOERTER: frozenset[str] = frozenset("""
+der die das den dem des ein eine einer eines einem einen und oder aber nicht
+kein keine ist sind war waren wird werden hat haben hatte sich sie er es ihr
+ihre ihrer ihres ihrem ihren sein seine seiner seines seinem seinen ich du wir
+man in im an auf zu zur zum von vom mit fuer als auch nur noch schon wie was
+wer wo dass wenn sondern dies diese dieser dieses diesem mehr sehr durch ueber
+bei um aus nach vor ohne gegen kann koennen will wollen muss muessen etwas
+doch mal ja nein hier dann da so eigen eigene eigenen eigener eigenes
+""".split())
 
 
 # ─────────────────────────────────────────────
@@ -792,6 +812,157 @@ def kern_hash_destillieren(turn_eintraege: list[dict], user_id: str = DEFAULT_US
         KERN_HASH_PROMPT.format(eintraege=eintraege, **perspektive),
         f"Kern-Hash ({user_id})",
     )
+
+
+def _inhaltswoerter(text: str) -> set[str]:
+    """Die Inhaltswoerter eines Profiltextes, ohne Funktionswoerter.
+
+    Vorbedingung: beliebiger Text, auch leer.
+    Nachbedingung: Menge kleingeschriebener Woerter ab vier Zeichen.
+
+    Der Wortschatz ist der Vergleichsgegenstand des Medoids. Er ist grob und
+    ausdruecklich nicht semantisch: Zwei Fassungen, die dasselbe mit anderen
+    Woertern sagen, gelten hier als verschieden. Fuer die Frage *welcher der
+    Laeufe liegt in der Mitte* reicht das — sie verlangt eine Ordnung, keine
+    Bedeutung.
+    """
+    return {w for w in re.findall(r"[a-zäöüßA-ZÄÖÜ]{4,}", (text or "").lower())
+            if w not in _PROFIL_STOPPWOERTER}
+
+
+def kern_medoid_waehlen(kerne: list[str]) -> int:
+    """Waehlt den zentralsten Lauf — den mit der groessten Naehe zu den anderen.
+
+    Vorbedingung: mindestens ein nicht leerer Text. Leere Laeufe sind
+        zulaessig und zaehlen nicht mit; sie sind der Teilausfall.
+    Nachbedingung: Stellung eines Laufs in `kerne`, dessen Text nicht leer
+        ist. Gibt es keinen brauchbaren Lauf, ist es -1, und der Aufrufer
+        meldet es.
+
+    **Warum ein Medoid und kein Mittel.** Es gibt keinen Mittelwert von
+    Texten, und die naheliegende Ersatzform — das Modell aus drei Fassungen
+    eine vierte bilden zu lassen — ist das Umschreiben der eigenen Ausgabe,
+    das `novaberg-pixie-character-hash.md` §3.1a ausdruecklich ausschliesst.
+    Der Medoid haelt dieselbe Linie wie `F-RAD-2`: **Gespeichert wird, was ein
+    Lauf tatsaechlich hervorgebracht hat**, nicht eine Mischung, die keiner
+    vergeben hat.
+
+    **Warum das noetig ist.** Zwei Destillationen aus identischem Material
+    teilen nur 27–32 % ihres Inhaltswortschatzes (§3.1c), und diese Streuung
+    geht ungefiltert in beide Charakter-Raeder: Bei festgehaltenem Material
+    bewegt allein die Neuziehung des Kerns den Zuwendungsfaktor um **0,2908**
+    gegen **0,0550** innerhalb eines Kerns — das 5,3-fache und 29 % der ganzen
+    Skala (`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`).
+    """
+    # ── Eingabe-Validierung ──
+    brauchbar: list[tuple[int, set[str]]] = [
+        (i, _inhaltswoerter(k)) for i, k in enumerate(kerne) if (k or "").strip()
+    ]
+    brauchbar = [(i, w) for i, w in brauchbar if w]
+    if not brauchbar:
+        logger.error(
+            f"Kern-Medoid: keiner von {len(kerne)} Laeufen traegt Inhaltswoerter "
+            "— keine Wahl moeglich"
+        )
+        return -1
+
+    if len(brauchbar) == 1:
+        stelle = brauchbar[0][0]
+        logger.warning(
+            f"Kern-Medoid: nur 1 von {len(kerne)} Laeufen brauchbar — Lauf "
+            f"{stelle + 1} wird ungeprueft genommen, eine Mitte gibt es nicht"
+        )
+        return stelle
+
+    # ── Verarbeitung ──
+    # Naehe zweier Laeufe: der Anteil des kleineren Wortschatzes, der im
+    # groesseren vorkommt. Laengenunempfindlich, anders als Jaccard — die
+    # Fassungen sind zwischen 3000 und 5500 Zeichen lang.
+    naehen: list[tuple[float, int]] = []
+    for stelle, worte in brauchbar:
+        andere = [w for i, w in brauchbar if i != stelle]
+        werte = [len(worte & w) / min(len(worte), len(w)) * 100 for w in andere]
+        naehen.append((sum(werte) / len(werte), stelle))
+
+    beste_naehe, gewaehlt = max(naehen)
+    schlechteste = min(naehen)[0]
+
+    # ── Ausgabe-Verifikation ──
+    if not (0 <= gewaehlt < len(kerne)) or not (kerne[gewaehlt] or "").strip():
+        logger.error(
+            f"Kern-Medoid: Stellung {gewaehlt} zeigt auf keinen brauchbaren "
+            f"Lauf — Wahl verworfen"
+        )
+        return -1
+
+    # **Die Spanne gehoert in dieselbe Zeile wie die Wahl.** Liegen alle Laeufe
+    # gleich nah beieinander, ist der Medoid eine Muenze — und das ist am Wert
+    # allein nicht zu sehen.
+    logger.info(
+        f"Kern-Medoid: Lauf {gewaehlt + 1} von {len(brauchbar)} gewaehlt, "
+        f"mittlere Naehe {beste_naehe:.1f} % (schlechtester Lauf "
+        f"{schlechteste:.1f} %, Abstand {beste_naehe - schlechteste:.1f} Punkte)"
+    )
+    return gewaehlt
+
+
+def kern_hash_mehrfach_destillieren(
+    turn_eintraege: list[dict],
+    user_id:        str = DEFAULT_USER_ID,
+    laeufe:         int = PIXIE_CHARAKTER_KERN_LAEUFE,
+    lauf_melden:    Callable[[int, str], None] | None = None,
+) -> str:
+    """Destilliert den Kern mehrfach und gibt den zentralsten Lauf zurueck.
+
+    Vorbedingung: wie `kern_hash_destillieren`; `laeufe` ist mindestens 1.
+    Nachbedingung: der Text **eines** Laufs oder "". Leer heisst: kein Lauf
+        war brauchbar, und das ist gemeldet.
+
+    Der Grund steht bei `kern_medoid_waehlen`: Der Kern speist beide Raeder
+    und den Responder, und seine Ziehung bewegt den Zuwendungsfaktor um 29 %
+    der Skala. `F-RAD-2` fasst dieselbe Ueberlegung fuer die Raeder — dort
+    greift sie eine Stufe zu spaet.
+
+    `lauf_melden` bekommt jeden Lauf einzeln, damit die verworfenen Fassungen
+    nachvollziehbar bleiben. Ein Lauf, den niemand sieht, ist von einem Lauf,
+    den es nicht gab, nicht zu unterscheiden.
+    """
+    if laeufe < 1:
+        logger.error(f"Kern-Hash ({user_id}): {laeufe} Laeufe verlangt — kein Profil")
+        return ""
+
+    fassungen: list[str] = []
+    for nummer in range(1, laeufe + 1):
+        fassung = kern_hash_destillieren(turn_eintraege, user_id)
+        fassungen.append(fassung)
+        if lauf_melden is not None:
+            lauf_melden(nummer, fassung)
+
+    # **Ein einzelner Lauf ist kein Teilausfall, sondern die Vorgabe.**
+    # `kern_medoid_waehlen` meldet bei nur einer brauchbaren Fassung eine
+    # fehlende Mitte — richtig, wenn zwei Laeufe ausgefallen sind, und falsch,
+    # wenn nur einer verlangt war. Die Unterscheidung gehoert hierher, wo die
+    # Zahl bekannt ist; sonst steht bei jeder Destillation eine Warnung, die
+    # keine ist, und Warnungen, die immer stehen, liest niemand mehr.
+    if laeufe == 1:
+        if not (fassungen[0] or "").strip():
+            logger.error(f"Kern-Hash ({user_id}): einziger Lauf leer — kein Profil")
+            return ""
+        return fassungen[0]
+
+    gewaehlt = kern_medoid_waehlen(fassungen)
+    if gewaehlt < 0:
+        logger.error(
+            f"Kern-Hash ({user_id}): {laeufe} Laeufe, keiner brauchbar — kein Profil"
+        )
+        return ""
+
+    verworfen = len([f for f in fassungen if (f or "").strip()]) - 1
+    logger.info(
+        f"Kern-Hash ({user_id}): Lauf {gewaehlt + 1} von {laeufe} gespeichert, "
+        f"{verworfen} Fassung(en) verworfen und in der Senke"
+    )
+    return fassungen[gewaehlt]
 
 
 def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:

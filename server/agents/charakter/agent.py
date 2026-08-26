@@ -24,7 +24,7 @@ from agents.charakter.destillation import (
     initiative_rad_destillieren,
     initiative_versatz_berechnen,
     intentions_profil_destillieren,
-    kern_hash_destillieren,
+    kern_hash_mehrfach_destillieren,
     langfristige_ziele_destillieren,
     nutzer_gewichtung_berechnen,
     speichen_ohne_mehrheit,
@@ -55,6 +55,7 @@ from config import (
     get_node_config,
     redis_client,
 )
+from memory.pipeline_log import log_berechnung
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from memory.ziele import ziel_deaktivieren, ziel_speichern, ziele_aktive_laden
 from services.model_services import EmbedRequest, model_service
@@ -237,8 +238,46 @@ class CharakterAgent(BaseAgent):
                 }
 
                 try:
-                    ergebnis["kern"] = kern_hash_destillieren(
-                        turn_wortlaut, user_id=subjekt_user_id
+                    # **Der Kern wird mehrfach erhoben, gespeichert wird der
+                    # Medoid.** Dieselbe Ueberlegung wie `F-RAD-2` bei den
+                    # Raedern — und dort greift sie eine Stufe zu spaet: Die
+                    # drei Rad-Laeufe lesen alle **denselben** Kern, waehrend
+                    # dessen eigene Ziehung den Zuwendungsfaktor um 0.2908
+                    # bewegt gegen 0.0550 innerhalb eines Kerns. Das 5,3-fache
+                    # und 29 % der Skala (RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE,
+                    # gemessen 26.08.2026 bei festgehaltenem Material).
+                    #
+                    # Jeder Lauf geht einzeln in die Forensik. Ein verworfener
+                    # Lauf, den niemand sieht, ist von einem Lauf, den es nie
+                    # gab, nicht zu unterscheiden — und die Wahl des Medoids
+                    # waere ohne die Verworfenen nicht nachrechenbar.
+                    erhebung_kern: str = str(uuid.uuid4())
+
+                    def kern_lauf_ablegen(nummer: int, fassung: str,
+                                          _u: str = subjekt_user_id,
+                                          _c: str = subjekt_character_id,
+                                          _e: str = erhebung_kern) -> None:
+                        """Senke fuer `kern_hash_mehrfach_destillieren`."""
+                        log_berechnung(
+                            turn_id = _e,
+                            node    = "charakter_hash",
+                            quelle  = "pixie/charakter",
+                            inhalt  = {
+                                "art":          "kern_erhebung",
+                                "erhebung_id":  _e,
+                                "lauf":         nummer,
+                                "zeichen":      len(fassung or ""),
+                                "fassung":      fassung or "",
+                                "modell":       PIXIE_ANALYSE_MODEL,
+                            },
+                            user_id      = _u,
+                            character_id = _c,
+                        )
+
+                    ergebnis["kern"] = kern_hash_mehrfach_destillieren(
+                        turn_wortlaut,
+                        user_id     = subjekt_user_id,
+                        lauf_melden = kern_lauf_ablegen,
                     )
                 except Exception as ex:
                     logger.exception(
