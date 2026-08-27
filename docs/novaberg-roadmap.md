@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 27. August 2026 — juengster Eintrag **11:35 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 27. August 2026 — juengster Eintrag **11:50 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 140 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 141 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,28 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 27.08.2026, 11:50 UTC — Addendum 2: der Abgleich des Verlaufs gegen die Speicher
+
+Auf die Frage, ob alles Relevante aus dem Chat in der Doku steht, wurde der **Verlauf gegen die Speicher** gehalten — nicht die eigene Liste gegen die Dokumente (`31_SITZUNG.md` §9a). Zwei Luecken, und die erste wiegt.
+
+### Der Determinismus-Befund nannte das Modell nicht
+
+**Die ganze Sitzung steht auf einer Zeichengleichheit**, und die wurde gegen **`OllamaProvider/qwen36-cpu`** gemessen. In keinem Dokument stand das.
+
+> **Determiniertheit bei `temperature = 0.0` ist keine Eigenschaft der Zahl, sondern eine des Aufbaus.** Ein anderes Modell, ein anderer Anbieter oder ein Wechsel auf die GPU koennen bei 0.0 **weiterhin streuen** — Stapelverarbeitung und nicht-deterministische Kerne sind dort der Regelfall.
+
+**Was daran haengt, ist nicht wenig:** die Bedingung an `F-RAD-2`, die Lesbarkeit der Drift-Reihe, die Skala der Aehnlichkeitsmessung — und damit die Deutung von `KERNHASH-TRAEGT-KEINE-PERSON`. Wechselt der Knoten Modell oder Backend, faellt das alles zugleich, und **nichts wuerde ausfallen**.
+
+Der Vorbehalt steht jetzt an drei Stellen: Konzept §3.1f, `F-RAD-2` und neben der Konstante in `config.py`.
+
+### Der Beleg des Rueckwegs stand nur in der Chronik
+
+Der echte Lauf der Blockaktualisierung — acht Pruefungen, vier Stempel — war im Chronikeintrag von 10:54 UTC beschrieben und **nicht in der Featureliste**. Die Zeile *„Rueckweg ins Wissen"* nannte weiterhin nur die zwei echten Laeufe vom 18.08.2026. Nachgetragen; die Ampel bleibt 🔴, `RUECKWEG-OHNE-IDEMPOTENZ` ist davon unberuehrt.
+
+> **Beide gehen auf dieselbe Ursache zurueck wie das erste Addendum:** Was im Gespraech gemessen und nicht **gebaut** wurde, hat keine Datei, die es von selbst einsammelt. Der Nachzug folgt dem Diff — und die Modellbindung erzeugt keinen Diff, weil sie kein Code ist, sondern eine Voraussetzung.
 
 ---
 

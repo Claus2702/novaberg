@@ -282,6 +282,14 @@ Gemessen am selben festgehaltenen Material, viermal je Temperatur:
 
 **Die Mehrfacherhebung aus `F-RAD-2` läuft damit ins Leere: drei zeichengleiche Läufe, dreifache Kosten.** Die Festlegung ist nicht verletzt, sondern gegenstandslos geworden — und das wird eigens behandelt, nicht nebenbei.
 
+#### Woran der Befund hängt — Modell und Backend
+
+**Gemessen wurde gegen `OllamaProvider/qwen36-cpu`**, den Sprach-Rückweg des BackgroundWorkers. Das gehört zum Befund, nicht daneben:
+
+> **Determiniertheit bei `temperature = 0.0` ist keine Eigenschaft der Zahl, sondern eine des Aufbaus.** Sie setzt voraus, dass derselbe Prompt denselben Rechenweg nimmt. Ein anderes Modell, ein anderer Anbieter oder ein Wechsel auf die GPU können bei 0.0 **weiterhin streuen** — Stapelverarbeitung und nicht-deterministische Kerne sind dort der Regelfall, nicht die Ausnahme.
+
+**Was daraus folgt:** Wechselt der Knoten `charakter_hash` das Modell oder das Backend, ist die Zeichengleichheit **neu zu messen** und nicht vorauszusetzen. Und mit ihr fällt alles, was darauf steht — die Bedingung an `F-RAD-2`, die Lesbarkeit der Drift-Reihe (§3.1d) und die Skala der Ähnlichkeitsmessung (§3.1c).
+
 #### Was diese Messung nicht sagt
 
 **Ob ein Kern bei 0,0 *besser* ist.** Gemessen ist die Wiederholbarkeit, nicht die Güte. Ein Profil kann eng reproduzierbar und dabei gleichmäßig falsch sein — und ein deterministischer Kern wandert nicht mehr durch Rauschen, wohl aber weiterhin mit dem Material. Genau das soll er.
