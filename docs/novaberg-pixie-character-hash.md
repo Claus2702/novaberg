@@ -253,7 +253,7 @@ Live gerechnet wären es rund 560 s allein für den Kern der Figur und ein Zyklu
 
 #### Was trotzdem bleibt
 
-**`PIXIE_CHARAKTER_KERN_LAEUFE` steht auf 1.** Der Mechanismus bleibt gebaut, und mit ihm die Senke: Jeder Lauf steht als `kern_erhebung` im `pipeline_log`, auch der einzelne. Wer die Streuung ernsthaft verschmälern will, ändert eine Konstante statt zu bauen — und weiß dank der Messung, was er dafür bekommt.
+**`PIXIE_CHARAKTER_KERN_LAEUFE` steht auf 1.** Der Mechanismus bleibt gebaut, und mit ihm die Senke: Jeder Lauf steht als `kern_erhebung` im `pipeline_log`, auch der einzelne. **Werkzeug:** `labor/2026-08-26_rad_medoid_wirkung.py` — es ist aus dem Werkzeug abgeleitet, das den Befund erzeugt hat, damit die Zahlen vergleichbar bleiben: dieselbe Anordnung, nur der Kern entsteht anders. Wer die Streuung ernsthaft verschmälern will, ändert eine Konstante statt zu bauen — und weiß dank der Messung, was er dafür bekommt.
 
 > **`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` bleibt damit offen.** Der Versuch, ihn mit dem naheliegenden Griff zu schließen, ist gefahren und gemessen; er trägt nicht. **Was das ausschließt, ist mehr wert als das, was es liefert:** Mehrfacherhebung des Kerns ist als Weg geprüft und zu teuer für ihre Wirkung. Die Streuung muss dort kleiner werden, wo sie entsteht — bei der Ableitung selbst.
 
@@ -297,6 +297,8 @@ Gemessen am selben festgehaltenen Material, viermal je Temperatur:
 > **Die laufende Drift-Reihe (§3.1d) misst ab jetzt etwas anderes als bei ihrem Beginn.** Vor dem Wechsel stand zwischen zwei Fassungen desselben Tages das Rauschen der Ableitung; ab jetzt steht dort nichts mehr. **Die Trennung von Drift und Rauschen, die sie tragen sollte, ist damit gegenstandslos** — was bleibt, ist die Frage nach dem Wandern selbst, und die wird einfacher. Fassungen vor und nach dem 26.08.2026, 23:00 UTC gehören nicht in dieselbe Rechnung.
 
 **Werkzeuge:** `labor/2026-08-26_kern_temperatur.py` und `labor/2026-08-26_rad_bei_null.py`.
+
+> **Und die Determiniertheit ist gegen die Produktion geprüft, nicht nur im Labor.** `labor/2026-08-27_determinismus_gegen_produktion.py` destilliert den Kern erneut und hält ihn gegen die Fassung, die der Pixie-Lauf am 27.08.2026 um 00:16 UTC in `charakter_hash` geschrieben hat — elf Stunden früher, durch den Produktionspfad, ohne Zutun. **Zeichengleich, 3608 Zeichen.** Die Vorbedingung ist, dass sich das Material nicht bewegt hat; die Zahl der Begegnungen meldet das Werkzeug deshalb mit.
 
 ---
 
