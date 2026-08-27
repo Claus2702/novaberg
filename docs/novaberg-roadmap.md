@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 27. August 2026 — juengster Eintrag **10:54 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 27. August 2026 — juengster Eintrag **11:35 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 139 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 140 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,28 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 27.08.2026, 11:35 UTC — Addendum: die Frage nach dem Ganzen fand eine Zustandsangabe
+
+**Die Schlusspruefung war gelaufen, dreizehn von dreizehn belegt.** Dann kam die Frage: *„Hast Du dann alles aktuell? Harness, Konzepte, Lessons, Module, Roadmap, Backlog, Bugs, Handzettel?"* — **dieselbe Frage, die am 25.08.2026 zwei Luecken fand.**
+
+Diesmal gesucht statt behauptet, und mit dem Zugriff, den der Nachzug nicht benutzt: **Nennt ein Zustandsdokument eine Groesse, die der Code nicht mehr hat?**
+
+**Ein Treffer, und es ist die Klasse aus `31_SITZUNG.md` §4a.** `novaberg-charakter-rad-messreihe_k.md` behauptet in §1 und in der MESSUNG-Zeile eine **Verfahrensstreuung des Faktors von 0.08**. Sie wurde bei Produktions-Temperatur **0.2** erhoben. Seit dem 26.08.2026 steht der Knoten auf **0.0**, und drei Rad-Laeufe auf demselben Eingang sind zeichengleich — **Spanne 0,0000**.
+
+> **Die Verfahrensstreuung ist nicht kleiner geworden, sie ist verschwunden.** Und damit ist das Kriterium der MESSUNG-Zeile nicht mehr anwendbar: *„Liegen sie gleichauf, misst die Reihe nur Rauschen"* — gegen null liegt nichts gleichauf.
+
+**Der Schluss des Absatzes bleibt richtig, und zwar staerker:** Wenn das Verfahren gar nicht streut, kann der Sprung von 0.235 erst recht nicht daher kommen. Ueberholt ist die **Vergleichsgroesse**, nicht die Aussage.
+
+Dazu ein zweiter, kleinerer: `RAD-GESPEICHERT-NICHT-REPRODUZIERBAR` liess ausdruecklich offen, *„ob die gespeicherte Null aus einer anderen Temperatur stammt"*. Bei 0.0 kann es eine Nichtreproduzierbarkeit **derselben** Eingabe nicht mehr geben; offen bleibt allein, ob die gespeicherte Eingabe die war, die man glaubt.
+
+**Warum der Nachzug es nicht fand:** Er ging entlang dessen, was gebaut wurde — Auswahl, Medoid, Temperatur. Die Verfahrensstreuung ist keine Groesse des Baus, sondern eine **Kennzahl in einem fremden Konzept**, die zufaellig davon abhaengt. **Sie lag quer zum Weg**, wie das Moduldokument am 25.08.2026.
+
+> **Der Unterschied zum letzten Mal:** Diesmal war der `grep` bereits als Schritt vorgesehen — er stand seit dem 25.08.2026 im Handzettel als *„nennt ein Zustandsdokument einen Bezeichner, den der Code nicht mehr hat?"*. **Er lief nicht von selbst, sondern weil dieselbe Frage noch einmal gestellt wurde.** Ein Schritt, der nur auf Nachfrage laeuft, ist kein Schritt.
+
+Geprueft und **ohne Befund**: `novaberg-agent-character.md` (anderer Agent), `novaberg-architecture.md` (beschreibt die Tabelle, nicht die Erhebung), `novaberg-graph-rechenkette.md`, `novaberg-node-gv_k.md`, die Moduldokumente der Leser, und der Harness (`F-RAD-2` traegt beide Ergaenzungen).
 
 ---
 

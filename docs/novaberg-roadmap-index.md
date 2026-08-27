@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 573 Abschnitte in 5 Dateien — 228 mit eigenem Datum, 344 geerbt, 1 ohne.
+**Umfang:** 574 Abschnitte in 5 Dateien — 229 mit eigenem Datum, 344 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 310 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 311 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 573 Marken, 573 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 574 Marken, 574 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-27 | laufend | ## | [27.08.2026, 11:35 UTC — Addendum: die Frage nach dem Ganzen fand eine Zustandsangabe](novaberg-roadmap.md#27082026-1135-utc--addendum-die-frage-nach-dem-ganzen-fand-eine-zustandsangabe) |
 | 2026-08-27 | laufend | ## | [27.08.2026, 10:54 UTC — die Rechnung, und ein Beleg fuer eine Korrektur](novaberg-roadmap.md#27082026-1054-utc--die-rechnung-und-ein-beleg-fuer-eine-korrektur) |
 | (2026-08-27) | laufend | ### | · [Die Rechnung: entscheidbar geworden, und negativ ausgefallen](novaberg-roadmap.md#die-rechnung-entscheidbar-geworden-und-negativ-ausgefallen) |
 | (2026-08-27) | laufend | ### | · [Der Beleg: die Blockaktualisierung traegt](novaberg-roadmap.md#der-beleg-die-blockaktualisierung-traegt) |

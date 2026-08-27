@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein akuter Zustand, der durch die Messungen der letzten Tage stabilisiert wird
-**Stand:** 26. August 2026 (**die offene Ursache der Streuungsangabe ist beantwortet** — der Profiltext muss sich nicht aendern: Bei festgehaltenem Material bewegt allein die Neuziehung des Kerns den Faktor um **0,2908**, das **5,3-fache** der Streuung, die die Dreifacherhebung einfaengt; siehe den Abschnitt am Ende. Davor: 1. August 2026
+**Stand:** 27. August 2026 (**die Verfahrensstreuung von 0.08 ist ueberholt** — der Knoten steht seit dem 26.08.2026 auf `temperature = 0.0`, drei Rad-Laeufe sind zeichengleich, Spanne 0,0000; das Kriterium der MESSUNG-Zeile ist damit nicht mehr anwendbar. § 1 und § MESSUNG markiert. Davor: 26. August 2026 (**die offene Ursache der Streuungsangabe ist beantwortet** — der Profiltext muss sich nicht aendern: Bei festgehaltenem Material bewegt allein die Neuziehung des Kerns den Faktor um **0,2908**, das **5,3-fache** der Streuung, die die Dreifacherhebung einfaengt; siehe den Abschnitt am Ende. Davor: 1. August 2026
 **Pfad:** novaberg/docs/novaberg-charakter-rad-messreihe_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ✅ gebaut für **beide Räder**, im Betrieb seit 01.08.2026.
@@ -16,6 +16,12 @@
 Am 31.07.2026 wechselte Novas Zuwendungsrad innerhalb von zwei Stunden von einer leeren Abwendungsseite zu `distanz 1.0`. Der Faktor, den die Salienz-Formel bei **jedem** Turn liest, fiel von 1.215 auf 0.980. Dazwischen lagen zwanzig sachliche Frage-Antwort-Turns.
 
 Die naheliegende Erklärung — das Modell würfelt — ist geprüft und **widerlegt**: Drei Erhebungen gegen dieselbe Eingabe bei Produktions-Temperatur ergaben elf von zwölf Speichen identisch, `distanz` stabil auf 1.0. Die Verfahrensstreuung des Faktors beträgt **0.08**, der beobachtete Sprung **0.235** — das Dreifache.
+
+> **Die Zahl 0.08 ist eine Zustandsangabe und seit dem 26.08.2026 überholt.** Sie wurde bei Produktions-Temperatur **0.2** erhoben. Der Knoten `charakter_hash` steht seither auf **0.0**, und drei Rad-Läufe auf demselben Eingang liefern **1,2977 · 1,2977 · 1,2977** — Spanne **0,0000**. **Die Verfahrensstreuung ist nicht kleiner geworden, sie ist verschwunden.**
+>
+> **Der Schluss dieses Absatzes bleibt trotzdem richtig, und zwar stärker:** Wenn das Verfahren gar nicht streut, kann der Sprung von 0.235 erst recht nicht daher kommen. Überholt ist die Vergleichsgröße, nicht die Aussage.
+>
+> **An ihre Stelle tritt eine andere Streuung, eine Stufe früher.** Bei festgehaltenem Material bewegt allein die Neuziehung des **Kern-Hash** den Zuwendungsfaktor um **0,2908** (`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`, 26.08.2026). Auch diese Zahl stammt von **vor** dem Temperaturwechsel; ob sie bei 0.0 bleibt, ist **ungemessen** und die nächste Frage an diese Reihe.
 
 **Der Sprung war also echt.** Und genau das ist das Problem: Zwanzig Turns gegen einen Bestand von rund tausend Kurzzeit-Einträgen haben eine Größe umgeworfen, die jeder Turn liest.
 
@@ -200,7 +206,7 @@ Seine Destillation begründete ausdrücklich, warum sie **ein echtes Rad** speic
 |---|---|
 | **ZIEL** | Der Wert, den die Salienz-Formel liest, folgt einer einzelnen Messung nur zu 41 %, und jede Messung, aus der er entstand, bleibt einzeln nachlesbar. |
 | **TEST** | Fünf abgelegte Reihen mit bekannten Werten ergeben das von Hand gerechnete Mittel; eine sechste verdrängt die älteste; eine zweite Aggregation über denselben Bestand ändert nichts; eine Messung innerhalb von zwölf Stunden wird nicht erhoben; das Mittel taucht nie als Zeile in der Messreihe auf. |
-| **MESSUNG** | Nach fünf Erhebungen gegen das Produktivsystem: die Streuung zwischen den Reihen gegen die Verfahrensstreuung von 0.08. Liegen sie gleichauf, misst die Reihe nur Rauschen und das Fenster ist zu kurz. |
+| **MESSUNG** | Nach fünf Erhebungen gegen das Produktivsystem: die Streuung zwischen den Reihen gegen die Verfahrensstreuung von ~~0.08~~ → **0,0000 seit dem 26.08.2026** (Temperatur 0.0, siehe §1). **Das Kriterium *„liegen sie gleichauf“* ist damit nicht mehr anwendbar** — gegen null liegt nichts gleichauf. Was die Reihe künftig gegen sich halten muss, ist die Streuung der Stufe davor: die des Kern-Hash, und die ist bei 0.0 ungemessen. |
 | **Gegenprobe** | Historiengewicht auf 0 setzen: Das Ergebnis muss exakt der jüngsten Messung entsprechen, also dem heutigen Verhalten. |
 
 **Reihenfolge des Baus:** Tabelle → Schreiben der Messungen → Aggregation → Umstellung des Lesewerts. **Der Lesewert bleibt bis zum letzten Schritt unverändert**, damit die Historie zunächst ohne Wirkung mitläuft und die ersten Reihen gegen das heutige Verhalten vergleichbar sind.
