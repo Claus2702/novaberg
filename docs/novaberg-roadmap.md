@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 26. August 2026 — juengster Eintrag **23:01 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 27. August 2026 — juengster Eintrag **10:54 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 138 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 139 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,59 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 27.08.2026, 10:54 UTC — die Rechnung, und ein Beleg fuer eine Korrektur
+
+Zwei Auftraege, beide abgeschlossen.
+
+### Die Rechnung: entscheidbar geworden, und negativ ausgefallen
+
+Die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` stand am 25.08.2026 unter einer Decke von 32 %. Seit dem Temperaturwechsel liegt sie bei 100 %. Alle vierzehn Kerne wurden frisch destilliert — sieben Paare, zwei Perspektiven, geschichtete Auswahl, `temperature = 0.0`.
+
+| | 25.08. bei T=0,2 | 27.08. bei T=0,0 |
+|---|---|---|
+| Novas sieben Kerne | 16,0 % | **19,7 %** (11,7–25,0) |
+| Sieben verschiedene Menschen | 16,3 % | **16,2 %** (9,5–24,6) |
+| Abstand | −0,3 Punkte | **+3,5 Punkte** |
+
+**Der erste Lauf zeigte, warum ein einfacher Mittelwertvergleich nicht genuegt.** Die hoechsten Aehnlichkeiten betreffen auf **beiden** Seiten dieselben Korpuspaare: `hartmut ↔ konrad` steht bei Nova mit 24,3 % oben und in der Kontrolle mit 24,6 %. **Die Aehnlichkeit folgt dem Gespraech, nicht der Person.**
+
+Gerechnet wird deshalb **gepaart je Korpuspaar** — der Korpuseffekt faellt heraus, weil er in beiden Werten desselben Paares steckt.
+
+| | |
+|---|---|
+| Novas Wert hoeher in | **15 von 21** Paaren |
+| Mittlere Differenz | **+3,5 Punkte** (−4,5 bis +12,0) |
+| Vorzeichentest, zweiseitig | **p = 0,078** |
+
+> **Knapp ueber der Schwelle — kein Nachweis, und auch nicht nichts.** Und die Abhaengigkeit arbeitet **gegen** das Ergebnis: Die 21 Paare stammen aus je sieben Kernen, jeder Kern steckt in sechs Paaren, und diese Kopplung laesst eine Wirkung signifikanter erscheinen als sie ist. Der wahre p-Wert liegt **ueber** 0,078.
+
+**Der Eintrag ist damit nicht mehr unentscheidbar, sondern entschieden und negativ**, mit einem schwachen Zeiger in die andere Richtung. **Nebenbei belegt:** Die vierzehn Kerne des zweiten Laufs sind zeichengleich zu denen des ersten — die Gegenprobe auf die Determiniertheit am echten Gegenstand.
+
+### Der Beleg: die Blockaktualisierung traegt
+
+`VERSIONSSTEMPEL-FRISST-LEERZEILE` ist am 25.08.2026 behoben; **136 von 136 Dateien mit Version > 1.0 waren betroffen**. Der Eintrag haelt zugleich fest, woran es lag, dass es niemandem auffiel: *„Die Funktion war in den Zeugen nur gemockt."*
+
+Ein Test gegen eine Attrappe belegt eine Behebung nicht. Gefahren wurde deshalb der echte Weg — `version_fortschreiben` und `absatz_aendern` — an einer Kopie einer echten Wissensdatei mit Version 1.2, also genau der betroffenen Klasse. **Acht Pruefungen, alle gruen:**
+
+| | |
+|---|---|
+| Leerzeile unter dem Kopf ueberlebt | OK |
+| Version zaehlt hoch (1.2 → 1.3) | OK |
+| Neuer Block steht im laufenden Text, alter nicht mehr | OK |
+| Alter Wortlaut in `## HISTORIE` unter `[<c3_1.3_2026-08-27]` | OK |
+| Marke `[c3>]` gesetzt, Paarung heil | OK |
+| **Leerzeile ueberlebt vier Stempel** (1.2 → 1.6) | OK |
+
+**Der letzte Punkt ist der eigentliche Beleg.** Der Defekt frass die Leerzeile bei **jedem** Eingriff; ein einzelner Stempel haette die Behebung nur zur Haelfte gezeigt.
+
+> **Zwei Korrekturen am eigenen Zeugen unterwegs**, und beide Male lag es am Zeugen: Er suchte `## ARCHIV` statt `## HISTORIE`, und er baute den neuen Absatz als **Erweiterung** des alten — womit die Zusicherung *„der alte steht nicht mehr da"* per Konstruktion rot war, unabhaengig vom Code.
+
+Gearbeitet wurde auf einer Kopie, inzwischen entfernt. Der Gegenstand ist der Code, und der sieht denselben Inhalt.
+
+**Werkzeuge:** `labor/2026-08-27_kern_person_nachrechnung.py` (Vorzeichentest ohne Fremdbibliothek, `math.comb` genuegt) und `labor/2026-08-27_rueckweg_echter_lauf.py`. Kein Code im Repositorium geaendert.
 
 ---
 

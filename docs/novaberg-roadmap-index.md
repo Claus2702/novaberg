@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 570 Abschnitte in 5 Dateien — 227 mit eigenem Datum, 342 geerbt, 1 ohne.
+**Umfang:** 573 Abschnitte in 5 Dateien — 228 mit eigenem Datum, 344 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 307 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 310 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 570 Marken, 570 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 573 Marken, 573 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,11 +36,14 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
-| 2026-08-27 | laufend | ## | [27.08.2026, 00:05 UTC — die Ursache war eine Konstante ohne Herleitung](novaberg-roadmap.md#27082026-0005-utc--die-ursache-war-eine-konstante-ohne-herleitung) |
-| (2026-08-27) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung) |
-| (2026-08-27) | laufend | ### | · [Was der Wechsel mitnimmt](novaberg-roadmap.md#was-der-wechsel-mitnimmt) |
-| (2026-08-27) | laufend | ### | · [Zwei Folgen fuer laufende Arbeit](novaberg-roadmap.md#zwei-folgen-fuer-laufende-arbeit) |
-| (2026-08-27) | laufend | ### | · [Was ungemessen bleibt](novaberg-roadmap.md#was-ungemessen-bleibt) |
+| 2026-08-27 | laufend | ## | [27.08.2026, 10:54 UTC — die Rechnung, und ein Beleg fuer eine Korrektur](novaberg-roadmap.md#27082026-1054-utc--die-rechnung-und-ein-beleg-fuer-eine-korrektur) |
+| (2026-08-27) | laufend | ### | · [Die Rechnung: entscheidbar geworden, und negativ ausgefallen](novaberg-roadmap.md#die-rechnung-entscheidbar-geworden-und-negativ-ausgefallen) |
+| (2026-08-27) | laufend | ### | · [Der Beleg: die Blockaktualisierung traegt](novaberg-roadmap.md#der-beleg-die-blockaktualisierung-traegt) |
+| 2026-08-26 | laufend | ## | [26.08.2026, 23:01 UTC — die Ursache war eine Konstante ohne Herleitung](novaberg-roadmap.md#26082026-2301-utc--die-ursache-war-eine-konstante-ohne-herleitung) |
+| (2026-08-26) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung) |
+| (2026-08-26) | laufend | ### | · [Was der Wechsel mitnimmt](novaberg-roadmap.md#was-der-wechsel-mitnimmt) |
+| (2026-08-26) | laufend | ### | · [Zwei Folgen fuer laufende Arbeit](novaberg-roadmap.md#zwei-folgen-fuer-laufende-arbeit) |
+| (2026-08-26) | laufend | ### | · [Was ungemessen bleibt](novaberg-roadmap.md#was-ungemessen-bleibt) |
 | 2026-08-26 | laufend | ## | [26.08.2026, 22:25 UTC — der Medoid ist gebaut, und die Messung faellt gegen ihn aus](novaberg-roadmap.md#26082026-2225-utc--der-medoid-ist-gebaut-und-die-messung-faellt-gegen-ihn-aus) |
 | (2026-08-26) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung-1) |
 | (2026-08-26) | laufend | ### | · [Was bleibt, und warum es bleibt](novaberg-roadmap.md#was-bleibt-und-warum-es-bleibt) |
