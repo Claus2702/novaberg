@@ -1887,6 +1887,14 @@ NODE_LLM_CONFIG: dict = {
     # Kosten. Das ist bekannt und gemessen; die Festlegung wird eigens
     # behandelt, nicht nebenbei.
     #
+    # **Gemessen gegen `OllamaProvider/qwen36-cpu`, und das gehoert dazu.**
+    # Determiniertheit bei 0.0 ist keine Eigenschaft der Zahl, sondern eine des
+    # Aufbaus: Ein anderes Modell, ein anderer Anbieter oder ein Wechsel auf die
+    # GPU koennen bei 0.0 weiterhin streuen. **Wechselt dieser Knoten Modell oder
+    # Backend, ist die Zeichengleichheit neu zu messen** — und mit ihr faellt
+    # alles, was darauf steht: die Bedingung an F-RAD-2, die Lesbarkeit der
+    # Drift-Reihe und die Skala der Aehnlichkeitsmessung.
+    #
     # **Was diese Zahl nicht sagt:** ob ein Kern bei 0.0 *besser* ist. Gemessen
     # ist die Wiederholbarkeit, nicht die Guete — ein Profil kann eng
     # reproduzierbar und dabei gleichmaessig falsch sein.
