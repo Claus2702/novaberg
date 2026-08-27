@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Charakter — Profile, Raeder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 67 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 68 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -9,12 +9,23 @@
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 67 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 68 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
 
 ---
+
+## Block 27.08.2026 — aus dem Temperaturwechsel
+
+Ein Eintrag. Er ist die **Folge** einer Messung, nicht ihr Gegenstand — und er steht hier, weil er sonst nur in einer Festlegung stuende, die gerade ruht.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `RAD-LAEUFE-BEI-DETERMINISTISCHER-ABLEITUNG` | **Beide Charakter-Raeder werden dreimal erhoben, obwohl die drei Laeufe seit dem 26.08.2026 zeichengleich sind.** Der Knoten `charakter_hash` steht auf `temperature = 0.0`; nachgemessen am 26.08.2026 liefern drei Rad-Laeufe auf demselben Eingang **1,2977 · 1,2977 · 1,2977**, Spanne **0,0000**. `F-RAD-2` verlangt die Mehrfacherhebung mit Median — die Regel ist dadurch nicht verletzt, sondern **gegenstandslos** geworden und traegt seit dem 26.08.2026 ihre Bedingung: *gilt, solange die Ableitung streut*. **Was offen ist, ist die Umstellung des Bestands:** `ZUWENDUNG_RAD_LAEUFE` und `INITIATIVE_RAD_LAEUFE` stehen auf 3 und kosten je Erhebung vier ueberfluessige Modellaufrufe — bei einem Rad-Lauf von rund 28 s Median sind das rund **112 s je Erhebung, zweimal taeglich**. **Warum es kein Nebenzug war:** Eine Konstante zu senken, weil eine Messung sie gerade ueberfluessig macht, ist dieselbe Entscheidung wie das Loeschen der Festlegung — sie gehoert mit ihrer Begruendung an eine Stelle, an der jemand sie beim naechsten Temperaturwechsel wiederfindet. **Geschlossen, wenn** die Lauf-Zahlen der Ableitung folgen: 1 bei deterministischem Knoten, 3 sobald die Temperatur wieder steigt — und der Zusammenhang steht im Code, nicht nur im Register. | [CHA] ungebaendert — ⬜ **offen** — angelegt am 27.08.2026. Reine Ersparnis, kein Defekt: Der gespeicherte Wert ist richtig, er wird nur dreimal gerechnet. |
+
+---
+
 
 ## Block 26.08.2026 — aus dem Umbau der Kern-Auswahl
 

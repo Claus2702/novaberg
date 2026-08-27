@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 26. August 2026, 19:42 UTC
-**Offen:** **114 Funde — gezaehlt am 26.08.2026, 19:42 UTC** (122 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu**: der Kommentar an der Frist in `_llm_call` nennt Dauern um eine Groessenordnung zu hoch, und dieselbe Zahl haelt `PROFIL-EINMALERHEBUNG` zurueck)
+**Stand:** 27. August 2026, 11:10 UTC
+**Offen:** **115 Funde — gezaehlt am 27.08.2026, 11:10 UTC** (123 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu**: der Kern beschreibt das Gespraech, und ob er das soll, ist eine unbeantwortete Konzeptfrage)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -237,6 +237,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-27** — **Der Kern-Hash beschreibt das Gespraech, und niemand hat entschieden, ob er das soll.** Die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist am 27.08.2026 unter deterministischer Ableitung wiederholt und faellt weiter negativ aus (15 von 21 Paaren, p = 0,078). **Die Messung nennt dabei die Ursache mit:** Die hoechsten Aehnlichkeiten betreffen auf **beiden** Seiten dieselben Korpuspaare — `hartmut ↔ konrad` steht in Novas Gruppe mit 24,3 % oben und in der Kontrolle mit 24,6 %. Die Aehnlichkeit folgt dem **Gegenstand des Gespraechs**. **Damit steht eine Konzeptfrage offen, die keine Messung beantwortet:** Ist der Prompt der falsche — er verlangt das WIE und bekommt das WORUEBER, obwohl er ausdruecklich davor warnt —, oder ist der **Gegenstand falsch geschnitten**: Ein Profil, das aus Gespraechen ueber Kochen und Spiele entsteht, beschreibt vielleicht zu Recht Kochen und Spiele, und die Erwartung *„dauerhaftes Wesen"* liegt daneben. **Drei Hebel sind inzwischen gemessen und ausgeschieden** — der Prompt (dreimal), die Mehrfacherhebung (0,2908 → 0,2615 bei dreifachen Kosten) und die Materialauswahl (Bindung ans juengste Themenband halbiert, Befund unveraendert). Wer als naechstes ansetzt, sollte die Absicht pruefen, bevor er den vierten Hebel sucht.
 
 - **2026-08-26** — **Der Kommentar an der Frist in `_llm_call` nennt Dauern, die um eine Groessenordnung zu hoch sind.** `agents/charakter/destillation.py` begruendet `timeout_s = 1800` mit *„gemessen wurden 3288 Zeichen und rund 18 Minuten fuer Kern und Rad zusammen, bei einem einzelnen Rad-Aufruf von rund 8 Minuten"*. **Gemessen am 26.08.2026:** Ein Rad-Lauf dauert im Median **28 s** (222 Laeufe aus `charakter_rad_messung`, Spanne 6–39 s), ein Kern-Lauf **43,2 s** bei 4390 Zeichen und **71,7 s** bei 15 585 Zeichen, und eine **volle Destillation aus zehn Calls ueber beide Subjekte 261 s** (drei Zyklen, Spanne 204–395 s). Die behaupteten 8 Minuten fuer einen Rad-Aufruf sind das **17-fache** des gemessenen Medians. **Die Frist selbst ist davon unberuehrt** — eine Obergrenze, die zu weit steht, kostet nichts. Falsch ist die **Begruendung**, und sie wird zitiert: Dieselbe Zahl steht als Kostengrund in `PROFIL-EINMALERHEBUNG` und hat den Eintrag seit dem 19.08.2026 zurueckgehalten. **Ein Messwert im Kommentar altert wie ein Befund, und niemand haelt ihn nach.**
 
