@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 27. August 2026 — juengster Eintrag **11:50 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **10:15 UTC** (gemessen via `date -u`) (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,21 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 10:15 UTC — Lage-Analyse: die erste Scheibe der Verstehens-Schicht ist zugeschnitten
+
+**Neues Konzept `novaberg-thinking-lage_k.md`.** Es erfindet nichts neu, sondern schneidet aus den drei Thinking-Konzepten (Frames, Cognitive Pipeline, Drive) die erste baubare Scheibe — begruendet durch vier Messungen vom 27./28.08.2026:
+
+- **Die Rueckfragen haben keinen Gegenstand.** 84 Schlussfragen: 33 % Angebotsform, 23 % mit »oder«, neunzehn auf demselben Satzgeruest. Nach Halbierung der Fragen-Grundwerte und Mitlieferung der Frage-Art: weiterhin 2,2 Fragen je Turn, 100 % der Antworten enden mit einer Frage — nur das Geruest wechselte.
+- **Niemand erhebt das Nutzerziel** — nur das grobe `intent`-Label der Perzeption existiert.
+- **Der GV-Parse verliert seine eigenen Felder** — ueber 610 Parses: `Vehikel` leer in 75 %, `Absicht`/`Strategie` in 66 %.
+- **Die Landschaft entsteht aus Rueckfallwerten** — ein blosser Zwei-Wort-Gruss nach 25 h Pause landete in `kissenschlacht`; eine von sechs Achsen war gemessen.
+
+**Die drei Scheiben:** (1) Lage-Analyse je Turn — Gegenstand, vermutetes Nutzerziel, Ausdrucksweise, Referenzobjekte mit gedeckten und offenen Eigenschaften, Akutheit als Tiefenfilter; eigener LLM-Call mit erzwungenem JSON, protokolliert wie die Haltung. (2) Kurzfristiger Zielhorizont in der bestehenden `ziele`-Tabelle, mit Verfall in Stunden. (3) Die Rueckfrage-Zeile bekommt ihren Gegenstand aus der Lage. Ausdruecklich nicht gebaut: Aufloeser, Frame-Lager, Cross-Frame-Validierung, Plausibilitaet, Skills.
+
+**Nachtrag 12:45 UTC:** Das Konzept ist gegen die Kognitionswissenschaft geprueft — alle vier Kernannahmen gedeckt (Situationsmodelle/Event-Indexing, Plan-Erkennung und Mentalizing-Netzwerk, Generalized Event Knowledge, Current Concerns und zielgerichtetes Fragen als Expected Information Gain). Neu dazu §2a (Pruefung samt Quellen) und §3a: **der Kontext als Blase** — ein fortgeschriebenes Objekt ueber Turns, das driftet, sich teilen kann und die Emotion zieht statt springen laesst (Event Segmentation Theory; Grosz & Sidner 1986; Kuppens 2010). Folge fuer Scheibe 1: Die Lage wird **fortgeschrieben**, nicht je Turn frisch erhoben. Dazu der Regler: **Die Haltung entscheidet, wie aktiv offene Frame-Eigenschaften verfolgt werden** — Distanz fuellt passiv (»Aha!«), das Fachgespraech fragt aktiv nach; die Fragen-Menge ist damit Ausdruck der Haltung am Gegenstand, keine eigene Stellgroesse (§3a).
+
+**Eine begruendete Abweichung vom Pipeline-Konzept:** Das Verstehen liegt vor dem Gespraechsvektor (beide Pfade), nicht im Management-Gate — die Befunde liegen im Konversationspfad.
 
 ## 27.08.2026, 11:50 UTC — Addendum 2: der Abgleich des Verlaufs gegen die Speicher
 

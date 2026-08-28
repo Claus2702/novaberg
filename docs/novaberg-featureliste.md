@@ -204,7 +204,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Metakognition Phase 1** (Pipeline-Log) | 🟢 | 87.913 Zeilen `[gemessen]` | Entscheidungs-Eintrag fehlt in 11 Knoten |
 | **Metakognition Phase 2** (`pipeline_search`) | ⚫ | Bezeichner existiert nicht `[gemessen]` | alles |
 | **Metakognition Phase 3–6** (Vorsätze, Selbstreflexion) | ⚫ | keine Tabelle, kein Agent `[gemessen]` | alles |
-| **Frames · Skills · Task-Orchestration · Cognitive Pipeline** | ⚫ | die Kernbezeichner fehlen sämtlich `[gemessen]` | vier Konzepte aus Chat 80/81, kein Code |
+| **Frames · Skills · Task-Orchestration · Cognitive Pipeline** | ⚫ | die Kernbezeichner fehlen sämtlich `[gemessen]` | vier Konzepte aus Chat 80/81, kein Code. **Stand 28.08.2026:** erste baubare Scheibe zugeschnitten — `novaberg-thinking-lage_k.md` (28.08.2026): Lage-Analyse je Turn, kurzfristiger Zielhorizont, Gesprächsführung aus der Lage; drei Scheiben mit ZIEL/TEST/MESSUNG, noch kein Code |
 | **Referenz-Auflösung** (anaphorische Verweise) | ⚫ | `coreferee`, `HanTa`, `de_core_news_sm` **nicht installiert** `[gemessen]` | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` offen |
 
 ### 6.1 Sykophanz-Eindämmung
