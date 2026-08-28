@@ -173,6 +173,7 @@ class DerKnotenBautDieBrueckeTest(unittest.TestCase):
         with patch("graph.nodes.sachlage.sachlage_load",
                    return_value=(dict(AKTUELL), False)), \
              patch("graph.nodes.sachlage.log_berechnung"), \
+             patch("graph.nodes.sachlage.short_goal_track"), \
              patch("graph.nodes.sachlage._persist_history") as schreiben, \
              patch("graph.nodes.sachlage.history_read_turn",
                    return_value=per_turn_id) as lesen, \
@@ -236,6 +237,7 @@ class DerKnotenBautDieBrueckeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive", return_value=dict(AKTUELL)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
              patch("graph.nodes.sachlage.log_berechnung"), \
+             patch("graph.nodes.sachlage.short_goal_track"), \
              patch("graph.nodes.sachlage._persist_history") as schreiben:
             state = sachlage_assess(zustand)
 
@@ -250,6 +252,7 @@ class DerKnotenBautDieBrueckeTest(unittest.TestCase):
                    return_value=(dict(AKTUELL), False)), \
              patch("graph.nodes.sachlage._derive", return_value=None), \
              patch("graph.nodes.sachlage.log_berechnung"), \
+             patch("graph.nodes.sachlage.short_goal_track"), \
              patch("graph.nodes.sachlage._persist_history") as schreiben:
             sachlage_assess(zustand)
 

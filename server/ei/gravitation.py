@@ -37,7 +37,9 @@ class ActivatedGoal:
 
     Attributes:
         ziel_id: Datenbank-ID des Ziels.
-        ziel_typ: "langfristig" oder "mittelfristig".
+        ziel_typ: "langfristig", "mittelfristig" oder "kurzfristig" (seit
+            28.08.2026 — das kurzfristige ist per Bauart aktiviert, sein
+            Tor ist der Verfall, nicht die Schwelle).
         zielsatz: Der Zieltext.
         motivation: Motivationsstärke (0.0-1.0).
         emotion: Emotionale Valenz des Ziels.
@@ -164,7 +166,16 @@ def ziel_gravitation_berechnen(
         motivation: float = ziel.get("motivation", 0.5)
         staerke:    float = similarity * motivation
 
-        if staerke >= GRAVITATIONS_SCHWELLE:
+        # Ein kurzfristiges Ziel ist per Bauart aktiviert, solange es lebt
+        # (novaberg-thinking-lage_k.md §4, Scheibe 2): Es entstand aus dem
+        # laufenden Gespraech und verfaellt in Stunden. `[gemessen]` —
+        # 28.08.2026: Sein Zielsatz (»Ich moechte dem Nutzer bei seinem
+        # Vorhaben helfen: …«) liegt zur Nutzeraeusserung bei Kosinus 0,13
+        # bis 0,41, Staerke 0,09 bis 0,29 — die Schwelle 0,40 haette es nie
+        # passiert. Die Zahlen bleiben echt: sim und staerke werden nicht
+        # gehoben, nur das Tor entfaellt.
+        kurzfristig: bool = ziel.get("ziel_typ") == "kurzfristig"
+        if staerke >= GRAVITATIONS_SCHWELLE or kurzfristig:
             goal = ActivatedGoal(
                 ziel_id=ziel["id"],
                 ziel_typ=ziel.get("ziel_typ", "mittelfristig"),
@@ -179,7 +190,9 @@ def ziel_gravitation_berechnen(
             aktiviert.append(goal)
 
             logger.info(
-                f"Gravitation: Ziel AKTIVIERT — id={ziel['id']}, "
+                f"Gravitation: Ziel AKTIVIERT"
+                f"{' (kurzfristig, per Bauart)' if kurzfristig and staerke < GRAVITATIONS_SCHWELLE else ''}"
+                f" — id={ziel['id']}, "
                 f"typ={goal.ziel_typ}, sim={goal.similarity:.3f}, "
                 f"mot={motivation:.2f}, staerke={goal.aktivierungs_staerke:.3f}, "
                 f"'{goal.zielsatz[:50]}'"
@@ -191,8 +204,12 @@ def ziel_gravitation_berechnen(
                 f"staerke={staerke:.3f} < {GRAVITATIONS_SCHWELLE}"
             )
 
-    # Absteigend nach Aktivierungs-Stärke sortieren.
-    aktiviert.sort(key=lambda g: g.aktivierungs_staerke, reverse=True)
+    # Absteigend nach Aktivierungs-Stärke sortieren — kurzfristige zuerst:
+    # Der GV nimmt die ersten drei, und das Ziel aus dem laufenden Gespraech
+    # darf nicht hinter drei staerkeren Charakterzielen verschwinden.
+    aktiviert.sort(
+        key=lambda g: (g.ziel_typ == "kurzfristig", g.aktivierungs_staerke), reverse=True,
+    )
 
     if aktiviert:
         logger.info(

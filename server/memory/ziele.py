@@ -96,7 +96,7 @@ def motivation_berechnen(
     motivation_basis:    float,
     motivation_basis_am: datetime,
     jetzt:               datetime | None = None,
-    halbwertszeit_tage:  int = ZIEL_MITTELFRISTIG_DECAY_TAGE,
+    halbwertszeit_tage:  float = ZIEL_MITTELFRISTIG_DECAY_TAGE,
 ) -> float:
     """Berechnet die aktuelle Motivation eines Ziels aus seinem Anker.
 
@@ -235,7 +235,8 @@ def ziele_aktive_laden(
             f"Ziele geladen: {len(ziele)} aktive Ziele für Paar "
             f"({user_id}, {character_id}) "
             f"({sum(1 for z in ziele if z['ziel_typ'] == 'langfristig')} lang, "
-            f"{sum(1 for z in ziele if z['ziel_typ'] == 'mittelfristig')} mittel)"
+            f"{sum(1 for z in ziele if z['ziel_typ'] == 'mittelfristig')} mittel, "
+            f"{sum(1 for z in ziele if z['ziel_typ'] == 'kurzfristig')} kurz)"
         )
         return ziele
 
@@ -387,7 +388,7 @@ def ziel_decay_lauf(
     postgres_url:       str,
     ziel_typ:           str = "mittelfristig",
     deaktivierungs_schwelle: float = 0.15,
-    halbwertszeit_tage: int = ZIEL_MITTELFRISTIG_DECAY_TAGE,
+    halbwertszeit_tage: float = ZIEL_MITTELFRISTIG_DECAY_TAGE,
     user_id:            str | None = None,
 ) -> dict:
     """Materialisiert `motivation` fuer alle aktiven Ziele eines Typs.

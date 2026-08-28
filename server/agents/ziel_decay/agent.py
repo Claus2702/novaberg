@@ -20,6 +20,7 @@ from config import (
     PIXIE_DECAY_PRIORITAET,
     POSTGRES_URL,
     ZIEL_DECAY_AKTIV,
+    ZIEL_KURZFRISTIG_DECAY_STUNDEN,
     ZIEL_MITTELFRISTIG_DECAY_TAGE,
 )
 from memory import pipeline_log
@@ -116,7 +117,7 @@ class ZielDecayAgent(BaseAgent):
             )
 
     def invoke(self, state: AgentState) -> AgentState:
-        """Loest den Verfallslauf ueber die mittelfristigen Ziele aus.
+        """Loest den Verfallslauf ueber die mittel- und kurzfristigen Ziele aus.
 
         Ablauf (EVA):
           Eingabe      — Feature-Gate pruefen.
@@ -146,12 +147,29 @@ class ZielDecayAgent(BaseAgent):
         self._log_forensik(run_id, {"phase": "start"})
 
         # --- Verarbeitung ---
-        ergebnis: dict = ziel_decay_lauf(
-            POSTGRES_URL,
-            ziel_typ                = "mittelfristig",
-            deaktivierungs_schwelle = ZIEL_DEAKTIVIERUNGS_SCHWELLE,
-            halbwertszeit_tage      = ZIEL_MITTELFRISTIG_DECAY_TAGE,
-        )
+        # Zwei Typen, zwei Halbwertszeiten (Scheibe 2 des Lage-Konzepts,
+        # 28.08.2026): mittelfristig in Tagen, kurzfristig in Stunden. Ein
+        # Lauf je Typ, weil die Allowlist im Lauf genau einen Typ nimmt.
+        laeufe: list[dict] = [
+            ziel_decay_lauf(
+                POSTGRES_URL,
+                ziel_typ                = "mittelfristig",
+                deaktivierungs_schwelle = ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+                halbwertszeit_tage      = ZIEL_MITTELFRISTIG_DECAY_TAGE,
+            ),
+            ziel_decay_lauf(
+                POSTGRES_URL,
+                ziel_typ                = "kurzfristig",
+                deaktivierungs_schwelle = ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+                halbwertszeit_tage      = ZIEL_KURZFRISTIG_DECAY_STUNDEN / 24.0,
+            ),
+        ]
+        ergebnis: dict = {
+            "verarbeitet": sum(l["verarbeitet"] for l in laeufe),
+            "deaktiviert": sum(l["deaktiviert"] for l in laeufe),
+            "ohne_anker":  sum(l["ohne_anker"] for l in laeufe),
+            "error":       " | ".join(l["error"] for l in laeufe if l["error"]) or None,
+        }
 
         # --- Ausgabe (EVA) ---
         state["ergebnis"] = ergebnis

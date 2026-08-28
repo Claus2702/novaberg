@@ -137,6 +137,7 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive",
                    return_value=dict(VOLLSTAENDIG)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
+             patch("graph.nodes.sachlage.short_goal_track"), \
              patch("graph.nodes.sachlage._persist_history"), \
              patch("graph.nodes.sachlage.log_berechnung"):
             state = sachlage_assess(_state())
@@ -150,6 +151,7 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive",
                    return_value=dict(VOLLSTAENDIG)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
+             patch("graph.nodes.sachlage.short_goal_track"), \
              patch("graph.nodes.sachlage._persist_history"), \
              patch("graph.nodes.sachlage.log_berechnung"):
             state = sachlage_assess(_state())
@@ -163,6 +165,7 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive",
                    return_value=dict(VOLLSTAENDIG)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
+             patch("graph.nodes.sachlage.short_goal_track"), \
              patch("graph.nodes.sachlage._persist_history"), \
              patch("graph.nodes.sachlage.log_berechnung"):
             state = sachlage_assess(_state())

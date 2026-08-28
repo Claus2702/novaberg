@@ -49,6 +49,7 @@ from config import (
     redis_client,
 )
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
+from memory.kurzziel import short_goal_track
 from memory.pipeline_log import log_berechnung
 from memory.sachlage_history import (
     build_embed_text,
@@ -126,6 +127,10 @@ Regeln:
   nach Wichtigkeit geordnet, hoechstens fuenf.
 - Fuehre die vorige Sachlage FORT: Was der neue Turn deckt, wandert von
   "offen" nach "gedeckt". Was nicht mehr Gegenstand ist, faellt weg.
+- Ein Objekt, das schon in der bisherigen Sachlage steht, behaelt seinen
+  "name" WOERTLICH — auch wenn der neue Turn es anders nennt. Ein neues
+  Objekt bekommt nur dann einen eigenen Eintrag, wenn es eine andere Sache
+  ist, nicht eine Facette derselben.
 - Antworte NUR mit dem JSON."""
 
 _VORIGE_SEKTION: str = """Die bisherige Sachlage des Gespraechs:
@@ -314,6 +319,38 @@ def _persist_history(
     )
 
 
+def _track_short_goal(
+    user_id:      str,
+    character_id: str,
+    turn_id:      str,
+    sachlage:     dict,
+) -> None:
+    """Die Zielverfolgung, mit eigener Protokollzeile.
+
+    Vorbedingung: `sachlage` ist gerechnet und traegt `herkunft`.
+    Nachbedingung: Die Strecke in Redis ist fortgeschrieben; eine
+        `berechnung`-Zeile `node='kurzziel'` traegt Strecke, Kosinus und
+        Ziel-id — auch wenn kein Ziel entstand.
+    Fehlerfaelle: Nichts hier wirft; die Verfolgung meldet selbst.
+    """
+    try:
+        ergebnis: dict = short_goal_track(
+            redis_client, user_id, character_id, sachlage, str(sachlage.get("herkunft", "")),
+        )
+    except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+        logger.error(
+            f"Kurzziel: Verfolgung ausgefallen ({type(fehler).__name__}: {fehler})"
+        )
+        return
+    try:
+        log_berechnung(
+            turn_id=turn_id, node="kurzziel", quelle="character_graph",
+            inhalt=ergebnis, user_id=user_id, character_id=character_id,
+        )
+    except Exception as fehler:  # noqa: BLE001 — Forensik darf den Turn nicht killen
+        logger.warning(f"Kurzziel-Protokoll nicht geschrieben ({type(fehler).__name__})")
+
+
 def _impulse_embedding(state: dict) -> list[float] | None:
     """Rechnet das Embedding des Impulses nach — aus derselben Formel wie
     der Stapel (`build_impulse_embed_text`), damit die Suche den Vektor
@@ -493,6 +530,9 @@ def sachlage_assess(state: dict) -> dict:
             _persist_history(
                 user_id, character_id, state.get("turn_id", ""), sachlage,
             )
+            # Scheibe 2: Zeigt die Blase zum zweiten Mal auf dasselbe
+            # Nutzerziel, entsteht das kurzfristige Ziel (memory/kurzziel.py).
+            _track_short_goal(user_id, character_id, state.get("turn_id", ""), sachlage)
         else:
             sachlage = dict(vorige or {})
             sachlage["herkunft"] = HERKUNFT_AUSFALL

@@ -15,6 +15,8 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 from unittest.mock import MagicMock, patch
+
+
 class DieKetteBeginntBeimTurnTest(unittest.TestCase):
     """Glied 0 — der Bestand fand die Luecke am Kettenanfang (28.08.2026):
     0 von 300 KZG-Hashes trugen eine `turn_id`, und 21 Auftraege nach dem

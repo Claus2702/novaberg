@@ -2068,6 +2068,21 @@ SACHLAGE_VERFALL_SEKUNDEN:    float = float(
 SACHLAGE_BRUECKE_MIN_KOSINUS: float = float(
     os.getenv("SACHLAGE_BRUECKE_MIN_KOSINUS", "0.35"))
 
+# --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
+# Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein
+# `kurzfristig`-Ziel — per Namensgleichheit, ohne Schwelle. Eine Schwelle
+# ueber den Nutzerziel-Satz stand hier zuerst (0,8) und fiel an der Messung:
+# Der Satz wird je Turn neu formuliert (Kosinus 0,40 bis 0,42 beim selben
+# Vorhaben, 0,35 beim Wechsel), das akute Objekt traegt woertlich durch.
+# Der Anker des kurzfristigen Ziels. Unter den 0,8 der langfristigen: Es ist
+# ein Vorsatz fuer die naechsten Stunden, kein Zug des Charakters.
+KURZZIEL_MOTIVATION: float = float(os.getenv("KURZZIEL_MOTIVATION", "0.7"))
+# Halbwertszeit in Stunden; bei Schwelle 0,15 ist das Ziel nach knapp drei
+# Halbwertszeiten inaktiv — ein Vorsatz aus dem Gespraech ueberlebt den Tag
+# nicht, so wie die Blase selbst nach vier Stunden verfaellt.
+ZIEL_KURZFRISTIG_DECAY_STUNDEN: float = float(
+    os.getenv("ZIEL_KURZFRISTIG_DECAY_STUNDEN", "3"))
+
 GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
 GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)
 GV_ACHSE_INITIATIVE_VERH:     float = 1.5   # ⚠ ABGELOEST, siehe unten — nur noch fuer den Altpfad

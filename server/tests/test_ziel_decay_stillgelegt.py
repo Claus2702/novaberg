@@ -63,7 +63,9 @@ class TestZielDecayStillgelegt(unittest.TestCase):
                                  "ohne_anker": 0, "error": None}
             ZielDecayAgent().invoke({})
 
-        lauf.assert_called_once()
+        # Seit dem 28.08.2026 faehrt der Agent zwei Typen (mittel- und
+        # kurzfristig, Scheibe 2 des Lage-Konzepts) — ein Lauf je Typ.
+        self.assertEqual(lauf.call_count, 2)
 
     def test_eingeschaltet_meldet_wieder_eine_aufgabe(self) -> None:
         """Positiver Zwilling: Das Gate ist ein Schalter, keine Entfernung.
