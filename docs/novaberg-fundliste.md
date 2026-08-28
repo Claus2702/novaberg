@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
 **Stand:** 27. August 2026, 11:10 UTC
-**Offen:** **118 Funde — gezaehlt am 28.08.2026** (126 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **drei neu** vom 28.08.: die Leerquote des GV-Parses, der Labor-Buffer des Pipeline-Logs, der Akutheits-Grenzfall der Sachlage)
+**Offen:** **119 Funde — gezaehlt am 28.08.2026** (127 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **vier neu** vom 28.08.: die Leerquote des GV-Parses, der Labor-Buffer des Pipeline-Logs, der Akutheits-Grenzfall der Sachlage)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -238,6 +238,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-28** — **Sechs Aufzaehlungs-Luecken im Altbestand, gefunden vom ersten Lauf des neuen C18** (`harness`-Werkzeug, Deckung der Aufzaehlungen): `verfasser.py` und `thinker_cache.py` fehlen im Dateibaum von `novaberg-architecture.md` — dessen Dokumenten-Index den Verfasser zudem als *nicht gebaut* fuehrt, waehrend er seit Wochen laeuft; `[GESPRAECHSVERLAUF]` fehlt in der Blocktabelle des Verfasser-Dokuments; `[GEDAECHTNIS]`, `[GEDANKEN]`, `[GESPRAECHSVERLAUF]`, `[SITUATION]`, `[WISSENSLUECKEN]` fehlen im GV-Dokument. Kein Aufraeum-Projekt — die Zeile ist der Bestand, C18 meldet sie jetzt bei jedem Abschluss, bis sie behandelt sind.
 - **2026-08-28** — **Der GV-Parse verliert zwei Drittel seiner eigenen Felder.** Ueber 610 GV-Parses aus dem Serverlog: `Vehikel` leer in 456 (75 %), `Absicht` leer in 405 (66 %), `Strategie` leer in 400 (66 %). Der Knoten laeuft, die Hypothese kommt an — die strukturierten Zeilen darunter reissen im Parse oder fehlen in der Modellantwort. Jede Vorgabe, die an diesen Feldern haengt, erreicht ihren Leser nur in jedem dritten bis elften Turn; genau daran scheiterte am 27.08. der erste Anlauf der Frage-Art. Ursache ungeklaert: Prompt-Treue des Modells oder Parser.
 - **2026-08-28** — **Der `pipeline_log`-Buffer ist in Standalone-Prozessen nicht initialisiert** — ein Laborlauf, der einen Graph-Knoten direkt aufruft, verwirft dessen Forensik-Eintraege mit einer `warning` je Zeile. Die Messreihe zur Sachlage schrieb dadurch 0 Protokollzeilen, waehrend derselbe Weg im Serverprozess schreibt. Wer im Labor Protokollzeilen erwartet, prueft erst den Buffer — oder die Messung schweigt an der Stelle, die sie belegen soll.
 - **2026-08-28** — **Die Akutheits-Entscheidung der Sachlage kippt am Grenzfall zwischen Laeufen.** „Ich habe eine neue Pflanze" wurde bei Temperatur 0,1 einmal als akut, einmal als latent eingestuft (beides vertretbar — Possessiv ohne Vorhaben-Verb). Fuer Faelle mit klarem Vorhaben trennt die Entscheidung 10/10; der Grenzfall braucht entweder eine schaerfere Prompt-Regel oder die Duldung als Grauzone.
