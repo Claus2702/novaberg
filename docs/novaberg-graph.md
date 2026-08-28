@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
@@ -156,6 +156,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 2 | EI-Calc | Nein | `_ei_calc_character`: berechnet `nova_emotions_verlauf` (Decay + asymmetrische Empathie zu `state["external"].emotion`), schreibt `state["internal"].emotion.emotions_vector`, übertraegt seit Chat 113 auch `emotion`/`arousal` und zieht seit Chat 114 `state["internal"].raum` zum Register des letzten Sprechers nach (`ei/raum.py`), setzt `nova_emotion_konflikt`. Empathie-Switch nach `event_source` (siehe §3.6). |
 | 3 | Enricher | Nein | `_enrich_character`-Voll-Lauf: KZG/LZG-Resonanz, Session-Turns, Plugin-`enrich()`-Hooks, Drive-Ziele, baut `memory_entries`. Liest Novas modifizierten EI-Zustand fuer Sektor-Affinitaet (vorbereitet fuer P5). |
 | 4 | Reducer | Nein | Dedupliziert `memory_entries` (Exakt- + Substring-Dedup) und baut `memory_context` fuer den Responder. CG-only seit Chat 75 (im HG durch Phase 4 entfernt). |
+| 4a | Sachlage (`sachlage_node`) | GPU | Seit 28.08.2026. Schreibt das fortgeschriebene Verstehen des Gespraechs nach `state["sachlage"]` (Gegenstand, vermutetes Nutzerziel, Referenzobjekte mit offenen Eigenschaften; je Paar in Redis, 4 h Verfall), legt es als Faktum in `sachlage_verlauf` ab, zaehlt je akutem Objekt die Strecke zum kurzfristigen Ziel und baut auf Impuls-Turns die Bruecke zum Ausloeser nach `state["sachlage_bruecke"]`. Vor dem Router, damit beide Pfade dasselbe Verstehen sehen. `novaberg-thinking-lage_k.md`, Rechenkette S14a. |
 | 5 | Router | GPU | Routing-Entscheidungen, Pending-Agent-Check, setzt `management_action`. |
 | 6 | Planner | GPU | Bei Management: Agent finden, Aktion planen. Conditional ⇄ Agent-Dispatch. |
 | 7 | Agent-Dispatch | Nein | Delegiert an agenten-spezifischen Dispatch, kehrt zum Planner zurueck (Schleife). |
@@ -278,6 +279,8 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 |------|-----|-------------|-------------|
 | `user_id` | `str` | API-Layer | Alle Nodes |
 | `character_id` | `str` | API-Layer / `create_state` | Alle Nodes (Paar-Partitionierung, seit Chat 60) |
+| `sachlage` | `dict` | Sachlage-Knoten (CG) | Verfasser, GV, Event-Consumer (Stage-Detail). Traegt immer `herkunft`. Seit 28.08.2026. |
+| `sachlage_bruecke` | `dict` | Sachlage-Knoten (CG), nur auf Impuls-Turns | Verfasser (`[SACHLAGE-BRUECKE]`). Leer auf Nutzer-Turns. Seit 28.08.2026. |
 | `user_prompt` | `str` | API-Layer | Perzeption (HG), Router, Salienz (HG). **Traegt nur, was das Gegenueber gesagt hat.** Auf einem Impuls-Turn leer — dort steht der Gedanke in `eigener_gedanke` |
 | `eigener_gedanke` | `str` | Event-Consumer (Impuls-Payload) | Verfasser, Responder, Router, Thinker, Salienz, Gespraechsvektor — durchweg ueber `graph/reiz.py`, nicht direkt. **Neu seit 15.08.2026.** Leer auf jedem Nutzer-Turn |
 | `turn_id` | `str` | API-Layer (`/chat`, `/chat/stream`) | Pipeline-Log-Korrelation aller Nodes eines Konversations-Turns — derselbe Wert durch HumanGraph und CharacterGraph (Chat 88 P1.1, vervollstaendigt Chat 90 TURN-ID-FIX) |

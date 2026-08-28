@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
+**Stand:** 28. August 2026 (`turn_id` als Hash-Feld — das erste Glied der Sachlage-Brücke). Davor: 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -54,6 +54,7 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 | `timeline_id` | KzgAgent (`magnete_aufloesen`) | Magnet-Achse Zeit (Synapsen P3, optional; bei `None` aus dem Hash ausgelassen) |
 | `embedding` | KZG-Agent | 768-Dim Vektor (`EMBED_MODEL`, seit 12.07.2026 `nomic-embed-text-v2-moe`); Embed-Text via `embed_text_bauen(themen, kern)` — siehe §6 |
 | `erstellt_am` | System | Unix-Timestamp |
+| `turn_id` | Schreibauftrag der Salienz → `_neu_anlegen` | **Seit 28.08.2026.** Der Turn, aus dem der Eintrag entstand; leer = unbekannt (Legacy-Schreiber). Bis dahin stand er nur im Pipeline-Log, nicht im Hash — 0 von 300 Einträgen trugen ihn, und die Synapsen-Promotion las `_hget("turn_id")` ins Leere. Erstes Glied der Sachlage-Brücke: KZG-Queues und Promotion geben ihn als `ausloeser_turn_id` an den Auftrag |
 
 ---
 
