@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **21:06 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **21:35 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,14 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 21:35 UTC — Der Gespraechskontext im Client: die fuenf Scheiben in einem Tab
+
+**Der Anlass:** *„Wir brauchen einen neuen Tab fuer den Gespraechskontext. Was haben wir noch an berechneten Werten, die wir anzeigen?"* Die Antwort: Scheibe 1 die Blase (Thema, Gegenstand, vermutetes Nutzerziel, Ausdrucksweise, Objekte mit gedeckt/offen, Herkunft, Alter gegen 4 h), Scheibe 2 die Strecke je Objekt und das kurzfristige Ziel mit Live-Motivation, Scheibe 3 der Rueckfrage-Gegenstand, Scheibe 4 der Verlauf der Blasen, Scheibe 5 die Wiederaufnahme. Nicht ohne Bau: die Bruecke einer Zustellung (nur im State).
+
+**Befund beim Bau:** Das 🫧-Kontext-Panel fuer Scheibe 1 existierte seit dem Morgen und war registriert — es stand nur nicht in `_TOOLBAR_PANELS` des Hauptfensters. Kein Button, kein Client-Zeuge moeglich.
+
+**Der Bau:** `GET /drive/kontext` (`api/drive.py::kontext_lesen`) buendelt die Blase (samt `wiederaufnahme`), `frage_gegenstand` (`question_target`), die Strecke aus Redis (`kurzziel:{paar}`, ueber `short_goal_key`), die lebenden kurzfristigen Ziele aus `ziele_aktive_laden` mit Live-Motivation und Restlaufzeit `t = HWZ · log₂(m / Schwelle)`, die juengsten acht Verlaufszeilen (`memory/sachlage_history.py::history_recent`, juengste zuerst, ohne Vektor) und die Konstanten (Verfall, Halbwertszeit, Schwelle). `client/ui/panels/sachlage_panel.py` wird zum Tab »🫧 Gesprächskontext« mit fuenf Sektionen — Blase mit Verfallsbalken und Wiederaufnahme, Objekte mit Strecke und ★ am Frage-Gegenstand, Rueckfrage-Gegenstand-Zeile, Kurzziele mit Balken und Restlaufzeit, Verlauf — und steht in der Toolbar hinter dem Gespraechsvektor. **TEST:** 3 Zeugen (Endpoint buendelt die fuenf Scheiben; leer, aber vollstaendig; Verlauf juengste zuerst, begrenzt, im Paar — live). Suite **2488 → 2491 gruen, 0 uebersprungen**. Gegenprobe: kein Frage-Gegenstand → 1 rot; Verlauf ohne Limit-Konstante → 1; Verlauf ignoriert das Paar → 1; Kurzziele nicht gefiltert → 1. **MESSUNG:** der Endpoint gegen den echten Bestand des Paares, 21:30 UTC — Blase »Schwarze Löcher« (fortgeschrieben, 27 min), Objekt akut mit vier offenen Eigenschaften, Strecke `schwarzes loch` 2/2 → Ziel #29032, Kurzziele 29032 (0,63, verfaellt in 6,2 h) und 28576 (0,37, 3,9 h), sieben Verlaufszeilen von 17:15 bis 21:03. Der Client selbst laeuft beim Master; der Tab im laufenden Client ist der ausstehende Zeuge. Client-Dateien sind `py_compile`-sauber; die I001-Treffer dort sind Bestand (Import-Bloecke um `gi.require_version`).
 
 ## 28.08.2026, 21:06 UTC — Scheibe 3: die Rueckfrage bekommt ihren Gegenstand
 

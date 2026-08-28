@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 28. August 2026, 20:40 UTC
+**Stand:** 28. August 2026, 21:35 UTC
 **Offen:** **125 Funde — gezaehlt am 28.08.2026, 20:40 UTC** (134 Fundzeilen der Form `- **JJJJ-MM-TT**` im Abschnitt *Offen*, davon **9** mit `~~`; **elf neu und offen** vom 28.08. — der Tagestakt des Kurzziel-Verfalls, das Meta-`thema` und die Blasen-Wiederaufnahme sind am selben Abend erledigt, die offene Eigenschaft nach der Antwort widerlegt —: die gedrueckte Nebensache und die Frage als Deckung, der zweite SQL-Leser der Ziel-Motivation im Drive-Tab, die 27 Aufzaehlungs-Luecken der neuen C18-Paare, die Objektnamen-Stabilitaet der Zielstrecke, die Bruecken-Schwelle mit n=1, der Quelltext-Grep-Zeuge, die C18-Altlast, die Leerquote des GV-Parses, der Labor-Buffer des Pipeline-Logs, der Akutheits-Grenzfall der Sachlage, das tote Ruhe-Kriterium der Messturn-Vorlage)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
@@ -179,6 +179,8 @@ Der volle Wortlaut steht im Defektregister unter der genannten Kennung; hier ble
 ## Erledigt — der Befund war richtig und ist abgearbeitet
 
 Behoben, beantwortet oder umgezogen — der Beleg steht jeweils im Eintrag. Sie stehen hier und nicht unter *Offen*, weil ein erledigter Fund die Zahl der offenen verfälscht; gelöscht werden sie nicht, weil sie erklären, warum der Bestand aussieht, wie er aussieht.
+
+- **2026-08-28** — ~~**Das 🫧-Kontext-Panel war registriert, aber nicht in der Toolbar.**~~ → **Beim Bau des Gespraechskontext-Tabs gefunden und im selben Zug verdrahtet.** `client/ui/panels/sachlage_panel.py` (seit dem Morgen, Scheibe 1) stand in der `PanelRegistry`, nicht aber in `_TOOLBAR_PANELS` des Hauptfensters — kein Button, und der ausstehende Client-Zeuge konnte nie gelingen. Seit 28.08. abends als »🫧 Gesprächskontext« hinter dem Gespraechsvektor; das Panel zeigt jetzt alle fuenf Scheiben (`GET /drive/kontext`).
 
 - **2026-08-28** — ~~**Die Rueckkehr zu einer frueheren Blase beginnt bei null, und das Konzept verspricht eine Notiz, die das Artefakt nicht hat.**~~ → **Am selben Abend gebaut: Scheibe 5.** Der Knoten sucht vor dem Call mit dem Prompt-Embedding die naechste `sachlage_verlauf`-Zeile eines anderen Themas und gibt sie dem Prompt als fruehere Sachlage mit; Labor: Rueckkehrsaetze 0,40 auf die alte Blase, fremd ≤ 0,16, Objektname und Deckung 3/3 woertlich fortgefuehrt (`labor/2026-08-28_sachlage_wiederaufnahme_messung.py`). Die „Notiz im Artefakt" aus §3a ist das zweite Objekt — im Konzept so festgehalten. 8 Zeugen, Suite 2478, Gegenprobe 1/3/1/1.
 
