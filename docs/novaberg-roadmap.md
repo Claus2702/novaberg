@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **19:40 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **18:55 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,7 +21,7 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 ---
 
-## 28.08.2026, 19:40 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte
+## 28.08.2026, 18:55 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte
 
 **Der Bau:** `memory/kurzziel.py`. Der rechnende Weg des Sachlage-Knotens verfolgt je Paar in Redis, wie viele gerechnete Lagen hintereinander dasselbe akute Objekt tragen; bei zwei entsteht genau ein `ziel_typ='kurzfristig'` in `ziele` (»Ich moechte dem Nutzer bei seinem Vorhaben helfen: {Objekt} — {Nutzerziel}«, Anker 0,7, Vektor ueber den Zielsatz), kein zweites, solange das Objekt steht; eine neue Blase setzt zurueck. Der Decay-Agent faehrt seither zwei Typen — mittelfristig in Tagen, kurzfristig in Stunden (`ZIEL_KURZFRISTIG_DECAY_STUNDEN` = 3); die Halbwertszeit ist ein Bruchteil eines Tages geworden. Kein DDL: `ziel_typ` hat keinen CHECK.
 

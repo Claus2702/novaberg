@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 28. August 2026, 19:40 UTC (`date -u`)
+**Stand:** 28. August 2026, 18:55 UTC (`date -u`, nachgemessen — die erste Fassung trug eine geschaetzte Zeit)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 85 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
