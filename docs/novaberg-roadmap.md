@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **20:44 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **21:06 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,18 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 21:06 UTC — Scheibe 3: die Rueckfrage bekommt ihren Gegenstand
+
+**Der Anlass** steht seit dem 27.08.: 2,2 Fragen je Turn, 100 % Frage-Enden, neunzehn auf demselben Satzgeruest — und heute Abend der Betriebsfall, in dem Nova auf »Licht oder Wasser?« mit vier Rueckfragen antwortete. Menge und Art allein erzeugen Floskeln; der Gegenstand fehlte.
+
+**Der Bau:** `graph/nodes/sachlage.py::question_target` (rein) liefert die wichtigste offene Eigenschaft des ersten akuten Objekts (»Geburtstag — was dazu noch offen ist: wer«), sonst das Vorhaben des kurzfristigen Ziels (»wie es mit Umlaufzeitberechnung weitergeht«), sonst nichts; `ei/haltungssprache.py::_rueckfragenzeile` haengt ihn hinter Menge und Art, **und die Haltung bleibt der Regler** — bei »keine Rueckfrage« entfaellt er wie die Art; der Verfasser reicht ihn ueber `stoffzeilen(…, gegenstand)` durch und loggt `Verfasser: Rueckfrage-Gegenstand: …`. **TEST:** 10 Zeugen — sechs an `question_target` (akut/latent, erstes Objekt mit offener Eigenschaft, Kurzziel-Rueckfall, nichts), drei an der Zeile (mit Gegenstand, Haltung als Regler in `gewitter`, ohne Gegenstand wie bisher), einer am gebauten Verfasser-Prompt. Suite **2478 → 2488 gruen, 0 uebersprungen**. Gegenprobe: Verfasser reicht nichts durch → 1 rot; Zeile ignoriert den Gegenstand → 2 rot; kein Gegenstand aus der Sachlage → 3 rot; Haltung nicht mehr der Regler → 1 rot.
+
+**MESSUNG** (`labor/2026-08-28_scheibe3_zwei_arme.py`, die Anordnung des Konzepts: echter Verfasser-Systemprompt, Haltung `werkstatt` mit fragendem Rad, T = 0, zehn Aeusserungen der Scheibe 1, Arm A ohne / Arm B mit Gegenstand): 4 von 10 Aeusserungen hatten einen Gegenstand. **Rueckfrage im Stoff A 10/10, B 10/10** — die Menge ist Haltungssache. **Die Rueckfrage trifft den Gegenstand: A 1/4, B 4/4.** Ohne Gegenstand fragte der Verfasser nach Gaestezahl, Dauer des Ausflugs, Schwierigkeitsgrad des Rezepts; mit Gegenstand nach Anlass, Zielort, Art des Kuchens — dem, was die Lage offen nannte. Die erste Fassung der Messung zaehlte Frage-Enden und mass am Gegenstand vorbei: Der Verfasser schreibt Stoff in dritter Person, das Frage-Ende ist Sache des Responders.
+
+**Betrieb 21:04 UTC** (`labor/2026-08-28_scheibe3_betriebszeuge.py`): `Verfasser: Rueckfrage-Gegenstand: Schwarzes Loch — was dazu noch offen ist: mathematische Formel des Gravitationslinseneffekts`; Novas Antwort schloss mit der Frage nach Abstand und Ablenkungswinkel — die zweite offene Eigenschaft der Lage, nicht die erste. **Ein erster Betriebsturn mit »am Wochenende« lief auf den Management-Pfad** (Planner → Timeline-Agent → Termin, am unerkannten Datum gescheitert, 0 Zeilen in `timeline`); dort laeuft kein Verfasser. Messturns tragen keine Zeitangaben, auch nicht bei Astronomie.
+
+Damit sind alle fuenf Scheiben des Lage-Konzepts gebaut. Offen: die Betriebsmessung der Formfrage (Konzept §5), die Frage als Deckung (Fundliste).
 
 ## 28.08.2026, 20:40 UTC — Scheibe 5: die Rueckkehr zu einer frueheren Blase
 

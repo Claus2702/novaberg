@@ -943,7 +943,7 @@ Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur a
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** offen — angelegt am 28.08.2026.
+**Zustand:** ✅ **umgesetzt am 28.08.2026, abends.** Beleg: `graph/nodes/sachlage.py::question_target`, `ei/haltungssprache.py::_rueckfragenzeile(gegenstand)`, Verfasser reicht durch; 10 Zeugen, Suite 2488 gruen, Gegenprobe 1/2/3/1 rot; Labor `labor/2026-08-28_scheibe3_zwei_arme.py` (zwei Arme ueber die zehn Aeusserungen der Scheibe 1: Rueckfrage trifft den Gegenstand 4/4 gegen 1/4, Fragehaeufigkeit 10/10 in beiden Armen); Betrieb 21:04 UTC (`Rueckfrage-Gegenstand:` im Log, Novas Schlussfrage traf die zweite offene Eigenschaft). **Rest, als Rest benannt:** die Betriebsmessung der Formfrage (2,2 Fragen je Turn) steht aus — Konzept §5; ob eine vom Nutzer gestellte Frage als Deckung gelesen werden soll, ist offen (Fundliste 28.08.).
 
 Die Rueckfrage-Zeile des Verfassers traegt seit dem 27.08.2026 Menge und Art, aber keinen Gegenstand — gemessen: 2,2 Fragen je Turn, 100 % Frage-Enden, Floskelform. Scheibe 3: Die Zeile nennt die wichtigste offene Eigenschaft eines akuten Objekts oder den Weg zum beruehrten Ziel; **die Haltung bleibt der Regler** (Distanz fragt nicht, die Werkstatt darf mehrfach) — die Lage erzeugt keine Frage an der Haltung vorbei. Massstab: Expected Information Gain (Konzept §2a). ZIEL/TEST/MESSUNG in `novaberg-thinking-lage_k.md` §4; die Messanordnung (Schauspielerprobe, Vergleichsarme) existiert. ⬜ Prio mittel
 
