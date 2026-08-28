@@ -947,9 +947,20 @@ Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur a
 
 Die Rueckfrage-Zeile des Verfassers traegt seit dem 27.08.2026 Menge und Art, aber keinen Gegenstand — gemessen: 2,2 Fragen je Turn, 100 % Frage-Enden, Floskelform. Scheibe 3: Die Zeile nennt die wichtigste offene Eigenschaft eines akuten Objekts oder den Weg zum beruehrten Ziel; **die Haltung bleibt der Regler** (Distanz fragt nicht, die Werkstatt darf mehrfach) — die Lage erzeugt keine Frage an der Haltung vorbei. Massstab: Expected Information Gain (Konzept §2a). ZIEL/TEST/MESSUNG in `novaberg-thinking-lage_k.md` §4; die Messanordnung (Schauspielerprobe, Vergleichsarme) existiert. ⬜ Prio mittel
 
-**Die zwei Vorfragen, entschieden am 28.08.2026, abends:** (a) Deckung kommt von beiden Seiten — nachgemessen: die Fortschreibung las Novas Antworten schon, nur nicht ganz (400-Zeichen-Schnitt, behoben; der Betriebsfall war eine Nicht-Antwort). (b) `thema` benennt die Sache, nie den Wechsel — Prompt-Regel, gebaut am selben Abend (nachgestellt aus den echten Turns: 5/5 »Themenwechsel« vorher, 5/5 »Neutronensterne« nachher; Suite 2470). Dazu vor dieser Scheibe: die Wiederaufnahme einer frueheren Blase aus `sachlage_verlauf` (Stapel), entschieden am selben Abend. Datenpunkt fuer diese Scheibe: Im Betriebsfall beantwortete Nova die Sachfrage »Licht oder Wasser« mit vier Rueckfragen und einem Experimentvorschlag — die offene Eigenschaft der Lage ist genau der Gegenstand, den die Rueckfrage-Zeile bekommen soll.
+**Die zwei Vorfragen, entschieden am 28.08.2026, abends:** (a) Deckung kommt von beiden Seiten — nachgemessen: die Fortschreibung las Novas Antworten schon, nur nicht ganz (400-Zeichen-Schnitt, behoben; der Betriebsfall war eine Nicht-Antwort). (b) `thema` benennt die Sache, nie den Wechsel — Prompt-Regel, gebaut am selben Abend (nachgestellt aus den echten Turns: 5/5 »Themenwechsel« vorher, 5/5 »Neutronensterne« nachher; Suite 2470). Dazu vor dieser Scheibe: die Wiederaufnahme einer frueheren Blase aus `sachlage_verlauf` (SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME), entschieden und gebaut am selben Abend. Datenpunkt fuer diese Scheibe: Im Betriebsfall beantwortete Nova die Sachfrage »Licht oder Wasser« mit vier Rueckfragen und einem Experimentvorschlag — die offene Eigenschaft der Lage ist genau der Gegenstand, den die Rueckfrage-Zeile bekommen soll.
 
 **Zusammenhang:** SACHLAGE-SCHEIBE-2-KURZZIEL · die Formfrage der Rueckfragen bleibt bis nach dieser Scheibe liegen (Konzept §5).
+
+
+## Feature: SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME — die Rueckkehr zu einer frueheren Blase (28.08.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ✅ **umgesetzt am 28.08.2026, abends** — entworfen, gebaut und gemessen in einem Zug. Beleg: 8 Zeugen (`DieWiederaufnahmeTest`, Repository live), Suite 2478 gruen, Gegenprobe 1/3/1/1 rot, Labor `labor/2026-08-28_sachlage_wiederaufnahme_messung.py` (Rueckkehrsaetze 0,40 auf die alte Blase, fremd ≤ 0,16, eigene Blase ausgeschlossen; Objektname und Deckung 3/3 woertlich fortgefuehrt), Betrieb 20:44 UTC (echter Turn trifft die Pulsar-Blase von 17:24, Kosinus 0,62, Objektname woertlich). Konzept `novaberg-thinking-lage_k.md` §4 Scheibe 5.
+
+Ein Satz wie *„Nochmal zurueck zur Gravitationslinse …"* nach einer anderen Blase begann bei null: Die Fortschreibung las nur die Redis-Blase, die fruehere lag ungenutzt in `sachlage_verlauf`, der Objektname fiel dreimal anders aus. Jetzt sucht der Knoten vor dem Call mit dem Prompt-Embedding die naechste Zeile eines **anderen** Themas (`history_nearest(ausser_thema=…)`, Schwelle `SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS` = 0,35), gibt sie dem Prompt als fruehere Sachlage mit, traegt `wiederaufnahme` im Artefakt und eine Zeile im `[SACHLAGE]`-Block. **Rest, als Rest benannt:** die Schwelle steht auf n = 4 Saetzen; die Nebensache eines Zwei-Sachen-Turns steht mit der Sektion nur noch in 2/3 Laeufen (latent) im Artefakt (Fundliste); kein Stapel mit zwei lebenden Blasen — ob es einen braucht, zeigt der Betrieb.
+
+**Zusammenhang:** SACHLAGE-SCHEIBE-4-GEDAECHTNIS (liest dessen Tabelle) · SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND (Vorbedingung, entschieden).
 
 
 ## Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage je Turn persistiert, mit Thema, Embedding und Impuls-Bruecke (28.08.2026)

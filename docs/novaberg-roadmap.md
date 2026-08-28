@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **20:29 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **20:44 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,18 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 20:40 UTC — Scheibe 5: die Rueckkehr zu einer frueheren Blase
+
+**Der Anlass:** ein Satz mit zwei Sachen — *„Nochmal zurueck zur Gravitationslinse …, ach, und nimm die Zitrone auf die Einkaufsliste"*. Gemessen vor dem Bau (drei Laeufe gegen den Knoten): Die zwei Sachen liegen schon als zwei Objekte in einer Blase; die versprochene „Notiz im Artefakt" ist das zweite Objekt. Was fehlte, war das *zurueck*: Die Fortschreibung las nur die Redis-Blase, die fruehere Gravitationslinsen-Blase lag ungenutzt in `sachlage_verlauf`, und der Objektname fiel dreimal anders aus. Entschieden: vor Scheibe 3 bauen.
+
+**Der Zuschnitt** (Konzept §4, Scheibe 5): kein Stapel, keine zwei lebenden Blasen — eine Wiederaufnahme aus dem Faktum. Vor dem Call sucht der rechnende Weg mit dem Prompt-Embedding des Enrichers (`state["prompt_embedding"]`, ohnehin gerechnet) die naechste Verlaufszeile eines **anderen** Themas; ueber der Schwelle geht sie als *fruehere Sachlage* in den Prompt, mit der Regel: Objektname woertlich, Gedecktes bleibt gedeckt, was der Turn sonst nennt, bleibt ein eigenes Objekt. Das Artefakt traegt `wiederaufnahme` (turn_id, thema, kosinus, erstellt_am) oder `null`; der `[SACHLAGE]`-Block bekommt *„Der Nutzer kommt auf … zurueck (zuletzt vor 2 h)"*.
+
+**Der Bau:** `history_nearest(ausser_thema=…)` im Repository — ohne den Ausschluss faende die Suche fast immer den eigenen Vorturn; `_resume_lookup`, `_derive(…, wiederaufnahme=…)`, `_WIEDERAUFNAHME_SEKTION`, `_age_label`, Block-Zeile in `graph/nodes/sachlage.py`; `SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS` in `config.py`. **TEST:** 8 Zeugen (7 im Knoten: Suche mit Prompt-Embedding und Themen-Ausschluss, Impuls-Weg sucht nicht, ohne Treffer `null`, mit Treffer die Kennung, Prompt traegt Blase und Regel, ohne Vektor laeuft der Turn ohne Suche und sagt es, Block-Zeile; einer live gegen das Repository). Suite **2470 → 2478 gruen, 0 uebersprungen**. Gegenprobe: eigenes Thema nicht ausgeschlossen → 1 rot; keine Suche → 3 rot; Sektion nicht gerendert → 1 rot; Block ohne Zeile → 1 rot.
+
+**MESSUNG** (`labor/2026-08-28_sachlage_wiederaufnahme_messung.py`, Laborpaar mit drei persistierten Blasen, abgeraeumt): Kosinus Reiz × Gegenstand-Vektor — Rueckkehrsatz **0,404** auf die Gravitationslinse (0,174 Rettich, 0,219 Pulsare), knapper Rueckkehrsatz 0,399, fremder Satz 0,126–0,157, ein Satz zur eigenen Blase 0,464 auf sie und 0,229 auf die naechste fremde. Suche: beide Rueckkehrsaetze treffen, fremd nicht, die eigene Blase ist ausgeschlossen. Artefakt, drei Laeufe: `thema='Gravitationslinse'`, Objektname **woertlich**, beide gedeckten Eigenschaften wieder da, „Abhaengigkeit vom Spin" bleibt offen. Schwelle 0,35 zwischen 0,23 und 0,40 — n = 4, duenn belegt. **Ein Preis:** Mit der Sektion verschwand die Nebensache (Einkaufsliste) aus dem Artefakt (0/3); ein Satz in der Sektion holt sie in 2/3 zurueck, latent. Fundliste.
+
+**Betrieb belegt 28.08.2026, 20:44 UTC** (`labor/2026-08-28_sachlage_wiederaufnahme_betriebszeuge.py`, ein echter Turn *„Nochmal zurueck zu den Magnetfeldern der Pulsare von vorhin …"* bei lebender Transit-Blase): `Wiederaufnahme: fruehere Blase 'Astrophysikalische Magnetfelder' (turn=0d8b03b4…, kosinus=0.62)` vor dem Call; die neue Verlaufszeile (id 221) traegt `thema='Pulsar-Magnetfelder'` — die Sache, nicht die Rueckkehr —, das Objekt **`Pulsar-Magnetfeld` woertlich** wie in der Zeile von 17:24, deren gedeckte Eigenschaft bleibt gedeckt, und zwei ihrer offenen wanderten nach gedeckt, weil Novas 978 Zeichen lange Antwort von 17:25 jetzt ganz im Fenster steht; `pipeline_log` traegt `wiederaufnahme` mit turn_id, thema, kosinus 0,6197 und Zeitstempel. Sachlage-Call 4,2 s samt Suche.
 
 ## 28.08.2026, 20:29 UTC — `thema` benennt die Sache, nie den Wechsel
 

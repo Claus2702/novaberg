@@ -1,16 +1,16 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 427 Eintraege mit Kennung — 364 offen, 62 abgeschlossen, **1 ohne lesbaren Zustand**.
+**Umfang:** 428 Eintraege mit Kennung — 364 offen, 63 abgeschlossen, **1 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 427 von 427 Eintraegen zugeordnet.
+**Kategorie:** 428 von 428 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 68 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 49 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 50 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 97 |
 
@@ -214,7 +214,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
-## Alle 427 Eintraege
+## Alle 428 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -475,8 +475,9 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | ANT | 870 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
 | ANT | 910 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
 | ANT | 929 | abgeschlossen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
-| ANT | 940 | offen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
-| ANT | 951 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
+| ANT | 942 | offen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
+| ANT | 955 | abgeschlossen | `SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME` | [Feature: SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME — die Rue](novaberg-backlog-antwortpfad.md) |
+| ANT | 966 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |
