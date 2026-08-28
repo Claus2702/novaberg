@@ -1912,6 +1912,14 @@ NODE_LLM_CONFIG: dict = {
         "temperature": 0.6,
         "max_output_tokens": 512,
     },
+    # --- Sachlage (novaberg-thinking-lage_k.md, Scheibe 1) ---
+    # Niedrige Temperatur: Die Sachlage ist eine Analyse, keine Erzeugung —
+    # zwei Laeufe auf demselben Turn sollen dieselbe Struktur liefern.
+    "sachlage": {
+        "temperature": 0.1,
+        "max_output_tokens": 768,
+        "timeout_s": 60.0,
+    },
 }
 
 # ── GV4 — Wissenslücken-Erkennung ────────────────────────────
@@ -2038,6 +2046,14 @@ GV_ACHSE_ENERGIE_SCHWELLE:    float = 0.5   # arousal >= → hoch (1)
 # (`graph/personality.py::Raum`). Nach dieser Spanne ist er dort angekommen.
 GV_RAUM_NEUTRAL_SEKUNDEN:     float = float(
     os.getenv("GV_RAUM_NEUTRAL_SEKUNDEN", "14400"))   # 4 Stunden
+
+# **Der Verfall der Sachlage** (novaberg-thinking-lage_k.md §3a). Dieselbe
+# Spanne wie die Raum-Neutralisierung, aber eine andere Mechanik: Der Raum
+# wird linear gezogen, die Sachlage wird verworfen — ein halb verblasstes
+# Verstaendnis gibt es nicht. Eigene Konstante, damit die beiden getrennt
+# kalibrierbar bleiben (F-INTENS-1: eine Groesse an ihrer eigenen Skala).
+SACHLAGE_VERFALL_SEKUNDEN:    float = float(
+    os.getenv("SACHLAGE_VERFALL_SEKUNDEN", "14400"))  # 4 Stunden
 
 GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
 GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)

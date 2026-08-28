@@ -36,6 +36,7 @@ CHARACTER_NODE_LABELS: dict[str, str] = {
     "db_zugriff":           "DB-Zugriff — Identitäten laden",
     "emotionale_gravitation": "Gravitation — Erinnerungen färben",
     "reducer":              "Reducer — Kontext kürzen",
+    "sachlage_node":        "Sachlage — Verstehen des Gesprächs",
     "ei_calc_persist":      "EI-Persist — Nova-Zustand sichern",
     "enricher":             "Enricher — Kontext laden",
     "ei_calc":              "EI-Calc — Emotionale Intelligenz",
@@ -70,6 +71,20 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
         Formatierter Detail-String, oder "—" wenn keine Details verfügbar.
     """
     external = node_state.get("external")
+
+    if node_name == "sachlage_node":
+        sachlage: dict = node_state.get("sachlage") or {}
+        if not sachlage:
+            return "—"
+        akute: list[str] = [
+            str(o.get("name", "?"))
+            for o in sachlage.get("objekte", []) if o.get("akut")
+        ]
+        teile: list[str] = [str(sachlage.get("gegenstand") or "?")]
+        if akute:
+            teile.append("akut: " + ", ".join(akute[:3]))
+        teile.append(str(sachlage.get("herkunft", "?")))
+        return " · ".join(teile)
 
     if node_name == "enricher":
         hat_kontext: bool = bool(node_state.get("memory_context", ""))

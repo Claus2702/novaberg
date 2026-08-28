@@ -12,6 +12,7 @@ Reine Datenabfrage, kein LLM-Call, keine Graph-Ausfuehrung.
 
 import json
 import logging
+import time
 from collections import Counter
 
 import numpy as np
@@ -90,6 +91,29 @@ def gv_detail_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTAN
     except json.JSONDecodeError as fehler:
         logger.warning(f"Drive/GvDetail: '{key}' nicht parsebar — {fehler}")
         return {}
+
+
+@router.get("/sachlage")
+def sachlage_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_USER_ID):
+    """Liefert die fortgeschriebene Sachlage des Paares samt Alter.
+
+    Key: sachlage:{user_id}:{character_id} (graph/nodes/sachlage.py). Das
+    Sachlage-Panel laedt beim Oeffnen und nach jedem Turn. `alter_sekunden`
+    steht dabei, damit der Client den Verfall (SACHLAGE_VERFALL_SEKUNDEN)
+    einordnen kann, ohne die Frist zu kennen.
+    """
+    key: str = f"sachlage:{user_id}:{character_id}"
+    roh: dict = redis_client.hgetall(key) or {}
+    if not roh.get("json"):
+        return {}
+    try:
+        sachlage: dict = json.loads(roh["json"])
+        sachlage["alter_sekunden"] = round(
+            time.time() - float(roh.get("turn_zeit", "0")), 1)
+    except (json.JSONDecodeError, ValueError, TypeError) as fehler:
+        logger.warning(f"Drive/Sachlage: '{key}' nicht lesbar — {fehler}")
+        return {}
+    return sachlage
 
 
 @router.get("/goals")

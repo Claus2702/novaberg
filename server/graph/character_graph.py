@@ -62,6 +62,10 @@ class CharacterGraph(GraphBase):
         graph.add_node("enricher",        self._node_enrich)
         graph.add_node("emotionale_gravitation", self._node_emotionale_gravitation)
         graph.add_node("reducer",         self._node_reduce)
+        # "sachlage" selbst ist als Knotenname verboten: LangGraph lehnt
+        # Namen ab, die State-Schluesseln gleichen — derselbe Grund,
+        # aus dem der Gespraechsvektor-Knoten "gv_node" heisst.
+        graph.add_node("sachlage_node",   self._node_sachlage)
         graph.add_node("router",          self._node_route)
         graph.add_node("planner",         self._node_plan)
         graph.add_node("agent_dispatch",  self._node_agent_dispatch)
@@ -94,7 +98,12 @@ class CharacterGraph(GraphBase):
         # Ton der Antwort, nicht ihre Denkrichtung (Chat 113).
         graph.add_edge("enricher",   "emotionale_gravitation")
         graph.add_edge("emotionale_gravitation", "reducer")
-        graph.add_edge("reducer",    "router")
+        # Die Sachlage steht VOR dem Router, damit beide Pfade — Management
+        # und Konversation — dasselbe Verstehen sehen. Das ist die begruendete
+        # Abweichung vom Pipeline-Konzept (novaberg-thinking-lage_k.md §2):
+        # Die Befunde, die sie begruenden, liegen im Konversationspfad.
+        graph.add_edge("reducer",    "sachlage_node")
+        graph.add_edge("sachlage_node", "router")
 
         # Router → Planner oder GV-Node
         graph.add_conditional_edges(

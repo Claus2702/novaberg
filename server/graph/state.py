@@ -215,6 +215,9 @@ class ConversationState(TypedDict):
     # ── Gesprächsvektor (Epic 9) ───────────────────
     gespraechsvektor: str
     gv_detail: dict          # GV4 Debug-Info (Neugier, Luecken, Farbton)
+    # Das fortgeschriebene Verstehen des Gespraechs (graph/nodes/sachlage.py,
+    # novaberg-thinking-lage_k.md). Traegt IMMER eine `herkunft`-Marke.
+    sachlage: dict
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele: list[

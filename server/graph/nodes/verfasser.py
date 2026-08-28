@@ -329,6 +329,31 @@ def _build_system_prompt(state: ConversationState) -> str:
     if task_block:
         teile.append(task_block)
 
+    # ── Die Sachlage, vor der Gespraechslage ──
+    # Das sachliche Verstehen (graph/nodes/sachlage.py) steht VOR dem
+    # Gespraechsvektor: erst worum es geht, dann wie sich das Gespraech
+    # bewegt. Fehlt sie, faellt der Block laut aus — dieselbe Bauart wie
+    # bei der Haltung unten.
+    sachlage: dict = state.get("sachlage") or {}
+    if sachlage.get("gegenstand") or sachlage.get("nutzerziel"):
+        from graph.nodes.sachlage import sachlage_block
+        teile.append(sachlage_block(sachlage))
+    elif sachlage.get("herkunft"):
+        # Der Knoten LIEF und hat regulaer nichts — Novas Impuls oder ein
+        # Ausfall ohne Vorgaenger. Ein `error` behauptete hier eine falsche
+        # Diagnose (Fund der zweiten Kontrolle, 28.08.2026): Jeder Impuls
+        # nach Gespraechspause erzeugte eine Fehlerzeile, obwohl nichts
+        # defekt war.
+        logger.info(
+            f"Verfasser: Sachlage ohne Inhalt "
+            f"(herkunft={sachlage['herkunft']}) — kein [SACHLAGE]-Block"
+        )
+    else:
+        logger.error(
+            "Verfasser: Keine Sachlage im Zustand — der Knoten `sachlage` "
+            "ist nicht gelaufen."
+        )
+
     gv_block: str = _gespraechsvektor_block(state)
     if gv_block:
         teile.append(gv_block)

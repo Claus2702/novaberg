@@ -255,6 +255,10 @@ class GraphBase(ABC):
     def _node_reduce(self, state: ConversationState) -> ConversationState:
         return reduce_memory(state)
 
+    def _node_sachlage(self, state: ConversationState) -> ConversationState:
+        from graph.nodes.sachlage import sachlage_assess
+        return sachlage_assess(state)
+
     # Gesprächsvektor
     def _node_gespraechsvektor(self, state: ConversationState) -> ConversationState:
         from graph.nodes.gespraechsvektor import gespraechsvektor as _gv_fn

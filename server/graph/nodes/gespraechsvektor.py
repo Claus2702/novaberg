@@ -550,6 +550,13 @@ def _hypothese_destillieren(
             f"GV: {len(aktivierte_ziele)} aktivierte Ziele als [GEDANKEN]-Block eingefügt"
         )
 
+    # Die Sachlage — das sachliche Verstehen des Turns. Sie steht vor dem
+    # Farbton: erst was der Fall ist, dann wie es sich anfuehlt.
+    sachlage: dict = state.get("sachlage") or {}
+    if sachlage.get("gegenstand") or sachlage.get("nutzerziel"):
+        from graph.nodes.sachlage import sachlage_block
+        system_parts.append("\n\n" + sachlage_block(sachlage))
+
     # Situativer Farbton (kommt als Parameter, nicht mehr hier berechnet)
     farbton_block: str = f"\n\n[SITUATION]\n{farbton}" if farbton else ""
 
