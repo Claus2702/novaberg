@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **10:15 UTC** (gemessen via `date -u`) (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **13:30 UTC** (gemessen via `date -u`) (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,34 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 14:30 UTC — Scheibe 4 entworfen: das Sachlage-Gedaechtnis
+
+**Der Anlass sind Pixies Zustellungen:** Ein Impuls beruht auf einem Turn, und die Assoziation zum Ausloeser ist im Chat schwer nachvollziehbar. Geprueft am 28.08.2026: Der Impuls-Stack-Eintrag traegt Thema und Embedding, aber **keine `turn_id` seines Ausloesers**; die Sachlage selbst wird je Paar ueberschrieben, die `pipeline_log`-Zeile ist Forensik mit Vorhaltefrist — **ein Sachlage-Gedaechtnis existiert nicht.**
+
+**Der Entwurf** (`novaberg-thinking-lage_k.md` §4, Scheibe 4): Tabelle `sachlage_verlauf` je gerechnetem Turn (turn_id, Paar, **thema**, gegenstand, nutzerziel, objekte, **embedding**, erstellt_am; verfaellt nicht — F-VERFALL-1, Embedding-Text = gegenstand nach F-EMBED-1/2) · `thema` als neues Pflichtfeld aus demselben Call · die **`[SACHLAGE-BRUECKE]`**: Der Impuls-Eintrag traegt kuenftig die Ausloeser-`turn_id`, der Verfasser bekommt beide Blasen und baut den Uebergang; Rueckfall per Embedding-Aehnlichkeit, gekennzeichnet. **DDL nach F-DDL-1 angekuendigt, nicht gebaut.** Backlog: `SACHLAGE-SCHEIBE-2-KURZZIEL`, `-3-FRAGE-GEGENSTAND`, `-4-GEDAECHTNIS`.
+
+## 28.08.2026, 13:30 UTC — Scheibe 1 gebaut: der Sachlage-Knoten laeuft
+
+**`graph/nodes/sachlage.py`** — das fortgeschriebene Verstehen des Gespraechs, als Knoten `sachlage_node` zwischen Reducer und Router, damit Management- und Konversationspfad dasselbe Verstehen sehen. **Der Name weicht vom Konzept ab und der Grund ist eine Festlegung:** `F-LAGE-1..3` besetzen „Lage" fuer die emotionale Turn-Lage; die Sachlage ist ihre kognitive Schwester.
+
+**Die Bauart:** Eigener Chat-Call (GPU) mit erzwungenem JSON, Temperatur 0,1. Das Artefakt — Gegenstand, vermutetes Nutzerziel, Ausdrucksweise, Referenzobjekte mit gedeckten/offenen Eigenschaften — wird je Paar in Redis fortgeschrieben und verfaellt nach vier Stunden (`SACHLAGE_VERFALL_SEKUNDEN`; verworfen statt gezogen — ein halb verblasstes Verstaendnis gibt es nicht). **Fuenf Rueckkehrpfade, fuenf Herkunfts-Marken** (frisch, fortgeschrieben, verfallen_neu, impuls_uebernommen, ausfall_uebernommen) — kein Weg legt ein unmarkiertes Artefakt in den State. Verfasser und GV-Prompt tragen einen `[SACHLAGE]`-Block; offene Eigenschaften stehen darin nur fuer akute Objekte, und die Smalltalk-Schranke wird in der Pruefung erzwungen, nicht nur im Prompt erbeten. Protokoll je Turn als `berechnung`-Zeile.
+
+**MESSUNG** (`labor/2026-08-28_sachlage_messreihe.py`, zehn synthetische Aeusserungen gegen den Knoten direkt): Akutheit in 10 von 10 Faellen sinngemaess richtig, 8/10 im strengen Stringabgleich (die zwei Abweichungen sind Wortlaut der offenen Eigenschaft, nicht Substanz). **Die Fortschreibung traegt:** Nach »es ist der Geburtstag meiner Schwester« wandert die Person von offen nach gedeckt, und Geschenkideen erscheinen als neue offene Eigenschaft. **Median 2,1 s je Call** (Spanne 1,2–2,4 s) — der Preis im Antwortpfad, gemessen und benannt. Grenzfaelle ohne Vorhaben-Verb (»Ich habe eine neue Pflanze«) kippen zwischen Laeufen — bei Temperatur 0,1 erwartbar, notiert.
+
+**Suite 2395 gruen, 0 uebersprungen** (davor 2375); Gegenprobe: Kante entfernt → 1 rot. Harte Wand sauber. `F-NAME-1` eingehalten: Funktionsnamen englisch, `sachlage` als Fachbegriff im Messwerkzeug nachgetragen.
+
+**Die zweite Kontrolle aenderte den Bau** (kompilierter Graph statt Quelltext-Grep, 48 Kandidaten, 0 von 16 Pfaden erreichen einen Leser ohne den Knoten): `sachlage_node` fehlte in den Stream-Labels, und der Verfasser diagnostizierte »nicht gelaufen« auf einem regulaeren Leer-Pfad — beides behoben, je ein Zeuge.
+
+**Nachtrag 14:20 UTC — der Weg zum Client:** Eingang-Zeile im Knoten (die Groessen der Weiche vor der Entscheidung, F-LOG-3) · Stage-Detail fuer den Verarbeitungs-Stream (Gegenstand · akute Objekte · Herkunft) · `GET /drive/sachlage` (Snapshot samt `alter_sekunden`) · **Kontext-Panel im Client** (`client/ui/panels/sachlage_panel.py`, »🫧 Kontext«, turn-reaktiv): Kopf mit Herkunft und Alter, je Referenzobjekt gedeckte (✓) und offene (○) Eigenschaften, latente ohne Fragestoff. Fuenf weitere Zeugen; Suite 2395.
+
+## 28.08.2026, 14:35 UTC (nachgetragen; gebaut 27.08. 20:00 – 28.08. 07:00 UTC) — Rueckfragen halbiert mit Art, Raum-Neutralisierung
+
+**Zwei Bauten der Nacht, deren Chronik-Eintrag beim Konzept-Tag liegenblieb — nachgetragen am Sitzungsende.**
+
+**(1) `haltung`/`dreischicht`: Die Fragen-Grundwerte sind halbiert, und die Frage-Art reist mit der Menge.** Anlass gemessen: 84 Schlussfragen, 33 % Angebotsform, 23 % mit »oder«, 19 auf demselben Satzgeruest; das Rad legt ~+0,38 auf `fragen` in jeder Landschaft (424 Turns), `werkstatt` lief auf 1,18 ueber `GROESSE_MAX` (36 protokollierte Ueberlaeufe, ungelesen). `CLUSTER_FRAGEN` ist in **Menge** (halbiert — Setzung) und **Art** zerlegt; die Art haengt an der Landschaft, nicht am GV-Vehikel — das ist die Korrektur eines ersten Versuchs am selben Tag: `Vehikel` ist in 75 % von 610 Parsen leer. Zehn Zeugen; Live-Beleg 19 Turns: Vorgabe durchweg »eine Rueckfrage«, Art kommt an — aber die Menge bindet schwach (2,2 Fragen/Turn, 100 % Frage-Enden; das Muster wanderte zu »wie fuehlt sich das an«, 5/19). Commit c0c8f69.
+
+**(2) `raum`: Ein liegengebliebener Raum neutralisiert ueber vier Stunden.** Anlass: Zwei-Wort-Gruss nach 25 h Pause → `kissenschlacht`, eine von sechs Achsen gemessen. Linear auf die Kaltstart-Werte, nicht auf null; ohne Zeitstempel keine Neutralisierung, sondern laute Meldung. Neun Zeugen, Rechnung und Ladepfad getrennt; Live-Beleg: nach 9,8 h Pause `100 % neutralisiert, tiefe 0,67→0,30, naehe 0,86→0,50`, der Morgengruss landete in `bier`. Commit 4932d4d. **Konzept-Nachzug (`novaberg-gv-strategie_k.md`) erst am 28.08. nachmittags — der Nachzug war entlang des Codes gegangen, das Konzept lag quer.**
 
 ## 28.08.2026, 10:15 UTC — Lage-Analyse: die erste Scheibe der Verstehens-Schicht ist zugeschnitten
 

@@ -924,3 +924,38 @@ Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis 
 **Zusammenhang:** KZG-SALIENZ-KONSUMENTEN-DISSENS (drei Leser, drei Annahmen über dieselbe Zahl — dieselbe Familie).
 
 ---
+
+
+## Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfristige Zielhorizont aus der Lage (28.08.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** offen — angelegt am 28.08.2026.
+
+Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur als fluechtige GV-Hypothese; `ziel_typ='kurzfristig'` kommt in der `ziele`-Tabelle nicht vor. Scheibe 2 des Lage-Konzepts: Aus zwei Sachlagen derselben Session mit demselben Nutzerziel entsteht ein kurzfristiges Ziel mit Verfall in Stunden; es laeuft ohne weiteren Bau durch die bestehende Gravitation in den `[GEDANKEN]`-Block. ZIEL/TEST/MESSUNG stehen in `novaberg-thinking-lage_k.md` §4. Voraussetzung: Scheibe 1 (gebaut 28.08.2026) traegt im Betrieb. ⬜ Prio mittel
+
+**Zusammenhang:** SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND (Leser der Ziele) · Drive-Epic Phase 3.
+
+
+## Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die Rueckfrage bekommt ihren Gegenstand (28.08.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** offen — angelegt am 28.08.2026.
+
+Die Rueckfrage-Zeile des Verfassers traegt seit dem 27.08.2026 Menge und Art, aber keinen Gegenstand — gemessen: 2,2 Fragen je Turn, 100 % Frage-Enden, Floskelform. Scheibe 3: Die Zeile nennt die wichtigste offene Eigenschaft eines akuten Objekts oder den Weg zum beruehrten Ziel; **die Haltung bleibt der Regler** (Distanz fragt nicht, die Werkstatt darf mehrfach) — die Lage erzeugt keine Frage an der Haltung vorbei. Massstab: Expected Information Gain (Konzept §2a). ZIEL/TEST/MESSUNG in `novaberg-thinking-lage_k.md` §4; die Messanordnung (Schauspielerprobe, Vergleichsarme) existiert. ⬜ Prio mittel
+
+**Zusammenhang:** SACHLAGE-SCHEIBE-2-KURZZIEL · die Formfrage der Rueckfragen bleibt bis nach dieser Scheibe liegen (Konzept §5).
+
+
+## Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage je Turn persistiert, mit Thema, Embedding und Impuls-Bruecke (28.08.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** offen — angelegt am 28.08.2026. **DDL erforderlich und noch nicht angekuendigt** (`F-DDL-1`).
+
+Die Sachlage wird heute je Paar ueberschrieben (Redis, Verfall 4 h); die `pipeline_log`-Zeile ist Forensik mit Vorhaltefrist. Der Impuls-Stack-Eintrag traegt Thema und Embedding, aber keine `turn_id` seines Ausloesers (geprueft 28.08.2026) — die Zuordnung einer Zustellung zu ihrem Anlass ist nur implizit. Scheibe 4 (Entwurf in `novaberg-thinking-lage_k.md` §4): Tabelle `sachlage_verlauf` (turn_id, Paar, thema, gegenstand, nutzerziel, objekte, embedding, erstellt_am; verfaellt nicht — `F-VERFALL-1`), `thema` als Pflichtfeld des Artefakts aus demselben Call, und die `[SACHLAGE-BRUECKE]`: Impuls-Eintrag traegt die Ausloeser-`turn_id`, der Verfasser bekommt beide Blasen und baut den Uebergang. ⬜ Prio hoch
+
+**Zusammenhang:** SACHLAGE-SCHEIBE-2/3 · Zustellungs-Empathie (Anlass) · `F-EMBED-1`, `F-EMBED-2`, `F-VERFALL-1`, `F-SCHEMA-1`.
+
+---

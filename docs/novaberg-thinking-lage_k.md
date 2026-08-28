@@ -122,6 +122,8 @@ Das deckt sich mit der Event Segmentation Theory: Das Gehirn hält **ein** aktue
 
 ### Scheibe 1 — die Lage-Analyse
 
+**Gebaut am 28.08.2026, und der Name im Code lautet `sachlage`:** `F-LAGE-1..3` besetzen „Lage" fuer die emotionale Turn-Lage (Achsen, Sektor, Landschaft); die Sachlage ist ihre kognitive Schwester und traegt einen eigenen Namen. Knoten `sachlage_node` (LangGraph verbietet Knotennamen gleich State-Schluesseln), Modul `graph/nodes/sachlage.py`, Position `reducer → sachlage_node → router`.
+
 Der Knoten (Arbeitsname `lage`) läuft im CharacterGraph vor dem Gesprächsvektor, schreibt `state["lage"]` und die Protokollzeile. Verfasser und GV bekommen einen `[LAGE]`-Block.
 
 | | |
@@ -154,9 +156,31 @@ Die Rückfrage-Zeile des Verfassers (`ei/haltungssprache.py::_rueckfragenzeile`,
 
 ---
 
+### Scheibe 4 — das Sachlage-Gedächtnis (entworfen am 28.08.2026)
+
+**Der Anlass sind Pixies Zustellungen.** Ein Impuls beruht auf einem Turn; wenn die Aussage im Chat landet, ist die Assoziation zum Auslöser oft schwer nachvollziehbar. Empathisch wäre ein **Übergang vom Kontext des aktuellen Turns zum Kontext des Auslösers** — dafür braucht es beide Enden, und das zweite existiert nicht: Die Sachlage wird heute je Paar **überschrieben** (Redis, Verfall 4 h); die `pipeline_log`-Zeile je Turn ist Forensik mit Vorhaltefrist, ohne Thema, ohne Embedding, nicht abfragbar. Geprüft am 28.08.2026: Der Impuls-Stack-Eintrag trägt Thema und Embedding, aber **keine `turn_id` seines Auslösers** — die Zuordnung ist nur implizit über Ähnlichkeit.
+
+**Was schon trägt:** `turn_id` ist das Rückgrat, an dem alles Turnbasierte hängt — `turn_roh` (Wortlaut), `verbindung → lzg_knoten`, die Achsen-Protokolle, die Charakter-Destillation. Die Turns tragen das Emotionale, das *Wie*; die Sachlage trägt die Fakten. Eine je Turn persistierte Sachlage reiht sich mit einer Spalte ein.
+
+**Der Bau, drei Teile:**
+
+1. **Tabelle `sachlage_verlauf`** — je gerechnetem Turn eine Zeile: `turn_id`, Paar (`user_id`, `character_id`), **`thema`**, `gegenstand`, `nutzerziel`, `ausdrucksweise`, `objekte` (jsonb), **`embedding vector(768)`**, `erstellt_am`. Drei Festlegungen formen sie: Der Embedding-Text ist der `gegenstand`-Satz und aus der Zeile rekonstruierbar (`F-EMBED-1`); ein Vektor repräsentiert genau diesen einen Gegenstand (`F-EMBED-2`); und die Tabelle **verfällt nicht** — sie protokolliert ein Faktum, *die Sachlage dieses Turns war X* (`F-VERFALL-1`: was als Faktum protokolliert, bleibt). Geschrieben wird nur auf den drei rechnenden Wegen (frisch, fortgeschrieben, verfallen_neu) — übernommene Artefakte erzeugen keine Doppelzeile.
+2. **`thema`** wird ein Pflichtfeld des Artefakts — derselbe LLM-Call liefert es mit, ein bis drei Worte. Es ist der Anzeigename der Blase (auch für den Kontext-Tab) und das Findewort neben dem Vektor.
+3. **Die Brücke:** Der Impuls-Eintrag bekommt bei seiner Entstehung die **`turn_id` seines Auslöser-Turns**. Bei der Zustellung lädt der Graph die Auslöser-Zeile aus `sachlage_verlauf`, und der Verfasser bekommt beide Blasen als `[SACHLAGE-BRÜCKE]` — *aktuell* und *damals* — mit dem Auftrag, den Übergang zu bauen statt unvermittelt einzuwerfen. Rückfall ohne harte `turn_id`: die ähnlichste Verlaufszeile per Embedding gegen das Impuls-Embedding, als Rückfall gekennzeichnet.
+
+| | |
+|---|---|
+| **ZIEL** | Eine Zustellung nennt hörbar, woran sie anknüpft: Der Verfasser sieht die Auslöser-Sachlage neben der aktuellen und baut den Übergang. Nebenziel: `SELECT … FROM sachlage_verlauf ORDER BY embedding <=> $1` findet zu einem Thema die Turns, in denen es Gegenstand war. |
+| **TEST** | Zeugen auf: Schreibweg nur bei gerechneten Artefakten · Embedding-Text = `gegenstand` (rekonstruierbar) · Brücke nur mit beiden Enden, Rückfall gekennzeichnet · Impuls-Eintrag trägt die Auslöser-`turn_id`. |
+| **MESSUNG** | Ein gestellter Verlauf im Labor: Impuls aus Turn A, Zustellung in Lage B — der Verfasser-Prompt trägt beide Blasen; dazu die Trefferprobe der Embedding-Suche über zehn persistierte Lagen. |
+
+> **DDL:** `sachlage_verlauf` ist eine neue Tabelle (additiv) und wird nach `F-DDL-1` **vor dem Bau angekündigt**; sie wirkt erst nach Neustart des Dienstes. Ablageort nach `F-SCHEMA-1` in der zuständigen `init.sql`.
+
+---
+
 ## 5. Was ausdrücklich nicht gebaut wird
 
-Aus `cognitive-pipeline_k` bleiben Konzept: der Frame-**Auflöser** gegen den Bestand, das Frame-**Lager** samt Lernmechanik, **Cross-Frame-Validierung**, **Plausibilitätsprüfung**, **Skills**, die Ablösung des Planners und die Werkzeug-Orchestrierung. Ebenso bleibt liegen: die Formfrage der Rückfragen (2,2 je Turn) — sie wird nach Scheibe 3 neu gemessen und erst dann behandelt, falls sie dann noch besteht.
+Aus `cognitive-pipeline_k` bleiben Konzept: der Frame-**Auflöser** gegen den Bestand, das Frame-**Lager** samt Lernmechanik, **Cross-Frame-Validierung**, **Plausibilitätsprüfung**, **Skills**, die Ablösung des Planners und die Werkzeug-Orchestrierung. Ebenso bleibt liegen: die Formfrage der Rückfragen (2,2 je Turn) — sie wird nach Scheibe 3 neu gemessen und erst dann behandelt, falls sie dann noch besteht. Scheibe 4 bleibt Entwurf, bis die DDL angekündigt und freigegeben ist.
 
 ---
 

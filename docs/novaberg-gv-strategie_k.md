@@ -103,6 +103,8 @@ raum(neu) = raum(alt) + α · (geschätzter Nutzer-Raum − raum(alt))
 α = richtungszug × charakterfaktor
 ```
 
+**Und er altert — seit dem 28.08.2026.** Bis dahin überlebte der Raum in `redis:nova_state` jede Pause unverändert; gemessen: Ein Zwei-Wort-Gruß nach 25 Stunden landete in `kissenschlacht`, weil `naehe` 0,59 und `tiefe` 0,32 vom Vorabend zwei der sechs GV-Achsen setzten. `raum_neutralisieren` (`ei/raum.py`) zieht einen geladenen Raum **linear über vier Stunden** (`GV_RAUM_NEUTRAL_SEKUNDEN`) auf die Kaltstart-Werte (tiefe 0,3, naehe 0,5) — auf den Kaltstart, nicht auf null: Null wäre die Aussage *„fern und flach"*, die niemand gemessen hat. Ohne lesbaren Zeitstempel wird **nicht** neutralisiert, sondern laut gemeldet. Die Setzung der Spanne stammt vom Eigentümer: Ein Mensch ist nach Stunden auch nicht mehr im Gespräch.
+
 **Warum überhaupt ein eigener Wert?** Nähe und Tiefe lasen bis Chat 114 direkt Novas Register-Labels (`gespraechs_modus`, `sprach_stil`, `beziehungs_dynamik`). Diese Labels beschreiben aber **eine Äußerung**, nicht einen Zustand — und zwar Novas letzte, gemessen von der Assistant-Perzeption und über Redis in den nächsten Turn getragen. Zwischen `fachgespraech` und `alltag` gibt es kein Label, wohl aber einen Zwischenzustand, und genau der ist ein Registerwechsel.
 
 **Warum ein Zug?** Die Emotion hat zwei Kräfte: Novas eigenen Verlauf und die Empathie zum Nutzer. Das Register hatte nur die erste — es wurde perfekt konserviert, und nichts zog daran. Gemessen über eine Sequenz, in der der Nutzer vom Fachgespräch auf ein Alltagsthema wechselte: Er wurde lockerer, Nova förmlicher, und die Achsen folgten ihr. Eine Kurskorrektur des Nutzers hatte keinen Eingang ins System.
