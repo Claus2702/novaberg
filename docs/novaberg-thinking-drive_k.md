@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Antrieb — Ziele, Motivation, Gravitation, Dual-Emotion-Architektur (Konzept)
-**Stand:** 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
+**Stand:** 28. August 2026 (§3.3 kurzfristige Ziele gebaut, §7.1 zwei Verfallstypen — Scheibe 2 des Lage-Konzepts). Davor: 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
 **Pfad:** novaberg/docs/novaberg-thinking-drive_k.md
 **Quellen:** Chat 53 (Grundkonzept Antrieb, Zielpyramide, Gravitation, Dual-Emotion), Chat 51 (Neugier-Mechanismus), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 10 (Traum-Modus-Entscheidung)
 
@@ -98,15 +98,15 @@ Mittelfristige Ziele entstehen, wenn Nova recherchiert, vertieft oder träumt un
 
 ### 3.3 Kurzfristige Ziele — aus dem Gespräch
 
-Das ist der existierende Gesprächsvektor (GV-Node, Chat 39). Die Verlängerung des Denkpfads aus den letzten Turns. Flüchtig, pro Turn überschrieben, lebt in der Session.
+~~Das ist der existierende Gesprächsvektor (GV-Node, Chat 39). Die Verlängerung des Denkpfads aus den letzten Turns. Flüchtig, pro Turn überschrieben, lebt in der Session.~~ → **Seit dem 28.08.2026 gebaut als eigener Zielhorizont** (`novaberg-thinking-lage_k.md` §4, Scheibe 2; `memory/kurzziel.py`): Zeigen zwei gerechnete Lagen derselben Blase auf dasselbe akute Objekt, entsteht ein `ziel_typ='kurzfristig'` in `ziele` — Novas Vorsatz, dem Menschen bei genau dieser Sache zu helfen. Der Gesprächsvektor bleibt, was er war: die Hypothese über den nächsten Zug, kein Ziel.
 
 | Eigenschaft | Wert |
 |-------------|------|
-| **Quelle** | GV-Node (Session-Turns + Perzeption) |
-| **Anzahl** | 1 (aktuelle Hypothese) |
-| **Taktung** | Pro Turn |
-| **Decay** | Sofort — bei jedem Turn überschrieben |
-| **Speicherort** | Session-State (Redis) |
+| **Quelle** | Sachlage-Knoten, rechnender Weg — das akute Objekt, das zwei Lagen lang steht |
+| **Anzahl** | eines je akutem Objekt der Blase; kein zweites, solange es steht |
+| **Taktung** | je gerechnetem Turn (Impuls-Turns verfolgen nicht) |
+| **Decay** | Halbwertszeit `ZIEL_KURZFRISTIG_DECAY_STUNDEN` (3 h), Schwelle 0,15 — über den Decay-Agenten, der beide Typen fährt |
+| **Speicherort** | `ziele` (`ziel_typ='kurzfristig'`, Anker 0,7, Vektor über den Zielsatz); die Strecke in Redis (`kurzziel:{paar}`) |
 
 ---
 
@@ -181,8 +181,9 @@ Für jeden aktiven Zielsatz:
   similarity = cosine_similarity(turn_embedding, ziel_embedding)
   gravitation = similarity × motivation
 
-  Wenn gravitation > GRAVITATIONS_SCHWELLE:
-    → Zielsatz wird als "aktiviert" markiert
+  Wenn gravitation > GRAVITATIONS_SCHWELLE
+     oder ziel_typ == 'kurzfristig' (seit 28.08.2026, §3.3 — sein Tor ist der Verfall):
+    → Zielsatz wird als "aktiviert" markiert (kurzfristige zuerst, dann nach Stärke)
     → Wird dem GV-Node und der Salienz als Kontext mitgegeben
 ```
 
@@ -525,7 +526,7 @@ motivation = motivation_basis × exp(−ln2 / ZIEL_MITTELFRISTIG_DECAY_TAGE × t
 
 **Wer die Motivation setzt, setzt den Anker** — nicht den Momentwert. Damit beginnt die Vergessenskurve von vorn, genau wie `knoten_verstaerken` im LZG `verstaerkt_am` zurücksetzt: Ein Ziel wieder aufzugreifen *ist* seine Verstärkung.
 
-**Nur `mittelfristig` verfällt**, als Allowlist geprüft. Die frühere Fassung übersprang lediglich `langfristig` und hätte damit jeden anderen Typ mit der mittelfristigen Halbwertszeit behandelt — auch `kurzfristig`, das es heute nicht gibt und morgen geben kann.
+**Nur `mittelfristig` ~~verfällt~~ und — seit dem 28.08.2026 — `kurzfristig` verfallen**, je als Allowlist geprüft und mit eigener Halbwertszeit (14 Tage / 3 Stunden), ein Lauf je Typ. Die frühere Fassung übersprang lediglich `langfristig` und hätte damit jeden anderen Typ mit der mittelfristigen Halbwertszeit behandelt — auch `kurzfristig`, das es ~~heute nicht gibt und morgen geben kann~~ seit dem 28.08.2026 gibt (§3.3).
 
 **Abfrage-Pattern:** `SELECT * FROM ziele WHERE aktiv = TRUE AND user_id = 'nova'` lädt alle aktiven Ziele beider Typen in einem Query. Der Enricher filtert dann in Python nach Similarity.
 
@@ -688,7 +689,7 @@ Klingers Forschung zeigt: Wenn die Umstände ungünstig für zielgerichtetes ope
 
 | Parameter | Typ | Default | Beschreibung |
 |-----------|-----|---------|-------------|
-| `GRAVITATIONS_SCHWELLE` | float | 0.40 | Minimum-Gravitation, ab der ein Ziel aktiviert wird. Historie: 0.3 (Konzept) → 0.75 (Chat 69) → 0.60 → **0.40** (Chat 107, Rekalibrierung auf `nomic-embed-text-v2-moe` — im alten casing-blinden Raum lag 0.60 unter dem Grundrauschen 0.74 und feuerte immer) |
+| `GRAVITATIONS_SCHWELLE` | float | 0.40 | Minimum-Gravitation, ab der ein Ziel aktiviert wird. Historie: 0.3 (Konzept) → 0.75 (Chat 69) → 0.60 → **0.40** (Chat 107, Rekalibrierung auf `nomic-embed-text-v2-moe` — im alten casing-blinden Raum lag 0.60 unter dem Grundrauschen 0.74 und feuerte immer). **Gilt nicht für `kurzfristig`** (28.08.2026, gemessen): Dessen Zielsatz liegt zur Nutzeräußerung bei Kosinus 0,13–0,41, Stärke 0,09–0,29 — die Schwelle hätte es nie passiert. Es ist per Bauart aktiviert, solange es lebt; die Zahlen bleiben echt |
 | `GRAVITATIONS_SALIENZ_FAKTOR` | float | 0.5 | Skalierungsfaktor für den Salienz-Boost |
 | `NOVA_EMOTION_DECAY` | float | 0.85 | Decay-Rate für Novas Emotion pro Turn (→ Neutralität, pro Dimension) |
 | `NOVA_EMPATHIE_BENACHBART` | float | 0.15 | α bei Sektor-Distanz 0–1 (gleichgerichtete Emotionen bestätigen leicht) |

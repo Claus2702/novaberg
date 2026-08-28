@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 427 Eintraege mit Kennung — 365 offen, 61 abgeschlossen, **1 ohne lesbaren Zustand**.
+**Umfang:** 427 Eintraege mit Kennung — 364 offen, 62 abgeschlossen, **1 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 427 von 427 Eintraegen zugeordnet.
 
@@ -474,7 +474,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | ANT | 853 | offen | `BUILDER-CREATE-INITIAL-STATE-TOT` | [Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruf](novaberg-backlog-antwortpfad.md) |
 | ANT | 870 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
 | ANT | 910 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
-| ANT | 929 | offen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
+| ANT | 929 | abgeschlossen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
 | ANT | 940 | offen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
 | ANT | 951 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **17:40 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **19:40 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,16 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 19:40 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte
+
+**Der Bau:** `memory/kurzziel.py`. Der rechnende Weg des Sachlage-Knotens verfolgt je Paar in Redis, wie viele gerechnete Lagen hintereinander dasselbe akute Objekt tragen; bei zwei entsteht genau ein `ziel_typ='kurzfristig'` in `ziele` (»Ich moechte dem Nutzer bei seinem Vorhaben helfen: {Objekt} — {Nutzerziel}«, Anker 0,7, Vektor ueber den Zielsatz), kein zweites, solange das Objekt steht; eine neue Blase setzt zurueck. Der Decay-Agent faehrt seither zwei Typen — mittelfristig in Tagen, kurzfristig in Stunden (`ZIEL_KURZFRISTIG_DECAY_STUNDEN` = 3); die Halbwertszeit ist ein Bruchteil eines Tages geworden. Kein DDL: `ziel_typ` hat keinen CHECK.
+
+**Praemisse 1 fiel an der Messung, vor dem ersten Ziel.** Der Entwurf zaehlte »dasselbe Nutzerziel« — die erste Fassung verglich die `nutzerziel`-Saetze zweier Turns per Kosinus (Schwelle 0,8). Ueber vier gestellte Turns: **0,42 / 0,40 / 0,50 beim selben Vorhaben, 0,35 / 0,24 beim Wechsel** — kein Abstand. Das Feld traegt das Ziel der Aeusserung, je Turn neu formuliert. Das **akute Objekt** dagegen schreibt die Fortschreibung woertlich fort; die Strecke zaehlt es seither per Namensgleichheit, ohne Schwelle. Danach: A → 1, B → Ziel, C → 3 ohne zweites, D → Reset.
+
+**Praemisse 2 fiel danach:** *»laeuft ohne weiteren Bau durch die Gravitation in den [GEDANKEN]-Block«.* Der Zielsatz liegt zur Nutzeraeusserung bei **Kosinus 0,13–0,41, Staerke 0,09–0,29** — die Schwelle 0,40 haette das Ziel nie aktiviert. Entschieden: Ein kurzfristiges Ziel ist per Bauart aktiviert, solange es lebt (Stunden, wenige, aus dem laufenden Gespraech), sein Tor ist der Verfall; es steht im Block vorn. Die Zahlen bleiben echt. Dazu eine Prompt-Regel — *ein Objekt, das schon steht, behaelt seinen Namen woertlich* —, weil ein Lauf von dreien das Objekt umbenannte und das Ziel einen Turn spaeter kam.
+
+**MESSUNG** (`labor/2026-08-28_kurzziel_messung.py`, echter Sachlage-Call, Embed-Worker, Redis, `ziele`): mit Prompt-Regel »Rettich« stabil ueber A–C, Ziel bei B, kein zweites bei C, Reset bei D; Gravitation aktiviert es bei Staerke 0,28 / 0,23 und per Bauart auch bei einem fremden Turn (0,09). **Betrieb:** zwei echte Turns zur Transitmethode → `Kurzziel: angelegt (id=28576, Strecke 2)`. **Suite 2454 gruen, 0 uebersprungen**; Gegenprobe fuenf Eingriffe, 3 / 2 / 1 / 1 / 2 rot. Harte Wand sauber, Linter 1198. Die Lesson vom Nachmittag angewandt: Die aelteren Sachlage-Zeugen fingen den neuen Seiteneffekt ab, bevor er existierte.
 
 ## 28.08.2026, 17:40 UTC — Scheibe 4 gebaut: das Sachlage-Gedaechtnis und die Bruecke
 

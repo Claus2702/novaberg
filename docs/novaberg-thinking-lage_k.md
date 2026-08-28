@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lage-Analyse — die erste gebaute Scheibe der Verstehens-Schicht
-**Stand:** 28. August 2026, abends (Scheibe 4 gebaut und gemessen, §4; Betriebsmessung zu Scheibe 1). Davor am selben Tag: (Erstfassung; am selben Tag ergänzt: §2a wissenschaftliche Prüfung, §3a der Kontext als Blase)
+**Stand:** 28. August 2026, abends (Scheibe 2 gebaut und gemessen — die Strecke zählt das akute Objekt, nicht den Nutzerziel-Satz; Scheibe 4 gebaut und gemessen, §4; Betriebsmessung zu Scheibe 1). Davor am selben Tag: (Erstfassung; am selben Tag ergänzt: §2a wissenschaftliche Prüfung, §3a der Kontext als Blase)
 **Pfad:** novaberg/docs/novaberg-thinking-lage_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** `novaberg-thinking-frames_k.md` · `novaberg-thinking-cognitive-pipeline_k.md` · `novaberg-thinking-drive_k.md` (Herkunft jeweils dort) · Messungen vom 27./28.08.2026
@@ -134,15 +134,21 @@ Der Knoten (Arbeitsname `lage`) läuft im CharacterGraph vor dem Gesprächsvekto
 
 **Betriebsmessung am 28.08.2026, 15:30–16:06 UTC** (`labor/2026-08-28_sachlage_erster_zeuge.py`): fünf kurze Turns über `/chat` gegen den laufenden Server, ein Thema, fortlaufend. **6 Protokollzeilen `node='sachlage'`** — fünf gerechnete (`frisch`, dann viermal `fortgeschrieben`) und eine `impuls_uebernommen` für eine Zustellung im fünften Fenster. Die Fortschreibung hält über alle fünf Turns ein Objekt und deckt Eigenschaften 1 → 4; ab Turn 4 tritt ein zweites akutes Objekt hinzu. Dauer je Call im Betrieb 2,7–3,9 s (Labor: 2,1 s Median). Keine Schreibung in `fakten`, `notizen`, `ziele`, `wissensluecken`. **Beobachtung:** Eine offene Eigenschaft blieb offen, nachdem Nova sie im selben Turn beantwortet hatte — die Fortschreibung liest Deckung aus Nutzer-Äußerungen, nicht aus den Antworten (Fundliste 28.08.). Für Scheibe 3 ist das eine Frage, keine Fußnote.
 
-### Scheibe 2 — das kurzfristige Ziel
+### Scheibe 2 — das kurzfristige Ziel (gebaut am 28.08.2026)
 
-`ziel_typ='kurzfristig'` in der bestehenden `ziele`-Tabelle. Entsteht, wenn Lagen derselben Session wiederholt auf dasselbe Nutzerziel zeigen (*Kräuterbeet*); verfällt in Stunden statt Tagen. Läuft durch die bestehende Gravitation und erscheint damit ohne weiteren Bau im `[GEDANKEN]`-Block.
+`ziel_typ='kurzfristig'` in der bestehenden `ziele`-Tabelle. Entsteht, wenn Lagen derselben Session wiederholt auf ~~dasselbe Nutzerziel~~ **dasselbe akute Objekt** zeigen (*Kräuterbeet*); verfällt in Stunden statt Tagen. Läuft durch die bestehende Gravitation und erscheint damit ~~ohne weiteren Bau~~ im `[GEDANKEN]`-Block — **gemessen am 28.08.2026: nicht ohne Bau.** Der Zielsatz liegt zur Nutzeräußerung bei Kosinus 0,13–0,41 (Stärke 0,09–0,29 unter der Schwelle 0,40); die Gravitation hätte ihn nie aktiviert. Seither ist ein kurzfristiges Ziel per Bauart aktiviert, solange es lebt — sein Tor ist der Verfall, und es steht im `[GEDANKEN]`-Block vorn (`ei/gravitation.py`, `novaberg-thinking-drive_k.md` §5).
+
+> **Warum das Objekt und nicht das Nutzerziel — gemessen am 28.08.2026.** Die erste Fassung verglich die `nutzerziel`-Sätze zweier Turns per Kosinus (Schwelle 0,8). Über vier gestellte Turns lag der Kosinus beim **selben Vorhaben bei 0,42 / 0,40 / 0,50** und beim Themenwechsel bei **0,35 / 0,24** — kein Abstand. Das Feld ist so gemeint, wie der Prompt es fragt: *was der Nutzer mit dieser Äußerung erreichen will* — je Turn neu (»Verifizierung einer Hypothese…«, »Validierung eines Hilfsmittels…«). Das **akute Objekt** dagegen schreibt die Fortschreibung wörtlich fort (»Rettich bewässern« über drei Turns, dann »Flutberge«), weil der Prompt sie dazu anhält. Es ist der Träger der Beständigkeit; die Strecke zählt es per Namensgleichheit, ohne Schwelle.
 
 | | |
 |---|---|
 | **ZIEL** | Aus zwei Lagen mit demselben Nutzerziel innerhalb einer Session entsteht ein kurzfristiges Ziel; nach Ablauf seiner Frist ist es inaktiv. |
 | **TEST** | Zeugen auf Entstehung (zweimal dasselbe Ziel → Eintrag), Nicht-Entstehung (einmal → kein Eintrag) und Verfall. |
 | **MESSUNG** | Ein gestellter Sessionverlauf im Labor; danach `ziele`-Tabelle und Gravitations-Log. |
+
+**Gebaut am 28.08.2026.** `memory/kurzziel.py`: Der rechnende Weg des Sachlage-Knotens ruft nach der Verlaufszeile die Zielverfolgung (`short_goal_track`); je akutem Objekt zählt eine Strecke in Redis (`kurzziel:{paar}`) die aufeinanderfolgenden gerechneten Lagen, in denen es stand — bei **zwei** entsteht genau ein `kurzfristig`-Ziel (Zielsatz *»Ich möchte dem Nutzer bei seinem Vorhaben helfen: {Objekt} — {Nutzerziel des Turns}«*, Anker 0,7, Vektor über den Zielsatz), und solange das Objekt in der Blase steht, kein zweites. Eine frische oder nach Verfall neue Blase setzt die Strecke zurück; ein Objekt, das die Blase verlässt, fällt heraus. **Der Verfall** läuft über den bestehenden Decay-Agenten, der seither zwei Typen fährt — mittelfristig in Tagen, kurzfristig in Stunden (`ZIEL_KURZFRISTIG_DECAY_STUNDEN` = 3; bei Schwelle 0,15 ist das Ziel nach knapp drei Halbwertszeiten inaktiv). Der Impuls-Weg verfolgt nicht. **Zwei Dinge kamen aus der Messung dazu:** das Bauart-Tor in der Gravitation (oben) und eine Prompt-Regel des Sachlage-Calls — *ein Objekt, das schon steht, behält seinen Namen wörtlich* —, weil die Fortschreibung das Objekt in einem von drei Läufen umbenannte (»Rettichbewässerung« → »Bewässerungsstrategie«) und das Ziel dann einen Turn später entstand. 21 Zeugen; Gegenprobe: fünf Eingriffe, 3 / 2 / 1 / 1 / 2 rot.
+
+**MESSUNG** (`labor/2026-08-28_kurzziel_messung.py`, Sachlage-Knoten mit echtem Modell-Call, Embed-Worker, Redis, `ziele`): Turn A (Rettich gießen) → Strecke 1, kein Ziel · Turn B (dasselbe Vorhaben, andere Worte) → Strecke 2, **ein** `kurzfristig`-Ziel · Turn C → Strecke 3, **kein** zweites · Turn D (Flutberge) → Strecke des alten Objekts weg, neues bei 1. Je Call 2,7–4,7 s (Sachlage samt Verfolgung). Gravitation danach: das kurzfristige Ziel aktiviert bei Stärke 0,28 (Turn B), 0,23 (Turn C) und — per Bauart — auch 0,09 bei einem fremden Turn; der `[GEDANKEN]`-Block trägt es damit, solange es lebt, gleich worum der Turn geht. **Betrieb:** zwei echte Turns zu einem Vorhaben (Transitmethode) → Strecke 1, dann `Kurzziel: angelegt (id=28576, Strecke 2)` — das Ziel steht in `ziele` für das echte Paar.
 
 ### Scheibe 3 — die Gesprächsführung aus der Lage
 
