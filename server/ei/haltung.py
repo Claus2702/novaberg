@@ -44,40 +44,47 @@ GROESSE_MAX: float = 1.0
 # ─────────────────────────────────────────────
 # Grundwerte je Landschaft
 # ─────────────────────────────────────────────
-# Die Spalte `fragen` ist nicht gesetzt, sondern aus CLUSTER_FRAGEN
-# (ei/dreischicht.py) uebersetzt: "Haeufig, begeistert" -> 0.9, "Keine" -> 0.0.
+# Die Spalte `fragen` ist nicht gesetzt, sondern aus CLUSTER_FRAGE_MENGE
+# (ei/dreischicht.py) uebersetzt: "Mittel" -> 0.45, "Keine" -> 0.0.
 # Wer dort etwas aendert, aendert hier mit.
+#
+# **Am 27.08.2026 halbiert** — Setzung des Meisters, keine Messung: Die
+# Rueckfragen-Haeufigkeit war zu hoch. Halbiert ist ausschliesslich diese
+# Spalte; `SPEICHEN_BEITRAG` bleibt unangetastet, obwohl das Rad im Betrieb
+# rund +0,38 auf `fragen` legt und damit nach der Halbierung den groesseren
+# Anteil am Ergebnis traegt. Die Begruendung und der Preis stehen bei
+# CLUSTER_FRAGE_MENGE.
 CLUSTER_GRUNDWERT: dict[str, dict[str, float]] = {
     "feuerwerk": {
-        "umfang": 0.80, "fragen": 0.90, "naehe": 0.90,
+        "umfang": 0.80, "fragen": 0.45, "naehe": 0.90,
         "waerme": 0.90, "draengen": 0.70,
     },
     "kissenschlacht": {
-        "umfang": 0.30, "fragen": 0.60, "naehe": 0.80,
+        "umfang": 0.30, "fragen": 0.30, "naehe": 0.80,
         "waerme": 0.90, "draengen": 0.50,
     },
     "werkstatt": {
-        "umfang": 0.90, "fragen": 0.90, "naehe": 0.50,
+        "umfang": 0.90, "fragen": 0.45, "naehe": 0.50,
         "waerme": 0.50, "draengen": 0.70,
     },
     "glut": {
-        "umfang": 0.70, "fragen": 0.30, "naehe": 0.90,
+        "umfang": 0.70, "fragen": 0.15, "naehe": 0.90,
         "waerme": 0.80, "draengen": 0.20,
     },
     "bier": {
-        "umfang": 0.50, "fragen": 0.50, "naehe": 0.80,
+        "umfang": 0.50, "fragen": 0.25, "naehe": 0.80,
         "waerme": 0.80, "draengen": 0.30,
     },
     "foyer": {
-        "umfang": 0.70, "fragen": 0.50, "naehe": 0.30,
+        "umfang": 0.70, "fragen": 0.25, "naehe": 0.30,
         "waerme": 0.50, "draengen": 0.30,
     },
     "regen": {
-        "umfang": 0.20, "fragen": 0.15, "naehe": 0.80,
+        "umfang": 0.20, "fragen": 0.07, "naehe": 0.80,
         "waerme": 0.90, "draengen": 0.00,
     },
     "schmollen": {
-        "umfang": 0.20, "fragen": 0.15, "naehe": 0.60,
+        "umfang": 0.20, "fragen": 0.07, "naehe": 0.60,
         "waerme": 0.60, "draengen": 0.00,
     },
     "nebel": {
@@ -89,15 +96,15 @@ CLUSTER_GRUNDWERT: dict[str, dict[str, float]] = {
         "waerme": 0.20, "draengen": 0.20,
     },
     "schlachtfeld": {
-        "umfang": 0.15, "fragen": 0.30, "naehe": 0.20,
+        "umfang": 0.15, "fragen": 0.15, "naehe": 0.20,
         "waerme": 0.20, "draengen": 0.80,
     },
     "beichte": {
-        "umfang": 0.20, "fragen": 0.30, "naehe": 0.95,
+        "umfang": 0.20, "fragen": 0.15, "naehe": 0.95,
         "waerme": 0.90, "draengen": 0.00,
     },
     "wartezimmer": {
-        "umfang": 0.30, "fragen": 0.50, "naehe": 0.20,
+        "umfang": 0.30, "fragen": 0.25, "naehe": 0.20,
         "waerme": 0.50, "draengen": 0.20,
     },
     "paradox": {

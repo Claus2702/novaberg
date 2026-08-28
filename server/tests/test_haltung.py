@@ -282,8 +282,15 @@ class UebersteuerungTest(unittest.TestCase):
                 self.assertEqual(werte[groesse].art, "uebersteuerung")
                 self.assertEqual(werte[groesse].ausloeser, "langeweile")
         # Voller Zug: der Umfang faellt ganz, die uebrigen anteilig.
+        #
+        # **`fragen` steht seit dem 27.08.2026 bei der Haelfte** — 0.1500 ->
+        # 0.0750 —, weil der Grundwert der Landschaft halbiert wurde
+        # (`ei/haltung.py::CLUSTER_GRUNDWERT`, Setzung des Meisters). Der Zug
+        # selbst ist unveraendert: Die drei uebrigen Zusicherungen dieser
+        # Zeile stehen wie zuvor, und genau das belegt, dass die Aenderung
+        # den Mechanismus nicht beruehrt hat.
         self.assertAlmostEqual(werte["umfang"].ergebnis, 0.0000, places=4)
-        self.assertAlmostEqual(werte["fragen"].ergebnis, 0.1500, places=4)
+        self.assertAlmostEqual(werte["fragen"].ergebnis, 0.0750, places=4)
         self.assertAlmostEqual(werte["waerme"].ergebnis, 0.2167, places=4)
         self.assertAlmostEqual(werte["draengen"].ergebnis, 0.2100, places=4)
         # `naehe` steht nicht in der Zeile und bleibt unberuehrt.

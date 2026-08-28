@@ -261,21 +261,87 @@ CLUSTER_BESCHREIBUNGEN: dict[str, str] = {
     "paradox":       "Widerspruechlicher Zustand. Vorsicht, beobachten.",
 }
 
-CLUSTER_FRAGEN: dict[str, str] = {
-    "feuerwerk":     "Haeufig, begeistert",
-    "kissenschlacht":"Mittel, neckisch, oft rhetorisch",
-    "werkstatt":     "Haeufig, analytisch",
-    "glut":          "Selten (jeder 3.-4. Turn), intim",
-    "bier":          "Mittel, beilaeufig",
-    "foyer":         "Mittel, sachlich-hoeflich",
-    "regen":         "Sehr selten, behutsam",
-    "schmollen":     "Sehr selten, vorsichtig",
+# **Menge und Art stehen seit dem 27.08.2026 getrennt**, und der Grund ist ein
+# Befund: Der Verfasser bekam aus `ei/haltungssprache.py::stoffzeilen` immer
+# nur die **Menge** (»mehrere Rueckfragen«) und nie die **Art**. Die Art lief
+# ausschliesslich in den Strategie-Prompt dieses Moduls und erreichte den
+# Knoten, der die Frage schreibt, an keiner Stelle.
+#
+# **Wer eine Menge bestellt und sonst nichts, bekommt die billigste Form** —
+# und billig ist die, die zugleich die Vorschlagsvorgabe miterledigt. Gemessen
+# am 27.08.2026 ueber 84 Schlussfragen des produktiven Paares: 33 % beginnen
+# als Angebot (»Sollen wir …«, »Willst du …«), 23 % zusaetzlich mit »oder«,
+# 12 % tragen »tiefer«/»eintauchen«. Neunzehn Fragen auf demselben
+# Satzgeruest — *„Sollen wir X, oder willst du lieber Y?"*
+CLUSTER_FRAGE_ART: dict[str, str] = {
+    "feuerwerk":     "begeistert",
+    "kissenschlacht":"neckisch, oft rhetorisch",
+    "werkstatt":     "analytisch — eine echte Sachfrage, kein Angebot",
+    "glut":          "intim",
+    "bier":          "beilaeufig",
+    "foyer":         "sachlich-hoeflich",
+    "regen":         "behutsam",
+    "schmollen":     "vorsichtig",
+    "nebel":         "",
+    "gewitter":      "Spiegelung, keine Fragen",
+    "schlachtfeld":  "direkt",
+    "beichte":       "behutsam",
+    "wartezimmer":   "hoeflich",
+    "paradox":       "beobachten",
+}
+
+# **Die Menge ist am 27.08.2026 halbiert** — eine Setzung des Meisters, keine
+# Messung: *„Die Rueckfragen-Haeufigkeit ist einfach zu hoch."* Halbiert ist
+# **nur** der Grundwert der Landschaft; der Beitrag des Charakter-Rades auf
+# `fragen` bleibt unangetastet (`ei/haltung.py::SPEICHEN_BEITRAG`).
+#
+# **Was das bedeutet, steht in der Groessenordnung.** Der Radzuschlag liegt im
+# Betrieb bei rund +0,38 und ist ueber alle Landschaften nahezu konstant
+# (gemessen ueber 424 Turns mit protokollierter Haltung, 27.08.2026). Er wird
+# durch die Halbierung nicht kleiner — sein **Anteil am Ergebnis waechst**.
+# Das Konzept sagt: *„Was die vierzehn Landschaften unterscheidbar macht, ist
+# die Grundwerttabelle. Das Rad moduliert sie, es verteilt sie nicht."*
+# (`novaberg-haltungsraum_k.md`). Die Halbierung schwaecht genau diese
+# Unterscheidbarkeit; sie ist der bewusst in Kauf genommene Preis.
+#
+# **Das Nachhaken bleibt erreichbar**, ausdruecklich verlangt: `werkstatt` und
+# `feuerwerk` landen mit 0,45 + 0,38 bei 0,83 und damit im Band »eine
+# Rueckfrage, die nachhakt«.
+CLUSTER_FRAGE_MENGE: dict[str, str] = {
+    "feuerwerk":     "Mittel",
+    "kissenschlacht":"Selten",
+    "werkstatt":     "Mittel",
+    "glut":          "Sehr selten",
+    "bier":          "Selten",
+    "foyer":         "Selten",
+    "regen":         "Sehr selten",
+    "schmollen":     "Sehr selten",
     "nebel":         "Keine",
-    "gewitter":      "Keine — Spiegelung, keine Fragen",
-    "schlachtfeld":  "Selten, direkt",
-    "beichte":       "Selten, behutsam",
-    "wartezimmer":   "Mittel, hoeflich",
-    "paradox":       "Keine — beobachten",
+    "gewitter":      "Keine",
+    "schlachtfeld":  "Sehr selten",
+    "beichte":       "Sehr selten",
+    "wartezimmer":   "Selten",
+    "paradox":       "Keine",
+}
+
+
+def _frage_zeile(cluster: str) -> str:
+    """Setzt Menge und Art zu der Zeile zusammen, die der GV-Prompt liest.
+
+    Vorbedingung: `cluster` steht in beiden Tabellen.
+    Nachbedingung: »Menge, Art« — oder »Keine — Art«, wo die Landschaft eine
+        Grenze setzt und die Art erklaert, was stattdessen geschieht. Fehlt die
+        Art, bleibt die Menge allein stehen.
+    """
+    menge: str = CLUSTER_FRAGE_MENGE[cluster]
+    art:   str = CLUSTER_FRAGE_ART[cluster]
+    if not art:
+        return menge
+    return f"{menge} — {art}" if menge == "Keine" else f"{menge}, {art}"
+
+
+CLUSTER_FRAGEN: dict[str, str] = {
+    cluster: _frage_zeile(cluster) for cluster in CLUSTER_FRAGE_MENGE
 }
 
 

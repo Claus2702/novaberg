@@ -376,6 +376,55 @@ def stoff_band(groesse: str, wert: float) -> str:
     raise ValueError(meldung)
 
 
+# Das unterste Band von `fragen`, aus der Tabelle gezogen statt getippt: Ein
+# zweiter Wortlaut wuerde beim naechsten Umformulieren still falsch.
+KEINE_RUECKFRAGE: str = STOFF_BAENDER["fragen"][0][1]
+
+
+def _rueckfragenzeile(haltung: Haltung) -> str:
+    """Die Rueckfrage-Zeile — Menge UND Art, in einer Zeile.
+
+    **Die Art stand bis zum 27.08.2026 nirgends im Auftrag des Verfassers.**
+    Sie lag in `CLUSTER_FRAGE_ART` und lief ausschliesslich in den
+    Strategie-Prompt des GV-Knotens. Der Knoten, der die Frage **schreibt**,
+    bekam nur die Menge — und wer eine Menge bestellt und sonst nichts,
+    greift zur Form, die zugleich die Vorschlagsvorgabe erledigt. Gemessen an
+    84 Schlussfragen des produktiven Paares: 33 % beginnen als Angebot
+    (»Sollen wir …«), 23 % zusaetzlich mit »oder«, neunzehn auf demselben
+    Satzgeruest.
+
+    **Sie haengt ausdruecklich NICHT am Vehikel `frage`.** Der erste Versuch
+    desselben Tages tat das — und traf damit ein Feld, das im Betrieb meistens
+    leer ist: ueber 610 GV-Parses stand `Vehikel` in **456** Faellen (75 %)
+    auf nichts, `frage` in 53 (9 %). Eine Vorgabe, die in jedem elften Turn
+    ankommt, ist keine. Die Landschaft dagegen steht immer.
+
+    **Bei »keine Rueckfrage« entfaellt die Art**, denn dann gibt es keine
+    Frage, die eine Art haben koennte.
+
+    Vorbedingung: `haltung` traegt `fragen` und einen Cluster mit Eintrag in
+        `CLUSTER_FRAGE_ART`.
+    Nachbedingung: eine Zeile, die mit "Rueckfrage: " beginnt.
+    Fehlerfaelle: fehlender Cluster-Eintrag — laute Warnung, Menge allein.
+        Ein stilles Weglassen waere von "keine Rueckfrage" nicht zu
+        unterscheiden.
+    """
+    from ei.dreischicht import CLUSTER_FRAGE_ART
+
+    menge: str = stoff_band("fragen", haltung.werte["fragen"].ergebnis)
+    if menge == KEINE_RUECKFRAGE:
+        return f"Rueckfrage: {menge}."
+
+    art: str = CLUSTER_FRAGE_ART.get(haltung.cluster, "")
+    if not art:
+        logger.warning(
+            f"_rueckfragenzeile: Landschaft '{haltung.cluster}' ohne "
+            f"hinterlegte Frage-Art — die Frage entsteht ohne Vorgabe"
+        )
+        return f"Rueckfrage: {menge}."
+    return f"Rueckfrage: {menge}, und zwar {art}."
+
+
 def stoffzeilen(
     haltung: Haltung, reiz_zeichen: int, intentionen: tuple[str, ...],
 ) -> list[str]:
@@ -423,7 +472,7 @@ def stoffzeilen(
     zeilen: list[str] = [
         f"Menge: Stoff fuer {unten} bis {oben} Zeichen Rede. Mehr wird nicht "
         f"gesagt, sondern gestrichen.",
-        f"Rueckfrage: {stoff_band('fragen', haltung.werte['fragen'].ergebnis)}.",
+        _rueckfragenzeile(haltung),
         f"Vorschlag: {stoff_band('draengen', haltung.werte['draengen'].ergebnis)}.",
     ]
 
