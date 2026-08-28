@@ -2067,6 +2067,12 @@ SACHLAGE_VERFALL_SEKUNDEN:    float = float(
 # unter den 0,60 des Zustellungsfilters.
 SACHLAGE_BRUECKE_MIN_KOSINUS: float = float(
     os.getenv("SACHLAGE_BRUECKE_MIN_KOSINUS", "0.35"))
+# Scheibe 5 (28.08.2026): Ab diesem Kosinus zwischen Prompt-Embedding und dem
+# Gegenstand-Vektor einer frueheren Blase (anderes Thema) gilt der Turn als
+# Rueckkehr zu ihr, und der Sachlage-Call bekommt sie als fruehere Sachlage.
+# Startwert wie die Bruecke; die Messreihe der Scheibe setzt ihn.
+SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS: float = float(
+    os.getenv("SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS", "0.35"))
 
 # --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
 # Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein

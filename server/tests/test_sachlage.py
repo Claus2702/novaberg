@@ -21,6 +21,12 @@ Zeugen dieser Datei:
   * **Die Verdrahtung ist ein eigener Zeuge.** Ein Knoten, der rechnet und
     dessen Ergebnis niemand liest, war der Defekt der Frage-Art vom
     27.08.2026 — der Graph traegt die Kante, der Verfasser den Block.
+  * **Die Wiederaufnahme** (Scheibe 5, 28.08.2026): Auf dem rechnenden Weg
+    sucht der Knoten mit dem Prompt-Embedding die aehnlichste fruehere
+    Blase des Paares — unter Ausschluss des eigenen Themas —, gibt sie dem
+    Prompt als fruehere Sachlage mit und traegt die Kennung im Artefakt.
+    Der Impuls-Weg sucht nicht; ohne Vektor laeuft der Turn ohne Suche und
+    sagt es; der Block nennt die Rueckkehr.
   * **Der Verlauf traegt Novas Antwort ganz.** `[gemessen]` 28.08.2026: Eine
     offene Eigenschaft blieb drei Turns offen, obwohl Nova sie beantwortet
     hatte — die Antwort war 973 Zeichen lang, die Substanz begann bei 384,
@@ -34,7 +40,8 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
 import unittest
-from unittest.mock import patch
+from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
 
 from graph.nodes.sachlage import (
     HERKUNFT_AUSFALL,
@@ -48,6 +55,7 @@ from graph.nodes.sachlage import (
     sachlage_assess,
     sachlage_block,
 )
+from config import SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS
 
 VOLLSTAENDIG: dict = {
     # `thema` ist seit Scheibe 4 (28.08.2026) Pflichtfeld — der Anzeigename
@@ -302,6 +310,103 @@ class DasThemaBenenntDieSacheTest(unittest.TestCase):
         regeln = gesehen["prompt"].split("Regeln:")[1]
         self.assertIn("Themenwechsel", regeln)
         self.assertIn("neue Sache", regeln)
+
+
+FRUEHERE: dict = {
+    "turn_id": "t-frueher", "thema": "Gravitationslinse", "kosinus": 0.61,
+    "gegenstand": "Die Lichtablenkung an Schwarzen Loechern.",
+    "objekte": [{"name": "Gravitationslinse", "klasse": "vorgang", "akut": True,
+                 "gedeckt": {"mechanismus": "Raumkruemmung"}, "offen": ["Massenbestimmung"]}],
+    "erstellt_am": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
+}
+
+
+def _rechnender_lauf(state: dict, treffer: dict | None, erhoben: dict | None = None) -> dict:
+    """Ein Lauf des Knotens mit gepatchten Nachbarn; `history_nearest` liefert `treffer`."""
+    with patch("graph.nodes.sachlage.sachlage_load", return_value=(dict(VOLLSTAENDIG), False)), \
+         patch("graph.nodes.sachlage.history_nearest", return_value=treffer) as suche, \
+         patch("graph.nodes.sachlage._derive", return_value=dict(erhoben or VOLLSTAENDIG)), \
+         patch("graph.nodes.sachlage._sachlage_store"), \
+         patch("graph.nodes.sachlage.short_goal_track"), \
+         patch("graph.nodes.sachlage._persist_history"), \
+         patch("graph.nodes.sachlage.log_berechnung"):
+        ergebnis = sachlage_assess(state)
+    ergebnis["_suche"] = suche
+    return ergebnis
+
+
+class DieWiederaufnahmeTest(unittest.TestCase):
+    """Scheibe 5 — die fruehere Blase kommt aus dem Faktum zurueck."""
+
+    def test_die_suche_nutzt_das_prompt_embedding_und_schliesst_das_eigene_thema_aus(self) -> None:
+        state = _state(prompt_embedding=[0.1, 0.2, 0.3])
+
+        ergebnis = _rechnender_lauf(state, None)
+
+        ruf = ergebnis["_suche"].call_args
+        self.assertEqual(ruf.kwargs["embedding"], [0.1, 0.2, 0.3])
+        self.assertEqual(ruf.kwargs["ausser_thema"], VOLLSTAENDIG["thema"])
+        self.assertEqual(ruf.kwargs["min_kosinus"], SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS)
+
+    def test_der_impuls_weg_sucht_nicht(self) -> None:
+        state = _state(prompt_embedding=[0.1, 0.2, 0.3], event_source="shadow",
+                       event_payload={"eigener_gedanke": True, "prompt_thema": "x", "inhalt": "y"})
+        with patch("graph.nodes.sachlage.reiz_ist_eigener_gedanke", return_value=True):
+            ergebnis = _rechnender_lauf(state, FRUEHERE)
+
+        self.assertEqual(ergebnis["_suche"].call_count, 0)
+        self.assertNotIn("wiederaufnahme", ergebnis["sachlage"])
+
+    def test_ohne_treffer_ist_die_wiederaufnahme_null(self) -> None:
+        ergebnis = _rechnender_lauf(_state(prompt_embedding=[1.0]), None)
+
+        self.assertIsNone(ergebnis["sachlage"]["wiederaufnahme"])
+
+    def test_mit_treffer_traegt_das_artefakt_die_kennung(self) -> None:
+        ergebnis = _rechnender_lauf(_state(prompt_embedding=[1.0]), FRUEHERE)
+
+        self.assertEqual(ergebnis["sachlage"]["wiederaufnahme"],
+                         {"turn_id": "t-frueher", "thema": "Gravitationslinse", "kosinus": 0.61,
+                          "erstellt_am": FRUEHERE["erstellt_am"]})
+
+    def test_der_prompt_traegt_die_fruehere_blase_und_die_regel(self) -> None:
+        gesehen: dict = {}
+
+        def _fang(request: object, timeout: float) -> None:
+            gesehen["prompt"] = request.messages[0]["content"]
+            raise RuntimeError("kein Modell im Zeugen")
+
+        with patch("graph.nodes.sachlage.model_service") as ms:
+            ms.chat.submit_sync.side_effect = _fang
+            _derive(dict(VOLLSTAENDIG), [], "Nochmal zurueck zur Gravitationslinse", wiederaufnahme=FRUEHERE)
+            mit: str = gesehen["prompt"]
+            _derive(dict(VOLLSTAENDIG), [], "Nochmal zurueck zur Gravitationslinse", wiederaufnahme=None)
+            ohne: str = gesehen["prompt"]
+
+        self.assertIn("Raumkruemmung", mit)
+        self.assertIn("woertlich", mit.split("fruehere Sachlage")[1].lower())
+        self.assertNotIn("fruehere Sachlage", ohne)
+
+    def test_ohne_vektor_laeuft_der_turn_ohne_suche_und_sagt_es(self) -> None:
+        state = _state()  # kein prompt_embedding
+        with patch("graph.nodes.sachlage.model_service") as ms:
+            ms.embed.submit_sync.side_effect = RuntimeError("Worker aus")
+            with self.assertLogs("ki_server.sachlage", level="WARNING") as log:
+                ergebnis = _rechnender_lauf(state, FRUEHERE)
+
+        self.assertEqual(ergebnis["_suche"].call_count, 0)
+        self.assertEqual(ergebnis["sachlage"]["herkunft"], HERKUNFT_FORTGESCHRIEBEN)
+        self.assertIsNone(ergebnis["sachlage"]["wiederaufnahme"])
+        self.assertTrue(any("Wiederaufnahme" in zeile for zeile in log.output))
+
+    def test_der_block_nennt_die_rueckkehr(self) -> None:
+        block = sachlage_block({**VOLLSTAENDIG, "wiederaufnahme": {
+            "turn_id": "t", "thema": "Gravitationslinse", "kosinus": 0.6,
+            "erstellt_am": FRUEHERE["erstellt_am"]}})
+
+        self.assertIn("Gravitationslinse", block)
+        self.assertIn("zurueck", block.lower().replace("ü", "ue"))
+        self.assertNotIn("zurueck", sachlage_block(dict(VOLLSTAENDIG)).lower().replace("ü", "ue"))
 
 
 class DieVerdrahtungStehtTest(unittest.TestCase):

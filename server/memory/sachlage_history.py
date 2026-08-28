@@ -175,6 +175,7 @@ def history_nearest(
     character_id: str,
     embedding:    list[float],
     min_kosinus:  float,
+    ausser_thema: str | None = None,
 ) -> dict | None:
     """Die Verlaufszeile des Paares, die dem Vektor am naechsten liegt.
 
@@ -182,6 +183,9 @@ def history_nearest(
     Nachbedingung: Die naechste Zeile samt `kosinus`, wenn sie ueber der
         Schwelle liegt — sonst None. **Unter der Schwelle ist kein Treffer**:
         Eine Bruecke zu einem Turn ohne Bezug waere schlimmer als keine.
+        Mit `ausser_thema` bleiben Zeilen dieses Themas aussen vor — die
+        Wiederaufnahme (Scheibe 5) sucht eine *fruehere* Blase, und die
+        naechste Zeile ist sonst fast immer der eigene Vorturn.
     Fehlerfaelle: DB-Fehler — `logger.exception`, None.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -205,10 +209,11 @@ def history_nearest(
                     FROM   {TABELLE}
                     WHERE  user_id = %s AND character_id = %s
                            AND embedding IS NOT NULL
+                           AND (%s::text IS NULL OR thema <> %s)
                     ORDER BY embedding <=> %s::vector
                     LIMIT 1
                     """,  # noqa: S608 — Konstanten
-                    (vektor, user_id, character_id, vektor),
+                    (vektor, user_id, character_id, ausser_thema, ausser_thema, vektor),
                 )
                 zeile = cur.fetchone()
         finally:

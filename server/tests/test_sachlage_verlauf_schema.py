@@ -172,7 +172,10 @@ class SchreibenUndLesenSindEinRundlaufTest(unittest.TestCase):
         finally:
             conn.close()
 
-    def _schreiben(self, achse: int, herkunft: str = "frisch") -> str:
+    def _schreiben(
+        self, achse: int, herkunft: str = "frisch",
+        thema: str | None = None, vektor: list[float] | None = None,
+    ) -> str:
         turn_id: str = f"zeuge-{uuid.uuid4().hex}"
         self.turn_ids.append(turn_id)
         zeilen_id = history_write(
@@ -180,8 +183,9 @@ class SchreibenUndLesenSindEinRundlaufTest(unittest.TestCase):
             turn_id      = turn_id,
             user_id      = self.paar[0],
             character_id = self.paar[1],
-            sachlage     = {**ARTEFAKT, "herkunft": herkunft},
-            embedding    = _einheitsvektor(achse),
+            sachlage     = {**ARTEFAKT, "herkunft": herkunft,
+                            **({"thema": thema} if thema else {})},
+            embedding    = vektor if vektor is not None else _einheitsvektor(achse),
         )
         self.assertIsNotNone(zeilen_id)
         return turn_id
@@ -227,6 +231,27 @@ class SchreibenUndLesenSindEinRundlaufTest(unittest.TestCase):
         )
 
         self.assertIsNone(treffer)
+
+    def test_die_suche_kann_das_eigene_thema_ausschliessen(self) -> None:
+        """Scheibe 5: Wer nach einer frueheren Blase sucht, darf nicht die
+        eigene finden — die naechste Zeile ist fast immer der Vorturn.
+        """
+        schraeg: list[float] = _einheitsvektor(6)
+        schraeg[7] = 0.3
+        fruehere: str = self._schreiben(6, thema="Gravitationslinse", vektor=schraeg)
+        eigene:   str = self._schreiben(6, thema="Pulsare")
+
+        ohne = history_nearest(
+            POSTGRES_URL, self.paar[0], self.paar[1], _einheitsvektor(6), min_kosinus=0.5,
+        )
+        mit = history_nearest(
+            POSTGRES_URL, self.paar[0], self.paar[1], _einheitsvektor(6), min_kosinus=0.5,
+            ausser_thema="Pulsare",
+        )
+
+        self.assertEqual(ohne["turn_id"], eigene)
+        self.assertEqual(mit["turn_id"], fruehere)
+        self.assertEqual(mit["thema"], "Gravitationslinse")
 
     def test_die_suche_bleibt_im_paar(self) -> None:
         """Die Sachlage eines anderen Paares ist kein Anlass fuer dieses."""

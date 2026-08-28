@@ -41,11 +41,13 @@ import json
 import logging
 import re
 import time
+from datetime import datetime, timezone
 
 from config import (
     POSTGRES_URL,
     SACHLAGE_BRUECKE_MIN_KOSINUS,
     SACHLAGE_VERFALL_SEKUNDEN,
+    SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS,
     get_node_config,
     redis_client,
 )
@@ -103,7 +105,7 @@ SACHLAGE_PROMPT: str = """Du analysierst ein laufendes Gespraech. Deine Aufgabe
 ist zu verstehen, worum es geht — nicht zu antworten.
 
 {vorige_sektion}
-
+{wiederaufnahme_sektion}
 Die juengsten Beitraege:
 {verlauf}
 
@@ -156,6 +158,18 @@ _VORIGE_SEKTION: str = """Die bisherige Sachlage des Gespraechs:
 {vorige}
 
 Der neue Turn setzt dieses Verstaendnis fort."""
+
+# Scheibe 5: die fruehere Blase, die der Turn vermutlich wieder aufnimmt.
+_WIEDERAUFNAHME_SEKTION: str = """
+Eine fruehere Sachlage dieses Gespraechs zu einer aehnlichen Sache (Thema
+"{thema}", {alter}):
+{objekte}
+
+Kehrt der neue Turn zu dieser Sache zurueck, fuehre SIE fort: Ihr Objekt
+behaelt seinen "name" woertlich, was dort "gedeckt" ist, bleibt gedeckt.
+Was der Turn sonst noch nennt, bleibt ein eigenes Objekt. Geht es um etwas
+anderes, lass sie unbeachtet.
+"""
 
 
 def _redis_key(user_id: str, character_id: str) -> str:
@@ -278,26 +292,60 @@ def _render_history(session_turns: list[dict]) -> str:
     return "\n".join(zeilen) if zeilen else "(noch keine Beitraege)"
 
 
+def _age_label(erstellt_am: str) -> str:
+    """»vor 12 min« / »vor 2 h« / »vor 3 Tagen« aus einem ISO-Zeitstempel; leer, wenn unlesbar."""
+    try:
+        damals = datetime.fromisoformat(str(erstellt_am))
+    except (TypeError, ValueError):
+        return ""
+    if damals.tzinfo is None:
+        damals = damals.replace(tzinfo=timezone.utc)
+    sekunden: float = max(0.0, (datetime.now(timezone.utc) - damals).total_seconds())
+    if sekunden < 3600:
+        return f"vor {int(sekunden // 60)} min"
+    if sekunden < 86400:
+        return f"vor {sekunden / 3600:.0f} h"
+    return f"vor {int(sekunden // 86400)} Tagen"
+
+
 def _derive(
     vorige:        dict | None,
     session_turns: list[dict],
     aeusserung:    str,
+    wiederaufnahme: dict | None = None,
 ) -> dict | None:
     """Der LLM-Call — erzwungenes JSON, validiert gegen die Pflichtstruktur.
 
-    Vorbedingung: `aeusserung` ist nicht leer.
+    Vorbedingung: `aeusserung` ist nicht leer; `wiederaufnahme` ist eine
+        Verlaufszeile (`history_nearest`) oder None.
     Nachbedingung: Das validierte Artefakt oder None bei Ausfall.
     Fehlerfaelle: Ausnahmen des Workers werden gefangen und laut gemeldet —
         der Turn laeuft weiter, der Aufrufer markiert den Rueckkehrpfad.
     """
+    # Was der Prompt von der vorigen Blase sieht: die Sache, nicht die
+    # Buchfuehrung des letzten Laufs.
+    vorige_rein: dict | None = (
+        {k: v for k, v in vorige.items()
+         if k not in ("wiederaufnahme", "herkunft", "alter_sekunden")}
+        if vorige else None
+    )
     vorige_sektion: str = (
-        _VORIGE_SEKTION.format(vorige=json.dumps(vorige, ensure_ascii=False))
-        if vorige else "Es gibt noch keine Sachlage — dies ist der Anfang."
+        _VORIGE_SEKTION.format(vorige=json.dumps(vorige_rein, ensure_ascii=False))
+        if vorige_rein else "Es gibt noch keine Sachlage — dies ist der Anfang."
+    )
+    wiederaufnahme_sektion: str = (
+        _WIEDERAUFNAHME_SEKTION.format(
+            thema   = str(wiederaufnahme.get("thema", "")),
+            alter   = _age_label(str(wiederaufnahme.get("erstellt_am", ""))) or "frueher",
+            objekte = json.dumps(wiederaufnahme.get("objekte", []), ensure_ascii=False),
+        )
+        if wiederaufnahme else ""
     )
     prompt: str = SACHLAGE_PROMPT.format(
-        vorige_sektion = vorige_sektion,
-        verlauf        = _render_history(session_turns),
-        aeusserung     = aeusserung.strip()[:1200],
+        vorige_sektion         = vorige_sektion,
+        wiederaufnahme_sektion = wiederaufnahme_sektion,
+        verlauf                = _render_history(session_turns),
+        aeusserung             = aeusserung.strip()[:1200],
     )
     node_cfg: dict = get_node_config("sachlage")
     try:
@@ -314,6 +362,39 @@ def _derive(
         )
         return None
     return _validate_artifact(response.parsed)
+
+
+def _resume_lookup(state: dict, vorige: dict | None) -> dict | None:
+    """Scheibe 5: die fruehere Blase des Paares, zu der der Turn vermutlich zurueckkehrt.
+
+    Vorbedingung: `state` traegt das Paar; das Prompt-Embedding des Enrichers
+        liegt in `state["prompt_embedding"]` — fehlt es, wird der Reiz hier
+        eingebettet.
+    Nachbedingung: Die naechste Verlaufszeile eines **anderen** Themas ueber
+        `SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS`, samt `kosinus` — oder None.
+    Fehlerfaelle: Ohne Vektor (Embed-Worker aus) keine Suche, mit Warnung —
+        der Turn laeuft ohne Wiederaufnahme weiter; das Repository meldet
+        DB-Fehler selbst und liefert None.
+    """
+    vektor: list[float] | None = state.get("prompt_embedding") or None
+    if not vektor:
+        try:
+            vektor = model_service.embed.submit_sync(
+                EmbedRequest(text=reiz_text(state)[:1200])
+            ).embedding
+        except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+            logger.warning(
+                f"Wiederaufnahme: kein Vektor fuer den Reiz ({type(fehler).__name__}: "
+                f"{fehler}) — Turn laeuft ohne Suche nach einer frueheren Blase"
+            )
+            return None
+    return history_nearest(
+        POSTGRES_URL,
+        state.get("user_id", ""), state.get("character_id", ""),
+        embedding    = vektor,
+        min_kosinus  = SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS,
+        ausser_thema = str(vorige.get("thema") or "") or None if vorige else None,
+    )
 
 
 def _persist_history(
@@ -508,6 +589,13 @@ def sachlage_block(sachlage: dict) -> str:
             zeilen.append(
                 f"Im Raum steht: {objekt.get('name')} — dazu noch offen: {offen}"
             )
+    fruehere: dict | None = sachlage.get("wiederaufnahme")
+    if fruehere:
+        alter: str = _age_label(str(fruehere.get("erstellt_am", "")))
+        zeilen.append(
+            f"Der Nutzer kommt auf {fruehere.get('thema', '')} zurueck"
+            f"{f' (zuletzt {alter})' if alter else ''}"
+        )
     return "\n".join(zeilen)
 
 
@@ -545,14 +633,28 @@ def sachlage_assess(state: dict) -> dict:
         bruecke: dict = sachlage_bridge_build(state, sachlage)
     else:
         bruecke = {}
+        # Scheibe 5: Kehrt der Turn zu einer frueheren Blase zurueck, bekommt
+        # der Call sie mit — sonst beginnt die Sache bei null.
+        fruehere: dict | None = _resume_lookup(state, vorige)
+        if fruehere:
+            logger.info(
+                f"Wiederaufnahme: fruehere Blase '{str(fruehere.get('thema', ''))[:40]}' "
+                f"(turn={fruehere.get('turn_id')}, "
+                f"kosinus={float(fruehere.get('kosinus', 0.0)):.2f})"
+            )
         erhoben: dict | None = _derive(
             vorige, state.get("session_turns") or [], reiz_text(state),
+            wiederaufnahme=fruehere,
         )
         if erhoben is not None:
             erhoben["herkunft"] = (
                 HERKUNFT_VERFALLEN_NEU if verfallen
                 else HERKUNFT_FORTGESCHRIEBEN if vorige
                 else HERKUNFT_FRISCH
+            )
+            erhoben["wiederaufnahme"] = (
+                {k: fruehere.get(k) for k in ("turn_id", "thema", "kosinus", "erstellt_am")}
+                if fruehere else None
             )
             sachlage = erhoben
             _sachlage_store(user_id, character_id, sachlage)
