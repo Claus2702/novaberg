@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **20:15 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **20:29 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,14 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 20:29 UTC — `thema` benennt die Sache, nie den Wechsel
+
+**Der Anlass:** die zweite Vorfrage zu Scheibe 3. Der erste Betriebsturn nach Scheibe 4 (17:15 UTC, Rettich → Neutronensterne) schrieb `thema='Themenwechsel'` und `gegenstand='Ein abruptes Abweichen vom biologischen Fachgespraech hin zu …'` in `sachlage_verlauf` — der Vektor dieser Zeile zeigt halb auf das alte Thema, und zwar an der ersten Zeile jeder neuen Blase, dort, wo Bruecken-Rueckfall und Themensuche ansetzen. Entschieden: Prompt-Regel, keine Duldung.
+
+**MESSUNG vor dem Bau**, aus den echten Session-Turns des Paares nachgestellt (`labor/2026-08-28_sachlage_thema_wechsel.py`, nur `_derive`, fuenf Laeufe): **5/5** `thema='Themenwechsel'`, `gegenstand='Der Nutzer stellt eine abrupte Frage zur Astrophysik …'` — der Fall ist kein Ausreisser, er ist die Regel des Modells. **Nach dem Bau:** **5/5** `thema='Neutronensterne'`, `gegenstand='Die physikalische Ursache fuer die Leuchtkraft von Neutronensternen trotz fehlender Kernfusion.'` Der Zwei-Themen-Satz (Rueckkehr zur Gravitationslinse plus Einkaufsauftrag, drei Laeufe) bleibt unveraendert 3/3 »Gravitationslinseneffekt«.
+
+**Der Bau:** eine Regelzeile im Sachlage-Prompt, positiv formuliert (`F-PROMPT-1`): `thema` und `gegenstand` benennen die Sache selbst; bei einem Wechsel die neue Sache, die alte faellt aus der Sachlage; das Gespraech ueber die Sache — Wechsel, Rueckkehr, dass der Nutzer fragt — ist nie der Gegenstand. **TEST:** ein Zeuge am gerenderten Prompt (`DasThemaBenenntDieSacheTest`); Suite **2469 → 2470 gruen, 0 uebersprungen**; Gegenprobe: Regel entfernt → 1 rot. Die Wirkung selbst misst das Labor, nicht die Suite — ein Prompt-Zeuge kann nur halten, was gesendet wird.
 
 ## 28.08.2026, 20:15 UTC — Der Sachlage-Prompt sieht Novas Antworten ganz — und der Fund vom Nachmittag war halb falsch
 
