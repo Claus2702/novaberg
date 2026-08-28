@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 27. August 2026, 11:50 UTC (`date -u`)
+**Stand:** 28. August 2026, 16:10 UTC (`date -u`)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 85 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
@@ -204,7 +204,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Metakognition Phase 1** (Pipeline-Log) | 🟢 | 87.913 Zeilen `[gemessen]` | Entscheidungs-Eintrag fehlt in 11 Knoten |
 | **Metakognition Phase 2** (`pipeline_search`) | ⚫ | Bezeichner existiert nicht `[gemessen]` | alles |
 | **Metakognition Phase 3–6** (Vorsätze, Selbstreflexion) | ⚫ | keine Tabelle, kein Agent `[gemessen]` | alles |
-| **Frames · Skills · Task-Orchestration · Cognitive Pipeline** | ⚫ | die Kernbezeichner fehlen sämtlich `[gemessen]` | vier Konzepte aus Chat 80/81, kein Code. **Stand 28.08.2026:** erste baubare Scheibe zugeschnitten — `novaberg-thinking-lage_k.md` (28.08.2026): Lage-Analyse je Turn, kurzfristiger Zielhorizont, Gesprächsführung aus der Lage; drei Scheiben mit ZIEL/TEST/MESSUNG. **Scheibe 1 gebaut am 28.08.2026** (`graph/nodes/sachlage.py`, vor dem Router): 15 Zeugen, Messreihe 8/10 strenger Abgleich bei 10/10 sinngemaess, Fortschreibung offen→gedeckt belegt, Median 2,1 s je Call; Scheiben 2–4 offen als `SACHLAGE-SCHEIBE-*` im Backlog, Scheibe 4 (Gedaechtnis + Impuls-Bruecke, DDL) entworfen 28.08.2026 |
+| **Frames · Skills · Task-Orchestration · Cognitive Pipeline** | ⚫ | die Kernbezeichner fehlen sämtlich `[gemessen]` | vier Konzepte aus Chat 80/81, kein Code. **Stand 28.08.2026:** erste baubare Scheibe zugeschnitten — `novaberg-thinking-lage_k.md` (28.08.2026): Lage-Analyse je Turn, kurzfristiger Zielhorizont, Gesprächsführung aus der Lage; drei Scheiben mit ZIEL/TEST/MESSUNG. **Scheibe 1 gebaut am 28.08.2026** (`graph/nodes/sachlage.py`, vor dem Router): 15 Zeugen, Messreihe 8/10 strenger Abgleich bei 10/10 sinngemaess, Fortschreibung offen→gedeckt belegt, Median 2,1 s je Call; Scheiben 2–4 offen als `SACHLAGE-SCHEIBE-*` im Backlog, Scheibe 4 (Gedaechtnis + Impuls-Bruecke, DDL) entworfen 28.08.2026. **Betrieb belegt 28.08.2026, 16:05 UTC** (`labor/2026-08-28_sachlage_erster_zeuge.py`, fuenf Turns gegen den laufenden Server): 6 `pipeline_log`-Zeilen `node='sachlage'` (5 gerechnet, 1 `impuls_uebernommen`), Fortschreibung ueber alle fuenf Turns (gedeckt 1→4, zweites akutes Objekt ab Turn 4), 2,7–3,9 s je Call, 0 Seiteneffekte in `fakten`/`notizen`/`ziele`/`wissensluecken` — die Bedingung fuer Scheibe 2 ist erfuellt |
 | **Referenz-Auflösung** (anaphorische Verweise) | ⚫ | `coreferee`, `HanTa`, `de_core_news_sm` **nicht installiert** `[gemessen]` | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` offen |
 
 ### 6.1 Sykophanz-Eindämmung

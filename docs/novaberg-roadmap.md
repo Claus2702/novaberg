@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **13:30 UTC** (gemessen via `date -u`) (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **16:10 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,16 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 16:10 UTC — Der erste Zeuge: die Sachlage laeuft im Betrieb
+
+**Was offen war:** Scheibe 1 war gebaut und im Labor gegen den Knoten direkt gemessen — im Serverprozess hatte sie noch keinen Turn gesehen, und `pipeline_log` trug null Zeilen mit `node='sachlage'` (der Labor-Buffer schrieb nicht, Fundliste 28.08.). Das Konzept macht die Betriebsmessung zur Bedingung fuer Scheibe 2.
+
+**MESSUNG** (`labor/2026-08-28_sachlage_erster_zeuge.py`, 15:30–16:06 UTC): fuenf kurze Turns ueber `/chat` gegen den laufenden Server, Thema Rettich-Wasserhaushalt als Pflanzenphysiologie, 66–83 Zeichen, Tonlage fragend/pruefend/folgernd. **Ergebnis: 6 Zeilen `node='sachlage'` in `pipeline_log`** — fuenf gerechnete (1× `frisch`, 4× `fortgeschrieben`) und eine `impuls_uebernommen`, weil Pixie im fuenften Fenster eine Zustellung fuhr (Reiz 1102 Zeichen, Artefakt unveraendert uebernommen). **Die Fortschreibung traegt ueber alle fuenf Turns:** ein Objekt »Rettich-Wachstumsprozess« von Turn 1 an, gedeckte Eigenschaften 1 → 2 → 3 → 3 → 4; in Turn 4 tritt ein zweites akutes Objekt »Bewaesserungsstrategie« hinzu. Die Eingang-Zeile (F-LOG-3) stand in jedem Turn vor der Ergebnis-Zeile. **Dauer je Call im Betrieb 2,7 / 3,0 / 3,9 s** (Log-Zeitstempel Eingang → Ergebnis), gegen 2,1 s Median im Labor.
+
+**Seiteneffekte: keine.** `fakten` 0 → 0, `notizen` 1 → 1, `ziele` 358 → 358, `wissensluecken` 1280 → 1280; `pipeline_log` +464 Zeilen ueber alle Knoten. Vier `[ERROR]`-Zeilen im Fenster, beide Klassen registriert: `VERFASSER-KOPFBLOCK-FAELLT-AUS` in 3 von 5 Turns (Datenpunkt dort nachgetragen), eine leere Thinker-Antwort mit gefuellter Denkspur (bekannte Signatur, der Turn ueberlebte sie).
+
+**Zwei Beobachtungen in die Fundliste:** Eine offene Eigenschaft (»Licht vs. Wasser«) blieb von Turn 2 bis 5 offen, obwohl die Antwort sie im selben Turn deckte — die Fortschreibung liest Deckung nur aus Nutzer-Aeusserungen. Und das Ruhe-Kriterium der Messturn-Vorlage ist tot: Pixie schreibt im Halbminutentakt, das Log ruht nie, jeder Turn lief bis zur Frist.
 
 ## 28.08.2026, 14:30 UTC — Scheibe 4 entworfen: das Sachlage-Gedaechtnis
 

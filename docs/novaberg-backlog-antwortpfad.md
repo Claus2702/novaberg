@@ -932,7 +932,7 @@ Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis 
 
 **Zustand:** offen — angelegt am 28.08.2026.
 
-Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur als fluechtige GV-Hypothese; `ziel_typ='kurzfristig'` kommt in der `ziele`-Tabelle nicht vor. Scheibe 2 des Lage-Konzepts: Aus zwei Sachlagen derselben Session mit demselben Nutzerziel entsteht ein kurzfristiges Ziel mit Verfall in Stunden; es laeuft ohne weiteren Bau durch die bestehende Gravitation in den `[GEDANKEN]`-Block. ZIEL/TEST/MESSUNG stehen in `novaberg-thinking-lage_k.md` §4. Voraussetzung: Scheibe 1 (gebaut 28.08.2026) traegt im Betrieb. ⬜ Prio mittel
+Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur als fluechtige GV-Hypothese; `ziel_typ='kurzfristig'` kommt in der `ziele`-Tabelle nicht vor. Scheibe 2 des Lage-Konzepts: Aus zwei Sachlagen derselben Session mit demselben Nutzerziel entsteht ein kurzfristiges Ziel mit Verfall in Stunden; es laeuft ohne weiteren Bau durch die bestehende Gravitation in den `[GEDANKEN]`-Block. ZIEL/TEST/MESSUNG stehen in `novaberg-thinking-lage_k.md` §4. Voraussetzung: Scheibe 1 (gebaut 28.08.2026) traegt im Betrieb — **belegt am 28.08.2026, 16:05 UTC** (fuenf Turns, sechs Protokollzeilen, Fortschreibung ueber alle fuenf; Konzept §4). ⬜ Prio mittel
 
 **Zusammenhang:** SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND (Leser der Ziele) · Drive-Epic Phase 3.
 

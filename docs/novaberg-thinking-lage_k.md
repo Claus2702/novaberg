@@ -132,6 +132,8 @@ Der Knoten (Arbeitsname `lage`) läuft im CharacterGraph vor dem Gesprächsvekto
 | **TEST** | Zeugen auf das Artefakt: Pflichtfelder immer belegt; akutes Objekt trägt offene Eigenschaften, latentes keine; die Fortschreibung deckt Eigenschaften aus Folgeturns; Parser-Ausfall ist laut (kein leeres `lage` ohne Log-Zeile). |
 | **MESSUNG** | Laborlauf gegen den Knoten direkt (nicht über den vollen Pfad — Alltagssätze lösen im Produktivpfad echte Schreibungen aus): 10 feste Äußerungen, je erwartete Akutheit und Objektklasse, dazu die Dauer des Calls. |
 
+**Betriebsmessung am 28.08.2026, 15:30–16:06 UTC** (`labor/2026-08-28_sachlage_erster_zeuge.py`): fünf kurze Turns über `/chat` gegen den laufenden Server, ein Thema, fortlaufend. **6 Protokollzeilen `node='sachlage'`** — fünf gerechnete (`frisch`, dann viermal `fortgeschrieben`) und eine `impuls_uebernommen` für eine Zustellung im fünften Fenster. Die Fortschreibung hält über alle fünf Turns ein Objekt und deckt Eigenschaften 1 → 4; ab Turn 4 tritt ein zweites akutes Objekt hinzu. Dauer je Call im Betrieb 2,7–3,9 s (Labor: 2,1 s Median). Keine Schreibung in `fakten`, `notizen`, `ziele`, `wissensluecken`. **Beobachtung:** Eine offene Eigenschaft blieb offen, nachdem Nova sie im selben Turn beantwortet hatte — die Fortschreibung liest Deckung aus Nutzer-Äußerungen, nicht aus den Antworten (Fundliste 28.08.). Für Scheibe 3 ist das eine Frage, keine Fußnote.
+
 ### Scheibe 2 — das kurzfristige Ziel
 
 `ziel_typ='kurzfristig'` in der bestehenden `ziele`-Tabelle. Entsteht, wenn Lagen derselben Session wiederholt auf dasselbe Nutzerziel zeigen (*Kräuterbeet*); verfällt in Stunden statt Tagen. Läuft durch die bestehende Gravitation und erscheint damit ohne weiteren Bau im `[GEDANKEN]`-Block.
@@ -152,7 +154,7 @@ Die Rückfrage-Zeile des Verfassers (`ei/haltungssprache.py::_rueckfragenzeile`,
 | **TEST** | Zeugen auf die Zeile: Bei akutem Objekt und fragender Haltung nennt sie dessen offene Eigenschaft; bei niedriger `fragen`-Haltung nennt sie trotz offener Eigenschaften keine — die Lage erzeugt keine Frage an der Haltung vorbei; ohne akutes Objekt steht die Art-Vorgabe wie heute. |
 | **MESSUNG** | Die Schauspielerprobe-Anordnung vom 27.08.2026 (fester Prompt-Aufbau, T=0,0, Vergleichsarme mit/ohne Lage) über die 10 Äußerungen der Scheibe-1-Messung: Anteil der Schlussfragen, die eine offene Eigenschaft oder ein Ziel adressieren, vorher gegen nachher. |
 
-**Reihenfolge ist Abhängigkeit:** 2 und 3 lesen nur, was 1 erzeugt. Nach Scheibe 1 wird gemessen, bevor 2 begonnen wird — trägt die Lage nicht, sind 2 und 3 gegenstandslos.
+**Reihenfolge ist Abhängigkeit:** 2 und 3 lesen nur, was 1 erzeugt. Nach Scheibe 1 wird gemessen, bevor 2 begonnen wird — trägt die Lage nicht, sind 2 und 3 gegenstandslos. **Gemessen am 28.08.2026 im Betrieb: sie trägt** (Betriebsmessung unter Scheibe 1).
 
 ---
 
