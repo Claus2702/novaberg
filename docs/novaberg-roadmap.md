@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **21:35 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **22:09 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,10 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 22:09 UTC — Das Ziele-Panel zeigt nur noch lebende Ziele
+
+*„Ich moechte bitte diese lange Liste der verfallenen Ziele aus dem Tab Ziele & Antrieb weg haben."* `GET /drive/goals` liefert aktiv und inaktiv — beim Paar 330 langfristige Ziele, davon **eines** aktiv, und 9 mittelfristige, 4 aktiv; das Panel zeichnete jede inaktive Zeile durchgestrichen. `client/ui/panels/goals_panel.py::_build_section` zeigt seither nur die aktiven als Karten und darunter eine Zaehlzeile (»329 inaktive Ziele ausgeblendet (verfallen oder abgeloest)«). Der Endpoint ist unveraendert — die Zahl bleibt lesbar, der Tab wird leer. Kompiliert; kein Zeuge (der Client hat keine), der Zeuge ist der Tab beim Master.
 
 ## 28.08.2026, 21:35 UTC — Der Gespraechskontext im Client: die fuenf Scheiben in einem Tab
 

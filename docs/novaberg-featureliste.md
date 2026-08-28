@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 28. August 2026, 21:35 UTC (`date -u`; Gesprächskontext-Panel — die fünf Scheiben im Client). Davor 21:06 UTC (Scheibe 3 der Lage — die Rückfrage trägt ihren Gegenstand). Davor 20:44 UTC (Scheibe 5, die Wiederaufnahme, mit Betriebszeuge). Davor 20:29 UTC (`thema` benennt die Sache — Lage Scheibe 4). Davor 20:15 UTC (Verlaufsfenster des Sachlage-Prompts — Lage Scheibe 1). Davor 19:56 UTC (Verfall der Ziele beim Lesen gerechnet — Dual-Emotion Phase 3). Davor 18:55 UTC (nachgemessen — die erste Fassung trug eine geschaetzte Zeit)
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 91 Eintraege, juengster zuerst
+**Stand:** 28. August 2026, 22:09 UTC (`date -u`; Ziele-Panel ohne die inaktiven Karten). Davor 21:35 UTC (Gesprächskontext-Panel — die fünf Scheiben im Client). Davor 21:06 UTC (Scheibe 3 der Lage — die Rückfrage trägt ihren Gegenstand). Davor 20:44 UTC (Scheibe 5, die Wiederaufnahme, mit Betriebszeuge). Davor 20:29 UTC (`thema` benennt die Sache — Lage Scheibe 4). Davor 20:15 UTC (Verlaufsfenster des Sachlage-Prompts — Lage Scheibe 1). Davor 19:56 UTC (Verfall der Ziele beim Lesen gerechnet — Dual-Emotion Phase 3). Davor 18:55 UTC (nachgemessen — die erste Fassung trug eine geschaetzte Zeit)
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 92 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -361,7 +361,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Charakter-Panel** (5 Profile) | 🟢 | `panels/character_panel.py` `[Code]` | — |
 | **GV-Panel** | 🟠 | `panels/gv_panel.py` `[Code]` | Dreischicht-Felder visualisieren offen |
 | **Gesprächskontext-Panel** (die fünf Scheiben der Lage) | 🟡 | `panels/sachlage_panel.py` + `GET /drive/kontext` (`api/drive.py::kontext_lesen`, `memory/sachlage_history.py::history_recent`) `[Code]`, 3 Zeugen, Gegenprobe 4/4; Endpoint gegen den echten Bestand geprüft 28.08.2026 21:30 UTC (Blase, Strecke 2/2 → Ziel, zwei Kurzziele mit Live-Motivation und Restlaufzeit, 7 Verlaufszeilen). **Das Panel existierte seit dem Morgen, stand aber nicht in `_TOOLBAR_PANELS`** — seit 28.08. abends als Tab »🫧 Gesprächskontext« erreichbar | Client-Zeuge (der Tab im laufenden Client) ausstehend; die Brücke einer Zustellung ist nicht persistiert und wird nicht angezeigt |
-| **KZG-/LZG-/Session-/Ziele-Panel** | 🟢 | vier Panels `[Code]` | — |
+| **KZG-/LZG-/Session-/Ziele-Panel** | 🟢 | vier Panels `[Code]`. **Ziele-Panel seit 28.08.2026 22:09 UTC:** nur aktive Ziele als Karten, die inaktiven als Zählzeile (»330 inaktive Ziele ausgeblendet«) — der Tab war voller Streichungen (`panels/goals_panel.py::_build_section`; Bestand des Paares: 330 langfristige, 1 aktiv; 9 mittelfristige, 4 aktiv) | — |
 | **Gravitationskarte** | 🟢 | `panels/gravity_map_panel.py` `[Code]` | Turn-Dashboard mit Mikrosternen `[Doku]` offen |
 | **System-Panel + StatusBar** | 🟢 | `[Code]` | `LOG-TUERKLINGEL` (Warn-/Fehlerlampen) offen |
 | **Offene Frage sichtbar machen** | ⚫ | `CLIENT-OFFENE-FRAGE-UNSICHTBAR` `[Doku]` | alles |
@@ -498,6 +498,8 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **28. August 2026, 22:09 UTC** — **Keine Ampel wechselt; das Ziele-Panel zeigt nur noch Lebendes.** 329 durchgestrichene langfristige Ziele fuellten den Tab; jetzt eine Zaehlzeile.
 
 - **28. August 2026, 21:35 UTC** — **Eine Ampel neu auf 🟡: das Gespraechskontext-Panel.** Die fuenf Scheiben der Lage in einem Tab — Blase mit Verfall, Objekte mit Strecke und ★-Frage-Gegenstand, Kurzziele mit Live-Motivation, Verlauf der Blasen; ein Endpoint `GET /drive/kontext`. Das Scheibe-1-Panel vom Morgen hing nie in der Toolbar. Suite 2491 gruen.
 
