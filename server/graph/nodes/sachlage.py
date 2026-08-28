@@ -599,6 +599,43 @@ def sachlage_block(sachlage: dict) -> str:
     return "\n".join(zeilen)
 
 
+# Der Zielsatz des kurzfristigen Ziels traegt das Vorhaben woertlich hinter
+# diesem Praefix (`memory/kurzziel.py::build_short_goal_sentence`).
+_KURZZIEL_PRAEFIX: str = "Ich möchte dem Nutzer bei seinem Vorhaben helfen: "
+
+
+def question_target(sachlage: dict, aktivierte_ziele: list[dict] | None = None) -> str | None:
+    """Scheibe 3: der Gegenstand, den die Rueckfrage des Verfassers bekommt.
+
+    Die Reihenfolge ist die des Konzepts (`novaberg-thinking-lage_k.md` §4,
+    Scheibe 3): die wichtigste offene Eigenschaft eines akuten Objekts —
+    `offen` ist im Prompt nach Wichtigkeit geordnet, also die erste —, sonst
+    der naechste Schritt zum beruehrten Ziel, und das ist das kurzfristige
+    (es entstand aus derselben Blase). Novas eigene mittel- und
+    langfristigen Ziele sind kein Gegenstand fuer eine Frage an den Nutzer.
+
+    Rein: kein Modell, kein Zustand. **Die Haltung bleibt der Regler** —
+    ob aus dem Gegenstand eine Frage wird, entscheidet die Rueckfrage-Zeile
+    (`ei/haltungssprache.py::_rueckfragenzeile`), nicht diese Funktion.
+
+    Vorbedingung: `sachlage` ist ein Artefakt (auch leer); `aktivierte_ziele`
+        die Dicts aus dem Zustand oder None.
+    Nachbedingung: Ein Satzstueck (»Geburtstag — was dazu noch offen ist:
+        wer« / »wie es mit Umlaufzeitberechnung weitergeht«) oder None.
+    Fehlerfaelle: keine — ein fehlender Gegenstand ist ein regulaerer Fall.
+    """
+    for objekt in sachlage.get("objekte") or []:
+        if objekt.get("akut") and objekt.get("offen"):
+            return f"{objekt.get('name', '')} — was dazu noch offen ist: {objekt['offen'][0]}"
+    for ziel in aktivierte_ziele or []:
+        if ziel.get("ziel_typ") == "kurzfristig":
+            satz: str = str(ziel.get("zielsatz", ""))
+            vorhaben: str = satz.split(_KURZZIEL_PRAEFIX, 1)[-1].split(" — ", 1)[0].strip()
+            if vorhaben:
+                return f"wie es mit {vorhaben} weitergeht"
+    return None
+
+
 def sachlage_assess(state: dict) -> dict:
     """Der Knoten: laedt, schreibt fort, protokolliert.
 

@@ -21,6 +21,10 @@ Zeugen dieser Datei:
   * **Die Verdrahtung ist ein eigener Zeuge.** Ein Knoten, der rechnet und
     dessen Ergebnis niemand liest, war der Defekt der Frage-Art vom
     27.08.2026 — der Graph traegt die Kante, der Verfasser den Block.
+  * **Der Frage-Gegenstand** (Scheibe 3, 28.08.2026): `question_target` ist
+    rein — die wichtigste offene Eigenschaft des ersten akuten Objekts, sonst
+    das Vorhaben des kurzfristigen Ziels, sonst nichts; latente Objekte
+    liefern keinen. Der Verfasser reicht ihn in die Rueckfrage-Zeile.
   * **Die Wiederaufnahme** (Scheibe 5, 28.08.2026): Auf dem rechnenden Weg
     sucht der Knoten mit dem Prompt-Embedding die aehnlichste fruehere
     Blase des Paares — unter Ausschluss des eigenen Themas —, gibt sie dem
@@ -41,8 +45,9 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
+from config import SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS
 from graph.nodes.sachlage import (
     HERKUNFT_AUSFALL,
     HERKUNFT_FORTGESCHRIEBEN,
@@ -52,10 +57,10 @@ from graph.nodes.sachlage import (
     _derive,
     _render_history,
     _validate_artifact,
+    question_target,
     sachlage_assess,
     sachlage_block,
 )
-from config import SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS
 
 VOLLSTAENDIG: dict = {
     # `thema` ist seit Scheibe 4 (28.08.2026) Pflichtfeld — der Anzeigename
@@ -278,7 +283,8 @@ class DerVerlaufTraegtNovasAntwortTest(unittest.TestCase):
 
         with patch("graph.nodes.sachlage.model_service") as ms:
             ms.chat.submit_sync.side_effect = _fang
-            _derive(None, [{"rolle": "assistant", "inhalt": "Wasser treibt das Wurzelwachstum."}], "Stimmt das?")
+            _derive(None, [{"rolle": "assistant", "inhalt": "Wasser treibt das Wurzelwachstum."}],
+                    "Stimmt das?")
 
         self.assertIn("Nova: Wasser treibt das Wurzelwachstum.", gesehen["prompt"])
         self.assertIn("Nova", gesehen["prompt"].split("Regeln:")[1])
@@ -378,9 +384,9 @@ class DieWiederaufnahmeTest(unittest.TestCase):
 
         with patch("graph.nodes.sachlage.model_service") as ms:
             ms.chat.submit_sync.side_effect = _fang
-            _derive(dict(VOLLSTAENDIG), [], "Nochmal zurueck zur Gravitationslinse", wiederaufnahme=FRUEHERE)
+            _derive(dict(VOLLSTAENDIG), [], "Nochmal zurueck", wiederaufnahme=FRUEHERE)
             mit: str = gesehen["prompt"]
-            _derive(dict(VOLLSTAENDIG), [], "Nochmal zurueck zur Gravitationslinse", wiederaufnahme=None)
+            _derive(dict(VOLLSTAENDIG), [], "Nochmal zurueck", wiederaufnahme=None)
             ohne: str = gesehen["prompt"]
 
         self.assertIn("Raumkruemmung", mit)
@@ -407,6 +413,65 @@ class DieWiederaufnahmeTest(unittest.TestCase):
         self.assertIn("Gravitationslinse", block)
         self.assertIn("zurueck", block.lower().replace("ü", "ue"))
         self.assertNotIn("zurueck", sachlage_block(dict(VOLLSTAENDIG)).lower().replace("ü", "ue"))
+
+
+class DerFrageGegenstandTest(unittest.TestCase):
+    """Scheibe 3 — woher die Rueckfrage ihren Gegenstand bekommt."""
+
+    def test_die_wichtigste_offene_eigenschaft_des_akuten_objekts(self) -> None:
+        self.assertEqual(question_target(VOLLSTAENDIG), "Geburtstag — was dazu noch offen ist: wer")
+
+    def test_ein_latentes_objekt_liefert_keinen(self) -> None:
+        latent = {**VOLLSTAENDIG, "objekte": [
+            {"name": "Rasen", "klasse": "objekt", "akut": False, "gedeckt": {}, "offen": ["Sorte"]},
+        ]}
+        self.assertIsNone(question_target(latent))
+
+    def test_ein_akutes_objekt_ohne_offene_eigenschaft_liefert_keinen(self) -> None:
+        gedeckt = {**VOLLSTAENDIG, "objekte": [
+            {"name": "Geburtstag", "klasse": "vorgang", "akut": True,
+             "gedeckt": {"wer": "Schwester"}, "offen": []},
+        ]}
+        self.assertIsNone(question_target(gedeckt))
+
+    def test_das_erste_akute_objekt_mit_offener_eigenschaft_zaehlt(self) -> None:
+        zwei = {**VOLLSTAENDIG, "objekte": [
+            {"name": "Rasen", "klasse": "objekt", "akut": False, "gedeckt": {}, "offen": []},
+            {"name": "Geburtstag", "klasse": "vorgang", "akut": True, "gedeckt": {}, "offen": []},
+            {"name": "Geschenk", "klasse": "objekt", "akut": True, "gedeckt": {},
+             "offen": ["Budget", "Idee"]},
+        ]}
+        self.assertEqual(question_target(zwei), "Geschenk — was dazu noch offen ist: Budget")
+
+    def test_ohne_offene_eigenschaft_traegt_das_kurzfristige_ziel(self) -> None:
+        ohne = {**VOLLSTAENDIG, "objekte": []}
+        ziele = [{"ziel_typ": "mittelfristig", "zielsatz": "Ich möchte Vögel verstehen"},
+                 {"ziel_typ": "kurzfristig",
+                  "zielsatz": "Ich möchte dem Nutzer bei seinem Vorhaben helfen: "
+                              "Umlaufzeitberechnung — Der Nutzer will …"}]
+        self.assertEqual(question_target(ohne, ziele), "wie es mit Umlaufzeitberechnung weitergeht")
+
+    def test_ohne_beides_gibt_es_keinen_gegenstand(self) -> None:
+        self.assertIsNone(question_target({**VOLLSTAENDIG, "objekte": []}, [
+            {"ziel_typ": "mittelfristig", "zielsatz": "Ich möchte Vögel verstehen"},
+        ]))
+        self.assertIsNone(question_target({}, None))
+
+
+class DerVerfasserReichtDenGegenstandDurchTest(unittest.TestCase):
+    """Die Verdrahtung, am gebauten Prompt gemessen — nicht am Quelltext."""
+
+    def test_die_rueckfrage_zeile_traegt_den_gegenstand(self) -> None:
+        from ei.haltung import haltung_berechnen
+        from graph.nodes.verfasser import _build_system_prompt
+
+        haltung = haltung_berechnen("werkstatt", {"wissbegier": 0.87, "aufmerksamkeit": 0.91})
+        prompt: str = _build_system_prompt(_state(
+            sachlage={**VOLLSTAENDIG, "herkunft": HERKUNFT_FRISCH}, haltung=haltung,
+        ))
+
+        zeile = next(z for z in prompt.splitlines() if z.startswith("Rueckfrage: "))
+        self.assertIn("Geburtstag — was dazu noch offen ist: wer", zeile)
 
 
 class DieVerdrahtungStehtTest(unittest.TestCase):

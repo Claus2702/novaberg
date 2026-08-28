@@ -405,9 +405,21 @@ def _build_system_prompt(state: ConversationState) -> str:
         intentionen: tuple[str, ...] = () if eigener else tuple(
             state.get("user_intentionen") or (),
         )
+        # Scheibe 3 des Lage-Konzepts: Die Rueckfrage bekommt ihren Gegenstand
+        # aus der Sachlage — die wichtigste offene Eigenschaft eines akuten
+        # Objekts oder das Vorhaben des kurzfristigen Ziels. Ob daraus eine
+        # Frage wird, entscheidet weiter die Haltung in der Zeile selbst.
+        from graph.nodes.sachlage import question_target
+        gegenstand: str | None = question_target(
+            sachlage, state.get("aktivierte_ziele") or [],
+        )
+        logger.info(
+            f"Verfasser: Rueckfrage-Gegenstand: "
+            f"{gegenstand[:80] if gegenstand else 'keiner'}"
+        )
         teile.append(
             "[MASS]\n" + "\n".join(
-                stoffzeilen(haltung, reiz_zeichen, intentionen),
+                stoffzeilen(haltung, reiz_zeichen, intentionen, gegenstand),
             ),
         )
 

@@ -159,3 +159,34 @@ class DieTabellenBleibenDeckungsgleichTest(unittest.TestCase):
         self.assertEqual(CLUSTER_FRAGEN["nebel"], "Keine")
         self.assertEqual(CLUSTER_FRAGEN["gewitter"],
                          "Keine — Spiegelung, keine Fragen")
+
+
+class DieRueckfrageBekommtIhrenGegenstandTest(unittest.TestCase):
+    """Scheibe 3 des Lage-Konzepts: Die Zeile nennt, wonach gefragt wird.
+
+    Gemessen 27./28.08.2026: 2,2 Fragen je Turn, 100 % Frage-Enden, und die
+    Antwort auf »Licht oder Wasser?« bestand aus vier Rueckfragen — eine
+    Vorgabe ohne Gegenstand erzeugt Floskeln. **Die Haltung bleibt der
+    Regler:** Wo sie keine Frage zulaesst, erzeugt auch ein Gegenstand keine.
+    """
+
+    GEGENSTAND: str = "Geburtstag — was dazu noch offen ist: wer"
+
+    def _zeile(self, cluster: str, gegenstand: str | None) -> str:
+        haltung = haltung_berechnen(cluster, RAD_FRAGEND)
+        return stoffzeilen(haltung, reiz_zeichen=120, intentionen=(), gegenstand=gegenstand)[1]
+
+    def test_mit_gegenstand_nennt_die_zeile_ihn_hinter_menge_und_art(self) -> None:
+        zeile = self._zeile("werkstatt", self.GEGENSTAND)
+
+        self.assertIn("Rueckfrage, die nachhakt", zeile)
+        self.assertIn("analytisch", zeile)
+        self.assertTrue(zeile.endswith(f"ihr Gegenstand: {self.GEGENSTAND}."), zeile)
+
+    def test_die_haltung_bleibt_der_regler(self) -> None:
+        """`gewitter` laesst keine Frage zu — der Gegenstand aendert daran nichts."""
+        self.assertEqual(self._zeile("gewitter", self.GEGENSTAND), "Rueckfrage: keine Rueckfrage.")
+
+    def test_ohne_gegenstand_steht_die_zeile_wie_bisher(self) -> None:
+        self.assertEqual(self._zeile("werkstatt", None), _rueckfragenzeile("werkstatt"))
+        self.assertNotIn("Gegenstand", self._zeile("werkstatt", None))

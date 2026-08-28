@@ -381,8 +381,17 @@ def stoff_band(groesse: str, wert: float) -> str:
 KEINE_RUECKFRAGE: str = STOFF_BAENDER["fragen"][0][1]
 
 
-def _rueckfragenzeile(haltung: Haltung) -> str:
-    """Die Rueckfrage-Zeile — Menge UND Art, in einer Zeile.
+def _rueckfragenzeile(haltung: Haltung, gegenstand: str | None = None) -> str:
+    """Die Rueckfrage-Zeile — Menge, Art UND Gegenstand, in einer Zeile.
+
+    **Der Gegenstand kam am 28.08.2026 dazu (Scheibe 3 des Lage-Konzepts).**
+    Menge und Art allein erzeugten weiter Floskeln: 2,2 Fragen je Turn,
+    100 % Frage-Enden, und auf »Licht oder Wasser?« kamen vier Rueckfragen
+    ohne Antwort. Der Gegenstand ist die wichtigste offene Eigenschaft eines
+    akuten Objekts der Sachlage oder das Vorhaben des kurzfristigen Ziels
+    (`graph/nodes/sachlage.py::question_target`). **Die Haltung bleibt der
+    Regler:** Bei »keine Rueckfrage« entfaellt er wie die Art — die Lage
+    erzeugt keine Frage an der Haltung vorbei.
 
     **Die Art stand bis zum 27.08.2026 nirgends im Auftrag des Verfassers.**
     Sie lag in `CLUSTER_FRAGE_ART` und lief ausschliesslich in den
@@ -403,8 +412,9 @@ def _rueckfragenzeile(haltung: Haltung) -> str:
     Frage, die eine Art haben koennte.
 
     Vorbedingung: `haltung` traegt `fragen` und einen Cluster mit Eintrag in
-        `CLUSTER_FRAGE_ART`.
-    Nachbedingung: eine Zeile, die mit "Rueckfrage: " beginnt.
+        `CLUSTER_FRAGE_ART`; `gegenstand` ist ein Satzstueck oder None.
+    Nachbedingung: eine Zeile, die mit "Rueckfrage: " beginnt; mit
+        Gegenstand endet sie auf »ihr Gegenstand: …«.
     Fehlerfaelle: fehlender Cluster-Eintrag — laute Warnung, Menge allein.
         Ein stilles Weglassen waere von "keine Rueckfrage" nicht zu
         unterscheiden.
@@ -415,18 +425,20 @@ def _rueckfragenzeile(haltung: Haltung) -> str:
     if menge == KEINE_RUECKFRAGE:
         return f"Rueckfrage: {menge}."
 
+    anhang: str = f" — ihr Gegenstand: {gegenstand}" if gegenstand else ""
     art: str = CLUSTER_FRAGE_ART.get(haltung.cluster, "")
     if not art:
         logger.warning(
             f"_rueckfragenzeile: Landschaft '{haltung.cluster}' ohne "
             f"hinterlegte Frage-Art — die Frage entsteht ohne Vorgabe"
         )
-        return f"Rueckfrage: {menge}."
-    return f"Rueckfrage: {menge}, und zwar {art}."
+        return f"Rueckfrage: {menge}{anhang}."
+    return f"Rueckfrage: {menge}, und zwar {art}{anhang}."
 
 
 def stoffzeilen(
     haltung: Haltung, reiz_zeichen: int, intentionen: tuple[str, ...],
+    gegenstand: str | None = None,
 ) -> list[str]:
     """Die fachliche Vorgabe fuer den Verfasser: Menge, Rueckfrage, Vorschlag.
 
@@ -451,6 +463,7 @@ def stoffzeilen(
         haltung: das Ergebnis der Haltungsrechnung dieses Turns.
         reiz_zeichen: Laenge der Nutzeraeusserung in Zeichen.
         intentionen: die erhobenen Intentionen des Turns.
+        gegenstand: der Frage-Gegenstand aus der Sachlage (Scheibe 3) oder None.
 
     Returns:
         Drei Zeilen fuer den Auftrag des Verfassers.
@@ -472,7 +485,7 @@ def stoffzeilen(
     zeilen: list[str] = [
         f"Menge: Stoff fuer {unten} bis {oben} Zeichen Rede. Mehr wird nicht "
         f"gesagt, sondern gestrichen.",
-        _rueckfragenzeile(haltung),
+        _rueckfragenzeile(haltung, gegenstand),
         f"Vorschlag: {stoff_band('draengen', haltung.werte['draengen'].ergebnis)}.",
     ]
 
