@@ -25,8 +25,68 @@ from config import (
     GV_TIEFE_MODUS,
 )
 from ei.utils import modus_pruefen
+from graph.personality import Raum
 
 logger = logging.getLogger("ki_server.ei.raum")
+
+
+def raum_neutralisieren(raum: Raum, alter_sekunden: float,
+                        spanne_sekunden: float) -> tuple[Raum, float]:
+    """Zieht einen liegengebliebenen Raum auf die Vorgabewerte zurueck.
+
+    **Der Raum ueberlebt den Turn — bis zum 27.08.2026 ueberlebte er auch die
+    Nacht.** Er liegt in `redis:nova_state` und wurde beim naechsten Turn
+    unveraendert gelesen, gleich ob eine Minute oder ein Tag vergangen war.
+    Gemessen: Auf ein blosses »Hey Kleines« nach 25 Stunden Pause setzten
+    `raum_naehe` 0,59 und `raum_tiefe` 0,32 vom Vorabend zwei der sechs
+    GV-Achsen, und der Turn landete in `kissenschlacht`.
+
+    **Gezogen wird auf den Kaltstart, nicht auf Null.** `Raum()` ohne
+    Argumente ist der Zustand, den das System selbst als *keine Information*
+    fuehrt — tiefe 0.3, naehe 0.5. Ein Rueckfall auf Null waere eine Aussage
+    (»fern und flach«), die niemand gemessen hat.
+
+    **Linear und stetig.** Nach `spanne_sekunden` ist der Raum am
+    Vorgabewert; davor anteilig. Eine Frist mit hartem Schnitt haette an
+    ihrer Kante aus einer Sekunde einen Zustandswechsel gemacht — dieselbe
+    Haerte, die `uebersteuerungs_zug` in `ei/haltung.py` vermeidet.
+
+    Vorbedingung: `alter_sekunden` >= 0, `spanne_sekunden` > 0.
+    Nachbedingung: (Raum, Anteil). Der Anteil liegt in [0, 1] und sagt, wie
+        weit neutralisiert wurde — er gehoert in die Log-Zeile, sonst ist ein
+        neutralisierter Raum von einem frisch neutralen nicht zu
+        unterscheiden.
+    Fehlerfaelle: `spanne_sekunden` <= 0 (ValueError). Ein stilles Passieren
+        waere eine Division durch Null oder eine wirkungslose Funktion.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if spanne_sekunden <= 0:
+        raise ValueError(
+            f"raum_neutralisieren: Spanne {spanne_sekunden} ist nicht positiv "
+            "— die Neutralisierung haette keinen Verlauf"
+        )
+    if alter_sekunden < 0:
+        logger.warning(
+            "raum_neutralisieren: Alter %.1f s ist negativ — Uhr oder "
+            "Zeitstempel stimmen nicht; als frisch behandelt", alter_sekunden,
+        )
+        alter_sekunden = 0.0
+
+    # ── Verarbeitung ────────────────────────────
+    anteil: float = min(alter_sekunden / spanne_sekunden, 1.0)
+    vorgabe: Raum = Raum()
+    neu = Raum(
+        tiefe = round(raum.tiefe + (vorgabe.tiefe - raum.tiefe) * anteil, 2),
+        naehe = round(raum.naehe + (vorgabe.naehe - raum.naehe) * anteil, 2),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if anteil >= 1.0 and (neu.tiefe, neu.naehe) != (vorgabe.tiefe, vorgabe.naehe):
+        raise ValueError(
+            f"raum_neutralisieren: voll neutralisiert, aber "
+            f"({neu.tiefe}, {neu.naehe}) != ({vorgabe.tiefe}, {vorgabe.naehe})"
+        )
+    return neu, anteil
 
 
 def raum_ziehen(

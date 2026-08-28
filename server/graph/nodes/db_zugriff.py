@@ -26,14 +26,19 @@ import logging
 import time
 from dataclasses import dataclass, replace
 
-from config import ASSISTANT_USER_ID, POSTGRES_URL, redis_client
+from config import (
+    ASSISTANT_USER_ID,
+    GV_RAUM_NEUTRAL_SEKUNDEN,
+    POSTGRES_URL,
+    redis_client,
+)
 from ei.eigenzeit import (
     KATEGORIE_NEUTRAL,
     arousal_daempfen,
     kategorien_gesprungen,
     verfall_faktor,
 )
-from ei.raum import raum_ziel_bestimmen
+from ei.raum import raum_neutralisieren, raum_ziel_bestimmen
 from graph.personality import (
     Character,
     Emotion,
@@ -265,8 +270,45 @@ def _raum_aus_nova_state(roh: dict, emotion: Emotion) -> tuple[Raum, bool]:
         )
         return _raum_aus_labels(emotion), False
 
+    # ── Verarbeitung: Neutralisierung ───────────
+    # **Der Raum ueberlebte bis zum 27.08.2026 auch die Nacht.** Gemessen:
+    # Auf ein »Hey Kleines« nach 25 Stunden Pause setzten `raum_naehe` 0,59
+    # und `raum_tiefe` 0,32 vom Vorabend zwei der sechs GV-Achsen.
+    #
+    # **Ohne Zeitstempel wird nicht neutralisiert, aber laut gemeldet.** Die
+    # Gegenrichtung — »kein Stempel, also uralt« — waere eine Aussage ueber
+    # ein Alter, das niemand kennt, und setzte jeden Bestandsraum ohne
+    # Vorwarnung zurueck.
+    stempel: str = roh.get("turn_zeit", "")
+    if not stempel:
+        logger.error(
+            "db_zugriff: nova_state ohne 'turn_zeit' — Raum wird NICHT "
+            "neutralisiert. Das ist ein Ausfall, keine Frischemeldung."
+        )
+        return geladen, True
+
+    try:
+        alter: float = time.time() - float(stempel)
+    except (ValueError, TypeError) as fehler:
+        logger.exception(
+            "%s: db_zugriff: 'turn_zeit' unlesbar ('%s') — Raum NICHT "
+            "neutralisiert", type(fehler).__name__, stempel,
+        )
+        return geladen, True
+
+    neutral, anteil = raum_neutralisieren(
+        geladen, alter, GV_RAUM_NEUTRAL_SEKUNDEN,
+    )
+    if anteil > 0.0:
+        logger.info(
+            "db_zugriff: Raum um %.0f %% neutralisiert (%.0f s alt, Spanne "
+            "%.0f s): tiefe %.2f -> %.2f, naehe %.2f -> %.2f",
+            anteil * 100, alter, GV_RAUM_NEUTRAL_SEKUNDEN,
+            geladen.tiefe, neutral.tiefe, geladen.naehe, neutral.naehe,
+        )
+
     # ── Ausgabe ─────────────────────────────────
-    return geladen, True
+    return neutral, True
 
 
 def _nova_zustand_laden(

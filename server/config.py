@@ -2022,6 +2022,23 @@ GV_REGISTER_OFFEN_EMOTIONAL:     float = 1.20   # Emotionale Luecke in offenem R
 
 # ── GV5 — Dreischicht: Achsen-Schwellenwerte ──
 GV_ACHSE_ENERGIE_SCHWELLE:    float = 0.5   # arousal >= → hoch (1)
+# **Die Neutralisierung von Novas Raum** — eine Setzung des Meisters vom
+# 27.08.2026, keine Messung: *„Ich als Mensch bin auch nach x Stunden nicht
+# mehr so im Gespraech, auch ich falle zurueck."*
+#
+# **Der Anlass ist gemessen.** Auf ein blosses »Hey Kleines« nach 25 Stunden
+# Pause landete der Turn in der Landschaft `kissenschlacht` (Sektor 45). Zwei
+# der sechs Achsen — Naehe und Tiefe — stammten aus `nova_state`, geschrieben
+# am Vorabend; der Raum hatte keine Frist und war ueber Nacht keinen Deut
+# gealtert. Der `wollen`-Riegel prueft das Alter seines Zustands auf die
+# Sekunde (Grenze 86400 s); der Raum tat es nicht.
+#
+# **Neutralisierung, nicht Verfall.** Der Raum wird nicht verworfen, sondern
+# linear auf die Vorgabewerte gezogen — dieselben, die ein Kaltstart liefert
+# (`graph/personality.py::Raum`). Nach dieser Spanne ist er dort angekommen.
+GV_RAUM_NEUTRAL_SEKUNDEN:     float = float(
+    os.getenv("GV_RAUM_NEUTRAL_SEKUNDEN", "14400"))   # 4 Stunden
+
 GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
 GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)
 GV_ACHSE_INITIATIVE_VERH:     float = 1.5   # ⚠ ABGELOEST, siehe unten — nur noch fuer den Altpfad
