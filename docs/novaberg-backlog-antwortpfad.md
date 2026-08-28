@@ -230,7 +230,7 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Ein Testlauf fuer den Client ist nicht entstanden.
+**Zustand:** offen — nachgesehen am 28.08.2026. Ein Testlauf fuer den Client ist nicht entstanden. **Datenpunkt 28.08.2026, abends:** zwei Panel-Aenderungen (Gespraechskontext-Tab neu, Ziele-Panel ohne inaktive Karten) mit `py_compile` als einziger Pruefung; und das Kontext-Panel hing seit dem Morgen registriert, aber ohne Toolbar-Eintrag — ein Zeuge ueber `_TOOLBAR_PANELS` gegen die Registry haette es am Tag des Baus gefunden.
 
 **Befund (2026-08-01).** **Der Client hat keinen Testlauf, und die Zuordnungsprüfung liegt vollständig in ihm.** `_zuordnung_pruefen` in `client/ui/stream_handler.py` entscheidet über drei Ausgänge und ist die einzige Stelle, an der eine falsch zugeordnete Antwort auffällt — geprüft ist sie nur am laufenden Client, nicht von der Suite. Das Server-Abbild kann `client/` weder importieren (GTK-Abhängigkeiten) noch sehen (nicht gemountet). Derselbe blinde Fleck wie beim Impuls-Zweig, diesmal an einer Stelle mit Verzweigungslogik.
 
