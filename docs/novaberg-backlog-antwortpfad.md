@@ -974,3 +974,14 @@ Die Sachlage wird heute je Paar ueberschrieben (Redis, Verfall 4 h); die `pipeli
 **Zusammenhang:** SACHLAGE-SCHEIBE-2/3 · Zustellungs-Empathie (Anlass) · `F-EMBED-1`, `F-EMBED-2`, `F-VERFALL-1`, `F-SCHEMA-1`.
 
 ---
+
+
+## Feature: SACHLAGE-SCHEIBE-6-AUFLOESER — der Frame-Aufloeser gegen den Gedaechtnis-Pool des Turns (28.08.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ✅ **umgesetzt am 28.08.2026, spaet** — entworfen, gebaut und gemessen in einem Zug, der Entwurf dabei einmal widerlegt und geaendert. Beleg: `graph/nodes/sachlage_resolver.py` (`memory_offer`, `resolve_open_properties`, `apply_memory_coverage`, `carry_sources`), 28 Zeugen (`tests/test_sachlage_resolver.py`), Suite 2520 gruen, Gegenprobe 2 / 0→1 / 1 / 1 rot; Labor `labor/2026-08-28_sachlage_aufloeser_zwei_arme.py` (eigener Call: Arm A 5/5 richtig mit Quelle, Arm B 0/5 falsch; als Feld im Sachlage-Call davor 5/5, 0/5, 1/5, 1/5 je Fassung); Betrieb 23:00–23:03 UTC (zwei Turns: eine offene Eigenschaft aus dem KZG gedeckt, Quelle im `pipeline_log`, im Folgeturn geerbt; Seiteneffekte null). Konzept `novaberg-thinking-lage_k.md` §4 Scheibe 6, Pipeline-Konzept §11 (Schritt 3 in der Konversationsfassung). **Rest, als Rest benannt:** die gezielte Suche je offener Eigenschaft (der Pool ist mit dem Reiz gesucht); Fakten (0 Zeilen) und Notizen (Leser schreibt `last_touched`, Fundliste 28.08.) als Quellen; die Kritikalitaet einer Luecke (Pipeline §4.6); `SACHLAGE_BESTAND_MAX_EINTRAEGE` = 8 als Startwert; das Mass ueber die naechsten Betriebsturns — *wie oft war eine offene Eigenschaft im Bestand schon gedeckt.*
+
+Scheibe 3 fragt nach der wichtigsten offenen Eigenschaft eines akuten Objekts — auch wenn Nova die Antwort laengst hat: Die Sachlage wusste nur, was der Turn deckt. Der Bestand des Paares (28.08.2026, 22:32 UTC): `fakten` 0 Zeilen, `notizen` 1, `timeline` 40, `autonomous_wissen` **1012**, `lzg_knoten` 2910 — und der Enricher legt KZG, LZG, Bibliothek und Aufzeichnungen je Turn schon in den State. Der Aufloeser baut daraus ein nummeriertes Angebot (Kalender, Pool nach Gewicht, Aufzeichnungen; gekappt), laesst einen eigenen Call nur die offenen Eigenschaften dagegen halten und uebernimmt nur Antworten, die auf einen angebotenen Eintrag und eine offene Eigenschaft zeigen; die Eigenschaft wandert nach `gedeckt` und traegt in `quellen` Quelle, Herkunft und Nummer. Der Verfasser bekommt *»Dazu weiss Nova schon (aus ihrer Recherche): …«*, `question_target` uebergeht sie, der Kontext-Tab zeigt die Herkunft. Der Sachlage-Prompt bleibt zeichengleich. Preis: 1,2–1,8 s je Turn mit offenen Eigenschaften und Angebot.
+
+**Zusammenhang:** SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND (liest `offen`, uebergeht Gedecktes) · SACHLAGE-SCHEIBE-1 (das Artefakt traegt jetzt `quellen`) · FAKTEN-PAIR-IGNORED, NOTIZEN-PAIR-MISSING (die nicht befragten Quellen) · Pipeline-Konzept §4.3 (Zielbild), §4.6 (Kritikalitaet, offen).

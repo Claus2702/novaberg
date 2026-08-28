@@ -256,6 +256,7 @@ project/
 │   │       ├── emotionale_gravitation.py #     → novaberg-node-emotionale-gravitation.md (CG, zwischen Enricher und Reducer)
 │   │       ├── reducer.py               #     Dedupliziert memory_entries → memory_context (nur CG, seit Chat 75)
 │   │       ├── sachlage.py              #     → novaberg-thinking-lage_k.md (CG, reducer→sachlage_node→router: fortgeschriebenes Verstehen je Turn, seit 28.08.2026)
+│   │       ├── sachlage_resolver.py     #     → novaberg-thinking-lage_k.md §4 Scheibe 6 (der Frame-Auflöser: offene Eigenschaften gegen den Gedächtnis-Pool des Turns, eigener Call; seit 28.08.2026)
 │   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (rolle user/character)
 │   │       ├── ei_calc_persist.py       #     → novaberg-node-ei-calc-persist.md (CG-Ausgang, nova_state-Persistierung)
 │   │       ├── router.py                #     → novaberg-node-router.md

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **22:09 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **23:04 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,12 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 23:04 UTC — Scheibe 6 der Lage: der Frame-Aufloeser gegen den Gedaechtnis-Pool des Turns
+
+**Der Anlass:** Scheibe 3 fragt nach der wichtigsten offenen Eigenschaft — auch wenn Nova die Antwort laengst hat. Gemessen vor dem Bau: Der Fakten-Graph des Pipeline-Konzepts traegt fuer das Paar **0 Zeilen**, `notizen` 1, `timeline` 40; Novas Wissen liegt in `autonomous_wissen` (**1012**) und `lzg_knoten` (2910) — und der Enricher legt es je Turn schon in den State. **Der Bau:** `graph/nodes/sachlage_resolver.py` macht aus dem Pool ein nummeriertes Angebot (Kalender, dann Pool nach Gewicht, dann Aufzeichnungen; gekappt auf 8), ein **eigener Call** (`sachlage_aufloeser`, T = 0) haelt die offenen Eigenschaften der akuten Objekte dagegen, `apply_memory_coverage` uebernimmt nur Treffer auf angebotene Eintraege und offene Eigenschaften (vor oder nach dem Turn; Kurzform-Schluessel per Enthaltensein) und traegt `quellen`; `carry_sources` erbt sie ueber die Fortschreibung. Der Sachlage-Prompt ist zeichengleich mit dem davor. Verfasser-Block *»Dazu weiss Nova schon (aus …)«*, Kontext-Tab zeigt die Herkunft.
+
+**Der Entwurf wurde beim Messen widerlegt:** Als Feld im Sachlage-Call traf das Modell die richtige Eigenschaft je Fassung 5/5 (vom Beispiel »G2« angeschoben), 0/5, 1/5, 1/5 und beanspruchte Eigenschaften, die nie offen waren; als eigener Call **5/5 richtig, 0/5 falsch** (`labor/2026-08-28_sachlage_aufloeser_zwei_arme.py`). Die Gegenprobe fand einen Zeugen, der den Feldnamen statt des Felds prueft — und dahinter `{{` in einem Wert, der nicht mehr formatiert wird. **Betrieb 23:00 UTC:** eine offene Eigenschaft aus dem KZG gedeckt, im Folgeturn geerbt; 5,3 s samt Aufloeser. 28 Zeugen, Suite **2520 gruen**, Gegenprobe 2/0→1/1/1, Linter 1217 → 1220, Wand sauber. Backlog `SACHLAGE-SCHEIBE-6-AUFLOESER` ✅; Fundliste: Notizen-Leser schreiben beim Lesen.
 
 ## 28.08.2026, 22:09 UTC — Das Ziele-Panel zeigt nur noch lebende Ziele
 

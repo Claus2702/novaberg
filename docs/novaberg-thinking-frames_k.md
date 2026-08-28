@@ -156,7 +156,7 @@ Die alten Beispiele aus dem Chat-80-Stand (*Anna ist nett heute* vs. *Anna wohnt
 
 ---
 
-**Stand 28.08.2026:** Die Konversationsfassung ist gebaut — der Sachlage-Knoten (`novaberg-thinking-lage_k.md` §3) erhebt je Turn Objekte mit Frame-Klasse (§3.1), Akutheit (§4, latent ohne offene Slots: §4.3 als Prüfung im Code) und gedeckten/offenen Slots aus dem Turn und aus Novas Antworten. **Ohne Frame-Lager (§7, §9)**: Die typischen Eigenschaften einer Sache erfindet das Modell je Turn neu — »Geburtstag« bekam einmal `wer`, einmal `Anlass`. Validierung (§5) und Plausibilität (§6) sind nicht gebaut.
+**Stand 28.08.2026:** Die Konversationsfassung ist gebaut — der Sachlage-Knoten (`novaberg-thinking-lage_k.md` §3) erhebt je Turn Objekte mit Frame-Klasse (§3.1), Akutheit (§4, latent ohne offene Slots: §4.3 als Prüfung im Code) und gedeckten/offenen Slots aus dem Turn und aus Novas Antworten. **Ohne Frame-Lager (§7, §9)**: Die typischen Eigenschaften einer Sache erfindet das Modell je Turn neu — »Geburtstag« bekam einmal `wer`, einmal `Anlass`. Validierung (§5) und Plausibilität (§6) sind nicht gebaut. **Seit dem 28.08.2026, spät, werden offene Slots gegen den Bestand gehalten** (Frame-Auflöser in der Konversationsfassung, `novaberg-thinking-lage_k.md` §4 Scheibe 6): ein eigener Call prüft je akutem Objekt, ob ein Eintrag aus KZG, LZG, Bibliothek, Aufzeichnungen oder Kalender eine offene Eigenschaft beantwortet — gedeckt mit Quelle, sonst offen; im Labor 5/5 richtig und 0/5 falsch. Ohne Frame-Lager bleibt die Lücken-Menge selbst je Turn erfunden.
 
 ---
 
