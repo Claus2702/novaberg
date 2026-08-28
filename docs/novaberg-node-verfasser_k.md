@@ -90,8 +90,9 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 | `[GEDAECHTNIS]` | ✅ | **—** |
 | `[AUFZEICHNUNGEN]` | ✅ | **—** |
 | `[WEB-RECHERCHE]` | ✅ | **—** |
+| `[SACHLAGE]` | ✅ | — (seit 28.08.2026: Gegenstand, vermutetes Nutzerziel, offene Eigenschaften akuter Objekte — `graph/nodes/sachlage.py`, `novaberg-thinking-lage_k.md`; steht vor dem Gesprächsvektor: erst worum es geht, dann wie es sich bewegt. Drei unterscheidbare Ausgänge: Block · gelaufen-und-leer als `info` · nicht gelaufen als `error`) |
 | `[GESPRAECHSVEKTOR]` | ✅ | — |
-| `[MASS]` | ✅ | — (die Zahl steht dort in `[REGIE]`) |
+| `[MASS]` | ✅ | — (die Zahl steht dort in `[REGIE]`). **Die Rückfrage-Zeile trägt seit dem 27.08.2026 Menge UND Art** („eine Rückfrage, und zwar analytisch — kein Angebot"), aus `CLUSTER_FRAGE_ART` an der Landschaft — nicht am Vehikel, das in 75 % der Parses leer ist (`ei/haltungssprache.py::_rueckfragenzeile`) |
 | `[IDENTITAET]` | — | ✅ |
 | `[EIGENE_EMOTION]` | — | ✅ |
 | `[KOMMUNIKATION]` | — | ✅ |

@@ -39,6 +39,8 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 **Die zweite Kontrolle aenderte den Bau** (kompilierter Graph statt Quelltext-Grep, 48 Kandidaten, 0 von 16 Pfaden erreichen einen Leser ohne den Knoten): `sachlage_node` fehlte in den Stream-Labels, und der Verfasser diagnostizierte »nicht gelaufen« auf einem regulaeren Leer-Pfad — beides behoben, je ein Zeuge.
 
+**Werkzeug der beiden Kennzahlen** (Rad-Zuschlag je Landschaft, GV-Leerquote): `labor/2026-08-28_messwege_zuschlag_und_leerquote.sh` — nachgetragen am Sitzungsende, nachdem der Abschluss fand, dass beide Messungen nur im Verlauf standen.
+
 **Nachtrag 14:20 UTC — der Weg zum Client:** Eingang-Zeile im Knoten (die Groessen der Weiche vor der Entscheidung, F-LOG-3) · Stage-Detail fuer den Verarbeitungs-Stream (Gegenstand · akute Objekte · Herkunft) · `GET /drive/sachlage` (Snapshot samt `alter_sekunden`) · **Kontext-Panel im Client** (`client/ui/panels/sachlage_panel.py`, »🫧 Kontext«, turn-reaktiv): Kopf mit Herkunft und Alter, je Referenzobjekt gedeckte (✓) und offene (○) Eigenschaften, latente ohne Fragestoff. Fuenf weitere Zeugen; Suite 2395.
 
 ## 28.08.2026, 14:35 UTC (nachgetragen; gebaut 27.08. 20:00 – 28.08. 07:00 UTC) — Rueckfragen halbiert mit Art, Raum-Neutralisierung

@@ -3,6 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
 **Stand:** 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
+**Nachtrag 28.08.2026:** Der System-Prompt des GV-Calls traegt zusaetzlich den `[SACHLAGE]`-Block — das sachliche Verstehen des Turns aus `graph/nodes/sachlage.py`, vor dem Farbton. Konzept: `novaberg-thinking-lage_k.md`.
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
 
