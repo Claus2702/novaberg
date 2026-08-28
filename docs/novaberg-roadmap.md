@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **19:56 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **20:15 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,18 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 20:15 UTC — Der Sachlage-Prompt sieht Novas Antworten ganz — und der Fund vom Nachmittag war halb falsch
+
+**Der Anlass:** die erste der zwei Vorfragen zu Scheibe 3 — *liest die Fortschreibung Deckung auch aus Novas Antworten?* Entschieden: ja. Vor dem Bau gemessen, ob es fehlt.
+
+**Drei Messungen, drei Antworten** (alle gegen `_derive` allein, ohne Persistenz): **(1)** Gestellter Fall — Nova beantwortet eine von zwei offenen Eigenschaften eines akuten Objekts, der Nutzer fragt die andere: **3/3** wandert die beantwortete nach *gedeckt*, mit dem heutigen Prompt (`labor/2026-08-28_sachlage_deckung_aus_antwort.py`). Die Fortschreibung liest Novas Antworten also. **(2)** Der Betriebsfall, nachgestellt aus den echten Session-Turns des Paares (`labor/2026-08-28_sachlage_deckung_nachmittagsfall.py`): »Licht vs. Wasser« bleibt **3/3 offen** — und Novas Antwort im Wortlaut zeigt, warum: Sie wiederholte die Frage in vier Varianten (*»Ist es der energetische Input durch das Licht … oder die Verfuegbarkeit des Wassers?«*) und schlug ein Experiment vor. Keine Antwort, *offen* ist richtig. **(3)** Trotzdem ein Defekt: `_render_history` schnitt jeden Beitrag bei **400 Zeichen**; die Antwort war 973 lang, die Regieanweisung davor 384 — im Prompt kamen 154 Zeichen an. Ueber die elf Antworten des Paares in Redis: 183 bis 1557 Zeichen, sechs ueber 400.
+
+**Der Bau** (`graph/nodes/sachlage.py`): `_BEITRAG_MAX_ZEICHEN` = 1600 (ueber der laengsten gemessenen Antwort), Regieanweisungen `*…*` fallen vor dem Schnitt (`_REGIEANWEISUNG`), Zeilenumbrueche einer Antwort werden gefaltet — eine Antwort, eine Verlaufszeile; und der Prompt traegt die Regel *Deckung kommt von beiden Seiten*. Nach dem Bau kommen 827 der 973 Zeichen an; der Betriebsfall bleibt 3/3 offen, wie er soll.
+
+**TEST:** 5 Zeugen (`DerVerlaufTraegtNovasAntwortTest`): Substanz jenseits von 400 kommt an, Regieanweisungen nicht, eine Antwort bleibt eine Zeile, eine reine Regieanweisung erzeugt keine Zeile, der gerenderte Prompt traegt Novas Zeile und die Regel. Suite **2464 → 2469 gruen, 0 uebersprungen**. Gegenprobe: Schnitt zurueck auf 400 → 1 rot; Regieanweisungen bleiben → 2 rot; Regel fehlt → 1 rot.
+
+**Fuer Scheibe 3 ein Datenpunkt:** Nova beantwortete eine Sachfrage mit Rueckfragen — die Floskelform, die Scheibe 3 durch einen Gegenstand ersetzen soll; die offene Eigenschaft der Lage ist dieser Gegenstand.
 
 ## 28.08.2026, 19:56 UTC — Der Verfall der Ziele wird beim Lesen gerechnet: ein Tageslauf traegt keine Halbwertszeit von drei Stunden
 

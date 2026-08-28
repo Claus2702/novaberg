@@ -947,6 +947,8 @@ Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur a
 
 Die Rueckfrage-Zeile des Verfassers traegt seit dem 27.08.2026 Menge und Art, aber keinen Gegenstand — gemessen: 2,2 Fragen je Turn, 100 % Frage-Enden, Floskelform. Scheibe 3: Die Zeile nennt die wichtigste offene Eigenschaft eines akuten Objekts oder den Weg zum beruehrten Ziel; **die Haltung bleibt der Regler** (Distanz fragt nicht, die Werkstatt darf mehrfach) — die Lage erzeugt keine Frage an der Haltung vorbei. Massstab: Expected Information Gain (Konzept §2a). ZIEL/TEST/MESSUNG in `novaberg-thinking-lage_k.md` §4; die Messanordnung (Schauspielerprobe, Vergleichsarme) existiert. ⬜ Prio mittel
 
+**Die zwei Vorfragen, entschieden am 28.08.2026, abends:** (a) Deckung kommt von beiden Seiten — nachgemessen: die Fortschreibung las Novas Antworten schon, nur nicht ganz (400-Zeichen-Schnitt, behoben; der Betriebsfall war eine Nicht-Antwort). (b) `thema` benennt die Sache, nie den Wechsel — Prompt-Regel (folgt). Dazu vor dieser Scheibe: die Wiederaufnahme einer frueheren Blase aus `sachlage_verlauf` (Stapel), entschieden am selben Abend. Datenpunkt fuer diese Scheibe: Im Betriebsfall beantwortete Nova die Sachfrage »Licht oder Wasser« mit vier Rueckfragen und einem Experimentvorschlag — die offene Eigenschaft der Lage ist genau der Gegenstand, den die Rueckfrage-Zeile bekommen soll.
+
 **Zusammenhang:** SACHLAGE-SCHEIBE-2-KURZZIEL · die Formfrage der Rueckfragen bleibt bis nach dieser Scheibe liegen (Konzept §5).
 
 
