@@ -675,6 +675,9 @@ class RechercheAgent(BaseAgent):
                 aufgabe="recherche",
                 thema=thema or session_kontext.get("thema_kern", ""),
                 inhalt=destillat,
+                # Der Turn, aus dem der Auftrag entstand, wandert mit auf
+                # den Stapel — das zweite Ende der Sachlage-Bruecke.
+                ausloeser_turn_id=queue_eintrag.get("ausloeser_turn_id"),
                 **stapel_werte_aus_auftrag(queue_eintrag),
             )
         except Exception as e:

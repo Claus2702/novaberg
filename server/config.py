@@ -2054,6 +2054,19 @@ GV_RAUM_NEUTRAL_SEKUNDEN:     float = float(
 # kalibrierbar bleiben (F-INTENS-1: eine Groesse an ihrer eigenen Skala).
 SACHLAGE_VERFALL_SEKUNDEN:    float = float(
     os.getenv("SACHLAGE_VERFALL_SEKUNDEN", "14400"))  # 4 Stunden
+# Die Sachlage-Bruecke ohne harte turn_id sucht die aehnlichste Verlaufszeile
+# des Paares per Kosinus. Unter dieser Schwelle gibt es keine Bruecke: Ein
+# Uebergang zu einem Turn ohne Bezug waere schlimmer als keiner.
+# `[gemessen]` — 28.08.2026, labor/2026-08-28_sachlage_bruecke_messung.py:
+# zehn Lagen, je ein Impuls zum eigenen Thema — Kosinus 0,40 bis 0,76
+# (Median 0,65); ein Impuls zu einem fremden Thema: naechste Zeile 0,25.
+# Der erste Wert 0,50 haette eine von zehn eigenen Lagen verworfen. 0,35
+# liegt in der Luecke; der Fremdtreffer ist mit n=1 duenn belegt und steht
+# in der Fundliste. Frage-Vektor (Thema + Gedanke) und Zeilen-Vektor
+# (Gegenstand-Satz) sind verschiedene Texte, deshalb liegt die Schwelle
+# unter den 0,60 des Zustellungsfilters.
+SACHLAGE_BRUECKE_MIN_KOSINUS: float = float(
+    os.getenv("SACHLAGE_BRUECKE_MIN_KOSINUS", "0.35"))
 
 GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
 GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)

@@ -218,6 +218,11 @@ class ConversationState(TypedDict):
     # Das fortgeschriebene Verstehen des Gespraechs (graph/nodes/sachlage.py,
     # novaberg-thinking-lage_k.md). Traegt IMMER eine `herkunft`-Marke.
     sachlage: dict
+    # Die Bruecke einer Zustellung zu ihrem Anlass (Scheibe 4): auf einem
+    # Impuls-Turn die Verlaufszeile des Ausloesers samt Weg (turn_id oder
+    # Embedding-Rueckfall), sonst leer. Deklariert, weil LangGraph
+    # Undeklariertes lautlos verwirft.
+    sachlage_bruecke: dict
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele: list[

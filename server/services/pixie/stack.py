@@ -15,6 +15,18 @@ from services.model_services import EmbedRequest, model_service
 logger = logging.getLogger("ki_server.pixie.stack")
 
 
+def build_impulse_embed_text(thema: str, inhalt: str) -> str:
+    """Der Embed-Text eines Stapel-Eintrags — die EINZIGE Formel dafuer.
+
+    Als benannte Funktion, weil ein zweiter Leser sie braucht: Der Rueckfall
+    der Sachlage-Bruecke (`graph/nodes/sachlage.py`) rechnet das
+    Impuls-Embedding aus Thema und Gedanke nach, statt 768 Gleitkommazahlen
+    durch das Ereignis zu schicken — und trifft den gespeicherten Vektor nur,
+    wenn er dieselbe Formel benutzt.
+    """
+    return f"{thema} {inhalt[:200]}"
+
+
 def stack_push(
     redis_client:  redis.Redis,
     user_id:       str,
@@ -26,6 +38,7 @@ def stack_push(
     modus:         str  = "",
     salienz:       float | None = None,
     arousal:       float | None = None,
+    ausloeser_turn_id: str | None = None,
 ) -> None:
     """Legt ein Ergebnis mit Embedding und Meta-Daten auf den Shadow-Stack.
 
@@ -42,6 +55,11 @@ def stack_push(
             wenn kein Bezugsvektor vorliegt — der haeufigste Fall.
         arousal: die Erregung, in der der Gedanke gefasst wurde. Sie hebt
             Novas Zustand beim Einwurf, wenn er niedriger liegt (Bauteil B).
+        ausloeser_turn_id: der Turn, aus dem der Auftrag entstand — das
+            zweite Ende der Sachlage-Bruecke (`novaberg-thinking-lage_k.md`
+            §4, Scheibe 4). `None` heisst unbekannt: Auftraege ohne Turnbezug
+            (Wiedervorlage, Altbestand) tragen keinen, und der Leser faellt
+            dann auf die Vektorsuche zurueck.
 
     **`None` heisst unbekannt und wird nie zu einer Zahl.** Beide Werte stehen
     ausdruecklich im Eintrag, auch wenn sie fehlen: Ein weggelassenes Feld
@@ -53,7 +71,7 @@ def stack_push(
         logger.debug("pixie.stack: stack_push uebersprungen (PIXIE_AKTIV=False)")
         return
 
-    embed_text: str = f"{thema} {inhalt[:200]}"
+    embed_text: str = build_impulse_embed_text(thema, inhalt)
 
     embed_response = model_service.embed.submit_sync(EmbedRequest(text=embed_text))
     embedding: list[float] = embed_response.embedding
@@ -74,6 +92,7 @@ def stack_push(
         "modus":       modus,
         "salienz":     salienz,
         "arousal":     arousal,
+        "ausloeser_turn_id": ausloeser_turn_id,
     }
 
     redis_client.rpush(

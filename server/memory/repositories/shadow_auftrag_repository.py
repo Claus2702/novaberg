@@ -37,7 +37,7 @@ LESE_SPALTEN: str = (
     "id, user_id, character_id, beobachter, aufgabe, thema, kontext, "
     "intentionen, emotion, modus, arousal, salienz_roh, salienz_absolut, "
     "salienz_decay, haeufigkeit, aktiv, erstellt_am, verstaerkt_am, "
-    "decay_am, versuche, bezug_id"
+    "decay_am, versuche, bezug_id, ausloeser_turn_id"
 )
 
 # Warum eine Zeile stillliegt — die geschlossene Wertemenge der Spalte `grund`.
@@ -185,6 +185,12 @@ class ShadowAuftrag:
     #: Leser benutzt sie als **Ausschluss**; eine ins Leere zeigende ID
     #: kostet dort einen Kandidaten zu viel und sonst nichts.
     bezug_id:     int | None = None
+    #: Der Turn, aus dem der Auftrag entstand — das erste Glied der
+    #: Sachlage-Bruecke (`novaberg-thinking-lage_k.md` §4, Scheibe 4). `None`
+    #: heisst unbekannt; ein Erzeuger ohne Turnbezug (Promotion-Queue,
+    #: Verweis) traegt keinen, und der Leser faellt auf die Vektorsuche
+    #: zurueck. Kein Fremdschluessel: Turns haben keine Tabelle.
+    ausloeser_turn_id: str | None = None
 
 
 class ShadowAuftragRepository:
@@ -263,15 +269,15 @@ class ShadowAuftragRepository:
                             (user_id, character_id, beobachter, aufgabe, thema,
                              kontext, intentionen, emotion, modus, arousal,
                              salienz_roh, salienz_absolut, salienz_decay,
-                             bezug_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                             bezug_id, ausloeser_turn_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                         """,
                         (auftrag.user_id, auftrag.character_id, auftrag.beobachter,
                          auftrag.aufgabe, auftrag.thema, auftrag.kontext,
                          auftrag.intentionen, auftrag.emotion, auftrag.modus,
                          auftrag.arousal, roh, absolut, absolut,
-                         auftrag.bezug_id),
+                         auftrag.bezug_id, auftrag.ausloeser_turn_id),
                     )
                     neue_id: int = cur.fetchone()[0]
                     conn.commit()

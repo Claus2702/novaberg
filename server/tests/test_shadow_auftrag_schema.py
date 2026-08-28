@@ -74,6 +74,12 @@ ERWARTETE_SPALTEN: dict[str, tuple[bool, bool]] = {
     # Kein Fremdschluessel: `F-VERFALL-1` (b) — was anderswo als
     # Fremdschluessel dient, verfaellt nicht mehr.
     "bezug_id":        (True,  False),
+    # Seit dem 28.08.2026: der Turn, aus dem der Auftrag entstand — das
+    # zweite Ende der Sachlage-Bruecke (`novaberg-thinking-lage_k.md` §4,
+    # Scheibe 4). NULL-faehig, **ohne Vorgabewert**: NULL heisst unbekannt,
+    # der Altbestand traegt es, und ein Leser prueft darauf. Kein
+    # Fremdschluessel — Turns haben keine Tabelle, die einen tragen koennte.
+    "ausloeser_turn_id": (True, False),
     "salienz_roh":     (False, False),
     "salienz_absolut": (False, False),
     "salienz_decay":   (False, False),

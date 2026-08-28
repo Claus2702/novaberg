@@ -25,6 +25,16 @@ Artefakt sagt in `herkunft`, ob es frisch erhoben, fortgeschrieben, nach
 Verfall neu begonnen, auf einem Impuls-Turn unveraendert uebernommen oder
 nach einem Ausfall des Calls uebernommen wurde. Ohne dieses Feld waere eine
 nicht gerechnete Sachlage von einer gerechneten nicht zu unterscheiden.
+
+**Das Gedaechtnis und die Bruecke** (Konzept §4, Scheibe 4, 28.08.2026):
+Jeder gerechnete Turn legt seine Sachlage als Faktum in `sachlage_verlauf`
+ab (`memory/sachlage_history.py`; verfaellt nicht, `F-VERFALL-1`). Auf einem
+Impuls-Turn baut der Knoten daraus die **Bruecke**: die Verlaufszeile des
+Turns, aus dem der Gedanke entstand — hart ueber die `ausloeser_turn_id`
+des Ereignisses, sonst ueber die aehnlichste Zeile des Paares, und dann
+**als Rueckfall markiert**. Der Verfasser bekommt beide Blasen als
+`[SACHLAGE-BRUECKE]` und baut den Uebergang, statt unvermittelt
+einzuwerfen. Ohne beide Enden gibt es keine Bruecke und keinen Block.
 """
 
 import json
@@ -32,14 +42,23 @@ import logging
 import time
 
 from config import (
+    POSTGRES_URL,
+    SACHLAGE_BRUECKE_MIN_KOSINUS,
     SACHLAGE_VERFALL_SEKUNDEN,
     get_node_config,
     redis_client,
 )
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from memory.pipeline_log import log_berechnung
-from services.model_services import model_service
+from memory.sachlage_history import (
+    build_embed_text,
+    history_nearest,
+    history_read_turn,
+    history_write,
+)
+from services.model_services import EmbedRequest, model_service
 from services.model_services.types import ChatRequest
+from services.pixie.stack import build_impulse_embed_text
 
 logger = logging.getLogger("ki_server.sachlage")
 
@@ -55,8 +74,13 @@ HERKUNFT_AUSFALL:        str = "ausfall_uebernommen"  # Call/Parse rot, Vorgaeng
 # Pflichtfelder des Artefakts — die Ausgabe-Verifikation haelt den Parse
 # dagegen, bevor er in den State darf.
 _PFLICHTFELDER: tuple[str, ...] = (
-    "gegenstand", "nutzerziel", "ausdrucksweise", "objekte",
+    "thema", "gegenstand", "nutzerziel", "ausdrucksweise", "objekte",
 )
+
+# Wie die Bruecke ihr zweites Ende gefunden hat — Begleitfeld, damit der
+# Verfasser einen belegten Anlass von einem erschlossenen unterscheidet.
+BRIDGE_VIA_TURN_ID:   str = "turn_id"             # Verlaufszeile des Ausloesers
+BRIDGE_VIA_EMBEDDING: str = "embedding_rueckfall"  # aehnlichste Zeile des Paares
 
 # Wie viele der juengsten Session-Turns der Prompt sieht. Die Sachlage selbst
 # traegt die aeltere Historie — mehr Turns doppeln nur, was die Fortschreibung
@@ -76,7 +100,8 @@ Die neue Aeusserung des Nutzers:
 
 Erstelle die aktualisierte Sachlage als JSON mit genau diesen Feldern:
 
-{{"gegenstand": "worum es im Gespraech gerade geht, ein Satz",
+{{"thema": "der Name der Sache, ein bis drei Worte",
+  "gegenstand": "worum es im Gespraech gerade geht, ein Satz",
   "nutzerziel": "was der Nutzer mit seiner Aeusserung vermutlich erreichen
                  will — das Gesagte muss nicht der Grund sein; schliesse aus
                  Zeichen und Mustern, formuliere als Vermutung",
@@ -256,6 +281,147 @@ def _derive(
     return _validate_artifact(response.parsed)
 
 
+def _persist_history(
+    user_id:      str,
+    character_id: str,
+    turn_id:      str,
+    sachlage:     dict,
+) -> None:
+    """Legt die gerechnete Sachlage als Faktum in `sachlage_verlauf` ab.
+
+    Vorbedingung: `sachlage` ist validiert und traegt `herkunft`.
+    Nachbedingung: Eine Zeile, mit Vektor ueber den Gegenstand-Satz — oder
+        ohne Vektor, wenn der Embed-Worker ausfaellt; das Faktum steht
+        trotzdem.
+    Fehlerfaelle: Nichts hier wirft. Ein Ausfall ist laut (Repository) und
+        kostet den Turn nicht.
+    """
+    embedding: list[float] | None
+    try:
+        antwort = model_service.embed.submit_sync(
+            EmbedRequest(text=build_embed_text(str(sachlage.get("gegenstand", ""))))
+        )
+        embedding = antwort.embedding
+    except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+        logger.warning(
+            f"Sachlage-Verlauf: Embedding ausgefallen ({type(fehler).__name__}: "
+            f"{fehler}) — Zeile ohne Vektor"
+        )
+        embedding = None
+    history_write(
+        POSTGRES_URL, turn_id=turn_id, user_id=user_id,
+        character_id=character_id, sachlage=sachlage, embedding=embedding,
+    )
+
+
+def _impulse_embedding(state: dict) -> list[float] | None:
+    """Rechnet das Embedding des Impulses nach — aus derselben Formel wie
+    der Stapel (`build_impulse_embed_text`), damit die Suche den Vektor
+    trifft, den `stack_push` abgelegt hat.
+
+    Nachbedingung: Der Vektor, oder None ohne Thema und Gedanke oder bei
+        Ausfall des Workers — beides laut.
+    """
+    payload: dict = state.get("event_payload") or {}
+    thema:  str = str(payload.get("prompt_thema", "") or "")
+    inhalt: str = str(payload.get("eigener_gedanke", "") or "")
+    if not thema and not inhalt:
+        logger.info("Sachlage-Bruecke: Impuls ohne Thema und Gedanke — kein Rueckfall")
+        return None
+    try:
+        return model_service.embed.submit_sync(
+            EmbedRequest(text=build_impulse_embed_text(thema, inhalt))
+        ).embedding
+    except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+        logger.warning(
+            f"Sachlage-Bruecke: Impuls-Embedding ausgefallen "
+            f"({type(fehler).__name__}: {fehler}) — kein Rueckfall"
+        )
+        return None
+
+
+def sachlage_bridge_build(state: dict, aktuell: dict) -> dict:
+    """Die Bruecke eines Impuls-Turns zu seinem Anlass.
+
+    Vorbedingung: `state` ist ein Impuls-Turn (`reiz_ist_eigener_gedanke`).
+    Nachbedingung: Ein Dict mit `damals` (Verlaufszeile des Ausloesers),
+        `aktuell`, `ausloeser_turn_id` und `weg` — oder `{}`, wenn es kein
+        zweites Ende gibt. **Der Weg steht immer dabei:** harte `turn_id`
+        oder Embedding-Rueckfall mit `kosinus`.
+    Fehlerfaelle: Eine `turn_id` ins Leere (Ausloeser vor dem Bau der
+        Tabelle) faellt auf die Suche zurueck; alles andere ist ein leeres
+        Dict mit Meldung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    payload: dict = state.get("event_payload") or {}
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    ausloeser: str | None = payload.get("ausloeser_turn_id") or None
+
+    # ── Verarbeitung ────────────────────────────
+    if ausloeser:
+        zeile: dict | None = history_read_turn(POSTGRES_URL, ausloeser)
+        if zeile is not None:
+            return {
+                "weg": BRIDGE_VIA_TURN_ID, "ausloeser_turn_id": ausloeser,
+                "damals": zeile, "aktuell": aktuell,
+            }
+        logger.info(
+            f"Sachlage-Bruecke: keine Verlaufszeile fuer Ausloeser turn={ausloeser} "
+            f"— Rueckfall auf die Vektorsuche"
+        )
+
+    embedding: list[float] | None = _impulse_embedding(state)
+    if embedding is None:
+        return {}
+    treffer: dict | None = history_nearest(
+        POSTGRES_URL, user_id, character_id, embedding, SACHLAGE_BRUECKE_MIN_KOSINUS,
+    )
+    if treffer is None:
+        logger.info("Sachlage-Bruecke: kein zweites Ende — keine Bruecke")
+        return {}
+
+    # ── Ausgabe ─────────────────────────────────
+    return {
+        "weg": BRIDGE_VIA_EMBEDDING, "ausloeser_turn_id": treffer["turn_id"],
+        "kosinus": treffer["kosinus"], "damals": treffer, "aktuell": aktuell,
+    }
+
+
+def sachlage_bridge_block(bruecke: dict) -> str:
+    """Der [SACHLAGE-BRUECKE]-Block fuer den Verfasser: beide Blasen und der
+    Auftrag, den Uebergang hoerbar zu bauen.
+
+    Vorbedingung: `bruecke` traegt `damals`.
+    Nachbedingung: Ein Block, der mit `[SACHLAGE-BRUECKE]` beginnt und den
+        Anlass als belegt oder als vermutet benennt.
+    """
+    damals:  dict = bruecke.get("damals") or {}
+    aktuell: dict = bruecke.get("aktuell") or {}
+    if bruecke.get("weg") == BRIDGE_VIA_EMBEDDING:
+        anlass: str = (
+            f"Der Anlass ist erschlossen, nicht belegt — vermutlich dieses "
+            f"fruehere Gespraech (Aehnlichkeit {float(bruecke.get('kosinus', 0.0)):.2f})."
+        )
+    else:
+        anlass = "Der Anlass ist belegt: das Gespraech, aus dem der Gedanke entstand."
+    zeilen: list[str] = [
+        "[SACHLAGE-BRUECKE]",
+        f"Dein Gedanke entstand frueher. {anlass}",
+        f"Damals ging es um: {damals.get('gegenstand', '')} ({damals.get('thema', '')})",
+        f"Was der Nutzer damals wollte: {damals.get('nutzerziel', '')}",
+    ]
+    if aktuell.get("gegenstand"):
+        zeilen.append(f"Jetzt geht es um: {aktuell.get('gegenstand', '')}")
+    else:
+        zeilen.append("Jetzt: Das Gespraech hat gerade keinen Gegenstand — eine Pause.")
+    zeilen.append(
+        "Baue den Uebergang hoerbar: Sag, woran du anknuepfst, bevor du den "
+        "Gedanken einbringst — wirf ihn nicht unvermittelt ein."
+    )
+    return "\n".join(zeilen)
+
+
 def sachlage_block(sachlage: dict) -> str:
     """Der [SACHLAGE]-Block fuer Verfasser und Gespraechsvektor.
 
@@ -309,7 +475,9 @@ def sachlage_assess(state: dict) -> dict:
         # wurde, steht in der Marke.
         sachlage: dict = dict(vorige or {})
         sachlage["herkunft"] = HERKUNFT_IMPULS
+        bruecke: dict = sachlage_bridge_build(state, sachlage)
     else:
+        bruecke = {}
         erhoben: dict | None = _derive(
             vorige, state.get("session_turns") or [], reiz_text(state),
         )
@@ -321,6 +489,10 @@ def sachlage_assess(state: dict) -> dict:
             )
             sachlage = erhoben
             _sachlage_store(user_id, character_id, sachlage)
+            # Das Faktum: nur gerechnete Artefakte, keine uebernommenen.
+            _persist_history(
+                user_id, character_id, state.get("turn_id", ""), sachlage,
+            )
         else:
             sachlage = dict(vorige or {})
             sachlage["herkunft"] = HERKUNFT_AUSFALL
@@ -343,6 +515,12 @@ def sachlage_assess(state: dict) -> dict:
             f"{fehler}) — der Turn laeuft weiter, die Reihe hat eine Luecke"
         )
     state["sachlage"] = sachlage
+    state["sachlage_bruecke"] = bruecke
+    if bruecke:
+        logger.info(
+            f"Sachlage-Bruecke [{bruecke['weg']}]: Ausloeser turn="
+            f"{bruecke['ausloeser_turn_id']}, damals='{str(bruecke['damals'].get('thema', ''))[:40]}'"
+        )
     logger.info(
         f"Sachlage [{sachlage['herkunft']}]: "
         f"Gegenstand='{str(sachlage.get('gegenstand', ''))[:80]}', "

@@ -40,6 +40,9 @@ from graph.nodes.sachlage import (
 )
 
 VOLLSTAENDIG: dict = {
+    # `thema` ist seit Scheibe 4 (28.08.2026) Pflichtfeld — der Anzeigename
+    # der Blase und das Findewort neben dem Vektor, aus demselben Call.
+    "thema":          "Geburtstag",
     "gegenstand":     "Ein anstehender Geburtstag",
     "nutzerziel":     "vermutlich Planung und Vorbereitung",
     "ausdrucksweise": "beilaeufig erzaehlend",
@@ -134,6 +137,7 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive",
                    return_value=dict(VOLLSTAENDIG)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
+             patch("graph.nodes.sachlage._persist_history"), \
              patch("graph.nodes.sachlage.log_berechnung"):
             state = sachlage_assess(_state())
 
@@ -146,6 +150,7 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive",
                    return_value=dict(VOLLSTAENDIG)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
+             patch("graph.nodes.sachlage._persist_history"), \
              patch("graph.nodes.sachlage.log_berechnung"):
             state = sachlage_assess(_state())
 
@@ -158,6 +163,7 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
              patch("graph.nodes.sachlage._derive",
                    return_value=dict(VOLLSTAENDIG)), \
              patch("graph.nodes.sachlage._sachlage_store"), \
+             patch("graph.nodes.sachlage._persist_history"), \
              patch("graph.nodes.sachlage.log_berechnung"):
             state = sachlage_assess(_state())
 

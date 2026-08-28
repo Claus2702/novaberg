@@ -354,6 +354,16 @@ def _build_system_prompt(state: ConversationState) -> str:
             "ist nicht gelaufen."
         )
 
+    # ── Die Bruecke: von jetzt zu damals (Scheibe 4) ──
+    # Auf einem Impuls-Turn traegt der Zustand die Verlaufszeile des
+    # Ausloesers; der Block sagt dem Verfasser, woran der Gedanke anknuepft.
+    # Fehlt sie, fehlt der Block — ohne Meldung: Der Knoten hat schon
+    # protokolliert, warum (kein Ausloeser, keine Zeile, unter der Schwelle).
+    bruecke: dict = state.get("sachlage_bruecke") or {}
+    if bruecke.get("damals"):
+        from graph.nodes.sachlage import sachlage_bridge_block
+        teile.append(sachlage_bridge_block(bruecke))
+
     gv_block: str = _gespraechsvektor_block(state)
     if gv_block:
         teile.append(gv_block)

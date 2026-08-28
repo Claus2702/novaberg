@@ -1045,3 +1045,56 @@ ALTER TABLE autonomous_wissen ADD COLUMN IF NOT EXISTS suchtext     TSVECTOR;
 
 CREATE INDEX IF NOT EXISTS idx_autonomous_wissen_suchtext
     ON autonomous_wissen USING gin (suchtext);
+
+-- ── sachlage_verlauf und shadow_auftrag.ausloeser_turn_id (28.08.2026) ──
+-- Konzept: docs/novaberg-thinking-lage_k.md §4, Scheibe 4 — das
+-- Sachlage-Gedaechtnis. Angekuendigt und freigegeben am 28.08.2026 (F-DDL-1).
+--
+-- Die Sachlage (graph/nodes/sachlage.py) wurde bis dahin je Paar in Redis
+-- ueberschrieben; die pipeline_log-Zeile ist Forensik mit Vorhaltefrist. Fuer
+-- die Bruecke einer Zustellung zu ihrem Anlass fehlte damit das zweite Ende.
+--
+-- **Verfaellt nicht** (F-VERFALL-1): Die Zeile protokolliert ein Faktum —
+-- *die Sachlage dieses Turns war X* — und Turns verfallen auch nicht.
+-- **Kein Fremdschluessel** auf turn_id: Turns haben keine Tabelle, die einen
+-- tragen koennte; die Zeile reiht sich neben turn_roh, verbindung und die
+-- Achsen-Protokolle an dasselbe Rueckgrat.
+-- **Embedding-Text ist der `gegenstand`-Satz** (F-EMBED-1, eine benannte
+-- Funktion in memory/sachlage_verlauf.py); ein Vektor je Zeile, weil jede
+-- Zeile genau einen Gegenstand traegt (F-EMBED-2). NULL-faehig: Faellt der
+-- Embed-Worker aus, steht das Faktum trotzdem, nur die Vektorsuche findet
+-- die Zeile nicht.
+-- Geschrieben wird nur auf den drei rechnenden Wegen (frisch,
+-- fortgeschrieben, verfallen_neu); uebernommene Artefakte (Impuls, Ausfall)
+-- erzeugen keine Doppelzeile.
+CREATE TABLE IF NOT EXISTS sachlage_verlauf (
+    id             SERIAL       PRIMARY KEY,
+    turn_id        TEXT         NOT NULL,
+    user_id        TEXT         NOT NULL,
+    character_id   VARCHAR(50)  NOT NULL,
+    thema          TEXT         NOT NULL,
+    gegenstand     TEXT         NOT NULL,
+    nutzerziel     TEXT         NOT NULL,
+    ausdrucksweise TEXT         NOT NULL,
+    objekte        JSONB        NOT NULL,
+    herkunft       TEXT         NOT NULL,
+    embedding      VECTOR(768),
+    erstellt_am    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- Der Rueckfall der Bruecke sucht je Paar; ohne Index wuechse die Suche mit
+-- jedem Turn, denn die Tabelle verfaellt nicht. Kein ivfflat: Die Tabelle
+-- beginnt bei null Zeilen, und ein Vektorindex ueber einen leeren Bestand
+-- lernt nichts (dieselbe Entscheidung wie bei ziele und notizen oben).
+CREATE INDEX IF NOT EXISTS idx_sachlage_verlauf_paar
+    ON sachlage_verlauf (user_id, character_id, erstellt_am DESC);
+CREATE INDEX IF NOT EXISTS idx_sachlage_verlauf_turn
+    ON sachlage_verlauf (turn_id);
+
+-- Der Turn, aus dem ein Auftrag entstand — das erste Glied der Kette
+-- Auftrag -> Stapel-Eintrag -> Ereignis -> Bruecke. Bis dahin reiste ein
+-- Turnbezug nur als Wortlaut im kontext-Feld mit (synapsen_promotion).
+-- NULL-faehig, **ohne Vorgabewert**: NULL heisst unbekannt; der Altbestand
+-- traegt es, und der Leser prueft darauf, statt eine leere Zeichenkette fuer
+-- eine turn_id zu halten.
+ALTER TABLE shadow_auftrag ADD COLUMN IF NOT EXISTS ausloeser_turn_id TEXT;

@@ -552,6 +552,10 @@ class SynapsenPromotionAgent(BaseAgent):
                 redis_client, user_id, "wissen_rueckweg",
                 thema=themen_str, prioritaet=salienz,
                 kontext=material, modus=f"rueckweg_{quelle}",
+                # Seit dem 28.08.2026 hat der Auftrag die Spalte fuer den
+                # Turnbezug (Sachlage-Bruecke); der Wortlaut reist weiter
+                # im kontext mit, weil der Rueckweg ihn liest.
+                ausloeser_turn_id=turn_id or None,
             )
         except Exception as fehler:  # noqa: BLE001 — die Promotion steht bereits
             logger.exception(

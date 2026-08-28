@@ -362,6 +362,9 @@ class NachfragenAgent(BaseAgent):
                     if isinstance(turn.get("arousal"), (int, float))
                     else None
                 ),
+                # Der Turn, aus dem der Auftrag entstand — das zweite Ende
+                # der Sachlage-Bruecke; None, wenn der Auftrag keinen traegt.
+                ausloeser_turn_id=auftrag.get("ausloeser_turn_id"),
             )
         except (redis.RedisError, OSError, RuntimeError, ValueError) as ex:
             return self._abbrechen(

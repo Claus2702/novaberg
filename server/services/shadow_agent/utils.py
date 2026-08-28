@@ -37,8 +37,13 @@ def shadow_queue_push(
     modus:        str  = "",
     arousal:      float | None = None,
     bezug_id:     int | None = None,
+    ausloeser_turn_id: str | None = None,
 ) -> None:
     """Legt einen Auftrag in die Shadow-Queue.
+
+    `ausloeser_turn_id` ist der Turn, aus dem der Auftrag entstand — das
+    erste Glied der Sachlage-Bruecke (`novaberg-thinking-lage_k.md` §4,
+    Scheibe 4). `None` heisst unbekannt, nie eine leere Zeichenkette.
 
     **`prioritaet` ist Pflicht und hatte bis zum 15.08.2026 den Vorgabewert
     0.0.** Der Wert traegt die Ausloese-Salienz des Turns; eine 0.0 ist ein
@@ -103,6 +108,7 @@ def shadow_queue_push(
         modus        = modus,
         arousal      = arousal,
         bezug_id     = bezug_id,
+        ausloeser_turn_id = ausloeser_turn_id or None,
     )
 
     try:

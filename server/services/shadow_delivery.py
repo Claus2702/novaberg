@@ -759,6 +759,11 @@ def _impuls_in_den_charaktergraph(
                 "gespraechs_modus": eintrag.get("modus", ""),
                 "prompt_thema":     eintrag.get("thema", ""),
                 "impuls_aufgabe":   eintrag.get("aufgabe", ""),
+                # Der Turn, aus dem der Gedanke entstand — das zweite Ende
+                # der Sachlage-Bruecke. Steht immer im Payload, auch als
+                # None: Ein Eintrag alter Bauart hat das Feld nicht, und
+                # der Knoten prueft auf None, nicht auf Anwesenheit.
+                "ausloeser_turn_id": eintrag.get("ausloeser_turn_id"),
                 # Der Stand, in dem der Gedanke gefasst wurde. Er **hebt**
                 # Novas Zustand beim Einwurf, wenn er hoeher liegt — der Weg
                 # zurueck in ihr Element (Bauteil B). Das Feld steht immer im

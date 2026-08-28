@@ -465,6 +465,9 @@ def kzg_store(
                     emotion      = emotion,
                     modus        = modus,
                     arousal      = arousal_gemessen,
+                    # Der Turn, aus dem der Auftrag entstand — leer bei
+                    # Legacy-Aufrufern, dann None (Sachlage-Bruecke).
+                    ausloeser_turn_id = turn_id or None,
                 )
         else:
             logger.debug("kzg: Promotion-Queue-Push uebersprungen (PIXIE_AKTIV=False)")
