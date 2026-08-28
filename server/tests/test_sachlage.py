@@ -277,6 +277,33 @@ class DerVerlaufTraegtNovasAntwortTest(unittest.TestCase):
         self.assertIn("deckt", gesehen["prompt"].split("Regeln:")[1])
 
 
+class DasThemaBenenntDieSacheTest(unittest.TestCase):
+    """Der Prompt sagt, dass `thema` und `gegenstand` die Sache nennen, nie den Wechsel.
+
+    `[gemessen]` 28.08.2026, erster Betriebsturn nach Scheibe 4: Vorgaenger
+    Rettich, Turn Neutronensterne — `thema='Themenwechsel'`, `gegenstand='Ein
+    abruptes Abweichen vom biologischen Fachgespraech hin zu …'`. Der Vektor
+    dieser Zeile zeigt halb auf das alte Thema; das Findewort ist keins. Der
+    Zeuge haelt den gerenderten Prompt, die Wirkung misst das Labor
+    (`labor/2026-08-28_sachlage_thema_wechsel.py`, fuenf Laeufe vorher/nachher).
+    """
+
+    def test_der_prompt_verlangt_die_sache_statt_des_wechsels(self) -> None:
+        gesehen: dict = {}
+
+        def _fang(request: object, timeout: float) -> None:
+            gesehen["prompt"] = request.messages[0]["content"]
+            raise RuntimeError("kein Modell im Zeugen")
+
+        with patch("graph.nodes.sachlage.model_service") as ms:
+            ms.chat.submit_sync.side_effect = _fang
+            _derive(dict(VOLLSTAENDIG), [], "Warum leuchten Neutronensterne noch?")
+
+        regeln = gesehen["prompt"].split("Regeln:")[1]
+        self.assertIn("Themenwechsel", regeln)
+        self.assertIn("neue Sache", regeln)
+
+
 class DieVerdrahtungStehtTest(unittest.TestCase):
     """Der Knoten haengt im Graphen, der Verfasser liest ihn."""
 

@@ -141,6 +141,11 @@ Regeln:
 - Deckung kommt von beiden Seiten: Auch was Nova in den juengsten Beitraegen
   bereits beantwortet hat, deckt die Eigenschaft. Offen bleibt nur, was
   weder der Nutzer noch Nova genannt hat.
+- "thema" und "gegenstand" benennen die Sache selbst. Wechselt der Turn
+  die Sache, nennen beide die neue Sache (etwa "Neutronensterne" / "Warum
+  Neutronensterne ohne Fusion leuchten"), und die alte faellt aus der
+  Sachlage. Das Gespraech ueber die Sache — ein Themenwechsel, eine
+  Rueckkehr, dass der Nutzer fragt — ist nie der Gegenstand.
 - Ein Objekt, das schon in der bisherigen Sachlage steht, behaelt seinen
   "name" WOERTLICH — auch wenn der neue Turn es anders nennt. Ein neues
   Objekt bekommt nur dann einen eigenen Eintrag, wenn es eine andere Sache
