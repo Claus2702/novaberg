@@ -35,6 +35,14 @@ des Ereignisses, sonst ueber die aehnlichste Zeile des Paares, und dann
 **als Rueckfall markiert**. Der Verfasser bekommt beide Blasen als
 `[SACHLAGE-BRUECKE]` und baut den Uebergang, statt unvermittelt
 einzuwerfen. Ohne beide Enden gibt es keine Bruecke und keinen Block.
+
+**Der Frame-Aufloeser** (Konzept §4, Scheibe 6, 28.08.2026): Auf dem
+rechnenden Weg baut `graph/nodes/sachlage_resolver.py` ein nummeriertes
+Angebot aus dem Gedaechtnis-Pool des Turns; nach dem Sachlage-Call haelt
+ein eigener, kleiner Call die offenen Eigenschaften der akuten Objekte
+dagegen. Eine Eigenschaft, die ein angebotener Eintrag beantwortet, wandert
+nach `gedeckt` und traegt in `quellen` ihre Herkunft — sie ist damit kein
+Rueckfrage-Gegenstand mehr. Der Sachlage-Prompt selbst bleibt unveraendert.
 """
 
 import json
@@ -50,6 +58,15 @@ from config import (
     SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS,
     get_node_config,
     redis_client,
+)
+from graph.nodes.sachlage_resolver import (
+    SOURCE_LABELS,
+    MemoryHit,
+    apply_memory_coverage,
+    carry_sources,
+    memory_offer,
+    open_properties,
+    resolve_open_properties,
 )
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from memory.kurzziel import short_goal_track
@@ -313,22 +330,32 @@ def _derive(
     session_turns: list[dict],
     aeusserung:    str,
     wiederaufnahme: dict | None = None,
+    bestand:        list[MemoryHit] | None = None,
 ) -> dict | None:
     """Der LLM-Call — erzwungenes JSON, validiert gegen die Pflichtstruktur.
 
     Vorbedingung: `aeusserung` ist nicht leer; `wiederaufnahme` ist eine
-        Verlaufszeile (`history_nearest`) oder None.
-    Nachbedingung: Das validierte Artefakt oder None bei Ausfall.
+        Verlaufszeile (`history_nearest`) oder None; `bestand` das Angebot
+        des Aufloesers (`memory_offer`) oder None.
+    Nachbedingung: Das validierte Artefakt oder None bei Ausfall. Mit
+        Angebot und offenen Eigenschaften ist der Aufloeser-Call gelaufen,
+        seine Ansprueche sind gegen das Angebot gehalten und die Quellen der
+        vorigen Blase fortgeschrieben.
     Fehlerfaelle: Ausnahmen des Workers werden gefangen und laut gemeldet —
         der Turn laeuft weiter, der Aufrufer markiert den Rueckkehrpfad.
     """
     # Was der Prompt von der vorigen Blase sieht: die Sache, nicht die
-    # Buchfuehrung des letzten Laufs.
+    # Buchfuehrung des letzten Laufs — auch nicht die Quellen der Objekte
+    # (die erbt das neue Artefakt in `carry_sources`).
     vorige_rein: dict | None = (
-        {k: v for k, v in vorige.items()
+        {k: (
+            [{ok: ov for ok, ov in o.items() if ok != "quellen"} for o in v]
+            if k == "objekte" else v
+        ) for k, v in vorige.items()
          if k not in ("wiederaufnahme", "herkunft", "alter_sekunden")}
         if vorige else None
     )
+    angebot: list[MemoryHit] = list(bestand or [])
     vorige_sektion: str = (
         _VORIGE_SEKTION.format(vorige=json.dumps(vorige_rein, ensure_ascii=False))
         if vorige_rein else "Es gibt noch keine Sachlage — dies ist der Anfang."
@@ -361,7 +388,17 @@ def _derive(
             f"Sachlage-Call ausgefallen ({type(fehler).__name__}: {fehler})"
         )
         return None
-    return _validate_artifact(response.parsed)
+    artefakt: dict | None = _validate_artifact(response.parsed)
+    if artefakt is None:
+        return None
+    # Scheibe 6: das Urteil, ob das Angebot eine offene Eigenschaft deckt,
+    # faellt ein eigener, kleiner Call — nur offene Eigenschaften gegen das
+    # Angebot. `[gemessen]` 28.08.2026: im Sachlage-Call selbst traf es 1/5.
+    offen: list[tuple[str, list[str]]] = open_properties(artefakt)
+    claims: dict = (
+        resolve_open_properties(offen, angebot) if angebot and offen else {}
+    )
+    return carry_sources(apply_memory_coverage(artefakt, angebot, claims, vorige), vorige)
 
 
 def _resume_lookup(state: dict, vorige: dict | None) -> dict | None:
@@ -584,10 +621,23 @@ def sachlage_block(sachlage: dict) -> str:
         f"Wie er es angeht: {sachlage.get('ausdrucksweise', '')}",
     ]
     for objekt in sachlage.get("objekte", []):
-        if objekt.get("akut") and objekt.get("offen"):
+        if not objekt.get("akut"):
+            continue
+        if objekt.get("offen"):
             offen: str = ", ".join(str(o) for o in objekt["offen"][:5])
             zeilen.append(
                 f"Im Raum steht: {objekt.get('name')} — dazu noch offen: {offen}"
+            )
+        # Scheibe 6: was das Gedaechtnis deckt, ist Wissen fuer den Verfasser,
+        # nicht Fragestoff — mit der Herkunft, damit Nova sagen kann, woher.
+        gedeckt: dict = objekt.get("gedeckt") or {}
+        for eigenschaft, quelle in list((objekt.get("quellen") or {}).items())[:3]:
+            label: str = SOURCE_LABELS.get(
+                str(quelle.get("quelle", "")), "aus dem Gedaechtnis",
+            )
+            zeilen.append(
+                f"Dazu weiss Nova schon ({label}): {eigenschaft} — "
+                f"{str(gedeckt.get(eigenschaft, ''))[:200]}"
             )
     fruehere: dict | None = sachlage.get("wiederaufnahme")
     if fruehere:
@@ -679,9 +729,13 @@ def sachlage_assess(state: dict) -> dict:
                 f"(turn={fruehere.get('turn_id')}, "
                 f"kosinus={float(fruehere.get('kosinus', 0.0)):.2f})"
             )
+        # Scheibe 6: das Angebot aus dem Gedaechtnis-Pool des Turns — was
+        # davon eine offene Eigenschaft deckt, entscheidet der Call, gehalten
+        # gegen das Angebot.
         erhoben: dict | None = _derive(
             vorige, state.get("session_turns") or [], reiz_text(state),
             wiederaufnahme=fruehere,
+            bestand=memory_offer(state, vorige),
         )
         if erhoben is not None:
             erhoben["herkunft"] = (

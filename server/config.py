@@ -1920,6 +1920,15 @@ NODE_LLM_CONFIG: dict = {
         "max_output_tokens": 768,
         "timeout_s": 60.0,
     },
+    # --- Der Frame-Aufloeser (novaberg-thinking-lage_k.md, Scheibe 6) ---
+    # Ein Urteil, keine Erzeugung: offene Eigenschaften gegen ein kurzes
+    # Angebot. Kleiner Ausgang, kurze Frist — er haengt hinter dem
+    # Sachlage-Call und darf den Turn nicht verdoppeln.
+    "sachlage_aufloeser": {
+        "temperature": 0.0,
+        "max_output_tokens": 384,
+        "timeout_s": 30.0,
+    },
 }
 
 # ── GV4 — Wissenslücken-Erkennung ────────────────────────────
@@ -2073,6 +2082,19 @@ SACHLAGE_BRUECKE_MIN_KOSINUS: float = float(
 # Startwert wie die Bruecke; die Messreihe der Scheibe setzt ihn.
 SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS: float = float(
     os.getenv("SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS", "0.35"))
+# Scheibe 6 (28.08.2026), der Frame-Aufloeser: Wie viele Eintraege des
+# Gedaechtnis-Pools dieses Turns (KZG, LZG, Bibliothek, Aufzeichnungen,
+# Kalender) der Sachlage-Call als nummeriertes Angebot sieht. Der Pool traegt
+# im Betrieb um 20 Eintraege (28.08.2026: 19 + 3 Aufzeichnungen); jeder kostet
+# Prompt-Zeichen, und eine Sektion hat schon einmal eine Nebensache aus dem
+# Artefakt gedrueckt (Scheibe 5). ⚠ Wachposten: Startwert, nicht gemessen.
+SACHLAGE_BESTAND_MAX_EINTRAEGE: int = int(
+    os.getenv("SACHLAGE_BESTAND_MAX_EINTRAEGE", "8"))
+# Kalendereintraege je akutem Objekt der vorigen Blase (Titel-Suche in beide
+# Zeitrichtungen). Der Kalender ist die einzige Quelle, die der Aufloeser
+# selbst sucht — der Pool kennt sie nicht.
+SACHLAGE_BESTAND_KALENDER_LIMIT: int = int(
+    os.getenv("SACHLAGE_BESTAND_KALENDER_LIMIT", "3"))
 
 # --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
 # Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein
