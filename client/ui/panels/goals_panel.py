@@ -17,6 +17,9 @@ Response-Format (siehe ``server/api/drive.py``):
     {
         "long_term":  [ { id, goal_text, motivation, emotion, arousal,
                           active, created_at, updated_at }, ... ],
+                      — aktiv UND inaktiv; das Panel zeigt seit dem 28.08.2026
+                        nur die aktiven als Karten und nennt die Zahl der
+                        ausgeblendeten (Wunsch: der Tab war voller Streichungen)
         "mid_term":   [ ... ],
         "short_term": null | {
             "conversation_vector": str,
@@ -186,17 +189,31 @@ def _build_section(
     header.add_css_class("heading")
     section.append(header)
 
-    if not ziele:
+    # Nur lebende Ziele als Karten. Der Endpoint liefert aktiv und inaktiv;
+    # die inaktiven (verfallen oder bei einer Destillation abgeloest) standen
+    # bis zum 28.08.2026 durchgestrichen darunter — bei 333 langfristigen ein
+    # Tab voller Streichungen. Ihre Zahl bleibt sichtbar, ihre Karten nicht.
+    aktive:   list = [z for z in ziele if bool(z.get("active", True))]
+    inaktive: int  = len(ziele) - len(aktive)
+
+    if not aktive:
         leer = Gtk.Label(label=leer_text)
         leer.set_xalign(0.0)
         leer.add_css_class("dim-label")
         section.append(leer)
-        return section
-
-    for idx, ziel in enumerate(ziele):
+    for idx, ziel in enumerate(aktive):
         if idx > 0:
             section.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
         section.append(_build_goal_card(ziel, zeige_aktualisiert=zeige_aktualisiert))
+
+    if inaktive:
+        hinweis = Gtk.Label(
+            label=f"{inaktive} inaktive Ziele ausgeblendet (verfallen oder abgelöst)",
+        )
+        hinweis.set_xalign(0.0)
+        hinweis.add_css_class("dim-label")
+        hinweis.add_css_class("caption")
+        section.append(hinweis)
 
     return section
 
