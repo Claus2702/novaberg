@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Event-Modell (Architektur-Evolution)
-**Stand:** 24. August 2026 (§7a **im Betrieb belegt** — 15 Aufrufe, die Marke kommt an; sie steht aber in keiner der 120 AgentGraph-Zeilen des Protokolls). Davor: 23. August 2026 (§7a neu — `event_payload` traegt die Herkunftsmarke auch ohne Ereignis; der AgentGraph wird direkt gerufen). Davor: 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
+**Stand:** 28. August 2026 (`ausloeser_turn_id` im Zustellungs-Payload — Scheibe 4 des Lage-Konzepts). Davor: 24. August 2026 (§7a **im Betrieb belegt** — 15 Aufrufe, die Marke kommt an; sie steht aber in keiner der 120 AgentGraph-Zeilen des Protokolls). Davor: 23. August 2026 (§7a neu — `event_payload` traegt die Herkunftsmarke auch ohne Ereignis; der AgentGraph wird direkt gerufen). Davor: 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
 **Pfad:** novaberg/docs/novaberg-convention-event-model.md
 **Typ:** Convention
 **Voraussetzung:** Session-Trennung (user_id × character_id), Chat 60 ✅
@@ -102,7 +102,7 @@ Jedes Event ist ein JSON-Dict:
 | Erzeuger | `source` | `typ` | Anlass |
 |---|---|---|---|
 | `api/chat.py` (sync + stream) | `user` | `message` | Der Nutzer hat geschrieben. Payload traegt `turn_id` und die neun EI-Dimensionen aus `external.emotion`. |
-| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110, geaendert am 15.08.2026.** Ein Pixie-Impuls: das Wissensstueck steht in **`eigener_gedanke`**, dazu `turn_id`, `reiz_herkunft="eigener_impuls"` und der mitgebrachte Zustand des Gedankens (`gedanke_arousal`, siehe unten). ~~das Wissensstueck als `user_prompt`~~ — **`user_prompt` fehlt im Payload ganz**, siehe unten. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. |
+| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110, geaendert am 15.08.2026.** Ein Pixie-Impuls: das Wissensstueck steht in **`eigener_gedanke`**, dazu `turn_id`, `reiz_herkunft="eigener_impuls"` und der mitgebrachte Zustand des Gedankens (`gedanke_arousal`, siehe unten). ~~das Wissensstueck als `user_prompt`~~ — **`user_prompt` fehlt im Payload ganz**, siehe unten. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. **Seit dem 28.08.2026 dazu `ausloeser_turn_id`** (siehe unten). |
 | `services/event_consumer.py` | `character` | `continue` | Thinker-Selbsttrigger bei Doppel-Fehlschlag. **Erbt** die `turn_id` — es ist derselbe Gedanke, nochmal versucht. |
 
 > **Abwesend, nicht leer — der Reiz-Platz des Impuls-Ereignisses (15.08.2026).** Ein Pixie-Impuls trug den Gedanken bis dahin als `user_prompt`, auf demselben Platz, an dem sonst steht, was der Mensch gesagt hat. Seither hat er einen eigenen: `eigener_gedanke`. **`user_prompt` wird im Payload nicht gesetzt** — weder gefuellt noch leer.
@@ -128,6 +128,8 @@ Der Anlass steht in `novaberg-bugs.md` → `ANTWORT-OHNE-ZUORDNUNG`: Ohne die Zu
 > **Was dabei offen bleibt:** `intent`, `tone` und `gespraechs_modus` tragen Vorgabewerte, die nicht leer sind — keine Belegungspruefung unterscheidet sie von einer Messung.
 
 **`reiz_herkunft`.** Markiert einen Reiz, den Nova sich selbst erarbeitet hat. Gelesen vom Responder (Block `[EIGENER GEDANKE]`) und vom Event-Consumer, der das Feld ins `character_response`-Payload weiterreicht, damit der Client den Impuls einfaerben kann. Fehlt das Feld, gilt der Reiz als fremd.
+
+**`ausloeser_turn_id` (28.08.2026).** Der Turn, aus dem der Gedanke entstand — das zweite Ende der Sachlage-Bruecke (`novaberg-thinking-lage_k.md` §4, Scheibe 4). Gelesen vom Sachlage-Knoten, der daraus die Verlaufszeile des Ausloesers laedt; ohne Wert faellt er auf die Vektorsuche zurueck und markiert das. **Das Feld steht immer im Payload, auch als `None`** — derselbe Grund wie bei `gedanke_arousal`: Ein Eintrag alter Bauart hat es nicht, und Anwesenheit sagte dann nichts. Ein Erzeuger: die Zustellung; der Thinker-Wiederholungsversuch traegt keinen Impuls und deshalb auch dieses Feld nicht.
 
 **`gedanke_arousal` (15.08.2026).** Die Erregung, in der der Gedanke gefasst wurde — sie **hebt** Novas Zustand beim Einwurf, wenn sie hoeher liegt als der geladene Wert. Der Wert stammt aus dem Stapel-Eintrag und wird im Zugriffsknoten angewandt; gelesen wird er ueber `reiz_level()` aus `graph/reiz.py`, dem einzigen Zugang.
 

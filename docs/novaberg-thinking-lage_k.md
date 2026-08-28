@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lage-Analyse — die erste gebaute Scheibe der Verstehens-Schicht
-**Stand:** 28. August 2026 (Erstfassung; am selben Tag ergänzt: §2a wissenschaftliche Prüfung, §3a der Kontext als Blase)
+**Stand:** 28. August 2026, abends (Scheibe 4 gebaut und gemessen, §4; Betriebsmessung zu Scheibe 1). Davor am selben Tag: (Erstfassung; am selben Tag ergänzt: §2a wissenschaftliche Prüfung, §3a der Kontext als Blase)
 **Pfad:** novaberg/docs/novaberg-thinking-lage_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** `novaberg-thinking-frames_k.md` · `novaberg-thinking-cognitive-pipeline_k.md` · `novaberg-thinking-drive_k.md` (Herkunft jeweils dort) · Messungen vom 27./28.08.2026
@@ -158,7 +158,7 @@ Die Rückfrage-Zeile des Verfassers (`ei/haltungssprache.py::_rueckfragenzeile`,
 
 ---
 
-### Scheibe 4 — das Sachlage-Gedächtnis (entworfen am 28.08.2026)
+### Scheibe 4 — das Sachlage-Gedächtnis (entworfen und gebaut am 28.08.2026)
 
 **Der Anlass sind Pixies Zustellungen.** Ein Impuls beruht auf einem Turn; wenn die Aussage im Chat landet, ist die Assoziation zum Auslöser oft schwer nachvollziehbar. Empathisch wäre ein **Übergang vom Kontext des aktuellen Turns zum Kontext des Auslösers** — dafür braucht es beide Enden, und das zweite existiert nicht: Die Sachlage wird heute je Paar **überschrieben** (Redis, Verfall 4 h); die `pipeline_log`-Zeile je Turn ist Forensik mit Vorhaltefrist, ohne Thema, ohne Embedding, nicht abfragbar. Geprüft am 28.08.2026: Der Impuls-Stack-Eintrag trägt Thema und Embedding, aber **keine `turn_id` seines Auslösers** — die Zuordnung ist nur implizit über Ähnlichkeit.
 
@@ -176,7 +176,11 @@ Die Rückfrage-Zeile des Verfassers (`ei/haltungssprache.py::_rueckfragenzeile`,
 | **TEST** | Zeugen auf: Schreibweg nur bei gerechneten Artefakten · Embedding-Text = `gegenstand` (rekonstruierbar) · Brücke nur mit beiden Enden, Rückfall gekennzeichnet · Impuls-Eintrag trägt die Auslöser-`turn_id`. |
 | **MESSUNG** | Ein gestellter Verlauf im Labor: Impuls aus Turn A, Zustellung in Lage B — der Verfasser-Prompt trägt beide Blasen; dazu die Trefferprobe der Embedding-Suche über zehn persistierte Lagen. |
 
-> **DDL:** `sachlage_verlauf` ist eine neue Tabelle (additiv) und wird nach `F-DDL-1` **vor dem Bau angekündigt**; sie wirkt erst nach Neustart des Dienstes. Ablageort nach `F-SCHEMA-1` in der zuständigen `init.sql`.
+> **DDL:** `sachlage_verlauf` ist eine neue Tabelle (additiv) und wird nach `F-DDL-1` **vor dem Bau angekündigt**; sie wirkt erst nach Neustart des Dienstes. Ablageort nach `F-SCHEMA-1` in der zuständigen `init.sql`. **Angekündigt, freigegeben und angelegt am 28.08.2026** — dazu eine zweite, im Entwurf nicht genannte Spalte: `shadow_auftrag.ausloeser_turn_id`. Ohne sie hätte der Stapel-Eintrag die `turn_id` seines Auslösers nie bekommen können, denn der Auftrag ist das erste Glied der Kette (Auftrag → Stapel → Ereignis → Brücke), und er hatte keine Spalte dafür. **Kein Verfall, weil Turns auch keinen haben** — so entschieden bei der Freigabe.
+
+**Gebaut am 28.08.2026.** `memory/sachlage_history.py` (Repository: schreiben, per `turn_id` lesen, per Vektor die ähnlichste Zeile eines Paares — mit Schwelle), der Knoten schreibt auf den drei rechnenden Wegen und baut auf dem Impuls-Weg die Brücke (`sachlage_bridge_build`, Weg `turn_id` oder `embedding_rueckfall` als Begleitfeld), der Verfasser bekommt `[SACHLAGE-BRUECKE]` nach `[SACHLAGE]`. Die `ausloeser_turn_id` wandert vom Turn über den Salienz-Schreibauftrag ins KZG-Hash, von dort in den Auftrag (KZG-Store, KZG-Queues, Synapsen-Promotion; der Recherche-Verweis trägt keine — dort steht `None`), dann über `shadow_auftrag`, den Stapel-Eintrag und das Ereignis-Payload bis in den Knoten. **Den Anfang der Kette fand erst der Bestand, nicht der Bau:** 0 von 300 KZG-Hashes trugen eine `turn_id` — der Salienz-Schreibauftrag reichte sie nicht durch, und das Hash-Mapping kannte das Feld nicht; 21 Aufträge nach dem Bau trugen deshalb `NULL`. Beides geschlossen, mit Zeugen an allen drei Stellen; der nächste echte Turn schrieb sein Hash mit `turn_id`. **Der Rückfall rechnet das Impuls-Embedding nach** — aus derselben Formel wie der Stapel (`build_impulse_embed_text`) — statt 768 Zahlen durch das Ereignis zu schicken. `thema` ist Pflichtfeld des Artefakts. 31 Zeugen, Suite 2427 grün; Gegenprobe: drei Eingriffe, je 1–2 rot (der Verfasser-Zeuge musste dafür erst vom Quelltext-Grep zum Verhaltenszeugen werden — der Import trug den Namen weiter).
+
+**MESSUNG** (`labor/2026-08-28_sachlage_bruecke_messung.py`, gegen Repository, Embed-Worker, Knoten und Verfasser, ohne LLM-Antwort): zehn persistierte Lagen, je ein synthetischer Impuls zum eigenen Thema — **Rang 1 in 10 von 10**, Kosinus 0,40–0,76 (Median 0,65); ein Impuls zu einem fremden Thema: nächste Zeile 0,25, keine Brücke. Brücke hart (Impuls aus Lage A in Lage B) → `weg=turn_id`, `damals` = A; ohne `turn_id` → `weg=embedding_rueckfall` bei 0,73; der Verfasser-Prompt trägt beide Blasen nach `[SACHLAGE]`. **Die Schwelle stand zuerst auf 0,50 und hätte eine von zehn eigenen Lagen verworfen** — auf 0,35 gesetzt (`SACHLAGE_BRUECKE_MIN_KOSINUS`); der Fremdwert ist mit n=1 dünn belegt (Fundliste). Betrieb: ein echter Turn schreibt die Verlaufszeile mit Vektor (Log `Sachlage-Verlauf: turn=… abgelegt`); die erste echte Zustellung mit Brücke steht aus, weil nur Aufträge, die **nach** dem Bau entstehen, eine `ausloeser_turn_id` tragen — der Altbestand des Stapels läuft über den Rückfall.
 
 ---
 

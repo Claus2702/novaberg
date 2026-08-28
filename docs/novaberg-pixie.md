@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 28. August 2026 (`ausloeser_turn_id` im Stapel-Eintrag, `build_impulse_embed_text` — Scheibe 4 des Lage-Konzepts). Davor: 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -151,9 +151,12 @@ Shadow-Stack Eintragsformat:
     "vorschlag": "...",
     "emotion": "neugierig",
     "modus": "fachgespraech",
-    "embedding": [0.12, -0.34, ...]
+    "embedding": [0.12, -0.34, ...],
+    "ausloeser_turn_id": "…"
 }
 ```
+
+**`ausloeser_turn_id` (28.08.2026):** der Turn, aus dem der Auftrag entstand — kommt aus `shadow_auftrag.ausloeser_turn_id` und wandert mit dem Ereignis in den CharacterGraph, wo der Sachlage-Knoten daraus die Brücke zur Sachlage des Auslösers baut (`novaberg-thinking-lage_k.md` §4, Scheibe 4). **Steht immer im Eintrag, auch als `null`:** Ein weggelassenes Feld wäre von einem Eintrag alter Bauart nicht zu unterscheiden. Wiedervorlage und Recherche-Verweis tragen keinen Turnbezug — dort ist es `null`, und die Brücke fällt auf die Vektorsuche zurück. Der Embed-Text des Eintrags hat seit demselben Tag eine benannte Formel (`build_impulse_embed_text`), weil der Rückfall ihn nachrechnet.
 
 **Delivery Service:** Eigenstaendiger Dienst, prueft alle fuenf Sekunden ob eine proaktive Nachricht gesendet werden soll — ausschliesslich fuer Kennungen mit **offener Verbindung**.
 

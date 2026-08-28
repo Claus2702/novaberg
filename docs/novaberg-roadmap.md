@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **16:10 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **17:40 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,18 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 17:40 UTC — Scheibe 4 gebaut: das Sachlage-Gedaechtnis und die Bruecke
+
+**DDL, angekuendigt und freigegeben:** `sachlage_verlauf` (je gerechnetem Turn eine Zeile — `turn_id`, Paar, `thema`, `gegenstand`, `nutzerziel`, `ausdrucksweise`, `objekte`, `herkunft`, `embedding VECTOR(768)` ueber den Gegenstand-Satz, `erstellt_am`; **kein Verfall, weil Turns auch keinen haben**) und `shadow_auftrag.ausloeser_turn_id` (`TEXT`, NULL = unbekannt). Die zweite Spalte nannte der Entwurf nicht: Der Auftrag ist das erste Glied der Kette Auftrag → Stapel → Ereignis → Bruecke, und er hatte keine Spalte fuer den Turnbezug — der Code sagte es selbst. Reihenfolge nach der Regel: Zeugen zuerst (rot: `Ran 2397, failures=2, errors=2`), dann der Schema-Edit, dann der erste Python-Anfasser als Zuender (`Migration: db/init.sql ausgefuehrt, 153 Statements`).
+
+**Der Bau:** `memory/sachlage_history.py` (Repository — schreiben, per `turn_id` lesen, per Vektor die aehnlichste Zeile eines Paares mit Schwelle; Embed-Text = Gegenstand, `build_embed_text`), der Knoten schreibt auf den drei rechnenden Wegen und baut auf dem Impuls-Weg die Bruecke (`sachlage_bridge_build`: Weg `turn_id` oder `embedding_rueckfall` als Begleitfeld; der Rueckfall rechnet das Impuls-Embedding aus derselben Formel wie der Stapel nach, `build_impulse_embed_text`, statt 768 Zahlen durch das Ereignis zu schicken), der Verfasser bekommt `[SACHLAGE-BRUECKE]` nach `[SACHLAGE]`. `thema` ist Pflichtfeld des Artefakts. **`F-NAME-1` griff:** Die neue Datei trug deutsche Funktionsnamen und wurde samt Modul umbenannt (`sachlage_verlauf.py` → `sachlage_history.py`, `verlauf_schreiben` → `history_write` usw.), bevor etwas darauf zeigte.
+
+**Den Anfang der Kette fand der Bestand, nicht der Bau.** Nach dem ersten echten Turn: 21 neue Auftraege, **keiner** mit `ausloeser_turn_id`; **0 von 300 KZG-Hashes** trugen eine `turn_id` — der Salienz-Schreibauftrag reichte sie nicht durch, das Hash-Mapping kannte das Feld nicht, und beide neuen Quellen der Auslöser-ID (KZG-Store, Promotion) lasen ins Leere. Geschlossen an drei Stellen (Salienz-`daten`, Hash-Mapping, KZG-Queues) plus Legacy-Manager, je ein Zeuge; der naechste echte Turn schrieb sein Hash mit `turn_id`. Der Bestandsnachweis der Auftragsspalte steht aus: Rueckweg-Auftraege leben nur bis zum naechsten Pixie-Takt.
+
+**Der Bestand fand ein Zweites:** Die drei aelteren Zeugen des rechnenden Wegs in `tests/test_sachlage.py` schrieben nach dem Bau **echte Zeilen in die Produktivtabelle** (sechs Zeilen `u/c`, ohne Vektor) — ein neuer Seiteneffekt an einem Pfad, dessen Zeugen nur die alten Seiteneffekte abfingen. Zeilen geloescht, Zeugen abgedichtet, Lesson.
+
+**MESSUNG** (`labor/2026-08-28_sachlage_bruecke_messung.py`): zehn persistierte Lagen, je ein Impuls zum eigenen Thema — **Rang 1 in 10/10**, Kosinus 0,40–0,76 (Median 0,65); Fremdthema: naechste Zeile 0,25, keine Bruecke. Bruecke hart → `weg=turn_id`; ohne `turn_id` → Rueckfall bei 0,73; Verfasser-Prompt traegt beide Blasen. **Schwelle von 0,50 auf 0,35** — 0,50 haette eine von zehn eigenen Lagen verworfen. Betrieb: zwei echte Turns schrieben ihre Verlaufszeile mit Vektor (id 41, 54; 3,5 s je Sachlage-Call samt Embedding und Insert, vorher 2,7–3,9 s ohne). **Suite 2433 gruen, 0 uebersprungen** (Beginn 2395); Gegenprobe: drei Eingriffe, je 1–2 rot — nachdem der Verfasser-Zeuge vom Quelltext-Grep zum Verhaltenszeugen geworden war (der Import trug den Namen weiter). Harte Wand sauber; Linter 1180 (Beginn 1159).
 
 ## 28.08.2026, 16:10 UTC — Der erste Zeuge: die Sachlage laeuft im Betrieb
 
