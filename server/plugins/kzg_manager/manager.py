@@ -55,6 +55,9 @@ class KzgManager(BaseManager):
             status: str = kzg_store(
                 redis_client, user_id, character_id, beobachter,
                 salienz_obj, embedding,
+                # Leer bei Schreibauftraegen alter Bauart — der Store meldet
+                # das als `kzg-store-unbekannt` und traegt keine erfundene ID.
+                turn_id=daten.get("turn_id", ""),
             )
             logger.info(f"KZG-Manager: Status = {status}")
             verarbeitet += 1

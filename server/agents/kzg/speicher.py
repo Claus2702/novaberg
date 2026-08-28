@@ -332,6 +332,12 @@ def _neu_anlegen(
         "tone":               salienz_obj.get("tone", "sachlich"),
         "erstellt_am":        str(timestamp),
         "entitaet_ids":       entitaet_ids_str,
+        # Der Turn, aus dem der Eintrag entstand. Bis zum 28.08.2026 stand
+        # er nur im Pipeline-Log, nicht im Hash: 0 von 300 Eintraegen trugen
+        # ihn, und die Promotion las ihn mit `_hget("turn_id")` ins Leere —
+        # der Rueckweg-Auftrag bekam nie einen Turnbezug (Sachlage-Bruecke,
+        # erstes Glied). Leer heisst unbekannt; nichts wird erfunden.
+        "turn_id":            turn_id,
         "embedding":          embedding_bytes,
     }
     if timeline_id is not None:

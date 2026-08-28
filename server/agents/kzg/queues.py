@@ -113,6 +113,10 @@ def queues_befuellen(state: AgentState) -> dict:
                     kontext=kern, prioritaet=neue_salienz,
                     intentionen=intentionen,
                     emotion=emotion, modus=modus, arousal=arousal,
+                    # Der Turn, aus dem der Auftrag entsteht — das erste
+                    # Glied der Sachlage-Bruecke. None, wenn der Kontext
+                    # keinen traegt.
+                    ausloeser_turn_id=state["kontext"].get("turn_id") or None,
                 )
                 aktionen.append(f"shadow_{aufgabe}")
 

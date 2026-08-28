@@ -825,6 +825,11 @@ def analyze(
                 "segment":        segment,
                 "segment_index":  seg_idx,
                 "segment_gesamt": len(segmente),
+                # Der Turn, aus dem der Eintrag entsteht. Bis zum 28.08.2026
+                # kam er nie beim KZG-Store an — 0 von 300 KZG-Hashes trugen
+                # eine turn_id — und damit auch nicht beim Auftrag, der aus
+                # dem Eintrag entsteht (Sachlage-Bruecke, erstes Glied).
+                "turn_id":        state.get("turn_id", ""),
             },
             "beschreibung": f"KZG: {', '.join(salienz_obj.get('themen', []))} "
                             f"(salienz={_salienz_anzeige(salienz_segment)}, "
