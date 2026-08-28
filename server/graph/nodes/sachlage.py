@@ -39,6 +39,7 @@ einzuwerfen. Ohne beide Enden gibt es keine Bruecke und keinen Block.
 
 import json
 import logging
+import re
 import time
 
 from config import (
@@ -87,6 +88,16 @@ BRIDGE_VIA_EMBEDDING: str = "embedding_rueckfall"  # aehnlichste Zeile des Paare
 # traegt die aeltere Historie — mehr Turns doppeln nur, was die Fortschreibung
 # schon haelt.
 _TURN_FENSTER: int = 6
+# Wie viel von einem Beitrag der Prompt sieht. `[gemessen]` 28.08.2026: Der
+# Schnitt stand auf 400; Novas Antworten des Paares waren 183 bis 1557 Zeichen
+# lang (6 von 11 ueber 400), und eine Regieanweisung frisst die ersten 100 bis
+# 400 davon. Eine offene Eigenschaft blieb drei Turns offen, weil die Antwort,
+# die sie deckte, bei Zeichen 384 begann und bei 400 endete. Die Grenze liegt
+# jetzt ueber der laengsten gemessenen Antwort; Regieanweisungen fallen vorher.
+_BEITRAG_MAX_ZEICHEN: int = 1600
+# Regieanweisungen (*…*) tragen Gestik, keine Sache — fuer das Verstehen des
+# Gegenstands sind sie Rauschen und kosten die Zeichen, die die Antwort braucht.
+_REGIEANWEISUNG: re.Pattern = re.compile(r"\*[^*\n]{1,400}\*")
 
 SACHLAGE_PROMPT: str = """Du analysierst ein laufendes Gespraech. Deine Aufgabe
 ist zu verstehen, worum es geht — nicht zu antworten.
@@ -127,6 +138,9 @@ Regeln:
   nach Wichtigkeit geordnet, hoechstens fuenf.
 - Fuehre die vorige Sachlage FORT: Was der neue Turn deckt, wandert von
   "offen" nach "gedeckt". Was nicht mehr Gegenstand ist, faellt weg.
+- Deckung kommt von beiden Seiten: Auch was Nova in den juengsten Beitraegen
+  bereits beantwortet hat, deckt die Eigenschaft. Offen bleibt nur, was
+  weder der Nutzer noch Nova genannt hat.
 - Ein Objekt, das schon in der bisherigen Sachlage steht, behaelt seinen
   "name" WOERTLICH — auch wenn der neue Turn es anders nennt. Ein neues
   Objekt bekommt nur dann einen eigenen Eintrag, wenn es eine andere Sache
@@ -238,13 +252,24 @@ def _validate_artifact(parsed: object) -> dict | None:
 
 
 def _render_history(session_turns: list[dict]) -> str:
-    """Die juengsten Turns als Verlaufszeilen fuer den Prompt."""
+    """Die juengsten Turns als Verlaufszeilen fuer den Prompt.
+
+    Vorbedingung: Turns mit `rolle` und `inhalt`, wie `session_turns_retrieve`
+        sie liefert.
+    Nachbedingung: Eine Zeile je Beitrag (`Nutzer:` / `Nova:`), ohne
+        Regieanweisungen, Zeilenumbrueche zu Leerzeichen gefaltet, hoechstens
+        `_BEITRAG_MAX_ZEICHEN` lang — Novas Antworten kommen damit ganz an,
+        und die Deckungsregel des Prompts hat etwas zu lesen.
+    Fehlerfaelle: Ein Beitrag, der nach dem Entfernen der Regieanweisung leer
+        ist, erzeugt keine Zeile; ohne Zeilen steht der Platzhalter.
+    """
     zeilen: list[str] = []
     for turn in session_turns[-_TURN_FENSTER:]:
         sprecher: str = "Nutzer" if turn.get("rolle") == "user" else "Nova"
-        inhalt: str = (turn.get("inhalt") or "").strip()
+        inhalt: str = _REGIEANWEISUNG.sub(" ", turn.get("inhalt") or "")
+        inhalt = " ".join(inhalt.split())
         if inhalt:
-            zeilen.append(f"{sprecher}: {inhalt[:400]}")
+            zeilen.append(f"{sprecher}: {inhalt[:_BEITRAG_MAX_ZEICHEN]}")
     return "\n".join(zeilen) if zeilen else "(noch keine Beitraege)"
 
 

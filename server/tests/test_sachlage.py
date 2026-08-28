@@ -21,6 +21,14 @@ Zeugen dieser Datei:
   * **Die Verdrahtung ist ein eigener Zeuge.** Ein Knoten, der rechnet und
     dessen Ergebnis niemand liest, war der Defekt der Frage-Art vom
     27.08.2026 — der Graph traegt die Kante, der Verfasser den Block.
+  * **Der Verlauf traegt Novas Antwort ganz.** `[gemessen]` 28.08.2026: Eine
+    offene Eigenschaft blieb drei Turns offen, obwohl Nova sie beantwortet
+    hatte — die Antwort war 973 Zeichen lang, die Substanz begann bei 384,
+    und das Rendering schnitt bei 400. Sechs von elf Antworten des Paares
+    sind laenger als 400. Der Zeuge haelt das Rendering: Substanz jenseits
+    der alten Grenze kommt an, Regieanweisungen (*…*) nicht, Zeilenumbrueche
+    in einer Antwort machen keine zweite Verlaufszeile — und der Prompt, der
+    zum Modell geht, traegt die Regel, dass Novas Antworten decken.
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
@@ -34,6 +42,8 @@ from graph.nodes.sachlage import (
     HERKUNFT_FRISCH,
     HERKUNFT_IMPULS,
     HERKUNFT_VERFALLEN_NEU,
+    _derive,
+    _render_history,
     _validate_artifact,
     sachlage_assess,
     sachlage_block,
@@ -209,6 +219,62 @@ class JederWegTraegtSeineMarkeTest(unittest.TestCase):
             state = sachlage_assess(_state())
 
         self.assertEqual(state["sachlage"]["herkunft"], HERKUNFT_AUSFALL)
+
+
+class DerVerlaufTraegtNovasAntwortTest(unittest.TestCase):
+    """_render_history — was das Modell vom Verlauf sieht.
+
+    Die Zahlen sind die der Messung vom 28.08.2026: Antwort 973 Zeichen,
+    Substanz ab 384, Schnitt bei 400 — die Eigenschaft blieb offen.
+    """
+
+    def test_substanz_jenseits_von_400_zeichen_kommt_an(self) -> None:
+        antwort = ("*Sie lehnt sich vor.* " + "Der Rettich braucht Wasser. " * 20
+                   + "ENTSCHEIDEND: Wasser treibt das Wurzelwachstum staerker als Licht.")
+        self.assertGreater(antwort.index("ENTSCHEIDEND"), 400)
+
+        gerendert = _render_history([{"rolle": "assistant", "inhalt": antwort}])
+
+        self.assertIn("ENTSCHEIDEND: Wasser treibt", gerendert)
+
+    def test_regieanweisungen_stehen_nicht_im_verlauf(self) -> None:
+        gerendert = _render_history([
+            {"rolle": "assistant",
+             "inhalt": "*Sie zieht eine Augenbraue hoch.* Wasser ist der Hebel. *Sie nickt.*"},
+        ])
+
+        self.assertEqual(gerendert, "Nova: Wasser ist der Hebel.")
+
+    def test_eine_antwort_bleibt_eine_verlaufszeile(self) -> None:
+        gerendert = _render_history([
+            {"rolle": "user", "inhalt": "Licht oder Wasser?"},
+            {"rolle": "assistant", "inhalt": "Wasser.\n\nUnd zwar gleichmaessig.\nOhne Schwall."},
+        ])
+
+        self.assertEqual(gerendert.splitlines(), [
+            "Nutzer: Licht oder Wasser?", "Nova: Wasser. Und zwar gleichmaessig. Ohne Schwall.",
+        ])
+
+    def test_eine_reine_regieanweisung_erzeugt_keine_zeile(self) -> None:
+        gerendert = _render_history([{"rolle": "assistant", "inhalt": "*Sie schweigt.*"}])
+
+        self.assertEqual(gerendert, "(noch keine Beitraege)")
+
+    def test_der_prompt_zum_modell_traegt_novas_antwort_und_die_deckungsregel(self) -> None:
+        """Am gerenderten Prompt gemessen, nicht am Quelltext."""
+        gesehen: dict = {}
+
+        def _fang(request: object, timeout: float) -> None:
+            gesehen["prompt"] = request.messages[0]["content"]
+            raise RuntimeError("kein Modell im Zeugen")
+
+        with patch("graph.nodes.sachlage.model_service") as ms:
+            ms.chat.submit_sync.side_effect = _fang
+            _derive(None, [{"rolle": "assistant", "inhalt": "Wasser treibt das Wurzelwachstum."}], "Stimmt das?")
+
+        self.assertIn("Nova: Wasser treibt das Wurzelwachstum.", gesehen["prompt"])
+        self.assertIn("Nova", gesehen["prompt"].split("Regeln:")[1])
+        self.assertIn("deckt", gesehen["prompt"].split("Regeln:")[1])
 
 
 class DieVerdrahtungStehtTest(unittest.TestCase):
