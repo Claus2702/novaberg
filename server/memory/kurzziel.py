@@ -78,6 +78,11 @@ def _key(user_id: str, character_id: str) -> str:
     return f"kurzziel:{user_id}:{character_id}"
 
 
+def short_goal_key(user_id: str, character_id: str) -> str:
+    """Der Redis-Schluessel der Strecke — fuer Leser ausserhalb des Moduls (Kontext-Tab)."""
+    return _key(user_id, character_id)
+
+
 def _embed(text: str) -> list[float]:
     """Der Vektor ueber den Embed-Worker — als eigene Funktion, damit Zeugen
     ihn ersetzen koennen, ohne den Worker zu starten.

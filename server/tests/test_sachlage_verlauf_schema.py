@@ -37,6 +37,7 @@ from memory.sachlage_history import (
     build_embed_text,
     history_nearest,
     history_read_turn,
+    history_recent,
     history_write,
 )
 
@@ -252,6 +253,21 @@ class SchreibenUndLesenSindEinRundlaufTest(unittest.TestCase):
         self.assertEqual(ohne["turn_id"], eigene)
         self.assertEqual(mit["turn_id"], fruehere)
         self.assertEqual(mit["thema"], "Gravitationslinse")
+
+    def test_der_verlauf_kommt_juengste_zuerst_und_begrenzt(self) -> None:
+        """Scheibe 4, Nebenziel Kontext-Tab: die letzten Blasen des Paares."""
+        erste  = self._schreiben(8, thema="Erste")
+        zweite = self._schreiben(8, thema="Zweite")
+        dritte = self._schreiben(8, thema="Dritte")
+
+        zeilen = history_recent(POSTGRES_URL, self.paar[0], self.paar[1], limit=2)
+
+        self.assertEqual([z["turn_id"] for z in zeilen], [dritte, zweite])
+        self.assertEqual(zeilen[0]["thema"], "Dritte")
+        self.assertNotIn("embedding", zeilen[0])
+        self.assertEqual(history_recent(POSTGRES_URL, "anderes-paar", self.paar[1], limit=2), [])
+        self.assertIsInstance(zeilen[0]["erstellt_am"], str)
+        _ = erste
 
     def test_die_suche_bleibt_im_paar(self) -> None:
         """Die Sachlage eines anderen Paares ist kein Anlass fuer dieses."""

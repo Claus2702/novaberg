@@ -555,6 +555,56 @@ class DieVerdrahtungStehtTest(unittest.TestCase):
         self.assertEqual(antwort["gegenstand"], VOLLSTAENDIG["gegenstand"])
         self.assertGreaterEqual(antwort["alter_sekunden"], 29.0)
 
+    def test_der_kontext_endpoint_buendelt_die_fuenf_scheiben(self) -> None:
+        """GET /drive/kontext — der Leseweg des Gespraechskontext-Tabs."""
+        import json as json_mod
+        import time as time_mod
+
+        from api import drive
+
+        def _hgetall(key: str) -> dict:
+            if key.startswith("sachlage:"):
+                return {"json": json_mod.dumps({**VOLLSTAENDIG, "herkunft": HERKUNFT_FORTGESCHRIEBEN,
+                                                "wiederaufnahme": {"thema": "Gravitationslinse", "kosinus": 0.62,
+                                                                   "turn_id": "t0", "erstellt_am": "2026-08-28T17:24:22+00:00"}}),
+                        "turn_zeit": str(time_mod.time() - 30)}
+            if key.startswith("kurzziel:"):
+                return {"strecken": json_mod.dumps({"geburtstag": 2}), "ziele": json_mod.dumps({"geburtstag": 4711})}
+            return {}
+
+        kurzziel = {"id": 4711, "ziel_typ": "kurzfristig", "zielsatz": "Ich möchte dem Nutzer bei seinem Vorhaben helfen: Geburtstag",
+                    "motivation": 0.35, "motivation_materialisiert": 0.7, "motivation_basis": 0.7,
+                    "motivation_basis_am": datetime.now(timezone.utc) - timedelta(hours=3), "erstellt_am": None, "thema": "Geburtstag"}
+        verlauf = [{"turn_id": "t1", "thema": "Geburtstag", "gegenstand": "Ein anstehender Geburtstag", "erstellt_am": "2026-08-28T20:00:00+00:00"}]
+        with patch.object(drive.redis_client, "hgetall", side_effect=_hgetall), \
+             patch.object(drive, "ziele_aktive_laden", return_value=[kurzziel, {"ziel_typ": "langfristig", "id": 1}]), \
+             patch.object(drive, "history_recent", return_value=verlauf) as recent:
+            antwort: dict = drive.kontext_lesen("u", "c")
+
+        self.assertEqual(antwort["sachlage"]["gegenstand"], VOLLSTAENDIG["gegenstand"])
+        self.assertEqual(antwort["frage_gegenstand"], "Geburtstag — was dazu noch offen ist: wer")
+        self.assertEqual(antwort["kurzziel"]["strecken"], {"geburtstag": 2})
+        self.assertEqual([z["id"] for z in antwort["kurzziele"]], [4711])
+        self.assertAlmostEqual(antwort["kurzziele"][0]["motivation"], 0.35, places=6)
+        self.assertGreater(antwort["kurzziele"][0]["verfaellt_in_stunden"], 3.0)
+        self.assertEqual(antwort["verlauf"], verlauf)
+        self.assertEqual(recent.call_args.kwargs.get("limit") or recent.call_args.args[-1], drive.KONTEXT_VERLAUF_ZEILEN)
+        self.assertEqual(antwort["verfall_sekunden"], drive.SACHLAGE_VERFALL_SEKUNDEN)
+        self.assertEqual(antwort["sachlage"]["wiederaufnahme"]["thema"], "Gravitationslinse")
+
+    def test_der_kontext_endpoint_ohne_sachlage_ist_leer_aber_vollstaendig(self) -> None:
+        from api import drive
+
+        with patch.object(drive.redis_client, "hgetall", return_value={}), \
+             patch.object(drive, "ziele_aktive_laden", return_value=[]), \
+             patch.object(drive, "history_recent", return_value=[]):
+            antwort: dict = drive.kontext_lesen("u", "c")
+
+        self.assertEqual(antwort["sachlage"], {})
+        self.assertIsNone(antwort["frage_gegenstand"])
+        self.assertEqual(antwort["kurzziele"], [])
+        self.assertEqual(antwort["verlauf"], [])
+
     def test_der_verfasser_baut_den_block_ein(self) -> None:
         """Rot, sobald der Verfasser die Sachlage wieder verliert."""
         import inspect

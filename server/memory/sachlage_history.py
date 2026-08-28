@@ -169,6 +169,54 @@ def history_read_turn(postgres_url: str, turn_id: str) -> dict | None:
     return _row_to_dict(zeile) if zeile else None
 
 
+def history_recent(
+    postgres_url: str,
+    user_id:      str,
+    character_id: str,
+    limit:        int = 10,
+) -> list[dict]:
+    """Die juengsten Verlaufszeilen eines Paares, juengste zuerst — ohne Vektor.
+
+    Der Leseweg des Gespraechskontext-Tabs (Scheibe 4, Nebenziel): welche
+    Blasen das Paar zuletzt hatte, mit Zeit, Thema und Gegenstand.
+
+    Vorbedingung: Paar gesetzt, `limit` > 0.
+    Nachbedingung: Hoechstens `limit` Zeilen, absteigend nach `erstellt_am`,
+        Zeitstempel als ISO-Text; ohne Zeilen eine leere Liste.
+    Fehlerfaelle: Leeres Paar — laut, leere Liste; DB-Fehler —
+        `logger.exception`, leere Liste.
+    """
+    if not user_id or not character_id or limit <= 0:
+        logger.error(
+            "sachlage_verlauf: Verlauf ohne Paar oder mit Limit %d (paar=%r/%r)",
+            limit, user_id, character_id,
+        )
+        return []
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(
+                    f"""
+                    SELECT {_LESE_SPALTEN}
+                    FROM   {TABELLE}
+                    WHERE  user_id = %s AND character_id = %s
+                    ORDER BY erstellt_am DESC
+                    LIMIT %s
+                    """,  # noqa: S608 — Konstanten
+                    (user_id, character_id, limit),
+                )
+                zeilen = cur.fetchall()
+        finally:
+            conn.close()
+    except psycopg2.Error:
+        logger.exception(
+            "sachlage_verlauf: Verlauf fuer %s/%s nicht lesbar", user_id, character_id,
+        )
+        return []
+    return [_row_to_dict(z) for z in zeilen]
+
+
 def history_nearest(
     postgres_url: str,
     user_id:      str,

@@ -12,6 +12,7 @@ Reine Datenabfrage, kein LLM-Call, keine Graph-Ausfuehrung.
 
 import json
 import logging
+import math
 import time
 from collections import Counter
 
@@ -26,14 +27,20 @@ from config import (
     GRAVITATIONS_SALIENZ_FAKTOR,
     GRAVITATIONS_SCHWELLE,
     POSTGRES_URL,
+    SACHLAGE_VERFALL_SEKUNDEN,
+    ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+    ZIEL_KURZFRISTIG_DECAY_STUNDEN,
     ZIEL_MAX_LANGFRISTIG,
     ZIEL_MAX_MITTELFRISTIG,
     ZIEL_MITTELFRISTIG_DECAY_TAGE,
     redis_client,
 )
 from ei.gravitation import _cosine_similarity
+from graph.nodes.sachlage import question_target
+from memory.kurzziel import short_goal_key
+from memory.sachlage_history import history_recent
 from memory.session import session_turns_retrieve
-from memory.ziele import ziele_aktive_laden
+from memory.ziele import ziel_paar_bestimmen, ziele_aktive_laden
 
 logger = logging.getLogger("ki_server.drive")
 
@@ -114,6 +121,86 @@ def sachlage_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT
         logger.warning(f"Drive/Sachlage: '{key}' nicht lesbar — {fehler}")
         return {}
     return sachlage
+
+
+# Wie viele Blasen der Gespraechskontext-Tab aus dem Verlauf zeigt.
+KONTEXT_VERLAUF_ZEILEN: int = 8
+
+
+def _short_goal_lives_for(ziel: dict) -> float | None:
+    """Stunden, bis die Live-Motivation unter die Deaktivierungsschwelle faellt.
+
+    Dieselbe Kurve wie `ziele_live_bewerten`, nur nach der Zeit aufgeloest:
+    t = HWZ * log2(motivation / schwelle). Ohne Anker keine Aussage.
+    """
+    motivation: float = float(ziel.get("motivation") or 0.0)
+    if motivation <= 0.0 or ziel.get("motivation_basis") is None:
+        return None
+    if motivation <= ZIEL_DEAKTIVIERUNGS_SCHWELLE:
+        return 0.0
+    stunden: float = ZIEL_KURZFRISTIG_DECAY_STUNDEN * math.log2(
+        motivation / ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+    )
+    return round(stunden, 2)
+
+
+@router.get("/kontext")
+def kontext_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_USER_ID):
+    """Der Gespraechskontext eines Paares — die fuenf Scheiben des Lage-Konzepts in einer Antwort.
+
+    * `sachlage`         — die fortgeschriebene Blase samt Alter und `wiederaufnahme`
+                            (Scheiben 1 und 5)
+    * `frage_gegenstand` — was die Rueckfrage des Verfassers bekaeme (Scheibe 3); ob sie
+                            gestellt wird, entscheidet die Haltung
+    * `kurzziel`         — die Strecke je akutem Objekt und die Ziel-ids (Scheibe 2)
+    * `kurzziele`        — die lebenden kurzfristigen Ziele mit Live-Motivation und Restlaufzeit
+    * `verlauf`          — die juengsten Blasen des Paares (Scheibe 4)
+
+    Reine Leseabfrage; die Motivation kommt aus demselben Lader wie in der Gravitation.
+    """
+    antwort: dict = {
+        "sachlage": sachlage_lesen(user_id, character_id),
+        "verfall_sekunden": SACHLAGE_VERFALL_SEKUNDEN,
+        "kurzziel": {"strecken": {}, "ziele": {}},
+        "kurzziele": [],
+        "verlauf": [],
+        "halbwertszeit_stunden": ZIEL_KURZFRISTIG_DECAY_STUNDEN,
+        "deaktivierungs_schwelle": ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+    }
+    antwort["frage_gegenstand"] = (
+        question_target(antwort["sachlage"]) if antwort["sachlage"] else None
+    )
+
+    roh: dict = redis_client.hgetall(short_goal_key(user_id, character_id)) or {}
+    try:
+        antwort["kurzziel"] = {
+            "strecken": json.loads(roh["strecken"]) if roh.get("strecken") else {},
+            "ziele":    json.loads(roh["ziele"]) if roh.get("ziele") else {},
+        }
+    except (json.JSONDecodeError, TypeError) as fehler:
+        logger.warning(f"Drive/Kontext: Strecke des Paares nicht lesbar — {fehler}")
+
+    subjekt, gegenueber = ziel_paar_bestimmen(user_id, character_id)
+    for ziel in ziele_aktive_laden(POSTGRES_URL, subjekt, gegenueber):
+        if ziel.get("ziel_typ") != "kurzfristig":
+            continue
+        erstellt = ziel.get("erstellt_am")
+        antwort["kurzziele"].append({
+            "id":                       ziel.get("id"),
+            "zielsatz":                 ziel.get("zielsatz", ""),
+            "thema":                    ziel.get("thema", ""),
+            "motivation":               float(ziel.get("motivation") or 0.0),
+            "motivation_materialisiert": ziel.get("motivation_materialisiert"),
+            "motivation_basis":         ziel.get("motivation_basis"),
+            "erstellt_am":              (erstellt.isoformat()
+                                         if hasattr(erstellt, "isoformat") else erstellt),
+            "verfaellt_in_stunden":     _short_goal_lives_for(ziel),
+        })
+
+    antwort["verlauf"] = history_recent(
+        POSTGRES_URL, user_id, character_id, limit=KONTEXT_VERLAUF_ZEILEN,
+    )
+    return antwort
 
 
 @router.get("/goals")
