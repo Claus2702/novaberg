@@ -253,8 +253,16 @@ def _build_objects_section(
         titel = _text_row("   ".join(titel_teile), "heading" if akut else "dim-label")
         block.append(titel)
 
+        # Scheibe 6: eine Deckung aus dem Gedaechtnis traegt ihre Quelle —
+        # sichtbar als Herkunft hinter dem Wert, damit der Tab zeigt, was
+        # das Gespraech deckte und was Nova schon wusste.
+        quellen: dict = objekt.get("quellen") or {}
         for eigenschaft, wert in list((objekt.get("gedeckt") or {}).items())[:6]:
-            block.append(_text_row(f"  ✓ {eigenschaft}: {wert}"))
+            herkunft: str = (
+                f"   ⟵ {quellen[eigenschaft].get('quelle', '?')} {quellen[eigenschaft].get('eintrag', '')}"
+                if eigenschaft in quellen else ""
+            )
+            block.append(_text_row(f"  ✓ {eigenschaft}: {wert}{herkunft}"))
 
         offen: list = objekt.get("offen") or []
         if offen:
