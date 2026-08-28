@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Antrieb — Ziele, Motivation, Gravitation, Dual-Emotion-Architektur (Konzept)
-**Stand:** 28. August 2026 (§3.3 kurzfristige Ziele gebaut, §7.1 zwei Verfallstypen — Scheibe 2 des Lage-Konzepts). Davor: 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
+**Stand:** 28. August 2026, abends (§7.1: die Motivation wird beim Lesen gerechnet — ein Tageslauf trägt keine Halbwertszeit von drei Stunden; §3.3, §5.2 nachgezogen). Davor am selben Tag: §3.3 kurzfristige Ziele gebaut, §7.1 zwei Verfallstypen — Scheibe 2 des Lage-Konzepts. Davor: 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
 **Pfad:** novaberg/docs/novaberg-thinking-drive_k.md
 **Quellen:** Chat 53 (Grundkonzept Antrieb, Zielpyramide, Gravitation, Dual-Emotion), Chat 51 (Neugier-Mechanismus), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 10 (Traum-Modus-Entscheidung)
 
@@ -105,7 +105,7 @@ Mittelfristige Ziele entstehen, wenn Nova recherchiert, vertieft oder träumt un
 | **Quelle** | Sachlage-Knoten, rechnender Weg — das akute Objekt, das zwei Lagen lang steht |
 | **Anzahl** | eines je akutem Objekt der Blase; kein zweites, solange es steht |
 | **Taktung** | je gerechnetem Turn (Impuls-Turns verfolgen nicht) |
-| **Decay** | Halbwertszeit `ZIEL_KURZFRISTIG_DECAY_STUNDEN` (3 h), Schwelle 0,15 — über den Decay-Agenten, der beide Typen fährt |
+| **Decay** | Halbwertszeit `ZIEL_KURZFRISTIG_DECAY_STUNDEN` (3 h), Schwelle `ZIEL_DEAKTIVIERUNGS_SCHWELLE` (0,15) — ~~über den Decay-Agenten, der beide Typen fährt~~ **beim Lesen** (seit 28.08.2026 abends): `ziele_aktive_laden` rechnet die Motivation aus Anker und Alter und lässt liegen, was unter der Schwelle liegt; der Tageslauf ist der Haushalt. `[gemessen]` — der Tageslauf allein (Takt 86400 s) hätte Ziel 28576 rund 25 h leben lassen |
 | **Speicherort** | `ziele` (`ziel_typ='kurzfristig'`, Anker 0,7, Vektor über den Zielsatz); die Strecke in Redis (`kurzziel:{paar}`) |
 
 ---
@@ -178,6 +178,9 @@ Das ist keine aktive Suche durch Listen. Es ist eine passive Anziehung — wie b
 
 ```
 Für jeden aktiven Zielsatz:
+  motivation  = aus Anker und Alter gerechnet (ziele_live_bewerten, seit 28.08.2026) —
+                nicht das Feld vom letzten Tageslauf; unter ZIEL_DEAKTIVIERUNGS_SCHWELLE
+                kommt das Ziel gar nicht erst hierher
   similarity = cosine_similarity(turn_embedding, ziel_embedding)
   gravitation = similarity × motivation
 
@@ -522,7 +525,7 @@ Eine Tabelle für beide Zeithorizonte. Der `ziel_typ` bestimmt das Decay-Verhalt
 motivation = motivation_basis × exp(−ln2 / ZIEL_MITTELFRISTIG_DECAY_TAGE × tage_seit_motivation_basis_am)
 ```
 
-`motivation` bleibt das **materialisierte** Feld, das jede Abfrage liest — einmal rechnen, hundertmal lesen, dieselbe Rollenteilung wie `gewicht_decay` im LZG. Der Lauf schreibt es neu und ist trotzdem kein Akkumulator, weil er aus Anker und Zeit rechnet und nie aus dem vorherigen Wert. Zehn Läufe hintereinander liefern denselben Stand wie einer; gar nicht zu laufen macht den Wert veraltet, nicht falsch.
+~~`motivation` bleibt das **materialisierte** Feld, das jede Abfrage liest — einmal rechnen, hundertmal lesen, dieselbe Rollenteilung wie `gewicht_decay` im LZG.~~ → **Widerlegt am 28.08.2026, an der Zeitskala:** Der Tageslauf (`PIXIE_DECAY_INTERVALL_SEKUNDEN` = 86400, gemessen im `hintergrund_log`: 25.–27.08. je ~19:58 UTC) hinkt bei 14 Tagen Halbwertszeit höchstens 5 % hinterher — bei 3 Stunden bis zu acht Halbwertszeiten. Ein Wert ist so frisch wie sein Takt, und für das kurzfristige Ziel entscheidet er allein (§5.2). **Seither rechnet `ziele_aktive_laden` die Motivation beim Lesen** aus `motivation_basis` und `motivation_basis_am` (`ziele_live_bewerten`, dieselbe Formel `motivation_berechnen`, für jeden Typ mit Halbwertszeit — `halbwertszeit_tage_fuer_typ`) und liefert nichts unter `ZIEL_DEAKTIVIERUNGS_SCHWELLE` (0,15, seit dem Abend in `config.py`). Das Feld bleibt materialisiert und der Tageslauf bleibt: Er schreibt es für Leser, die nicht rechnen, und legt `aktiv` um. Der Lauf schreibt es neu und ist trotzdem kein Akkumulator, weil er aus Anker und Zeit rechnet und nie aus dem vorherigen Wert. Zehn Läufe hintereinander liefern denselben Stand wie einer; gar nicht zu laufen macht den Wert veraltet, nicht falsch — und genau deshalb liest die Gravitation ihn nicht mehr. `[gemessen]` 28.08.2026, 19:52 UTC: sieben aktive Zeilen des Paares, der Lader lieferte fünf; zwei mittelfristige lagen live bei 0,148 und 0,146 unter der Schwelle, im Feld bei 0,153 und 0,155 vom Vortag.
 
 **Wer die Motivation setzt, setzt den Anker** — nicht den Momentwert. Damit beginnt die Vergessenskurve von vorn, genau wie `knoten_verstaerken` im LZG `verstaerkt_am` zurücksetzt: Ein Ziel wieder aufzugreifen *ist* seine Verstärkung.
 

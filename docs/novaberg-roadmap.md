@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **18:55 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 28. August 2026 — juengster Eintrag **19:56 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,22 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 28.08.2026, 19:56 UTC — Der Verfall der Ziele wird beim Lesen gerechnet: ein Tageslauf traegt keine Halbwertszeit von drei Stunden
+
+**Der Anlass:** Vor Scheibe 3 standen zwei Entscheidungen aus der Fundliste an; beim Nachmessen der Schaetzung *»Ziel 28576 faellt gegen 01:30 UTC unter die Schwelle«* zeigte sich, dass die Schaetzung stetigen Verfall unterstellte. Der Decay-Agent laeuft aber **einmal am Tag** (`PIXIE_DECAY_INTERVALL_SEKUNDEN` = 86400; `hintergrund_log`: 25., 26., 27.08. je ~19:58 UTC). Die Halbwertszeit von 3 h wurde damit alle 24 h angewendet — das Ziel haette bis zum Lauf des Folgetags gelebt, ~25 h, und weil die Gravitation ein kurzfristiges Ziel per Bauart aktiviert, so lange in jedem `[GEDANKEN]`-Block gestanden, auch bei fremden Turns.
+
+**Warum kein Sonderfall fuer den kurzen Typ:** Der Fehler liegt nicht zwischen den Typen, sondern zwischen der Einheit der Halbwertszeit und dem Takt. Mittelfristig (14 d) hinkt der gelesene Wert hoechstens 5 % hinterher, und sein Tor ist ohnehin `similarity × motivation`; langfristig verfaellt nicht; kurzfristig hinkt bis zu acht Halbwertszeiten, und der gelesene Wert entscheidet allein. Entschieden: on-the-fly rechnen, weil die Zielmenge klein ist.
+
+**Der Bau** (`memory/ziele.py`): `halbwertszeit_tage_fuer_typ` — die eine Stelle, an der ein Typ seine Kurve bekommt (14 d / 3 h / keine; unbekannter Typ laut und ohne Verfall); `ziele_live_bewerten` — reine Funktion, rechnet `motivation` aus `motivation_basis` und `motivation_basis_am` mit der bestehenden `motivation_berechnen`, legt den Datenbankwert als `motivation_materialisiert` daneben und laesst liegen, was unter `ZIEL_DEAKTIVIERUNGS_SCHWELLE` liegt, mit einer Log-Zeile; `ziele_aktive_laden` ruft sie nach dem SELECT. `ZIEL_DEAKTIVIERUNGS_SCHWELLE` (0,15) ist aus dem Agenten nach `config.py` gewandert, weil sie jetzt zwei Leser hat; der Agent liest die Halbwertszeiten aus derselben Zuordnung. Die Gravitation bleibt rein und unveraendert; der Tageslauf bleibt als Haushalt (Feld schreiben, `aktiv` umlegen).
+
+**TEST:** 10 Zeugen in `test_kurzziel.py` — Zuordnung je Typ, unbekannter Typ laut, 6 h → ein Viertel, 12 h → liegt (mit Log), mittelfristig in Tagen, langfristig nie, ohne Anker der materialisierte Wert mit Warnung, hundertmal rechnen aendert nichts; gegen echte Zeilen: der Lader liefert 3 h und langfristig, nicht 12 h, und die Zeile selbst bleibt unangetastet. Suite **2454 → 2464 gruen, 0 uebersprungen** (ein Zeuge des Namens-Casts musste »Anker« als generisches Wort lernen). Gegenprobe drei Eingriffe: Verfallenes nicht liegen lassen → 2 rot; Lader rechnet nicht → 1 rot; kurzfristig ohne Halbwertszeit → 6 rot.
+
+**MESSUNG** (`labor/2026-08-28_ziele_live_verfall_messung.py`, 19:52 UTC, gegen den echten Bestand des Paars): 7 aktive Zeilen, der Lader lieferte 5 — Ziel 28576 live **0,545** bei 1,1 h Alter (Feld 0,700); zwei mittelfristige (id 4 und 7, Anker vom 28.07.) live 0,148 und 0,146 **unter** der Schwelle, im Feld 0,153 und 0,155 vom Vortag — der Tageslauf um ~19:58 legt sie um, der Lader liess sie sechs Minuten vorher schon liegen.
+
+**Zweite Kontrolle** (Kriterium statt Aufzaehlung — wer liest `motivation` aus `ziele`?): drei Leser ueber den Lader (Enricher/Gravitation, Dispatcher, Wissensluecken) und **ein zweiter SQL-Leser**, `api/drive.py:142`, der die Liste des Drive-Tabs direkt aus der Tabelle liest — er zeigt weiter das Tagesfeld. Fundliste.
+
+Linter 1198 → 1200 (zwei `D` in den neuen Zeugen), harte Wand sauber, `codepruefungen.py` ohne Befund in den geaenderten Dateien. Nachzug: Drive-Konzept §3.3/§5.2/§7.1 (die Aussage »das Feld, das jede Abfrage liest« markiert), Lage-Konzept §4 Scheibe 2, Rechenkette S8, Architektur, Featureliste, Backlog `SACHLAGE-SCHEIBE-2-KURZZIEL` (Nachtrag), Fundliste (Zeile erledigt). Lesson im Harness: *Ein Wert ist so frisch wie sein Takt.*
 
 ## 28.08.2026, 18:55 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte
 

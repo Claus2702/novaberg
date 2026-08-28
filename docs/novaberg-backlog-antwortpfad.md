@@ -934,6 +934,8 @@ Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis 
 
 Der dritte Zielhorizont aus `novaberg-thinking-drive_k.md` §3.3 existiert nur als fluechtige GV-Hypothese; `ziel_typ='kurzfristig'` kommt in der `ziele`-Tabelle nicht vor. Scheibe 2 des Lage-Konzepts: Aus zwei Sachlagen derselben Session mit demselben Nutzerziel entsteht ein kurzfristiges Ziel mit Verfall in Stunden; es laeuft ohne weiteren Bau durch die bestehende Gravitation in den `[GEDANKEN]`-Block. ZIEL/TEST/MESSUNG stehen in `novaberg-thinking-lage_k.md` §4. Voraussetzung: Scheibe 1 (gebaut 28.08.2026) traegt im Betrieb — **belegt am 28.08.2026, 16:05 UTC** (fuenf Turns, sechs Protokollzeilen, Fortschreibung ueber alle fuenf; Konzept §4). ✅ umgesetzt 28.08.2026
 
+**Nachtrag 28.08.2026, abends — ein Rest, den der Betrieb fand:** Der Decay-Agent läuft einmal am Tag (Takt 86400 s, `hintergrund_log` 25.–27.08. je ~19:58 UTC); die Halbwertszeit von 3 h wurde damit alle 24 h angewendet, Ziel 28576 hätte ~25 h gelebt und so lange per Bauart im `[GEDANKEN]`-Block gestanden. **Behoben:** `ziele_aktive_laden` rechnet die Motivation beim Lesen aus Anker und Alter (`ziele_live_bewerten`, `halbwertszeit_tage_fuer_typ`) und liefert nichts unter `ZIEL_DEAKTIVIERUNGS_SCHWELLE`; der Tageslauf bleibt als Haushalt. 10 Zeugen, Suite 2464 grün, Gegenprobe 2/1/6 rot, Messung `labor/2026-08-28_ziele_live_verfall_messung.py`. Entschieden: on-the-fly, weil die Zielmenge klein ist und die Rechnung je Turn nichts kostet.
+
 **Zusammenhang:** SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND (Leser der Ziele) · Drive-Epic Phase 3.
 
 

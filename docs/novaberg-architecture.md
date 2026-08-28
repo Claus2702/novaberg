@@ -345,7 +345,7 @@ project/
 │   │   ├── haltung.py                   #   Haltungsstand je Paar (Zustand, nicht Verlauf)
 │   │   ├── session.py                   #   Session (_session_key mit character_id, Chat 60)
 │   │   ├── kontext.py                   #   Session-Kontext-Extraktion (LLM-gestuetzt)
-│   │   ├── ziele.py                     #   Ziele: lang-, mittel- und (seit 28.08.2026) kurzfristig; Verfall
+│   │   ├── ziele.py                     #   Ziele: lang-, mittel- und (seit 28.08.2026) kurzfristig; Verfall — beim Lesen gerechnet (ziele_live_bewerten)
 │   │   ├── kurzziel.py                  #   Das kurzfristige Ziel aus der Sachlage (→ novaberg-thinking-lage_k.md §4, Scheibe 2)
 │   │   ├── utils.py                     #   Gemeinsame Helfer der Schicht
 │   │   ├── repositories/                #   Daten-Repositories (CRUD gegen PostgreSQL)

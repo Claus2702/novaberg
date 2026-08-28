@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 28. August 2026, 18:55 UTC (`date -u`, nachgemessen — die erste Fassung trug eine geschaetzte Zeit)
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 85 Eintraege, juengster zuerst
+**Stand:** 28. August 2026, 19:56 UTC (`date -u`; Verfall der Ziele beim Lesen gerechnet — Dual-Emotion Phase 3). Davor 18:55 UTC (nachgemessen — die erste Fassung trug eine geschaetzte Zeit)
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 86 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -107,7 +107,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **EI-MIKRO** (situative Mikro-Anweisungen) | 🟢 | `responder.py:_ei_mikro_anweisung` `[Code]` | — |
 | **Dual-Emotion Phase 1** (User-IDs entkoppelt) | 🟢 | `[Doku]` Chat 57 · `[Code]` — `memory/kzg.py`, Key-Schema `kzg:{user_id}:{character_id}:{entry_id}`; das Paar definiert das gemeinsame Gespraech `[Erhebung 20.08.2026]` | — |
 | **Dual-Emotion Phase 2** (Nova-Empathie, Konflikt) | 🟠 | `[Code]`, AP1–7 und AP9 gebaut | AP8 Client-Teil `[Doku]` |
-| **Dual-Emotion Phase 3** (Ziel-Vektor als dritte Kraft) | 🟠 | `ziele`: **259 Zeilen**, `ZielDecayAgent` läuft `[gemessen]` | `ziel_motivation_anpassen` hat **keinen Aufrufer** `[gemessen]`; der Antrieb wirkt nicht auf die Emotion. **Seit dem 28.08.2026 ein dritter Zieltyp `kurzfristig`** (`memory/kurzziel.py`, Scheibe 2 des Lage-Konzepts; Halbwertszeit 3 h, der Decay-Agent fährt beide Typen — Zeugen `tests/test_kurzziel.py`, `tests/test_ziel_decay_stillgelegt.py`) |
+| **Dual-Emotion Phase 3** (Ziel-Vektor als dritte Kraft) | 🟠 | `ziele`: **259 Zeilen**, `ZielDecayAgent` läuft `[gemessen]` | `ziel_motivation_anpassen` hat **keinen Aufrufer** `[gemessen]`; der Antrieb wirkt nicht auf die Emotion. **Seit dem 28.08.2026 ein dritter Zieltyp `kurzfristig`** (`memory/kurzziel.py`, Scheibe 2 des Lage-Konzepts; Halbwertszeit 3 h, der Decay-Agent fährt beide Typen — Zeugen `tests/test_kurzziel.py`, `tests/test_ziel_decay_stillgelegt.py`). **28.08.2026, abends: der Verfall wird beim Lesen gerechnet** — der Tageslauf (Takt 86400 s) hätte das kurzfristige Ziel ~25 h leben lassen `[gemessen]`; `ziele_aktive_laden` rechnet seither aus Anker und Alter für jeden Typ mit Halbwertszeit und liefert nichts unter `ZIEL_DEAKTIVIERUNGS_SCHWELLE` (`memory/ziele.py::ziele_live_bewerten`; Zeugen `DerVerfallBeimLesenTest`, `DerLaderLaesstVerfallenesLiegenTest`; Suite 2464 grün; Betrieb 19:52 UTC: 7 aktive Zeilen, 5 geliefert, Ziel 28576 live 0,545 bei 1,1 h) |
 | **Emotionale Gravitation** (Erinnerung zieht) | 🔴 | `ei/gravitation.py` `[Code]` · `tests/test_emotionale_gravitation_node.py::TestHerkunftstor` · **Herkunftstor im Betrieb belegt 24.08.2026** `[gemessen]`: **15 Feuerungen auf 15 Impuls-Turns**, jede mit **genau 2** unterdrueckten Punkten und keine mit 0 — es schliesst also nicht im Leerlauf; im selben Fenster **32** Faerbungen durchgelaufen | `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ohne Leser `[gemessen]` · **🔴 seit 20.08.2026** (zuvor 🟢): `ZUG-ZWISCHEN-090-097-ABGESCHALTET` offen. `GRAVITATION-FAERBT-EIGENE-GEDANKEN` ist am 23.08.2026 behoben und seit dem 24.08.2026 im Betrieb gemessen — der eigene Gedanke bleibt ungefaerbt |
 | **Wahrnehmungs-Gravitation** (Synapsen P10) | 🟠 | `wahrnehmung_verschieben()` gebaut, live gemessen `[Doku]` | **Wirkung ungemessen** — ob sich je eine Trefferliste ändert, ist offen |
 | **Anker-Emotion** (Grundemotion je Charakter) | ⚫ | kein Code `[Code]` | alles |
@@ -497,6 +497,8 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **28. August 2026, 19:56 UTC** — **Keine Ampel wechselt; Dual-Emotion Phase 3 traegt einen Beleg mehr.** Der Verfall der Ziele wird beim Lesen gerechnet — der Tageslauf haette ein kurzfristiges Ziel ~25 h leben lassen `[gemessen]`. Suite 2464 gruen.
 
 - **25. August 2026, 08:40 UTC** — **Keine Ampel wechselt, und eine Kennzahl gibt das Urteil ab.** Der Einwand gegen die Kennzahl ist gemessen richtig: Ein Nebensatz verschiebt die Trigramm-Aehnlichkeit weiter, als eine Schwelle reicht. Im Bestand liegt ein echter Doppelgaenger bei **0,452** und eine echte Ergaenzung bei **0,622** — **der Doppelgaenger unaehnlicher als der Fund.** Die Zahl loest jetzt die **Frage** aus statt sie zu beantworten: ab 0,65 Kopie ohne Aufruf, unter 0,35 eingearbeitet ohne Aufruf, dazwischen **ein Modellaufruf** (19 von 232, 8 %). Ueber die Grenzfaelle **19 von 19 beantwortet**, das entscheidende Paar richtig herum.
   **Der Pruefstand war kaputt, nicht der Aufruf.** Ein erster Lauf bekam 7 von 19 Antworten — die Sonde liess `think` aus, das Modell dachte, und das Ausgabebudget war vor der schliessenden Klammer alle (`thinking` 2174 und 8866 Zeichen, `done_reason=length`). Getrennt durch einen **Versuchsplan ueber zwei Achsen**: Nur die Zelle ohne `think` faellt aus; eine blosse Erhoehung der Ausgabegrenze haette 18 von 19 geliefert und die Ursache verdeckt. Die Regel dagegen stand seit dem 21.08. Suite 2272 → **2279 gruen, 0 uebersprungen**.
