@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Cognitive Pipeline — Verstehens-Loop zwischen Router und Agent-Dispatch (Konzept)
-**Stand:** 09. Mai 2026, Chat 81
+**Stand:** 28. August 2026 (Phase A §11: Schritte 1–2 als Sachlage-Knoten gebaut, an anderer Stelle — Stand-Block). Davor 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-cognitive-pipeline_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** Chat 81 (entstanden aus dem Wetter-Dialog-Beispiel und Meisters Forderung nach echter Multi-Agent-Orchestrierung; Baumarkt-Beispiel als Lehrfall; Skill-vs-Frame-Trennung als tragende Architektur-Aussage)
@@ -539,6 +539,8 @@ Drei Phasen, alle aufeinander aufbauend.
 7. Werkzeug-Aufruf (Schritt 4.9) mit existierenden Agenten.
 8. Ergebnis-Validierung (Schritt 4.10).
 9. Migration: NotizenAgent und TimelineAgent als erste Konsumenten des CognitiveGraph; Planner bleibt Fallback für andere Anliegen-Klassen.
+
+**Stand 28.08.2026:** Die Schritte 1 und 2 sind gebaut — **nicht als CognitiveGraph hinter dem Router, sondern als Sachlage-Knoten vor dem Gesprächsvektor**, für beide Pfade (`novaberg-thinking-lage_k.md` §2a begründet die Abweichung: die Befunde lagen im Konversationspfad). Schritt 1 ist die Akutheit je Objekt, Schritt 2 die Frame-Aktivierung in der Konversationsfassung — Frame-Klasse, gedeckte und offene Slots, die das Modell je Turn erhebt, ohne Frame-Lager. Dazu, im Pipeline-Konzept nicht vorgesehen: ein kurzfristiges Ziel aus der Blase, der Rückfrage-Gegenstand für den Verfasser, das Gedächtnis der Blasen (`sachlage_verlauf`) mit Brücke und Wiederaufnahme (Scheiben 2–5 dort). **Offen sind die Schritte 3 bis 9 und die Migration**; der Frame-Auflöser (Schritt 3) ist der nächste, an dem der Kontext auf den Bestand zugreift.
 
 **Erfolgskriterium:** Die vier Live-Test-Befunde aus Chat 80 (NOTIZEN-VOR-TURN-BEZUG, NOTIZEN-CONTAINER-WECHSEL, NOTIZEN-SKILL-MANIFEST, NOTIZEN-UPDATE-TARGET-LEER) sind gelöst, ohne dass eine einzige Skill-Datei geschrieben wurde.
 

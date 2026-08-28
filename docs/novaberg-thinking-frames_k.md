@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Frames — Universales kognitives Substrat (Konzept)
-**Stand:** 09. Mai 2026, Chat 81
+**Stand:** 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-frames_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** Chat 80 (erste Konzeption als Slot-Erhebung pro Vorhaben), Chat 81 (universale Erweiterung — Frame als kognitives Substrat, Akutheit als Trigger, iterative Validierung, Plausibilitätsprüfung, Trennung zu Skills)
@@ -153,6 +153,10 @@ Die alte Unterscheidung war binär: ein Wort ist entweder Interface oder Referen
 Akutheit ist die feinere Mechanik. Sie ist gradiert, nicht binär. Ein Frame kann *halb akut* sein — erwähnt, aber zeitlich noch fern, wie *"an Ostern Reifen wechseln"* im November. Solche Frames werden im Lager registriert, aber nicht voll validiert. Wenn sie zeitlich näher rücken, gewinnen sie an Akutheit, und die Validierung beginnt.
 
 Die alten Beispiele aus dem Chat-80-Stand (*Anna ist nett heute* vs. *Anna wohnt in München*) bleiben gültig, sind jetzt aber Spezialfälle des Akutheits-Konzepts: Ersteres ist eine flüchtige Eindrucks-Aussage ohne Akutheit, Letzteres ist eine Welt-Aussage mit niedriger akuter Validierungs-Notwendigkeit (kein Vorhaben), aber hoher Frame-Lager-Relevanz (Personen-Frame `Anna` bekommt einen Slot `wohnort` belegt).
+
+---
+
+**Stand 28.08.2026:** Die Konversationsfassung ist gebaut — der Sachlage-Knoten (`novaberg-thinking-lage_k.md` §3) erhebt je Turn Objekte mit Frame-Klasse (§3.1), Akutheit (§4, latent ohne offene Slots: §4.3 als Prüfung im Code) und gedeckten/offenen Slots aus dem Turn und aus Novas Antworten. **Ohne Frame-Lager (§7, §9)**: Die typischen Eigenschaften einer Sache erfindet das Modell je Turn neu — »Geburtstag« bekam einmal `wer`, einmal `Anlass`. Validierung (§5) und Plausibilität (§6) sind nicht gebaut.
 
 ---
 
