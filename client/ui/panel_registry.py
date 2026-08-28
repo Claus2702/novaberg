@@ -195,6 +195,7 @@ def create_default_registry() -> PanelRegistry:
     from ui.panels.gv_panel import GvPanel
     from ui.panels.kzg_panel import KzgPanel
     from ui.panels.lzg_panel import LzgPanel
+    from ui.panels.sachlage_panel import SachlagePanel
     from ui.panels.session_panel import SessionPanel
     from ui.panels.system_panel import SystemPanel
 
@@ -206,6 +207,7 @@ def create_default_registry() -> PanelRegistry:
     registry.register(GoalsPanel)
     registry.register(GravityMapPanel)
     registry.register(GvPanel)
+    registry.register(SachlagePanel)
     registry.register(SystemPanel)
 
     # Platzhalter — werden in späteren Prompts registriert:
