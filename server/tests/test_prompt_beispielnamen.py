@@ -42,6 +42,8 @@ KEINE_NAMEN: frozenset[str] = frozenset({
     "Langzeit", # "aus Langzeit-Knoten" — Speicherschicht, kein Gespraechsname
     "Postgre",  # "aus PostgreSQL" — der Slot bricht nach dem ersten
                 # Kleinbuchstaben-Block ab. Zwilling zu "Redis" darueber.
+    "Anker",    # "aus Anker und Alter" — der Verfallsanker der Ziele
+                # (`test_kurzziel`), kein Gespraechsname
     "Nullen",   # "aus Nullen ist die anfaenglich vorurteilsfreie Haltung" —
                 # der Slot liest das Wort hinter "aus" und trifft hier ein
                 # Zahlwort. Steht in `test_charakter_rad_laden`, wo das

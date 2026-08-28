@@ -21,6 +21,12 @@ Die drei Zusicherungen des Konzepts, je ein Zeuge oder mehrere:
   * **Verfall** — die Halbwertszeit ist ein Bruchteil eines Tages; der
     Decay-Agent faehrt beide Typen, und der Lauf gegen echte Zeilen halbiert
     ein drei Stunden altes Ziel bei drei Stunden Halbwertszeit.
+  * **Verfall beim Lesen** (28.08.2026, gemessen: der Tageslauf laesst ein
+    Ziel mit drei Stunden Halbwertszeit rund 25 Stunden leben) — der Lader
+    rechnet die Motivation aus Anker und Alter, fuer jeden Typ mit
+    Halbwertszeit, und laesst liegen, was unter der Deaktivierungsschwelle
+    liegt, auch wenn `aktiv` noch TRUE ist. Langfristig verfaellt nicht;
+    ohne Anker gilt der materialisierte Wert.
 
 Dazu die Verdrahtung: Der rechnende Weg des Sachlage-Knotens ruft die
 Verfolgung, der Impuls-Weg nicht.
@@ -41,7 +47,13 @@ from memory.kurzziel import (
     normalize_object_name,
     short_goal_track,
 )
-from memory.ziele import motivation_berechnen, ziel_decay_lauf
+from memory.ziele import (
+    halbwertszeit_tage_fuer_typ,
+    motivation_berechnen,
+    ziel_decay_lauf,
+    ziele_aktive_laden,
+    ziele_live_bewerten,
+)
 
 RETTICH: dict = {"name": "Rettich bewässern", "klasse": "vorgang", "akut": True,
                  "gedeckt": {"problemstellung": "Wurzeln platzen"}, "offen": ["Intervall"]}
@@ -285,6 +297,121 @@ class DerLaufGegenEchteZeilenTest(unittest.TestCase):
         self.assertAlmostEqual(stand["Testziel kurz"][0], 0.4, places=2)
         self.assertTrue(stand["Testziel kurz"][1])
         self.assertFalse(stand["Testziel kurz alt"][1])
+
+
+class DerVerfallBeimLesenTest(unittest.TestCase):
+    """Eine Formel, zwei Leser: Der Lader rechnet dieselbe Kurve wie der Tageslauf.
+
+    Gemessen 28.08.2026: `PIXIE_DECAY_INTERVALL_SEKUNDEN` = 86400, das
+    kurzfristige Ziel lebte bis zum naechsten Tageslauf — ~25 h bei 3 h
+    Halbwertszeit. Der gelesene Wert entscheidet allein, weil die Schwelle
+    fuer kurzfristige Ziele per Bauart entfaellt (`ei/gravitation.py`).
+    """
+
+    JETZT = datetime(2026, 8, 28, 20, 0, tzinfo=timezone.utc)
+
+    def _ziel(self, typ: str, stunden_alt: float, anker: float | None = 0.8, **extra) -> dict:
+        anker_am = self.JETZT - timedelta(hours=stunden_alt) if anker is not None else None
+        ziel: dict = {
+            "id": 1, "ziel_typ": typ, "zielsatz": "x", "motivation": 0.8,
+            "motivation_basis": anker, "motivation_basis_am": anker_am,
+        }
+        ziel.update(extra)
+        return ziel
+
+    def test_die_halbwertszeit_kommt_aus_dem_typ(self) -> None:
+        self.assertAlmostEqual(halbwertszeit_tage_fuer_typ("kurzfristig") * 24.0, 3.0, places=6)
+        self.assertEqual(halbwertszeit_tage_fuer_typ("mittelfristig"), 14)
+        self.assertIsNone(halbwertszeit_tage_fuer_typ("langfristig"))
+
+    def test_ein_unbekannter_typ_ist_laut_und_verfaellt_nicht(self) -> None:
+        with self.assertLogs("ki_server.memory.ziele", level="ERROR"):
+            self.assertIsNone(halbwertszeit_tage_fuer_typ("ewig"))
+
+    def test_sechs_stunden_bei_drei_stunden_halbwertszeit_lassen_ein_viertel(self) -> None:
+        bewertet = ziele_live_bewerten([self._ziel("kurzfristig", 6.0)], jetzt=self.JETZT)
+
+        self.assertEqual(len(bewertet), 1)
+        self.assertAlmostEqual(bewertet[0]["motivation"], 0.2, places=4)
+        self.assertAlmostEqual(bewertet[0]["motivation_materialisiert"], 0.8, places=6)
+
+    def test_zwoelf_stunden_liegen_unter_der_schwelle_und_das_ziel_bleibt_liegen(self) -> None:
+        with self.assertLogs("ki_server.memory.ziele", level="INFO") as log:
+            bewertet = ziele_live_bewerten([self._ziel("kurzfristig", 12.0)], jetzt=self.JETZT)
+
+        self.assertEqual(bewertet, [])
+        self.assertTrue(any("beim Lesen verfallen" in zeile for zeile in log.output))
+
+    def test_mittelfristig_rechnet_in_tagen(self) -> None:
+        bewertet = ziele_live_bewerten([self._ziel("mittelfristig", 14 * 24.0)], jetzt=self.JETZT)
+
+        self.assertAlmostEqual(bewertet[0]["motivation"], 0.4, places=4)
+
+    def test_langfristig_verfaellt_nicht(self) -> None:
+        bewertet = ziele_live_bewerten([self._ziel("langfristig", 400 * 24.0)], jetzt=self.JETZT)
+
+        self.assertAlmostEqual(bewertet[0]["motivation"], 0.8, places=6)
+        self.assertNotIn("motivation_materialisiert", bewertet[0])
+
+    def test_ohne_anker_gilt_der_materialisierte_wert_und_es_wird_gemeldet(self) -> None:
+        with self.assertLogs("ki_server.memory.ziele", level="WARNING"):
+            bewertet = ziele_live_bewerten([self._ziel("kurzfristig", 0.0, anker=None)], jetzt=self.JETZT)
+
+        self.assertAlmostEqual(bewertet[0]["motivation"], 0.8, places=6)
+
+    def test_hundertmal_bewerten_aendert_nichts(self) -> None:
+        ziele = [self._ziel("kurzfristig", 3.0)]
+        erste = ziele_live_bewerten(ziele, jetzt=self.JETZT)[0]["motivation"]
+        for _ in range(100):
+            ziele = ziele_live_bewerten(ziele, jetzt=self.JETZT)
+        self.assertAlmostEqual(ziele[0]["motivation"], erste, places=9)
+
+
+class DerLaderLaesstVerfallenesLiegenTest(unittest.TestCase):
+    """`ziele_aktive_laden` gegen echte Zeilen: `aktiv` TRUE genuegt nicht mehr."""
+
+    def setUp(self) -> None:
+        self.conn = psycopg2.connect(POSTGRES_URL)
+        self._aufraeumen()
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO ziele (user_id, character_id, ziel_typ, zielsatz,
+                                   motivation, motivation_basis, motivation_basis_am)
+                VALUES (%s, %s, 'kurzfristig', 'Testziel kurz 3h',  0.8, 0.8,
+                        NOW() - INTERVAL '3 hours'),
+                       (%s, %s, 'kurzfristig', 'Testziel kurz 12h', 0.8, 0.8,
+                        NOW() - INTERVAL '12 hours'),
+                       (%s, %s, 'langfristig', 'Testziel lang',     0.8, 0.8,
+                        NOW() - INTERVAL '400 days')
+                """,
+                (TEST_USER, TEST_CHARACTER) * 3,
+            )
+        self.conn.commit()
+
+    def tearDown(self) -> None:
+        self._aufraeumen()
+        self.conn.close()
+
+    def _aufraeumen(self) -> None:
+        with self.conn.cursor() as cur:
+            cur.execute("DELETE FROM ziele WHERE user_id = %s", (TEST_USER,))
+        self.conn.commit()
+
+    def test_der_lader_liefert_den_live_wert_und_laesst_das_verfallene_liegen(self) -> None:
+        ziele = ziele_aktive_laden(POSTGRES_URL, TEST_USER, TEST_CHARACTER)
+        geladen = {z["zielsatz"]: z for z in ziele}
+
+        self.assertEqual(sorted(geladen), ["Testziel kurz 3h", "Testziel lang"])
+        self.assertAlmostEqual(geladen["Testziel kurz 3h"]["motivation"], 0.4, places=2)
+        self.assertAlmostEqual(geladen["Testziel lang"]["motivation"], 0.8, places=6)
+
+    def test_die_zeile_selbst_bleibt_unangetastet(self) -> None:
+        ziele_aktive_laden(POSTGRES_URL, TEST_USER, TEST_CHARACTER)
+
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT motivation, aktiv FROM ziele WHERE user_id = %s", (TEST_USER,))
+            self.assertEqual(sorted(cur.fetchall()), [(0.8, True)] * 3)
 
 
 class DieVerdrahtungTest(unittest.TestCase):

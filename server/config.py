@@ -2082,6 +2082,12 @@ KURZZIEL_MOTIVATION: float = float(os.getenv("KURZZIEL_MOTIVATION", "0.7"))
 # nicht, so wie die Blase selbst nach vier Stunden verfaellt.
 ZIEL_KURZFRISTIG_DECAY_STUNDEN: float = float(
     os.getenv("ZIEL_KURZFRISTIG_DECAY_STUNDEN", "3"))
+# Motivation unter diesem Wert → das Ziel ist verfallen. Zwei Leser derselben
+# Schwelle: der Tageslauf (`agents/ziel_decay`) legt `aktiv` um, der Lader
+# (`memory/ziele.py::ziele_live_bewerten`) laesst liegen, was der Tageslauf
+# noch nicht umgelegt hat — seit 28.08.2026, weil ein Takt von einem Tag
+# eine Halbwertszeit von drei Stunden nicht traegt.
+ZIEL_DEAKTIVIERUNGS_SCHWELLE: float = 0.15
 
 GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
 GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)

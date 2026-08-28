@@ -11,7 +11,13 @@ from datetime import datetime, timezone
 
 import psycopg2
 
-from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, ZIEL_MITTELFRISTIG_DECAY_TAGE
+from config import (
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
+    ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+    ZIEL_KURZFRISTIG_DECAY_STUNDEN,
+    ZIEL_MITTELFRISTIG_DECAY_TAGE,
+)
 from memory.utils import embedding_zu_pgvector_str
 from services.model_services import EmbedRequest, model_service
 
@@ -155,6 +161,101 @@ def motivation_berechnen(
     return motivation
 
 
+def halbwertszeit_tage_fuer_typ(ziel_typ: str) -> float | None:
+    """Die Halbwertszeit eines Zieltyps in Tagen — oder None, wo nichts verfaellt.
+
+    Die eine Stelle, an der ein Typ seine Kurve bekommt. Der Tageslauf
+    (`agents/ziel_decay`) und der Lader (`ziele_live_bewerten`) lesen beide
+    hier, damit ein Ziel beim Lesen nicht anders verfaellt als beim Schreiben.
+
+    Vorbedingung: `ziel_typ` ist einer der drei Horizonte.
+    Nachbedingung: mittelfristig → Tage, kurzfristig → Stunden/24,
+        langfristig → None (verfaellt nicht, `novaberg-thinking-drive_k.md` §7.1).
+    Fehlerfaelle: Ein unbekannter Typ wird laut gemeldet und verfaellt nicht —
+        ein stiller Verfall mit fremder Kurve waere der teurere Fehler.
+    """
+    if ziel_typ == "mittelfristig":
+        return float(ZIEL_MITTELFRISTIG_DECAY_TAGE)
+    if ziel_typ == "kurzfristig":
+        return ZIEL_KURZFRISTIG_DECAY_STUNDEN / 24.0
+    if ziel_typ == "langfristig":
+        return None
+    logger.error(
+        f"halbwertszeit_tage_fuer_typ: unbekannter Zieltyp {ziel_typ!r} — "
+        f"kein Verfall angesetzt. Der Schreiber dieses Typs ist unbekannt"
+    )
+    return None
+
+
+def ziele_live_bewerten(ziele: list[dict], jetzt: datetime | None = None) -> list[dict]:
+    """Rechnet die Motivation jedes Ziels aus Anker und Alter und laesst Verfallenes liegen.
+
+    Warum beim Lesen: Der Tageslauf materialisiert die Kurve einmal am Tag
+    (`PIXIE_DECAY_INTERVALL_SEKUNDEN` = 86400). Fuer ein mittelfristiges Ziel
+    mit 14 Tagen Halbwertszeit hinkt der gelesene Wert damit hoechstens 5 %
+    hinterher; fuer ein kurzfristiges mit 3 Stunden bis zu acht
+    Halbwertszeiten — und weil dessen Schwelle in der Gravitation per Bauart
+    entfaellt, entscheidet der gelesene Wert allein. `[gemessen]` 28.08.2026:
+    Ein Ziel von 18:47 UTC haette bis zum Tageslauf am Folgetag gelebt, ~25 h.
+
+    Reine Funktion: nichts wird zurueckgeschrieben, hundertmal rechnen ergibt
+    dasselbe (`F-ABGELEITET-1`). Die Zeile in der Datenbank bleibt, wie sie
+    ist; `aktiv` legt weiterhin nur der Tageslauf um.
+
+    Vorbedingung: Jedes Dict traegt `ziel_typ`, `motivation`, und — wo ein
+        Anker existiert — `motivation_basis` und `motivation_basis_am`.
+    Nachbedingung: Jedes zurueckgegebene Ziel traegt in `motivation` den
+        Wert von jetzt; wo gerechnet wurde, steht der Datenbankwert in
+        `motivation_materialisiert`. Kein Ziel unter
+        `ZIEL_DEAKTIVIERUNGS_SCHWELLE` kommt zurueck.
+    Fehlerfaelle: Ohne Anker gilt der materialisierte Wert, mit Warnung —
+        er ist veraltet, nicht falsch (`novaberg-thinking-drive_k.md` §7.1).
+    """
+    if jetzt is None:
+        jetzt = datetime.now(timezone.utc)
+
+    bewertet: list[dict] = []
+    for ziel in ziele:
+        halbwertszeit: float | None = halbwertszeit_tage_fuer_typ(str(ziel.get("ziel_typ", "")))
+        if halbwertszeit is None:
+            bewertet.append(ziel)
+            continue
+
+        anker:    float | None    = ziel.get("motivation_basis")
+        anker_am: datetime | None = ziel.get("motivation_basis_am")
+        if anker is None or anker_am is None:
+            logger.warning(
+                f"ziele_live_bewerten: Ziel id={ziel.get('id')} ({ziel.get('ziel_typ')}) "
+                f"ohne Anker — der materialisierte Wert {ziel.get('motivation')} gilt, "
+                f"veraltet statt gerechnet"
+            )
+            bewertet.append(ziel)
+            continue
+
+        live: float = motivation_berechnen(
+            float(anker), anker_am, jetzt=jetzt, halbwertszeit_tage=halbwertszeit,
+        )
+        if anker_am.tzinfo is None:
+            anker_am = anker_am.replace(tzinfo=timezone.utc)
+        stunden_alt: float = max(0.0, (jetzt - anker_am).total_seconds() / 3600.0)
+        if live < ZIEL_DEAKTIVIERUNGS_SCHWELLE:
+            logger.info(
+                f"Ziel id={ziel.get('id')} ({ziel.get('ziel_typ')}) beim Lesen verfallen: "
+                f"mot={live:.3f} < {ZIEL_DEAKTIVIERUNGS_SCHWELLE} (Anker {float(anker):.2f} "
+                f"vor {stunden_alt:.1f} h, HWZ {halbwertszeit * 24.0:.1f} h) — "
+                f"der Tageslauf hat es noch nicht umgelegt"
+            )
+            continue
+
+        bewertet.append({
+            **ziel,
+            "motivation":                live,
+            "motivation_materialisiert": ziel.get("motivation"),
+        })
+
+    return bewertet
+
+
 def ziele_aktive_laden(
     postgres_url: str,
     user_id:      str,
@@ -169,7 +270,9 @@ def ziele_aktive_laden(
 
     Vorbedingung: Beide Kennungen sind gesetzt.
     Nachbedingung: Ausschliesslich Ziele dieses Paares, aktiv, nach Typ und
-        Motivation sortiert.
+        Motivation sortiert — mit der Motivation von jetzt, nicht der des
+        letzten Tageslaufs (`ziele_live_bewerten`); was unter der
+        Deaktivierungsschwelle liegt, fehlt, auch wenn `aktiv` noch TRUE ist.
     Fehlerfaelle: Leere Kennung — `logger.error`, leere Liste, kein Zugriff.
         DB-Fehler — `logger.exception`, leere Liste.
 
@@ -198,7 +301,8 @@ def ziele_aktive_laden(
         cursor.execute(
             """
             SELECT id, ziel_typ, zielsatz, motivation, emotion, arousal,
-                   embedding::text, erstellt_am, COALESCE(thema, '')
+                   embedding::text, erstellt_am, COALESCE(thema, ''),
+                   motivation_basis, motivation_basis_am
             FROM ziele
             WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
             ORDER BY ziel_typ, motivation DESC
@@ -229,11 +333,18 @@ def ziele_aktive_laden(
                 "embedding":   embedding,
                 "erstellt_am": row[7],
                 "thema":       row[8] or "",
+                "motivation_basis":    row[9],
+                "motivation_basis_am": row[10],
             })
+
+        # Der Wert von jetzt, nicht der vom letzten Tageslauf — und was
+        # unter der Schwelle liegt, kommt gar nicht erst zum Leser.
+        geladen: int = len(ziele)
+        ziele = ziele_live_bewerten(ziele)
 
         logger.info(
             f"Ziele geladen: {len(ziele)} aktive Ziele für Paar "
-            f"({user_id}, {character_id}) "
+            f"({user_id}, {character_id}), {geladen - len(ziele)} beim Lesen verfallen "
             f"({sum(1 for z in ziele if z['ziel_typ'] == 'langfristig')} lang, "
             f"{sum(1 for z in ziele if z['ziel_typ'] == 'mittelfristig')} mittel, "
             f"{sum(1 for z in ziele if z['ziel_typ'] == 'kurzfristig')} kurz)"

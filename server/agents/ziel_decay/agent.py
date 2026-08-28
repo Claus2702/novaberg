@@ -1,8 +1,11 @@
 """ZielDecayAgent — Motivations-Verfall fuer mittelfristige Ziele.
 
 Exponentieller Verfall aus dem Anker `motivation_basis` und dem Zeitpunkt
-`motivation_basis_am`. `motivation` ist das materialisierte Feld, das jede
-Abfrage liest — einmal rechnen, hundertmal lesen, wie `gewicht_decay` im LZG.
+`motivation_basis_am`. `motivation` ist das materialisierte Feld — ~~das jede
+Abfrage liest~~: Seit dem 28.08.2026 rechnet der Lader (`ziele_aktive_laden`)
+den Wert von jetzt selbst aus Anker und Alter, weil ein Tagestakt eine
+Halbwertszeit von drei Stunden nicht traegt. Dieser Lauf ist der Haushalt:
+Er schreibt das Feld fuer Leser, die nicht rechnen, und legt `aktiv` um.
 
 Der Agent traegt keine Formel und keine Schleife: Die Fachlogik liegt in
 memory/ziele.py, hier steht nur der Ausloeser plus Audit und Forensik.
@@ -19,19 +22,14 @@ from config import (
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
     PIXIE_DECAY_PRIORITAET,
     POSTGRES_URL,
+    ZIEL_DEAKTIVIERUNGS_SCHWELLE,
     ZIEL_DECAY_AKTIV,
-    ZIEL_KURZFRISTIG_DECAY_STUNDEN,
-    ZIEL_MITTELFRISTIG_DECAY_TAGE,
 )
 from memory import pipeline_log
-from memory.ziele import ziel_decay_lauf
+from memory.ziele import halbwertszeit_tage_fuer_typ, ziel_decay_lauf
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.ziel_decay")
-
-# Motivation unter diesem Wert → Ziel deaktivieren
-ZIEL_DEAKTIVIERUNGS_SCHWELLE: float = 0.15
-
 
 class ZielDecayAgent(BaseAgent):
 
@@ -149,20 +147,17 @@ class ZielDecayAgent(BaseAgent):
         # --- Verarbeitung ---
         # Zwei Typen, zwei Halbwertszeiten (Scheibe 2 des Lage-Konzepts,
         # 28.08.2026): mittelfristig in Tagen, kurzfristig in Stunden. Ein
-        # Lauf je Typ, weil die Allowlist im Lauf genau einen Typ nimmt.
+        # Lauf je Typ, weil die Allowlist im Lauf genau einen Typ nimmt. Die
+        # Halbwertszeit kommt aus derselben Zuordnung, die der Lader beim
+        # Lesen benutzt (`halbwertszeit_tage_fuer_typ`) — eine Kurve, zwei Leser.
         laeufe: list[dict] = [
             ziel_decay_lauf(
                 POSTGRES_URL,
-                ziel_typ                = "mittelfristig",
+                ziel_typ                = typ,
                 deaktivierungs_schwelle = ZIEL_DEAKTIVIERUNGS_SCHWELLE,
-                halbwertszeit_tage      = ZIEL_MITTELFRISTIG_DECAY_TAGE,
-            ),
-            ziel_decay_lauf(
-                POSTGRES_URL,
-                ziel_typ                = "kurzfristig",
-                deaktivierungs_schwelle = ZIEL_DEAKTIVIERUNGS_SCHWELLE,
-                halbwertszeit_tage      = ZIEL_KURZFRISTIG_DECAY_STUNDEN / 24.0,
-            ),
+                halbwertszeit_tage      = halbwertszeit_tage_fuer_typ(typ),
+            )
+            for typ in ("mittelfristig", "kurzfristig")
         ]
         ergebnis: dict = {
             "verarbeitet": sum(l["verarbeitet"] for l in laeufe),
