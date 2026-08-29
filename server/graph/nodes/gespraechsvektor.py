@@ -45,6 +45,7 @@ from ei.initiative import Fuehrung, fuehrung_messen, skalenfassung
 from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.utils import NEGATIVE_EMOTIONEN, POSITIVE_EMOTIONEN, modus_pruefen
 from ei.wissensluecken import wissensluecken_finden
+from graph.format.memory_context import speaker_label
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden
@@ -264,7 +265,10 @@ def _resonanz_kontext_laden(state: ConversationState) -> str:
         themen_roh = erinnerung.get("themen") or []
         themen: str = ", ".join(str(t) for t in themen_roh if t)
 
-        zeile: str = f"  {inhalt} ({herkunft}"
+        # Wer es gesagt hat, reist mit — dieselbe Erinnerung ohne Sprecher
+        # las sich im [GEDAECHTNIS]-Block als Novas eigene (29.08.2026).
+        sprecher: str = speaker_label(erinnerung.get("beobachter"))
+        zeile: str = f"  {inhalt} ({herkunft}; Sprecher: {sprecher}"
         if themen:
             zeile += f"; Themen: {themen}"
         emotion: str = (erinnerung.get("emotion") or "").strip()

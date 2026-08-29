@@ -147,13 +147,47 @@ def _format_charakter(entry: ContextEntry) -> str:
     return f"[Charakter] {inhalt}"
 
 
+# Der Sprecher eines Gedaechtniseintrags, in Worten. `beobachter` ist der
+# Schreiber des Eintrags (Paar-Schema: user = das Gegenueber, assistant = Nova)
+# und damit, wer die Sache gesagt hat. Seit dem 29.08.2026 steht er im Block:
+# Ohne ihn erschien ein Nutzersatz als Novas Erinnerung — `[gemessen]` am
+# Bestand desselben Tages: 3029 `assistant` / 219 `user` in `lzg_knoten`,
+# im KZG 276 / 24 von 300. Die Worte sind die des Gespraechsvektors; die
+# Umstellung des ganzen Blocks auf die Namen seines Lesers steht aus.
+_SPEAKER_WORDS: dict[str, str] = {"user": "Nutzer", "assistant": "Nova"}
+
+
+def speaker_label(beobachter: object) -> str:
+    """Der Sprecher eines Eintrags in Worten — oder 'unbekannt', und das gemeldet.
+
+    Vorbedingung: keine — jeder Wert ist zulaessig, nur zwei sind bekannt.
+    Nachbedingung: 'Nutzer', 'Nova' oder 'unbekannt'; ein Wert ausserhalb
+        des Kanons (auch None und '') steht im Log als Warnung, denn ein
+        Eintrag ohne Sprecher ist ein Defekt seiner Quelle, kein Normalfall.
+
+    Args:
+        beobachter: der Schreiber des Eintrags, wie die Quelle ihn liefert.
+
+    Returns:
+        Das Wort fuer den Sprecher.
+    """
+    if isinstance(beobachter, str) and beobachter in _SPEAKER_WORDS:
+        return _SPEAKER_WORDS[beobachter]
+    logger.warning(
+        f"format_memory_entries: beobachter {beobachter!r} ausserhalb des Kanons "
+        f"(user|assistant) — Sprecher unbekannt"
+    )
+    return "unbekannt"
+
+
 def _format_kzg(entry: ContextEntry) -> str:
-    """KZG-Block: [KZG] {themen} (Salienz: {gewicht}): {inhalt}.
+    """KZG-Block: [KZG] {themen} (Salienz: {gewicht}, Sprecher: {wer}): {inhalt}.
 
     themen kann als Liste oder String vorliegen. Liste wird mit
     ', ' joined; String unveraendert; sonst Leerstring.
     gewicht wird mit der Default-Float-Repraesentation ausgegeben
-    (1.5, nicht 1.50).
+    (1.5, nicht 1.50). Der Sprecher kommt aus meta['beobachter']
+    (`speaker_label`) — bis zum 29.08.2026 verwarf diese Funktion ihn.
     """
     inhalt:  str = entry.get("inhalt", "")
     gewicht      = entry.get("gewicht", 0.0)
@@ -167,7 +201,8 @@ def _format_kzg(entry: ContextEntry) -> str:
     else:
         themen_str = ""
 
-    return f"[KZG] {themen_str} (Salienz: {gewicht}): {inhalt}"
+    sprecher: str = speaker_label(meta.get("beobachter"))
+    return f"[KZG] {themen_str} (Salienz: {gewicht}, Sprecher: {sprecher}): {inhalt}"
 
 
 def _format_lzg(entry: ContextEntry) -> str:
@@ -322,6 +357,9 @@ def _format_lzg_resonanz(resonanz: dict) -> str:
         zeilen.append(f"----- Erinnerung {nummer} -----")
         inhalt: str = (erinnerung.get("inhalt") or "").strip()
         zeilen.append(f'"{inhalt}"')
+        # Wer es gesagt hat — ein woertliches Zitat ohne Sprecher liest sich als
+        # eigene Erinnerung, auch wenn es der Nutzer war (29.08.2026).
+        zeilen.append(f"Sprecher: {speaker_label(erinnerung.get('beobachter'))}")
 
         emotion: str = (erinnerung.get("emotion") or "").strip()
         if emotion and emotion.lower() != "neutral":

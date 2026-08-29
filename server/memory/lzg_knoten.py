@@ -942,7 +942,9 @@ def _knoten_details_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
     """
     Laedt die Lesepfad-Detailfelder eines Knotens (§8.4.2 Erinnerungs-Ebene):
     id, inhalt, dimension, gewicht_decay, emotion, arousal, themen,
-    entitaet_ids, erstellt_am. Nur aktive Knoten (§8.3.1).
+    entitaet_ids, erstellt_am, beobachter (seit 29.08.2026 — der Sprecher der
+    Erinnerung; ohne ihn zitierte der Block einen Nutzersatz als Novas).
+    Nur aktive Knoten (§8.3.1).
 
     Eigene Quelle statt knoten_laden, weil knoten_laden fuer die Kantenbildung
     gewicht_absolut (ohne emotion/inhalt) liefert; der Lesepfad braucht die
@@ -956,7 +958,7 @@ def _knoten_details_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
             cur.execute(
                 """
                 SELECT id, inhalt, dimension, gewicht_decay, emotion,
-                       arousal, themen, entitaet_ids, erstellt_am
+                       arousal, themen, entitaet_ids, erstellt_am, beobachter
                 FROM lzg_knoten
                 WHERE id = %s AND aktiv = TRUE
                 """,
@@ -1039,6 +1041,7 @@ def spreading_lesen(
             "themen":            a.get("themen"),
             "entitaet_ids":      a.get("entitaet_ids"),
             "emotion":           a.get("emotion") or "",
+            "beobachter":        a.get("beobachter") or "",
             "erstellt_am":       a.get("erstellt_am"),
             "gewicht_decay":     a.get("gewicht_decay") or 0.0,
             "schale":            0,
@@ -1075,6 +1078,7 @@ def spreading_lesen(
                     "themen":            detail.get("themen"),
                     "entitaet_ids":      detail.get("entitaet_ids"),
                     "emotion":           detail.get("emotion") or "",
+                    "beobachter":        detail.get("beobachter") or "",
                     "erstellt_am":       detail.get("erstellt_am"),
                     "gewicht_decay":     detail.get("gewicht_decay") or 0.0,
                     "schale":            schale,
@@ -1117,6 +1121,7 @@ def spreading_lesen(
             "themen":          eintrag["themen"],
             "entitaet_ids":    eintrag["entitaet_ids"],
             "emotion":         eintrag["emotion"],
+            "beobachter":      eintrag["beobachter"],
             "erstellt_am":     eintrag["erstellt_am"],
             "gewicht_decay":   eintrag["gewicht_decay"],
             "schale":          eintrag["schale"],

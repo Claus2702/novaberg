@@ -35,6 +35,7 @@ ANKER_ERINNERUNG: dict = {
     "themen":        ["Schwarze Loecher", "Ereignishorizont"],
     "entitaet_ids":  [12],
     "emotion":       "neugierig",
+    "beobachter":    "user",
     "gewicht_decay": 0.82,
     "schale":        0,
     "pfad":          [],
@@ -47,6 +48,7 @@ NACHBAR_ERINNERUNG: dict = {
     "themen":        ["Hawking-Strahlung"],
     "entitaet_ids":  [],
     "emotion":       "",
+    "beobachter":    "assistant",
     "gewicht_decay": 0.41,
     "schale":        2,
     "pfad":          [{"kante_id": 99}],
@@ -59,6 +61,7 @@ ERINNERUNG_OHNE_INHALT: dict = {
     "themen":        ["Gravitation"],
     "entitaet_ids":  [],
     "emotion":       "neutral",
+    "beobachter":    "user",
     "gewicht_decay": 0.10,
     "schale":        1,
     "pfad":          [],
@@ -91,6 +94,24 @@ class TestResonanzKontextGefuellt(unittest.TestCase):
         self.assertIn("Ereignishorizont wurde als Grenze", text)
         self.assertIn("Hawking-Strahlung kam als Gegenbewegung", text)
         self.assertEqual(2, len(text.strip().splitlines()))
+
+    def test_sprecher_reist_mit(self) -> None:
+        """Seit 29.08.2026: jede Zeile sagt, wer die Erinnerung gesagt hat."""
+        text: str = _resonanz_kontext_laden(
+            _state([ANKER_ERINNERUNG, NACHBAR_ERINNERUNG])
+        )
+        anker_zeile, nachbar_zeile = text.strip().splitlines()
+        self.assertIn("Sprecher: Nutzer", anker_zeile)
+        self.assertIn("Sprecher: Nova", nachbar_zeile)
+        self.assertNotIn("Sprecher: Nova", anker_zeile)
+
+    def test_ohne_beobachter_ist_der_sprecher_unbekannt_und_gemeldet(self) -> None:
+        ohne: dict = {**ANKER_ERINNERUNG}
+        del ohne["beobachter"]
+        from graph.format import memory_context as fmt
+        with self.assertLogs(fmt.logger, level="WARNING"):
+            text: str = _resonanz_kontext_laden(_state([ohne]))
+        self.assertIn("Sprecher: unbekannt", text)
 
     def test_schale_trennt_direkten_treffer_von_assoziation(self) -> None:
         """Schale 0 ist der Anker, Schale 2 ein Nachbar zweiter Ordnung.
