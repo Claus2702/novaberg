@@ -1915,9 +1915,14 @@ NODE_LLM_CONFIG: dict = {
     # --- Sachlage (novaberg-thinking-lage_k.md, Scheibe 1) ---
     # Niedrige Temperatur: Die Sachlage ist eine Analyse, keine Erzeugung —
     # zwei Laeufe auf demselben Turn sollen dieselbe Struktur liefern.
+    # `[gemessen]` 29.08.2026, mittags: Seit Scheibe 9 traegt jedes Objekt
+    # gedeckt, offen, traeger und sprecher — eine fortgeschriebene Blase mit
+    # zwei Objekten brauchte 706–709 Token, der dritte Laborlauf und der
+    # Betriebsturn brachen bei 768 mit `done_reason='length'` ab (halbes
+    # JSON, Sachlage-Ausfall). 1024 laesst der Form Luft; die Frist bleibt.
     "sachlage": {
         "temperature": 0.1,
-        "max_output_tokens": 768,
+        "max_output_tokens": 1024,
         "timeout_s": 60.0,
     },
     # --- Der Frame-Aufloeser (novaberg-thinking-lage_k.md, Scheibe 6) ---
