@@ -299,6 +299,18 @@ def _build_goal_card(ziel: dict, zeige_aktualisiert: bool) -> Gtk.Box:
     wert_label.add_css_class("caption")
     mot_row.append(wert_label)
 
+    # Seit 29.08.2026 rechnet der Endpoint die Motivation live (wie die
+    # Gravitation); der Wert des Tageslaufs steht daneben, wenn er abweicht.
+    materialisiert = ziel.get("motivation_materialisiert")
+    if materialisiert is not None and abs(float(materialisiert) - motivation) >= 0.005:
+        tages_label = Gtk.Label(label=f"(Tageslauf {float(materialisiert):.2f})")
+        tages_label.add_css_class("dim-label")
+        tages_label.add_css_class("caption")
+        tages_label.set_tooltip_text(
+            "Wert, den der Tageslauf zuletzt schrieb — die Anzeige rechnet aus Anker und Alter"
+        )
+        mot_row.append(tages_label)
+
     card.append(mot_row)
 
     # Aktualisiert-am (nur fuer mittelfristige Ziele relevant).
