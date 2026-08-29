@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 28. August 2026, 23:07 UTC
+**Stand:** 29. August 2026, 06:55 UTC (keine neue Zeile; die Zaehlung von 23:07 gilt)
 **Offen:** **128 Funde — gezaehlt am 28.08.2026, 23:07 UTC** (137 Fundzeilen der Form `- **JJJJ-MM-TT**` im Abschnitt *Offen*, davon **9** mit `~~`; neu: die Notizen-Leser schreiben beim Lesen und `fakten` ist leer; die Suite schreibt ins Server-Log, das mitten im Messturn rotierte). Davor: **126 Funde — gezaehlt am 28.08.2026, 22:24 UTC** (135 Fundzeilen der Form `- **JJJJ-MM-TT**` im Abschnitt *Offen*, davon **9** mit `~~`; **zwoelf neu und offen** vom 28.08. — der JSON-Ausfall des Sachlage-Calls im Labor, — der Tagestakt des Kurzziel-Verfalls, das Meta-`thema` und die Blasen-Wiederaufnahme sind am selben Abend erledigt, die offene Eigenschaft nach der Antwort widerlegt —: die gedrueckte Nebensache und die Frage als Deckung, der zweite SQL-Leser der Ziel-Motivation im Drive-Tab, die 27 Aufzaehlungs-Luecken der neuen C18-Paare, die Objektnamen-Stabilitaet der Zielstrecke, die Bruecken-Schwelle mit n=1, der Quelltext-Grep-Zeuge, die C18-Altlast, die Leerquote des GV-Parses, der Labor-Buffer des Pipeline-Logs, der Akutheits-Grenzfall der Sachlage, das tote Ruhe-Kriterium der Messturn-Vorlage)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md

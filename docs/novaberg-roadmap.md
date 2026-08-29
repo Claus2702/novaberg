@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 28. August 2026 — juengster Eintrag **23:04 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 29. August 2026 — juengster Eintrag **06:55 UTC** (gemessen via `date -u`). Davor 28. August 2026, 23:04 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,14 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 29.08.2026, 06:55 UTC — Scheibe 7 der Lage: Behauptungen des Nutzers gegen Weltwissen
+
+**Der Anlass:** Die Sachlage deckte jede Behauptung als Eigenschaft, ohne zu fragen, ob die Welt sie hergibt (Pipeline-Konzept Schritt 4.5, Frames §6: *„Mein Elefant ist hergeflogen"*). Abgegrenzt gegen den Sykophanz-Sprint, der Einwaende gegen Novas Werte beurteilt. **Der Bau:** `graph/nodes/sachlage_plausibility.py` — bei akutem Objekt ein eigener Call (`sachlage_plausibilitaet`, T 0) ueber die Aeusserung des Nutzers, vier Stufen aus Frames §6.2, nur die drei ueber `plausibel` bleiben (`plausibilitaet` je akutem Objekt, hoechstens drei); `_derive` ruft ihn nach dem Aufloeser, der `[SACHLAGE]`-Block traegt *»Zweifel (Stufe): Behauptung — Grund«*, der Kontext-Tab `⚠`. Die Form der Reaktion bleibt bei Haltung und Vehikel. Schritt 4 (Cross-Frame) bleibt Konzept: keine Slots aus Fakten oder Lager.
+
+**Drei Laborlaeufe** (`labor/2026-08-29_sachlage_plausibilitaet_messung.py`, zehn Aeusserungen × 3): erste Prompt-Fassung 3/12 Fehlalarme (der Einstein-Wert 1,75″, dessen Grund den Wert bestaetigte), Stufe durchweg zu streng; zweite Fassung (*ein Befund braucht einen Gegenwert*) 0/12 — und »schneller als Licht« 0/3 nicht, weil das Modell es uebersah, sondern weil es den Befund unter *»Lichtgeschwindigkeit«* statt *»Pulsar«* meldete und der woertliche Objektabgleich ihn verwarf; im ersten Betriebsturn dasselbe (*»Neutronensternen-Rotation«*). Seit `_match_object` (woertlich, Enthaltensein, sonst das einzige akute Objekt): **0/12 Fehlalarme, 18/18 nicht-plausible gemeldet**, Stufe im Mittel eine zu hoch, 1,3 s je Call. **Betrieb 06:53 UTC:** `unmoeglich` fuer die zwoelf Sonnenmassen mit der TOV-Grenze als Grund im `pipeline_log`; im selben Turn deckte der Aufloeser 2 offene Eigenschaften aus dem Gedaechtnis. 15 Zeugen, Suite **2535 gruen**, Gegenprobe 1/1/1/1, Linter 1220 → 1224, Wand sauber. Backlog `SACHLAGE-SCHEIBE-7-PLAUSIBILITAET` ✅ mit Rest (Stufeneichung).
+
+**Vorab:** Der Compose-Stack war nach dem Neustart des Hosts nicht gestoppt, sondern entfernt — Volumes intakt, `up -d` der vier Kerndienste, Daten vollstaendig (`sachlage_verlauf` 16, `autonomous_wissen` 1072).
 
 ## 28.08.2026, 23:04 UTC — Scheibe 6 der Lage: der Frame-Aufloeser gegen den Gedaechtnis-Pool des Turns
 
