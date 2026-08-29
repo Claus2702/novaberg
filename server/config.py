@@ -1929,6 +1929,14 @@ NODE_LLM_CONFIG: dict = {
         "max_output_tokens": 384,
         "timeout_s": 30.0,
     },
+    # --- Die Plausibilitaetspruefung (novaberg-thinking-lage_k.md, Scheibe 7) ---
+    # Ein Urteil gegen Weltwissen ueber die Aeusserung; laeuft nur bei akutem
+    # Objekt, hinter dem Aufloeser. Kleiner Ausgang, kurze Frist.
+    "sachlage_plausibilitaet": {
+        "temperature": 0.0,
+        "max_output_tokens": 384,
+        "timeout_s": 30.0,
+    },
 }
 
 # ── GV4 — Wissenslücken-Erkennung ────────────────────────────

@@ -43,6 +43,13 @@ ein eigener, kleiner Call die offenen Eigenschaften der akuten Objekte
 dagegen. Eine Eigenschaft, die ein angebotener Eintrag beantwortet, wandert
 nach `gedeckt` und traegt in `quellen` ihre Herkunft — sie ist damit kein
 Rueckfrage-Gegenstand mehr. Der Sachlage-Prompt selbst bleibt unveraendert.
+
+**Die Plausibilitaetspruefung** (Konzept §4, Scheibe 7, 29.08.2026): Traegt
+die Sachlage ein akutes Objekt, prueft ein weiterer kleiner Call
+(`graph/nodes/sachlage_plausibility.py`), ob die Aeusserung des Nutzers eine
+Behauptung enthaelt, die dem Weltwissen widerspricht — vier Stufen aus
+Frames §6.2, im Artefakt stehen nur die drei ueber `plausibel`, und der
+Block nennt sie dem Verfasser als Zweifel.
 """
 
 import json
@@ -58,6 +65,11 @@ from config import (
     SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS,
     get_node_config,
     redis_client,
+)
+from graph.nodes.sachlage_plausibility import (
+    apply_plausibility,
+    assess_plausibility,
+    has_acute_object,
 )
 from graph.nodes.sachlage_resolver import (
     SOURCE_LABELS,
@@ -398,7 +410,14 @@ def _derive(
     claims: dict = (
         resolve_open_properties(offen, angebot) if angebot and offen else {}
     )
-    return carry_sources(apply_memory_coverage(artefakt, angebot, claims, vorige), vorige)
+    artefakt = carry_sources(apply_memory_coverage(artefakt, angebot, claims, vorige), vorige)
+    # Scheibe 7: Behauptet der Nutzer ueber die akute Sache etwas, das die
+    # Welt nicht hergibt? Ein eigener Call, nur bei akutem Objekt — die Lage
+    # sagt dass und warum, die Form bleibt Sache von Haltung und Vehikel.
+    befunde: dict = (
+        assess_plausibility(aeusserung, artefakt) if has_acute_object(artefakt) else {}
+    )
+    return apply_plausibility(artefakt, befunde)
 
 
 def _resume_lookup(state: dict, vorige: dict | None) -> dict | None:
@@ -638,6 +657,13 @@ def sachlage_block(sachlage: dict) -> str:
             zeilen.append(
                 f"Dazu weiss Nova schon ({label}): {eigenschaft} — "
                 f"{str(gedeckt.get(eigenschaft, ''))[:200]}"
+            )
+        # Scheibe 7: ein Zweifel am Gesagten — Stufe, Behauptung, Grund. Ob und
+        # wie Nova ihn ausspricht, entscheiden Haltung und Vehikel.
+        for befund in (objekt.get("plausibilitaet") or [])[:3]:
+            zeilen.append(
+                f"Zweifel ({befund.get('stufe', '')}): {befund.get('behauptung', '')} — "
+                f"{befund.get('grund', '')}"
             )
     fruehere: dict | None = sachlage.get("wiederaufnahme")
     if fruehere:
