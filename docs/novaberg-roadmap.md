@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 29. August 2026 — juengster Eintrag **06:55 UTC** (gemessen via `date -u`). Davor 28. August 2026, 23:04 UTC.
+**Stand:** 29. August 2026 — juengster Eintrag **07:30 UTC** (gemessen via `date -u`). Davor 06:55 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,14 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 29.08.2026, 07:30 UTC — Scheibe 8 der Lage: der Wissenstraeger — Antwortstoff statt Rueckfrage, mit Websuche
+
+**Der Anlass, gemessen um 07:04 UTC:** *„Das muss ganz schoen knallen bei einem Kollaps"* — die Sachlage las richtig (der Nutzer will eine Einschaetzung *erhalten*), Scheibe 3 machte die offene Eigenschaft »Energieentladung« zum Rueckfrage-Gegenstand, und Nova fragte den Nutzer, wie das Knallen aussieht. Scheibe 3 war an Alltagsframes entworfen, wo nur der Nutzer die Luecke kennt. **Die Absicht:** Nova vervollstaendigt offene Eigenschaften aus ihrem Weltwissen, und wo das nicht reicht, darf sie nachschlagen.
+
+**Der Bau:** Jede offene Eigenschaft bekommt im Sachlage-Call ihren Traeger — `nutzer`, `welt`, `nachschlagen` —, gegen den Kanon gehalten (`_normalize_holders`), fehlend = `nutzer`. `question_target` gibt nur `nutzer`-Eigenschaften; `answer_targets` die anderen; der `[SACHLAGE]`-Block traegt *»Der Nutzer will zu … wissen: … — beantworte es aus deinem Wissen, statt danach zu fragen«*. `graph/nodes/sachlage_research.py`: eine Websuche je Turn fuer die erste `nachschlagen`-Eigenschaft (dieselbe wie im Thinker), Treffer in `recherche` und im Block; Kontext-Tab `↳welt`/`↳nachschlagen`, `🔎`. 17 Zeugen, Suite **2552 gruen**, Gegenprobe 2/1/2/1, Linter 1224, Wand sauber.
+
+**Drei Messungen, drei Befunde:** (1) Labor, 15 Aeusserungen × 3 (`labor/2026-08-29_sachlage_traeger_messung.py`): Alltag **43 nutzer / 5 welt / 0 nachschlagen**, Wissenschaft **3 / 24 / 15**, 0 von 90 ohne Traeger, Artefaktform wie in Scheibe 1. (2) Betrieb 07:24: die **fortgeschriebene** Blase trug `traeger: {}` — das Modell laesst das Feld weg, wenn die vorige Blase keins hatte; Regelzeile geschaerft und `carry_holders` erbt aus der vorigen Blase; Fortfuehrungsfall im Labor danach 7/7 mit Traeger. (3) Betrieb 07:27: Traeger da, kein Rueckfrage-Gegenstand auf der Welt-Eigenschaft, Nova **antwortete** mit dem Rekordwert (716 Hz, PSR J1748-2446ad) — die Websuche dazu lieferte **drei BeamNG-Mod-Seiten**; seither haelt `relevant_hits` (ein Wort des Objektnamens muss im Treffer stehen) das Rauschen fern (Fundliste). Backlog `SACHLAGE-SCHEIBE-8-TRAEGER` ✅ mit Rest.
 
 ## 29.08.2026, 06:55 UTC — Scheibe 7 der Lage: Behauptungen des Nutzers gegen Weltwissen
 

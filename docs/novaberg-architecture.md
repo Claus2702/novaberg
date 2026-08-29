@@ -258,6 +258,7 @@ project/
 │   │       ├── sachlage.py              #     → novaberg-thinking-lage_k.md (CG, reducer→sachlage_node→router: fortgeschriebenes Verstehen je Turn, seit 28.08.2026)
 │   │       ├── sachlage_resolver.py     #     → novaberg-thinking-lage_k.md §4 Scheibe 6 (der Frame-Auflöser: offene Eigenschaften gegen den Gedächtnis-Pool des Turns, eigener Call; seit 28.08.2026)
 │   │       ├── sachlage_plausibility.py #     → novaberg-thinking-lage_k.md §4 Scheibe 7 (Behauptungen des Nutzers gegen Weltwissen, vier Stufen, eigener Call bei akutem Objekt; seit 29.08.2026)
+│   │       ├── sachlage_research.py     #     → novaberg-thinking-lage_k.md §4 Scheibe 8 (eine Websuche je Turn für die erste »nachschlagen«-Eigenschaft; seit 29.08.2026)
 │   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (rolle user/character)
 │   │       ├── ei_calc_persist.py       #     → novaberg-node-ei-calc-persist.md (CG-Ausgang, nova_state-Persistierung)
 │   │       ├── router.py                #     → novaberg-node-router.md
