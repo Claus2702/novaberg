@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 29. August 2026 (`[SACHLAGE]` trägt seit den Scheiben 6–8 Deckung, Zweifel, Antwortstoff und Suchtreffer — Block-Tabelle). Davor 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
@@ -90,7 +90,7 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 | `[GEDAECHTNIS]` | ✅ | **—** |
 | `[AUFZEICHNUNGEN]` | ✅ | **—** |
 | `[WEB-RECHERCHE]` | ✅ | **—** |
-| `[SACHLAGE]` | ✅ | — (seit 28.08.2026: Gegenstand, vermutetes Nutzerziel, offene Eigenschaften akuter Objekte — `graph/nodes/sachlage.py`, `novaberg-thinking-lage_k.md`; steht vor dem Gesprächsvektor: erst worum es geht, dann wie es sich bewegt. Drei unterscheidbare Ausgänge: Block · gelaufen-und-leer als `info` · nicht gelaufen als `error`) |
+| `[SACHLAGE]` | ✅ | — (seit 28.08.2026: Gegenstand, vermutetes Nutzerziel, offene Eigenschaften akuter Objekte; seit 28.08. spät je Deckung aus dem Gedächtnis *»Dazu weiss Nova schon (aus …)«* (Scheibe 6); seit 29.08. je Plausibilitätsbefund *»Zweifel (Stufe): Behauptung — Grund«* (Scheibe 7), je Welt-Eigenschaft *»Der Nutzer will zu … wissen: … — beantworte es«* und je Suchtreffer *»Nachgeschlagen zu …«* (Scheibe 8) — `graph/nodes/sachlage.py::sachlage_block`, `novaberg-thinking-lage_k.md`; steht vor dem Gesprächsvektor: erst worum es geht, dann wie es sich bewegt. Drei unterscheidbare Ausgänge: Block · gelaufen-und-leer als `info` · nicht gelaufen als `error`) |
 | `[SACHLAGE-BRUECKE]` | ✅ | — (seit 28.08.2026, nur auf Impuls-Turns mit zweitem Ende: die Sachlage des Turns, aus dem der Gedanke entstand, neben der aktuellen — `sachlage_bridge_block`, `novaberg-thinking-lage_k.md` §4 Scheibe 4. Nennt, ob der Anlass belegt (`turn_id`) oder erschlossen ist (Embedding-Rückfall mit Kosinus), und trägt den Auftrag, den Übergang hörbar zu bauen. Fehlt die Brücke, fehlt der Block ohne Fehlerzeile — der Knoten hat den Grund schon protokolliert) |
 | `[GESPRAECHSVEKTOR]` | ✅ | — |
 | `[MASS]` | ✅ | — (die Zahl steht dort in `[REGIE]`). **Die Rückfrage-Zeile trägt seit dem 27.08.2026 Menge UND Art** („eine Rückfrage, und zwar analytisch — kein Angebot"), aus `CLUSTER_FRAGE_ART` an der Landschaft — nicht am Vehikel, das in 75 % der Parses leer ist (`ei/haltungssprache.py::_rueckfragenzeile`). **Seit dem 28.08.2026 abends auch den Gegenstand** (*»… — ihr Gegenstand: Geburtstag — was dazu noch offen ist: wer«*) aus der Sachlage (`graph/nodes/sachlage.py::question_target`, Scheibe 3 des Lage-Konzepts); bei *»keine Rückfrage«* entfällt er wie die Art — die Haltung bleibt der Regler. Labor: Rückfrage trifft den Gegenstand 4/4 statt 1/4 |

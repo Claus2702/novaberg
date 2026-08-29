@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Cognitive Pipeline — Verstehens-Loop zwischen Router und Agent-Dispatch (Konzept)
-**Stand:** 28. August 2026 (Phase A §11: Schritte 1–2 als Sachlage-Knoten gebaut, an anderer Stelle — Stand-Block). Davor 09. Mai 2026, Chat 81
+**Stand:** 29. August 2026 (Phase A §11: Schritte 3 und 5 gebaut, 6 und 9 begonnen — Stand-Block). Davor 28. August 2026 (Phase A §11: Schritte 1–2 als Sachlage-Knoten gebaut, an anderer Stelle — Stand-Block). Davor 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-cognitive-pipeline_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** Chat 81 (entstanden aus dem Wetter-Dialog-Beispiel und Meisters Forderung nach echter Multi-Agent-Orchestrierung; Baumarkt-Beispiel als Lehrfall; Skill-vs-Frame-Trennung als tragende Architektur-Aussage)

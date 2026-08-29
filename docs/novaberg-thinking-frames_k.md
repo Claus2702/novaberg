@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Frames — Universales kognitives Substrat (Konzept)
-**Stand:** 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
+**Stand:** 29. August 2026 (§6 Plausibilität gebaut, offene Slots tragen ihren Wissensträger — Stand-Block vor §5). Davor 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-frames_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** Chat 80 (erste Konzeption als Slot-Erhebung pro Vorhaben), Chat 81 (universale Erweiterung — Frame als kognitives Substrat, Akutheit als Trigger, iterative Validierung, Plausibilitätsprüfung, Trennung zu Skills)
