@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `reducer` (Memory-Konsolidierung im CharacterGraph)
-**Stand:** 15. August 2026 (Zeilenzitat auf `thinker.py` durch den Ankernamen ersetzt); davor 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
+**Stand:** 29. August 2026 (der Sprecher steht in der KZG-Zeile und an jeder Resonanz-Erinnerung — §3); davor 15. August 2026 (Zeilenzitat auf `thinker.py` durch den Ankernamen ersetzt); davor 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
 **Pfad:** novaberg/docs/novaberg-node-reducer.md
 **Datei:** `server/graph/nodes/reducer.py` (Wrapper in `server/graph/base.py:215-216`)
 **Formatter:** `server/graph/format/memory_context.py`
@@ -103,6 +103,7 @@ Format-Wissen lebt **nicht** im Reducer. Nach der Dedup übergibt der Reducer di
 - Der Formatter ist eine **reine Funktion**, kein Graph-Node. Er trifft keine Entscheidungen, sondern baut den finalen Memory-Context-String aus den strukturierten Entries.
 - **Sortierung:** `summary` zuerst, dann `charakter`, dann `kzg`+`lzg` gemeinsam absteigend nach `gewicht`, dann `plugin_*` in Eingangsreihenfolge, unbekannte Quellen als Fallback ans Ende (mit Logging-Warnung pro Eintrag).
 - **Format-Konvention pro Quelle** ist im Formatter-Modul zentralisiert — beim nächsten Format-Wechsel ist genau ein Ort betroffen, weder die Memory-Module noch die Plugin-Manager noch der Reducer kennen Output-Format.
+- **Der Sprecher steht in der Zeile (seit 29.08.2026).** `[KZG] {themen} (Salienz: {gewicht}, Sprecher: {Nutzer|Nova|unbekannt}): {inhalt}` aus `meta['beobachter']`, und jede Resonanz-Erinnerung trägt hinter dem Zitat `Sprecher: …` — dafür liest `memory/lzg_knoten.py::_knoten_details_laden` jetzt `beobachter`, und `spreading_lesen` reicht es von Anker und Nachbar bis ins Ergebnis. Ein Wert außerhalb `user|assistant` wird *unbekannt* und als Warnung gemeldet (`speaker_label`). Bis dahin verwarf `_format_kzg` den Beobachter, und die Resonanz zitierte ohne ihn — ein Nutzersatz las sich als Novas Erinnerung. Zeugen: `tests/test_memory_context_speaker.py`.
 - Der Formatter wird außerdem vom `thinker`-Memory-Search-Tool direkt aufgerufen — im Werkzeug `memory_search` in `graph/nodes/thinker.py`, am Aufruf von `_format_faktencheck_treffer` —, um identische Format-Konventionen über beide Pfade zu garantieren. **Ankername statt Zeilennummer:** Die Zahl stand auf 189 und traf schon vor der Änderung vom 15.08.2026 nicht mehr zu.
 
 ---

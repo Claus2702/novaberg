@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Web-Infrastruktur — SearXNG, WebSearchManager, PageFetcher
-**Stand:** 19. April 2026, Chat 57 (DRY-Prinzip explizit)
+**Stand:** 29. August 2026 (Konsumententabelle: der Thinker sucht einmal je Turn, die Sachlage-Recherche als zweiter Konsument nachgetragen); davor 19. April 2026, Chat 57 (DRY-Prinzip explizit)
 **Pfad:** `novaberg/docs/novaberg-tool-web.md`
 **Quellen:** nova-07-a.md, Codestand
 
@@ -70,7 +70,8 @@ Web-Suche und Page-Fetch sind bewusst als allgemeine Tools positioniert, nicht a
 
 | Graph | Konsument | Nutzung |
 |-------|-----------|---------|
-| **Human Graph** | Thinker | `web_search` als Tool bei Wissensfragen (Auto-Fetch auf Top-URL) |
+| **Character Graph** (seit Chat 60; hier stand ~~Human Graph~~) | Thinker | `web_search` als Tool bei Wissensfragen (Auto-Fetch auf Top-URL) — **seit 29.08.2026 einmal je Turn** (`THINKER_WEBSUCHE_MAX_JE_TURN`), und hat die Sachlage-Recherche im selben Turn Treffer, bedienen sie die erste Suche ohne zweiten Aufruf der Maschine (`novaberg-node-thinker.md` §4.4) |
+| **Character Graph** | Sachlage-Recherche (`graph/nodes/sachlage_research.py`, seit 29.08.2026) | `web_search_manager.suchen()` einmal je Turn fuer die erste offene `nachschlagen`-Eigenschaft, Wortlaut-Filter, kein Fetch (`novaberg-thinking-lage_k.md` §4 Scheibe 8) |
 | **Pixie Graph** | RechercheAgent | `web_search_manager.suchen()` + `page_fetch()` iterativ fuer mehrstufige Recherchen |
 | **Pixie Graph** | VertiefungsAgent | Gleiche Web-Infrastruktur wie RechercheAgent |
 
