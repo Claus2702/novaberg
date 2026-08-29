@@ -40,7 +40,7 @@ from graph.nodes.sachlage import question_target
 from memory.kurzziel import short_goal_key
 from memory.sachlage_history import history_recent
 from memory.session import session_turns_retrieve
-from memory.ziele import ziel_paar_bestimmen, ziele_aktive_laden
+from memory.ziele import ziel_paar_bestimmen, ziele_aktive_laden, ziele_live_bewerten
 
 logger = logging.getLogger("ki_server.drive")
 
@@ -66,6 +66,53 @@ def _goal_row_to_dict(row: tuple) -> dict:
         "created_at": created_at.isoformat() if created_at else "",
         "updated_at": updated_at.isoformat() if updated_at else "",
     }
+
+
+def _goals_live(rows: list[tuple]) -> list[dict]:
+    """Die Anzeige-Liste mit live gerechneter Motivation der aktiven Ziele.
+
+    Der Fund vom 28.08.2026: Dieser Endpoint las `motivation` aus dem
+    Tagesfeld, der Lader der Gravitation rechnet sie seit demselben Abend
+    beim Lesen — zwei Leser derselben Spalte mit zwei Werten. Hier laeuft
+    dieselbe Bewertung; was sie als verfallen liegen laesst, bleibt in der
+    Liste, aber als inaktiv und mit Marke.
+
+    Vorbedingung: `rows` in der Spaltenfolge des SELECT in `goals_lesen`
+        (id … ziel_typ, motivation_basis, motivation_basis_am).
+    Nachbedingung: Jeder Eintrag traegt `ziel_typ`, `motivation` (aktiv: live;
+        inaktiv: Datenbankwert), `motivation_materialisiert` (immer der
+        Datenbankwert) und `live_verfallen` (True nur, wenn der Tageslauf das
+        Ziel noch fuehrt, die Rechnung es aber unter der Schwelle sieht).
+        Die Reihenfolge der Zeilen bleibt.
+    Fehlerfaelle: keine eigenen — `ziele_live_bewerten` meldet fehlende Anker.
+    """
+    eintraege: list[dict] = []
+    for row in rows:
+        entry: dict = _goal_row_to_dict(row)
+        entry["ziel_typ"]                  = str(row[8])
+        entry["motivation_basis"]          = float(row[9]) if row[9] is not None else None
+        entry["motivation_basis_am"]       = row[10]
+        entry["motivation_materialisiert"] = entry["motivation"]
+        entry["live_verfallen"]            = False
+        eintraege.append(entry)
+
+    aktive: list[dict] = [e for e in eintraege if e["active"]]
+    live_nach_id: dict[int, dict] = {
+        e["id"]: e for e in ziele_live_bewerten(aktive)
+    }
+    for entry in eintraege:
+        if not entry["active"]:
+            continue
+        live: dict | None = live_nach_id.get(entry["id"])
+        if live is None:
+            entry["active"] = False
+            entry["live_verfallen"] = True
+        else:
+            entry["motivation"] = float(live["motivation"])
+    for entry in eintraege:
+        entry.pop("motivation_basis", None)
+        entry.pop("motivation_basis_am", None)
+    return eintraege
 
 
 def _short_term_load(user_id: str, character_id: str) -> dict | None:
@@ -211,6 +258,13 @@ def goals_lesen(user_id: str = DEFAULT_USER_ID):
     sortiert nach `active DESC, motivation DESC`). Kurzfristige Daten
     kommen aus Redis (zuletzt geschriebener Snapshot vom Dispatcher).
 
+    **Die Motivation der aktiven Ziele ist live gerechnet** (seit 29.08.2026):
+    dieselbe Bewertung wie im Lader der Gravitation (`ziele_live_bewerten`
+    aus Anker und Alter), damit der Tab nicht einen Tag lang 0,70 zeigt,
+    waehrend die Gravitation mit 0,5 → 0,15 rechnet. Der Datenbankwert steht
+    daneben in `motivation_materialisiert`; ein Ziel, das beim Lesen schon
+    unter der Schwelle liegt, kommt als inaktiv mit `live_verfallen`.
+
     `user_id` ist der **Mensch** der Beziehung, nicht das Subjekt der Zeile:
     Novas Ziele stehen als `(nova, mensch)`. Der Vorgabewert haelt das
     bisherige Verhalten fuer den Standard-Menschen.
@@ -225,7 +279,8 @@ def goals_lesen(user_id: str = DEFAULT_USER_ID):
         cursor.execute(
             """
             SELECT id, zielsatz, motivation, emotion, arousal, aktiv,
-                   erstellt_am, aktualisiert_am, ziel_typ
+                   erstellt_am, aktualisiert_am, ziel_typ,
+                   motivation_basis, motivation_basis_am
             FROM ziele
             WHERE user_id = %s AND character_id = %s
             ORDER BY ziel_typ, aktiv DESC, motivation DESC
@@ -236,12 +291,10 @@ def goals_lesen(user_id: str = DEFAULT_USER_ID):
         rows = cursor.fetchall()
         conn.close()
 
-        for row in rows:
-            ziel_typ: str  = row[8]
-            entry:    dict = _goal_row_to_dict(row)
-            if ziel_typ == "langfristig":
+        for entry in _goals_live(rows):
+            if entry["ziel_typ"] == "langfristig":
                 long_term.append(entry)
-            elif ziel_typ == "mittelfristig":
+            elif entry["ziel_typ"] == "mittelfristig":
                 mid_term.append(entry)
 
         logger.info(
