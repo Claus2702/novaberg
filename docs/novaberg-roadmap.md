@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 29. August 2026 — juengster Eintrag **07:30 UTC** (gemessen via `date -u`). Davor 06:55 UTC.
+**Stand:** 29. August 2026 — juengster Eintrag **07:55 UTC** (gemessen via `date -u`). Davor 07:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,10 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 29.08.2026, 07:55 UTC — Der Drive-Tab rechnet die Motivation live, wie die Gravitation
+
+**Der Fund** (28.08.2026, zweite Kontrolle: *wer liest `motivation` aus `ziele`*): `api/drive.py::goals_lesen` hatte einen eigenen SELECT und zeigte den Wert des Tageslaufs, waehrend `ziele_aktive_laden` seit demselben Abend aus Anker und Alter rechnet — ein kurzfristiges Ziel stand im Tab bis zu einen Tag lang auf 0,70. **Die Abhilfe:** dieselbe Bewertung (`ziele_live_bewerten`) auf der Anzeige-Liste (`_goals_live`): aktive Ziele tragen `motivation` live und `motivation_materialisiert` daneben; was die Rechnung schon unter der Schwelle sieht, kommt als inaktiv mit `live_verfallen`; inaktive und langfristige bleiben, wie die Datenbank sie fuehrt. Das Ziele-Panel zeigt *(Tageslauf 0,60)* hinter dem Live-Wert, wenn beide abweichen. 4 Zeugen (`tests/test_drive_goals_live.py`), Gegenprobe 3/1 rot wie vorhergesagt, Suite 2556 gruen, Wand sauber. **Betrieb 07:54 UTC:** Endpoint und Lader liefern dieselben Werte (29122 0,588 gegen Tageslauf 0,600; 27223 0,575; 27875 0,558; 27024 0,505; 27876 0,800) — und der Lader zeigte nebenbei den Chat-171-Zeugen: vier kurzfristige Ziele (28576, 29032, 29121, 29231) sind beim Lesen verfallen, waehrend `aktiv` bis zum Tageslauf steht.
 
 ## 29.08.2026, 07:30 UTC — Scheibe 8 der Lage: der Wissenstraeger — Antwortstoff statt Rueckfrage, mit Websuche
 
