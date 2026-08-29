@@ -257,12 +257,16 @@ def _build_objects_section(
         # sichtbar als Herkunft hinter dem Wert, damit der Tab zeigt, was
         # das Gespraech deckte und was Nova schon wusste.
         quellen: dict = objekt.get("quellen") or {}
+        # Scheibe 9: wer die gedeckte Eigenschaft gesagt hat — hinter dem
+        # Wert, wie der Traeger hinter der offenen (ohne Zusatz: unbekannt).
+        sprecher: dict = objekt.get("sprecher") or {}
         for eigenschaft, wert in list((objekt.get("gedeckt") or {}).items())[:6]:
             herkunft: str = (
                 f"   ⟵ {quellen[eigenschaft].get('quelle', '?')} {quellen[eigenschaft].get('eintrag', '')}"
                 if eigenschaft in quellen else ""
             )
-            block.append(_text_row(f"  ✓ {eigenschaft}: {wert}{herkunft}"))
+            wer: str = f" ↳{sprecher[eigenschaft]}" if eigenschaft in sprecher else ""
+            block.append(_text_row(f"  ✓ {eigenschaft}: {wert}{wer}{herkunft}"))
 
         offen: list = objekt.get("offen") or []
         # Scheibe 8: der Wissenstraeger hinter der offenen Eigenschaft —
