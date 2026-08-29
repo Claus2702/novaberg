@@ -60,12 +60,18 @@ def create_tools(
     user_id:       str,
     character_id:  str,
     cache:         ThinkerToolCache,
+    prior_hits:    dict | None = None,
 ) -> list:
     """Erzeugt die Tools für den Thinker-Agent.
 
     Der Per-Turn-Cache wird nur an memory_search durchgereicht — Stufe 2
     (Result-Hash) lebt strukturell ausschliesslich dort. Die Stufe-1-
     Pruefung haengt auf der Aufruf-Schicht in _execute_tool_call().
+
+    `prior_hits` sind die Treffer der Sachlage-Recherche dieses Turns
+    (`prior_research`), oder None: Gibt es sie, bedienen sie die erste
+    `web_search` — ohne die Suchmaschine ein zweites Mal zu rufen. Das
+    Suchbudget des Turns fuehrt `cache`.
     """
 
     @tool
@@ -214,21 +220,49 @@ def create_tools(
 
         Liefert eine Trefferliste plus den vollstaendigen Artikeltext
         des relevantesten Ergebnisses. Fuer weitere URLs nutze web_fetch(url).
+        Laeuft einmal je Pruefung — formuliere den Suchbegriff so, dass er
+        die Kernbehauptung trifft.
         """
         logger.info(f"Thinker-Tool: web_search({suchbegriff})")
 
+        # Suchdisziplin (29.08.2026): eine Suche je Turn, und die Sachlage-
+        # Recherche dieses Turns IST diese Suche, wenn sie Treffer hat. Ohne
+        # Budget bekommt das Modell eine Fuehrung, keine Suche — das Budget
+        # zaehlt auch leere und gescheiterte Aufrufe, denn die Sperre der
+        # Suchmaschine zaehlt Anfragen, nicht Treffer.
+        if not cache.web_search_allowed():
+            logger.info(
+                f"Thinker-Tool: web_search({suchbegriff[:60]}) — Suchbudget des "
+                f"Turns verbraucht, keine neue Suche"
+            )
+            return (
+                "Die Websuche dieses Turns ist bereits gelaufen — ihre Treffer "
+                "stehen oben im Verlauf. Pruefe damit, oder lade eine andere URL "
+                "aus der Trefferliste mit web_fetch(url)."
+            )
+        cache.web_search_spent()
+
         try:
-            results: list[dict] = web_search_manager.suchen(suchbegriff, max_results=5)
+            quelle: str
+            results: list[dict]
+            if prior_hits is not None:
+                results = list(prior_hits["treffer"])
+                quelle = (
+                    f"in diesem Turn bereits nachgeschlagen zu "
+                    f"{prior_hits['objekt']} — {prior_hits['eigenschaft']}"
+                )
+                logger.info(
+                    f"Thinker-Tool: web_search({suchbegriff[:60]}) — bedient aus der "
+                    f"Sachlage-Recherche ({len(results)} Treffer), keine neue Suche"
+                )
+            else:
+                results = web_search_manager.suchen(suchbegriff, max_results=5)
+                quelle = "Suchmaschine"
 
             if not results:
                 return f"Keine Ergebnisse fuer '{suchbegriff}' gefunden."
 
-            # Uebersicht aller Treffer (Snippets)
-            parts: list[str] = []
-            for i, r in enumerate(results, 1):
-                parts.append(f"{i}. {r['title']}\n   URL: {r['url']}\n   {r['content']}")
-
-            uebersicht: str = f"Web-Ergebnisse fuer '{suchbegriff}':\n\n" + "\n\n".join(parts)
+            uebersicht: str = format_search_results(suchbegriff, results, quelle)
 
             # Automatisch Top-Treffer fetchen
             top_url: str = results[0]["url"]
@@ -264,6 +298,91 @@ def create_tools(
         return f"Seiteninhalt von {url}:\n\n{text}"
 
     return [timeline_check, timeline_search, memory_search, web_search, web_fetch]
+
+
+# ─────────────────────────────────────────────
+# Suchdisziplin: die Suche, die schon gelaufen ist
+# ─────────────────────────────────────────────
+
+def prior_research(state: dict) -> dict | None:
+    """Die Treffer der Sachlage-Recherche dieses Turns — die Suche, die schon lief.
+
+    Die Sachlage (`graph/nodes/sachlage_research.py`) sucht je Turn hoechstens
+    einmal, fuer die erste offene `nachschlagen`-Eigenschaft eines akuten
+    Objekts, und legt die Treffer am Objekt unter `recherche` ab. Der Thinker
+    bekommt sie hier als seine erste Suche, statt die Suchmaschine ein zweites
+    Mal zu rufen. `[gemessen]` 29.08.2026, 20 Turns: 23 Thinker-Suchen
+    sperrten die Wikipedia-API, und die Sachlage ging leer aus.
+
+    Vorbedingung: keine — ein Turn ohne Sachlage oder ohne Treffer ist der
+        Normalfall und liefert None.
+    Nachbedingung: None, oder ein dict mit `objekt` (Name), `eigenschaft` und
+        `treffer` (nicht leer; jeder Treffer ein dict mit `url`) — die erste
+        Eigenschaft mit Treffern am ersten akuten Objekt, das welche hat.
+    Fehlerfaelle: Eine Sachlage, die kein dict ist, wird gemeldet und
+        uebergangen; ein Treffer ohne URL faellt mit Warnung heraus.
+
+    Args:
+        state: der Zustand des Durchlaufs.
+
+    Returns:
+        Die Vorab-Treffer oder None.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    sachlage: object = state.get("sachlage")
+    if not sachlage:
+        return None
+    if not isinstance(sachlage, dict):
+        logger.error(
+            f"Thinker: state['sachlage'] ist kein dict ({type(sachlage).__name__}) "
+            f"— keine Vorab-Treffer"
+        )
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    for objekt in sachlage.get("objekte") or []:
+        if not isinstance(objekt, dict) or not objekt.get("akut"):
+            continue
+        for eigenschaft, treffer in (objekt.get("recherche") or {}).items():
+            roh: list = list(treffer or [])
+            gueltig: list[dict] = [t for t in roh if isinstance(t, dict) and t.get("url")]
+            if len(gueltig) < len(roh):
+                logger.warning(
+                    f"Thinker: {len(roh) - len(gueltig)} Recherche-Treffer ohne URL an "
+                    f"'{objekt.get('name', '')}' ({eigenschaft}) verworfen"
+                )
+            if gueltig:
+                return {
+                    "objekt":      str(objekt.get("name", "")),
+                    "eigenschaft": str(eigenschaft),
+                    "treffer":     gueltig,
+                }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return None
+
+
+def format_search_results(query: str, results: list[dict], source: str) -> str:
+    """Die Trefferliste als Text fuer das Modell — nummeriert, mit URL und Snippet.
+
+    Vorbedingung: `results` ist nicht leer; jeder Treffer ein dict. Prueft
+        der Aufrufer.
+    Nachbedingung: Eine Kopfzeile mit Suchbegriff und Quelle, dann je Treffer
+        drei Zeilen in der Reihenfolge der Liste.
+
+    Args:
+        query:   der Suchbegriff des Modells.
+        results: die Treffer (title, url, content).
+        source:  woher sie stammen — die Suchmaschine oder die Sachlage.
+
+    Returns:
+        Der Text der Uebersicht.
+    """
+    parts: list[str] = [
+        f"{i}. {r.get('title', '')}\n   URL: {r.get('url', '')}\n   {r.get('content', '')}"
+        for i, r in enumerate(results, 1)
+    ]
+    return f"Web-Ergebnisse fuer '{query}' ({source}):\n\n" + "\n\n".join(parts)
 
 
 # ─────────────────────────────────────────────
@@ -491,8 +610,24 @@ def think(
     tool_cache: ThinkerToolCache = ThinkerToolCache()
     logger.info("Thinker: Per-Turn-Tool-Cache instanziiert")
 
+    # Suchdisziplin: Was die Sachlage in diesem Turn schon nachgeschlagen hat,
+    # ist die erste Websuche des Thinkers (F-LOG-3: die Groesse steht im Log,
+    # bevor sie wirkt).
+    prior_hits: dict | None = prior_research(state)
+    if prior_hits is not None:
+        logger.info(
+            f"Thinker: Sachlage-Recherche dieses Turns — {len(prior_hits['treffer'])} "
+            f"Treffer zu '{prior_hits['objekt']}' ({prior_hits['eigenschaft']}) "
+            f"bedienen die erste Websuche"
+        )
+    else:
+        logger.info(
+            "Thinker: Sachlage-Recherche dieses Turns — keine Treffer, die erste "
+            "Websuche geht an die Suchmaschine"
+        )
+
     tools: list = create_tools(
-        postgres_url, user_id, character_id, tool_cache
+        postgres_url, user_id, character_id, tool_cache, prior_hits
     )
 
     # ── Reasoning-Prompt zusammenbauen ───────

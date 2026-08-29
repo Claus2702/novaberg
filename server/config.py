@@ -982,6 +982,13 @@ TIMELINE_UEBERSICHT_TAGE_VORAUS:   int = int(os.getenv("TIMELINE_UEBERSICHT_TAGE
 SEARXNG_URL:         str = os.getenv("SEARXNG_URL",      "http://searxng:8080")
 SEARXNG_TIMEOUT:   float = float(os.getenv("SEARXNG_TIMEOUT",     "10.0"))
 SEARXNG_MAX_RESULTS: int = int(os.getenv("SEARXNG_MAX_RESULTS",   "10"))
+# Suchdisziplin des Thinkers (29.08.2026): So oft ruft der Thinker je Turn die
+# Suchmaschine. `[gemessen]` 29.08.2026, 20 Turns: 23 Suchen, bis zu drei je
+# Turn, und die Wikipedia-API sperrte zweimal fuer 180 s — die eine Suche der
+# Sachlage-Recherche ging leer aus. Hat die Sachlage in diesem Turn Treffer,
+# bekommt der Thinker diese statt einer eigenen Suche; sie zaehlen gegen
+# dieses Budget (`graph/nodes/thinker.py::prior_research`).
+THINKER_WEBSUCHE_MAX_JE_TURN: int = int(os.getenv("THINKER_WEBSUCHE_MAX_JE_TURN", "1"))
 
 # --- Web-Tools: PageFetcher ---
 PAGE_FETCH_TIMEOUT:   float = float(os.getenv("PAGE_FETCH_TIMEOUT", "10.0"))

@@ -12,16 +12,25 @@ Zwei-Stufen-Schutz:
 
 Beide Stufen verwenden OrderedDict mit FIFO-Verdraengung bei Erreichen
 von MAX_GROESSE, damit der Cache nicht unbegrenzt waechst.
+
+Dazu, seit dem 29.08.2026, das **Suchbudget des Turns**: So oft darf der
+Thinker in diesem think()-Aufruf die Suchmaschine rufen
+(`THINKER_WEBSUCHE_MAX_JE_TURN`). `[gemessen]` 29.08.2026, 20 Turns: 23
+Suchen, bis zu drei je Turn, und die Wikipedia-API sperrte zweimal fuer
+180 s. Das Budget lebt hier, weil es dieselbe Lebensdauer hat wie der Cache —
+ein Turn — und aus demselben Grund strikt lokal bleiben muss.
 """
 
 import logging
 from collections import OrderedDict
 
+from config import THINKER_WEBSUCHE_MAX_JE_TURN
+
 logger = logging.getLogger("ki_server.thinker.cache")
 
 
 class ThinkerToolCache:
-    """Pro-Turn-Cache fuer Thinker-Tool-Aufrufe.
+    """Pro-Turn-Cache fuer Thinker-Tool-Aufrufe — und das Suchbudget des Turns.
 
     Lebensdauer: ein think()-Aufruf. Wird lokal instanziiert und nach
     Rueckkehr aus think() automatisch verworfen. Kann strukturell nicht
@@ -30,14 +39,45 @@ class ThinkerToolCache:
 
     MAX_GROESSE: int = 20
 
-    def __init__(self) -> None:
+    def __init__(self, web_search_budget: int = THINKER_WEBSUCHE_MAX_JE_TURN) -> None:
+        # ── Eingabe-Validierung ─────────────────────
+        if isinstance(web_search_budget, bool) or not isinstance(web_search_budget, int) \
+                or web_search_budget < 0:
+            raise ValueError(
+                f"web_search_budget muss eine ganze Zahl >= 0 sein, ist {web_search_budget!r}"
+            )
         # Stufe 1: tool_name::json(args) -> Tool-Output-String
         self._stufe1: OrderedDict[str, str] = OrderedDict()
         # Stufe 2: result_hash -> None (Set-Verhalten mit FIFO-Disziplin)
         self._stufe2: OrderedDict[str, None] = OrderedDict()
+        # Suchbudget: so viele Aufrufe der Suchmaschine hat dieser Turn noch.
+        self._web_searches_left: int = web_search_budget
         logger.debug(
-            f"ThinkerToolCache initialisiert (MAX_GROESSE={self.MAX_GROESSE})"
+            f"ThinkerToolCache initialisiert (MAX_GROESSE={self.MAX_GROESSE}, "
+            f"Suchbudget={web_search_budget})"
         )
+
+    # ── Suchbudget des Turns ─────────────────
+
+    def web_search_allowed(self) -> bool:
+        """True, solange dieser Turn noch eine Suche gegen die Suchmaschine hat."""
+        return self._web_searches_left > 0
+
+    def web_search_spent(self) -> None:
+        """Verbucht eine Suche dieses Turns — auch eine aus der Sachlage bediente.
+
+        Vorbedingung: `web_search_allowed()` war True; der Aufrufer hat gefragt.
+        Nachbedingung: Der Rest ist um eins kleiner und steht im Log.
+        Fehlerfaelle: Ein Verbuchen ohne Rest ist ein Defekt des Aufrufers
+            und faellt laut — ein stilles Weiterzaehlen unter null saehe aus
+            wie ein verbrauchtes Budget.
+        """
+        if self._web_searches_left <= 0:
+            raise RuntimeError(
+                "Suchbudget des Turns ist verbraucht — web_search_allowed() wurde nicht gefragt"
+            )
+        self._web_searches_left -= 1
+        logger.info(f"Thinker-Suchbudget: eine Suche verbucht, Rest {self._web_searches_left}")
 
     # ── Stufe 1: Argument-Cache ──────────────
 
