@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 29. August 2026 — juengster Eintrag **07:55 UTC** (gemessen via `date -u`). Davor 07:30 UTC.
+**Stand:** 29. August 2026 — juengster Eintrag **08:54 UTC** (gemessen via `date -u`). Davor 08:32 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 141 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 143 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -20,6 +20,22 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 29.08.2026, 08:54 UTC — Scheibe 9 der Lage: der Sprecher — der Gedanke des Nutzers bleibt seiner
+
+**Der Anlass, gemessen (07:04 und 07:24 UTC):** Auf *»Das muss ganz schoen knallen bei einem Kollaps«* eroeffnete Nova mit *»Das muss ja eine gewaltige energetische Entladung sein«* — der Satz des Nutzers als eigene Feststellung. Das Log zeigt den Ort: Der Verfasser kannte den Sprecher (Kopfblock *»PERSON B sagt …«*) und schrieb den Stoff als *»Person A stellt fest, dass …«*; es fehlte die Fuehrung, was Person A mit einem fremden Gedanken tut — und in der Lage die Auskunft, wer eine gedeckte Eigenschaft gesagt hat, denn Deckung kommt seit Scheibe 8 von beiden Seiten. Scheibe 8 fragte *wer kann es wissen*; diese Scheibe fragt *wer hat es gesagt*.
+
+**Der Bau:** Jede gedeckte Eigenschaft traegt im Sachlage-Call ihren Sprecher (`sprecher`: `nutzer` / `nova`), gegen den Kanon gehalten (`_normalize_speakers`), aus der vorigen Blase geerbt (`carry_speakers`, hinter `carry_holders` in `_derive`), im `[SACHLAGE]`-Block als *»Der Nutzer hat zu … gesagt: …«* / *»Nova hat schon zu … gesagt: …«* (`speaker_lines`, hoechstens drei, eine Gedaechtnis-Deckung behaelt ihre Quellenzeile). Der Herkunftsblock des Nutzer-Turns (`verfasser.fremder_reiz.txt`) fuehrt jetzt wie die Impuls-Fassung (F-PROMPT-1): *ES IST SEIN GEDANKE — Person A greift ihn als seinen auf; IHRE EIGENE FESTSTELLUNG BEGINNT DORT, WO SIE ETWAS HINZUFUEGT* — die alte Fassung verwies auf `[AKTUELLER PROMPT]`, einen Block, den der Verfasser nie setzt. Kontext-Tab: `↳nutzer` / `↳nova` hinter der gedeckten Eigenschaft. 15 Zeugen (`tests/test_sachlage_sprecher.py`, zwei nach der zweiten Kontrolle), Suite 2556 → **2571 gruen**, Gegenprobe 1/2/2/2 rot wie vorhergesagt, Linter 1224, Wand sauber.
+
+**Drei Messungen:** (1) Labor zwei Arme (`labor/2026-08-29_sachlage_sprecher_zwei_arme.py`, 5 Wissenschaftsbehauptungen × 2, T = 0): **Zuschreibung an Person B 0/10 → 10/10, Echo 3/10 → 0/10**; frische Artefakte 5 × `nutzer`. (2) **Fortfuehrungsfall** (Blase aus Redis ohne Sprecher + Verlauf mit Novas 716-Hz-Antwort + Folgeturn): 2/3 mit `nova` am Rekordwert, der dritte Lauf `done_reason='length'` bei **768 Ausgabetoken** — das Artefakt traegt seit dieser Scheibe vier Felder je Objekt, zwei Objekte brauchten 706–709 Token. `config.py`: `sachlage.max_output_tokens` 768 → 1024, danach **3/3**. (3) **Betrieb** (08:46 vor, 08:51 nach der Anhebung): vor der Anhebung brach der Sachlage-Call ab, und die Fuehrung allein trug (*»Person A greift die Vorstellung … auf, die Person B als Systemkollaps beschrieben hat«* → *»dieser Gedanke von dir …«*); danach Sachlage mit 889 Token, im Block *»Der Nutzer hat zu Kollaps gesagt: Energetische Intensitaet — …('knallen')«*, Nova: *»Systemkollaps – du hast das Bild gerade so perfekt getroffen!«*. Zwischen beiden Turns lief ein Impuls-Turn; der Zeuge nahm dessen Ende fuer das eigene und wartet seither auf die Turnzaehlung hinter der eigenen `nachrichten_id`.
+
+**Die zweite Kontrolle (09:01 UTC), der Bestand statt der Zeugen:** In der Live-Blase waren am *latenten* Objekt **3 von 7** Sprecher geraten, 2 vertauscht (*»zwoelf Sonnenmassen«* als `nova`, vom Nutzer in Turn 1 gesagt — ausserhalb des 6-Turn-Fensters); die Regel zwang zum Raten, `carry_speakers` erbte es ohne `akut`-Filter. Seither: Sprecher nur an akuten Objekten, Weglassen erlaubt (*ein geratener Sprecher ist schlimmer als keiner*); 2 Zeugen, Gegenprobe 1/1, Live-Blase danach 0 statt 7 am latenten Objekt. **Nebenbefunde:** Der `[GEDAECHTNIS]`-Block kennt den Sprecher seiner Eintraege nicht (`_format_kzg` verwirft `beobachter`, die LZG-Resonanz laedt ihn nicht — Fundliste). Der Doppel-Turn von 07:28 ging im uvicorn-Reload eines Edits verloren, nicht in der Queue (Fundliste erledigt; Messregel seither: kein Betriebsturn neben einem Edit).
+
+## 29.08.2026, 08:32 UTC — Die Websuche antwortet wieder: Wikipedia-Volltext statt Bing
+
+**Der Fund** (Scheibe 8, 07:27 UTC): Die Suche zur Rotationsfrequenz des schnellsten Pulsars brachte drei BeamNG-Mod-Seiten. **Gemessen:** Bing — seit dem 30.07. die einzige antwortende Engine — lieferte in vier von vier Proben zehn Treffer ohne Bezug zur Anfrage, gleich bei welcher Sprache (`de`, `de-DE`, `en-US`, `all`); Google 0 ohne Meldung, DuckDuckGo und Startpage CAPTCHA, Brave Rate-Limit, Qwant und Karmasearch 403, Mojeek in der Probe ebenfalls 403. Ein Treffer, der die Sache nicht nennt, ist schlimmer als keiner: Der Thinker laedt den ersten Treffer automatisch nach (heute frueh `mail.google.com` und ein MSDN-Forum), Pixies Recherche holte `fast.com`, `bet365.com` und `zhihu.com`.
+
+**Die Abhilfe in der searxng-Konfiguration** (`settings.yml`, Sicherung `settings.yml.vor-mojeek-2026-08-29`, searxng neu gestartet): Bing abgeschaltet, die Volltextsuche der Wikipedia ueber die offizielle MediaWiki-API eingeschaltet (`engine: mediawiki`, `search_type: text`, Sprache folgt der Anfrage). **Derselbe Code-Pfad aus dem Server-Container** (`tools/web/search.py::web_search_manager.suchen` + `sachlage_research.py::relevant_hits`): Pulsar-Anfrage **3 von 3** relevant (`de.wikipedia.org/wiki/Neutronenstern#Rotationsfrequenz`, `Pulsar`, `Vela-Supernova`; die direkte Probe fand `PSR J1748−2446ad`), Gammablitz 3 von 3, eine Alltagsanfrage (Bahn-Sparpreis) leer. Wikimedia sperrt einen Schub von sechs Anfragen in zwei Minuten fuer 180 s — eine Suche je Turn liegt darunter. Kein Code geaendert; der Wortlaut-Filter bleibt. Nebenbefund derselben Stunde: Der zusammengelegte Doppel-Turn von 07:28 ging im uvicorn-Reload eines Edits verloren (Fundliste, Harness `60_ANLAGE`).
 
 ## 29.08.2026, 07:55 UTC — Der Drive-Tab rechnet die Motivation live, wie die Gravitation
 

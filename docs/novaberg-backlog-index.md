@@ -1,16 +1,16 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 431 Eintraege mit Kennung — 363 offen, 67 abgeschlossen, **1 ohne lesbaren Zustand**.
+**Umfang:** 432 Eintraege mit Kennung — 363 offen, 68 abgeschlossen, **1 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 431 von 431 Eintraegen zugeordnet.
+**Kategorie:** 432 von 432 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 68 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 53 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 54 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 97 |
 
@@ -214,7 +214,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
-## Alle 431 Eintraege
+## Alle 432 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -481,6 +481,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | ANT | 979 | abgeschlossen | `SACHLAGE-SCHEIBE-6-AUFLOESER` | [Feature: SACHLAGE-SCHEIBE-6-AUFLOESER — der Frame-Au](novaberg-backlog-antwortpfad.md) |
 | ANT | 990 | abgeschlossen | `SACHLAGE-SCHEIBE-7-PLAUSIBILITAET` | [Feature: SACHLAGE-SCHEIBE-7-PLAUSIBILITAET — Behaupt](novaberg-backlog-antwortpfad.md) |
 | ANT | 1001 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
+| ANT | 1012 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |
