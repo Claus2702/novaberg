@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 29. August 2026 — juengster Eintrag **08:54 UTC** (gemessen via `date -u`). Davor 08:32 UTC.
+**Stand:** 29. August 2026 — juengster Eintrag **19:48 UTC** (gemessen via `date -u`). Davor 08:54 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 143 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 144 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -20,6 +20,10 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 29.08.2026, 19:48 UTC — Die Betriebsmessung der Lage-Kette: 20 Turns
+
+**Die Anordnung** (`labor/2026-08-29_kette_betriebsmessung.py`, 18:59–19:47 UTC): 20 Wissenschaftsturns ueber `/chat`, zwei Themenwechsel, Fragen und Behauptungen (drei unhaltbare), Fertig-Signal an der Turnzaehlung, Waermewaechter; je Turn Logfenster und Redis-Blase. **Die Kette:** Sachlage 19 × fortgeschrieben, `eval_count` median 444, max 912 (kein `length` bei 1024); Latenz bis zur Antwort median **99 s** (49–185); Aufloeser **16 Deckungen** aus dem Gedaechtnis; Plausibilitaet **3 Befunde an genau den drei unhaltbaren Behauptungen, 0 Fehlalarme**; Wiederaufnahme in 16 von 20 Turns. **Traeger:** 31 offene Eigenschaften, 0 `nutzer` / 17 `welt` / 14 `nachschlagen`; Antwortstoff in 17 von 20 Bloecken; der Rueckfrage-Gegenstand war nie eine Frage an den Nutzer, 17 × das Kurzziel — **und das bleibt nach dem Themenwechsel das alte** (*»wie es mit Magnetar weitergeht«* bei den Gamma-Oszillationen; Fundliste). **Sprecher:** 63 gedeckte Eigenschaften, 31 `nutzer` / 11 `nova` / 21 ohne; Sprecherzeile in 18 von 20 Bloecken; der Stoff nennt den Nutzer an **7 von 8 Behauptungsturns** (an Fragen gibt es nichts aufzunehmen). **Websuche:** 8 Suchen, 1 relevanter Treffer — die Wikipedia-API sperrte zweimal fuer 180 s, weil der **Thinker 23-mal suchte** (bis zu drei je Turn) und die Sachlage-Suche im selben Budget steht (Fundliste). **Form:** Frage am Ende in 12 von 19 Antworten, 1,21 Fragezeichen je Antwort. Nebenbefund am Zeugen: die Session-Liste ist gekappt, ein Fertig-Signal auf *N+1* reisst die Frist (Turn 13).
 
 ## 29.08.2026, 08:54 UTC — Scheibe 9 der Lage: der Sprecher — der Gedanke des Nutzers bleibt seiner
 
