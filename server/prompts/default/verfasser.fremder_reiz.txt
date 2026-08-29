@@ -1,3 +1,12 @@
 [HERKUNFT DES REIZES]
-Was unter [AKTUELLER PROMPT] steht, hat PERSON B gesagt. Der Inhalt antwortet
-darauf.
+Die letzte Nachricht der Folge hat PERSON B gesagt. Der Inhalt antwortet
+darauf — und was Person B darin sagt, bleibt sein Gedanke, auch wenn Person A
+ihn teilt. Fuehre ihn so:
+
+- ES IST SEIN GEDANKE. Person A greift ihn als seinen auf: Sie stimmt ihm
+  zu, fuehrt ihn weiter oder zweifelt an ihm. Der Inhalt sagt, worauf sie
+  antwortet, und nennt ihn dabei als den, der es gesagt hat.
+- IHRE EIGENE FESTSTELLUNG BEGINNT DORT, WO SIE ETWAS HINZUFUEGT: die
+  Einordnung, den Vergleich, die Zahl, die Frage.
+- Unter [SACHLAGE] steht, wer was gesagt hat: »Der Nutzer hat gesagt« gehoert
+  ihm, »Nova hat schon gesagt« gehoert ihr.

@@ -58,6 +58,15 @@ Verstehens). Nur eine `nutzer`-Eigenschaft ist ein Rueckfrage-Gegenstand;
 die anderen sind Antwortstoff fuer den Verfasser (`answer_targets`), und
 fuer die erste `nachschlagen`-Eigenschaft ohne Deckung laeuft eine Websuche
 (`graph/nodes/sachlage_research.py`). Ohne Traeger gilt `nutzer`.
+
+**Der Sprecher** (Konzept §4, Scheibe 9, 29.08.2026): Jede gedeckte
+Eigenschaft eines akuten Objekts traegt, wer sie gesagt hat — `nutzer` oder
+`nova` —, denn Deckung kommt von beiden Seiten, und der Gedanke des Nutzers
+bleibt seiner. Der Block nennt es dem Verfasser (`speaker_lines`); ohne
+Sprecher keine Zeile. Kein Raten: Ist der Sprecher in den juengsten
+Beitraegen nicht zu sehen, bleibt die Eigenschaft ohne — an einem latenten
+Objekt gibt es keinen Sprecher, weil das Fenster ihn dort nicht deckt
+(gemessen 29.08.2026: drei von sieben geraten, zwei davon vertauscht).
 """
 
 import json
@@ -127,6 +136,12 @@ TRAEGER_NACHSCHLAGEN: str = "nachschlagen"  # Weltwissen, aber speziell/aktuell/
 TRAEGER_KANON: frozenset[str] = frozenset({TRAEGER_NUTZER, TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
 ANTWORT_TRAEGER: frozenset[str] = frozenset({TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
 
+# Scheibe 9: wer eine gedeckte Eigenschaft gesagt hat. Der Gedanke des
+# Nutzers bleibt seiner, Novas bleibt ihrer — der Verfasser hoert beides.
+SPRECHER_NUTZER: str = "nutzer"
+SPRECHER_NOVA:   str = "nova"
+SPRECHER_KANON: frozenset[str] = frozenset({SPRECHER_NUTZER, SPRECHER_NOVA})
+
 # Wie die Bruecke ihr zweites Ende gefunden hat — Begleitfeld, damit der
 # Verfasser einen belegten Anlass von einem erschlossenen unterscheidet.
 BRIDGE_VIA_TURN_ID:   str = "turn_id"             # Verlaufszeile des Ausloesers
@@ -175,7 +190,9 @@ Erstelle die aktualisierte Sachlage als JSON mit genau diesen Feldern:
       "offen": ["typische Eigenschaften dieser Sache, die noch niemand
                  genannt hat"],
       "traeger": {{"erste Eigenschaft aus offen": "nutzer|welt|nachschlagen",
-                   "zweite Eigenschaft aus offen": "nutzer|welt|nachschlagen"}}}}
+                   "zweite Eigenschaft aus offen": "nutzer|welt|nachschlagen"}},
+      "sprecher": {{"erste Eigenschaft aus gedeckt": "nutzer|nova",
+                    "zweite Eigenschaft aus gedeckt": "nutzer|nova"}}}}
   ]}}
 
 Regeln:
@@ -197,6 +214,14 @@ Regeln:
 - Deckung kommt von beiden Seiten: Auch was Nova in den juengsten Beitraegen
   bereits beantwortet hat, deckt die Eigenschaft. Offen bleibt nur, was
   weder der Nutzer noch Nova genannt hat.
+- "sprecher" sagt je gedeckter Eigenschaft eines AKUTEN Objekts, wer sie
+  genannt hat: "nutzer" oder "nova" — auch fuer eine fortgefuehrte
+  Eigenschaft, deren Eintrag in der bisherigen Sachlage noch keinen hatte.
+  Was Nova in den juengsten Beitraegen gesagt hat, traegt "nova"; was der
+  Nutzer gesagt hat, "nutzer". Ist in den juengsten Beitraegen und der
+  bisherigen Sachlage NICHT zu sehen, wer es gesagt hat, laesst du die
+  Eigenschaft in "sprecher" weg — ein geratener Sprecher ist schlimmer als
+  keiner. Ein latentes Objekt traegt kein "sprecher".
 - "thema" und "gegenstand" benennen die Sache selbst. Wechselt der Turn
   die Sache, nennen beide die neue Sache (etwa "Neutronensterne" / "Warum
   Neutronensterne ohne Fusion leuchten"), und die alte faellt aus der
@@ -322,6 +347,7 @@ def _validate_artifact(parsed: object) -> dict | None:
             )
             objekt["offen"] = []
         objekt["traeger"] = _normalize_holders(objekt)
+        objekt["sprecher"] = _normalize_speakers(objekt)
     return parsed
 
 
@@ -396,6 +422,95 @@ def carry_holders(artifact: dict, previous: dict | None) -> dict:
             schluessel: str = _holder_key(eigenschaft)
             if str(eigenschaft) not in traeger and schluessel in geerbt:
                 traeger[str(eigenschaft)] = geerbt[schluessel]
+    return artifact
+
+
+def _normalize_speakers(objekt: dict) -> dict[str, str]:
+    """Scheibe 9: die Sprecher der gedeckten Eigenschaften, gegen den Kanon gehalten.
+
+    Vorbedingung: `objekt` ist ein Objekt des Parses.
+    Nachbedingung: Ein dict Eigenschaft → Sprecher aus SPRECHER_KANON, nur
+        fuer Eigenschaften, die in `gedeckt` stehen, nur an akuten Objekten;
+        ein fehlender Sprecher bleibt fehlend — der Block schreibt dann keine
+        Zeile (das Verhalten vor der Scheibe). Unbekannte Werte, fremde
+        Schluessel und Sprecher an latenten Objekten fallen laut.
+    """
+    roh: object = objekt.get("sprecher")
+    if roh is None:
+        return {}
+    if not isinstance(roh, dict):
+        logger.warning(
+            f"Sachlage: 'sprecher' an '{objekt.get('name')}' ist "
+            f"{type(roh).__name__} statt dict — verworfen"
+        )
+        return {}
+    # Nur akute Objekte: Das Fenster deckt die Herkunft einer alten Deckung
+    # nicht, und das Modell raet dann (`[gemessen]` 29.08.2026: 3 von 7 am
+    # latenten Objekt falsch, 2 davon vertauscht). Wie die Smalltalk-Schranke.
+    if not objekt.get("akut") and roh:
+        logger.info(
+            f"Sachlage: latentes Objekt '{objekt.get('name')}' trug Sprecher — "
+            f"geleert (nur akute Objekte tragen einen)"
+        )
+        return {}
+    gedeckt_roh: object = objekt.get("gedeckt")
+    gedeckt: dict[str, str] = (
+        {_holder_key(e): str(e) for e in gedeckt_roh} if isinstance(gedeckt_roh, dict) else {}
+    )
+    sprecher: dict[str, str] = {}
+    for eigenschaft, wert in roh.items():
+        wert_norm: str = str(wert).strip().lower()
+        schluessel: str = _holder_key(eigenschaft)
+        if wert_norm not in SPRECHER_KANON:
+            logger.warning(
+                f"Sachlage: Sprecher {wert!r} an '{eigenschaft}' ({objekt.get('name')}) "
+                f"steht nicht im Kanon {SPRECHER_KANON} — verworfen"
+            )
+            continue
+        if schluessel not in gedeckt:
+            logger.info(
+                f"Sachlage: Sprecher an '{eigenschaft}' ({objekt.get('name')}) — "
+                f"die Eigenschaft steht nicht in gedeckt, verworfen"
+            )
+            continue
+        sprecher[gedeckt[schluessel]] = wert_norm
+    return sprecher
+
+
+def carry_speakers(artifact: dict, previous: dict | None) -> dict:
+    """Scheibe 9: fehlende Sprecher aus der vorigen Blase erben.
+
+    Dieselbe Lehre wie `carry_holders` — der Fortfuehrungsfall zaehlt:
+    Ein Modell, das eine Blase ohne das Feld fortschreibt, laesst das Feld
+    weg. Eine Eigenschaft, die in der vorigen Blase gedeckt war und dort
+    einen Sprecher hatte, behaelt ihn; nur was auch dort keinen hatte,
+    bleibt ohne.
+
+    Vorbedingung: `artifact` validiert; `previous` ein Artefakt oder None.
+    Nachbedingung: `sprecher` jedes akuten Objekts umfasst die geerbten
+        Eintraege; vorhandene bleiben unberuehrt; ein latentes Objekt erbt
+        nichts — sonst ueberlebt ein einmal geratener Wert jede Folgeblase.
+    """
+    if not previous:
+        return artifact
+    vorige: dict[str, dict] = {
+        _holder_key(o.get("name", "")): {
+            _holder_key(k): v for k, v in (o.get("sprecher") or {}).items()
+        }
+        for o in previous.get("objekte") or [] if isinstance(o, dict)
+    }
+    for objekt in artifact.get("objekte") or []:
+        if not objekt.get("akut"):
+            continue
+        geerbt: dict = vorige.get(_holder_key(objekt.get("name", "")), {})
+        if not geerbt:
+            continue
+        sprecher: dict = objekt.setdefault("sprecher", {})
+        gedeckt: object = objekt.get("gedeckt")
+        for eigenschaft in (gedeckt if isinstance(gedeckt, dict) else {}):
+            schluessel: str = _holder_key(eigenschaft)
+            if str(eigenschaft) not in sprecher and schluessel in geerbt:
+                sprecher[str(eigenschaft)] = geerbt[schluessel]
     return artifact
 
 
@@ -517,6 +632,7 @@ def _derive(
     )
     artefakt = carry_sources(apply_memory_coverage(artefakt, angebot, claims, vorige), vorige)
     artefakt = carry_holders(artefakt, vorige)
+    artefakt = carry_speakers(artefakt, vorige)
     # Scheibe 7: Behauptet der Nutzer ueber die akute Sache etwas, das die
     # Welt nicht hergibt? Ein eigener Call, nur bei akutem Objekt — die Lage
     # sagt dass und warum, die Form bleibt Sache von Haltung und Vehikel.
@@ -759,7 +875,8 @@ def sachlage_block(sachlage: dict) -> str:
         # Scheibe 6: was das Gedaechtnis deckt, ist Wissen fuer den Verfasser,
         # nicht Fragestoff — mit der Herkunft, damit Nova sagen kann, woher.
         gedeckt: dict = objekt.get("gedeckt") or {}
-        for eigenschaft, quelle in list((objekt.get("quellen") or {}).items())[:3]:
+        quellen: dict = objekt.get("quellen") or {}
+        for eigenschaft, quelle in list(quellen.items())[:3]:
             label: str = SOURCE_LABELS.get(
                 str(quelle.get("quelle", "")), "aus dem Gedaechtnis",
             )
@@ -767,6 +884,8 @@ def sachlage_block(sachlage: dict) -> str:
                 f"Dazu weiss Nova schon ({label}): {eigenschaft} — "
                 f"{str(gedeckt.get(eigenschaft, ''))[:200]}"
             )
+        # Scheibe 9: wer eine gedeckte Eigenschaft gesagt hat.
+        zeilen.extend(speaker_lines(objekt))
         # Scheibe 7: ein Zweifel am Gesagten — Stufe, Behauptung, Grund. Ob und
         # wie Nova ihn ausspricht, entscheiden Haltung und Vehikel.
         for befund in (objekt.get("plausibilitaet") or [])[:3]:
@@ -799,6 +918,36 @@ def sachlage_block(sachlage: dict) -> str:
             f"{f' (zuletzt {alter})' if alter else ''}"
         )
     return "\n".join(zeilen)
+
+
+def speaker_lines(objekt: dict) -> list[str]:
+    """Scheibe 9: die Zeilen des Blocks, die sagen, wer was gesagt hat.
+
+    Der Gedanke des Nutzers bleibt seiner, Novas bleibt ihrer — der Verfasser
+    hoert beides und nimmt den fremden als fremden auf. Eine Deckung aus dem
+    Gedaechtnis traegt ihre Quelle statt eines Sprechers (Scheibe 6); ohne
+    Sprecher (alte Artefakte) keine Zeile — das Verhalten vor der Scheibe.
+
+    Vorbedingung: `objekt` ist ein akutes Objekt des Artefakts.
+    Nachbedingung: Hoechstens drei Zeilen, in der Reihenfolge von `gedeckt`,
+        nur fuer Eigenschaften mit Sprecher und ohne Quelle.
+    """
+    gedeckt: dict = objekt.get("gedeckt") or {}
+    quellen: dict = objekt.get("quellen") or {}
+    sprecher: dict = objekt.get("sprecher") or {}
+    genannt: list[str] = [
+        str(e) for e in gedeckt if str(e) in sprecher and str(e) not in quellen
+    ][:3]
+    zeilen: list[str] = []
+    for eigenschaft in genannt:
+        wer: str = (
+            "Der Nutzer hat" if sprecher[eigenschaft] == SPRECHER_NUTZER else "Nova hat schon"
+        )
+        zeilen.append(
+            f"{wer} zu {objekt.get('name')} gesagt: {eigenschaft} — "
+            f"{str(gedeckt.get(eigenschaft, ''))[:200]}"
+        )
+    return zeilen
 
 
 # Der Zielsatz des kurzfristigen Ziels traegt das Vorhaben woertlich hinter
