@@ -50,6 +50,14 @@ die Sachlage ein akutes Objekt, prueft ein weiterer kleiner Call
 Behauptung enthaelt, die dem Weltwissen widerspricht — vier Stufen aus
 Frames §6.2, im Artefakt stehen nur die drei ueber `plausibel`, und der
 Block nennt sie dem Verfasser als Zweifel.
+
+**Der Wissenstraeger** (Konzept §4, Scheibe 8, 29.08.2026): Jede offene
+Eigenschaft traegt, wer sie kennen kann — `nutzer`, `welt` oder
+`nachschlagen` (im Sachlage-Call, denn *wer kann das wissen* ist Teil des
+Verstehens). Nur eine `nutzer`-Eigenschaft ist ein Rueckfrage-Gegenstand;
+die anderen sind Antwortstoff fuer den Verfasser (`answer_targets`), und
+fuer die erste `nachschlagen`-Eigenschaft ohne Deckung laeuft eine Websuche
+(`graph/nodes/sachlage_research.py`). Ohne Traeger gilt `nutzer`.
 """
 
 import json
@@ -71,6 +79,7 @@ from graph.nodes.sachlage_plausibility import (
     assess_plausibility,
     has_acute_object,
 )
+from graph.nodes.sachlage_research import research_open_property
 from graph.nodes.sachlage_resolver import (
     SOURCE_LABELS,
     MemoryHit,
@@ -109,6 +118,14 @@ HERKUNFT_AUSFALL:        str = "ausfall_uebernommen"  # Call/Parse rot, Vorgaeng
 _PFLICHTFELDER: tuple[str, ...] = (
     "thema", "gegenstand", "nutzerziel", "ausdrucksweise", "objekte",
 )
+
+# Scheibe 8: wer eine offene Eigenschaft kennen kann. `nutzer` ist der
+# Rueckfall fuer Artefakte ohne Traeger — das Verhalten vor der Scheibe.
+TRAEGER_NUTZER:       str = "nutzer"        # nur der Nutzer: Vorhaben, Leute, Wahl
+TRAEGER_WELT:         str = "welt"          # allgemeines Wissen, aus dem Kopf
+TRAEGER_NACHSCHLAGEN: str = "nachschlagen"  # Weltwissen, aber speziell/aktuell/zahlengenau
+TRAEGER_KANON: frozenset[str] = frozenset({TRAEGER_NUTZER, TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
+ANTWORT_TRAEGER: frozenset[str] = frozenset({TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
 
 # Wie die Bruecke ihr zweites Ende gefunden hat — Begleitfeld, damit der
 # Verfasser einen belegten Anlass von einem erschlossenen unterscheidet.
@@ -156,7 +173,9 @@ Erstelle die aktualisierte Sachlage als JSON mit genau diesen Feldern:
       "akut": true,
       "gedeckt": {{"eigenschaft": "was dazu schon gesagt wurde"}},
       "offen": ["typische Eigenschaften dieser Sache, die noch niemand
-                 genannt hat"]}}
+                 genannt hat"],
+      "traeger": {{"erste Eigenschaft aus offen": "nutzer|welt|nachschlagen",
+                   "zweite Eigenschaft aus offen": "nutzer|welt|nachschlagen"}}}}
   ]}}
 
 Regeln:
@@ -167,6 +186,12 @@ Regeln:
   Bemerkung mit Eigenschaftsfragen reagiert, wird unertraeglich.
 - "offen" nennt nur Eigenschaften, die fuer das Vorhaben wirklich fehlen —
   nach Wichtigkeit geordnet, hoechstens fuenf.
+- "traeger" sagt je offener Eigenschaft, wer sie kennen kann: "nutzer" —
+  nur der Nutzer (sein Vorhaben, seine Leute, seine Wahl, sein Erleben);
+  "welt" — allgemeines Wissen, aus dem Kopf zu beantworten; "nachschlagen"
+  — Weltwissen, aber speziell, aktuell oder zahlengenau. JEDE Eigenschaft
+  aus "offen" bekommt genau einen Traeger — auch eine fortgefuehrte, deren
+  Eintrag in der bisherigen Sachlage noch keinen hatte.
 - Fuehre die vorige Sachlage FORT: Was der neue Turn deckt, wandert von
   "offen" nach "gedeckt". Was nicht mehr Gegenstand ist, faellt weg.
 - Deckung kommt von beiden Seiten: Auch was Nova in den juengsten Beitraegen
@@ -296,7 +321,87 @@ def _validate_artifact(parsed: object) -> dict | None:
                 f"offene Eigenschaften — geleert (Smalltalk-Schranke)"
             )
             objekt["offen"] = []
+        objekt["traeger"] = _normalize_holders(objekt)
     return parsed
+
+
+def _normalize_holders(objekt: dict) -> dict[str, str]:
+    """Scheibe 8: die Wissenstraeger der offenen Eigenschaften, gegen den Kanon gehalten.
+
+    Vorbedingung: `objekt` ist ein Objekt des Parses.
+    Nachbedingung: Ein dict Eigenschaft → Traeger aus TRAEGER_KANON, nur fuer
+        Eigenschaften, die in `offen` stehen; ein fehlender Traeger bleibt
+        fehlend — der Leser behandelt ihn wie `nutzer` (das Verhalten vor
+        der Scheibe). Unbekannte Werte und fremde Schluessel fallen laut.
+    """
+    roh: object = objekt.get("traeger")
+    if roh is None:
+        return {}
+    if not isinstance(roh, dict):
+        logger.warning(
+            f"Sachlage: 'traeger' an '{objekt.get('name')}' ist "
+            f"{type(roh).__name__} statt dict — verworfen"
+        )
+        return {}
+    offen: dict[str, str] = {_holder_key(o): str(o) for o in objekt.get("offen") or []}
+    traeger: dict[str, str] = {}
+    for eigenschaft, wert in roh.items():
+        wert_norm: str = str(wert).strip().lower()
+        schluessel: str = _holder_key(eigenschaft)
+        if wert_norm not in TRAEGER_KANON:
+            logger.warning(
+                f"Sachlage: Traeger {wert!r} an '{eigenschaft}' ({objekt.get('name')}) "
+                f"steht nicht im Kanon {TRAEGER_KANON} — verworfen"
+            )
+            continue
+        if schluessel not in offen:
+            logger.info(
+                f"Sachlage: Traeger an '{eigenschaft}' ({objekt.get('name')}) — "
+                f"die Eigenschaft steht nicht in offen, verworfen"
+            )
+            continue
+        traeger[offen[schluessel]] = wert_norm
+    return traeger
+
+
+def carry_holders(artifact: dict, previous: dict | None) -> dict:
+    """Scheibe 8: fehlende Traeger aus der vorigen Blase erben.
+
+    `[gemessen]` 29.08.2026: Ohne Vorgaenger gab das Modell 90 von 90 offenen
+    Eigenschaften einen Traeger; bei der Fortschreibung einer Blase, deren
+    Objekte noch keinen trugen, liess es das Feld ganz weg. Eine Eigenschaft,
+    die schon in der vorigen Blase offen war und dort einen Traeger hatte,
+    behaelt ihn; nur was auch dort keinen hatte, bleibt ohne (= `nutzer`).
+
+    Vorbedingung: `artifact` validiert; `previous` ein Artefakt oder None.
+    Nachbedingung: `traeger` jedes akuten Objekts umfasst die geerbten
+        Eintraege; vorhandene bleiben unberuehrt.
+    """
+    if not previous:
+        return artifact
+    vorige: dict[str, dict] = {
+        _holder_key(o.get("name", "")): {
+            _holder_key(k): v for k, v in (o.get("traeger") or {}).items()
+        }
+        for o in previous.get("objekte") or [] if isinstance(o, dict)
+    }
+    for objekt in artifact.get("objekte") or []:
+        if not objekt.get("akut"):
+            continue
+        geerbt: dict = vorige.get(_holder_key(objekt.get("name", "")), {})
+        if not geerbt:
+            continue
+        traeger: dict = objekt.setdefault("traeger", {})
+        for eigenschaft in objekt.get("offen") or []:
+            schluessel: str = _holder_key(eigenschaft)
+            if str(eigenschaft) not in traeger and schluessel in geerbt:
+                traeger[str(eigenschaft)] = geerbt[schluessel]
+    return artifact
+
+
+def _holder_key(text: object) -> str:
+    """Der Vergleichsschluessel einer Eigenschaft: Kleinschreibung, ein Leerzeichen."""
+    return " ".join(str(text).lower().split())
 
 
 def _render_history(session_turns: list[dict]) -> str:
@@ -411,13 +516,17 @@ def _derive(
         resolve_open_properties(offen, angebot) if angebot and offen else {}
     )
     artefakt = carry_sources(apply_memory_coverage(artefakt, angebot, claims, vorige), vorige)
+    artefakt = carry_holders(artefakt, vorige)
     # Scheibe 7: Behauptet der Nutzer ueber die akute Sache etwas, das die
     # Welt nicht hergibt? Ein eigener Call, nur bei akutem Objekt — die Lage
     # sagt dass und warum, die Form bleibt Sache von Haltung und Vehikel.
     befunde: dict = (
         assess_plausibility(aeusserung, artefakt) if has_acute_object(artefakt) else {}
     )
-    return apply_plausibility(artefakt, befunde)
+    artefakt = apply_plausibility(artefakt, befunde)
+    # Scheibe 8: die erste offene Eigenschaft, die Nachschlagen verlangt und
+    # die das Gedaechtnis nicht deckt — eine Websuche je Turn.
+    return research_open_property(artefakt)
 
 
 def _resume_lookup(state: dict, vorige: dict | None) -> dict | None:
@@ -665,6 +774,23 @@ def sachlage_block(sachlage: dict) -> str:
                 f"Zweifel ({befund.get('stufe', '')}): {befund.get('behauptung', '')} — "
                 f"{befund.get('grund', '')}"
             )
+        # Scheibe 8: Was die Welt weiss, beantwortet Nova — kein Fragestoff.
+        traeger: dict = objekt.get("traeger") or {}
+        antworten: list[str] = [
+            str(e) for e in (objekt.get("offen") or [])
+            if traeger.get(str(e), TRAEGER_NUTZER) in ANTWORT_TRAEGER
+        ][:3]
+        if antworten:
+            zeilen.append(
+                f"Der Nutzer will zu {objekt.get('name')} wissen: {', '.join(antworten)} — "
+                f"beantworte es aus deinem Wissen, statt danach zu fragen"
+            )
+        for eigenschaft, treffer in list((objekt.get("recherche") or {}).items())[:1]:
+            for fund in treffer[:2]:
+                zeilen.append(
+                    f"Nachgeschlagen zu {objekt.get('name')} — {eigenschaft}: "
+                    f"{str(fund.get('content', ''))[:240]} ({fund.get('url', '')})"
+                )
     fruehere: dict | None = sachlage.get("wiederaufnahme")
     if fruehere:
         alter: str = _age_label(str(fruehere.get("erstellt_am", "")))
@@ -701,8 +827,14 @@ def question_target(sachlage: dict, aktivierte_ziele: list[dict] | None = None) 
     Fehlerfaelle: keine — ein fehlender Gegenstand ist ein regulaerer Fall.
     """
     for objekt in sachlage.get("objekte") or []:
-        if objekt.get("akut") and objekt.get("offen"):
-            return f"{objekt.get('name', '')} — was dazu noch offen ist: {objekt['offen'][0]}"
+        if not objekt.get("akut"):
+            continue
+        # Scheibe 8: Nur eine Eigenschaft, die der Nutzer kennt, ist eine
+        # Frage an ihn. Was die Welt weiss, ist Antwortstoff (`answer_targets`).
+        traeger: dict = objekt.get("traeger") or {}
+        for eigenschaft in objekt.get("offen") or []:
+            if traeger.get(str(eigenschaft), TRAEGER_NUTZER) == TRAEGER_NUTZER:
+                return f"{objekt.get('name', '')} — was dazu noch offen ist: {eigenschaft}"
     for ziel in aktivierte_ziele or []:
         if ziel.get("ziel_typ") == "kurzfristig":
             satz: str = str(ziel.get("zielsatz", ""))
@@ -710,6 +842,30 @@ def question_target(sachlage: dict, aktivierte_ziele: list[dict] | None = None) 
             if vorhaben:
                 return f"wie es mit {vorhaben} weitergeht"
     return None
+
+
+def answer_targets(sachlage: dict) -> list[tuple[str, str, str]]:
+    """Scheibe 8: die offenen Eigenschaften, die Nova beantworten soll.
+
+    Rein. Eine offene Eigenschaft mit Traeger `welt` oder `nachschlagen`
+    ist Antwortstoff fuer den Verfasser, keine Frage an den Nutzer — und sie
+    steht nur in `offen`, solange das Gedaechtnis sie nicht deckt (Scheibe 6
+    nimmt gedeckte heraus).
+
+    Vorbedingung: `sachlage` ist ein Artefakt (auch leer).
+    Nachbedingung: Tripel (Objektname, Eigenschaft, Traeger) in der Reihenfolge
+        von `offen`, nur akute Objekte; leer erlaubt.
+    """
+    ziele: list[tuple[str, str, str]] = []
+    for objekt in sachlage.get("objekte") or []:
+        if not objekt.get("akut"):
+            continue
+        traeger: dict = objekt.get("traeger") or {}
+        for eigenschaft in objekt.get("offen") or []:
+            wer: str = traeger.get(str(eigenschaft), TRAEGER_NUTZER)
+            if wer in ANTWORT_TRAEGER:
+                ziele.append((str(objekt.get("name", "")), str(eigenschaft), wer))
+    return ziele
 
 
 def sachlage_assess(state: dict) -> dict:

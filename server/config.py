@@ -2103,6 +2103,12 @@ SACHLAGE_BESTAND_MAX_EINTRAEGE: int = int(
 # selbst sucht — der Pool kennt sie nicht.
 SACHLAGE_BESTAND_KALENDER_LIMIT: int = int(
     os.getenv("SACHLAGE_BESTAND_KALENDER_LIMIT", "3"))
+# Scheibe 8 (29.08.2026), der Wissenstraeger: Fuer die erste offene Eigenschaft
+# eines akuten Objekts, die "nachschlagen" verlangt und die das Gedaechtnis
+# nicht deckt, laeuft EINE Websuche je Turn — so viele Treffer sieht der
+# Verfasser. Die Suche ist dieselbe wie im Thinker (`tools/web/search.py`).
+SACHLAGE_RECHERCHE_MAX_TREFFER: int = int(
+    os.getenv("SACHLAGE_RECHERCHE_MAX_TREFFER", "3"))
 
 # --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
 # Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein
