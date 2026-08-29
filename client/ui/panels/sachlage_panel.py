@@ -265,11 +265,22 @@ def _build_objects_section(
             block.append(_text_row(f"  ✓ {eigenschaft}: {wert}{herkunft}"))
 
         offen: list = objekt.get("offen") or []
+        # Scheibe 8: der Wissenstraeger hinter der offenen Eigenschaft —
+        # ohne Zusatz kennt sie nur der Nutzer (Fragestoff), sonst Antwortstoff.
+        traeger: dict = objekt.get("traeger") or {}
         if offen:
             marken: list[str] = [
-                f"{'★' if akut and str(o) == ziel_eigenschaft else '○'} {o}" for o in offen[:5]
+                f"{'★' if akut and str(o) == ziel_eigenschaft else '○'} {o}"
+                + (f" ↳{traeger[str(o)]}" if traeger.get(str(o), "nutzer") != "nutzer" else "")
+                for o in offen[:5]
             ]
             block.append(_text_row("  " + "   ".join(marken)))
+        for eigenschaft, treffer in list((objekt.get("recherche") or {}).items())[:1]:
+            for fund in treffer[:2]:
+                block.append(_text_row(
+                    f"  🔎 {eigenschaft}: {str(fund.get('content', ''))[:160]} "
+                    f"({fund.get('url', '')})",
+                ))
         # Scheibe 7: ein Zweifel am Gesagten — Stufe, Behauptung, Grund.
         for befund in (objekt.get("plausibilitaet") or [])[:3]:
             block.append(_text_row(
