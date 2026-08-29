@@ -270,6 +270,12 @@ def _build_objects_section(
                 f"{'★' if akut and str(o) == ziel_eigenschaft else '○'} {o}" for o in offen[:5]
             ]
             block.append(_text_row("  " + "   ".join(marken)))
+        # Scheibe 7: ein Zweifel am Gesagten — Stufe, Behauptung, Grund.
+        for befund in (objekt.get("plausibilitaet") or [])[:3]:
+            block.append(_text_row(
+                f"  ⚠ {befund.get('stufe', '?')}: {befund.get('behauptung', '')} — "
+                f"{befund.get('grund', '')}",
+            ))
         section.append(block)
 
     if frage_gegenstand:
