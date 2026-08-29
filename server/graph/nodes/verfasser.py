@@ -267,6 +267,28 @@ def _aufzeichnungen_block(state: ConversationState) -> str:
     return "\n\n".join(bloecke)
 
 
+def _question_target(sachlage: dict, state: dict) -> tuple[str | None, bool]:
+    """Der Rueckfrage-Gegenstand der Lage und ob er Novas eigener Zug ist.
+
+    Vorbedingung: `sachlage` ist das Artefakt des Turns (auch leer); `state`
+        traegt `aktivierte_ziele` oder nicht.
+    Nachbedingung: (Gegenstand oder None, eigener Zug) — protokolliert, auch
+        wenn es keinen Gegenstand gibt: »keiner« ist eine Auskunft.
+    """
+    from graph.nodes.sachlage import GEGENSTAND_EIGENER_ZUG, question_target_origin
+    quelle: tuple[str, str] | None = question_target_origin(
+        sachlage, state.get("aktivierte_ziele") or [],
+    )
+    gegenstand: str | None = quelle[0] if quelle else None
+    eigener_zug: bool = bool(quelle) and quelle[1] == GEGENSTAND_EIGENER_ZUG
+    logger.info(
+        f"Verfasser: Rueckfrage-Gegenstand: "
+        f"{gegenstand[:80] if gegenstand else 'keiner'}"
+        f"{' (Novas eigener Zug)' if eigener_zug else ''}"
+    )
+    return gegenstand, eigener_zug
+
+
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt des Verfassers: Auftrag plus Wissen.
 
@@ -336,8 +358,8 @@ def _build_system_prompt(state: ConversationState) -> str:
     # bei der Haltung unten.
     sachlage: dict = state.get("sachlage") or {}
     if sachlage.get("gegenstand") or sachlage.get("nutzerziel"):
-        from graph.nodes.sachlage import sachlage_block
-        teile.append(sachlage_block(sachlage))
+        from graph.nodes.sachlage import LESER_VERFASSER, sachlage_block
+        teile.append(sachlage_block(sachlage, leser=LESER_VERFASSER))
     elif sachlage.get("herkunft"):
         # Der Knoten LIEF und hat regulaer nichts — Novas Impuls oder ein
         # Ausfall ohne Vorgaenger. Ein `error` behauptete hier eine falsche
@@ -409,17 +431,10 @@ def _build_system_prompt(state: ConversationState) -> str:
         # aus der Sachlage — die wichtigste offene Eigenschaft eines akuten
         # Objekts oder das Vorhaben des kurzfristigen Ziels. Ob daraus eine
         # Frage wird, entscheidet weiter die Haltung in der Zeile selbst.
-        from graph.nodes.sachlage import question_target
-        gegenstand: str | None = question_target(
-            sachlage, state.get("aktivierte_ziele") or [],
-        )
-        logger.info(
-            f"Verfasser: Rueckfrage-Gegenstand: "
-            f"{gegenstand[:80] if gegenstand else 'keiner'}"
-        )
+        gegenstand, eigener_zug = _question_target(sachlage, state)
         teile.append(
             "[MASS]\n" + "\n".join(
-                stoffzeilen(haltung, reiz_zeichen, intentionen, gegenstand),
+                stoffzeilen(haltung, reiz_zeichen, intentionen, gegenstand, eigener_zug),
             ),
         )
 

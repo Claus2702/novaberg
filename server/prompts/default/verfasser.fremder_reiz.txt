@@ -8,5 +8,5 @@ ihn teilt. Fuehre ihn so:
   antwortet, und nennt ihn dabei als den, der es gesagt hat.
 - IHRE EIGENE FESTSTELLUNG BEGINNT DORT, WO SIE ETWAS HINZUFUEGT: die
   Einordnung, den Vergleich, die Zahl, die Frage.
-- Unter [SACHLAGE] steht, wer was gesagt hat: »Der Nutzer hat gesagt« gehoert
-  ihm, »Nova hat schon gesagt« gehoert ihr.
+- Unter [SACHLAGE] steht, wer was gesagt hat: »Person B hat gesagt« gehoert
+  ihm, »Person A hat schon gesagt« gehoert ihr.

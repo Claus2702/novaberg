@@ -99,7 +99,7 @@ from graph.nodes.sachlage_resolver import (
     resolve_open_properties,
 )
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
-from memory.kurzziel import short_goal_track
+from memory.kurzziel import normalize_object_name, short_goal_track
 from memory.pipeline_log import log_berechnung
 from memory.sachlage_history import (
     build_embed_text,
@@ -141,6 +141,28 @@ ANTWORT_TRAEGER: frozenset[str] = frozenset({TRAEGER_WELT, TRAEGER_NACHSCHLAGEN}
 SPRECHER_NUTZER: str = "nutzer"
 SPRECHER_NOVA:   str = "nova"
 SPRECHER_KANON: frozenset[str] = frozenset({SPRECHER_NUTZER, SPRECHER_NOVA})
+
+# Scheibe 3, Nachtrag (29.08.2026 abends): woher der Rueckfrage-Gegenstand
+# stammt. Aus der Blase — eine offene Eigenschaft des Nutzers oder das
+# Kurzziel zu einem akuten Objekt — oder Novas eigener Zug: das staerkste
+# Kurzziel, dessen Sache nicht in der Blase steht. Die Gravitation bleibt;
+# der Verfasser erfaehrt nur, wessen Zug es ist.
+GEGENSTAND_AUS_BLASE:  str = "blase"
+GEGENSTAND_EIGENER_ZUG: str = "eigener_zug"
+
+# Der Leser des [SACHLAGE]-Blocks bestimmt die Namen (29.08.2026 spaet): Der
+# Verfasser bekommt einen Auftrag ueber PERSON A und PERSON B — das Modell
+# ist der Schauspieler, der Charakter der Auftrag, und nirgends wird es als
+# der Charakter angesprochen. Der Gespraechsvektor analysiert in dritter
+# Person und kennt Nova und den Nutzer beim Namen. Ein Block, der »Nova«,
+# »der Nutzer« und »dein Wissen« in den Verfasser-Prompt traegt, ist ein
+# zweites und drittes Namenssystem — die am 13.08.2026 gemessene Fehlerklasse.
+LESER_VERFASSER: str = "verfasser"
+LESER_GV:        str = "gv"
+_NAMEN: dict[str, dict[str, str]] = {
+    LESER_VERFASSER: {"nova": "Person A", "nutzer": "Person B", "Nutzer": "Person B"},
+    LESER_GV:        {"nova": "Nova",     "nutzer": "der Nutzer", "Nutzer": "Der Nutzer"},
+}
 
 # Wie die Bruecke ihr zweites Ende gefunden hat — Begleitfeld, damit der
 # Verfasser einen belegten Anlass von einem erschlossenen unterscheidet.
@@ -836,32 +858,50 @@ def sachlage_bridge_block(bruecke: dict) -> str:
         anlass = "Der Anlass ist belegt: das Gespraech, aus dem der Gedanke entstand."
     zeilen: list[str] = [
         "[SACHLAGE-BRUECKE]",
-        f"Dein Gedanke entstand frueher. {anlass}",
+        f"Person As Gedanke entstand frueher. {anlass}",
         f"Damals ging es um: {damals.get('gegenstand', '')} ({damals.get('thema', '')})",
-        f"Was der Nutzer damals wollte: {damals.get('nutzerziel', '')}",
+        f"Was Person B damals wollte: {damals.get('nutzerziel', '')}",
     ]
     if aktuell.get("gegenstand"):
         zeilen.append(f"Jetzt geht es um: {aktuell.get('gegenstand', '')}")
     else:
         zeilen.append("Jetzt: Das Gespraech hat gerade keinen Gegenstand — eine Pause.")
     zeilen.append(
-        "Baue den Uebergang hoerbar: Sag, woran du anknuepfst, bevor du den "
-        "Gedanken einbringst — wirf ihn nicht unvermittelt ein."
+        "Baue den Uebergang hoerbar: Person A sagt, woran sie anknuepft, bevor "
+        "sie den Gedanken einbringt — der Anschluss steht im Inhalt."
     )
     return "\n".join(zeilen)
 
 
-def sachlage_block(sachlage: dict) -> str:
+def _reader_names(leser: str, aufrufer: str) -> dict[str, str]:
+    """Die Personennamen fuer den Leser eines Blocks — oder ein lauter Fehler.
+
+    Vorbedingung: `leser` ist LESER_VERFASSER oder LESER_GV.
+    Nachbedingung: das Namens-Dict; ein unbekannter Leser ist ein ValueError,
+        kein Rueckfall — ein Block im falschen Namenssystem saehe richtig aus.
+    """
+    if leser not in _NAMEN:
+        meldung: str = f"{aufrufer}: unbekannter Leser {leser!r}"
+        raise ValueError(meldung)
+    return _NAMEN[leser]
+
+
+def sachlage_block(sachlage: dict, leser: str = LESER_GV) -> str:
     """Der [SACHLAGE]-Block fuer Verfasser und Gespraechsvektor.
 
-    Vorbedingung: `sachlage` traegt die Pflichtfelder.
+    Vorbedingung: `sachlage` traegt die Pflichtfelder; `leser` ist
+        LESER_VERFASSER oder LESER_GV — ein anderer Wert ist ein Fehler, kein
+        Rueckfall (ein Block im falschen Namenssystem saehe richtig aus).
     Nachbedingung: Ein Block, der mit `[SACHLAGE]` beginnt; offene
-        Eigenschaften stehen nur bei akuten Objekten.
+        Eigenschaften stehen nur bei akuten Objekten; die Personen heissen
+        beim Verfasser Person A und Person B, beim Gespraechsvektor Nova und
+        der Nutzer — nie »du«.
     """
+    n: dict[str, str] = _reader_names(leser, "sachlage_block")
     zeilen: list[str] = [
         "[SACHLAGE]",
         f"Worum es geht: {sachlage.get('gegenstand', '')}",
-        f"Was der Nutzer vermutlich will: {sachlage.get('nutzerziel', '')}",
+        f"Was {n['nutzer']} vermutlich will: {sachlage.get('nutzerziel', '')}",
         f"Wie er es angeht: {sachlage.get('ausdrucksweise', '')}",
     ]
     for objekt in sachlage.get("objekte", []):
@@ -881,11 +921,11 @@ def sachlage_block(sachlage: dict) -> str:
                 str(quelle.get("quelle", "")), "aus dem Gedaechtnis",
             )
             zeilen.append(
-                f"Dazu weiss Nova schon ({label}): {eigenschaft} — "
+                f"Dazu weiss {n['nova']} schon ({label}): {eigenschaft} — "
                 f"{str(gedeckt.get(eigenschaft, ''))[:200]}"
             )
         # Scheibe 9: wer eine gedeckte Eigenschaft gesagt hat.
-        zeilen.extend(speaker_lines(objekt))
+        zeilen.extend(speaker_lines(objekt, leser))
         # Scheibe 7: ein Zweifel am Gesagten — Stufe, Behauptung, Grund. Ob und
         # wie Nova ihn ausspricht, entscheiden Haltung und Vehikel.
         for befund in (objekt.get("plausibilitaet") or [])[:3]:
@@ -901,8 +941,9 @@ def sachlage_block(sachlage: dict) -> str:
         ][:3]
         if antworten:
             zeilen.append(
-                f"Der Nutzer will zu {objekt.get('name')} wissen: {', '.join(antworten)} — "
-                f"beantworte es aus deinem Wissen, statt danach zu fragen"
+                f"{n['Nutzer']} will zu {objekt.get('name')} wissen: "
+                f"{', '.join(antworten)} — "
+                f"{n['nova']} beantwortet es aus ihrem Wissen, statt danach zu fragen"
             )
         for eigenschaft, treffer in list((objekt.get("recherche") or {}).items())[:1]:
             for fund in treffer[:2]:
@@ -914,13 +955,13 @@ def sachlage_block(sachlage: dict) -> str:
     if fruehere:
         alter: str = _age_label(str(fruehere.get("erstellt_am", "")))
         zeilen.append(
-            f"Der Nutzer kommt auf {fruehere.get('thema', '')} zurueck"
+            f"{n['Nutzer']} kommt auf {fruehere.get('thema', '')} zurueck"
             f"{f' (zuletzt {alter})' if alter else ''}"
         )
     return "\n".join(zeilen)
 
 
-def speaker_lines(objekt: dict) -> list[str]:
+def speaker_lines(objekt: dict, leser: str = LESER_GV) -> list[str]:
     """Scheibe 9: die Zeilen des Blocks, die sagen, wer was gesagt hat.
 
     Der Gedanke des Nutzers bleibt seiner, Novas bleibt ihrer — der Verfasser
@@ -928,10 +969,13 @@ def speaker_lines(objekt: dict) -> list[str]:
     Gedaechtnis traegt ihre Quelle statt eines Sprechers (Scheibe 6); ohne
     Sprecher (alte Artefakte) keine Zeile — das Verhalten vor der Scheibe.
 
-    Vorbedingung: `objekt` ist ein akutes Objekt des Artefakts.
+    Vorbedingung: `objekt` ist ein akutes Objekt des Artefakts; `leser` wie
+        bei `sachlage_block`.
     Nachbedingung: Hoechstens drei Zeilen, in der Reihenfolge von `gedeckt`,
-        nur fuer Eigenschaften mit Sprecher und ohne Quelle.
+        nur fuer Eigenschaften mit Sprecher und ohne Quelle, in den Namen
+        des Lesers.
     """
+    n: dict[str, str] = _reader_names(leser, "speaker_lines")
     gedeckt: dict = objekt.get("gedeckt") or {}
     quellen: dict = objekt.get("quellen") or {}
     sprecher: dict = objekt.get("sprecher") or {}
@@ -941,7 +985,8 @@ def speaker_lines(objekt: dict) -> list[str]:
     zeilen: list[str] = []
     for eigenschaft in genannt:
         wer: str = (
-            "Der Nutzer hat" if sprecher[eigenschaft] == SPRECHER_NUTZER else "Nova hat schon"
+            f"{n['Nutzer']} hat" if sprecher[eigenschaft] == SPRECHER_NUTZER
+            else f"{n['nova']} hat schon"
         )
         zeilen.append(
             f"{wer} zu {objekt.get('name')} gesagt: {eigenschaft} — "
@@ -953,6 +998,52 @@ def speaker_lines(objekt: dict) -> list[str]:
 # Der Zielsatz des kurzfristigen Ziels traegt das Vorhaben woertlich hinter
 # diesem Praefix (`memory/kurzziel.py::build_short_goal_sentence`).
 _KURZZIEL_PRAEFIX: str = "Ich möchte dem Nutzer bei seinem Vorhaben helfen: "
+
+
+def question_target_origin(
+    sachlage: dict, aktivierte_ziele: list[dict] | None = None,
+) -> tuple[str, str] | None:
+    """Scheibe 3: der Gegenstand der Rueckfrage — und woher er stammt.
+
+    `[gemessen]` 29.08.2026, 20 Betriebsturns: 17 von 20 Gegenstaenden kamen
+    aus dem Kurzziel, und in den ersten zwei Turns nach einem Themenwechsel
+    war das das alte — die Gravitation zieht Nova dorthin, und das ist
+    gewollt. Falsch war nur die Form: Die Rueckfrage-Zeile gab Novas Zug als
+    Frage an den Nutzer zu *seiner* Sache aus. Deshalb traegt der Gegenstand
+    seine Herkunft: `blase` (eine offene Eigenschaft des Nutzers oder ein
+    Kurzziel zu einem akuten Objekt der Blase) oder `eigener_zug` (ein
+    Kurzziel, dessen Sache nicht in der Blase steht).
+
+    Rein. Vorbedingung: wie `question_target`.
+    Nachbedingung: (Gegenstand, Herkunft) mit Herkunft aus
+        {GEGENSTAND_AUS_BLASE, GEGENSTAND_EIGENER_ZUG}, oder None.
+    """
+    akute: set[str] = set()
+    for objekt in sachlage.get("objekte") or []:
+        if not objekt.get("akut"):
+            continue
+        akute.add(normalize_object_name(str(objekt.get("name", ""))))
+        # Scheibe 8: Nur eine Eigenschaft, die der Nutzer kennt, ist eine
+        # Frage an ihn. Was die Welt weiss, ist Antwortstoff (`answer_targets`).
+        traeger: dict = objekt.get("traeger") or {}
+        for eigenschaft in objekt.get("offen") or []:
+            if traeger.get(str(eigenschaft), TRAEGER_NUTZER) == TRAEGER_NUTZER:
+                return (
+                    f"{objekt.get('name', '')} — was dazu noch offen ist: "
+                    f"{eigenschaft}",
+                    GEGENSTAND_AUS_BLASE,
+                )
+    for ziel in aktivierte_ziele or []:
+        if ziel.get("ziel_typ") == "kurzfristig":
+            satz: str = str(ziel.get("zielsatz", ""))
+            vorhaben: str = satz.split(_KURZZIEL_PRAEFIX, 1)[-1].split(" — ", 1)[0].strip()
+            if vorhaben:
+                herkunft: str = (
+                    GEGENSTAND_AUS_BLASE if normalize_object_name(vorhaben) in akute
+                    else GEGENSTAND_EIGENER_ZUG
+                )
+                return f"wie es mit {vorhaben} weitergeht", herkunft
+    return None
 
 
 def question_target(sachlage: dict, aktivierte_ziele: list[dict] | None = None) -> str | None:
@@ -974,23 +1065,11 @@ def question_target(sachlage: dict, aktivierte_ziele: list[dict] | None = None) 
     Nachbedingung: Ein Satzstueck (»Geburtstag — was dazu noch offen ist:
         wer« / »wie es mit Umlaufzeitberechnung weitergeht«) oder None.
     Fehlerfaelle: keine — ein fehlender Gegenstand ist ein regulaerer Fall.
+    Seit dem 29.08.2026 abends ein Blick auf `question_target_origin`, das
+    zusaetzlich die Herkunft kennt.
     """
-    for objekt in sachlage.get("objekte") or []:
-        if not objekt.get("akut"):
-            continue
-        # Scheibe 8: Nur eine Eigenschaft, die der Nutzer kennt, ist eine
-        # Frage an ihn. Was die Welt weiss, ist Antwortstoff (`answer_targets`).
-        traeger: dict = objekt.get("traeger") or {}
-        for eigenschaft in objekt.get("offen") or []:
-            if traeger.get(str(eigenschaft), TRAEGER_NUTZER) == TRAEGER_NUTZER:
-                return f"{objekt.get('name', '')} — was dazu noch offen ist: {eigenschaft}"
-    for ziel in aktivierte_ziele or []:
-        if ziel.get("ziel_typ") == "kurzfristig":
-            satz: str = str(ziel.get("zielsatz", ""))
-            vorhaben: str = satz.split(_KURZZIEL_PRAEFIX, 1)[-1].split(" — ", 1)[0].strip()
-            if vorhaben:
-                return f"wie es mit {vorhaben} weitergeht"
-    return None
+    quelle: tuple[str, str] | None = question_target_origin(sachlage, aktivierte_ziele)
+    return quelle[0] if quelle else None
 
 
 def answer_targets(sachlage: dict) -> list[tuple[str, str, str]]:

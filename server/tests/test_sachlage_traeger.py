@@ -209,7 +209,7 @@ class DerBlockUndDieVerdrahtungTest(unittest.TestCase):
         )
         block: str = sachlage_block(artefakt)
         self.assertIn("Der Nutzer will zu Kollaps wissen: Energieentladung, Rekordwert — "
-                      "beantworte es aus deinem Wissen", block)
+                      "Nova beantwortet es aus ihrem Wissen", block)
         self.assertIn("Nachgeschlagen zu Kollaps — Rekordwert: 716 Hz (https://a)", block)
 
     def test_nutzer_eigenschaft_bleibt_im_raum_und_ist_kein_antwortstoff(self) -> None:

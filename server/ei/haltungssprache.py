@@ -381,8 +381,20 @@ def stoff_band(groesse: str, wert: float) -> str:
 KEINE_RUECKFRAGE: str = STOFF_BAENDER["fragen"][0][1]
 
 
-def _rueckfragenzeile(haltung: Haltung, gegenstand: str | None = None) -> str:
+def _rueckfragenzeile(
+    haltung: Haltung, gegenstand: str | None = None, eigener_zug: bool = False,
+) -> str:
     """Die Rueckfrage-Zeile — Menge, Art UND Gegenstand, in einer Zeile.
+
+    **Seit dem 29.08.2026 abends sagt sie auch, wessen Zug der Gegenstand
+    ist.** Gemessen ueber 20 Betriebsturns: 17 Gegenstaende kamen aus dem
+    staerksten Kurzziel, und nach einem Themenwechsel zog das alte — Nova
+    fragte den Nutzer, wie es mit den Magnetaren weitergeht, waehrend er von
+    Gamma-Oszillationen sprach. Die Gravitation ist gewollt; die Form war
+    falsch. Bei `eigener_zug` fuehrt die Zeile: Es ist ihr Ziel, sie nennt
+    es als das, was sie zieht, und laesst ihm die Wahl. Der Verfasser wird nie
+    als der Charakter angesprochen — er ist der Schauspieler, Person A ist
+    der Auftrag.
 
     **Der Gegenstand kam am 28.08.2026 dazu (Scheibe 3 des Lage-Konzepts).**
     Menge und Art allein erzeugten weiter Floskeln: 2,2 Fragen je Turn,
@@ -412,9 +424,12 @@ def _rueckfragenzeile(haltung: Haltung, gegenstand: str | None = None) -> str:
     Frage, die eine Art haben koennte.
 
     Vorbedingung: `haltung` traegt `fragen` und einen Cluster mit Eintrag in
-        `CLUSTER_FRAGE_ART`; `gegenstand` ist ein Satzstueck oder None.
+        `CLUSTER_FRAGE_ART`; `gegenstand` ist ein Satzstueck oder None;
+        `eigener_zug` sagt, dass der Gegenstand Novas Kurzziel ausserhalb
+        der Blase ist.
     Nachbedingung: eine Zeile, die mit "Rueckfrage: " beginnt; mit
-        Gegenstand endet sie auf »ihr Gegenstand: …«.
+        Gegenstand traegt sie »ihr Gegenstand: …«, bei eigenem Zug dahinter
+        die Fuehrung, wessen Ziel es ist.
     Fehlerfaelle: fehlender Cluster-Eintrag — laute Warnung, Menge allein.
         Ein stilles Weglassen waere von "keine Rueckfrage" nicht zu
         unterscheiden.
@@ -426,6 +441,11 @@ def _rueckfragenzeile(haltung: Haltung, gegenstand: str | None = None) -> str:
         return f"Rueckfrage: {menge}."
 
     anhang: str = f" — ihr Gegenstand: {gegenstand}" if gegenstand else ""
+    if gegenstand and eigener_zug:
+        anhang += (
+            "; das ist Person As eigenes Ziel, nicht die Sache von Person B — sie nennt es "
+            "als das, was sie gerade zieht, und laesst ihm die Wahl, mitzugehen"
+        )
     art: str = CLUSTER_FRAGE_ART.get(haltung.cluster, "")
     if not art:
         logger.warning(
@@ -438,7 +458,7 @@ def _rueckfragenzeile(haltung: Haltung, gegenstand: str | None = None) -> str:
 
 def stoffzeilen(
     haltung: Haltung, reiz_zeichen: int, intentionen: tuple[str, ...],
-    gegenstand: str | None = None,
+    gegenstand: str | None = None, eigener_zug: bool = False,
 ) -> list[str]:
     """Die fachliche Vorgabe fuer den Verfasser: Menge, Rueckfrage, Vorschlag.
 
@@ -464,6 +484,7 @@ def stoffzeilen(
         reiz_zeichen: Laenge der Nutzeraeusserung in Zeichen.
         intentionen: die erhobenen Intentionen des Turns.
         gegenstand: der Frage-Gegenstand aus der Sachlage (Scheibe 3) oder None.
+        eigener_zug: ob der Gegenstand Novas Kurzziel ausserhalb der Blase ist.
 
     Returns:
         Drei Zeilen fuer den Auftrag des Verfassers.
@@ -485,7 +506,7 @@ def stoffzeilen(
     zeilen: list[str] = [
         f"Menge: Stoff fuer {unten} bis {oben} Zeichen Rede. Mehr wird nicht "
         f"gesagt, sondern gestrichen.",
-        _rueckfragenzeile(haltung, gegenstand),
+        _rueckfragenzeile(haltung, gegenstand, eigener_zug),
         f"Vorschlag: {stoff_band('draengen', haltung.werte['draengen'].ergebnis)}.",
     ]
 
