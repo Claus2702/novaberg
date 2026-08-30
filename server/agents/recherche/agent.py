@@ -727,6 +727,13 @@ class RechercheAgent(BaseAgent):
                 beobachter="assistant",
                 salienz_obj=salienz_obj,
                 embedding=embedding,
+                # Derselbe Turn, der schon auf den Stapel wandert (oben):
+                # Der Eintrag entsteht aus diesem Auftrag, und der Auftrag
+                # aus jenem Turn. Ohne die Kennung hier bricht die
+                # Sachlage-Bruecke an ihrem ersten Glied — der Folgeauftrag,
+                # den dieser Eintrag bei hoher Salienz ausloest, traegt sie
+                # dann nicht (`memory/kzg.py`, `ausloeser_turn_id`).
+                turn_id=queue_eintrag.get("ausloeser_turn_id") or "",
             )
             logger.info("RechercheAgent: In Novas KZG gespeichert")
         except Exception as e:

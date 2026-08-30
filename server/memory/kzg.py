@@ -317,7 +317,13 @@ def kzg_store(
                     String, kein Index-Bruch.
       timeline_id:  Integer im RediSearch-NumericField. None -> Feld wird
                     aus dem mapping= ausgelassen.
-      turn_id:      Pipeline-Log-Korrelation; bei Legacy-Aufrufern leer.
+      turn_id:      Der Turn, aus dem der Eintrag entstand. Zwei Leser, und
+                    der zweite kam am 28.08.2026 dazu: die Korrelation im
+                    Pipeline-Log **und** das erste Glied der Sachlage-Bruecke —
+                    ein Auftrag, den dieser Eintrag bei hoher Salienz ausloest,
+                    erbt ihn als `ausloeser_turn_id` (unten). Leer heisst
+                    unbekannt und kappt die Bruecke; sie faellt dann auf die
+                    Vektorsuche zurueck.
     """
     # Der Wert aus dem Salienz-Node ist die Bewertung des Modells — der
     # unveraenderliche Eingang. Die Salienz, gegen die alle Tore pruefen, ist
