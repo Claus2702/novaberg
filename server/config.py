@@ -977,8 +977,15 @@ TIMELINE_UEBERSICHT_TAGE_ZURUECK:  int = int(os.getenv("TIMELINE_UEBERSICHT_TAGE
 TIMELINE_UEBERSICHT_TAGE_VORAUS:   int = int(os.getenv("TIMELINE_UEBERSICHT_TAGE_VORAUS", "14"))
 
 # ─────────────────────────────────────────────
-# Web-Suche (SearXNG)
+# Web-Suche (Serper zuerst, SearXNG als Rueckfall)
 # ─────────────────────────────────────────────
+# Serper liefert Google-Treffer ueber HTTP. Ohne Schluessel ueberspringt der
+# WebSearchManager den Anbieter und faellt auf SearXNG durch — unveraendertes
+# Verhalten. Der Schluessel steht in der `.env` und wird ueber die Compose-Datei
+# durchgereicht; er kostet je Anfrage ein Guthaben (Startguthaben 2500).
+SERPER_API_KEY:      str = os.getenv("SERPER_API_KEY", "")
+SERPER_URL:          str = os.getenv("SERPER_URL", "https://google.serper.dev/search")
+SERPER_TIMEOUT:    float = float(os.getenv("SERPER_TIMEOUT", "10.0"))
 SEARXNG_URL:         str = os.getenv("SEARXNG_URL",      "http://searxng:8080")
 SEARXNG_TIMEOUT:   float = float(os.getenv("SEARXNG_TIMEOUT",     "10.0"))
 SEARXNG_MAX_RESULTS: int = int(os.getenv("SEARXNG_MAX_RESULTS",   "10"))
