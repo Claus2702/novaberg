@@ -237,7 +237,7 @@ Antwort als JSON:
    Recherche-Ziel (1 Satz), 2-4 Queries, Erfolgskriterien
 
 3. SUCHE + FETCH [Python, deterministisch]
-   SearXNG → PageFetcher, iterativ, max 3 Runden
+   Web-Suche (Serper, SearXNG als Rueckfall) → PageFetcher, iterativ, max 3 Runden
 
 4. BEWERTUNG [Qwen, Analyse]
    3 Pruefungen (Fakten, Vollstaendigkeit, User-Mehrwert)

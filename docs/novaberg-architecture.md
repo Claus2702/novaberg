@@ -28,7 +28,7 @@
 | **server** | Python 3.12, FastAPI + LangGraph | 8000 | API-Server, Graph-basierte Agenten, Pixie |
 | **postgres** | PostgreSQL 16 + pgvector | 5432 | LZG, Entitäten, Fakten, Timeline, Notizen |
 | **redis** | Redis 7 Stack (mit RediSearch) | 6379 | KZG, Session, Queues, Stacks, Vektorsuche |
-| **searxng** | SearXNG | 8080 | Lokale Metasuchmaschine (JSON-API) |
+| **searxng** | SearXNG | 8080 | Lokale Metasuchmaschine (JSON-API) — seit 30.08.2026 der **Rueckfall** hinter Serper |
 | ~~**telegram-bot**~~ | Python, Long Polling | — | **abgeschaltet am 24.08.2026** — von Matrix abgeloest; Behaelter entfernt, Compose-Block genommen. `telegram_bot/` liegt weiter im Repositorium. **Die Zeilen fuer `synapse` und `matrix-bot` fehlen in dieser Tabelle** (Fundliste 24.08.2026) |
 
 ### 1.3 Host-native Services (Ollama)
@@ -331,7 +331,7 @@ project/
 │   │   ├── db_manager.py                #   PostgreSQL + Connection Pool
 │   │   ├── redis_manager.py             #   Redis (nativ threadsafe)
 │   │   ├── web/                         #   Web-Infrastruktur (Chat 35)
-│   │   │   ├── search.py                #     WebSearchManager (SearXNG)
+│   │   │   ├── search.py                #     WebSearchManager (Serper, SearXNG als Rueckfall)
 │   │   │   └── fetch.py                 #     PageFetcher (trafilatura + BS4)
 │   │   └── dateien/                     #   Datei-Werkzeuge (WIS-3)
 │   │       └── schreiben.py             #     Pfadwaechter + Modusbits (F-WISSEN-1)
@@ -625,7 +625,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | pg_trgm Fuzzy-Suche (Notizen) | Implementiert | novaberg-agent-notes_l.md |
 | Session-Kontext in Perzeption + Router | Implementiert & validiert | novaberg-node-perception.md, novaberg-node-router.md |
 | Rueckfrage-Kette (Redis-Pending Resume) | Implementiert & validiert | novaberg-graph.md |
-| Web-Integration (SearXNG + PageFetcher) | Implementiert | Chat 35 |
+| Web-Integration (Serper + SearXNG + PageFetcher) | Implementiert | Chat 35; Serper als erster Anbieter seit 30.08.2026 |
 | TimelineAgent (CRUD + bi-temporal + ZeitVektor) | Implementiert & validiert | novaberg-agent-timeline.md |
 | KZG-Agent (LangGraph-Subgraph, 5 Nodes) | Implementiert & validiert | novaberg-mem-kzg.md |
 | DelegationsAgent (Halluzinations-Ventil) | Implementiert & validiert | novaberg-pixie-delegation.md |
@@ -745,7 +745,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | Dokument | Beschreibung |
 |----------|-------------|
 | novaberg-tool-timeparser.md | Zeitparser (Fuzzy, Normalisierung, ZeitVektor) |
-| novaberg-tool-web.md | Web-Infrastruktur (SearXNG, PageFetcher) |
+| novaberg-tool-web.md | Web-Infrastruktur (Suchanbieter, PageFetcher) |
 | novaberg-tool-multi-channel.md | Multi-Channel (Telegram Bot, Formatierung) |
 
 ### Tiefe 3 — Querschnittsmuster (4)
@@ -913,7 +913,7 @@ Prueft 5 Dienste + Pixie-Status:
 | `redis` | Redis-Verbindung | `redis_client.ping()` |
 | `postgres` | PostgreSQL + pgvector-Extension + Schema | SQL-Query |
 | `ollama` | GPU-Ollama + Modellverfuegbarkeit | `ollama_gpu_client.list()` |
-| `searxng` | SearXNG erreichbar | HTTP GET auf `SEARXNG_URL` (Timeout 3s) |
+| `searxng` | SearXNG erreichbar | HTTP GET auf `SEARXNG_URL` (Timeout 3s) — **prueft den Rueckfall, nicht den ersten Anbieter** (Fundliste 30.08.2026) |
 | `shadow` | Pixie-Status (idle/aktiv + Thema) | Redis-Key `shadow_status` |
 
 Client-Statusleiste pollt `/health` alle 5 Sekunden. Zeigt 5 Dienste mit gruen/rot-Indikatoren.
@@ -951,7 +951,7 @@ Alles Konfigurierbare lebt in `config.py`, gelesen aus Umgebungsvariablen mit De
 > Die drei Verbraucher heissen `OLLAMA_MODEL` (GPU), `SHADOW_MODEL` (CPU) und `PIXIE_ANALYSE_MODEL` (Analyse).
 | Zeitzonen | `TIMEZONE` ("Europe/Berlin") |
 | LLM-Backends | `WORKER_BACKEND_CHAT` (ollama_gpu), `WORKER_BACKEND_BG_ANALYSE`, `WORKER_BACKEND_BG_SPRACHE`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `LLM_PROFILE` (lokal — nur noch ThinkingNormalizer-Schalter, siehe §2.5/§2.7) |
-| Web-Suche | `SEARXNG_URL` (http://searxng:8080), `SEARXNG_TIMEOUT` (10.0), `SEARXNG_MAX_RESULTS` (10) |
+| Web-Suche | `SERPER_API_KEY` (leer = Anbieter uebersprungen), `SERPER_URL` (https://google.serper.dev/search), `SERPER_TIMEOUT` (10.0), `SEARXNG_URL` (http://searxng:8080), `SEARXNG_TIMEOUT` (10.0), `SEARXNG_MAX_RESULTS` (10) |
 
 **Keine Magic Numbers im Code.** Alle Schwellwerte, Raten und Gewichtungen sind konfigurierbar.
 

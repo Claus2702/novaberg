@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **07:35 UTC** (gemessen via `date -u`). Davor 29.08.2026, 23:20 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **08:59 UTC** (gemessen via `date -u`). Davor 30.08.2026, 07:35 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 30.08.2026, 08:59 UTC — Der Suchanbieter: Serper zuerst, SearXNG als Rueckfall
+
+**Die Lage.** SearXNG hat keinen eigenen Index; von den Quellen dahinter antwortete zuletzt nur noch die Wikipedia-Volltextsuche. Die Bauweise fuer einen echten Anbieter stand seit dem 29.08.2026 als Fundzeile, die Wahl war offen — **entschieden am 30.08.2026: Serper**, Google-Ergebnisse ueber HTTP.
+
+**Gebaut.** `tools/web/search.py` traegt jetzt zwei Anbieterklassen mit gleicher Form (`name`, `configured`, `search`): `SerperProvider` (`POST` auf `SERPER_URL`, Schluessel im Kopf `X-API-KEY`, Antwortfeld `organic`, Abbildung `link` → `url`, `snippet` → `content`) und `SearxngProvider` (der bisherige Weg, unveraendert). Der `WebSearchManager` haelt die Rangfolge, ueberspringt einen unkonfigurierten Anbieter und faellt bei leerem Ergebnis an den naechsten durch — **jede dieser Weichen mit einer Zeile im Log**, damit ein leeres Ergebnis nicht wie ein stiller Ausfall aussieht. Die gemeinsame Trefferform bleibt `title` / `url` / `content`; **kein Konsument wurde angefasst**, weil alle vier (Thinker, Sachlage-Recherche, RechercheAgent, VertiefungsAgent) durch `web_search_manager.suchen` gehen. Konfiguration: `SERPER_API_KEY` (leer = uebersprungen, unveraendertes Verhalten), `SERPER_URL`, `SERPER_TIMEOUT`.
+
+**Geprueft.** 22 Zeugen (`tests/test_web_search_provider.py`), **Suite 2655 gruen, 0 uebersprungen** (Beginn 2633), Gegenprobe **1 / 1 / 1 rot wie vorhergesagt** (Rueckfall abgeschaltet, Abbildung `link` → `url` verdreht, Rangfolge vertauscht), Linter 1225 (Beginn 1227), harte Wand sauber.
+
+**Gemessen im Betrieb.** Ein Aufruf durch die Kette aus dem Server-Behaelter: Serper liefert 3 Treffer zur Frage nach Sonnenflecken (Max-Planck-Institut, Wikipedia, YouTube). Ein Thinker-Turn um 08:55 UTC (`labor/2026-08-30_suchanbieter_betriebszeuge.py`): **Serper 1x gefragt, 5 Treffer, 0 Rueckfall**, Suchbudget verbucht, Auto-Fetch auf `de.wikipedia.org/wiki/Sonnenfleck`.
+
+**Was offen bleibt.** Der Health-Check prueft weiterhin nur SearXNG — der erste Anbieter hat kein Lebenszeichen, und eine gruene Statusleiste beschreibt seit heute den Rueckfall (Fundliste). Serper kostet je Anfrage ein Guthaben; das Startguthaben von 2500 ist ohne Zahlungsmittel und nach Lesart der Startseite einmalig.
 
 ---
 

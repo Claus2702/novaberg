@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 29. August 2026 (die Suchdisziplin: eine Suche je Turn, die Sachlage-Treffer bedienen die erste — §4.4); davor 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
+**Stand:** 30. August 2026 (der Suchanbieter: Serper zuerst, SearXNG als Rueckfall — §4.4); davor 29. August 2026 (die Suchdisziplin: eine Suche je Turn, die Sachlage-Treffer bedienen die erste — §4.4); davor 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Der Thinker ist Novas Faktenprüfer. Er sitzt zwischen Responder und Tribunal und prüft die generierte Antwort auf Korrektheit — gegen die Datenbank, das Langzeitgedächtnis und bei Bedarf gegen das Internet (via Web-Suche über SearXNG + automatischen Page-Fetch). Termine, Daten, Fakten über den Nutzer und externe Behauptungen werden aktiv verifiziert. Bei Widersprüchen korrigiert er die Antwort, bevor das Tribunal sie bewertet.
+Der Thinker ist Novas Faktenprüfer. Er sitzt zwischen Responder und Tribunal und prüft die generierte Antwort auf Korrektheit — gegen die Datenbank, das Langzeitgedächtnis und bei Bedarf gegen das Internet (via Web-Suche über Serper, SearXNG als Rückfall, + automatischen Page-Fetch). Termine, Daten, Fakten über den Nutzer und externe Behauptungen werden aktiv verifiziert. Bei Widersprüchen korrigiert er die Antwort, bevor das Tribunal sie bewertet.
 
 ---
 
@@ -166,10 +166,10 @@ web_search("aktueller Bundeskanzler Deutschland 2026")
 → Treffer-Übersicht (5 Snippets) + vollständiger Artikeltext der Top-URL
 ```
 
-Durchsucht das Internet über die lokale SearXNG-Instanz. Nutzt `tools.web.search` (synchroner `web_search_manager.suchen()`) für die Suche und `tools.web.fetch` (`page_fetch()`) für den automatischen Seitenabruf.
+Durchsucht das Internet über `web_search_manager.suchen()` — seit dem 30.08.2026 **Serper zuerst, die lokale SearXNG-Instanz als Rückfall** (`novaberg-tool-web.md` §1). Nutzt `tools.web.search` für die Suche und `tools.web.fetch` (`page_fetch()`) für den automatischen Seitenabruf.
 
 **Ablauf in Python-Code (nicht LLM-gesteuert):**
-1. SearXNG-Suche → max. 5 Treffer (Titel, URL, Snippet)
+1. Suche über den ersten liefernden Anbieter → max. 5 Treffer (Titel, URL, Snippet)
 2. Treffer-Übersicht formatieren (nummeriert)
 3. **Auto-Fetch:** `page_fetch(results[0]["url"])` auf die Top-URL
 4. Volltext anhängen falls erfolgreich: `--- Vollstaendiger Inhalt von {url} ---`
@@ -186,7 +186,7 @@ Wird eingesetzt wenn:
 
 **Erzwungene Web-Suche:** Wenn `needs_web=true` vom Router gesetzt ist, fügt der Thinker einen expliziten Pflicht-Block in den Reasoning-Input ein: "Du MUSST web_search() aufrufen, bevor du ERGEBNIS: OK schreibst."
 
-**Die Suchdisziplin (seit 29.08.2026): eine Suche je Turn, und die Sachlage-Recherche ist diese Suche, wenn sie Treffer hat.** `[gemessen]` 29.08.2026, 20 Wissenschaftsturns: Der Thinker rief die Suchmaschine **23-mal** (bis zu dreimal je Turn, deutsch und englisch, einmal mit einem Suchbegriff, der zwei Themen verband), lud jeden ersten Treffer nach — und die Wikipedia-API, seit dem Vormittag die einzige antwortende Engine, sperrte zweimal für 180 s. Die eine Suche der Sachlage-Recherche (`graph/nodes/sachlage_research.py`, Scheibe 8 des Lage-Konzepts) stand im selben Budget und traf 1 von 8 Mal. Wer die Suche teilt, teilt die Sperre — und jeder spätere Anbieter mit Schlüssel zählt Anfragen, nicht Treffer.
+**Die Suchdisziplin (seit 29.08.2026): eine Suche je Turn, und die Sachlage-Recherche ist diese Suche, wenn sie Treffer hat.** `[gemessen]` 29.08.2026, 20 Wissenschaftsturns: Der Thinker rief die Suchmaschine **23-mal** (bis zu dreimal je Turn, deutsch und englisch, einmal mit einem Suchbegriff, der zwei Themen verband), lud jeden ersten Treffer nach — und die Wikipedia-API, seit dem Vormittag die einzige antwortende Engine, sperrte zweimal für 180 s. Die eine Suche der Sachlage-Recherche (`graph/nodes/sachlage_research.py`, Scheibe 8 des Lage-Konzepts) stand im selben Budget und traf 1 von 8 Mal. Wer die Suche teilt, teilt die Sperre — und jeder spätere Anbieter mit Schlüssel zählt Anfragen, nicht Treffer. **Seit dem 30.08.2026 ist genau das der Fall:** Serper steht vorn und verbraucht je Anfrage ein Guthaben, das Budget von einer Suche je Turn wiegt damit schwerer als gegen eine lokale Instanz.
 
 - **Das Budget** lebt im Per-Turn-Cache (`ThinkerToolCache(web_search_budget=…)`, `web_search_allowed()` / `web_search_spent()`), Vorgabe `THINKER_WEBSUCHE_MAX_JE_TURN = 1` in `config.py`. Ein leerer oder gescheiterter Aufruf zählt — die Sperre der Maschine zählt Anfragen. Ohne Budget bekommt das Modell statt einer Suche eine Führung (F-PROMPT-1): *»Die Websuche dieses Turns ist bereits gelaufen — ihre Treffer stehen oben im Verlauf. Prüfe damit, oder lade eine andere URL aus der Trefferliste mit web_fetch(url).«* `web_fetch` ist nicht budgetiert; Stufe 1 des Caches fängt den wortgleichen Wiederholungsaufruf weiterhin vor dem Werkzeug ab.
 - **Die Vorab-Treffer:** `prior_research(state)` liest `state["sachlage"]` — das erste akute Objekt mit Treffern unter `recherche` — und `think()` reicht sie an `create_tools(…, prior_hits)`. Die erste `web_search` des Turns wird dann aus ihnen bedient (Kopfzeile *»in diesem Turn bereits nachgeschlagen zu {Objekt} — {Eigenschaft}«*, Auto-Fetch des ersten Treffers wie sonst), ohne Aufruf der Maschine, und sie verbraucht das Budget. Die Sachlage sucht mit dem Wortlaut-Filter, der Thinker liest die Seite nach — dieselbe Suche, zwei Leser. Ein Turn ohne Sachlage-Treffer geht wie bisher an die Maschine, einmal. Im Log: *»Thinker: Sachlage-Recherche dieses Turns — n Treffer zu '…' (…) bedienen die erste Websuche«* bzw. *»… keine Treffer, die erste Websuche geht an die Suchmaschine«*, dazu *»Thinker-Suchbudget: eine Suche verbucht, Rest 0«*, *»… bedient aus der Sachlage-Recherche (n Treffer), keine neue Suche«*, *»… Suchbudget des Turns verbraucht, keine neue Suche«* (F-LOG-3).

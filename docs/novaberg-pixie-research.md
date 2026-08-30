@@ -177,7 +177,7 @@ Zeugen: `tests/test_recherche_frist.py` — zwei auf den Werten, einer auf ihrem
 | Komponente | Pfad |
 |-----------|------|
 | Session-Kontext | `memory/kontext.py` |
-| Web-Suche | `tools/web/search.py` (SearXNG) |
+| Web-Suche | `tools/web/search.py` (Serper, SearXNG als Rueckfall — seit 30.08.2026) |
 | Page-Fetch | `tools/web/fetch.py` (trafilatura + BS4-Fallback) |
 | Shadow-Stack | `services/pixie/stack.py` |
 | KZG | `memory/kzg.py` |
