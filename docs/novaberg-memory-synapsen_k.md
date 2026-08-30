@@ -252,6 +252,28 @@ hergibt, und der Grund für ihre Größe.
 
 ---
 
+### 4.1a `lzg_knoten_haltung` — die Ladung eines Knotens
+
+**Seit dem 30.08.2026.** Eine additive Annotation **auf** `lzg_knoten`, kein zweiter
+Speicher — hier genannt, weil wer die Schema-Übersicht liest, sie sonst nicht findet. Der
+Gegenstand ist in `novaberg-thinking-opinion_k.md` §5 und §5a beschrieben; für den
+Gedächtnisgraphen zählen drei Eigenschaften:
+
+- **Eine eigene Tabelle statt Spalten**, weil ein Knoten **mehrere** Ladungen trägt, je
+  Eigenschaft eine (`UNIQUE (knoten_id, eigenschaft)`). Der Widerspruch zwischen ihnen ist
+  der Gegenstand, nicht ein Fehler.
+- **Sie trägt die Dynamik des Knotens** (`F-VERFALL-1`): `staerke_roh`, `staerke_decay`,
+  `haeufigkeit`, `aktiv` — eine Haltung ist Gedächtnis, kein Faktum.
+- **Zwei Aktivitäten gelten zusammen.** Der Leseweg verbindet mit `lzg_knoten` und prüft
+  **dessen** `aktiv` mit. Der Graph löscht nicht, er lässt ruhen — ohne den Verbund hätte
+  eine Ladung ihren Gegenstand überlebt, ohne dass irgendwo etwas falsch aussieht.
+
+`praemisse_knoten_id` zeigt als Selbstreferenz auf den Knoten, auf dem das Urteil steht,
+und ist leer, bis es Werte-Knoten gibt. **Der Bestand ist heute 0 Zeilen** — die Schicht
+hat weder Erzeuger noch Leser.
+
+---
+
 ### 4.2 `lzg_kanten`
 
 ```sql
