@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
+**Stand:** 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
 
 > **Gemessen am 02.08.2026, nicht geschätzt:** 1108 Knoten, 110.340 Kanten, alte Tabelle 0 Zeilen. Kantenzusammensetzung: embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %.
 >
@@ -204,6 +204,53 @@ CREATE INDEX idx_lzg_knoten_user_id
 - `gewicht_roh` ist der kumulative Wert (frei wachsend). `gewicht_absolut` ist der gedämpfte Wert nach Sinus-Dämpfung (Cap 10) — die Anker-Stärke des Knotens. `gewicht_decay` ist der zeitlich abgewertete Präsenz-Wert, den Pixie täglich nachzieht. Lesepfad sortiert nach `gewicht_decay`, Kanten-Cache berechnet sich aus `gewicht_absolut`. Details siehe Punkt 5.
 - `emotions_vektor` kehrt zurück. In Chat 83 entfernt wegen Trajektorie-Inkonsistenz mit verdichteten Punkten — diese Begründung entfällt, weil Knoten erhaltene Einzeleinträge sind, keine verdichteten Punkte.
 - Magnet-Felder (`entitaet_ids`, `timeline_id`, `themen`, `gedaechtnistyp`) müssen ab dem Umbau vom KZG-Schreibpfad befüllt werden (M5 wird Voraussetzung).
+
+#### Was die Skala [0 … 10] bedeutet — sie misst nicht Wichtigkeit, sondern Dauer
+
+**Ergänzt am 30.08.2026, weil die Formel dokumentiert war und ihre Wirkung nicht.**
+
+Die Zehnerskala des Knotengewichts ist eine **Haltbarkeitsskala**. Sie beantwortet die
+Frage *wie lange bleibt das*, nicht *wie wichtig ist das*. Wer sie als Wichtigkeit liest,
+hält den Anlagewert für zu hoch — er ist es nicht, er ist die Eintrittsbedingung.
+
+**Was ins LZG kommt, bleibt.** Ein Eintrag, der die Promotion schafft, hat das Tor der
+KZG-Salienz bereits passiert; das Langzeitgedächtnis ist kein zweites Sieb. Deshalb startet
+ein frisch angelegter Knoten **nicht bei null**, sondern bei 3 bis 4 — die Dämpfungskurve
+mit `CAP = 10` rechnet auf einem `gewicht_roh` aus [0,1] (der KZG-Salienz, K8) und bildet
+diesen Bereich auf **3,25 bis 3,96** ab.
+
+| `gewicht_roh` beim Anlegen | `gewicht_absolut` |
+|---|---|
+| 0,673 (niedrigster im Bestand) | **3,248** |
+| 0,900 | 3,754 |
+| 1,000 (höchstmögliche Salienz) | **3,955** |
+
+**Der untere Bereich der Skala gehört dem Verfall, nicht der Anlage.** Ein Knoten betritt
+sie bei 3–4 und wandert nach unten, solange ihn niemand berührt — oder nach oben, wenn er
+wiederkehrt (`LZG_KNOTEN_REINFORCEMENT_BOOST = 0.1` je Verstärkung auf `gewicht_roh`, das
+frei über 10 hinauswachsen darf; im Bestand bis 12,50 bei 116 Verstärkungen).
+
+**In Jahren gerechnet** (`LZG_KNOTEN_DECAY_RATE = 0.0015` täglich, Ruheschwelle
+`LZG_KNOTEN_MIN_GEWICHT = 0.1`):
+
+| Startwert | bis 1,0 | bis zur Ruheschwelle |
+|---|---|---|
+| 3,25 — schwächste Anlage | 2,2 Jahre | **6,4 Jahre** |
+| 3,96 — stärkste Anlage | 2,5 Jahre | 6,7 Jahre |
+| 10,00 — voll verstärkt | 4,2 Jahre | **8,4 Jahre** |
+
+Zwischen der schwächsten Erinnerung und der am häufigsten bestätigten liegen damit rund
+**zwei Jahre Haltbarkeit** — das ist die Auflösung, die diese Skala über solche Zeiträume
+hergibt, und der Grund für ihre Größe.
+
+> **Warum der Bestand das heute nicht zeigt.** `[gemessen]` 30.08.2026 über 3.261 Knoten:
+> `gewicht_absolut` von 3,248 bis 10,0, `gewicht_decay` von **3,091** bis 10,0 — kein
+> einziger Knoten liegt unter 3,09. Das ist kein Widerspruch zur Skala, sondern ihr
+> Zeitmaßstab: Der Nullpunkt des Bestandes liegt beim 27.07.2026, also fünf Wochen zurück,
+> und der Verfall braucht Jahre. **Wer die untere Skalenhälfte im Bestand sucht und nicht
+> findet, misst das Alter des Speichers, nicht die Formel.**
+
+---
 
 ### 4.2 `lzg_kanten`
 
