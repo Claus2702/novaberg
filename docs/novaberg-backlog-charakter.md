@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Charakter — Profile, Raeder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 68 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 69 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -9,10 +9,22 @@
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 68 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 69 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+
+---
+
+## Block 30.08.2026 — aus dem Faszinationskonzept
+
+Ein Eintrag. Er ist **kein Defekt**, sondern ein fertig durchgerechnetes Konzept, das auf sieben Vorbedingungen wartet — und er steht unter Charakter, weil sein Kern eine **dritte Charakterschicht** ist, nicht eine Groesse der Kognition.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `FASZINATION-PRAEGUNG` | **Faszination als Wert [0..1] auf einem Traeger, gebildet aus Bindung x Qualitaet x Praegung x Turn-Modulatoren** — Konzept liegt vor in `novaberg-thinking-faszination_k.md` (v0.7, sieben Fassungen, jede hat eine These der vorigen widerlegt). Der Wert ist **valenzblind**: Kriegsgeschichte und Gartenkraeuter sind derselbe Mechanismus mit unterschiedlicher Haerte. Traeger ist **nicht die Entitaet**, sondern ein Merkmalsprofil auf sechs gesetzten Qualitaetsdimensionen — der Zwilling erbt die Faszination, nicht die Zuwendung. **Mit enthalten ist die Praegungsschicht (Faeden und Straenge)** als dritte Charakterschicht neben dem Zuwendungs-Rad (relational) und den Werte-Knoten (normativ): Sie ist **thematisch** und heute nicht vorhanden. Ein Faden ist ein einschneidendes, embeddingbezogenes Ereignis; wiederkehrende Emotion-Ausgang-Sequenzen verdichten zu Straengen. Die Literatur nennt das Self-Defining Memory (Singer & Salovey 1993) — die Deckung wurde **nach** der Entwicklung gesucht und ist deshalb Konvergenz, kein Beleg. **Sieben Vorbedingungen, sechs davon offen** — gemessen am 30.08.2026: (1) MS-Welle Block 2 ff. *in Arbeit* · (2) Synapsen P4, Knoten/Kanten/Spreading *blockiert durch (1)* · (3) `KZG-SALIENZ-NEUBAU` *queued — das Faden-Tor steht darauf, Vorbedingung und nicht Nachbar* · (4) **abstrakte Schicht** mit Qualitaets- und Werte-Knoten samt Typ-Diskriminator *offen; `lzg_knoten_haltung` traegt **null Zeilen**, `praemisse_knoten_id` wartet auf dasselbe Stueck* · (5) `charakter_rad_messung` mit stabiler Reihe *die Reihe laeuft seit dem 12.08.2026, 68 Erhebungen; die **zeitliche** Stabilitaet ist die offene Frage, nicht die Wiederholstreuung aus `RAD-STABILITAET-UNGEMESSEN`* · (6) ~~`PIXIE_AKTIV` steht auf `False`~~ **erfuellt — im laufenden Container steht `PIXIE_AKTIV=true`**; nur der Code-Default in `config.py:360` ist `false` · (7) Haltungsraum bekommt einen Leser *offen — `state["haltung"]` hat seit dem 03.08.2026 keinen einzigen*. **Ohne den Typ-Diskriminator sickert die Valenz von der Werte- auf die Qualitaetsseite** und Kriegsgeschichte truege weniger Faszination als Kraeuter — der Fehler waere fest im Schema verbaut. | [CHA] ⬜ **offen** — angelegt am 30.08.2026. Kein Ausfall: Es ist heute nichts kaputt, es fehlt eine Schicht. |
+
+**Eine Entscheidung des Meisters steht davor und gehoert nicht ins Bauen.** `novaberg-thinking-opinion_k.md` §9 hat fuer seinen Fall *grob zuerst, Zerlegung spaeter* gewaehlt, ausdruecklich um nicht auf drei Fundamente zu warten. **Der Zwilling-Test sagt das Gegenteil:** Ohne die abstrakte Schicht generalisiert nichts, und beide Groessen bleiben an Objekte genagelt, die sie nicht meinen. Wird fuer die abstrakte Schicht zuerst entschieden, **zieht `opinion_k` §9 mit** — die Entscheidung faellt also einmal fuer beide. Der Grund, sie nicht nebenbei zu treffen: Eine themengefuehrte Faszination **saehe in den Logs aus wie eine funktionierende**, und das ist die Fehlerklasse mit fuenf dokumentierten Faellen.
 
 ---
 
