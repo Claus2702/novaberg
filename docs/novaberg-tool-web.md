@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Web-Infrastruktur — Suchanbieter, WebSearchManager, PageFetcher
-**Stand:** 30. August 2026 (Serper als erster Anbieter, SearXNG als Rueckfall); davor 29. August 2026 (Konsumententabelle: der Thinker sucht einmal je Turn, die Sachlage-Recherche als zweiter Konsument nachgetragen); davor 19. April 2026, Chat 57 (DRY-Prinzip explizit)
+**Stand:** 30. August 2026 (Serper als erster Anbieter, SearXNG als Rueckfall; die Sperren der uebrigen Engines gemessen); davor 29. August 2026 (Konsumententabelle: der Thinker sucht einmal je Turn, die Sachlage-Recherche als zweiter Konsument nachgetragen); davor 19. April 2026, Chat 57 (DRY-Prinzip explizit)
 **Pfad:** `novaberg/docs/novaberg-tool-web.md`
 **Quellen:** nova-07-a.md, Codestand
 
@@ -19,7 +19,7 @@ Die Web-Suche fragt **Serper zuerst und SearXNG als Rueckfall**. Beide liefern d
 
 **Ein uebersprungener oder leer ausgehender Anbieter steht im Log**, damit ein leeres Ergebnis nicht wie ein stiller Ausfall aussieht: *»… nicht konfiguriert — uebersprungen«*, *»… ohne Treffer … — Rueckfall auf den naechsten Anbieter«*, und wenn keiner lieferte, eine `error`-Zeile.
 
-**Warum die Reihenfolge so steht:** SearXNG hat keinen eigenen Index, sondern reicht an Bing, Google, DuckDuckGo und Wikipedia weiter — und die Quellen dahinter blocken. Seit dem 29.08.2026 antwortet aus dieser Instanz nur noch die Wikipedia-Volltextsuche; sie traegt Wissensfragen, aber nichts darueber hinaus. `[gemessen]` — 30.08.2026, dieselbe Frage nach Sonnenflecken: Serper liefert 5 Treffer, darunter Max-Planck-Institut und Wikipedia.
+**Warum die Reihenfolge so steht:** SearXNG hat keinen eigenen Index, sondern reicht an Bing, Google, DuckDuckGo und Wikipedia weiter — und die Quellen dahinter blocken. Seit dem 29.08.2026 antwortet aus dieser Instanz nur noch die Wikipedia-Volltextsuche; sie traegt Wissensfragen, aber nichts darueber hinaus. `[gemessen]` — 30.08.2026, dieselbe Frage nach Sonnenflecken: Serper liefert 5 Treffer, darunter Max-Planck-Institut und Wikipedia. Am selben Tag gegengeprueft, warum kein zweiter kostenloser Anbieter einspringt: Von den aktiven Engines antworteten `duckduckgo` und `startpage` mit CAPTCHA, `brave` mit *too many requests*, `karmasearch` mit *access denied*, `aol` mit HTTP-Fehler — fuenf Treffer, alle aus der Wikipedia-Volltextsuche. Die Endnutzer-API von Qwant (`api.qwant.com/v3/search/web`, in der Konfiguration vorhanden und abgeschaltet) antwortet mit **HTTP 403**. **Was ohne Index blockt, blockt fuer jeden Server ohne Wohnzimmer-Anschluss** — der Ausweg ist ein Anbieter mit bezahltem Zugang, nicht eine andere Engine (Fundliste 30.08.2026: Tavily und Staan als Optionen).
 
 **Serper kostet je Anfrage ein Guthaben** (Startguthaben 2500, ohne Zahlungsmittel). Deshalb wiegt die Suchdisziplin der Konsumenten (§5) schwerer als bei einer lokalen Instanz.
 
