@@ -414,17 +414,21 @@ Daten-Agenten (Charakter, Promotion, Decay) bleiben ausserhalb.
 
 **Kategorie:** [HGR] HINTERGRUND
 
-**Zustand:** offen — am Bestand gemessen am 30.08.2026.
+**Zustand:** offen — am Bestand gemessen am 30.08.2026, Zahlen nachgezogen am selben Tag abends.
 
 **Befund (2026-08-30).** Zwei Sachverhalte an derselben Tabelle, und der zweite macht den ersten unbehandelbar.
 
-**(a) Der Rueckstand.** `ziele` traegt **376 Zeilen, davon 30 aktiv**. Bei `meister` stehen **331 inaktive langfristige** Ziele gegen **ein** aktives — bei einer Motivation zwischen **0,80 und 0,90**, also weit ueber jeder Schwelle. Sie sind nicht abgeraeumt, sondern nur abgeschaltet; ein Pfad, der sie loescht, zusammenfasst oder wieder aufnimmt, ist nicht erkennbar. Der `ZielDecayAgent` laeuft und senkt die Motivation — er entfernt nichts.
+**(a) Der Rueckstand.** `ziele` traegt **376 Zeilen, davon 22 aktiv**. Bei `meister` stehen **331 inaktive langfristige** Ziele gegen **ein** aktives — bei einer Motivation zwischen **0,80 und 0,90**, verteilt auf **genau zwei verschiedene Werte**, also weit ueber jeder Schwelle. Sie sind nicht abgeraeumt, sondern nur abgeschaltet; ein Pfad, der sie loescht, zusammenfasst oder wieder aufnimmt, ist nicht erkennbar. Der `ZielDecayAgent` laeuft und senkt die Motivation — er entfernt nichts.
 
-**(b) Die Motivation trennt innerhalb der Horizonte nicht.** Alle langfristigen Ziele stehen auf **exakt 0,80**, ueber sieben Gegenueber hinweg. Die mittelfristigen liegen bei `meister` zwischen 0,49 und 0,63, die kurzfristigen zwischen 0,57 und 0,70. **Als Gewichtungsfaktor ist die Spalte damit innerhalb eines Horizonts eine Konstante** — was sie unterscheidet, ist der Horizont selbst, den man auch direkt lesen kann. Wer sie multipliziert, multipliziert mit 0,80.
+**(b) Die Motivation trennt innerhalb der Horizonte nicht.** Alle **aktiven** langfristigen Ziele stehen auf **exakt 0,80**, ueber sieben Gegenueber hinweg. Die mittelfristigen liegen bei `meister` zwischen **0,14 und 0,60**, bei `falle` zwischen **0,18 und 0,19**; die kurzfristigen stehen zwischen **0,00 und 0,10** und **keines** von ihnen ist noch aktiv. **Als Gewichtungsfaktor ist die Spalte damit innerhalb eines Horizonts eine Konstante** — was sie unterscheidet, ist der Horizont selbst, den man auch direkt lesen kann. Wer sie multipliziert, multipliziert mit 0,80.
 
 **Verwandt mit `GV-INITIATIVE-KIPPT-NIE`** — dieselbe Klasse: ein Wert, der erhoben, gespeichert und gelesen wird und dabei nie den Zustand wechselt, den er anzeigen soll. Eine Groesse ohne Varianz sieht im Log aus wie eine Messung.
 
 **Was fertig waere.** Zweierlei, und (b) geht vor: Die Motivation streut innerhalb eines Horizonts messbar, oder sie wird als Gewichtungsfaktor aufgegeben und durch etwas ersetzt, das streut. Erst danach ist ein Abraeumpfad fuer die 331 sinnvoll — solange alle denselben Wert tragen, gibt es kein Kriterium, nach dem er auswaehlen koennte.
+
+**Nicht Teil dieses Befundes — zweimal geprueft, zweimal widerlegt.** Die Vermutung, ein Teil der Zeilen trage **keine** `motivation_basis`, ist am Bestand falsch: **376 von 376 tragen eine** (kurzfristig 14, mittelfristig 14, langfristig 348). Die Annahme entstand aus einer Abfrage, in der die Spalte nicht abgefragt war; die Leerstelle wurde als Wert gelesen. Sie ist am 30.08.2026 zweimal aufgetreten und steht deshalb hier ausdruecklich — dieselbe Feststellung fuehrt der Bug-Eintrag `ZIEL-VERFALLEN-BLEIBT-AKTIV`.
+
+> **Die absoluten Zahlen dieses Eintrags altern innerhalb eines Tages.** Zwischen der Erstmessung am Vormittag und dem Nachzug am Abend des 30.08.2026 fiel `aktiv` von 30 auf 22, die kurzfristige Motivation von 0,57–0,70 auf 0,00–0,10. Der `ZielDecayAgent` arbeitet weiter, waehrend der Eintrag steht. **Wer diese Zahlen zitiert, nennt das Messdatum mit** — und wer sie prueft, misst neu, statt eine Abweichung fuer einen Widerspruch zu halten. Der **Sachverhalt** ist davon unberuehrt: Der Rueckstand waechst, er schrumpft nicht.
 
 **Prioritaet:** mittel. Kein Ausfall, aber jede Rechnung, die die Motivation als Faktor nimmt, rechnet mit einer Konstanten.
 
