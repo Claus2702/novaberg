@@ -53,6 +53,70 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
+## 30.08.2026 — eine Schwelle, die nicht mehr ablehnt
+
+Zwei Eintraege aus derselben Messung. Der erste ist ein **Schwellwert auf einer Groesse, die ihren
+dokumentierten Wertebereich verlassen hat**; der zweite ist der Grund, warum der erste so lange
+unbemerkt blieb — **es gibt nichts zu zaehlen**.
+
+### `EMGRAV-SCHWELLE-TOT` — die Gravitationsschwelle kann nicht mehr ablehnen
+
+**Zustand:** offen — am Bestand gemessen am 30.08.2026.
+
+**Klasse:** Ein Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat.
+Verwandt mit `KZG-SALIENZ-SKALENBRUCH` (dieselbe Ursache, anderes Feld; im Archiv) und mit
+`GV-INITIATIVE-KIPPT-NIE` (Schwelle ausserhalb des erreichbaren Bereichs, dort umgekehrt).
+
+**Symptom.** `gravitation = similarity x gewicht_decay x zeit_decay x 0,5 >= 0,40` verlangt
+`gewicht_decay x zeit_decay >= 0,80`. `gewicht_decay` ist **nicht auf [0,1] normiert** — gemessen
+Median **3,77**, Maximum **9,98**, **alle 3.266 aktiven Knoten ueber 1**. Von **1.711 scanbaren
+Knoten faellt keiner durch**; alle reissen die Schwelle bereits bei `similarity < 0,30`.
+
+**Wirkung.** Die Auswahl trifft allein `LIMIT 10` und `EMOTIONALE_GRAVITATION_MAX_PRO_TURN = 2`. Die
+Gravitationsformel entscheidet nur noch die **Rangfolge**, nicht mehr das **Ob**. Rekonstruiert ueber
+56 Turns: **112 Aktivierungen, exakt 2,00 je Turn**, auf 57 Knoten (3,3 % des Scan-Bereichs); 13
+Knoten mit drei oder mehr Aktivierungen, **1.654 mit keiner**. Sieben der zehn meistaktivierten
+handeln von Neutronensternen.
+
+**Warum das nicht nur unschoen ist.** Der Doku-Satz *„Der Normalfall ist, dass nichts passiert"*
+liest sich als Seltenheitsbefund und beschreibt in Wahrheit die Obergrenze `MAX_PRO_TURN`. **Wer ihn
+als Messung nimmt, baut auf einer Annahme, die die Zahl nie gestuetzt hat.** Genau das ist geschehen:
+Die Praegungsschicht in `novaberg-thinking-faszination_k.md` §7.4 hatte ihre Verfallsrate darauf
+gestuetzt. Faeden wuerden unsterblich — wird einer alle paar Turns aufgefrischt, kommt der Verfall
+nie zum Zug.
+
+**Was fertig waere.** Die Schwelle lehnt wieder ab: entweder `gewicht_decay` auf [0,1] normiert und
+die Schwelle mit ihr, oder eine Schwelle auf der heutigen Skala, die eine begruendete Trefferrate
+trifft. **Nicht Teil dieses Eintrags: die Normierungsrechnung.** Nach einer Division durch
+`LZG_KNOTEN_GEWICHT_CAP = 10.0` laege das erreichbare Maximum bei **0,287** und damit **unter** der
+Schwelle 0,40 — die Reparatur kippt den Fehler in die Gegenrichtung, wenn die Schwelle nicht
+mitwandert. Das gehoert in den Sprint, nicht in die Fehlerbeschreibung.
+
+**Prioritaet:** hoch. Er haelt die Praegungsschicht auf und faelscht zugleich still die Gewichtung
+jedes Turns, der eine Erinnerung einfaerbt.
+
+### `EMGRAV-KANDIDAT-OHNE-KENNUNG` — der Kandidat traegt keinen Schluessel
+
+**Zustand:** offen — am Code festgestellt am 30.08.2026.
+
+**Symptom.** Das `SELECT` in `server/ei/gravitation.py` gibt **keine `id`** zurueck. Der Kandidat
+traegt Inhalt (auf 100 Zeichen gekuerzt), Emotion, Arousal, Aehnlichkeit, Gewicht, Zeit-Decay,
+Gravitation und Quelle — aber keinen Schluessel.
+
+**Wirkung.** **Keine Aktivierung ist zaehlbar oder zuordenbar** — weder im `pipeline_log` noch in
+einer Spalte. Die Identitaet verlaesst die Abfrage nicht; auch eine nachtraegliche Auswertung der
+Logzeilen kaeme nur an ein Inhaltspraefix, und Praefixe sind nicht eindeutig.
+
+**Warum eigenstaendig.** Er ist nicht die Ursache von `EMGRAV-SCHWELLE-TOT`, sondern der Grund,
+warum dieser unbemerkt blieb: Eine Groesse ohne Kennung kann nicht auffallen, wenn sie kippt.
+
+**Was fertig waere.** Drei Codestellen: `id` in beide `SELECT`s, `knoten_id` in den Kandidaten-Dict,
+eine `pipeline_log`-Zeile im Node. **Keine DDL noetig** — `pipeline_log.inhalt` ist `jsonb`.
+
+**Prioritaet:** mittel. Kein Ausfall, aber Vorbedingung fuer jede Messung an diesem Pfad.
+
+---
+
 ## 25.08.2026 — ein Turn, dessen Antwort fertig war und nie ankam
 
 Drei Eintraege aus **einem** Turn (13:33 UTC). Sie haengen aneinander wie eine Kette: Der
