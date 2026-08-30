@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **09:20 UTC** (gemessen via `date -u`). Davor 30.08.2026, 08:59 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **12:45 UTC** (gemessen via `date -u`). Davor 30.08.2026, 09:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,27 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 30.08.2026, 12:45 UTC — Scheibe 8: die Treffer stehen im Block, der Wert steht in der Antwort
+
+**Die offene Zusage.** Das Lage-Konzept trug seit dem 29.08.2026 den Satz *»Der Betriebsturn mit `nachschlagen` und Treffer im Block steht noch aus.«* Er war zweimal gescheitert, und beide Male an der Suche: Bing lieferte Rauschen (drei BeamNG-Mod-Seiten zu einer Pulsar-Frage), danach trug nur die Wikipedia-Volltextsuche und ging im geteilten Budget leer aus. Seit heute frueh steht Serper davor.
+
+**Gelaufen** (`labor/2026-08-30_scheibe8_treffer_im_block.py`, 10:33 UTC, Frage nach der Oberflaechentemperatur von Beteigeuze). Die Kette hat vier Glieder, und alle vier sind belegt:
+
+| Glied | Beleg |
+|---|---|
+| Traeger `nachschlagen` | an der Eigenschaft *Exakter Temperaturwert in Kelvin* |
+| Suche | `Web-Suche ueber Serper` → 3 Treffer |
+| Wortlaut-Filter | **3 von 3 nennen die Sache** — am 29.08.2026 waren es 0 von 3 |
+| Treffer im Block | **4 Zeilen** *»Nachgeschlagen zu Beteigeuze — …«* |
+
+Dazu das Ziel der Scheibe selbst: `Rueckfrage-Gegenstand: keiner`, und Novas Antwort traegt den Wert — *»bei einer effektiven Temperatur von etwa 3.450 Kelvin«*. Der Thinker wurde aus derselben Recherche bedient, **0 zusaetzliche Aufrufe der Maschine**.
+
+**Gezaehlt wurde im Zeilenfenster, nicht im Zeitfenster.** Die Blockzeilen stehen in einer Prompt-Ausgabe, und die traegt ihren Zeitstempel nur in der ersten Zeile; ein `grep` ueber ein Zeitfenster haette null gefunden und wie ein Befund ausgesehen. Der Zeuge uebersetzt das Zeitfenster deshalb in Zeilennummern — 2540 Zeilen, davon 1068 mit Zeitstempel.
+
+**Nebenbefund, nicht im Vorbeigehen behoben.** Die beiden Treffer widersprechen sich: Wikipedia nennt 3600 K, die zweite Quelle 3450 K. Nova nimmt einen Wert und benennt die Abweichung nicht; das Tribunal haelt die Antwort fuer sachlich korrekt. Der Block reicht Treffer nebeneinander durch, ohne dass geprueft wird, ob sie dasselbe sagen (Fundliste).
 
 ---
 
