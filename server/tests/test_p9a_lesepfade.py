@@ -153,22 +153,34 @@ class GravitationVerfaelltEinmalTest(unittest.TestCase):
     naechsten Kalibrierung der Schwelle etwas anderes als seinen Namen.
     """
 
-    GEWICHT: float = 1.0
+    # `gewicht_decay` steht auf [0, LZG_KNOTEN_GEWICHT_CAP]; die Rechnung
+    # normiert es seit dem 30.08.2026 auf [0,1] (EMGRAV-SCHWELLE-TOT). Mit dem
+    # frueheren Wert 1.0 erreichte ein Knoten hoechstens eine Gravitation von
+    # 0,05 und konnte die Schwelle nicht mehr reissen — das Fixture haette dann
+    # ein Alter in der Zukunft gebraucht. 8.0 liegt im Bestand (Median 3,77,
+    # Maximum 9,98, gemessen am 30.08.2026 ueber 3266 aktive Knoten).
+    GEWICHT: float = 8.0
     EMOTION: str = "freude"
 
     def setUp(self) -> None:
         """Legt einen alten, emotional besetzten Knoten an."""
         from config import (
-            EMOTIONALE_GRAVITATION_FAKTOR_LZG,
             EMOTIONALE_GRAVITATION_ZEIT_HALBWERT,
             EMOTIONALE_GRAVITATIONS_SCHWELLE,
             LZG_KNOTEN_DECAY_RATE,
         )
 
         # Alter so, dass gravitation = SCHWELLE * 1.005 (knapp darueber).
-        #   gravitation = 1.0 x GEWICHT x 2^(-tage/HALBWERT) x FAKTOR
+        # Der Anteil kommt aus der **echten** Rechnung, nicht aus einer hier
+        # wiederholten Formel: Seit dem 30.08.2026 normiert sie `gewicht_decay`
+        # auf [0,1] (EMGRAV-SCHWELLE-TOT), und eine nachgerechnete Erwartung
+        # haette das nicht mitbekommen — sie prueefte weiter die alte Skala.
+        from ei.gravitation import gravitation_lzg_berechnen
+
         ziel: float = EMOTIONALE_GRAVITATIONS_SCHWELLE * 1.005
-        anteil: float = ziel / (self.GEWICHT * EMOTIONALE_GRAVITATION_FAKTOR_LZG)
+        # Gravitation bei zeit_decay = 1.0, also fuer einen frischen Knoten.
+        grav_frisch: float = gravitation_lzg_berechnen(1.0, self.GEWICHT, 1.0)
+        anteil: float = ziel / grav_frisch
         self.tage: float = -EMOTIONALE_GRAVITATION_ZEIT_HALBWERT * math.log2(anteil)
 
         self.erwartet_richtig: float = ziel

@@ -25,6 +25,7 @@ from config import (
     EMOTIONALE_GRAVITATIONS_SCHWELLE,
     GRAVITATIONS_SALIENZ_FAKTOR,
     GRAVITATIONS_SCHWELLE,
+    LZG_KNOTEN_GEWICHT_CAP,
     REDIS_URL,
 )
 
@@ -610,6 +611,7 @@ def _kzg_emotionale_eintraege(
             inhalt: str = redis_client.hget(key, "inhalt") or ""
 
             kandidaten.append({
+                "knoten_id":   key,
                 "emotion":     emotion,
                 "arousal":     arousal,
                 "similarity":  round(similarity, 3),
@@ -627,6 +629,58 @@ def _kzg_emotionale_eintraege(
             )
 
     return kandidaten
+
+
+def gravitation_lzg_berechnen(
+    similarity:    float,
+    gewicht_decay: float,
+    zeit_decay:    float,
+) -> float:
+    """Berechnet die emotionale Gravitation eines LZG-Knotens.
+
+    Eigene Funktion, weil die Formel sonst nur hinter einer Datenbankabfrage
+    erreichbar waere — ein Zeuge muesste sie dann nachrechnen statt aufrufen und
+    bliebe gruen, wenn sich die echte Rechnung aendert.
+
+    `gewicht_decay` steht auf [0, LZG_KNOTEN_GEWICHT_CAP], die Schwelle auf
+    [0,1]. Ohne die Division vergleicht die Rechnung zwei Skalen und lehnt
+    nichts mehr ab: Gemessen am 30.08.2026 riss jeder der 1711 scanbaren Knoten
+    die Schwelle schon bei `similarity < 0,30` (`gewicht_decay` Median 3,77,
+    Maximum 9,98, alle 3266 aktiven Knoten ueber 1) — Bug EMGRAV-SCHWELLE-TOT.
+
+    Geteilt wird durch die **Konstante**, nicht durch die Zahl, damit die
+    Normierung einer Skalenaenderung folgt. Der Wert ist ohnehin normiert
+    erzeugt: `gewicht_absolut_berechnen` rechnet `CAP * sin(...)**exp`, und der
+    Sinusterm liegt in [0,1] — die Division nimmt nur den Streckfaktor zurueck
+    und verliert nichts (755 verschiedene Werte bleiben 755).
+
+    Args:
+        similarity: Kosinus-Aehnlichkeit zum Turn-Embedding, [0,1].
+        gewicht_decay: Praesenz-Wert des Knotens, [0, LZG_KNOTEN_GEWICHT_CAP].
+        zeit_decay: Zeitfaktor der emotionalen Praesenz, [0,1].
+
+    Returns:
+        Gravitation auf [0, EMOTIONALE_GRAVITATION_FAKTOR_LZG].
+
+    Raises:
+        ValueError: Wenn `gewicht_decay` negativ ist oder den Deckel ueberschreitet.
+    """
+    # ── Eingabe ────────────────────────────────
+    if not 0.0 <= gewicht_decay <= LZG_KNOTEN_GEWICHT_CAP:
+        raise ValueError(
+            f"gewicht_decay={gewicht_decay} liegt ausserhalb "
+            f"[0, {LZG_KNOTEN_GEWICHT_CAP}] — die Skala ist nicht die erwartete, "
+            f"und die Normierung darunter waere eine Behauptung statt einer Rechnung"
+        )
+
+    # ── Verarbeitung ───────────────────────────
+    gewicht_norm: float = gewicht_decay / LZG_KNOTEN_GEWICHT_CAP
+    gravitation:  float = (
+        similarity * gewicht_norm * zeit_decay * EMOTIONALE_GRAVITATION_FAKTOR_LZG
+    )
+
+    # ── Ausgabe ────────────────────────────────
+    return gravitation
 
 
 def _lzg_emotionale_eintraege(
@@ -659,7 +713,7 @@ def _lzg_emotionale_eintraege(
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT inhalt, emotion, arousal, gewicht_decay, verstaerkt_am,
+            SELECT id, inhalt, emotion, arousal, gewicht_decay, verstaerkt_am,
                    1 - (embedding <=> %s::vector) AS similarity
             FROM lzg_knoten
             WHERE user_id = %s
@@ -681,7 +735,7 @@ def _lzg_emotionale_eintraege(
 
     kandidaten: list[dict] = []
 
-    for inhalt, emotion, arousal, gewicht_decay, verstaerkt_am, similarity in rows:
+    for knoten_id, inhalt, emotion, arousal, gewicht_decay, verstaerkt_am, similarity in rows:
         # `gewicht_decay` ist BEREITS der zeitlich abgewertete Praesenz-Wert:
         # Der Decay-Lauf materialisiert ihn taeglich als
         # `gewicht_absolut * exp(-rate * tage_seit_verstaerkung)`
@@ -698,17 +752,25 @@ def _lzg_emotionale_eintraege(
         # flachere Kurve fuer die emotionale Praesenz (§8.4.3).
         zeit_decay: float = _zeit_decay_faktor(verstaerkt_am, jetzt)
 
-        # Gravitation berechnen
-        gravitation: float = (
-            similarity * gewicht_decay * zeit_decay * EMOTIONALE_GRAVITATION_FAKTOR_LZG
+        # Gravitation berechnen — die Formel steht in einer eigenen Funktion,
+        # damit ein Zeuge sie aufrufen kann statt sie nachzurechnen.
+        gewicht_norm: float = gewicht_decay / LZG_KNOTEN_GEWICHT_CAP
+        gravitation:  float = gravitation_lzg_berechnen(
+            similarity, gewicht_decay, zeit_decay,
         )
 
         if gravitation >= EMOTIONALE_GRAVITATIONS_SCHWELLE:
             kandidaten.append({
+                "knoten_id":   knoten_id,
                 "emotion":     emotion,
                 "arousal":     arousal or 0.5,
                 "similarity":  round(similarity, 3),
+                # `gewicht` bleibt der **gespeicherte** Wert: Die Zusicherung aus
+                # P9a (kein zweiter Verfallsabzug beim Lesen) prueft ihn gegen die
+                # Spalte. Der normierte Wert steht daneben, damit die Rechnung
+                # nachvollziehbar bleibt, ohne die Spur zur Spalte zu verlieren.
                 "gewicht":     round(gewicht_decay, 3),
+                "gewicht_norm": round(gewicht_norm, 3),
                 "zeit_decay":  round(zeit_decay, 3),
                 "gravitation": round(gravitation, 3),
                 "quelle":      "lzg",

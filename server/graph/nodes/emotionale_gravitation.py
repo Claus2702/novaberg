@@ -40,7 +40,8 @@ import logging
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.nodes.ei_calc import internal_emotion_uebertragen
 from graph.reiz import reiz_ist_eigener_gedanke
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
+from memory.pipeline_log import log_berechnung
 
 logger = logging.getLogger("ki_server.emotionale_gravitation")
 
@@ -103,6 +104,34 @@ def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationSta
             f"Injektion faellt aus"
         )
         return state
+
+    # Welche Erinnerung aktiviert wurde, stand bis zum 30.08.2026 nirgends: Der
+    # Kandidat trug keinen Schluessel, und die Logzeile nennt nur eine Anzahl.
+    # Damit war die Reaktivierungshaeufigkeit eines Knotens nicht zaehlbar — und
+    # ein Schwellwert, der nichts mehr ablehnt, faellt niemandem auf
+    # (EMGRAV-KANDIDAT-OHNE-KENNUNG, EMGRAV-SCHWELLE-TOT).
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "emotionale_gravitation",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "schritt":    "emgrav_aktivierung",
+            "aktiviert":  len(punkte),
+            "kandidaten": [
+                {
+                    "knoten_id":   p.get("knoten_id"),
+                    "quelle":      p.get("quelle"),
+                    "emotion":     p.get("emotion"),
+                    "similarity":  p.get("similarity"),
+                    "gewicht":     p.get("gewicht"),
+                    "gravitation": p.get("gravitation"),
+                }
+                for p in punkte
+            ],
+        },
+        user_id      = state.get("user_id"),
+        character_id = state.get("character_id"),
+    )
 
     # ── Verarbeitung ────────────────────────────
     vorher_emotion: str   = verlauf[0]["emotion"]

@@ -1569,7 +1569,18 @@ ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele
 # Ziel-Gravitation 0.3") beschrieb zudem einen Wert, den es nie gab.
 # ⚠ Wachposten: Prompt↔Eintrag-Wert (gravitation = sim × gewicht × decay ×
 # faktor), nicht gemessen — begründeter Startwert, kein Messergebnis.
-EMOTIONALE_GRAVITATIONS_SCHWELLE:       float = 0.40
+# Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
+# Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
+# 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest
+# die bereits normierte Salienz).
+#
+# 0.40 war gegen die UNnormierte LZG-Skala gesetzt und lehnte dort nichts mehr ab:
+# gemessen am 30.08.2026 riss jeder der 1711 scanbaren Knoten sie schon bei
+# similarity < 0,30 (`gewicht_decay` Median 3,77, Maximum 9,98). Nachgerechnet
+# ueber 56 Turns ergibt die normierte Skala je Schwelle: 0,20 -> 0,50 Treffer je
+# Turn · 0,10 -> 6,30 · 0,05 -> 9,91. Der erreichbare Hoechstwert liegt bei 0,287,
+# weshalb 0,40 nach der Normierung NIE ausloesen wuerde (Bug EMGRAV-SCHWELLE-TOT).
+EMOTIONALE_GRAVITATIONS_SCHWELLE:       float = 0.18
 EMOTIONALE_GRAVITATION_ZEIT_HALBWERT:   int   = 180    # Halbwertszeit in Tagen
 EMOTIONALE_GRAVITATION_MAX_PRO_TURN:    int   = 2      # Max aktivierte Erinnerungen pro Turn
 EMOTIONALE_GRAVITATION_FAKTOR_SESSION:  float = 1.0    # Session-Einträge: frisch, volle Wirkung
