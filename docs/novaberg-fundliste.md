@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 30. August 2026, 11:05 UTC
+**Stand:** 30. August 2026, 11:46 UTC
 **Offen:** **132 Funde — gezaehlt am 30.08.2026, 08:30 UTC** (151 Fundzeilen der Form `- **JJJJ-MM-TT**` im Abschnitt *Offen*, davon **19** mit `~~`; neu: der GV-Prompt spricht das Modell als Nova an — Entscheidung offen)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 85 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
@@ -662,8 +662,8 @@ Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wor
 - **30. August 2026, 08:30 UTC** — **132 offene Funde, gezaehlt** (151 Fundzeilen, 19 mit `~~`). Neu, aus der Schlussfrage: *»Du denkst als Nova«* im GV-Prompt und der fehlende Zeuge ueber den ganzen Verfasser-Prompt standen nur im Konzept und im Handzettel.
 - **30. August 2026, 11:05 UTC** — **136 offene Funde, gezaehlt** (157 Fundzeilen im Abschnitt *Offen*, 21 mit `~~`). Neu: die Suite schreibt echte Zeilen in `shadow_auftrag`. Berichtigt: die Bruecken-Zeile — ihre Zahlen enthielten Testzeilen.
 - **30. August 2026, 12:50 UTC** — **136 offene Funde, gezaehlt** (156 Fundzeilen im Abschnitt *Offen*, 20 mit `~~`). Neu: nur 4 % der Auftraege tragen die `ausloeser_turn_id`.
-- **30. August 2026, 12:45 UTC** — **135 offene Funde, gezaehlt** (155 Fundzeilen im Abschnitt *Offen*, 20 mit `~~`). Neu: zwei Suchtreffer mit verschiedenen Werten werden nicht als Widerspruch behandelt.
-- **30. August 2026, 12:10 UTC** — **134 offene Funde, gezaehlt** (154 Fundzeilen im Abschnitt *Offen*, 20 mit `~~`). Neu: der Anbieter nach dem Startguthaben (Tavily) und Staan als dritte Option samt der 403 von Qwant.
+- **30. August 2026, 10:45 UTC** — **135 offene Funde, gezaehlt** (155 Fundzeilen im Abschnitt *Offen*, 20 mit `~~`). Neu: zwei Suchtreffer mit verschiedenen Werten werden nicht als Widerspruch behandelt.
+- **30. August 2026, 10:05 UTC** — **134 offene Funde, gezaehlt** (154 Fundzeilen im Abschnitt *Offen*, 20 mit `~~`). Neu: der Anbieter nach dem Startguthaben (Tavily) und Staan als dritte Option samt der 403 von Qwant.
 - **30. August 2026, 09:02 UTC** — **132 offene Funde, gezaehlt** (152 Fundzeilen im Abschnitt *Offen*, 20 mit `~~`). Neu: der Health-Check kennt den ersten Suchanbieter nicht. Erledigt: die Wahl des Suchanbieters (Serper eingebaut).
 - **30. August 2026, 08:15 UTC** — **131 offene Funde, gezaehlt** (150 Fundzeilen, 19 mit `~~`). Neu: der Suchanbieter ist noch nicht gewaehlt, die Bauweise steht (Serper-Notiz aus dem Gespraech).
 - **30. August 2026, 07:40 UTC** — **130 offene Funde, gezaehlt** (149 Fundzeilen, 19 mit `~~`). Erledigt: die drei Wissensbloecke des Verfassers sprechen ueber Person A — Gedaechtnisblock in den Namen des Lesers (Kanal `memory_context_verfasser`), Aufzeichnungs-Bloecke in dritter Person.

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **12:45 UTC** (gemessen via `date -u`). Davor 30.08.2026, 09:20 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **11:46 UTC** (gemessen via `date -u`). Davor 30.08.2026, 10:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,7 +21,23 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 ---
 
-## 30.08.2026, 12:45 UTC — Scheibe 8: die Treffer stehen im Block, der Wert steht in der Antwort
+## 30.08.2026, 11:46 UTC — Scheibe 10: das Gewicht einer Luecke
+
+**Der Befund.** Scheibe 8 gibt jeder offenen Eigenschaft ihren Traeger — *wer kann das wissen*. Sie sagt nicht, *was es kostet, wenn niemand es sagt*. Solange die erste `nutzer`-Eigenschaft den Rueckfrage-Gegenstand bekam, entschied die Reihenfolge einer sortierten Liste darueber, ob Nova nach dem Tragenden oder nach dem Netten fragt. Dasselbe galt fuer die eine Websuche je Turn.
+
+**Gebaut.** `kritikalitaet` je offener Eigenschaft (`kritisch` / `unkritisch`), im Sachlage-Call erhoben, gegen den Kanon gehalten und aus der vorigen Blase geerbt — wie Traeger und Sprecher. Zwei Leser waehlen daraus vor, beide in zwei Durchgaengen: `question_target_origin` fuer die Rueckfrage, `lookup_target` fuer die Websuche. Der Block nennt die tragende Luecke in einer eigenen Zeile, aber nur wenn ihr Traeger der Nutzer ist — was die Welt weiss, ist Antwortstoff. Ohne erhobenes Gewicht gilt `unkritisch`, also das Verhalten vor der Scheibe.
+
+**Geprueft.** 22 Zeugen, Suite **2682 gruen**, Linter 1225, harte Wand sauber. **Gegenprobe 1 / 1 / 0 / 1 / 1 — und die Null hat am meisten getragen:** Der Eingriff *Erben abgeschaltet* liess alles gruen, weil die Zeugen `carry_criticality` selbst riefen statt seinen Einbau zu pruefen. Dieselbe Luecke trugen die Bestandszeugen fuer `carry_holders` und `carry_speakers`; ein Verdrahtungszeuge ueber den Syntaxbaum deckt jetzt alle drei.
+
+**Gemessen.** Labor ueber 15 Aeusserungen, je zwei Laeufe: Alltag 8 kritisch / 20 unkritisch, Wissenschaft 8 / 14, **kein fehlender Wert**, **0 von 18 Objekten** mit mehr als einer kritischen Luecke. Der Rueckfrage-Gegenstand aendert sich in **2 von 8** Faellen. Betrieb 11:39 und 11:41 UTC: Der erste Turn — reine Wissensfrage — erhob zwei kritische Luecken, beide `welt`/`nachschlagen`, und erzeugte richtigerweise weder Blockzeile noch Rueckfrage; der zweite brachte eine Luecke beim Nutzer, und die Kette lief durch bis zur Zeile *»Ohne Art und Qualitaet der vorliegenden Daten … muesste Nova bei Linsendaten raten«* und zum passenden Rueckfrage-Gegenstand.
+
+**Was nicht belegt ist.** Nova hat in diesem Turn **nicht** danach gefragt — die Antwort ging auf den Frust ein. Der Stoff steht im Block, die Form entscheiden Haltung und Vehikel; ob die Rueckfrage haeufiger den tragenden Gegenstand trifft, ist mit einem Turn nicht gemessen.
+
+**Die Zeitstempel dieses Tages sind dabei berichtigt worden.** Mehrere Staende trugen 12:10, 12:25 und 12:45 UTC, waehrend `date -u` 11:46 sagte — geschaetzt statt gemessen. Ein Eintrag mit Zukunftszeit sortiert jeden spaeteren unter sich; die Fundliste kennt den Fall seit dem 25.08.2026.
+
+---
+
+## 30.08.2026, 10:45 UTC — Scheibe 8: die Treffer stehen im Block, der Wert steht in der Antwort
 
 **Die offene Zusage.** Das Lage-Konzept trug seit dem 29.08.2026 den Satz *»Der Betriebsturn mit `nachschlagen` und Treffer im Block steht noch aus.«* Er war zweimal gescheitert, und beide Male an der Suche: Bing lieferte Rauschen (drei BeamNG-Mod-Seiten zu einer Pulsar-Frage), danach trug nur die Wikipedia-Volltextsuche und ging im geteilten Budget leer aus. Seit heute frueh steht Serper davor.
 
