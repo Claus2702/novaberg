@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
+**Stand:** 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
 **Nachtrag 28.08.2026:** Der System-Prompt des GV-Calls traegt zusaetzlich den `[SACHLAGE]`-Block — das sachliche Verstehen des Turns aus `graph/nodes/sachlage.py`, vor dem Farbton. Konzept: `novaberg-thinking-lage_k.md`. **Nachtrag 29.08.2026:** Derselbe Block trägt seit den Scheiben 6–8 des Lage-Konzepts auch die Deckung aus dem Gedächtnis, die Zweifel der Plausibilitätsprüfung und den Antwortstoff samt Suchtreffern (`sachlage_block`) — der GV sieht damit, was Nova zur Sache weiß, bevor er das Vehikel wählt. **Nachtrag 29.08.2026, spaet:** Der Block spricht in den Namen seines Lesers (`sachlage_block(…, leser=LESER_GV)`): hier *Nova* und *der Nutzer* in dritter Person — der GV analysiert, er spielt nicht; der Verfasser bekommt denselben Block mit *Person A* und *Person B* (F-PROMPT-2: das Modell wird nie als der Charakter angesprochen). Der GV-Prompt traegt selbst noch einmal *»dein«* (Fundliste 29.08.).
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
@@ -714,6 +714,8 @@ Unabhängig davon traf Hop 1 auch vorher nicht: Der Schlüssel ist eine Themenph
 | Was es liefert | *was der Fall ist* — semantisch | *was erlebt wurde* — episodisch |
 
 Der Unterschied in der letzten Zeile ist kein Detail: Der Prompt-Block heißt deshalb `[VERWANDTE ERINNERUNGEN]` und nicht mehr `[VERWANDTE FAKTEN]`. Ein Block, der Erlebtes als gesichertes Wissen ankündigt, lässt das LLM es als Auskunft lesen.
+
+**Seit dem 29.08.2026 trägt jede Zeile des Blocks ihren Sprecher** (`_resonanz_kontext_laden`: *»… (direkt zum Thema; Sprecher: Nutzer; Themen: …; Färbung: …)«*, aus `beobachter` über `memory_context.py::speaker_label` — `user` → *Nutzer*, `assistant` → *Nova*, sonst *unbekannt* mit Warnung). Bis dahin las sich ein wörtlich zitierter Nutzersatz als Novas eigene Erinnerung; der Lesepfad (`spreading_lesen`) lud die Spalte gar nicht. Der Gesprächsvektor ist ein Analyse-Knoten und nennt den Charakter beim Namen (F-PROMPT-2); der Verfasser bekommt denselben Stoff im `[GEDAECHTNIS]`-Block als Person A / Person B. Zeugen: `tests/test_gv_resonanz_kontext.py`.
 
 **Beide Modalitäten sind vorgesehen, nicht alternativ** — Synapsen-Konzept §3.2 beschreibt sie als komplementär („Reine Fakten wären ein Polizeibericht. Reine Resonanz wäre ein Gefühl ohne Anker."). Mit M2.5b tritt der Faktenpfad wieder daneben, nicht an die Stelle. Wer ihn weckt, repariert vorher den Schlüssel-Mismatch; Details in `novaberg-bugs.md`, GV-ENTITY-HOP-FINDET-NICHTS.
 
