@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **13:01 UTC** (gemessen via `date -u`). Davor 30.08.2026, 11:46 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **17:25 UTC** (gemessen via `date -u`). Davor 30.08.2026, 13:01 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,30 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 30.08.2026, 17:25 UTC — Die Faszination bekommt ein Konzept, und drei Ernteversuche sterben
+
+**Die Frage.** Wo haengt eine Faszination? Das erste Konzept sagte: an der Entitaet. Der **Zwilling-Test** verwirft das — wer sich fuer ein Werkzeug begeistert, begeistert sich fuer das gleiche daneben ebenso. Faszination haengt an **Eigenschaften**, und ein Gegenstand ist faszinierend, wenn er sie vereint. Damit faellt die Entitaet aus demselben Grund wie zuvor das Freitextfeld — eine Ebene weiter.
+
+**Die Konsequenz ist groesser als eine Schluesselwahl:** Faszination und Praemisse zeigen auf **dieselbe abstrakte Schicht**. Bei der Haltung heisst der Zielknoten *Wert* (»teuer ← Sparsamkeit«), bei der Faszination *Qualitaet* (»Astronomie ← Abstraktheit«); mechanisch ist es derselbe Zeiger. Das erklaert die Vererbung auf den Zwilling — er erbt, weil er am selben abstrakten Knoten haengt — und es erklaert, warum `praemisse_knoten_id` heute leer ist: Es fehlt beiden dasselbe Stueck.
+
+**Drei Ernteversuche, drei Messungen, drei Absagen.** Die Schicht laesst sich aus keinem vorhandenen Bestand verdichten:
+
+| Quelle | Messung | Warum sie ausscheidet |
+|---|---|---|
+| LZG-Themen | **12.040 Nennungen auf 8.094 verschiedene**, 1,49 je Thema; der Spitzenwert *Entropie* deckt 0,8 % | Freitext ohne Wiederholung |
+| Sachlage-Eigenschaften | **330 Nennungen auf 136 verschiedene** | Es sind **Wissensluecken, keine Qualitaeten** — *»Struktur des Kernmaterials«*, *»Entfernung des naechsten Magnetars«* |
+| Ziele | bei **sechs von sechs** Gegenueber formgleich: *verstehen/lernen*, `neugierig`/`hoffnung`, beide 0,80 | Eine Schablone gibt die Form zurueck, die hineingeschrieben wurde |
+
+**Und der Bestand kann die Frage ohnehin nicht beantworten:** 2.981 von 3.261 Knoten gehoeren einem Paar, 48 von 50 einer Zufallsstichprobe tragen `beobachter = assistant`. Wer daraus Qualitaeten liest, liest Novas Redegegenstaende — nicht, was bindet. **Das Vokabular wird deshalb gesetzt, nicht geerntet**, in der Bauart des Charakter-Rades: geschlossener Satz, ein Call bewertet jede Dimension einzeln, das Ergebnis wird gerechnet.
+
+**Drei Groessen, die als Gewicht vorgesehen waren, sind Konstanten.** `ziele.motivation` steht bei allen langfristigen Zielen exakt auf 0,80; die GV-Valenz-Achse steht in **573 von 618** Landschaftszeilen auf 1; die Salienz laeuft gegen einen Deckel von 1,0 mit Werten bis 10,0. Beide Register haben dazu heute einen Eintrag bekommen: `ZIELE-RUHEN-OHNE-ABRAEUMPFAD` (331 abgeschaltete Ziele ohne Abraeumpfad, dazu die Konstanz) und `ZIEL-VERFALLEN-BLEIBT-AKTIV` (der Verfall senkt die Motivation auf 0,19 und laesst `aktiv` stehen).
+
+**Was der Dialog beitrug.** Auf die Frage nach ihrer Faszination nannte Nova eine — und konnte sie auf Nachfrage nicht zerlegen, sondern gab denselben Satz umgestellt zurueck. Das ist kein Beleg fuer einen inneren Zustand; es gibt keinen Wert, den sie ablesen koennte. Es ist der Beleg, dass die zweite Ebene fehlt, und er kostete zwei Turns.
+
+**Nachgetragen.** Vier Stellen der Vorfassung waren beim Umbau ausgefallen und stehen wieder im Konzept: die Feld-fuer-Feld-Begruendung der vier verwendeten Emotion-Felder, der Tone-Beleg mit Herkunft, zwei Quellenverweise und die 14 Landschaften als offener Punkt. **Der Unabhaengigkeits-Beleg der Rad-Speiche kehrt mit anderen Zahlen zurueck:** `wissbegier` **0,86** gegen `distanz` **0,40** ueber 63 Messungen, statt *beide auf 1,0*. Die Aussage hielt, ihr Beleg nicht.
 
 ---
 
