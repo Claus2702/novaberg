@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **11:46 UTC** (gemessen via `date -u`). Davor 30.08.2026, 10:45 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **13:01 UTC** (gemessen via `date -u`). Davor 30.08.2026, 11:46 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,22 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 30.08.2026, 13:01 UTC — Die Haltungsschicht: der Speicher steht
+
+**Was Nova bisher fehlte.** Sie hat Wissen und sie hat Gefuehl — was ihr fehlt, ist eine Haltung. Die Knoten tragen `emotion` und `arousal`, aber das ist die Faerbung des **Moments**, in dem der Knoten entstand, nicht das Urteil ueber die **Sache**: kein Vorzeichen, ein Wert je Knoten, und bei 1.552 von 3.260 steht `neutral`. Der Einwand-Knoten darf `quelle="haltung"` sagen und hat nichts, woraus er sie ableiten koennte.
+
+**Gebaut: `lzg_knoten_haltung`**, eine additive Annotation auf `lzg_knoten` — kein zweiter Speicher, und eine eigene Tabelle statt Spalten, weil ein Knoten **mehrere** Ladungen traegt. *Kino: teuer (−0,5) UND mit dir (+0,8).* Genau dieser Widerspruch unterscheidet eine Haltung von einem Schalter. Dazu `memory/repositories/node_stance_repository.py` mit Schreib-, Lese- und Verrechnungsweg.
+
+**Drei Entscheidungen im Code.** Eine **zweite Beobachtung ist kein zweiter Eintrag** (`UNIQUE (knoten_id, eigenschaft)`): Die neue Ladung wandert mit halbem Gewicht in die vorhandene, die Haeufigkeit steigt, die Staerke wird frisch — ein Ausreisser kippt keine gewachsene Haltung, eine wiederholte Erfahrung setzt sich durch. Die **Netto-Haltung ist gewichtet, nicht gemittelt**: Oft bestaetigt wiegt schwerer, verfallen wiegt weniger, und der Widerspruch bleibt sichtbar statt sich wegzukuerzen. Und **zwei Aktivitaeten muessen gelten**: Der Graph loescht nicht, er laesst ruhen — der Leseweg verbindet deshalb mit dem Knoten und prueft dessen `aktiv` mit, sonst haette eine Haltung ihren Gegenstand ueberlebt, ohne dass etwas falsch aussieht.
+
+**Geprueft.** 19 Zeugen, Suite **2701 gruen**, Linter 1225, harte Wand sauber, Gegenprobe **2 / 1 / 3 / 1 / 1**. An einem echten Knoten belegt: zwei Ladungen, Verstaerkung 0,8 dann 0,6 auf **+0,70 (x2)**, gegen *schwer zu fassen* −0,40, **netto +0,333**; die Probezeilen danach wieder entfernt.
+
+**Der Name traegt die Trennung.** `valenz` heisst im Bestand die binaere GV-Gespraechsachse, die den Turn faerbt und einen Turn lebt — 618 Landschaftszeilen, 573 positiv gegen 45 negativ. Diese Schicht faerbt die Sache und bleibt; sie heisst deshalb `haltung`.
+
+**Was fehlt, ausdruecklich:** ein **Erzeuger** und ein **Leser**. Niemand schreibt Ladungen, der Spreading-Pass fragt sie nicht ab. Die Schicht ist vollstaendig gebaut und vollstaendig ungenutzt — das ist der Zustand, nicht ein Versehen, und der naechste Zug schliesst genau ihn.
 
 ---
 
