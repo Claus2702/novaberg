@@ -441,7 +441,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | ANT | 178 | offen | `PROMPT-DOPPELTE-FORMULIERUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 200 | offen | `CLUSTERZAHL-13-GEGEN-14` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 213 | offen | `GV-DETAIL-LAENGE-IRREFUEHREND` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
-| ANT | 229 | offen | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 229 | teilweise | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 249 | offen | `GRAPH-SACKGASSE-UNGEPRUEFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-antwortpfad.md) |
 | ANT | 272 | offen | `META-KOGNITION` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
 | ANT | 307 | abgeschlossen | `CLIENT-RENDER` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |

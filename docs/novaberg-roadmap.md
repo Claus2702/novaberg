@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **08:59 UTC** (gemessen via `date -u`). Davor 30.08.2026, 07:35 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **09:20 UTC** (gemessen via `date -u`). Davor 30.08.2026, 08:59 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,24 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 30.08.2026, 09:20 UTC — Der Client hat einen Testlauf
+
+**Die Lage.** `CLIENT-OHNE-TESTLAUF` stand seit dem 01.08.2026 offen, mit Prioritaet hoch: Die Zuordnungspruefung `_zuordnung_pruefen` entscheidet ueber drei Ausgaenge und ist die einzige Stelle, an der eine falsch zugeordnete Antwort auffaellt — geprueft war sie nur am laufenden Client. Am 28.08. kam ein zweiter Datenpunkt dazu: Das Kontext-Panel hing einen Tag lang registriert, aber ohne Toolbar-Eintrag, also unerreichbar und ohne Fehlermeldung.
+
+**Was die Diagnose uebersah.** Sie sagte, das Server-Abbild koenne `client/` weder importieren noch sehen — richtig, und deshalb galt der Zeuge als versperrt. **Auf dem Host ist GTK vorhanden** (3.56.3), und `ui.stream_handler` laedt dort ohne Display und ohne laufenden Client. Der Zeuge war die ganze Zeit baubar, nur nicht im Behaelter.
+
+**Gebaut.** `client/tests/` mit 17 Zeugen, Aufruf aus `novaberg/client`:
+
+    python3 -m unittest discover -s tests -t .
+
+`test_stream_assignment.py` deckt alle drei Ausgaenge der Zuordnungspruefung, was jeder mit der Menge offener Fragen macht, und haelt den teuren Fall getrennt: Eine Antwort **ohne** Kennung bei offener Frage ist *fremd*, nicht *passend*. `test_toolbar_panels.py` haelt die Panel-Registry gegen `_TOOLBAR_PANELS` in der Richtung *registriert → Button* — die Gegenrichtung ist ein gewollter Platzhalter — und nennt den Gesprächskontext-Tab namentlich, damit der Fall vom 28.08. nicht zweimal passiert.
+
+**Geprueft.** 17 Zeugen gruen, Gegenprobe **3 / 2 / 2 rot** (leere Kennung gilt als passend; fremde Antwort raeumt die Frage weg; der Kontext-Tab aus der Toolbar genommen). Zweite Kontrolle ueber den Bestand statt ueber die Zeugen: **10 Panel-Dateien im Baum, 10 registriert**, und der Zeuge benutzt dieselbe Fabrik wie das Hauptfenster (`create_default_registry`) — keine Attrappe.
+
+**Was offen bleibt.** Der Lauf haengt an einem Menschen, der ihn aufruft: Er ist nicht Teil der Server-Suite und faellt still aus, wenn niemand daran denkt. Vom Client sind zwei von 24 Dateien bezeugt; das Rendern des Kontext-Tabs — Traeger, Sprecher, Zweifel, Quellen — hat weiterhin keinen Zeugen.
 
 ---
 
