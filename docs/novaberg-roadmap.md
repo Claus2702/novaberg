@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 29. August 2026 — juengster Eintrag **22:58 UTC** (gemessen via `date -u`). Davor 22:44 UTC.
+**Stand:** 29. August 2026 — juengster Eintrag **23:20 UTC** (gemessen via `date -u`). Davor 22:58 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,10 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 29.08.2026, 23:20 UTC — Die eine Suche auf Deutsch: eine Fuehrung, deren Wirkung das Labor nicht zeigt
+
+**Der Fund** (22:39 UTC): *»nearest known magnetar distance«* gegen die deutsche Wikipedia-Volltextsuche, nachgeladen eine Liste von Doppelsternen. **Der Bau:** Regelzeile *»Der Suchbegriff ist deutsch …«* (F-PROMPT-1), der `[WEBSUCHE]`-Pflichtblock verlangt *»auf Deutsch«*, die Werkzeugbeschreibung ebenso; 3 Zeugen (`tests/test_thinker_search_language.py`: geladener Prompt, System-Prompt, der Block im Eingang von `think()`), Suite 2618 → **2621 gruen**, Wand sauber. **Das Labor** (`labor/2026-08-29_thinker_suchsprache_zwei_arme.py`, acht Wissenschaftsfragen, erster Zug, Knotentemperatur): **Arm A ohne die Zeilen 0 von 8 englisch, Arm B 0 von 7** — Abbruch des Laufs am Waermewaechter bei Tctl 89 °C nach 15 von 16 Zuegen; kein messbarer Unterschied. **Die Erklaerung liegt in der Kettenmessung:** Von den 7 englischen Begriffen waren 5 Zweit- oder Drittsuchen nach leeren Treffern und nur 2 von 17 Erstsuchen — das Muster ist die Umformulierung ins Englische, und die schneidet das Budget seit 22:44 UTC ab. Die Zeilen bleiben als Fuehrung fuer die verbleibenden Erstsuchen, ihre Wirkung ist **unbelegt** und steht so in Doku und Fundliste. Betriebsturn 23:15 UTC (Dichte im Neutronenstern): eine deutsche Suche, Maschine 1 ×. Nebenbefund am Labor: 15 Thinker-Zuege mit `think=True` hintereinander treiben Tctl von 78 auf 89 °C — der Waechter (30-s-Takt, Grenze 82) griff erst bei 89; `pkill` gibt es im Behaelter nicht, das Beenden des `docker exec` genuegte.
 
 ## 29.08.2026, 22:58 UTC — Der Sprecher im [GEDAECHTNIS]-Block: wer eine Erinnerung gesagt hat
 
