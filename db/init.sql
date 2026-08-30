@@ -167,6 +167,71 @@ CREATE TABLE IF NOT EXISTS lzg_kanten (
 );
 
 -- ───────────────────────────────────────────────
+-- lzg_knoten_haltung — die Ladung eines Knotens
+-- ───────────────────────────────────────────────
+-- Die Meinungsschicht als **additive Annotation** auf dem assoziativen
+-- Gedaechtnis (`novaberg-thinking-opinion_k.md` §5), kein zweiter Speicher.
+--
+-- **Warum eine eigene Tabelle und keine Spalten am Knoten:** Ein Knoten traegt
+-- MEHRERE Ladungen, je Eigenschaft eine — »Kino: teuer (−0.5) UND mit dir
+-- (+0.8)«. Genau dieser Widerspruch unterscheidet eine Haltung von einem
+-- Schalter; Spalten koennten ihn nicht tragen.
+--
+-- **Warum `haltung` und nicht `valenz`:** Der Name ist im Bestand an die
+-- binaere GV-Gespraechsachse vergeben (`GV_VALENZ_SEKTOR`), die den TURN
+-- faerbt und einen Turn lebt. Diese hier faerbt die SACHE und bleibt.
+--
+-- **Verfall (`F-VERFALL-1`):** Eine Haltung ist Gedaechtnis, kein Faktum — sie
+-- traegt dieselbe Dynamik wie der Knoten (roh, verfallen, verstaerkt_am) und
+-- ruht unter der Schwelle, statt geloescht zu werden. Eine Haltung, die
+-- niemand mehr bestaetigt, soll nicht so laut sein wie eine frische.
+-- **Zum Loeschverhalten:** Es tritt im Betrieb nicht ein. Der Graph loescht
+-- keine Knoten, er laesst sie ruhen (`aktiv = FALSE`, F-VERFALL-1) — CASCADE
+-- greift nur, wenn ein Knoten wirklich verschwindet (Reset, Bereinigung),
+-- und dann ist eine Annotation ohne ihren Gegenstand nichts wert. Was
+-- stattdessen taeglich gilt, steht im Leseweg: Er verbindet mit dem Knoten
+-- und prueft DESSEN `aktiv` mit, damit eine Ladung nicht weiterspricht,
+-- waehrend ihre Sache schon ruht (`node_stance_repository.stances_load`).
+CREATE TABLE IF NOT EXISTS lzg_knoten_haltung (
+    id                  SERIAL           PRIMARY KEY,
+    knoten_id           INTEGER          NOT NULL REFERENCES lzg_knoten(id) ON DELETE CASCADE,
+
+    -- Der Gegenstand der Ladung. Leer = die Sache als ganze (die grobe
+    -- Themen-Stufe aus §9); gefuellt = eine Eigenschaft (»teuer«).
+    eigenschaft         TEXT             NOT NULL DEFAULT '',
+
+    -- Die Ladung selbst: Vorzeichen UND Staerke, -1.0 bis +1.0.
+    ladung              DOUBLE PRECISION NOT NULL,
+    -- Die Emotion dahinter, aus dem Plutchik-Kanon; leer = keine benannte.
+    emotion             TEXT             NOT NULL DEFAULT '',
+
+    -- Die Praemisse als Kante, nicht als Freitext: der Werte-Knoten, auf dem
+    -- das Urteil steht. Faellt er weg, ist die Ladung zu revidieren. Bis es
+    -- Werte-Knoten gibt, bleibt das Feld leer (Konzept §5).
+    praemisse_knoten_id INTEGER          REFERENCES lzg_knoten(id) ON DELETE SET NULL,
+
+    -- Woher die Ladung stammt — ohne Herkunft ist sie nicht nachrechenbar.
+    quelle              TEXT             NOT NULL DEFAULT '',
+
+    -- Dynamik wie am Knoten (F-VERFALL-1)
+    staerke_roh         DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+    staerke_decay       DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+    haeufigkeit         INTEGER          NOT NULL DEFAULT 1,
+    aktiv               BOOLEAN          NOT NULL DEFAULT TRUE,
+    erstellt_am         TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    verstaerkt_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    decay_am            TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+
+    -- Eine Sache traegt je Eigenschaft genau eine Ladung; eine zweite
+    -- verstaerkt die vorhandene, statt eine Dublette anzulegen.
+    CONSTRAINT uq_lzg_haltung_gegenstand UNIQUE (knoten_id, eigenschaft),
+    CONSTRAINT chk_lzg_haltung_spanne    CHECK (ladung >= -1.0 AND ladung <= 1.0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lzg_haltung_knoten
+    ON lzg_knoten_haltung (knoten_id, aktiv);
+
+-- ───────────────────────────────────────────────
 -- charakter_hash
 -- ───────────────────────────────────────────────
 -- character_id Default '' (NICHT 'nova'): entspricht dem Live-Stand.
