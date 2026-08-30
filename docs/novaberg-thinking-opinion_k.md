@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Wie Nova zu einer eigenen Haltung kommt
-**Stand:** 23. Mai 2026
+**Stand:** 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
 **Pfad:** novaberg/docs/novaberg-thinking-opinion_k.md
 **Status:** Konzept. Skelett steht, Kalibrierung offen. Bewusst offene Punkte sind durchgehend mit ⬜ markiert und in §10 gesammelt.
 **Verwandt:** novaberg-thinking-drive_k.md · novaberg-thinking-frames_k.md · novaberg-memory-synapsen_k.md · novaberg-node-gv_k.md · novaberg-node-tribunal.md · novaberg-pixie.md · novaberg-ei.md
@@ -96,6 +96,8 @@ Drei Eigenschaften halten:
 
 **Schichtung.** Unten die valenzierten Knoten (Pixie-gebildet). Darüber die **Werte** als verdichtete Valenz-Cluster. Oben die **Ziele/Drive** als weitere Destillation. Der Live-Pfad liest über alle drei Schichten.
 
+⬜ **Naming-Wache, die schwerere:** **Das Wort „Valenz" ist im Stack bereits vergeben** — an eine der sechs Gesprächsachsen des GV (`GV_VALENZ_SEKTOR` in `config.py`, dazu `valenz_quelle` in der Landschaftszeile). Sie ist **binär**, aus dem Plutchik-Sektor der Turn-Emotion abgeleitet, lebt **einen Turn** und misst, wie der *Moment* gefärbt ist — nicht, wie Nova zur *Sache* steht. `[gemessen]` — 30.08.2026: **618 Landschaftszeilen seit dem 08.08., alle mit Quelle, 573 positiv gegen 45 negativ**; die Achse steht in 93 % der Turns auf 1 und trennt damit fast nichts. Wer die Meinungsschicht wieder `valenz` nennt, legt zwei Gegenstände auf ein Wort. **Vorschlag zur Trennung: `turn_valenz` für die Achse, `haltung` für die Ladung am Knoten** — im Code und in der Doku durchgehalten.
+
 ⬜ **Naming-Wache:** „Cluster" ist im Stack bereits belegt — der GV hat 13 Strategie-Cluster (Dreischicht). Der valenzierte Speicher-Cluster ist etwas anderes. Im Code/Doku konsequent trennen (z.B. *Valenz-Region* vs. *Strategie-Cluster*), sonst droht die Impuls/Leitgedanke-Kollision aus Chat 73.
 
 ---
@@ -159,8 +161,8 @@ Der Charakter tritt im System zweimal auf — und das ist die Eleganz:
 
 Dieser Bau steht auf zwei Fundamenten. Das ist keine Verschiebung, es ist die Schichtung:
 
-1. **Synapsen P4** — das assoziative Substrat (Knoten/Kanten, Spreading-Aktivierung, Schalen). Die Valenz ist eine *Annotation darauf*. Ohne P4 kein Graph, den man valenzieren könnte.
-2. **Pixie aktiv** — heute `PIXIE_AKTIV = False`. Der Bildungspfad *ist* ein Pixie-Prozess. Ohne aktives Pixie keine Bildung.
+1. **Synapsen P4** — das assoziative Substrat (Knoten/Kanten, Spreading-Aktivierung, Schalen). Die Ladung ist eine *Annotation darauf*. Ohne P4 kein Graph, den man annotieren könnte. `[gemessen]` — 30.08.2026: Das Substrat steht und heißt **`lzg_knoten` / `lzg_kanten`** (nicht `synapse_*`): **3.260 Knoten, 493.730 Kanten**, der Pass läuft (`memory/lzg_knoten.py::spreading_lesen`, `anker_retrieval`, `SCHALEN_FAKTOR`). **Eine Ladungsspalte gibt es nicht** — die Annotationsschicht fehlt vollständig.
+2. ~~**Pixie aktiv** — heute `PIXIE_AKTIV = False`.~~ → **Am 30.08.2026 gemessen: `PIXIE_AKTIV` ist `True`, Pixie läuft** (rund 90 Hintergrundaufträge am Tag). Der Bildungspfad *ist* ein Pixie-Prozess; dieses Fundament steht.
 
 **Phasierung — lauffähiger Zwischenstand vor den Frames:**
 
