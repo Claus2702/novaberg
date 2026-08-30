@@ -24,6 +24,9 @@ logger = logging.getLogger("ki_server.sachlage.research")
 # (dort TRAEGER_NACHSCHLAGEN; hier ohne Import, weil `sachlage.py` dieses
 # Modul importiert und ein Kreis entstuende).
 HOLDER_LOOKUP: str = "nachschlagen"
+# Das Gewicht, das eine Luecke vorzieht — derselbe Wert wie in `sachlage.py`
+# (dort KRITISCH), aus demselben Grund ohne Import.
+CRITICAL: str = "kritisch"
 # Wie viel eines Treffers das Artefakt traegt.
 _CONTENT_MAX_CHARS: int = 400
 # Ein Treffer muss die Sache nennen: mindestens ein Wort des Objektnamens ab
@@ -35,17 +38,29 @@ _MIN_TERM_CHARS: int = 5
 
 
 def lookup_target(artifact: dict) -> tuple[dict, str] | None:
-    """Das erste akute Objekt mit einer offenen `nachschlagen`-Eigenschaft.
+    """Die nachzuschlagende Eigenschaft — die kritische zuerst.
 
-    Vorbedingung: `artifact` ist validiert (`traeger` normalisiert).
+    **Scheibe 10 (30.08.2026):** Es gibt eine Suche je Turn, und bis dahin
+    entschied die Reihenfolge in `offen`, welche Luecke sie bekommt. Dieselbe
+    Ueberlegung wie beim Rueckfrage-Gegenstand: Eine Luecke, ohne die die
+    Antwort raten muesste, geht einer vor, die sie nur genauer macht. Zwei
+    Durchgaenge, der erste sucht die kritische.
+
+    Vorbedingung: `artifact` ist validiert (`traeger` und `kritikalitaet`
+        normalisiert).
     Nachbedingung: (Objekt, Eigenschaft) oder None.
     """
-    for objekt in artifact.get("objekte") or []:
-        if not isinstance(objekt, dict) or not objekt.get("akut"):
-            continue
-        traeger: dict = objekt.get("traeger") or {}
-        for eigenschaft in objekt.get("offen") or []:
-            if traeger.get(str(eigenschaft)) == HOLDER_LOOKUP:
+    for nur_kritische in (True, False):
+        for objekt in artifact.get("objekte") or []:
+            if not isinstance(objekt, dict) or not objekt.get("akut"):
+                continue
+            traeger: dict = objekt.get("traeger") or {}
+            gewichte: dict = objekt.get("kritikalitaet") or {}
+            for eigenschaft in objekt.get("offen") or []:
+                if traeger.get(str(eigenschaft)) != HOLDER_LOOKUP:
+                    continue
+                if nur_kritische and gewichte.get(str(eigenschaft)) != CRITICAL:
+                    continue
                 return objekt, str(eigenschaft)
     return None
 

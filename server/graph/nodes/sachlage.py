@@ -59,6 +59,15 @@ die anderen sind Antwortstoff fuer den Verfasser (`answer_targets`), und
 fuer die erste `nachschlagen`-Eigenschaft ohne Deckung laeuft eine Websuche
 (`graph/nodes/sachlage_research.py`). Ohne Traeger gilt `nutzer`.
 
+**Das Gewicht einer Luecke** (Konzept §4, Scheibe 10, 30.08.2026): Jede
+offene Eigenschaft traegt neben ihrem Traeger, ob eine Antwort ohne sie
+raten muesste — `kritisch` oder `unkritisch`. Der Traeger sagt *wer kann es
+wissen*, die Kritikalitaet *was kostet es, wenn niemand es sagt*. Nur eine
+kritische Luecke zieht den Rueckfrage-Gegenstand vor (`question_target`
+sucht sie in einem ersten Durchgang, bevor die Reihenfolge in `offen`
+entscheidet), und nur sie bekommt eine eigene Zeile im Block. Ohne Wert
+gilt `unkritisch` — das Verhalten vor der Scheibe.
+
 **Der Sprecher** (Konzept §4, Scheibe 9, 29.08.2026): Jede gedeckte
 Eigenschaft eines akuten Objekts traegt, wer sie gesagt hat — `nutzer` oder
 `nova` —, denn Deckung kommt von beiden Seiten, und der Gedanke des Nutzers
@@ -134,6 +143,13 @@ TRAEGER_NUTZER:       str = "nutzer"        # nur der Nutzer: Vorhaben, Leute, W
 TRAEGER_WELT:         str = "welt"          # allgemeines Wissen, aus dem Kopf
 TRAEGER_NACHSCHLAGEN: str = "nachschlagen"  # Weltwissen, aber speziell/aktuell/zahlengenau
 TRAEGER_KANON: frozenset[str] = frozenset({TRAEGER_NUTZER, TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
+
+# Scheibe 10 (30.08.2026): das Gewicht einer Luecke. Der Traeger sagt, WER
+# sie schliessen kann; die Kritikalitaet sagt, OB die Antwort ohne sie raten
+# muesste. Nur eine kritische Luecke zieht die Rueckfrage vor.
+KRITISCH:   str = "kritisch"
+UNKRITISCH: str = "unkritisch"
+KRITIKALITAET_KANON: frozenset[str] = frozenset({KRITISCH, UNKRITISCH})
 ANTWORT_TRAEGER: frozenset[str] = frozenset({TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
 
 # Scheibe 9: wer eine gedeckte Eigenschaft gesagt hat. Der Gedanke des
@@ -213,6 +229,8 @@ Erstelle die aktualisierte Sachlage als JSON mit genau diesen Feldern:
                  genannt hat"],
       "traeger": {{"erste Eigenschaft aus offen": "nutzer|welt|nachschlagen",
                    "zweite Eigenschaft aus offen": "nutzer|welt|nachschlagen"}},
+      "kritikalitaet": {{"erste Eigenschaft aus offen": "kritisch|unkritisch",
+                         "zweite Eigenschaft aus offen": "kritisch|unkritisch"}},
       "sprecher": {{"erste Eigenschaft aus gedeckt": "nutzer|nova",
                     "zweite Eigenschaft aus gedeckt": "nutzer|nova"}}}}
   ]}}
@@ -231,6 +249,14 @@ Regeln:
   — Weltwissen, aber speziell, aktuell oder zahlengenau. JEDE Eigenschaft
   aus "offen" bekommt genau einen Traeger — auch eine fortgefuehrte, deren
   Eintrag in der bisherigen Sachlage noch keinen hatte.
+- "kritikalitaet" sagt je offener Eigenschaft, ob eine Antwort ohne sie
+  raten muesste: "kritisch" — ohne diese Angabe traegt jede Antwort einen
+  geratenen Kern, die Sache selbst bleibt unbestimmt; "unkritisch" — die
+  Antwort steht auch ohne sie, die Angabe macht sie nur genauer. Die Probe
+  ist die Antwort, nicht die Neugier: Laesst sich der Satz sinnvoll
+  formulieren, ist die Luecke unkritisch. Meist ist hoechstens eine
+  Eigenschaft kritisch; JEDE Eigenschaft aus "offen" bekommt genau einen
+  Wert — auch eine fortgefuehrte.
 - Fuehre die vorige Sachlage FORT: Was der neue Turn deckt, wandert von
   "offen" nach "gedeckt". Was nicht mehr Gegenstand ist, faellt weg.
 - Deckung kommt von beiden Seiten: Auch was Nova in den juengsten Beitraegen
@@ -369,6 +395,7 @@ def _validate_artifact(parsed: object) -> dict | None:
             )
             objekt["offen"] = []
         objekt["traeger"] = _normalize_holders(objekt)
+        objekt["kritikalitaet"] = _normalize_criticality(objekt)
         objekt["sprecher"] = _normalize_speakers(objekt)
     return parsed
 
@@ -410,6 +437,82 @@ def _normalize_holders(objekt: dict) -> dict[str, str]:
             continue
         traeger[offen[schluessel]] = wert_norm
     return traeger
+
+
+def _normalize_criticality(objekt: dict) -> dict[str, str]:
+    """Scheibe 10: das Gewicht der offenen Eigenschaften, gegen den Kanon gehalten.
+
+    Gebaut wie `_normalize_holders`, und aus demselben Grund: Ein Wert, den
+    das Modell vergibt, ist erst ein Wert, wenn er im Kanon steht — sonst ist
+    ein Tippfehler von einer Aussage nicht zu unterscheiden.
+
+    Vorbedingung: `objekt` ist ein Objekt des Parses.
+    Nachbedingung: Ein dict Eigenschaft → Wert aus KRITIKALITAET_KANON, nur
+        fuer Eigenschaften, die in `offen` stehen. Ein fehlender Eintrag
+        bleibt fehlend — der Leser behandelt ihn wie `unkritisch`, also wie
+        das Verhalten vor der Scheibe. Unbekannte Werte fallen laut.
+    """
+    roh: object = objekt.get("kritikalitaet")
+    if roh is None:
+        return {}
+    if not isinstance(roh, dict):
+        logger.warning(
+            f"Sachlage: 'kritikalitaet' an '{objekt.get('name')}' ist "
+            f"{type(roh).__name__} statt dict — verworfen"
+        )
+        return {}
+    offen: dict[str, str] = {_holder_key(o): str(o) for o in objekt.get("offen") or []}
+    gewichte: dict[str, str] = {}
+    for eigenschaft, wert in roh.items():
+        wert_norm: str = str(wert).strip().lower()
+        schluessel: str = _holder_key(eigenschaft)
+        if wert_norm not in KRITIKALITAET_KANON:
+            logger.warning(
+                f"Sachlage: Kritikalitaet {wert!r} an '{eigenschaft}' "
+                f"({objekt.get('name')}) steht nicht im Kanon "
+                f"{KRITIKALITAET_KANON} — verworfen"
+            )
+            continue
+        if schluessel not in offen:
+            logger.info(
+                f"Sachlage: Kritikalitaet an '{eigenschaft}' ({objekt.get('name')}) — "
+                f"die Eigenschaft steht nicht in offen, verworfen"
+            )
+            continue
+        gewichte[offen[schluessel]] = wert_norm
+    return gewichte
+
+
+def carry_criticality(artifact: dict, previous: dict | None) -> dict:
+    """Scheibe 10: fehlende Gewichte aus der vorigen Blase erben.
+
+    Dieselbe Lehre wie `carry_holders`: Der Fortfuehrungsfall ist der, in dem
+    das Modell ein neues Feld weglaesst, weil die vorige Blase es nicht trug.
+
+    Vorbedingung: `artifact` validiert; `previous` ein Artefakt oder None.
+    Nachbedingung: `kritikalitaet` jedes akuten Objekts umfasst die geerbten
+        Eintraege; vorhandene bleiben unberuehrt.
+    """
+    if not previous:
+        return artifact
+    vorige: dict[str, dict] = {
+        _holder_key(o.get("name", "")): {
+            _holder_key(k): v for k, v in (o.get("kritikalitaet") or {}).items()
+        }
+        for o in previous.get("objekte") or [] if isinstance(o, dict)
+    }
+    for objekt in artifact.get("objekte") or []:
+        if not objekt.get("akut"):
+            continue
+        geerbt: dict = vorige.get(_holder_key(objekt.get("name", "")), {})
+        if not geerbt:
+            continue
+        gewichte: dict = objekt.setdefault("kritikalitaet", {})
+        for eigenschaft in objekt.get("offen") or []:
+            schluessel: str = _holder_key(eigenschaft)
+            if str(eigenschaft) not in gewichte and schluessel in geerbt:
+                gewichte[str(eigenschaft)] = geerbt[schluessel]
+    return artifact
 
 
 def carry_holders(artifact: dict, previous: dict | None) -> dict:
@@ -654,6 +757,7 @@ def _derive(
     )
     artefakt = carry_sources(apply_memory_coverage(artefakt, angebot, claims, vorige), vorige)
     artefakt = carry_holders(artefakt, vorige)
+    artefakt = carry_criticality(artefakt, vorige)
     artefakt = carry_speakers(artefakt, vorige)
     # Scheibe 7: Behauptet der Nutzer ueber die akute Sache etwas, das die
     # Welt nicht hergibt? Ein eigener Call, nur bei akutem Objekt — die Lage
@@ -886,6 +990,33 @@ def _reader_names(leser: str, aufrufer: str) -> dict[str, str]:
     return _NAMEN[leser]
 
 
+def critical_gap_lines(objekt: dict, namen: dict[str, str]) -> list[str]:
+    """Scheibe 10: die Zeile des Blocks, die die tragende Luecke benennt.
+
+    Eine Luecke kommt hier nur durch, wenn beides gilt: Sie ist `kritisch`
+    (ohne sie muesste die Antwort raten) **und** ihr Traeger ist der Nutzer.
+    Was die Welt weiss, ist Antwortstoff und keine Frage — eine kritische
+    Weltwissens-Luecke macht daraus keine Rueckfrage, sondern hoechstens eine
+    Suche (Scheibe 8).
+
+    Rein. Vorbedingung: `objekt` ist ein Objekt des Artefakts, `namen` die
+        Leser-Namen des Blocks.
+    Nachbedingung: Hoechstens eine Zeile; leer, wenn keine tragende Luecke
+        beim Nutzer liegt.
+    """
+    kritische: list[str] = [
+        str(e) for e in (objekt.get("offen") or [])
+        if (objekt.get("kritikalitaet") or {}).get(str(e), UNKRITISCH) == KRITISCH
+        and (objekt.get("traeger") or {}).get(str(e), TRAEGER_NUTZER) == TRAEGER_NUTZER
+    ][:2]
+    if not kritische:
+        return []
+    return [
+        f"Ohne {', '.join(kritische)} muesste {namen['nova']} bei "
+        f"{objekt.get('name')} raten — das ist zuerst zu klaeren"
+    ]
+
+
 def sachlage_block(sachlage: dict, leser: str = LESER_GV) -> str:
     """Der [SACHLAGE]-Block fuer Verfasser und Gespraechsvektor.
 
@@ -933,6 +1064,9 @@ def sachlage_block(sachlage: dict, leser: str = LESER_GV) -> str:
                 f"Zweifel ({befund.get('stufe', '')}): {befund.get('behauptung', '')} — "
                 f"{befund.get('grund', '')}"
             )
+        # Scheibe 10: Die Luecke, ohne die jede Antwort raten muesste. Sie steht
+        # VOR dem Antwortstoff, weil sie die Antwort traegt und nicht schmueckt.
+        zeilen.extend(critical_gap_lines(objekt, n))
         # Scheibe 8: Was die Welt weiss, beantwortet Nova — kein Fragestoff.
         traeger: dict = objekt.get("traeger") or {}
         antworten: list[str] = [
@@ -1026,8 +1160,20 @@ def question_target_origin(
         # Scheibe 8: Nur eine Eigenschaft, die der Nutzer kennt, ist eine
         # Frage an ihn. Was die Welt weiss, ist Antwortstoff (`answer_targets`).
         traeger: dict = objekt.get("traeger") or {}
-        for eigenschaft in objekt.get("offen") or []:
-            if traeger.get(str(eigenschaft), TRAEGER_NUTZER) == TRAEGER_NUTZER:
+        gewichte: dict = objekt.get("kritikalitaet") or {}
+        # Scheibe 10: Zwei Durchgaenge, und der erste sucht die kritische
+        # Luecke. `offen` ist nach Wichtigkeit geordnet, aber Wichtigkeit ist
+        # nicht dasselbe wie *ohne sie muss die Antwort raten* — genau diese
+        # Unterscheidung fehlte, solange die erste Nutzer-Eigenschaft gewann.
+        for nur_kritische in (True, False):
+            for eigenschaft in objekt.get("offen") or []:
+                if traeger.get(str(eigenschaft), TRAEGER_NUTZER) != TRAEGER_NUTZER:
+                    continue
+                ist_kritisch: bool = (
+                    gewichte.get(str(eigenschaft), UNKRITISCH) == KRITISCH
+                )
+                if nur_kritische and not ist_kritisch:
+                    continue
                 return (
                     f"{objekt.get('name', '')} — was dazu noch offen ist: "
                     f"{eigenschaft}",
