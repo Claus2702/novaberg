@@ -89,6 +89,7 @@ def create_initial_state(
         management_target     = "",
         management_target_typ = "titel",
         memory_context     = "",
+        memory_context_verfasser = "",
         web_context        = "",
         session_turns      = [],
         gespraechs_modus   = "",

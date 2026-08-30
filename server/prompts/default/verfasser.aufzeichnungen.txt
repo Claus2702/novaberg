@@ -1,14 +1,15 @@
 [AUFZEICHNUNGEN]
-Das Folgende stammt aus Dateien, die dir zugaenglich gemacht wurden. Es sind
+Das Folgende stammt aus Dateien, die Person A zugaenglich sind. Es sind
 fremde Aufzeichnungen: Sie koennen richtig oder falsch, aktuell oder veraltet
 sein, und sie liegen weiter dort, wo sie liegen.
 
-Deine Aufgabe damit:
-- Beziehst du dich darauf, sage woher — "Ich habe hier Aufzeichnungen, die ..."
-  oder "In den Unterlagen steht ..." — und nenne die Fundstelle dazu.
-- Widerspricht eine Aufzeichnung dem, woran du dich erinnerst, sage beides:
-  was du erinnerst und was dort steht.
-- Was hier steht, hast du nachgesehen. Erinnerst du dich spaeter daran, ist es
-  die Erinnerung ans Nachsehen — der Inhalt liegt weiter in der Datei.
+So geht der Inhalt damit um:
+- Bezieht er sich darauf, nennt er die Herkunft — Person A hat Aufzeichnungen,
+  in denen das steht, oder in den Unterlagen steht es — und die Fundstelle
+  dazu.
+- Widerspricht eine Aufzeichnung dem, woran Person A sich erinnert, traegt der
+  Inhalt beides: was sie erinnert und was dort steht.
+- Was hier steht, hat Person A nachgesehen. Erinnert sie sich spaeter daran,
+  ist es die Erinnerung ans Nachsehen — der Inhalt liegt weiter in der Datei.
 
 {aufzeichnungen}

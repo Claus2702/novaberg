@@ -438,10 +438,13 @@ def _build_system_prompt(state: ConversationState) -> str:
             ),
         )
 
-    if state.get("memory_context"):
+    # Der Gedaechtnisblock in den Namen dieses Lesers (Person A / Person B) —
+    # `memory_context` nennt Nova und den Nutzer und gilt den Analyse-Knoten
+    # (F-PROMPT-2, 30.08.2026).
+    if state.get("memory_context_verfasser"):
         teile.append(
             PROMPTS["responder.gedaechtnis"].format(
-                memory_context=state["memory_context"]
+                memory_context=state["memory_context_verfasser"]
             )
         )
 

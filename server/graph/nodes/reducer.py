@@ -15,6 +15,7 @@ import re
 
 from graph.context_entry import ContextEntry
 from graph.format import format_memory_entries
+from graph.format.memory_context import LESER_ANALYSE, LESER_VERFASSER
 from graph.state import zustand_verifizieren
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,9 @@ logger = logging.getLogger(__name__)
 # Die Felder, die JEDER Rueckkehrpfad dieses Knotens setzt. Ein Pfad, der eines
 # auslaesst, liesse den vorigen Stand stehen — und der laese sich wie ein
 # frisches Ergebnis (22_STILLE_FEHLER §5).
-SCHREIBT = frozenset({"memory_entries_raw", "memory_entries", "memory_context"})
+SCHREIBT = frozenset({
+    "memory_entries_raw", "memory_entries", "memory_context", "memory_context_verfasser",
+})
 
 
 def reduce_memory(state: dict) -> dict:
@@ -47,7 +50,13 @@ def reduce_memory(state: dict) -> dict:
         State-Update mit:
         - memory_entries_raw: list[ContextEntry] — Backup vor Dedup
         - memory_entries: list[ContextEntry] — dedupliziert
-        - memory_context: str — formatierter String fuer den Responder
+        - memory_context: str — formatierter String in dritter Person mit
+          Namen (Nova, der Nutzer) fuer die Analyse-Knoten Thinker, Tribunal
+          und Corrector
+        - memory_context_verfasser: str — derselbe Block in den Namen des
+          Verfassers (Person A, Person B; seit 30.08.2026) — das Modell ist
+          der Schauspieler, der Charakter der Auftrag, und kein Block spricht
+          es als den Charakter an
     """
     entries: list[ContextEntry] = state.get("memory_entries", [])
     eingangsanzahl: int = len(entries)
@@ -74,7 +83,10 @@ def reduce_memory(state: dict) -> dict:
             return zustand_verifizieren({
                 "memory_entries_raw": raw_backup,
                 "memory_entries": [],
-                "memory_context": format_memory_entries([], lzg_resonanz=lzg_resonanz),
+                "memory_context": format_memory_entries(
+                    [], lzg_resonanz=lzg_resonanz, leser=LESER_ANALYSE),
+                "memory_context_verfasser": format_memory_entries(
+                    [], lzg_resonanz=lzg_resonanz, leser=LESER_VERFASSER),
             }, "reducer", SCHREIBT)
         logger.info("Reducer: Keine Eintraege — leerer memory_context")
         # ── Ausgabe-Verifikation ────────────────────
@@ -82,6 +94,7 @@ def reduce_memory(state: dict) -> dict:
             "memory_entries_raw": raw_backup,
             "memory_entries": [],
             "memory_context": "",
+            "memory_context_verfasser": "",
         }, "reducer", SCHREIBT)
 
     # Stufe 1: Exakt-Dedup
@@ -102,12 +115,16 @@ def reduce_memory(state: dict) -> dict:
         logger.info(f"Reducer: lzg_resonanz mit {resonanz_anzahl} Erinnerungen an Formatter")
     else:
         logger.info("Reducer: keine lzg_resonanz")
-    memory_context: str = format_memory_entries(nach_stufe2, lzg_resonanz=lzg_resonanz)
+    # Zwei Leser, zwei Namenssysteme — derselbe Inhalt (F-PROMPT-2).
+    memory_context: str = format_memory_entries(
+        nach_stufe2, lzg_resonanz=lzg_resonanz, leser=LESER_ANALYSE)
+    memory_context_verfasser: str = format_memory_entries(
+        nach_stufe2, lzg_resonanz=lzg_resonanz, leser=LESER_VERFASSER)
 
     logger.info(
         f"Reducer: Abgeschlossen — {eingangsanzahl} → {len(nach_stufe2)} Eintraege "
         f"({entfernt_stufe1 + entfernt_stufe2} entfernt), Output-Laenge {len(memory_context)} "
-        "Zeichen"
+        f"Zeichen (Verfasser {len(memory_context_verfasser)})"
     )
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -115,6 +132,7 @@ def reduce_memory(state: dict) -> dict:
         "memory_entries_raw": raw_backup,
         "memory_entries": nach_stufe2,
         "memory_context": memory_context,
+        "memory_context_verfasser": memory_context_verfasser,
     }, "reducer", SCHREIBT)
 
 

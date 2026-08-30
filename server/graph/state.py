@@ -94,6 +94,10 @@ class ConversationState(TypedDict):
 
     # ── Enricher ─────────────────────────────
     memory_context:    str
+    # Derselbe Block in den Namen des Verfassers (Person A / Person B), seit
+    # 30.08.2026 — `memory_context` nennt Nova und den Nutzer und gilt den
+    # Analyse-Knoten. Zwei Kanaele statt eines Kompromisses (F-PROMPT-2).
+    memory_context_verfasser: str
     memory_entries: list[ContextEntry]  # Strukturierte Eintraege (vor Reducer-Dedup, vor Formatter)
     lzg_resonanz: (
         dict | None

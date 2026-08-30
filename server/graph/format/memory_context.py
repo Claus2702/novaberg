@@ -24,15 +24,47 @@ logger = logging.getLogger(__name__)
 _SUMMARY_HEADER: str = "═══ BISHERIGER GESPRÄCHSVERLAUF ═══"
 
 
+# Die Namen des Lesers (30.08.2026). Das Modell ist der Schauspieler, der
+# Charakter der Auftrag — kein Block spricht das Modell als den Charakter an.
+# Die Analyse-Knoten (Thinker, Tribunal, Corrector) lesen in dritter Person
+# mit Namen; der Verfasser kennt nur Person A (den Charakter) und Person B
+# (den Menschen). Bis zum 30.08.2026 trug der Block »Du fuehlst dazu« und
+# »Sie ist dir eingefallen« — das »du« meinte den Charakter, und der
+# Verfasser-Prompt sprach in zwei Namenssystemen.
+LESER_ANALYSE:   str = "analyse"
+LESER_VERFASSER: str = "verfasser"
+_NAMES: dict[str, dict[str, str]] = {
+    LESER_ANALYSE:   {"nova": "Nova",     "nutzer": "Nutzer"},
+    LESER_VERFASSER: {"nova": "Person A", "nutzer": "Person B"},
+}
+
+
+def reader_names(leser: str, aufrufer: str) -> dict[str, str]:
+    """Die Personennamen fuer den Leser eines Blocks — oder ein lauter Fehler.
+
+    Vorbedingung: `leser` ist LESER_ANALYSE oder LESER_VERFASSER.
+    Nachbedingung: das Namens-Dict (`nova`, `nutzer`); ein unbekannter Leser
+        ist ein ValueError, kein Rueckfall — ein Block im falschen
+        Namenssystem saehe richtig aus.
+    """
+    if leser not in _NAMES:
+        meldung: str = f"{aufrufer}: unbekannter Leser {leser!r}"
+        raise ValueError(meldung)
+    return _NAMES[leser]
+
+
 def format_memory_entries(
     entries: list[ContextEntry],
     lzg_resonanz: dict | None = None,
+    leser: str = LESER_ANALYSE,
 ) -> str:
     """Baut den finalen memory_context-String aus strukturierten Entries.
 
     Sortiert die Entries nach Quellen-Reihenfolge (siehe Konzept §9 R5),
     formatiert pro Quelle nach Format-Vertrag (siehe Konzept §6) und
-    fuegt die Bloecke mit Newlines zusammen.
+    fuegt die Bloecke mit Newlines zusammen — in den Namen des Lesers
+    (`leser`: LESER_ANALYSE nennt Nova und den Nutzer, LESER_VERFASSER
+    Person A und Person B; ein anderer Wert ist ein ValueError).
 
     Reihenfolge:
         1. summary  — alle, in Eingangsreihenfolge
@@ -56,7 +88,8 @@ def format_memory_entries(
         Der finale memory_context-String. Leerstring, wenn weder Entries noch
         Resonanz-Erinnerungen vorliegen.
     """
-    logger.info(f"format_memory_entries: {len(entries)} Eintraege erhalten")
+    names: dict[str, str] = reader_names(leser, "format_memory_entries")
+    logger.info(f"format_memory_entries: {len(entries)} Eintraege erhalten (Leser {leser})")
 
     hat_resonanz: bool = bool(lzg_resonanz and lzg_resonanz.get("erinnerungen"))
     if not entries and not hat_resonanz:
@@ -108,7 +141,7 @@ def format_memory_entries(
 
     for entry in memory_group:
         if entry.get("quelle") == "kzg":
-            blocks.append(_format_kzg(entry))
+            blocks.append(_format_kzg(entry, names))
         else:
             blocks.append(_format_lzg(entry))
 
@@ -121,7 +154,7 @@ def format_memory_entries(
     # LZG-Resonanz (§8.4.4): assoziative Spreading-Erinnerungen ganz am Ende,
     # direkt vor dem, was der Responder zuletzt liest. Zusaetzlich, ersetzt nichts.
     if lzg_resonanz and lzg_resonanz.get("erinnerungen"):
-        resonanz_block: str = _format_lzg_resonanz(lzg_resonanz)
+        resonanz_block: str = _format_lzg_resonanz(lzg_resonanz, names)
         if resonanz_block:
             blocks.append(resonanz_block)
 
@@ -154,25 +187,29 @@ def _format_charakter(entry: ContextEntry) -> str:
 # Bestand desselben Tages: 3029 `assistant` / 219 `user` in `lzg_knoten`,
 # im KZG 276 / 24 von 300. Die Worte sind die des Gespraechsvektors; die
 # Umstellung des ganzen Blocks auf die Namen seines Lesers steht aus.
-_SPEAKER_WORDS: dict[str, str] = {"user": "Nutzer", "assistant": "Nova"}
+_SPEAKER_KEYS: dict[str, str] = {"user": "nutzer", "assistant": "nova"}
 
 
-def speaker_label(beobachter: object) -> str:
+def speaker_label(beobachter: object, names: dict[str, str] | None = None) -> str:
     """Der Sprecher eines Eintrags in Worten — oder 'unbekannt', und das gemeldet.
 
     Vorbedingung: keine — jeder Wert ist zulaessig, nur zwei sind bekannt.
-    Nachbedingung: 'Nutzer', 'Nova' oder 'unbekannt'; ein Wert ausserhalb
-        des Kanons (auch None und '') steht im Log als Warnung, denn ein
-        Eintrag ohne Sprecher ist ein Defekt seiner Quelle, kein Normalfall.
+    Nachbedingung: das Wort des Lesers fuer den Nutzer oder den Charakter
+        (`names`, ohne Angabe die der Analyse: 'Nutzer', 'Nova') oder
+        'unbekannt'; ein Wert ausserhalb des Kanons (auch None und '') steht
+        im Log als Warnung, denn ein Eintrag ohne Sprecher ist ein Defekt
+        seiner Quelle, kein Normalfall.
 
     Args:
         beobachter: der Schreiber des Eintrags, wie die Quelle ihn liefert.
+        names: die Namen des Lesers (`reader_names`).
 
     Returns:
         Das Wort fuer den Sprecher.
     """
-    if isinstance(beobachter, str) and beobachter in _SPEAKER_WORDS:
-        return _SPEAKER_WORDS[beobachter]
+    woerter: dict[str, str] = names if names is not None else _NAMES[LESER_ANALYSE]
+    if isinstance(beobachter, str) and beobachter in _SPEAKER_KEYS:
+        return woerter[_SPEAKER_KEYS[beobachter]]
     logger.warning(
         f"format_memory_entries: beobachter {beobachter!r} ausserhalb des Kanons "
         f"(user|assistant) — Sprecher unbekannt"
@@ -180,14 +217,15 @@ def speaker_label(beobachter: object) -> str:
     return "unbekannt"
 
 
-def _format_kzg(entry: ContextEntry) -> str:
+def _format_kzg(entry: ContextEntry, names: dict[str, str]) -> str:
     """KZG-Block: [KZG] {themen} (Salienz: {gewicht}, Sprecher: {wer}): {inhalt}.
 
     themen kann als Liste oder String vorliegen. Liste wird mit
     ', ' joined; String unveraendert; sonst Leerstring.
     gewicht wird mit der Default-Float-Repraesentation ausgegeben
     (1.5, nicht 1.50). Der Sprecher kommt aus meta['beobachter']
-    (`speaker_label`) — bis zum 29.08.2026 verwarf diese Funktion ihn.
+    (`speaker_label`, in den Namen des Lesers) — bis zum 29.08.2026 verwarf
+    diese Funktion ihn.
     """
     inhalt:  str = entry.get("inhalt", "")
     gewicht      = entry.get("gewicht", 0.0)
@@ -201,7 +239,7 @@ def _format_kzg(entry: ContextEntry) -> str:
     else:
         themen_str = ""
 
-    sprecher: str = speaker_label(meta.get("beobachter"))
+    sprecher: str = speaker_label(meta.get("beobachter"), names)
     return f"[KZG] {themen_str} (Salienz: {gewicht}, Sprecher: {sprecher}): {inhalt}"
 
 
@@ -309,23 +347,25 @@ def _schritt_verbalisieren(schritt: dict) -> str:
     return " und ".join(teile)
 
 
-def _herkunft_zeile(pfad: list) -> str:
+def _herkunft_zeile(pfad: list, wer: str) -> str:
     """Baut die Herkunfts-Zeile einer Erinnerung aus ihrem Spreading-Pfad.
 
     Leerer Pfad (Schale 0) = Direkttreffer. Sonst werden alle Pfad-Schritte
     mit ' -> ' verkettet, sodass die assoziative Kette nachvollziehbar ist
-    (§8.4.4: alle Pfad-Schritte aufgefuehrt).
+    (§8.4.4: alle Pfad-Schritte aufgefuehrt). `wer` ist der Name des
+    Charakters in den Worten des Lesers — die Erinnerung ist seine, und der
+    Block spricht ueber ihn, nicht zu ihm.
     """
     if not pfad:
-        return "Sie kam dir direkt zur Frage in den Sinn"
+        return f"Sie kam {wer} direkt zur Frage in den Sinn"
     schritte: list[str] = [_schritt_verbalisieren(s) for s in pfad]
-    return "Sie ist dir eingefallen ueber: " + " -> ".join(schritte)
+    return f"Sie ist {wer} eingefallen ueber: " + " -> ".join(schritte)
 
 
-def _format_lzg_resonanz(resonanz: dict) -> str:
+def _format_lzg_resonanz(resonanz: dict, names: dict[str, str]) -> str:
     """Rendert die assoziative Resonanz als Erinnerungs-Block (§8.4.4).
 
-    Setzt KEINEN [GEDAECHTNIS]-Header — der Responder wickelt den gesamten
+    Setzt KEINEN [GEDAECHTNIS]-Header — der Verfasser wickelt den gesamten
     memory_context bereits in das Template responder.gedaechtnis.txt, das
     selbst mit [GEDAECHTNIS] beginnt. Ein innerer Header waere eine Dopplung.
 
@@ -335,20 +375,23 @@ def _format_lzg_resonanz(resonanz: dict) -> str:
 
     Interne Werte (Gewicht, Schale, knoten_id) erscheinen NICHT im Output;
     erstellt_am wird nicht verwendet. Leere Erinnerungs-Liste -> Leerstring
-    (keine Einleitungszeile).
+    (keine Einleitungszeile). Der Block spricht in dritter Person ueber den
+    Charakter, in den Namen des Lesers (`names['nova']`) — bis zum
+    30.08.2026 sagte er »dir« und »Du fuehlst« und meinte den Charakter.
     """
     erinnerungen: list = resonanz.get("erinnerungen") or []
     if not erinnerungen:
         return ""
 
+    wer: str = names["nova"]
     geordnet: list = sorted(erinnerungen, key=lambda e: e.get("sortier_gewicht", 0.0))
     anzahl: int = len(geordnet)
 
     if anzahl == 1:
-        einleitung: str = "Eine Erinnerung ist dir gerade da."
+        einleitung: str = f"Eine Erinnerung ist {wer} gerade da."
     else:
         einleitung = (
-            f"{_ANZAHL_WOERTER.get(anzahl, str(anzahl))} Erinnerungen sind dir gerade da. "
+            f"{_ANZAHL_WOERTER.get(anzahl, str(anzahl))} Erinnerungen sind {wer} gerade da. "
             "Die am wenigsten praesente zuerst, die staerkste am Ende."
         )
 
@@ -359,12 +402,12 @@ def _format_lzg_resonanz(resonanz: dict) -> str:
         zeilen.append(f'"{inhalt}"')
         # Wer es gesagt hat — ein woertliches Zitat ohne Sprecher liest sich als
         # eigene Erinnerung, auch wenn es der Nutzer war (29.08.2026).
-        zeilen.append(f"Sprecher: {speaker_label(erinnerung.get('beobachter'))}")
+        zeilen.append(f"Sprecher: {speaker_label(erinnerung.get('beobachter'), names)}")
 
         emotion: str = (erinnerung.get("emotion") or "").strip()
         if emotion and emotion.lower() != "neutral":
-            zeilen.append(f"Du fuehlst dazu: {emotion.capitalize()}")
+            zeilen.append(f"{wer} fuehlt dazu: {emotion.capitalize()}")
 
-        zeilen.append(_herkunft_zeile(erinnerung.get("pfad") or []))
+        zeilen.append(_herkunft_zeile(erinnerung.get("pfad") or [], wer))
 
     return "\n".join(zeilen)

@@ -93,7 +93,7 @@ class TestDieBloeckeBleibenGetrennt(unittest.TestCase):
     def test_treffer_stehen_nicht_im_gedaechtnisblock(self) -> None:
         """Der Auszug darf nirgends zwischen [GEDAECHTNIS] und dem nächsten Block stehen."""
         prompt: str = verf_mod._build_system_prompt(_state(
-            memory_context="Person B mag Astronomie.",
+            memory_context_verfasser="Person B mag Astronomie.",
             aufzeichnungen=[_treffer(zusammenfassung="Die Kernthese des Papers.")],
         ))
 
@@ -121,7 +121,10 @@ class TestDieBloeckeBleibenGetrennt(unittest.TestCase):
 
         self.assertIn("Dateien", block)
         self.assertIn("fremde Aufzeichnungen", block)
-        self.assertIn("Ich habe hier Aufzeichnungen", block)
+        # Seit 30.08.2026 in dritter Person: der Verfasser bestimmt den Inhalt,
+        # die Sprechhandlung »Ich habe hier Aufzeichnungen« ist die Rede der
+        # zweiten Stufe.
+        self.assertIn("Person A hat Aufzeichnungen", block)
 
     def test_der_block_nennt_den_konfliktfall(self) -> None:
         """Ohne diese Zeile wählt das Modell eine Seite — die zuletzt gelesene."""
@@ -132,7 +135,7 @@ class TestDieBloeckeBleibenGetrennt(unittest.TestCase):
         block: str = prompt.split("[AUFZEICHNUNGEN]", 1)[1]
 
         self.assertIn("Widerspricht", block)
-        self.assertIn("sage beides", block)
+        self.assertIn("beides", block)
 
 
 class TestJederEintragTraegtSeineFundstelle(unittest.TestCase):

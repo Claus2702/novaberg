@@ -27,12 +27,16 @@ import psycopg2
 from config import POSTGRES_URL
 from graph.format import memory_context as fmt
 from graph.format.memory_context import (
+    LESER_ANALYSE,
     _format_kzg,
     _format_lzg_resonanz,
+    reader_names,
     speaker_label,
 )
 from memory import lzg_knoten
 from memory.lzg_knoten import _knoten_details_laden, spreading_lesen
+
+NAMEN = reader_names(LESER_ANALYSE, "test")
 
 
 class SpeakerLabelTest(unittest.TestCase):
@@ -63,14 +67,14 @@ class KzgLineNamesSpeakerTest(unittest.TestCase):
 
     def test_user_and_assistant(self) -> None:
         self.assertEqual(
-            _format_kzg(self._entry("user")),
+            _format_kzg(self._entry("user"), NAMEN),
             "[KZG] Magnetar (Salienz: 1.5, Sprecher: Nutzer): Der Nutzer will den Rekord wissen.",
         )
-        self.assertIn("Sprecher: Nova)", _format_kzg(self._entry("assistant")))
+        self.assertIn("Sprecher: Nova)", _format_kzg(self._entry("assistant"), NAMEN))
 
     def test_missing_speaker_is_unknown_and_logged(self) -> None:
         with self.assertLogs(fmt.logger, level="WARNING"):
-            zeile = _format_kzg(self._entry(None))
+            zeile = _format_kzg(self._entry(None), NAMEN)
         self.assertIn("Sprecher: unbekannt)", zeile)
 
 
@@ -84,7 +88,7 @@ class ResonanceNamesSpeakerTest(unittest.TestCase):
             {"inhalt": "Der Nutzer mag Schokolade", "emotion": "neutral",
              "beobachter": "assistant", "sortier_gewicht": 0.4, "pfad": []},
         ]}
-        zeilen = _format_lzg_resonanz(resonanz).split("\n")
+        zeilen = _format_lzg_resonanz(resonanz, NAMEN).split("\n")
         # Aufsteigend nach Gewicht: die schwaechere (Nova) zuerst.
         self.assertEqual(zeilen[2], '"Der Nutzer mag Schokolade"')
         self.assertEqual(zeilen[3], "Sprecher: Nova")
@@ -95,7 +99,7 @@ class ResonanceNamesSpeakerTest(unittest.TestCase):
         resonanz = {"erinnerungen": [
             {"inhalt": "x", "emotion": "", "sortier_gewicht": 0.1, "pfad": []}]}
         with self.assertLogs(fmt.logger, level="WARNING"):
-            block = _format_lzg_resonanz(resonanz)
+            block = _format_lzg_resonanz(resonanz, NAMEN)
         self.assertIn("Sprecher: unbekannt", block)
 
 

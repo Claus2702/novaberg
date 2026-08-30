@@ -211,8 +211,10 @@ class TestDerVerfasserSiehtDasWissen(unittest.TestCase):
 
     def test_gedaechtnis_und_web_stehen_im_verfasser_prompt(self) -> None:
         """Beide Wissensquellen erreichen den Verfasser vollstaendig."""
+        # Seit 30.08.2026 liest der Verfasser seinen eigenen Kanal — den Block
+        # in den Namen Person A / Person B, nicht die Analyse-Fassung.
         prompt: str = verf_mod._build_system_prompt(_state(
-            memory_context="Der Nutzer interessiert sich fuer Astronomie.",
+            memory_context_verfasser="Person B interessiert sich fuer Astronomie.",
             web_context="Quelle: Gammablitze dauern Sekunden.",
         ))
 

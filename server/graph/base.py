@@ -128,6 +128,7 @@ class GraphBase(ABC):
 
             # Enricher
             memory_context     = "",
+            memory_context_verfasser = "",
             web_context        = "",
             session_turns      = [],
             # Aus Pfad 1 uebernommen, wenn das Ereignis sie traegt. Sonst leer
