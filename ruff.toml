@@ -207,6 +207,14 @@ ignore = [
     "S608",
 ]
 
+# Die Zeugen des Clients (seit 30.08.2026) tragen dieselbe Begruendung wie die
+# des Servers — bei einer Testmethode IST der Name die Beschreibung. Sie liegen
+# in einem eigenen Baum, weil sie auf dem Host laufen und nicht im Behaelter:
+# `client/` traegt GTK-Abhaengigkeiten und ist nicht ins Server-Abbild gemountet.
+# Der kanonische Linter-Lauf geht ueber `server/`; dieser Block wirkt, sobald
+# jemand `client/` mitprueft.
+"client/tests/**" = ["D102", "S101", "S608"]
+
 # korpus_laeufer.py ist kein Zeuge, sondern ein Werkzeug im Testverzeichnis: Es
 # faehrt einen Korpus und schreibt sein Ergebnis auf die Standardausgabe. Fuer
 # ein Werkzeug mit Konsolenausgabe ist `print` die Schnittstelle und nicht der
