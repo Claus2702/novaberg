@@ -410,6 +410,25 @@ Daten-Agenten (Charakter, Promotion, Decay) bleiben ausserhalb.
 | DELIVERY-VOICE | Recherche-Destillation klingt nach Referat, nicht nach Nova | [HGR] ⬜ Delivery-Prompt braucht staerkere Charakter-Durchdringung. Beobachtet Chat 79 |
 
 
+#### ZIELE-RUHEN-OHNE-ABRAEUMPFAD — 331 langfristige Ziele liegen, und die Motivation trennt sie nicht
+
+**Kategorie:** [HGR] HINTERGRUND
+
+**Zustand:** offen — am Bestand gemessen am 30.08.2026.
+
+**Befund (2026-08-30).** Zwei Sachverhalte an derselben Tabelle, und der zweite macht den ersten unbehandelbar.
+
+**(a) Der Rueckstand.** `ziele` traegt **376 Zeilen, davon 30 aktiv**. Bei `meister` stehen **331 inaktive langfristige** Ziele gegen **ein** aktives — bei einer Motivation zwischen **0,80 und 0,90**, also weit ueber jeder Schwelle. Sie sind nicht abgeraeumt, sondern nur abgeschaltet; ein Pfad, der sie loescht, zusammenfasst oder wieder aufnimmt, ist nicht erkennbar. Der `ZielDecayAgent` laeuft und senkt die Motivation — er entfernt nichts.
+
+**(b) Die Motivation trennt innerhalb der Horizonte nicht.** Alle langfristigen Ziele stehen auf **exakt 0,80**, ueber sieben Gegenueber hinweg. Die mittelfristigen liegen bei `meister` zwischen 0,49 und 0,63, die kurzfristigen zwischen 0,57 und 0,70. **Als Gewichtungsfaktor ist die Spalte damit innerhalb eines Horizonts eine Konstante** — was sie unterscheidet, ist der Horizont selbst, den man auch direkt lesen kann. Wer sie multipliziert, multipliziert mit 0,80.
+
+**Verwandt mit `GV-INITIATIVE-KIPPT-NIE`** — dieselbe Klasse: ein Wert, der erhoben, gespeichert und gelesen wird und dabei nie den Zustand wechselt, den er anzeigen soll. Eine Groesse ohne Varianz sieht im Log aus wie eine Messung.
+
+**Was fertig waere.** Zweierlei, und (b) geht vor: Die Motivation streut innerhalb eines Horizonts messbar, oder sie wird als Gewichtungsfaktor aufgegeben und durch etwas ersetzt, das streut. Erst danach ist ein Abraeumpfad fuer die 331 sinnvoll — solange alle denselben Wert tragen, gibt es kein Kriterium, nach dem er auswaehlen koennte.
+
+**Prioritaet:** mittel. Kein Ausfall, aber jede Rechnung, die die Motivation als Faktor nimmt, rechnet mit einer Konstanten.
+
+
 #### RECH-NO-PERSIST — Recherche-Resultate verschwinden ungenutzt
 
 **Kategorie:** [HGR] HINTERGRUND

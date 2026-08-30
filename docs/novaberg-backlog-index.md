@@ -1,14 +1,14 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 432 Eintraege mit Kennung — 363 offen, 68 abgeschlossen, **1 ohne lesbaren Zustand**.
+**Umfang:** 433 Eintraege mit Kennung — 363 offen, 68 abgeschlossen, **2 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 432 von 432 Eintraegen zugeordnet.
+**Kategorie:** 433 von 433 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 67 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 68 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 54 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
@@ -43,12 +43,13 @@
 
 ---
 
-## Ohne lesbaren Zustand — 1 Eintraege
+## Ohne lesbaren Zustand — 2 Eintraege
 
 **Die Arbeitsliste.** Jede Zeile braucht eine `**Zustand:**`-Angabe an genau einer Stelle, aus geschlossener Wertemenge.
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
+| 229 | Ueberschrift #### | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
 | 25 | Tabellenzeile | `PROTOKOLLPFLICHT-OHNE-GATE` | Block 25.08.2026 — das Gate, das die Protokollpflicht bewach |
 ## Die Rangordnung
 
@@ -214,7 +215,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
-## Alle 432 Eintraege
+## Alle 433 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -329,37 +330,38 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | HGR | 375 | offen | `PIX-LLM-ROUTER` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
 | HGR | 378 | offen | `PIXIE-GRAPH-MERGE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
 | HGR | 410 | offen | `DELIVERY-VOICE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| HGR | 413 | offen | `RECH-NO-PERSIST` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| HGR | 436 | offen | `SHADOW-DEAD` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| HGR | 437 | offen | `PIX-GPU-IDLE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| HGR | 449 | offen | `PIXIE-ROUTING-DOPPELREGISTRY` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| HGR | 450 | offen | `PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| HGR | 451 | offen | `WEB-EXTRAKTION-STILL-LEER` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
-| WIS | 454 | offen | `EPIC-PIXIE-ABFLUSS` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 468 | offen | `PIX-AGENTEN-FEHLEN` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 469 | offen | `PIX-RETRY-KREIS` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 470 | offen | `PIX-SERIELLER-PLATZ` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 471 | offen | `PIX-PRIORITAET-STILL` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 507 | offen | `PIX-WARTESCHLANGE-AM-MODELL` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 508 | offen | `WIS-AGENTEN-NACHZIEHEN` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
-| HGR | 517 | abgeschlossen | `PIX-CLEAN` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-hintergrund.md) |
-| HGR | 547 | abgeschlossen | `MIGRATION-PIX-CLEANUP` | [Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach](novaberg-backlog-hintergrund.md) |
-| HGR | 575 | offen | `AUDIT-PIXIE-TURN-ID` | [Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflös](novaberg-backlog-hintergrund.md) |
-| HGR | 608 | abgeschlossen | `CONFIG-PIXIE-AKTIV-HARDCODED` | [CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nic](novaberg-backlog-hintergrund.md) |
-| HGR | 629 | abgeschlossen | `QUEUE-SCHEMA-STALE` | [Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten](novaberg-backlog-hintergrund.md) |
-| HGR | 642 | offen | `SCHED-STALE-SCHEDULE` | [Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixi](novaberg-backlog-hintergrund.md) |
-| HGR | 655 | offen | `SHADOW-PAYLOAD-FIELD-MISMATCH` | [Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest ](novaberg-backlog-hintergrund.md) |
-| HGR | 674 | offen | `WIEDERVORLAGE-MULTI-USER` | [Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Auf](novaberg-backlog-hintergrund.md) |
-| HGR | 699 | offen | `PIXIE-GHOST` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
-| HGR | 700 | offen | `PIXIE-AGENT-MISSING` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
-| HGR | 701 | offen | `RECH-SPIRAL` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
-| HGR | 702 | offen | `RECH-CHARAKTER` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
-| HGR | 703 | offen | `DELIVERY-DEDUP` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
-| HGR | 704 | offen | `AUDIT-PIXIE-TURN-ID` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
-| HGR | 745 | abgeschlossen | `PIXIE-DECAY-KEIN-AGENT` | [Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodisc](novaberg-backlog-hintergrund.md) |
-| HGR | 782 | offen | `PIXIE-TURN-ID-LEER` | [Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter Characte](novaberg-backlog-hintergrund.md) |
-| HGR | 813 | abgeschlossen | `QUEUE-VERFALL-KONZEPT` | [QUEUE-VERFALL-KONZEPT — der Stapel und die Queue bra](novaberg-backlog-hintergrund.md) |
-| HGR | 852 | offen | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | [IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angel](novaberg-backlog-hintergrund.md) |
+| HGR | 413 | offen | `ZIELE-RUHEN-OHNE-ABRAEUMPFAD` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 432 | offen | `RECH-NO-PERSIST` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 455 | offen | `SHADOW-DEAD` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 456 | offen | `PIX-GPU-IDLE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 468 | offen | `PIXIE-ROUTING-DOPPELREGISTRY` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 469 | offen | `PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 470 | offen | `WEB-EXTRAKTION-STILL-LEER` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| WIS | 473 | offen | `EPIC-PIXIE-ABFLUSS` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 487 | offen | `PIX-AGENTEN-FEHLEN` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 488 | offen | `PIX-RETRY-KREIS` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 489 | offen | `PIX-SERIELLER-PLATZ` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 490 | offen | `PIX-PRIORITAET-STILL` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 526 | offen | `PIX-WARTESCHLANGE-AM-MODELL` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 527 | offen | `WIS-AGENTEN-NACHZIEHEN` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 536 | abgeschlossen | `PIX-CLEAN` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-hintergrund.md) |
+| HGR | 566 | abgeschlossen | `MIGRATION-PIX-CLEANUP` | [Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach](novaberg-backlog-hintergrund.md) |
+| HGR | 594 | offen | `AUDIT-PIXIE-TURN-ID` | [Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflös](novaberg-backlog-hintergrund.md) |
+| HGR | 627 | abgeschlossen | `CONFIG-PIXIE-AKTIV-HARDCODED` | [CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nic](novaberg-backlog-hintergrund.md) |
+| HGR | 648 | abgeschlossen | `QUEUE-SCHEMA-STALE` | [Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten](novaberg-backlog-hintergrund.md) |
+| HGR | 661 | offen | `SCHED-STALE-SCHEDULE` | [Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixi](novaberg-backlog-hintergrund.md) |
+| HGR | 674 | offen | `SHADOW-PAYLOAD-FIELD-MISMATCH` | [Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest ](novaberg-backlog-hintergrund.md) |
+| HGR | 693 | offen | `WIEDERVORLAGE-MULTI-USER` | [Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Auf](novaberg-backlog-hintergrund.md) |
+| HGR | 718 | offen | `PIXIE-GHOST` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 719 | offen | `PIXIE-AGENT-MISSING` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 720 | offen | `RECH-SPIRAL` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 721 | offen | `RECH-CHARAKTER` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 722 | offen | `DELIVERY-DEDUP` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 723 | offen | `AUDIT-PIXIE-TURN-ID` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 764 | abgeschlossen | `PIXIE-DECAY-KEIN-AGENT` | [Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodisc](novaberg-backlog-hintergrund.md) |
+| HGR | 801 | offen | `PIXIE-TURN-ID-LEER` | [Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter Characte](novaberg-backlog-hintergrund.md) |
+| HGR | 832 | abgeschlossen | `QUEUE-VERFALL-KONZEPT` | [QUEUE-VERFALL-KONZEPT — der Stapel und die Queue bra](novaberg-backlog-hintergrund.md) |
+| HGR | 871 | offen | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | [IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angel](novaberg-backlog-hintergrund.md) |
 | CHA | 25 | offen | `RAD-LAEUFE-BEI-DETERMINISTISCHER-ABLEITUNG` | [Block 27.08.2026 — aus dem Temperaturwechsel](novaberg-backlog-charakter.md) |
 | CHA | 36 | offen | `KERNVERGLEICH-KONTROLLE-STEHT-STILL` | [Block 26.08.2026 — aus dem Umbau der Kern-Auswahl](novaberg-backlog-charakter.md) |
 | CHA | 47 | abgeschlossen | `KERNAUSWAHL-KRITERIUM-OFFEN` | [Block 25.08.2026 — aus der Vermessung des Kern-Hash](novaberg-backlog-charakter.md) |
@@ -441,7 +443,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | ANT | 178 | offen | `PROMPT-DOPPELTE-FORMULIERUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 200 | offen | `CLUSTERZAHL-13-GEGEN-14` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 213 | offen | `GV-DETAIL-LAENGE-IRREFUEHREND` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
-| ANT | 229 | teilweise | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 229 | unlesbar | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 249 | offen | `GRAPH-SACKGASSE-UNGEPRUEFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-antwortpfad.md) |
 | ANT | 272 | offen | `META-KOGNITION` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
 | ANT | 307 | abgeschlossen | `CLIENT-RENDER` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |

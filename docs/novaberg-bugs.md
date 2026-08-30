@@ -109,6 +109,29 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ---
 
+### `ZIEL-VERFALLEN-BLEIBT-AKTIV` — der Verfall raeumt die Motivation ab und laesst das Ziel stehen
+
+**Zustand:** offen — am Bestand gemessen am 30.08.2026.
+
+**Symptom.** Vier mittelfristige Ziele des Paares `falle` tragen `aktiv = true` bei einer Motivation von **0,19 bis 0,20** gegen eine `motivation_basis` von 0,60 bis 0,65. Der `ZielDecayAgent` hat sie auf rund ein Drittel ihres Ausgangswertes gesenkt — und die Aktivitaet nicht beendet.
+
+| id | Motivation | Basis | erstellt | aktualisiert |
+|---|---|---|---|---|
+| 7019 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
+| 7020 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
+| 7021 | 0,20 | 0,65 | 06.08.2026 | 06.08.2026 |
+| 7022 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
+
+Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktualisiert_am` steht bei allen auf dem Erstelldatum — der Verfall schreibt die Motivation, ohne die Zeile als bearbeitet zu markieren.
+
+**Warum das ein Defekt ist und nicht eine Einstellung.** Der Verfall ist die Bauart des Gedaechtnisses: Was lange niemanden interessiert hat, soll leiser werden, bis es **ruht**. Hier senkt er den Wert und laesst die Zeile im aktiven Bestand — sie erscheint in jeder Abfrage, die nach `aktiv` filtert, mit einem Gewicht, das ihre Bedeutungslosigkeit bereits ausdrueckt. **Ein Leser, der nach Aktivitaet filtert und nach Motivation gewichtet, bekommt sie zweimal verschieden beantwortet.**
+
+**Nicht Teil dieses Befundes:** Die Vermutung, es gaebe zwei Zustaende in `ziele.motivation` — Zeilen mit und ohne `motivation_basis` —, ist am Bestand **widerlegt**: **376 von 376 Zeilen tragen eine Basis** (kurzfristig 14, mittelfristig 14, langfristig 348). Die Annahme entstand aus einer Abfrage, in der die Spalte nicht abgefragt war.
+
+**Was fertig waere.** Eine Schwelle, unter der der Verfall die Zeile auf `aktiv = false` setzt — oder die begruendete Festlegung, dass Ziele nie von selbst ruhen und `aktiv` allein von aussen gesetzt wird. Beides ist vertretbar; der heutige Zustand ist keins von beidem.
+
+**Verwandt:** `ZIELE-RUHEN-OHNE-ABRAEUMPFAD` (Backlog, Hintergrund) — dort die andere Haelfte: 331 abgeschaltete Ziele bei voller Motivation.
+
 ### `SETEXT-UNTERSCHRIFT-IM-BLOCK` — die Unterstreichung steht im Inhalt
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `block_lesen` liest weiter ab `start` der Ueberschriftenzeile (`tools/dateien/operationen.py:587`).
