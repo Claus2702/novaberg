@@ -99,7 +99,9 @@ Queue-Eintrag (aufgabe: recherche, thema: "...")
     ▼
 6. ERGEBNIS [Python]
    → stack_push() (Shadow-Stack → Delivery an User)
-   → kzg_store(user_id="nova") (Novas Langzeit-Wissen)
+   → kzg_store(user_id="nova", turn_id=<ausloeser des Auftrags>) (Novas Langzeit-Wissen)
+     Die Kennung wandert mit: Der Eintrag entsteht aus diesem Auftrag, der Auftrag
+     aus jenem Turn — erstes Glied der Sachlage-Bruecke (seit 30.08.2026).
 ```
 
 **LLM-Calls gesamt:** 4-10 Qwen-Calls (Analyse) + 1 Sprach-Call (`SHADOW_MODEL`) pro Durchlauf.
