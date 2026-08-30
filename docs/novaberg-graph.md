@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 30. August 2026 (`memory_context_verfasser` als State-Kanal, der Reducer schreibt zwei Fassungen). Davor 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
@@ -155,7 +155,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 1 | db_zugriff | Nein | Lädt Charakter-Hashes (User + Nova), Identitäten, Direktiven, persistierten Nova-State (`nova_state:{user_id}:{character_id}`) aus PostgreSQL/Redis in `state["external"]` / `state["internal"]`. Pixie-Sonderfall: bei `event_source != "user"` wird `external` als Kopie von `internal` befüllt. (Chat 89, Phase 2.) |
 | 2 | EI-Calc | Nein | `_ei_calc_character`: berechnet `nova_emotions_verlauf` (Decay + asymmetrische Empathie zu `state["external"].emotion`), schreibt `state["internal"].emotion.emotions_vector`, übertraegt seit Chat 113 auch `emotion`/`arousal` und zieht seit Chat 114 `state["internal"].raum` zum Register des letzten Sprechers nach (`ei/raum.py`), setzt `nova_emotion_konflikt`. Empathie-Switch nach `event_source` (siehe §3.6). |
 | 3 | Enricher | Nein | `_enrich_character`-Voll-Lauf: KZG/LZG-Resonanz, Session-Turns, Plugin-`enrich()`-Hooks, Drive-Ziele, baut `memory_entries`. Liest Novas modifizierten EI-Zustand fuer Sektor-Affinitaet (vorbereitet fuer P5). |
-| 4 | Reducer | Nein | Dedupliziert `memory_entries` (Exakt- + Substring-Dedup) und baut `memory_context` fuer den Responder. CG-only seit Chat 75 (im HG durch Phase 4 entfernt). |
+| 4 | Reducer | Nein | Dedupliziert `memory_entries` (Exakt- + Substring-Dedup) und baut `memory_context` (Analyse-Knoten) sowie seit 30.08.2026 `memory_context_verfasser` (Verfasser, Person A / Person B). CG-only seit Chat 75 (im HG durch Phase 4 entfernt). |
 | 4a | Sachlage (`sachlage_node`) | GPU | Seit 28.08.2026. Schreibt das fortgeschriebene Verstehen des Gespraechs nach `state["sachlage"]` (Gegenstand, vermutetes Nutzerziel, Referenzobjekte mit offenen Eigenschaften; je Paar in Redis, 4 h Verfall), legt es als Faktum in `sachlage_verlauf` ab, zaehlt je akutem Objekt die Strecke zum kurzfristigen Ziel und baut auf Impuls-Turns die Bruecke zum Ausloeser nach `state["sachlage_bruecke"]`. Vor dem Router, damit beide Pfade dasselbe Verstehen sehen. `novaberg-thinking-lage_k.md`, Rechenkette S14a. |
 | 5 | Router | GPU | Routing-Entscheidungen, Pending-Agent-Check, setzt `management_action`. |
 | 6 | Planner | GPU | Bei Management: Agent finden, Aktion planen. Conditional ⇄ Agent-Dispatch. |
@@ -387,7 +387,8 @@ Kein KZG/LZG-Read, kein Charakter-Hash, kein Reducer, kein `memory_context` (Pha
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `memory_entries` | `list[ContextEntry]` | `memory_entries_raw` nach Exakt- + Substring-Dedup. |
-| `memory_context` | `str` | Destillierter String fuer den Responder-Prompt. |
+| `memory_context` | `str` | Destillierter String in dritter Person mit Namen (Nova, Nutzer) — seit 30.08.2026 fuer die Analyse-Knoten Thinker, Tribunal und Corrector. |
+| `memory_context_verfasser` | `str` | Derselbe Block in den Namen des Verfassers (Person A, Person B), seit 30.08.2026 (F-PROMPT-2: kein Block spricht das Modell als den Charakter an). Der Reducer schreibt beide auf jedem Rueckkehrpfad. |
 
 → Details: `novaberg-node-db-zugriff.md`, `novaberg-node-enricher.md`. Der Reducer hat keine eigene Modul-Doku — die Logik lebt in `server/graph/nodes/reducer.py` und ist in §3.2 + §4.4 dieses Dokuments zusammengefasst.
 

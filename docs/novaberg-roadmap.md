@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 29. August 2026 — juengster Eintrag **23:20 UTC** (gemessen via `date -u`). Davor 22:58 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **07:35 UTC** (gemessen via `date -u`). Davor 29.08.2026, 23:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,14 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 30.08.2026, 07:35 UTC — Das »du« gehoert dem Schauspieler: die Wissensbloecke des Verfassers sprechen ueber Person A
+
+**Die Absicht:** Die Verarbeitung wird besser, wenn das Modell einen ausdruecklichen Auftrag als Rolle bekommt — *du bist der Schauspieler, das sind die Informationen, das ist die Lage, du spielst Person A* — statt *»du bist jetzt Nova«*. Das *»du«* spricht den Schauspieler an, nie den Charakter (F-PROMPT-2). **Der Bestand dagegen** (Fundliste 29.08.): `[GEDAECHTNIS]` sagte *»Du fuehlst dazu«*, *»Sie ist dir eingefallen«*, *»Erinnerungen sind dir gerade da«*; `[AUFZEICHNUNGEN]` *»Dateien, die dir zugaenglich gemacht wurden«*, *»woran du dich erinnerst«*; `[EIGENE FUNDE]` *»Das Folgende hast du selbst nachgesehen«* — vom Responder uebernommen, wo *»du«* der Schauspieler ist, im Verfasser aber, der ueber Person A in dritter Person schreibt, ploetzlich der Charakter. Seit dem Vorabend stand daneben *»Sprecher: Nova«*.
+
+**Der Bau:** `format_memory_entries(entries, lzg_resonanz, leser=LESER_ANALYSE | LESER_VERFASSER)` rendert in den Namen des Lesers (`reader_names`, ein unbekannter Leser ist ein `ValueError`): *Nova* / *Nutzer* in dritter Person fuer Thinker, Tribunal und Corrector (*»Nova fuehlt dazu«*, *»Sie ist Nova eingefallen ueber«*), *Person A* / *Person B* fuer den Verfasser. Der Reducer schreibt beide Fassungen auf jedem Rueckkehrpfad — `memory_context` und den **neuen Kanal `memory_context_verfasser`** (deklariert in `ConversationState`, initialisiert in `graph/base.py` und `graph/builder.py`); der Verfasser liest nur seinen. Die beiden Aufzeichnungs-Bloecke beschreiben, wie *der Inhalt* mit dem Material umgeht — *»Person A hat Aufzeichnungen, in denen das steht«*, *»sie hat das nachgelesen«* —, ohne *»du«*; die Sprechhandlung *»Ich habe hier Aufzeichnungen«* bleibt der zweiten Stufe. 13 neue Zeugen (`tests/test_verfasser_reader_names.py`: Formatter je Leser, unbekannter Leser, Reducer auf drei Pfaden, Kanal deklariert und initialisiert, der Verfasser liest seinen Kanal, die drei Bloecke im gebauten Prompt ohne *Nova/Nutzer/du* und mit Person A und Person B), drei Bestandszeugen umgestellt; Suite 2621 → **2633 gruen, 0 uebersprungen**; Gegenprobe **1 / 5 / 4** rot (vorhergesagt 2 / 4 / 4 — Eingriff a traf nur einen der zwei Reducer-Pfade, Eingriff b riss zusaetzlich den Blockzeugen); Linter 1227, Wand sauber.
+
+**Betrieb 07:28 UTC** (ein Wissenschaftsturn ueber den ausgekuehlten Neutronenstern): Reducer *»17 → 15 Eintraege, Output-Laenge 12696 Zeichen (Verfasser 12756)«*; in den Prompt-Ausgaben des Turns **»Du fuehlst dazu« 0 ×**, *»Person A fuehlt dazu«* 2 ×, *»Nova fuehlt dazu«* 4 ×; *Sprecher: Person A/B* 11 ×, *Sprecher: Nova/Nutzer* 25 ×; *»dir eingefallen«* 0 ×, *»Person A eingefallen«* 3 ×, *»Nova eingefallen«* 6 ×. Nebenbei: die Sachlage-Recherche bediente den Thinker, 0 Maschinenaufrufe. **Labor zwei Arme** (`labor/2026-08-30_verfasser_anrede_zwei_arme.py`, fuenf Wissenschaftsaeusserungen, Gedaechtnisblock mit KZG-Zeilen und drei Erinnerungen, beide Aufzeichnungs-Bloecke, T = 0): Arm A mit den alten Bloecken (*»Du fuehlst«*, *»woran du dich erinnerst«*) gegen Arm B — **Ich-Form 0/5 gegen 0/5, Du-Form 0/5 gegen 0/5, »Person A« 5/5 gegen 5/5.** Der Auftrag des Verfassers (§2.2b, dritte Person) haelt die Perspektive auch gegen die alten Bloecke; der Umbau ist damit eine Frage der Konsistenz des Prompts, kein messbarer Gewinn an Perspektive — was er an Inhalt aendert, ist mit diesem Mass nicht zu sehen.
 
 ## 29.08.2026, 23:20 UTC — Die eine Suche auf Deutsch: eine Fuehrung, deren Wirkung das Labor nicht zeigt
 

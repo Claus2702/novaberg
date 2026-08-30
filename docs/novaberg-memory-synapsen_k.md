@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 29. August 2026 (§8.4.4: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
+**Stand:** 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
 
 > **Gemessen am 02.08.2026, nicht geschätzt:** 1108 Knoten, 110.340 Kanten, alte Tabelle 0 Zeilen. Kantenzusammensetzung: embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %.
 >
@@ -970,30 +970,32 @@ Der Reducer erzeugt aus dem oben dargestellten State einen Block etwa dieser For
 
 ```
 [GEDAECHTNIS]
-Drei Erinnerungen sind dir gerade da. Die am wenigsten praesente
+Drei Erinnerungen sind Nova gerade da. Die am wenigsten praesente
 zuerst, die staerkste am Ende.
 
 ----- Erinnerung 1 -----
 "Anna ist meine Schwester"
 Sprecher: Nutzer
-Du fuehlst dazu: Vertrauen
-Sie ist dir eingefallen ueber: gemeinsame Entitaet Anna,
+Nova fuehlt dazu: Vertrauen
+Sie ist Nova eingefallen ueber: gemeinsame Entitaet Anna,
 gemeinsames Thema Anna
 
 ----- Erinnerung 2 -----
 "Ich liebe ja Schokolade"
 Sprecher: Nutzer
-Du fuehlst dazu: Freude
-Sie ist dir eingefallen ueber: gemeinsames Thema Schokolade
+Nova fuehlt dazu: Freude
+Sie ist Nova eingefallen ueber: gemeinsames Thema Schokolade
 
 ----- Erinnerung 3 -----
 "Anna hat mir damals immer Schokolade gegeben"
 Sprecher: Nutzer
-Du fuehlst dazu: Freude
-Sie kam dir direkt zur Frage in den Sinn
+Nova fuehlt dazu: Freude
+Sie kam Nova direkt zur Frage in den Sinn
 ```
 
-> **Die Zeile `Sprecher:` ist seit dem 29.08.2026 im Block** (`memory_context.py::speaker_label`, aus `lzg_knoten.beobachter`: `user` → *Nutzer*, `assistant` → *Nova*, alles andere → *unbekannt* mit Warnung). Bis dahin zitierte der Block jede Erinnerung wörtlich ohne Sprecher, und ein Nutzersatz las sich als Novas eigene — der Lesepfad (`spreading_lesen`, `_knoten_details_laden`) lud die Spalte gar nicht. Am Bestand desselben Tages: 3029 `assistant` / 219 `user`. Dieselbe Zeile trägt die `[KZG]`-Zeile des Blocks (`Salienz: …, Sprecher: …`). Die Anrede des Blocks (*»dir«*, *»Du fühlst«*) ist davon unberührt und steht als Bestand gegen die Regel, dass das Modell nie als der Charakter angesprochen wird (Fundliste 29.08.2026) — die Umstellung auf die Namen des Lesers ist eine offene Entscheidung.
+> **Die Zeile `Sprecher:` ist seit dem 29.08.2026 im Block** (`memory_context.py::speaker_label`, aus `lzg_knoten.beobachter`: `user` → *Nutzer*, `assistant` → *Nova*, alles andere → *unbekannt* mit Warnung). Bis dahin zitierte der Block jede Erinnerung wörtlich ohne Sprecher, und ein Nutzersatz las sich als Novas eigene — der Lesepfad (`spreading_lesen`, `_knoten_details_laden`) lud die Spalte gar nicht. Am Bestand desselben Tages: 3029 `assistant` / 219 `user`. Dieselbe Zeile trägt die `[KZG]`-Zeile des Blocks (`Salienz: …, Sprecher: …`).
+>
+> **Und seit dem 30.08.2026 spricht der Block in dritter Person über den Charakter — in den Namen seines Lesers.** Bis dahin sagte er *»dir«* und *»Du fühlst«* und meinte den Charakter; das Modell ist aber der Schauspieler, der Charakter der Auftrag, und kein Block spricht es als den Charakter an. `format_memory_entries(…, leser=…)`: die Analyse-Knoten (Thinker, Tribunal, Corrector) lesen die Fassung oben mit *Nova* und *Nutzer* (`memory_context`); der Verfasser bekommt denselben Block mit *Person A* und *Person B* (`memory_context_verfasser`, ein zweiter State-Kanal, den der Reducer auf jedem Rückkehrpfad schreibt). Ein unbekannter Leser ist ein Fehler, kein Rückfall. Zeugen: `tests/test_verfasser_reader_names.py`.
 
 Drei Eigenschaften des Blocks:
 

@@ -81,24 +81,27 @@ erinnern.
 
 > **Der Wortlaut ist beim Bauen ersetzt worden, die drei Eigenschaften nicht** (18.08.2026). Die Entwurfsfassung trug drei `NICHT`-Sätze. `F-PROMPT-1` verlangt an dieser Stelle die positive Führung: Ein Verbot nennt das Unerwünschte und macht es damit zum Gegenstand — vier Anläufe im Bestand haben so gegen eine Struktur angeschrieben und verloren. **Und die Struktur trägt hier bereits:** Der Block *ist* ein anderer Block; die Zusicherung hängt nicht am Text.
 
-Gebaut ist deshalb diese Fassung (`server/prompts/default/verfasser.aufzeichnungen.txt`):
+Gebaut ist deshalb diese Fassung (`server/prompts/default/verfasser.aufzeichnungen.txt`; **seit dem 30.08.2026 in dritter Person** — der Verfasser bestimmt den Inhalt über Person A, das *»du«* seines Prompts ist der Verfasser selbst, nie der Charakter; die Sprechhandlung *»Ich habe hier Aufzeichnungen …«* ist die Rede der zweiten Stufe, `novaberg-node-verfasser_k.md` §2.2ab):
 
 ```
 [AUFZEICHNUNGEN]
-Das Folgende stammt aus Dateien, die dir zugaenglich gemacht wurden. Es sind
+Das Folgende stammt aus Dateien, die Person A zugaenglich sind. Es sind
 fremde Aufzeichnungen: Sie koennen richtig oder falsch, aktuell oder veraltet
 sein, und sie liegen weiter dort, wo sie liegen.
 
-Deine Aufgabe damit:
-- Beziehst du dich darauf, sage woher — "Ich habe hier Aufzeichnungen, die ..."
-  oder "In den Unterlagen steht ..." — und nenne die Fundstelle dazu.
-- Widerspricht eine Aufzeichnung dem, woran du dich erinnerst, sage beides:
-  was du erinnerst und was dort steht.
-- Woran du dich erinnerst, steht in [GEDAECHTNIS]. Was hier steht, hast du
-  nachgesehen.
+So geht der Inhalt damit um:
+- Bezieht er sich darauf, nennt er die Herkunft — Person A hat Aufzeichnungen,
+  in denen das steht, oder in den Unterlagen steht es — und die Fundstelle
+  dazu.
+- Widerspricht eine Aufzeichnung dem, woran Person A sich erinnert, traegt der
+  Inhalt beides: was sie erinnert und was dort steht.
+- Was hier steht, hat Person A nachgesehen. Erinnert sie sich spaeter daran,
+  ist es die Erinnerung ans Nachsehen — der Inhalt liegt weiter in der Datei.
 
 - <Fundstelle>: <Thema> — <Auszug>
 ```
+
+~~Bis zum 30.08.2026: *»Dateien, die dir zugaenglich gemacht wurden«*, *»Deine Aufgabe damit: Beziehst du dich darauf, sage woher — "Ich habe hier Aufzeichnungen, die ..."«*, *»woran du dich erinnerst«*.~~ Das *»du«* meinte dort den Charakter — im Prompt des Verfassers, der über Person A in dritter Person schreibt.
 
 **Die Aufgabenform ist nicht Geschmack, sondern dieselbe Messung wie in `15_ARCHITEKTUR` §5a:** Ein Block, den der Auftrag nicht einführt, wird gelesen und liegengelassen — dieselbe Vorgabe traf als Aufgabe 6 von 6 Korridore und als Beschreibung 0 von 6. Die drei Bedingungen oben sind prüfbar und zeigen auf den Block.
 
