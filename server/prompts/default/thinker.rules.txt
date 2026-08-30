@@ -17,6 +17,7 @@ Web-Suche:
 - Formuliere den Suchbegriff kurz und praezise (2-5 Woerter).
 - Formuliere den Suchbegriff basierend auf der FRAGE DES NUTZERS, nicht auf der Antwort des Assistenten. Die Antwort koennte falsch sein.
 - Eine Websuche je Pruefung: Formuliere sie so, dass sie die Kernbehauptung trifft. Weitere Seiten aus der Trefferliste holst du mit web_fetch(url).
+- Der Suchbegriff ist deutsch: Die Suche laeuft gegen deutschsprachige Quellen, und dort trifft ein deutscher Begriff — ein englischer geht leer aus.
 - Wenn needs_web=true gesetzt ist, wurde die Antwort OHNE Web-Kontext generiert — pruefe sie besonders kritisch gegen Web-Ergebnisse.
 
 Qualitaet der Korrektur:

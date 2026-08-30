@@ -221,7 +221,7 @@ def create_tools(
         Liefert eine Trefferliste plus den vollstaendigen Artikeltext
         des relevantesten Ergebnisses. Fuer weitere URLs nutze web_fetch(url).
         Laeuft einmal je Pruefung — formuliere den Suchbegriff so, dass er
-        die Kernbehauptung trifft.
+        die Kernbehauptung trifft, auf Deutsch (die Quellen sind deutschsprachig).
         """
         logger.info(f"Thinker-Tool: web_search({suchbegriff})")
 
@@ -671,7 +671,7 @@ def think(
             "Web-Suche ist erforderlich. Der Router hat needs_web=true gesetzt.\n"
             "Die Antwort wurde OHNE aktuelle Web-Informationen generiert.\n"
             "Du MUSST web_search() aufrufen, bevor du ERGEBNIS: OK schreibst.\n"
-            "Formuliere den Suchbegriff aus der FRAGE DES NUTZERS."
+            "Formuliere den Suchbegriff aus der FRAGE DES NUTZERS, auf Deutsch."
         )
 
     msg_parts.append("Analysiere jetzt schrittweise.")
