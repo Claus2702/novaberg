@@ -79,7 +79,9 @@ Das ist so entschieden (Chat 113) und korrigiert die Funktionszeile der Abgrenzu
 | `nova_emotions_verlauf` | liest und schreibt | `ei_calc` erzeugt ihn, der Node färbt ihn |
 | `internal.emotion` | schreibt (seit Chat 114) | Nachzug des führenden Verlaufseintrags, siehe unten |
 
-Kein weiteres Feld wird berührt.
+Kein weiteres Feld wird berührt. **Geschrieben wird zusätzlich eine `pipeline_log`-Zeile**
+(`schritt: emgrav_aktivierung`) mit der Zahl der Aktivierungen und je Kandidat `knoten_id`,
+`quelle`, `emotion`, `similarity`, `gewicht` und `gravitation` — seit dem 30.08.2026, siehe §4.
 
 **Der Nachzug nach `internal.emotion` (Chat 114).** Ursprünglich berührte der Node nur den Verlauf. Damit stand er auf halbem Weg: `ei_calc` überträgt die führende Emotion nach `internal.emotion`, **bevor** dieser Node den Verlauf ein zweites Mal ändert. Zwischen hier und dem Responder liest genau ein Konsument beide Größen — der GV-Node, dessen sechs Säulen auf dem Verlauf rechnen und dessen Dreischicht-Achsen auf `internal.emotion`. Gemessen am 28.07.2026: Säulen `begeisterung`, Achsen `neugierig`, im selben Turn. Dieselben zwei Zeitstände, die Chat 113 eine Node-Position früher geschlossen hatte.
 
@@ -87,11 +89,22 @@ Der Node ruft deshalb `internal_emotion_uebertragen()` erneut auf, wenn er den V
 
 ## 4. Verhalten
 
-**Der Normalfall ist, dass nichts passiert.** Nur wenige Turns treffen eine Erinnerung über der Schwelle; ohne Punkte kehrt der Node sofort zurück, und das ist kein Fehler.
+**Der Normalfall ist, dass nichts passiert.** Ohne Punkte kehrt der Node sofort zurück, und das ist kein Fehler. `[gemessen]` 30.08.2026 über 56 Turns: **28 von 56 treffen keine Erinnerung**, 0,71 Aktivierungen je Turn.
+
+> **Bis zum 30.08.2026 stimmte dieser Satz nicht, und er hat Schaden angerichtet.** Er stand hier als Beschreibung, war aber keine — die Schwelle konnte nichts mehr ablehnen, weil `gewicht_decay` auf `[0, 10]` gegen eine Schwelle für `[0,1]` gerechnet wurde. Gemessen am 30.08.2026: **jeder** Turn aktivierte genau zwei Knoten, und von 1.711 scanbaren Knoten fiel keiner durch. Was wie Seltenheit aussah, war `EMOTIONALE_GRAVITATION_MAX_PRO_TURN = 2` — die Obergrenze, nicht das Tor.
+>
+> **Der Satz ist als Messung gelesen und weitergetragen worden:** Die Prägungsschicht in `novaberg-thinking-faszination_k.md` §7.4 hatte ihre Verfallsrate darauf gestützt. Behoben mit `EMGRAV-SCHWELLE-TOT`; die Zahl oben ist gemessen, nicht behauptet.
 
 **Punkte ohne Verlauf sind einer.** Dann hat `ei_calc` nichts geliefert, und die Injektion hätte nichts, worauf sie wirken könnte — `logger.error`, State unverändert.
 
 **Die Log-Zeile benennt die Wirkung, nicht ihre Anzahl.** Sie sagt, welche Emotion vorher führte und welche danach führt, samt Quelle und Gravitationswert jedes Punktes. Ein Zähler hätte die eigentliche Frage — hat sich Novas Lage verschoben? — unbeobachtbar gemacht.
+
+> **Die Wirkung zu benennen genügt nicht, wenn niemand den Gegenstand wiederfinden kann.** Bis zum
+> 30.08.2026 trug der Kandidat **keine Knoten-Kennung**: Das `SELECT` gab keine `id` zurück, und die
+> Log-Zeile nannte nur eine Anzahl. Damit war nicht zählbar, wie oft eine einzelne Erinnerung
+> reaktiviert wird — und ein Schwellwert, der nichts mehr ablehnt, fiel niemandem auf. Beides ist
+> mit `EMGRAV-KANDIDAT-OHNE-KENNUNG` behoben: Die Kennung reist mit, die `pipeline_log`-Zeile hält
+> sie fest. **Die Log-Zeile bleibt, wie sie ist** — sie beantwortet weiter ihre eigene Frage.
 
 ## 5. Live-Messung (28.07.2026, 11:58 UTC)
 

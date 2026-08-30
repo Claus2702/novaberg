@@ -1,8 +1,8 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 28. August 2026, 20:45 UTC (Datenpunkt an `VERFASSER-KOPFBLOCK-FAELLT-AUS`, 1 von 1). Davor 27. August 2026, 10:54 UTC (**die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist wiederholt** — 19,7 % gegen 16,2 %, gepaart 15 von 21 und p = 0,078: der Befund haelt, knapp. Davor 26.08.2026, 23:01 UTC: (**die Temperatur war die Ursache** — der Knoten `charakter_hash` steht auf **0.0**: vier Laeufe auf demselben Material sind dort zeichengleich statt 32,9 % ueberdeckend. Damit faellt die Ursache von `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`, und die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist zu wiederholen — ihre Decke lag bei 32 % und liegt jetzt bei 100 %. Davor 22:25 UTC: (**der Kern-Medoid ist gebaut, gemessen und verworfen** — 0,2908 → 0,2615 bei dreifachen Kosten, nicht von Rauschen unterscheidbar; `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` bleibt offen, aber ein Weg ist geprueft und ausgeschlossen. Davor 21:24 UTC: (**`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` neu** — die drei Rad-Laeufe der Festlegung `F-RAD-2` lesen alle denselben Kern, und dessen Neuziehung bewegt den Faktor um **0,2908** gegen **0,0550** innerhalb eines Kerns: das 5,3-fache, und 29 % der ganzen Skala. Davor 21:00 UTC: (**die Rauschgrenze der Destillation steht** — zwei Laeufe aus identischem Material teilen nur 27–32 % ihres Wortschatzes; damit hat die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` endlich eine Skala, und der Befund haelt. Davor 20:05 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist gebaut und bleibt offen** — die geschichtete Auswahl laeuft, die Bindung an das juengste Themenband faellt von 28,4 % auf 10,8 %, aber das Schliesskriterium ist mit den heutigen Vergleichskorpora nicht messbar. Davor 19:42 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist baubereit** — das Auswahlkriterium steht seit heute: festes Zeichenbudget beim Vierfachen des heutigen, darin zeitlich geschichtet. `gewicht_absolut` ist als Selektor ausgeschieden (Korrelation **−0,716** gegen die Zeit, im juengsten Zeitblock σ 0,27), und die Kostenannahme gegen ein groesseres Budget ist widerlegt: eine volle Destillation aus zehn Calls dauert **261 s**. Keine Kennung kam hinzu oder fiel weg. Davor: 25. August 2026, 19:29 UTC (**`BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`** — eine am Vortag gebaute Log-Zeile meldete elfmal `8 von 8`, waehrend ein Feld leer ausgeliefert wurde; behoben, im Archiv. Davor, 18:16 UTC: (**zwei neue Kennungen, beide am selben Tag behoben und im Archiv**: `PROMPT-CONSUMER-OHNE-ABRAEUMEN` und `VORHER-ZUSTAND-OHNE-SPUR` — beide ueber einen `F841`-Treffer sichtbar geworden, beide mit Zeugen und Gegenprobe. Davor, 10:05 UTC: (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
+**Stand:** 30. August 2026 (`EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und ins Archiv umgezogen — die Gravitationsschwelle lehnt wieder ab, 0,71 Aktivierungen je Turn statt 2,00). Davor 28. August 2026, 20:45 UTC (Datenpunkt an `VERFASSER-KOPFBLOCK-FAELLT-AUS`, 1 von 1). Davor 27. August 2026, 10:54 UTC (**die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist wiederholt** — 19,7 % gegen 16,2 %, gepaart 15 von 21 und p = 0,078: der Befund haelt, knapp. Davor 26.08.2026, 23:01 UTC: (**die Temperatur war die Ursache** — der Knoten `charakter_hash` steht auf **0.0**: vier Laeufe auf demselben Material sind dort zeichengleich statt 32,9 % ueberdeckend. Damit faellt die Ursache von `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`, und die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist zu wiederholen — ihre Decke lag bei 32 % und liegt jetzt bei 100 %. Davor 22:25 UTC: (**der Kern-Medoid ist gebaut, gemessen und verworfen** — 0,2908 → 0,2615 bei dreifachen Kosten, nicht von Rauschen unterscheidbar; `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` bleibt offen, aber ein Weg ist geprueft und ausgeschlossen. Davor 21:24 UTC: (**`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` neu** — die drei Rad-Laeufe der Festlegung `F-RAD-2` lesen alle denselben Kern, und dessen Neuziehung bewegt den Faktor um **0,2908** gegen **0,0550** innerhalb eines Kerns: das 5,3-fache, und 29 % der ganzen Skala. Davor 21:00 UTC: (**die Rauschgrenze der Destillation steht** — zwei Laeufe aus identischem Material teilen nur 27–32 % ihres Wortschatzes; damit hat die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` endlich eine Skala, und der Befund haelt. Davor 20:05 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist gebaut und bleibt offen** — die geschichtete Auswahl laeuft, die Bindung an das juengste Themenband faellt von 28,4 % auf 10,8 %, aber das Schliesskriterium ist mit den heutigen Vergleichskorpora nicht messbar. Davor 19:42 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist baubereit** — das Auswahlkriterium steht seit heute: festes Zeichenbudget beim Vierfachen des heutigen, darin zeitlich geschichtet. `gewicht_absolut` ist als Selektor ausgeschieden (Korrelation **−0,716** gegen die Zeit, im juengsten Zeitblock σ 0,27), und die Kostenannahme gegen ein groesseres Budget ist widerlegt: eine volle Destillation aus zehn Calls dauert **261 s**. Keine Kennung kam hinzu oder fiel weg. Davor: 25. August 2026, 19:29 UTC (**`BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`** — eine am Vortag gebaute Log-Zeile meldete elfmal `8 von 8`, waehrend ein Feld leer ausgeliefert wurde; behoben, im Archiv. Davor, 18:16 UTC: (**zwei neue Kennungen, beide am selben Tag behoben und im Archiv**: `PROMPT-CONSUMER-OHNE-ABRAEUMEN` und `VORHER-ZUSTAND-OHNE-SPUR` — beide ueber einen `F841`-Treffer sichtbar geworden, beide mit Zeugen und Gegenprobe. Davor, 10:05 UTC: (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
-**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — **131** abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
+**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — **133** abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
 
 ---
 
@@ -50,70 +50,6 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 > Zwischen dem Pruefstand der Eintraege (`00c16b6`, 20.08.) und dem Tag lagen 15 Commits, aber nur
 > **vier** geaenderte Server-Dateien — ein Kriterium statt 25 Einzelpruefungen. Zwei Eintraege
 > erwiesen sich dabei als laengst erledigt.
-
----
-
-## 30.08.2026 — eine Schwelle, die nicht mehr ablehnt
-
-Zwei Eintraege aus derselben Messung. Der erste ist ein **Schwellwert auf einer Groesse, die ihren
-dokumentierten Wertebereich verlassen hat**; der zweite ist der Grund, warum der erste so lange
-unbemerkt blieb — **es gibt nichts zu zaehlen**.
-
-### `EMGRAV-SCHWELLE-TOT` — die Gravitationsschwelle kann nicht mehr ablehnen
-
-**Zustand:** offen — am Bestand gemessen am 30.08.2026.
-
-**Klasse:** Ein Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat.
-Verwandt mit `KZG-SALIENZ-SKALENBRUCH` (dieselbe Ursache, anderes Feld; im Archiv) und mit
-`GV-INITIATIVE-KIPPT-NIE` (Schwelle ausserhalb des erreichbaren Bereichs, dort umgekehrt).
-
-**Symptom.** `gravitation = similarity x gewicht_decay x zeit_decay x 0,5 >= 0,40` verlangt
-`gewicht_decay x zeit_decay >= 0,80`. `gewicht_decay` ist **nicht auf [0,1] normiert** — gemessen
-Median **3,77**, Maximum **9,98**, **alle 3.266 aktiven Knoten ueber 1**. Von **1.711 scanbaren
-Knoten faellt keiner durch**; alle reissen die Schwelle bereits bei `similarity < 0,30`.
-
-**Wirkung.** Die Auswahl trifft allein `LIMIT 10` und `EMOTIONALE_GRAVITATION_MAX_PRO_TURN = 2`. Die
-Gravitationsformel entscheidet nur noch die **Rangfolge**, nicht mehr das **Ob**. Rekonstruiert ueber
-56 Turns: **112 Aktivierungen, exakt 2,00 je Turn**, auf 57 Knoten (3,3 % des Scan-Bereichs); 13
-Knoten mit drei oder mehr Aktivierungen, **1.654 mit keiner**. Sieben der zehn meistaktivierten
-handeln von Neutronensternen.
-
-**Warum das nicht nur unschoen ist.** Der Doku-Satz *„Der Normalfall ist, dass nichts passiert"*
-liest sich als Seltenheitsbefund und beschreibt in Wahrheit die Obergrenze `MAX_PRO_TURN`. **Wer ihn
-als Messung nimmt, baut auf einer Annahme, die die Zahl nie gestuetzt hat.** Genau das ist geschehen:
-Die Praegungsschicht in `novaberg-thinking-faszination_k.md` §7.4 hatte ihre Verfallsrate darauf
-gestuetzt. Faeden wuerden unsterblich — wird einer alle paar Turns aufgefrischt, kommt der Verfall
-nie zum Zug.
-
-**Was fertig waere.** Die Schwelle lehnt wieder ab: entweder `gewicht_decay` auf [0,1] normiert und
-die Schwelle mit ihr, oder eine Schwelle auf der heutigen Skala, die eine begruendete Trefferrate
-trifft. **Nicht Teil dieses Eintrags: die Normierungsrechnung.** Nach einer Division durch
-`LZG_KNOTEN_GEWICHT_CAP = 10.0` laege das erreichbare Maximum bei **0,287** und damit **unter** der
-Schwelle 0,40 — die Reparatur kippt den Fehler in die Gegenrichtung, wenn die Schwelle nicht
-mitwandert. Das gehoert in den Sprint, nicht in die Fehlerbeschreibung.
-
-**Prioritaet:** hoch. Er haelt die Praegungsschicht auf und faelscht zugleich still die Gewichtung
-jedes Turns, der eine Erinnerung einfaerbt.
-
-### `EMGRAV-KANDIDAT-OHNE-KENNUNG` — der Kandidat traegt keinen Schluessel
-
-**Zustand:** offen — am Code festgestellt am 30.08.2026.
-
-**Symptom.** Das `SELECT` in `server/ei/gravitation.py` gibt **keine `id`** zurueck. Der Kandidat
-traegt Inhalt (auf 100 Zeichen gekuerzt), Emotion, Arousal, Aehnlichkeit, Gewicht, Zeit-Decay,
-Gravitation und Quelle — aber keinen Schluessel.
-
-**Wirkung.** **Keine Aktivierung ist zaehlbar oder zuordenbar** — weder im `pipeline_log` noch in
-einer Spalte. Die Identitaet verlaesst die Abfrage nicht; auch eine nachtraegliche Auswertung der
-Logzeilen kaeme nur an ein Inhaltspraefix, und Praefixe sind nicht eindeutig.
-
-**Warum eigenstaendig.** Er ist nicht die Ursache von `EMGRAV-SCHWELLE-TOT`, sondern der Grund,
-warum dieser unbemerkt blieb: Eine Groesse ohne Kennung kann nicht auffallen, wenn sie kippt.
-
-**Was fertig waere.** Drei Codestellen: `id` in beide `SELECT`s, `knoten_id` in den Kandidaten-Dict,
-eine `pipeline_log`-Zeile im Node. **Keine DDL noetig** — `pipeline_log.inhalt` ist `jsonb`.
-
-**Prioritaet:** mittel. Kein Ausfall, aber Vorbedingung fuer jede Messung an diesem Pfad.
 
 ---
 

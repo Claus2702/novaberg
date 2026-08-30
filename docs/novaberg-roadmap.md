@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **17:25 UTC** (gemessen via `date -u`). Davor 30.08.2026, 13:01 UTC.
+**Stand:** 30. August 2026 — juengster Eintrag **22:38 UTC** (gemessen via `date -u`). Davor 30.08.2026, 17:25 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,31 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 30.08.2026, 22:38 UTC — Die Gravitationsschwelle konnte nicht mehr ablehnen
+
+**Der Befund kam aus einer Frage, die etwas anderes wollte.** Fuer die Praegungsschicht der Faszination war zu messen, wie oft ein einzelner LZG-Knoten reaktiviert wird — die Zahl setzt Halbstrecke und Auffuellgrad. Die Messung fand zuerst, dass **Aktivierungen nirgends festgehalten werden**: Das `SELECT` in `ei/gravitation.py` gab keine `id` zurueck, der Kandidat trug Inhalt und Gewicht, aber keinen Schluessel. Nicht zaehlbar, nicht zuordenbar.
+
+**Die Rekonstruktion ueber 56 Turns brachte dann den eigentlichen Fund.** `gravitation = similarity x gewicht_decay x zeit_decay x 0,5 >= 0,40` verlangt `gewicht_decay x zeit_decay >= 0,80` — aber `gewicht_decay` steht auf `[0, LZG_KNOTEN_GEWICHT_CAP]`, nicht auf `[0,1]`. **Median 3,77, Maximum 9,98, alle 3.266 aktiven Knoten ueber 1.** Von 1.711 scanbaren Knoten fiel keiner durch; alle rissen die Schwelle bereits bei `similarity < 0,30`. Die Auswahl traf allein `LIMIT 10` und `MAX_PRO_TURN = 2`.
+
+> **Der Doku-Satz war die eigentliche Schadensquelle.** Das Moduldokument sagte *„Der Normalfall ist, dass nichts passiert"* — das liest sich als Seltenheitsbefund und beschrieb in Wahrheit die Obergrenze. **Er ist als Messung gelesen und weitergetragen worden:** Die Praegungsschicht hatte ihre Verfallsrate darauf gestuetzt. Faeden waeren unsterblich geworden — wird einer alle paar Turns aufgefrischt, kommt der Verfall nie zum Zug. **Dieselbe Klasse wie `KZG-SALIENZ-SKALENBRUCH`**, nur ein Feld weiter.
+
+**Behoben am selben Tag.** Die Rechnung steht jetzt in `gravitation_lzg_berechnen()` — einer eigenen reinen Funktion mit EVA-Eingabepruefung, die durch `LZG_KNOTEN_GEWICHT_CAP` teilt und nicht durch die Zahl. Die Schwelle steht auf **0,18** und traegt ihre Herkunft im Kommentar (`F-INTENS-1`). Beide `SELECT`s geben die Kennung zurueck, der Kandidat traegt `knoten_id`, und der Node schreibt eine `pipeline_log`-Zeile `emgrav_aktivierung`. **Keine DDL.**
+
+| Nachgemessen ueber dieselben 56 Turns | vorher | nachher |
+|---|---:|---:|
+| Aktivierungen je Turn | 2,00 (konstant) | **0,71** |
+| Turns ohne Aktivierung | 0 von 56 | **28 von 56** |
+| verschiedene Knoten | 57 | 16 |
+| Knoten ueber zehn Aktivierungen | 1 | **0** |
+
+**Drei Funde des Baus, die keiner gesucht hat.** Der erste Zeuge **rechnete die Formel nach, statt sie aufzurufen** — die Gegenprobe blieb gruen, obwohl die Normierung zurueckgebaut war; deshalb die eigene Funktion. Dieselbe Falle sass im Bestandstest `GravitationVerfaelltEinmalTest`, dessen Fixture ebenfalls nachrechnete. **Und die erste Gegenprobe log:** Der Container lud 0,40 aus einer Datei, die 0,18 sagte — `__pycache__`, wortwoertlich `novaberg-lesson_l_gegenprobe-misst-den-cache.md`.
+
+**Eine eigene Aussage war zu absolut und ist berichtigt:** Es hiess, 0,40 laege nach der Normierung ueber dem *erreichbaren* Maximum. Erreichbar sind rechnerisch 0,5; ueber dem **gemessenen** Maximum von 0,2872 liegt sie. Der Zeuge prueft deshalb den staerksten tatsaechlich beobachteten Fall.
+
+**Suite 2701 → 2706 gruen, 0 uebersprungen.** Fuenf neue Zeugen, alle mit Zahlen aus dem Bestand statt symbolischer Schwelle (`schwelle-symbolisch`). Gegenprobe in drei Richtungen rot: Normierung entfernt, Schwelle zurueck auf 0,40, beides. Beide Bugs sind im Archiv.
+
+**Was das fuer die Faszination heisst:** Die vierte Vorbedingung des Konzepts ist gefallen. `α` und die Halbstrecke sind ab hier kalibrierbar — die 0,71 sind der Ausgangspunkt, nicht das Ergebnis: drei Tage, ein Stellvertreter-Vektor, und die Wirksamkeit der 0,18 ist im Livebetrieb zu beobachten.
 
 ## 30.08.2026, 17:25 UTC — Die Faszination bekommt ein Konzept, und drei Ernteversuche sterben
 

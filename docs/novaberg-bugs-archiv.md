@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** 123 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
+**Stand:** 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Inhalt:** 125 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---
@@ -15,6 +15,97 @@
 **Die Abschnittsueberschriften stammen aus der Quelldatei** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Zustand er hat. Jeder Eintrag hier ist abgeschlossen; ein Abschnitt namens `## Offene Bugs` beschreibt in dieser Datei nur die Herkunft seiner Eintraege.
 
 **Hier wird nicht gearbeitet.** Wer einen dieser Befunde wieder aufmachen muss, verschiebt den Eintrag zurueck nach `novaberg-bugs.md` — mit neuem Zustand und neuem Datum. Eine Kennung wird nie wiederverwendet und steht nie in beiden Dateien.
+
+---
+
+## 30.08.2026 — eine Schwelle, die nicht mehr ablehnt
+
+Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste ist ein
+**Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat**; der zweite
+ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
+
+### `EMGRAV-SCHWELLE-TOT` — die Gravitationsschwelle kann nicht mehr ablehnen
+
+**Zustand:** ✅ **behoben am 30.08.2026.** `gravitation_lzg_berechnen()` normiert `gewicht_decay`
+durch `LZG_KNOTEN_GEWICHT_CAP`, die Schwelle steht auf **0,18** und traegt ihre Herkunft im
+Kommentar (`F-INTENS-1`). **Gemessen nach dem Bau** ueber dieselben 56 Turns, durch die echte
+Funktion statt durch nachgebautes SQL: **0,71 Aktivierungen je Turn statt 2,00**, 28 von 56 Turns
+ohne jede Aktivierung, 16 statt 57 verschiedene Knoten, kein Knoten mehr ueber zehn Aktivierungen.
+Suite 2706 gruen. Befund erhoben am 30.08.2026.
+
+**Klasse:** Ein Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat.
+Verwandt mit `KZG-SALIENZ-SKALENBRUCH` (dieselbe Ursache, anderes Feld; im Archiv) und mit
+`GV-INITIATIVE-KIPPT-NIE` (Schwelle ausserhalb des erreichbaren Bereichs, dort umgekehrt).
+
+**Symptom.** `gravitation = similarity x gewicht_decay x zeit_decay x 0,5 >= 0,40` verlangt
+`gewicht_decay x zeit_decay >= 0,80`. `gewicht_decay` ist **nicht auf [0,1] normiert** — gemessen
+Median **3,77**, Maximum **9,98**, **alle 3.266 aktiven Knoten ueber 1**. Von **1.711 scanbaren
+Knoten faellt keiner durch**; alle reissen die Schwelle bereits bei `similarity < 0,30`.
+
+**Wirkung.** Die Auswahl trifft allein `LIMIT 10` und `EMOTIONALE_GRAVITATION_MAX_PRO_TURN = 2`. Die
+Gravitationsformel entscheidet nur noch die **Rangfolge**, nicht mehr das **Ob**. Rekonstruiert ueber
+56 Turns: **112 Aktivierungen, exakt 2,00 je Turn**, auf 57 Knoten (3,3 % des Scan-Bereichs); 13
+Knoten mit drei oder mehr Aktivierungen, **1.654 mit keiner**. Sieben der zehn meistaktivierten
+handeln von Neutronensternen.
+
+**Warum das nicht nur unschoen ist.** Der Doku-Satz *„Der Normalfall ist, dass nichts passiert"*
+liest sich als Seltenheitsbefund und beschreibt in Wahrheit die Obergrenze `MAX_PRO_TURN`. **Wer ihn
+als Messung nimmt, baut auf einer Annahme, die die Zahl nie gestuetzt hat.** Genau das ist geschehen:
+Die Praegungsschicht in `novaberg-thinking-faszination_k.md` §7.4 hatte ihre Verfallsrate darauf
+gestuetzt. Faeden wuerden unsterblich — wird einer alle paar Turns aufgefrischt, kommt der Verfall
+nie zum Zug.
+
+**Was fertig waere.** Die Schwelle lehnt wieder ab: entweder `gewicht_decay` auf [0,1] normiert und
+die Schwelle mit ihr, oder eine Schwelle auf der heutigen Skala, die eine begruendete Trefferrate
+trifft. **Nicht Teil dieses Eintrags: die Normierungsrechnung.** Nach einer Division durch
+`LZG_KNOTEN_GEWICHT_CAP = 10.0` laege das erreichbare Maximum bei **0,287** und damit **unter** der
+Schwelle 0,40 — die Reparatur kippt den Fehler in die Gegenrichtung, wenn die Schwelle nicht
+mitwandert. Das gehoert in den Sprint, nicht in die Fehlerbeschreibung.
+
+**Prioritaet:** hoch. Er hielt die Praegungsschicht auf und faelschte zugleich still die Gewichtung
+jedes Turns, der eine Erinnerung einfaerbte.
+
+**Was der Bau nebenbei gefunden hat.** Der erste Zeuge **rechnete die Formel nach, statt sie
+aufzurufen** — die Gegenprobe blieb gruen, obwohl die Normierung zurueckgebaut war. Deshalb steht die
+Rechnung jetzt in einer eigenen reinen Funktion, die der Zeuge aufruft. Dieselbe Falle sass im
+Bestandstest `GravitationVerfaelltEinmalTest`, dessen Fixture die Formel ebenfalls nachrechnete; er
+ruft sie jetzt und traegt ein `GEWICHT` aus dem Bestand (8,0 statt 1,0, weil 1,0 auf der normierten
+Skala hoechstens 0,05 erreicht). **Und die erste Gegenprobe log**: Der Container lud 0,40 aus einer
+Datei, die 0,18 sagte — `__pycache__`, wortwoertlich
+`novaberg-lesson_l_gegenprobe-misst-den-cache.md`. Alle Zahlen oben sind mit geloeschtem Cache
+gefahren.
+
+> **Eine Aussage des Befundes war zu absolut.** Es hiess, 0,40 laege nach der Normierung ueber dem
+> *erreichbaren* Maximum. Erreichbar sind rechnerisch **0,5** (Aehnlichkeit 1, Gewicht am Deckel,
+> frisch); ueber dem **gemessenen** Maximum von 0,2872 liegt sie. Der Zeuge prueft deshalb den
+> staerksten tatsaechlich beobachteten Fall, nicht den theoretischen.
+
+### `EMGRAV-KANDIDAT-OHNE-KENNUNG` — der Kandidat traegt keinen Schluessel
+
+**Zustand:** ✅ **behoben am 30.08.2026.** Beide `SELECT`s geben die Kennung zurueck, der Kandidat
+traegt `knoten_id`, und der Node schreibt eine `pipeline_log`-Zeile (`schritt: emgrav_aktivierung`)
+mit Zahl und Einzelkandidaten. Keine DDL. Festgestellt am 30.08.2026.
+
+**Symptom.** Das `SELECT` in `server/ei/gravitation.py` gibt **keine `id`** zurueck. Der Kandidat
+traegt Inhalt (auf 100 Zeichen gekuerzt), Emotion, Arousal, Aehnlichkeit, Gewicht, Zeit-Decay,
+Gravitation und Quelle — aber keinen Schluessel.
+
+**Wirkung.** **Keine Aktivierung ist zaehlbar oder zuordenbar** — weder im `pipeline_log` noch in
+einer Spalte. Die Identitaet verlaesst die Abfrage nicht; auch eine nachtraegliche Auswertung der
+Logzeilen kaeme nur an ein Inhaltspraefix, und Praefixe sind nicht eindeutig.
+
+**Warum eigenstaendig.** Er ist nicht die Ursache von `EMGRAV-SCHWELLE-TOT`, sondern der Grund,
+warum dieser unbemerkt blieb: Eine Groesse ohne Kennung kann nicht auffallen, wenn sie kippt.
+
+**Was fertig waere.** Drei Codestellen: `id` in beide `SELECT`s, `knoten_id` in den Kandidaten-Dict,
+eine `pipeline_log`-Zeile im Node. **Keine DDL noetig** — `pipeline_log.inhalt` ist `jsonb`.
+
+**Prioritaet:** mittel. Kein Ausfall, aber Vorbedingung fuer jede Messung an diesem Pfad.
+
+**Ein Feld ist dabei zurueckgenommen worden.** Der Kandidat sollte unter `gewicht` den normierten
+Wert tragen — das brach die Zusicherung aus P9a (*„was in der Spalte steht, kommt zurueck"*), die
+gegen einen zweiten Verfallsabzug beim Lesen steht. `gewicht` ist wieder der **gespeicherte** Wert;
+der normierte steht als `gewicht_norm` daneben. Gefunden hat es die Suite, nicht der Bau.
 
 ---
 

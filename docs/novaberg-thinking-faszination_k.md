@@ -784,8 +784,22 @@ Sieben der zehn meistaktivierten Knoten handeln von Neutronensternen. Für die e
 das genau die Lage, vor der §7.3 warnt: Ein laxes Tor lässt die Verdichtung die Form des Korpus
 zurückgeben.
 
-**Konsequenz: `EMGRAV-SCHWELLE-TOT` wird Vorbedingung** (§14). Vor ihrer Reparatur ist keine
-Kalibrierung von Halbstrecke oder `α` sinnvoll.
+**Konsequenz: `EMGRAV-SCHWELLE-TOT` wurde Vorbedingung** (§14) — und ist **am 30.08.2026 behoben.**
+`gravitation_lzg_berechnen()` normiert `gewicht_decay` durch `LZG_KNOTEN_GEWICHT_CAP`, die Schwelle
+steht auf 0,18.
+
+**Nachgemessen nach dem Bau, über dieselben 56 Turns und durch die echte Funktion:**
+
+| | vorher | nachher |
+|---|---:|---:|
+| Aktivierungen je Turn | 2,00 (konstant) | **0,71** |
+| Turns ohne Aktivierung | 0 von 56 | **28 von 56** |
+| verschiedene Knoten | 57 | 16 |
+| Knoten über zehn Aktivierungen | 1 | **0** |
+
+**Damit ist die Verteilung erstmals eine Aussage über Bindung und nicht über eine offene Schleuse.**
+Halbstrecke und `α` sind ab hier kalibrierbar — die Zahlen oben sind der Ausgangspunkt, nicht das
+Ergebnis: Sie stammen aus einem Stellvertreter-Vektor (siehe Vorbehalte unten) und aus drei Tagen.
 
 > **Vier Vorbehalte zu den rekonstruierten Zahlen** (die Aussage zur Schwelle betreffen sie nicht):
 > Der Node rechnet gegen ein `prompt_embedding`, das nirgends persistiert wird — verwendet wurde ein
@@ -1312,16 +1326,17 @@ Recherche absinken.** Tut er das nicht, sitzt der Verfall am falschen Ort.
 
 ## 13. Was offen ist
 
-**Die Reaktivierungshäufigkeit — gemessen, mit einem Ergebnis, das zuerst repariert werden muss.**
-Siehe §7.4. Die Annahme der Seltenheit ist widerlegt; die Schwelle der emotionalen Gravitation ist
-funktionslos, und ohne sie kann kein Faden verfallen. **Erst nach `EMGRAV-SCHWELLE-TOT` ist die
-Verteilung aussagekräftig und `α` kalibrierbar.**
+**Die Reaktivierungshäufigkeit — gemessen und danach repariert.** Siehe §7.4. Die Annahme der
+Seltenheit war widerlegt, die Schwelle funktionslos; beides ist am 30.08.2026 behoben. **Was jetzt
+offen ist, ist die Kalibrierung selbst:** 0,71 Aktivierungen je Turn sind eine Ausgangslage aus drei
+Tagen und einem Stellvertreter-Vektor. Halbstrecke und `α` gehören gegen eine Reihe kalibriert, die
+über Wochen läuft — und gegen echte `prompt_embedding`-Werte, sobald die Aktivierungen im
+`pipeline_log` stehen.
 
-**Aktivierungen werden nicht festgehalten.** Das `SELECT` in `ei/gravitation.py` gibt keine
-Knoten-Kennung zurück; die Identität verlässt die Abfrage nicht, weder ins `pipeline_log` noch in
-eine Spalte. Eine echte Zählung braucht drei Codestellen — `id` in beide `SELECT`s, `knoten_id` in
-den Kandidaten-Dict, eine `pipeline_log`-Zeile im Node. **Keine DDL nötig**, `pipeline_log.inhalt`
-ist `jsonb`.
+**Die Schwelle 0,18 ist eine Setzung mit Herkunft, keine Optimierung.** Gerechnet wurde: 0,20 → 0,50
+Treffer je Turn · 0,10 → 6,30 · 0,05 → 9,91. Welche Rate richtig ist, sagt keine Messung — das ist
+eine Aussage darüber, wie oft eine Erinnerung mitreden soll. **Die Wirksamkeit ist im Livebetrieb zu
+beobachten**, und die Konstante trägt ihre Herkunft im Kommentar (`F-INTENS-1`).
 
 **Die Verfallsfunktion selbst.** Die Rechnungen in §7.4 verwenden eine hyperbolische Form mit Boden
 — sie hat den fetten Schwanz, den Vergessenskurven zeigen. Exponentiell wäre die Alternative und
@@ -1397,7 +1412,7 @@ war eine Stichprobenaussage, keine Eigenschaft der Größe.
 | 1 | MS-Welle Block 2 ff. | in Arbeit |
 | 2 | Synapsen P4 — Knoten, Kanten, Spreading | blockiert durch (1) |
 | 3 | **`KZG-SALIENZ-NEUBAU`** — das Faden-Tor steht darauf | queued; **Vorbedingung** |
-| 4 | **`EMGRAV-SCHWELLE-TOT`** — solange jeder Knoten die Schwelle reißt, kann kein Faden verfallen | **neu, gemessen 30.08.2026**; Vorbedingung |
+| 4 | ~~**`EMGRAV-SCHWELLE-TOT`** — solange jeder Knoten die Schwelle reißt, kann kein Faden verfallen~~ | **erfüllt** — behoben am 30.08.2026, gemessen 0,71 Aktivierungen je Turn statt 2,00 |
 | 5 | **abstrakte Schicht** — Qualitäts- und Werte-Knoten mit Typ-Diskriminator | offen; `praemisse_knoten_id` liegt leer |
 | 6 | `charakter_rad_messung` liefert eine stabile Reihe | gebaut, braucht Laufzeit |
 | 7 | ~~`PIXIE_AKTIV` steht auf `False`~~ | **erfüllt** — `PIXIE_AKTIV=true` im laufenden Container, `[gemessen]` 30.08.2026; nur der Code-Default in `config.py:360` ist `false` |
@@ -1534,6 +1549,15 @@ Alternative — entscheidbar nach der Reaktivierungsmessung (§13).
 
 ## Änderungsverlauf
 
+- **v0.9 — 30.08.2026, abends:** **`EMGRAV-SCHWELLE-TOT` ist behoben, und damit faellt die vierte
+  Vorbedingung.** Die Rechnung normiert `gewicht_decay` durch `LZG_KNOTEN_GEWICHT_CAP`, die Schwelle
+  steht auf 0,18 und traegt ihre Herkunft im Kommentar. Nachgemessen ueber dieselben 56 Turns, diesmal
+  durch die echte Funktion statt durch nachgebautes SQL: **0,71 Aktivierungen je Turn statt 2,00**,
+  28 von 56 Turns ohne jede Aktivierung, 16 statt 57 verschiedene Knoten, keiner mehr ueber zehn.
+  Damit beschreibt die Verteilung erstmals Bindung statt einer offenen Schleuse, und `α` ist
+  kalibrierbar. Der zweite Bug derselben Messung — `EMGRAV-KANDIDAT-OHNE-KENNUNG` — ist mit behoben:
+  Die Kandidaten tragen `knoten_id`, der Node schreibt eine `pipeline_log`-Zeile. §13 fuehrt jetzt
+  die Kalibrierung als offenen Punkt, nicht mehr die Messung.
 - **v0.8 — 30.08.2026:** **§2.9 Was dieses Konzept beansprucht — und was nicht**: funktionale statt
   struktureller Entsprechung, mit Berridges **wanting/liking**-Dissoziation als stärkster Deckung
   der Richtungsachse und vier ausdrücklichen Nicht-Ansprüchen (drei Schienen sind kein
