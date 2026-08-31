@@ -106,6 +106,21 @@ Nach der Verarbeitung aller pending_writes prüft der Dispatcher ob der Delegati
 
 **Ausschluss:** `user_id == "nova"` → kein Delegation-Trigger (Novas eigene KZG-Einträge lösen keine Delegation aus).
 
+> **`DELEGATION_EFFEKTIVWERT_SCHWELLE` steht seit dem 31.08.2026 auf 0,20** (vorher 0,15),
+> mitgezogen mit der Reizstärke-Kalibrierung (`novaberg-ei.md` §Reizstärke). `[gemessen]` über
+> 33 echte Verlaufszustände: 18 Auslösungen vorher, 6 danach unverändert, **4 bei 0,20**. Der
+> Kipppunkt wanderte von arousal 0,546 auf **0,594** — die Perzeption vergibt für interessante,
+> aber unbelastete Sachverhalte bis 0,60, das obere Drittel des Alltagsbandes wurde also
+> mitgefangen. *Der Mensch ist keine Glasfigur.*
+>
+> **Die Zahl sitzt auf dem breitesten Plateau der Umgebung** (0,1726–0,2088). Zwei Auslösungen
+> wären bei 0,23 erreichbar, das Fenster dafür ist aber nur 0,011 breit — 0,24 stellt das Tor
+> auf null. Eine Schwelle auf einer Kante ist keine Schwelle.
+>
+> **Und sie steuert nur Kriterium 1 von dreien.** Kriterium 3 feuert bei einer Salienz über
+> `DELEGATION_SALIENZ_SCHWELLE`, und das trifft **93,5 %** von 2771 gemessenen Läufen. Wer den
+> DelegationsAgenten insgesamt seltener anschlagen lassen will, dreht dort — nicht hier.
+
 Wenn ein Trigger greift, wird `_delegation_trigger` und `salienz_obj_aktuell` in den State geschrieben und `dispatch_delegation(state, embed_client, embed_model)` aufgerufen.
 
 ---

@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Charakter — Profile, Raeder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 69 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 70 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -9,10 +9,20 @@
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 69 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 70 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+
+---
+
+## Block 31.08.2026 — aus der Reizstaerke-Kalibrierung
+
+Ein Eintrag. Er ist **eine fehlende Messgrundlage, kein fehlender Bau** — drei Schwellen stehen und wirken, aber keine ist an echtem Betrieb kalibriert.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `SCHWELLEN-AUF-TESTMATERIAL-KALIBRIERT` | **Die drei am 31.08.2026 gesetzten Schwellen stehen auf einer Grundlage, die zur Haelfte aus Werkzeug besteht.** Es gibt genau **zwei Sessions** im System: `meister:nova` mit 17 Turns und `sektorprobe:nova` mit 16 — und die zweite ist die Messreihe vom 31.08.2026, acht konstruierte Wissenschaftsreize. **16 der 33 Verlaufszustaende, gegen die `DELEGATION_EFFEKTIVWERT_SCHWELLE` auf 0,20 gerechnet wurde, sind damit Testmaterial.** Genau die Klasse, die am 31.08.2026 schon einmal zugeschlagen hat: Die erste Torschwelle der Praegung stand auf 0,90, weil der Korpus zu erheblichem Teil aus frueheren Messturns bestand. **Der Abstand ist bezifferbar:** Gegen den nutzerseitigen Bestand gerechnet (178 nicht-neutrale Knoten) laegen **36 %** ueber dem Delegations-Kipppunkt, gegen die 33 Zustaende sind es 12 %. Die beiden messen Verschiedenes — kumulierte Verlaeufe gegen einzelne Turns —, aber der Abstand zeigt, wie duenn die Zahl steht. **Zweitens die Praegungs-Torquote von 21,1 %:** Sie kombiniert zwei **ungepaarte** Bestaende (3677 `bewertung`-Zeilen fuer die Salienz, 1718 nicht-neutrale `lzg_knoten` fuer das Arousal) unter der Annahme der **Unabhaengigkeit** — zu keinem Turn liegen beide Groessen gemeinsam vor. Korrelieren sie, und das ist plausibel, liegt der echte Durchlass hoeher. Die Histogramme sind ausserdem 0,1-Buckets; die Quoten sind Stufen, keine Punkte. **Drittens die Erregungswerte selbst:** Auch ohne die neutralen Knoten tragen **51,7 %** exakt `0.5` — den Vorgabewert der `Wahrnehmung`-Dataclass, den Rueckfall von `_arousal_lesen` und den von `_arousal_to_float`. Ohne Herkunftsfeld ist gemessen von gefallen nicht zu trennen (siehe `novaberg-fundliste.md`, 31.08.2026). **Was gebraucht wird:** einige Wochen echter Gespraeche **ohne Testreihen im Korpus**, danach dieselben drei Rechnungen noch einmal — Delegations-Ausloesungen je hundert Turns, Torzeilen mit Urteil aus dem `pipeline_log` (das Tor protokolliert jede Pruefung, auch die abgelehnte), und Uebernahmen der Erinnerungs-Injektion. **Geschlossen, wenn** die drei Quoten auf einem Korpus gemessen sind, der keine Messturns enthaelt, und die Schwellen entweder bestaetigt oder mit dieser Grundlage nachgezogen sind. | [CHA] ungebaendert — ⬜ **offen** — angelegt am 31.08.2026. **Kein Defekt:** Jede der drei Schwellen ist besser begruendet als die, die sie ersetzt, und jede hat seit dem 31.08.2026 einen Zeugen auf ihre **Wirkung** (`tests/test_schwellen_nach_reizstaerke.py`). Was fehlt, ist der Beleg am Gegenstand statt am Werkzeug. |
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Emotionale Intelligenz (Übersicht)
-**Stand:** 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
+**Stand:** 31. August 2026 (Mechanismus 4 — die Reizstärke; Cap 4.0, Turn-Beitrag erregungsabhängig, Filterschwelle 0.04, alle drei aus Messreihen hergeleitet: §Reizstärke). Davor: 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
 **Pfad:** novaberg/docs/novaberg-ei.md
 **Quellen:** nova-04-k.md (EI-Konzept)
 
@@ -146,7 +146,7 @@ Seit Chat 61 folgt Novaberg einem explizit wissenschaftlich verankerten Drei-Mec
 
 ### Mechanismus 1: Carryover (Emotionen hallen nach)
 
-Der aktuelle Turn (i=0) zählt mit seinem vollen Decay-Wert. Ältere Turns ziehen nur mit 15% ihres Decay-Werts ein (`EMOTION_HISTORIEN_GEWICHT`). Das modelliert **affective carryover**: Die letzte Emotion färbt die Wahrnehmung der nächsten, aber sie übertönt nicht den aktuellen Zustand.
+Der aktuelle Turn (i=0) trägt seit dem 31.08.2026 seine **Reizstärke** statt eines festen Vollwerts (Mechanismus 4). Ältere Turns ziehen nur mit 15% ihres Decay-Werts ein (`EMOTION_HISTORIEN_GEWICHT`). Das modelliert **affective carryover**: Die letzte Emotion färbt die Wahrnehmung der nächsten, aber sie übertönt nicht den aktuellen Zustand.
 
 Wissenschaftliche Basis: Russell & Carroll (1999), Davidson (1998) "Affective Chronometry", Bower (1981) "Mood-Congruent Memory".
 
@@ -166,15 +166,135 @@ Gegensätzliche Emotionen hemmen sich aktiv. Im Plutchik-Oktagon entspricht die 
 
 Wissenschaftliche Basis: Solomon (1980) "Opponent-Process Theory", Cacioppo, Gardner & Berntson (1997) "Beyond bipolar", Plutchik (1980).
 
+### Mechanismus 4: Reizstärke (wie hart ein Turn auftrifft)
+
+Der aktuelle Turn trägt `GLAETTUNGS_MAXIMUM × arousal³`. Ein erschütternder Reiz schlägt damit **im ersten Turn** durch, ein beiläufiger baut sich über viele auf. Bei `arousal = 1.0` ist der Beitrag exakt der Cap: Der Anschlag der Wahrnehmung ist der Anschlag der Skala.
+
+Die Mechanismen 1 und 2 beschreiben, wie lange etwas **nachhallt**. Dieser beschreibt, wie hart es **auftrifft** — und er ist der jüngste der vier, weil bis zum 31.08.2026 niemand bemerkt hatte, dass die Frage unbeantwortet war. Die Herleitung steht unten in §Reizstärke.
+
+Wissenschaftliche Basis: Yerkes & Dodson (1908) — Erregung als eigene Dimension neben der Valenz; Bradley & Lang (1994) "Measuring emotion: the SAM"; Cahill & McGaugh (1998) "Mechanisms of emotional arousal and lasting declarative memory" — die Beobachtung, dass Erregung die Einprägung überproportional verstärkt, nicht linear.
+
 ### Glättung auf Anzeigebereich: sin^0.5
 
-Der akkumulierte Rohwert (Summe aus Mechanismus 1 + 2) wird gekappt bei 2.5 und über die Kurve `sin(rohwert / 2.5 × π/2)^0.5` auf [0, 1] abgebildet. Die Kurve ist:
+Der akkumulierte Rohwert (Summe aus Mechanismus 1 + 2 + 4) wird gekappt bei **4.0** und über die Kurve `sin(rohwert / 4.0 × π/2)^0.5` auf [0, 1] abgebildet. Die Kurve ist:
 
-- **Steil unten:** kleine Andeutungen werden sichtbar (0.1 → 0.25)
-- **Sanft oben:** einzelne starke Turns werden präsent, aber nicht ausgereizt (1.0 → 0.77)
-- **Mathematisch exakt 1.0 am Cap:** lodernde Dauer-Emotionen verdienen ihre Eins
+- **Steil unten:** kleine Andeutungen bleiben sichtbar (0.13 → 0.22)
+- **Sanft oben:** natürliche Sättigung
+- **Mathematisch exakt 1.0 am Cap:** ein Reiz mit voller Erregung erreicht ihn sofort
 
 Nach der Glättung wirkt Mechanismus 3 (Plutchik-Dämpfung) auf die absoluten Werte.
+
+**Die Wurzel spreizt nicht — sie hält die Echos.** Das ist ihre eigentliche Aufgabe, und sie war bis zum 31.08.2026 verdeckt, weil die Kurve damals beides tun musste. Siehe §Reizstärke, Schritt 5.
+
+---
+
+## Reizstärke — die Herleitung
+
+`[gemessen]` 31.08.2026. Vier Konstanten der Emotionsrechnung wurden an diesem Tag neu gesetzt; dieser Abschnitt hält fest, **woraus**. Jede Zahl unten stammt aus einem Lauf, nicht aus einer Überlegung.
+
+### Schritt 1 — Die Perzeption isoliert: was sie ausgibt
+
+`perceive()` wurde ohne Graph, ohne Session-Kontext und ohne Antwortgenerierung gerufen — acht Reize entlang des Plutchik-Rads, drei Durchgänge.
+
+| Ergebnis | Zahl |
+|---|---|
+| Sektoren mit Treffer | **6 von 8** |
+| über drei Durchgänge wortgleich | **8 von 8** |
+| Vorkommen von `neutral` | **0 von 24** |
+
+Zwei Fehlgriffe, beide systematisch: Sektor 4 (Überraschung) landet auf dem **Gegenpol** Sektor 8 (Neugier), Sektor 7 (Ärger) auf dem Nachbarn Sektor 6. Der Klassifikator ist bei `temperature = 0.05` deterministisch; für diese Frage genügt ein Durchlauf.
+
+**Damit war ein älterer Verdacht widerlegt.** Eine Vollturn-Reihe hatte am selben Tag 4 von 8 Sektoren und dreimal `neutral` ergeben. Beides entsteht **hinter** der Perzeption, nicht in ihr.
+
+### Schritt 2 — Die Erregungsspanne: was die Perzeption vergeben kann
+
+Elf Reize, nach Wucht gestaffelt, isoliert gemessen:
+
+| Reiz | Emotion | Arousal |
+|---|---|---|
+| Umlaufzeit des Mondes | `neutral` | 0.10 |
+| Tardigraden im Vakuum | `neugierig` | 0.40 |
+| Gammablitz ohne Vorwarnung | `unsicherheit` | 0.50 |
+| Webb-Aufnahmen | `begeisterung` | 0.60 |
+| ein Todesfall in der Nacht | `verzweiflung` | **0.80** |
+| die dritte Absage ohne Begründung | `wut` | **0.80** |
+| „Sie hat ja gesagt!!!" | `ueberrascht` | **0.90** |
+| ein Beweis, der nach elf Jahren hält | `begeisterung` | **0.90** |
+
+Die Spanne ist **0.10 bis 0.90**, und sie trennt sauber nach Wucht. Eine frühere Messung hatte nur 0.40 bis 0.60 gesehen — das lag am Reizsatz aus acht Wissenschaftssätzen, nicht am Knoten. Dieselbe Staffelung bewegt auch die übrigen Felder: `intent` wechselt auf `personal`, `tone` auf `empathisch` und `direkt`, `beziehungs_dynamik` auf `hilfesuchend` und `vertrauen`.
+
+> **Die Isolation ist die Bedingung dafür, dass diese Frage messbar war.** Ein Messturn über `/chat` darf keine erfundenen persönlichen Sätze tragen — er bliebe im Gedächtnis stehen. Ein direkter Knotenaufruf schreibt nichts, und erst dadurch sind Reize wie ein Todesfall zulässig. Belegt: `lzg_knoten` 3278 → 3278, `notizen` 1 → 1, `fakten` 0 → 0 über die ganze Reihe.
+
+### Schritt 3 — Der Befund: die Erregung wirkte nicht
+
+Über die volle Skala von 0.0 bis 1.0 erzeugte ein einzelner Turn **immer denselben Wert**:
+
+```
+arousal   0.00  0.10  0.20  0.40  0.50  0.60  0.80  0.90  1.00
+gewicht   0.77  0.77  0.77  0.77  0.77  0.77  0.77  0.77  0.77
+```
+
+Spannweite: **0.0000**. Der Grund steht in der Akkumulation: Der Beitrag des jüngsten Turns war `decay`, und bei `i = 0` ist `log(1 + 0)` null, also `decay = 1.0` — konstant, für jede Erregung. Der arousal-abhängige Verfall aus Mechanismus 2 greift erst ab dem zweiten Turn. **Ein Todesfall und eine Mondumlaufzeit wogen gleich.**
+
+Die Erregung war seit jeher im Bestand. Gelesen wurde sie an dieser Stelle nie.
+
+Zwei Folgen, beide gemessen:
+
+- **Die Skala war oben gestaucht.** Der erste Turn verbrauchte 77 % davon, die folgenden dreizehn teilten sich die restlichen 23 %. Von 21 Torzeilen der Prägungsschicht trugen 8 den Wert `1.00` und 4 den Wert `0.77` — zwei Werte statt einer Verteilung.
+- **Die Empathie konnte nie ziehen.** Sie addiert `α × arousal` auf ein bestehendes Gewicht und erreicht höchstens 0.77 (α = 0.85 am Gegenpol, arousal 0.9). Gegen eine Basis von 0.77 kam sie in **7 von 8** Sektorlagen auf eine Verschiebung von exakt 0.00. Umgekehrt gilt: Je größer die emotionale Distanz, desto größer α — und desto wirkungsloser, weil der einzige Fall mit Wirkung (gleicher Sektor) das kleinste α trägt.
+
+### Schritt 4 — Die Kalibrierung
+
+`GLAETTUNGS_MAXIMUM` von 2.5 auf **4.0**, und der Turn-Beitrag von konstant 1.0 auf **`GLAETTUNGS_MAXIMUM × arousal³`**. Beide Zahlen sind **eine** Entscheidung: Bei `arousal = 1.0` ist der Beitrag exakt der Cap.
+
+An den in Schritt 2 gemessenen Reizen:
+
+| Reiz | Arousal | vorher | nachher |
+|---|---|---|---|
+| Nashorn ausgestorben | 0.40 | 0.77 | **0.32** |
+| Gammablitz ohne Vorwarnung | 0.50 | 0.77 | **0.44** |
+| Webb-Aufnahmen | 0.60 | 0.77 | **0.58** |
+| ein Todesfall | 0.80 | 0.77 | **0.85** |
+| ein Beweis, der hält | 0.90 | 0.77 | **0.95** |
+| Anschlag der Wahrnehmung | 1.00 | 0.77 | **1.00** |
+
+Die Trostgrenze fällt aus derselben Formel, ohne eigene Regel:
+
+| Novas Lage | Gewicht | freundlicher Nutzer (arousal 0.8) |
+|---|---|---|
+| leicht traurig | 0.32 | **zieht** |
+| traurig | 0.44 | **zieht** |
+| erschüttert | 0.85 | hält |
+| im Schock | 0.95 | hält |
+
+Eine gedrückte Stimmung lässt sich aufhellen, ein Todesfall nicht wegreden. Das war nicht eingebaut; es folgt aus der Ordnung der Zahlen.
+
+### Schritt 5 — Was die Kalibrierung beinahe zerstört hätte
+
+Der erste Entwurf nahm die Wurzel aus der Glättungskurve heraus — die Spreizung sollte allein aus dem Turn-Beitrag kommen, und die Kurve wurde dafür nicht mehr gebraucht. **Die Messung widersprach.**
+
+Ein Turn, der einen Schritt zurückliegt, trägt einen Rohwert von 0.128:
+
+| Exponent | geglättet | nach der Sektor-Dämpfung |
+|---|---|---|
+| **0.5** | 0.224 | **0.157** — sichtbar |
+| 1.0 | 0.050 | **0.025** — gefiltert |
+
+Mechanismus 3 dämpft über eine **Potenz**, und eine Potenz wirkt auf kleine Basen ungleich härter als auf große. Ohne die Wurzel fiel das Echo unter jede sinnvolle Filterschwelle: Eine Traurigkeit wäre beim ersten tröstenden Turn nicht leiser geworden, sondern **aus dem Verlauf verschwunden**.
+
+Die Wurzel blieb, der Beitrag ging von `arousal²` auf `arousal³` — die Zielwerte aus Schritt 4 bleiben, die Echos auch.
+
+> **Die Kurve hatte zwei Aufgaben, und nur eine war benannt.** Solange jeder Reiz denselben Rohwert erzeugte, sah die Wurzel wie eine Spreizung aus. Was sie tatsächlich trug, wurde erst sichtbar, als jemand sie entfernte.
+
+### Schritt 6 — `EMOTION_MIN_WEIGHT` von 0.15 auf 0.04
+
+Die Filterschwelle ist an den Cap gebunden, nicht an die Emotion: Ein größerer Cap staucht jeden Wert. Das Echo eines gewöhnlichen Turns lag vorher bei 0.18, nach der Änderung bei 0.05. Bei einer Schwelle von 0.15 wäre es gefiltert worden — dieselbe Klasse von Fehler wie in Schritt 5, nur an anderer Stelle.
+
+### Was diese Kalibrierung nicht beantwortet
+
+- **Die beiden Sektor-Fehlgriffe aus Schritt 1 bleiben.** Sie liegen im Perzeptions-Prompt, nicht in der Rechnung.
+- **Der Preis der neuen Skala:** Ein gewöhnlicher Reiz braucht jetzt rund 30 gleichartige Turns bis 1.00 statt 14. Das ist die Kehrseite davon, dass 1.00 nun „Todesfall" heißt und nicht „ein Dutzend Fachfragen".
+- **Die Schwellen der Prägungsschicht** stehen weiter auf ihren Setzungen und sind gegen die alte Wertelage kalibriert. Sie kommen später in der Kette und werden eigens nachgezogen.
 
 ---
 

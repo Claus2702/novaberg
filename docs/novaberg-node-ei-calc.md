@@ -32,13 +32,17 @@ Funktionen `_emotions_verlauf_berechnen()` und `_emotions_vektor_bestimmen()` ha
 
 Die Akkumulation folgt drei biologisch motivierten Mechanismen:
 
-1. **Aktueller Turn voll, Historie als Echo (15%):** Der neueste Turn (i=0) zählt mit seinem vollen Decay-Wert. Ältere Turns ziehen nur mit 15% ihres Decay-Werts ein. Modelliert **affective carryover** (Russell & Carroll 1999, Davidson 1998) — Emotionen hallen nach, übertönen aber nicht den aktuellen Zustand.
+1. **Aktueller Turn nach seiner Wucht, Historie als Echo (15%):** Der neueste Turn (i=0) trägt seit dem 31.08.2026 seine Reizstärke (Punkt 4) statt eines festen Vollwerts. Ältere Turns ziehen nur mit 15% ihres Decay-Werts ein. Modelliert **affective carryover** (Russell & Carroll 1999, Davidson 1998) — Emotionen hallen nach, übertönen aber nicht den aktuellen Zustand.
 
 2. **Harter Cap bei 2.5:** Akkumulierte Rohwerte werden auf maximal 2.5 beschränkt. Verhindert unbegrenztes Aufstauen über viele wiederholte Turns.
 
-3. **sin^0.5-Glättungskurve:** Der gekappte Rohwert wird auf den Anzeigebereich [0, 1] abgebildet über `sin(rohwert / MAXIMUM × π/2)^0.5`. Die Kurve ist steil unten (selbst kleine Andeutungen werden sichtbar: 0.1 → 0.25), sanft oben (einzelner starker Turn: 1.0 → 0.77, mehrere Turns bauen auf), mathematisch exakt 1.0 am Cap. Modelliert konversationelle Emotion — eine Emotion baut sich durch Wiederholung auf, statt sofort voll auszuschlagen.
+3. **sin^0.5-Glättungskurve:** Der gekappte Rohwert wird auf den Anzeigebereich [0, 1] abgebildet über `sin(rohwert / MAXIMUM × π/2)^0.5`. Die Kurve ist steil unten, sanft oben, mathematisch exakt 1.0 am Cap. **Die Wurzel spreizt nicht — sie hält die Echos älterer Turns über der Filterschwelle**; ohne sie fällt ein Echo nach der antagonistischen Sektor-Dämpfung auf 0.025 und verschwindet aus dem Verlauf (`novaberg-ei.md` §Reizstärke, Schritt 5).
 
-Die Funktion ist in `server/ei/berechnung.py` als `_glaettung()` implementiert. Config-Parameter: `EMOTION_HISTORIEN_GEWICHT = 0.15`, `EMOTION_GLAETTUNGS_MAXIMUM = 2.5`.
+4. **Reizstärke (seit 31.08.2026):** Der aktuelle Turn trägt `EMOTION_GLAETTUNGS_MAXIMUM × arousal³`. Vorher war sein Beitrag **konstant 1.0** — bei `i = 0` ist `log(1 + 0)` null, damit `decay = 1.0`, und der arousal-abhängige Verfall greift erst ab dem zweiten Turn. Gemessen erzeugte deshalb jeder Reiz denselben Ausschlag von 0.77, über die volle Erregungsskala mit Spannweite **0.0000**: Ein Todesfall wog wie eine Mondumlaufzeit. Bei `arousal = 1.0` ist der Beitrag jetzt exakt der Cap — der Anschlag der Wahrnehmung ist der Anschlag der Skala, erreicht im ersten Turn.
+
+Die Funktion ist in `server/ei/berechnung.py` als `_glaettung()` implementiert. Config-Parameter: `EMOTION_HISTORIEN_GEWICHT = 0.15`, `EMOTION_GLAETTUNGS_MAXIMUM = 4.0`, `EMOTION_MIN_WEIGHT = 0.04`.
+
+> **Die Herleitung dieser drei Zahlen steht in `novaberg-ei.md` §Reizstärke** — mit den Messreihen, aus denen sie stammen, und mit dem Entwurf, den die Messung verworfen hat.
 
 ---
 

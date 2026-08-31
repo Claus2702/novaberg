@@ -153,6 +153,37 @@ Gemessen über 180 Turns der Charakterbildungs-Messreihe:
 
 > **Warum Float statt String?** Ursprünglich war Arousal ein String (`high/mid/low`). Das war zu ungenau — „ärgerlich (high)" konnte leicht genervt oder Raserei sein. Der Wechsel auf Float (Chat 8) ermöglicht feinere Steuerung: Antwortlänge, Tonalität und Vektor-Berechnung profitieren alle von der höheren Auflösung.
 
+#### Die Spanne ist gemessen
+
+`[gemessen]` 31.08.2026, elf nach Wucht gestaffelte Reize, isoliert gegen `perceive()` ohne Graph und ohne Session-Kontext:
+
+| Reiz | Emotion | Arousal |
+|---|---|---|
+| Umlaufzeit des Mondes | `neutral` | 0.10 |
+| Tardigraden im Vakuum | `neugierig` | 0.40 |
+| Gammablitz ohne Vorwarnung | `unsicherheit` | 0.50 |
+| Webb-Aufnahmen | `begeisterung` | 0.60 |
+| ein Todesfall in der Nacht | `verzweiflung` | 0.80 |
+| die dritte Absage ohne Begründung | `wut` | 0.80 |
+| „Sie hat ja gesagt!!!" | `ueberrascht` | 0.90 |
+
+**Die Spanne ist 0.10 bis 0.90 und trennt sauber nach Wucht.** Eine frühere Reihe hatte über 24 Läufe nur drei Werte gesehen (0.40, 0.50, 0.60) — das lag am Reizsatz aus acht Wissenschaftssätzen, nicht am Knoten. Dieselbe Staffelung bewegt auch die übrigen Felder: `intent` wechselt auf `personal`, `tone` auf `empathisch` und `direkt`, `beziehungs_dynamik` auf `hilfesuchend` und `vertrauen`. **Ein Reizsatz aus einem Register misst die Monotonie des Reizsatzes, nicht die des Klassifikators.**
+
+Die Erregung ist seit dem 31.08.2026 die Größe, aus der der Emotionsverlauf die Reizstärke bezieht (`novaberg-ei.md` §Reizstärke). Was dieser Knoten hier vergibt, entscheidet dort, wie hart ein Turn auftrifft.
+
+#### Die Sektoren, gegen das Rad gehalten
+
+`[gemessen]` 31.08.2026, acht Reize entlang des Plutchik-Rads, drei Durchgänge, isoliert: **6 von 8 Sektoren getroffen, 8 von 8 Läufe wortgleich stabil, `neutral` 0 von 24 Mal.** Bei `temperature = 0.05` ist der Klassifikator deterministisch.
+
+Zwei Fehlgriffe, beide systematisch und beide reproduzierbar:
+
+| gereizt | geliefert | Verhältnis |
+|---|---|---|
+| Sektor 4 — Überraschung | `neugierig` → **Sektor 8** | der **Gegenpol** |
+| Sektor 7 — Ärger | `frustration` → **Sektor 6** | der Nachbar |
+
+**Der Reparaturort ist der Prompt, nicht die Rechnung.** Eine Vollturn-Reihe hatte am selben Tag 4 von 8 Sektoren und dreimal `neutral` ergeben — beides entsteht hinter diesem Knoten, nicht in ihm.
+
 ### 3.3 Psychologisch — Was wird gebraucht?
 
 | Feld | Werte | Beschreibung |

@@ -82,9 +82,56 @@ Embedding-Nähe (Konzept §7.12, zwei Andockwege); der Gravitations-Node hält d
 seit dem 30.08.2026 samt `knoten_id`. **Bis dahin bleibt `ausschlag_aktuell` für immer gleich
 `ausschlag_absolut`.**
 
-**Der Ausschlag ist eine Näherung.** Er stammt aus dem Verlauf und trägt damit Historie; das
-Konzept will die Stärke *im Moment des Erlebens*. Eine reine Turn-Stärke liefert das System
-heute nicht — die **Emotion** ist die des Turns, ihre **Stärke** nicht.
+**Der Ausschlag ist eine Näherung — aber eine schärfere als am 30.08.2026.** Er stammt aus dem
+Verlauf und trägt damit Historie; das Konzept will die Stärke *im Moment des Erlebens*.
+
+`[gemessen]` 31.08.2026: Bis zu diesem Tag trug er **überhaupt keine Reizstärke**. Der Beitrag
+des aktuellen Turns war konstant, und die 21 Torzeilen dieser Schicht zeigen es — 8-mal der
+Wert `1.00`, 4-mal `0.77`, zwei Werte statt einer Verteilung. Seit der Kalibrierung folgt der
+Ausschlag der Erregung (0.32 bei einem bedrückenden Sachverhalt, 0.85 bei einem Todesfall,
+1.00 am Anschlag der Wahrnehmung); Herleitung in `novaberg-ei.md` §Reizstärke.
+
+> **Die Salienzschwelle steht seit dem 31.08.2026 auf 0,60, der Ausschlag auf 0,70.** Vorher
+> standen beide auf 0,70 — und ließen sowohl den frischen Wert (0,77) als auch den gesättigten
+> (1,00) durch, trennten also nichts. Nach der Reizstärke-Kalibrierung sperrten sie umgekehrt
+> fast alles. Die Vorgabe lautet: *Es soll nicht alles durch das Tor, und aus dem, was
+> durchgeht, bilden sich wenige Stränge* — rund ein Fünftel.
+
+| Schwellenpaar | Durchlass |
+|---|---|
+| 0,70 / 0,70 | 14,9 % |
+| **0,60 / 0,70** | **21,1 %** |
+| 0,50 / 0,70 | 24,3 % |
+
+Gelockert wurde die Bedingung, die **Erinnerungswürdigkeit** misst; die auf den emotionalen
+Gehalt blieb streng. Zeugen: `tests/test_schwellen_nach_reizstaerke.py`.
+
+**Was das Tor durchlässt** — drei Zahlen, die verschiedene Grundgesamtheiten messen und nicht
+gegeneinander gelesen werden dürfen:
+
+| Größe | Bestand | über der Schwelle |
+|---|---|---|
+| **Ausschlag** (aus dem Arousal gerechnet) | 1718 nicht-neutrale `lzg_knoten` | **31,3 %** — Kipppunkt bei arousal 0,688 |
+| **Salienz** | 3677 `bewertung`-Zeilen | **67,5 %** bei Schwelle 0,60 |
+| **beide zusammen** (das Tor prüft mit UND) | — | **21,1 %** |
+
+`[gemessen]` 31.08.2026. Zwei Fallen stecken in diesen Zahlen, und beide haben bei der Erhebung
+zugeschlagen:
+
+**Die Grundgesamtheit ist ohne neutrale Knoten zu rechnen.** `_emotions_verlauf_berechnen`
+filtert sie in Schritt 1 heraus — sie erreichen das Tor nie. Über alle 3278 Knoten gerechnet
+kommen 18,7 % statt 31,3 % heraus und der Durchlass fällt auf 8,9 %; 1508 der 1560
+Ausgeschlossenen sind neutral.
+
+**Und die Salienz-Angabe *4 von 21* misst etwas anderes.** Sie stammt aus den Torzeilen zweier
+Messreihen, nicht aus dem Bestand. Die Angabe *0 von 31* aus derselben Prüfung ist ein Drittes:
+Verlaufszustände zweier Live-Sessions, davon 16 aus der Testreihe `sektorprobe`.
+
+> **Die Arousal-Verteilung ist zu zwei Dritteln kein Messwert.** 2070 der 3278 Knoten (63,1 %)
+> tragen exakt `0.5` — den Vorgabewert der `Wahrnehmung`-Dataclass, den Rückfall von
+> `_arousal_lesen` bei unlesbarem JSON und den von `_arousal_to_float`. Die Spalte trägt kein
+> Herkunftsfeld; gemessen und gefallen sind nicht unterscheidbar. Jede Prozentangabe über diesen
+> Bestand steht damit auf einem Drittel belastbarer Daten.
 
 **Die Sektoren der Perzeption sind ungeprüft.** `[gemessen]` 31.08.2026 über acht gezielte
 Plutchik-Reize: 4 von 8 getroffen, `neutral` dreimal, wo ein besetzter Sektor gemeint war.

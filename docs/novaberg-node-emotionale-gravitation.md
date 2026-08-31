@@ -166,6 +166,22 @@ Die Energie-Achse wechselte dabei von 0.50 auf 1.00 — der Nachzug ist nicht ko
 **Zwei Skalenabweichungen**, jetzt messbar, weil der Pfad lebt:
 
 - Der LZG-Zweig rechnet den **Verfall dreifach** — die Spalte `gewicht_decay` ist bereits materialisiert und läuft zusätzlich durch `effektives_gewicht_berechnen()` und `_zeit_decay_faktor()` (Fundliste, 28.07.2026).
+> **Der Faktor steht seit dem 31.08.2026 auf 0,25** (vorher 0,6), mitgezogen mit der
+> Reizstärke-Kalibrierung des Emotionsverlaufs (`novaberg-ei.md` §Reizstärke). `[gemessen]`:
+> Dieselbe Injektion sortierte danach in **172 von 1178** Paarungen die Führung um statt in 2 —
+> nicht weil sie gewachsen wäre, sondern weil das Feld enger wurde. Der Abstand zwischen Führung
+> und Platz zwei fiel im Median von 0,52 auf 0,27. Bei 0,25 sind es 58, davon **48 unvermeidbar**:
+> Zwei Zustände tragen einen exakten Gleichstand an der Spitze, den jede Injektion über 0,005
+> kippt. Tiefer als 0,25 nicht — bei Faktor 0,15 fallen 620 von 1178 Injektionen unter
+> `EMOTION_MIN_WEIGHT` und verschwinden aus dem Verlauf, während die Umsortierungen nur von 58
+> auf 48 sinken.
+>
+> **In keiner der 1178 Paarungen übernimmt eine fremde Emotion die Führung** — obwohl 395 der
+> Punkte eine tragen, die Nova nicht hat. Die Umsortierungen finden ausschließlich innerhalb
+> ihrer eigenen Emotionen statt; das Versprechen „färben, nicht überschreiben" hielt auch
+> vorher. **Der Deckel 0,5 greift nie:** Der höchste vorkommende Gravitationswert ist 0,558,
+> mit Faktor 0,25 also 0,140. Er ist kein Stellrad.
+
 - Das **Injektionsgewicht** `min(0.5, gravitation × 0.6)` lag vor der KZG-Normierung bei jeder Injektion am Deckel; die im Kommentar versprochene Abstufung „0.3 schwaches Echo, 0.8 starker Anklang" fand nicht statt. Seit die KZG-Anker normiert sind (Chat 113), liegen die Werte bei 0.53 bis 0.69 und die Abstufung existiert wieder. §5.7 nennt als Startgewicht der dritten Kraft **0.2** — der Code kennt diesen Wert nicht.
 - Der **Quellenfaktor** stellt LZG mit 0.5 gegen KZG mit 0.8. Das steht gegen das Leitmotiv „viel speichern, intelligent vergessen": Das LZG ist die Schatzkiste und wird stärker gedämpft als der Zwischenspeicher. Offen.
 

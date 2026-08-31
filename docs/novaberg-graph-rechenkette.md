@@ -125,7 +125,7 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 ### S4 — Emotionsverlauf mit Decay
 
 **Eingang:** Novas historische Turns aus der Session (`rolle == "assistant"`).
-**Rechnung:** Über die letzten `EMOTION_MAX_TURNS` Turns wird je Emotion ein Gewicht akkumuliert. Der Decay ist **arousal-abhängig** — eine starke Emotion verfällt langsamer als eine schwache. Der jüngste Turn zählt voll, ältere nur als Echo (`EMOTION_HISTORIEN_GEWICHT`). Der akkumulierte Rohwert wird über eine `sin^0,5`-Kurve auf `[0, 1]` geglättet: steil unten, damit leise Andeutungen sichtbar werden, flach oben als natürliche Sättigung. Emotionen fern vom dominanten Plutchik-Sektor werden über eine Potenztransformation gedämpft, deren Exponent mit dem Arousal der dominanten Emotion skaliert — Gegenpole können nicht gleich hoch stehen.
+**Rechnung:** Über die letzten `EMOTION_MAX_TURNS` Turns wird je Emotion ein Gewicht akkumuliert. Der Decay ist **arousal-abhängig** — eine starke Emotion verfällt langsamer als eine schwache. Der jüngste Turn trägt seine Reizstärke `Cap × arousal³` (seit 31.08.2026), ältere nur als Echo (`EMOTION_HISTORIEN_GEWICHT`). Der akkumulierte Rohwert wird über eine `sin^0,5`-Kurve auf `[0, 1]` geglättet: steil unten, damit leise Andeutungen sichtbar werden, flach oben als natürliche Sättigung. Emotionen fern vom dominanten Plutchik-Sektor werden über eine Potenztransformation gedämpft, deren Exponent mit dem Arousal der dominanten Emotion skaliert — Gegenpole können nicht gleich hoch stehen.
 **Beitrag:** Der Verlauf ist die Grundlage von S6 und erscheint als `[EIGENE_EMOTION]`-Block im Responder-Prompt. Sein führender Eintrag setzt `internal.emotion` und damit die Achsen von S20.
 **Reinheit:** rein. `_emotions_verlauf_berechnen`, `_glaettung`, `_emotion_kanonisieren`, `_arousal_to_float`.
 **Prüfstand:** keiner.
@@ -217,7 +217,7 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 
 **Eingang:** das rohe Turn-Embedding; für die Injektion Novas Verlauf aus S4/S6.
 **Rechnung des Scans:** Je Eintrag in KZG und LZG `similarity × gewicht × zeit_decay × quellen_faktor`. Der Zeit-Decay ist eine eigene, **flachere** Kurve als der Gedächtnisverfall — emotionale Präsenz hält länger als Abrufbarkeit. Nur Einträge über `EMOTIONALE_GRAVITATIONS_SCHWELLE`, höchstens `EMOTIONALE_GRAVITATION_MAX_PRO_TURN`.
-**Rechnung der Injektion:** Je Punkt wird `min(0,5; gravitation × 0,6)` auf Novas Verlauf addiert — gedeckelt, weil Erinnerungen **färben** und nicht überschreiben sollen. Danach wird `internal.emotion` nachgezogen.
+**Rechnung der Injektion:** Je Punkt wird `min(0,5; gravitation × 0,25)` auf Novas Verlauf addiert — gedeckelt, weil Erinnerungen **färben** und nicht überschreiben sollen. Danach wird `internal.emotion` nachgezogen. **Der Faktor stand bis zum 31.08.2026 auf 0,6**; nach der Reizstärke-Kalibrierung sortierte dieselbe Injektion in 172 von 1178 Paarungen um statt in 2 — nicht weil sie gewachsen wäre, sondern weil das Feld enger wurde (Abstand Führung zu Platz zwei im Median 0,52 → 0,27). **Der Deckel greift dabei nie:** Der höchste im Bestand vorkommende Gravitationswert ist 0,558.
 **Beitrag:** Eine reaktivierte Erinnerung ändert nicht nur den Ton, sondern Novas Denkrichtung: Die Achsen von S20 und die Säulen von S18 stehen danach auf der neuen Lage.
 **Reinheit:** Scan unrein, Injektion rein (`emotionale_gravitation_auf_verlauf_anwenden`, `emotionale_gravitation_anwenden`).
 **Prüfstand:** `test_emotionale_gravitation_node.py`.

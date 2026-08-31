@@ -90,7 +90,7 @@ Die einzige Klasse mit einer Bauartregel statt einer Zahl: **Der gespeicherte We
 
 ### 3.5 Glättung — wie stark die Vergangenheit die Gegenwart dämpft
 
-`RAD_HISTORIEN_GEWICHT = 0.5` · `RAD_MESSREIHE_FENSTER = 5` · `EMOTION_HISTORIEN_GEWICHT = 0.15` · `EMOTION_GLAETTUNGS_MAXIMUM = 2.5` · `STIL_SESSION_GEWICHT = 0.7`
+`RAD_HISTORIEN_GEWICHT = 0.5` · `RAD_MESSREIHE_FENSTER = 5` · `EMOTION_HISTORIEN_GEWICHT = 0.15` · ~~`EMOTION_GLAETTUNGS_MAXIMUM = 2.5`~~ → **4.0, am 31.08.2026 aus Messreihen hergeleitet** (`novaberg-ei.md` §Reizstärke) · `STIL_SESSION_GEWICHT = 0.7`
 
 Glättung ist der direkte Gegenspieler der Unterscheidbarkeit: Sie kauft Stabilität mit Auflösung. Fenster und Historiengewicht der Räder sind ausdrücklich **Setzungen zum Messen** und abzulösen, sobald zehn Erhebungen vorliegen (`novaberg-charakter-rad-messreihe_k.md` §8). Bestand am 06.08.2026: **sechs Erhebungen je Rad** am produktiven Paar.
 

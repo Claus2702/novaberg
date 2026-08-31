@@ -312,8 +312,8 @@ Drei wesentliche Verfeinerungen nach der Kernimplementierung:
 1. **Rollen-Split im EI-Calc:** State-Flag `ei_calc_rolle` ("user" | "character") trennt die Berechnungspfade sauber. `_ei_calc_user()` und `_ei_calc_character()` sind separate Funktionen.
 
 2. **Akkumulationsrefactor:** Drei biologisch motivierte Mechanismen ersetzen die einfache Decay-Summierung:
-   - Aktueller Turn voll, Historie als Echo (15% — `EMOTION_HISTORIEN_GEWICHT`)
-   - Harter Cap bei 2.5 (`EMOTION_GLAETTUNGS_MAXIMUM`)
+   - Aktueller Turn nach seiner Reizstärke (seit 31.08.2026), Historie als Echo (15% — `EMOTION_HISTORIEN_GEWICHT`)
+   - Harter Cap bei 4.0 (`EMOTION_GLAETTUNGS_MAXIMUM`) — seit dem 31.08.2026, zusammen mit dem erregungsabhängigen Turn-Beitrag; Herleitung in `novaberg-ei.md` §Reizstärke
    - sin^0.5-Glättungskurve für den Anzeigebereich [0, 1] — steil unten (kleine Andeutungen sichtbar), sanft oben (aufbauend statt sofort ausschlagend)
 
 3. **Perzeption-Symmetrie:** Perzeption läuft nun in beiden Graphen — als erster Node im HumanGraph (User-Prompt, `perzeption_rolle: "user"`) und als letzter Node im CharacterGraph nach Corrector/Evaluate (Nova-Antwort, `perzeption_rolle: "assistant"`). Nach jedem Turn sind beide Emotionen im Session-Turn annotiert.

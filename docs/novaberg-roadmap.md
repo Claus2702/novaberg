@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 31. August 2026 — juengster Eintrag **20:30 UTC** (gemessen via `date -u`). Davor 30.08.2026, 22:38 UTC.
+**Stand:** 31. August 2026 — juengster Eintrag **21:35 UTC** (gemessen via `date -u`). Davor 31.08.2026, 20:24 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,88 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 31.08.2026, 21:35 UTC — Drei Schwellen, die eine Lage beschrieben und eine Zahl trugen ✅
+
+Die Reizstaerke-Kalibrierung verschob die Wertelage des Emotionsverlaufs. **Drei Schwellen an anderen Stellen waren gegen die alte Lage gesetzt** — und keine hatte einen Zeugen. Deshalb blieben 2732 Tests gruen, waehrend drei Tore ihr Verhalten aenderten.
+
+| Schwelle | vorher | unveraendert bei neuer Lage | gesetzt |
+|---|---|---|---|
+| `DELEGATION_EFFEKTIVWERT_SCHWELLE` | 18 von 33 | 6 von 33 | **0,20 → 4 von 33** |
+| Injektions-Faktor (`ei/gravitation.py`) | 2 von 1178 | 172 von 1178 | **0,25 → 58** |
+| `PRAEGUNG_TOR_SALIENZ` | 31 von 31 | 0 von 31 | **0,60 → 21,1 %** |
+
+### Zwei Grundgesamtheiten, und beide waren zuerst falsch
+
+Die Torquote lag in der ersten Rechnung bei 8,9 % und schien unerreichbar: 63 % aller `lzg_knoten` tragen ein Arousal von exakt 0,5. **Der Berg zerfaellt nach Emotion.** Bei `begeisterung` liegen nur 10,9 % darauf, bei `freude` 12,6 %, bei `hoffnung` null — die Perzeption differenziert. Er sitzt auf `neutral` (1508 Knoten, 77,6 % davon bei 0,5) und `neugierig`.
+
+**Und `neutral` wird in Schritt 1 der Verlaufsrechnung herausgefiltert** — diese Knoten erreichen das Tor nie. Ohne sie: 1718 Knoten, **31,3 %** statt 18,7 % ueber der Schwelle, und 20 bis 25 % werden erreichbar.
+
+Dieselbe Klasse traf die Salienz: *4 von 21* stammte aus den Torzeilen zweier Messreihen, nicht aus dem Bestand. Ueber 3677 `bewertung`-Zeilen sind es 47,5 % bei Schwelle 0,70.
+
+> **Zwei Zahlen, die verschiedene Mengen messen, sehen wie ein Widerspruch aus und sind keiner.** Dreimal an einem Tag, dreimal von mir selbst.
+
+### Die Injektion war nie das Problem
+
+`[gemessen]` ueber 1178 Paarungen: **In keiner einzigen uebernimmt eine fremde Emotion die Fuehrung** — obwohl 395 Punkte eine tragen, die Nova nicht hat. Die 172 Umsortierungen finden ausschliesslich innerhalb ihrer eigenen Emotionen statt. Das Versprechen des Kommentars, *faerben und nicht ueberschreiben*, hielt vorher wie nachher.
+
+**Nicht die Injektion ist gewachsen, das Feld ist enger geworden:** Der Abstand zwischen Fuehrung und Platz zwei fiel im Median von 0,52 auf 0,27. Und 48 der 58 verbleibenden Kipper sind unvermeidbar — zwei Zustaende tragen einen exakten Gleichstand an der Spitze.
+
+**Der Deckel 0,5 ist kein Stellrad.** Der hoechste im Bestand vorkommende Gravitationswert ist 0,558; zwischen Cap 0,50 und 0,25 aendert sich nichts.
+
+### Was die Zeugen gekostet haben
+
+Die erste Fassung war **schaerfer als die gewaehlte Zahl**: Sie verlangte, dass ein Turn mit arousal 0,60 nicht ausloest — bei Schwelle 0,20 tut er es knapp (0,209 gegen 0,200). Statt die Schwelle nachzuziehen, wurde der Zeuge auf die **Mitte** des Alltagsbands gefasst und der Grenzfall im Docstring benannt. Eine Zusicherung, die mehr verspricht, als die Zahl leistet, ist eine Behauptung.
+
+Zwei Bestandszeugen (`test_gv_zeitstand.py`) brachen — und trugen dabei einen eigenen Fehler: `gravitation: 0.80`, einen Wert, den die Rechnung nach der Normierung nicht mehr hervorbringt. Sie stehen jetzt auf dem hoechsten **gemessenen** Wert.
+
+**Suite 2739 → 2748 gruen, 0 uebersprungen.** Neun neue Zeugen, Gegenprobe vier vorhergesagt und vier gezaehlt.
+
+---
+
+## 31.08.2026, 20:24 UTC — Ein Todesfall wog wie eine Mondumlaufzeit ✅
+
+**Der Emotionsverlauf las die Erregung nie.** Der Beitrag des aktuellen Turns war `decay`, und bei `i = 0` ist `log(1 + 0)` null — also `decay = 1.0`, konstant fuer jede Erregung. Gemessen ueber die volle Skala 0.0 bis 1.0: jeder einzelne Turn erzeugte **0.77**, Spannweite **0.0000**. Der arousal-abhaengige Verfall regelt, wie lange etwas nachhallt; wie hart es auftrifft, stand nirgends.
+
+Der Weg dorthin ging von vorne nach hinten durch die Kette, jede Stufe fuer sich isoliert.
+
+### Die Perzeption allein, ohne Graph und ohne Nova
+
+`perceive()` unmittelbar gerufen, leere `user_id`, kein Session-Kontext, keine Antwortgenerierung. Acht Plutchik-Reize, drei Durchgaenge: **6 von 8 Sektoren getroffen, 8 von 8 Laeufe wortgleich, `neutral` 0 von 24 Mal.** Damit war ein Verdacht vom Vortag widerlegt — eine Vollturn-Reihe hatte 4 von 8 und dreimal `neutral` ergeben, und beides entsteht **hinter** der Perzeption.
+
+Zwei Fehlgriffe blieben, beide systematisch: Sektor 4 landet auf dem **Gegenpol** Sektor 8, Sektor 7 auf dem Nachbarn 6.
+
+**Die Isolation war nicht nur sparsam, sie war die Bedingung.** Ein direkter Knotenaufruf schreibt nichts — belegt mit `lzg_knoten` 3278 → 3278 ueber die ganze Reihe. Erst dadurch waren Reize wie ein Todesfall zulaessig, die ueber `/chat` im Gedaechtnis stehen blieben. Und genau die brauchte die naechste Frage.
+
+### Die Erregungsspanne: 0.10 bis 0.90, nicht 0.40 bis 0.60
+
+Elf nach Wucht gestaffelte Reize. Die enge Spanne der ersten Reihe war **der Reizsatz**, nicht der Knoten: Acht Wissenschaftssaetze koennen nur `knowledge/sachlich` erzeugen. Mit einem Todesfall und einer Ekstase bewegen sich auch `intent`, `tone` und `beziehungs_dynamik`.
+
+> **Ein Reizsatz aus einem Register misst die Monotonie des Reizsatzes.** Drei meiner eigenen Aussagen dieses Tages fielen daran — zur Arousal-Spanne, zur Tonvielfalt und zur Beziehungsdynamik.
+
+### Die Kalibrierung, und der Entwurf, den die Messung verwarf
+
+`GLAETTUNGS_MAXIMUM` 2.5 → **4.0**, Turn-Beitrag konstant 1.0 → **`GLAETTUNGS_MAXIMUM × arousal³`**, `MIN_WEIGHT` 0.15 → **0.04**. An den gemessenen Reizen: Nashorn 0.32 · Gammablitz 0.44 · Webb 0.58 · **Todesfall 0.85** · **Ekstase 0.95** · Anschlag **1.00**. Bei `arousal = 1.0` ist der Beitrag exakt der Cap — der Anschlag der Wahrnehmung ist der Anschlag der Skala, im ersten Turn.
+
+Die Trostgrenze faellt aus derselben Formel: Ein freundlicher Nutzer holt Nova aus gedrueckter Stimmung (0.32, 0.44), aber nicht aus Erschuetterung (0.85, 0.95). Niemand hat sie gesetzt.
+
+**Der erste Entwurf nahm die Wurzel aus der Glaettungskurve** — die Spreizung sollte allein aus dem Beitrag kommen. Die Messung widersprach: Ein Echo von 0.128 steht mit Wurzel nach der Sektor-Daempfung bei 0.157 und ohne sie bei **0.025**, also unter jeder Filterschwelle. Eine Traurigkeit waere beim ersten troestenden Turn nicht leiser geworden, sondern aus dem Verlauf verschwunden.
+
+> **Die Kurve hatte zwei Aufgaben, und nur eine war benannt.** Solange jeder Reiz denselben Rohwert erzeugte, sah die Wurzel wie eine Spreizung aus. Was sie wirklich trug, wurde erst sichtbar, als jemand sie entfernte.
+
+Der Beitrag ging deshalb von `arousal²` auf `arousal³`, die Wurzel blieb. Die Zielwerte auch.
+
+### Zeugen und Bilanz
+
+`tests/test_emotions_reizstaerke.py` — sieben Zusicherungen: Trennung, Ordnung ueber das ganze Band, Anschlag im ersten Turn, Daempfung gewoehnlicher Reize, ueberlebendes Echo, Trost-ja-Schock-nein, Kopplung von Cap und Vollausschlag. Rote Phase 6/7 gesehen, Gegenprobe (Beitrag zurueck auf `decay`) wieder 6/7 rot.
+
+**Suite 2732 → 2739 gruen, 0 uebersprungen.** Bemerkenswert: **kein einziger bestehender Test brach** — die konkreten Werte dieser Rechnung waren nirgends bezeugt. Die harte Wand laeuft sauber; ein `B905` aus der neuen Testdatei wurde vorher behoben.
+
+Einer der sieben Zeugen prueft die **Verwendung** und nicht die Formel: Er laesst die Empathie auf zwei verschiedene Lagen los und verlangt zwei verschiedene Ausgaenge. Die Lesson vom Vortag hat ihn erzwungen.
+
+**Herleitung mit allen Messreihen:** `novaberg-ei.md` §Reizstaerke, sechs Schritte.
 
 ---
 
