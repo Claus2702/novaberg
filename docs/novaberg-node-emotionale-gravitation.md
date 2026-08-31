@@ -106,6 +106,30 @@ Der Node ruft deshalb `internal_emotion_uebertragen()` erneut auf, wenn er den V
 > mit `EMGRAV-KANDIDAT-OHNE-KENNUNG` behoben: Die Kennung reist mit, die `pipeline_log`-Zeile hält
 > sie fest. **Die Log-Zeile bleibt, wie sie ist** — sie beantwortet weiter ihre eigene Frage.
 
+## 4a. Die Rechnung — seit dem 30.08.2026 normiert
+
+```
+gravitation = similarity × (gewicht_decay / LZG_KNOTEN_GEWICHT_CAP) × zeit_decay × QUELLENFAKTOR
+```
+
+Die Formel des LZG-Zweigs steht in **`gravitation_lzg_berechnen()`** — einer eigenen reinen
+Funktion mit EVA-Eingabeprüfung, nicht inline im Scan. Der Grund ist ein Zeuge: Hinter einer
+Datenbankabfrage ist die Rechnung nur nachrechenbar, nicht aufrufbar, und ein nachrechnender
+Zeuge bleibt grün, wenn sich die echte Rechnung ändert.
+
+**Die Division ist verlustfrei.** `gewicht_absolut_berechnen()` rechnet
+`CAP × sin(…)^exp` — der Sinusterm liegt bereits in `[0,1]`, und die Division nimmt nur den
+Streckfaktor zurück, den die Formel außen drangesetzt hat. 755 verschiedene Werte bleiben
+755. Geteilt wird durch die **Konstante**, damit die Normierung einer Skalenänderung folgt.
+
+**`EMOTIONALE_GRAVITATIONS_SCHWELLE` steht seit dem 30.08.2026 auf 0,18**, vorher 0,40. Die
+Schwelle musste mit der Skala wandern: Nach der Normierung liegt der stärkste **gemessene**
+Wert bei 0,2872, und 0,40 hätte nie ausgelöst — der Fehler wäre in die Gegenrichtung
+gekippt. Gerechnet über 56 Turns: 0,20 → 0,50 Treffer je Turn · 0,10 → 6,30 · 0,05 → 9,91.
+Die Konstante trägt ihre Herkunft im Kommentar (`F-INTENS-1`).
+
+**Der KZG-Zweig war nie betroffen** — er liest die Salienz, und die steht auf `[0,1]`.
+
 ## 5. Live-Messung (28.07.2026, 11:58 UTC)
 
 Turn zum Thema Gewürze:

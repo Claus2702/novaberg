@@ -252,6 +252,22 @@ hergibt, und der Grund für ihre Größe.
 
 ---
 
+### 4.1b `praegung_faden` und `praegung_beruehrung` — nicht Teil dieses Speichers
+
+**Seit dem 31.08.2026.** Hier genannt, weil wer die Schema-Übersicht liest, sie sonst nicht
+findet — **aber sie hängen nicht am LZG-Knoten.** Ein Faden trägt `turn_id` und ein eigenes
+`embedding`; er ist kein Annotat, sondern eine eigene Schicht neben dem Gedächtnis.
+
+> **Die Spaltenvorlage ist das LZG, seine Formel ist es nicht.** Dort wächst das Gewicht
+> durch Wiederverwendung — was oft gebraucht wird, bleibt. Bei einer Prägung ist es
+> umgekehrt: **Die Intensität wird im Moment des Erlebens vergeben und nie überboten.**
+> `ausschlag_absolut` entsteht einmal aus `ausschlag_eingang`, und `ausschlag_aktuell` kann
+> ihn nie überschreiten.
+
+Beschreibung: `novaberg-node-praegung.md`, Konzept `novaberg-thinking-faszination_k.md` §7.
+
+---
+
 ### 4.1a `lzg_knoten_haltung` — die Ladung eines Knotens
 
 **Seit dem 30.08.2026.** Eine additive Annotation **auf** `lzg_knoten`, kein zweiter
