@@ -266,6 +266,8 @@ project/
 │   │       ├── responder.py             #     → novaberg-node-responder.md
 │   │       ├── thinker.py               #     → novaberg-node-thinker.md
 │   │       ├── salience.py              #     → novaberg-node-salience.md
+│   │       ├── praegung.py              #     Faden-Tor der Praegungsschicht
+│   │                                    #       → novaberg-thinking-faszination_k.md §7.3
 │   │       ├── dispatcher.py            #     → novaberg-node-dispatcher.md (zentraler Session-Turn-Schreiber)
 │   │       ├── tribunal.py              #     → novaberg-node-tribunal.md
 │   │       ├── corrector.py             #     → novaberg-node-corrector.md

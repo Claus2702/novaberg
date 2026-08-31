@@ -41,7 +41,7 @@ Warum nicht pragmatisch / kritisch / empathisch? Das Konzept (Chat 1) war bewuss
 ```
 2x ablehnen  -> ablehnen -> Corrector
 2x warnung   -> warnung  -> Corrector
-sonst        -> ok       -> Salienz -> Dispatcher -> END (seit Chat 60 wieder im Graph)
+sonst        -> ok       -> Salienz -> Praegung -> Dispatcher -> END (seit Chat 60 wieder im Graph)
 ```
 
 Maximale Korrektur-Iterationen: 2. Danach Fallback (neutrale Antwort). Das verhindert endlose Schleifen bei unlosbaren Konflikten zwischen Perspektiven.
@@ -95,6 +95,13 @@ Perzeption → Enricher → EI-Calc → Salienz → Dispatcher → END
 | 2 | Enricher | Nein | HG-Methodensplit `_enrich_human`: laedt `raw_turns`, erzeugt `prompt_embedding`, ermittelt `aktivierte_ziele` und `gravitationsterm`. Kein KZG/LZG, kein Charakter-Hash, kein Reducer (Phase 4, Chat 90). |
 | 3 | EI-Calc | Nein | `_ei_calc_user`: Emotions-Verlauf, Vektor, Modus-/Stil-Plausibilitaet. Keine Nova-Empathie im HG (Rollen-Split Chat 61). |
 | 4 | Salienz | GPU | Bewertet Speicherwuerdigkeit des User-Prompts, erzeugt `pending_writes` mit `ziel="kzg"`. |
+
+**Der CharacterGraph traegt seit dem 31.08.2026 einen Knoten mehr:** `praegung` steht zwischen
+`salience` und `dispatcher` und prueft das Faden-Tor der Praegungsschicht. **Die Position ist
+erzwungen** — die effektive Salienz ist eine seiner beiden Torbedingungen und wird erst im
+Salienz-Knoten gerechnet; danach ist der Turn vorbei. Der Knoten schreibt in `praegung_faden` und
+protokolliert **jede** Pruefung, auch die abgelehnte (`pipeline_log`, `schritt: praegung_tor`).
+Konzept: `novaberg-thinking-faszination_k.md` §7.3.
 | 5 | Dispatcher | Nein | Schreibt Session-Turn (komplett) + KZG + Delegation. Session-Zusammenfassung bei Bedarf. |
 
 Gerade Linie, keine Conditional Edges.
@@ -133,7 +140,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
                                                                                     |
             +───────────────────────────────────────────────────────────────────────+
             |
-            +── ok / fallback → perzeption_assistant → ei_calc_persist → Salienz → Dispatcher → END
+            +── ok / fallback → perzeption_assistant → ei_calc_persist → Salienz → Praegung → Dispatcher → END
                                  ↑
                                  hier geht die Antwort raus (seit 25.08.2026)
             |

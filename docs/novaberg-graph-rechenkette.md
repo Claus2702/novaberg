@@ -47,6 +47,7 @@ Jedes System trägt fünf Angaben:
 |---|---|---|---|
 | 0 | S1 Perzeption des Reizes | `graph/nodes/perzeption.py` | unrein (Modell) |
 | 0 | S2 Salienz und Intentionen des Reizes | `graph/nodes/salience.py` | unrein (Modell) |
+| 2 | S35 Faden-Tor der Praegung | `graph/nodes/praegung.py` | unrein (PostgreSQL) |
 | 1 | S3 Zustandsladung | `graph/nodes/db_zugriff.py` | unrein (Redis, PostgreSQL) |
 | 1 | S4 Emotionsverlauf mit Decay | `ei/berechnung.py` | rein |
 | 1 | S5 Emotionsvektor | `ei/berechnung.py` | rein |
