@@ -53,6 +53,7 @@ CHARACTER_NODE_LABELS: dict[str, str] = {
     "corrector":            "Corrector — Korrektur",
     "perzeption_assistant": "Perzeption — Antwort-Analyse",
     "salience":             "Salienz — Bewertung",
+    "praegung":             "Prägung — Faden-Tor",
     "dispatcher":           "Dispatcher — Speichern",
 }
 
