@@ -1023,7 +1023,14 @@ EMOTION_DECAY_BASE: float = 10
 EMOTION_MAX_TURNS: int = 100
 
 # Mindest-Gewicht — Emotionen darunter werden entfernt.
-EMOTION_MIN_WEIGHT: float = 0.15
+#
+# 31.08.2026: 0.15 → 0.04, gemeinsam mit EMOTION_GLAETTUNGS_MAXIMUM (2.5 → 4.0).
+# Die Schwelle ist an den Cap gebunden, nicht an die Emotion: Ein groesserer Cap
+# staucht jeden Wert, und das Echo eines gewoehnlichen Turns fiel bei 0.15
+# darunter — gemessen 0.05 statt vorher 0.18. Es waere damit nicht leiser
+# geworden, sondern aus dem Verlauf **verschwunden**. Herleitung samt Messreihe:
+# `novaberg-ei.md` §Reizstaerke.
+EMOTION_MIN_WEIGHT: float = 0.04
 
 # Fenster für Vektor-Berechnung (Richtungswechsel).
 # Kurz halten — der Vektor soll Wendepunkte erkennen, nicht Grundstimmung.
@@ -1502,26 +1509,43 @@ EI_AROUSAL_DOMINANZ: float = 2.0
 #
 # HISTORIEN_GEWICHT = 0.15
 #   Anteil, mit dem ältere Turns in die Akkumulation eingehen. Der
-#   neueste Turn (i=0) zählt immer voll (100%). Ältere Turns ziehen
-#   als Stimmungs-Trägheit mit, verstärken sich aber nicht unbegrenzt.
+#   neueste Turn (i=0) trägt seit dem 31.08.2026 seine eigene Wucht
+#   (`GLAETTUNGS_MAXIMUM × arousal³`) statt eines festen Vollwerts;
+#   ältere ziehen als Stimmungs-Trägheit mit und verstärken sich nicht
+#   unbegrenzt.
 #
-# GLAETTUNGS_MAXIMUM = 2.5
+# GLAETTUNGS_MAXIMUM = 4.0
 #   Harte Obergrenze für akkumulierte Rohwerte. Bei diesem Wert erreicht
 #   die Glättungs-Kurve mathematisch exakt 1.0. Rohwerte darüber werden
-#   ebenfalls auf 1.0 abgebildet — lodernde Dauer-Emotionen verdienen
-#   ihre Eins, alles bis dahin wird differenziert dargestellt.
+#   ebenfalls auf 1.0 abgebildet.
 #
-# Die Glättungs-Kurve sin^0.5 ist eine durchgehende, glatte Funktion ohne
-# Knickstellen: steil unten (kleine Andeutungen werden sichtbar), flach
-# oben (natürliche Sättigung). Modelliert konversationelle Emotion gut —
-# eine Emotion baut sich durch Wiederholung auf, statt sofort voll
-# auszuschlagen.
+#   **Der Cap ist zugleich der Beitrag des stärksten denkbaren Reizes.**
+#   Der aktuelle Turn trägt `GLAETTUNGS_MAXIMUM × arousal²` bei
+#   (`ei/berechnung.py`), also bei arousal 1.0 exakt den Cap: Der Anschlag
+#   der Wahrnehmung ist der Anschlag der Skala, erreicht im ersten Turn.
+#   Die beiden Zahlen sind deshalb **eine** Entscheidung und nicht zwei —
+#   wer den Cap ändert, verschiebt den Vollausschlag mit.
 #
-# Beispielwerte (Maximum=2.5):
-#   0.1 → 0.25, 0.5 → 0.56, 1.0 → 0.77, 1.5 → 0.90, 2.0 → 0.98, 2.5 → 1.00
+# 31.08.2026: 2.5 → 4.0, und der Turn-Beitrag von konstant 1.0 auf die
+# kubische Form. Vorher erzeugte **jeder** Reiz denselben Ausschlag von
+# 0.77, unabhängig von seiner Erregung — gemessen über die volle Skala 0.0
+# bis 1.0 eine Spannweite von 0.0000. Der Grund lag in der Akkumulation: bei
+# i=0 ist log(1+0) null, damit decay = 1.0, und der arousal-abhängige Verfall
+# griff erst ab dem zweiten Turn. Ein Todesfall und eine Mondumlaufzeit
+# wogen gleich. Herleitung samt Messreihen: `novaberg-ei.md` §Reizstärke.
+#
+# Die Glättungs-Kurve sin^0.5 bleibt unverändert. Sie spreizt nicht — das tut
+# der Turn-Beitrag —, sondern hält die **Echos** älterer Turns über der
+# Filterschwelle: Ohne die Wurzel fällt ein Echo nach der antagonistischen
+# Sektor-Dämpfung auf 0.025 und verschwindet aus dem Verlauf.
+#
+# Beispielwerte (Maximum=4.0, Exponent 0.5), mit den Reizen dahinter:
+#   0.13 → 0.22 (Echo)      0.26 → 0.32 (a 0.40)   0.50 → 0.44 (a 0.50)
+#   0.86 → 0.58 (a 0.60)    2.05 → 0.85 (a 0.80)   2.92 → 0.95 (a 0.90)
+#   4.00 → 1.00 (Cap; a 1.0 erreicht ihn im ersten Turn)
 # ─────────────────────────────────────────────
 EMOTION_HISTORIEN_GEWICHT:  float = 0.15
-EMOTION_GLAETTUNGS_MAXIMUM: float = 2.5
+EMOTION_GLAETTUNGS_MAXIMUM: float = 4.0
 
 # ─── Nova-Empathie (Dual-Emotion Phase 2, AP3) ────────────
 # Empathie-Koeffizient α abhängig von der Sektor-Distanz im Plutchik-Oktagon.

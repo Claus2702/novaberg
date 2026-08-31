@@ -95,16 +95,26 @@ def _glaettung(rohwert: float) -> float:
     über eine sin^0.5-Kurve.
 
     Die Kurve ist eine durchgehende, glatte Funktion ohne Knickstellen:
-    - Steil unten: selbst kleine Andeutungen werden sichtbar
-    - Flach oben: natürliche Sättigung, einzelne Turns nicht sofort am Max
+    - Steil unten: selbst kleine Andeutungen bleiben sichtbar
+    - Flach oben: natürliche Sättigung
     - Mathematisch sauber: erreicht exakt 1.0 am Cap
 
-    Modelliert konversationelle Emotion plausibel: Eine Emotion baut sich
-    durch Wiederholung auf, statt sofort voll auszuschlagen.
+    **Die Spreizung der Reizstärke liegt nicht hier, sondern im Turn-Beitrag**
+    (`_emotions_verlauf_berechnen`): dort trägt der aktuelle Turn
+    `MAXIMUM × arousal³`. Diese Kurve hat eine andere Aufgabe.
+
+    **Warum der Exponent 0.5 bleiben muss.** `[gemessen]` 31.08.2026: Ohne ihn
+    verschwindet das **Echo** älterer Turns. Ein Turn, der einen Schritt
+    zurückliegt, trägt einen Rohwert von 0.128; die Wurzel hebt ihn auf 0.224,
+    und die antagonistische Sektor-Dämpfung (Schritt 4) lässt davon 0.157 —
+    sichtbar. Ohne die Wurzel steht er bei 0.050, nach der Dämpfung bei
+    **0.025**, und die Filterschwelle entfernt ihn aus dem Verlauf. Er wäre
+    dann nicht leiser, sondern fort. Die Dämpfung ist eine Potenz: Auf kleine
+    Basen wirkt sie ungleich härter als auf große.
 
     Mathematik:
         x_normalisiert = rohwert / MAXIMUM × π/2     # mappt [0, MAXIMUM] auf [0, π/2]
-        ergebnis       = sin(x_normalisiert)^0.5      # sin liegt in [0, 1], Wurzel macht steiler unten
+        ergebnis       = sin(x_normalisiert)^0.5      # sin in [0, 1], Wurzel hält Echos sichtbar
 
     Args:
         rohwert: Akkumulierter Emotions-Wert (kann > MAXIMUM sein).
@@ -112,15 +122,14 @@ def _glaettung(rohwert: float) -> float:
     Returns:
         Geglätteter Wert zwischen 0.0 und 1.0.
 
-    Beispielwerte (Maximum=2.5):
-        0.05 → 0.18 (auch leise Andeutungen sichtbar)
-        0.10 → 0.25
-        0.30 → 0.43
-        0.50 → 0.56
-        1.00 → 0.77 (einzelner starker Turn — präsent, nicht ausgereizt)
-        1.50 → 0.90 (mehrere Turns akkumuliert)
-        2.00 → 0.98
-        2.50 → 1.00 (Cap, mathematisch exakt)
+    Beispielwerte (Maximum=4.0), mit den Reizen, die sie erzeugen:
+        0.13 → 0.22 (das Echo eines Turns, einen Schritt zurück)
+        0.26 → 0.32 (arousal 0.40 — ein bedrückender Sachverhalt)
+        0.50 → 0.44 (arousal 0.50)
+        0.86 → 0.58 (arousal 0.60 — sichtbare Begeisterung)
+        2.05 → 0.85 (arousal 0.80 — ein Todesfall)
+        2.92 → 0.95 (arousal 0.90 — Ekstase)
+        4.00 → 1.00 (Cap; arousal 1.0 erreicht ihn im ersten Turn)
     """
     if rohwert >= EMOTION_GLAETTUNGS_MAXIMUM:
         logger.debug(f"EI-Calc: Glättung am Cap — rohwert={rohwert:.3f} → 1.000")
@@ -200,7 +209,7 @@ def _emotions_verlauf_berechnen(
         return []
 
     # 3. Decay berechnen (neuester Turn zuerst)
-    # Aktueller Turn (i=0) zählt voll (100%), ältere Turns nur als Echo
+    # Aktueller Turn (i=0) trägt seine Wucht (Reizstärke), ältere nur als Echo
     # (HISTORIEN_GEWICHT, default 15%). Das modelliert biologisch: die
     # aktuelle Emotion dominiert, alte Turns ziehen als Stimmungs-Trägheit
     # nur sanft mit. Verhindert unbegrenztes Aufsummieren über Turns.
@@ -217,8 +226,25 @@ def _emotions_verlauf_berechnen(
         effective_decay: float = EMOTION_DECAY_FACTOR * (1.0 - arousal * EI_AROUSAL_PERSISTENCE)
         decay: float = 1.0 / (1.0 + effective_decay * math.log(1.0 + i, EMOTION_DECAY_BASE))
 
-        # Aktueller Turn voll, ältere Turns als Echo
-        beitrag: float = decay if i == 0 else decay * EMOTION_HISTORIEN_GEWICHT
+        # Der aktuelle Turn trägt seine eigene Wucht, ältere ziehen als Echo mit.
+        #
+        # **Warum der Decay den jüngsten Turn nicht beschreiben kann:** Bei i=0
+        # ist log(1+0) null, also decay = 1.0 — konstant, für jede Erregung.
+        # Bis zum 31.08.2026 stand hier genau dieses `decay`, und deshalb erzeugte
+        # ein Todesfall (arousal 0.80) denselben Ausschlag wie eine
+        # Mondumlaufzeit: 0.77, über die volle Skala mit Spannweite 0.0000.
+        # Der arousal-abhängige Verfall oben regelt, wie lange etwas **nachhallt**;
+        # wie hart es **auftrifft**, stand nirgends.
+        #
+        # Die kubische Form trennt das gemessene Band der Perzeption
+        # (0.40–0.90) auf 0.32 bis 0.95 und trifft bei arousal 1.0 exakt den Cap:
+        # Der Anschlag der Wahrnehmung ist der Anschlag der Skala, im ersten Turn.
+        # Ein Schock ist plötzlich, kein Aufbau über Turns.
+        # Herleitung samt Messreihen: `novaberg-ei.md` §Reizstärke.
+        beitrag: float = (
+            EMOTION_GLAETTUNGS_MAXIMUM * arousal ** 3 if i == 0
+            else decay * EMOTION_HISTORIEN_GEWICHT
+        )
         akkumuliert[emotion] = akkumuliert.get(emotion, 0.0) + beitrag
 
         # Arousal mit emotionsspezifischem Decay dämpfen
