@@ -247,6 +247,10 @@ class GraphBase(ABC):
     def _node_salience(self, state: ConversationState) -> ConversationState:
         return analyze(state, self.redis_client, state["user_id"], self.postgres_url)
 
+    def _node_praegung(self, state: ConversationState) -> ConversationState:
+        from graph.nodes.praegung import praegung_pruefen
+        return praegung_pruefen(state)
+
     def _node_dispatch(self, state: ConversationState) -> ConversationState:
         return dispatch(state, self.redis_client, self.postgres_url)
 

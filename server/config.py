@@ -1569,6 +1569,31 @@ ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele
 # Ziel-Gravitation 0.3") beschrieb zudem einen Wert, den es nie gab.
 # ⚠ Wachposten: Prompt↔Eintrag-Wert (gravitation = sim × gewicht × decay ×
 # faktor), nicht gemessen — begründeter Startwert, kein Messergebnis.
+# ── Praegungsschicht: das Faden-Tor (Scheibe 1, 31.08.2026) ──────────
+# Zwei Bedingungen, und Arousal ist keine davon (Konzept §7.3). Das Tor traegt
+# die volle Last: Es ist das einzige, was die Fadenkarte von "jeder Turn ist ein
+# Faden" trennt.
+#
+# **Beide Zahlen sind Setzungen, keine Messungen** — und das ist ausdruecklich
+# vermerkt, weil eine Schwelle ohne Beobachtung heute schon einmal jahrelang
+# nichts abgelehnt hat (EMGRAV-SCHWELLE-TOT). Die Salienz ist messbar:
+# `[gemessen]` 30.08.2026 ueber 2747 Laeufe liegen 43 % ueber 0,90 und 48 %
+# ueber 0,85 — sie allein trennt schlecht, deshalb die Konjunktion. Der
+# Emotionsausschlag ist im Bestand **nicht** messbar, weil der Emotionsverlauf
+# nirgends persistiert wird; erst `praegung_faden.ausschlag_eingang` macht ihn
+# sichtbar. Das Tor protokolliert deshalb **jede** Pruefung, auch die
+# abgelehnte, damit beide Schwellen nach einer Woche kalibrierbar sind.
+# 0.90 war gegen den Gesamtkorpus kalibriert (43 % darueber) — und der besteht
+# zu erheblichem Teil aus frueheren Messturns, also aus langen Wissenschafts-
+# texten mit hoher Salienz. `[gemessen]` 31.08.2026 an sieben echten
+# Gespraechsturns: effektive Salienz **0,43 bis 0,86**, keiner ueber 0,90. Eine
+# Schwelle, die nur Messturns durchlaesst, misst das Werkzeug statt des
+# Gegenstands (`21_MESSUNG/messturns.md`).
+# Auf 0,70 gezogen am 31.08.2026: Sechs echte Gespraechsturns lagen bei
+# 0,442 bis 0,732 — der beste verfehlte 0,75 um 0,018.
+PRAEGUNG_TOR_SALIENZ:   float = float(os.getenv("PRAEGUNG_TOR_SALIENZ", "0.70"))
+PRAEGUNG_TOR_AUSSCHLAG: float = float(os.getenv("PRAEGUNG_TOR_AUSSCHLAG", "0.70"))
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest

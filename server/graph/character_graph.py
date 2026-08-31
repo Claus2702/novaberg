@@ -83,6 +83,7 @@ class CharacterGraph(GraphBase):
         graph.add_node("perzeption_assistant", self._node_perceive)
         graph.add_node("ei_calc_persist",    self._node_ei_calc_persist)
         graph.add_node("salience",           self._node_salience)
+        graph.add_node("praegung",           self._node_praegung)
         graph.add_node("dispatcher",         self._node_dispatch)
 
         # ── Kanten ─────────────────────────────
@@ -174,7 +175,10 @@ class CharacterGraph(GraphBase):
         # Perzeption-Assistant (PFAD2-PERZEPTION-FIX Phase 2).
         graph.add_edge("perzeption_assistant", "ei_calc_persist")
         graph.add_edge("ei_calc_persist",     "salience")
-        graph.add_edge("salience",            "dispatcher")
+        # Das Faden-Tor steht hinter der Salienz, weil sie eine seiner beiden
+        # Bedingungen ist — frueher gaebe es sie noch nicht (Konzept §7.3).
+        graph.add_edge("salience",            "praegung")
+        graph.add_edge("praegung",            "dispatcher")
         graph.add_edge("dispatcher",          END)
 
         # ── Kompilieren ────────────────────────

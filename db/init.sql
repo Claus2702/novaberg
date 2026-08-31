@@ -1163,3 +1163,91 @@ CREATE INDEX IF NOT EXISTS idx_sachlage_verlauf_turn
 -- traegt es, und der Leser prueft darauf, statt eine leere Zeichenkette fuer
 -- eine turn_id zu halten.
 ALTER TABLE shadow_auftrag ADD COLUMN IF NOT EXISTS ausloeser_turn_id TEXT;
+
+-- ══════════════════════════════════════════════════════════════════════
+-- Praegungsschicht — Faeden und ihre Beruehrungen (Scheibe 1, 31.08.2026)
+--
+-- Die dritte Charakterschicht neben dem Zuwendungs-Rad (relational) und den
+-- Werte-Knoten (normativ): Sie ist **thematisch**. Ein Faden ist ein
+-- einschneidendes, embeddingbezogenes Ereignis; wiederkehrende
+-- Emotion-Ausgang-Sequenzen verdichten spaeter zu Straengen.
+-- Konzept: novaberg-thinking-faszination_k.md §7.
+--
+-- **Die tragende Unterscheidung gegenueber dem LZG:** Das LZG ist auf
+-- Vergessen ausgerichtet, die Praegung auf Intensitaet. Dort waechst das
+-- Gewicht durch Wiederverwendung; hier wird die Intensitaet im Moment des
+-- Erlebens vergeben und **nie ueberboten**. Die Spaltenvorlage ist das LZG,
+-- seine Formel ist es nicht.
+-- ══════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS praegung_faden (
+    id                  SERIAL PRIMARY KEY,
+
+    -- Paar-Schema: user_id ist das Subjekt, character_id das Gegenueber,
+    -- beobachter der Schreiber. Eine Praegung ist Novas Eigenschaft
+    -- gegenueber jemandem, nicht global.
+    user_id             TEXT             NOT NULL,
+    character_id        VARCHAR(50)      NOT NULL,
+    beobachter          VARCHAR(20)      NOT NULL DEFAULT 'assistant',
+
+    -- Quelle vor Destillat: Der Rueckbezug auf den Turn ist der Weg zurueck
+    -- zum Wortlaut. NULL-faehig ohne Vorgabewert, weil `geschlossen`-Faeden
+    -- (Pixie schliesst aus mehreren Bestaenden) keinen einzelnen Turn haben —
+    -- und genau daran verlaeuft die Grenze der Rueckwirkung, nicht daran,
+    -- wer geschrieben hat (§7.5).
+    turn_id             TEXT,
+
+    embedding           VECTOR(768),
+    emotion             TEXT             NOT NULL,
+
+    -- Hier entscheidet sich alles: die Emotionsstaerke bei Entstehung.
+    -- Roh und auf voller Skala [0,1] — kein Cap, weil der Eingang die volle
+    -- Skala **ist**.
+    ausschlag_eingang   DOUBLE PRECISION NOT NULL,
+
+    -- Abgeleitet, genau einmal: sin(eingang * pi/2)^2. Punktsymmetrisch um
+    -- 0,5, Abflachung an beiden Enden, Trennschaerfe dort, wo die meisten
+    -- Faeden liegen werden. Der Exponent weicht bewusst vom sin^0.5 der
+    -- Faszination ab (§7.2, §10.6) — dort ein Produkt vieler Faktoren, hier
+    -- ein einzelnes Erlebnis.
+    ausschlag_absolut   DOUBLE PRECISION NOT NULL,
+
+    -- Faltung ueber die Beruehrungen; startet gleich `ausschlag_absolut`.
+    -- Wird nie darueber gehoben: Wiedererinnern macht nicht intensiver.
+    ausschlag_aktuell   DOUBLE PRECISION NOT NULL,
+
+    -- Feld, keine Fadenart (§7.5). Narrative Skripte entstehen aus
+    -- wiederkehrenden Emotion-**Ausgang**-Sequenzen; das Urteil faellt spaeter
+    -- die Selbstreflexion, im Live-Pfad waere es nicht moeglich.
+    ausgang             VARCHAR(20)      NOT NULL DEFAULT 'offen',
+
+    -- erlebt (Live-Tor) | bewertet (Pixie im Rueckblick) | geschlossen
+    -- (Pixie aus mehreren Bestaenden, darf nicht zurueckwirken).
+    herkunft            VARCHAR(20)      NOT NULL DEFAULT 'erlebt',
+
+    entstanden_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW()
+);
+
+-- Die Suche laeuft je Paar und ueber die Zeit. Kein ivfflat: Die Tabelle
+-- beginnt bei null Zeilen, und ein Vektorindex ueber einen leeren Bestand
+-- lernt nichts — dieselbe Entscheidung wie bei sachlage_verlauf.
+CREATE INDEX IF NOT EXISTS idx_praegung_faden_paar
+    ON praegung_faden (user_id, character_id, entstanden_am DESC);
+CREATE INDEX IF NOT EXISTS idx_praegung_faden_turn
+    ON praegung_faden (turn_id);
+
+-- Eine Zeile je Reaktivierung. **Eigene Tabelle statt eines verschobenen
+-- Zeitstempels:** Rechnet man die Auffuellung durch Vorruecken eines
+-- `verstaerkt_am`, kodiert dieser Zeitstempel die Verfallsfunktion — aendert
+-- man spaeter die Halbstrecke, bedeuten alle alten Zeitstempel etwas anderes,
+-- und es gibt keinen Weg zurueck. So bleiben Alpha und Halbstrecke Parameter
+-- eines Laufs, nicht eines Schreibvorgangs (§7.2, §7.4).
+CREATE TABLE IF NOT EXISTS praegung_beruehrung (
+    id           SERIAL PRIMARY KEY,
+    faden_id     INTEGER     NOT NULL REFERENCES praegung_faden(id) ON DELETE CASCADE,
+    beruehrt_am  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    quelle       TEXT        NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_praegung_beruehrung_faden
+    ON praegung_beruehrung (faden_id, beruehrt_am DESC);
