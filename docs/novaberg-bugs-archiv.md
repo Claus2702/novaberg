@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
 **Stand:** 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** 125 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
+**Inhalt:** **52 abgeschlossene Eintraege mit eigenem Abschnitt** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026 ueber Ueberschriften der Form `### \`KENNUNG\``. **Die Zahl ist nicht mit der frueheren vergleichbar** (dort 123, fortgeschrieben statt gezaehlt): Die Datei fuehrt Eintraege in mehreren Formen — 84 `Zustand:`-Zeilen, 135 Ueberschriften mit irgendeiner Kennung, dazu Tabellenzeilen ohne eigenen Abschnitt. Fundliste 30.08.2026.
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---
