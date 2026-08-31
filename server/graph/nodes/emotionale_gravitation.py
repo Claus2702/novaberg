@@ -37,13 +37,63 @@ Kein LLM-Call, kein I/O. Reine State-Transformation.
 
 import logging
 
+from config import POSTGRES_URL, PRAEGUNG_BERUEHRUNG_NAEHE
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.nodes.ei_calc import internal_emotion_uebertragen
 from graph.reiz import reiz_ist_eigener_gedanke
 from graph.state import ConversationState, pipeline_quelle
 from memory.pipeline_log import log_berechnung
+from memory.praegung import beruehrung_aus_reaktivierung
 
 logger = logging.getLogger("ki_server.emotionale_gravitation")
+
+
+def _faeden_auffrischen(state: ConversationState, punkte: list[dict]) -> None:
+    """Legt Beruehrungen fuer die Faeden an, die den Reaktivierungen nahe stehen.
+
+    Vorbedingung: `punkte` sind die aktivierten Gravitationspunkte dieses Turns.
+    Nachbedingung: Je getroffenem Faden eine Zeile in `praegung_beruehrung`, und
+    eine `pipeline_log`-Zeile mit der Zahl der Kandidaten und der Treffer.
+    Fehlerfaelle: Keine eigenen — die Schreibfunktion meldet selbst und liefert
+    eine leere Liste; der Turn laeuft weiter.
+
+    **Die Log-Zeile zaehlt beide Seiten.** Eine Reihe ohne Beruehrungen kann
+    daran liegen, dass die Schwelle zu hoch steht oder dass es keine Faeden
+    gibt; ohne die Kandidatenzahl waeren die beiden Faelle ununterscheidbar —
+    dieselbe Klasse wie ein Tor, dessen Neins niemand zaehlt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    lzg_ids: list[int] = [
+        int(p["knoten_id"]) for p in punkte
+        if p.get("quelle") == "lzg" and p.get("knoten_id") is not None
+    ]
+    if not lzg_ids:
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    treffer = beruehrung_aus_reaktivierung(
+        POSTGRES_URL,
+        state.get("user_id", ""), state.get("character_id", ""),
+        lzg_ids, PRAEGUNG_BERUEHRUNG_NAEHE,
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "emotionale_gravitation",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "schritt":    "praegung_auffrischung",
+            "kandidaten": len(lzg_ids),
+            "schwelle":   PRAEGUNG_BERUEHRUNG_NAEHE,
+            "treffer":    [
+                {"knoten_id": k, "faden_id": f, "naehe": round(n, 3)}
+                for k, f, n in treffer
+            ],
+        },
+        user_id      = state.get("user_id"),
+        character_id = state.get("character_id"),
+    )
 
 
 def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationState:
@@ -132,6 +182,14 @@ def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationSta
         user_id      = state.get("user_id"),
         character_id = state.get("character_id"),
     )
+
+    # Dieselben Reaktivierungen frischen Praegungsfaeden auf (Konzept §7.4).
+    # **Hier und nicht im Praegungs-Node:** Die Auffrischung haengt an der
+    # Reaktivierung, nicht am Turn — ein Turn ohne aktivierte Erinnerung
+    # frischt nichts auf, auch wenn er thematisch passt. Nur LZG-Punkte: Eine
+    # KZG-Reaktivierung hat keine Zeile in `lzg_knoten` und damit kein
+    # Embedding, gegen das sich ein Faden vergleichen liesse.
+    _faeden_auffrischen(state, punkte)
 
     # ── Verarbeitung ────────────────────────────
     vorher_emotion: str   = verlauf[0]["emotion"]

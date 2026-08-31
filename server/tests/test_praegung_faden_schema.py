@@ -337,6 +337,77 @@ class DerNodeSchreibtDieTurnEmotionInDenFadenTest(unittest.TestCase):
         with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
             cur.execute("DELETE FROM praegung_faden WHERE user_id = %s", (self.USER,))
 
+    def test_der_node_bettet_das_segment_ein_nicht_den_turn(self) -> None:
+        """Das Segment, nicht der Turn — geprueft an der Verdrahtung.
+
+        Salienz und Emotion des Fadens kommen aus dem staerksten Segment, weil
+        ein Mittel den einschneidenden Satz verduennen wuerde. Fuer das
+        Embedding galt das bis zum 01.09.2026 nicht: Es kam aus
+        `prompt_embedding` und trug den ganzen Turn.
+
+        **Der Zeuge greift den Aufruf ab, nicht die Hilfsfunktion.** Ein Zeuge
+        auf `_faden_embedding` allein bliebe gruen, wenn der Node ihr den
+        falschen Text reicht — genau die Klasse, an der am 31.08.2026 drei
+        Baufehler vorbeiliefen
+        (`novaberg-lesson_l_zeuge-prueft-die-funktion-nicht-ihre-verwendung.md`).
+        """
+        from graph.nodes import praegung as node
+        gesehen: list[str] = []
+
+        def spion(segment_text: str, state: dict) -> tuple[list[float], str]:
+            gesehen.append(segment_text)
+            return [0.1] * 768, "segment"
+
+        echt = node._faden_embedding
+        node._faden_embedding = spion
+        try:
+            node.praegung_pruefen({
+                "user_id": self.USER, "character_id": self.CHAR,
+                "turn_id": "t-node-embed",
+                "prompt_embedding": [0.5] * 768,
+                "pending_writes": [
+                    {"daten": {
+                        "salienz_obj": {"salienz": 0.95, "emotion": "frustration"},
+                        "segment": "Der Beweis haelt nach elf Jahren.",
+                    }},
+                ],
+                "nova_emotions_verlauf": [{"emotion": "frustration", "gewicht": 0.85}],
+            })
+        finally:
+            node._faden_embedding = echt
+
+        self.assertEqual(
+            gesehen, ["Der Beweis haelt nach elf Jahren."],
+            "Der Node reicht nicht den Segmenttext weiter — das Faden-Embedding "
+            "traegt dann den ganzen Turn statt des einschneidenden Satzes",
+        )
+
+    def test_ohne_worker_faellt_es_hoerbar_auf_den_turn_zurueck(self) -> None:
+        """Der Rueckfall ist als solcher benannt, nicht stumm.
+
+        In der Suite laeuft kein Embed-Worker; `submit_sync` wirft. Ohne die
+        Herkunftsangabe waere ein grob eingebetteter Faden von einem scharfen
+        nicht zu unterscheiden, und die Naehe-Schwelle der Verstaerkung stuende
+        auf gemischtem Material — dieselbe Klasse wie ein Vorgabewert in der
+        Spanne echter Messwerte.
+        """
+        from graph.nodes.praegung import _faden_embedding
+
+        vektor, herkunft = _faden_embedding(
+            "Ein Satz, der eingebettet werden wollte.",
+            {"prompt_embedding": [0.5] * 768},
+        )
+        self.assertEqual(herkunft, "prompt", "Der Rueckfall nennt sich nicht")
+        self.assertEqual(vektor, [0.5] * 768)
+
+        vektor, herkunft = _faden_embedding("   ", {"prompt_embedding": []})
+        self.assertEqual(
+            herkunft, "keins",
+            "Ohne jeden Vektor muss die Herkunft `keins` lauten — ein leerer "
+            "Faden sieht sonst aus wie ein grober",
+        )
+        self.assertEqual(vektor, [])
+
     def test_der_faden_traegt_den_sektor_des_turns(self) -> None:
         """Der Verlauf fuehrt mit `traurigkeit`, der Turn perzipiert `frustration`."""
         from graph.nodes.praegung import praegung_pruefen

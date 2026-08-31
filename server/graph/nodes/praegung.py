@@ -18,6 +18,7 @@ from config import POSTGRES_URL
 from graph.state import ConversationState, pipeline_quelle
 from memory.pipeline_log import log_berechnung
 from memory.praegung import faden_anlegen, tor_urteil
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.praegung_node")
 
@@ -35,7 +36,9 @@ def _staerkstes_segment(state: ConversationState) -> dict | None:
     die Wucht des einen und den Sektor eines anderen.
 
     Returns:
-        Das `salienz_obj` des staerksten Segments, oder None.
+        Das `salienz_obj` des staerksten Segments, oder None. Der **Text** des
+        Segments steht unter dem Schluessel `_segment_text` daneben — er ist
+        der Traeger des scharfen Embeddings (siehe `_faden_embedding`).
     """
     bestes: dict | None = None
     for eintrag in state.get("pending_writes") or []:
@@ -44,8 +47,67 @@ def _staerkstes_segment(state: ConversationState) -> dict | None:
         if not isinstance(obj, dict) or obj.get("salienz") is None:
             continue
         if bestes is None or float(obj["salienz"]) > float(bestes["salienz"]):
-            bestes = obj
+            bestes = {**obj, "_segment_text": (daten.get("segment") or "")
+                      if isinstance(daten, dict) else ""}
     return bestes
+
+
+def _faden_embedding(segment_text: str, state: ConversationState) -> tuple[list[float], str]:
+    """Der Vektor, unter dem ein Faden spaeter wiedergefunden wird.
+
+    **Das Segment, nicht der Turn.** Salienz und Emotion des Fadens kommen aus
+    dem staerksten Segment, mit der ausdruecklichen Begruendung, ein Mittel
+    verduenne den einschneidenden Satz (`_staerkstes_segment`). Fuer das
+    Embedding galt das bis zum 01.09.2026 **nicht**: Es kam aus
+    `prompt_embedding` und trug damit den ganzen Turn — bei einem Turn mit einem
+    einschneidenden Satz und drei belanglosen genau die Verduennung, gegen die
+    die Segmentwahl gebaut ist.
+
+    **Warum das die Verstaerkung traegt.** Ein Faden wird ueber Embedding-Naehe
+    wiedergefunden (Konzept §7.12). `[gemessen]` 01.09.2026 ueber 19.900
+    Knotenpaare: Ohne geteiltes Thema liegt die Aehnlichkeit im Median bei 0,355,
+    mit geteiltem bei 0,504 — die Verteilungen ueberlappen breit. Auf einem
+    verduennten Vektor ist diese Trennung noch schwaecher, und ein Faden, der
+    durch Zufallsaehnlichkeit aufgefrischt wird, wird unsterblich (§7.4).
+
+    Vorbedingung: keine.
+    Nachbedingung: (Vektor, Herkunft) — Herkunft ist `segment`, `prompt` oder
+    `keins` und wird protokolliert. **Ein Rueckfall, den niemand zaehlen kann,
+    waere von einem scharfen Vektor nicht zu unterscheiden.**
+    Fehlerfaelle: Faellt der Embed-Dienst aus, wird laut gemeldet und auf den
+    Turn-Vektor zurueckgefallen — ein grober Faden ist besser als keiner, aber
+    er sagt es.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if segment_text.strip():
+        # ── Verarbeitung ────────────────────────
+        try:
+            vektor: list[float] = model_service.embed.submit_sync(
+                EmbedRequest(text=segment_text[:1200])
+            ).embedding
+            if vektor:
+                return vektor, "segment"
+            logger.error(
+                "Praegung: Embed-Dienst lieferte einen leeren Vektor fuer das "
+                "Segment — Rueckfall auf den Turn-Vektor, der Faden wird grob"
+            )
+        except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+            # `exception` statt `error`: Faellt der Embed-Dienst aus, ist der
+            # Stapel die einzige Auskunft darueber, woran — und ein Faden, der
+            # dadurch grob wird, ist spaeter nicht mehr nachzubessern.
+            logger.exception(
+                f"Praegung: Segment nicht eingebettet ({type(fehler).__name__}) "
+                f"— Rueckfall auf den Turn-Vektor, der Faden wird grob"
+            )
+    else:
+        logger.error(
+            "Praegung: das staerkste Segment traegt keinen Text — Rueckfall auf "
+            "den Turn-Vektor, der Faden wird grob"
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    turn_vektor: list[float] = state.get("prompt_embedding") or []
+    return turn_vektor, ("prompt" if turn_vektor else "keins")
 
 
 def _ausschlag_der_emotion(verlauf: list[dict], emotion: str) -> float:
@@ -136,8 +198,11 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
     durch, grund = tor_urteil(salienz, ausschlag)
 
     faden_id: int | None = None
+    embedding_quelle: str = ""
     if durch:
-        embedding: list[float] = state.get("prompt_embedding") or []
+        embedding, embedding_quelle = _faden_embedding(
+            segment.get("_segment_text", ""), state,
+        )
         faden_id = faden_anlegen(
             POSTGRES_URL,
             user_id       = user_id,
@@ -165,6 +230,10 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
             "urteil":    "faden" if durch else "abgelehnt",
             "grund":     grund,
             "faden_id":  faden_id,
+            # Ohne dieses Feld waere ein grob eingebetteter Faden von einem
+            # scharfen nicht zu unterscheiden — und die Naehe-Schwelle der
+            # Verstaerkung stuende auf gemischtem Material.
+            "embedding_quelle": embedding_quelle if durch else None,
         },
         user_id      = user_id,
         character_id = character_id,

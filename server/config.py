@@ -1629,6 +1629,44 @@ ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele
 PRAEGUNG_TOR_SALIENZ:   float = float(os.getenv("PRAEGUNG_TOR_SALIENZ", "0.60"))
 PRAEGUNG_TOR_AUSSCHLAG: float = float(os.getenv("PRAEGUNG_TOR_AUSSCHLAG", "0.70"))
 
+# Wie nah eine reaktivierte Erinnerung einem Faden stehen muss, damit sie ihn
+# auffrischt (Konzept §7.4, §7.12 — der thematische Andockweg).
+#
+# `[gemessen]` 01.09.2026 ueber 19.900 Paare aus `lzg_knoten`:
+#   ohne geteiltes Thema  Median 0,355   p95 0,555   p99 0,620
+#   mit  geteiltem Thema  Median 0,504
+# **Die Verteilungen ueberlappen breit** — der Median des thematischen Falls
+# liegt unter dem p95 des fremden. Eine Schwelle bei 0,50 faenge rund die
+# Haelfte der echten Treffer und bei diesem Mengenverhaeltnis etwa 990 fremde
+# gegen 45 richtige.
+#
+# Deshalb das p99 der fremden Paare: **wenige, aber verlaessliche Beruehrungen.**
+# Eine verpasste Auffrischung kostet einen Faden Lebensdauer, eine falsche macht
+# ihn unsterblich — und das ist derselbe Ausfall, wegen dem
+# `EMGRAV-SCHWELLE-TOT` ueberhaupt Vorbedingung der Praegungsschicht wurde
+# (§7.4). Der Preis ist benannt: Deutlich weniger als die Haelfte der echten
+# thematischen Treffer kommt durch.
+PRAEGUNG_BERUEHRUNG_NAEHE: float = float(
+    os.getenv("PRAEGUNG_BERUEHRUNG_NAEHE", "0.62")
+)
+
+# Die Faltung ueber die Beruehrungen (Konzept §7.4). Alle drei sind **Setzungen**
+# und warten auf Laufzeit: Sie sind erst entscheidbar, wenn Faeden ueber Wochen
+# gelebt haben.
+#
+# ALPHA — wie weit eine Beruehrung die Luecke zu `ausschlag_absolut` auffuellt.
+#   Nicht 1,0: Ein voller Reset macht das Beruehrungsintervall bedeutungslos —
+#   ein Thema, das einmal im Jahr aufkommt, stuende so hoch wie ein woechentli-
+#   ches. Gerechnet ueber vier Werte (§7.4): Bei 0,33 trennt das Gleichgewicht
+#   sieben Tage (0,790) von 365 Tagen (0,472); bei 1,0 stehen beide auf 0,900.
+# HALBSTRECKE — nach wie vielen Tagen die Haelfte der Spanne ueber dem Boden
+#   verfallen ist.
+# BODEN — der Anteil, unter den ein Faden nie faellt. **Ein Faden wird nie
+#   deaktiviert, nur leiser** (§7.4).
+PRAEGUNG_ALPHA:       float = float(os.getenv("PRAEGUNG_ALPHA", "0.33"))
+PRAEGUNG_HALBSTRECKE: float = float(os.getenv("PRAEGUNG_HALBSTRECKE", "60"))
+PRAEGUNG_BODEN:       float = float(os.getenv("PRAEGUNG_BODEN", "0.20"))
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest

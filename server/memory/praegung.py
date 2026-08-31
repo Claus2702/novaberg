@@ -15,6 +15,7 @@ haelt die Episode frisch.
 
 import logging
 import math
+from datetime import datetime
 
 import psycopg2
 
@@ -193,6 +194,215 @@ def faden_anlegen(
         f"herkunft={herkunft}, turn={turn_id or 'ohne'}"
     )
     return faden_id
+
+
+def _verfall(tage: float, boden: float, halbstrecke: float) -> float:
+    """Der relative Anteil nach `tage` ohne Beruehrung.
+
+    **Hyperbolisch, nicht exponentiell** (Konzept §7.4): Die Form hat den fetten
+    Schwanz, den Vergessenskurven zeigen — ein Faden faellt schnell aus der
+    Frische und danach immer langsamer. Exponentiell waere die Alternative und
+    ist nicht durchgerechnet; der offene Punkt steht im Konzept.
+
+    Nachbedingung: Wert in (boden, 1.0]. **Der Boden wird nie unterschritten** —
+    ein Faden wird leiser, nie deaktiviert.
+    """
+    return boden + (1.0 - boden) / (1.0 + max(0.0, tage) / halbstrecke)
+
+
+def _verfall_umkehren(anteil: float, boden: float, halbstrecke: float) -> float:
+    """Wie viele Tage Verfall zu diesem Anteil gehoeren.
+
+    Die Umkehrung von `_verfall`. Sie wird gebraucht, weil eine Beruehrung den
+    Anteil **anhebt** und der Verfall danach dort weiterlaufen muss, wo der
+    angehobene Wert steht — nicht dort, wo die Uhr steht.
+
+    Nachbedingung: Tage >= 0. Ein Anteil auf oder unter dem Boden liefert eine
+    grosse, aber endliche Zahl statt einer Division durch null.
+    """
+    spanne: float = anteil - boden
+    if spanne <= 1e-9:
+        return halbstrecke * 1e6
+    return halbstrecke * ((1.0 - boden) / spanne - 1.0)
+
+
+def ausschlag_aktuell_falten(
+    ausschlag_absolut: float,
+    entstanden_am:     datetime,
+    beruehrungen:      list[datetime],
+    jetzt:             datetime,
+    alpha:             float,
+    halbstrecke:       float,
+    boden:             float,
+) -> float:
+    """Rechnet `ausschlag_aktuell` aus der Beruehrungsliste — von Grund auf.
+
+    **Keine Fortschreibung.** Der Wert wird bei jedem Aufruf aus dem Eingang und
+    der Ereignisliste neu gefaltet, ohne Kenntnis des vorigen. Damit bleiben
+    Alpha, Halbstrecke und Boden Parameter eines **Laufs** und nicht eines
+    Schreibvorgangs: Wer sie spaeter aendert, bekommt eine andere Kurve auf
+    denselben Daten — statt eines Bestands, dessen alte Zeilen etwas anderes
+    bedeuten als seine neuen (Konzept §7.2, §7.4).
+
+    **Eine Beruehrung fuellt die Luecke, sie setzt nicht zurueck.** Ein voller
+    Reset machte das Beruehrungsintervall bedeutungslos; die Auffuellung hebt
+    proportional zu dem, was noch da war.
+
+    **Der Wert kann `ausschlag_absolut` nie ueberschreiten** — kein Akkumulator,
+    kein Deckel noetig. Wiedererinnern macht nicht intensiver.
+
+    Vorbedingung: `beruehrungen` sind Zeitpunkte nach `entstanden_am`; die
+    Reihenfolge stellt die Funktion selbst her.
+    Nachbedingung: Wert in [ausschlag_absolut × boden, ausschlag_absolut].
+    Fehlerfaelle: Keine — eine leere Liste ist der Regelfall und ergibt den
+    reinen Verfall.
+
+    Args:
+        ausschlag_absolut: Der Eingangswert des Fadens.
+        entstanden_am: Wann der Faden entstand.
+        beruehrungen: Die Zeitpunkte der Reaktivierungen.
+        jetzt: Der Bezugszeitpunkt der Rechnung.
+        alpha: Auffuellgrad je Beruehrung.
+        halbstrecke: Halbwertszeit des Verfalls in Tagen.
+        boden: Anteil, unter den nicht gefallen wird.
+
+    Returns:
+        Der gefaltete Ausschlag.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    anteil: float = 1.0
+    letzt:  datetime = entstanden_am
+
+    # ── Verarbeitung ───────────────────────────
+    for beruehrt_am in sorted(beruehrungen):
+        if beruehrt_am <= letzt:
+            # Eine Beruehrung vor der Entstehung ist ein Datenfehler, kein
+            # Sonderfall: Sie wuerde negative Tage in den Verfall tragen.
+            logger.error(
+                f"Praegung: Beruehrung {beruehrt_am.isoformat()} liegt nicht "
+                f"nach {letzt.isoformat()} — uebersprungen, die Faltung laeuft "
+                f"ohne sie weiter"
+            )
+            continue
+        tage: float = (beruehrt_am - letzt).total_seconds() / 86400.0
+        anteil = _verfall(
+            _verfall_umkehren(anteil, boden, halbstrecke) + tage, boden, halbstrecke,
+        )
+        anteil = anteil + alpha * (1.0 - anteil)
+        letzt = beruehrt_am
+
+    rest_tage: float = (jetzt - letzt).total_seconds() / 86400.0
+    anteil = _verfall(
+        _verfall_umkehren(anteil, boden, halbstrecke) + rest_tage, boden, halbstrecke,
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return ausschlag_absolut * min(1.0, max(boden, anteil))
+
+
+def beruehrung_aus_reaktivierung(
+    postgres_url: str,
+    user_id:      str,
+    character_id: str,
+    knoten_ids:   list[int],
+    schwelle:     float,
+) -> list[tuple[int, int, float]]:
+    """Frischt Faeden auf, die einer reaktivierten Erinnerung nahe stehen.
+
+    **Der thematische Andockweg** (Konzept §7.12). Ein Faden traegt das
+    Embedding seines Segments; ein reaktivierter LZG-Knoten traegt seines. Liegen
+    sie nah genug beieinander, ist die Erinnerung dieselbe Sache — und der Faden
+    wird aufgefrischt statt zu verblassen.
+
+    **Je Knoten hoechstens ein Faden, und zwar der naechste.** Ein Knoten, der
+    zwei Faeden zugleich auffrischt, verdoppelt eine Reaktivierung; die
+    Auffuellregel (§7.4) zaehlt Ereignisse, nicht Aehnlichkeiten.
+
+    **Der strukturelle Andockweg fehlt.** §7.12 nennt zwei — thematische Naehe
+    und geteilte Qualitaets- oder Wert-Kante. Der zweite braucht die abstrakte
+    Schicht, und `lzg_knoten_haltung` traegt null Zeilen. Ferne Uebertragungen
+    (*Machtlosigkeit → Waffen*) sind damit heute nicht moeglich, nur nahe
+    (*SciFi-Episode → Heimcomputer*).
+
+    Vorbedingung: `knoten_ids` sind LZG-Knoten; KZG-Reaktivierungen haben keine
+    Zeile in `lzg_knoten` und werden vom Aufrufer ausgesiebt.
+    Nachbedingung: Je getroffenem Faden eine Zeile in `praegung_beruehrung`.
+    Rueckgabe ist die Liste (knoten_id, faden_id, Aehnlichkeit) — **auch fuer
+    die Auswertung gedacht**: Ohne sie waere nicht zu sagen, ob eine Reihe ohne
+    Beruehrungen an der Schwelle lag oder daran, dass es keine Faeden gibt.
+    Fehlerfaelle: Ein Datenbankfehler wird gemeldet und liefert eine leere
+    Liste; der Turn laeuft weiter, die Auffrischung faellt aus.
+
+    Args:
+        postgres_url: Verbindung.
+        user_id: Subjekt des Paars.
+        character_id: Gegenueber des Paars.
+        knoten_ids: Die reaktivierten LZG-Knoten dieses Turns.
+        schwelle: Mindestaehnlichkeit, ab der ein Faden als getroffen gilt.
+
+    Returns:
+        Die angelegten Beruehrungen als (knoten_id, faden_id, Aehnlichkeit).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not knoten_ids:
+        return []
+    if not user_id or not character_id:
+        logger.error(
+            f"Praegung: Beruehrung ohne vollstaendiges Paar abgelehnt — "
+            f"user_id={user_id!r}, character_id={character_id!r}; eine Praegung "
+            f"gehoert einer Beziehung, nicht dem System"
+        )
+        return []
+
+    # ── Verarbeitung ───────────────────────────
+    treffer: list[tuple[int, int, float]] = []
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            for knoten_id in knoten_ids:
+                cur.execute(
+                    """
+                    SELECT f.id, 1 - (f.embedding <=> k.embedding) AS naehe
+                    FROM praegung_faden f, lzg_knoten k
+                    WHERE k.id = %s
+                      AND f.user_id = %s AND f.character_id = %s
+                      AND f.embedding IS NOT NULL AND k.embedding IS NOT NULL
+                    ORDER BY f.embedding <=> k.embedding
+                    LIMIT 1
+                    """,
+                    (knoten_id, user_id, character_id),
+                )
+                zeile = cur.fetchone()
+                if zeile is None:
+                    continue
+                faden_id, naehe = int(zeile[0]), float(zeile[1])
+                if naehe < schwelle:
+                    continue
+                cur.execute(
+                    "INSERT INTO praegung_beruehrung (faden_id, quelle) "
+                    "VALUES (%s, %s)",
+                    (faden_id, f"lzg:{knoten_id}"),
+                )
+                treffer.append((knoten_id, faden_id, naehe))
+    except Exception as fehler:
+        logger.exception(
+            f"Praegung: Auffrischung ausgefallen ({type(fehler).__name__}) — "
+            f"{len(knoten_ids)} Reaktivierung(en) ohne Wirkung auf die Faeden"
+        )
+        return []
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if treffer:
+        logger.info(
+            "Praegung: %d von %d Reaktivierung(en) haben einen Faden getroffen — %s",
+            len(treffer), len(knoten_ids),
+            ", ".join(f"Knoten {k} -> Faden {f} ({n:.3f})" for k, f, n in treffer),
+        )
+    else:
+        logger.info(
+            "Praegung: keine der %d Reaktivierung(en) traf einen Faden "
+            "(Schwelle %.2f)", len(knoten_ids), schwelle,
+        )
+    return treffer
 
 
 def beruehrung_anlegen(postgres_url: str, faden_id: int, quelle: str) -> bool:
