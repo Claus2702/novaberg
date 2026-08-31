@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 30. August 2026 — juengster Eintrag **22:38 UTC** (gemessen via `date -u`). Davor 30.08.2026, 17:25 UTC.
+**Stand:** 31. August 2026 — juengster Eintrag **20:30 UTC** (gemessen via `date -u`). Davor 30.08.2026, 22:38 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -20,6 +20,28 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 31.08.2026, 20:30 UTC — Die Praegungsschicht bekommt ihre erste Scheibe, und drei Baufehler dasselbe Muster
+
+**Gebaut:** `praegung_faden` und `praegung_beruehrung`, die Formkurve `sin(x·π/2)²` als aufrufbare reine Funktion, das Faden-Tor als Node zwischen `salience` und `dispatcher`. Die Schematests standen **vor** dem Schema-Edit (`F-DDL-1` — die Testdatei ist selbst der Zuender), die rote Phase ist gesehen worden, 3 von 3. Suite 2701 → **2732 gruen**.
+
+**Drei Baufehler, alle dasselbe Muster: die Groesse am falschen Ort abgegriffen.**
+
+| # | gelesen | gemeint | Wirkung |
+|---|---|---|---|
+| 1 | `salienz_human` (Mittel 0,41) | effektive Salienz (Mittel 0,80) | Tor liess **nie** durch — 3 von 2757 Laeufen haetten gereicht |
+| 2 | Schwelle 0,90 aus dem Gesamtkorpus | echtes Gespraechsverhalten | echte Turns liegen bei **0,44–0,73**; der Korpus ist von Messturns hochgezogen |
+| 3 | Fuehrung des Emotionsverlaufs | Emotion **dieses** Turns | der Faden trug den Sektor des **vorigen** Turns |
+
+**Der dritte ist der lehrreichste und kam von einer Frage des Meisters.** Der Emotionsverlauf ist eine Summe ueber die Historie (`akkumuliert[emotion] += beitrag`, aktueller Turn voll, aeltere als Echo) — **die Emotionen werden gezogen, sie springen nicht.** Gemessen ueber acht Plutchik-Sektoren an einem frischen Paar erschien die perzipierte `zufriedenheit` erst einen Turn spaeter als Fuehrung, die `traurigkeit` ebenso. **Ohne diesen Versatz sah die Perzeption aus, als traefe sie 1 von 8 Sektoren; mit ihm trifft sie 4 von 8** — Sektor 6 sogar woertlich (`frustration`). Ein Befund, der beinahe als Perzeptionsdefekt ins Register gegangen waere, war ein Lesefehler im eigenen Node.
+
+**Alle drei rutschten an Zeugen vorbei, die die Hilfsfunktion isoliert pruefen.** Beide Gegenproben blieben gruen, bis ein Zeuge existierte, der **den Node laeuft und die Zeile zurueckliest**. Dieselbe Klasse wie der nachgerechnete Zeuge vom Vortag.
+
+**Zwei Messreihen, und die erste hat das System zur Abschaltung gebracht.** Der Waermeriegel prueft die Temperatur **vor** dem Turn und sah waehrend der rund 100 s Volllast nie wieder hin — 87,5 Grad davor, Grenze 92, das reichte. Daraus `F-MESS-2`: Pixie pausiert waehrend Messreihen (ueber `POST /admin/pixie/pause`, nicht die Umgebungsvariable), und der Waechter misst **waehrend** des Turns mit Start-, Abbruchgrenze und Takt. **Die Wirkung ist gemessen:** Spitzen fielen von 84,6–87,5 auf **66,4–69,1 Grad** — Pixie war der Hauptlastanteil, nicht die Turns.
+
+**Der erste Faden ist im Betrieb entstanden und wieder verworfen:** Er trug `traurigkeit` aus dem Verlauf, wo der Turn `frustration` perzipiert hatte. Keine Seiteneffekte in `notizen` und `fakten` ueber beide Reihen; die botanische Formulierung der Gartenthemen hat gehalten, obwohl `F-MESS-1` Garten ausschliesst.
+
+**Offen bleibt die Verstaerkung:** `praegung_beruehrung` steht, `beruehrung_anlegen()` ist gebaut und getestet — **ohne Aufrufer**. Die Zuordnung Reaktivierung → Faden laeuft ueber Embedding-Naehe (§7.12) und ist Scheibe 2.
 
 ## 30.08.2026, 22:38 UTC — Die Gravitationsschwelle konnte nicht mehr ablehnen
 

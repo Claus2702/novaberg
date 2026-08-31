@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 30. August 2026
+**Stand:** 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
 **Status:** ⬜ nicht gebaut — Entwurf. Alle Zahlen der Rechnung sind **Setzungen zum Messen**. Die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
@@ -1575,6 +1575,19 @@ Alternative — entscheidbar nach der Reaktivierungsmessung (§13).
 
 ## Änderungsverlauf
 
+- **v0.11 — 31.08.2026:** **Scheibe 1 der Prägungsschicht ist gebaut** — `praegung_faden` und
+  `praegung_beruehrung`, die Formkurve `sin²` als aufrufbare Funktion, das Tor aus §7.3 als Node
+  zwischen `salience` und `dispatcher`. **Der erste Faden ist im Betrieb entstanden** (Sektorreihe
+  an einem frischen Paar) und nach einem Befund wieder verworfen. Drei Baufehler am selben Muster,
+  alle gemessen und behoben: Das Tor las `salienz_human` statt der effektiven Salienz (die eine
+  steht im Mittel bei 0,41 und erreicht die Schwelle in 3 von 2757 Läufen, die andere bei 0,80) ·
+  die Torschwelle war gegen einen messturn-verzerrten Korpus kalibriert und liegt jetzt bei 0,70,
+  gemessen an echten Gesprächsturns (0,44–0,73) · **und der Faden trug die Führung des
+  Emotionsverlaufs statt der Turn-Emotion.** Der Verlauf ist eine Summe über die Historie und hinkt
+  dem Reiz **einen Turn nach**: Über acht Sektoren erschien die perzipierte `zufriedenheit` erst
+  beim nächsten Turn als Führung, die `traurigkeit` ebenso. Emotion und Salienz kommen jetzt aus
+  demselben Segment, der Ausschlag bezieht sich auf die Emotion des Fadens. **Die Perzeption selbst
+  trifft 4 von 8 Sektoren** — ein erster Befund zu §7.8, der ohne den Versatz wie 1 von 8 aussah.
 - **v0.10 — 30.08.2026, nachts:** **Die Reihenfolge ist entschieden: die Prägungsschicht zuerst.** Die
   Frage lautete zwei Fassungen lang falsch — *grob zuerst* gegen *abstrakte Schicht zuerst* führen
   beide über zwei Fundamente, die nicht stehen. Der dritte Weg ist durch Messung frei geworden, nicht
