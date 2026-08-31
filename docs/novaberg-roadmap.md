@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 31. August 2026 — juengster Eintrag **21:35 UTC** (gemessen via `date -u`). Davor 31.08.2026, 20:24 UTC.
+**Stand:** 31. August 2026 — juengster Eintrag **22:25 UTC** (gemessen via `date -u`). Davor 31.08.2026, 21:35 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,40 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 31.08.2026, 22:25 UTC — Die Praegungsschicht bekommt ihre Verstaerkung ✅
+
+`beruehrung_anlegen()` stand seit dem 31.08.2026 ohne Aufrufer im Bestand, und `ausschlag_aktuell` blieb dadurch fuer immer gleich `ausschlag_absolut`. Scheibe 2 schliesst die Kette in drei Teilen — und der erste war ein Defekt in Scheibe 1.
+
+### Der Faden trug das falsche Embedding
+
+Salienz und Emotion kommen aus dem **staerksten Segment**, mit der ausdruecklichen Begruendung, ein Mittel verduenne den einschneidenden Satz. **Fuer das Embedding galt das nicht:** Es kam aus `prompt_embedding` und trug den ganzen Turn. Ein Turn mit einem einschneidenden Satz und drei belanglosen bekam einen gemittelten Vektor — genau die Verduennung, gegen die die Segmentwahl gebaut ist.
+
+Faellt der Embed-Dienst aus, steht die Herkunft jetzt in der Torzeile (`segment` | `prompt` | `keins`). **Ohne dieses Feld waere ein grober Faden von einem scharfen nicht zu unterscheiden** — dieselbe Klasse wie ein Vorgabewert in der Spanne echter Messwerte.
+
+### Die Naehe-Schwelle, und was die Nulllinie sagt
+
+`[gemessen]` 01.09.2026 ueber 19.900 Knotenpaare: ohne geteiltes Thema Median **0,355**, mit geteiltem **0,504**. **Die Verteilungen ueberlappen breit** — der Median des thematischen Falls liegt unter dem p95 des fremden. Eine Schwelle bei 0,50 faenge die Haelfte der echten Treffer und bei diesem Mengenverhaeltnis rund 990 fremde gegen 45 richtige.
+
+Gesetzt auf **0,62**, das p99 der fremden Paare: wenige, aber verlaessliche Beruehrungen. Eine verpasste Auffrischung kostet einen Faden Lebensdauer, eine falsche macht ihn **unsterblich** — und das ist derselbe Ausfall, wegen dem `EMGRAV-SCHWELLE-TOT` ueberhaupt Vorbedingung wurde.
+
+### Die Faltung stand als Tabelle da, nicht als Formel
+
+Das Konzept nennt die Verfallsfunktion **hyperbolisch mit Boden** und liefert neun Stuetzstellen, aber keine Gleichung. Sie wurde aus den Werten zurueckgerechnet — `v(t) = boden + (1 − boden) / (1 + t/H)` — und trifft alle neun exakt.
+
+**Der Zeuge ist die Tabelle selbst**, in beiden Modellen: 18 Stuetzstellen auf zwei Nachkommastellen, einschliesslich der Spalte T200, an der die Entscheidung gegen den vollen Reset fiel (0,535 gegen 0,900).
+
+> **Eine gerechnete Tabelle ohne die Formel daneben ist ein Pruefstein ohne Bauanleitung.** Hier hat sie gehalten, weil neun Stuetzstellen die Form eindeutig festlegen — bei dreien waere sie geraten gewesen.
+
+### Zwei Grenzen, beide benannt
+
+**Nur der thematische Andockweg.** §7.12 nennt zwei; der strukturelle braucht die abstrakte Schicht, und `lzg_knoten_haltung` traegt null Zeilen. **Nur LZG-Reaktivierungen** — eine KZG-Reaktivierung hat kein Embedding, gegen das sich ein Faden vergleichen liesse.
+
+**Suite 2750 → 2763 gruen, 0 uebersprungen.** Drei Gegenproben: Segmenttext abgeklemmt (1 vorhergesagt, 1 gezaehlt), Naehe-Schwelle unerreichbar (3 / 3), Auffuellung ausgebaut (2 Methoden vorhergesagt, 9 Stuetzstellen gezaehlt — dieselbe Verwechslung von Zaehlebenen wie am Vorabend).
+
+**Der Betriebsbeleg steht aus.** Es gibt keinen Faden im Bestand; die Messung braucht einen Turn durchs Tor und danach eine Reaktivierung, die ihn trifft.
 
 ---
 

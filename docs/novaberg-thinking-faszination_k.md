@@ -1342,10 +1342,22 @@ beobachten**, und die Konstante trägt ihre Herkunft im Kommentar (`F-INTENS-1`)
 — sie hat den fetten Schwanz, den Vergessenskurven zeigen. Exponentiell wäre die Alternative und
 ist nicht durchgerechnet.
 
+> **Sie stand als Tabelle da, nicht als Formel.** Beim Bau am 01.09.2026 musste sie aus den neun
+> Stützstellen von §7.4 zurückgerechnet werden: `v(t) = boden + (1 − boden) / (1 + t/H)`, mit
+> `ausschlag = ausschlag_absolut × v(t)`. Sie trifft alle neun exakt und steht jetzt in
+> `memory/praegung.py` als `_verfall`, mit ihrer Umkehrung daneben — die Auffüllung hebt den
+> Anteil an, und der Verfall muss danach dort weiterlaufen, wo der angehobene Wert steht, nicht
+> wo die Uhr steht. **Eine gerechnete Tabelle ohne die Formel daneben ist ein Prüfstein ohne
+> Bauanleitung**; sie hat hier gehalten, weil neun Stützstellen die Form eindeutig festlegen.
+
 **Der dritte Torterm.** Das fünfte SDM-Kriterium ist der Bezug auf einen **ungelösten Konflikt**.
 
-**Trägt der Faden ein eigenes Embedding oder eine Referenz?** **Ob der Turn zum Zeitpunkt der
-Fadenprüfung überhaupt schon ein Embedding trägt, ist nicht geprüft.**
+~~**Trägt der Faden ein eigenes Embedding oder eine Referenz?**~~ → **Beantwortet am
+01.09.2026: ein eigenes, und zwar das seines Segments.** Der Turn trägt zum Zeitpunkt der
+Fadenprüfung ein Embedding (`prompt_embedding`) — es ist aber das falsche: Salienz und Emotion
+kommen aus dem stärksten Segment, das Embedding trug den ganzen Turn und damit genau die
+Verdünnung, gegen die die Segmentwahl gebaut ist. Der Faden bekommt jetzt einen eigenen Vektor
+aus dem Segmenttext; fällt der Embed-Dienst aus, vermerkt die Torzeile das.
 
 **Enthalten die `charakter_hash`-Schichten thematische Aussagen?** `intentions` könnte
 Themenbezüge tragen. **Nicht geprüft.**

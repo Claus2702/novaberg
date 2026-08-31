@@ -166,6 +166,16 @@ Die Energie-Achse wechselte dabei von 0.50 auf 1.00 — der Nachzug ist nicht ko
 **Zwei Skalenabweichungen**, jetzt messbar, weil der Pfad lebt:
 
 - Der LZG-Zweig rechnet den **Verfall dreifach** — die Spalte `gewicht_decay` ist bereits materialisiert und läuft zusätzlich durch `effektives_gewicht_berechnen()` und `_zeit_decay_faktor()` (Fundliste, 28.07.2026).
+> **Der Node frischt seit dem 01.09.2026 auch Prägungsfäden auf.** Dieselben Gravitationspunkte,
+> die Novas Verlauf färben, laufen durch `_faeden_auffrischen`: Je reaktiviertem LZG-Knoten wird
+> der nächste Faden des Paars gesucht, und liegt er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` (0,62),
+> entsteht eine Zeile in `praegung_beruehrung`.
+>
+> **Hier und nicht im Prägungs-Node:** Die Auffrischung hängt an der Reaktivierung, nicht am Turn
+> — ein Turn ohne aktivierte Erinnerung frischt nichts auf, auch wenn er thematisch passt. Die
+> Log-Zeile `praegung_auffrischung` zählt Kandidaten **und** Treffer: Ohne die Kandidatenzahl wäre
+> eine Reihe ohne Berührungen nicht von einer ohne Fäden zu unterscheiden.
+
 > **Der Faktor steht seit dem 31.08.2026 auf 0,25** (vorher 0,6), mitgezogen mit der
 > Reizstärke-Kalibrierung des Emotionsverlaufs (`novaberg-ei.md` §Reizstärke). `[gemessen]`:
 > Dieselbe Injektion sortierte danach in **172 von 1178** Paarungen die Führung um statt in 2 —

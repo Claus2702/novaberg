@@ -76,11 +76,35 @@ ebenso — dann haben die Vorbedingungen von `faden_anlegen` abgelehnt.
 
 ## 7. Offene Punkte
 
-**Die Verstärkung fehlt.** `praegung_beruehrung` steht, `beruehrung_anlegen()` ist gebaut
-und getestet und hat **keinen Aufrufer**. Die Zuordnung Reaktivierung → Faden läuft über
-Embedding-Nähe (Konzept §7.12, zwei Andockwege); der Gravitations-Node hält die Kandidaten
-seit dem 30.08.2026 samt `knoten_id`. **Bis dahin bleibt `ausschlag_aktuell` für immer gleich
-`ausschlag_absolut`.**
+~~**Die Verstärkung fehlt.**~~ → **Gebaut am 01.09.2026 (Scheibe 2).** Die Kette von der
+Reaktivierung bis zur Zahl ist geschlossen:
+
+| Teil | wo | was |
+|---|---|---|
+| **Scharfes Embedding** | `graph/nodes/praegung.py` → `_faden_embedding` | Der Faden trägt den Vektor **seines Segments**, nicht des ganzen Turns |
+| **Zuordnung** | `memory/praegung.py` → `beruehrung_aus_reaktivierung` | Je reaktiviertem LZG-Knoten der nächste Faden, wenn er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` steht |
+| **Aufrufer** | `graph/nodes/emotionale_gravitation.py` → `_faeden_auffrischen` | Dieselben Punkte, die Novas Verlauf färben, frischen die Fäden auf |
+| **Faltung** | `memory/praegung.py` → `ausschlag_aktuell_falten` | `ausschlag_aktuell` aus der Berührungsliste, von Grund auf |
+
+**Zwei Grenzen, und beide sind nicht Nachlässigkeit:**
+
+- **Nur der thematische Andockweg.** Konzept §7.12 nennt zwei — Embedding-Nähe und geteilte
+  Qualitäts- oder Wert-Kante. Der zweite braucht die abstrakte Schicht, und
+  `lzg_knoten_haltung` trägt null Zeilen. Ferne Übertragungen (*Machtlosigkeit → Waffen*) sind
+  damit heute nicht möglich, nur nahe (*SciFi-Episode → Heimcomputer*).
+- **Nur LZG-Reaktivierungen.** Eine KZG-Reaktivierung hat keine Zeile in `lzg_knoten` und damit
+  kein Embedding, gegen das sich ein Faden vergleichen ließe.
+
+**Der Betriebsbeleg steht aus.** Es gibt bisher keinen Faden im Bestand; die Zeugen fahren gegen
+die Datenbank mit gesetzten Vektoren, und die Faltung gegen die gerechnete Tabelle des Konzepts.
+Was fehlt, ist ein Turn, der durchs Tor kommt, und danach eine Reaktivierung, die ihn trifft.
+
+**Das Embedding ist seit dem 01.09.2026 scharf.** Salienz und Emotion des Fadens kamen schon
+immer aus dem stärksten Segment, mit der ausdrücklichen Begründung, ein Mittel verdünne den
+einschneidenden Satz. **Für das Embedding galt das nicht** — es kam aus `prompt_embedding` und
+trug den ganzen Turn. Fällt der Embed-Dienst aus, steht in der Torzeile jetzt
+`embedding_quelle: "prompt"`: Ohne dieses Feld wäre ein grob eingebetteter Faden von einem
+scharfen nicht zu unterscheiden, und die Nähe-Schwelle stünde auf gemischtem Material.
 
 **Der Ausschlag ist eine Näherung — aber eine schärfere als am 30.08.2026.** Er stammt aus dem
 Verlauf und trägt damit Historie; das Konzept will die Stärke *im Moment des Erlebens*.
