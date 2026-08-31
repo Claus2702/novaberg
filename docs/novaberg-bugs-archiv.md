@@ -1,7 +1,13 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
 **Stand:** 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** **52 abgeschlossene Eintraege mit eigenem Abschnitt** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026 ueber Ueberschriften der Form `### \`KENNUNG\``. **Die Zahl ist nicht mit der frueheren vergleichbar** (dort 123, fortgeschrieben statt gezaehlt): Die Datei fuehrt Eintraege in mehreren Formen — 84 `Zustand:`-Zeilen, 135 Ueberschriften mit irgendeiner Kennung, dazu Tabellenzeilen ohne eigenen Abschnitt. Fundliste 30.08.2026.
+**Inhalt:** **52 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+
+> **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
+> fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
+> 74 Kurzeintraegen aus frueher Zeit steht der Befund in der Tabellenzeile und sonst nirgends — sie
+> auszuformulieren hiesse, Belege zu erfinden. Die Regel gilt fuer neue Eintraege und fuer jeden, der
+> ohnehin angefasst wird.
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---

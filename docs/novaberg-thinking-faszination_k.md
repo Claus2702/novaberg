@@ -1411,19 +1411,44 @@ war eine Stichprobenaussage, keine Eigenschaft der Größe.
 |---|---|---|
 | 1 | MS-Welle Block 2 ff. | in Arbeit |
 | 2 | Synapsen P4 — Knoten, Kanten, Spreading | blockiert durch (1) |
-| 3 | **`KZG-SALIENZ-NEUBAU`** — das Faden-Tor steht darauf | queued; **Vorbedingung** |
+| 3 | ~~**`KZG-SALIENZ-NEUBAU`** — das Faden-Tor steht darauf~~ | **hinfällig als Vorbedingung** — `[gemessen]` 30.08.2026 über 2.747 Läufe steht `salienz_effektiv` auf [0…1], Maximum exakt 1,000, keiner darüber. Der Skalenbruch ist am 24.08.2026 behoben; der Sprint bleibt offen (die Formel ist nicht idempotent), **aber das Tor braucht ihn nicht** |
 | 4 | ~~**`EMGRAV-SCHWELLE-TOT`** — solange jeder Knoten die Schwelle reißt, kann kein Faden verfallen~~ | **erfüllt** — behoben am 30.08.2026, gemessen 0,71 Aktivierungen je Turn statt 2,00 |
 | 5 | **abstrakte Schicht** — Qualitäts- und Werte-Knoten mit Typ-Diskriminator | offen; `praemisse_knoten_id` liegt leer |
 | 6 | `charakter_rad_messung` liefert eine stabile Reihe | gebaut, braucht Laufzeit |
 | 7 | ~~`PIXIE_AKTIV` steht auf `False`~~ | **erfüllt** — `PIXIE_AKTIV=true` im laufenden Container, `[gemessen]` 30.08.2026; nur der Code-Default in `config.py:360` ist `false` |
 | 8 | Haltungsraum bekommt einen Leser | offen |
 
-**Die Reihenfolgefrage, die eine Entscheidung des Meisters ist.** `opinion_k` §9 hat *grob zuerst,
-Zerlegung später* gewählt. Der Zwilling-Test sagt das Gegenteil.
+### Die Reihenfolge ist am 30.08.2026 entschieden: die Prägungsschicht zuerst
 
-**Empfehlung: abstrakte Schicht zuerst; `opinion_k` §9 zieht mit.** Eine themengeführte Faszination
-**sähe in den Logs aus wie eine funktionierende** — die Klasse der stillen Fehlschläge mit fünf
-dokumentierten Fällen.
+**Die Frage lautete zwei Wege lang falsch.** `opinion_k` §9 wählte *grob zuerst, Zerlegung später*,
+der Zwilling-Test sagte das Gegenteil — beide Wege führen über die abstrakte Schicht und damit über
+zwei Fundamente, die nicht stehen. **Am 30.08.2026 ist ein dritter Weg frei geworden**, und zwar
+durch Messung, nicht durch Bauen:
+
+| | vorher | seit dem 30.08.2026 |
+|---|---|---|
+| Faden-Tor | wartet auf `KZG-SALIENZ-NEUBAU` | Salienz steht auf [0…1], **hinfällig** |
+| Verstärkung | Schwelle lehnt nichts ab | `EMGRAV-SCHWELLE-TOT` **behoben** |
+| Reaktivierung zählbar | nein, kein Schlüssel | `knoten_id` im `pipeline_log` |
+| Verdichtung | `PIXIE_AKTIV = False` angenommen | steht auf `true`, **erfüllt** |
+
+**Die Prägungsschicht hängt an keiner der drei verbliebenen offenen Zeilen.** MS-Welle, Synapsen P4
+und die abstrakte Schicht tragen die **Qualitätsseite** — `neuheit` als Kanteneigenschaft, die
+Generalisierung des Zwillings, die Trägerzählung. Fäden hängen an Embeddings und Emotionen.
+
+**Was sie braucht, ist DDL:** je eine Tabelle für Fäden und Stränge. Das ist der einzige Posten, und
+er ist anzukündigen, weil ein Schemawechsel erst nach einem Neustart wirkt.
+
+> **Der Grund für diese Reihenfolge ist nicht, dass sie die billigste ist.** Sie ist die einzige, die
+> heute eine **Messreihe** erzeugt. `α`, die Halbstrecke, die acht Sektorfaktoren und der Boden sind
+> allesamt Setzungen, die ohne laufende Fäden nicht kalibrierbar sind — und diese Reihe braucht
+> Wochen, gleich wann sie beginnt. Jeder Tag, an dem zuerst die abstrakte Schicht gebaut wird, ist
+> ein Tag ohne Daten für die Kalibrierung.
+
+**Die abstrakte Schicht ist damit nicht verworfen, nur nicht zuerst.** Der Zwilling-Test gilt
+unverändert: Eine themengeführte Faszination **sähe in den Logs aus wie eine funktionierende** — die
+Klasse der stillen Fehlschläge mit fünf dokumentierten Fällen. Sie bleibt Vorbedingung der
+**Faszination**; `opinion_k` §9 zieht weiterhin mit, wenn sie fällt.
 
 **Drei Konzepte, ein Verdichtungsmechanismus.** Faden → Strang, Knoten → Werte-Cluster und Träger →
 Qualität sind strukturell dasselbe.
@@ -1471,6 +1496,7 @@ Qualität sind strukturell dasselbe.
 | **35** | **Berührungstabelle statt verschobenem Zeitstempel** | `verstaerkt_am` vorrücken | ein verschobener Zeitstempel kodiert die Verfallsfunktion; Regel (3) (§7.2) |
 | 36 | **Funktionale Entsprechung beansprucht, keine strukturelle** | Nachbildung des Gehirns | Novaberg ist ein Simulator; die drei Schienen sind technisch, nicht neuroanatomisch (§2.9) |
 | 37 | **Arousal-Ausschluss gilt dem EI-Mischwert, nicht dem Konstrukt** | Arousal grundsätzlich ausschließen | McGaughs Modulationshypothese läuft über Erregung; der Ausschluss ist systemintern begründet (§7.3) |
+| 38 | **Prägungsschicht zuerst, abstrakte Schicht danach** | abstrakte Schicht zuerst · grob zuerst wie `opinion_k` §9 | sie hängt an keiner offenen Vorbedingung mehr und ist die einzige, die eine Messreihe erzeugt — ohne sie bleibt `α` unkalibrierbar (§14) |
 
 ---
 
@@ -1549,6 +1575,16 @@ Alternative — entscheidbar nach der Reaktivierungsmessung (§13).
 
 ## Änderungsverlauf
 
+- **v0.10 — 30.08.2026, nachts:** **Die Reihenfolge ist entschieden: die Prägungsschicht zuerst.** Die
+  Frage lautete zwei Fassungen lang falsch — *grob zuerst* gegen *abstrakte Schicht zuerst* führen
+  beide über zwei Fundamente, die nicht stehen. Der dritte Weg ist durch Messung frei geworden, nicht
+  durch Bauen: Das Faden-Tor braucht `KZG-SALIENZ-NEUBAU` **nicht** mehr (die Salienz steht seit dem
+  24.08.2026 auf [0…1], gemessen über 2.747 Läufe, Maximum exakt 1,000 — §14 Zeile 3 ist
+  entsprechend berichtigt), die Verstärkung ist repariert, die Reaktivierung zählbar und Pixie läuft.
+  Es bleibt **DDL** für zwei Tabellen. Der Grund für diese Reihenfolge ist nicht der Preis, sondern
+  die **Messreihe**: `α`, Halbstrecke, Sektorfaktoren und Boden sind ohne laufende Fäden nicht
+  kalibrierbar, und diese Reihe braucht Wochen. Die abstrakte Schicht bleibt Vorbedingung der
+  Faszination, nur nicht die erste; `opinion_k` §9 zieht weiterhin mit.
 - **v0.9 — 30.08.2026, abends:** **`EMGRAV-SCHWELLE-TOT` ist behoben, und damit faellt die vierte
   Vorbedingung.** Die Rechnung normiert `gewicht_decay` durch `LZG_KNOTEN_GEWICHT_CAP`, die Schwelle
   steht auf 0,18 und traegt ihre Herkunft im Kommentar. Nachgemessen ueber dieselben 56 Turns, diesmal
