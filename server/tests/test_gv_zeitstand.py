@@ -29,12 +29,24 @@ import unittest
 from graph.nodes.emotionale_gravitation import emotionale_gravitation_anwenden
 from graph.personality import Emotion, InternalPersonality
 
-# Injektionsgewicht = min(0.5, gravitation × 0.6) = 0.48 (ei/gravitation.py).
-# 0.48 schlaegt die 0.40 des Vorstands — begeisterung fuehrt danach.
+# Injektionsgewicht = min(0.5, gravitation × 0.25) = 0.1395 (ei/gravitation.py).
+#
+# **Der Punkt traegt den hoechsten Gravitationswert, der im Bestand vorkommt**
+# (0.558, gemessen am 31.08.2026 ueber 38 Kandidaten). Vorher stand hier 0.80 —
+# ein Wert, den die Rechnung nach der Normierung nicht mehr hervorbringt; der
+# Zeuge fuhr damit einen Fall, den es nicht gibt.
+#
+# **Und der Vorstand ist bewusst schwach.** Seit der Reizstaerke-Kalibrierung
+# (31.08.2026) fuehrt ein gewoehnlicher Turn mit 0,32 bis 0,58, und dagegen
+# uebernimmt die Injektion nicht mehr — das ist die Absicht des Faktors 0.25.
+# Dieser Zeuge prueft aber nicht die Schwelle, sondern die **Verdrahtung**:
+# ob die Fuehrung des modifizierten Verlaufs bis in `internal.emotion` reicht.
+# Dafuer braucht er den Randfall, in dem eine Uebernahme ueberhaupt noch
+# eintritt — ein stark gedaempfter Gegenpol knapp unter der Injektion.
 GRAVITATIONSPUNKT: dict = {
     "emotion":     "begeisterung",
     "arousal":     0.90,
-    "gravitation": 0.80,
+    "gravitation": 0.558,
     "quelle":      "lzg",
 }
 
@@ -46,8 +58,8 @@ def _state(mit_punkten: bool) -> dict:
     return {
         "internal": internal,
         "nova_emotions_verlauf": [
-            {"emotion": "neugierig",     "gewicht": 0.40, "arousal": 0.50},
-            {"emotion": "zufriedenheit", "gewicht": 0.20, "arousal": 0.30},
+            {"emotion": "neugierig",     "gewicht": 0.13, "arousal": 0.50},
+            {"emotion": "zufriedenheit", "gewicht": 0.08, "arousal": 0.30},
         ],
         "emotionale_gravitationspunkte": [GRAVITATIONSPUNKT] if mit_punkten else [],
     }
@@ -66,12 +78,15 @@ class TestNachzugNachGravitation(unittest.TestCase):
         )
 
     def test_arousal_wandert_mit(self) -> None:
-        """Arousal = min(1.0, 0.90 × 0.80) = 0.72, von Hand gerechnet."""
+        """Arousal = min(1.0, max(0.50, 0.90 × 0.558)) = 0.50, von Hand gerechnet.
+
+        Der Vorstand traegt 0.50 und der Punkt 0.502 — der hoehere gewinnt.
+        """
         state: dict = _state(mit_punkten=True)
 
         ergebnis: dict = emotionale_gravitation_anwenden(state)
 
-        self.assertAlmostEqual(ergebnis["internal"].emotion.arousal, 0.72, places=2)
+        self.assertAlmostEqual(ergebnis["internal"].emotion.arousal, 0.50, places=2)
 
     def test_beide_beine_lesen_dasselbe(self) -> None:
         """Die Frage des Befunds: Saeulen und Achsen auf einer Lage."""

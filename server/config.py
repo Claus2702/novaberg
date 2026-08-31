@@ -1615,7 +1615,18 @@ ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele
 # Gegenstands (`21_MESSUNG/messturns.md`).
 # Auf 0,70 gezogen am 31.08.2026: Sechs echte Gespraechsturns lagen bei
 # 0,442 bis 0,732 — der beste verfehlte 0,75 um 0,018.
-PRAEGUNG_TOR_SALIENZ:   float = float(os.getenv("PRAEGUNG_TOR_SALIENZ", "0.70"))
+#
+# **Auf 0,60 gezogen am 31.08.2026, nach der Reizstaerke-Kalibrierung.** Die
+# Vorgabe lautet: rund ein Fuenftel der Turns soll praegen. Gemessen ueber 3677
+# `bewertung`-Zeilen (Salienz) und 1718 nicht-neutrale `lzg_knoten` (Arousal):
+#   0,70 / 0,70 -> 14,9 %   ·   **0,60 / 0,70 -> 21,1 %**   ·   0,50 / 0,70 -> 24,3 %
+# Gelockert wird die Bedingung, die Erinnerungswuerdigkeit misst; die auf den
+# emotionalen Gehalt bleibt streng. Herkunft: `novaberg-ei.md` §Reizstaerke.
+#
+# Die Grundgesamtheit ist **ohne neutrale Knoten** gerechnet — die filtert
+# `_emotions_verlauf_berechnen` in Schritt 1 heraus, sie erreichen das Tor nie.
+# Mit ihnen kaeme 8,9 % heraus; 1508 der 1560 Ausgeschlossenen sind neutral.
+PRAEGUNG_TOR_SALIENZ:   float = float(os.getenv("PRAEGUNG_TOR_SALIENZ", "0.60"))
 PRAEGUNG_TOR_AUSSCHLAG: float = float(os.getenv("PRAEGUNG_TOR_AUSSCHLAG", "0.70"))
 
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
@@ -1637,7 +1648,22 @@ EMOTIONALE_GRAVITATION_FAKTOR_KZG:      float = 0.8    # KZG: leicht gedämpft
 EMOTIONALE_GRAVITATION_FAKTOR_LZG:      float = 0.5    # LZG: stärker gedämpft
 
 # ─── DelegationsAgent (VENT1) ─────────────────
-DELEGATION_EFFEKTIVWERT_SCHWELLE: float = 0.15
+# **Von 0.15 auf 0.20 gezogen am 31.08.2026**, mit der Reizstaerke-Kalibrierung.
+# Der Kipppunkt lag bei arousal 0,546 und fing damit das obere Drittel des
+# Alltagsbandes mit — die Perzeption vergibt fuer interessante, aber unbelastete
+# Sachverhalte bis 0,60. Jetzt kippt es bei **0,594**: Ein Turn muss ueber der
+# halben Erregungsskala liegen, damit Nova ein Beruhigungs-Signal bekommt.
+#
+# Gemessen ueber 33 echte Verlaufszustaende: 18 Ausloesungen vor der
+# Kalibrierung, 6 danach unveraendert, **4 bei 0.20**. Die Zahl sitzt auf dem
+# breitesten Plateau der Umgebung (0,1726–0,2088). 2 Ausloesungen waeren bei
+# 0.23 erreichbar, das Fenster dafuer ist aber nur 0,011 breit — 0.24 stellt das
+# Tor auf null. Eine Schwelle auf einer Kante ist keine Schwelle.
+#
+# **Das steuert Kriterium 1 von dreien.** Kriterium 3 feuert bei Salienz ueber
+# DELEGATION_SALIENZ_SCHWELLE, und das trifft 93,5 % von 2771 gemessenen Laeufen.
+# Wer den Agenten insgesamt seltener anschlagen lassen will, dreht dort.
+DELEGATION_EFFEKTIVWERT_SCHWELLE: float = 0.20
 # **Am 24.08.2026 von 0.6 auf 0.4615 mitgezogen** — 0.6 / 1.3, weil der
 # Eigen-Pfad der Salienz seit demselben Tag durch (1 + MAX_ZUSCHLAG) normiert
 # ist und dieselbe Lage nun einen um diesen Faktor kleineren Wert traegt.

@@ -818,10 +818,26 @@ def emotionale_gravitation_auf_verlauf_anwenden(
         if not emotion or emotion == "neutral":
             continue
 
-        # Gravitation als Injektions-Gewicht (skaliert: 0.3 → schwaches Echo,
-        # 0.8 → starker Anklang). Gecapped auf 0.5 — Erinnerungen sollen
-        # Novas Emotion färben, nicht überschreiben.
-        injektions_gewicht: float = min(0.5, gravitation * 0.6)
+        # Gravitation als Injektions-Gewicht. Gecapped auf 0.5 — Erinnerungen
+        # sollen Novas Emotion färben, nicht überschreiben.
+        #
+        # **Faktor von 0.6 auf 0.25 gezogen am 31.08.2026**, mit der
+        # Reizstärke-Kalibrierung (`novaberg-ei.md` §Reizstärke). Nicht die
+        # Injektion ist gewachsen — **das Feld ist enger geworden**: Der Abstand
+        # zwischen Führung und Platz zwei fiel im Median von 0,52 auf 0,27.
+        # Dieselbe Injektion, die vorher unter jedem Abstand lag, sortierte
+        # danach in 172 von 1178 Paarungen um (vorher 2). Bei 0.25 sind es 58,
+        # davon 48 unvermeidbar: Zwei Zustände tragen einen exakten Gleichstand
+        # an der Spitze, den jede Injektion über 0,005 kippt.
+        #
+        # **Der Cap greift nie und ist kein Stellrad.** Der höchste im Bestand
+        # vorkommende Gravitationswert ist 0,558; mit Faktor 0.25 sind das
+        # 0,140. Zwischen Cap 0.50 und 0.25 ändert sich nichts.
+        #
+        # Tiefer als 0.25 nicht: Bei Faktor 0.15 fallen 620 von 1178 Injektionen
+        # unter EMOTION_MIN_WEIGHT und verschwinden aus dem Verlauf, während die
+        # Umsortierungen nur von 58 auf 48 sinken — die Rechnung wäre tot.
+        injektions_gewicht: float = min(0.5, gravitation * 0.25)
 
         # Prüfen ob die Emotion schon in Novas Verlauf existiert
         gefunden: bool = False
