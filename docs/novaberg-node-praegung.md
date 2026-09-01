@@ -1,11 +1,11 @@
 # Novaberg — Node: Prägung — das Faden-Tor
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
+**Stand:** 1. September 2026, 19:45 UTC (**§6b — der Strang**: Zuordnung über ein fortgeschriebenes Zentroid, Nachzug im Tageslauf). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1 und 2 gebaut und im Betrieb belegt (§6a) — Fäden entstehen, die Auffrischung läuft, **die erste Berührung steht aus**. Stränge, Prägungszug und Verfall sind nicht gebaut
+**Zustand:** 🟠 Scheibe 1, 2 und **3a** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, und Fäden finden ihren Strang. **Die Achsen des Strangs, der Prägungszug und der Verfall sind nicht gebaut**
 
 ---
 
@@ -140,6 +140,28 @@ Zusicherung nachweislich leer war** — und er ist behoben.
 **Ein Zeuge im Bestand ist es noch:** `test_praegung_faden_schema.py:350` setzt die Gewichte als
 Literal auf 0,90/0,85 und sichert zu, dass das Tor durchlässt. Diese Werte erreicht die Pipeline
 in 0 von 31 gemessenen Zuständen; der Test ist grün und seine Zusicherung hohl.
+
+---
+
+## 6b. Der Strang — Scheibe 3a, seit dem 01.09.2026
+
+**Was gebaut ist:** Ein Faden sucht beim Anlegen den nächstliegenden Strang seines Paares und tritt ihm bei, wenn die Nähe zum **Zentroid** `PRAEGUNG_STRANG_NAEHE` erreicht — sonst gründet er einen. Das Zentroid wird fortgeschrieben, `(alt·n + neu)/(n+1)`.
+
+| Größe | Wert | Herkunft |
+|---|---|---|
+| `PRAEGUNG_STRANG_NAEHE` | **0,62** | übernommen von `PRAEGUNG_BERUEHRUNG_NAEHE`; **für diesen Vergleich ungemessen** — dort Turn gegen Faden, hier Faden gegen ein Mittel |
+| Stränge im Bestand | **1** | `[gemessen]` 01.09.2026, 19:45 UTC |
+| zugeordnete Fäden | **4 von 4** | derselbe Lauf, Vorhersage 1 Strang und getroffen |
+| Abstand zu fremden Themen | **0,5165** höchster von 15 | Zentroid gegen LZG-Knoten quer durch den Bestand, keiner über der Schwelle |
+
+**Die letzte Zeile ist der Beleg, dass die Schwelle trennt.** Vier Fäden eines Tages zu einem Thema ergeben *einen* Strang auch dann, wenn nichts abgewiesen wird.
+
+**Zwei Wege, und beide sind Absicht:**
+
+- `strang_zuordnen` läuft **außerhalb** der Transaktion, die den Faden schreibt — dieselbe Entscheidung wie bei der Faltung (§7.4 des Konzepts). Die Rechnung ist wiederholbar, das Ereignis nicht.
+- `faeden_ohne_strang_zuordnen` ist der Rückweg und läuft als **fünfter Schritt** im Tageslauf des `SynapsenDecayAgent`, sortiert nach `entstanden_am`. Ohne die Sortierung ergäbe derselbe Bestand bei jedem Lauf ein anderes Ergebnis, und keines davon wäre falsch.
+
+**Was ausdrücklich nicht gebaut ist:** die drei Achsen (Ladung, Richtung, Valenz) und `strang_staerke`. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13). `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
 
 ---
 

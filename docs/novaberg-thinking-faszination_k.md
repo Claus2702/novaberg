@@ -915,6 +915,34 @@ berührt wurde** — die Berührungstabelle liefert sie direkt.
 > **ein** Anlass. **Zweimal im Bestand belegt:** `reihe_laden` zählte Zeilen statt Erhebungen; die
 > Haltungsraum-Messreihe über zwanzig Turns hatte eine wirksame Stichprobe von **vier**.
 
+> **Gebaut am 01.09.2026 — die Zuordnung, nicht die Achsen.** `praegung_strang`
+> trägt Paar, Zentroid, `faden_zahl` und die beiden Fadenzeiten; `praegung_faden`
+> trägt `strang_id`. Ein Faden sucht beim Anlegen den nächsten Strang seines
+> Paares und tritt ihm bei, wenn die Nähe zum **Zentroid** `PRAEGUNG_STRANG_NAEHE`
+> erreicht (0,62, Startwert wie bei der Reaktivierung, ungemessen für diesen
+> Vergleich) — sonst gründet er einen. Das Zentroid wird fortgeschrieben:
+> `(alt·n + neu)/(n+1)`.
+>
+> **Die Zuordnung läuft außerhalb der Fadentransaktion**, dieselbe Entscheidung
+> wie bei der Faltung (§7.4): Die Rechnung ist wiederholbar, das Ereignis nicht.
+> Was ohne Strang bleibt, holt `faeden_ohne_strang_zuordnen` als fünfter Schritt
+> des Tageslaufs — sortiert nach `entstanden_am`, weil Online-Zuordnung sonst bei
+> jedem Lauf einen anderen Bestand ergäbe.
+>
+> **Die drei Achsen und die Stärke sind ausdrücklich nicht gebaut.** `W_ANZAHL`,
+> `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle
+> führt dieses Dokument selbst als gesetzt und ungemessen (§13). Mit vier Fäden
+> eines Tages wären `anlaesse` = 1 und `spanne` = 0 — zwei der drei Eingaben
+> Konstanten.
+>
+> `[gemessen]` 01.09.2026, 19:45 UTC: Vier Fäden, Vorhersage **1 Strang**
+> (327+328+353+354), Lauf **1 Strang**, 4 von 4 zugeordnet. **Der Beleg, dass die
+> Schwelle trennt, steht daneben und ist der wichtigere:** Das Zentroid gegen 15
+> Themenknoten quer durch das LZG erreicht **kein einziges Mal** 0,62 — der
+> nächste liegt bei 0,5165 (selbst ein Neutronenstern-Knoten), der fernste bei
+> 0,0550. Ohne diese zweite Zahl hieße *ein Strang über alles* nur, dass die
+> Schwelle nichts abweist.
+
 ### 7.8 Die Sektor-Destillation ist ein Typwechsel, kein Mittelwert
 
 **Nicht der Mittelwert.** Sektor 1 und Sektor 5 ergäben im Mittel *neutral* — die Ambivalenz wäre

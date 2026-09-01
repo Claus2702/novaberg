@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **19:26 UTC** (gemessen via `date -u`). Davor 01.09.2026, 18:30 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **19:45 UTC** (gemessen via `date -u`). Davor 01.09.2026, 19:26 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 146 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 147 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,41 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 19:45 UTC — Scheibe 3a: Fäden finden ihren Strang ✅
+
+**ZIEL:** Ein neuer Faden findet den Strang, der thematisch zu ihm passt, oder gründet einen — und das Zentroid des Strangs wächst dabei mit.
+
+**DDL** (angekündigt und freigegeben, wirkt nach Neustart): `praegung_strang` mit Paar-Schema, `zentroid VECTOR(768)`, `faden_zahl`, `angelegt_am`, `erster_faden`, `letzter_faden`, `name`; dazu `praegung_faden.strang_id` als nullbare Referenz. **`angelegt_am` kam erst bei der Diagnose dazu:** Ohne sie war bei zwei vorgefundenen Strängen nicht zu beantworten, wer sie angelegt hatte.
+
+**Gebaut:** `strang_zuordnen` sucht den nächsten Strang des Paares und tritt bei, wenn die Nähe zum Zentroid `PRAEGUNG_STRANG_NAEHE` (0,62) erreicht — sonst Gründung. Das Zentroid ist ein laufendes Mittel, `(alt·n + neu)/(n+1)`, keine Ersetzung. **Außerhalb der Fadentransaktion**, dieselbe Entscheidung wie bei der Faltung: Die Rechnung ist wiederholbar, das Ereignis nicht. `faeden_ohne_strang_zuordnen` ist der Rückweg und läuft als **fünfter Schritt des Tageslaufs**, sortiert nach `entstanden_am` — Online-Zuordnung ergäbe sonst bei jedem Lauf einen anderen Bestand.
+
+**Nicht gebaut, ausdrücklich:** die drei Achsen (Ladung, Richtung, Valenz) und `strang_staerke`. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen. Mit vier Fäden eines Tages wären `anlaesse` = 1 und `spanne` = 0.
+
+**TEST:** `tests/test_praegung_strang.py`, 13 Zeugen. Suite **2828 grün, 0 übersprungen** (2815 → 2828).
+
+**Gegenproben, beide vorhergesagt und beide getroffen:** Aufruf in `faden_anlegen` entfernt → 1 rot (1 vorhergesagt). Zentroid ersetzt statt fortgeschrieben → 1 rot (1 vorhergesagt).
+
+**MESSUNG** — `labor/2026-09-01_strang_betriebsbeleg.py`, Vorhersage **vor** dem Lauf gerechnet:
+
+| | |
+|---|---|
+| **Vorhergesagt** | 1 Strang: 327+328+353+354 |
+| **Gelaufen** | 1 Strang, **4 von 4** zugeordnet, 0 Fäden offen |
+| **Trennt die Schwelle?** | Zentroid gegen 15 LZG-Themenknoten: **kein einziger** erreicht 0,62 — nächster 0,5165, fernster 0,0550 |
+
+Die zweite Zeile ist die wichtigere. Vier Fäden eines Tages zu einem Thema ergeben *einen* Strang auch dann, wenn die Schwelle gar nichts abweist; erst der Abstand zu fremden Themen zeigt, dass sie trennt.
+
+### Und die Suite schrieb dabei in den Produktivbestand — zwei Wege, beide geschlossen
+
+**Gefunden, weil der Bestand vor der Messung schon zugeordnet war.** Zwei Stränge standen da, die niemand gebaut hatte.
+
+- **`TageslaufRuftDenBestandslaufTest` ersetzt vier Schritte des Tageslaufs, der neue fünfte stand nicht dabei** — er lief gegen `POSTGRES_URL` über **alle** Paare und legte bei jedem Suitenlauf einen Strang über die vier Fäden des Messpaars an. Der Zeuge wurde nicht geändert; er wurde gefährlich, weil sein Gegenstand wuchs.
+- **Vier `tearDown`-Pfade löschen `praegung_faden`, aber nicht den Strang**, den `faden_anlegen` seither mitgründet. `ON DELETE SET NULL` nimmt ihn nicht mit — er blieb als verwaiste Zeile stehen.
+
+**Dritter Fall dieser Klasse in fünf Tagen** (`20_TESTS/neuer-seiteneffekt-alte-zeugen.md`, 28.08. und 01.09.). Beide Wege geschlossen, Bestand zurückgesetzt, **Gegenprobe: Suitenlauf danach, `praegung_strang` 0 Zeilen, `strang_id` 0-mal gesetzt.**
 
 ---
 
