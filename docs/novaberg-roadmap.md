@@ -61,6 +61,10 @@ Dieselbe Nachfrage foerderte zwei weitere Luecken zutage: Der Defekt am Faden-Em
 
 > **Der Lessons-Schritt hinterlaesst als einziger kein Artefakt.** Alle anderen erzeugen eine Suite-Bilanz, einen Commit, eine Fundlisten-Zeile. Er erzeugt eine Datei, die niemand zaehlt — und die Formel zu sprechen ist leichter, als sie zu erfuellen.
 
+Eine zweite Nachfrage — *ist jetzt alles aufgenommen?* — fand drei weitere Luecken, und keine Pruefung haette sie gemeldet: Die vier neuen Konstanten der Praegung fehlten im **Kalibrierungs-Register**, die **Rechenkette** kannte die Auffrischung nicht, und der Perzeptions-Befund war zwar gemessen und im Moduldokument beschrieben, aber **nie klassifiziert** — er steht jetzt als `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` im Backlog.
+
+> **Zweimal hintereinander hat eine Frage gefunden, was die Schlusspruefung nicht sieht.** Sie prueft, ob ein Schritt *ausgefuehrt* wurde, nicht ob er *vollstaendig* war — und der Nachzug sucht entlang geaenderter Dateien, waehrend ein Register, das aufzaehlt, keine nennt.
+
 ---
 
 ## 31.08.2026, 21:35 UTC — Drei Schwellen, die eine Lage beschrieben und eine Zahl trugen ✅

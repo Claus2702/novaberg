@@ -182,7 +182,7 @@ Zwei Fehlgriffe, beide systematisch und beide reproduzierbar:
 | Sektor 4 — Überraschung | `neugierig` → **Sektor 8** | der **Gegenpol** |
 | Sektor 7 — Ärger | `frustration` → **Sektor 6** | der Nachbar |
 
-**Der Reparaturort ist der Prompt, nicht die Rechnung.** Eine Vollturn-Reihe hatte am selben Tag 4 von 8 Sektoren und dreimal `neutral` ergeben — beides entsteht hinter diesem Knoten, nicht in ihm.
+**Der Reparaturort ist der Prompt, nicht die Rechnung.** Eine Vollturn-Reihe hatte am selben Tag 4 von 8 Sektoren und dreimal `neutral` ergeben — beides entsteht hinter diesem Knoten, nicht in ihm. Geführt als `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` (Backlog, Charakter): **kein Defekt im Sinne des Bug-Registers**, weil kein Dokument sagt, welche Sektoren getroffen werden müssen — es fehlt ein Soll, nicht seine Einhaltung. Auf den Sektoren bauen das Sektor-Histogramm eines Strangs (§7.8) und die acht Verfallsfaktoren (§7.9).
 
 ### 3.3 Psychologisch — Was wird gebraucht?
 

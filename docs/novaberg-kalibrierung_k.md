@@ -92,6 +92,8 @@ Die einzige Klasse mit einer Bauartregel statt einer Zahl: **Der gespeicherte We
 
 `RAD_HISTORIEN_GEWICHT = 0.5` · `RAD_MESSREIHE_FENSTER = 5` · `EMOTION_HISTORIEN_GEWICHT = 0.15` · ~~`EMOTION_GLAETTUNGS_MAXIMUM = 2.5`~~ → **4.0, am 31.08.2026 aus Messreihen hergeleitet** (`novaberg-ei.md` §Reizstärke) · `STIL_SESSION_GEWICHT = 0.7`
 
+**Dazu seit dem 01.09.2026 vier Konstanten der Prägungsschicht**, alle vier Setzungen, die auf Laufzeit warten: `PRAEGUNG_BERUEHRUNG_NAEHE = 0.62` — als einzige **gemessen** hergeleitet, aus der Nulllinie über 19.900 Knotenpaare (p99 der fremden Paare) · `PRAEGUNG_ALPHA = 0.33` · `PRAEGUNG_HALBSTRECKE = 60` · `PRAEGUNG_BODEN = 0.20` — die drei aus der gerechneten Tabelle des Konzepts (§7.4), nicht aus dem Bestand. **Ihre Kalibrierung braucht Fäden, die über Wochen gelebt haben**; heute gibt es keinen.
+
 Glättung ist der direkte Gegenspieler der Unterscheidbarkeit: Sie kauft Stabilität mit Auflösung. Fenster und Historiengewicht der Räder sind ausdrücklich **Setzungen zum Messen** und abzulösen, sobald zehn Erhebungen vorliegen (`novaberg-charakter-rad-messreihe_k.md` §8). Bestand am 06.08.2026: **sechs Erhebungen je Rad** am produktiven Paar.
 
 ### 3.6 Kennlinien — die Form der Abbildung selbst

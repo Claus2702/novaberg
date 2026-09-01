@@ -16,6 +16,16 @@
 
 ---
 
+## Block 01.09.2026 — aus der isolierten Perzeptions-Messung
+
+Ein Eintrag. Er ist **eine Reparatur am Prompt, kein Rechenfehler** — und er steht unter Charakter, weil die Sektoren bestimmen, welche Emotion ein Faden traegt.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` | **Zwei von acht Plutchik-Sektoren werden systematisch verfehlt, einer davon auf seinen eigenen Gegenpol.** `[gemessen]` 31.08.2026, `perceive()` isoliert gerufen — ohne Graph, ohne Session-Kontext, ohne Antwortgenerierung —, acht Reize entlang des Rads, **drei Durchgaenge wortgleich**: 6 von 8 getroffen, `neutral` 0 von 24 Mal. Bei `temperature = 0.05` ist der Klassifikator deterministisch; ein Durchlauf genuegt fuer diese Frage, und die Wiederholung hat es belegt statt es anzunehmen. **Die zwei Fehlgriffe sind reproduzierbar und gerichtet:** Ein Reiz auf **Sektor 4 (Ueberraschung)** — *Tardigraden ueberleben das Vakuum ohne jede Anpassung* — liefert `neugierig` und damit **Sektor 8, den Gegenpol** (Ueberraschung ↔ Neugier, Plutchik-Antagonist). Ein Reiz auf **Sektor 7 (Aerger)** — *ueber Jahre manipulierte Bilder in Fachartikeln* — liefert `frustration` und damit den **Nachbarn Sektor 6**. **Warum das mehr ist als eine Ungenauigkeit:** Auf den Sektoren bauen das Sektor-Histogramm eines Strangs (Konzept §7.8) und die **acht Verfallsfaktoren** (§7.9) — beide Scheibe 3 der Praegungsschicht, beide noch nicht gebaut. Ein Faden, der den Gegenpol seines Sektors traegt, verfaellt nach der falschen Kurve, und ein Strang verdichtet auf der falschen Achse. **Ein aelterer Befund faellt dabei:** Eine Vollturn-Reihe vom 31.08.2026 hatte 4 von 8 Sektoren und dreimal `neutral` ergeben. Beides entsteht **hinter** der Perzeption — sie selbst sagt nie `neutral`, und sie trifft 6. **Der Reparaturort ist der Prompt, nicht die Rechnung**; `perzeption.task.txt` bietet alle 16+1 Kategorien an, der Klassifikator waehlt zwei davon nie richtig. **Geschlossen, wenn** eine Reihe ueber acht gezielte Reize 8 von 8 trifft — oder wenn belegt ist, dass die beiden Sektoren mit diesem Modell nicht trennbar sind und die Verfallsfaktoren darauf eingerichtet werden. | [CHA] ungebaendert — ⬜ **offen** — angelegt am 01.09.2026. **Kein Defekt im Sinne des Bug-Registers:** Kein Dokument sagt, welche Sektoren die Perzeption treffen muss; es fehlt ein Soll, nicht seine Einhaltung. Werkzeug: `labor/2026-08-31_perzeption_isoliert.py`. |
+
+---
+
 ## Block 31.08.2026 — aus der Reizstaerke-Kalibrierung
 
 Ein Eintrag. Er ist **eine fehlende Messgrundlage, kein fehlender Bau** — drei Schwellen stehen und wirken, aber keine ist an echtem Betrieb kalibriert.
