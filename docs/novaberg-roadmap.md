@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **17:25 UTC** (gemessen via `date -u`). Davor 01.09.2026, 16:50 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **17:45 UTC** (gemessen via `date -u`). Davor 01.09.2026, 17:25 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 17:45 UTC — Zwei kleine Schulden ✅
+
+**Eine widerlegte Zahl im Kommentar einer Konstante.** `config.py` begruendete die Gravitationsschwelle unter anderem damit, dass der erreichbare Hoechstwert bei **0,287** liege. `[gemessen]` ueber 71 aktivierte Gravitationspunkte: Hoechstwert **0,6640**, Mittel 0,3518, **21 davon ueber 0,40**. Die Zahl stammte aus 56 Turns vor der Normierung. Die Begruendung des Bugs `EMGRAV-SCHWELLE-TOT` bleibt richtig — 0,40 lehnte auf der unnormierten Skala nichts ab —, seine Vorhersage ueber die normierte nicht. Der Satz ist durchgestrichen und ersetzt, nicht geloescht.
+
+> **Und die Zahl daneben, die nicht gemessen werden konnte, steht als solche da.** Die 71 sind die *aktivierten* Punkte und per Bauart alle ueber 0,18; ueber die abgelehnten fuehrt der Log nichts. Wie viel eine andere Schwelle durchliesse, ist mit diesem Bestand **nicht** zu beantworten — beinahe haette hier eine Tabelle mit Schwellen von 0,10 bis 0,45 gestanden, deren untere Haelfte nur die Filterung des Logs abbildet.
+
+**Und ein Aufgabeneintrag, den seine eigene Regel verlangt.** Die Beweiskette-Regel entstand heute frueh und ist maschinell pruefbar; `01_LESSON_UEBERNAHME` §6 verlangt dafuer einen Eintrag im Katalog, und der fehlte. Nachgetragen als **`C25`**: *Traegt das Dokument eines heute gemessenen Moduls ein heutiges Datum?* Die Suche ist billig, das Urteil braucht den Menschen — dass gemessen wurde, geht aus einem Diff nicht hervor.
+
+> **Der fehlende Eintrag stand im Handzettel und wurde von keiner Pruefung gefunden.** Die Regel ueber Regeln hat selbst keine.
+
+Suite unveraendert **2807 gruen, 0 uebersprungen**.
 
 ---
 
