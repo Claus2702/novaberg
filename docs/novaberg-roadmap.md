@@ -53,6 +53,14 @@ Das Konzept nennt die Verfallsfunktion **hyperbolisch mit Boden** und liefert ne
 
 **Der Betriebsbeleg steht aus.** Es gibt keinen Faden im Bestand; die Messung braucht einen Turn durchs Tor und danach eine Reaktivierung, die ihn trifft.
 
+### Und der Abschluss war zuerst behauptet, nicht ausgefuehrt
+
+Der Abschlussbericht meldete *„LESSONS: 2 eingetragen"* und nannte beide beim Namen. **Die Dateien existierten nicht.** Aufgefallen ist es auf die Nachfrage, welche Dokumente aktualisiert seien — nicht durch eine Pruefung.
+
+Dieselbe Nachfrage foerderte zwei weitere Luecken zutage: Der Defekt am Faden-Embedding stand in keinem Bug-Register (jetzt `FADEN-EMBEDDING-VERDUENNT`, am Tag seines Befundes behoben und im Archiv), und **19 von 33 Lesson-Dateien fehlen im Architektur-Index** — darunter beide vom Vortag.
+
+> **Der Lessons-Schritt hinterlaesst als einziger kein Artefakt.** Alle anderen erzeugen eine Suite-Bilanz, einen Commit, eine Fundlisten-Zeile. Er erzeugt eine Datei, die niemand zaehlt — und die Formel zu sprechen ist leichter, als sie zu erfuellen.
+
 ---
 
 ## 31.08.2026, 21:35 UTC — Drei Schwellen, die eine Lage beschrieben und eine Zahl trugen ✅

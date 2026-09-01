@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** **52 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 1. September 2026 — `FADEN-EMBEDDING-VERDUENNT` am Tag seines Befundes behoben und abgelegt. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Inhalt:** **53 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -29,6 +29,22 @@
 Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste ist ein
 **Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat**; der zweite
 ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
+
+### `FADEN-EMBEDDING-VERDUENNT` — der Faden trug den Turn, nicht sein Segment
+
+**Zustand:** behoben am 01.09.2026, am selben Tag gefunden. Zeugen: `tests/test_praegung_faden_schema.py`.
+
+**Symptom.** `praegung_faden.embedding` kam aus `state["prompt_embedding"]` — dem Vektor des **ganzen Turns**. Salienz und Emotion desselben Fadens kamen aus dem **staerksten Segment**, ausgewaehlt mit der ausdruecklichen Begruendung: *„Ein Turn mit einem einzigen einschneidenden Satz ist einschneidend, auch wenn drei belanglose daneben stehen — ein Mittel verduennte ihn."*
+
+**Genau dieses Mittel stand im Embedding.** Der Faden trug die Wucht und den Sektor eines Segments und den Vektor des Durchschnitts.
+
+**Warum das ein Defekt ist und nicht eine Einstellung.** Ein Faden wird ueber Embedding-Naehe wiedergefunden — das ist der einzige Weg, auf dem eine Reaktivierung ihn auffrischt (Konzept §7.12). `[gemessen]` 01.09.2026 ueber 19.900 Knotenpaare trennt diese Naehe ohnehin nur schwach: ohne geteiltes Thema Median **0,355**, mit geteiltem **0,504**, die Verteilungen ueberlappen breit. **Auf einem verduennten Vektor ist die Trennung noch schwaecher** — und ein Faden, der durch Zufallsaehnlichkeit aufgefrischt wird, wird unsterblich (§7.4). Dieselbe Ausfallklasse, wegen der `EMGRAV-SCHWELLE-TOT` ueberhaupt Vorbedingung dieser Schicht wurde.
+
+**Behebung.** `_faden_embedding()` bettet den Segmenttext ein. Faellt der Embed-Dienst aus, wird auf den Turn-Vektor zurueckgefallen — **und die Torzeile vermerkt es**: `embedding_quelle` traegt `segment`, `prompt` oder `keins`. Ohne dieses Feld waere ein grober Faden von einem scharfen nicht zu unterscheiden, und die Naehe-Schwelle stuende auf gemischtem Material.
+
+**Die Klasse ist allgemeiner als der Fall.** Wo eine Begruendung fuer **eine** von mehreren Eigenschaften desselben Objekts formuliert wird, gilt sie meist fuer alle — und die uebrigen werden nicht mitgezogen. Hier lag die Begruendung im Docstring der Funktion, die das Segment waehlt; das Embedding wurde vierzig Zeilen weiter unten aus einer anderen Quelle geholt.
+
+**Verwandt:** `novaberg-lesson_l_groesse-am-falschen-ort.md` — dort dieselbe Familie mit vertauschten Groessen statt vertauschten Quellen.
 
 ### `EMGRAV-SCHWELLE-TOT` — die Gravitationsschwelle kann nicht mehr ablehnen
 

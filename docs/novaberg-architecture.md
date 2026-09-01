@@ -798,6 +798,8 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-lesson_l_weg-vor-wortschatz.md | Erst messen, ob der Weg befahren wird — sonst erweitert man einen toten Pfad |
 | novaberg-lesson_l_parst-nicht-schlaegt-parst-falsch.md | Eine zu breite Regel macht aus dem harmlosen Ausfall den schädlichen |
 | novaberg-lesson_l_meldung-im-bestand-ertrinkt.md | Eine Regel, deren Verletzung ein Absturz ist, gehört nicht in eine geduldete Trefferzahl |
+| novaberg-lesson_l_zwei-grundgesamtheiten.md | Zwei Zahlen, die verschiedene Mengen messen, sehen wie ein Widerspruch aus |
+| novaberg-lesson_l_die-sonde-misst-sich-selbst.md | Ein Reizsatz aus einem Register misst die Monotonie des Reizsatzes |
 
 ### Uebergreifend
 
