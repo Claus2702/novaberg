@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 1. September 2026, 14:30 UTC (§11a neu — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -537,6 +537,26 @@ Drei Größen wirken **nicht** im Turn, in dem sie entstehen, sondern im nächst
 | Novas Zustand | S32 | S3 → alle Achsen | `nova_state:{user_id}:{character_id}` |
 
 **Die Landschaft ist die einzige der drei, die im selben Turn zweimal vorkommt** — einmal als Wert des Vorturns (in S9 und S11) und einmal frisch gerechnet (in S20 und S26). Beides sind verschiedene Größen mit demselben Namen.
+
+---
+
+## 11a. Die Knoten-Dateien, die hier kein eigenes System tragen
+
+**Dieses Register ordnet nach Rechnungen, nicht nach Knoten** (§1). Vier der 25 Knoten-Dateien
+kommen deshalb in keinem `S`-Abschnitt vor, und das ist bei allen vieren richtig — aber es war
+bis zum 01.09.2026 nirgends gesagt. Wer prüfte, ob das Register vollständig ist, fand vier
+Lücken und konnte nicht unterscheiden, ob sie fehlen oder nicht hierher gehören.
+
+| Datei | warum kein eigenes System |
+|---|---|
+| `enricher.py` | **lädt, rechnet nicht.** Die Rechnungen, die im Enricher *ausgelöst* werden, stehen als eigene Systeme: S8 (Ziel-Gravitation) und S12 (emotionale Gravitation) — beide in `ei/*.py`. Der Knoten selbst ist der Orchestrator |
+| `ei_calc.py` | **derselbe Fall.** Er ruft `ei/berechnung.py` und `ei/raum.py`; die Rechnungen stehen dort als S3 bis S7 |
+| `agent_dispatch.py` | **reiner Router.** Liest `agent_name`, findet den agentenspezifischen Dispatch, überlässt ihm die Transformation. Kein eigener Wert |
+| `thinker_cache.py` | **Schutzmechanismus, keine Größe.** Per-Turn-Cache gegen die Schleife identischer Werkzeugaufrufe (`THINK-MEM-LOOP`), zweistufig, strikt lokal je Aufruf |
+
+> **Eine Aufzählung braucht auch die Zeile für das, was absichtlich fehlt.** Sonst ist eine
+> bewusste Auslassung von einer vergessenen nicht zu unterscheiden — dieselbe Klasse wie ein
+> Ausfall, der als Messwert durchgeht.
 
 ---
 

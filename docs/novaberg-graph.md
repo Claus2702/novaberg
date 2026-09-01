@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 30. August 2026 (`memory_context_verfasser` als State-Kanal, der Reducer schreibt zwei Fassungen). Davor 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 1. September 2026, 14:30 UTC (**19 State-Kanaele nachgetragen**, die die Kanaltabelle nie kannte — Verfasser (`antwort_inhalt`, `einwandsurteil`, `node_annotations`), Haltungsraum (`haltung`), Tribunal und Korrektur-Loop (§4.7a, funf Kanaele), Enricher-Suche (`such_vektor`, `suchtext`, `suchtext_herkunft`, `aufzeichnungen`), Router (`management_target_typ`, `timeline_query`), GV (`gv_detail`), Responder (`model`, `token_total`), Salienz (`salienz_human`). Gefunden von `C18`, nicht vom Nachzug). Davor 30. August 2026 (`memory_context_verfasser` als State-Kanal, der Reducer schreibt zwei Fassungen). Davor 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
@@ -343,6 +343,8 @@ Felder der `Emotion`-Klasse (`graph/personality.py`):
 | `momentum` | `str` | low / mid / high (fuer Shadow Delivery) |
 | `management_action` | `str` | "agent" (Plugin-gesteuert) / "resume" / "" |
 | `management_target` | `str` | Agent-Name (seit Chat 40, von Plugin-Prompt gesetzt) |
+| `management_target_typ` | `str` | `"titel"` \| `"inhalt"` \| `"thema"` — **wie** der Nutzer sucht. Vom Router gesetzt (Vorgabe `"titel"`), vom Planner gelesen |
+| `timeline_query` | `dict` | Die Zeitachsen-Anfrage dieses Turns: `{"type": "range\|search\|store", ...}`. Vom Router gesetzt, leer wenn `needs_timeline` falsch ist |
 
 ### 4.4 db_zugriff + Enricher + EmGrav + Reducer (CharacterGraph-Pre-Router-Block)
 
@@ -388,6 +390,10 @@ Kein KZG/LZG-Read, kein Charakter-Hash, kein Reducer, kein `memory_context` (Pha
 | `memory_entries_raw` | `list[ContextEntry]` | Akkumulator: KZG-Resonanz + LZG-Resonanz + Plugin-`enrich()`-Hooks. |
 | `web_context` | `str` | Web-Kontext (optional). |
 | `emotionale_gravitationspunkte` | `list[dict]` | Emotional aufgeladene Erinnerungen, vom Enricher ueber Embedding-Aehnlichkeit zum Turn gefunden (KZG + LZG, `ei/gravitation.py`). Verbraucher ist der Node `emotionale_gravitation` zwischen Enricher und Reducer — bis Chat 113 stand der Verbraucher in `ei_calc` und lief damit VOR dem Produzenten: 851 Berechnungen, null Anwendungen. Siehe `novaberg-node-emotionale-gravitation.md`. |
+| `such_vektor` | `list[float]` | **Der Suchschluessel der Gedaechtnissuche**: das Prompt-Embedding nach der Wahrnehmungs-Gravitation (§8.5). KZG, LZG und die Bibliothek suchen damit. Gesetzt nur, wenn ueberhaupt gesucht wird. |
+| `suchtext` | `str` | Der Text, aus dem der Suchschluessel entstanden ist — seit dem 20.08.2026 das Ergebnis des Query Rewritings, sonst die rohe Aeusserung. |
+| `suchtext_herkunft` | `str` | Woher dieser Text kam: `rewrite`, `abgeschaltet`, `zu_wenig_verlauf`, `leer`, `zu_lang`, `aufruf_gescheitert`. **Beide Felder stehen zusammen, damit ein Turn nachtraeglich beantworten kann, womit er gesucht hat** — eine Suche ohne Treffer ist sonst nicht von einer Suche mit dem falschen Schluessel zu unterscheiden. |
+| `aufzeichnungen` | `list` | Die Treffer des Dateien-Index dieses Turns (`agents.dateien_index.aufzeichnungen.Aufzeichnung`). Gelesen vom Verfasser fuer den `[AUFZEICHNUNGEN]`-Block; leer, wenn die Quelle ausfaellt — der Enricher meldet den Ausfall und setzt die Liste ausdruecklich. |
 
 #### Reducer (nur CharacterGraph)
 
@@ -439,6 +445,7 @@ Die Modus-/Stil-Plausibilitaet fuer `internal.emotion` wird **nicht** hier gemac
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `gespraechsvektor` | `str` | Natuerlichsprachliche Hypothese fuer den Responder |
+| `gv_detail` | `dict` | Die Rechenspur des GV-Knotens — Neugier, Wissensluecken, Farbton (GV4). Fuer Protokoll und Kontext-Anzeige, nicht fuer den Prompt |
 
 ### 4.6 Planner (optional)
 
@@ -450,19 +457,45 @@ Die Modus-/Stil-Plausibilitaet fuer `internal.emotion` wird **nicht** hier gemac
 | `task_block` | `str` | Fertiger [AUFGABE]-Block fuer den Responder (seit Chat 54) |
 | `task_context_cut` | `bool` | Kontext-Schnitt-Flag fuer den Responder (seit Chat 54) |
 
+### 4.6a Verfasser und Haltungsraum
+
+Der Verfasser bestimmt, **was** gesagt wird; der Responder gibt ihm Novas Form. Die Trennung
+steht in `novaberg-node-verfasser_k.md` §2 — der Responder fuegt keine Behauptung hinzu, die
+hier nicht steht.
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `antwort_inhalt` | `str` | Der fachliche Inhalt der Antwort, bevor Nova ihm ihre Form gibt. Vom Verfasser gesetzt, vom Responder gelesen. Leer, wenn der Verfasser ausfaellt — und der Responder protokolliert die Laenge, damit „nichts zu sagen" von „ausgefallen" unterscheidbar bleibt |
+| `einwandsurteil` | `Einwandsurteil` | Das Urteil ueber einen Einwand des Nutzers, gefaellt **bevor** ein Satz formuliert ist (`graph/einwand.py`). Traegt die Ausbausperre: bei `bewertung == "abweichend"` darf der abweichende Wert zitiert, aber nicht als Praemisse verwendet werden. **`geliefert=False` heisst „kein lesbares Urteil", nicht „kein Einwand"** |
+| `haltung` | `Haltung \| None` | Die fuenf Verhaltensgroessen des Turns — Umfang, Fragen, Naehe, Waerme, Draengen —, gerechnet aus der Landschaft des GV-Knotens und Novas Zuwendungsrad (`novaberg-haltungsraum_k.md` §2). Verfasser und Responder **lesen** sie, keiner von beiden rechnet sie. **Nicht vorbelegt, und das ist Absicht:** Fehlt der Schluessel, ist die Rechnung nicht gelaufen — eine leere Haltung waere davon nicht zu unterscheiden |
+| `node_annotations` | `list[str]` | Interne Anmerkungen quer durch die Knoten (Planner-Ausfaelle, Verfasser-Hinweise). Vom Tribunal gelesen und seinem Urteilsprompt beigelegt |
+
 ### 4.7 Responder
 
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `response` | `str` | Generierte Antwort |
+| `model` | `str` | Welcher Weg die Antwort erzeugt hat (`"chat_worker"`) |
+| `token_total` | `int` | Tokenverbrauch des Antwort-Calls. Gelesen vom Event-Consumer und von der Salienz fuer das Protokoll |
 
 **Lese-Quellen (seit Chat 89, Phase 3):** Der Responder liest umfangreich aus den Personality-Klassen — `state["internal"].character.{core, adaptive, relationship, intentions, emotions}` fuer den `[IDENTITAET]`-Block, `state["internal"].identities` fuer Charakter-Anweisungen, `state["internal"].directives` fuer den `[DIREKTIVEN]`-Block, `state["external"].emotion.{emotion, arousal, mode, language_style, relationship_dynamic, tone, intent}` fuer EI-MIKRO und Stil-Adaption. Vollstaendige Klassen-Definitionen: `novaberg-personality.md`.
+
+### 4.7a Tribunal und Korrektur-Loop
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `tribunal_votes` | `list[TribunalVote]` | Die Einzelstimmen der drei Perspektiven (§2.2) |
+| `tribunal_verdict` | `str` | `ok` \| `warnung` \| `ablehnen` — das zusammengefasste Urteil, gelesen von der Graph-Weiche `evaluate` |
+| `tribunal_summary` | `str` | Die kritischen Rueckmeldungen als Text fuer den Corrector; leer, wenn keine anfiel |
+| `correction_round` | `int` | Zaehler der Korrekturrunden, vom Corrector hochgezaehlt |
+| `max_corrections` | `int` | Die Obergrenze aus der Konfiguration. **Die Weiche liest beide zusammen** — ohne den Zaehler neben der Grenze waere eine Antwort, die die Runden aufgebraucht hat, von einer akzeptierten nicht zu unterscheiden |
 
 ### 4.8 Salienz (nach Tribunal)
 
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `pending_writes` | `list[PendingWrite]` | Ergaenzt um Salienz-Writes (KZG, Fakten, Timeline) |
+| `salienz_human` | `float \| None` | Die **rohe** Bewertung dessen, was der Nutzer in diesem Turn gesagt hat, 0.0–1.0 — ohne Gravitationsboost. Der HumanGraph setzt sie als Maximum ueber seine Segmente; sie reist ueber das Event-Payload in den CharacterGraph. **`None` heisst „es gab keine Nutzeraeusserung"** (AgentGraph, eigener Impuls) und ist nicht dasselbe wie `0.0` (`novaberg-convention-abgeleitete-werte.md`, Regel 1) |
 
 ### 4.8a KZG-Dispatch (Chat 60)
 

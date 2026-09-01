@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 30. August 2026 (`turn_id` hat zwei Leser und zwei Schreibpfade — der Recherche-Agent übergibt sie seit heute). Davor 28. August 2026 (`turn_id` als Hash-Feld — das erste Glied der Sachlage-Brücke). Davor: 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
+**Stand:** 1. September 2026, 14:30 UTC (`beziehungs_dynamik` in der Feldtabelle — stand seit jeher im Hash und nie in der Aufzaehlung; zwei Leser: Charakter-Agent und Synapsen-Promotion). Davor 30. August 2026 (`turn_id` hat zwei Leser und zwei Schreibpfade — der Recherche-Agent übergibt sie seit heute). Davor 28. August 2026 (`turn_id` als Hash-Feld — das erste Glied der Sachlage-Brücke). Davor: 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -47,6 +47,7 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 | `arousal` | State | Arousal-Float (0.0–1.0) |
 | `emotions_vektor` | State | Richtungsvektor |
 | `sprach_stil` | State | Erkannter Sprachstil (locker/formell/...) |
+| `beziehungs_dynamik` | State (Perzeption → `external.emotion.relationship_dynamic`) | Die Beziehungsdynamik des Turns — `vertrauen`, `distanz`, `angriff`, `hilfesuchend`, `dankbar`, `neutral`; Vorgabe `neutral`. **Zwei Leser aus dem Hash:** der Charakter-Agent (Destillation der Beziehungsschicht) und die Synapsen-Promotion. **Stand seit jeher im Hash und bis zum 01.09.2026 nicht in dieser Tabelle** |
 | `tone` | State | Tonlage aus Perzeption |
 | `character_id` | State | ID des beteiligten Charakters (Paar-Partition) |
 | `beobachter` | Dispatch | `"user"` (HumanGraph, Pfad 1) oder `"assistant"` (CharacterGraph, Pfad 2) — wer hat den Turn beobachtet |

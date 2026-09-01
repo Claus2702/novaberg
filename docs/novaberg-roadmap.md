@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **13:50 UTC** (gemessen via `date -u`). Davor 01.09.2026, 10:50 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **14:30 UTC** (gemessen via `date -u`). Davor 01.09.2026, 14:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,51 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 14:30 UTC — 34 Deckungsluecken, davon drei erfunden ✅
+
+Die Schlusspruefung meldete **34 Befunde** der Pruefung `C18` (Deckung der Aufzaehlungen): vollstaendige Listen, die ein Exemplar ihrer Sorte nicht kannten. Alle Altbestand, ueber Wochen angesammelt.
+
+**Der erste Befund lag an der Pruefung selbst.** `ergebnis`, `knoten` und `pflicht` sind keine State-Kanaele, sondern **Parameter von `zustand_verifizieren()`**. Die Extraktion schnitt den Klassenkoerper am naechsten `class` — und `ConversationState` ist die letzte Klasse ihrer Datei, der Block lief bis zum Dateiende weiter und nahm Funktionsparameter derselben Einrueckung mit. Nach der Berichtigung: **31 statt 34**.
+
+> **Eine Pruefung, die Falsches meldet, kostet dasselbe wie eine, die schweigt.** Wer diese drei geschlossen haette, traegt drei erfundene Kanaele in genau die Aufzaehlung ein, die sie bewachen soll.
+
+**Die 31 echten sind geschlossen**, jeder mit seinem Inhalt statt mit seinem Namen:
+
+| Aufzaehlung | Luecken | was fehlte |
+|---|---|---|
+| `novaberg-graph.md`, State-Kanaele | **19** | Verfasser, Haltungsraum, Tribunal und Korrektur-Loop (§4.7a neu), die vier Enricher-Suchkanaele, Router, GV, Responder, Salienz |
+| `novaberg-node-gv_k.md` | **4** | das Dokument beschrieb die Absicht des Knotens vollstaendig und seine **Prompt-Struktur gar nicht** — §8.0a listet jetzt alle neun Bloecke |
+| `novaberg-graph-rechenkette.md` | **4** | vier Knoten-Dateien ohne eigenes System; §11a nennt sie mit Grund |
+| `novaberg-architecture.md`, Dateibaum | **2** | `verfasser.py` und `thinker_cache.py`; die Zahl stand seit dem 31.07. auf 20 und ist **25** |
+| `novaberg-node-verfasser_k.md` | **1** | der Block stand in der Tabelle als *Session-Verlauf* und trug seinen Namen `[GESPRAECHSVERLAUF]` nicht |
+| `novaberg-mem-kzg.md` | **1** | `beziehungs_dynamik` — seit jeher im Hash, nie in der Tabelle |
+
+**Zwei Nebenbefunde.** Beim Schliessen der GV-Bloecke hatte ich einen `[DREISCHICHT]`-Block erfunden; er heisst in Wahrheit `[GESPRAECHSLANDSCHAFT]`, `[WERKZEUGE]` und `[ABSICHTEN]` und wird in `ei/dreischicht.py` gebaut, nicht im Knoten — durch Nachsehen im Code berichtigt. Und die Erfolgsmeldung des Werkzeugs sagte *„4 Paare geprueft"*, obwohl seit dem 28.08.2026 abends **acht** registriert sind.
+
+**Gegenprobe:** Zwei geschlossene Zeilen zurueckgebaut, **2 Befunde vorhergesagt, 2 gezaehlt**; danach wieder 0.
+
+---
+
+## 01.09.2026, 14:05 UTC — Die erste Beruehrung, vorher ausgerechnet ✅
+
+Drei Reihen mit zehn Turns hatten **null Beruehrungen** ergeben, und der Befund lautete: *es fehlt kein Bauteil, sondern ein Zusammentreffen.* Eine vierte Reihe aufs Geratewohl kostet zehn Minuten Volllast und kann wieder null liefern.
+
+**Stattdessen lief der Produktivpfad vorher, ohne zu schreiben.** `emotionale_gravitation_scannen` und `_vektoren_der_punkte` sind dieselben Funktionen, die der Turn ruft; nur die Schreibfunktion war durch die reine Rechnung ersetzt. Die Vorausberechnung sagte je Reiz, welche zwei Punkte der Gravitations-Scan waehlt und wie nah sie den Faeden stehen.
+
+**Vorhersage vor dem Lauf: 2 / 1 / 2. Gemessen: 1 / 1 / 2 — vier Beruehrungen.** Naehen 0,682 · 0,684 · 0,739 · 0,682 auf die Faeden 354, 353, 327 und 354. Die Abweichung bei Reiz G: ein dritter Eintrag (Gravitation 0,336) verdraengte im Turn den vorausberechneten zweiten (0,325) — 3 % Abstand, gegen den die Vorausberechnung nicht aufloest.
+
+> **Ein Zusammentreffen ist nichts, worauf man wartet, sondern etwas, das man ausrechnen kann.** Zwei Tore stehen hintereinander und messen Verschiedenes: Der Gravitations-Scan waehlt gegen das Embedding des **ganzen Turns** und nimmt hoechstens zwei; die Auffrischung misst danach die Naehe zum Embedding des **staerksten Segments** eines Fadens. Wer das trennt, kann den Reiz waehlen, statt ihn zu raten.
+
+**Was einen Faden trifft, ist Novas eigenes Wort.** Alle vier Eintraege ueber der Naehe-Schwelle tragen `beobachter = assistant` — es sind ihre Antworten und die Fragen, die sie darin gestellt hat. Die vierte Reihe hat genau diese Fragen wieder aufgenommen.
+
+**Und dabei fiel ein Defekt auf, der die Aussage der ganzen Scheibe aendert.** Die vier Beruehrungen stehen in der Tabelle, und `ausschlag_aktuell` ist bei **allen vier** Faeden unveraendert geblieben: `ausschlag_aktuell_falten` ist gebaut, gegen 18 Stuetzstellen bezeugt — und hat **keinen Aufrufer im Produktivcode** (`FALTUNG-OHNE-AUFRUFER`). **Dieselbe Klasse wie in Scheibe 1**, wo `beruehrung_anlegen()` gebaut, getestet und ungerufen dastand. Die Kette ist gebaut, aber nicht geschlossen.
+
+**Nebenbefund:** Die Salienz steht in **5 von 13** Torzeilen des Paars auf exakt 0,442, ueber drei Emotionen hinweg; alle uebrigen Werte kommen genau einmal vor. Fundliste, nicht verfolgt.
+
+**Werkzeuge:** `labor/2026-09-01_beruehrung_erreichbarkeit.py` (welcher Eintrag kann ueberhaupt aktiviert werden), `labor/2026-09-01_beruehrung_vorausberechnet.py` (welcher Reiz trifft), vierte Reihe in `labor/2026-09-01_scheibe2_betriebsbeleg.py`. Kein Produktivcode geaendert, Suite unveraendert **2772 gruen, 0 uebersprungen**.
 
 ---
 

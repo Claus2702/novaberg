@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 30. August 2026 (§2.2ab: `[GEDAECHTNIS]`, `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]` sprechen über Person A, nie mit ihr — der Gedächtnisblock in den Namen seines Lesers, zweiter Kanal `memory_context_verfasser`). Davor 29. August 2026, spät (`[SACHLAGE]` und `[SACHLAGE-BRUECKE]` sprechen über Person A und Person B, nie mit dem Charakter; `[MASS]`: die Rückfrage-Zeile sagt, wessen Zug der Gegenstand ist; mittags: `[SACHLAGE]` trägt seit den Scheiben 6–9 Deckung, Zweifel, Antwortstoff, Suchtreffer und Sprecher; die Nutzer-Fassung des Herkunftsblocks führt, §2.2a — Block-Tabelle). Davor 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 1. September 2026, 14:30 UTC (§2.2: die Verlaufszeile heisst jetzt `[GESPRAECHSVERLAUF]` statt *Session-Verlauf* — der Block stand in der Tabelle und trug seinen Namen nicht). Davor 30. August 2026 (§2.2ab: `[GEDAECHTNIS]`, `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]` sprechen über Person A, nie mit ihr — der Gedächtnisblock in den Namen seines Lesers, zweiter Kanal `memory_context_verfasser`). Davor 29. August 2026, spät (`[SACHLAGE]` und `[SACHLAGE-BRUECKE]` sprechen über Person A und Person B, nie mit dem Charakter; `[MASS]`: die Rückfrage-Zeile sagt, wessen Zug der Gegenstand ist; mittags: `[SACHLAGE]` trägt seit den Scheiben 6–9 Deckung, Zweifel, Antwortstoff, Suchtreffer und Sprecher; die Nutzer-Fassung des Herkunftsblocks führt, §2.2a — Block-Tabelle). Davor 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
@@ -99,7 +99,7 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 | `[KOMMUNIKATION]` | — | ✅ |
 | `[REGELN]` | — | ✅ |
 | `[DIREKTIVEN]` | — | ✅ |
-| Session-Verlauf | ✅ | ✅ |
+| `[GESPRAECHSVERLAUF]` (Session-Verlauf) | ✅ | ✅ | — die bisherigen Turns, älteste zuerst; `Nova (von sich aus)` markiert eine Äußerung, die sie selbst begonnen hat. **Die Zeile stand bis zum 01.09.2026 als *Session-Verlauf* hier** und nannte den Block damit nicht bei seinem Namen — für jede Prüfung, die Blocknamen gegen den Code hält, fehlte er |
 | fachlicher Inhalt der Antwort | erzeugt ihn | erhält ihn |
 
 **Die beiden fett gesetzten Zeilen sind der tragende Teil.** Der Responder verliert Gedächtnis und Web-Recherche vollständig. Er kann dann nichts aus einem Wissen erfinden, das er nicht sieht — die Lehre aus den vier Fix-Iterationen wird von einer Fallunterscheidung zu einer Eigenschaft der Bauart.

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
+**Stand:** 1. September 2026, 14:30 UTC (§8.0a neu — **die neun Bloecke, die der Knoten wirklich baut**; vier davon nannte das Dokument nie. Es beschrieb die Absicht vollstaendig und die Prompt-Struktur gar nicht). Davor 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
 **Nachtrag 28.08.2026:** Der System-Prompt des GV-Calls traegt zusaetzlich den `[SACHLAGE]`-Block — das sachliche Verstehen des Turns aus `graph/nodes/sachlage.py`, vor dem Farbton. Konzept: `novaberg-thinking-lage_k.md`. **Nachtrag 29.08.2026:** Derselbe Block trägt seit den Scheiben 6–8 des Lage-Konzepts auch die Deckung aus dem Gedächtnis, die Zweifel der Plausibilitätsprüfung und den Antwortstoff samt Suchtreffern (`sachlage_block`) — der GV sieht damit, was Nova zur Sache weiß, bevor er das Vehikel wählt. **Nachtrag 29.08.2026, spaet:** Der Block spricht in den Namen seines Lesers (`sachlage_block(…, leser=LESER_GV)`): hier *Nova* und *der Nutzer* in dritter Person — der GV analysiert, er spielt nicht; der Verfasser bekommt denselben Block mit *Person A* und *Person B* (F-PROMPT-2: das Modell wird nie als der Charakter angesprochen). Der GV-Prompt traegt selbst noch einmal *»dein«* (Fundliste 29.08.).
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
@@ -457,6 +457,27 @@ Novas Gesprächsvektor arbeitet auf System-1-Ebene: schnelle Antizipation des n�
 ---
 
 ## 8. Technische Umsetzungsskizze
+
+### 8.0a Die Blöcke, die der Knoten baut (Bestand 01.09.2026)
+
+`graph/nodes/gespraechsvektor.py` setzt acht Blöcke — drei in den System-Prompt, fünf in die
+User-Nachricht; ein neunter kommt fertig aus `ei/dreischicht.py` und trägt selbst drei Marken. Jeder steht nur, wenn seine Quelle etwas trägt.
+
+| Block | wohin | Inhalt |
+|---|---|---|
+| `[GEDANKEN]` | System | Bis zu drei aktivierte Ziele als Zielsätze — *„Gedanken, die dir gerade durch den Kopf gehen"*. Quelle `aktivierte_ziele` |
+| `[SACHLAGE]` | System | Das sachliche Verstehen des Turns, **vor** dem Farbton: erst was der Fall ist, dann wie es sich anfühlt. Hier in den Namen *Nova* und *der Nutzer*, beim Verfasser als *Person A/B* |
+| `[SITUATION]` | System | Der situative Farbton, als Parameter übergeben und nicht hier gerechnet |
+| `[GESPRAECHSVERLAUF]` | User | Die bisherigen Turns als Text |
+| `[AKTUELLER PROMPT]` | User | Die Äußerung dieses Turns |
+| `[EMOTIONALER ZUSTAND]` | User | Emotion, Arousal, Vektor, Modus |
+| `[VERWANDTE ERINNERUNGEN]` | User | Erlebtes, **nicht** gesichertes Wissen — der Name ist die Aussage (§10, dort begründet) |
+| `[WISSENSLUECKEN]` | User | Semantisch nahe, noch nicht besprochene Konzepte mit Quelle und Relevanz (GV4) |
+| `[GESPRAECHSLANDSCHAFT]` · `[WERKZEUGE]` · `[ABSICHTEN]` | System | Der Dreischicht-Block — **drei Marken, nicht eine**, und gebaut in `ei/dreischicht.py::dreischicht_prompt_bauen`, nicht im Knoten. Steht nur, wenn die Dreischicht gerechnet wurde |
+
+**Diese Aufzählung ist maschinell bewacht** (`C18`): Jeder Block, den der Knoten setzt, muss hier
+stehen. Vier von ihnen fehlten bis zum 01.09.2026 — das Dokument beschrieb die Absicht des
+Knotens vollständig und seine Prompt-Struktur gar nicht.
 
 ### 8.1 Neuer Node oder Enricher-Erweiterung
 
