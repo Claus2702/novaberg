@@ -24,6 +24,10 @@ from config import (
     PRAEGUNG_ALPHA,
     PRAEGUNG_BODEN,
     PRAEGUNG_HALBSTRECKE,
+    PRAEGUNG_KONFRONTATION_SCHWELLE,
+    PRAEGUNG_SEKTOR8_ZUG,
+    PRAEGUNG_SPEICHEN_SCHUETZEND,
+    PRAEGUNG_SPEICHEN_WILD,
     PRAEGUNG_STRANG_NAEHE,
     PRAEGUNG_TOR_AUSSCHLAG,
     PRAEGUNG_TOR_SALIENZ,
@@ -519,6 +523,153 @@ def strang_histogramm_rechnen(postgres_url: str, strang_id: int) -> dict | None:
         "konzentration": konzentration, "valenz": valenz,
         "unbekannt": unbekannt,
     }
+
+
+def konfrontationsmass(rad: dict[str, float]) -> float | None:
+    """Wie weit Nova heute der unangenehmen Sache nachgeht statt sie zu meiden.
+
+    Konzept §7.7. Mittel der vier **wilden** Speichen minus Mittel der vier
+    **schuetzenden**, auf [-1, 1]. Vorgabe des Eigentuemers (01.09.2026): Aerger
+    und Ekel koennen anziehen, aber ein Gemuet mit Selbsterhaltungsdrang und
+    Pflichtbewusstsein schuetzt sich davor — das wilde, furchtlose, neugierige
+    Wesen sucht die Konfrontation.
+
+    **Die Speichen kommen aus beiden Raedern**, und das ist Absicht: Wissbegier
+    und Pflicht stehen im Zuwendungs-Rad, Eigensinn und Behutsamkeit im
+    Initiative-Rad. Wer nur eines liest, sieht die halbe Anlage.
+
+    Vorbedingung: `rad` bildet Speichennamen auf [0, 1] ab — die Vereinigung
+        beider Raeder, wie `rad_zusammenfassen` sie liefert.
+    Nachbedingung: ein Wert auf [-1, 1], oder None, wenn **eine** der acht
+        Speichen fehlt.
+    Fehlerfaelle: Eine fehlende Speiche wird gemeldet und macht das Mass
+        **ungueltig** statt es aus den uebrigen zu bilden. Ein Mass aus sechs
+        von acht Speichen sieht aus wie eines aus acht, und der Unterschied
+        waere nirgends ablesbar (`22_STILLE_FEHLER`).
+
+    Args:
+        rad: die Speichen beider Raeder, zusammengefasst.
+
+    Returns:
+        Das Mass auf [-1, 1], oder None bei unvollstaendigem Rad.
+    """
+    # ── Eingabe ────────────────────────────────
+    fehlend: list[str] = [
+        name for name in PRAEGUNG_SPEICHEN_WILD + PRAEGUNG_SPEICHEN_SCHUETZEND
+        if name not in (rad or {})
+    ]
+    if fehlend:
+        logger.warning(
+            f"Praegung: Konfrontationsmass ungueltig — {len(fehlend)} von 8 "
+            f"Speichen fehlen ({', '.join(sorted(fehlend))}). Ein Mass aus "
+            f"weniger Speichen saehe aus wie eines aus allen"
+        )
+        return None
+
+    # ── Verarbeitung ───────────────────────────
+    wild:       float = sum(rad[n] for n in PRAEGUNG_SPEICHEN_WILD) / 4
+    schuetzend: float = sum(rad[n] for n in PRAEGUNG_SPEICHEN_SCHUETZEND) / 4
+
+    # ── Ausgabe ────────────────────────────────
+    mass: float = wild - schuetzend
+    logger.info(
+        f"Praegung: Konfrontationsmass {mass:+.4f} — wild {wild:.4f}, "
+        f"schuetzend {schuetzend:.4f}"
+    )
+    return mass
+
+
+def strang_richtung(
+    histogramm: list[int],
+    konfrontation: float | None,
+) -> tuple[str, str]:
+    """Zieht dieser Strang Nova an, oder drueckt er sie weg?
+
+    Konzept §7.7. **Die Richtung ist nicht die Valenz:** Zwei negative
+    Praegungen koennen entgegengesetzt zeigen — Machtlosigkeit → Macht ist
+    Annaeherung, Furcht vor der Dunkelheit ist Vermeidung. Eine Valenzachse
+    allein kann Kriegsgeschichte nicht von Dunkelheit unterscheiden.
+
+    **Vier Regeln, in dieser Reihenfolge:**
+
+      1. **Sektor 8 ueber `PRAEGUNG_SEKTOR8_ZUG` → Annaeherung, unbedingt.**
+         Vorgabe des Eigentuemers: Starke Neugier zieht immer, und die
+         Anwesenheit ueber der Schwelle genuegt — das Rad wird nicht gefragt.
+      2. **Furcht (3) und Ueberraschung (4) zusammen → Annaeherung.** Die
+         Awe-Dyade, der einzige Fall, den das Konzept selbst vorgibt.
+      3. **Dominant positiv (1, 2) → Annaeherung.**
+      4. **Sonst entscheidet das Rad.** Ueber `PRAEGUNG_KONFRONTATION_SCHWELLE`
+         Annaeherung, darunter Vermeidung.
+
+    **Die Reihenfolge ist Teil der Aussage.** Ein Strang aus Furcht *und* viel
+    Neugier ist Annaeherung, gleich wie vorsichtig Nova heute ist; Regel 1 steht
+    deshalb vor Regel 4.
+
+    Vorbedingung: `histogramm` traegt acht Zahlen.
+    Nachbedingung: `("annaeherung" | "vermeidung" | "unbestimmt", grund)`. Der
+        Grund nennt die Regel **und ihre Zahl** — ohne sie waere im Nachhinein
+        nicht zu sehen, wie knapp die Entscheidung war (`11_EVA`).
+    Fehlerfaelle: Ein leeres Histogramm und ein fehlendes Mass ergeben
+        `unbestimmt` — nicht `vermeidung`. Ein Vorgabewert an dieser Stelle
+        waere eine Aussage ueber den Charakter, die niemand getroffen hat.
+
+    Args:
+        histogramm: die acht Sektorzahlen des Strangs.
+        konfrontation: das Mass aus `konfrontationsmass`, oder None.
+
+    Returns:
+        Richtung und Grund.
+    """
+    # ── Eingabe ────────────────────────────────
+    if not histogramm or len(histogramm) != 8:
+        return ("unbestimmt", f"Histogramm unbrauchbar ({histogramm})")
+
+    gesamt: int = sum(histogramm)
+    if gesamt <= 0:
+        return ("unbestimmt", "kein Faden im Strang")
+
+    # ── Verarbeitung ───────────────────────────
+    anteil8: float = histogramm[7] / gesamt
+    if anteil8 >= PRAEGUNG_SEKTOR8_ZUG:
+        return (
+            "annaeherung",
+            f"Neugier {anteil8:.3f} >= {PRAEGUNG_SEKTOR8_ZUG} — sie zieht immer",
+        )
+
+    if histogramm[2] > 0 and histogramm[3] > 0:
+        return (
+            "annaeherung",
+            f"Awe-Dyade: Furcht {histogramm[2]} und Ueberraschung "
+            f"{histogramm[3]} zusammen",
+        )
+
+    positiv: int = histogramm[0] + histogramm[1]
+    negativ: int = histogramm[2] + histogramm[4] + histogramm[5] + histogramm[6]
+    if positiv > negativ:
+        return (
+            "annaeherung",
+            f"positiv {positiv} ueberwiegt negativ {negativ}",
+        )
+
+    if konfrontation is None:
+        return (
+            "unbestimmt",
+            f"negativ {negativ} gegen positiv {positiv}, aber kein Rad — "
+            f"ein Vorgabewert waere eine Aussage ueber den Charakter",
+        )
+
+    # ── Ausgabe ────────────────────────────────
+    if konfrontation > PRAEGUNG_KONFRONTATION_SCHWELLE:
+        return (
+            "annaeherung",
+            f"negativ {negativ}, aber Konfrontationsmass {konfrontation:+.4f} > "
+            f"{PRAEGUNG_KONFRONTATION_SCHWELLE}",
+        )
+    return (
+        "vermeidung",
+        f"negativ {negativ} und Konfrontationsmass {konfrontation:+.4f} <= "
+        f"{PRAEGUNG_KONFRONTATION_SCHWELLE}",
+    )
 
 
 def faeden_ohne_strang_zuordnen(postgres_url: str) -> tuple[int, int]:

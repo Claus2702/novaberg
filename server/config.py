@@ -1740,6 +1740,60 @@ PRAEGUNG_BODEN:       float = float(os.getenv("PRAEGUNG_BODEN", "0.20"))
 # nur die Zahl der Straenge gegen die Zahl der Faeden zeigt es.
 PRAEGUNG_STRANG_NAEHE: float = float(os.getenv("PRAEGUNG_STRANG_NAEHE", "0.62"))
 
+# ── Die Richtung eines Strangs (Konzept §7.7) ────────────────────────────────
+#
+# **Annaeherung oder Vermeidung — und sie steht nicht im Bestand.** Ein Strang
+# ist Bestand, das Charakter-Rad ist Zustand: Es bewegte sich am 31.07.2026
+# binnen zwei Stunden um 100 %. Eine gespeicherte Richtung waere die Antwort
+# von gestern auf die Frage von heute; sie wird deshalb bei jedem Lesen aus
+# Histogramm **und** Rad gerechnet.
+#
+# **Valenz ist nicht Richtung.** Zwei negative Praegungen koennen entgegen-
+# gesetzt zeigen: Machtlosigkeit → Macht ist Annaeherung, Furcht vor der
+# Dunkelheit ist Vermeidung (§7.7).
+#
+# Vorgabe des Eigentuemers, 01.09.2026:
+#   „Auch Aerger und Ekel kann anziehen, aber ein normales Gemuet mit
+#    Selbsterhaltungsdrang, Pflichtbewusstsein und Verantwortungsgefuehl wird
+#    sich davor schuetzen wollen und eher vermeiden. Das wilde, furchtlose,
+#    chaotische, neugierige Wesen wird aber die Konfrontation nicht scheuen.
+#    Man muesste es am Haltungsrad festmachen. … Starke Neugier ist sicher ein
+#    Faktor, der immer zieht."
+#
+# Acht der 22 Speichen tragen das Mass, vier gegen vier. Die uebrigen bleiben
+# aussen vor — sie beschreiben Zuwendung und Gespraechsform, nicht die Frage,
+# ob jemand einer unangenehmen Sache nachgeht.
+PRAEGUNG_SPEICHEN_WILD: tuple[str, ...] = (
+    "wissbegier",          # zuwendung  — Novas hoechste Speiche (0,864)
+    "assoziationsdrang",   # initiative
+    "eigensinn",           # initiative
+    "widerspruchsfreude",  # initiative — „die Konfrontation nicht scheuen"
+)
+PRAEGUNG_SPEICHEN_SCHUETZEND: tuple[str, ...] = (
+    "pflicht",             # zuwendung  — Pflichtbewusstsein
+    "misstrauen",          # zuwendung
+    "behutsamkeit",        # initiative
+    "zurueckhaltung",      # initiative
+)
+
+# Mittel der wilden minus Mittel der schuetzenden Speichen. **Die Schwelle ist
+# 0,0 und das ist eine Aussage, keine Beliebigkeit:** Wer mehr wild als
+# schuetzend ist, geht der unangenehmen Sache nach. Novas Stand am 01.09.2026
+# liegt bei **+0,52** — sie wuerde einem Aerger-Strang nachgehen.
+PRAEGUNG_KONFRONTATION_SCHWELLE: float = float(
+    os.getenv("PRAEGUNG_KONFRONTATION_SCHWELLE", "0.0")
+)
+
+# Ab welchem Anteil Sektor 8 (Neugier, Hoffnung) einen Strang **unbedingt** auf
+# Annaeherung stellt — ohne das Rad zu fragen. Vorgabe des Eigentuemers: die
+# hoechste Stufe der Neugier bedeutet Zug, und die Anwesenheit ueber der
+# Schwelle genuegt.
+#
+# **Setzung mit Herkunft, keine Optimierung** (`F-INTENS-1`): Ein Viertel ist
+# mehr als Beiwerk und weniger als Dominanz. Bei vier Faeden ist es einer.
+# Ungemessen — es gibt bis heute einen Strang.
+PRAEGUNG_SEKTOR8_ZUG: float = float(os.getenv("PRAEGUNG_SEKTOR8_ZUG", "0.25"))
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest

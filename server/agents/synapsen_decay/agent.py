@@ -1,6 +1,6 @@
 """Pixie-Agent: synapsen_decay — täglicher Decay-Lauf für das Synapsen-Netz.
 
-Orchestriert einmal täglich fünf entkoppelte Wartungsaufgaben (Konzept
+Orchestriert einmal täglich sechs entkoppelte Wartungsaufgaben (Konzept
 synapsen_k §9, P6; queue-verfall_k §11; faszination_k §7.4, §7.7):
 
   1. run_node_decay      — materialisiert gewicht_decay je aktivem lzg_knoten
@@ -15,6 +15,10 @@ synapsen_k §9, P6; queue-verfall_k §11; faszination_k §7.4, §7.7):
   5. faeden_ohne_strang_zuordnen — holt die Strangzuordnung nach, die
                            außerhalb der Fadentransaktion läuft und deshalb
                            ausfallen darf.
+  6. Strang-Richtungen — rechnet je Strang Annäherung oder Vermeidung aus
+                           Histogramm und Charakter-Rad und schreibt sie ins
+                           Protokoll. Kein Bestand: Die Richtung hängt am Rad
+                           und damit am Zustand.
 
 **Der dritte Schritt steht hier und nicht in einem eigenen Agenten**, weil er
 so keinen zusätzlichen Platz im Heartbeat kostet — bei einem einzigen
@@ -36,6 +40,7 @@ import logging
 import uuid
 
 from agents.base import AgentState, BaseAgent, PeriodicTask
+from agents.charakter import rad_messreihe
 from config import (
     DEFAULT_USER_ID,
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
@@ -200,6 +205,93 @@ class SynapsenDecayAgent(BaseAgent):
         logger.info(f"Synapsen-Decay: {stand} Praegungsfaeden nachgefuehrt")
         return ergebnis
 
+    def _richtungen_protokollieren(self, run_id: str) -> int:
+        """Rechnet fuer jeden Strang die Richtung und schreibt sie ins Protokoll.
+
+        Konzept §7.7. **Kein Bestand, kein Verhalten — eine Beobachtungszeile.**
+        Die Richtung haengt am Charakter-Rad und damit am Zustand; sie wird bei
+        jedem Lesen neu gerechnet. Bis der Praegungszug sie liest, ist dieser
+        Lauf ihr einziger Leser, und seine Protokollzeilen sind die Reihe, an
+        der `PRAEGUNG_SEKTOR8_ZUG` und `PRAEGUNG_KONFRONTATION_SCHWELLE`
+        kalibrierbar werden.
+
+        **Das Rad wird je Paar geladen, nicht je Strang.** Mehrere Straenge
+        eines Paares teilen dasselbe Rad; ein Ladevorgang je Strang waere
+        dieselbe Abfrage mehrfach.
+
+        Vorbedingung: keine.
+        Nachbedingung: je Strang eine Zeile der Art `berechnung` unter dem
+            Knoten `praegung_strang`, mit Richtung, Grund, Histogramm und dem
+            Konfrontationsmass.
+        Fehlerfaelle: Ein Paar ohne vollstaendiges Rad ergibt `unbestimmt` —
+            der Lauf bricht nicht ab. Ein junges Paar hat noch kein Rad, und
+            das ist der Regelfall am Anfang.
+
+        Args:
+            run_id: Die Korrelation dieses Tageslaufs.
+
+        Returns:
+            Zahl der protokollierten Straenge.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        try:
+            straenge: list[dict] = db_manager.select(
+                "SELECT id, user_id, character_id, sektor_histogramm "
+                "FROM praegung_strang ORDER BY id",
+            )
+        except Exception as fehler:
+            logger.exception(
+                f"{type(fehler).__name__}: Synapsen-Decay: Straenge fuer die "
+                f"Richtung nicht lesbar — kein Eintrag dieses Laufs"
+            )
+            return 0
+
+        # ── Verarbeitung ────────────────────────────
+        raeder: dict[tuple[str, str], dict | None] = {}
+        gezaehlt: int = 0
+        for zeile in straenge:
+            paar = (zeile["user_id"], zeile["character_id"])
+            if paar not in raeder:
+                gesammelt: dict[str, float] = {}
+                for rad_art in ("zuwendung", "initiative"):
+                    teil = rad_messreihe.rad_zusammenfassen(
+                        rad_messreihe.reihe_laden(paar[0], paar[1], rad_art),
+                    )
+                    if teil:
+                        gesammelt.update(teil)
+                raeder[paar] = gesammelt or None
+
+            mass = (
+                praegung.konfrontationsmass(raeder[paar])
+                if raeder[paar] else None
+            )
+            histogramm: list[int] = list(zeile["sektor_histogramm"] or [])
+            richtung, grund = praegung.strang_richtung(histogramm, mass)
+
+            pipeline_log.log_berechnung(
+                turn_id      = run_id,
+                node         = "praegung_strang",
+                quelle       = "synapsen_decay",
+                inhalt       = {
+                    "schritt":        "strang_richtung",
+                    "strang_id":      zeile["id"],
+                    "richtung":       richtung,
+                    "grund":          grund,
+                    "histogramm":     histogramm,
+                    "konfrontation":  mass,
+                },
+                user_id      = paar[0],
+                character_id = paar[1],
+            )
+            gezaehlt += 1
+
+        # ── Ausgabe-Verifikation ────────────────────
+        logger.info(
+            f"Synapsen-Decay: {gezaehlt} von {len(straenge)} Strang-Richtungen "
+            f"protokolliert"
+        )
+        return gezaehlt
+
     def invoke(self, state: AgentState) -> AgentState:
         """Führt den täglichen Decay-Lauf aus (globaler Bulk-Lauf).
 
@@ -299,6 +391,20 @@ class SynapsenDecayAgent(BaseAgent):
                 f"Synapsen-Decay: {strang_zugeordnet} von {strang_offen} "
                 f"Faeden einem Strang zugeordnet"
             )
+
+            # 6. Die Richtung jedes Strangs (Konzept §7.7) — **gerechnet, nicht
+            #    gespeichert.** Ein Strang ist Bestand, das Charakter-Rad ist
+            #    Zustand: Es bewegte sich am 31.07.2026 binnen zwei Stunden um
+            #    100 %. Eine Spalte traege damit die Antwort von gestern auf die
+            #    Frage von heute.
+            #
+            #    **Der Schritt steht hier, weil er sonst keinen Aufrufer haette.**
+            #    Der Leser der Richtung ist der Praegungszug, und der ist nicht
+            #    gebaut; eine Rechenfunktion ohne Aufrufer war in dieser Schicht
+            #    binnen zwei Tagen dreimal der Befund. So entsteht stattdessen
+            #    eine Beobachtungsreihe im Protokoll — und genau die braucht die
+            #    Kalibrierung der beiden Schwellen.
+            richtungen: int = self._richtungen_protokollieren(run_id)
 
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
