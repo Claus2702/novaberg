@@ -35,7 +35,7 @@ ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu z
 
 ### `FALTUNG-OHNE-AUFRUFER` — die Beruehrung wird geschrieben und nie gelesen
 
-**Zustand:** ✅ behoben am 01.09.2026
+**Zustand:** behoben am 01.09.2026 ✅
 **Symptom.** `[gemessen]` 01.09.2026, 14:00 UTC: Die vierte Messreihe hat **4 Beruehrungen** in
 `praegung_beruehrung` erzeugt (Naehen 0,682 · 0,684 · 0,739 · 0,682). `ausschlag_aktuell` aller
 vier Faeden steht danach unveraendert auf `ausschlag_absolut` — 0,794 · 0,854 · 0,991 · 1,000.

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **17:45 UTC** (gemessen via `date -u`). Davor 01.09.2026, 17:25 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **18:30 UTC** (gemessen via `date -u`). Davor 01.09.2026, 17:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,33 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 18:30 UTC — Drei Pruefungen, die falsch aussagten, und elf Luecken ✅
+
+Die Schlusspruefung der Sitzung fand nichts am Produkt und **dreimal etwas an sich selbst**.
+
+**`C16` warnte vor einer Lage, die es seit dem 21.08.2026 nicht mehr gibt.** Es beschriftete `harness/`, `labor/` und die Protokolle als *„NICHT versioniert"* und schloss mit *„ein Ort ohne Versionierung und ohne Backup traegt jede Aenderung genau einmal"*. Seither liegen alle drei im privaten Repositorium mit der NAS als Remote.
+
+> **Eine Pruefung, die jede Sitzung dieselbe ueberholte Warnung ausgibt, erzieht dazu, sie zu ueberlesen** — und dann faellt auch die neue nicht mehr auf.
+
+**`C17` las die Zahl der ungepushten Commits aus einem Commit-Hash.** Das Muster suchte hinter dem Wort mit zwoelf Zeichen Luecke und traf die **1** in `e1efe7e`; gemeldet wurde eine Abweichung gegen die gemessenen 4, obwohl der Handzettel recht hatte.
+
+**Und die erste Abhilfe machte es schlimmer.** Ein Backtick-Verbot in der Luecke liess das Muster gar nicht mehr greifen: **Aus einer Falschmeldung wurde Schweigen.** Das ist die teurere Haelfte — eine Falschmeldung wird bemerkt, eine schweigende Pruefung besetzt den Platz, an dem sonst jemand nachsaehe. Jetzt wird zuerst **vor** dem Wort gesucht und nur ersatzweise dahinter.
+
+**Dabei fiel ein toter Zweig auf:** `int(m.group(1) or m.group(2))` — beide Muster tragen genau eine Gruppe, der Ausdruck waere ein `IndexError` gewesen, den nur die Kurzschluss-Auswertung verdeckte.
+
+**Und zwei Fragen nach dem Ganzen fanden elf Luecken.** Die erste sieben — die geschaerfte Stellvertreter-Regel im Harness, den schwerer gewordenen Backlog-Eintrag, den Chronik-Eintrag, den Stand der Featureliste, beide Findemittel und einen Archiv-Eintrag, den `C21` als falsch abgelegt meldete, weil ein Haken vor dem Wort *behoben* stand.
+
+**Die zweite fand vier weitere, und alle vier in Registern, die aufzaehlen und keine Datei nennen:**
+
+- **Das Kalibrierungs-Register trug zwei veraltete Zahlen.** `DELEGATION_SALIENZ_SCHWELLE` stand dort auf **0.6** und ist seit dem 24.08.2026 **0.4615**; `EMOTIONALE_GRAVITATIONS_SCHWELLE` stand auf 0.40 und ist seit dem 30.08.2026 **0.18**. Beide Aenderungen waren dokumentiert — nur nicht dort, wo sie aufgezaehlt werden.
+- **Die zwei neuen Konstanten des Zielsog-Zugs fehlten darin ganz.**
+- **Der Pruefstand der Rechenkette** fuehrte S8 als ungeprueft; seit heute traegt die ungetorte Groesse fuenf Zeugen, und S36 war ueberhaupt nicht genannt.
+- **Die Bestandstabelle der Wertekonvention** kannte weder `ausschlag_absolut` noch `ausschlag_aktuell` noch den Zielsog-Zug — drei abgeleitete Werte, die gestern und heute entstanden sind.
+
+> **Elf Luecken, und keine Pruefung hat eine davon gemeldet — drei Werkzeuge haetten es gekonnt und liefen nicht.** Der Doku-Nachzug sucht entlang geaenderter Dateien; ein Register, das Konstanten aufzaehlt, nennt keine. **Das ist dieselbe Klasse, die `C18` fuer Aufzaehlungen von Dateien und Bezeichnern schliesst — fuer Aufzaehlungen von *Zahlen* gibt es sie nicht.**
 
 ---
 

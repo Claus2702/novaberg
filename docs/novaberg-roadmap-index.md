@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 577 Abschnitte in 5 Dateien — 230 mit eigenem Datum, 346 geerbt, 1 ohne.
+**Umfang:** 641 Abschnitte in 5 Dateien — 278 mit eigenem Datum, 362 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 314 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 378 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 577 Marken, 577 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 641 Marken, 641 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,70 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 18:30 UTC — Drei Pruefungen, die falsch aussagten, und elf Luecken ✅](novaberg-roadmap.md#01092026-1830-utc--drei-pruefungen-die-falsch-aussagten-und-elf-luecken) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 17:45 UTC — Zwei kleine Schulden ✅](novaberg-roadmap.md#01092026-1745-utc--zwei-kleine-schulden) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 17:25 UTC — Dieselbe Vorgabe, dreimal gelegt ✅](novaberg-roadmap.md#01092026-1725-utc--dieselbe-vorgabe-dreimal-gelegt) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 16:50 UTC — Novas eigene Gedanken ziehen an ihrer Salienz ✅](novaberg-roadmap.md#01092026-1650-utc--novas-eigene-gedanken-ziehen-an-ihrer-salienz) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 15:45 UTC — Ein konstanter Wert, der keiner war ✅](novaberg-roadmap.md#01092026-1545-utc--ein-konstanter-wert-der-keiner-war) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 15:30 UTC — Der Verfall bekommt seinen Takt, und ein Zeuge schrieb in den Bestand ✅](novaberg-roadmap.md#01092026-1530-utc--der-verfall-bekommt-seinen-takt-und-ein-zeuge-schrieb-in-den-bestand) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 15:10 UTC — Die Faltung bekommt ihren Aufrufer ✅](novaberg-roadmap.md#01092026-1510-utc--die-faltung-bekommt-ihren-aufrufer) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 14:30 UTC — 34 Deckungsluecken, davon drei erfunden ✅](novaberg-roadmap.md#01092026-1430-utc--34-deckungsluecken-davon-drei-erfunden) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 14:05 UTC — Die erste Beruehrung, vorher ausgerechnet ✅](novaberg-roadmap.md#01092026-1405-utc--die-erste-beruehrung-vorher-ausgerechnet) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 13:50 UTC — Ein Dokument, dessen Gegenstand verschwunden ist ✅](novaberg-roadmap.md#01092026-1350-utc--ein-dokument-dessen-gegenstand-verschwunden-ist) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 10:50 UTC — Der Betriebsbeleg, und zwei Defekte auf dem Weg dorthin ✅](novaberg-roadmap.md#01092026-1050-utc--der-betriebsbeleg-und-zwei-defekte-auf-dem-weg-dorthin) |
+| (2026-09-01) | laufend | ### | · [`PROMOTION-NUR-EIN-PAAR` — 13 Auftraege ueber fuenf Paare, unbearbeitet](novaberg-roadmap.md#promotion-nur-ein-paar--13-auftraege-ueber-fuenf-paare-unbearbeitet) |
+| (2026-09-01) | laufend | ### | · [Die Auffrischung erreichte den haeufigsten Fall nicht](novaberg-roadmap.md#die-auffrischung-erreichte-den-haeufigsten-fall-nicht) |
+| (2026-09-01) | laufend | ### | · [Was zehn Turns gezeigt haben](novaberg-roadmap.md#was-zehn-turns-gezeigt-haben) |
+| (2026-09-01) | laufend | ### | · [Und ein bekannter Defekt zeigte sich im Betrieb](novaberg-roadmap.md#und-ein-bekannter-defekt-zeigte-sich-im-betrieb) |
+| 2026-08-31 | laufend | ## | [31.08.2026, 22:25 UTC — Die Praegungsschicht bekommt ihre Verstaerkung ✅](novaberg-roadmap.md#31082026-2225-utc--die-praegungsschicht-bekommt-ihre-verstaerkung) |
+| (2026-08-31) | laufend | ### | · [Der Faden trug das falsche Embedding](novaberg-roadmap.md#der-faden-trug-das-falsche-embedding) |
+| (2026-08-31) | laufend | ### | · [Die Naehe-Schwelle, und was die Nulllinie sagt](novaberg-roadmap.md#die-naehe-schwelle-und-was-die-nulllinie-sagt) |
+| (2026-08-31) | laufend | ### | · [Die Faltung stand als Tabelle da, nicht als Formel](novaberg-roadmap.md#die-faltung-stand-als-tabelle-da-nicht-als-formel) |
+| (2026-08-31) | laufend | ### | · [Zwei Grenzen, beide benannt](novaberg-roadmap.md#zwei-grenzen-beide-benannt) |
+| (2026-08-31) | laufend | ### | · [Und der Abschluss war zuerst behauptet, nicht ausgefuehrt](novaberg-roadmap.md#und-der-abschluss-war-zuerst-behauptet-nicht-ausgefuehrt) |
+| 2026-08-31 | laufend | ## | [31.08.2026, 21:35 UTC — Drei Schwellen, die eine Lage beschrieben und eine Zahl trugen ✅](novaberg-roadmap.md#31082026-2135-utc--drei-schwellen-die-eine-lage-beschrieben-und-eine-zahl-trugen) |
+| (2026-08-31) | laufend | ### | · [Zwei Grundgesamtheiten, und beide waren zuerst falsch](novaberg-roadmap.md#zwei-grundgesamtheiten-und-beide-waren-zuerst-falsch) |
+| (2026-08-31) | laufend | ### | · [Die Injektion war nie das Problem](novaberg-roadmap.md#die-injektion-war-nie-das-problem) |
+| (2026-08-31) | laufend | ### | · [Was die Zeugen gekostet haben](novaberg-roadmap.md#was-die-zeugen-gekostet-haben) |
+| 2026-08-31 | laufend | ## | [31.08.2026, 20:24 UTC — Ein Todesfall wog wie eine Mondumlaufzeit ✅](novaberg-roadmap.md#31082026-2024-utc--ein-todesfall-wog-wie-eine-mondumlaufzeit) |
+| (2026-08-31) | laufend | ### | · [Die Perzeption allein, ohne Graph und ohne Nova](novaberg-roadmap.md#die-perzeption-allein-ohne-graph-und-ohne-nova) |
+| (2026-08-31) | laufend | ### | · [Die Erregungsspanne: 0.10 bis 0.90, nicht 0.40 bis 0.60](novaberg-roadmap.md#die-erregungsspanne-010-bis-090-nicht-040-bis-060) |
+| (2026-08-31) | laufend | ### | · [Die Kalibrierung, und der Entwurf, den die Messung verwarf](novaberg-roadmap.md#die-kalibrierung-und-der-entwurf-den-die-messung-verwarf) |
+| (2026-08-31) | laufend | ### | · [Zeugen und Bilanz](novaberg-roadmap.md#zeugen-und-bilanz) |
+| 2026-08-31 | laufend | ## | [31.08.2026, 20:30 UTC — Die Praegungsschicht bekommt ihre erste Scheibe, und drei Baufehler dasselbe Muster](novaberg-roadmap.md#31082026-2030-utc--die-praegungsschicht-bekommt-ihre-erste-scheibe-und-drei-baufehler-dasselbe-muster) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 22:38 UTC — Die Gravitationsschwelle konnte nicht mehr ablehnen](novaberg-roadmap.md#30082026-2238-utc--die-gravitationsschwelle-konnte-nicht-mehr-ablehnen) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 17:25 UTC — Die Faszination bekommt ein Konzept, und drei Ernteversuche sterben](novaberg-roadmap.md#30082026-1725-utc--die-faszination-bekommt-ein-konzept-und-drei-ernteversuche-sterben) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 13:01 UTC — Die Haltungsschicht: der Speicher steht](novaberg-roadmap.md#30082026-1301-utc--die-haltungsschicht-der-speicher-steht) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 11:46 UTC — Scheibe 10: das Gewicht einer Luecke](novaberg-roadmap.md#30082026-1146-utc--scheibe-10-das-gewicht-einer-luecke) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 10:45 UTC — Scheibe 8: die Treffer stehen im Block, der Wert steht in der Antwort](novaberg-roadmap.md#30082026-1045-utc--scheibe-8-die-treffer-stehen-im-block-der-wert-steht-in-der-antwort) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 09:20 UTC — Der Client hat einen Testlauf](novaberg-roadmap.md#30082026-0920-utc--der-client-hat-einen-testlauf) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 08:59 UTC — Der Suchanbieter: Serper zuerst, SearXNG als Rueckfall](novaberg-roadmap.md#30082026-0859-utc--der-suchanbieter-serper-zuerst-searxng-als-rueckfall) |
+| 2026-08-30 | laufend | ## | [30.08.2026, 07:35 UTC — Das »du« gehoert dem Schauspieler: die Wissensbloecke des Verfassers sprechen ueber Person A](novaberg-roadmap.md#30082026-0735-utc--das-du-gehoert-dem-schauspieler-die-wissensbloecke-des-verfassers-sprechen-ueber-person-a) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 23:20 UTC — Die eine Suche auf Deutsch: eine Fuehrung, deren Wirkung das Labor nicht zeigt](novaberg-roadmap.md#29082026-2320-utc--die-eine-suche-auf-deutsch-eine-fuehrung-deren-wirkung-das-labor-nicht-zeigt) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 22:58 UTC — Der Sprecher im [GEDAECHTNIS]-Block: wer eine Erinnerung gesagt hat](novaberg-roadmap.md#29082026-2258-utc--der-sprecher-im-gedaechtnis-block-wer-eine-erinnerung-gesagt-hat) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 22:44 UTC — Die Suchdisziplin des Thinkers: eine Suche je Turn, die Sachlage-Treffer zuerst](novaberg-roadmap.md#29082026-2244-utc--die-suchdisziplin-des-thinkers-eine-suche-je-turn-die-sachlage-treffer-zuerst) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 21:40 UTC — Der eigene Zug: die Rueckfrage sagt, wessen Ziel sie nennt](novaberg-roadmap.md#29082026-2140-utc--der-eigene-zug-die-rueckfrage-sagt-wessen-ziel-sie-nennt) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 19:48 UTC — Die Betriebsmessung der Lage-Kette: 20 Turns](novaberg-roadmap.md#29082026-1948-utc--die-betriebsmessung-der-lage-kette-20-turns) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 08:54 UTC — Scheibe 9 der Lage: der Sprecher — der Gedanke des Nutzers bleibt seiner](novaberg-roadmap.md#29082026-0854-utc--scheibe-9-der-lage-der-sprecher--der-gedanke-des-nutzers-bleibt-seiner) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 08:32 UTC — Die Websuche antwortet wieder: Wikipedia-Volltext statt Bing](novaberg-roadmap.md#29082026-0832-utc--die-websuche-antwortet-wieder-wikipedia-volltext-statt-bing) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 07:55 UTC — Der Drive-Tab rechnet die Motivation live, wie die Gravitation](novaberg-roadmap.md#29082026-0755-utc--der-drive-tab-rechnet-die-motivation-live-wie-die-gravitation) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 07:30 UTC — Scheibe 8 der Lage: der Wissenstraeger — Antwortstoff statt Rueckfrage, mit Websuche](novaberg-roadmap.md#29082026-0730-utc--scheibe-8-der-lage-der-wissenstraeger--antwortstoff-statt-rueckfrage-mit-websuche) |
+| 2026-08-29 | laufend | ## | [29.08.2026, 06:55 UTC — Scheibe 7 der Lage: Behauptungen des Nutzers gegen Weltwissen](novaberg-roadmap.md#29082026-0655-utc--scheibe-7-der-lage-behauptungen-des-nutzers-gegen-weltwissen) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 23:04 UTC — Scheibe 6 der Lage: der Frame-Aufloeser gegen den Gedaechtnis-Pool des Turns](novaberg-roadmap.md#28082026-2304-utc--scheibe-6-der-lage-der-frame-aufloeser-gegen-den-gedaechtnis-pool-des-turns) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 22:09 UTC — Das Ziele-Panel zeigt nur noch lebende Ziele](novaberg-roadmap.md#28082026-2209-utc--das-ziele-panel-zeigt-nur-noch-lebende-ziele) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 21:35 UTC — Der Gespraechskontext im Client: die fuenf Scheiben in einem Tab](novaberg-roadmap.md#28082026-2135-utc--der-gespraechskontext-im-client-die-fuenf-scheiben-in-einem-tab) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 21:06 UTC — Scheibe 3: die Rueckfrage bekommt ihren Gegenstand](novaberg-roadmap.md#28082026-2106-utc--scheibe-3-die-rueckfrage-bekommt-ihren-gegenstand) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 20:40 UTC — Scheibe 5: die Rueckkehr zu einer frueheren Blase](novaberg-roadmap.md#28082026-2040-utc--scheibe-5-die-rueckkehr-zu-einer-frueheren-blase) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 20:29 UTC — `thema` benennt die Sache, nie den Wechsel](novaberg-roadmap.md#28082026-2029-utc--thema-benennt-die-sache-nie-den-wechsel) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 20:15 UTC — Der Sachlage-Prompt sieht Novas Antworten ganz — und der Fund vom Nachmittag war halb falsch](novaberg-roadmap.md#28082026-2015-utc--der-sachlage-prompt-sieht-novas-antworten-ganz--und-der-fund-vom-nachmittag-war-halb-falsch) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 19:56 UTC — Der Verfall der Ziele wird beim Lesen gerechnet: ein Tageslauf traegt keine Halbwertszeit von drei Stunden](novaberg-roadmap.md#28082026-1956-utc--der-verfall-der-ziele-wird-beim-lesen-gerechnet-ein-tageslauf-traegt-keine-halbwertszeit-von-drei-stunden) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 18:55 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte](novaberg-roadmap.md#28082026-1855-utc--scheibe-2-gebaut-das-kurzfristige-ziel--und-zwei-praemissen-die-die-messung-korrigierte) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 17:40 UTC — Scheibe 4 gebaut: das Sachlage-Gedaechtnis und die Bruecke](novaberg-roadmap.md#28082026-1740-utc--scheibe-4-gebaut-das-sachlage-gedaechtnis-und-die-bruecke) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 16:10 UTC — Der erste Zeuge: die Sachlage laeuft im Betrieb](novaberg-roadmap.md#28082026-1610-utc--der-erste-zeuge-die-sachlage-laeuft-im-betrieb) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 14:30 UTC — Scheibe 4 entworfen: das Sachlage-Gedaechtnis](novaberg-roadmap.md#28082026-1430-utc--scheibe-4-entworfen-das-sachlage-gedaechtnis) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 13:30 UTC — Scheibe 1 gebaut: der Sachlage-Knoten laeuft](novaberg-roadmap.md#28082026-1330-utc--scheibe-1-gebaut-der-sachlage-knoten-laeuft) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 14:35 UTC (nachgetragen; gebaut 27.08. 20:00 – 28.08. 07:00 UTC) — Rueckfragen halbiert mit Art, Raum-Neutralisierung](novaberg-roadmap.md#28082026-1435-utc-nachgetragen-gebaut-2708-2000--2808-0700-utc--rueckfragen-halbiert-mit-art-raum-neutralisierung) |
+| 2026-08-28 | laufend | ## | [28.08.2026, 10:15 UTC — Lage-Analyse: die erste Scheibe der Verstehens-Schicht ist zugeschnitten](novaberg-roadmap.md#28082026-1015-utc--lage-analyse-die-erste-scheibe-der-verstehens-schicht-ist-zugeschnitten) |
 | 2026-08-27 | laufend | ## | [27.08.2026, 11:50 UTC — Addendum 2: der Abgleich des Verlaufs gegen die Speicher](novaberg-roadmap.md#27082026-1150-utc--addendum-2-der-abgleich-des-verlaufs-gegen-die-speicher) |
 | (2026-08-27) | laufend | ### | · [Der Determinismus-Befund nannte das Modell nicht](novaberg-roadmap.md#der-determinismus-befund-nannte-das-modell-nicht) |
 | (2026-08-27) | laufend | ### | · [Der Beleg des Rueckwegs stand nur in der Chronik](novaberg-roadmap.md#der-beleg-des-rueckwegs-stand-nur-in-der-chronik) |

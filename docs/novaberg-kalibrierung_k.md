@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 7. August 2026
+**Stand:** 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -74,7 +74,14 @@ Die dichteste und am schlechtesten belegte Klasse. Der bekannte Befund: **10 von
 
 ### 3.3 Schwellen — unterhalb derer nichts geschieht
 
-`GRAVITATIONS_SCHWELLE = 0.40` · `EMOTIONALE_GRAVITATIONS_SCHWELLE = 0.40` · `GV_CHARAKTER_RESONANZ_SCHWELLE = 0.40` · `DELEGATION_SALIENZ_SCHWELLE = 0.6` · `GV_LUECKEN_MIN_RELEVANZ = 0.15` · `GV_LUECKEN_SIM_OBERGRENZE = 0.92`
+`GRAVITATIONS_SCHWELLE = 0.40` · ~~`EMOTIONALE_GRAVITATIONS_SCHWELLE = 0.40`~~ → **0.18 seit dem 30.08.2026** · `GV_CHARAKTER_RESONANZ_SCHWELLE = 0.40` · ~~`DELEGATION_SALIENZ_SCHWELLE = 0.6`~~ → **0.4615 seit dem 24.08.2026** · `GV_LUECKEN_MIN_RELEVANZ = 0.15` · `GV_LUECKEN_SIM_OBERGRENZE = 0.92`
+
+**Zwei dieser Zahlen waren hier veraltet und sind am 01.09.2026 berichtigt worden** — ein Register, das Zahlen aufzählt und keine Datei nennt, wird vom Doku-Nachzug nicht gefunden.
+
+`[gemessen]` 01.09.2026 an zweien von ihnen:
+
+- **`GRAVITATIONS_SCHWELLE = 0.40` laesst 2 % durch.** Ueber 400 Stellvertreter-Turns gegen 36 aktive Ziele liegt der Median der staerksten Zielstaerke bei **0,308**, p99 bei 0,413, das Maximum bei **0,427**. Die Konstante traegt selbst den Vermerk *„Ziele wurden nicht gemessen — begruendeter Startwert"*; das ist seither eingeloest. **Sie bleibt trotzdem stehen**, weil sie entscheidet, *woran Nova denkt* (der `[GEDANKEN]`-Block), und die Salienz seit dem 01.09.2026 die ungetorte Groesse liest.
+- **`DELEGATION_SALIENZ_SCHWELLE = 0.4615` trifft 93,2 %** — 2601 von 2792 protokollierten Laeufen. Ob das gewollt ist, steht als offene Entscheidung im Register der Festlegungen.
 
 **Eine Schwelle wirkt auch über die Größe der Trefferliste, die sie durchlässt.** Gemessen am 07.08.2026 über 322 Turns: Die LZG-Ankerliste trägt im Median **3** Einträge, im Maximum ebenfalls 3, und ist in **54 von 322 Turns leer** — die KZG-Liste dagegen immer genau 10. Damit entscheidet dieser Deckel, wie viel das Langzeitgedächtnis überhaupt in den Prompt bringen kann, und er bestimmt zugleich, wie empfindlich die Liste auf jede stromaufwärts gerechnete Verschiebung reagiert: Eine Menge aus drei Einträgen hat wenig Rand, an dem eine kleine Drehung die Mitgliedschaft kippt.
 
@@ -91,6 +98,8 @@ Die einzige Klasse mit einer Bauartregel statt einer Zahl: **Der gespeicherte We
 ### 3.5 Glättung — wie stark die Vergangenheit die Gegenwart dämpft
 
 `RAD_HISTORIEN_GEWICHT = 0.5` · `RAD_MESSREIHE_FENSTER = 5` · `EMOTION_HISTORIEN_GEWICHT = 0.15` · ~~`EMOTION_GLAETTUNGS_MAXIMUM = 2.5`~~ → **4.0, am 31.08.2026 aus Messreihen hergeleitet** (`novaberg-ei.md` §Reizstärke) · `STIL_SESSION_GEWICHT = 0.7`
+
+**Und seit dem 01.09.2026 abends zwei Konstanten des Zielsog-Zugs**, die zusammen eine Kurve legen: `SALIENZ_ZUG_G0 = 0.1297` · `SALIENZ_ZUG_W = 0.0239`. Sie sind **dreimal an einem Tag neu gelegt** worden, bei unveränderter Vorgabe (*Mitte bei etwa 40 % Zug, oben gegen 100 %*) und wechselnder Skala: zweimal gegen Stellvertreter-Verteilungen (Median 0,308 bzw. 0,299), zuletzt gegen die vier echten Betriebswerte (Median **0,1187**). **Die schwächste Grundlage aller Konstanten dieses Dokuments** — vier Messwerte aus einem Paar, dessen Reize für die Messung geschrieben wurden. Herleitung und Vorbehalt in `novaberg-salienz-berechnung_k.md` §4a.
 
 **Dazu seit dem 01.09.2026 vier Konstanten der Prägungsschicht**, alle vier Setzungen, die auf Laufzeit warten: `PRAEGUNG_BERUEHRUNG_NAEHE = 0.62` — als einzige **gemessen** hergeleitet, aus der Nulllinie über 19.900 Knotenpaare (p99 der fremden Paare) · `PRAEGUNG_ALPHA = 0.33` · `PRAEGUNG_HALBSTRECKE = 60` · `PRAEGUNG_BODEN = 0.20` — die drei aus der gerechneten Tabelle des Konzepts (§7.4), nicht aus dem Bestand. **Ihre Kalibrierung braucht Fäden, die über Wochen gelebt haben**; heute gibt es keinen.
 

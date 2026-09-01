@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Verbindliche Konvention für Werte, die aus anderen Werten berechnet werden
-**Stand:** 16. August 2026 (gegen den Code gehalten: alle sieben Regeln stehen, die Bestandstabelle stimmt — **zwei nach ihr entstandene Speicher fehlten darin**). Davor: 27. Juli 2026, Chat 111
+**Stand:** 1. September 2026, 18:30 UTC (§4: drei Eintraege der Praegungs- und Salienzschicht aufgenommen — `ausschlag_absolut`, `ausschlag_aktuell` und der Zielsog-Zug; alle drei erfuellen die Regeln, und der verworfene Mittelwert-Entwurf haette Regel 5 verletzt). Davor 16. August 2026 (gegen den Code gehalten: alle sieben Regeln stehen, die Bestandstabelle stimmt — **zwei nach ihr entstandene Speicher fehlten darin**). Davor: 27. Juli 2026, Chat 111
 **Pfad:** novaberg/docs/novaberg-convention-abgeleitete-werte.md
 **Typ:** Convention
 **Anlass:** `KZG-SALIENZ-SKALENBRUCH`, `ZIEL-DECAY-FORMEL-KUMULATIV` — dieselbe Bauart, zwei Fundorte
@@ -94,6 +94,9 @@ Das LZG-Gewicht ist damit **halb** konform: Die Kurve ist sauber, der Anker daru
 | `memory/repositories/shadow_auftrag_repository.py` — `salienz_roh` | Akkumulator mit Umkehrfunktion (`salienz_roh += BOOST`, `salienz_roh_zurueckrechnen`) | **halb** — wie `gewicht_roh`, siehe unten |
 | dieselbe Datei — `salienz_absolut`, `salienz_decay` | reine Funktionen aus `salienz_roh` bzw. aus `salienz_absolut` und `verstaerkt_am` | erfüllt |
 | `autonomous_wissen` — `gewicht_roh` / `_absolut` / `_decay` | dieselbe Dreiteilung | erfüllt, soweit geprüft |
+| `praegung_faden` — `ausschlag_absolut` | Formkurve über `ausschlag_eingang`, **einmal** angewandt | erfüllt — Regel (5) mustergültig: die Kurve steht am Eingang, nicht am Leser |
+| `praegung_faden` — `ausschlag_aktuell` | Faltung über `ausschlag_absolut`, `entstanden_am` und die vollständige Berührungsliste; **der vorige Wert geht nicht ein** | erfüllt — materialisiertes Ergebnis nach Regel (1), von Grund auf nachrechenbar (3) und idempotent (4). Der Wiederholungslauf über den Bestand ist gebaut (`alle_faeden_nachfuehren`) |
+| `ei/salienz.py` — der Zielsog-Zug | `antrieb + β(sog) × sog × (1 − antrieb)` | erfüllt — hebt auf die Lücke nach oben, **ohne Normierung und ohne Kappung** in [0,1] geschlossen. Der verworfene Mittelwert-Entwurf hätte Regel (5) verletzt: Er hätte die ganze Skala umgedeutet und jede darauf kalibrierte Schwelle mitgezogen |
 
 **Die Queue erfüllt Regel 5 sauber:** Der Zuwachs greift am **Anker** (`salienz_roh += BOOST`), nicht auf dem gekrümmten Wert. Das ist genau die Bauart, die §3 (5) verlangt und die dem LZG-Gewicht als Vorbild dient.
 
