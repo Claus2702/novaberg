@@ -105,9 +105,12 @@ Salienz-Angabe *4 von 21* stammte aus Torzeilen zweier Messreihen, nicht aus dem
 | **Die Nähe-Nulllinie** | ohne geteiltes Thema Median **0,355** (19 811 Paare), mit geteiltem **0,504** (89 Paare); p95 0,555, p99 0,620 | 01.09.2026 | 19 900 Knotenpaare aus `lzg_knoten`, pgvector |
 | **Die Schwelle ist erreichbar** | **4 von 22** KZG-Einträgen des Paars liegen darüber: 0,739 · 0,731 · 0,684 · 0,682 | 01.09.2026 | `labor/2026-09-01_naehe_gemessen.py` |
 | **Die Auffrischung wird gerufen** | 3 Aufrufe, je **2 Kandidaten** | 01.09.2026 | `pipeline_log`, Schritt `praegung_auffrischung` |
-| **Berührungen** | **0** — die aktivierten Einträge lagen bei 0,56 | 01.09.2026 | dieselbe Quelle |
+| **Berührungen** | **4** über drei Turns — Nähen 0,682 · 0,684 · 0,739 · 0,682, Fäden 353/354/327 | 01.09.2026 | `praegung_beruehrung`, vierte Reihe |
+| **Der Reiz ist vorausberechenbar** | Vorhersage **5**, gemessen **4** über drei Reize (2/1/2 gegen 1/1/2) | 01.09.2026 | `labor/2026-09-01_beruehrung_vorausberechnet.py` |
+| **Was einen Faden trifft, ist Novas eigenes Wort** | alle 4 nahen KZG-Einträge tragen `beobachter = assistant`; 4 von 22 über der Schwelle | 01.09.2026 | `labor/2026-09-01_beruehrung_erreichbarkeit.py` |
 | **Die Faltung rechnet das Konzept** | **18 von 18** Stützstellen der Tabelle aus §7.4, zwei Modelle, zwei Nachkommastellen | 01.09.2026 | `tests/test_praegung_faltung.py` |
 | **Der volle Reset ist widerlegt** | T200: Auffüllung **0,535** gegen Reset **0,900** | 01.09.2026 | derselbe Zeuge |
+| **Die Faltung läuft im Betrieb nicht** | 4 Berührungen geschrieben, `ausschlag_aktuell` bei **allen vier** Fäden unverändert gleich `ausschlag_absolut` | 01.09.2026 | `praegung_faden` nach der vierten Reihe; `ausschlag_aktuell_falten` ohne Aufrufer |
 
 **Die Verfallsfunktion stand nur als Tabelle da.** Sie wurde aus neun Stützstellen
 zurückgerechnet — `v(t) = boden + (1 − boden) / (1 + t/H)` — und trifft alle neun exakt. Neun
@@ -140,15 +143,16 @@ in 0 von 31 gemessenen Zuständen; der Test ist grün und seine Zusicherung hohl
 
 ## 7. Offene Punkte
 
-~~**Die Verstärkung fehlt.**~~ → **Gebaut am 01.09.2026 (Scheibe 2).** Die Kette von der
-Reaktivierung bis zur Zahl ist geschlossen:
+~~**Die Verstärkung fehlt.**~~ → **Gebaut am 01.09.2026 (Scheibe 2).** Drei der vier Bauteile
+laufen im Betrieb; **das vierte hat keinen Aufrufer**, und damit ist die Kette von der
+Reaktivierung bis zur Zahl gebaut, aber nicht geschlossen:
 
 | Teil | wo | was |
 |---|---|---|
 | **Scharfes Embedding** | `graph/nodes/praegung.py` → `_faden_embedding` | Der Faden trägt den Vektor **seines Segments**, nicht des ganzen Turns |
 | **Zuordnung** | `memory/praegung.py` → `beruehrung_aus_reaktivierung` | Je reaktiviertem LZG-Knoten der nächste Faden, wenn er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` steht |
 | **Aufrufer** | `graph/nodes/emotionale_gravitation.py` → `_faeden_auffrischen` | Dieselben Punkte, die Novas Verlauf färben, frischen die Fäden auf |
-| **Faltung** | `memory/praegung.py` → `ausschlag_aktuell_falten` | `ausschlag_aktuell` aus der Berührungsliste, von Grund auf |
+| **Faltung** | `memory/praegung.py` → `ausschlag_aktuell_falten` | `ausschlag_aktuell` aus der Berührungsliste, von Grund auf — **gebaut, bezeugt, ohne Aufrufer** (`FALTUNG-OHNE-AUFRUFER`, 01.09.2026) |
 
 **Zwei Grenzen, und beide sind nicht Nachlässigkeit:**
 
@@ -177,18 +181,58 @@ Reaktivierung bis zur Zahl ist geschlossen:
 | **Fäden entstanden** | 4, alle mit `embedding_quelle = segment` |
 | **Ausschlag über die Reihe** | 0,26 · 0,53 · 0,70 · 0,75 · 0,94 · **1,00** |
 | **Auffrischung gerufen** | 3-mal, je 2 Kandidaten |
-| **Berührungen entstanden** | **0** |
+| **Berührungen entstanden** | **0** (vierte Reihe, 01.09.2026: **4**) |
 
 **Beide Torbedingungen greifen einzeln** — das konnten sie vorher nicht: Vor der
 Reizstärke-Kalibrierung ließ das Tor 31 von 31 durch, danach 0 von 31. Und der Ausschlag
 bewegt sich jetzt über die ganze Skala bis zum Anschlag; er stand vorher konstant auf 0,77
 oder 1,00.
 
-**Die Berührung fehlt, und der Grund ist beziffert.** Von 22 KZG-Einträgen des Paars liegen
-**vier über der Nähe-Schwelle** (0,739 · 0,731 · 0,684 · 0,682) — die Schwelle ist also
-erreichbar. Die zwei Einträge, die der Gravitations-Node in diesen drei Turns aktiviert hat,
-gehörten nicht dazu; ihre beste Nähe lag bei 0,56. **Was fehlt, ist kein Bauteil, sondern ein
-Zusammentreffen**: eine Reaktivierung, die zufällig einen der nahen Einträge wählt.
+~~**Die Berührung fehlt, und der Grund ist beziffert.**~~ → **Sie ist am 01.09.2026, 14:00 UTC
+eingetreten.** Der Satz stimmte in seiner Diagnose und irrte in seinem Schluss: Von 22
+KZG-Einträgen des Paars liegen **vier über der Nähe-Schwelle** (0,739 · 0,731 · 0,684 · 0,682),
+und die zwei Einträge, die der Gravitations-Node in den ersten drei Reihen aktiviert hatte,
+gehörten nicht dazu — ihre beste Nähe lag bei 0,56. Der Schluss lautete: *was fehlt, ist ein
+Zusammentreffen*. **Ein Zusammentreffen ist aber nichts, worauf man wartet, sondern etwas, das
+man ausrechnen kann.**
+
+### Die vierte Reihe — vorher gerechnet statt hinterher gezählt
+
+Drei Reihen mit zehn Turns hatten null Berührungen ergeben. Eine vierte aufs Geratewohl kostet
+zehn Minuten Volllast und kann wieder null liefern. **Stattdessen lief der Produktivpfad
+vorher, ohne zu schreiben:** `emotionale_gravitation_scannen` und `_vektoren_der_punkte` sind
+dieselben Funktionen, die der Turn ruft; nur die Schreibfunktion war durch die reine Rechnung
+ersetzt (`labor/2026-09-01_beruehrung_vorausberechnet.py`).
+
+| Reiz | vorhergesagt | gemessen | Faden / Nähe |
+|---|---|---|---|
+| G Eisenmenge | 2 | **1** | 354 / 0,682 |
+| H Magnetfeld | 1 | **1** | 353 / 0,684 |
+| I Schockwelle | 2 | **2** | 327 / 0,739 · 354 / 0,682 |
+
+**Die Vorhersage stand vor dem Lauf und traf in zwei von drei Fällen genau.** Bei G verdrängte
+im Turn ein dritter Eintrag (`…290527`, Gravitation 0,336) den vorausberechneten zweiten
+(`…523013`, 0,325) — ein Abstand von 3 %, gegen den die Vorausberechnung nicht auflöst. Nicht
+verfolgt.
+
+**Und die Berührung allein bewegt nichts.** Die vier Zeilen stehen in `praegung_beruehrung`,
+und `ausschlag_aktuell` ist bei allen vier Fäden unverändert geblieben. `ausschlag_aktuell_falten`
+ist gebaut, gegen 18 Stützstellen bezeugt — und hat **keinen Aufrufer** (`FALTUNG-OHNE-AUFRUFER`).
+**Das ist dieselbe Klasse wie in Scheibe 1**, wo `beruehrung_anlegen()` gebaut, getestet und
+ungerufen dastand: Die Zeugen prüfen die Funktion, nicht ihre Verwendung, und 2772 grüne Tests
+sagen darüber nichts.
+
+> **Zwei Tore hintereinander messen Verschiedenes, und darin lag das Warten.** Der
+> Gravitations-Scan wählt gegen das Embedding des **ganzen Turns**, gewichtet mit Salienz und
+> Zeit, und nimmt höchstens zwei. Die Auffrischung misst danach die Nähe zwischen aktiviertem
+> Eintrag und dem Embedding des **stärksten Segments** eines Fadens. Ein Eintrag, der Tor 1
+> nicht passiert, kann Tor 2 nie erreichen — gleichgültig, wie nah er einem Faden steht.
+
+**Und wer einen Faden trifft, ist Nova selbst.** Alle vier nahen Einträge tragen
+`beobachter = assistant` — es sind ihre eigenen Antworten und die Fragen, die sie darin
+gestellt hat. Die vierte Reihe hat genau diese Fragen wieder aufgenommen. Das ist kein Zufall
+der Auswahl: Der Faden trägt das stärkste Segment des Reizes, und Novas Zusammenfassung
+desselben Turns ist dichter am Gegenstand als die Nachbarturns.
 
 Damit die nächste Reihe das nicht wieder mit einem Sonderskript messen muss, nennt die
 Log-Zeile seit dem 01.09.2026 auch die **verfehlte** Nähe — die drei nächsten Fäden mit ihrem
@@ -253,8 +297,13 @@ Verlaufszustände zweier Live-Sessions, davon 16 aus der Testreihe `sektorprobe`
 > Herkunftsfeld; gemessen und gefallen sind nicht unterscheidbar. Jede Prozentangabe über diesen
 > Bestand steht damit auf einem Drittel belastbarer Daten.
 
-**Die Sektoren der Perzeption sind ungeprüft.** `[gemessen]` 31.08.2026 über acht gezielte
-Plutchik-Reize: 4 von 8 getroffen, `neutral` dreimal, wo ein besetzter Sektor gemeint war.
+**Die Sektoren der Perzeption sind ungeprüft.** ~~`[gemessen]` 31.08.2026 über acht gezielte
+Plutchik-Reize: 4 von 8 getroffen, `neutral` dreimal, wo ein besetzter Sektor gemeint war.~~
+→ **Widerlegt am 01.09.2026 durch die isolierte Messung:** ohne Graph und Session-Kontext
+**6 von 8 getroffen, 8 von 8 Läufe wortgleich, `neutral` 0 von 24**. Die schlechteren Zahlen
+entstanden **hinter** der Perzeption. Die zwei verbleibenden Fehlgriffe sind systematisch —
+Sektor 4 landet auf dem Gegenpol 8, Sektor 7 auf dem Nachbarn 6
+(`PERZEPTION-SEKTOR-4-AUF-GEGENPOL`).
 Darauf bauen das Sektor-Histogramm eines Strangs (§7.8) und die acht Verfallsfaktoren (§7.9).
 
 **Beide Torschwellen warten auf Kalibrierung** — sie ist erst nach Wochen laufender Fäden

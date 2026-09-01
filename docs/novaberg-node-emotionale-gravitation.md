@@ -171,6 +171,12 @@ Die Energie-Achse wechselte dabei von 0.50 auf 1.00 — der Nachzug ist nicht ko
 > der nächste Faden des Paars gesucht, und liegt er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` (0,62),
 > entsteht eine Zeile in `praegung_beruehrung`.
 >
+> **Im Betrieb belegt am 01.09.2026, 14:00 UTC:** Über sechs Aufrufe mit je zwei Kandidaten
+> entstanden **4 Berührungen** — Nähen 0,682 · 0,684 · 0,739 · 0,682 auf die Fäden 354, 353, 327
+> und 354. Die ersten drei Aufrufe trafen nichts (beste Nähe 0,56); die vierte Reihe war **vorher
+> ausgerechnet**, indem derselbe Pfad ohne Schreiben lief
+> (`labor/2026-09-01_beruehrung_vorausberechnet.py`). Vorhersage 2/1/2, gemessen 1/1/2.
+>
 > **Hier und nicht im Prägungs-Node:** Die Auffrischung hängt an der Reaktivierung, nicht am Turn
 > — ein Turn ohne aktivierte Erinnerung frischt nichts auf, auch wenn er thematisch passt. Die
 > Log-Zeile `praegung_auffrischung` zählt Kandidaten **und** Treffer, und seit dem 01.09.2026 auch
