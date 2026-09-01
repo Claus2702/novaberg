@@ -173,8 +173,17 @@ Die Energie-Achse wechselte dabei von 0.50 auf 1.00 — der Nachzug ist nicht ko
 >
 > **Hier und nicht im Prägungs-Node:** Die Auffrischung hängt an der Reaktivierung, nicht am Turn
 > — ein Turn ohne aktivierte Erinnerung frischt nichts auf, auch wenn er thematisch passt. Die
-> Log-Zeile `praegung_auffrischung` zählt Kandidaten **und** Treffer: Ohne die Kandidatenzahl wäre
-> eine Reihe ohne Berührungen nicht von einer ohne Fäden zu unterscheiden.
+> Log-Zeile `praegung_auffrischung` zählt Kandidaten **und** Treffer, und seit dem 01.09.2026 auch
+> die **verfehlte** Nähe: Ohne sie wäre nicht zu sagen, ob eine Reihe an der Schwelle scheiterte
+> oder daran, dass es keine Fäden gibt.
+>
+> **Beide Speicher, und der zweite ist der häufigere.** Der Vektor liegt je nach Quelle woanders —
+> bei `lzg` in `lzg_knoten.embedding`, bei `kzg` als Float32-Bytes im Redis-Hash. Die erste Fassung
+> las nur LZG, begründet mit *„eine KZG-Reaktivierung hat kein Embedding"*. **Die Begründung war
+> falsch**, und die Einschränkung traf genau den Fall, der eintritt: `[gemessen]` 01.09.2026 über
+> sieben Betriebsturns eines jungen Paars kamen **alle** aktivierten Punkte aus dem
+> Kurzzeitgedächtnis. Solange das Langzeitgedächtnis eines Paars dünn ist — und das ist es am
+> Anfang immer —, ist der KZG-Weg der einzige, der trägt. `_vektoren_der_punkte` holt beide.
 
 > **Der Faktor steht seit dem 31.08.2026 auf 0,25** (vorher 0,6), mitgezogen mit der
 > Reizstärke-Kalibrierung des Emotionsverlaufs (`novaberg-ei.md` §Reizstärke). `[gemessen]`:
