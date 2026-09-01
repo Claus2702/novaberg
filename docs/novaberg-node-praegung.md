@@ -1,11 +1,11 @@
 # Novaberg — Node: Prägung — das Faden-Tor
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Moduldokument — `graph/nodes/praegung.py`
-**Stand:** 31. August 2026
+**Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
+**Stand:** 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1 gebaut — Fäden entstehen, die **Verstärkung fehlt**
+**Zustand:** 🟠 Scheibe 1 und 2 gebaut und im Betrieb belegt (§6a) — Fäden entstehen, die Auffrischung läuft, **die erste Berührung steht aus**. Stränge, Prägungszug und Verfall sind nicht gebaut
 
 ---
 
@@ -74,6 +74,70 @@ Fehlt eine der beiden Torgrößen, ist das **kein stiller Ausfall**: Der Node me
 `logger.error` und lässt den Zustand unberührt. Ein Durchlass ohne geschriebene Zeile
 ebenso — dann haben die Vorbedingungen von `faden_anlegen` abgelehnt.
 
+## 6a. Was gemessen ist — die Beweiskette
+
+**Warum dieser Abschnitt existiert.** Die Schicht trägt nicht, weil sie gebaut ist, sondern weil
+jede ihrer Größen einmal gegen den Bestand gehalten wurde. Wer das später bestreiten oder
+nachrechnen will, findet hier die Zahl, ihr Datum und das Werkzeug, das sie erzeugt hat.
+
+### Scheibe 1 — entsteht ein Faden, und ist er der richtige?
+
+| Was | Gemessen | Wann | Beleg |
+|---|---|---|---|
+| **Das Tor trennt** | 10 Prüfungen: **4 durch, 6 abgelehnt** — 5-mal an der Salienz, 1-mal am Ausschlag | 01.09.2026 | `pipeline_log`, Schritt `praegung_tor`, Paar `scheibe2probe` |
+| **Vorher trennte es nicht** | 31 von 31 durch (vor der Kalibrierung), 0 von 31 (danach, ungezogen) | 31.08.2026 | zweite Kontrolle über 31 Verlaufszustände |
+| **Die Formkurve rechnet** | 0,700 → 0,794 · 0,750 → 0,854 · 0,940 → 0,991 · 1,000 → 1,000 | 01.09.2026 | `praegung_faden`, nachgerechnet als `sin(x·π/2)²` |
+| **Der Ausschlag bewegt sich** | 0,26 · 0,53 · 0,70 · 0,75 · 0,94 · **1,00** über sechs Turns | 01.09.2026 | Torzeilen; vorher stand er konstant auf 0,77 oder 1,00 |
+| **Das Embedding ist scharf** | 4 von 4 Fäden mit `embedding_quelle = segment`, kein Rückfall | 01.09.2026 | Torzeilen |
+| **Die Emotion ist die des Turns** | Verlauf führt `traurigkeit`, Turn perzipiert `frustration` → Faden trägt `frustration` | 31.08.2026 | `tests/test_praegung_faden_schema.py` |
+
+**Die Torschwellen sind hergeleitet, nicht gesetzt.** Salienz 0,60 und Ausschlag 0,70 ergeben
+gemeinsam **21,1 %** Durchlass, gerechnet über 3677 `bewertung`-Zeilen und 1718 nicht-neutrale
+`lzg_knoten`; die Vorgabe lautete ein Fünftel. Werkzeug: `labor/2026-08-31_torquote_kalibrieren.py`.
+**Zwei Fallen stecken in dieser Zahl**, und beide haben bei der Erhebung zugeschlagen — die
+Grundgesamtheit muss ohne neutrale Knoten gerechnet werden (mit ihnen: 8,9 %), und die frühere
+Salienz-Angabe *4 von 21* stammte aus Torzeilen zweier Messreihen, nicht aus dem Bestand.
+
+### Scheibe 2 — findet eine Reaktivierung ihren Faden?
+
+| Was | Gemessen | Wann | Beleg |
+|---|---|---|---|
+| **Die Nähe-Nulllinie** | ohne geteiltes Thema Median **0,355** (19 811 Paare), mit geteiltem **0,504** (89 Paare); p95 0,555, p99 0,620 | 01.09.2026 | 19 900 Knotenpaare aus `lzg_knoten`, pgvector |
+| **Die Schwelle ist erreichbar** | **4 von 22** KZG-Einträgen des Paars liegen darüber: 0,739 · 0,731 · 0,684 · 0,682 | 01.09.2026 | `labor/2026-09-01_naehe_gemessen.py` |
+| **Die Auffrischung wird gerufen** | 3 Aufrufe, je **2 Kandidaten** | 01.09.2026 | `pipeline_log`, Schritt `praegung_auffrischung` |
+| **Berührungen** | **0** — die aktivierten Einträge lagen bei 0,56 | 01.09.2026 | dieselbe Quelle |
+| **Die Faltung rechnet das Konzept** | **18 von 18** Stützstellen der Tabelle aus §7.4, zwei Modelle, zwei Nachkommastellen | 01.09.2026 | `tests/test_praegung_faltung.py` |
+| **Der volle Reset ist widerlegt** | T200: Auffüllung **0,535** gegen Reset **0,900** | 01.09.2026 | derselbe Zeuge |
+
+**Die Verfallsfunktion stand nur als Tabelle da.** Sie wurde aus neun Stützstellen
+zurückgerechnet — `v(t) = boden + (1 − boden) / (1 + t/H)` — und trifft alle neun exakt. Neun
+legen die Form eindeutig fest; drei hätten es nicht getan.
+
+### Zwei Defekte, die zwischen der Schicht und jedem Beleg standen
+
+| Kennung | Was er verhinderte | Nach dem Bau gemessen |
+|---|---|---|
+| `PROMOTION-NUR-EIN-PAAR` | 13 Aufträge über 5 Paare unbearbeitet, alle 5 ohne LZG-Knoten — ohne Langzeitgedächtnis keine Reaktivierung | Queue 2 → 0, LZG 0 → 2 in **90 Sekunden**, alle 13 abgeflossen |
+| Auffrischung nur über LZG | Über 7 Betriebsturns kamen **alle** aktivierten Punkte aus dem Kurzzeitgedächtnis | die Auffrischung wird seither gerufen und bekommt Kandidaten |
+
+### Was die Zeugen zusichern, und was sie gekostet haben
+
+`test_praegung_faden_schema.py` (28) · `test_praegung_auffrischung.py` (10) ·
+`test_praegung_faltung.py` (7) · `test_emotions_reizstaerke.py` (7) ·
+`test_schwellen_nach_reizstaerke.py` (9) · `test_promotion_alle_paare.py` (5).
+
+**Jede Gegenprobe mit Vorhersage vor dem Eingriff:** 6/7 · 4/4 · 1/1 · 3/3 · 3/3 — und einmal
+**1 vorhergesagt, 0 gezählt**: Der Zeuge auf den KZG-Weg prüfte `beruehrung_aus_reaktivierung`
+mit einem übergebenen Vektor und damit die Funktion, nicht ihre Verwendung. Erst ein zweiter auf
+`_vektoren_der_punkte` fing den Eingriff. **Das ist der einzige Punkt dieser Kette, an dem eine
+Zusicherung nachweislich leer war** — und er ist behoben.
+
+**Ein Zeuge im Bestand ist es noch:** `test_praegung_faden_schema.py:350` setzt die Gewichte als
+Literal auf 0,90/0,85 und sichert zu, dass das Tor durchlässt. Diese Werte erreicht die Pipeline
+in 0 von 31 gemessenen Zuständen; der Test ist grün und seine Zusicherung hohl.
+
+---
+
 ## 7. Offene Punkte
 
 ~~**Die Verstärkung fehlt.**~~ → **Gebaut am 01.09.2026 (Scheibe 2).** Die Kette von der
@@ -100,6 +164,8 @@ Reaktivierung bis zur Zahl ist geschlossen:
   beschafft, weiß, woher sie kommen.
 
 ### Der Betriebsbeleg, 01.09.2026
+
+> Die vollständige Kette aller Messungen steht in **§6a**; hier nur, was daraus offen bleibt.
 
 `[gemessen]` über drei Reihen und zehn Turns an einem frischen Paar:
 
