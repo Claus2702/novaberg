@@ -299,7 +299,7 @@ class PluginReihenfolgeTest(unittest.TestCase):
             p(patch.object(enricher_mod, "_load_raw_turns", return_value=[]))
             p(patch.object(enricher_mod, "_create_prompt_embedding", return_value=NAH))
             p(patch.object(
-                enricher_mod, "_compute_ziele_und_gravitation", return_value=([], 0.0),
+                enricher_mod, "_compute_ziele_und_gravitation", return_value=([], 0.0, 0.0),
             ))
             p(patch.object(enricher_mod, "_vorturn_cluster_lesen", return_value="foyer"))
             p(patch.object(enricher_mod, "spreading_lesen", return_value=[]))

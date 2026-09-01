@@ -350,7 +350,7 @@ class EnricherVerdrahtungTest(unittest.TestCase):
             p(patch.object(enricher_mod, "_create_prompt_embedding", return_value=ROH))
             p(patch.object(
                 enricher_mod, "_compute_ziele_und_gravitation",
-                return_value=(ziele, 0.5),
+                return_value=(ziele, 0.5, 0.0),
             ))
             p(patch.object(enricher_mod, "_vorturn_cluster_lesen", return_value=CLUSTER_FREI))
             p(patch.object(enricher_mod, "spreading_lesen", return_value=[]))

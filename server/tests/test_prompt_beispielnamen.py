@@ -48,6 +48,14 @@ KEINE_NAMEN: frozenset[str] = frozenset({
                 # der Slot liest das Wort hinter "aus" und trifft hier ein
                 # Zahlwort. Steht in `test_charakter_rad_laden`, wo das
                 # neutrale Rad beschrieben wird.
+    "Novas",    # "aus Novas eigenem Zielsog" — der Charakter des Projekts
+                # selbst, im Genitiv. `Nova` ist ausdruecklich kein zu
+                # schuetzender Name (32_VEROEFFENTLICHUNG §1c); der Slot
+                # bricht am Genitiv-s nicht ab und liefert deshalb eine
+                # zweite Form derselben Ausnahme.
+    "Messwerten",  # "aus Messwerten Marken" — eine Kappung macht aus
+                # Messwerten Marken; der Slot liest das Wort hinter "aus"
+                # und trifft hier ein Substantiv im Dativ Plural.
     "Redi",     # "aus RediSearch" — derselbe Bruch wie bei "Postgre", nur
                 # am anderen Produktnamen. "Redis" steht schon oben; die
                 # Suchmaschine darin heisst RediSearch und faellt deshalb

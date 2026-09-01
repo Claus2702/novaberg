@@ -227,6 +227,63 @@ def ziel_gravitation_berechnen(
     return aktiviert
 
 
+def zielsog_staerkster(
+    turn_embedding: list[float],
+    ziele:          list[dict],
+) -> float:
+    """Die staerkste Zielstaerke des Turns — **ohne das Tor der Aktivierung**.
+
+    **Warum ungetort, und warum eine eigene Funktion.** `GRAVITATIONS_SCHWELLE`
+    entscheidet, welche Ziele *aktiviert* werden — und aktivierte Ziele wandern
+    in den `[GEDANKEN]`-Block des GV-Prompts und in die Herkunft des
+    Rueckfrage-Gegenstands. Das Tor beantwortet also die Frage **woran Nova
+    gerade denkt**.
+
+    Die Salienz stellt eine andere: **wie sehr zieht das Thema sie an.** Darauf
+    ist die Antwort nicht ja oder nein, sondern ein Mass — und ein Mass, das
+    durch ein Tor laeuft, ist keines mehr. `[gemessen]` 01.09.2026 ueber 400
+    Stellvertreter-Turns gegen 36 aktive Ziele: Der Median der staerksten
+    Zielstaerke liegt bei **0,308**, das Maximum bei 0,427; die Schwelle 0,40
+    laesst **2 %** durch. Wer die Schwelle fuer die Salienz senkte, aenderte
+    zugleich, worueber Nova nachdenkt — zwei Wirkungen aus einer Zahl.
+
+    **Kurzfristige Ziele zaehlen hier ohne Sonderregel.** Die Aktivierung nimmt
+    sie per Bauart auf, auch unter der Schwelle; hier gibt es keine Schwelle,
+    an der eine Ausnahme noetig waere.
+
+    Vorbedingung: keine — fehlendes Embedding oder leere Zielliste sind der
+    Regelfall am Anfang.
+    Nachbedingung: Rueckgabe in [0.0, 1.0]; 0.0 heisst "kein Ziel traegt".
+    Fehlerfaelle: Ein Ziel ohne Embedding wird uebergangen, nicht als 0.0
+    gewertet — ein fehlender Operand ist keine Messung.
+
+    Args:
+        turn_embedding: Embedding des aktuellen Turns.
+        ziele: Die aktiven Ziele des Paars.
+
+    Returns:
+        `max(similarity x motivation)` ueber alle Ziele mit Embedding.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not turn_embedding or not ziele:
+        return 0.0
+
+    # ── Verarbeitung ────────────────────────────
+    staerkste: float = 0.0
+    for ziel in ziele:
+        ziel_embedding: list[float] | None = ziel.get("embedding")
+        if not ziel_embedding:
+            continue
+        staerke: float = (
+            _cosine_similarity(turn_embedding, ziel_embedding)
+            * ziel.get("motivation", 0.5)
+        )
+        staerkste = max(staerkste, staerke)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return max(0.0, min(1.0, staerkste))
+
+
 def gravitationsterm_berechnen(aktivierte_ziele: list[ActivatedGoal]) -> float:
     """Berechnet den Salienz-Gravitationsterm aus aktivierten Zielen.
 

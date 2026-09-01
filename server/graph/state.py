@@ -233,6 +233,15 @@ class ConversationState(TypedDict):
         dict
     ]  # Ziele über Gravitationsschwelle [{zielsatz, motivation, aktivierungs_staerke, ...}]
     gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
+    # Die staerkste **ungetorte** Zielstaerke dieses Turns
+    # (`similarity x motivation`, ohne `GRAVITATIONS_SCHWELLE`). Der Salienz-
+    # Formel dient sie als Zug auf die Luecke nach oben; `aktivierte_ziele`
+    # daneben beantwortet die andere Frage — woran Nova gerade denkt.
+    #
+    # **Getrennt, weil eine Zahl sonst zwei Wirkungen haette:** Wer die
+    # Schwelle fuer die Salienz senkte, aenderte zugleich den
+    # `[GEDANKEN]`-Block des GV-Prompts.
+    zielsog_roh: float
     emotionale_gravitationspunkte: list[dict]  # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
     prompt_embedding: list[
         float

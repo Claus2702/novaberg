@@ -29,12 +29,15 @@ weil ein einzelner Faktor sie umgelegt hat.
 """
 
 import logging
+import math
 from dataclasses import dataclass, field
 
 from config import (
     RAD_MAX,
     RAD_MIN,
     SALIENZ_EREGUNG_MAX_ZUSCHLAG,
+    SALIENZ_ZUG_G0,
+    SALIENZ_ZUG_W,
 )
 
 logger = logging.getLogger("ki_server.ei.salienz")
@@ -88,6 +91,16 @@ class SalienzErgebnis:
     gekappt: bool = False
     # True, wenn das Ergebnis die Skalenobergrenze 1.0 ueberschritten hatte.
 
+    zielsog: float = 0.0
+    # Der staerkste **ungetorte** Zielsog dieses Turns (similarity x motivation).
+    # Ungetort, weil das Tor der Aktivierung eine andere Frage beantwortet: was
+    # Nova denkt, nicht wie wichtig ihr eine Aeusserung ist.
+
+    zug_staerke: float = 0.0
+    # beta(zielsog) — wie viel der Luecke nach oben der Sog schliesst. Steht
+    # neben dem Sog, weil aus dem Ergebnis allein nicht abzulesen waere, ob ein
+    # schwacher Zug an einem starken Sog lag oder umgekehrt.
+
 
 def _erregungs_zuschlag_berechnen(arousal: float) -> float:
     """Rechnet Novas Erregung in einen Verstaerkungs-Zuschlag um.
@@ -112,12 +125,51 @@ def _erregungs_zuschlag_berechnen(arousal: float) -> float:
     return arousal * SALIENZ_EREGUNG_MAX_ZUSCHLAG
 
 
+def zielsog_zug_staerke(zielsog: float) -> float:
+    """Wie stark Novas eigener Zielsog an der Salienz zieht — eine Logistische.
+
+    **Der Zug waechst mit dem Sog, und zwar ueberproportional in der Mitte.**
+    Ein schwacher Sog soll fast nichts bewirken, ein starker deutlich etwas;
+    dazwischen liegt der Bereich, in dem die Entscheidung faellt. Genau das ist
+    die Form einer Logistischen: flach an beiden Enden, steil in der Mitte.
+
+        beta(g) = 1 / (1 + exp(-(g - SALIENZ_ZUG_G0) / SALIENZ_ZUG_W))
+
+    **Sie tort sich selbst.** Bei `g = 0` liefert sie 0,001. Eine Schwelle, ab
+    der ein Sog "zaehlt", waere eine zweite Entscheidung ueber dieselbe Sache —
+    und ein Tor, das ein Gewicht sein sollte, ist genau der Fehler, den die
+    alte Fassung machte (`GRAVITATIONS_SCHWELLE` liess 98 % der Turns ohne Sog).
+
+    Vorbedingung: keine — negative Werte werden gekappt und benannt.
+    Nachbedingung: Rueckgabe in (0, 1).
+    Fehlerfaelle: Keine.
+
+    Args:
+        zielsog: Die staerkste ungetorte Zielstaerke des Turns
+            (`similarity x motivation`), 0.0-1.0.
+
+    Returns:
+        Der Anteil der Luecke nach oben, den der Sog schliesst.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if zielsog < 0.0:
+        logger.warning(
+            f"Salienz-Formel: zielsog {zielsog:.3f} negativ — auf 0.0 gesetzt"
+        )
+        zielsog = 0.0
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return 1.0 / (1.0 + math.exp(-(zielsog - SALIENZ_ZUG_G0) / SALIENZ_ZUG_W))
+
+
 def salienz_effektiv_berechnen(
+    *,
     sprachlich:        float,
     ziel_gravitation:  float,
     arousal:           float,
     salienz_human:     float | None,
     nutzer_gewichtung: float | None,
+    zielsog:           float = 0.0,
 ) -> SalienzErgebnis:
     """Berechnet die Salienz eines Segments aus Novas Aeusserung.
 
@@ -133,6 +185,11 @@ def salienz_effektiv_berechnen(
             wenn es keine gab.
         nutzer_gewichtung: Faktor des Charakter-Rads, oder None, wenn er nicht
             gelesen werden konnte.
+        zielsog: Die staerkste **ungetorte** Zielstaerke dieses Turns
+            (`similarity x motivation`), 0.0-1.0. Sie zieht den Eigen-Pfad auf
+            die Luecke nach oben; wie stark, sagt `zielsog_zug_staerke`.
+            Vorgabe 0.0 heisst "kein Sog" und laesst den Pfad unveraendert —
+            das ist der Zustand jedes Aufrufers, der sie nicht kennt.
 
     Vorbedingung: sprachlich und ziel_gravitation sind nicht negativ.
     Nachbedingung: effektiv liegt in [0.0, 1.0]; gewinner benennt den Pfad, aus
@@ -178,9 +235,26 @@ def salienz_effektiv_berechnen(
     # Erregung vergroessert nicht mehr, sie **teilt die Skala mit**. Die
     # Einseitigkeit aus `novaberg-salienz-berechnung_k.md` §4 bleibt: Der
     # Zuschlag hebt gegenueber einem ruhigen Turn, er loescht nichts aus.
-    zuschlag:   float = _erregungs_zuschlag_berechnen(arousal)
+    zuschlag: float = _erregungs_zuschlag_berechnen(arousal)
+
+    # **Der Zielsog zieht, er konkurriert nicht.** Bis zum 01.09.2026 stand er
+    # als zweiter Operand im `max()` darueber und entschied dort in **4 von
+    # 2786** protokollierten Zeilen — Mittel 0,034 gegen 0,692 beim
+    # sprachlichen Antrieb. Ein Antrieb, der rechnet und unter einem `max()`
+    # verschwindet, sieht von aussen aus wie einer, der nicht angeschlossen
+    # ist.
+    #
+    # Die Form ist die Auffuellregel der Praegung: Sie schliesst einen Teil der
+    # **Luecke nach oben** und kann deshalb nie senken und nie ueber 1 gehen —
+    # ohne Normierung, ohne Kappung. Ein Mittelwert taete das Gegenteil: Weil
+    # der Sog in 86 % der Turns null ist, halbierte er die Salienz des ganzen
+    # Systems (gemessen: Mittel 0,6196 -> 0,3250, Praegungs-Torquote 59 % -> 0 %).
+    zug:   float = zielsog_zug_staerke(zielsog)
+    basis: float = max(antriebe.values())
+    gezogen: float = basis + zug * zielsog * (1.0 - basis)
+
     eigen_pfad: float = (
-        max(antriebe.values()) * (1.0 + zuschlag)
+        gezogen * (1.0 + zuschlag)
         / (1.0 + SALIENZ_EREGUNG_MAX_ZUSCHLAG)
     )
 
@@ -236,6 +310,8 @@ def salienz_effektiv_berechnen(
         effektiv           = round(effektiv, 4),
         pflicht_pfad       = round(pflicht_pfad, 4) if pflicht_pfad is not None else None,
         eigen_pfad         = round(eigen_pfad, 4),
+        zielsog            = round(zielsog, 4),
+        zug_staerke        = round(zug, 4),
         gewinner           = gewinner,
         antriebe           = antriebe,
         erregungs_zuschlag = round(zuschlag, 4),

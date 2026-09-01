@@ -23,7 +23,7 @@ import logging
 import redis
 
 from config import ASSISTANT_NAME, PROMPTS, get_node_config
-from ei.salienz import salienz_effektiv_berechnen
+from ei.salienz import SalienzErgebnis, salienz_effektiv_berechnen
 from graph.reiz import reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import nutzer_gewichtung_laden
@@ -327,6 +327,52 @@ def _salienz_human_ermitteln(roh_salienzen: list[float]) -> float | None:
         hoechste = max(0.0, min(1.0, hoechste))
 
     return hoechste
+
+
+def _formel_aus_dem_state(
+    state:             ConversationState,
+    sprachlich:        float,
+    gravitationsterm:  float,
+    arousal:           float,
+    nutzer_gewichtung: float | None,
+) -> SalienzErgebnis:
+    """Ruft die Salienz-Formel mit dem, was der State traegt.
+
+    **Eine eigene Naht, damit die Verdrahtung bezeugbar ist.** Der Aufruf stand
+    inmitten der Segment-Schleife von `analyze`, und ein Zeuge haette dort den
+    ganzen Knoten fahren muessen — also gar keiner. Was ein Zeuge nicht
+    erreicht, ist unbewacht; genau so stand `ausschlag_aktuell_falten` am
+    01.09.2026 einen Tag lang ohne Aufrufer (`20_TESTS/verdrahtung.md`).
+
+    **Der ungetorte Sog, nicht der Gravitationsterm.** Der Term entsteht aus den
+    *aktivierten* Zielen und traegt damit `GRAVITATIONS_SCHWELLE` in sich; der
+    Sog ist das Mass, an dem der Zug haengt. Das Tor beantwortet, woran Nova
+    denkt — die Salienz fragt, wie sehr das Thema sie anzieht
+    (`novaberg-salienz-berechnung_k.md` §4a).
+
+    Vorbedingung: keine — ein fehlender Kanal bedeutet "kein Sog".
+    Nachbedingung: Das Ergebnis der Formel, unveraendert weitergereicht.
+    Fehlerfaelle: Keine eigenen.
+
+    Args:
+        state: Der Zustandsverbund dieses Turns.
+        sprachlich: Die Lesung dieses Segments.
+        gravitationsterm: Der Term aus den aktivierten Zielen.
+        arousal: Novas gemessene Erregung.
+        nutzer_gewichtung: Der Faktor des Charakter-Rads, oder None.
+
+    Returns:
+        Das `SalienzErgebnis` der Formel.
+    """
+    # ── Eingabe-Validierung / Verarbeitung / Ausgabe ──
+    return salienz_effektiv_berechnen(
+        sprachlich        = sprachlich,
+        ziel_gravitation  = gravitationsterm,
+        arousal           = arousal,
+        salienz_human     = state.get("salienz_human"),
+        nutzer_gewichtung = nutzer_gewichtung,
+        zielsog           = state.get("zielsog_roh") or 0.0,
+    )
 
 
 def analyze(
@@ -722,12 +768,8 @@ def analyze(
             # allein gefragt: max(sein Interesse × ihr Charakter, ihr Antrieb).
             # Der Gravitationsboost entfaellt hier — die Gravitation ist jetzt
             # einer der Antriebe des Eigen-Pfads und zaehlte sonst zweimal.
-            ergebnis = salienz_effektiv_berechnen(
-                sprachlich        = roh_wert,
-                ziel_gravitation  = gravitationsterm,
-                arousal           = nova_arousal,
-                salienz_human     = state.get("salienz_human"),
-                nutzer_gewichtung = nutzer_gewichtung,
+            ergebnis = _formel_aus_dem_state(
+                state, roh_wert, gravitationsterm, nova_arousal, nutzer_gewichtung,
             )
 
             salienz_obj["salienz"] = ergebnis.effektiv
@@ -766,6 +808,8 @@ def analyze(
                     "antriebe":            ergebnis.antriebe,
                     "nicht_angeschlossen": list(ergebnis.nicht_angeschlossen),
                     "erregungs_zuschlag":  ergebnis.erregungs_zuschlag,
+                    "zielsog":             ergebnis.zielsog,
+                    "zug_staerke":         ergebnis.zug_staerke,
                     "gekappt":             ergebnis.gekappt,
                 },
                 span_id = span_id,

@@ -1583,6 +1583,31 @@ EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Ar
 # Messergebnis. Nach Live-Betrieb prüfen.
 GRAVITATIONS_SCHWELLE:        float = 0.40
 GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms auf die Salienz
+
+# ── Der Zug aus Novas eigenem Zielsog (01.09.2026) ──────────────────────────
+# Novas Antrieb soll die Salienz ihrer Aeusserung **heben**, nicht mit ihr
+# konkurrieren. Bis heute stand er als zweiter Operand in einem `max()` und
+# entschied damit in **4 von 2786** protokollierten Zeilen (0,14 %): Mittel
+# 0,034 gegen 0,692 beim sprachlichen Antrieb.
+#
+# Die neue Form zieht auf die Luecke nach oben — dieselbe Auffuellregel, die
+# die Praegung benutzt:  s' = s + beta(g) * g * (1 - s).  Sie hebt, sobald ein
+# Sog da ist, senkt nie und bleibt ohne Normierung in [0, 1].
+#
+# **beta haengt am Sog selbst**, als Logistische:
+#     beta(g) = 1 / (1 + exp(-(g - SALIENZ_ZUG_G0) / SALIENZ_ZUG_W))
+# Roh-Aequivalent der beiden Zahlen: Sie sind der Ausgleich durch drei
+# vorgegebene Stuetzstellen auf der Skala `similarity x motivation` —
+# g 0,25 -> 0,15 · g 0,35 -> 0,65 · g 0,40 -> 0,75. Die Kurve trifft sie mit
+# 0,163 / 0,579 / 0,785. Bei g = 0 liefert sie 0,001: **sie tort sich selbst**,
+# eine Schwelle fuer die Salienz braucht es nicht.
+#
+# ⚠ Erster Versuch, ausdruecklich. Die Stuetzstellen sind gesetzt, nicht
+# gemessen — die Vorgabe lautete, der Einfluss solle merklich sein. Die Kurve
+# kann uebersteuert sein; was sie im Betrieb tut, ist der Gegenstand der
+# naechsten Messreihe (novaberg-salienz-berechnung_k.md §4a).
+SALIENZ_ZUG_G0: float = float(os.getenv("SALIENZ_ZUG_G0", "0.3336"))
+SALIENZ_ZUG_W:  float = float(os.getenv("SALIENZ_ZUG_W",  "0.0511"))
 ZIEL_MITTELFRISTIG_DECAY_TAGE: int  = 14     # Halbwertszeit mittelfristiger Ziele in Tagen
 ZIEL_MAX_MITTELFRISTIG:         int = 5      # Max aktive mittelfristige Ziele
 ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele

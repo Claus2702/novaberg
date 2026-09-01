@@ -53,6 +53,7 @@ from ei.gravitation import (
     gravitationsterm_berechnen,
     wahrnehmung_verschieben,
     ziel_gravitation_berechnen,
+    zielsog_staerkster,
 )
 from graph.context_entry import ContextEntry
 from graph.reiz import reiz_text
@@ -330,8 +331,8 @@ def _compute_ziele_und_gravitation(
     postgres_url: str,
     user_id:      str,
     character_id: str,
-) -> tuple[list, float]:
-    """Laedt die aktiven Ziele DIESES Paares, berechnet Aktivierung und Term.
+) -> tuple[list, float, float]:
+    """Laedt die aktiven Ziele DIESES Paares, berechnet Aktivierung, Term und Sog.
 
     Das Turn-Paar wird uebergeben, nicht das Ziel-Paar: Die Ableitung steht in
     `ziel_paar_bestimmen` und gilt fuer beide Pfade des Enrichers, die ihr Paar
@@ -342,23 +343,29 @@ def _compute_ziele_und_gravitation(
     in den State (`_ziele_als_dicts`).
 
     Vorbedingung: embedding gueltig, postgres_url verbunden, Turn-Paar gesetzt.
-    Nachbedingung: Tupel (aktivierte_ziele, gravitationsterm), gebildet
-                   ausschliesslich aus Zielen dieser Beziehung.
-                   Beide leer / 0.0, wenn keine Ziele vorhanden sind.
+    Nachbedingung: Tupel (aktivierte_ziele, gravitationsterm, zielsog_roh),
+                   gebildet ausschliesslich aus Zielen dieser Beziehung.
+                   Alle drei leer / 0.0, wenn keine Ziele vorhanden sind.
+
+    **Der dritte Wert laeuft am Tor vorbei.** `zielsog_roh` ist die staerkste
+    Zielstaerke ohne `GRAVITATIONS_SCHWELLE` — die Salienz braucht ein Mass,
+    die Aktivierung eine Entscheidung, und beide aus derselben Zahl zu ziehen
+    hiesse, mit einem Regler zwei Dinge zu stellen (`zielsog_staerkster`).
     """
     # ── Eingabe-Validierung ─────────────────────
     ziel_subjekt, ziel_gegenueber = ziel_paar_bestimmen(user_id, character_id)
     ziele: list[dict] = ziele_aktive_laden(postgres_url, ziel_subjekt, ziel_gegenueber)
 
     if not ziele:
-        return [], 0.0
+        return [], 0.0, 0.0
 
     # ── Verarbeitung ────────────────────────────
     aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
     grav: float = gravitationsterm_berechnen(aktiviert)
+    sog:  float = zielsog_staerkster(embedding, ziele)
 
     # ── Ausgabe ─────────────────────────────────
-    return aktiviert, grav
+    return aktiviert, grav, sog
 
 
 def _ziele_als_dicts(aktiviert: list) -> list[dict]:
@@ -482,12 +489,13 @@ def _enrich_human(
     # 4 + 5. Aktivierte Ziele + Gravitationsterm.
     # Keine Wahrnehmungs-Gravitation im HG: Dieser Pfad fuehrt keine
     # Vektorsuche, es gibt keinen Suchschluessel zu verschieben.
-    aktiviert, gravitationsterm = _compute_ziele_und_gravitation(
+    aktiviert, gravitationsterm, zielsog_roh = _compute_ziele_und_gravitation(
         embedding, postgres_url, user_id, character_id,
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
     state["gravitationsterm"] = gravitationsterm
+    state["zielsog_roh"]      = zielsog_roh
 
     if aktivierte_ziele:
         logger.info(
@@ -810,12 +818,13 @@ def _enrich_character(
     #     Aktivierung selbst rechnet gegen das ROHE Anfrage-Embedding —
     #     mit dem verschobenen waere sie ihre eigene Eingabe.
     # ─────────────────────────────────────────
-    aktiviert, gravitationsterm = _compute_ziele_und_gravitation(
+    aktiviert, gravitationsterm, zielsog_roh = _compute_ziele_und_gravitation(
         embedding, postgres_url, user_id, character_id,
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
     state["gravitationsterm"] = gravitationsterm
+    state["zielsog_roh"]      = zielsog_roh
 
     if aktivierte_ziele:
         logger.info(
