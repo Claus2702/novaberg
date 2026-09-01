@@ -1732,8 +1732,21 @@ PRAEGUNG_BODEN:       float = float(os.getenv("PRAEGUNG_BODEN", "0.20"))
 # gemessen am 30.08.2026 riss jeder der 1711 scanbaren Knoten sie schon bei
 # similarity < 0,30 (`gewicht_decay` Median 3,77, Maximum 9,98). Nachgerechnet
 # ueber 56 Turns ergibt die normierte Skala je Schwelle: 0,20 -> 0,50 Treffer je
-# Turn · 0,10 -> 6,30 · 0,05 -> 9,91. Der erreichbare Hoechstwert liegt bei 0,287,
-# weshalb 0,40 nach der Normierung NIE ausloesen wuerde (Bug EMGRAV-SCHWELLE-TOT).
+# Turn · 0,10 -> 6,30 · 0,05 -> 9,91.
+#
+# ~~Der erreichbare Hoechstwert liegt bei 0,287, weshalb 0,40 nach der
+# Normierung NIE ausloesen wuerde.~~ → **Widerlegt am 01.09.2026.** `[gemessen]`
+# ueber **71 aktivierte** Gravitationspunkte im `pipeline_log`: Hoechstwert
+# **0,6640**, Mittel 0,3518; **21 davon liegen ueber 0,40**. Die Zahl 0,287 war
+# aus 56 Turns vor der Normierung hochgerechnet und ist ueberholt — die
+# Begruendung des Bugs `EMGRAV-SCHWELLE-TOT` bleibt richtig (0,40 lehnte auf der
+# unnormierten Skala nichts ab), seine Vorhersage ueber die normierte nicht.
+#
+# **Was diese Zahlen NICHT sagen:** Die 71 sind die *aktivierten* Punkte und
+# damit per Bauart alle ueber 0,18. Ueber die Verteilung der abgelehnten
+# Kandidaten sagt der Bestand nichts — der Log fuehrt nur, was durchkam. Eine
+# Aussage darueber, wie viel eine andere Schwelle durchliesse, braucht die
+# ungefilterte Menge und ist damit heute nicht zu haben.
 EMOTIONALE_GRAVITATIONS_SCHWELLE:       float = 0.18
 EMOTIONALE_GRAVITATION_ZEIT_HALBWERT:   int   = 180    # Halbwertszeit in Tagen
 EMOTIONALE_GRAVITATION_MAX_PRO_TURN:    int   = 2      # Max aktivierte Erinnerungen pro Turn
