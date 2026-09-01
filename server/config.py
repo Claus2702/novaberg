@@ -1596,18 +1596,49 @@ GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms 
 #
 # **beta haengt am Sog selbst**, als Logistische:
 #     beta(g) = 1 / (1 + exp(-(g - SALIENZ_ZUG_G0) / SALIENZ_ZUG_W))
-# Roh-Aequivalent der beiden Zahlen: Sie sind der Ausgleich durch drei
-# vorgegebene Stuetzstellen auf der Skala `similarity x motivation` —
-# g 0,25 -> 0,15 · g 0,35 -> 0,65 · g 0,40 -> 0,75. Die Kurve trifft sie mit
-# 0,163 / 0,579 / 0,785. Bei g = 0 liefert sie 0,001: **sie tort sich selbst**,
-# eine Schwelle fuer die Salienz braucht es nicht.
 #
-# ⚠ Erster Versuch, ausdruecklich. Die Stuetzstellen sind gesetzt, nicht
-# gemessen — die Vorgabe lautete, der Einfluss solle merklich sein. Die Kurve
-# kann uebersteuert sein; was sie im Betrieb tut, ist der Gegenstand der
-# naechsten Messreihe (novaberg-salienz-berechnung_k.md §4a).
-SALIENZ_ZUG_G0: float = float(os.getenv("SALIENZ_ZUG_G0", "0.3336"))
-SALIENZ_ZUG_W:  float = float(os.getenv("SALIENZ_ZUG_W",  "0.0511"))
+# Roh-Aequivalent der beiden Zahlen: Sie legen die Kurve auf den Bereich, den
+# der Sog **im Betrieb tatsaechlich einnimmt** — Mitte `g 0,12 -> beta 0,40`,
+# oberes Ende `g 0,20 -> beta 0,95`.
+#
+# **Die zweite Fassung, am selben Tag.** Die erste lag auf drei gesetzten
+# Stuetzstellen (0,25/0,35/0,40 -> 0,15/0,65/0,75) und war gegen eine
+# **Stellvertreter-Verteilung** gelegt: 400 verdichtete Knoten mit Median
+# 0,308. `[gemessen]` 01.09.2026, 16:40 UTC, zwei Betriebsturns: Der Sog trug
+# **0,0821 und 0,2034**, und der Zuwachs lag bei +0,0003 und +0,0074 — der
+# Mechanismus unterschied um den Faktor 30 und bewegte nichts. Die neue Lage
+# traegt bei denselben zwei Turns +0,0035 und +0,0421, also rund das Sechsfache.
+#
+# **Die dritte Fassung, und der Unterschied ist die Skala, nicht die Vorgabe.**
+# Die Vorgabe lautete unveraendert: Mitte bei etwa 40 % Zug, oben gegen 100 %.
+# Fassung zwei legte sie auf die **Stellvertreter**-Skala (Median 0,308, oberes
+# Ende 0,427 — uebereinstimmend bei beiden Stellvertretern). Die vier **echten**
+# Messwerte des Betriebs liegen weit darunter: 0,0626 · 0,0821 · 0,1552 ·
+# 0,2034, Median **0,1187**. Auf dieser Skala liegt die Mitte bei 0,12 und das
+# obere Ende bei 0,20.
+#
+# `[gemessen]` an denselben zwei Reizen, Zuwachs auf einen Antrieb von 0,5:
+#   Fassung 1:  nah +0,0020 (0,4 %) · fern +0,0001 — Verhaeltnis 13,9 : 1
+#   Fassung 2:  nah +0,0164 (3,7 %) · fern +0,0016 — Verhaeltnis  9,5 : 1
+#   Fassung 3:  nah +0,0511 (11,6 %) · fern +0,0015 — Verhaeltnis 32,5 : 1
+# Die dritte ist auf beiden Seiten besser: merklicher **und** trennschaerfer.
+#
+# ⚠ **Und sie steht auf vier Messwerten aus einem einzigen Paar**, dessen Reize
+# fuer die Messung geschrieben wurden. Das ist die duennste Grundlage aller drei
+# Fassungen — sie kann auf genau diese Reize passen und sonst nichts.
+#
+# **beta(0) ist bedeutungslos und muss es sein**: Der Zuwachs ist
+# `beta(g) x g x (1 - antrieb)` und traegt `g` als Faktor. Ein Turn ohne Sog
+# bekommt nichts, gleich was die Kurve am Rand sagt.
+#
+# ⚠ Weiterhin ein Versuch. **Vier Messwerte sind keine Verteilung**, und ob die
+# Stellvertreter zu hoch liegen, weil sie verdichtet sind oder weil sie vom
+# anderen Paar stammen, ist mit dem Bestand nicht zu trennen — es gibt keinen
+# Korpus roher Nutzer-Prompts (`gespraech_archiv` traegt 0 Zeilen). Die
+# `salienz_formel`-Zeile traegt `zielsog` und `zug_staerke` mit; die Verteilung
+# entsteht im Betrieb (novaberg-salienz-berechnung_k.md §4a).
+SALIENZ_ZUG_G0: float = float(os.getenv("SALIENZ_ZUG_G0", "0.1297"))
+SALIENZ_ZUG_W:  float = float(os.getenv("SALIENZ_ZUG_W",  "0.0239"))
 ZIEL_MITTELFRISTIG_DECAY_TAGE: int  = 14     # Halbwertszeit mittelfristiger Ziele in Tagen
 ZIEL_MAX_MITTELFRISTIG:         int = 5      # Max aktive mittelfristige Ziele
 ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele

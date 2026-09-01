@@ -21,9 +21,12 @@ Die Zusicherungen:
 
   1. **Die Kurve trifft ihre Stuetzstellen.** Sie sind gesetzt, nicht gemessen;
      wer sie aendert, soll es an einem roten Zeugen merken.
-  2. **Sie tort sich selbst.** Bei Sog 0 ist der Zug praktisch null — es braucht
-     keine Schwelle, und eine waere eine zweite Entscheidung ueber dieselbe
-     Sache.
+  2. **Ohne Sog kein Zuwachs — und die Zusicherung haengt am Zuwachs, nicht an
+     der Kurve.** `[gemessen]` 01.09.2026: Die erste Fassung prueft `beta(0) <
+     0,01` und wurde bei der Neukalibrierung rot, obwohl nichts kaputt war.
+     `beta(0)` ist **bedeutungslos**: Der Zuwachs ist `beta(g) x g x (1 -
+     antrieb)` und traegt `g` als Faktor. Ein Zeuge auf einen Zwischenwert
+     bewacht eine Groesse, die niemand liest.
   3. **Der Zug hebt und senkt nie** — in **zwei** Zeugen. Der eine verbietet
      das Senken, der andere verlangt das Heben. `[gemessen]` 01.09.2026: Die
      erste Fassung hatte nur den ersten, und die Gegenprobe mit entferntem Zug
@@ -49,12 +52,16 @@ from config import GRAVITATIONS_SCHWELLE
 from ei.gravitation import zielsog_staerkster
 from ei.salienz import salienz_effektiv_berechnen, zielsog_zug_staerke
 
-#: Die drei Stuetzstellen der Vorgabe und die Werte, mit denen die
-#: Ausgleichskurve sie trifft. Gesetzt, nicht gemessen — siehe Kopf.
+#: Die Stuetzstellen der dritten Fassung (01.09.2026, 17:20 UTC). Die Vorgabe
+#: blieb dieselbe — Mitte bei etwa 40 % Zug, oben gegen 100 % —, nur die Skala
+#: wechselte: Fassung 1 und 2 lagen auf einer **Stellvertreter**-Verteilung
+#: (Median 0,308), die vier **echten** Betriebswerte liegen bei 0,0626 · 0,0821
+#: · 0,1552 · 0,2034 mit Median 0,1187. **Vier Werte aus einem Paar sind die
+#: duennste Grundlage aller drei Fassungen** — der Vorbehalt steht an der
+#: Konstante.
 STUETZSTELLEN: list[tuple[float, float]] = [
-    (0.25, 0.163),
-    (0.35, 0.579),
-    (0.40, 0.785),
+    (0.12, 0.400),   # die Mitte der vier echten Messwerte (Median 0,1187)
+    (0.20, 0.950),   # ihr oberes Ende
 ]
 
 #: Zwei orthogonale Einheitsvektoren: der eine trifft das Ziel voll, der andere
@@ -80,11 +87,11 @@ class ZugkurveTest(unittest.TestCase):
                         f"wer G0 oder W aendert, aendert die Vorgabe",
                 )
 
-    def test_ohne_sog_kein_zug(self) -> None:
-        self.assertLess(
-            zielsog_zug_staerke(0.0), 0.01,
-            "Ein Turn ohne Zielsog bekommt trotzdem einen Zug — dann braucht "
-            "die Kurve doch ein Tor, und ein Tor ist genau das, was sie ersetzt",
+    def test_die_kurve_erreicht_oben_fast_ganz(self) -> None:
+        self.assertGreater(
+            zielsog_zug_staerke(0.25), 0.90,
+            "Am oberen Ende des Vorkommenden (0,25) zieht die Kurve weniger als 90 % — "
+            "die Vorgabe lautete, dort von maximal vollem Zug auszugehen",
         )
 
     def test_ein_starker_sog_zieht_mehr_als_ein_schwacher(self) -> None:
@@ -123,6 +130,34 @@ class ZugAufDieSalienzTest(unittest.TestCase):
                         "Der Sog hat die Salienz gesenkt — das ist die Form, "
                         "die als Mittelwert verworfen wurde (Kopf dieser Datei)",
                     )
+
+    def test_ohne_sog_kein_zuwachs(self) -> None:
+        """Die Zusicherung haengt am Zuwachs, nicht an `beta(0)`.
+
+        `beta(0)` ist bedeutungslos — der Zuwachs traegt `g` als Faktor. Die
+        erste Fassung dieses Zeugen prueft `beta(0) < 0,01` und wurde bei der
+        Neukalibrierung rot, obwohl nichts kaputt war.
+        """
+        for sprachlich in (0.1, 0.5, 0.9):
+            with self.subTest(sprachlich=sprachlich):
+                self.assertAlmostEqual(
+                    self._eigen(sprachlich, 0.0),
+                    self._eigen(sprachlich, 0.0),
+                    places=9,
+                )
+        ohne_kanal = salienz_effektiv_berechnen(
+            sprachlich=0.5, ziel_gravitation=0.0, arousal=0.5,
+            salienz_human=None, nutzer_gewichtung=None,
+        ).eigen_pfad
+        mit_null = salienz_effektiv_berechnen(
+            sprachlich=0.5, ziel_gravitation=0.0, arousal=0.5,
+            salienz_human=None, nutzer_gewichtung=None, zielsog=0.0,
+        ).eigen_pfad
+        self.assertAlmostEqual(
+            ohne_kanal, mit_null, places=9,
+            msg="Ein Turn ohne Sog bekommt einen Zuwachs — dann braucht die "
+                "Kurve doch ein Tor, und ein Tor ist genau das, was sie ersetzt",
+        )
 
     def test_der_zug_hebt_tatsaechlich(self) -> None:
         """Die Gegenprobe zu Zusicherung 3 — sonst ist sie einseitig.
