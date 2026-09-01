@@ -1008,6 +1008,16 @@ Faden (Episode) → Strang (Macht) → Qualität (bedrohungsrelevanz, weite) →
 > Charaktertext** (+0,036, vorzeichenwechselnd). Hier geht es um **thematische Nähe zweier
 > konkreter Texte** — die Kernaufgabe des Embeddings. **Aber der Anker ist die Episode, nicht das
 > Etikett:** Geprägt hat nicht der Begriff *SciFi*, sondern *Star Wars gesehen zu haben*.
+>
+> **Die Zuversicht dieses Absatzes ist am 01.09.2026 relativiert worden.** Gemessen über 19.900
+> Knotenpaare trennt die thematische Nähe zwar — aber schwach: ohne geteiltes Thema Median
+> **0,355**, mit geteiltem **0,504**, und die Verteilungen überlappen breit. Der Median des
+> thematischen Falls liegt **unter** dem 95. Perzentil des fremden. Die Schwelle steht deshalb auf
+> dem 99. Perzentil der fremden Paare (0,62): wenige, aber verlässliche Treffer. **Die Kernaufgabe
+> ist es, aber sie wird nicht gut genug gelöst, um ohne strenge Schwelle auszukommen** — und der
+> Preis ist benannt: Deutlich weniger als die Hälfte der echten thematischen Treffer kommt durch.
+> Im Betrieb blieben drei Reihen ohne Berührung; vier von 22 Einträgen lagen über der Schwelle, die
+> zufällig aktivierten nicht darunter (`novaberg-node-praegung.md` §7).
 
 ### 7.13 Zwei Grenzen
 
