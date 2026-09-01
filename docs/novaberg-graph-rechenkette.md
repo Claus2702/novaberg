@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 1. September 2026, 14:30 UTC (§11a neu — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 1. September 2026, 15:20 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -21,7 +21,7 @@ Dieses Dokument beantwortet **eine** Frage: Welche Größe wird an welcher Stell
 | Warum ist eine Rechnung so entschieden worden | das jeweilige `*_k.md` (Spalte „Absicht" unten) |
 | Welche Defekte sind bekannt | `novaberg-bugs.md` |
 
-**Der Zweck der Aufteilung ist Prüfbarkeit.** Die Kette hat 34 Glieder. Ein Glied, das für sich einen unplausiblen Wert liefert, fällt am Ende nicht auf — die Antwort bleibt eine Antwort. Wer die Kette messen will, braucht sie zerlegt, und zwar entlang der Rechnungen, nicht entlang der Knoten: Ein Knoten trägt bis zu sechs Systeme (der GV-Knoten), und ein System läuft über zwei Knoten (die emotionale Gravitation).
+**Der Zweck der Aufteilung ist Prüfbarkeit.** Die Kette hat 36 Glieder. Ein Glied, das für sich einen unplausiblen Wert liefert, fällt am Ende nicht auf — die Antwort bleibt eine Antwort. Wer die Kette messen will, braucht sie zerlegt, und zwar entlang der Rechnungen, nicht entlang der Knoten: Ein Knoten trägt bis zu sechs Systeme (der GV-Knoten), und ein System läuft über zwei Knoten (die emotionale Gravitation).
 
 **Die Nummerierung S1–S34 ist die Ordnung dieses Dokuments und keine Kennung.** Sie folgt dem Lauf des Turns. Wird ein System eingefügt, bekommt es einen Buchstaben (S19a), damit die bestehenden Verweise stehen bleiben.
 
@@ -48,6 +48,7 @@ Jedes System trägt fünf Angaben:
 | 0 | S1 Perzeption des Reizes | `graph/nodes/perzeption.py` | unrein (Modell) |
 | 0 | S2 Salienz und Intentionen des Reizes | `graph/nodes/salience.py` | unrein (Modell) |
 | 2 | S35 Faden-Tor der Praegung | `graph/nodes/praegung.py` | unrein (PostgreSQL) |
+| 2 | S36 Faltung des Praegungs-Ausschlags | `memory/praegung.py` | **rein** — die Rechnung; ihr Aufrufer schreibt |
 | 1 | S3 Zustandsladung | `graph/nodes/db_zugriff.py` | unrein (Redis, PostgreSQL) |
 | 1 | S4 Emotionsverlauf mit Decay | `ei/berechnung.py` | rein |
 | 1 | S5 Emotionsvektor | `ei/berechnung.py` | rein |
@@ -248,6 +249,31 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 **Reinheit:** unrein — Modell, Redis, PostgreSQL, Embed-Worker. Rein sind `_validate_artifact`, `sachlage_block`, `sachlage_bridge_block`, `normalize_object_name`, `build_short_goal_sentence`.
 **Prüfstand:** `test_sachlage.py`, `test_sachlage_bruecke.py`, `test_sachlage_verlauf_schema.py` (live), `test_sachlage_kette.py`, `test_kurzziel.py`, `test_sachlage_resolver.py` (Scheibe 6), `test_sachlage_plausibility.py` (Scheibe 7), `test_sachlage_traeger.py` (Scheibe 8).
 **Absicht:** `novaberg-thinking-lage_k.md` §3, §3a, §4.
+
+### S36 — Faltung des Prägungs-Ausschlags (01.09.2026)
+
+**Eingang:** `ausschlag_absolut` und `entstanden_am` des Fadens, die **vollständige**
+Berührungsliste aus `praegung_beruehrung`, der Bezugszeitpunkt; dazu `PRAEGUNG_ALPHA` (0,33),
+`PRAEGUNG_HALBSTRECKE` (60 Tage) und `PRAEGUNG_BODEN` (0,20).
+
+**Rechnung:** Hyperbolischer Verfall vom Entstehen bis zur ersten Berührung, dort Teilauffüllung
+der Lücke um `α`, dann weiter bis zur nächsten — und vom letzten Ereignis bis heute
+(`ausschlag_aktuell_falten`). **Der vorige Wert geht nicht ein**: Die Größe ist von Grund auf
+nachrechenbar und idempotent (Wertekonvention Regeln 3 und 4). Die Formkurve wird **nicht** hier
+angewandt, sondern einmal am Eingang bei S35 (Regel 5).
+
+**Wo sie läuft:** `ausschlag_aktuell_nachfuehren` liest, faltet und schreibt die Spalte; gerufen
+von **beiden** Schreibwegen der Berührung, und **außerhalb deren Transaktion** — die Rechnung ist
+wiederholbar, ihr Fehler darf kein Ereignis mitnehmen.
+
+**Beitrag zur Antwort:** heute keiner. Die Größe ist der Rohstoff für Stränge, Prägungszug und
+Verfall, und die drei sind nicht gebaut. **Sie steht trotzdem hier**, weil sie im Turn läuft: Wer
+die Kette misst, misst sie mit.
+
+**Absicht:** `novaberg-thinking-faszination_k.md` §7.4.
+
+**Offen:** Der Verfall **zwischen** zwei Berührungen erreicht die Spalte nicht — sie steht auf dem
+Stand der letzten Auffrischung (`FALTUNG-OHNE-PERIODISCHEN-LAUF`).
 
 ### S15 — Ressourcen-Routing · S16 — Aufgabenblock
 

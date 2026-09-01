@@ -246,6 +246,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-09-01** — **`beruehrung_anlegen()` hat weiterhin keinen Aufrufer im Produktivcode.** Der Befund steht seit dem 31.08.2026 in der Featureliste und ist beim Bau der Nachfuehrung erneut aufgefallen — die Funktion faltet jetzt mit, aber sie wird von nichts gerufen. Erster Anwendungsfall der geplanten Pruefung `A17` (Funktion ohne Aufrufer).
 - **2026-09-01** — **Eine Pruefung las Funktionsparameter als State-Kanaele.** `C18` schnitt den Koerper von `ConversationState` am naechsten `class`; die Klasse ist die letzte ihrer Datei, also lief der Block bis zum Dateiende und nahm die Parameter von `zustand_verifizieren()` mit. **3 von 34 Befunden waren erfunden** — und waeren beim Schliessen als erfundene Kanaele in die bewachte Aufzaehlung gewandert. Berichtigt am selben Tag, Gegenprobe 2/2.
 - **2026-09-01** — **Die Erfolgsmeldung von `C18` nannte vier gepruefte Paare, seit dem 28.08.2026 abends sind es acht.** Ein Literal in der Ausgabe, das mit der Registry nicht mitwuchs: Die Pruefung meldete Erfolg fuer weniger, als sie tatsaechlich geprueft hat. Berichtigt.
 - **2026-09-01** — **`C18` prueft nur eine Richtung.** Es haelt die Exemplare gegen die Aufzaehlung, nicht die Aufzaehlung gegen die Exemplare — ein Eintrag, dessen Datei verschwunden ist, faellt nicht auf. Dieselbe Klasse wie das Dokument mit verschwundenem Gegenstand vom Vortag. Nicht gebaut.

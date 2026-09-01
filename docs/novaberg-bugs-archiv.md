@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 1. September 2026 — `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT` am Tag ihres Befundes behoben und abgelegt. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** **54 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Inhalt:** **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -11,6 +11,9 @@
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---
+
+---
+
 
 ## Wozu diese Datei
 
@@ -29,6 +32,57 @@
 Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste ist ein
 **Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat**; der zweite
 ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
+
+### `FALTUNG-OHNE-AUFRUFER` — die Beruehrung wird geschrieben und nie gelesen
+
+**Zustand:** ✅ behoben am 01.09.2026
+**Symptom.** `[gemessen]` 01.09.2026, 14:00 UTC: Die vierte Messreihe hat **4 Beruehrungen** in
+`praegung_beruehrung` erzeugt (Naehen 0,682 · 0,684 · 0,739 · 0,682). `ausschlag_aktuell` aller
+vier Faeden steht danach unveraendert auf `ausschlag_absolut` — 0,794 · 0,854 · 0,991 · 1,000.
+Der Grund: `memory/praegung.py` → `ausschlag_aktuell_falten` hat **keinen Aufrufer im
+Produktivcode**. `grep -rn "ausschlag_aktuell_falten" server/ --include=*.py` liefert ausserhalb
+der Zeugen nur die Definition. Geschrieben wird `ausschlag_aktuell` genau einmal, beim Anlegen
+des Fadens (Zeile 174).
+**Wirkung.** Die Kette der Praegungsschicht ist **nicht** geschlossen, obwohl alle vier
+Bauteile stehen und bezeugt sind (7 Zeugen, 18 Stuetzstellen gegen die Konzepttabelle). Der
+Verfall findet nicht statt, die Auffuellung findet nicht statt: Ein Faden behaelt seinen
+Eingangswert fuer immer — genau der Zustand, den Scheibe 2 beheben sollte.
+**Dieselbe Klasse wie in Scheibe 1.** Dort war `beruehrung_anlegen()` gebaut, getestet und ohne
+Aufrufer; der Befund steht seit dem 31.08.2026 in der Featureliste. **Der Nachfolgebauteil hat
+den Fehler geerbt** — die Zeugen pruefen die Funktion, nicht ihre Verwendung, und eine gruene
+Suite sagt darueber nichts.
+**Was fertig waere.** `ausschlag_aktuell` wird bei jedem Lesen eines Fadens — oder in einem
+periodischen Lauf — aus `entstanden_am`, `ausschlag_absolut` und der Beruehrungsliste neu
+gefaltet, und ein Betriebsbeleg zeigt einen Faden, dessen `ausschlag_aktuell` von
+`ausschlag_absolut` abweicht.
+**Prioritaet:** hoch.
+
+---
+
+**Behoben am 01.09.2026, 15:05 UTC.** `memory/praegung.py` → `ausschlag_aktuell_nachfuehren`
+liest `ausschlag_absolut`, `entstanden_am` und die vollstaendige Beruehrungsliste, faltet und
+schreibt; `beruehrung_aus_reaktivierung` ruft sie fuer jeden getroffenen Faden. **Ausserhalb der
+Transaktion, die die Beruehrung schreibt** — die Rechnung ist jederzeit wiederholbar, und ein
+Fehler in ihr darf kein Ereignis mitnehmen.
+
+`[gemessen]` im Betrieb, fuenfte Reihe: Faden 327 **0,793893 → 0,792117**, Faden 354
+**1,000000 → 0,998756**. Der Unterschied ist klein, weil beide Faeden Stunden alt sind — bei
+`PRAEGUNG_HALBSTRECKE` 60 Tage ist das die richtige Groessenordnung, und die Zeugen decken den
+Bereich ab, den der Betrieb heute nicht erreicht.
+
+**Neun Zeugen** in `tests/test_praegung_nachfuehrung.py`, davon drei auf die **Verwendung**
+statt auf die Rechnung; zwei Gegenproben mit entferntem Aufrufer, **2 vorhergesagt und 2
+gezaehlt**, dann **1 und 1**. Suite 2772 → **2781 gruen, 0 uebersprungen**.
+
+**Beide Schreibwege falten.** Die zweite Kontrolle fragte nicht die eigene Liste ab, sondern
+den Baum: *wer schreibt sonst noch in `praegung_beruehrung`?* `beruehrung_anlegen` tat es —
+ohne Aufrufer im Produktivcode und ohne Nachfuehrung. Haette nur der gebaute Weg sie bekommen,
+stuende derselbe Defekt an der anderen Tuer, sobald ihn jemand benutzt.
+
+**Der Rest ist benannt, nicht stillschweigend gelassen:** Der Verfall *zwischen* zwei
+Beruehrungen erreicht die Spalte nicht — `FALTUNG-OHNE-PERIODISCHEN-LAUF` im Backlog. Faden 353
+zeigt es: eine Beruehrung von 14:00, kein zweiter Treffer danach, und der Wert steht weiter auf
+`ausschlag_absolut`.
 
 ### `PROMOTION-NUR-EIN-PAAR` — der periodische Lauf erreichte genau eine Queue
 

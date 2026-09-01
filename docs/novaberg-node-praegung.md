@@ -110,7 +110,8 @@ Salienz-Angabe *4 von 21* stammte aus Torzeilen zweier Messreihen, nicht aus dem
 | **Was einen Faden trifft, ist Novas eigenes Wort** | alle 4 nahen KZG-Einträge tragen `beobachter = assistant`; 4 von 22 über der Schwelle | 01.09.2026 | `labor/2026-09-01_beruehrung_erreichbarkeit.py` |
 | **Die Faltung rechnet das Konzept** | **18 von 18** Stützstellen der Tabelle aus §7.4, zwei Modelle, zwei Nachkommastellen | 01.09.2026 | `tests/test_praegung_faltung.py` |
 | **Der volle Reset ist widerlegt** | T200: Auffüllung **0,535** gegen Reset **0,900** | 01.09.2026 | derselbe Zeuge |
-| **Die Faltung läuft im Betrieb nicht** | 4 Berührungen geschrieben, `ausschlag_aktuell` bei **allen vier** Fäden unverändert gleich `ausschlag_absolut` | 01.09.2026 | `praegung_faden` nach der vierten Reihe; `ausschlag_aktuell_falten` ohne Aufrufer |
+| ~~**Die Faltung läuft im Betrieb nicht**~~ | 4 Berührungen geschrieben, `ausschlag_aktuell` bei **allen vier** Fäden unverändert — `ausschlag_aktuell_falten` ohne Aufrufer | 01.09.2026, 14:00 | `praegung_faden` nach der vierten Reihe |
+| **Die Faltung wirkt** | Faden 327 **0,793893 → 0,792117**, Faden 354 **1,000000 → 0,998756** nach einer Berührung | 01.09.2026, 15:05 | fünfte Reihe, ein Reiz; `ausschlag_aktuell_nachfuehren` |
 
 **Die Verfallsfunktion stand nur als Tabelle da.** Sie wurde aus neun Stützstellen
 zurückgerechnet — `v(t) = boden + (1 − boden) / (1 + t/H)` — und trifft alle neun exakt. Neun
@@ -152,7 +153,8 @@ Reaktivierung bis zur Zahl gebaut, aber nicht geschlossen:
 | **Scharfes Embedding** | `graph/nodes/praegung.py` → `_faden_embedding` | Der Faden trägt den Vektor **seines Segments**, nicht des ganzen Turns |
 | **Zuordnung** | `memory/praegung.py` → `beruehrung_aus_reaktivierung` | Je reaktiviertem LZG-Knoten der nächste Faden, wenn er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` steht |
 | **Aufrufer** | `graph/nodes/emotionale_gravitation.py` → `_faeden_auffrischen` | Dieselben Punkte, die Novas Verlauf färben, frischen die Fäden auf |
-| **Faltung** | `memory/praegung.py` → `ausschlag_aktuell_falten` | `ausschlag_aktuell` aus der Berührungsliste, von Grund auf — **gebaut, bezeugt, ohne Aufrufer** (`FALTUNG-OHNE-AUFRUFER`, 01.09.2026) |
+| **Faltung** | `memory/praegung.py` → `ausschlag_aktuell_falten` | `ausschlag_aktuell` aus der Berührungsliste, von Grund auf |
+| **Nachführung** | `memory/praegung.py` → `ausschlag_aktuell_nachfuehren` | Liest Eingang, Entstehung und Berührungsliste, faltet, schreibt die Spalte. Von **beiden** Schreibwegen gerufen — `beruehrung_aus_reaktivierung` und `beruehrung_anlegen` —, und **außerhalb deren Transaktion**: die Rechnung ist wiederholbar, ihr Fehler darf kein Ereignis mitnehmen |
 
 **Zwei Grenzen, und beide sind nicht Nachlässigkeit:**
 
@@ -215,12 +217,34 @@ im Turn ein dritter Eintrag (`…290527`, Gravitation 0,336) den vorausberechnet
 (`…523013`, 0,325) — ein Abstand von 3 %, gegen den die Vorausberechnung nicht auflöst. Nicht
 verfolgt.
 
-**Und die Berührung allein bewegt nichts.** Die vier Zeilen stehen in `praegung_beruehrung`,
-und `ausschlag_aktuell` ist bei allen vier Fäden unverändert geblieben. `ausschlag_aktuell_falten`
-ist gebaut, gegen 18 Stützstellen bezeugt — und hat **keinen Aufrufer** (`FALTUNG-OHNE-AUFRUFER`).
-**Das ist dieselbe Klasse wie in Scheibe 1**, wo `beruehrung_anlegen()` gebaut, getestet und
-ungerufen dastand: Die Zeugen prüfen die Funktion, nicht ihre Verwendung, und 2772 grüne Tests
-sagen darüber nichts.
+~~**Und die Berührung allein bewegt nichts.**~~ → **Behoben am 01.09.2026, 15:05 UTC.** Die
+vier Zeilen standen in `praegung_beruehrung`, und `ausschlag_aktuell` blieb bei allen vier Fäden
+unverändert: `ausschlag_aktuell_falten` war gebaut, gegen 18 Stützstellen bezeugt — und hatte
+**keinen Aufrufer** (`FALTUNG-OHNE-AUFRUFER`, im Archiv). **Dieselbe Klasse wie in Scheibe 1**,
+wo `beruehrung_anlegen()` gebaut, getestet und ungerufen dastand: Die Zeugen prüfen die Funktion,
+nicht ihre Verwendung, und 2772 grüne Tests sagen darüber nichts.
+
+`ausschlag_aktuell_nachfuehren` schließt die Lücke. Sie liest `ausschlag_absolut`,
+`entstanden_am` und die **vollständige** Berührungsliste, faltet und schreibt — der vorige Wert
+der Spalte geht nicht ein. Damit ist die Spalte ein materialisiertes Ergebnis im Sinne von
+`novaberg-convention-abgeleitete-werte.md` Regel 1, und ein Wiederholungslauf über den Bestand
+ist ein zulässiger Wartungsvorgang (Regel 4).
+
+**Sie steht außerhalb der Transaktion, die die Berührung schreibt.** Fällt sie aus, fehlt kein
+Ereignis: Die Zeile steht, und der nächste Lauf holt den Wert nach. Wäre sie Teil derselben
+Transaktion, nähme ihr Fehler die Berührung mit — ein Rechenfehler würde Gedächtnis löschen.
+
+**Beide Schreibwege falten, nicht nur der gebaute.** `beruehrung_anlegen` schreibt in dieselbe
+Tabelle und hat weiterhin **keinen Aufrufer im Produktivcode** — hätte nur der eine Weg die
+Nachführung bekommen, stünde derselbe Defekt an der anderen Tür, sobald ihn jemand benutzt.
+Gefunden hat das die zweite Kontrolle mit einem anderen Kriterium: *wer schreibt sonst noch in
+`praegung_beruehrung`?*
+
+**Der Rest ist benannt, nicht stillschweigend gelassen.** Der Verfall **zwischen** zwei
+Berührungen erreicht die Spalte nicht; der Wert steht auf dem Stand seiner letzten Auffrischung
+(`FALTUNG-OHNE-PERIODISCHEN-LAUF` im Backlog). **Faden 353 zeigt es im selben Bestand:** eine
+Berührung von 14:00, kein zweiter Treffer danach — und der Wert steht weiter auf
+`ausschlag_absolut`, weil ihn seit dem Bau des Aufrufers niemand angefasst hat.
 
 > **Zwei Tore hintereinander messen Verschiedenes, und darin lag das Warten.** Der
 > Gravitations-Scan wählt gegen das Embedding des **ganzen Turns**, gewichtet mit Salienz und

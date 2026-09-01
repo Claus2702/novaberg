@@ -730,6 +730,14 @@ Fließgleichgewicht — der Wert direkt nach einer Berührung, bei regelmäßige
 
 `ausschlag_aktuell` ist eine **Faltung über die Berührungsliste**, keine gespeicherte Zahl:
 
+> **Umgesetzt am 01.09.2026, und die Spalte gibt es trotzdem.** *„Keine gespeicherte Zahl"*
+> heißt hier: keine **fortgeschriebene**. `praegung_faden.ausschlag_aktuell` ist ein
+> **materialisiertes Ergebnis** — zusätzlich gespeichert, nie anstelle der Eingaben, und bei
+> jedem Lauf aus Eingang, Entstehungszeit und Ereignisliste neu gerechnet
+> (`novaberg-convention-abgeleitete-werte.md` Regel 1, 3 und 4). Wer sie liest, liest den Stand
+> der letzten Nachführung; wer den heutigen Wert braucht, ruft die Rechnung.
+
+
 ```
 v = 1.0                                   # relativer Anteil von ausschlag_absolut
 letzt = entstanden_am

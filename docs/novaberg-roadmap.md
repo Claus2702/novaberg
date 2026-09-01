@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **14:30 UTC** (gemessen via `date -u`). Davor 01.09.2026, 14:05 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **15:10 UTC** (gemessen via `date -u`). Davor 01.09.2026, 14:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,24 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 15:10 UTC — Die Faltung bekommt ihren Aufrufer ✅
+
+`ausschlag_aktuell_falten` war gebaut, gegen **18 Stuetzstellen** des Konzepts bezeugt — und wurde von nirgends gerufen. Vier Beruehrungen entstanden am Vormittag im Betrieb, und der Wert, den sie haetten bewegen sollen, stand unveraendert auf `ausschlag_absolut`. `FALTUNG-OHNE-AUFRUFER`, gefunden nicht von der Suite und nicht vom Nachzug, sondern von einer Messung, die eine Wirkung erwartete und keine sah.
+
+**`ausschlag_aktuell_nachfuehren` schliesst die Luecke.** Sie liest Eingang, Entstehungszeit und die **vollstaendige** Beruehrungsliste, faltet und schreibt; der vorige Wert der Spalte geht nicht ein. Die Spalte ist damit ein materialisiertes Ergebnis im Sinne der Wertekonvention Regel 1 — zusaetzlich gespeichert, nie anstelle der Eingaben —, und ein Wiederholungslauf ueber den Bestand ist ein zulaessiger Wartungsvorgang (Regel 4). `beruehrung_aus_reaktivierung` ruft sie fuer jeden getroffenen Faden.
+
+> **Sie steht ausserhalb der Transaktion, die die Beruehrung schreibt.** Faellt sie aus, fehlt kein Ereignis: Die Zeile steht, der naechste Lauf holt den Wert nach. Waere sie Teil derselben Transaktion, naehme ihr Fehler die Beruehrung mit — **ein Rechenfehler wuerde Gedaechtnis loeschen.**
+
+`[gemessen]` im Betrieb, fuenfte Reihe mit einem Reiz: Faden 327 **0,793893 → 0,792117**, Faden 354 **1,000000 → 0,998756**. Der Unterschied ist klein, und das ist richtig — beide Faeden sind Stunden alt, die Halbstrecke betraegt 60 Tage. Die Zeugen decken den Bereich, den der Betrieb heute nicht erreicht: ein Faden von 30 Tagen, und der Boden nach 20.000.
+
+**Neun Zeugen**, davon drei ausdruecklich auf die **Verwendung** statt auf die Rechnung — genau die Sorte, die gefehlt hat. Zwei Gegenproben mit entferntem Aufrufer: **2 vorhergesagt, 2 gezaehlt**, dann **1 und 1**. Suite 2772 → **2781 gruen, 0 uebersprungen**.
+
+**Die zweite Kontrolle fand die andere Tuer.** Ihr Kriterium war nicht die eigene Liste, sondern eine Frage an den Baum: *wer schreibt sonst noch in `praegung_beruehrung`?* Antwort: `beruehrung_anlegen`, der zweite Schreibweg — ohne Aufrufer im Produktivcode und ohne Nachfuehrung. Er faltet jetzt auch. **Wer heute keinen Aufrufer hat, bekommt morgen einen, und dann ohne Wirkung.** Der Linter zaehlt unveraendert 9 geduldete Befunde in der Datei, keinen neuen; die harte Konfiguration laeuft sauber.
+
+**Und der Rest ist benannt statt stillschweigend gelassen.** Der Verfall *zwischen* zwei Beruehrungen erreicht die Spalte nicht — sie steht auf dem Stand der letzten Auffrischung. `FALTUNG-OHNE-PERIODISCHEN-LAUF` im Backlog. **Faden 353 zeigt es im selben Bestand:** eine Beruehrung von 14:00, danach kein Treffer mehr, und der Wert steht weiter auf `ausschlag_absolut`.
 
 ---
 
