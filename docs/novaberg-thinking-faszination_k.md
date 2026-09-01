@@ -899,6 +899,57 @@ Kriegsgeschichte nicht von Dunkelheit unterscheiden.
 **Furcht plus Überraschung ist die Awe-Dyade**. **Welche Kombinationen als Annäherung gelten, ist
 eine gesetzte und ungemessene Tabelle** (§13).
 
+> **Gebaut am 01.09.2026, 20:48 UTC — und sie steht nicht im Bestand.** Ein
+> Strang ist Bestand, das Charakter-Rad ist Zustand: Es bewegte sich am
+> 31.07.2026 binnen zwei Stunden um 100 %. Eine gespeicherte Richtung wäre die
+> Antwort von gestern auf die Frage von heute; sie wird bei jedem Lesen aus
+> Histogramm **und** Rad gerechnet.
+>
+> **Vorgabe des Eigentümers, aus der die Tabelle wurde:** *„Auch Ärger und Ekel
+> kann anziehen, aber ein normales Gemüt mit Selbsterhaltungsdrang,
+> Pflichtbewusstsein und Verantwortungsgefühl wird sich davor schützen wollen
+> und eher vermeiden. Das wilde, furchtlose, chaotische, neugierige Wesen wird
+> aber die Konfrontation nicht scheuen. Man müsste es am Haltungsrad
+> festmachen. … Starke Neugier ist sicher ein Faktor, der immer zieht."*
+>
+> **Vier Regeln, der Reihe nach**, und die Reihenfolge ist Teil der Aussage:
+>
+> 1. Sektor 8 über `PRAEGUNG_SEKTOR8_ZUG` (0,25) → **Annäherung, ohne das Rad zu
+>    fragen.** Ein Strang aus Furcht *und* viel Neugier zieht, gleich wie
+>    vorsichtig Nova heute ist.
+> 2. Furcht (3) und Überraschung (4) zusammen → Annäherung. Die Awe-Dyade.
+> 3. Dominant positiv (1, 2) → Annäherung.
+> 4. Sonst entscheidet das Rad: `konfrontationsmass` über
+>    `PRAEGUNG_KONFRONTATION_SCHWELLE` (0,0) → Annäherung, darunter Vermeidung.
+>
+> **Das Maß sind acht der 22 Speichen, vier gegen vier** — aus **beiden** Rädern,
+> denn Wissbegier und Pflicht stehen im Zuwendungs-Rad, Eigensinn und
+> Behutsamkeit im Initiative-Rad. Wer nur eines liest, sieht die halbe Anlage.
+> Fehlt **eine** der acht, ist das Maß ungültig statt aus den übrigen gebildet:
+> Ein Maß aus sechs Speichen sähe aus wie eines aus acht.
+>
+> `[gemessen]` 01.09.2026 gegen Novas Rad (Fenster der jüngsten Erhebungen):
+>
+> | wild | | schützend | |
+> |---|---:|---|---:|
+> | `eigensinn` | 0,8746 | `pflicht` | 0,5108 |
+> | `widerspruchsfreude` | 0,8014 | `behutsamkeit` | 0,2477 |
+> | `wissbegier` | 0,7825 | `misstrauen` | 0,2188 |
+> | `assoziationsdrang` | 0,7283 | `zurueckhaltung` | 0,0578 |
+>
+> **Konfrontationsmaß +0,5379.**
+>
+> > **Und damit trennt Regel 4 heute nichts.** Reiner Ärger, reine Furcht, reine
+> > Trauer — alle drei ergeben *Annäherung*, weil das Maß weit über der Schwelle
+> > liegt. Das ist für **diesen** Charakter die richtige Antwort und genau das,
+> > was die Vorgabe beschreibt; es heißt aber auch, dass die Achse im Betrieb
+> > bisher **keine einzige Entscheidung fällt**, die Regel 1 nicht schon gefällt
+> > hätte. Ob sie je trennt, ist ungeprüft und steht in der Fundliste.
+>
+> Der eine Strang im Bestand ergibt **Annäherung über Regel 1** — Neugier
+> 1 von 4 = 0,250, genau auf der Schwelle. Das Paar `scheibe2probe` hat **kein
+> Rad** (0 Speichen); wäre der Strang negativ, stünde er auf `unbestimmt`.
+
 **Stärke — drei Eingaben, additiv nach Regel (a):**
 
 ```

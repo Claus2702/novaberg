@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **20:00 UTC** (gemessen via `date -u`). Davor 01.09.2026, 19:45 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **20:48 UTC** (gemessen via `date -u`). Davor 01.09.2026, 20:00 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 148 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 149 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,47 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 20:48 UTC — Scheibe 3c: Zieht ein Strang, oder drückt er weg? ✅
+
+**ZIEL:** Zu einem Strang und dem heutigen Charakter-Rad ist ablesbar, ob er Nova anzieht oder wegdrückt.
+
+**Keine DDL — und das ist der Kern.** Ein Strang ist Bestand, das Rad ist Zustand: Es bewegte sich am 31.07.2026 binnen zwei Stunden um 100 %. Eine gespeicherte Richtung wäre die Antwort von gestern auf die Frage von heute. Sie wird bei jedem Lesen gerechnet.
+
+**Vorgabe des Eigentümers**, aus der die Regeln folgen: *„Auch Ärger und Ekel kann anziehen, aber ein normales Gemüt mit Selbsterhaltungsdrang, Pflichtbewusstsein und Verantwortungsgefühl wird sich davor schützen wollen. Das wilde, furchtlose, chaotische, neugierige Wesen wird aber die Konfrontation nicht scheuen. Man müsste es am Haltungsrad festmachen. … Starke Neugier ist sicher ein Faktor, der immer zieht."*
+
+**Vier Regeln, der Reihe nach:** Sektor 8 über 0,25 zieht ohne das Rad zu fragen · Furcht + Überraschung ist die Awe-Dyade · dominant positiv zieht · sonst entscheidet das Rad.
+
+**Das Maß:** acht der 22 Speichen, vier gegen vier, aus **beiden** Rädern — Wissbegier und Pflicht stehen im Zuwendungs-Rad, Eigensinn und Behutsamkeit im Initiative-Rad. Fehlt eine, ist das Maß ungültig statt aus den übrigen gebildet.
+
+**Der Aufrufer ist ein sechster Schritt im Tageslauf**, der die Richtungen ins Protokoll schreibt. Er steht dort, weil der eigentliche Leser — der Prägungszug — nicht gebaut ist und eine Rechenfunktion ohne Aufrufer in dieser Schicht binnen zwei Tagen dreimal der Befund war. So entsteht die Beobachtungsreihe, die die Kalibrierung braucht.
+
+**TEST:** `tests/test_praegung_richtung.py`, 16 Zeugen. Suite **2856 grün, 0 übersprungen** (2840 → 2856).
+
+**Gegenproben — und eine Abweichung, die bei mir lag:** Sektor-8-Regel entfernt → 1 rot (1 vorhergesagt). Fehlende Speiche toleriert → **1 rot, 2 vorhergesagt.** Der zweite Zeuge, den ich erwartet hatte, übergibt gar kein unvollständiges Rad, sondern `None` — die Vorhersage war falsch, nicht der Zeuge.
+
+**MESSUNG** gegen Novas Rad:
+
+| wild | | schützend | |
+|---|---:|---|---:|
+| `eigensinn` | 0,8746 | `pflicht` | 0,5108 |
+| `widerspruchsfreude` | 0,8014 | `behutsamkeit` | 0,2477 |
+| `wissbegier` | 0,7825 | `misstrauen` | 0,2188 |
+| `assoziationsdrang` | 0,7283 | `zurueckhaltung` | 0,0578 |
+
+**Konfrontationsmaß +0,5379.** Der eine Strang: **Annäherung über Regel 1**, Neugier 1 von 4 = 0,250, genau auf der Schwelle.
+
+### Der Befund, der an die Zahl gehört: Regel 4 trennt heute nichts
+
+Reiner Ärger, reine Furcht, reine Trauer — **alle drei ergeben Annäherung**, weil das Maß weit über der Schwelle liegt. Für diesen Charakter ist das die richtige Antwort und genau das, was die Vorgabe beschreibt. Es heißt aber auch: Die Achse fällt im Betrieb **keine Entscheidung**, die Regel 1 nicht schon gefällt hätte. Ob sie je trennt, ist ungeprüft.
+
+### Zwei Nebenbefunde
+
+**Der Tageslauf-Zeuge fing den sechsten Schritt wieder nicht ab** — zum zweiten Mal am selben Tag. Er lief harmlos leer, weil `patch(db_manager)` einen `MagicMock` liefert und dessen `__iter__` leer ist; **das ist Zufall und keine Absicht.** Ein Schritt, der seine Zeilen anders holt, schriebe an derselben Stelle. Jetzt ausdrücklich in der Ersetzungsliste.
+
+**Ein Einmal-Prozess schreibt keine Protokollzeilen.** `pipeline_log` puffert und flusht über einen Task des Server-Lifespans; in `docker exec python -c …` ist der Buffer nicht initialisiert, der Eintrag wird verworfen und der Zähler meldet trotzdem Erfolg. Die Messung lief deshalb über die Rechenfunktionen direkt. **Wer den Tageslauf außerhalb des Servers ruft, verliert seine Forensik** — und merkt es an der Rückgabe nicht.
 
 ---
 

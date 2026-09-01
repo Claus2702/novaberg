@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 1. September 2026, 20:00 UTC (**§6b — der Strang**: Zuordnung über ein fortgeschriebenes Zentroid, Nachzug im Tageslauf, dazu das Sektor-Histogramm). Davor: 1. September 2026, 19:45 UTC. Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 1. September 2026, 20:48 UTC (**§6b — der Strang**: Zuordnung, Sektor-Histogramm und die Richtung, die nicht gespeichert wird). Davor: 1. September 2026, 20:00 UTC. Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1, 2, **3a und 3b** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, und der Strang trägt sein Sektor-Histogramm. **Die Richtung des Strangs, der Prägungszug und der Verfall sind nicht gebaut**
+**Zustand:** 🟠 Scheibe 1, 2, **3a, 3b und 3c** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, und seine Richtung wird gerechnet. **Die Stärke des Strangs, der Prägungszug und der Verfall sind nicht gebaut**
 
 ---
 
@@ -176,7 +176,30 @@ Acht Zahlen im Bestand, dazu drei Destillate. **Nicht der Mittelwert:** Sektor 1
 
 **Neu gerechnet bei jedem Beitritt, nicht fortgeschrieben** — anders als das Zentroid. Dort 768 Werte und ein Scan je Turn; hier ein `GROUP BY` über die Fäden eines Strangs, und eine Neuberechnung kann nicht driften. Eine Emotion außerhalb von `EMOTION_SEKTOR_MAP` färbt nicht mit und wird gemeldet.
 
-**Was ausdrücklich nicht gebaut ist:** die **Richtung** (Annäherung ↔ Vermeidung) und `strang_staerke`. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13) — sie trägt den Torfaktor der ganzen Schicht, und welche Sektorkombinationen als Annäherung gelten, ist eine **Absicht** und keine Implementierungsentscheidung. `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
+### Die Richtung — Scheibe 3c, seit dem 01.09.2026, 20:48 UTC
+
+**Sie steht nicht im Bestand.** Ein Strang ist Bestand, das Charakter-Rad ist Zustand — es bewegte sich am 31.07.2026 binnen zwei Stunden um 100 %. Eine gespeicherte Richtung wäre die Antwort von gestern auf die Frage von heute.
+
+**Vier Regeln, der Reihe nach** (`memory/praegung.py: strang_richtung`):
+
+| # | Bedingung | Ergebnis |
+|---|---|---|
+| 1 | Sektor 8 ≥ `PRAEGUNG_SEKTOR8_ZUG` (0,25) | Annäherung, **ohne das Rad zu fragen** |
+| 2 | Furcht (3) und Überraschung (4) beide besetzt | Annäherung — die Awe-Dyade |
+| 3 | positiv (1, 2) > negativ (3, 5, 6, 7) | Annäherung |
+| 4 | sonst | `konfrontationsmass` > 0,0 → Annäherung, sonst Vermeidung |
+
+Fehlt das Rad, ist das Ergebnis `unbestimmt` — nicht `vermeidung`. Ein Vorgabewert wäre eine Aussage über den Charakter, die niemand getroffen hat.
+
+**Das Maß:** acht der 22 Speichen, vier gegen vier, aus **beiden** Rädern. Fehlt eine, ist es ungültig statt aus den übrigen gebildet — ein Maß aus sechs Speichen sähe aus wie eines aus acht.
+
+`[gemessen]` 01.09.2026 gegen Novas Rad: **+0,5379** (wild 0,7967, schützend 0,2588). Der eine Strang: **Annäherung über Regel 1**, Neugier 0,250 genau auf der Schwelle.
+
+> **🔴 Regel 4 trennt heute nichts.** Reiner Ärger, reine Furcht und reine Trauer ergeben alle drei Annäherung. Für diesen Charakter ist das richtig und genau das, was die Vorgabe beschreibt — die Achse fällt im Betrieb aber keine Entscheidung, die Regel 1 nicht schon fällt. In der Fundliste.
+
+**Der Aufrufer ist der sechste Schritt des Tageslaufs**, der je Strang eine Zeile ins `pipeline_log` schreibt (`node='praegung_strang'`, `schritt='strang_richtung'`). Er steht dort, weil der eigentliche Leser — der Prägungszug — nicht gebaut ist; so entsteht die Beobachtungsreihe für die Kalibrierung. **Achtung bei der Messung:** Ein Einmal-Prozess außerhalb des Servers schreibt keine Protokollzeilen und meldet trotzdem Erfolg.
+
+**Was ausdrücklich nicht gebaut ist:** `strang_staerke` und der Prägungszug. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13) — sie trägt den Torfaktor der ganzen Schicht, und welche Sektorkombinationen als Annäherung gelten, ist eine **Absicht** und keine Implementierungsentscheidung. `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
 
 **Valenz ist nicht Richtung.** Zwei negative Prägungen können entgegengesetzte Richtungen haben: Machtlosigkeit → Macht ist Annäherung, Furcht vor der Dunkelheit ist Vermeidung (§7.7). Eine Valenzachse allein kann Kriegsgeschichte nicht von Dunkelheit unterscheiden.
 
