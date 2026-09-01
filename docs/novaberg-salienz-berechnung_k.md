@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Formel und Herleitung der Salienz für beide Beobachter
-**Stand:** 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
+**Stand:** 1. September 2026, 16:50 UTC (**§4a neu — der Zug aus Novas eigenem Zielsog**: der Antrieb konkurriert nicht mehr im `max()`, er zieht auf die Luecke nach oben; Kurve, verworfener Mittelwert-Entwurf und der ausdrueckliche Vorbehalt stehen dort). Davor 1. September 2026, 15:45 UTC (§4: der Antrieb `ziel_gravitation` ist gemessen — Mittel 0,034 gegen 0,692, entscheidend in **4 von 2786** Zeilen; die aeltere Angabe *„0.0 in allen betrachteten Laeufen"* ist damit praeziser gefasst). Davor 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
 **Pfad:** novaberg/docs/novaberg-salienz-berechnung_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -63,6 +63,105 @@ salienz_charakter = max( sprachlich , ziel_gravitation ,
 ```
 
 Wieder `max()`, aus demselben Grund: mehrere Gründe, einer genügt.
+
+### 4a. Der Zug aus Novas eigenem Zielsog — seit dem 01.09.2026
+
+> **Nova soll ihre eigenen Gedanken und Ideen haben, und ihr Einfluss soll merklich vorhanden
+> sein. Das erzeugt eine gewisse Kreativität — und gibt dem kognitiven System eine
+> Individualität.** *(Vorgabe des Eigentümers, 01.09.2026)*
+
+**Der Zielsog stand bis dahin im `max()` und war damit praktisch nicht vorhanden.** `[gemessen]`
+über **2786** protokollierte `salienz_formel`-Zeilen: Mittel **0,034** gegen **0,692** beim
+sprachlichen Antrieb, Maximum 0,561 — und **entscheidend in 4 Zeilen (0,14 %)**, in allen vieren
+nur, weil der sprachliche Antrieb ungewöhnlich tief lag.
+
+> **Ein Antrieb, der rechnet und unter einem `max()` verschwindet, sieht von außen aus wie einer,
+> der gar nicht angeschlossen ist.** Der Unterschied ist nur an der Trefferquote zu erkennen,
+> nicht am Ergebnis.
+
+#### Die Form: ein Zug auf die Lücke nach oben
+
+```
+zielsog  = max( similarity × motivation )   über alle Ziele, OHNE Tor
+β        = 1 / (1 + exp(-(zielsog − SALIENZ_ZUG_G0) / SALIENZ_ZUG_W))
+gezogen  = antrieb + β × zielsog × (1 − antrieb)
+```
+
+**Sie hebt, senkt nie und bleibt ohne Normierung in [0, 1]** — es ist dieselbe Auffüllregel, die
+die Prägungsschicht benutzt (`novaberg-thinking-faszination_k.md` §7.4): *ein Ereignis füllt
+einen Teil der Lücke, es setzt nicht zurück.*
+
+**Die Stärke des Zugs bezieht sich auf die Differenz, nicht auf den Wert.** 75 % Zug heißt: drei
+Viertel dessen, was nach oben noch fehlt. Bei einer schon hohen Salienz ist das wenig, bei einer
+niedrigen viel — und das ist gewollt: Ein Thema, das Nova anzieht, hebt eine belanglose Äußerung
+spürbar und eine ohnehin gewichtige kaum noch.
+
+#### Der verworfene Entwurf, und warum er fiel
+
+Der erste Vorschlag war ein **Mittelwert**, `(salienz + zielsog) / 2` — der Sog sollte nicht als
+Anker im Raum stehen, sondern ziehen. Die Absicht war richtig, die Form nicht. `[gemessen]` über
+dieselben 2786 Zeilen:
+
+| Form | Mittel | ≥ Prägungs-Tor 0,60 | gehoben | gesenkt |
+|---|---|---|---|---|
+| `max(s, g)` (bis 01.09.) | 0,6196 | 1636 (59 %) | — | — |
+| **Mittelwert `(s+g)/2`** | **0,3250** | **3 (0 %)** | 0 | **2785** |
+| Zuschlag mit Normierung | 0,4818 | 531 (19 %) | 0 | 2786 |
+| **Zug auf die Lücke, β=0,5** | 0,6235 | 1663 (60 %) | **383** | 1 |
+
+**Der Grund liegt nicht in der Form, sondern in der Größe:** Der Sog ist in **86 %** der Turns
+null, und ein Mittel mit einer Null halbiert. Der Mittelwert hätte die Salienz des ganzen Systems
+gesenkt statt sie zu heben — und jede darauf kalibrierte Schwelle mitgezogen.
+
+#### Die Kurve: β wächst mit dem Sog
+
+Vorgegeben waren drei Stützstellen; die Ausgleichs-Logistische trifft sie so:
+
+| Sog | vorgegeben | Kurve |
+|---|---|---|
+| 0,25 | 0,15 | 0,163 |
+| 0,35 | 0,60–0,70 | 0,579 |
+| 0,40 | 0,75 | 0,785 |
+
+**Sie tort sich selbst:** β(0) = 0,001. Für die Salienz braucht es keine Schwelle mehr — und eine
+wäre eine zweite Entscheidung über dieselbe Sache.
+
+#### Warum der Sog ungetort ist, und das Tor trotzdem bleibt
+
+`GRAVITATIONS_SCHWELLE` entscheidet, welche Ziele **aktiviert** werden — und aktivierte Ziele
+stehen im `[GEDANKEN]`-Block des GV-Prompts und in der Herkunft des Rückfrage-Gegenstands. Das
+Tor beantwortet: **woran denkt Nova gerade.** Die Salienz stellt eine andere Frage: **wie sehr
+zieht das Thema sie an** — und darauf ist die Antwort ein Maß, kein Ja oder Nein.
+
+**Ein Maß, das durch ein Tor läuft, ist keines mehr.** Deshalb liest die Salienz die ungetorte
+stärkste Zielstärke (`zielsog_staerkster`), während die Aktivierung ihre 0,40 behält. Wer die
+Schwelle für die Salienz gesenkt hätte, hätte zugleich geändert, worüber Nova nachdenkt — zwei
+Wirkungen aus einer Zahl.
+
+#### ⚠ Ein erster Versuch, ausdrücklich
+
+**Die drei Stützstellen sind gesetzt, nicht gemessen.** Die Vorgabe lautete, der Einfluss solle
+merklich sein; welche Zahlen das bedeutet, konnte niemand wissen. **Die Kurve kann übersteuert
+sein.** Sie steht hier, damit die nächste Messung sie widerlegen kann — nicht, weil sie richtig
+ist.
+
+`[gemessen]` 01.09.2026, 16:40 UTC, zwei Betriebsturns an einem frischen Paar:
+
+| Reiz | Sog | β | Eigen-Pfad | ohne Zug | Zuwachs |
+|---|---|---|---|---|---|
+| nah an Novas Zielen | 0,2034 | 0,073 | 0,4488 | 0,4423 | **+0,0065** |
+| fern von ihnen | 0,0821 | 0,007 | 0,4079 | 0,4077 | +0,0002 |
+
+**Der Mechanismus unterscheidet — um den Faktor 30 —, und der absolute Zuwachs ist winzig.** Der
+Grund steht in der Nulllinie: Die Stützstellen wurden gegen eine **Stellvertreter-Verteilung**
+gelegt (400 `lzg_knoten` als Ersatz für Turn-Embeddings, Median 0,308), und die beiden echten
+Turns tragen 0,20 und 0,08. **Verdichtete Turns liegen textsortennäher an Zielsätzen als rohe
+Prompts** — die Einschränkung stand bei der Messung dabei und ist eingetreten.
+
+**Damit ist die Kurve heute eher unter- als übersteuert.** Was sie wirklich tut, entscheidet eine
+Reihe über echte Turns; erst deren Verteilung sagt, wo `SALIENZ_ZUG_G0` liegen muss. Die
+`salienz_formel`-Zeile trägt seit heute `zielsog` und `zug_staerke` mit, damit die Reihe kein
+Sonderskript braucht.
 
 ### Die Normierung — seit dem 24.08.2026
 
@@ -286,9 +385,13 @@ Die Entscheidung dazu, in ihrer allgemeinen Form: **Eine Salienz von 0 ist zulä
 
 **Die Normierung der emotionalen Gravitation.** `similarity × gewicht × zeit_decay × quellen_faktor` liefert Werte **weit über 1.0**: `gewicht` ist das LZG-Gewicht und lag am 27.07.2026 über 47 Knoten zwischen **3.31 und 4.98**. In ein `max()` mit Werten aus [0,1] gegeben, gewänne dieser Antrieb praktisch immer — nicht weil er der stärkste Grund wäre, sondern weil seine Skala eine andere ist. Er bleibt deshalb abgeklemmt, bis er normiert ist. Berührt `GV-RELEVANZ-UNNORMIERT`.
 
-**Das Tor der Ziel-Gravitation.** Die Schwelle 0.40 liegt auf `similarity × motivation`. Bei den 15 aktiven Zielen (Motivation 0.6–0.9, Mittel 0.759) hebt die Multiplikation die tatsächlich nötige Ähnlichkeit auf **0.44 bis 0.67**. Gemessen: `gravitationsterm = 0.0` in allen bisher betrachteten Läufen. Der Antrieb ist angeschlossen und schweigt. Dieselbe Klasse wie oben — ein Faktor, der gewichten soll, verschiebt in Wahrheit ein Tor.
+**Das Tor der Ziel-Gravitation.** Die Schwelle 0.40 liegt auf `similarity × motivation`. Bei den 15 aktiven Zielen (Motivation 0.6–0.9, Mittel 0.759) hebt die Multiplikation die tatsächlich nötige Ähnlichkeit auf **0.44 bis 0.67**. ~~Gemessen: `gravitationsterm = 0.0` in allen bisher betrachteten Läufen.~~ → **Bei größerer Stichprobe genauer, und in der Sache dasselbe.** `[gemessen]` 01.09.2026 über **2786** protokollierte `salienz_formel`-Zeilen: `ziel_gravitation` ist meist **nicht** null, aber klein — Mittel **0,034** gegen **0,692** beim sprachlichen Antrieb, Maximum 0,561. **Er entscheidet den `max()` in 4 von 2786 Zeilen (0,14 %)**, und in allen vieren nur, weil der sprachliche Antrieb ungewöhnlich tief lag (0,2 bis 0,3).
 
-**Damit trägt der Eigen-Pfad heute genau einen von vier Antrieben.** Die Namen der schweigenden reisen in jeder `pipeline_log`-Zeile mit; ohne sie sähe ein `max()` über zwei Antriebe genauso aus wie eines über vier.
+> **Der Unterschied zwischen *null* und *0,034* ändert nichts am Befund und viel an seiner Prüfbarkeit.** Ein Antrieb, der konstant null ist, sieht aus wie einer, der gar nicht angeschlossen ist; einer, der rechnet und unter dem `max()` verschwindet, ist von außen nur an seiner Trefferquote zu erkennen. Die Zahl, die den Zustand beschreibt, ist deshalb **0,14 %** und nicht *„schweigt"*.
+
+Der Antrieb ist angeschlossen und wirkt praktisch nie. Dieselbe Klasse wie oben — ein Faktor, der gewichten soll, verschiebt in Wahrheit ein Tor.
+
+**Damit trägt der Eigen-Pfad heute einen Antrieb im `max()` und einen als Zug** — der zweite entschied bis zum 01.09.2026 in 0,14 % der Fälle und zieht seither auf die Lücke nach oben (§4a); der dritte und vierte sind abgeklemmt. Die Namen der schweigenden reisen in jeder `pipeline_log`-Zeile mit; ohne sie sähe ein `max()` über zwei Antriebe genauso aus wie eines über vier.
 
 **Die Züge des Rades.** Zwölf Zahlen, gesetzt nach Augenmaß. Sie sind nachzukalibrieren, sobald genug Charaktere durchgerechnet sind — und sie sind der erste Kandidat, wenn die Gewichtung sich in der Praxis falsch anfühlt.
 

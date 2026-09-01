@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 23. August 2026 (`salienz.rules` und `salienz_segment.rules` haben einen Override; er lud bis zum 23.08.2026 nicht, weil nach Connector statt nach Modell geschluesselt wurde). Davor: 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
+**Stand:** 1. September 2026, 16:50 UTC (`zielsog_roh` als Eingang, §6: Novas eigener Zielsog zieht die Salienz ihrer Aeusserung, statt im `max()` zu konkurrieren). Davor 23. August 2026 (`salienz.rules` und `salienz_segment.rules` haben einen Override; er lud bis zum 23.08.2026 nicht, weil nach Connector statt nach Modell geschluesselt wurde). Davor: 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -129,7 +129,7 @@ Pro Segment extrahiert die Salienz 10 Dimensionen — nicht nur den Score (verif
 | 0.5–0.7 | Ein neuer Sachgehalt: Zahl, Mechanismus, belegter Zusammenhang |
 | 0.1–0.3 | Wiederholung von Bekanntem; Formulierungsvariante ohne neuen Gehalt |
 
-**Diese Skala ist nur noch der eine von vier Antrieben des Eigen-Pfads.** Was am Ende im KZG steht, entscheidet die Formel `max(salienz_human × nutzer_gewichtung, salienz_charakter)` — siehe `novaberg-salienz-berechnung_k.md`.
+**Diese Skala ist nur noch der eine von vier Antrieben des Eigen-Pfads.** Was am Ende im KZG steht, entscheidet die Formel `max(salienz_human × nutzer_gewichtung, salienz_charakter)` — siehe `novaberg-salienz-berechnung_k.md`. **Seit dem 01.09.2026 zieht Novas eigener Zielsog zusätzlich daran** (§4a dort): Er konkurriert nicht mehr im `max()`, wo er in 4 von 2786 Zeilen entschied, sondern schließt einen Teil der Lücke nach oben.
 
 ### 3.3 Emotionale Verstärker
 
@@ -299,6 +299,7 @@ Die Salienz entscheidet *was* gespeichert wird. Sie führt *nichts* aus. Alle Er
 | `user_prompt` | str | Bewertungsobjekt (HG) bzw. Lagebild (CG) |
 | `response` | str | Bewertungsobjekt (CG) bzw. (leeres) Lagebild (HG). Im AgentGraph nie gesetzt — er hat keinen Responder |
 | `gravitationsterm` | float | Im HumanGraph weiterhin Salienz-Boost. Für `character`/`agent` seit Chat 112 **einer der Antriebe des Eigen-Pfads**, kein Zuschlag mehr — sonst zählte er zweimal |
+| `zielsog_roh` | float | Die stärkste **ungetorte** Zielstärke des Turns, seit 01.09.2026. Sie steht **nicht** im `max()` der Antriebe, sondern zieht das Ergebnis auf die Lücke nach oben: `gezogen = antrieb + β(sog) × sog × (1 − antrieb)`. Der Knoten liest sie über `_formel_aus_dem_state` — eine eigene Naht, damit die Verdrahtung bezeugbar ist. Herleitung in `novaberg-salienz-berechnung_k.md` §4a |
 | `salienz_human` | float \| None | *(Chat 112)* Im CharacterGraph aus dem Event-Payload; Operand des Pflicht-Pfads. Im HumanGraph selbst geschrieben, nicht gelesen |
 | `internal` | InternalPersonality | *(Chat 112)* `internal.emotion.arousal` speist den Erregungs-Zuschlag `(1 + z)`. Fehlt die Klasse, ist der Zuschlag **0.0** und nicht etwa 0.5 — ein erfundener Mittelwert trüge 15 % auf jedes Segment |
 | `pending_writes` | list[PendingWrite] | Akkumulator (read-modify-write) |

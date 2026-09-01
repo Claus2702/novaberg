@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **15:30 UTC** (gemessen via `date -u`). Davor 01.09.2026, 15:10 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **16:50 UTC** (gemessen via `date -u`). Davor 01.09.2026, 15:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,53 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 16:50 UTC — Novas eigene Gedanken ziehen an ihrer Salienz ✅
+
+> **Nova soll ihre eigenen Gedanken und Ideen haben, und ihr Einfluss soll merklich vorhanden sein. Das erzeugt eine gewisse Kreativitaet — und gibt dem kognitiven System eine Individualitaet.** *(Vorgabe des Eigentuemers)*
+
+Der Zielsog stand als zweiter Operand in einem `max()` und entschied dort in **4 von 2786** Zeilen: Mittel 0,034 gegen 0,692 beim sprachlichen Antrieb. Er zieht jetzt statt zu konkurrieren.
+
+**Die Form ist die Auffuellregel der Praegung**, an einer anderen Stelle: `gezogen = antrieb + beta(sog) x sog x (1 - antrieb)`. Sie hebt, senkt nie und bleibt ohne Normierung in [0, 1]. **Die Staerke bezieht sich auf die Differenz, nicht auf den Wert** — bei einer schon hohen Salienz ist ein Zug von 75 % wenig, bei einer niedrigen viel. Das ist gewollt.
+
+**Der erste Entwurf war ein Mittelwert und ist an der Messung gefallen.** `(s + g) / 2` haette **2785 von 2786** Zeilen gesenkt, das Mittel von 0,6196 auf 0,3250 und den Durchlass des Praegungs-Tors von 59 % auf **0 %**. Der Grund liegt nicht in der Form, sondern in der Groesse: Der Sog ist in **86 %** der Turns null, und ein Mittel mit einer Null halbiert.
+
+**beta haengt am Sog selbst**, als Logistische ueber drei vorgegebenen Stuetzstellen (0,25 → 0,15 · 0,35 → 0,65 · 0,40 → 0,75; die Ausgleichskurve trifft sie mit 0,163 / 0,579 / 0,785). Bei Sog 0 liefert sie 0,001: **sie tort sich selbst**, eine Schwelle braucht es nicht.
+
+> **Und das Tor davor bleibt trotzdem stehen.** `GRAVITATIONS_SCHWELLE` entscheidet, welche Ziele *aktiviert* werden — und die stehen im `[GEDANKEN]`-Block des GV-Prompts. Das Tor beantwortet, **woran Nova denkt**; die Salienz fragt, **wie sehr ein Thema sie anzieht**, und darauf ist die Antwort ein Mass. **Ein Mass, das durch ein Tor laeuft, ist keines mehr** — deshalb liest die Salienz die ungetorte Groesse, und eine Zahl hat nicht zwei Wirkungen.
+
+**Ausdruecklich ein erster Versuch.** Die Stuetzstellen sind gesetzt, nicht gemessen; die Kurve kann uebersteuert sein. Der Vorbehalt steht im Konzept, damit die naechste Messung sie widerlegen kann.
+
+`[gemessen]` 16:40 UTC, zwei Betriebsturns: ein Reiz nah an Novas Zielen traegt Sog 0,2034 und beta 0,073, der Eigen-Pfad steigt von 0,4423 auf **0,4488**; ein ferner traegt 0,0821 und 0,007, der Pfad steigt um **0,0002**. **Der Mechanismus unterscheidet um den Faktor 30 — und der absolute Zuwachs ist winzig.**
+
+Der Grund steht in der Nulllinie und war bei ihr schon benannt: Die Stuetzstellen wurden gegen eine **Stellvertreter-Verteilung** gelegt (400 `lzg_knoten` statt Turn-Embeddings, Median 0,308), und die echten Turns tragen 0,20 und 0,08. **Die Kurve ist damit heute eher unter- als uebersteuert.** Die `salienz_formel`-Zeile traegt seit heute `zielsog` und `zug_staerke` mit, damit die naechste Reihe kein Sonderskript braucht.
+
+**Zwei Befunde an den eigenen Zeugen.** Die erste Gegenprobe sagte **6 rote Zeugen** voraus und zaehlte **1**: Die Zusicherung *„der Zug hebt und senkt nie"* prueft mit `>=` und bleibt gruen, wenn der Zug **ganz fehlt** — ein Zeuge, der nur eine Richtung verbietet, laesst das Nichts durch. Ein zweiter Zeuge verlangt jetzt das Heben. Die Wiederholung sagte **2 Testmethoden** voraus und meldete **5 Fehlschlaege**: `subTest` zaehlt je Fall. Dieselbe Menge, zwei Zaehlweisen — die Lesson vom 31.08. in klein.
+
+Suite 2789 → **2806 gruen, 0 uebersprungen**. Linter: harte Konfiguration sauber; **ein** neuer geduldeter Befund (`PLR0913`, sechs Argumente an der Formel), der zweite (`PLR0917`) durch nur-benannte Parameter erledigt.
+
+---
+
+## 01.09.2026, 15:45 UTC — Ein konstanter Wert, der keiner war ✅
+
+Die Salienz stand in **5 von 13** Torzeilen des Messpaars auf exakt 0,442, ueber drei Emotionen hinweg — die Signatur einer Groesse, die nicht mehr rechnet. Dieselbe Signatur trug der Ausschlag vor seiner Kalibrierung, und dort steckte ein echter Defekt dahinter.
+
+**Hier nicht.** Nachgerechnet an den `salienz_formel`-Zeilen: In allen fuenf traegt der sprachliche Antrieb 0,500 und der Erregungszuschlag 0,150 — **beide quantisiert**, und die Reize waren einander aehnlich. Die zwei Groessen, die dabei tatsaechlich variierten, konnten das Ergebnis gar nicht bewegen:
+
+- `ziel_gravitation` schwankte zwischen 0,0885 und 0,3815 und **verschwindet unter dem `max()`** gegen 0,500.
+- `salienz_human` schwankte zwischen 0,300 und 0,500 und **fiel aus**, weil dem jungen Paar das destillierte Zuwendungsrad fehlt: ohne `nutzer_gewichtung` entsteht kein Pflicht-Pfad.
+
+Damit bleibt genau ein Eingang uebrig, und der stand fuenfmal gleich. **Die Formel rechnet; die Stichprobe war zu eng.**
+
+> **Zwei Eingaenge, die variieren, ohne etwas zu bewegen, sehen aus wie ein toter Wert — und sind das Gegenteil: eine Formel, die genau das tut, was sie soll.** Der Unterschied ist nur an den Zwischengroessen zu sehen, nicht am Ergebnis. Ohne die `salienz_formel`-Zeile mit ihren Antrieben waere der Befund nicht aufzuloesen gewesen.
+
+**Und die Aufloesung foerderte einen echten Befund zutage.** `[gemessen]` ueber **2786** Zeilen: `ziel_gravitation` traegt im Mittel **0,034** gegen **0,692** beim sprachlichen Antrieb, Maximum 0,561 — und **entscheidet den `max()` in 4 Zeilen, 0,14 %**; in allen vieren nur, weil der sprachliche Antrieb ungewoehnlich tief lag.
+
+Das Konzept fuehrte ihn bisher mit *„gravitationsterm = 0.0 in allen bisher betrachteten Laeufen"*. Die groessere Stichprobe macht daraus eine Quote statt einer Null, und das ist mehr als eine Genauigkeit: **Ein Antrieb, der konstant null ist, sieht aus wie einer, der gar nicht angeschlossen ist; einer, der rechnet und unter dem `max()` verschwindet, ist von aussen nur an seiner Trefferquote zu erkennen.** Der Eigen-Pfad traegt damit weiterhin genau einen von vier Antrieben — jetzt mit einer Zahl daneben statt eines Wortes.
+
+Kein Produktivcode geaendert, Suite unveraendert **2789 gruen, 0 uebersprungen**.
 
 ---
 

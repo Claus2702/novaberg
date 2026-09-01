@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 1. September 2026, 15:30 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn **und einmal taeglich ueber den Bestand**; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 1. September 2026, 16:50 UTC (S33: Novas eigener Zielsog zieht, statt im `max()` zu konkurrieren — ungetort, ueber eine Logistische; Eingang `zielsog_roh` neu). Davor 1. September 2026, 15:30 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn **und einmal taeglich ueber den Bestand**; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -174,8 +174,9 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 
 **Eingang:** das rohe Prompt-Embedding, die aktiven Ziele des Paares — **mit der Motivation von jetzt:** `ziele_aktive_laden` rechnet sie seit dem Abend des 28.08.2026 aus `motivation_basis` und Alter (`ziele_live_bewerten`, Halbwertszeit je Typ über `halbwertszeit_tage_fuer_typ`: 14 d / 3 h / keine) und liefert nichts unter `ZIEL_DEAKTIVIERUNGS_SCHWELLE` = 0,15, auch wenn `aktiv` noch TRUE ist; der Tageslauf `ziel_decay` (Takt 86400 s) schreibt das Feld nur noch für Leser, die nicht rechnen, und legt `aktiv` um.
 **Rechnung:** Je Ziel `similarity × motivation`; über `GRAVITATIONS_SCHWELLE` gilt es als aktiviert — **ein `kurzfristig`-Ziel (S14a) ist seit dem 28.08.2026 per Bauart aktiviert, solange es lebt, und steht vorn:** sein Zielsatz liegt zur Nutzeräußerung bei Kosinus 0,13–0,41, Stärke 0,09–0,29, die Schwelle hätte es nie passiert; sein Tor ist der Verfall (3 h Halbwertszeit) — und der wird beim Laden gerechnet, nicht aus dem Tagesfeld gelesen (`[gemessen]` 28.08.2026: mit dem Tagesfeld allein hätte es ~25 h gelebt). Der `gravitationsterm` ist die Summe der Aktivierungsstärken, skaliert mit `GRAVITATIONS_SALIENZ_FAKTOR`.
-**Beitrag:** Die aktivierten Ziele erscheinen als `[GEDANKEN]`-Block im GV-Prompt. Der Term ist ein Antrieb des Eigen-Pfads der Salienz-Formel (S33) und der Neugier-Boost der Wissenslücken (S22).
-**Reinheit:** rein. `ziel_gravitation_berechnen`, `gravitationsterm_berechnen`, `_cosine_similarity`.
+**Seit dem 01.09.2026 liefert derselbe Eingang zwei getrennte Größen.** `zielsog_staerkster` rechnet dieselben `similarity × motivation` **ohne das Tor** und gibt das Maximum zurück — die Salienz braucht ein Maß, die Aktivierung eine Entscheidung. `[gemessen]` über 400 Stellvertreter-Turns gegen 36 aktive Ziele: Median der stärksten Zielstärke **0,308**, p99 0,413, Maximum 0,427; die Schwelle 0,40 lässt **2 %** durch. Wer sie für die Salienz gesenkt hätte, hätte zugleich den `[GEDANKEN]`-Block geändert — zwei Wirkungen aus einer Zahl.
+**Beitrag:** Die aktivierten Ziele erscheinen als `[GEDANKEN]`-Block im GV-Prompt. Der Term ist ein Antrieb des Eigen-Pfads der Salienz-Formel (S33) und der Neugier-Boost der Wissenslücken (S22); der **ungetorte Sog** zieht dort zusätzlich auf die Lücke nach oben.
+**Reinheit:** rein. `ziel_gravitation_berechnen`, `gravitationsterm_berechnen`, `zielsog_staerkster`, `_cosine_similarity`.
 **Prüfstand:** `test_kurzziel.py` (`DieGravitationTraegtDasKurzeZielTest` für das Bauart-Tor, `DerVerfallBeimLesenTest` und `DerLaderLaesstVerfallenesLiegenTest` für den Eingang); für die Rechnung selbst keiner.
 **Absicht:** `novaberg-thinking-drive_k.md`.
 
@@ -525,17 +526,21 @@ Ziehen dürfen **sechs von zwölf** Speichen — die ganze Abwendungsseite: *Zie
 
 ### S33 — Die Salienz-Formel
 
-**Eingang:** die Lesung des Segments, der Gravitationsterm aus S8, Novas Arousal, `salienz_human` aus S2, die Nutzer-Gewichtung des Rads.
+**Eingang:** die Lesung des Segments, der Gravitationsterm aus S8, **der ungetorte Zielsog** (State-Kanal `zielsog_roh`, seit 01.09.2026), Novas Arousal, `salienz_human` aus S2, die Nutzer-Gewichtung des Rads.
 **Rechnung:**
 
 ```
 salienz_effektiv  = max( salienz_human × nutzer_gewichtung , salienz_charakter )
-salienz_charakter = max( antriebe ) × (1 + erregungs_zuschlag)
+antrieb           = max( antriebe )
+gezogen           = antrieb + β(zielsog) × zielsog × (1 − antrieb)      ← seit 01.09.2026
+salienz_charakter = gezogen × (1 + erregungs_zuschlag) ÷ (1 + MAX_ZUSCHLAG)
 ```
 
 Zwei Gründe, sich etwas zu merken, und es genügt einer — deshalb `max()` und keine Summe. Eine Summe höbe ein Segment, das beide Pfade schwach berührt, über eines, das einen davon voll trifft. Der Erregungs-Zuschlag wirkt als `(1 + z)` mit `z ≥ 0`: Er hebt und kann nie auslöschen.
+
+**Novas eigener Zielsog steht seit dem 01.09.2026 nicht mehr im `max()`, sondern zieht.** Dort entschied er `[gemessen]` in **4 von 2786** Zeilen — Mittel 0,034 gegen 0,692. Die neue Form schließt einen Teil der **Lücke nach oben** und kann deshalb nie senken; wie viel, sagt eine Logistische über dem Sog selbst. Der Sog ist dabei **ungetort**: `GRAVITATIONS_SCHWELLE` entscheidet, woran Nova denkt (`[GEDANKEN]`-Block), nicht wie sehr ein Thema sie anzieht. Herleitung, verworfener Mittelwert-Entwurf und der ausdrückliche Vorbehalt in `novaberg-salienz-berechnung_k.md` §4a.
 **Beitrag:** Entscheidet, was von diesem Turn ins Gedächtnis wandert und damit im nächsten wieder auftauchen kann.
-**Reinheit:** rein. `salienz_effektiv_berechnen`, `_erregungs_zuschlag_berechnen`.
+**Reinheit:** rein. `salienz_effektiv_berechnen`, `_erregungs_zuschlag_berechnen`, `zielsog_zug_staerke`; die ungetorte Größe liefert `ei/gravitation.py::zielsog_staerkster` (unrein nur über ihren Aufrufer, der die Ziele lädt).
 **Prüfstand:** `test_salienz_formel.py`, `test_kzg_salienz_formel.py`.
 **Absicht:** `novaberg-salienz-berechnung_k.md` §§2–4.
 
