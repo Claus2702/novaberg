@@ -132,18 +132,31 @@ Am Ende jedes Planner-Durchlaufs (sofern Agent-Ergebnisse vorliegen könnten) ru
 | `_build_task_inquiry()` | [AUFGABE] für Pflicht-Rückfrage (inkl. Disambiguierung-JSON) |
 | `_build_task_success()` | [AUFGABE] für erfolgreiche Agent-Aktionen |
 | `_build_task_dismissed()` | [AUFGABE] für abgelehnte Aktionen (User hat "Nein" gesagt) |
+| `_build_task_ablehnung()` | [AUFGABE] für eine begründete Ablehnung mit Gegenangebot (seit 17.08.2026) |
 | `_build_task_error()` | [AUFGABE] für fehlgeschlagene Aktionen |
 | `_build_task_legacy()` | [AUFGABE] für Legacy-Management (alter Manager-Pfad) |
 | `_write_task_block()` | Liest agent_results/mgmt_result aus State, ruft `_build_task_block()`, schreibt Ergebnis in State |
 
 **Prioritätsreihenfolge:**
+
 1. Rückfrage (`inquiry`) → kein Kontext-Schnitt (User braucht Kontext für Antwort)
-2. Fehler (`error`) → Kontext-Schnitt
-3. Verworfen (`dismissed`) → Kontext-Schnitt
-4. Erfolg (`completed`) → Kontext-Schnitt
-5. Legacy-Management → Kontext-Schnitt
+2. Ablehnung mit Gegenangebot (`abgelehnt`) → Kontext-Schnitt — ein Urteil ist keine Störung und steht deshalb vor dem Fehler
+3. Fehler (`error`) → Kontext-Schnitt
+4. Verworfen (`dismissed`) → Kontext-Schnitt
+5. Erfolg (`completed`) → Kontext-Schnitt
+6. Legacy-Management → Kontext-Schnitt
 
 `rejected` (Classify-Vorprüfung) wird ignoriert — ist ein Nicht-Ereignis für den Responder.
+
+#### Der Fehler-Block trägt die Tatsache, nicht nur die Störung
+
+**Stand 01.09.2026.** Ein `[AUFGABE]`-Block, der eine Lage beschreibt, bindet nicht — dieselbe Bauregel wie beim Verfasser-Auftrag. Der Fehler-Block sagte bis zum 01.09.2026 *„Bei der Verarbeitung ist ein Fehler aufgetreten … Erkläre dem Nutzer kurz was schiefging"* und nannte damit **weder den Schreibvorgang noch seine Folge**.
+
+`[gemessen]` — 01.09.2026, drei Turns in Folge: Der Timeline-Agent lieferte `status="fehler"`, der Block wurde jedes Mal gebaut (203, 164, 189 Zeichen, `context_cut=True`) und erreichte den Prompt — und die Antwort meldete jedes Mal Erfolg (*„Alles klar! Ich habe die Geschäftsreise nach Bielefeld für Mittwoch und Donnerstag eingetragen"*, während `timeline` nichts geschrieben hatte). **Der Block war nie das Problem, sein Wortlaut war es.**
+
+Die neue Fassung folgt dem Ablehnungs-Block, der seit dem 20.08.2026 wirkt: Sie nennt die Tatsache (*nichts eingetragen, nichts geändert, nichts gelöscht*), verlangt die Ansage an den Nutzer und reicht eine Rückfrage des Agenten als Frage weiter statt als Erklärung. Vier der fünf Fehlerquellen des Timeline-Agenten (`crud.py` 122/206/329, `suche.py` 131) nennen eine fehlende Angabe und sind damit beantwortbar.
+
+Bezeugt in `tests/test_task_block_fehler.py` — acht Zeugen, davon einer die Gegenprobe gegen den alten Wortlaut. Gegenprobe am 01.09.2026: alte Fassung eingesetzt, **5 von 8 rot**, vorhergesagt 5.
 
 **Vier Austrittspunkte mit `_write_task_block()` (vierter seit Chat 106):**
 1. Resume-Guard (Agent lief bereits in diesem Turn — Schleifen-Schutz im Resume-Zweig, §3.1)

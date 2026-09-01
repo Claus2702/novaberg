@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **18:30 UTC** (gemessen via `date -u`). Davor 01.09.2026, 17:45 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **19:26 UTC** (gemessen via `date -u`). Davor 01.09.2026, 18:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 145 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 146 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,48 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 19:26 UTC — Der Fehlschlag eines Agenten erreicht den Nutzer ✅
+
+**Auslöser:** ein Gespräch über eine Geschäftsreise nach Bielefeld, vom Eigentümer gefahren. Der Timeline-Agent scheiterte dreimal, und Nova bestätigte dreimal einen Eintrag, den es nicht gab.
+
+| Zeit | Agent | Antwort |
+|---|---|---|
+| 18:48:52 | `fehler` — *„Konnte kein Datum erkennen. Wann soll 'Geschäftsreise nach Bielefeld' stattfinden?"* | *„Alles klar! Ich habe die Geschäftsreise … eingetragen."* |
+| 18:54:59 | `fehler` — *„Kein Termin 'Termin mit dem Chef' gefunden."* | *„Ich habe die Zeit entsprechend angepasst."* |
+| 18:56:31 | `fehler` — *„Konnte kein Datum erkennen. Wann soll 'Heizungswartung' stattfinden?"* | nennt den Fehler, bezogen auf die falsche Sache |
+
+**Der Block war jedes Mal da.** `Planner: task_block erstellt (context_cut=True, 203 / 164 / 189 Zeichen)` — er erreichte den Prompt und setzte sich nicht durch. **Nicht der Pfad fehlte, der Wortlaut trug nicht:**
+
+    Bei der Verarbeitung ist ein Fehler aufgetreten: {fehler_texte}
+    Erklaere dem Nutzer kurz was schiefging.
+
+Er nennt weder den Schreibvorgang noch seine Folge. Das Vorbild stand im Haus: `responder.aufgabe_ablehnung` sagt seit dem 20.08.2026 ausdrücklich *„Es wurde nichts eingetragen"* und *„Sag dem Nutzer beides"* — und wirkt.
+
+**Gebaut:** `responder.aufgabe_fehler` neu gefasst — die Tatsache (*nichts eingetragen, nichts geändert, nichts gelöscht*), die Ansage an den Nutzer, und die Weitergabe einer Rückfrage **als Frage** statt als Erklärung. Vier der fünf Fehlerquellen des Timeline-Agenten (`crud.py` 122/206/329, `suche.py` 131) nennen eine fehlende Angabe und sind damit beantwortbar. `F-PROMPT-1` gewahrt: kein Verbot, nur Führung.
+
+**TEST:** `tests/test_task_block_fehler.py`, 8 Zeugen — darunter die Gegenprobe gegen den alten Wortlaut als Konstante. Suite **2815 grün, 0 übersprungen** (2807 → 2815).
+
+**Gegenprobe:** alte Fassung eingesetzt, **5 von 8 rot**, vorhergesagt 5.
+
+**MESSUNG** — `labor/2026-09-01_fehlerpfad_betriebsbeleg.py`, ein Turn nach Neustart von `ki_server` (der Prompt wird beim Prozessstart gelesen; das Skript prüft **im Prozess**, dass die neue Fassung geladen ist, bevor es misst). Frisches Paar `fehlerprobe`, Reiz ohne jede Zeitangabe:
+
+| | |
+|---|---|
+| **Reiz** | *„Trage mir bitte einen Termin fuer die Wartung der Heizung ein."* |
+| **Agent** | 19:25:37 · `status=fehler` · *„Konnte kein Datum erkennen. Wann soll 'Wartung der Heizung' stattfinden?"* |
+| **Antwort** | 19:26:00 · **„Hat nicht geklappt. Wann soll die Heizung gewartet werden?"** |
+| **Seiteneffekt** | `timeline` 83 → 83 Zeilen, höchste id 494 → 494 |
+
+**Beides ist da: die Tatsache und die weitergereichte Frage** — vorher stand an derselben Stelle *„Alles klar! Ich habe die Geschäftsreise nach Bielefeld für Mittwoch und Donnerstag eingetragen"*, bei identischem Agentenausgang.
+
+Der Kontext-Schnitt macht die Antwort sehr kurz (58 Zeichen gegen mehrere hundert bei den Turns des Abends). Das ist die gewollte Wirkung von `context_cut=True` und kein Nebenbefund; ob diese Kürze für den Fehlerfall die richtige ist, ist eine Frage an den Betrieb und nicht an den Block.
+
+**Ein Defekt im Messwerkzeug, im ersten Lauf gefunden und behoben:** Es wartete auf die `agent_dispatch`-Zeile und las die Antwort dann aus einer Tabelle, in der sie noch nicht stand — **23 Sekunden liegen zwischen beiden** (19:25:37 → 19:26:00), gefüllt von Gefühlsrechnung, Salienz der Antwort und Verfasser. Der Lauf meldete deshalb eine leere Ausgabe als Ergebnis. Die Wartebedingung zeigt jetzt auf `turn_roh`. **Eine Wartebedingung auf dem falschen Ereignis meldet nicht „noch nicht", sondern „nichts".**
+
+**Nicht geändert:** dass der Timeline-Agent eine fehlende Angabe als `status="fehler"` transportiert statt als `status="rueckfrage"`. Der Kanon trennt beides (`agents/base.py`), und der Rückfrage-Pfad schneidet den Kontext nicht — das ist ein eigener Auftrag und steht in der Fundliste.
 
 ---
 
