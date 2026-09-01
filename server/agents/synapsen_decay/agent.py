@@ -9,6 +9,9 @@ synapsen_k §9, P6; queue-verfall_k §11):
   2. delete_expired_entries — TTL-Cleanup alter pipeline_log-Einträge.
   3. verfall_lauf        — dasselbe für die Shadow-Queue, mit **eigener Rate**
                            (30 Tage statt 787) und eigenem Audit-Eintrag.
+  4. alle_faeden_nachfuehren — faltet `ausschlag_aktuell` jedes Prägungsfadens
+                           auf heute. Der Verfall **zwischen** zwei Berührungen
+                           hat kein Ereignis, an dem er hängen könnte.
 
 **Der dritte Schritt steht hier und nicht in einem eigenen Agenten**, weil er
 so keinen zusätzlichen Platz im Heartbeat kostet — bei einem einzigen
@@ -37,7 +40,7 @@ from config import (
     POSTGRES_URL,
     SYNAPSEN_DECAY_AKTIV,
 )
-from memory import lzg_knoten, pipeline_log
+from memory import lzg_knoten, pipeline_log, praegung
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from tools.db_manager import db_manager
 
@@ -146,6 +149,54 @@ class SynapsenDecayAgent(BaseAgent):
                 f"pipeline_log-Forensik nicht geschrieben ({inhalt.get('phase', '?')}): {ex}"
             )
 
+    def _faltung_lauf(self, run_id: str) -> dict:
+        """Faltet `ausschlag_aktuell` jedes Praegungsfadens auf heute.
+
+        Der Verfall **zwischen** zwei Beruehrungen hat kein Ereignis, an dem er
+        haengen koennte: `ausschlag_aktuell_nachfuehren` laeuft, wenn eine
+        Beruehrung entsteht, und dazwischen steht der Wert still
+        (`FALTUNG-OHNE-PERIODISCHEN-LAUF`).
+
+        **Eigener Audit-Eintrag wie beim Queue-Verfall.** Ohne ihn waere
+        hinterher nicht zu unterscheiden, ob der Lauf ueber einen leeren
+        Bestand ging oder gar nicht lief — und ein leerer Bestand ist am Anfang
+        der Regelfall.
+
+        Vorbedingung: keine.
+        Nachbedingung: Jeder Faden traegt einen auf heute gerechneten Wert;
+        `gefaltet == gesamt`, wenn nichts ausfiel.
+        Fehlerfaelle: Keine eigenen — die Fachfunktion meldet selbst und
+        liefert ihren Fehler im Ergebnis.
+
+        Args:
+            run_id: Die Korrelation dieses Tageslaufs.
+
+        Returns:
+            Das Ergebnis von `alle_faeden_nachfuehren`.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        self._audit_log(
+            DEFAULT_USER_ID, "praegung_faltung", "gestartet", f"run_id={run_id}",
+        )
+
+        # ── Verarbeitung ────────────────────────────
+        ergebnis: dict = praegung.alle_faeden_nachfuehren(POSTGRES_URL)
+
+        # ── Ausgabe-Verifikation ────────────────────
+        stand: str = f"{ergebnis['gefaltet']} von {ergebnis['gesamt']}"
+        if ergebnis["error"]:
+            self._audit_log(
+                DEFAULT_USER_ID, "praegung_faltung", "fehler",
+                f"{stand}: {ergebnis['error']}",
+            )
+        else:
+            self._audit_log(
+                DEFAULT_USER_ID, "praegung_faltung", "erledigt",
+                f"{stand} Faeden nachgefuehrt",
+            )
+        logger.info(f"Synapsen-Decay: {stand} Praegungsfaeden nachgefuehrt")
+        return ergebnis
+
     def invoke(self, state: AgentState) -> AgentState:
         """Führt den täglichen Decay-Lauf aus (globaler Bulk-Lauf).
 
@@ -220,11 +271,17 @@ class SynapsenDecayAgent(BaseAgent):
                 f"verarbeitet, {queue_result['deaktiviert']} deaktiviert"
             )
 
+            # 4. Faltung des Praegungs-Ausschlags (novaberg-node-praegung.md
+            #    §7, S36 der Rechenkette). Vierter Schritt aus demselben Grund
+            #    wie der dritte: kein zusaetzlicher Platz im Heartbeat.
+            faltung_result = self._faltung_lauf(run_id)
+
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
                 e
                 for e in (
-                    decay_result["error"], cleanup_result["error"], queue_result["error"],
+                    decay_result["error"], cleanup_result["error"],
+                    queue_result["error"], faltung_result["error"],
                 )
                 if e is not None
             ]
@@ -232,6 +289,7 @@ class SynapsenDecayAgent(BaseAgent):
                 "decay": decay_result,
                 "cleanup": cleanup_result,
                 "queue_verfall": queue_result,
+                "praegung_faltung": faltung_result,
             }
 
             ende_inhalt = {
@@ -241,6 +299,8 @@ class SynapsenDecayAgent(BaseAgent):
                 "deleted_count": cleanup_result["deleted_count"],
                 "queue_verarbeitet": queue_result["verarbeitet"],
                 "queue_deaktiviert": queue_result["deaktiviert"],
+                "faeden_gefaltet": faltung_result["gefaltet"],
+                "faeden_gesamt": faltung_result["gesamt"],
             }
 
             if fehler:

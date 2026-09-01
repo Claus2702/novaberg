@@ -412,6 +412,96 @@ def ausschlag_aktuell_nachfuehren(
     return geschrieben
 
 
+def alle_faeden_nachfuehren(
+    postgres_url: str,
+    jetzt:        datetime | None = None,
+    stapel:       int = 500,
+) -> dict:
+    """Faltet den ganzen Bestand — der Verfall zwischen zwei Beruehrungen.
+
+    **Warum es diesen Lauf ueberhaupt gibt.** `ausschlag_aktuell_nachfuehren`
+    laeuft, wenn eine Beruehrung entsteht. Der Verfall **zwischen** zwei
+    Beruehrungen hat kein Ereignis, an dem er haengen koennte: Ein Faden, den
+    seit Wochen niemand angesprochen hat, stuende in der Spalte so hoch wie am
+    Tag seiner letzten Auffrischung. `[gemessen]` 01.09.2026: Faden 353 trug
+    eine Beruehrung und stand danach unveraendert auf `ausschlag_absolut`, weil
+    ihn nach dem Bau des Aufrufers niemand mehr getroffen hat
+    (`FALTUNG-OHNE-PERIODISCHEN-LAUF`).
+
+    **Der ganze Bestand, nicht die veralteten.** Welche Zeile veraltet ist,
+    waere nur mit einem Zeitstempel der letzten Faltung zu beantworten — den
+    gibt es nicht, und ein Schemawechsel dafuer waere teurer als die Rechnung.
+    Sie ist billig: ein Lesevorgang und ein `UPDATE` je Faden, ohne Modell und
+    ohne Netz.
+
+    **Die Vollstaendigkeit ist die eigentliche Zusicherung.** Zurueckgegeben
+    werden `gefaltet` **und** `gesamt`; sind sie gleich, traegt kein Faden einen
+    Wert, der aelter ist als der Lauf. Ohne die zweite Zahl waere ein Lauf ueber
+    die Haelfte des Bestandes von einem vollstaendigen nicht zu unterscheiden
+    (`22_STILLE_FEHLER`).
+
+    Vorbedingung: keine — ein leerer Bestand ist der Regelfall am Anfang.
+    Nachbedingung: Jeder Faden traegt einen `ausschlag_aktuell`, der auf
+    `jetzt` gerechnet ist; `gefaltet == gesamt`, wenn nichts ausfiel.
+    Fehlerfaelle: Ein Lesefehler wird gemeldet und liefert `gesamt = 0` mit
+    einem Text in `error`; ein Stapel, der ausfaellt, laesst die uebrigen
+    laufen — der Wert ist jederzeit neu rechenbar.
+
+    Args:
+        postgres_url: Verbindung.
+        jetzt: Bezugszeitpunkt der Rechnung; ohne Angabe die aktuelle Zeit.
+        stapel: Wie viele Faeden je Aufruf gerechnet werden.
+
+    Returns:
+        `{"gefaltet": int, "gesamt": int, "error": str | None}`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    bezug: datetime = jetzt or datetime.now(timezone.utc)
+    if stapel < 1:
+        logger.error(
+            f"Praegung: Stapelgroesse {stapel} ist unbrauchbar — der Lauf "
+            f"faellt aus, statt in eine Endlosschleife zu gehen"
+        )
+        return {"gefaltet": 0, "gesamt": 0, "error": f"stapel={stapel}"}
+
+    # ── Verarbeitung ───────────────────────────
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            cur.execute("SELECT id FROM praegung_faden ORDER BY id")
+            ids: list[int] = [int(z[0]) for z in cur.fetchall()]
+    except Exception as fehler:
+        logger.exception(
+            f"Praegung: Bestandslauf konnte die Faeden nicht lesen "
+            f"({type(fehler).__name__}) — kein Wert ist nachgefuehrt"
+        )
+        return {"gefaltet": 0, "gesamt": 0, "error": str(fehler)}
+
+    gefaltet: int = 0
+    for anfang in range(0, len(ids), stapel):
+        gefaltet += ausschlag_aktuell_nachfuehren(
+            postgres_url, ids[anfang:anfang + stapel], bezug,
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # **Die Luecke wird benannt, nicht verschwiegen.** Ein Lauf ueber 40 von 50
+    # Faeden sieht in der Zeile darunter aus wie einer ueber 40 von 40.
+    if gefaltet < len(ids):
+        logger.error(
+            f"Praegung: Bestandslauf hat {gefaltet} von {len(ids)} Faeden "
+            f"nachgefuehrt — die uebrigen tragen einen Wert von vorher; die "
+            f"Rechnung ist wiederholbar, der naechste Lauf holt sie"
+        )
+    else:
+        logger.info(
+            "Praegung: Bestandslauf hat alle %d Faeden nachgefuehrt", gefaltet,
+        )
+    return {
+        "gefaltet": gefaltet,
+        "gesamt":   len(ids),
+        "error":    None if gefaltet == len(ids) else "unvollstaendig",
+    }
+
+
 def beruehrung_aus_reaktivierung(
     postgres_url: str,
     user_id:      str,
