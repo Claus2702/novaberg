@@ -304,31 +304,41 @@ def beruehrung_aus_reaktivierung(
     postgres_url: str,
     user_id:      str,
     character_id: str,
-    knoten_ids:   list[int],
+    kandidaten:   list[tuple[str, list[float]]],
     schwelle:     float,
-) -> list[tuple[int, int, float]]:
+) -> list[tuple[str, int, float]]:
     """Frischt Faeden auf, die einer reaktivierten Erinnerung nahe stehen.
 
     **Der thematische Andockweg** (Konzept §7.12). Ein Faden traegt das
-    Embedding seines Segments; ein reaktivierter LZG-Knoten traegt seines. Liegen
+    Embedding seines Segments; eine reaktivierte Erinnerung traegt ihres. Liegen
     sie nah genug beieinander, ist die Erinnerung dieselbe Sache — und der Faden
     wird aufgefrischt statt zu verblassen.
 
-    **Je Knoten hoechstens ein Faden, und zwar der naechste.** Ein Knoten, der
-    zwei Faeden zugleich auffrischt, verdoppelt eine Reaktivierung; die
+    **Die Funktion nimmt Vektoren, keine Kennungen.** Bis zum 01.09.2026 nahm
+    sie LZG-Knoten-IDs und holte das Embedding per JOIN aus `lzg_knoten`. Damit
+    erreichte sie **den haeufigsten Fall nicht**: `[gemessen]` an diesem Tag
+    kamen ueber sieben Betriebsturns eines jungen Paars **alle** aktivierten
+    Gravitationspunkte aus dem **Kurzzeitgedaechtnis** — dort steht das
+    Embedding in Redis, nicht in der Tabelle. Die Begruendung *„eine
+    KZG-Reaktivierung hat kein Embedding"* war falsch; sie hat eines, nur an
+    einem anderen Ort. Wer den Vektor beschafft, weiss, woher er kommt — diese
+    Funktion muss es nicht wissen.
+
+    **Je Kandidat hoechstens ein Faden, und zwar der naechste.** Eine
+    Reaktivierung, die zwei Faeden auffrischt, verdoppelt ein Ereignis; die
     Auffuellregel (§7.4) zaehlt Ereignisse, nicht Aehnlichkeiten.
 
-    **Der strukturelle Andockweg fehlt.** §7.12 nennt zwei — thematische Naehe
-    und geteilte Qualitaets- oder Wert-Kante. Der zweite braucht die abstrakte
-    Schicht, und `lzg_knoten_haltung` traegt null Zeilen. Ferne Uebertragungen
-    (*Machtlosigkeit → Waffen*) sind damit heute nicht moeglich, nur nahe
-    (*SciFi-Episode → Heimcomputer*).
+    **Der strukturelle Andockweg fehlt weiterhin.** §7.12 nennt zwei — thematische
+    Naehe und geteilte Qualitaets- oder Wert-Kante. Der zweite braucht die
+    abstrakte Schicht, und `lzg_knoten_haltung` traegt null Zeilen. Ferne
+    Uebertragungen (*Machtlosigkeit → Waffen*) sind heute nicht moeglich, nur
+    nahe (*SciFi-Episode → Heimcomputer*).
 
-    Vorbedingung: `knoten_ids` sind LZG-Knoten; KZG-Reaktivierungen haben keine
-    Zeile in `lzg_knoten` und werden vom Aufrufer ausgesiebt.
+    Vorbedingung: `kandidaten` sind (Quellenkennung, Vektor)-Paare; die Kennung
+    wandert unveraendert in `praegung_beruehrung.quelle`.
     Nachbedingung: Je getroffenem Faden eine Zeile in `praegung_beruehrung`.
-    Rueckgabe ist die Liste (knoten_id, faden_id, Aehnlichkeit) — **auch fuer
-    die Auswertung gedacht**: Ohne sie waere nicht zu sagen, ob eine Reihe ohne
+    Rueckgabe ist die Liste (Kennung, Faden-ID, Aehnlichkeit) — **auch fuer die
+    Auswertung gedacht**: Ohne sie waere nicht zu sagen, ob eine Reihe ohne
     Beruehrungen an der Schwelle lag oder daran, dass es keine Faeden gibt.
     Fehlerfaelle: Ein Datenbankfehler wird gemeldet und liefert eine leere
     Liste; der Turn laeuft weiter, die Auffrischung faellt aus.
@@ -337,14 +347,14 @@ def beruehrung_aus_reaktivierung(
         postgres_url: Verbindung.
         user_id: Subjekt des Paars.
         character_id: Gegenueber des Paars.
-        knoten_ids: Die reaktivierten LZG-Knoten dieses Turns.
+        kandidaten: Die reaktivierten Erinnerungen als (Kennung, Vektor).
         schwelle: Mindestaehnlichkeit, ab der ein Faden als getroffen gilt.
 
     Returns:
-        Die angelegten Beruehrungen als (knoten_id, faden_id, Aehnlichkeit).
+        Die angelegten Beruehrungen als (Kennung, Faden-ID, Aehnlichkeit).
     """
     # ── Eingabe-Validierung ─────────────────────
-    if not knoten_ids:
+    if not kandidaten:
         return []
     if not user_id or not character_id:
         logger.error(
@@ -355,38 +365,49 @@ def beruehrung_aus_reaktivierung(
         return []
 
     # ── Verarbeitung ───────────────────────────
-    treffer: list[tuple[int, int, float]] = []
+    treffer: list[tuple[str, int, float]] = []
+    # **Auch die knappste Verfehlung wird gemeldet.** Eine Reihe ohne
+    # Beruehrungen sagt sonst nicht, ob die Schwelle um 0,01 oder um 0,30
+    # verfehlt wurde — und genau daran haengt, ob sie zu hoch steht.
+    verfehlt: list[tuple[str, int, float]] = []
     try:
         with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
-            for knoten_id in knoten_ids:
+            for kennung, vektor in kandidaten:
+                if not vektor:
+                    logger.error(
+                        f"Praegung: Reaktivierung '{kennung}' ohne Vektor — "
+                        f"uebersprungen; ohne ihn ist keine Naehe zu rechnen"
+                    )
+                    continue
+                vektor_str: str = "[" + ",".join(str(x) for x in vektor) + "]"
                 cur.execute(
                     """
-                    SELECT f.id, 1 - (f.embedding <=> k.embedding) AS naehe
-                    FROM praegung_faden f, lzg_knoten k
-                    WHERE k.id = %s
-                      AND f.user_id = %s AND f.character_id = %s
-                      AND f.embedding IS NOT NULL AND k.embedding IS NOT NULL
-                    ORDER BY f.embedding <=> k.embedding
+                    SELECT id, 1 - (embedding <=> %s::vector) AS naehe
+                    FROM praegung_faden
+                    WHERE user_id = %s AND character_id = %s
+                      AND embedding IS NOT NULL
+                    ORDER BY embedding <=> %s::vector
                     LIMIT 1
                     """,
-                    (knoten_id, user_id, character_id),
+                    (vektor_str, user_id, character_id, vektor_str),
                 )
                 zeile = cur.fetchone()
                 if zeile is None:
                     continue
                 faden_id, naehe = int(zeile[0]), float(zeile[1])
+                verfehlt.append((kennung, faden_id, naehe))
                 if naehe < schwelle:
                     continue
                 cur.execute(
                     "INSERT INTO praegung_beruehrung (faden_id, quelle) "
                     "VALUES (%s, %s)",
-                    (faden_id, f"lzg:{knoten_id}"),
+                    (faden_id, kennung),
                 )
-                treffer.append((knoten_id, faden_id, naehe))
+                treffer.append((kennung, faden_id, naehe))
     except Exception as fehler:
         logger.exception(
             f"Praegung: Auffrischung ausgefallen ({type(fehler).__name__}) — "
-            f"{len(knoten_ids)} Reaktivierung(en) ohne Wirkung auf die Faeden"
+            f"{len(kandidaten)} Reaktivierung(en) ohne Wirkung auf die Faeden"
         )
         return []
 
@@ -394,13 +415,20 @@ def beruehrung_aus_reaktivierung(
     if treffer:
         logger.info(
             "Praegung: %d von %d Reaktivierung(en) haben einen Faden getroffen — %s",
-            len(treffer), len(knoten_ids),
-            ", ".join(f"Knoten {k} -> Faden {f} ({n:.3f})" for k, f, n in treffer),
+            len(treffer), len(kandidaten),
+            ", ".join(f"{k} -> Faden {f} ({n:.3f})" for k, f, n in treffer),
         )
     else:
+        naechste: str = (
+            "; naechste: " + ", ".join(
+                f"{k} -> Faden {f} ({n:.3f})"
+                for k, f, n in sorted(verfehlt, key=lambda x: -x[2])[:3]
+            )
+            if verfehlt else " (kein Faden im Paar)"
+        )
         logger.info(
             "Praegung: keine der %d Reaktivierung(en) traf einen Faden "
-            "(Schwelle %.2f)", len(knoten_ids), schwelle,
+            "(Schwelle %.2f)%s", len(kandidaten), schwelle, naechste,
         )
     return treffer
 

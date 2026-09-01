@@ -37,7 +37,11 @@ Kein LLM-Call, kein I/O. Reine State-Transformation.
 
 import logging
 
-from config import POSTGRES_URL, PRAEGUNG_BERUEHRUNG_NAEHE
+import numpy as np
+import psycopg2
+import redis
+
+from config import POSTGRES_URL, PRAEGUNG_BERUEHRUNG_NAEHE, REDIS_URL
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.nodes.ei_calc import internal_emotion_uebertragen
 from graph.reiz import reiz_ist_eigener_gedanke
@@ -46,6 +50,120 @@ from memory.pipeline_log import log_berechnung
 from memory.praegung import beruehrung_aus_reaktivierung
 
 logger = logging.getLogger("ki_server.emotionale_gravitation")
+
+
+def _roh_redis() -> redis.Redis:
+    """Ein Redis-Client ohne Dekodierung — Embeddings sind Float32-Bytes.
+
+    Der Standard-Client dekodiert alles zu Text und macht aus dem Vektor Muell.
+    Dieselbe Bauart wie in `ei/gravitation.py`, wo der Gravitations-Scan
+    denselben Wert liest.
+    """
+    return redis.from_url(REDIS_URL, decode_responses=False)
+
+
+def _lzg_vektoren(ids: list[int]) -> list[tuple[str, list[float]]]:
+    """Die Embeddings der reaktivierten Langzeit-Knoten, in einem Zug.
+
+    Fehlerfaelle: Faellt die Abfrage aus, wird gemeldet und leer geliefert; die
+    Kurzzeit-Seite laeuft unabhaengig weiter.
+    """
+    if not ids:
+        return []
+    try:
+        with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, embedding FROM lzg_knoten "
+                "WHERE id = ANY(%s) AND embedding IS NOT NULL",
+                (ids,),
+            )
+            return [(f"lzg:{knoten_id}", _vektor_lesen(roh))
+                    for knoten_id, roh in cur.fetchall()]
+    except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+        logger.exception(
+            f"EmGrav-Node: LZG-Vektoren nicht lesbar ({type(fehler).__name__}) "
+            f"— {len(ids)} Reaktivierung(en) ohne Wirkung auf die Faeden"
+        )
+        return []
+
+
+def _kzg_vektoren(keys: list[str]) -> list[tuple[str, list[float]]]:
+    """Die Embeddings der reaktivierten Kurzzeit-Eintraege aus Redis.
+
+    Sie liegen als Float32-Bytes im Hash-Feld `embedding` und brauchen deshalb
+    einen Client ohne Dekodierung.
+
+    Fehlerfaelle: Ein Eintrag ohne lesbaren Vektor wird gemeldet und
+    uebersprungen; die uebrigen laufen weiter.
+    """
+    if not keys:
+        return []
+    roh_client = _roh_redis()
+    gefunden: list[tuple[str, list[float]]] = []
+    for key in keys:
+        try:
+            roh_bytes = roh_client.hget(key, "embedding")
+        except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+            logger.exception(
+                f"EmGrav-Node: KZG-Vektor '{key}' nicht lesbar "
+                f"({type(fehler).__name__}) — uebersprungen"
+            )
+            continue
+        if not roh_bytes:
+            logger.error(
+                f"EmGrav-Node: KZG-Eintrag '{key}' traegt kein Embedding — "
+                f"uebersprungen; die Reaktivierung kann keinen Faden treffen"
+            )
+            continue
+        gefunden.append(
+            (f"kzg:{key}", np.frombuffer(roh_bytes, dtype=np.float32).tolist())
+        )
+    return gefunden
+
+
+def _vektoren_der_punkte(punkte: list[dict]) -> list[tuple[str, list[float]]]:
+    """Holt zu jedem Gravitationspunkt seinen Vektor — aus beiden Speichern.
+
+    **Der Vektor liegt je nach Quelle woanders**, und beide tragen einen:
+
+    | Quelle | Ort |
+    |---|---|
+    | `lzg` | `lzg_knoten.embedding` in PostgreSQL |
+    | `kzg` | Feld `embedding` im Redis-Hash, Float32-Bytes |
+
+    `[gemessen]` 01.09.2026: Ueber sieben Betriebsturns eines jungen Paars kamen
+    **alle** aktivierten Punkte aus dem Kurzzeitgedaechtnis. Eine Auffrischung,
+    die nur LZG liest, erreicht damit genau den Fall nicht, der eintritt —
+    solange das Langzeitgedaechtnis eines Paars duenn ist, und das ist es am
+    Anfang immer.
+
+    Vorbedingung: `punkte` tragen `quelle` und `knoten_id`.
+    Nachbedingung: Je Punkt hoechstens ein Paar (Kennung, Vektor). Die Kennung
+    hat die Form `lzg:{id}` oder `kzg:{key}` und wandert in
+    `praegung_beruehrung.quelle` — **ohne sie waere im Nachhinein nicht zu
+    sagen, was einen Faden aufgefrischt hat**.
+    Fehlerfaelle: Keine eigenen; beide Seiten melden selbst.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    lzg_ids: list[int] = [
+        int(p["knoten_id"]) for p in punkte
+        if p.get("quelle") == "lzg" and p.get("knoten_id") is not None
+    ]
+    kzg_keys: list[str] = [
+        str(p["knoten_id"]) for p in punkte
+        if p.get("quelle") == "kzg" and p.get("knoten_id") is not None
+    ]
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return _lzg_vektoren(lzg_ids) + _kzg_vektoren(kzg_keys)
+
+
+def _vektor_lesen(roh: object) -> list[float]:
+    """Ein pgvector-Wert als Liste — er kommt je nach Treiber als Text."""
+    if isinstance(roh, (list, tuple)):
+        return [float(x) for x in roh]
+    text: str = str(roh).strip().strip("[]")
+    return [float(x) for x in text.split(",")] if text else []
 
 
 def _faeden_auffrischen(state: ConversationState, punkte: list[dict]) -> None:
@@ -63,18 +181,15 @@ def _faeden_auffrischen(state: ConversationState, punkte: list[dict]) -> None:
     dieselbe Klasse wie ein Tor, dessen Neins niemand zaehlt.
     """
     # ── Eingabe-Validierung ─────────────────────
-    lzg_ids: list[int] = [
-        int(p["knoten_id"]) for p in punkte
-        if p.get("quelle") == "lzg" and p.get("knoten_id") is not None
-    ]
-    if not lzg_ids:
+    kandidaten: list[tuple[str, list[float]]] = _vektoren_der_punkte(punkte)
+    if not kandidaten:
         return
 
     # ── Verarbeitung ────────────────────────────
     treffer = beruehrung_aus_reaktivierung(
         POSTGRES_URL,
         state.get("user_id", ""), state.get("character_id", ""),
-        lzg_ids, PRAEGUNG_BERUEHRUNG_NAEHE,
+        kandidaten, PRAEGUNG_BERUEHRUNG_NAEHE,
     )
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -84,10 +199,10 @@ def _faeden_auffrischen(state: ConversationState, punkte: list[dict]) -> None:
         quelle  = pipeline_quelle(state),
         inhalt  = {
             "schritt":    "praegung_auffrischung",
-            "kandidaten": len(lzg_ids),
+            "kandidaten": len(kandidaten),
             "schwelle":   PRAEGUNG_BERUEHRUNG_NAEHE,
             "treffer":    [
-                {"knoten_id": k, "faden_id": f, "naehe": round(n, 3)}
+                {"quelle": k, "faden_id": f, "naehe": round(n, 3)}
                 for k, f, n in treffer
             ],
         },

@@ -32,6 +32,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 
+import numpy as np
 import psycopg2
 
 from config import POSTGRES_URL
@@ -103,7 +104,7 @@ class AuffrischungTest(unittest.TestCase):
     def test_ein_naher_knoten_frischt_den_faden_auf(self) -> None:
         treffer = beruehrung_aus_reaktivierung(
             POSTGRES_URL, self.USER, self.CHAR,
-            [self.knoten["nah"]], self.SCHWELLE,
+            [(f"lzg:{self.knoten['nah']}", NAH_B)], self.SCHWELLE,
         )
         self.assertEqual(
             len(treffer), 1,
@@ -115,7 +116,7 @@ class AuffrischungTest(unittest.TestCase):
     def test_ein_ferner_knoten_frischt_nicht_auf(self) -> None:
         treffer = beruehrung_aus_reaktivierung(
             POSTGRES_URL, self.USER, self.CHAR,
-            [self.knoten["fern"]], self.SCHWELLE,
+            [(f"lzg:{self.knoten['fern']}", FERN)], self.SCHWELLE,
         )
         self.assertEqual(
             treffer, [],
@@ -136,7 +137,7 @@ class AuffrischungTest(unittest.TestCase):
             )
         treffer = beruehrung_aus_reaktivierung(
             POSTGRES_URL, self.USER, self.CHAR,
-            [self.knoten["nah"]], self.SCHWELLE,
+            [(f"lzg:{self.knoten['nah']}", NAH_B)], self.SCHWELLE,
         )
         self.assertEqual(
             len(treffer), 1,
@@ -147,7 +148,7 @@ class AuffrischungTest(unittest.TestCase):
     def test_ohne_vollstaendiges_paar_wird_abgelehnt(self) -> None:
         self.assertEqual(
             beruehrung_aus_reaktivierung(
-                POSTGRES_URL, self.USER, "", [self.knoten["nah"]], self.SCHWELLE,
+                POSTGRES_URL, self.USER, "", [(f"lzg:{self.knoten['nah']}", NAH_B)], self.SCHWELLE,
             ),
             [],
             "Ohne Gegenueber angelegt — eine Praegung gehoert einer Beziehung",
@@ -157,7 +158,7 @@ class AuffrischungTest(unittest.TestCase):
     def test_die_quelle_nennt_den_knoten(self) -> None:
         beruehrung_aus_reaktivierung(
             POSTGRES_URL, self.USER, self.CHAR,
-            [self.knoten["nah"]], self.SCHWELLE,
+            [(f"lzg:{self.knoten['nah']}", NAH_B)], self.SCHWELLE,
         )
         zeilen = self._beruehrungen()
         self.assertEqual(len(zeilen), 1)
@@ -166,6 +167,36 @@ class AuffrischungTest(unittest.TestCase):
             "Die Quelle nennt den ausloesenden Knoten nicht — im Nachhinein "
             "waere nicht zu sagen, was den Faden aufgefrischt hat",
         )
+
+    def test_eine_kzg_reaktivierung_trifft_genauso(self) -> None:
+        """Der haeufigste Fall — und bis zum 01.09.2026 der ausgeschlossene.
+
+        Die erste Fassung nahm LZG-Knoten-IDs und holte das Embedding per JOIN
+        aus `lzg_knoten`. `[gemessen]` am 01.09.2026 ueber sieben Betriebsturns
+        eines jungen Paars: **alle** aktivierten Gravitationspunkte trugen
+        `quelle=kzg`. Die Auffrischung lief nie, obwohl die Reaktivierung lief.
+        """
+        treffer = beruehrung_aus_reaktivierung(
+            POSTGRES_URL, self.USER, self.CHAR,
+            [("kzg:scheibe2probe:nova:1788243800173", NAH_B)], self.SCHWELLE,
+        )
+        self.assertEqual(
+            len(treffer), 1,
+            "Eine KZG-Reaktivierung hat den Faden nicht getroffen — bei einem "
+            "jungen Paar kommt fast jede Reaktivierung von dort",
+        )
+        zeilen = self._beruehrungen()
+        self.assertEqual(zeilen[0][1], "kzg:scheibe2probe:nova:1788243800173")
+
+    def test_ein_kandidat_ohne_vektor_wird_gemeldet(self) -> None:
+        """Ohne Vektor ist keine Naehe zu rechnen — das faellt nicht still aus."""
+        with self.assertLogs("ki_server.praegung", level="ERROR") as protokoll:
+            treffer = beruehrung_aus_reaktivierung(
+                POSTGRES_URL, self.USER, self.CHAR,
+                [("lzg:999", [])], self.SCHWELLE,
+            )
+        self.assertEqual(treffer, [])
+        self.assertIn("ohne Vektor", protokoll.output[0])
 
     def test_ohne_faeden_passiert_nichts_und_es_bricht_nicht(self) -> None:
         """Der Regelfall zu Beginn: Es gibt noch keine Faeden."""
@@ -176,10 +207,60 @@ class AuffrischungTest(unittest.TestCase):
         self.assertEqual(
             beruehrung_aus_reaktivierung(
                 POSTGRES_URL, self.USER, self.CHAR,
-                [self.knoten["nah"]], self.SCHWELLE,
+                [(f"lzg:{self.knoten['nah']}", NAH_B)], self.SCHWELLE,
             ),
             [],
         )
+
+
+class DerNodeReichtBeideQuellenWeiterTest(unittest.TestCase):
+    """Die **Verwendung**: Holt der Node auch Kurzzeit-Vektoren?
+
+    Ein Zeuge auf `beruehrung_aus_reaktivierung` allein bleibt gruen, wenn der
+    Node ihr nur LZG-Punkte reicht — genau der Zustand vom 01.09.2026, in dem
+    die Reaktivierung lief und die Auffrischung nie
+    (`novaberg-lesson_l_zeuge-prueft-die-funktion-nicht-ihre-verwendung.md`).
+    """
+
+    KEY: str = "kzg:test-auffrischung:nova:1"
+
+    def setUp(self) -> None:
+        import redis
+
+        from config import REDIS_URL
+        self.roh = redis.from_url(REDIS_URL, decode_responses=False)
+        self.roh.hset(
+            self.KEY, "embedding",
+            np.array(NAH_B, dtype=np.float32).tobytes(),
+        )
+
+    def tearDown(self) -> None:
+        self.roh.delete(self.KEY)
+
+    def test_ein_kzg_punkt_kommt_mit_seinem_vektor_an(self) -> None:
+        from graph.nodes.emotionale_gravitation import _vektoren_der_punkte
+
+        kandidaten = _vektoren_der_punkte([
+            {"quelle": "kzg", "knoten_id": self.KEY, "emotion": "freude"},
+        ])
+        self.assertEqual(
+            len(kandidaten), 1,
+            "Der Node reicht Kurzzeit-Reaktivierungen nicht weiter — bei einem "
+            "jungen Paar kommt fast jede von dort",
+        )
+        kennung, vektor = kandidaten[0]
+        self.assertEqual(kennung, f"kzg:{self.KEY}")
+        self.assertEqual(len(vektor), 768)
+
+    def test_ein_kzg_eintrag_ohne_embedding_wird_gemeldet(self) -> None:
+        from graph.nodes.emotionale_gravitation import _vektoren_der_punkte
+
+        with self.assertLogs("ki_server.emotionale_gravitation", level="ERROR") as p:
+            kandidaten = _vektoren_der_punkte([
+                {"quelle": "kzg", "knoten_id": "kzg:gibt-es-nicht:nova:9"},
+            ])
+        self.assertEqual(kandidaten, [])
+        self.assertIn("kein Embedding", p.output[0])
 
 
 if __name__ == "__main__":

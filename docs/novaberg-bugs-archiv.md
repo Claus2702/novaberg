@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 1. September 2026 — `FADEN-EMBEDDING-VERDUENNT` am Tag seines Befundes behoben und abgelegt. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** **53 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 1. September 2026 — `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT` am Tag ihres Befundes behoben und abgelegt. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Inhalt:** **54 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -29,6 +29,36 @@
 Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste ist ein
 **Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat**; der zweite
 ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
+
+### `PROMOTION-NUR-EIN-PAAR` — der periodische Lauf erreichte genau eine Queue
+
+**Zustand:** behoben am 01.09.2026, am selben Tag gefunden. Zeugen: `tests/test_promotion_alle_paare.py`.
+
+**Symptom.** `SynapsenPromotionAgent.invoke` waehlte seine Warteschlange so:
+
+    user_id = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
+
+Der **periodische** Pixie-Lauf uebergibt keinen Kontext. Der Agent nahm den Rueckfall `meister`, sah in `queue:meister` nach und meldete alle fuenf Minuten *„Queue leer — nichts zu tun"*. **Die Meldung stimmte fuer das Paar, in das er schaute** — und genau deshalb fiel nichts auf.
+
+**Der Bestand am Tag des Befundes:** 13 Promotionsauftraege ueber fuenf Paare.
+
+| Paar | Auftraege | LZG-Knoten davor |
+|---|---|---|
+| `nmcp_probe` | 5 | 0 |
+| `b1_live` | 2 | 0 |
+| `nmcp_live` | 2 | 0 |
+| `sektorprobe` | 2 | 0 |
+| `scheibe2probe` | 2 | 0 |
+
+Zwei der Auftraege waren zwei Minuten alt, elf standen laenger.
+
+**Warum das mehr ist als ein Rueckstand.** Der KZG-Hash hat eine TTL von sieben bis dreissig Tagen. Was nicht promotet wird, verfaellt — **fuer jedes Paar ausser dem Standard entstand nie ein Langzeitgedaechtnis**, und alles, was darauf aufbaut, lief ins Leere: die emotionale Gravitation findet nichts zu reaktivieren, und die Praegungsschicht bekommt keine Beruehrungen. Der Defekt wurde gefunden, weil der Betriebsbeleg fuer die Verstaerkung nicht zustande kam.
+
+**Behebung.** Der Rumpf ist jetzt `_paar_abarbeiten(user_id)`; `invoke` iteriert. Ein gezielter Aufruf bleibt bei seinem Paar, ein periodischer nimmt alle mit Auftraegen (`_paare_mit_auftraegen`, Nebenlisten wie `:arbeit` ausgenommen). Ein Fehler in einem Paar stoppt die uebrigen nicht.
+
+**Gemessen nach dem Bau:** Queue 2 → 0 und LZG 0 → 2 innerhalb von 90 Sekunden; ueber alle fuenf Paare flossen alle 13 Auftraege ab, das Langzeitgedaechtnis traegt jetzt 13 Knoten, wo vorher keiner stand.
+
+**Die Klasse:** Ein Vorgabewert an der Stelle, an der die Eingabe fehlt, macht aus *„nichts angegeben"* ein *„dieses eine"*. Verwandt mit `novaberg-lesson_l_default-wie-fehlschlag.md` — dort sieht ein Default wie ein Fehlschlag aus, hier sieht ein **fehlender Parameter** wie eine getroffene Wahl aus.
 
 ### `FADEN-EMBEDDING-VERDUENNT` — der Faden trug den Turn, nicht sein Segment
 

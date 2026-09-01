@@ -173,7 +173,69 @@ class SynapsenPromotionAgent(BaseAgent):
             was in diesem Lauf gescheitert ist — beim naechsten Lauf wird es
             zurueckgelegt und erneut versucht.
         """
-        user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
+        # **Ohne ausdrueckliche `user_id` laufen alle Paare mit Auftraegen.**
+        # Der periodische Pixie-Lauf uebergibt keinen Kontext; bis zum
+        # 01.09.2026 fiel er deshalb auf DEFAULT_USER_ID zurueck und sah in
+        # genau einer Queue nach. `[gemessen]` an dem Tag: 13 Auftraege ueber
+        # fuenf Paare lagen unbearbeitet, elf davon aelter als der Befund. Fuer
+        # jedes Paar ausser dem Standard hiess das: Der KZG-Hash ueberlebt
+        # seine TTL und wird nie promotet — das Langzeitgedaechtnis bleibt leer,
+        # und mit ihm jede Reaktivierung, die darauf aufbaut.
+        gewaehlt: str = state["kontext"].get("user_id", "")
+        paare: list[str] = [gewaehlt] if gewaehlt else self._paare_mit_auftraegen()
+
+        gesamt: dict[str, int] = {
+            "promotet": 0, "fehler": 0, "zurueckgelegt": 0, "endgueltig": 0,
+        }
+        for paar in paare:
+            teil = self._paar_abarbeiten(paar)
+            for name in gesamt:
+                gesamt[name] += teil[name]
+
+        state["ergebnis"] = gesamt
+        state["status"] = "abgeschlossen"
+        return state
+
+    def _paare_mit_auftraegen(self) -> list[str]:
+        """Die Paare, deren Warteschlange mindestens einen Auftrag traegt.
+
+        **Die Arbeitslisten sind ausgenommen** (`:arbeit`, `:gescheitert`,
+        `:versuche`): Sie tragen keine wartenden Auftraege, und ein Paar allein
+        aus ihnen abzuleiten hiesse, einen Rest als Arbeit zu zaehlen.
+
+        Vorbedingung: keine.
+        Nachbedingung: Jede Kennung kommt hoechstens einmal vor.
+        Fehlerfaelle: Faellt der Scan aus, wird gemeldet und auf das
+        Standard-Paar zurueckgefallen — ein Lauf ueber eines ist besser als
+        keiner, aber er sagt es.
+        """
+        # ── Verarbeitung ────────────────────────────
+        try:
+            gefunden: list[str] = []
+            for schluessel in redis_client.scan_iter(match="queue:*", count=200):
+                name: str = (schluessel.decode() if isinstance(schluessel, bytes)
+                             else str(schluessel))
+                rest: str = name[len("queue:"):]
+                if not rest or ":" in rest:
+                    continue
+                gefunden.append(rest)
+        except Exception as fehler:  # noqa: BLE001 — der Heartbeat geht vor
+            logger.exception(
+                f"Synapsen-Promotion: Queues nicht auffindbar "
+                f"({type(fehler).__name__}) — Rueckfall auf '{DEFAULT_USER_ID}', "
+                f"andere Paare bleiben diesen Lauf unbearbeitet"
+            )
+            return [DEFAULT_USER_ID]
+
+        # ── Ausgabe-Verifikation ────────────────────
+        return sorted(set(gefunden))
+
+    def _paar_abarbeiten(self, user_id: str) -> dict[str, int]:
+        """Arbeitet die Warteschlange **eines** Paars ab.
+
+        Der Rumpf stand bis zum 01.09.2026 unmittelbar in `invoke` und war
+        damit auf ein Paar festgelegt.
+        """
         queue_key: str = f"queue:{user_id}"
         arbeit_key: str = f"{queue_key}:arbeit"
         promotet: int = 0
@@ -262,12 +324,10 @@ class SynapsenPromotionAgent(BaseAgent):
         else:
             logger.debug("Synapsen-Promotion: Queue leer — nichts zu tun")
 
-        state["ergebnis"] = {
+        return {
             "promotet": promotet, "fehler": fehler,
             "zurueckgelegt": zurueckgelegt, "endgueltig": endgueltig,
         }
-        state["status"] = "abgeschlossen"
-        return state
 
     # ─────────────────────────────────────────
     # Eintrag verarbeiten (EVA)

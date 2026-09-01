@@ -92,12 +92,42 @@ Reaktivierung bis zur Zahl ist geschlossen:
   Qualitäts- oder Wert-Kante. Der zweite braucht die abstrakte Schicht, und
   `lzg_knoten_haltung` trägt null Zeilen. Ferne Übertragungen (*Machtlosigkeit → Waffen*) sind
   damit heute nicht möglich, nur nahe (*SciFi-Episode → Heimcomputer*).
-- **Nur LZG-Reaktivierungen.** Eine KZG-Reaktivierung hat keine Zeile in `lzg_knoten` und damit
-  kein Embedding, gegen das sich ein Faden vergleichen ließe.
+- ~~**Nur LZG-Reaktivierungen.**~~ → **Behoben am 01.09.2026, noch am selben Tag.** Die
+  Begründung war falsch: Ein KZG-Eintrag trägt sehr wohl ein Embedding, nur in Redis statt in
+  der Tabelle. `[gemessen]` über sieben Betriebsturns eines jungen Paars kamen **alle**
+  aktivierten Gravitationspunkte aus dem Kurzzeitgedächtnis — die Einschränkung traf damit
+  genau den Fall, der eintritt. Die Zuordnung nimmt jetzt Vektoren statt Kennungen; wer sie
+  beschafft, weiß, woher sie kommen.
 
-**Der Betriebsbeleg steht aus.** Es gibt bisher keinen Faden im Bestand; die Zeugen fahren gegen
-die Datenbank mit gesetzten Vektoren, und die Faltung gegen die gerechnete Tabelle des Konzepts.
-Was fehlt, ist ein Turn, der durchs Tor kommt, und danach eine Reaktivierung, die ihn trifft.
+### Der Betriebsbeleg, 01.09.2026
+
+`[gemessen]` über drei Reihen und zehn Turns an einem frischen Paar:
+
+| | |
+|---|---|
+| **Torprüfungen** | 10 — **4 durch, 6 abgelehnt** |
+| abgelehnt an der Salienz | 5 |
+| abgelehnt am Ausschlag | 1 |
+| **Fäden entstanden** | 4, alle mit `embedding_quelle = segment` |
+| **Ausschlag über die Reihe** | 0,26 · 0,53 · 0,70 · 0,75 · 0,94 · **1,00** |
+| **Auffrischung gerufen** | 3-mal, je 2 Kandidaten |
+| **Berührungen entstanden** | **0** |
+
+**Beide Torbedingungen greifen einzeln** — das konnten sie vorher nicht: Vor der
+Reizstärke-Kalibrierung ließ das Tor 31 von 31 durch, danach 0 von 31. Und der Ausschlag
+bewegt sich jetzt über die ganze Skala bis zum Anschlag; er stand vorher konstant auf 0,77
+oder 1,00.
+
+**Die Berührung fehlt, und der Grund ist beziffert.** Von 22 KZG-Einträgen des Paars liegen
+**vier über der Nähe-Schwelle** (0,739 · 0,731 · 0,684 · 0,682) — die Schwelle ist also
+erreichbar. Die zwei Einträge, die der Gravitations-Node in diesen drei Turns aktiviert hat,
+gehörten nicht dazu; ihre beste Nähe lag bei 0,56. **Was fehlt, ist kein Bauteil, sondern ein
+Zusammentreffen**: eine Reaktivierung, die zufällig einen der nahen Einträge wählt.
+
+Damit die nächste Reihe das nicht wieder mit einem Sonderskript messen muss, nennt die
+Log-Zeile seit dem 01.09.2026 auch die **verfehlte** Nähe — die drei nächsten Fäden mit ihrem
+Abstand. Eine Reihe ohne Berührungen sagte sonst nicht, ob die Schwelle um 0,01 oder um 0,30
+verfehlt wurde.
 
 **Das Embedding ist seit dem 01.09.2026 scharf.** Salienz und Emotion des Fadens kamen schon
 immer aus dem stärksten Segment, mit der ausdrücklichen Begründung, ein Mittel verdünne den

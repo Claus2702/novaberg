@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 31. August 2026 — juengster Eintrag **22:25 UTC** (gemessen via `date -u`). Davor 31.08.2026, 21:35 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **10:50 UTC** (gemessen via `date -u`). Davor 31.08.2026, 22:25 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,54 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 10:50 UTC — Der Betriebsbeleg, und zwei Defekte auf dem Weg dorthin ✅
+
+Die Kette von Scheibe 2 war gebaut und getestet, aber nie gelaufen. Der Versuch, sie im Betrieb zu belegen, foerderte **zwei Defekte** zutage — und beide standen zwischen ihr und jedem Beleg.
+
+### `PROMOTION-NUR-EIN-PAAR` — 13 Auftraege ueber fuenf Paare, unbearbeitet
+
+Der periodische Promotions-Lauf las
+
+    user_id = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
+
+und der Heartbeat uebergibt keinen Kontext. Der Agent nahm `meister`, sah in dessen Queue nach und meldete alle fuenf Minuten *„Queue leer — nichts zu tun"*. **Die Meldung stimmte fuer das Paar, in das er schaute.**
+
+`nmcp_probe` 5 · `b1_live` 2 · `nmcp_live` 2 · `sektorprobe` 2 · `scheibe2probe` 2 — und alle fuenf Paare hatten **null** LZG-Knoten. Der KZG-Hash verfaellt nach sieben bis dreissig Tagen; fuer jedes Paar ausser dem Standard entstand nie ein Langzeitgedaechtnis, und alles, was darauf aufbaut, lief ins Leere.
+
+**Nach dem Bau gemessen:** Queue 2 → 0 und LZG 0 → 2 in 90 Sekunden, ueber alle fuenf Paare 13 Knoten, wo vorher keiner stand.
+
+> **Ein Vorgabewert an der Stelle, an der die Eingabe fehlt, macht aus *nichts angegeben* ein *dieses eine*.**
+
+### Die Auffrischung erreichte den haeufigsten Fall nicht
+
+Auch mit LZG-Knoten kam keine Beruehrung zustande. Der Grund stand im Log: *„2 von 11 Kandidaten aktiviert"* — beide mit `quelle=kzg`. Die Zuordnung las nur LZG, begruendet mit *„eine KZG-Reaktivierung hat kein Embedding"*.
+
+**Die Begruendung war falsch.** Ein KZG-Eintrag traegt eines, nur in Redis statt in der Tabelle. Und ueber sieben Betriebsturns eines jungen Paars kamen **alle** aktivierten Punkte von dort — solange das Langzeitgedaechtnis duenn ist, und das ist es am Anfang immer. Die Funktion nimmt jetzt **Vektoren statt Kennungen**; wer sie beschafft, weiss, woher sie kommen.
+
+### Was zehn Turns gezeigt haben
+
+| | |
+|---|---|
+| Torpruefungen | 10 — **4 durch, 6 abgelehnt** (5-mal an der Salienz, 1-mal am Ausschlag) |
+| Faeden | **4**, alle mit `embedding_quelle = segment` |
+| Ausschlag ueber die Reihe | 0,26 · 0,53 · 0,70 · 0,75 · 0,94 · **1,00** |
+| Auffrischung gerufen | 3-mal, je 2 Kandidaten |
+| Beruehrungen | **0** |
+
+**Beide Torbedingungen greifen einzeln** — vor der Reizstaerke-Kalibrierung liess das Tor 31 von 31 durch, danach 0 von 31. Und der Ausschlag laeuft ueber die ganze Skala bis zum Anschlag; er stand vorher konstant auf 0,77 oder 1,00.
+
+**Die Beruehrung fehlt, und der Grund ist beziffert.** Von 22 KZG-Eintraegen des Paars liegen **vier ueber der Naehe-Schwelle** (0,739 · 0,731 · 0,684 · 0,682). Die zwei, die der Gravitations-Node in diesen Turns aktivierte, gehoerten nicht dazu — ihre beste Naehe lag bei 0,56. **Was fehlt, ist kein Bauteil, sondern ein Zusammentreffen.**
+
+Damit die naechste Reihe das nicht wieder mit einem Sonderskript messen muss, nennt die Log-Zeile jetzt auch die **verfehlte** Naehe.
+
+### Und ein bekannter Defekt zeigte sich im Betrieb
+
+Turn 7 perzipierte `überrascht` — mit Umlaut, ausserhalb des Kanons. Der Ausschlag stand auf **0,00**, weil die Emotion im Verlauf nicht gefunden wird. `PERZEPTION-EMOTION-AUSSER-KANON` mit sichtbarer Folge: Ein Turn mit dieser Emotion kann das Tor nie passieren.
+
+**Suite 2768 → 2772 gruen, 0 uebersprungen.** Gegenproben: 3 vorhergesagt und 3 gezaehlt beim Promotions-Fix; beim KZG-Weg **1 vorhergesagt, 0 gezaehlt** — der Zeuge prueste die Funktion statt ihrer Verwendung, und erst ein zweiter auf `_vektoren_der_punkte` fing den Eingriff.
 
 ---
 
