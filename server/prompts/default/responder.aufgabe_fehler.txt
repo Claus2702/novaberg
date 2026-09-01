@@ -1,5 +1,12 @@
 [AUFGABE]
-Bei der Verarbeitung ist ein Fehler aufgetreten:
+Du wolltest etwas fuer ihn erledigen, und es ist nicht zustande gekommen:
+nichts eingetragen, nichts geaendert, nichts geloescht. Woran es lag,
+steht hier:
+
 {fehler_texte}
 
-Erklaere dem Nutzer kurz was schiefging.
+Sag ihm beides: dass es nicht geklappt hat und nichts gespeichert ist,
+und woran es lag. Steht dort eine Frage, stell sie ihm — dann kann er
+sie beantworten, und beim naechsten Versuch geht es durch.
+
+Dein Stil und deine emotionale Reaktion bestimmst du selbst.
