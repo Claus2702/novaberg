@@ -1296,6 +1296,36 @@ CREATE TABLE IF NOT EXISTS praegung_strang (
     erster_faden  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     letzter_faden TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
+    -- Das Sektor-Histogramm (Konzept §7.8). **Nicht der Mittelwert:** Sektor 1
+    -- und Sektor 5 ergaeben gemittelt *neutral*, und die Ambivalenz — der
+    -- interessante Fall — waere ausgeloescht.
+    --
+    -- **Es zaehlt Faeden und gewichtet sie nicht mit `ausschlag_aktuell`.** Die
+    -- Intensitaet hat ihren eigenen Platz in der Ladung (`W_SPITZE`); ein
+    -- Histogramm, das Faerbung und Staerke mischt, ist eine Zahl mit zwei
+    -- Wirkungen.
+    --
+    -- **Die acht Zahlen bleiben stehen, nicht nur ihre Kennzahlen** (Quelle vor
+    -- Destillat): Mit ihnen ist jede spaetere Kennzahl nachrechenbar, ohne sie
+    -- braucht jede neue eine Migration. `sektor_dominant`, `konzentration` und
+    -- `valenz` sind Destillate und werden bei jedem Beitritt neu gerechnet —
+    -- anders als das Zentroid, das fortgeschrieben wird: Hier sind es acht
+    -- Zahlen aus einem GROUP BY, und eine Neuberechnung kann nicht driften.
+    sektor_histogramm INTEGER[]       NOT NULL DEFAULT '{0,0,0,0,0,0,0,0}',
+    sektor_dominant   INTEGER,
+    konzentration     DOUBLE PRECISION,
+
+    -- Anteil positiver minus Anteil negativer Sektoren, auf [-1, 1].
+    -- **Sektor 4 (Ueberraschung) zaehlt in keine Richtung** — `SEKTOR_GRUPPE`
+    -- fuehrt ihn als neutral, er ist die Haelfte der Awe-Dyade, und ihn einer
+    -- Seite zuzuschlagen waere eine Setzung, die das Konzept nicht macht.
+    --
+    -- **Valenz ist nicht Richtung.** Zwei negative Praegungen koennen
+    -- entgegengesetzte Richtungen haben (§7.7: Machtlosigkeit → Annaeherung,
+    -- Furcht vor der Dunkelheit → Vermeidung). Die Richtung braucht die
+    -- Annaeherungs-Tabelle und ist nicht gebaut.
+    valenz            DOUBLE PRECISION,
+
     name          TEXT
 );
 

@@ -20,12 +20,14 @@ from datetime import datetime, timezone
 import psycopg2
 
 from config import (
+    EMOTION_SEKTOR_MAP,
     PRAEGUNG_ALPHA,
     PRAEGUNG_BODEN,
     PRAEGUNG_HALBSTRECKE,
     PRAEGUNG_STRANG_NAEHE,
     PRAEGUNG_TOR_AUSSCHLAG,
     PRAEGUNG_TOR_SALIENZ,
+    SEKTOR_GRUPPE,
 )
 
 logger = logging.getLogger("ki_server.praegung")
@@ -275,6 +277,7 @@ def strang_zuordnen(postgres_url: str, faden_id: int) -> int | None:
         logger.error(f"Praegung: Strangzuordnung abgelehnt — faden_id={faden_id}")
         return None
 
+    beigetreten: bool = False
     try:
         with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
             cur.execute(
@@ -358,27 +361,28 @@ def strang_zuordnen(postgres_url: str, faden_id: int) -> int | None:
                     f"naehe={naehe:.4f} >= {PRAEGUNG_STRANG_NAEHE}, "
                     f"jetzt {faden_zahl + 1} Faeden"
                 )
-                return strang_id
+                beigetreten = True
 
-            # Kein Strang nah genug: Der Faden gruendet einen. Sein Vektor ist
-            # das erste Zentroid — ein Strang aus einem Faden ist der Regelfall
-            # am Anfang und kein Sonderfall.
-            cur.execute(
-                """
-                INSERT INTO praegung_strang
-                    (user_id, character_id, beobachter, zentroid, faden_zahl,
-                     erster_faden, letzter_faden)
-                VALUES (%s, %s, %s, %s::vector, 1, %s, %s)
-                RETURNING id
-                """,
-                (user_id, character_id, beobachter,
-                 _vektor_schreiben(faden_vektor), entstanden_am, entstanden_am),
-            )
-            strang_id = cur.fetchone()[0]
-            cur.execute(
-                "UPDATE praegung_faden SET strang_id = %s WHERE id = %s",
-                (strang_id, faden_id),
-            )
+            else:
+                # Kein Strang nah genug: Der Faden gruendet einen. Sein Vektor
+                # ist das erste Zentroid — ein Strang aus einem Faden ist der
+                # Regelfall am Anfang und kein Sonderfall.
+                cur.execute(
+                    """
+                    INSERT INTO praegung_strang
+                        (user_id, character_id, beobachter, zentroid, faden_zahl,
+                         erster_faden, letzter_faden)
+                    VALUES (%s, %s, %s, %s::vector, 1, %s, %s)
+                    RETURNING id
+                    """,
+                    (user_id, character_id, beobachter,
+                     _vektor_schreiben(faden_vektor), entstanden_am, entstanden_am),
+                )
+                strang_id = cur.fetchone()[0]
+                cur.execute(
+                    "UPDATE praegung_faden SET strang_id = %s WHERE id = %s",
+                    (strang_id, faden_id),
+                )
     except Exception as fehler:
         logger.error(
             f"Praegung: Strangzuordnung fuer Faden {faden_id} fehlgeschlagen — "
@@ -388,12 +392,133 @@ def strang_zuordnen(postgres_url: str, faden_id: int) -> int | None:
         return None
 
     # ── Ausgabe ────────────────────────────────
-    beste = f"{treffer[3]:.4f}" if treffer is not None else "kein Strang vorhanden"
-    logger.info(
-        f"Praegung: Faden {faden_id} gruendet Strang {strang_id} — "
-        f"beste Naehe {beste} < {PRAEGUNG_STRANG_NAEHE}"
-    )
+    if not beigetreten:
+        beste = f"{treffer[3]:.4f}" if treffer is not None else "kein Strang vorhanden"
+        logger.info(
+            f"Praegung: Faden {faden_id} gruendet Strang {strang_id} — "
+            f"beste Naehe {beste} < {PRAEGUNG_STRANG_NAEHE}"
+        )
+
+    # Das Histogramm, **ausserhalb** der Transaktion oben und mit eigenem
+    # Fehlerpfad: Es ist eine reine Aggregation ueber den Bestand und jederzeit
+    # wiederholbar; die Zuordnung ist es nicht. Faellt es aus, steht ein Strang
+    # mit veraltetem Histogramm da — und der naechste Beitritt richtet es.
+    strang_histogramm_rechnen(postgres_url, strang_id)
+
     return strang_id
+
+
+def strang_histogramm_rechnen(postgres_url: str, strang_id: int) -> dict | None:
+    """Rechnet das Sektor-Histogramm eines Strangs neu und schreibt es fort.
+
+    Konzept §7.8. **Nicht der Mittelwert:** Sektor 1 und Sektor 5 ergaeben
+    gemittelt *neutral*, und die Ambivalenz — der interessante Fall — waere
+    ausgeloescht. Also ein Histogramm ueber die acht Plutchik-Sektoren, und
+    daraus drei Destillate: dominanter Sektor, Konzentration und Valenz.
+
+    **Gezaehlt werden Faeden, nicht Ausschlaege.** Die Intensitaet hat ihren
+    eigenen Platz in der Ladung (`W_SPITZE`); ein Histogramm, das Faerbung und
+    Staerke mischt, ist eine Zahl mit zwei Wirkungen.
+
+    **Neu gerechnet, nicht fortgeschrieben** — ausdruecklich anders als beim
+    Zentroid. Dort sind es 768 Werte und ein Scan je Turn waere teuer; hier ist
+    es ein GROUP BY ueber die Faeden eines Strangs, und eine Neuberechnung kann
+    nicht driften.
+
+    **Valenz ist nicht Richtung.** Zwei negative Praegungen koennen
+    entgegengesetzte Richtungen haben (§7.7). Die Richtung braucht die
+    Annaeherungs-Tabelle und ist nicht gebaut.
+
+    Vorbedingung: `strang_id` bezeichnet eine Zeile in `praegung_strang`.
+    Nachbedingung: `sektor_histogramm` traegt acht Zahlen, deren Summe die Zahl
+        der Faeden mit kanonischer Emotion ist; `sektor_dominant`,
+        `konzentration` und `valenz` sind daraus gerechnet oder NULL, wenn kein
+        Faden zaehlbar war.
+    Fehlerfaelle: Eine Emotion ausserhalb von `EMOTION_SEKTOR_MAP` wird **nicht
+        mitgezaehlt und gemeldet** — stillschweigend auf einen Sektor zu legen
+        hiesse, eine unbekannte Faerbung als bekannte auszugeben.
+
+    Args:
+        postgres_url: Verbindung.
+        strang_id: der Strang, dessen Histogramm neu entsteht.
+
+    Returns:
+        `{"histogramm": [...], "dominant": int|None, "konzentration": float|None,
+        "valenz": float|None, "unbekannt": int}` oder None bei Fehlschlag.
+    """
+    # ── Eingabe ────────────────────────────────
+    if strang_id is None or strang_id <= 0:
+        logger.error(f"Praegung: Histogramm abgelehnt — strang_id={strang_id}")
+        return None
+
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            cur.execute(
+                "SELECT emotion, count(*) FROM praegung_faden "
+                "WHERE strang_id = %s GROUP BY emotion",
+                (strang_id,),
+            )
+            zeilen: list = cur.fetchall()
+
+            # ── Verarbeitung ───────────────────────────
+            histogramm: list[int] = [0] * 8
+            unbekannt:  int = 0
+            for emotion, anzahl in zeilen:
+                sektor = EMOTION_SEKTOR_MAP.get(emotion)
+                if sektor is None:
+                    unbekannt += anzahl
+                    logger.warning(
+                        f"Praegung: Strang {strang_id} — Emotion '{emotion}' "
+                        f"({anzahl}x) ist in keinem Sektor und faerbt nicht mit"
+                    )
+                    continue
+                histogramm[sektor - 1] += anzahl
+
+            gesamt: int = sum(histogramm)
+            if gesamt:
+                dominant: int | None = histogramm.index(max(histogramm)) + 1
+                konzentration: float | None = max(histogramm) / gesamt
+                positiv = sum(
+                    n for i, n in enumerate(histogramm, start=1)
+                    if SEKTOR_GRUPPE.get(i) == "positiv"
+                )
+                negativ = sum(
+                    n for i, n in enumerate(histogramm, start=1)
+                    if SEKTOR_GRUPPE.get(i) == "negativ"
+                )
+                valenz: float | None = (positiv - negativ) / gesamt
+            else:
+                dominant, konzentration, valenz = None, None, None
+
+            cur.execute(
+                """
+                UPDATE praegung_strang
+                   SET sektor_histogramm = %s, sektor_dominant = %s,
+                       konzentration = %s, valenz = %s
+                 WHERE id = %s
+                """,
+                (histogramm, dominant, konzentration, valenz, strang_id),
+            )
+    except Exception as fehler:
+        logger.error(
+            f"Praegung: Histogramm von Strang {strang_id} nicht geschrieben — "
+            f"{fehler}"
+        )
+        return None
+
+    # ── Ausgabe ────────────────────────────────
+    logger.info(
+        f"Praegung: Strang {strang_id} — Histogramm {histogramm}, "
+        f"dominant={dominant}, konzentration="
+        f"{f'{konzentration:.3f}' if konzentration is not None else '—'}, "
+        f"valenz={f'{valenz:+.3f}' if valenz is not None else '—'}"
+        + (f", {unbekannt} ohne Sektor" if unbekannt else "")
+    )
+    return {
+        "histogramm": histogramm, "dominant": dominant,
+        "konzentration": konzentration, "valenz": valenz,
+        "unbekannt": unbekannt,
+    }
 
 
 def faeden_ohne_strang_zuordnen(postgres_url: str) -> tuple[int, int]:
