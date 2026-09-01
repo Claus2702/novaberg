@@ -153,6 +153,13 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
 
     **Wer den Tageslauf erweitert, erweitert diese Liste** — sonst schreibt der
     naechste Schritt hier still weiter.
+
+    `[2×]` — 01.09.2026, derselbe Tag: Der **sechste** Schritt (die
+    Strang-Richtungen) kam dazu und stand wieder nicht in der Liste. Er lief
+    harmlos leer, weil `patch(db_manager)` einen `MagicMock` liefert und dessen
+    `__iter__` leer ist — **das ist Zufall und keine Absicht.** Ein Schritt, der
+    seine Zeilen anders holt, schriebe an derselben Stelle. Er steht jetzt
+    ausdruecklich in der Liste.
     """
 
     def _lauf(self, faltung: dict) -> tuple[object, object]:
@@ -169,7 +176,9 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
              patch(f"{AGENT_MODUL}.praegung.alle_faeden_nachfuehren",
                    return_value=faltung) as gerufen, \
              patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",
-                   return_value=(0, 0)):
+                   return_value=(0, 0)), \
+             patch.object(SynapsenDecayAgent, "_richtungen_protokollieren",
+                          return_value=0):
             zustand: AgentState = SynapsenDecayAgent().invoke(
                 AgentState(auftrag="", kontext={}),
             )
