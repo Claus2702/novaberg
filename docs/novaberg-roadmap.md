@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **19:45 UTC** (gemessen via `date -u`). Davor 01.09.2026, 19:26 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **20:00 UTC** (gemessen via `date -u`). Davor 01.09.2026, 19:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 147 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 148 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,40 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 20:00 UTC — Scheibe 3b: Woraus ein Strang gefühlt besteht ✅
+
+**ZIEL:** Jeder Strang trägt, aus welchen Gefühlssektoren seine Fäden stammen — als Histogramm, aus dem dominanter Sektor, Konzentration und Valenz ablesbar sind.
+
+**DDL** (angekündigt und freigegeben): `sektor_histogramm INTEGER[]`, `sektor_dominant`, `konzentration`, `valenz` an `praegung_strang`.
+
+**Der tragende Satz des Konzepts ist ein Verbot des Mittelwerts** (§7.8): Sektor 1 und Sektor 5 ergäben gemittelt *neutral*, und genau der interessante Fall wäre ausgelöscht. Ein Histogramm löscht ihn nicht.
+
+**Vier Entscheidungen:**
+
+- **Gezählt werden Fäden, nicht Ausschläge.** Die Intensität hat ihren Platz in der Ladung; ein Histogramm, das Färbung und Stärke mischt, ist eine Zahl mit zwei Wirkungen — dieselbe Klasse wie die Salienz am Morgen desselben Tages.
+- **Die acht Zahlen bleiben im Bestand**, nicht nur ihre Kennzahlen. Quelle vor Destillat: Ohne sie braucht jede neue Kennzahl eine Migration.
+- **Neu gerechnet bei jedem Beitritt, nicht fortgeschrieben** — ausdrücklich anders als beim Zentroid. Dort 768 Werte und ein Scan je Turn; hier ein `GROUP BY` über die Fäden eines Strangs, und eine Neuberechnung kann nicht driften.
+- **Sektor 4 zählt in keine Richtung.** `SEKTOR_GRUPPE` führt Überraschung als neutral; sie ist die Hälfte der Awe-Dyade.
+
+**TEST:** `tests/test_praegung_histogramm.py`, 12 Zeugen. Suite **2840 grün, 0 übersprungen** (2828 → 2840).
+
+**Gegenproben, beide vorhergesagt und beide getroffen:** Aufruf des Histogramms entfernt → 2 rot (2 vorhergesagt, Beitritt und Gründung). Sektor 4 der positiven Seite zugeschlagen → 1 rot (1 vorhergesagt).
+
+**MESSUNG** — Vorhersage vor dem Lauf, aus den Emotionen der vier Fäden gerechnet:
+
+| | Vorhergesagt | Gemessen |
+|---|---|---|
+| Histogramm | [3,0,0,0,0,0,0,1] | **[3,0,0,0,0,0,0,1]** |
+| dominanter Sektor | 1 | **1** |
+| Konzentration | 0,750 | **0,750** |
+| Valenz | +1,000 | **+1,000** |
+
+**Der Vorbehalt gehört an die Zahl:** Alle vier Fäden sind positiv, und der Fall, um den §7.8 überhaupt gebaut ist — zwei Gipfel — kommt im Bestand nicht vor. Er ist bezeugt, nicht gemessen. Diese Messung prüft die Abbildung Emotion → Sektor und drei Formeln, keine Entscheidung mit offenem Ausgang.
+
+**Nicht gebaut: die Richtung** (Annäherung ↔ Vermeidung). Sie braucht die Annäherungs-Tabelle, die §13 als gesetzt und ungemessen führt und die *„den Torfaktor der ganzen Prägungsschicht trägt"*. Welche Sektorkombinationen als Annäherung gelten, ist eine Absicht und keine Implementierungsentscheidung.
 
 ---
 

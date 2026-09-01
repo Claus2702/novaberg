@@ -956,6 +956,34 @@ das ist der interessante Fall, kein Fehler.**
 **nicht** im `EMOTION_KANON` — richtig so: Ein Rückstand ist eine Disposition, die Emotionen
 hinterlassen haben.
 
+> **Gebaut am 01.09.2026, 20:00 UTC.** `praegung_strang` trägt `sektor_histogramm`
+> als acht Zahlen, dazu `sektor_dominant`, `konzentration` (Anteil des dominanten
+> Sektors) und `valenz` (Anteil positiver minus negativer Sektoren, auf [−1, 1]).
+> **Gezählt werden Fäden, nicht Ausschläge** — die Intensität hat ihren Platz in
+> der Ladung, und ein Histogramm, das Färbung und Stärke mischt, ist eine Zahl mit
+> zwei Wirkungen.
+>
+> **Sektor 4 zählt in keine Richtung.** `SEKTOR_GRUPPE` führt Überraschung als
+> neutral; sie ist die Hälfte der Awe-Dyade, und sie einer Seite zuzuschlagen wäre
+> eine Setzung, die dieses Dokument nicht macht.
+>
+> **Neu gerechnet bei jedem Beitritt, nicht fortgeschrieben** — ausdrücklich
+> anders als beim Zentroid. Dort sind es 768 Werte und ein Scan je Turn wäre
+> teuer; hier ist es ein `GROUP BY` über die Fäden eines Strangs, und eine
+> Neuberechnung kann nicht driften. Die acht Zahlen bleiben im Bestand, nicht nur
+> ihre Kennzahlen: Mit ihnen ist jede spätere Kennzahl nachrechenbar, ohne sie
+> braucht jede neue eine Migration.
+>
+> Eine Emotion außerhalb von `EMOTION_SEKTOR_MAP` **färbt nicht mit und wird
+> gemeldet** — stillschweigend auf einen Sektor zu legen hieße, eine unbekannte
+> Färbung als bekannte auszugeben.
+>
+> `[gemessen]` 01.09.2026: Der eine Strang trägt **[3,0,0,0,0,0,0,1]**, dominant 1,
+> Konzentration 0,750, Valenz +1,000 — Vorhersage und Messung zeichengleich.
+> **Der Vorbehalt gehört an die Zahl:** Alle vier Fäden sind positiv, und der Fall,
+> um den dieser Abschnitt gebaut ist — zwei Gipfel — kommt im Bestand nicht vor.
+> Er ist bezeugt (`tests/test_praegung_histogramm.py`), nicht gemessen.
+
 ### 7.9 Verfall: zwei Stimmen aus einer Quelle
 
 Beide entstehen aus **derselben Faltung** (§7.4), nur mit verschieden skalierter Zeitachse:

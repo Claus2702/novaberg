@@ -596,7 +596,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Synapsen-Tabellen (lzg_knoten, lzg_kanten, parallel zum LZG) | Schema angelegt, leer | novaberg-memory-synapsen_k.md §4 |
 | `praegung_faden` | im Betrieb belegt 01.09.2026 — 4 Zeilen, alle einem Strang zugeordnet | novaberg-node-praegung.md |
 | `praegung_beruehrung` | im Betrieb belegt 01.09.2026 — 7 Zeilen | novaberg-node-praegung.md |
-| `praegung_strang` | im Betrieb belegt 01.09.2026 — 1 Zeile ueber 4 Faeden; Achsen und Staerke nicht gebaut | novaberg-node-praegung.md §6b |
+| `praegung_strang` | im Betrieb belegt 01.09.2026 — 1 Zeile ueber 4 Faeden, mit Sektor-Histogramm [3,0,0,0,0,0,0,1]; **Richtung und Staerke nicht gebaut** | novaberg-node-praegung.md §6b |
 | Ebbinghaus-Decay + Soft-Delete | **Abgeloest: `SynapsenDecayAgent` materialisiert `gewicht_decay`** (P9) | novaberg-memory-synapsen_k.md §9 · archive/novaberg-pixie-decay.md |
 | Salienz als Entscheider | Implementiert & getestet | novaberg-node-salience.md |
 | Fakten-Pipeline (Typ 1 + 2, bi-temporal) | Implementiert & getestet | novaberg-mem-knowledge-graph.md |
