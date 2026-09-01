@@ -109,6 +109,10 @@ class NachfuehrungTest(unittest.TestCase):
             cur.execute(
                 "DELETE FROM praegung_faden WHERE user_id = %s", (self.USER,),
             )
+            # Der Strang, den `faden_anlegen` seit dem 01.09.2026 mit gruendet.
+            cur.execute(
+                "DELETE FROM praegung_strang WHERE user_id = %s", (self.USER,),
+            )
             cur.execute(
                 "DELETE FROM lzg_knoten WHERE user_id = %s", (self.USER,),
             )

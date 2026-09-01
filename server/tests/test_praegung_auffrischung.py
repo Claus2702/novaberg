@@ -89,6 +89,10 @@ class AuffrischungTest(unittest.TestCase):
             cur.execute(
                 "DELETE FROM praegung_faden WHERE user_id = %s", (self.USER,),
             )
+            # Der Strang, den `faden_anlegen` seit dem 01.09.2026 mit gruendet.
+            cur.execute(
+                "DELETE FROM praegung_strang WHERE user_id = %s", (self.USER,),
+            )
             cur.execute(
                 "DELETE FROM lzg_knoten WHERE user_id = %s", (self.USER,),
             )
@@ -203,6 +207,10 @@ class AuffrischungTest(unittest.TestCase):
         with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
             cur.execute(
                 "DELETE FROM praegung_faden WHERE user_id = %s", (self.USER,),
+            )
+            # Der Strang, den `faden_anlegen` seit dem 01.09.2026 mit gruendet.
+            cur.execute(
+                "DELETE FROM praegung_strang WHERE user_id = %s", (self.USER,),
             )
         self.assertEqual(
             beruehrung_aus_reaktivierung(

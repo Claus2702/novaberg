@@ -141,7 +141,19 @@ class LeererBestandTest(unittest.TestCase):
 
 
 class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
-    """Die Verdrahtung: ohne sie bleibt der Lauf gebaut und ungerufen."""
+    """Die Verdrahtung: ohne sie bleibt der Lauf gebaut und ungerufen.
+
+    **Jeder Schritt des Tageslaufs wird ersetzt, auch die, um die es hier nicht
+    geht.** `invoke` ruft sie alle; was nicht ersetzt ist, laeuft gegen
+    `POSTGRES_URL`. `[gemessen]` 01.09.2026: Der am selben Tag hinzugekommene
+    fuenfte Schritt stand hier nicht — und legte bei jedem Suitenlauf einen
+    Strang ueber die vier Faeden des Messpaars an. Der Zeuge war nicht
+    geaendert worden; er wurde gefaehrlich, weil der Gegenstand wuchs
+    (`20_TESTS/neuer-seiteneffekt-alte-zeugen.md`, dritter Fall in fuenf Tagen).
+
+    **Wer den Tageslauf erweitert, erweitert diese Liste** — sonst schreibt der
+    naechste Schritt hier still weiter.
+    """
 
     def _lauf(self, faltung: dict) -> tuple[object, object]:
         from agents.base import AgentState
@@ -155,7 +167,9 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
              patch(f"{AGENT_MODUL}.ShadowAuftragRepository.verfall_lauf", return_value=leer), \
              patch(f"{AGENT_MODUL}.db_manager"), \
              patch(f"{AGENT_MODUL}.praegung.alle_faeden_nachfuehren",
-                   return_value=faltung) as gerufen:
+                   return_value=faltung) as gerufen, \
+             patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",
+                   return_value=(0, 0)):
             zustand: AgentState = SynapsenDecayAgent().invoke(
                 AgentState(auftrag="", kontext={}),
             )

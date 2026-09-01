@@ -148,6 +148,11 @@ class DerFadenWirdGeschriebenTest(unittest.TestCase):
     def tearDown(self) -> None:
         with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
             cur.execute("DELETE FROM praegung_faden WHERE user_id = %s", (self.USER,))
+            # Der Strang, den `faden_anlegen` seit dem 01.09.2026 mit gruendet.
+            # `ON DELETE SET NULL` nimmt ihn nicht mit — er bliebe als
+            # verwaiste Zeile im Produktivbestand stehen, und genau so standen
+            # nach einem Suitenlauf zwei Straenge da, die niemand gebaut hatte.
+            cur.execute("DELETE FROM praegung_strang WHERE user_id = %s", (self.USER,))
 
     def test_der_faden_startet_bei_seinem_ursprungswert(self) -> None:
         """`ausschlag_aktuell` gleich `ausschlag_absolut` — die Faltung faengt dort an."""
@@ -336,6 +341,11 @@ class DerNodeSchreibtDieTurnEmotionInDenFadenTest(unittest.TestCase):
     def tearDown(self) -> None:
         with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
             cur.execute("DELETE FROM praegung_faden WHERE user_id = %s", (self.USER,))
+            # Der Strang, den `faden_anlegen` seit dem 01.09.2026 mit gruendet.
+            # `ON DELETE SET NULL` nimmt ihn nicht mit — er bliebe als
+            # verwaiste Zeile im Produktivbestand stehen, und genau so standen
+            # nach einem Suitenlauf zwei Straenge da, die niemand gebaut hatte.
+            cur.execute("DELETE FROM praegung_strang WHERE user_id = %s", (self.USER,))
 
     def test_der_node_bettet_das_segment_ein_nicht_den_turn(self) -> None:
         """Das Segment, nicht der Turn — geprueft an der Verdrahtung.
