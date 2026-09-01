@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **10:50 UTC** (gemessen via `date -u`). Davor 31.08.2026, 22:25 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **13:50 UTC** (gemessen via `date -u`). Davor 01.09.2026, 10:50 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 13:50 UTC — Ein Dokument, dessen Gegenstand verschwunden ist ✅
+
+Auf die Frage, ob alle Module aktuell seien, fiel ein Fehler des Vormittags auf: Der Defekt `PROMOTION-NUR-EIN-PAAR` war in `novaberg-pixie-promotion.md` vermerkt worden — **und das Dokument beschreibt einen Agenten, den es nicht mehr gibt.**
+
+`server/agents/promotion/` existiert nicht. Der Weg vom Kurzzeit- ins Langzeitgedaechtnis laeuft ueber `SynapsenPromotionAgent`, und **der hatte kein Moduldokument**. Der Name `pixie-promotion` passte zum Gegenstand, das Dokument nicht.
+
+> **Ein Dokument, dessen Gegenstand verschwunden ist, bleibt auffindbar — und wird beim Nachziehen gewaehlt.** Es sieht aus wie das richtige, es ist am richtigen Ort, sein Titel trifft. Nur beschreibt es etwas, das es nicht mehr gibt.
+
+Behoben: `novaberg-node-synapsen-promotion.md` angelegt, mit dem Defekt, der Arbeitslisten-Mechanik, den Messungen und den drei Zeugendateien. Der Vorgaenger traegt im Kopf einen Vermerk und bleibt als **Herkunft** stehen — die Zwei-Call-Bauart und die EVA-Haertung sind in den Nachfolger eingegangen.
+
+**Und das neue Dokument trug die Beweiskette von Anfang an** — die Regel von heute Vormittag (`41_DOKU_ARTEFAKTE/moduldokument.md` v1.0) bei ihrer ersten Anwendung.
 
 ---
 

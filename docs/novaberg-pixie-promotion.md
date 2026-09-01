@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 1. September 2026 (**der periodische Lauf erreicht seit heute jedes Paar** — vorher nur das Standard-Paar, siehe §2a). Davor: 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
+**Stand:** 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
@@ -10,6 +10,16 @@
 
 > **Hinweis (Chat 88): Synapsen-Umbau im Gang.**
 > Die hier beschriebene Cluster-Promotion mit Aggregat-Schicht wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Jeder ehemalige KZG-Eintrag wird künftig zum eigenständigen Knoten in `lzg_knoten`, Cluster werden zu gerichteten Kanten in `lzg_kanten` mit eigenen Decays und Reinforcement-Pfaden. Tabellen `lzg_knoten`/`lzg_kanten` sind seit P2 (Chat 88) angelegt, aber leer — die neue Promotion-Logik kommt in P4 und steht noch aus. Dieses Dokument beschreibt den heutigen Stand der alten Cluster-Promotion bis zur Umsetzung. Während des Umbaus ruhen alle Promotion-bezogenen Sprints, die nicht unmittelbar Teil des Synapsen-Konzepts sind.
+
+> **Dieses Dokument beschreibt einen Agenten, den es nicht mehr gibt.** `[gemessen]`
+> 01.09.2026: `server/agents/promotion/` existiert nicht; der Weg vom Kurzzeit- ins
+> Langzeitgedächtnis läuft über `SynapsenPromotionAgent` in
+> `server/agents/synapsen_promotion/`, und der ist **hier nicht beschrieben** —
+> `novaberg-node-synapsen-promotion.md` trägt ihn seit dem 01.09.2026.
+>
+> Der Text unten bleibt als Herkunft stehen: Die Zwei-Call-Bauart und die
+> EVA-Härtung sind in den Nachfolger eingegangen. **Er ist keine Beschreibung des
+> heutigen Zustands.**
 
 ## 1. Aufgabe
 
@@ -38,26 +48,6 @@ Der PromotionAgent ist der einzige Weg vom Kurzzeitgedächtnis (KZG, Redis) ins 
 Die Queue wird vollständig abgearbeitet (while-Schleife mit LPOP). KZG-Einträge haben TTL — Verzögerung bedeutet Datenverlust. Die Promotion hat deshalb die höchste Priorität unter allen Pixie-Agenten.
 
 Nach der Queue-Verarbeitung läuft automatisch die Cluster-Promotion (Scan der gesamten KZG-Partition).
-
----
-
-## 2a. Welche Warteschlange gelesen wird
-
-Jedes Paar hat eine eigene Liste, `queue:{user_id}`. Ein **gezielter** Aufruf nennt sein Paar im Kontext; der **periodische** Pixie-Lauf nennt keines.
-
-> **`PROMOTION-NUR-EIN-PAAR`** — behoben am 01.09.2026, gefunden am selben Tag.
->
-> Der Agent las `state["kontext"].get("user_id", "") or DEFAULT_USER_ID`. Ohne Kontext nahm er den Rückfall `meister`, sah in dessen Queue nach und meldete alle fünf Minuten *„Queue leer — nichts zu tun"*. **Die Meldung stimmte für das Paar, in das er schaute** — und genau deshalb fiel nichts auf.
->
-> `[gemessen]` 01.09.2026: **13 Aufträge über fünf Paare** lagen unbearbeitet — `nmcp_probe` 5, `b1_live` 2, `nmcp_live` 2, `sektorprobe` 2, `scheibe2probe` 2. **Alle fünf hatten null LZG-Knoten.** Der KZG-Hash verfällt nach sieben bis dreißig Tagen; für jedes Paar außer dem Standard entstand nie ein Langzeitgedächtnis, und alles, was darauf aufbaut, lief ins Leere — die emotionale Gravitation findet nichts zu reaktivieren, und die Prägungsschicht bekommt keine Berührungen.
->
-> **Gefunden wurde er nicht durch eine Prüfung**, sondern weil der Betriebsbeleg für die Prägungs-Verstärkung nicht zustande kam und jemand nach dem Grund suchte.
->
-> **Nach dem Bau gemessen:** Queue 2 → 0 und LZG 0 → 2 innerhalb von 90 Sekunden; über alle fünf Paare flossen alle 13 Aufträge ab.
-
-Der Rumpf heißt seit dem 01.09.2026 `_paar_abarbeiten(user_id)`; `invoke` iteriert über die Paare. Ein gezielter Aufruf bleibt bei seinem, ein periodischer nimmt alle mit Aufträgen (`_paare_mit_auftraegen`). **Nebenlisten sind keine Paare:** `queue:{paar}:arbeit`, `:gescheitert` und `:versuche` werden ausgesiebt, sonst zählte ein liegengebliebener Rest als Arbeit eines neuen Paars. Ein Fehler in einem Paar stoppt die übrigen nicht.
-
-**Die Klasse:** Ein Vorgabewert an der Stelle, an der die Eingabe fehlt, macht aus *„nichts angegeben"* ein *„dieses eine"*. Zeugen: `tests/test_promotion_alle_paare.py`.
 
 ---
 

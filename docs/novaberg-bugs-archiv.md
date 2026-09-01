@@ -54,7 +54,7 @@ Zwei der Auftraege waren zwei Minuten alt, elf standen laenger.
 
 **Warum das mehr ist als ein Rueckstand.** Der KZG-Hash hat eine TTL von sieben bis dreissig Tagen. Was nicht promotet wird, verfaellt — **fuer jedes Paar ausser dem Standard entstand nie ein Langzeitgedaechtnis**, und alles, was darauf aufbaut, lief ins Leere: die emotionale Gravitation findet nichts zu reaktivieren, und die Praegungsschicht bekommt keine Beruehrungen. Der Defekt wurde gefunden, weil der Betriebsbeleg fuer die Verstaerkung nicht zustande kam.
 
-**Behebung.** Der Rumpf ist jetzt `_paar_abarbeiten(user_id)`; `invoke` iteriert. Ein gezielter Aufruf bleibt bei seinem Paar, ein periodischer nimmt alle mit Auftraegen (`_paare_mit_auftraegen`, Nebenlisten wie `:arbeit` ausgenommen). Ein Fehler in einem Paar stoppt die uebrigen nicht.
+**Behebung.** Der Rumpf ist jetzt `_paar_abarbeiten(user_id)`; `invoke` iteriert. Moduldokument: `novaberg-node-synapsen-promotion.md` §2a — **es entstand mit diesem Befund**, der Agent hatte keines. Ein gezielter Aufruf bleibt bei seinem Paar, ein periodischer nimmt alle mit Auftraegen (`_paare_mit_auftraegen`, Nebenlisten wie `:arbeit` ausgenommen). Ein Fehler in einem Paar stoppt die uebrigen nicht.
 
 **Gemessen nach dem Bau:** Queue 2 → 0 und LZG 0 → 2 innerhalb von 90 Sekunden; ueber alle fuenf Paare flossen alle 13 Auftraege ab, das Langzeitgedaechtnis traegt jetzt 13 Knoten, wo vorher keiner stand.
 

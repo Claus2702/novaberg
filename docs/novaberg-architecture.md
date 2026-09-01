@@ -803,6 +803,7 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-lesson_l_meldung-im-bestand-ertrinkt.md | Eine Regel, deren Verletzung ein Absturz ist, gehört nicht in eine geduldete Trefferzahl |
 | novaberg-lesson_l_zwei-grundgesamtheiten.md | Zwei Zahlen, die verschiedene Mengen messen, sehen wie ein Widerspruch aus |
 | novaberg-lesson_l_die-sonde-misst-sich-selbst.md | Ein Reizsatz aus einem Register misst die Monotonie des Reizsatzes |
+| novaberg-node-synapsen-promotion.md | SynapsenPromotionAgent — der Weg vom Kurzzeit- ins Langzeitgedaechtnis (loest novaberg-pixie-promotion.md ab) |
 
 ### Uebergreifend
 
