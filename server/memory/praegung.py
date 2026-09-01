@@ -15,11 +15,14 @@ haelt die Episode frisch.
 
 import logging
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 
 import psycopg2
 
 from config import (
+    PRAEGUNG_ALPHA,
+    PRAEGUNG_BODEN,
+    PRAEGUNG_HALBSTRECKE,
     PRAEGUNG_TOR_AUSSCHLAG,
     PRAEGUNG_TOR_SALIENZ,
 )
@@ -300,6 +303,115 @@ def ausschlag_aktuell_falten(
     return ausschlag_absolut * min(1.0, max(boden, anteil))
 
 
+def ausschlag_aktuell_nachfuehren(
+    postgres_url: str,
+    faden_ids:    list[int],
+    jetzt:        datetime | None = None,
+) -> int:
+    """Rechnet `ausschlag_aktuell` der genannten Faeden neu und schreibt ihn.
+
+    **Der Aufrufer, der `ausschlag_aktuell_falten` gefehlt hat.** Die Faltung war
+    seit dem 01.09.2026 gebaut und gegen 18 Stuetzstellen des Konzepts bezeugt —
+    und wurde von nirgends gerufen (`FALTUNG-OHNE-AUFRUFER`). Vier Beruehrungen
+    entstanden im Betrieb, und der Wert, den sie haetten bewegen sollen, stand
+    unveraendert auf `ausschlag_absolut`.
+
+    **Von Grund auf, nicht fortgeschrieben.** Gelesen werden `ausschlag_absolut`,
+    `entstanden_am` und die vollstaendige Beruehrungsliste; der vorige Wert der
+    Spalte geht in die Rechnung nicht ein. Damit ist die Spalte ein
+    **materialisiertes Ergebnis** im Sinne von `novaberg-convention-abgeleitete-werte.md`
+    Regel 1 — zusaetzlich gespeichert, nie anstelle der Eingaben — und ein
+    Wiederholungslauf ueber den ganzen Bestand ist ein zulaessiger
+    Wartungsvorgang (Regel 4).
+
+    **Deshalb steht sie ausserhalb der Transaktion, die die Beruehrung schreibt.**
+    Faellt sie aus, fehlt kein Ereignis: Die Beruehrungszeile steht, und der
+    naechste Lauf holt den Wert nach. Waere sie Teil derselben Transaktion,
+    naehme ihr Fehler die Beruehrung mit — ein Rechenfehler wuerde Gedaechtnis
+    loeschen.
+
+    **Was sie nicht leistet: den Verfall zwischen zwei Beruehrungen.** Der Wert
+    steht danach auf dem Stand seiner letzten Beruehrung und altert in der
+    Spalte nicht mit. Wer den heutigen Wert braucht, ruft diese Funktion —
+    ein periodischer Lauf ueber den Bestand ist der offene Rest
+    (`FALTUNG-OHNE-PERIODISCHEN-LAUF`).
+
+    Vorbedingung: `faden_ids` sind bestehende Zeilen; unbekannte werden still
+    uebergangen, weil eine geloeschte Praegung kein Fehler ist.
+    Nachbedingung: Je genanntem Faden ein `ausschlag_aktuell` in
+    [`ausschlag_absolut` x `PRAEGUNG_BODEN`, `ausschlag_absolut`].
+    Fehlerfaelle: Ein Datenbankfehler wird gemeldet und liefert 0; der Aufrufer
+    laeuft weiter, der Wert bleibt auf seinem vorigen Stand.
+
+    Args:
+        postgres_url: Verbindung.
+        faden_ids: Die Faeden, deren Wert neu zu rechnen ist.
+        jetzt: Bezugszeitpunkt der Rechnung; ohne Angabe die aktuelle Zeit.
+
+    Returns:
+        Die Zahl der geschriebenen Zeilen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ids: list[int] = sorted({int(f) for f in faden_ids})
+    if not ids:
+        return 0
+    bezug: datetime = jetzt or datetime.now(timezone.utc)
+
+    # ── Verarbeitung ───────────────────────────
+    geschrieben: int = 0
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT f.id, f.ausschlag_absolut, f.entstanden_am,
+                       coalesce(
+                           array_agg(b.beruehrt_am ORDER BY b.beruehrt_am)
+                           FILTER (WHERE b.beruehrt_am IS NOT NULL),
+                           '{}'
+                       )
+                FROM praegung_faden f
+                LEFT JOIN praegung_beruehrung b ON b.faden_id = f.id
+                WHERE f.id = ANY(%s)
+                GROUP BY f.id
+                """,
+                (ids,),
+            )
+            zeilen = cur.fetchall()
+            for faden_id, absolut, entstanden_am, beruehrungen in zeilen:
+                wert: float = ausschlag_aktuell_falten(
+                    ausschlag_absolut = float(absolut),
+                    entstanden_am     = entstanden_am,
+                    beruehrungen      = list(beruehrungen or []),
+                    jetzt             = bezug,
+                    alpha             = PRAEGUNG_ALPHA,
+                    halbstrecke       = PRAEGUNG_HALBSTRECKE,
+                    boden             = PRAEGUNG_BODEN,
+                )
+                cur.execute(
+                    "UPDATE praegung_faden SET ausschlag_aktuell = %s WHERE id = %s",
+                    (wert, int(faden_id)),
+                )
+                geschrieben += 1
+    except Exception as fehler:
+        logger.exception(
+            f"Praegung: Nachfuehrung ausgefallen ({type(fehler).__name__}) — "
+            f"{len(ids)} Faden/Faeden behalten ihren vorigen `ausschlag_aktuell`; "
+            f"der Wert ist jederzeit neu rechenbar, es fehlt kein Ereignis"
+        )
+        return 0
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Die Differenz zwischen genannten und geschriebenen Zeilen ist kein
+    # Fehler, aber sie gehoert benannt: Sonst waere eine geloeschte Praegung
+    # von einer nicht gerechneten nicht zu unterscheiden.
+    if geschrieben < len(ids):
+        logger.info(
+            "Praegung: %d von %d Faden/Faeden nachgefuehrt — die uebrigen "
+            "gibt es nicht mehr", geschrieben, len(ids),
+        )
+    return geschrieben
+
+
 def beruehrung_aus_reaktivierung(
     postgres_url: str,
     user_id:      str,
@@ -411,6 +523,15 @@ def beruehrung_aus_reaktivierung(
         )
         return []
 
+    # Die Beruehrung allein bewegt nichts — erst die Faltung traegt sie in den
+    # Wert. **Ausserhalb der Transaktion oben**, weil sie jederzeit
+    # wiederholbar ist: Ein Fehler hier darf die geschriebene Beruehrung nicht
+    # mitnehmen (siehe `ausschlag_aktuell_nachfuehren`).
+    if treffer:
+        ausschlag_aktuell_nachfuehren(
+            postgres_url, [faden_id for _k, faden_id, _n in treffer],
+        )
+
     # ── Ausgabe-Verifikation ────────────────────
     if treffer:
         logger.info(
@@ -466,6 +587,12 @@ def beruehrung_anlegen(postgres_url: str, faden_id: int, quelle: str) -> bool:
     except Exception as fehler:
         logger.error(f"Praegung: Beruehrung nicht geschrieben — {fehler}")
         return False
+
+    # **Beide Schreibwege falten, nicht nur der eine.** Am 01.09.2026 bekam
+    # `beruehrung_aus_reaktivierung` die Nachfuehrung; dieser zweite Weg haette
+    # sie nicht gehabt, und derselbe Defekt stuende an einer anderen Tuer. Wer
+    # heute keinen Aufrufer hat, bekommt morgen einen — und dann ohne Wirkung.
+    ausschlag_aktuell_nachfuehren(postgres_url, [faden_id])
 
     # ── Ausgabe ────────────────────────────────
     return True
