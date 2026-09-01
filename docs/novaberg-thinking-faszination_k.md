@@ -735,7 +735,9 @@ Fließgleichgewicht — der Wert direkt nach einer Berührung, bei regelmäßige
 > **materialisiertes Ergebnis** — zusätzlich gespeichert, nie anstelle der Eingaben, und bei
 > jedem Lauf aus Eingang, Entstehungszeit und Ereignisliste neu gerechnet
 > (`novaberg-convention-abgeleitete-werte.md` Regel 1, 3 und 4). Wer sie liest, liest den Stand
-> der letzten Nachführung; wer den heutigen Wert braucht, ruft die Rechnung.
+> der letzten Nachführung — und die läuft bei jeder Berührung sowie **einmal täglich über den
+> ganzen Bestand** (vierter Schritt des `SynapsenDecayAgent`). Wer es genauer braucht, ruft die
+> Rechnung selbst.
 
 
 ```

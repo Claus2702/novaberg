@@ -112,6 +112,7 @@ Salienz-Angabe *4 von 21* stammte aus Torzeilen zweier Messreihen, nicht aus dem
 | **Der volle Reset ist widerlegt** | T200: Auffüllung **0,535** gegen Reset **0,900** | 01.09.2026 | derselbe Zeuge |
 | ~~**Die Faltung läuft im Betrieb nicht**~~ | 4 Berührungen geschrieben, `ausschlag_aktuell` bei **allen vier** Fäden unverändert — `ausschlag_aktuell_falten` ohne Aufrufer | 01.09.2026, 14:00 | `praegung_faden` nach der vierten Reihe |
 | **Die Faltung wirkt** | Faden 327 **0,793893 → 0,792117**, Faden 354 **1,000000 → 0,998756** nach einer Berührung | 01.09.2026, 15:05 | fünfte Reihe, ein Reiz; `ausschlag_aktuell_nachfuehren` |
+| **Der Bestandslauf erreicht jeden Faden** | **4 von 4** gefaltet; Faden 328 mit 0 Berührungen bei Anteil **0,9951**, Faden 354 mit 3 bei **0,9986** | 01.09.2026, 15:19 | `alle_faeden_nachfuehren` über den echten Bestand |
 
 **Die Verfallsfunktion stand nur als Tabelle da.** Sie wurde aus neun Stützstellen
 zurückgerechnet — `v(t) = boden + (1 − boden) / (1 + t/H)` — und trifft alle neun exakt. Neun
@@ -154,6 +155,7 @@ Reaktivierung bis zur Zahl gebaut, aber nicht geschlossen:
 | **Zuordnung** | `memory/praegung.py` → `beruehrung_aus_reaktivierung` | Je reaktiviertem LZG-Knoten der nächste Faden, wenn er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` steht |
 | **Aufrufer** | `graph/nodes/emotionale_gravitation.py` → `_faeden_auffrischen` | Dieselben Punkte, die Novas Verlauf färben, frischen die Fäden auf |
 | **Faltung** | `memory/praegung.py` → `ausschlag_aktuell_falten` | `ausschlag_aktuell` aus der Berührungsliste, von Grund auf |
+| **Bestandslauf** | `memory/praegung.py` → `alle_faeden_nachfuehren` | Faltet den ganzen Bestand auf heute; vierter Schritt im Tageslauf des `SynapsenDecayAgent`. Meldet `gefaltet` **und** `gesamt` — die Vollständigkeit ist die Zusicherung |
 | **Nachführung** | `memory/praegung.py` → `ausschlag_aktuell_nachfuehren` | Liest Eingang, Entstehung und Berührungsliste, faltet, schreibt die Spalte. Von **beiden** Schreibwegen gerufen — `beruehrung_aus_reaktivierung` und `beruehrung_anlegen` —, und **außerhalb deren Transaktion**: die Rechnung ist wiederholbar, ihr Fehler darf kein Ereignis mitnehmen |
 
 **Zwei Grenzen, und beide sind nicht Nachlässigkeit:**
@@ -240,11 +242,28 @@ Nachführung bekommen, stünde derselbe Defekt an der anderen Tür, sobald ihn j
 Gefunden hat das die zweite Kontrolle mit einem anderen Kriterium: *wer schreibt sonst noch in
 `praegung_beruehrung`?*
 
-**Der Rest ist benannt, nicht stillschweigend gelassen.** Der Verfall **zwischen** zwei
-Berührungen erreicht die Spalte nicht; der Wert steht auf dem Stand seiner letzten Auffrischung
-(`FALTUNG-OHNE-PERIODISCHEN-LAUF` im Backlog). **Faden 353 zeigt es im selben Bestand:** eine
-Berührung von 14:00, kein zweiter Treffer danach — und der Wert steht weiter auf
-`ausschlag_absolut`, weil ihn seit dem Bau des Aufrufers niemand angefasst hat.
+~~**Der Rest ist benannt, nicht stillschweigend gelassen.**~~ → **Am selben Tag geschlossen,
+15:20 UTC.** Der Verfall **zwischen** zwei Berührungen hat kein Ereignis, an dem er hängen könnte;
+der Wert stand auf dem Stand der letzten Auffrischung (`FALTUNG-OHNE-PERIODISCHEN-LAUF`). Faden
+353 zeigte es: eine Berührung von 14:00, kein Treffer danach, Wert unverändert auf
+`ausschlag_absolut`.
+
+`alle_faeden_nachfuehren` faltet den **ganzen** Bestand und läuft als **vierter Schritt im
+täglichen Lauf** des `SynapsenDecayAgent` — aus demselben Grund wie dessen dritter: Bei einem
+einzigen seriellen Platz im Heartbeat kostet ein Schritt im vorhandenen Tageslauf keinen
+zusätzlichen.
+
+> **Welche Zeile veraltet ist, wäre nur mit einem Zeitstempel der letzten Faltung zu beantworten
+> — den gibt es nicht, und ein Schemawechsel dafür wäre teurer als die Rechnung.** Sie ist billig:
+> ein Lesevorgang und ein `UPDATE` je Faden, ohne Modell und ohne Netz. **Die Zusicherung ist
+> stattdessen die Vollständigkeit:** Der Lauf gibt `gefaltet` **und** `gesamt` zurück; sind sie
+> gleich, trägt kein Faden einen Wert, der älter ist als der Lauf. Ohne die zweite Zahl wäre ein
+> Lauf über die Hälfte des Bestandes von einem vollständigen nicht zu unterscheiden.
+
+`[gemessen]` 01.09.2026, 15:19 UTC, über den echten Bestand: **4 von 4 gefaltet.** Faden 328 trägt
+**null** Berührungen und steht bei 0,9951 seines Eingangs — reiner Verfall; Faden 354 trägt drei
+und steht bei 0,9986. **Die Auffüllung ist an der Zahl ablesbar**, obwohl beide am selben Tag
+entstanden sind.
 
 > **Zwei Tore hintereinander messen Verschiedenes, und darin lag das Warten.** Der
 > Gravitations-Scan wählt gegen das Embedding des **ganzen Turns**, gewichtet mit Salienz und

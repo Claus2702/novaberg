@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **15:10 UTC** (gemessen via `date -u`). Davor 01.09.2026, 14:30 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **15:30 UTC** (gemessen via `date -u`). Davor 01.09.2026, 15:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,30 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 15:30 UTC — Der Verfall bekommt seinen Takt, und ein Zeuge schrieb in den Bestand ✅
+
+Die Faltung lief seit einer Stunde bei jeder Beruehrung — und der Verfall **zwischen** zwei Beruehrungen hat kein Ereignis, an dem er haengen koennte. Ein Faden, den seit Wochen niemand angesprochen hat, stand in der Spalte so hoch wie am Tag seiner letzten Auffrischung.
+
+**`alle_faeden_nachfuehren` faltet den ganzen Bestand, als vierter Schritt im Tageslauf des `SynapsenDecayAgent`.** Kein neuer Agent und kein neuer Platz im Heartbeat — dieselbe Begruendung, die dort schon fuer den dritten Schritt steht: Bei einem einzigen seriellen Platz konkurriert jeder neue periodische Auftrag mit den bestehenden.
+
+**Kein Schemawechsel, und der Grund ist eine Abwaegung.** Welche Zeile veraltet ist, waere nur mit einem Zeitstempel der letzten Faltung zu beantworten. Die Rechnung ist billiger als die Spalte: ein Lesevorgang und ein `UPDATE` je Faden, ohne Modell und ohne Netz.
+
+> **Die Zusicherung ist stattdessen die Vollstaendigkeit.** Der Lauf meldet `gefaltet` **und** `gesamt`. Sind sie gleich, traegt kein Faden einen Wert, der aelter ist als der Lauf; ohne die zweite Zahl waere ein Lauf ueber die Haelfte des Bestandes von einem vollstaendigen nicht zu unterscheiden.
+
+`[gemessen]` 15:19 UTC ueber den echten Bestand: **4 von 4 gefaltet.** Faden 328 traegt **null** Beruehrungen und steht bei 0,9951 seines Eingangs — reiner Verfall; Faden 354 traegt drei und steht bei 0,9986. Beide sind am selben Tag entstanden: **die Auffuellung ist an der Zahl ablesbar.**
+
+**Und der neue Zeuge machte die Suite zum Schreiber im laufenden System.** `alle_faeden_nachfuehren` laeuft ueber **alle** Paare — das ist ihr Zweck und macht sie zum gefaehrlichsten Kandidaten fuer genau diesen Fehler. Die erste Fassung rief sie gegen die echte Datenbank, und jeder Suitenlauf faltete die vier Faeden des Messpaars mit: Faden 328 stand danach auf 0,849432, obwohl kein Test ihn anfasst.
+
+> **Gefunden hat es nicht die Suite, sondern eine Messung, die vorher nachsah.** Der Bestand hatte sich bewegt, ohne dass etwas ihn haette bewegen duerfen. Dieselbe Klasse wie `SUITE-HAENGT-AM-AKTIVEN-PAAR` — und die Aufgabe `A15` zaehlt sie seit dem 25.08.2026, ohne sie zu verhindern.
+
+Behoben am selben Tag: Der globale Weg faehrt gegen eine **nachgebildete** Verbindung und prueft, **welche Kennungen** in welchen Stapeln bei der Rechnung ankommen; die echte Datenbank sehen nur die Zeugen mit ausdruecklicher Faden-Kennung. **Gegenprobe: die vier Werte vor und nach einem vollen Suitenlauf zeichengleich.**
+
+**Und der Linter fand, was der Bau uebersah.** Der vierte Schritt hob `invoke` auf 52 Statements; er steht jetzt als eigene Methode `_faltung_lauf`. Danach zaehlt die Datei dieselben sieben geduldeten Befunde wie vorher — kein neuer.
+
+Acht Zeugen, Gegenprobe mit vollstaendig zurueckgebautem viertem Schritt: **2 vorhergesagt, 2 gezaehlt.** Suite 2781 → **2789 gruen, 0 uebersprungen**.
 
 ---
 

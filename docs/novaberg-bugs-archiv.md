@@ -79,10 +79,9 @@ den Baum: *wer schreibt sonst noch in `praegung_beruehrung`?* `beruehrung_anlege
 ohne Aufrufer im Produktivcode und ohne Nachfuehrung. Haette nur der gebaute Weg sie bekommen,
 stuende derselbe Defekt an der anderen Tuer, sobald ihn jemand benutzt.
 
-**Der Rest ist benannt, nicht stillschweigend gelassen:** Der Verfall *zwischen* zwei
-Beruehrungen erreicht die Spalte nicht — `FALTUNG-OHNE-PERIODISCHEN-LAUF` im Backlog. Faden 353
-zeigt es: eine Beruehrung von 14:00, kein zweiter Treffer danach, und der Wert steht weiter auf
-`ausschlag_absolut`.
+**Der Rest war benannt und ist am selben Tag geschlossen:** Der Verfall *zwischen* zwei
+Beruehrungen erreichte die Spalte nicht — `FALTUNG-OHNE-PERIODISCHEN-LAUF`, seit 15:20 UTC
+erledigt durch `alle_faeden_nachfuehren` als vierten Schritt im Tageslauf.
 
 ### `PROMOTION-NUR-EIN-PAAR` — der periodische Lauf erreichte genau eine Queue
 
