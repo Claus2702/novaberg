@@ -1723,6 +1723,23 @@ PRAEGUNG_ALPHA:       float = float(os.getenv("PRAEGUNG_ALPHA", "0.33"))
 PRAEGUNG_HALBSTRECKE: float = float(os.getenv("PRAEGUNG_HALBSTRECKE", "60"))
 PRAEGUNG_BODEN:       float = float(os.getenv("PRAEGUNG_BODEN", "0.20"))
 
+# Wie nah ein Faden dem Zentroid eines Strangs stehen muss, um ihm beizutreten
+# (Konzept §7.7). **Eine eigene Konstante, obwohl der Startwert derselbe ist wie
+# bei `PRAEGUNG_BERUEHRUNG_NAEHE`:** Dort vergleicht ein Turn-Embedding gegen
+# einen einzelnen Faden, hier ein Faden gegen ein **Mittel ueber n Faeden**.
+# Ein Mittel liegt naeher an allem als jedes seiner Glieder — dieselbe Zahl
+# bedeutet an den zwei Stellen nicht dasselbe, und wer sie teilt, kann die eine
+# nicht bewegen, ohne die andere zu treffen.
+#
+# **Setzung mit Herkunft, keine Optimierung** (`F-INTENS-1`): 0,62 ist der Wert,
+# an dem die Reaktivierung im Betrieb trennt. Ob er auch fuer die Strangbildung
+# trennt, ist ungemessen — dafuer braucht es Faeden aus mehreren Tagen und
+# mehreren Themen. Zu hoch: jeder Faden gruendet seinen eigenen Strang, und die
+# Verdichtung faellt aus. Zu niedrig: alles ist ein Strang, und die Richtung
+# mittelt sich weg. **Beides sieht im Bestand gleich aus wie ein Erfolg**, und
+# nur die Zahl der Straenge gegen die Zahl der Faeden zeigt es.
+PRAEGUNG_STRANG_NAEHE: float = float(os.getenv("PRAEGUNG_STRANG_NAEHE", "0.62"))
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest

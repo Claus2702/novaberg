@@ -1,7 +1,7 @@
 """Pixie-Agent: synapsen_decay — täglicher Decay-Lauf für das Synapsen-Netz.
 
-Orchestriert einmal täglich drei entkoppelte Wartungsaufgaben (Konzept
-synapsen_k §9, P6; queue-verfall_k §11):
+Orchestriert einmal täglich fünf entkoppelte Wartungsaufgaben (Konzept
+synapsen_k §9, P6; queue-verfall_k §11; faszination_k §7.4, §7.7):
 
   1. run_node_decay      — materialisiert gewicht_decay je aktivem lzg_knoten
                            (exponentieller Verfall aus verstaerkt_am) und
@@ -12,6 +12,9 @@ synapsen_k §9, P6; queue-verfall_k §11):
   4. alle_faeden_nachfuehren — faltet `ausschlag_aktuell` jedes Prägungsfadens
                            auf heute. Der Verfall **zwischen** zwei Berührungen
                            hat kein Ereignis, an dem er hängen könnte.
+  5. faeden_ohne_strang_zuordnen — holt die Strangzuordnung nach, die
+                           außerhalb der Fadentransaktion läuft und deshalb
+                           ausfallen darf.
 
 **Der dritte Schritt steht hier und nicht in einem eigenen Agenten**, weil er
 so keinen zusätzlichen Platz im Heartbeat kostet — bei einem einzigen
@@ -275,6 +278,27 @@ class SynapsenDecayAgent(BaseAgent):
             #    §7, S36 der Rechenkette). Vierter Schritt aus demselben Grund
             #    wie der dritte: kein zusaetzlicher Platz im Heartbeat.
             faltung_result = self._faltung_lauf(run_id)
+
+            # 5. Nachzug der Straenge (Konzept §7.7). Die Zuordnung eines
+            #    Fadens laeuft ausserhalb seiner Transaktion und darf
+            #    ausfallen; dieser Lauf ist ihr Rueckweg — und zugleich der
+            #    Weg, auf dem ein Bestand aus der Zeit vor der Strangschicht
+            #    seine Straenge bekommt. Ueber einen vollstaendig zugeordneten
+            #    Bestand laeuft er leer, und das kostet eine Abfrage.
+            self._audit_log(
+                DEFAULT_USER_ID, "praegung_straenge", "gestartet", f"run_id={run_id}",
+            )
+            strang_zugeordnet, strang_offen = praegung.faeden_ohne_strang_zuordnen(
+                POSTGRES_URL
+            )
+            self._audit_log(
+                DEFAULT_USER_ID, "praegung_straenge", "erledigt",
+                f"{strang_zugeordnet} von {strang_offen} Faeden zugeordnet",
+            )
+            logger.info(
+                f"Synapsen-Decay: {strang_zugeordnet} von {strang_offen} "
+                f"Faeden einem Strang zugeordnet"
+            )
 
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [

@@ -1251,3 +1251,65 @@ CREATE TABLE IF NOT EXISTS praegung_beruehrung (
 
 CREATE INDEX IF NOT EXISTS idx_praegung_beruehrung_faden
     ON praegung_beruehrung (faden_id, beruehrt_am DESC);
+
+-- ── Der Strang (Konzept §7.7) ───────────────────────────────────────────
+--
+-- Faeden, die thematisch beieinanderliegen, gehoeren demselben Strang an.
+-- **Unbegrenzt speichern, begrenzt wirken:** Keine Obergrenze fuer die
+-- Existenz eines Strangs; fuer die Wirkung nimmt der Praegungszug spaeter das
+-- Maximum ueber die Straenge, nicht ihre Summe.
+--
+-- **Das Zentroid wird gespeichert, nicht bei jedem Lesen gerechnet.** Ein
+-- Mittel ueber n Vektoren bei jedem Fadenanlauf waere ein Tabellenscan je
+-- Turn; als Spalte ist es ein Wert, der beim Beitritt fortgeschrieben wird.
+-- Der Preis ist bekannt: Es kann von der exakten Neuberechnung abweichen,
+-- wenn ein Faden nachtraeglich den Strang wechselt. Das tut heute keiner.
+--
+-- **`name` bleibt zunaechst leer** (§7.11): Der Name eines Strangs entsteht,
+-- er wird nicht gefunden — das ist eine eigene Scheibe und keine Spalte, die
+-- man beim Anlegen fuellt.
+CREATE TABLE IF NOT EXISTS praegung_strang (
+    id            SERIAL PRIMARY KEY,
+
+    -- Paar-Schema wie beim Faden: Ein Strang ist Novas thematische Bindung
+    -- gegenueber jemandem, nicht global.
+    user_id       TEXT        NOT NULL,
+    character_id  VARCHAR(50) NOT NULL,
+    beobachter    VARCHAR(20) NOT NULL DEFAULT 'assistant',
+
+    zentroid      VECTOR(768) NOT NULL,
+
+    -- Zeilenzahl, nicht Anlaesse. Die Staerke zaehlt spaeter **Anlaesse**
+    -- (verschiedene Tage, §7.7) und rechnet sie aus der Beruehrungstabelle;
+    -- diese Spalte ist der Divisor der Zentroid-Fortschreibung und sonst
+    -- nichts. Der Unterschied ist im Bestand zweimal teuer gewesen.
+    faden_zahl    INTEGER     NOT NULL DEFAULT 0,
+
+    -- **Wann der Strang entstand, nicht wann sein erster Faden entstand.** Die
+    -- beiden Spalten darueber tragen Fadenzeiten und koennen aelter sein als
+    -- der Strang — ein Nachzug ordnet Bestand aus der Zeit vor der Schicht zu.
+    -- `[gemessen]` 01.09.2026: Ohne diese Spalte war bei zwei vorgefundenen
+    -- Straengen nicht zu beantworten, wer sie angelegt hatte; die Diagnose
+    -- lief ueber Logzeiten statt ueber den Bestand.
+    angelegt_am   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    erster_faden  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    letzter_faden TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    name          TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_praegung_strang_paar
+    ON praegung_strang (user_id, character_id, letzter_faden DESC);
+
+-- NULL-faehig mit Absicht: Die Zuordnung laeuft **ausserhalb** der
+-- Transaktion, die den Faden schreibt. Dieselbe Entscheidung wie bei der
+-- Faltung (§7.4) — die Rechnung ist wiederholbar, das Ereignis nicht; ein
+-- Fehler beim Zuordnen darf keinen Faden mitnehmen. Was ohne Strang bleibt,
+-- holt der Nachzug.
+ALTER TABLE praegung_faden
+    ADD COLUMN IF NOT EXISTS strang_id INTEGER
+    REFERENCES praegung_strang(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_praegung_faden_strang
+    ON praegung_faden (strang_id);

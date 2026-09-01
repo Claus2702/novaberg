@@ -23,6 +23,7 @@ from config import (
     PRAEGUNG_ALPHA,
     PRAEGUNG_BODEN,
     PRAEGUNG_HALBSTRECKE,
+    PRAEGUNG_STRANG_NAEHE,
     PRAEGUNG_TOR_AUSSCHLAG,
     PRAEGUNG_TOR_SALIENZ,
 )
@@ -196,7 +197,258 @@ def faden_anlegen(
         f"eingang={ausschlag_eingang:.2f} -> absolut={ausschlag_absolut:.3f}, "
         f"herkunft={herkunft}, turn={turn_id or 'ohne'}"
     )
+
+    # Der Strang, **ausserhalb** der Transaktion oben und mit eigenem
+    # Fehlerpfad: Die Zuordnung ist eine Rechnung und wiederholbar, das Anlegen
+    # des Fadens ist ein Ereignis und nicht. Faellt sie aus, bleibt
+    # `strang_id` NULL und `faeden_ohne_strang_zuordnen` holt sie nach — der
+    # Faden geht dabei nie verloren (§7.7, dieselbe Entscheidung wie bei der
+    # Faltung in §7.4).
+    strang_zuordnen(postgres_url, faden_id)
+
     return faden_id
+
+
+def _vektor_lesen(roh: str | None) -> list[float] | None:
+    """Wandelt ein pgvector-Literal in eine Liste.
+
+    pgvector liefert `'[0.1,0.2,...]'` als Text; psycopg2 kennt den Typ nicht.
+    Ein unlesbarer Wert ist ein Fehler und kein Leerfall — er wird gemeldet und
+    fuehrt zum Ausfall der Zuordnung, nicht zu einem Nullvektor.
+    """
+    if not roh:
+        return None
+    try:
+        return [float(t) for t in roh.strip().strip("[]").split(",")]
+    except (AttributeError, ValueError) as fehler:
+        logger.error(f"Praegung: Vektor unlesbar — {fehler}")
+        return None
+
+
+def _vektor_schreiben(werte: list[float]) -> str:
+    """Das pgvector-Literal zu einer Liste."""
+    return "[" + ",".join(f"{w:.8f}" for w in werte) + "]"
+
+
+def strang_zuordnen(postgres_url: str, faden_id: int) -> int | None:
+    """Ordnet einen Faden dem naechstliegenden Strang zu oder gruendet einen.
+
+    Konzept §7.7. **Der Strang ist die groessere Runde auf der Themenlandkarte:**
+    Faeden, die beieinanderliegen, gehoeren zusammen, und zwanzig Faeden in
+    einem engen Bereich sind nicht redundant, sondern der Beleg fuer einen
+    starken Strang (§7.6).
+
+    **Das Zentroid wird fortgeschrieben, nicht neu gerechnet.** `zentroid_neu =
+    (zentroid × n + faden) / (n + 1)` — mathematisch dasselbe wie das Mittel
+    ueber alle n+1 Vektoren, aber ohne Tabellenscan je Turn. Der Divisor ist
+    `faden_zahl`, und das ist **Zeilenzahl und ausdruecklich nicht Anlaesse**:
+    Die Staerke zaehlt spaeter Anlaesse (§7.7), diese Spalte traegt den
+    Mittelwert und sonst nichts.
+
+    **Die Zuordnung ist reihenfolgeabhaengig, und das ist hier zulaessig.**
+    §7.6 verwarf die Verdraengung genau deswegen — dort war die Reihenfolge
+    beliebig. Hier ist sie **die Zeit**: Ein Faden trifft auf die Straenge, die
+    es bei seiner Entstehung gab. Der Nachzug haelt sich daran
+    (`faeden_ohne_strang_zuordnen` sortiert nach `entstanden_am`), sonst
+    entstuende bei jedem Lauf ein anderer Bestand.
+
+    Vorbedingung: `faden_id` bezeichnet eine Zeile mit Embedding. Ein Faden
+        ohne Vektor hat keinen Ort und bekommt keinen Strang — er behaelt
+        `strang_id = NULL` und wird beim naechsten Nachzug wieder betrachtet.
+    Nachbedingung: `praegung_faden.strang_id` zeigt auf einen Strang desselben
+        Paares, dessen `faden_zahl` und `letzter_faden` den Beitritt tragen.
+    Fehlerfaelle: Jeder Fehlschlag laesst `strang_id` auf NULL und meldet mit
+        Spur. **Ein Faden ohne Strang ist ein wiederholbarer Zustand, ein
+        verlorener Faden nicht** — deshalb laeuft diese Funktion ausserhalb der
+        Transaktion, die den Faden schreibt (dieselbe Entscheidung wie bei der
+        Faltung, §7.4).
+
+    Args:
+        postgres_url: Verbindung.
+        faden_id: der Faden, der seinen Strang sucht.
+
+    Returns:
+        Die Kennung des Strangs, oder None wenn keiner zugeordnet wurde.
+    """
+    # ── Eingabe ────────────────────────────────
+    if faden_id is None or faden_id <= 0:
+        logger.error(f"Praegung: Strangzuordnung abgelehnt — faden_id={faden_id}")
+        return None
+
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT user_id, character_id, beobachter, embedding::text,
+                       entstanden_am, strang_id
+                FROM praegung_faden WHERE id = %s
+                """,
+                (faden_id,),
+            )
+            zeile = cur.fetchone()
+            if zeile is None:
+                logger.error(f"Praegung: Faden {faden_id} nicht gefunden")
+                return None
+
+            user_id, character_id, beobachter, emb_roh, entstanden_am, vorhandener = zeile
+
+            if vorhandener is not None:
+                logger.info(
+                    f"Praegung: Faden {faden_id} traegt bereits Strang "
+                    f"{vorhandener} — unveraendert"
+                )
+                return vorhandener
+
+            faden_vektor: list[float] | None = _vektor_lesen(emb_roh)
+            if faden_vektor is None:
+                logger.warning(
+                    f"Praegung: Faden {faden_id} ohne Embedding — kein Ort auf der "
+                    f"Landkarte, kein Strang. Bleibt fuer den Nachzug offen"
+                )
+                return None
+
+            # ── Verarbeitung ───────────────────────────
+            # Der naechste Strang desselben Paares. `<=>` ist die
+            # Kosinus-Distanz; 1 - d ist die Aehnlichkeit, auf der die Schwelle
+            # steht — dieselbe Rechnung wie bei der Reaktivierung.
+            cur.execute(
+                """
+                SELECT id, zentroid::text, faden_zahl,
+                       1 - (zentroid <=> %s::vector) AS naehe
+                FROM praegung_strang
+                WHERE user_id = %s AND character_id = %s AND beobachter = %s
+                ORDER BY naehe DESC
+                LIMIT 1
+                """,
+                (_vektor_schreiben(faden_vektor), user_id, character_id, beobachter),
+            )
+            treffer = cur.fetchone()
+
+            if treffer is not None and treffer[3] >= PRAEGUNG_STRANG_NAEHE:
+                strang_id, zentroid_roh, faden_zahl, naehe = treffer
+                zentroid: list[float] | None = _vektor_lesen(zentroid_roh)
+                if zentroid is None or len(zentroid) != len(faden_vektor):
+                    logger.error(
+                        f"Praegung: Zentroid von Strang {strang_id} unbrauchbar "
+                        f"(Laenge {len(zentroid) if zentroid else 'None'} gegen "
+                        f"{len(faden_vektor)}) — Faden {faden_id} bleibt offen"
+                    )
+                    return None
+
+                neues_zentroid: list[float] = [
+                    (alt * faden_zahl + neu) / (faden_zahl + 1)
+                    for alt, neu in zip(zentroid, faden_vektor, strict=True)
+                ]
+                cur.execute(
+                    """
+                    UPDATE praegung_strang
+                       SET zentroid = %s::vector,
+                           faden_zahl = faden_zahl + 1,
+                           letzter_faden = GREATEST(letzter_faden, %s)
+                     WHERE id = %s
+                    """,
+                    (_vektor_schreiben(neues_zentroid), entstanden_am, strang_id),
+                )
+                cur.execute(
+                    "UPDATE praegung_faden SET strang_id = %s WHERE id = %s",
+                    (strang_id, faden_id),
+                )
+                logger.info(
+                    f"Praegung: Faden {faden_id} tritt Strang {strang_id} bei — "
+                    f"naehe={naehe:.4f} >= {PRAEGUNG_STRANG_NAEHE}, "
+                    f"jetzt {faden_zahl + 1} Faeden"
+                )
+                return strang_id
+
+            # Kein Strang nah genug: Der Faden gruendet einen. Sein Vektor ist
+            # das erste Zentroid — ein Strang aus einem Faden ist der Regelfall
+            # am Anfang und kein Sonderfall.
+            cur.execute(
+                """
+                INSERT INTO praegung_strang
+                    (user_id, character_id, beobachter, zentroid, faden_zahl,
+                     erster_faden, letzter_faden)
+                VALUES (%s, %s, %s, %s::vector, 1, %s, %s)
+                RETURNING id
+                """,
+                (user_id, character_id, beobachter,
+                 _vektor_schreiben(faden_vektor), entstanden_am, entstanden_am),
+            )
+            strang_id = cur.fetchone()[0]
+            cur.execute(
+                "UPDATE praegung_faden SET strang_id = %s WHERE id = %s",
+                (strang_id, faden_id),
+            )
+    except Exception as fehler:
+        logger.error(
+            f"Praegung: Strangzuordnung fuer Faden {faden_id} fehlgeschlagen — "
+            f"{fehler}. Der Faden bleibt ohne Strang und wird beim Nachzug "
+            f"erneut betrachtet"
+        )
+        return None
+
+    # ── Ausgabe ────────────────────────────────
+    beste = f"{treffer[3]:.4f}" if treffer is not None else "kein Strang vorhanden"
+    logger.info(
+        f"Praegung: Faden {faden_id} gruendet Strang {strang_id} — "
+        f"beste Naehe {beste} < {PRAEGUNG_STRANG_NAEHE}"
+    )
+    return strang_id
+
+
+def faeden_ohne_strang_zuordnen(postgres_url: str) -> tuple[int, int]:
+    """Holt nach, was ohne Strang geblieben ist — in der Reihenfolge der Zeit.
+
+    Konzept §7.7. Die Zuordnung laeuft ausserhalb der Fadentransaktion und darf
+    deshalb ausfallen; dieser Lauf ist ihr Rueckweg. Er ist zugleich der Weg,
+    auf dem ein Bestand aus der Zeit **vor** der Strangschicht seine Straenge
+    bekommt.
+
+    **Die Sortierung ist die Zusicherung, nicht die Bequemlichkeit.** Online-
+    Zuordnung ist reihenfolgeabhaengig; `entstanden_am, id` macht sie
+    reproduzierbar — zwei Laeufe ueber denselben Bestand ergeben denselben
+    Bestand. Ohne sie waere jeder Nachzug ein anderes Ergebnis, und keiner
+    davon falsch.
+
+    Nachbedingung: Die zurueckgegebenen Zahlen sind **gezaehlt, nicht
+    fortgeschrieben** — `zugeordnet` und `gesamt`. Die Vollstaendigkeit ist die
+    Zusicherung dieses Laufs; ohne die zweite Zahl waere `zugeordnet` allein
+    von einem Abbruch nicht zu unterscheiden.
+
+    Args:
+        postgres_url: Verbindung.
+
+    Returns:
+        `(zugeordnet, gesamt)` — wie viele einen Strang bekamen und wie viele
+        ohne einen dastanden.
+    """
+    # ── Eingabe ────────────────────────────────
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id FROM praegung_faden
+                 WHERE strang_id IS NULL AND embedding IS NOT NULL
+                 ORDER BY entstanden_am, id
+                """
+            )
+            offene: list[int] = [z[0] for z in cur.fetchall()]
+    except Exception as fehler:
+        logger.error(f"Praegung: Nachzug der Straenge nicht gelesen — {fehler}")
+        return (0, 0)
+
+    # ── Verarbeitung ───────────────────────────
+    zugeordnet: int = 0
+    for faden_id in offene:
+        if strang_zuordnen(postgres_url, faden_id) is not None:
+            zugeordnet += 1
+
+    # ── Ausgabe ────────────────────────────────
+    logger.info(
+        f"Praegung: Strang-Nachzug — {zugeordnet} von {len(offene)} Faeden "
+        f"zugeordnet"
+    )
+    return (zugeordnet, len(offene))
 
 
 def _verfall(tage: float, boden: float, halbstrecke: float) -> float:
