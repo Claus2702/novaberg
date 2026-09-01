@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **16:50 UTC** (gemessen via `date -u`). Davor 01.09.2026, 15:45 UTC.
+**Stand:** 1. September 2026 — juengster Eintrag **17:25 UTC** (gemessen via `date -u`). Davor 01.09.2026, 16:50 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,30 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 01.09.2026, 17:25 UTC — Dieselbe Vorgabe, dreimal gelegt ✅
+
+Der Zug war gebaut und bewegte nichts: +0,4 % am nahen Reiz. **Die Vorgabe blieb unveraendert — Mitte bei etwa 40 % Zug, oben gegen 100 % —, und dreimal wechselte nur die Skala, auf der *Mitte* und *oben* gemessen werden.**
+
+| | Mitte / oben | Grundlage | nah | fern | Verhaeltnis |
+|---|---|---|---|---|---|
+| 1 | 0,25 → 0,15 · 0,40 → 0,75 | Stellvertreter, gesetzte Stuetzstellen | +0,4 % | +0,0001 | 13,9 : 1 |
+| 2 | 0,20 → 0,40 · 0,40 → 0,95 | Stellvertreter (Median 0,308) | +3,7 % | +0,0016 | 9,5 : 1 |
+| **3** | **0,12 → 0,40 · 0,20 → 0,95** | **die vier echten Betriebswerte** | **+11,6 %** | +0,0015 | **32,5 : 1** |
+
+**Die beiden Stellvertreter waren sich einig und lagen trotzdem falsch.** Verdichtete Knoten des Hauptpaars: Median 0,308, Ende 0,427. Nutzerseitige KZG-Eintraege desselben Paars: 0,299 und 0,426. Die vier echten Betriebswerte: 0,0626 · 0,0821 · 0,1552 · 0,2034, Median **0,1187** — ein Faktor 2,6 darunter.
+
+> **Zwei unabhaengige Stellvertreter, die einander bestaetigen, sind noch kein Beleg fuer die Sache, die sie vertreten.** Sie teilen ihre Textsorte — beide sind verdichtet — und damit auch ihren Fehler. Die Uebereinstimmung misst, wie aehnlich sie einander sind, nicht wie nah sie am Gegenstand liegen.
+
+Im Betrieb bestaetigt, 17:25 UTC: Sog 0,1528, beta **0,724**, Eigen-Pfad **0,4656** gegen 0,4192 ohne Zug — **+11,1 %**, vorhergesagt waren 11,6 %.
+
+**Ein Befund an der eigenen Zusicherung, gefunden von der Neukalibrierung.** Ein Zeuge prueft `beta(0) < 0,01` und wurde rot, obwohl nichts kaputt war: **`beta(0)` ist bedeutungslos**, denn der Zuwachs ist `beta(g) x g x (1 - antrieb)` und traegt `g` als Faktor. Ein Turn ohne Sog bekommt nichts, gleich was die Kurve am Rand sagt. Die Zusicherung haengt jetzt am Zuwachs statt am Zwischenwert — **ein Zeuge auf eine Groesse, die niemand liest, bewacht nichts.**
+
+**Der Vorbehalt ist groesser geworden, nicht kleiner.** Die dritte Fassung steht auf **vier** Messwerten aus **einem** Paar, dessen Reize fuer die Messung geschrieben wurden — die duennste Grundlage aller drei. Sie kann auf genau diese Reize passen und sonst nichts. Die Konstante traegt den Vorbehalt bei sich; die Verteilung entsteht im Betrieb und entscheidet.
+
+Suite 2806 → **2807 gruen, 0 uebersprungen**. Kein neuer Linter-Befund.
 
 ---
 

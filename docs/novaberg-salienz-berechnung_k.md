@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Formel und Herleitung der Salienz für beide Beobachter
-**Stand:** 1. September 2026, 16:50 UTC (**§4a neu — der Zug aus Novas eigenem Zielsog**: der Antrieb konkurriert nicht mehr im `max()`, er zieht auf die Luecke nach oben; Kurve, verworfener Mittelwert-Entwurf und der ausdrueckliche Vorbehalt stehen dort). Davor 1. September 2026, 15:45 UTC (§4: der Antrieb `ziel_gravitation` ist gemessen — Mittel 0,034 gegen 0,692, entscheidend in **4 von 2786** Zeilen; die aeltere Angabe *„0.0 in allen betrachteten Laeufen"* ist damit praeziser gefasst). Davor 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
+**Stand:** 1. September 2026, 17:25 UTC (§4a: **die Kurve dreimal gelegt** — die Vorgabe blieb, die Skala wechselte; die dritte Fassung steht auf den vier echten Betriebswerten und traegt im Betrieb +11,1 % statt +0,4 %). Davor 1. September 2026, 16:50 UTC (**§4a neu — der Zug aus Novas eigenem Zielsog**: der Antrieb konkurriert nicht mehr im `max()`, er zieht auf die Luecke nach oben; Kurve, verworfener Mittelwert-Entwurf und der ausdrueckliche Vorbehalt stehen dort). Davor 1. September 2026, 15:45 UTC (§4: der Antrieb `ziel_gravitation` ist gemessen — Mittel 0,034 gegen 0,692, entscheidend in **4 von 2786** Zeilen; die aeltere Angabe *„0.0 in allen betrachteten Laeufen"* ist damit praeziser gefasst). Davor 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
 **Pfad:** novaberg/docs/novaberg-salienz-berechnung_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -158,10 +158,51 @@ gelegt (400 `lzg_knoten` als Ersatz für Turn-Embeddings, Median 0,308), und die
 Turns tragen 0,20 und 0,08. **Verdichtete Turns liegen textsortennäher an Zielsätzen als rohe
 Prompts** — die Einschränkung stand bei der Messung dabei und ist eingetreten.
 
-**Damit ist die Kurve heute eher unter- als übersteuert.** Was sie wirklich tut, entscheidet eine
-Reihe über echte Turns; erst deren Verteilung sagt, wo `SALIENZ_ZUG_G0` liegen muss. Die
-`salienz_formel`-Zeile trägt seit heute `zielsog` und `zug_staerke` mit, damit die Reihe kein
-Sonderskript braucht.
+**Damit war die Kurve eher unter- als übersteuert** — und genau das war der Anlass, sie noch am
+selben Tag zweimal neu zu legen.
+
+#### Drei Fassungen an einem Tag, und der Unterschied ist die Skala
+
+**Die Vorgabe blieb dieselbe: Mitte bei etwa 40 % Zug, oben gegen 100 %.** Was sich änderte, war
+die Skala, auf der *Mitte* und *oben* gemessen werden.
+
+| | Mitte / oben | `g0` | `w` | Grundlage |
+|---|---|---|---|---|
+| 1 | 0,25 → 0,15 · 0,40 → 0,75 | 0,3418 | 0,0529 | Stellvertreter, drei gesetzte Stützstellen |
+| 2 | 0,20 → 0,40 · 0,40 → 0,95 | 0,2242 | 0,0597 | Stellvertreter (Median 0,308, Ende 0,427) |
+| **3** | **0,12 → 0,40 · 0,20 → 0,95** | **0,1297** | **0,0239** | **die vier echten Betriebswerte** |
+
+**Die beiden Stellvertreter waren sich einig und lagen trotzdem falsch.** Die verdichteten Knoten
+des Hauptpaars und seine nutzerseitigen KZG-Einträge ergeben Median **0,308** bzw. **0,299** und
+enden beide bei **0,427**. Die vier echten Betriebswerte liegen bei **0,0626 · 0,0821 · 0,1552 ·
+0,2034**, Median **0,1187** — ein Faktor 2,6 darunter.
+
+> **Zwei unabhängige Stellvertreter, die einander bestätigen, sind noch kein Beleg für die Sache,
+> die sie vertreten.** Sie teilen ihre Textsorte — beide sind verdichtet — und damit auch ihren
+> Fehler. Die Übereinstimmung misst, wie ähnlich sie einander sind, nicht wie nah sie am
+> Gegenstand liegen.
+
+*Nicht getrennt:* ob die Stellvertreter zu hoch liegen, weil sie verdichtet sind, oder weil sie
+vom anderen Paar stammen. Der Bestand kann das nicht beantworten — `gespraech_archiv` trägt null
+Zeilen, es gibt keinen Korpus roher Nutzer-Prompts.
+
+`[gemessen]` an denselben zwei Reizen, Zuwachs auf einen Antrieb von 0,5:
+
+| Fassung | nah an ihren Zielen | fern | Verhältnis |
+|---|---|---|---|
+| 1 | +0,0020 (0,4 %) | +0,0001 | 13,9 : 1 |
+| 2 | +0,0164 (3,7 %) | +0,0016 | 9,5 : 1 |
+| **3** | **+0,0511 (11,6 %)** | +0,0015 | **32,5 : 1** |
+
+**Die dritte ist auf beiden Seiten besser: merklicher und trennschärfer.** Im Betrieb bestätigt,
+17:25 UTC: Sog 0,1528, β **0,724**, Eigen-Pfad **0,4656** gegen 0,4192 ohne Zug — **+11,1 %**,
+vorhergesagt waren 11,6 %.
+
+> ⚠ **Und sie steht auf vier Messwerten aus einem einzigen Paar**, dessen Reize für die Messung
+> geschrieben wurden. Das ist die dünnste Grundlage aller drei Fassungen: Sie kann auf genau diese
+> Reize passen und sonst nichts. **Die Konstante trägt den Vorbehalt bei sich**, und die
+> `salienz_formel`-Zeile trägt `zielsog` und `zug_staerke` mit — die Verteilung entsteht im
+> Betrieb, und sie ist es, die entscheidet.
 
 ### Die Normierung — seit dem 24.08.2026
 
