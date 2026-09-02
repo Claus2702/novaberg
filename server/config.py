@@ -1432,6 +1432,54 @@ EMOTION_SEKTOR_MAP: dict[str, int] = {
     "hoffnung": 8, "neugierig": 8,
 }
 
+# Valenz je kanonischer Emotion, auf [-1, +1]. **Vorzeichen ist Richtung,
+# Betrag ist Ladung** — beide werden getrennt gelesen: die Strangvalenz nimmt
+# das Vorzeichen mit, die Strangstaerke nur den Betrag.
+#
+# **Warum eine gesetzte Tabelle und keine Ableitung aus dem Plutchik-Rad.** Das
+# Rad ordnet nach **Verwandtschaft**, nicht nach Wert; Nachbarn sind aehnlich,
+# Gegenueberliegende sind Gegensaetze. Legt man eine Achse durch Freude ↔ Trauer
+# und projiziert, kommen **drei von acht Sektoren falsch heraus**: Angst und
+# Aerger stuenden auf 0 (beide sind klar negativ), Ueberraschung auf -0,71
+# (sie ist richtungslos). Valenz ist im Kreis schlicht nicht kodiert.
+#
+# **Die Herkunft ist Russells Circumplex** — Valenz und Erregung als zwei
+# empirisch erhobene Achsen. Die Erregungsachse liegt hier nicht; sie waere eine
+# zweite Groesse mit eigenem Leser.
+#
+# **Die zweite Zahl je Sektor ist die schwaechere Form.** Der Kanon fuehrt sie
+# ohnehin paarweise, und `EMOTION_AROUSAL_DECAY` daneben nutzt dieselbe Ordnung.
+#
+# **Ueberraschung traegt eine kleine Ladung ohne belastbare Richtung.** Ihr
+# Vorzeichen ist die schwaechste Stelle dieser Tabelle: Sie kippt je nach
+# Anlass. Der Betrag ist klein genug, dass die Wahl wenig traegt — und `0,0`
+# waere die staerkere Behauptung gewesen, naemlich dass eine Ueberraschung gar
+# keine Ladung hinterlaesst.
+#
+# **Alle sechzehn sind Setzungen und ungemessen**, wie die Verfallsraten
+# daneben. `[gerechnet]` 02.09.2026 ueber 1.786 echte Emotionszeilen ueber dem
+# Salienz-Tor, 20.000 simulierte Vierer-Straenge: Der Betrag streut dann
+# **0,225 bis 1,000** (Mittel 0,593, Streuung 0,137) — gegen **97,05 % exakt
+# 1,00** bei der Dreiwerte-Gruppe davor.
+EMOTION_VALENZ: dict[str, float] = {
+    # Sektor 1 — Freude
+    "begeisterung":  1.00, "freude":        0.80,
+    # Sektor 2 — Zuversicht: ruhig positiv, nicht euphorisch
+    "dankbarkeit":   0.75, "zufriedenheit": 0.60,
+    # Sektor 3 — Angst: negativ und erregt
+    "stress":       -0.70, "unsicherheit": -0.55,
+    # Sektor 4 — Ueberraschung: kleine Ladung, keine belastbare Richtung
+    "ueberrascht":   0.10, "verwundert":    0.05,
+    # Sektor 5 — Trauer: der Gegenpol der Freude, voller Ausschlag
+    "verzweiflung": -1.00, "traurigkeit":  -0.80,
+    # Sektor 6 — Enttaeuschung
+    "frustration":  -0.75, "enttaeuschung": -0.65,
+    # Sektor 7 — Aerger: stark negativ, aber unter der Trauer
+    "wut":          -0.90, "aerger":       -0.70,
+    # Sektor 8 — Neugier: mild positiv; Erwartung faerbt, sie draengt nicht
+    "hoffnung":      0.50, "neugierig":     0.35,
+}
+
 # Sektor → Emotions-Gruppe (für Vektor-Berechnung)
 # Plutchik-Reihenfolge: positive und negative interleaved
 SEKTOR_GRUPPE: dict[int, str] = {
@@ -1793,6 +1841,55 @@ PRAEGUNG_KONFRONTATION_SCHWELLE: float = float(
 # mehr als Beiwerk und weniger als Dominanz. Bei vier Faeden ist es einer.
 # Ungemessen — es gibt bis heute einen Strang.
 PRAEGUNG_SEKTOR8_ZUG: float = float(os.getenv("PRAEGUNG_SEKTOR8_ZUG", "0.25"))
+
+# ── Die Ladung eines Strangs (Konzept §7.7, Fassung vom 02.09.2026) ──────────
+#
+#   strang_staerke = ( W_SALIENZ · mittel(faden.salienz)
+#                    + W_VALENZ  · mittel(|valenz_faden|)
+#                    + W_ANZAHL  · norm(faden_zahl) )
+#                    × f_praesenz( heute − letzte Beruehrung )
+#
+# **Vorgabe des Eigentuemers, 02.09.2026:** *„Salienz, Valenz, Anzahl Faeden.
+# Das macht den Strang stark."* — und zur Anzahl: *„Wenn ich viele emotionale
+# Eindruecke (Faeden) habe, dann ist ein Thema intensiv gepraegt. Es ist
+# lebendig. Es ist praesent."*
+#
+# **Sie loest die Fassung des Konzepts ab**, die Anlaesse, Spitze und Spanne
+# nannte. Der Grund gegen Anlaesse dort war ein **Messfehler** — zwanzig Zeilen
+# aus einer Erhebung taeuschten eine Stichprobe von zwanzig vor. Hier ist es
+# keine Stichprobe: Das Tor hat jeden Faden einzeln durchgelassen (4 von 13
+# Pruefungen im Betrieb), und zwanzig Faeden sind zwanzig Erlebnisse.
+#
+# **`mittel(|valenz|)` und nicht `|mittel(valenz)|`**, ebenfalls Vorgabe: *„Wenn
+# die sich aufheben wuerden, wuerden viele Faeden eigentlich zu einer Nullung
+# fuehren statt zu einer Intensivierung der Praegung."* Zwei Freude- und zwei
+# Trauerfaeden ergeben so **1,0** statt 0.
+PRAEGUNG_W_SALIENZ: float = float(os.getenv("PRAEGUNG_W_SALIENZ", "0.4"))
+PRAEGUNG_W_VALENZ:  float = float(os.getenv("PRAEGUNG_W_VALENZ",  "0.2"))
+PRAEGUNG_W_ANZAHL:  float = float(os.getenv("PRAEGUNG_W_ANZAHL",  "0.4"))
+
+# Saettigung der Fadenzahl: `n / (n + K)`. Ein Faden ergibt 0,20, vier ergeben
+# 0,50, zwanzig 0,83. **Kein Deckel und keine Obergrenze** — aber der zwanzigste
+# Faden traegt weniger als der zweite, sonst uebernaehme die Anzahl die ganze
+# Groesse. Ungemessen: Es gibt heute einen Strang mit vier Faeden.
+PRAEGUNG_ANZAHL_SAETTIGUNG: float = float(
+    os.getenv("PRAEGUNG_ANZAHL_SAETTIGUNG", "4.0")
+)
+
+# `f_praesenz` — dieselbe hyperbolische Form wie der Fadenverfall, mit eigenem
+# Boden und eigener Halbstrecke. **Ohne sie stuende ein Strang, der vor Jahren
+# endete, dauerhaft hoch** (§7.9): W_ANZAHL und die beiden Mittel kennen die
+# Gegenwart nicht.
+#
+# Der Boden liegt hoeher als beim Faden (0,20): Ein Strang ist die Summe
+# mehrerer Erlebnisse und verblasst langsamer als jedes einzelne. Beide Zahlen
+# sind Setzungen und warten auf Laufzeit.
+PRAEGUNG_PRAESENZ_BODEN:       float = float(
+    os.getenv("PRAEGUNG_PRAESENZ_BODEN", "0.35")
+)
+PRAEGUNG_PRAESENZ_HALBSTRECKE: float = float(
+    os.getenv("PRAEGUNG_PRAESENZ_HALBSTRECKE", "90")
+)
 
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem

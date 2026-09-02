@@ -21,22 +21,30 @@ import psycopg2
 
 from config import (
     EMOTION_SEKTOR_MAP,
+    EMOTION_VALENZ,
     PRAEGUNG_ALPHA,
+    PRAEGUNG_ANZAHL_SAETTIGUNG,
     PRAEGUNG_BODEN,
     PRAEGUNG_HALBSTRECKE,
     PRAEGUNG_KONFRONTATION_SCHWELLE,
+    PRAEGUNG_PRAESENZ_BODEN,
+    PRAEGUNG_PRAESENZ_HALBSTRECKE,
     PRAEGUNG_SEKTOR8_ZUG,
     PRAEGUNG_SPEICHEN_SCHUETZEND,
     PRAEGUNG_SPEICHEN_WILD,
     PRAEGUNG_STRANG_NAEHE,
     PRAEGUNG_TOR_AUSSCHLAG,
     PRAEGUNG_TOR_SALIENZ,
+    PRAEGUNG_W_ANZAHL,
+    PRAEGUNG_W_SALIENZ,
+    PRAEGUNG_W_VALENZ,
     SEKTOR_GRUPPE,
 )
 
 logger = logging.getLogger("ki_server.praegung")
 
 HERKUNFT_KANON: frozenset[str] = frozenset({"erlebt", "bewertet", "geschlossen"})
+
 AUSGANG_KANON:  frozenset[str] = frozenset({"offen", "erfolg", "misserfolg"})
 
 
@@ -116,6 +124,7 @@ def faden_anlegen(
     turn_id: str | None = None,
     herkunft: str = "erlebt",
     beobachter: str = "assistant",
+    salienz: float | None = None,
 ) -> int | None:
     """Legt einen Faden an und gibt seine Kennung zurueck.
 
@@ -140,6 +149,9 @@ def faden_anlegen(
         turn_id: Rueckbezug auf die Quelle.
         herkunft: erlebt | bewertet | geschlossen.
         beobachter: Schreiber der Zeile.
+        salienz: Wie stark der Reiz draengte, [0,1]. **Nullfaehig:** Wer sie
+            nicht kennt, schreibt keine — ein Vorgabewert waere eine erfundene
+            Messung, und die Strangstaerke rechnet ohne sie weiter.
 
     Returns:
         Die Kennung des Fadens, oder None bei verletzter Vorbedingung.
@@ -181,13 +193,13 @@ def faden_anlegen(
                 INSERT INTO praegung_faden
                     (user_id, character_id, beobachter, turn_id, embedding,
                      emotion, ausschlag_eingang, ausschlag_absolut,
-                     ausschlag_aktuell, herkunft)
-                VALUES (%s, %s, %s, %s, %s::vector, %s, %s, %s, %s, %s)
+                     ausschlag_aktuell, herkunft, salienz)
+                VALUES (%s, %s, %s, %s, %s::vector, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
                 (user_id, character_id, beobachter, turn_id, embedding_str,
                  emotion, ausschlag_eingang, ausschlag_absolut,
-                 ausschlag_absolut, herkunft),
+                 ausschlag_absolut, herkunft, salienz),
             )
             faden_id: int = cur.fetchone()[0]
     except Exception as fehler:
@@ -482,15 +494,17 @@ def strang_histogramm_rechnen(postgres_url: str, strang_id: int) -> dict | None:
             if gesamt:
                 dominant: int | None = histogramm.index(max(histogramm)) + 1
                 konzentration: float | None = max(histogramm) / gesamt
-                positiv = sum(
-                    n for i, n in enumerate(histogramm, start=1)
-                    if SEKTOR_GRUPPE.get(i) == "positiv"
-                )
-                negativ = sum(
-                    n for i, n in enumerate(histogramm, start=1)
-                    if SEKTOR_GRUPPE.get(i) == "negativ"
-                )
-                valenz: float | None = (positiv - negativ) / gesamt
+                # **Die Valenz kommt aus `EMOTION_VALENZ`, nicht aus der
+                # Sektorgruppe** (seit 02.09.2026): Sie traegt damit
+                # Zwischenstufen statt +1/-1/0. Gerechnet wird ueber die
+                # Emotionen, nicht ueber das Histogramm — die Tabelle
+                # unterscheidet innerhalb eines Sektors (`begeisterung` 1,00
+                # gegen `freude` 0,80), das Histogramm kann das nicht.
+                valenz: float | None = sum(
+                    EMOTION_VALENZ.get(emotion, 0.0) * anzahl
+                    for emotion, anzahl in zeilen
+                    if emotion in EMOTION_SEKTOR_MAP
+                ) / gesamt
             else:
                 dominant, konzentration, valenz = None, None, None
 
@@ -670,6 +684,174 @@ def strang_richtung(
         f"negativ {negativ} und Konfrontationsmass {konfrontation:+.4f} <= "
         f"{PRAEGUNG_KONFRONTATION_SCHWELLE}",
     )
+
+
+def strang_staerke(postgres_url: str, strang_id: int) -> dict | None:
+    """Wie stark ein Strang zieht — Salienz, Valenz, Anzahl, mal Praesenz.
+
+    Konzept §7.7 in der Fassung vom 02.09.2026. **Vorgabe des Eigentuemers:**
+    *„Salienz, Valenz, Anzahl Faeden. Das macht den Strang stark."*
+
+        staerke = ( W_SALIENZ · mittel(faden.salienz)
+                  + W_VALENZ  · mittel(|valenz_faden|)
+                  + W_ANZAHL  · n / (n + K) )
+                  × f_praesenz( heute − letzte Beruehrung )
+
+    **Sie wird nicht gespeichert** — dieselbe Entscheidung wie bei der Richtung:
+    `f_praesenz` macht sie zeitabhaengig, und eine Spalte truege die Antwort von
+    gestern. Die Rechnung ist ein Aggregat ueber die Faeden eines Strangs.
+
+    **`mittel(|valenz|)`, nicht `|mittel(valenz)|`.** Zwei Freude- und zwei
+    Trauerfaeden ergeben so 1,0 statt 0. Vorgabe: *„Wenn die sich aufheben
+    wuerden, wuerden viele Faeden eigentlich zu einer Nullung fuehren statt zu
+    einer Intensivierung der Praegung."* Ein Faden traegt seine Valenz heute nur
+    als Sektorzugehoerigkeit (+1, -1, oder 0 bei Ueberraschung); die Groesse
+    steht damit **nahezu konstant auf 1,0** und wird erst tragend, wenn Sektor 4
+    haeufiger vorkommt. Der Befund steht in der Fundliste, die Absicht ist
+    bestaetigt.
+
+    **Additiv, nicht multiplikativ** (Regel a des Konzepts §10.0): Keine Null aus
+    einer Multiplikation, nur weil ein Eingang null ist.
+
+    Vorbedingung: `strang_id` bezeichnet eine Zeile in `praegung_strang`.
+    Nachbedingung: Ein Wert auf [0, 1] samt seinen drei Eingaengen und der
+        Praesenz — **der Bericht traegt die Teile, nicht nur die Summe.** Ohne
+        sie ist im Nachhinein nicht zu sehen, welcher Eingang die Zahl gemacht
+        hat, und genau das war bei der Salienz am 01.09.2026 die Frage.
+    Fehlerfaelle: Ein Strang ohne Faeden ergibt None. Faeden **ohne** Salienz
+        zaehlen fuer das Mittel nicht mit und werden gemeldet; steht keiner mit
+        Salienz da, ist der Eingang 0,0 und die Zahl daneben sagt es.
+
+    Args:
+        postgres_url: Verbindung.
+        strang_id: der Strang.
+
+    Returns:
+        `{"staerke", "salienz_mittel", "valenz_mittel", "anzahl_term",
+        "praesenz", "faden_zahl", "ohne_salienz", "tage_still"}` oder None.
+    """
+    # ── Eingabe ────────────────────────────────
+    if strang_id is None or strang_id <= 0:
+        logger.error(f"Praegung: Staerke abgelehnt — strang_id={strang_id}")
+        return None
+
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            # **Die Beruehrungen stehen in einem eigenen Ausdruck, nicht in
+            # einem JOIN.** Ein `LEFT JOIN` auf `praegung_beruehrung`
+            # vervielfacht die Fadenzeilen — ein Faden mit drei Beruehrungen
+            # erscheint dreimal, `count(*)` zaehlt dann Paare statt Faeden und
+            # `avg(salienz)` gewichtet oft beruehrte Faeden staerker.
+            # `[gemessen]` 02.09.2026: Die erste Fassung meldete **8 Faeden**
+            # fuer einen Strang, der vier hat. Gefunden hat es die Vorhersage
+            # vor dem Lauf, nicht die 16 Zeugen — die ersetzen den Cursor und
+            # sehen die Abfrage nicht.
+            #
+            # **Je Emotion eine Zeile**, weil die Valenz aus `EMOTION_VALENZ`
+            # kommt und nicht mehr aus einer Dreiwerte-Gruppe: Die Tabelle lebt
+            # in Python, also holt die Abfrage die Emotionen und rechnet nicht
+            # selbst.
+            cur.execute(
+                """
+                SELECT f.emotion, count(*), count(f.salienz),
+                       coalesce(sum(f.salienz), 0.0)
+                FROM praegung_faden f
+                WHERE f.strang_id = %s
+                GROUP BY f.emotion
+                """,
+                (strang_id,),
+            )
+            je_emotion: list = cur.fetchall()
+
+            cur.execute(
+                """
+                SELECT EXTRACT(EPOCH FROM (NOW() - GREATEST(
+                           max(f.entstanden_am),
+                           coalesce((SELECT max(b.beruehrt_am)
+                                       FROM praegung_beruehrung b
+                                       JOIN praegung_faden g ON g.id = b.faden_id
+                                      WHERE g.strang_id = %s),
+                                    max(f.entstanden_am))
+                       ))) / 86400.0
+                FROM praegung_faden f
+                WHERE f.strang_id = %s
+                """,
+                (strang_id, strang_id),
+            )
+            tage_still = (cur.fetchone() or [0.0])[0]
+    except Exception as fehler:
+        logger.error(
+            f"Praegung: Staerke von Strang {strang_id} nicht lesbar — {fehler}"
+        )
+        return None
+
+    faden_zahl:  int   = sum(z[1] for z in je_emotion)
+    mit_salienz: int   = sum(z[2] for z in je_emotion)
+    salienz_summe: float = sum(float(z[3]) for z in je_emotion)
+    if not faden_zahl:
+        logger.warning(f"Praegung: Strang {strang_id} hat keine Faeden")
+        return None
+
+    # ── Verarbeitung ───────────────────────────
+    # **`mittel(|valenz|)` ueber die Tabelle**, nicht ueber die Sektorgruppe.
+    # Bis zum 02.09.2026 trug ein Faden ±1 oder 0, und die Groesse stand in
+    # 97,05 % der Faelle auf exakt 1,00 — eine Konstante mit Nachkommastellen.
+    # Eine Emotion ausserhalb der Tabelle traegt **keine** Ladung und wird
+    # gemeldet; ein Vorgabewert waere eine erfundene Faerbung.
+    unbekannt: int = 0
+    valenz_summe: float = 0.0
+    for emotion, anzahl, _mit_sal, _sum_sal in je_emotion:
+        wert = EMOTION_VALENZ.get(emotion)
+        if wert is None:
+            unbekannt += anzahl
+            logger.warning(
+                f"Praegung: Strang {strang_id} — Emotion '{emotion}' "
+                f"({anzahl}x) steht nicht in EMOTION_VALENZ und faerbt nicht"
+            )
+            continue
+        valenz_summe += abs(wert) * anzahl
+    valenz_mittel: float = valenz_summe / faden_zahl
+    salienz_mittel: float = (
+        salienz_summe / mit_salienz if mit_salienz else 0.0
+    )
+    anzahl_term:   float = faden_zahl / (faden_zahl + PRAEGUNG_ANZAHL_SAETTIGUNG)
+    praesenz:      float = _verfall(
+        max(0.0, float(tage_still or 0.0)),
+        PRAEGUNG_PRAESENZ_BODEN, PRAEGUNG_PRAESENZ_HALBSTRECKE,
+    )
+
+    summe: float = (
+        PRAEGUNG_W_SALIENZ * float(salienz_mittel)
+        + PRAEGUNG_W_VALENZ * valenz_mittel
+        + PRAEGUNG_W_ANZAHL * anzahl_term
+    )
+    staerke: float = summe * praesenz
+
+    # ── Ausgabe ────────────────────────────────
+    fehlend: int = faden_zahl - mit_salienz
+    if fehlend:
+        logger.warning(
+            f"Praegung: Strang {strang_id} — {fehlend} von {faden_zahl} Faeden "
+            f"ohne Salienz; das Mittel steht auf {float(salienz_mittel):.4f} "
+            f"und traegt sie nicht"
+        )
+    logger.info(
+        f"Praegung: Strang {strang_id} Staerke {staerke:.4f} — "
+        f"salienz {float(salienz_mittel):.4f}, valenz {valenz_mittel:.4f}, "
+        f"anzahl {anzahl_term:.4f} ({faden_zahl} Faeden), "
+        f"praesenz {praesenz:.4f} ({float(tage_still or 0):.1f} Tage still)"
+    )
+    return {
+        "staerke":        staerke,
+        "salienz_mittel": float(salienz_mittel),
+        "valenz_mittel":  valenz_mittel,
+        "anzahl_term":    anzahl_term,
+        "praesenz":       praesenz,
+        "faden_zahl":     faden_zahl,
+        "ohne_salienz":   fehlend,
+        "ohne_valenz":    unbekannt,
+        "tage_still":     float(tage_still or 0.0),
+    }
 
 
 def faeden_ohne_strang_zuordnen(postgres_url: str) -> tuple[int, int]:

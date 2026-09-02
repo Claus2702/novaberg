@@ -15,10 +15,11 @@ synapsen_k §9, P6; queue-verfall_k §11; faszination_k §7.4, §7.7):
   5. faeden_ohne_strang_zuordnen — holt die Strangzuordnung nach, die
                            außerhalb der Fadentransaktion läuft und deshalb
                            ausfallen darf.
-  6. Strang-Richtungen — rechnet je Strang Annäherung oder Vermeidung aus
-                           Histogramm und Charakter-Rad und schreibt sie ins
-                           Protokoll. Kein Bestand: Die Richtung hängt am Rad
-                           und damit am Zustand.
+  6. Strang-Richtungen und -Ladung — rechnet je Strang Annäherung oder
+                           Vermeidung aus Histogramm und Charakter-Rad, dazu die
+                           Stärke aus Salienz, Valenz, Anzahl und Präsenz, und
+                           schreibt beides in **eine** Protokollzeile. Kein
+                           Bestand: beide hängen am Zustand.
 
 **Der dritte Schritt steht hier und nicht in einem eigenen Agenten**, weil er
 so keinen zusätzlichen Platz im Heartbeat kostet — bei einem einzigen
@@ -268,6 +269,13 @@ class SynapsenDecayAgent(BaseAgent):
             histogramm: list[int] = list(zeile["sektor_histogramm"] or [])
             richtung, grund = praegung.strang_richtung(histogramm, mass)
 
+            # Die Ladung daneben, in derselben Zeile: Richtung **und** Staerke
+            # sind die beiden Groessen, die der Praegungszug zusammen braucht
+            # (§10.3, `max_j(sim_j · ladung_j)` ueber Straenge mit Annaeherung).
+            # Getrennt protokolliert waeren sie im Nachhinein nicht mehr
+            # demselben Zeitpunkt zuzuordnen.
+            ladung = praegung.strang_staerke(POSTGRES_URL, zeile["id"]) or {}
+
             pipeline_log.log_berechnung(
                 turn_id      = run_id,
                 node         = "praegung_strang",
@@ -279,6 +287,9 @@ class SynapsenDecayAgent(BaseAgent):
                     "grund":          grund,
                     "histogramm":     histogramm,
                     "konfrontation":  mass,
+                    # Die Teile neben der Summe: Ohne sie ist nicht zu sehen,
+                    # welcher Eingang die Zahl gemacht hat.
+                    **{f"ladung_{k}": v for k, v in ladung.items()},
                 },
                 user_id      = paar[0],
                 character_id = paar[1],

@@ -213,6 +213,11 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
                              if embedding else None),
             turn_id       = state.get("turn_id"),
             herkunft      = "erlebt",
+            # Der erste der drei Eingaenge der Strangstaerke (§7.7): wie stark
+            # der Reiz **draengte**. Der Ausschlag daneben sagt, wie stark er
+            # **fuehlte** — bis zum 02.09.2026 ueberlebte die Salienz nur in der
+            # Torzeile des Protokolls, und das verfaellt.
+            salienz       = salienz,
         )
 
     # ── Ausgabe ────────────────────────────────

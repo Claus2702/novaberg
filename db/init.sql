@@ -1225,6 +1225,17 @@ CREATE TABLE IF NOT EXISTS praegung_faden (
     -- (Pixie aus mehreren Bestaenden, darf nicht zurueckwirken).
     herkunft            VARCHAR(20)      NOT NULL DEFAULT 'erlebt',
 
+    -- Die Salienz des Turns, an dem der Faden entstand (Konzept §7.7, Fassung
+    -- vom 02.09.2026). **Nullfaehig mit Absicht:** Faeden aus der Zeit vor
+    -- dieser Spalte tragen sie nicht, und ein Vorgabewert waere eine erfundene
+    -- Messung. Der Bestand ist einmalig aus den Torzeilen des `pipeline_log`
+    -- nachgezogen — dort steht sie seit Scheibe 1, aber das Log verfaellt.
+    --
+    -- Sie ist der erste der drei Eingaenge der Strangstaerke: **wie stark der
+    -- einzelne Eindruck draengte.** Der Ausschlag daneben sagt, wie stark er
+    -- **fuehlte** — beide zusammen liessen das Tor ihn durch.
+    salienz             DOUBLE PRECISION,
+
     entstanden_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW()
 );
 

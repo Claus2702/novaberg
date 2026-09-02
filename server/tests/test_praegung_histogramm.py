@@ -22,9 +22,9 @@ Die Zusicherungen:
   2. **Der dominante Sektor ist der groesste**, nicht der erste.
   3. **Die Konzentration ist der Anteil des dominanten Sektors.**
   4. **Bimodal ergibt nicht neutral** — der Fall, um den §7.8 gebaut ist.
-  5. **Valenz zaehlt Sektor 4 in keine Richtung** — er ist als neutral gefuehrt,
-     die Haelfte der Awe-Dyade, und ihn einer Seite zuzuschlagen waere eine
-     Setzung, die das Konzept nicht macht.
+  5. **Die Valenz kommt aus `EMOTION_VALENZ`** und traegt Zwischenstufen —
+     `begeisterung` 1,00 gegen `freude` 0,80, und Sektor 4 nahe null. Das
+     Histogramm allein koennte innerhalb eines Sektors nicht unterscheiden.
   6. **Eine Emotion ohne Sektor faerbt nicht mit und wird gemeldet**, statt
      stillschweigend auf einem Sektor zu landen.
   7. **Ein Strang ohne zaehlbare Faeden traegt NULL**, keine erfundene Null.
@@ -90,18 +90,35 @@ class AmbivalenzUeberlebtTest(unittest.TestCase):
             "genau die Ambivalenz, die das Konzept erhalten will",
         )
 
-    def test_die_valenz_zaehlt_sektor_vier_in_keine_richtung(self) -> None:
-        """Ueberraschung ist als neutral gefuehrt, die Haelfte der Awe-Dyade."""
-        ergebnis, _ = _rechnen([("freude", 1), ("ueberrascht", 2), ("wut", 1)])
-        self.assertAlmostEqual(
-            ergebnis["valenz"], 0.0, places=6,
-            msg="Sektor 4 ist einer Richtung zugeschlagen worden",
+    def test_ueberraschung_traegt_kaum_valenz(self) -> None:
+        """Seit dem 02.09.2026 eine kleine Ladung statt einer Null.
+
+        `EMOTION_VALENZ` gibt Sektor 4 einen Betrag nahe null und ein
+        Vorzeichen, das kaum traegt — sie kippt je nach Anlass. `0,0` waere die
+        staerkere Behauptung gewesen: dass eine Ueberraschung gar nichts
+        hinterlaesst.
+        """
+        ergebnis, _ = _rechnen([("ueberrascht", 4)])
+        self.assertLess(
+            abs(ergebnis["valenz"]), 0.2,
+            "Sektor 4 traegt eine Ladung, die ihm nicht zusteht",
         )
-        self.assertEqual(ergebnis["histogramm"][3], 2, "Er faehlt trotzdem mit")
+        self.assertEqual(ergebnis["histogramm"][3], 4, "Er zaehlt trotzdem mit")
+
+    def test_die_tabelle_unterscheidet_innerhalb_eines_sektors(self) -> None:
+        """`begeisterung` 1,00 gegen `freude` 0,80 — das Histogramm kann das nicht."""
+        stark, _  = _rechnen([("begeisterung", 4)])
+        milder, _ = _rechnen([("freude", 4)])
+        self.assertGreater(
+            stark["valenz"], milder["valenz"],
+            "Beide Emotionen desselben Sektors tragen dieselbe Valenz — die "
+            "Tabelle wird nicht gelesen, nur die Sektorgruppe",
+        )
+        self.assertEqual(stark["histogramm"], milder["histogramm"])
 
     def test_die_valenz_steht_auf_der_vollen_skala(self) -> None:
-        nur_positiv, _ = _rechnen([("freude", 3)])
-        nur_negativ, _ = _rechnen([("wut", 3)])
+        nur_positiv, _ = _rechnen([("begeisterung", 3)])
+        nur_negativ, _ = _rechnen([("verzweiflung", 3)])
         self.assertAlmostEqual(nur_positiv["valenz"], 1.0, places=6)
         self.assertAlmostEqual(nur_negativ["valenz"], -1.0, places=6)
 
