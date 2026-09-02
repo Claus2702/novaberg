@@ -133,13 +133,13 @@ Die zweite Zeile ist die wichtigere. Vier Fäden eines Tages zu einem Thema erge
 
 ## 01.09.2026, 19:26 UTC — Der Fehlschlag eines Agenten erreicht den Nutzer ✅
 
-**Auslöser:** ein Gespräch über eine Geschäftsreise nach Bielefeld, vom Eigentümer gefahren. Der Timeline-Agent scheiterte dreimal, und Nova bestätigte dreimal einen Eintrag, den es nicht gab.
+**Auslöser:** ein Gespräch des Eigentümers mit mehreren Terminaufträgen. Der Timeline-Agent scheiterte dreimal, und Nova bestätigte dreimal einen Eintrag, den es nicht gab.
 
 | Zeit | Agent | Antwort |
 |---|---|---|
-| 18:48:52 | `fehler` — *„Konnte kein Datum erkennen. Wann soll 'Geschäftsreise nach Bielefeld' stattfinden?"* | *„Alles klar! Ich habe die Geschäftsreise … eingetragen."* |
-| 18:54:59 | `fehler` — *„Kein Termin 'Termin mit dem Chef' gefunden."* | *„Ich habe die Zeit entsprechend angepasst."* |
-| 18:56:31 | `fehler` — *„Konnte kein Datum erkennen. Wann soll 'Heizungswartung' stattfinden?"* | nennt den Fehler, bezogen auf die falsche Sache |
+| 18:48:52 | `fehler` — kein Datum erkannt, Rückfrage nach dem Zeitpunkt | bestätigt den Eintrag als erledigt |
+| 18:54:59 | `fehler` — der zu ändernde Termin ist nicht auffindbar | bestätigt eine Zeitkorrektur |
+| 18:56:31 | `fehler` — kein Datum erkannt, zweiter Vorgang | nennt den Fehler, bezogen auf die falsche Sache |
 
 **Der Block war jedes Mal da.** `Planner: task_block erstellt (context_cut=True, 203 / 164 / 189 Zeichen)` — er erreichte den Prompt und setzte sich nicht durch. **Nicht der Pfad fehlte, der Wortlaut trug nicht:**
 
@@ -158,12 +158,12 @@ Er nennt weder den Schreibvorgang noch seine Folge. Das Vorbild stand im Haus: `
 
 | | |
 |---|---|
-| **Reiz** | *„Trage mir bitte einen Termin fuer die Wartung der Heizung ein."* |
-| **Agent** | 19:25:37 · `status=fehler` · *„Konnte kein Datum erkennen. Wann soll 'Wartung der Heizung' stattfinden?"* |
-| **Antwort** | 19:26:00 · **„Hat nicht geklappt. Wann soll die Heizung gewartet werden?"** |
+| **Reiz** | ein **synthetischer** Eintragungsauftrag ohne jede Zeitangabe — konstruiert für diese Messung, kein Gesprächsinhalt |
+| **Agent** | 19:25:37 · `status=fehler` · Rückfrage nach dem Zeitpunkt |
+| **Antwort** | 19:26:00 · nennt den Fehlschlag **und** stellt die Rückfrage des Agenten weiter |
 | **Seiteneffekt** | `timeline` 83 → 83 Zeilen, höchste id 494 → 494 |
 
-**Beides ist da: die Tatsache und die weitergereichte Frage** — vorher stand an derselben Stelle *„Alles klar! Ich habe die Geschäftsreise nach Bielefeld für Mittwoch und Donnerstag eingetragen"*, bei identischem Agentenausgang.
+**Beides ist da: die Tatsache und die weitergereichte Frage** — vorher stand an derselben Stelle eine Erfolgsmeldung über einen Eintrag, den der Agent nie geschrieben hatte, bei identischem Agentenausgang.
 
 Der Kontext-Schnitt macht die Antwort sehr kurz (58 Zeichen gegen mehrere hundert bei den Turns des Abends). Das ist die gewollte Wirkung von `context_cut=True` und kein Nebenbefund; ob diese Kürze für den Fehlerfall die richtige ist, ist eine Frage an den Betrieb und nicht an den Block.
 
