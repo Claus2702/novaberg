@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 2. September 2026, 14:30 UTC (**§6b — der Strang**: Zuordnung, Sektor-Histogramm, Richtung und Ladung). Davor: 1. September 2026, 20:48 UTC. Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 2. September 2026, 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
 **Zustand:** 🟠 Scheibe 1, 2, **3a–3c und 4** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, und seine Richtung und seine Ladung werden gerechnet. **Der Prägungszug und der sektorabhängige Verfall sind nicht gebaut**
@@ -118,6 +118,33 @@ Salienz-Angabe *4 von 21* stammte aus Torzeilen zweier Messreihen, nicht aus dem
 zurückgerechnet — `v(t) = boden + (1 − boden) / (1 + t/H)` — und trifft alle neun exakt. Neun
 legen die Form eindeutig fest; drei hätten es nicht getan.
 
+### Scheibe 3 — findet ein Faden seinen Strang, und was ist der Strang dann?
+
+| Was | Gemessen | Wann | Beleg |
+|---|---|---|---|
+| **Die Zuordnung läuft** | **4 von 4** Fäden zugeordnet, **1** Strang — Vorhersage 1 Strang (327+328+353+354), vor dem Lauf gerechnet | 01.09.2026, 19:45 | `labor/2026-09-01_strang_betriebsbeleg.py` |
+| **Die Schwelle trennt** | das Zentroid gegen **15** LZG-Themenknoten quer durch den Bestand: **kein einziger** über 0,62 — nächster **0,5165** (selbst ein Neutronenstern-Knoten), fernster **0,0550** | 01.09.2026 | `praegung_strang.zentroid` gegen `lzg_knoten`, pgvector |
+| **Das Zentroid ist ein laufendes Mittel** | `(alt·n + neu)/(n+1)`, gegen die Neuberechnung geprüft | 01.09.2026 | `tests/test_praegung_strang.py` |
+| **Das Histogramm** | **[3,0,0,0,0,0,0,1]**, dominant 1, Konzentration **0,750** — Vorhersage zeichengleich | 01.09.2026, 20:00 | `praegung_strang`, aus `praegung_faden` nachgerechnet |
+| **Die Richtung** | **Annäherung** über Regel 1 — Neugier **0,250**, genau auf der Schwelle; das Rad wird dabei nicht gefragt | 01.09.2026, 20:48 | `memory/praegung.py: strang_richtung` gegen den echten Bestand |
+| **Novas Konfrontationsmaß** | **+0,5379** — wild 0,7967 (eigensinn 0,8746 · widerspruchsfreude 0,8014 · wissbegier 0,7825 · assoziationsdrang 0,7283), schützend 0,2588 | 01.09.2026 | `charakter_rad_messung` über `reihe_laden`, beide Räder |
+| ⚠ **Die Rad-Regel trennt heute nichts** | reiner Ärger, reine Furcht, reine Trauer → **alle drei Annäherung**, weil +0,5379 weit über der Schwelle 0,0 liegt | 01.09.2026 | dieselbe Erhebung; in der Fundliste |
+| **Das Paar `scheibe2probe` hat kein Rad** | **0 von 8** Speichen — ein negativer Strang stünde dort auf `unbestimmt` | 01.09.2026 | `reihe_laden` über beide Räder |
+
+### Scheibe 4 — was macht einen Strang stark?
+
+| Was | Gemessen | Wann | Beleg |
+|---|---|---|---|
+| **Die Ladung** | **0,66162** — Vorhersage 0,66247; die Differenz von **0,00085** ist die vergangene Zeit (4,4 h zwischen beiden, `tage_still` 0,907 → 1,089). Alle drei Summanden trafen exakt | 02.09.2026, 18:45 | `memory/praegung.py: strang_staerke` gegen den echten Bestand |
+| **Die vier Eingänge** | Salienz **0,74825** · Valenz **0,8375** · Anzahl **0,500** (4 Fäden) · Präsenz **0,99223** | 02.09.2026 | dieselbe Rechnung, Teile im Bericht mitgeführt |
+| **Was jeder Term zur Stärke beiträgt** | Salienz **±0,017** · Valenz **±0,027** · Anzahl **0,080 → 0,333** (1 → 20 Fäden) | 02.09.2026 | 20 000 simulierte Vierer-Stränge über 1 786 echte Emotionszeilen über dem Salienz-Tor |
+| **Die Valenz trägt mehr als die Salienz** | Streuung **0,1367** gegen **0,0433**, bei halbem Gewicht — die Salienz ist durch das Tor bei 0,60 vorselektiert und liegt eng | 02.09.2026 | dieselbe Simulation |
+| ~~**Die Valenz stand auf einer Konstanten**~~ | **97,05 %** aller Vierer-Stränge hätten exakt 1,00 getragen, solange ein Faden ±1 trug | 02.09.2026 | dieselbe Simulation, Fassung vor `EMOTION_VALENZ` |
+| **Die Salienz war nur im Protokoll** | 4 von 4 Bestandsfäden aus den Torzeilen nachgezogen: 0,605 · 0,821 · 0,869 · 0,698 | 02.09.2026 | `pipeline_log`, Schritt `praegung_tor` — das Log verfällt, die Spalte nicht |
+| ~~**Die Abfrage zählte Paare statt Fäden**~~ | **8 Fäden** für einen Strang mit vier, durch ein `LEFT JOIN praegung_beruehrung` — bei 16 grünen Zeugen und sauberem Linter | 02.09.2026 | gefunden von der Vorhersage; behoben am selben Tag |
+
+> **Was diese Belege nicht decken, steht daneben:** Die Messung ruht auf **einem** Strang mit vier Fäden aus **einem** Tag und **einem** Paar. `n/(n+4)` ist damit bei n=4 belegt und nicht bei n=20, `f_praesenz` bei einem Tag Stille und nicht bei neunzig. **Zwei der vier Faktoren sind an genau einem Punkt ihrer Kurve gemessen**; der Rest ist gerechnet und bezeugt. Die drei Gewichte 0,4 / 0,2 / 0,4 sind Setzungen mit Begründung und ohne Messung.
+
 ### Zwei Defekte, die zwischen der Schicht und jedem Beleg standen
 
 | Kennung | Was er verhinderte | Nach dem Bau gemessen |
@@ -215,7 +242,7 @@ strang_staerke = ( 0,4 · mittel(faden.salienz)
 | `salienz_mittel` | **0,74825** | neue Spalte `praegung_faden.salienz`, nullbar |
 | `valenz_mittel` | **0,8375** | `mittel(|v|)` über `EMOTION_VALENZ` (16 Werte), **nicht** `|mittel(v)|` — Ambivalenz hebt sich nicht auf |
 | `anzahl_term` | **0,500** | `n/(n+4)`, kein Deckel; der zwanzigste Faden trägt weniger als der zweite |
-| `praesenz` | **0,99351** | 0,907 Tage still; Boden 0,35, Halbstrecke 90 Tage |
+| `praesenz` | **0,99223** | 1,089 Tage still; Boden 0,35, Halbstrecke 90 Tage |
 | **Stärke** | **0,66162** | `[gemessen]` 02.09.2026; die Abweichung von der Vorhersage (0,00085) ist die vergangene Zeit |
 
 **Additiv, nicht multiplikativ** (Konzept §10.0 Regel a): keine Null aus einer Multiplikation, nur weil ein Eingang null ist. Ein Strang, dessen Fäden alle keine Salienz tragen, steht deshalb nicht auf null.
