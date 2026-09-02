@@ -952,12 +952,50 @@ eine gesetzte und ungemessene Tabelle** (§13).
 
 **Stärke — drei Eingaben, additiv nach Regel (a):**
 
-```
+~~```
 strang_staerke = ( W_ANZAHL · norm(anlaesse)
                  + W_SPITZE · max(faden.ausschlag_aktuell)
                  + W_SPANNE · norm(tage zwischen erstem und letztem Faden) )
                  × f_praesenz( heute − letzte Berührung im Strang )
-```
+```~~
+
+> **Abgelöst am 02.09.2026 durch eine Vorgabe des Eigentümers.** Die Fassung darüber bleibt stehen, weil die Begründung darunter sich auf sie bezieht.
+>
+> *„Salienz, Valenz, Anzahl Fäden. Das macht den Strang stark."*
+>
+> ```
+> strang_staerke = ( W_SALIENZ · mittel(faden.salienz)
+>                  + W_VALENZ  · mittel(|valenz_faden|)
+>                  + W_ANZAHL  · n / (n + K) )
+>                  × f_praesenz( heute − letzte Berührung im Strang )
+> ```
+>
+> **Anzahl statt Anlässe, und der Einwand unten trägt hier nicht.** *„Wenn ich viele emotionale Eindrücke (Fäden) habe, dann ist ein Thema intensiv geprägt. Es ist lebendig. Es ist präsent."* Der Grund gegen Zeilen war zweimal ein **Messfehler** — zwanzig Zeilen aus einer Erhebung täuschten eine Stichprobe von zwanzig vor. Hier ist es keine Stichprobe: **Das Tor hat jeden Faden einzeln durchgelassen** (4 von 13 Prüfungen im Betrieb, jeder über Salienz 0,60 **und** Ausschlag 0,70). Zwanzig Fäden sind zwanzig Erlebnisse.
+>
+> **`mittel(|valenz|)` und nicht `|mittel(valenz)|`.** *„Wenn die sich aufheben würden, würden viele Fäden eigentlich zu einer Nullung führen statt zu einer Intensivierung der Prägung."* Zwei Freude- und zwei Trauerfäden ergeben so **1,0** statt 0 — dieselbe Linie wie §7.8, wo Ambivalenz der interessante Fall ist und kein Fehler.
+>
+> **Spitze und Spanne fallen weg.** Die Salienz geht als **Mittel** ein, nicht als Maximum: Ein Maximum wäre die Spitze.
+>
+> `[gemessen]` 02.09.2026 am einen Strang: Salienz 0,74825 · Valenz 1,000 · Anzahl 0,500 (4 Fäden) · Präsenz 0,99351 → **Stärke 0,69476**, Vorhersage und Messung zeichengleich.
+>
+> **Die Faden-Valenz kommt aus einer Tabelle, nicht aus der Sektorgruppe** — seit dem 02.09.2026, am selben Tag nachgezogen. Bis dahin trug ein Faden ±1 oder 0, und das Mittel der Beträge stand in **97,05 %** aller Fälle auf exakt 1,00: eine Konstante mit Nachkommastellen.
+>
+> **Der Kreis gibt die Valenz nicht her.** Plutchiks Rad ordnet nach Verwandtschaft, nicht nach Wert. Legt man eine Achse durch Freude ↔ Trauer und projiziert, kommen drei von acht Sektoren falsch heraus: Angst und Ärger stünden auf 0 — beide sind klar negativ —, Überraschung auf −0,71, obwohl sie richtungslos ist. **`EMOTION_VALENZ` ist deshalb gesetzt, mit Russells Circumplex als Herkunft**, und trägt sechzehn Werte: je Sektor zwei, die schwächere Form niedriger.
+>
+> `[gerechnet]` 02.09.2026 über 1.786 echte Emotionszeilen über dem Salienz-Tor, 20.000 simulierte Vierer-Stränge:
+>
+> | Term | Mittel | Streuung | Beitrag zur Stärke |
+> |---|---:|---:|---:|
+> | Salienz (0,4) | 0,7822 | 0,0433 | ±0,017 |
+> | Valenz **vorher** (0,2) | 0,9923 | 0,0438 | ±0,009 |
+> | Valenz **mit Tabelle** (0,2) | 0,5928 | 0,1367 | **±0,027** |
+> | Anzahl (0,4), 1 → 20 Fäden | — | — | 0,080 → 0,333 |
+>
+> **Die Valenz trägt damit mehr als die Salienz, bei halbem Gewicht.** Der Grund ist strukturell: Die Salienz ist durch das Tor bei 0,60 vorselektiert und drängt sich zwischen 0,60 und 1,00 — *„die Salienz ist eigentlich nur das Tor, es steckt also eine Wertigkeit darin, aber die Valenz ist hier die eigentliche Gewichtung"* (Vorgabe des Eigentümers).
+>
+> **Die Anzahl dominiert beide um eine Größenordnung.** Ein Strang, der von vier auf acht Fäden wächst, gewinnt 0,067 — mehr als Salienz und Valenz zusammen je hergeben. Die Ladung ist im Kern eine Fadenzählung, an der zwei Terme wackeln, und das entspricht der Absicht.
+>
+> **`f_praesenz` hat einen höheren Boden als der Fadenverfall** (0,35 gegen 0,20) und eine längere Halbstrecke (90 gegen 60 Tage): Ein Strang ist die Summe mehrerer Erlebnisse und verblasst langsamer als jedes einzelne. Beide Zahlen sind Setzungen.
 
 `anlaesse` = Zahl **verschiedener Tage**, an denen ein Faden dieses Strangs entstand **oder
 berührt wurde** — die Berührungstabelle liefert sie direkt.

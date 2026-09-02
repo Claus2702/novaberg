@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 1. September 2026 — juengster Eintrag **20:48 UTC** (gemessen via `date -u`). Davor 01.09.2026, 20:00 UTC.
+**Stand:** 2. September 2026 — juengster Eintrag **18:45 UTC** (gemessen via `date -u`). Davor 02.09.2026, 14:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 149 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 151 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,88 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 02.09.2026, 18:45 UTC — Die Valenz bekommt Zwischenstufen ✅
+
+**Anlass:** Die Größe stand nach Scheibe 4 nahezu konstant auf 1,0 — ein Faden trug seine Valenz nur als Sektorzugehörigkeit, ±1 oder 0 bei Überraschung. `[gerechnet]` über 1.786 echte Emotionszeilen: **97,05 %** aller Vierer-Stränge hätten exakt 1,00 getragen.
+
+**Der Kreis gibt die Valenz nicht her.** Plutchiks Rad ordnet nach Verwandtschaft, nicht nach Wert. Eine Achse durch Freude ↔ Trauer und Projektion darauf ergibt bei drei von acht Sektoren Unsinn: Angst und Ärger stünden auf 0, obwohl beide klar negativ sind; Überraschung auf −0,71, obwohl sie richtungslos ist. Valenz ist im Kreis nicht kodiert.
+
+**Also gesetzt, mit Herkunft:** `EMOTION_VALENZ`, sechzehn Werte auf [−1, +1] nach Russells Circumplex — je Sektor zwei, die schwächere Form niedriger. Dieselbe Bauform wie `EMOTION_AROUSAL_DECAY` daneben, mit denselben Schlüsseln.
+
+| Term | Mittel | Streuung | Beitrag zur Stärke |
+|---|---:|---:|---:|
+| Salienz (0,4) | 0,7822 | 0,0433 | ±0,017 |
+| Valenz **vorher** (0,2) | 0,9923 | 0,0438 | ±0,009 |
+| Valenz **mit Tabelle** (0,2) | 0,5928 | 0,1367 | **±0,027** |
+| Anzahl (0,4), 1 → 20 Fäden | — | — | 0,080 → 0,333 |
+
+**Die Valenz trägt jetzt mehr als die Salienz, bei halbem Gewicht** — und der Grund ist strukturell: Die Salienz ist durch das Tor bei 0,60 vorselektiert und liegt eng. *„Die Salienz ist eigentlich nur das Tor, es steckt also eine Wertigkeit darin, aber die Valenz ist hier die eigentliche Gewichtung, und ich messe ihr viel Wert zu"* (Vorgabe des Eigentümers).
+
+**Die Anzahl dominiert beide um eine Größenordnung**, und das entspricht der Absicht.
+
+**TEST:** die Zeugen beider Scheiben nachgezogen — die Tabelle unterscheidet jetzt *innerhalb* eines Sektors (`begeisterung` 1,00 gegen `freude` 0,80), was das Histogramm nicht kann. Suite **2874 grün, 0 übersprungen**.
+
+**MESSUNG** am einen Strang:
+
+| | vorher (±1) | mit Tabelle |
+|---|---:|---:|
+| `valenz_mittel` | 1,000 | **0,8375** |
+| `valenz` | +1,000 | **+0,8375** |
+| Stärke | 0,69476 | **0,66162** |
+
+Vorhergesagt waren 0,66247; die Differenz von 0,00085 ist **die vergangene Zeit** — zwischen Vorhersage und Lauf lagen 4,4 Stunden, `tage_still` stieg von 0,907 auf 1,089. Alle drei Summanden trafen exakt, und die Abweichung ist selbst der Beleg, dass `f_praesenz` wirkt.
+
+**Nebenbefund:** Ein bestehender Zeuge über Namen im Repositorium hielt *„Sektor"* für einen Gesprächsnamen. Als generisches Wort eingetragen, wie er es selbst vorschreibt — er hat richtig angeschlagen, nur an der falschen Stelle.
+
+**Offen und in der Fundliste:** Drei Tabellen sagen etwas über Sektor 4, und sie stimmen nicht überein — `GV_VALENZ_SEKTOR` führt Überraschung als negativ, `SEKTOR_GRUPPE` als neutral, `EMOTION_VALENZ` als nahe null mit schwach positivem Vorzeichen.
+
+---
+
+## 02.09.2026, 14:30 UTC — Scheibe 4: Was einen Strang stark macht ✅
+
+**ZIEL:** Ein Strang trägt eine Ladung aus Salienz, Valenz und Fadenzahl, gedämpft durch seine Präsenz.
+
+**Die Formel löst die des Konzepts ab — Vorgabe des Eigentümers:** *„Salienz, Valenz, Anzahl Fäden. Das macht den Strang stark."*
+
+```
+strang_staerke = ( 0,4 · mittel(faden.salienz)
+                 + 0,2 · mittel(|valenz_faden|)
+                 + 0,4 · n / (n + 4) )
+                 × f_praesenz( heute − letzte Berührung )
+```
+
+**Anzahl statt Anlässe, und der Einwand des Konzepts trägt hier nicht.** Sein Grund gegen Zeilen war zweimal ein Messfehler — zwanzig Zeilen aus einer Erhebung täuschten eine Stichprobe von zwanzig vor. Hier ist es keine Stichprobe: Das Tor hat jeden Faden einzeln durchgelassen, jeder über Salienz 0,60 **und** Ausschlag 0,70. *„Wenn ich viele emotionale Eindrücke habe, dann ist ein Thema intensiv geprägt. Es ist lebendig. Es ist präsent."*
+
+**`mittel(|valenz|)`, nicht `|mittel(valenz)|`** — der Unterschied ist der Kern: *„Wenn die sich aufheben würden, würden viele Fäden eigentlich zu einer Nullung führen statt zu einer Intensivierung."* Zwei Freude- und zwei Trauerfäden ergeben 1,0 statt 0.
+
+**DDL:** `praegung_faden.salienz`, nullbar. Sie überlebte bis heute nur in der Torzeile des `pipeline_log`, und das verfällt; die vier Bestandsfäden sind einmalig daraus nachgezogen.
+
+**Nicht gespeichert wird die Stärke selbst** — wie die Richtung: `f_praesenz` macht sie zeitabhängig.
+
+**TEST:** `tests/test_praegung_ladung.py`, 16 Zeugen. Suite **2872 grün, 0 übersprungen** (2856 → 2872).
+
+**Gegenproben, eine Abweichung:** Aufhebung statt Mittel der Beträge → **3 rot, 2 vorhergesagt**; der dritte prüft die gewichtete Summe und rechnet die Valenz mit. Additiv durch multiplikativ ersetzt → 2 rot (2 vorhergesagt). Beide Abweichungen lagen bei meiner Vorhersage, nicht bei den Zeugen.
+
+**MESSUNG** — Vorhersage vor dem Lauf aus dem Bestand gerechnet:
+
+| | Vorhergesagt | Gemessen |
+|---|---|---|
+| Salienz-Mittel | 0,74825 | **0,74825** |
+| Valenz-Mittel | 1,000 | **1,000** |
+| Anzahl-Term (4 Fäden) | 0,500 | **0,500** |
+| Präsenz (0,907 Tage still) | 0,99351 | **0,99351** |
+| **Stärke** | **0,69476** | **0,69476** |
+
+### Und die Vorhersage fand einen Defekt, den 16 grüne Zeugen nicht sahen
+
+**Die erste Fassung der Abfrage meldete acht Fäden für einen Strang mit vier.** Ein `LEFT JOIN praegung_beruehrung` in derselben Abfrage vervielfacht die Fadenzeilen — jeder Faden erscheint so oft, wie er Berührungen hat. `count(*)` zählte damit Paare statt Fäden, und `avg(salienz)` gewichtete die oft berührten stärker.
+
+**16 Zeugen waren grün, der Linter sauber, die Suite mit 2872 Tests grün.** Ein Zeuge gegen eine nachgebildete Verbindung prüft die **Rechnung** auf den Zahlen, die er selbst hineingibt — die Abfrage ist für ihn ein String, den der Mock wegwirft. Gefunden hat es die Vorhersage: Die Fadenzahl stand als erste Größe darin und war doppelt so groß wie der Bestand.
+
+Die Berührung steht jetzt in einem eigenen Ausdruck. Neu im Harness: `20_TESTS/mock-verdeckt-die-abfrage.md`.
 
 ---
 

@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 1. September 2026, 20:48 UTC (**§6b — der Strang**: Zuordnung, Sektor-Histogramm und die Richtung, die nicht gespeichert wird). Davor: 1. September 2026, 20:00 UTC. Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 2. September 2026, 14:30 UTC (**§6b — der Strang**: Zuordnung, Sektor-Histogramm, Richtung und Ladung). Davor: 1. September 2026, 20:48 UTC. Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1, 2, **3a, 3b und 3c** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, und seine Richtung wird gerechnet. **Die Stärke des Strangs, der Prägungszug und der Verfall sind nicht gebaut**
+**Zustand:** 🟠 Scheibe 1, 2, **3a–3c und 4** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, und seine Richtung und seine Ladung werden gerechnet. **Der Prägungszug und der sektorabhängige Verfall sind nicht gebaut**
 
 ---
 
@@ -199,7 +199,32 @@ Fehlt das Rad, ist das Ergebnis `unbestimmt` — nicht `vermeidung`. Ein Vorgabe
 
 **Der Aufrufer ist der sechste Schritt des Tageslaufs**, der je Strang eine Zeile ins `pipeline_log` schreibt (`node='praegung_strang'`, `schritt='strang_richtung'`). Er steht dort, weil der eigentliche Leser — der Prägungszug — nicht gebaut ist; so entsteht die Beobachtungsreihe für die Kalibrierung. **Achtung bei der Messung:** Ein Einmal-Prozess außerhalb des Servers schreibt keine Protokollzeilen und meldet trotzdem Erfolg.
 
-**Was ausdrücklich nicht gebaut ist:** `strang_staerke` und der Prägungszug. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13) — sie trägt den Torfaktor der ganzen Schicht, und welche Sektorkombinationen als Annäherung gelten, ist eine **Absicht** und keine Implementierungsentscheidung. `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
+### Die Ladung — Scheibe 4, seit dem 02.09.2026
+
+**Vorgabe des Eigentümers:** *„Salienz, Valenz, Anzahl Fäden. Das macht den Strang stark."* Die Fassung löst die des Konzepts ab, die Anlässe, Spitze und Spanne nannte.
+
+```
+strang_staerke = ( 0,4 · mittel(faden.salienz)
+                 + 0,2 · mittel(|valenz_faden|)
+                 + 0,4 · n / (n + 4) )
+                 × f_praesenz( heute − letzte Berührung )
+```
+
+| Eingang | Wert am einen Strang | Bemerkung |
+|---|---:|---|
+| `salienz_mittel` | **0,74825** | neue Spalte `praegung_faden.salienz`, nullbar |
+| `valenz_mittel` | **0,8375** | `mittel(|v|)` über `EMOTION_VALENZ` (16 Werte), **nicht** `|mittel(v)|` — Ambivalenz hebt sich nicht auf |
+| `anzahl_term` | **0,500** | `n/(n+4)`, kein Deckel; der zwanzigste Faden trägt weniger als der zweite |
+| `praesenz` | **0,99351** | 0,907 Tage still; Boden 0,35, Halbstrecke 90 Tage |
+| **Stärke** | **0,66162** | `[gemessen]` 02.09.2026; die Abweichung von der Vorhersage (0,00085) ist die vergangene Zeit |
+
+**Additiv, nicht multiplikativ** (Konzept §10.0 Regel a): keine Null aus einer Multiplikation, nur weil ein Eingang null ist. Ein Strang, dessen Fäden alle keine Salienz tragen, steht deshalb nicht auf null.
+
+**Nicht gespeichert**, wie die Richtung — `f_praesenz` macht die Zahl zeitabhängig.
+
+> **Die Valenz trägt mehr als die Salienz, bei halbem Gewicht** (Streuung 0,137 gegen 0,043). Die Salienz ist durch das Tor bei 0,60 vorselektiert und liegt eng; die Valenz kommt seit dem 02.09.2026 aus `EMOTION_VALENZ` mit sechzehn Zwischenstufen statt ±1. **Die Anzahl dominiert beide um eine Größenordnung**, und das entspricht der Absicht.
+
+**Was ausdrücklich nicht gebaut ist:** der Prägungszug (§10.3) — er ist der Leser, für den Richtung und Ladung heute ins Protokoll geschrieben werden. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13) — sie trägt den Torfaktor der ganzen Schicht, und welche Sektorkombinationen als Annäherung gelten, ist eine **Absicht** und keine Implementierungsentscheidung. `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
 
 **Valenz ist nicht Richtung.** Zwei negative Prägungen können entgegengesetzte Richtungen haben: Machtlosigkeit → Macht ist Annäherung, Furcht vor der Dunkelheit ist Vermeidung (§7.7). Eine Valenzachse allein kann Kriegsgeschichte nicht von Dunkelheit unterscheiden.
 
