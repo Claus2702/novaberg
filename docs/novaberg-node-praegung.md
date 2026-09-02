@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 2. September 2026, 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
 **Zustand:** 🟠 Scheibe 1, 2, **3a–3c und 4** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, und seine Richtung und seine Ladung werden gerechnet. **Der Prägungszug und der sektorabhängige Verfall sind nicht gebaut**
@@ -142,6 +142,10 @@ legen die Form eindeutig fest; drei hätten es nicht getan.
 | ~~**Die Valenz stand auf einer Konstanten**~~ | **97,05 %** aller Vierer-Stränge hätten exakt 1,00 getragen, solange ein Faden ±1 trug | 02.09.2026 | dieselbe Simulation, Fassung vor `EMOTION_VALENZ` |
 | **Die Salienz war nur im Protokoll** | 4 von 4 Bestandsfäden aus den Torzeilen nachgezogen: 0,605 · 0,821 · 0,869 · 0,698 | 02.09.2026 | `pipeline_log`, Schritt `praegung_tor` — das Log verfällt, die Spalte nicht |
 | ~~**Die Abfrage zählte Paare statt Fäden**~~ | **8 Fäden** für einen Strang mit vier, durch ein `LEFT JOIN praegung_beruehrung` — bei 16 grünen Zeugen und sauberem Linter | 02.09.2026 | gefunden von der Vorhersage; behoben am selben Tag |
+
+| **Ein echtes Paar, im Betrieb** | Faden **1282** (`meister`, `freude`, Salienz 0,691) entstand am 02.09. 16:49 in einem normalen Turn, füllte die neue Spalte und **gründete Strang 16** — die ganze Kette ohne Messreihe | 02.09.2026, 19:25 | `praegung_faden`, `praegung_strang`; nachgerechnet über beide Stränge |
+| **Zwei Stränge, zwei Ladungen** | `scheibe2probe` **0,66148** (n=4, 1,12 Tage still) gegen `meister` **0,51612** (n=1, 0,11 Tage still) — die Differenz von 0,145 liegt fast ganz im Anzahl-Term (0,500 gegen 0,200) | 02.09.2026 | dieselbe Rechnung; **erste Messung an zwei verschiedenen Punkten der Sättigungskurve** |
+| **Zwei Richtungen, zwei Regeln** | `scheibe2probe` über Regel 1 (Neugier 0,250), `meister` über Regel 3 (positiv 1 gegen negativ 0) — beide **Annäherung** | 02.09.2026 | `strang_richtung` gegen beide Bestände |
 
 > **Was diese Belege nicht decken, steht daneben:** Die Messung ruht auf **einem** Strang mit vier Fäden aus **einem** Tag und **einem** Paar. `n/(n+4)` ist damit bei n=4 belegt und nicht bei n=20, `f_praesenz` bei einem Tag Stille und nicht bei neunzig. **Zwei der vier Faktoren sind an genau einem Punkt ihrer Kurve gemessen**; der Rest ist gerechnet und bezeugt. Die drei Gewichte 0,4 / 0,2 / 0,4 sind Setzungen mit Begründung und ohne Messung.
 
