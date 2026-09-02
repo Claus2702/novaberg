@@ -44,6 +44,8 @@ KEINE_NAMEN: frozenset[str] = frozenset({
                 # Kleinbuchstaben-Block ab. Zwilling zu "Redis" darueber.
     "Anker",    # "aus Anker und Alter" — der Verfallsanker der Ziele
                 # (`test_kurzziel`), kein Gespraechsname
+    "Sektor",   # "aus Sektor 4 steht in der Tabelle nahe null" — der
+                # Plutchik-Sektor der Praegungsschicht, kein Gespraechsname
     "Nullen",   # "aus Nullen ist die anfaenglich vorurteilsfreie Haltung" —
                 # der Slot liest das Wort hinter "aus" und trifft hier ein
                 # Zahlwort. Steht in `test_charakter_rad_laden`, wo das
