@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 641 Abschnitte in 5 Dateien — 278 mit eigenem Datum, 362 geerbt, 1 ohne.
+**Umfang:** 651 Abschnitte in 5 Dateien — 284 mit eigenem Datum, 366 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 378 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 388 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 641 Marken, 641 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 651 Marken, 651 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,16 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-02 | laufend | ## | [02.09.2026, 18:45 UTC — Die Valenz bekommt Zwischenstufen ✅](novaberg-roadmap.md#02092026-1845-utc--die-valenz-bekommt-zwischenstufen) |
+| 2026-09-02 | laufend | ## | [02.09.2026, 14:30 UTC — Scheibe 4: Was einen Strang stark macht ✅](novaberg-roadmap.md#02092026-1430-utc--scheibe-4-was-einen-strang-stark-macht) |
+| (2026-09-02) | laufend | ### | · [Und die Vorhersage fand einen Defekt, den 16 grüne Zeugen nicht sahen](novaberg-roadmap.md#und-die-vorhersage-fand-einen-defekt-den-16-grüne-zeugen-nicht-sahen) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 20:48 UTC — Scheibe 3c: Zieht ein Strang, oder drückt er weg? ✅](novaberg-roadmap.md#01092026-2048-utc--scheibe-3c-zieht-ein-strang-oder-drückt-er-weg) |
+| (2026-09-01) | laufend | ### | · [Der Befund, der an die Zahl gehört: Regel 4 trennt heute nichts](novaberg-roadmap.md#der-befund-der-an-die-zahl-gehört-regel-4-trennt-heute-nichts) |
+| (2026-09-01) | laufend | ### | · [Zwei Nebenbefunde](novaberg-roadmap.md#zwei-nebenbefunde) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 20:00 UTC — Scheibe 3b: Woraus ein Strang gefühlt besteht ✅](novaberg-roadmap.md#01092026-2000-utc--scheibe-3b-woraus-ein-strang-gefühlt-besteht) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 19:45 UTC — Scheibe 3a: Fäden finden ihren Strang ✅](novaberg-roadmap.md#01092026-1945-utc--scheibe-3a-fäden-finden-ihren-strang) |
+| (2026-09-01) | laufend | ### | · [Und die Suite schrieb dabei in den Produktivbestand — zwei Wege, beide geschlossen](novaberg-roadmap.md#und-die-suite-schrieb-dabei-in-den-produktivbestand--zwei-wege-beide-geschlossen) |
+| 2026-09-01 | laufend | ## | [01.09.2026, 19:26 UTC — Der Fehlschlag eines Agenten erreicht den Nutzer ✅](novaberg-roadmap.md#01092026-1926-utc--der-fehlschlag-eines-agenten-erreicht-den-nutzer) |
 | 2026-09-01 | laufend | ## | [01.09.2026, 18:30 UTC — Drei Pruefungen, die falsch aussagten, und elf Luecken ✅](novaberg-roadmap.md#01092026-1830-utc--drei-pruefungen-die-falsch-aussagten-und-elf-luecken) |
 | 2026-09-01 | laufend | ## | [01.09.2026, 17:45 UTC — Zwei kleine Schulden ✅](novaberg-roadmap.md#01092026-1745-utc--zwei-kleine-schulden) |
 | 2026-09-01 | laufend | ## | [01.09.2026, 17:25 UTC — Dieselbe Vorgabe, dreimal gelegt ✅](novaberg-roadmap.md#01092026-1725-utc--dieselbe-vorgabe-dreimal-gelegt) |

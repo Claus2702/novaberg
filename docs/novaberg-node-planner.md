@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
+**Stand:** 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -154,7 +154,7 @@ Am Ende jedes Planner-Durchlaufs (sofern Agent-Ergebnisse vorliegen könnten) ru
 
 `[gemessen]` — 01.09.2026, drei Turns in Folge: Der Timeline-Agent lieferte `status="fehler"`, der Block wurde jedes Mal gebaut (203, 164, 189 Zeichen, `context_cut=True`) und erreichte den Prompt — und die Antwort meldete jedes Mal Erfolg — einen Eintrag, eine Zeitkorrektur, einen Bezug, während `timeline` nichts geschrieben hatte. **Der Block war nie das Problem, sein Wortlaut war es.**
 
-Die neue Fassung folgt dem Ablehnungs-Block, der seit dem 20.08.2026 wirkt: Sie nennt die Tatsache (*nichts eingetragen, nichts geändert, nichts gelöscht*), verlangt die Ansage an den Nutzer und reicht eine Rückfrage des Agenten als Frage weiter statt als Erklärung. Vier der fünf Fehlerquellen des Timeline-Agenten (`crud.py` 122/206/329, `suche.py` 131) nennen eine fehlende Angabe und sind damit beantwortbar.
+Die neue Fassung steht in `server/prompts/default/responder.aufgabe_fehler.txt` und folgt dem Ablehnungs-Block, der seit dem 20.08.2026 wirkt: Sie nennt die Tatsache (*nichts eingetragen, nichts geändert, nichts gelöscht*), verlangt die Ansage an den Nutzer und reicht eine Rückfrage des Agenten als Frage weiter statt als Erklärung. Vier der fünf Fehlerquellen des Timeline-Agenten (`crud.py` 122/206/329, `suche.py` 131) nennen eine fehlende Angabe und sind damit beantwortbar.
 
 Bezeugt in `tests/test_task_block_fehler.py` — acht Zeugen, davon einer die Gegenprobe gegen den alten Wortlaut. Gegenprobe am 01.09.2026: alte Fassung eingesetzt, **5 von 8 rot**, vorhergesagt 5.
 
