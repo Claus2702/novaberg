@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
 **Status:** ⬜ nicht gebaut — Entwurf. Alle Zahlen der Rechnung sind **Setzungen zum Messen**. Die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
@@ -1687,6 +1687,49 @@ Qualität sind strukturell dasselbe.
 **Die Dimension `domaenendistanz`.** Widerlegt: sechs von sechs Gegenüber tragen dieselbe
 Zielpaar-Schablone, darunter Testpersonas ohne Astrophysik-Kontakt. **Kommt zurück, wenn sie an
 einem nicht-schablonierten Bestand auftaucht.**
+
+### Aus dem Bau der Valenz (02.09.2026)
+
+**Die Valenz aus der Kreisgeometrie ableiten.** Eine Achse durch Freude ↔ Trauer legen und die
+acht Sektoren darauf projizieren — der Kosinus des Winkels als Valenz. **Drei von acht kommen
+falsch heraus:** Angst und Ärger stünden auf 0, obwohl beide klar negativ sind; Überraschung auf
+−0,71, obwohl sie richtungslos ist. Der Grund ist keine schlechte Achsenwahl, sondern die
+Ordnung selbst: **Plutchiks Rad sortiert nach Verwandtschaft, nicht nach Wert.** Valenz ist im
+Kreis nicht kodiert und deshalb nicht ableitbar, sondern nur setzbar.
+
+**Vorzeichen mal Ausschlag als Faden-Valenz.** Am feinsten und ohne jede neue Setzung — aber es
+**zählt die Intensität doppelt**, weil die Salienz schon als eigener Summand dasteht. Ein starker
+Faden hübe zwei der drei Terme. Kommt zurück, falls die Salienz als Eingang je entfällt.
+
+**Die zwei Emotionen je Sektor als reine Intensitätsstufen** (`begeisterung` > `freude` usw.),
+ohne Tabelle. Bei vier der acht Sektoren ist die Rangfolge nicht eindeutig — `dankbarkeit` gegen
+`zufriedenheit`, `ueberrascht` gegen `verwundert`, `frustration` gegen `enttaeuschung`,
+`hoffnung` gegen `neugierig`. Die Stufung wäre dort eine Setzung ohne Anhalt. **Als Teil von
+`EMOTION_VALENZ` ist sie dennoch drin** — dort trägt sie ihren Grund je Zeile.
+
+**`|mittel(valenz)|` statt `mittel(|valenz|)`.** Der erste Entwurf, und er hätte genau den Strang
+schwach gemacht, der am stärksten zieht: Zwei Freude- und zwei Trauerfäden ergäben **null**.
+*„Wenn die sich aufheben würden, würden viele Fäden eigentlich zu einer Nullung führen statt zu
+einer Intensivierung der Prägung."*
+
+**Ein eigener Valenz-Vektor am Strang.** Verworfen, weil es ihn schon gibt: `sektor_histogramm`
+**ist** der Vektor, und `EMOTION_VALENZ` ist die Gewichtung, mit der aus ihm eine Zahl wird —
+ein Skalarprodukt zwischen dem Gemessenen und dem Gesetzten. Ein zusätzlich abgelegter Vektor
+wäre aus beidem jederzeit ableitbar und würde driften, sobald eine der sechzehn Zahlen sich
+ändert (`novaberg-convention-abgeleitete-werte.md`).
+
+> **Ein Vektor wäre erst dann die richtige Form, wenn die Valenz mehr als eine Achse hätte.**
+> Russell bietet genau das an: Valenz **und** Erregung. Ein Strang aus Ärger und einer aus Trauer
+> haben dieselbe Valenz — negativ —, aber völlig verschiedene Erregung, und heute ist das nicht
+> unterscheidbar. Als Punkt in einer Ebene ließe sich fragen, ob ein Strang im erregt-negativen
+> oder im stillen Quadranten liegt. **Das ist eine zweite Achse, kein längerer Vektor**, und die
+> Ladungsformel bräuchte am Ende trotzdem eine Zahl. Offen, und erst zu bauen, wenn sie einen
+> Leser hat — `EMOTION_AROUSAL_DECAY` trägt die Erregungsseite bereits in derselben Bauform.
+
+**Die Anzahl-Sättigung härter** (`n/(n+10)` statt `n/(n+4)`), um die Dominanz des Anzahl-Terms zu
+dämpfen. Nicht verworfen, sondern **nicht gewählt**: Die Dominanz ist die Absicht. *„Wenn ich
+viele emotionale Eindrücke habe, dann ist ein Thema intensiv geprägt."* Der Weg steht hier, weil
+er bei der Kalibrierung wiederkommt.
 
 **Qualitäten aus dem Bestand verdichten.** Drei Quellen, drei Ausschlüsse.
 
