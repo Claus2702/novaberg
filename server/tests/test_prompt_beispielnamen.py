@@ -46,6 +46,9 @@ KEINE_NAMEN: frozenset[str] = frozenset({
                 # (`test_kurzziel`), kein Gespraechsname
     "Sektor",   # "aus Sektor 4 steht in der Tabelle nahe null" — der
                 # Plutchik-Sektor der Praegungsschicht, kein Gespraechsname
+    "Zusicherung",  # "aus Zusicherung 7" — die Zeugenkoepfe dieses Projekts
+                # nummerieren ihre Zusicherungen und verweisen aufeinander.
+                # Stehendes Vokabular, kein Gespraechsname
     "Nullen",   # "aus Nullen ist die anfaenglich vorurteilsfreie Haltung" —
                 # der Slot liest das Wort hinter "aus" und trifft hier ein
                 # Zahlwort. Steht in `test_charakter_rad_laden`, wo das

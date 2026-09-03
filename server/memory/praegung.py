@@ -38,6 +38,8 @@ from config import (
     PRAEGUNG_W_ANZAHL,
     PRAEGUNG_W_SALIENZ,
     PRAEGUNG_W_VALENZ,
+    PRAEGUNG_ZUG_HUB,
+    PRAEGUNG_ZUG_UNBESTIMMT,
     SEKTOR_GRUPPE,
 )
 
@@ -852,6 +854,189 @@ def strang_staerke(postgres_url: str, strang_id: int) -> dict | None:
         "ohne_valenz":    unbekannt,
         "tage_still":     float(tage_still or 0.0),
     }
+
+
+def praegungszug(
+    postgres_url: str,
+    user_id: str,
+    character_id: str,
+    reiz_vektor: list[float],
+    konfrontation: float | None,
+    beobachter: str = "assistant",
+) -> dict | None:
+    """Wie stark die Praegung diesen Reiz anhebt — verstaerkt nur, daempft nie.
+
+    Konzept §10.3.
+
+        praegungszug = 1.0 + PRAEGUNG_ZUG_HUB · max_j( sim_j · gewicht_j · ladung_j )
+
+    **Der Zug ist ein Maximum, keine Summe.** Zwei Straenge, die denselben Reiz
+    tragen, ziehen nicht doppelt — es zieht der eine, der am naechsten liegt und
+    am staerksten geladen ist.
+
+    **Die Richtung ist der Torfaktor, nicht die Valenz** (§7.7). Ein negativer
+    Strang zieht: *Machtlosigkeit → Macht* ist Annaeherung, und Kriegsgeschichte
+    kommt als Awe-Dyade herein. Nur der Strang, von dem Nova **wegwill**, traegt
+    nichts bei. **Vorgabe des Eigentuemers, 03.09.2026:** *„Was unter Vermeidung
+    faellt, ist genau das, was wir nicht als Faszination wollen — wir filtern es
+    einfach raus."* `unbestimmt` ist keine Vermeidung, sondern Unkenntnis und
+    wiegt `PRAEGUNG_ZUG_UNBESTIMMT`.
+
+    **Die Suche bricht ab, sobald kein Strang mehr gewinnen kann.** Die Zeilen
+    kommen nach Aehnlichkeit sortiert, und `gewicht · ladung` liegt auf [0, 1] —
+    ein Strang mit `sim <= bestes_produkt` kann das Maximum nicht mehr heben.
+    Der Abbruch ist damit **exakt und keine Naeherung**; er haelt den Aufwand bei
+    wenigen Zeilen, waehrend die Zahl der Straenge waechst.
+
+    Vorbedingung: `reiz_vektor` traegt die Dimension der Zentroide; das Paar ist
+        gesetzt. `konfrontation` ist das Mass aus `konfrontationsmass` oder None
+        — ohne Rad entscheidet Regel 4 nicht, und der Strang bleibt
+        `unbestimmt` statt auf einen Vorgabewert zu fallen.
+    Nachbedingung: `zug` liegt auf [1.0, 1.0 + PRAEGUNG_ZUG_HUB], **durch
+        Konstruktion und ohne Kappung** (`F-NAHT-1`). Der Bericht traegt die
+        Teile neben der Summe: ohne sie ist im Nachhinein nicht zu sehen, ob ein
+        Zug von 1,0 aus fehlender Naehe, fehlender Ladung oder aus lauter
+        Vermeidung entstand — drei verschiedene Zustaende mit derselben Zahl.
+    Fehlerfaelle: Kein Strang, kein Vektor oder ein Lesefehler ergeben **nicht**
+        None, sondern den Zug 1,0 mit `grund` — die Abwesenheit einer Praegung
+        ist der Normalfall und kein Fehler. None steht nur fuer eine abgelehnte
+        Eingabe.
+
+    Args:
+        postgres_url: Verbindung.
+        user_id: der Mensch (`novaberg-convention-paar-schema.md` §2).
+        character_id: die Figur.
+        reiz_vektor: das Embedding des Reizes, an dem der Zug ansetzt.
+        konfrontation: das Mass aus `konfrontationsmass`, oder None.
+        beobachter: Schreiber der Straenge — dieselbe Achse wie bei der
+            Zuordnung (`strang_zuordnen`), sonst zoege ein Strang, den ein
+            anderer geschrieben hat.
+
+    Returns:
+        `{"zug", "strang_id", "sim", "ladung", "richtung", "gewicht", "produkt",
+        "betrachtet", "gerechnet", "grund"}` oder None bei abgelehnter Eingabe.
+    """
+    # ── Eingabe ────────────────────────────────
+    if not user_id or not character_id:
+        logger.error(
+            f"Praegung: Zug abgelehnt — Paar unvollstaendig "
+            f"(user_id={user_id!r}, character_id={character_id!r})"
+        )
+        return None
+
+    if not reiz_vektor:
+        logger.error(
+            "Praegung: Zug abgelehnt — kein Reizvektor. Ohne Ort auf der "
+            "Landkarte gibt es keine Aehnlichkeit, und ein Zug von 1,0 waere "
+            "hier eine Aussage statt einer fehlenden Eingabe"
+        )
+        return None
+
+    leer: dict = {
+        "zug": 1.0, "strang_id": None, "sim": 0.0, "ladung": 0.0,
+        "richtung": None, "gewicht": 0.0, "produkt": 0.0,
+        "betrachtet": 0, "gerechnet": 0, "grund": "",
+    }
+
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            # `<=>` ist die Kosinus-Distanz; 1 - d ist die Aehnlichkeit —
+            # dieselbe Rechnung wie bei der Zuordnung und der Reaktivierung.
+            cur.execute(
+                """
+                SELECT id, sektor_histogramm,
+                       1 - (zentroid <=> %s::vector) AS naehe
+                FROM praegung_strang
+                WHERE user_id = %s AND character_id = %s AND beobachter = %s
+                ORDER BY naehe DESC
+                """,
+                (_vektor_schreiben(reiz_vektor), user_id, character_id, beobachter),
+            )
+            straenge: list = cur.fetchall()
+    except Exception as fehler:
+        logger.error(
+            f"Praegung: Straenge fuer den Zug nicht lesbar ({user_id}/"
+            f"{character_id}) — {fehler}. Der Zug bleibt bei 1,0"
+        )
+        return {**leer, "grund": f"Straenge nicht lesbar: {fehler}"}
+
+    if not straenge:
+        logger.info(
+            f"Praegung: Zug 1.0000 — kein Strang fuer {user_id}/{character_id}"
+        )
+        return {**leer, "grund": "kein Strang"}
+
+    # ── Verarbeitung ───────────────────────────
+    bestes: float = 0.0
+    treffer: dict = {}
+    gerechnet: int = 0
+
+    for strang_id, histogramm_roh, naehe in straenge:
+        # **Der Abbruch traegt zugleich das „verstaerkt nur, daempft nie".**
+        # `bestes` startet bei 0,0 und waechst nur ueber Produkte
+        # nichtnegativer Groessen; eine negative Kosinusnaehe erfuellt damit
+        # `sim <= bestes` und kommt nie in die Rechnung. Eine zusaetzliche
+        # Klammer `max(0.0, …)` waere toter Code — sie stand hier und liess
+        # sich in der Gegenprobe entfernen, ohne dass ein Zeuge rot wurde
+        # (03.09.2026). Ein Schutz, der nie greift, sieht aus wie der Grund
+        # fuer eine Zusicherung, die in Wahrheit woanders haengt.
+        sim: float = float(naehe)
+        if sim <= bestes:
+            break
+
+        histogramm: list[int] = list(histogramm_roh or [])
+        richtung, grund = strang_richtung(histogramm, konfrontation)
+        gewicht: float = {
+            "annaeherung": 1.0,
+            "unbestimmt":  PRAEGUNG_ZUG_UNBESTIMMT,
+            "vermeidung":  0.0,
+        }.get(richtung, 0.0)
+        gerechnet += 1
+        if gewicht <= 0.0:
+            logger.debug(
+                f"Praegung: Strang {strang_id} traegt nicht zum Zug bei — "
+                f"{richtung} ({grund})"
+            )
+            continue
+
+        ladung_teile: dict = strang_staerke(postgres_url, strang_id) or {}
+        ladung: float = float(ladung_teile.get("staerke") or 0.0)
+        produkt: float = sim * gewicht * ladung
+        if produkt > bestes:
+            bestes = produkt
+            treffer = {
+                "strang_id": strang_id, "sim": sim, "ladung": ladung,
+                "richtung": richtung, "gewicht": gewicht, "produkt": produkt,
+                "grund": grund,
+            }
+
+    zug: float = 1.0 + PRAEGUNG_ZUG_HUB * bestes
+
+    # ── Ausgabe ────────────────────────────────
+    # Die Spanne ist durch Konstruktion eingehalten, nicht gekappt. Bricht sie,
+    # ist eine der beiden Eingangsskalen verlassen worden — das ist ein Befund
+    # und keine Zahl, die man zurechtschneidet.
+    if not 1.0 <= zug <= 1.0 + PRAEGUNG_ZUG_HUB + 1e-9:
+        logger.error(
+            f"Praegung: Zug {zug:.4f} verlaesst die Spanne "
+            f"[1.0, {1.0 + PRAEGUNG_ZUG_HUB:.2f}] — sim oder Ladung liegen "
+            f"ausserhalb von [0, 1]; die Teile stehen daneben"
+        )
+
+    ergebnis: dict = {
+        **leer, **treffer, "zug": zug,
+        "betrachtet": len(straenge), "gerechnet": gerechnet,
+    }
+    if not treffer:
+        ergebnis["grund"] = "kein Strang mit Zug"
+    logger.info(
+        f"Praegung: Zug {zug:.4f} fuer {user_id}/{character_id} — "
+        f"Strang {ergebnis['strang_id']}, sim {ergebnis['sim']:.4f}, "
+        f"Ladung {ergebnis['ladung']:.4f}, {ergebnis['richtung']} "
+        f"(Gewicht {ergebnis['gewicht']:.2f}); {gerechnet} von "
+        f"{len(straenge)} Straengen gerechnet"
+    )
+    return ergebnis
 
 
 def faeden_ohne_strang_zuordnen(postgres_url: str) -> tuple[int, int]:

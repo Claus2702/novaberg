@@ -14,10 +14,16 @@ Torschwellen sind Setzungen; erst diese Zeilen machen sie kalibrierbar.
 
 import logging
 
+from agents.charakter import rad_messreihe
 from config import POSTGRES_URL
 from graph.state import ConversationState, pipeline_quelle
 from memory.pipeline_log import log_berechnung
-from memory.praegung import faden_anlegen, tor_urteil
+from memory.praegung import (
+    faden_anlegen,
+    konfrontationsmass,
+    praegungszug,
+    tor_urteil,
+)
 from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.praegung_node")
@@ -130,6 +136,120 @@ def _ausschlag_der_emotion(verlauf: list[dict], emotion: str) -> float:
     return 0.0
 
 
+def _konfrontation_des_paares(user_id: str, character_id: str) -> float | None:
+    """Novas Mass, der unangenehmen Sache nachzugehen — aus **beiden** Raedern.
+
+    Wissbegier und Pflicht stehen im Zuwendungs-Rad, Eigensinn und Behutsamkeit
+    im Initiative-Rad; wer nur eines liest, sieht die halbe Anlage und bekommt
+    von `konfrontationsmass` ein None.
+
+    Vorbedingung: das Paar ist gesetzt.
+    Nachbedingung: das Mass auf [-1, 1], oder None bei unvollstaendigem Rad.
+    Fehlerfaelle: Ein Lesefehler ergibt None — der Zug rechnet dann mit
+        `unbestimmt` weiter, statt einen Vorgabewert ueber Novas Charakter zu
+        erfinden.
+
+    Args:
+        user_id: der Mensch (`novaberg-convention-paar-schema.md` §2).
+        character_id: die Figur.
+
+    Returns:
+        Das Konfrontationsmass, oder None.
+    """
+    # ── Eingabe ────────────────────────────────
+    if not user_id or not character_id:
+        return None
+
+    # ── Verarbeitung ───────────────────────────
+    gesammelt: dict[str, float] = {}
+    for rad_art in ("zuwendung", "initiative"):
+        try:
+            teil = rad_messreihe.rad_zusammenfassen(
+                rad_messreihe.reihe_laden(user_id, character_id, rad_art),
+            )
+        except Exception as fehler:
+            logger.warning(
+                f"Praegung-Zug: {rad_art}-Rad von {user_id}/{character_id} nicht "
+                f"lesbar — {fehler}. Das Mass bleibt unvollstaendig"
+            )
+            continue
+        if teil:
+            gesammelt.update(teil)
+
+    # ── Ausgabe ────────────────────────────────
+    return konfrontationsmass(gesammelt) if gesammelt else None
+
+
+def _zug_protokollieren(
+    state: ConversationState, user_id: str, character_id: str,
+) -> None:
+    """Rechnet den Praegungszug dieses Turns und schreibt ihn ins Protokoll.
+
+    Konzept §10.3. **Kein Bestand, kein Verhalten — eine Beobachtungszeile.**
+    Der Zug ist der letzte Bauteil vor der Faszination; bis die ihn liest, ist
+    diese Zeile sein einziger Leser, und die Reihe daraus ist das Material, an
+    dem `PRAEGUNG_ZUG_SPANNE_OBEN` und `PRAEGUNG_ZUG_UNBESTIMMT` kalibrierbar
+    werden. Genauso stehen Richtung und Ladung seit dem 02.09.2026 im
+    Tageslauf.
+
+    **Er haengt nicht am Tor.** Ein Turn kann eine Praegung *anziehen*, ohne
+    selbst eine zu hinterlassen — das ist der Regelfall: Das Tor liess 4 von 13
+    Pruefungen durch, der Zug gilt fuer alle 13.
+
+    Vorbedingung: keine.
+    Nachbedingung: eine Zeile `praegung_zug` unter dem Knoten `praegung`, mit
+        Zug, Strang, Naehe, Ladung und Richtung.
+    Fehlerfaelle: Ein Turn ohne `prompt_embedding` hat keinen Ort auf der
+        Landkarte; das wird als Grund protokolliert und nicht als Zug 1,0
+        ausgegeben — sonst waere „kein Reiz" von „kein Strang" nicht zu
+        unterscheiden.
+
+    Args:
+        state: Der Zustandsverbund dieses Turns.
+        user_id: der Mensch (`novaberg-convention-paar-schema.md` §2).
+        character_id: die Figur.
+
+    Returns:
+        Nichts — der Node schreibt ins Protokoll, nicht in den Verbund.
+    """
+    # ── Eingabe ────────────────────────────────
+    reiz_vektor: list[float] = state.get("prompt_embedding") or []
+    inhalt: dict = {"schritt": "praegung_zug"}
+
+    # ── Verarbeitung ───────────────────────────
+    if not reiz_vektor:
+        inhalt |= {"zug": None, "grund": "kein prompt_embedding"}
+        logger.warning(
+            "Praegung-Zug: kein prompt_embedding in diesem Turn — ohne Ort auf "
+            "der Landkarte gibt es keine Aehnlichkeit und keinen Zug"
+        )
+    else:
+        ergebnis: dict | None = praegungszug(
+            POSTGRES_URL,
+            user_id       = user_id,
+            character_id  = character_id,
+            reiz_vektor   = reiz_vektor,
+            konfrontation = _konfrontation_des_paares(user_id, character_id),
+        )
+        if ergebnis is None:
+            inhalt |= {"zug": None, "grund": "Eingabe abgelehnt"}
+        else:
+            # Die Teile neben der Summe: Ein Zug von 1,0 entsteht aus fehlender
+            # Naehe, fehlender Ladung oder lauter Vermeidung — drei Zustaende
+            # mit derselben Zahl.
+            inhalt |= ergebnis
+
+    # ── Ausgabe ────────────────────────────────
+    log_berechnung(
+        turn_id      = state.get("turn_id", "unbekannt"),
+        node         = "praegung",
+        quelle       = pipeline_quelle(state),
+        inhalt       = inhalt,
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
+
 def praegung_pruefen(state: ConversationState) -> ConversationState:
     """Prueft das Faden-Tor und legt bei Durchlass einen Faden an.
 
@@ -138,15 +258,18 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
     Ausfall — der Node meldet es und laesst den State unveraendert.
 
     Nachbedingung: Eine `pipeline_log`-Zeile `praegung_tor` mit beiden Werten und
-    dem Urteil; bei Durchlass zusaetzlich eine Zeile in `praegung_faden`.
+    dem Urteil; bei Durchlass zusaetzlich eine Zeile in `praegung_faden`. Dazu
+    **immer** eine Zeile `praegung_zug` — sie haengt nicht am Tor, denn ein Turn
+    kann eine Praegung anziehen, ohne selbst eine zu hinterlassen.
 
     Args:
         state: Der Zustandsverbund nach der Salienzberechnung.
 
     Returns:
         Der unveraenderte State — dieser Node schreibt in die Datenbank, nicht
-        in den Verbund. Die Praegung wirkt spaeter ueber den Praegungszug, nicht
-        in diesem Turn.
+        in den Verbund. Auch der Praegungszug wirkt noch nicht: Er wird seit dem
+        03.09.2026 je Turn gerechnet und protokolliert, aber von niemandem
+        gelesen (§10.3).
     """
     # ── Eingabe ────────────────────────────────
     # **Die effektive Salienz, nicht `salienz_human`.** Das sind zwei Groessen:
@@ -243,6 +366,8 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
         user_id      = user_id,
         character_id = character_id,
     )
+
+    _zug_protokollieren(state, user_id, character_id)
 
     if durch and faden_id is None:
         logger.error(

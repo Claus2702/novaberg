@@ -1827,7 +1827,10 @@ PRAEGUNG_SPEICHEN_SCHUETZEND: tuple[str, ...] = (
 # Mittel der wilden minus Mittel der schuetzenden Speichen. **Die Schwelle ist
 # 0,0 und das ist eine Aussage, keine Beliebigkeit:** Wer mehr wild als
 # schuetzend ist, geht der unangenehmen Sache nach. Novas Stand am 01.09.2026
-# liegt bei **+0,52** — sie wuerde einem Aerger-Strang nachgehen.
+# lag bei **+0,52**, am 03.09.2026 nachgemessen bei **+0,5333** — sie wuerde
+# einem Aerger-Strang nachgehen. **Die Schwelle hat bis heute nie entschieden:**
+# Beide Straenge des Bestands stellt schon Regel 1 oder 3 auf Annaeherung,
+# und jeder Wert zwischen 0,0 und Novas Mass waere heute wirkungsgleich.
 PRAEGUNG_KONFRONTATION_SCHWELLE: float = float(
     os.getenv("PRAEGUNG_KONFRONTATION_SCHWELLE", "0.0")
 )
@@ -1889,6 +1892,44 @@ PRAEGUNG_PRAESENZ_BODEN:       float = float(
 )
 PRAEGUNG_PRAESENZ_HALBSTRECKE: float = float(
     os.getenv("PRAEGUNG_PRAESENZ_HALBSTRECKE", "90")
+)
+
+# ── Der Praegungszug (Konzept §10.3) ────────────────────────────────────────
+#
+#   praegungszug = 1.0 + PRAEGUNG_ZUG_HUB · max_j( sim_j · gewicht_j · ladung_j )
+#
+# **Verstaerkt nur, daempft nie** — kein Tor, keine Null. Der Grund steht im
+# Konzept: Ein multiplikatives Tor auf einer Aehnlichkeit hebt die noetige
+# Naehe unbemerkt an; bei der Ziel-Gravitation ergab Tor 0,40 in **allen zwoelf**
+# betrachteten Laeufen `gravitationsterm = 0.0`.
+#
+# **Der Hub ist abgeleitet, nicht gesetzt** (`F-NAHT-1`): `sim` und `ladung`
+# liegen je auf [0, 1], ihr Produkt also auch. Der Hub ist damit genau die
+# Strecke zwischen 1,0 und dem oberen Ende der Zielspanne — das Ergebnis liegt
+# durch Konstruktion darin und wird **nicht gekappt**. Wer die Spanne aendert,
+# aendert eine Zahl, nicht zwei.
+PRAEGUNG_ZUG_SPANNE_OBEN: float = float(
+    os.getenv("PRAEGUNG_ZUG_SPANNE_OBEN", "1.6")
+)
+# `round`, damit `1.6 - 1.0` nicht als 0.6000000000000001 in jeder
+# Protokollzeile steht — die Zahl ist dieselbe, die Zeile lesbar.
+PRAEGUNG_ZUG_HUB: float = round(PRAEGUNG_ZUG_SPANNE_OBEN - 1.0, 6)
+
+# Wie schwer ein Strang **ohne** feststellbare Richtung im Zug wiegt.
+#
+# **Vorgabe des Eigentuemers, 03.09.2026:** Ein Strang auf `vermeidung` ist
+# genau das, *„was wir nicht als Faszination wollen — wir filtern es einfach
+# raus"*; er traegt 0. `unbestimmt` ist aber keine Vermeidung, sondern
+# **Unkenntnis**: Jedes junge Paar hat noch kein vollstaendiges Charakter-Rad
+# (gemessen 03.09.2026: 6 Radmessungen bei `mehmet`/`nova` gegen 208 bei
+# `meister`/`nova`), und ein Vorgabewert waere an dieser Stelle eine Aussage
+# ueber den Charakter, die niemand getroffen hat (`strang_richtung`).
+#
+# Das halbe Gewicht ist eine **Setzung mit Herkunft und ohne Messung**: Ein
+# junger Strang zieht, aber nicht so stark wie einer, dessen Richtung belegt
+# ist. Ungemessen — es gibt heute zwei Straenge, beide auf `annaeherung`.
+PRAEGUNG_ZUG_UNBESTIMMT: float = float(
+    os.getenv("PRAEGUNG_ZUG_UNBESTIMMT", "0.5")
 )
 
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
