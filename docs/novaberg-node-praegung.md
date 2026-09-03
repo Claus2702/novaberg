@@ -353,6 +353,8 @@ einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc
 
 > **Und Nova hat für diese Reize kein negatives Register.** Viermal `neutral` oder `neugierig`, kein einziges Mal Sektor 3, 5, 6 oder 7 — sie wandelt Verlust und Angriff in Neugier um. Das ist ein Befund über Perzeption und EI-Calc und steht in der Fundliste; für diese Schicht heißt er: **Die vier Bauteile ohne Eingabe warten nicht auf ein Tor-Problem.**
 
+> **Nachtrag derselben Sitzung, 20:35 UTC — die zweite Kontrolle hebt diesen Befund auf.** Gegen den **ganzen** Bestand statt gegen vier Turns gehalten: Nova trägt im echten Paar **35 negative Knoten von 2825 (1,24 %)** — Trauer 37 und Frustration 23 über alle Paare, seit Ende Juli. **Das Register existiert.** Das Faden-Tor gibt es aber erst seit dem 31.08.2026, und seither sind im echten Paar **22 Gelegenheiten** aufgelaufen. **Erwartungswert bei 1,24 %: 0,27.** Null negative Fäden ist damit nicht auffällig, sondern das wahrscheinlichste Ergebnis — die Stichprobe ist zu klein, um überhaupt etwas zu zeigen. Was die vier Turns belegen, ist eine Aussage über **diese vier Reize**, nicht über Novas Repertoire.
+
 ### Woher die Emotion eines Fadens kommt — und warum das hier steht
 
 **Aus Novas eigener Antwort, nicht aus dem Reiz.** In der Pipeline belegt: Das Segment, aus dem Tor und Faden ihre Emotion nehmen, trägt `graph_rolle: character` und `eingabe_label: "Antwort der Assistentin"`.

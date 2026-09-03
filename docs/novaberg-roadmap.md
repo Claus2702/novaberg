@@ -44,6 +44,8 @@ Viermal `neutral` oder `neugierig`, **kein einziges Mal Sektor 3, 5, 6 oder 7.**
 
 Das erklärt den Korpus vollständig — 26,2 % Sektor 8, 16,2 % Sektor 1, 47,9 % neutral, 3,0 % negativ — und **verschiebt den offenen Punkt**: Die vier wartenden Bauteile warten nicht auf ein Tor-Problem und nicht auf die richtigen Themen, sondern darauf, dass Nova überhaupt ein negatives Gefühl entwickelt. **Ein Befund über Perzeption und EI-Calc, nicht über die Prägung.**
 
+> **Nachtrag derselben Sitzung, 20:35 UTC — die zweite Kontrolle hebt diesen Befund auf.** Gegen den **ganzen** Bestand statt gegen vier Turns gehalten: Nova trägt im echten Paar **35 negative Knoten von 2825 (1,24 %)** — Trauer 37 und Frustration 23 über alle Paare, seit Ende Juli. **Das Register existiert.** Das Faden-Tor gibt es aber erst seit dem 31.08.2026, und seither sind im echten Paar **22 Gelegenheiten** aufgelaufen. **Erwartungswert bei 1,24 %: 0,27.** Null negative Fäden ist damit nicht auffällig, sondern das wahrscheinlichste Ergebnis — die Stichprobe ist zu klein, um überhaupt etwas zu zeigen. Was die vier Turns belegen, ist eine Aussage über **diese vier Reize**, nicht über Novas Repertoire.
+
 ### Der Nebenbefund, der die Bauart der Schicht betrifft
 
 **Die Emotion eines Fadens kommt aus Novas eigener Antwort, nicht aus dem Reiz.** In der Pipeline belegt: `graph_rolle: character`, `eingabe_label: "Antwort der Assistentin"`. Das passt zu `beobachter = assistant` und ist vermutlich Absicht — **es steht in keinem Dokument**, und wer das Konzept liest, nimmt das Gegenteil an. Die Folge ist erheblich: Ein erschütternder Reiz, auf den Nova sachlich antwortet, hinterlässt keinen Faden.
