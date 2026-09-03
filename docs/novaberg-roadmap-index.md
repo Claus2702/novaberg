@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 666 Abschnitte in 5 Dateien — 287 mit eigenem Datum, 378 geerbt, 1 ohne.
+**Umfang:** 672 Abschnitte in 5 Dateien — 288 mit eigenem Datum, 383 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 403 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 409 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 666 Marken, 666 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 672 Marken, 672 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,12 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-03 | laufend | ## | [03.09.2026, 20:25 UTC — Vier Turns gegen das Produktivsystem, und keiner kam durch ✅](novaberg-roadmap.md#03092026-2025-utc--vier-turns-gegen-das-produktivsystem-und-keiner-kam-durch) |
+| (2026-09-03) | laufend | ### | · [Die Bauart des Reizes wiegt schwerer als sein Thema](novaberg-roadmap.md#die-bauart-des-reizes-wiegt-schwerer-als-sein-thema) |
+| (2026-09-03) | laufend | ### | · [Nova hat kein negatives Register für diese Reize](novaberg-roadmap.md#nova-hat-kein-negatives-register-für-diese-reize) |
+| (2026-09-03) | laufend | ### | · [Der Nebenbefund, der die Bauart der Schicht betrifft](novaberg-roadmap.md#der-nebenbefund-der-die-bauart-der-schicht-betrifft) |
+| (2026-09-03) | laufend | ### | · [Und ein zweites Mal berichtigt](novaberg-roadmap.md#und-ein-zweites-mal-berichtigt) |
+| (2026-09-03) | laufend | ### | · [Belegt wurde dabei etwas, das offen war](novaberg-roadmap.md#belegt-wurde-dabei-etwas-das-offen-war) |
 | 2026-09-03 | laufend | ## | [03.09.2026, 19:45 UTC — Eine Messreihe gegen die Rechnung ✅](novaberg-roadmap.md#03092026-1945-utc--eine-messreihe-gegen-die-rechnung) |
 | (2026-09-03) | laufend | ### | · [A — Die Deckung, und sie ist der Befund](novaberg-roadmap.md#a--die-deckung-und-sie-ist-der-befund) |
 | (2026-09-03) | laufend | ### | · [B — Das Tor über 60 echte Prüfungen](novaberg-roadmap.md#b--das-tor-über-60-echte-prüfungen) |

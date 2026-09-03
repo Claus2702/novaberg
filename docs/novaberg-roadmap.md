@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **19:45 UTC** (gemessen via `date -u`). Davor 03.09.2026, 19:30 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **20:25 UTC** (gemessen via `date -u`). Davor 03.09.2026, 19:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 154 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,45 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 03.09.2026, 20:25 UTC — Vier Turns gegen das Produktivsystem, und keiner kam durch ✅
+
+**Die Frage war, ob die Prägungsschicht je einen negativen Faden bekommt.** Vier Messturns auf einem Testpaar, Pixie pausiert, Wärmewächter während des Laufs — 49,5 bis 63,1 °C bei einer Abbruchgrenze von 88.
+
+| Turn | Bauart des Reizes | Salienz | Ausschlag | Emotion | Urteil |
+|---|---|---:|---:|---|---|
+| 1 | Aussage über Verlust (Voyager) | 0,163 | 0,00 | `neutral` | Salienz zu klein |
+| 2 | Aussage über Bedrohung (Gammablitz) | 0,408 | 0,00 | `neutral` | Salienz zu klein |
+| 3 | Frage nach Novas Haltung | **0,752** | 0,20 | `neugierig` | Ausschlag zu klein |
+| 4 | Provokation, Widerspruch | 0,644 | 0,44 | `neugierig` | Ausschlag zu klein |
+
+### Die Bauart des Reizes wiegt schwerer als sein Thema
+
+Dieselbe Themenwelt, viermal. **Aussagen *über* etwas erreichen 0,163 und 0,408; Reize, die Novas Haltung verlangen, 0,752 und 0,644** — Faktor 2 bis 4. Beide letzteren rissen die Salienzschwelle und scheiterten erst am Ausschlag.
+
+> **Für jede künftige Kalibrierung heißt das: Die Bauart muss konstant gehalten werden.** Wer sie mitvariiert, misst sie statt der Schwelle.
+
+### Nova hat kein negatives Register für diese Reize
+
+Viermal `neutral` oder `neugierig`, **kein einziges Mal Sektor 3, 5, 6 oder 7.** Den Verlust der Voyager-Signale machte sie zu *„einem seltsamen Gedanken"*; die Provokation *„das ist gescheiterte Wissenschaft"* beantwortete sie mit *„nachvollziehbar — ein Schlag ins Gesicht der Methodik"* und blieb sachlich. **Sie wandelt Verlust und Angriff in Neugier um.**
+
+Das erklärt den Korpus vollständig — 26,2 % Sektor 8, 16,2 % Sektor 1, 47,9 % neutral, 3,0 % negativ — und **verschiebt den offenen Punkt**: Die vier wartenden Bauteile warten nicht auf ein Tor-Problem und nicht auf die richtigen Themen, sondern darauf, dass Nova überhaupt ein negatives Gefühl entwickelt. **Ein Befund über Perzeption und EI-Calc, nicht über die Prägung.**
+
+### Der Nebenbefund, der die Bauart der Schicht betrifft
+
+**Die Emotion eines Fadens kommt aus Novas eigener Antwort, nicht aus dem Reiz.** In der Pipeline belegt: `graph_rolle: character`, `eingabe_label: "Antwort der Assistentin"`. Das passt zu `beobachter = assistant` und ist vermutlich Absicht — **es steht in keinem Dokument**, und wer das Konzept liest, nimmt das Gegenteil an. Die Folge ist erheblich: Ein erschütternder Reiz, auf den Nova sachlich antwortet, hinterlässt keinen Faden.
+
+### Und ein zweites Mal berichtigt
+
+Die Aussage vom Nachmittag — *„der Korpus ist positiv durch eine Löschung, nicht durch das Tor"* — war irreführend. Faden 41 stammt vom **Testpaar** `sektorprobe` aus einer Sektor-Messreihe. Die 60 Torzeilen verteilen sich auf `meister`/`nova` **32**, `scheibe2probe` 20, `sektorprobe` 8, und **im echten Paar trug keine einzige Prüfung eine negative Emotion**. Das Tor hat nichts abgewiesen; es hat nie negatives Material gesehen.
+
+### Belegt wurde dabei etwas, das offen war
+
+**Der Prägungszug läuft im Betrieb** — vier `praegung_zug`-Zeilen, alle `zug 1.0` mit Grund *„kein Strang"*, korrekt für ein Paar ohne Strang. Erste Betriebszeilen der Scheibe 5.
+
+**Seiteneffekte, gezählt:** `praegung_faden` 5 → 5 · `praegung_strang` 2 → 2 · `timeline` 85 → 85 · `notizen` 1 → 1. Geschrieben wurden vier Tor- und vier Zug-Zeilen im Protokoll, sonst nichts.
 
 ---
 
@@ -96,7 +135,7 @@ Der Betrag kommt stattdessen aus der Asymmetrie, die derselbe Abschnitt schon ne
 
 `[gemessen]` über alle fünf Fäden: **größter Abstand 0,000000.**
 
-> ~~**Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen**~~ **[Am selben Tag berichtigt: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC, Salienz 0,732 / Ausschlag 0,77. Er steht nicht im Bestand, weil er nach Befund verworfen wurde. Der Korpus ist positiv durch eine Löschung, nicht durch das Tor.]** — vier in Sektor 1, einer in Sektor 8. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**.
+> ~~**Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen**~~ **[Zweimal berichtigt, 03.09.2026. Erst: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC. Dann, genauer: Diese Zeile stammt vom **Testpaar** `sektorprobe` aus einer Sektor-Messreihe und wurde mit deren Bestand entfernt. **Im echten Paar `meister`/`nova` trug in 32 Torprüfungen keine einzige eine negative Emotion.** Das Tor hat nichts abgewiesen — es hat nie negatives Material gesehen.]** — vier in Sektor 1, einer in Sektor 8. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**.
 
 Damit warten **vier** Bauteile auf dieselbe fehlende Eingabe: die Einfärbung, der bimodale Fall des Sektor-Histogramms, Regel 4 der Strangrichtung und das Gewicht für `unbestimmt`. Das steht in der Fundliste, nicht als Umbau.
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
 **Status:** ⬜ nicht gebaut — Entwurf. Alle Zahlen der Rechnung sind **Setzungen zum Messen**. Die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
@@ -640,6 +640,21 @@ Faktoren, §10.6). Beide Kommentare nennen den jeweils anderen Fall.
 > Emotion muss einen hohen Ausschlag in Freude oder Trauer, Neugier, etc. haben. Arousal ist kein
 > Teil davon."*
 
+> **Wessen Emotion — nachgetragen am 03.09.2026, weil es nirgends stand.** Salienz und Emotion des
+> Fadens kommen aus dem stärksten Segment **von Novas eigener Antwort**, nicht aus dem Reiz. Im
+> Betrieb belegt: Das Segment trägt `graph_rolle: character` und `eingabe_label: „Antwort der
+> Assistentin"`.
+>
+> **Das ist mit `beobachter = assistant` stimmig** — die Prägung ist Novas thematische Schicht, also
+> muss sie aus ihrer Seite kommen. Wer diesen Abschnitt ohne den Zusatz liest, nimmt das Gegenteil
+> an.
+>
+> **Die Folge gehört an die Regel und nicht in eine Fußnote:** Ein erschütternder Reiz, auf den Nova
+> sachlich antwortet, hinterlässt **keinen** Faden. Die Schicht bildet nicht ab, was ihr begegnet
+> ist, sondern was sie daraus gemacht hat — und damit hängt sie an derselben Stelle wie der
+> Ausdruck: `[gemessen]` 03.09.2026, vier Messturns über Verlust, Bedrohung und eine Provokation
+> ergaben viermal `neutral` oder `neugierig` und **keinen einzigen negativen Sektor**.
+
 **Arousal auszuschließen ist richtig, und die Literatur stützt es** (§2.4): Was der Zentralität
 zugeschrieben wird, ist die **Intensität** des Affekts, nicht seine Aktivierungsstärke. Dazu ein
 systemeigener Grund: Der EI-Arousal ist bereits ein Mischwert (Dynamik 0,40, Intent 0,35, Tone
@@ -1123,7 +1138,7 @@ nie stumm, und was leise ist, kann sich nicht mehr weit unterscheiden.
 
 `[gemessen]` 03.09.2026 gegen den echten Bestand: **`abstand_max = 0,0` bei 5 von 5 Fäden.** Alle
 liegen in Sektor 1 und 8 — ~~die Prägungsschicht hat bis heute **keinen einzigen negativen Faden**
-aufgenommen.~~ **[Am selben Tag berichtigt: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC, Salienz 0,732 / Ausschlag 0,77. Er steht nicht im Bestand, weil er nach Befund verworfen wurde. Der Korpus ist positiv durch eine Löschung, nicht durch das Tor.]** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**; die Trennung ist
+aufgenommen.~~ **[Zweimal berichtigt, 03.09.2026. Erst: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC. Dann, genauer: Diese Zeile stammt vom **Testpaar** `sektorprobe` aus einer Sektor-Messreihe und wurde mit deren Bestand entfernt. **Im echten Paar `meister`/`nova` trug in 32 Torprüfungen keine einzige eine negative Emotion.** Das Tor hat nichts abgewiesen — es hat nie negatives Material gesehen.]** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**; die Trennung ist
 an denselben Daten mit getauschter Emotion gerechnet (0,007 bis 0,014) und nicht gemessen.
 
 **Die Trennung ist bindend:**

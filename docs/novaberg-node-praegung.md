@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding, Prägungszug) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung, Zug); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 3. September 2026, 20:25 UTC (**§6b — der Betriebsbeleg der Scheiben 5 und 6**: vier Messturns, kein Faden, aber die ersten vier `praegung_zug`-Zeilen; dazu **woher die Emotion eines Fadens kommt** — aus Novas Antwort, nicht aus dem Reiz, und das stand nirgends). Davor 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
 **Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4, 5 und 6** gebaut (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. **Der Zug hat noch keinen Leser, und die Einfärbung hat keinen Verbraucher und im Bestand keine Eingabe**
@@ -325,13 +325,41 @@ einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc
 | **Sektoren** | 1 (viermal) und 8 (einmal) |
 | **größter Abstand** | **0,000000** |
 
-> ~~**Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen.**~~ **[Am selben Tag berichtigt: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC, Salienz 0,732 / Ausschlag 0,77. Er steht nicht im Bestand, weil er nach Befund verworfen wurde. Der Korpus ist positiv durch eine Löschung, nicht durch das Tor.]** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe** — genau die Klasse, die der zweite Zugriff *„der Bestand statt der Zeugen"* finden soll. Die Trennung ist an denselben Daten mit getauschter Emotion **gerechnet** (0,007 bis 0,014 bei diesem Alter) und nicht gemessen.
+> ~~**Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen.**~~ **[Zweimal berichtigt, 03.09.2026. Erst: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC. Dann, genauer: Diese Zeile stammt vom **Testpaar** `sektorprobe` aus einer Sektor-Messreihe und wurde mit deren Bestand entfernt. **Im echten Paar `meister`/`nova` trug in 32 Torprüfungen keine einzige eine negative Emotion.** Das Tor hat nichts abgewiesen — es hat nie negatives Material gesehen.]** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe** — genau die Klasse, die der zweite Zugriff *„der Bestand statt der Zeugen"* finden soll. Die Trennung ist an denselben Daten mit getauschter Emotion **gerechnet** (0,007 bis 0,014 bei diesem Alter) und nicht gemessen.
 
 **Und sie hat ein Fenster.** `[gerechnet]` bei 0,9 und Halbstrecke 60 Tage: 3,9 % nach einer Woche, **14,3 % nach 120 Tagen**, wieder 3,7 % nach fünf Jahren. An beiden Enden verschwindet der Unterschied — jung mangels Zeit, alt, weil beide Stimmen gegen denselben Boden laufen.
 
 **11 Zeugen** (`tests/test_praegung_einfaerbung.py`), davon einer auf die Verdrahtung. Gegenproben 4/4, 4/4, 1/1 und 5/5.
 
 > **Der siebte Schritt stand von Anfang an in der Ersetzungsliste des Tageslauf-Zeugen** — zum ersten Mal, seit die Klasse bekannt ist. Beim fünften und sechsten Schritt fehlte er je einmal, und beim fünften schrieb die Suite dabei in den Produktivbestand.
+
+
+### Der Betriebsbeleg der Scheiben 5 und 6 — 03.09.2026, 20:25 UTC
+
+**Vier Messturns auf einem Testpaar**, Pixie pausiert, Wärmewächter während des Laufs (49,5 bis 63,1 °C bei Abbruchgrenze 88).
+
+| Turn | Bauart des Reizes | Salienz | Ausschlag | Emotion | Urteil |
+|---|---|---:|---:|---|---|
+| 1 | Aussage über Verlust | 0,163 | 0,00 | `neutral` | Salienz zu klein |
+| 2 | Aussage über Bedrohung | 0,408 | 0,00 | `neutral` | Salienz zu klein |
+| 3 | Frage nach Novas Haltung | **0,752** | 0,20 | `neugierig` | Ausschlag zu klein |
+| 4 | Provokation | 0,644 | 0,44 | `neugierig` | Ausschlag zu klein |
+
+**Der Prägungszug läuft im Betrieb:** vier `praegung_zug`-Zeilen, alle `zug 1.0` mit Grund *„kein Strang"* — korrekt für ein Paar ohne Strang. Das ist der erste Betriebsbeleg der Scheibe 5.
+
+**Kein Faden entstanden**, und das ist kein Fehler des Tors: Beide Torschwellen haben getrennt, was sie trennen sollen.
+
+> **Die Bauart des Reizes hebt die Salienz um Faktor 2 bis 4** — bei gleichem Thema. Aussagen *über* etwas liegen bei 0,163 und 0,408, Reize, die Novas Haltung verlangen, bei 0,752 und 0,644. Wer eine Torschwelle kalibriert, hält die Bauart konstant; sonst misst er sie statt der Schwelle.
+
+> **Und Nova hat für diese Reize kein negatives Register.** Viermal `neutral` oder `neugierig`, kein einziges Mal Sektor 3, 5, 6 oder 7 — sie wandelt Verlust und Angriff in Neugier um. Das ist ein Befund über Perzeption und EI-Calc und steht in der Fundliste; für diese Schicht heißt er: **Die vier Bauteile ohne Eingabe warten nicht auf ein Tor-Problem.**
+
+### Woher die Emotion eines Fadens kommt — und warum das hier steht
+
+**Aus Novas eigener Antwort, nicht aus dem Reiz.** In der Pipeline belegt: Das Segment, aus dem Tor und Faden ihre Emotion nehmen, trägt `graph_rolle: character` und `eingabe_label: "Antwort der Assistentin"`.
+
+Das ist mit `beobachter = assistant` stimmig — die Prägung ist Novas thematische Schicht, also muss sie aus ihrer Seite kommen. **Es stand aber in keinem Dokument**, und wer §7 des Konzepts liest, nimmt an, der Reiz präge.
+
+> **Die Folge ist erheblich und gehört an diese Stelle:** Ein erschütternder Reiz, auf den Nova sachlich antwortet, hinterlässt **keinen** Faden. Die Schicht misst nicht, was ihr begegnet ist, sondern was sie daraus gemacht hat.
 
 
 ---
