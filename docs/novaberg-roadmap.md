@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 2. September 2026 — juengster Eintrag **18:45 UTC** (gemessen via `date -u`). Davor 02.09.2026, 14:30 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **07:15 UTC** (gemessen via `date -u`). Davor 02.09.2026, 18:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 151 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 152 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,60 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 03.09.2026, 07:15 UTC — Scheibe 5: Der Prägungszug ✅
+
+**Das letzte Stück vor der Faszination.** Richtung und Ladung standen seit zwei Tagen und wurden von niemandem gelesen; seit heute liest sie der Zug.
+
+```
+praegungszug = 1.0 + PRAEGUNG_ZUG_HUB · max_j( sim_j · gewicht_j · ladung_j )     # 1,0 … 1,6
+```
+
+**Zwei Entscheidungen des Eigentümers standen davor, und beide sind gefallen.**
+
+Die erste: *„Was unter Vermeidung fällt, ist genau das, was wir nicht als Faszination wollen. Wir wollen deswegen auch keine Prägung dafür. Das heißt, wir filtern es einfach raus."* — Vermeidung trägt **0**. `unbestimmt` ist dagegen keine Vermeidung, sondern **Unkenntnis**, und trägt **0,5**: Jedes junge Paar hat kein vollständiges Charakter-Rad, gemessen heute 6 Radmessungen bei `mehmet`/`nova` gegen 208 bei `meister`/`nova`.
+
+Die zweite: `PRAEGUNG_KONFRONTATION_SCHWELLE` bleibt bei **0,0**. Die Null ist die Aussage — wer mehr wild als schützend ist, geht der unangenehmen Sache nach.
+
+> **Die Richtung ist nicht die Valenz, und das trägt die ganze Entscheidung.** Blut, Krieg und Gewalt sind negativ und landen auf *Annäherung* — Kriegsgeschichte kommt als Awe-Dyade über Regel 2 herein, bevor das Rad gefragt wird. Auf `vermeidung` fällt nur der schmale Rest: negativ dominant, Sektor 8 unter 0,25, keine Überraschung dabei, und ein Rad, das sich schützt.
+
+### Zwei Bauentscheidungen, die aus Regeln folgen
+
+**Der Hub ist abgeleitet, nicht gesetzt** (`F-NAHT-1`): `sim` und `gewicht · ladung` liegen je auf [0, 1], also ist `PRAEGUNG_ZUG_HUB = PRAEGUNG_ZUG_SPANNE_OBEN − 1,0` genau die Strecke zur oberen Spanne. Das Ergebnis liegt **durch Konstruktion** darin und wird nicht gekappt. Wer die Spanne ändert, ändert eine Zahl, nicht zwei.
+
+**Ein Maximum, keine Summe** — zwei Stränge ziehen nicht doppelt. Die Zeilen kommen nach Ähnlichkeit absteigend, und die Suche bricht ab, sobald `sim_j` unter das beste Produkt fällt: `gewicht · ladung` liegt auf [0, 1], also kann kein späterer Strang gewinnen. **Exakt, keine Näherung.**
+
+### Gemessen gegen den echten Bestand
+
+Ein Lauf, der `praegungszug` gegen **jeden** Faden des Bestands als Reiz fährt, mit dem echten Charakter-Rad des jeweiligen Paares:
+
+| Reiz | Paar | sim | Ladung | Zug |
+|---|---|---:|---:|---:|
+| Faden 327 | scheibe2probe/nova | 0,8701 | 0,6594 | **1,3442** |
+| Faden 328 | scheibe2probe/nova | 0,8814 | 0,6594 | **1,3487** |
+| Faden 353 | scheibe2probe/nova | 0,8225 | 0,6594 | **1,3254** |
+| Faden 354 | scheibe2probe/nova | 0,8754 | 0,6594 | **1,3463** |
+| Faden 1282 | meister/nova | 1,0000 | 0,5144 | **1,3087** |
+
+**Die Kreuzprobe trennt:** Faden 327 gegen die Stränge von `meister`/`nova` gehalten ergibt sim **0,2245** und Zug **1,0693** — ein fremdes Thema hebt kaum, statt zu senken.
+
+**15 Zeugen**, davon drei auf die Verdrahtung und zwei auf die Abfrage selbst. Suite **2889 grün, 0 übersprungen**. Gegenproben: Vermeidungsfilter 1/1 · `unbestimmt`-Gewicht 1/1 · Abbruch 2/2 · Maximum 1/1.
+
+### Was die Gegenprobe fand und kein Zeuge hielt
+
+Eine Klammer `max(0.0, naehe)` stand als Schutz gegen negative Kosinusnähe im Code. Sie ließ sich **entfernen, ohne dass ein einziger von 15 Zeugen rot wurde** — der Abbruch trägt die Zusicherung bereits: `bestes` startet bei 0,0, und `sim <= bestes` schließt jede negative Nähe aus, bevor sie gewichtet wird.
+
+> **Ein Schutz, der nie greift, sieht aus wie der Grund für eine Zusicherung, die in Wahrheit woanders hängt.** Die Klammer ist entfernt, der Grund steht als Kommentar an der Abbruchbedingung, und der Zeuge prüft jetzt beides — die Zahl und dass gar nicht erst gerechnet wurde.
+
+### Nebenbefunde
+
+**Zwei Zahlen der Rechenkette waren überholt.** Die Gliederzahl stand auf 36 statt 40, und **S37 fehlte in der Übersichtstabelle** — beides heute nachgezogen. **S35 hat weiterhin keinen eigenen Abschnitt**; das steht in der Fundliste.
+
+**Der Namens-Zeuge schlug zum zweiten Mal in zwei Sitzungen an, wo nichts war** — diesmal auf *„aus Zusicherung 7"*. Nach `KEINE_NAMEN` eingetragen, wie die Meldung es vorsieht.
+
+**Novas Konfrontationsmaß steht heute auf +0,5333** (01.09.: +0,52 im Kommentar, +0,5379 im Protokoll). Der Kommentar in `config.py` ist nachgezogen — und trägt jetzt den Satz, dass die Schwelle **bis heute nie entschieden hat**: Beide Stränge stellt schon Regel 1 oder 3 auf Annäherung.
 
 ---
 

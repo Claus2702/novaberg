@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik — Einheitliches Prompt-Schema für alle Nodes
-**Stand:** 23. August 2026 (der Override-Pfad heisst `prompts/gemma4-gpu/`). Davor: 18. August 2026 (`[AUFZEICHNUNGEN]` ergänzt); davor 17. April 2026, Chat 52 (Code-Alignment). **Die Matrix in §3 ist älter als die Trennung von Verfasser und Responder** — sie führt `GEDAECHTNIS` beim Responder, der ihn seit dem 14.08.2026 nicht mehr sieht; als Fund notiert, hier nicht mitrepariert
+**Stand:** 3. September 2026 (`KEINE_NAMEN` um `Zusicherung` gewachsen — zweiter Fehlalarm der Konstruktion `aus X` in zwei Sitzungen). Davor 23. August 2026 (der Override-Pfad heisst `prompts/gemma4-gpu/`). Davor: 18. August 2026 (`[AUFZEICHNUNGEN]` ergänzt); davor 17. April 2026, Chat 52 (Code-Alignment). **Die Matrix in §3 ist älter als die Trennung von Verfasser und Responder** — sie führt `GEDAECHTNIS` beim Responder, der ihn seit dem 14.08.2026 nicht mehr sieht; als Fund notiert, hier nicht mitrepariert
 **Pfad:** novaberg/docs/novaberg-pattern-prompt-schema.md
 **Quellen:** nova-01-t-d.md
 **Betrifft:** Alle Nodes mit LLM-Prompts (Perzeption, Router, Responder, Thinker, Tribunal, Salienz, Classify-Nodes)
@@ -138,6 +138,8 @@ Ein Name, der frei im Satz steht, wird nicht erkannt. Braucht ein Beispiel eine 
 Der Test führt **keine Liste zu schützender Namen** — die stünde damit im Repository und wäre selbst die Preisgabe. Er kennt nur die erlaubten. Ein zweiter Fall prüft, dass der Cast in den Beispielen tatsächlich vorkommt; ohne ihn wäre das Löschen aller Beispiele grün.
 
 Generische Wörter, die `aus X` mitnimmt (`aus Worker-Thread`, `aus Konzept §7.5`), stehen in `KEINE_NAMEN`. Wächst diese Liste, ist das ein Anlass hinzusehen.
+
+**Am 03.09.2026 um `Zusicherung` gewachsen** — *„aus Zusicherung 7"*: Die Zeugenköpfe dieses Projekts nummerieren ihre Zusicherungen und verweisen aufeinander, der Slot liest das Wort dahinter. Stehendes Vokabular, kein Gesprächsname. **Der Zeuge hat damit zum zweiten Mal in zwei Sitzungen angeschlagen, wo nichts war** (davor `Sektor`) — die Fehlalarmquote der Konstruktion `aus X` gehört beobachtet, nicht die Liste.
 
 **Am 21.08.2026 um einen Eintrag gewachsen, und der Anlass ist eine eigene Klasse: der Produktname.** `RediSearch` ergab den Fund `Redi` — der Slot bricht nach dem ersten Kleinbuchstaben-Block ab, genau wie bei `PostgreSQL` → `Postgre`. **Beide Zwillinge stehen inzwischen in der Liste, und ihre Stammformen `Redis` und `Postgre` standen schon vorher darin.** Ein Produktname mit einem zweiten Großbuchstaben in der Mitte erzeugt also zuverlässig einen zweiten Fund — das ist keine Nachlässigkeit des Musters, sondern seine Bauart, und der Grund, warum die Liste hier steht statt im Muster.
 

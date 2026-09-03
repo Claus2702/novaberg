@@ -1,11 +1,11 @@
 # Novaberg — Node: Prägung — das Faden-Tor
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding, Prägungszug) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung, Zug); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
+**Stand:** 3. September 2026, 06:45 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1, 2, **3a–3c und 4** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, und seine Richtung und seine Ladung werden gerechnet. **Der Prägungszug und der sektorabhängige Verfall sind nicht gebaut**
+**Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4 und 5** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. **Der Zug hat noch keinen Leser, und der sektorabhängige Verfall ist nicht gebaut**
 
 ---
 
@@ -228,7 +228,7 @@ Fehlt das Rad, ist das Ergebnis `unbestimmt` — nicht `vermeidung`. Ein Vorgabe
 
 > **🔴 Regel 4 trennt heute nichts.** Reiner Ärger, reine Furcht und reine Trauer ergeben alle drei Annäherung. Für diesen Charakter ist das richtig und genau das, was die Vorgabe beschreibt — die Achse fällt im Betrieb aber keine Entscheidung, die Regel 1 nicht schon fällt. In der Fundliste.
 
-**Der Aufrufer ist der sechste Schritt des Tageslaufs**, der je Strang eine Zeile ins `pipeline_log` schreibt (`node='praegung_strang'`, `schritt='strang_richtung'`). Er steht dort, weil der eigentliche Leser — der Prägungszug — nicht gebaut ist; so entsteht die Beobachtungsreihe für die Kalibrierung. **Achtung bei der Messung:** Ein Einmal-Prozess außerhalb des Servers schreibt keine Protokollzeilen und meldet trotzdem Erfolg.
+**Der Aufrufer ist der sechste Schritt des Tageslaufs**, der je Strang eine Zeile ins `pipeline_log` schreibt (`node='praegung_strang'`, `schritt='strang_richtung'`). Er steht dort, ~~weil der eigentliche Leser — der Prägungszug — nicht gebaut ist~~ → **der Zug ist seit dem 03.09.2026 gebaut** (Scheibe 5) und liest beide Größen je Turn; die Tageslauf-Zeile bleibt trotzdem, denn sie ist die Reihe über den **ganzen** Bestand, während der Zug nur das Paar des Turns sieht. So entsteht die Beobachtungsreihe für die Kalibrierung. **Achtung bei der Messung:** Ein Einmal-Prozess außerhalb des Servers schreibt keine Protokollzeilen und meldet trotzdem Erfolg.
 
 ### Die Ladung — Scheibe 4, seit dem 02.09.2026
 
@@ -255,9 +255,47 @@ strang_staerke = ( 0,4 · mittel(faden.salienz)
 
 > **Die Valenz trägt mehr als die Salienz, bei halbem Gewicht** (Streuung 0,137 gegen 0,043). Die Salienz ist durch das Tor bei 0,60 vorselektiert und liegt eng; die Valenz kommt seit dem 02.09.2026 aus `EMOTION_VALENZ` mit sechzehn Zwischenstufen statt ±1. **Die Anzahl dominiert beide um eine Größenordnung**, und das entspricht der Absicht.
 
-**Was ausdrücklich nicht gebaut ist:** der Prägungszug (§10.3) — er ist der Leser, für den Richtung und Ladung heute ins Protokoll geschrieben werden. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13) — sie trägt den Torfaktor der ganzen Schicht, und welche Sektorkombinationen als Annäherung gelten, ist eine **Absicht** und keine Implementierungsentscheidung. `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
+~~**Was ausdrücklich nicht gebaut ist:** der Prägungszug (§10.3) — er ist der Leser, für den Richtung und Ladung heute ins Protokoll geschrieben werden.~~ → **Gebaut am 03.09.2026, siehe Scheibe 5.** Richtung und Ladung haben damit ihren Leser; der Zug selbst hat noch keinen. `W_ANZAHL`, `W_SPITZE` und `W_SPANNE` sind nirgends beziffert, und die Annäherungs-Tabelle führt das Konzept selbst als gesetzt und ungemessen (§13) — sie trägt den Torfaktor der ganzen Schicht, und welche Sektorkombinationen als Annäherung gelten, ist eine **Absicht** und keine Implementierungsentscheidung. `praegung_strang.name` bleibt leer — der Name entsteht (§7.11).
 
 **Valenz ist nicht Richtung.** Zwei negative Prägungen können entgegengesetzte Richtungen haben: Machtlosigkeit → Macht ist Annäherung, Furcht vor der Dunkelheit ist Vermeidung (§7.7). Eine Valenzachse allein kann Kriegsgeschichte nicht von Dunkelheit unterscheiden.
+
+### Der Prägungszug — Scheibe 5, seit dem 03.09.2026
+
+**Der Leser, auf den Richtung und Ladung zwei Tage lang gewartet haben.** Er rechnet je Turn, wie stark die Prägung diesen Reiz anhebt, und schreibt das Ergebnis als `praegung_zug` ins Protokoll — noch ohne eigenen Leser, dieselbe Bauart wie Richtung und Ladung im Tageslauf.
+
+```
+praegungszug = 1.0 + PRAEGUNG_ZUG_HUB · max_j( sim_j · gewicht_j · ladung_j )
+```
+
+| Größe | Herkunft | Bemerkung |
+|---|---|---|
+| `sim_j` | `1 - (zentroid <=> reizvektor)` | dieselbe Rechnung wie bei Zuordnung und Reaktivierung |
+| `gewicht_j` | die Richtung | Annäherung 1,0 · **`unbestimmt` 0,5** · Vermeidung 0,0 |
+| `ladung_j` | `strang_staerke` | Scheibe 4, nicht gespeichert |
+| `PRAEGUNG_ZUG_HUB` | `PRAEGUNG_ZUG_SPANNE_OBEN − 1,0` = **0,6** | abgeleitet, nicht gesetzt (`F-NAHT-1`) |
+
+**Vorgabe des Eigentümers, 03.09.2026:** *„Was unter Vermeidung fällt, ist genau das, was wir nicht als Faszination wollen. Wir wollen deswegen auch keine Prägung dafür. Das heißt, wir filtern es einfach raus."* — `unbestimmt` ist dagegen **Unkenntnis** und wiegt halb: Jedes junge Paar hat kein vollständiges Rad (gemessen 03.09.2026: 6 Radmessungen bei `mehmet`/`nova` gegen 208 bei `meister`/`nova`).
+
+**Ein Maximum, keine Summe.** Die Zeilen kommen nach Ähnlichkeit absteigend; sobald `sim_j` unter das beste Produkt fällt, kann kein Strang mehr gewinnen, weil `gewicht · ladung` auf [0, 1] liegt. **Der Abbruch ist exakt** und hält den Aufwand bei wenigen Zeilen, während die Zahl der Stränge wächst.
+
+`[gemessen]` 03.09.2026 gegen den echten Bestand — ein Lauf, der `praegungszug` gegen **jeden** Faden des Bestands als Reiz fährt, mit dem echten Charakter-Rad des jeweiligen Paares:
+
+| Reiz | Paar | sim | Ladung | Zug |
+|---|---|---:|---:|---:|
+| Faden 327 | scheibe2probe/nova | 0,8701 | 0,6594 | **1,3442** |
+| Faden 328 | scheibe2probe/nova | 0,8814 | 0,6594 | **1,3487** |
+| Faden 353 | scheibe2probe/nova | 0,8225 | 0,6594 | **1,3254** |
+| Faden 354 | scheibe2probe/nova | 0,8754 | 0,6594 | **1,3463** |
+| Faden 1282 | meister/nova | 1,0000 | 0,5144 | **1,3087** |
+
+**Die Kreuzprobe trennt:** Faden 327 gegen die Stränge von `meister`/`nova` gehalten ergibt sim **0,2245** und Zug **1,0693**. Ein fremdes Thema hebt kaum — und senkt nicht.
+
+> **Was der Bestand nicht hergibt:** Beide Stränge stehen auf *Annäherung*. Die Gewichte 0,5 und 0,0 sind bezeugt und **ungemessen**, und über die richtige Spanne sagen zwei Stränge nichts.
+
+**15 Zeugen** (`tests/test_praegung_zug.py`), davon drei auf die Verdrahtung — die Klasse, an der diese Schicht binnen zwei Tagen dreimal gescheitert ist. Zwei prüfen die **Abfrage selbst**, weil der Abbruch nur bei absteigender Sortierung richtig ist und ein Zeuge gegen eine nachgebildete Verbindung das nicht sieht.
+
+> **Die Gegenprobe hat einen Fund geliefert, den kein Zeuge hatte.** Eine Klammer `max(0.0, naehe)` stand als Schutz gegen negative Kosinusnähe im Code — sie ließ sich entfernen, **ohne dass ein Zeuge rot wurde**. Der Abbruch trägt die Zusicherung bereits: `bestes` startet bei 0,0, und `sim <= bestes` schließt jede negative Nähe aus. Die Klammer war toter Code und ist entfernt; der Zeuge prüft jetzt **beides**, die Zahl und dass gar nicht erst gerechnet wurde. Ein Schutz, der nie greift, sieht aus wie der Grund für eine Zusicherung, die in Wahrheit woanders hängt.
+
 
 ---
 

@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 651 Abschnitte in 5 Dateien — 284 mit eigenem Datum, 366 geerbt, 1 ohne.
+**Umfang:** 656 Abschnitte in 5 Dateien — 285 mit eigenem Datum, 370 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 388 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 393 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 651 Marken, 651 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 656 Marken, 656 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,11 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-03 | laufend | ## | [03.09.2026, 07:15 UTC — Scheibe 5: Der Prägungszug ✅](novaberg-roadmap.md#03092026-0715-utc--scheibe-5-der-prägungszug) |
+| (2026-09-03) | laufend | ### | · [Zwei Bauentscheidungen, die aus Regeln folgen](novaberg-roadmap.md#zwei-bauentscheidungen-die-aus-regeln-folgen) |
+| (2026-09-03) | laufend | ### | · [Gemessen gegen den echten Bestand](novaberg-roadmap.md#gemessen-gegen-den-echten-bestand) |
+| (2026-09-03) | laufend | ### | · [Was die Gegenprobe fand und kein Zeuge hielt](novaberg-roadmap.md#was-die-gegenprobe-fand-und-kein-zeuge-hielt) |
+| (2026-09-03) | laufend | ### | · [Nebenbefunde](novaberg-roadmap.md#nebenbefunde) |
 | 2026-09-02 | laufend | ## | [02.09.2026, 18:45 UTC — Die Valenz bekommt Zwischenstufen ✅](novaberg-roadmap.md#02092026-1845-utc--die-valenz-bekommt-zwischenstufen) |
 | 2026-09-02 | laufend | ## | [02.09.2026, 14:30 UTC — Scheibe 4: Was einen Strang stark macht ✅](novaberg-roadmap.md#02092026-1430-utc--scheibe-4-was-einen-strang-stark-macht) |
 | (2026-09-02) | laufend | ### | · [Und die Vorhersage fand einen Defekt, den 16 grüne Zeugen nicht sahen](novaberg-roadmap.md#und-die-vorhersage-fand-einen-defekt-den-16-grüne-zeugen-nicht-sahen) |

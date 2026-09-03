@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 3. September 2026, 06:30 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
 **Status:** ⬜ nicht gebaut — Entwurf. Alle Zahlen der Rechnung sind **Setzungen zum Messen**. Die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
@@ -878,8 +878,8 @@ situiert — und die Vielzahl gleichzeitiger Interessen ist der Regelfall.
 
 | Achse | woher | wer liest sie |
 |---|---|---|
-| **Ladung** (Betrag) | Fadenzahl, Spitze, Spanne | Faszination |
-| **Richtung** (Annäherung ↔ Vermeidung) | Sektorzusammensetzung | **Faszination — der Torfaktor** |
+| **Ladung** (Betrag) | Fadenzahl, Spitze, Spanne | der Prägungszug (§10.3), seit dem 03.09.2026 |
+| **Richtung** (Annäherung ↔ Vermeidung) | Sektorzusammensetzung | **der Prägungszug — als Torfaktor**, seit dem 03.09.2026 |
 | **Valenz** (positiv ↔ negativ) | dominanter Sektor | Ton, Meinung, Einfärbung — **nicht** Faszination |
 
 | Prägung | Ursprung | Richtung | speist Faszination |
@@ -1345,16 +1345,80 @@ wiegt am schwersten, weil sie Faszination von Neugier trennt.
 
 ### 10.3 Der Prägungszug — verstärkt nur, dämpft nie
 
+**Gebaut am 03.09.2026** (`memory/praegung.py::praegungszug`, gerufen je Turn vom Faden-Tor).
+
 ```
-praegungszug = 1.0 + PRAEG_HUB · max_j( sim_j · ladung_j )        # 1.0 … ~1.6
-               nur über Stränge mit Richtung = Annäherung
+praegungszug = 1.0 + PRAEGUNG_ZUG_HUB · max_j( sim_j · gewicht_j · ladung_j )   # 1.0 … 1.6
 ```
 
-**Nie unter 1,0, kein Tor, keine Null.** `sim_j` ist das Maximum über **beide** Andockwege (§7.12).
+**Nie unter 1,0, kein Tor, keine Null.** `sim_j` ist das Maximum über **beide** Andockwege (§7.12);
+heute trägt nur der thematische, weil der strukturelle die abstrakte Schicht braucht.
 
 > **Warum ausdrücklich kein Tor.** Die Ziel-Gravitation zeigt, was ein multiplikatives Tor auf
 > einer Ähnlichkeit anrichtet: Tor 0,40 auf `sim × motivation` hebt die nötige Ähnlichkeit auf
 > **0,44–0,67**; gemessen `gravitationsterm = 0.0` in **allen zwölf** betrachteten Läufen.
+
+#### Das Gewicht der Richtung — die Entscheidung vom 03.09.2026
+
+Die frühere Fassung schrieb *„nur über Stränge mit Richtung = Annäherung"*. Das lässt offen, was mit
+`unbestimmt` geschieht, und genau der Fall ist am Anfang der Regelfall: Ein junges Paar hat kein
+vollständiges Charakter-Rad, und Regel 4 kann dann nicht entscheiden.
+
+| Richtung | Gewicht | Warum |
+|---|---|---|
+| `annaeherung` | 1,0 | der Fall, für den der Zug gebaut ist |
+| `unbestimmt` | `PRAEGUNG_ZUG_UNBESTIMMT` = 0,5 | **Unkenntnis, nicht Vermeidung** — ein Vorgabewert wäre eine Aussage über den Charakter, die niemand getroffen hat |
+| `vermeidung` | 0,0 | der Strang, von dem Nova wegwill |
+
+> **Vorgabe des Eigentümers, 03.09.2026:** *„Was unter Vermeidung fällt, ist genau das, was wir nicht
+> als Faszination wollen. Wir wollen deswegen auch keine Prägung dafür. Das heißt, wir filtern es
+> einfach raus."*
+
+**Das ist keine Aussage über negative Themen.** Blut, Krieg und Gewalt sind negativ und landen auf
+*Annäherung* — Kriegsgeschichte kommt als Awe-Dyade schon über Regel 2 herein, bevor das Rad
+gefragt wird (§7.7). Auf `vermeidung` fällt nur der schmale Rest: negativ dominant, Sektor 8 unter
+0,25, keine Überraschung dabei, und ein Rad, das sich schützt. **Die Richtung ist der Torfaktor, die
+Valenz ist es ausdrücklich nicht.**
+
+#### Der Hub ist abgeleitet, nicht gesetzt
+
+`sim` und `gewicht · ladung` liegen je auf [0, 1], ihr Produkt also auch. `PRAEGUNG_ZUG_HUB` ist
+damit genau die Strecke zwischen 1,0 und `PRAEGUNG_ZUG_SPANNE_OBEN` (1,6) — das Ergebnis liegt
+**durch Konstruktion** in der Spanne und wird nicht gekappt (`F-NAHT-1`). Wer die Spanne ändert,
+ändert eine Zahl, nicht zwei.
+
+#### Ein Maximum, keine Summe — und die Suche weiß, wann Schluss ist
+
+Zwei Stränge, die denselben Reiz tragen, ziehen nicht doppelt. Die Zeilen kommen nach Ähnlichkeit
+absteigend; sobald `sim_j` unter das beste bisherige Produkt fällt, kann kein Strang das Maximum
+mehr heben, weil `gewicht · ladung` auf [0, 1] liegt. **Der Abbruch ist exakt und keine Näherung**
+— und er trägt zugleich das *„dämpft nie"*: Eine negative Kosinusnähe erfüllt die Abbruchbedingung
+und kommt nie in die Rechnung.
+
+`[gemessen]` 03.09.2026 gegen den echten Bestand — ein Lauf, der `praegungszug` gegen **jeden**
+Faden des Bestands als Reiz fährt, mit dem echten Charakter-Rad des jeweiligen Paares:
+
+| Reiz | Paar | sim | Ladung | Richtung | Zug |
+|---|---|---|---|---|---|
+| Faden 327 | scheibe2probe/nova | 0,8701 | 0,6594 | Annäherung (Neugier 0,250) | **1,3442** |
+| Faden 328 | scheibe2probe/nova | 0,8814 | 0,6594 | Annäherung | **1,3487** |
+| Faden 353 | scheibe2probe/nova | 0,8225 | 0,6594 | Annäherung | **1,3254** |
+| Faden 354 | scheibe2probe/nova | 0,8754 | 0,6594 | Annäherung | **1,3463** |
+| Faden 1282 | meister/nova | 1,0000 | 0,5144 | Annäherung (positiv 1 > negativ 0) | **1,3087** |
+
+**Die Kreuzprobe trennt:** Derselbe Faden 327 gegen die Stränge von `meister`/`nova` gehalten ergibt
+sim **0,2245** und Zug **1,0693** — ein fremdes Thema hebt kaum, statt zu senken. Der Unterschied
+zwischen naher und ferner Prägung ist damit im Betrieb belegt, nicht nur bezeugt.
+
+> **Was diese Zahlen nicht sagen.** Beide Stränge stehen auf *Annäherung*, keiner auf `vermeidung`
+> oder `unbestimmt`; die beiden anderen Gewichte sind bezeugt und **ungemessen**. `PRAEGUNG_ZUG_HUB`
+> ist eine Setzung: Er bestimmt die Spanne, und über die richtige Spanne sagt ein Bestand aus zwei
+> Strängen nichts.
+
+**Der Zug hat noch keinen Leser.** Er wird je Turn gerechnet und als `praegung_zug` protokolliert —
+dieselbe Bauart wie Richtung und Ladung im Tageslauf, und aus demselben Grund: damit keine
+Rechenfunktion ohne Aufrufer dasteht und die Reihe entsteht, an der die Konstanten kalibrierbar
+werden.
 
 ### 10.4 Der Verfall der Qualitäten ist je Dimension verschieden
 
