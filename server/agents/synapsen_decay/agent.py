@@ -417,12 +417,26 @@ class SynapsenDecayAgent(BaseAgent):
             #    Kalibrierung der beiden Schwellen.
             richtungen: int = self._richtungen_protokollieren(run_id)
 
+            # 7. Die Einfaerbung — die zweite Stimme des Verfalls (Konzept
+            #    §7.9). Dieselbe Faltung, Zeitachse mal Sektorfaktor: Ein Faden
+            #    aus einem negativen Sektor verliert sein **Gefuehl** schneller
+            #    als seine **Ladung**. Auch sie steht nicht im Bestand, aus
+            #    demselben Grund wie Richtung und Ladung — sie haengt am
+            #    heutigen Tag.
+            #
+            #    **Und auch sie steht hier, weil ihre Leser fehlen.** Ziele,
+            #    LZG-Erinnerungen und EI-Calc (§8) sind nicht gebaut; bis dahin
+            #    ist diese Reihe das Material, an dem `PRAEGUNG_SEKTOR_FAKTOR`
+            #    kalibrierbar wird.
+            einfaerbung_result: dict = praegung.alle_einfaerbungen(POSTGRES_URL)
+
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
                 e
                 for e in (
                     decay_result["error"], cleanup_result["error"],
                     queue_result["error"], faltung_result["error"],
+                    einfaerbung_result["error"],
                 )
                 if e is not None
             ]
@@ -431,6 +445,7 @@ class SynapsenDecayAgent(BaseAgent):
                 "cleanup": cleanup_result,
                 "queue_verfall": queue_result,
                 "praegung_faltung": faltung_result,
+                "praegung_einfaerbung": einfaerbung_result,
             }
 
             ende_inhalt = {
@@ -442,6 +457,8 @@ class SynapsenDecayAgent(BaseAgent):
                 "queue_deaktiviert": queue_result["deaktiviert"],
                 "faeden_gefaltet": faltung_result["gefaltet"],
                 "faeden_gesamt": faltung_result["gesamt"],
+                "einfaerbungen": einfaerbung_result["gerechnet"],
+                "einfaerbung_abstand_max": einfaerbung_result["abstand_max"],
             }
 
             if fehler:

@@ -30,6 +30,7 @@ from config import (
     PRAEGUNG_PRAESENZ_BODEN,
     PRAEGUNG_PRAESENZ_HALBSTRECKE,
     PRAEGUNG_SEKTOR8_ZUG,
+    PRAEGUNG_SEKTOR_FAKTOR,
     PRAEGUNG_SPEICHEN_SCHUETZEND,
     PRAEGUNG_SPEICHEN_WILD,
     PRAEGUNG_STRANG_NAEHE,
@@ -1132,6 +1133,7 @@ def ausschlag_aktuell_falten(
     alpha:             float,
     halbstrecke:       float,
     boden:             float,
+    zeitfaktor:        float = 1.0,
 ) -> float:
     """Rechnet `ausschlag_aktuell` aus der Beruehrungsliste — von Grund auf.
 
@@ -1149,6 +1151,12 @@ def ausschlag_aktuell_falten(
     **Der Wert kann `ausschlag_absolut` nie ueberschreiten** — kein Akkumulator,
     kein Deckel noetig. Wiedererinnern macht nicht intensiver.
 
+    **Eine Faltung, zwei Zeitachsen** (Konzept §7.9). Ueber `zeitfaktor` liefert
+    dieselbe Funktion die zweite Stimme: `ausschlag_aktuell` mit 1,0, die
+    **Einfaerbung** mit dem Sektorfaktor. Zwei getrennte Rechnungen waeren zwei
+    Kurven, die auseinanderlaufen koennen — hier ist es eine, deren Uhr
+    verschieden schnell geht.
+
     Vorbedingung: `beruehrungen` sind Zeitpunkte nach `entstanden_am`; die
     Reihenfolge stellt die Funktion selbst her.
     Nachbedingung: Wert in [ausschlag_absolut × boden, ausschlag_absolut].
@@ -1163,6 +1171,11 @@ def ausschlag_aktuell_falten(
         alpha: Auffuellgrad je Beruehrung.
         halbstrecke: Halbwertszeit des Verfalls in Tagen.
         boden: Anteil, unter den nicht gefallen wird.
+        zeitfaktor: Streckung der Zeitachse. 1,0 ergibt `ausschlag_aktuell`;
+            ein Wert darueber laesst die Zeit schneller laufen und ergibt die
+            **Einfaerbung** (§7.9). Er wirkt auf die Abstaende, **nicht** auf
+            den Boden und nicht auf Alpha — sonst waeren es zwei Kurven statt
+            einer Kurve mit zwei Zeitachsen.
 
     Returns:
         Der gefaltete Ausschlag.
@@ -1182,14 +1195,14 @@ def ausschlag_aktuell_falten(
                 f"ohne sie weiter"
             )
             continue
-        tage: float = (beruehrt_am - letzt).total_seconds() / 86400.0
+        tage: float = (beruehrt_am - letzt).total_seconds() / 86400.0 * zeitfaktor
         anteil = _verfall(
             _verfall_umkehren(anteil, boden, halbstrecke) + tage, boden, halbstrecke,
         )
         anteil = anteil + alpha * (1.0 - anteil)
         letzt = beruehrt_am
 
-    rest_tage: float = (jetzt - letzt).total_seconds() / 86400.0
+    rest_tage: float = (jetzt - letzt).total_seconds() / 86400.0 * zeitfaktor
     anteil = _verfall(
         _verfall_umkehren(anteil, boden, halbstrecke) + rest_tage, boden, halbstrecke,
     )
@@ -1394,6 +1407,209 @@ def alle_faeden_nachfuehren(
         "gefaltet": gefaltet,
         "gesamt":   len(ids),
         "error":    None if gefaltet == len(ids) else "unvollstaendig",
+    }
+
+
+def sektor_faktor(emotion: str) -> tuple[float, int | None]:
+    """Wie schnell die Zeit fuer den Affekt dieses Sektors laeuft.
+
+    Konzept §7.9, §8.4. Negative Sektoren stehen ueber 1,0 — der
+    Fading-Affect-Bias, und ausdruecklich nur auf der Einfaerbung.
+
+    Vorbedingung: keine.
+    Nachbedingung: `(faktor, sektor)`. Eine unbekannte Emotion ergibt **1,0 und
+        None** — die neutrale Zeitachse, nicht eine erfundene Beschleunigung —
+        und wird gemeldet: Ein Vorgabewert ueber 1,0 waere eine Aussage ueber die
+        Valenz einer Emotion, die in keiner Tabelle steht.
+    Fehlerfaelle: siehe Nachbedingung; der Aufrufer laeuft weiter.
+
+    Args:
+        emotion: Die Emotion des Fadens.
+
+    Returns:
+        Der Zeitfaktor und der Sektor, oder `(1.0, None)`.
+    """
+    # ── Eingabe ────────────────────────────────
+    sektor: int | None = EMOTION_SEKTOR_MAP.get(emotion or "")
+    if sektor is None or not 1 <= sektor <= len(PRAEGUNG_SEKTOR_FAKTOR):
+        logger.warning(
+            f"Praegung: Emotion '{emotion}' hat keinen Sektor — die Einfaerbung "
+            f"laeuft auf der neutralen Zeitachse (1,0). Ein Vorgabewert darueber "
+            f"waere eine Aussage ueber ihre Valenz"
+        )
+        return (1.0, None)
+
+    # ── Ausgabe ────────────────────────────────
+    return (PRAEGUNG_SEKTOR_FAKTOR[sektor - 1], sektor)
+
+
+def einfaerbung_falten(
+    ausschlag_absolut: float,
+    emotion:           str,
+    entstanden_am:     datetime,
+    beruehrungen:      list[datetime],
+    jetzt:             datetime,
+) -> dict:
+    """Die zweite Stimme: wie stark der Faden noch **fuehlt**.
+
+    Konzept §7.9. Dieselbe Faltung wie `ausschlag_aktuell`, nur mit
+    `t x sektor_faktor` — **eine Kurve, zwei Uhren**:
+
+        ausschlag_aktuell : Faltung mit t                  → Ladung, Faszination
+        einfaerbung       : Faltung mit t x sektor_faktor  → Ziele, LZG, EI-Calc
+
+    **Die Trennung ist bindend, und sie ist der Grund fuer die ganze Groesse.**
+    Der Fading-Affect-Bias darf die Ladung nicht erreichen: Sonst verloere
+    Kriegsgeschichte ueber Monate gegen Gartenkraeuter, und die Valenzblindheit
+    der Faszination fiele nicht durch einen Rechenfehler, sondern durch Absicht
+    (§2.5). **Das alte Unrecht zieht schwaecher am Gefuehl und gleich stark an
+    der Aufmerksamkeit.**
+
+    **Sie wird nicht gespeichert** — dieselbe Entscheidung wie bei Richtung und
+    Ladung: Der Wert haengt am heutigen Tag, eine Spalte truege die Antwort von
+    gestern. Die Eingaenge stehen alle im Bestand, die Rechnung ist von Grund auf
+    wiederholbar (`novaberg-convention-abgeleitete-werte.md` Regel 1, 3, 4).
+
+    Vorbedingung: `beruehrungen` liegen nach `entstanden_am`.
+    Nachbedingung: `einfaerbung <= ausschlag_aktuell` fuer jeden Sektor mit
+        Faktor >= 1,0, und **gleich** bei 1,0 — der Bericht traegt beide, weil
+        die Aussage der Groesse ihr **Abstand** ist und nicht ihr Betrag.
+    Fehlerfaelle: Eine Emotion ohne Sektor ergibt die neutrale Zeitachse; der
+        Bericht sagt es ueber `sektor = None`.
+
+    Args:
+        ausschlag_absolut: Der Eingangswert des Fadens.
+        emotion: Die Emotion des Fadens — sie bestimmt den Sektor.
+        entstanden_am: Wann der Faden entstand.
+        beruehrungen: Die Zeitpunkte der Reaktivierungen.
+        jetzt: Der Bezugszeitpunkt der Rechnung.
+
+    Returns:
+        `{"einfaerbung", "ausschlag_aktuell", "abstand", "sektor", "faktor"}`.
+    """
+    # ── Eingabe ────────────────────────────────
+    faktor, sektor = sektor_faktor(emotion)
+
+    # ── Verarbeitung ───────────────────────────
+    gemeinsam: dict = {
+        "ausschlag_absolut": ausschlag_absolut,
+        "entstanden_am":     entstanden_am,
+        "beruehrungen":      beruehrungen,
+        "jetzt":             jetzt,
+        "alpha":             PRAEGUNG_ALPHA,
+        "halbstrecke":       PRAEGUNG_HALBSTRECKE,
+        "boden":             PRAEGUNG_BODEN,
+    }
+    ausschlag:   float = ausschlag_aktuell_falten(**gemeinsam)
+    einfaerbung: float = ausschlag_aktuell_falten(**gemeinsam, zeitfaktor=faktor)
+
+    # ── Ausgabe ────────────────────────────────
+    # **Der Abstand ist die Aussage, nicht der Betrag.** Ein Faden aus Sektor 5
+    # und einer aus Sektor 1 koennen dieselbe Einfaerbung tragen, wenn der eine
+    # juenger ist; was der Bias behauptet, ist der Abstand zum eigenen Ausschlag.
+    if einfaerbung > ausschlag + 1e-9:
+        logger.error(
+            f"Praegung: Einfaerbung {einfaerbung:.6f} liegt ueber dem Ausschlag "
+            f"{ausschlag:.6f} (Sektor {sektor}, Faktor {faktor}) — ein Faktor "
+            f"unter 1,0 laesst den Affekt langsamer verblassen als die Ladung, "
+            f"und das behauptet der Bias nicht"
+        )
+    return {
+        "einfaerbung":       einfaerbung,
+        "ausschlag_aktuell": ausschlag,
+        "abstand":           ausschlag - einfaerbung,
+        "sektor":            sektor,
+        "faktor":            faktor,
+    }
+
+
+def alle_einfaerbungen(postgres_url: str, jetzt: datetime | None = None) -> dict:
+    """Rechnet die Einfaerbung jedes Fadens und berichtet die Reihe.
+
+    **Der Aufrufer, damit keine Rechenfunktion ohne einen dasteht.** Die
+    Einfaerbung hat ihre eigentlichen Leser noch nicht — Ziele, LZG-Erinnerungen
+    und EI-Calc (§8) sind nicht gebaut. Bis dahin laeuft sie einmal taeglich
+    ueber den Bestand und schreibt ihre Reihe ins Log; genau daran wird
+    `PRAEGUNG_SEKTOR_FAKTOR` kalibrierbar, und dieselbe Bauart tragen Richtung,
+    Ladung und der Praegungszug.
+
+    **Kein Schreibvorgang, kein Schemawechsel.** Der Lauf liest und rechnet.
+
+    Vorbedingung: keine — ein leerer Bestand ist der Regelfall am Anfang.
+    Nachbedingung: `{"gerechnet", "gesamt", "je_sektor", "abstand_max", "error"}`.
+        **`gerechnet` und `gesamt` stehen nebeneinander**, weil ein Lauf ueber
+        die Haelfte des Bestandes sonst aussaehe wie ein vollstaendiger.
+    Fehlerfaelle: Ein Lesefehler wird gemeldet und liefert `gesamt = 0` mit Text
+        in `error`; der Tageslauf laeuft weiter.
+
+    Args:
+        postgres_url: Verbindung.
+        jetzt: Bezugszeitpunkt der Rechnung; ohne Angabe die aktuelle Zeit.
+
+    Returns:
+        Die Bilanz des Laufs.
+    """
+    # ── Eingabe ────────────────────────────────
+    bezug: datetime = jetzt or datetime.now(timezone.utc)
+
+    # ── Verarbeitung ───────────────────────────
+    try:
+        with psycopg2.connect(postgres_url) as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT f.id, f.emotion, f.ausschlag_absolut, f.entstanden_am,
+                       coalesce(
+                           array_agg(b.beruehrt_am ORDER BY b.beruehrt_am)
+                           FILTER (WHERE b.beruehrt_am IS NOT NULL),
+                           '{}'
+                       )
+                FROM praegung_faden f
+                LEFT JOIN praegung_beruehrung b ON b.faden_id = f.id
+                GROUP BY f.id
+                ORDER BY f.id
+                """,
+            )
+            zeilen: list = cur.fetchall()
+    except Exception as fehler:
+        logger.exception(
+            f"Praegung: Einfaerbungslauf konnte die Faeden nicht lesen "
+            f"({type(fehler).__name__}) — keine Reihe entstanden"
+        )
+        return {"gerechnet": 0, "gesamt": 0, "je_sektor": {},
+                "abstand_max": 0.0, "error": str(fehler)}
+
+    je_sektor:   dict[int | None, int] = {}
+    abstand_max: float = 0.0
+    gerechnet:   int   = 0
+    for faden_id, emotion, absolut, entstanden_am, beruehrungen in zeilen:
+        teile: dict = einfaerbung_falten(
+            ausschlag_absolut = float(absolut),
+            emotion           = emotion,
+            entstanden_am     = entstanden_am,
+            beruehrungen      = list(beruehrungen or []),
+            jetzt             = bezug,
+        )
+        je_sektor[teile["sektor"]] = je_sektor.get(teile["sektor"], 0) + 1
+        abstand_max = max(abstand_max, teile["abstand"])
+        gerechnet += 1
+        logger.info(
+            f"Praegung: Faden {faden_id} ({emotion}, Sektor {teile['sektor']}, "
+            f"Faktor {teile['faktor']}) — Ausschlag "
+            f"{teile['ausschlag_aktuell']:.6f}, Einfaerbung "
+            f"{teile['einfaerbung']:.6f}, Abstand {teile['abstand']:.6f}"
+        )
+
+    # ── Ausgabe ────────────────────────────────
+    logger.info(
+        f"Praegung: Einfaerbungslauf {gerechnet} von {len(zeilen)} Faeden, "
+        f"groesster Abstand {abstand_max:.6f}, Sektoren {je_sektor}"
+    )
+    return {
+        "gerechnet":   gerechnet,
+        "gesamt":      len(zeilen),
+        "je_sektor":   je_sektor,
+        "abstand_max": abstand_max,
+        "error":       None if gerechnet == len(zeilen) else "unvollstaendig",
     }
 
 

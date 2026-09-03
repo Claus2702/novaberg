@@ -1932,6 +1932,45 @@ PRAEGUNG_ZUG_UNBESTIMMT: float = float(
     os.getenv("PRAEGUNG_ZUG_UNBESTIMMT", "0.5")
 )
 
+# ── Die Einfaerbung: die zweite Stimme des Verfalls (Konzept §7.9, §8.4) ─────
+#
+#   ausschlag_aktuell : Faltung mit t                  → Ladung, Faszination
+#   einfaerbung       : Faltung mit t x sektor_faktor  → Ziele, LZG, EI-Calc
+#
+# **Der Fading-Affect-Bias, und ausdruecklich nur hier** (Walker & Skowronski;
+# Ritchie et al. 2016): Die emotionale Intensitaet negativer Erinnerungen
+# verblasst schneller als die positiver. Wirkte er auf den Ausschlag, verloere
+# Kriegsgeschichte ueber Monate gegen Gartenkraeuter und die Valenzblindheit der
+# Faszination fiele durch Absicht. **Das alte Unrecht zieht schwaecher am
+# Gefuehl und gleich stark an der Aufmerksamkeit.**
+#
+# **Nicht aus `EMOTION_AROUSAL_DECAY` abgeleitet, und das ist ein Befund.** Das
+# Konzept nennt die Tabelle als Bauform — sie liefert die *Form* (16 Raten), aber
+# ihre Werte sagen das Gegenteil: Trauer 0,02 (*„graebt sich ein"*), Freude 0,10.
+# Sie beschreibt die **Erregung im Turn**, nicht den Affekt einer Erinnerung ueber
+# Monate; eine Ableitung daraus kehrte den Bias um. Zwei verschiedene Groessen auf
+# zwei verschiedenen Zeitskalen.
+#
+# **Der Betrag ist eine Setzung mit Herkunft, keine Messung** (`F-INTENS-1`): 1,5
+# ist das Verhaeltnis der Asymmetrie, die das Konzept an derselben Stelle nennt —
+# das Charakter-Rad zieht 0,60 nach oben und 0,40 nach unten. So traegt das
+# Projekt **eine** Asymmetrie und nicht zwei. Bei Halbstrecke 60 Tagen heisst 1,5:
+# Ein Trauer-Faden steht nach 40 Tagen dort, wo ein Freude-Faden nach 60 steht.
+#
+# **Sektor 4 steht auf 1,0, und das ist die schwaechere Behauptung.** Der Bias
+# spricht ueber Valenz; Ueberraschung traegt keine. Ein Wert ueber 1,0 waere eine
+# Aussage ueber neutralen Affekt, die niemand belegt hat.
+PRAEGUNG_SEKTOR_FAKTOR: tuple[float, ...] = (
+    1.0,   # 1 Freude          positiv
+    1.0,   # 2 Zuversicht      positiv
+    1.5,   # 3 Angst           negativ
+    1.0,   # 4 Ueberraschung   neutral — keine Valenz, keine Aussage
+    1.5,   # 5 Trauer          negativ
+    1.5,   # 6 Enttaeuschung   negativ
+    1.5,   # 7 Aerger          negativ
+    1.0,   # 8 Neugier         positiv
+)
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest

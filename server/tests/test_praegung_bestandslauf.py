@@ -154,6 +154,11 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
     **Wer den Tageslauf erweitert, erweitert diese Liste** — sonst schreibt der
     naechste Schritt hier still weiter.
 
+    `[3×]` — 03.09.2026: Der **siebte** Schritt (die Einfaerbungen) kam dazu
+    und steht **von Anfang an** in der Liste — zum ersten Mal, seit die Klasse
+    bekannt ist. Ohne ihn liefe er gegen `POSTGRES_URL` ueber den ganzen
+    Bestand; er schreibt zwar nicht, aber er laese bei jedem Suitenlauf.
+
     `[2×]` — 01.09.2026, derselbe Tag: Der **sechste** Schritt (die
     Strang-Richtungen) kam dazu und stand wieder nicht in der Liste. Er lief
     harmlos leer, weil `patch(db_manager)` einen `MagicMock` liefert und dessen
@@ -177,6 +182,9 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
                    return_value=faltung) as gerufen, \
              patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",
                    return_value=(0, 0)), \
+             patch(f"{AGENT_MODUL}.praegung.alle_einfaerbungen",
+                   return_value={"gerechnet": 0, "gesamt": 0, "je_sektor": {},
+                                 "abstand_max": 0.0, "error": None}), \
              patch.object(SynapsenDecayAgent, "_richtungen_protokollieren",
                           return_value=0):
             zustand: AgentState = SynapsenDecayAgent().invoke(
