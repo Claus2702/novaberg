@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Verfall vorgehaltener Daten
-**Stand:** 16. August 2026
+**Stand:** 3. September 2026 (§5 — die Prägungsschicht aufgenommen; sie bringt eine **dritte Bauart** mit: der Verfall ohne Spalte, bei jedem Lesen gerechnet. Davor 16. August 2026)
 **Pfad:** novaberg/docs/novaberg-convention-verfall.md
 **Typ:** Convention
 
@@ -106,6 +106,15 @@ GROUP BY c.table_name ORDER BY 4 DESC, 2 DESC, 1;
 | `verbindung` | Brücke | ❌ | — | **konform** — §2, ausdrücklich |
 | `fakten` | **Bindung** zwischen zwei `entitaeten` | ❌ | — | **offen** → `FAKTEN-BINDUNG-OHNE-VERFALL` |
 | `notizen` | freier Gedächtnisinhalt, kein FK zeigt darauf | ❌ | — | **offen** → `FACHSPEICHER-AGENTEN` |
+| `praegung_faden` | Gedächtnis, Suchort | ✅ `ausschlag_aktuell` | ✅ Sweep, täglich | konform (seit 01.09.2026) |
+| `praegung_beruehrung` | Ereignis, Eingang der Faltung | ❌ | — | **konform** — der Faden trägt ihn, §1.1 |
+| `praegung_strang` | Gedächtnis, Suchort | ❌ Spalte, ✅ gerechnet | ✅ bei jedem Lesen | **konform, andere Bauart** — siehe unten |
+
+**Seit dem 03.09.2026 eine dritte Bauart: der Verfall ohne Spalte.** Bei der Prägungsschicht hängen `f_praesenz` (Strangstärke), die **Richtung**, die **Ladung** und die **Einfärbung** am heutigen Tag und werden bei **jedem Lesen** neu gerechnet — eine Spalte trüge die Antwort von gestern. Die Eingänge stehen vollständig im Bestand, die Rechnung ist von Grund auf wiederholbar (`novaberg-convention-abgeleitete-werte.md` Regel 1, 3, 4).
+
+> **§3 Form 3 trifft hier ausdrücklich nicht.** Der teuerste Verstoß ist *„Spalten ohne Lauf"* — hier gibt es **keine Spalte und einen Lauf**, und das ist die Umkehrung. Wo doch eine Spalte steht (`ausschlag_aktuell`), ist sie ein **materialisiertes Ergebnis** und wird täglich über den ganzen Bestand neu gefaltet; ihr `decay_am`-Äquivalent ist die Vollständigkeitszahl `gefaltet == gesamt`.
+
+> **Und der Faden verfällt in zwei Takten** (Konzept §7.9): `ausschlag_aktuell` sektorunabhängig für die Aufmerksamkeit, `einfaerbung` sektorabhängig für das Gefühl. Das ist **eine** Verfallsfunktion mit zwei Zeitachsen, nicht die in §6 verworfene zweite Kurve — die wurde nach *Salienz* gestaffelt und hätte dasselbe zweimal gesagt; diese trennt zwei **verschiedene** Größen.
 
 **Zwei Bauarten des Laufs, beide zulässig:** ein **Sweep** über alle Zeilen im Tageslauf (`lzg_knoten`, `shadow_auftrag`) oder **träge** beim Anfassen einer Zeile (`autonomous_wissen`). Erkennbar an `decay_am`: Ein Sweep hinterlässt ein bis zwei Datumswerte über den ganzen Bestand, ein träger Lauf viele.
 

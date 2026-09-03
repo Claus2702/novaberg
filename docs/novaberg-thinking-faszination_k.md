@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
 **Status:** ⬜ nicht gebaut — Entwurf. Alle Zahlen der Rechnung sind **Setzungen zum Messen**. Die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
@@ -1075,6 +1075,8 @@ hinterlassen haben.
 
 ### 7.9 Verfall: zwei Stimmen aus einer Quelle
 
+**Gebaut am 03.09.2026** (`memory/praegung.py::einfaerbung_falten`, siebter Schritt des Tageslaufs).
+
 Beide entstehen aus **derselben Faltung** (§7.4), nur mit verschieden skalierter Zeitachse:
 
 ```
@@ -1083,9 +1085,46 @@ einfaerbung       : Faltung mit t × sektor_faktor
 ```
 
 **Eine Verfallsfunktion, ein Faktor je Plutchik-Sektor.** Negative Sektoren über 1,0 — für sie
-läuft die Zeit schneller. Das ist der Fading-Affect-Bias (§2.5), und `sektor_faktor` ist eine
-Tabelle mit acht Zahlen statt acht Kurven. `EMOTION_AROUSAL_DECAY` liefert die Bauform mit 16
-emotionsabhängigen Raten.
+läuft die Zeit schneller. Das ist der Fading-Affect-Bias (§2.5), und `PRAEGUNG_SEKTOR_FAKTOR` ist
+eine Tabelle mit acht Zahlen statt acht Kurven.
+
+| Sektor | 1 Freude | 2 Zuversicht | 3 Angst | 4 Überraschung | 5 Trauer | 6 Enttäuschung | 7 Ärger | 8 Neugier |
+|---|---|---|---|---|---|---|---|---|
+| Faktor | 1,0 | 1,0 | **1,5** | 1,0 | **1,5** | **1,5** | **1,5** | 1,0 |
+
+> ~~`EMOTION_AROUSAL_DECAY` liefert die Bauform mit 16 emotionsabhängigen Raten.~~ → **Beim Bau
+> widerlegt, 03.09.2026.** Sie liefert die *Form*, aber ihre Werte sagen das **Gegenteil**: Trauer
+> 0,02 (*„gräbt sich ein"*) gegen Freude 0,10. Eine Ableitung daraus kehrte den Bias um. Der Grund
+> ist keine Inkonsistenz, sondern eine andere Größe auf einer anderen Zeitskala: Jene Tabelle
+> beschreibt die **Erregung im Turn**, diese den **Affekt einer Erinnerung über Monate**. Beide
+> dürfen nebeneinander stehen — aber keine der beiden ist die Quelle der anderen.
+
+**Der Betrag ist eine Setzung mit Herkunft, keine Messung** (`F-INTENS-1`): 1,5 ist das Verhältnis
+der Asymmetrie, die dieser Abschnitt selbst nennt — das Charakter-Rad zieht 0,60 nach oben und 0,40
+nach unten. So trägt das Projekt **eine** Asymmetrie und nicht zwei.
+
+**Sektor 4 steht auf 1,0, und das ist die schwächere Behauptung.** Der Bias spricht über Valenz;
+Überraschung trägt keine. Ein Wert darüber wäre eine Aussage über neutralen Affekt, die niemand
+belegt hat.
+
+#### Der Bias hat ein Fenster, und das ist eine Eigenschaft der Kurve
+
+`[gerechnet]` 03.09.2026, `ausschlag_absolut` 0,9, Halbstrecke 60 Tage, keine Berührung:
+
+| Tage | 7 | 30 | 60 | **120** | 180 | 365 | 730 | 1825 |
+|---|---|---|---|---|---|---|---|---|
+| Abstand | 0,032 | 0,069 | 0,072 | **0,072** | 0,049 | 0,031 | 0,017 | 0,007 |
+| relativ | 3,9 % | 10,4 % | 13,3 % | **14,3 %** | 13,6 % | 10,8 % | 7,4 % | 3,7 % |
+
+**An beiden Enden verschwindet die Trennung** — jung, weil kaum Zeit vergangen ist; alt, weil beide
+Stimmen gegen denselben Boden laufen. Sie ist am größten zwischen etwa einem und sechs Monaten.
+**Das ist keine Schwäche der Konstruktion, sondern die Aussage des Bodens:** Ein Faden wird leiser,
+nie stumm, und was leise ist, kann sich nicht mehr weit unterscheiden.
+
+`[gemessen]` 03.09.2026 gegen den echten Bestand: **`abstand_max = 0,0` bei 5 von 5 Fäden.** Alle
+liegen in Sektor 1 und 8 — die Prägungsschicht hat bis heute **keinen einzigen negativen Faden**
+aufgenommen. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**; die Trennung ist
+an denselben Daten mit getauschter Emotion gerechnet (0,007 bis 0,014) und nicht gemessen.
 
 **Die Trennung ist bindend:**
 

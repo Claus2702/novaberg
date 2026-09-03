@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 3. September 2026, 18:57 UTC (**S38 neu** — der Prägungszug: er liest Richtung und Ladung aus S37 und hebt daraus je Turn eine Zahl auf [1,0 … 1,6]; das Maximum mit exaktem Abbruch, der Hub aus der Spanne abgeleitet. §12 Prüfstand nachgezogen). Davor 2. September 2026, 19:30 UTC (**S37 neu** — der Strang mit seinen vier Rechnungen; zwei davon ausdruecklich ohne Bestand, weil sie am Zustand haengen. §12 Pruefstand nachgezogen). Davor 1. September 2026, 18:30 UTC (§12 Pruefstand: S8 ist halb geprueft, S36 von Anfang an — die Liste stand auf dem Stand vom 08.08.2026). Davor 1. September 2026, 16:50 UTC (S33: Novas eigener Zielsog zieht, statt im `max()` zu konkurrieren — ungetort, ueber eine Logistische; Eingang `zielsog_roh` neu). Davor 1. September 2026, 15:30 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn **und einmal taeglich ueber den Bestand**; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 3. September 2026, 19:30 UTC (**S36 trägt seine zweite Stimme** — die Einfärbung aus derselben Faltung mit `t × sektor_faktor`; im Bestand ohne Wirkung, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**S38 neu** — der Prägungszug: er liest Richtung und Ladung aus S37 und hebt daraus je Turn eine Zahl auf [1,0 … 1,6]; das Maximum mit exaktem Abbruch, der Hub aus der Spanne abgeleitet. §12 Prüfstand nachgezogen). Davor 2. September 2026, 19:30 UTC (**S37 neu** — der Strang mit seinen vier Rechnungen; zwei davon ausdruecklich ohne Bestand, weil sie am Zustand haengen. §12 Pruefstand nachgezogen). Davor 1. September 2026, 18:30 UTC (§12 Pruefstand: S8 ist halb geprueft, S36 von Anfang an — die Liste stand auf dem Stand vom 08.08.2026). Davor 1. September 2026, 16:50 UTC (S33: Novas eigener Zielsog zieht, statt im `max()` zu konkurrieren — ungetort, ueber eine Logistische; Eingang `zielsog_roh` neu). Davor 1. September 2026, 15:30 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn **und einmal taeglich ueber den Bestand**; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -48,7 +48,7 @@ Jedes System trägt fünf Angaben:
 | 0 | S1 Perzeption des Reizes | `graph/nodes/perzeption.py` | unrein (Modell) |
 | 0 | S2 Salienz und Intentionen des Reizes | `graph/nodes/salience.py` | unrein (Modell) |
 | 2 | S35 Faden-Tor der Praegung | `graph/nodes/praegung.py` | unrein (PostgreSQL) |
-| 2 | S36 Faltung des Praegungs-Ausschlags | `memory/praegung.py` | **rein** — die Rechnung; ihr Aufrufer schreibt |
+| 2 | S36 Faltung des Praegungs-Ausschlags **und der Einfaerbung** | `memory/praegung.py` | **rein** — die Rechnung; ihr Aufrufer schreibt |
 | 2 | S37 Der Strang: Zuordnung, Histogramm, Richtung, Ladung | `memory/praegung.py` | unrein (PostgreSQL); die Richtung ist rein |
 | 2 | S38 Der Praegungszug | `memory/praegung.py`, `graph/nodes/praegung.py` | unrein (PostgreSQL) |
 | 1 | S3 Zustandsladung | `graph/nodes/db_zugriff.py` | unrein (Redis, PostgreSQL) |
@@ -253,7 +253,7 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 **Prüfstand:** `test_sachlage.py`, `test_sachlage_bruecke.py`, `test_sachlage_verlauf_schema.py` (live), `test_sachlage_kette.py`, `test_kurzziel.py`, `test_sachlage_resolver.py` (Scheibe 6), `test_sachlage_plausibility.py` (Scheibe 7), `test_sachlage_traeger.py` (Scheibe 8).
 **Absicht:** `novaberg-thinking-lage_k.md` §3, §3a, §4.
 
-### S36 — Faltung des Prägungs-Ausschlags (01.09.2026)
+### S36 — Faltung des Prägungs-Ausschlags und der Einfärbung (01./03.09.2026)
 
 **Eingang:** `ausschlag_absolut` und `entstanden_am` des Fadens, die **vollständige**
 Berührungsliste aus `praegung_beruehrung`, der Bezugszeitpunkt; dazu `PRAEGUNG_ALPHA` (0,33),
@@ -268,6 +268,26 @@ angewandt, sondern einmal am Eingang bei S35 (Regel 5).
 **Wo sie läuft:** `ausschlag_aktuell_nachfuehren` liest, faltet und schreibt die Spalte; gerufen
 von **beiden** Schreibwegen der Berührung, und **außerhalb deren Transaktion** — die Rechnung ist
 wiederholbar, ihr Fehler darf kein Ereignis mitnehmen.
+
+**Seit dem 03.09.2026 zwei Stimmen aus derselben Faltung** (Konzept §7.9). `ausschlag_aktuell_falten`
+trägt einen `zeitfaktor`; er streckt die **Abstände**, nicht Boden und Alpha:
+
+```
+ausschlag_aktuell : Faltung mit t                  → Ladung, Faszination (S38)
+einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc (ungebaut)
+```
+
+**Der Fading-Affect-Bias, und ausdrücklich nur auf der zweiten Zeile.** Negative Sektoren tragen
+1,5, positive 1,0, Überraschung 1,0 — der Bias spricht über Valenz, und die trägt sie nicht.
+Wirkte er auf den Ausschlag, verlöre Kriegsgeschichte über Monate gegen Gartenkräuter.
+
+**Reinheit:** die Faltung rein, der Bestandslauf unrein (PostgreSQL).
+**Prüfstand:** 11 Zeugen für die Einfärbung, einer davon auf die Verdrahtung; Gegenproben 4/4, 4/4,
+1/1, 5/5.
+
+`[gemessen]` 03.09.2026: **größter Abstand 0,000000 bei 5 von 5 Fäden** — der Bestand trägt keinen
+negativen Faden. Die Trennung ist an denselben Daten mit getauschter Emotion gerechnet und hat ein
+Fenster: 3,9 % nach einer Woche, 14,3 % nach 120 Tagen, 3,7 % nach fünf Jahren.
 
 ### S37 — Der Strang: Zuordnung, Histogramm, Richtung, Ladung (01./02.09.2026)
 
@@ -667,7 +687,7 @@ Lücken und konnte nicht unterscheiden, ob sie fehlen oder nicht hierher gehöre
 
 ## 12. Prüfstand
 
-**Drei reine Systeme haben heute keinen eigenen Test:** S4 (Emotionsverlauf), S14 (Verdichtung), S17 (Farbton). ~~S8 (Ziel-Gravitation)~~ → **seit dem 01.09.2026 halb geprüft:** Die ungetorte Größe `zielsog_staerkster` trägt fünf Zeugen (`tests/test_salienz_zielsog.py`), die getorte Aktivierung weiterhin keinen. **S36** (Faltung des Prägungs-Ausschlags) ist von Anfang an bezeugt — 7 Zeugen auf die Rechnung, 9 auf ihre Verwendung, 8 auf den Bestandslauf. **S38** (der Prägungszug) ist von Anfang an bezeugt — 15 Zeugen, davon drei auf die Verdrahtung und zwei auf die Abfrage; **die Gegenprobe fand dabei toten Code**, den keiner der fünfzehn hielt. **S37** (der Strang) ebenso: 13 Zeugen auf die Zuordnung, 12 auf das Histogramm, 16 auf die Richtung, 16 auf die Ladung — je zwei davon auf die Verdrahtung, weil eine gebaute und ungerufene Funktion in dieser Schicht binnen zwei Tagen dreimal der Befund war. **Was keiner von ihnen sieht, ist die Abfrage**: Ein Zeuge gegen eine nachgebildete Verbindung prüft die Rechnung auf den Zahlen, die er selbst hineingibt (`20_TESTS/mock-verdeckt-die-abfrage.md`). ~~S5 (Emotionsvektor)~~ → **seit dem 08.08.2026 geprüft**, und der erste Test hat zwei Defekte gefunden, die vorher niemand vermutet hatte (siehe §5, S5). Ohne Test sind außerdem die reinen Teile gemischter Systeme: die Register-Plausibilität in S32, der Blockbau in S16, die Vote-Ableitung in S30 — dazu die Kopplung `CLUSTER_FRAGEN` ↔ `CLUSTER_GRUNDWERT` in S26, die kein System ist, sondern eine Naht zwischen zweien.
+**Drei reine Systeme haben heute keinen eigenen Test:** S4 (Emotionsverlauf), S14 (Verdichtung), S17 (Farbton). ~~S8 (Ziel-Gravitation)~~ → **seit dem 01.09.2026 halb geprüft:** Die ungetorte Größe `zielsog_staerkster` trägt fünf Zeugen (`tests/test_salienz_zielsog.py`), die getorte Aktivierung weiterhin keinen. **S36** (Faltung des Prägungs-Ausschlags) ist von Anfang an bezeugt — 7 Zeugen auf die Rechnung, 9 auf ihre Verwendung, 8 auf den Bestandslauf, seit dem 03.09.2026 **11 weitere auf die Einfärbung**. **S38** (der Prägungszug) ist von Anfang an bezeugt — 15 Zeugen, davon drei auf die Verdrahtung und zwei auf die Abfrage; **die Gegenprobe fand dabei toten Code**, den keiner der fünfzehn hielt. **S37** (der Strang) ebenso: 13 Zeugen auf die Zuordnung, 12 auf das Histogramm, 16 auf die Richtung, 16 auf die Ladung — je zwei davon auf die Verdrahtung, weil eine gebaute und ungerufene Funktion in dieser Schicht binnen zwei Tagen dreimal der Befund war. **Was keiner von ihnen sieht, ist die Abfrage**: Ein Zeuge gegen eine nachgebildete Verbindung prüft die Rechnung auf den Zahlen, die er selbst hineingibt (`20_TESTS/mock-verdeckt-die-abfrage.md`). ~~S5 (Emotionsvektor)~~ → **seit dem 08.08.2026 geprüft**, und der erste Test hat zwei Defekte gefunden, die vorher niemand vermutet hatte (siehe §5, S5). Ohne Test sind außerdem die reinen Teile gemischter Systeme: die Register-Plausibilität in S32, der Blockbau in S16, die Vote-Ableitung in S30 — dazu die Kopplung `CLUSTER_FRAGEN` ↔ `CLUSTER_GRUNDWERT` in S26, die kein System ist, sondern eine Naht zwischen zweien.
 
 **Was eine Prüfung je System beantworten muss** — dieselben drei Fragen, die auch die Messreihen stellen:
 

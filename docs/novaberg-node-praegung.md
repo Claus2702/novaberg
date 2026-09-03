@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding, Prägungszug) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung, Zug); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4 und 5** gebaut und im Betrieb belegt (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. **Der Zug hat noch keinen Leser, und der sektorabhängige Verfall ist nicht gebaut**
+**Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4, 5 und 6** gebaut (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. **Der Zug hat noch keinen Leser, und die Einfärbung hat keinen Verbraucher und im Bestand keine Eingabe**
 
 ---
 
@@ -295,6 +295,43 @@ praegungszug = 1.0 + PRAEGUNG_ZUG_HUB · max_j( sim_j · gewicht_j · ladung_j )
 **15 Zeugen** (`tests/test_praegung_zug.py`), davon drei auf die Verdrahtung — die Klasse, an der diese Schicht binnen zwei Tagen dreimal gescheitert ist. Zwei prüfen die **Abfrage selbst**, weil der Abbruch nur bei absteigender Sortierung richtig ist und ein Zeuge gegen eine nachgebildete Verbindung das nicht sieht.
 
 > **Die Gegenprobe hat einen Fund geliefert, den kein Zeuge hatte.** Eine Klammer `max(0.0, naehe)` stand als Schutz gegen negative Kosinusnähe im Code — sie ließ sich entfernen, **ohne dass ein Zeuge rot wurde**. Der Abbruch trägt die Zusicherung bereits: `bestes` startet bei 0,0, und `sim <= bestes` schließt jede negative Nähe aus. Die Klammer war toter Code und ist entfernt; der Zeuge prüft jetzt **beides**, die Zahl und dass gar nicht erst gerechnet wurde. Ein Schutz, der nie greift, sieht aus wie der Grund für eine Zusicherung, die in Wahrheit woanders hängt.
+
+
+### Die Einfärbung — Scheibe 6, seit dem 03.09.2026
+
+**Die zweite Stimme des Verfalls.** Dieselbe Faltung, Zeitachse mal Sektorfaktor:
+
+```
+ausschlag_aktuell : Faltung mit t                  → Ladung, Faszination
+einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc
+```
+
+**Eine Kurve, zwei Uhren** — nicht zwei Rechnungen. `ausschlag_aktuell_falten` trägt seit heute einen `zeitfaktor`; er wirkt auf die **Abstände**, nicht auf Boden und Alpha. Zwei getrennte Funktionen wären zwei Kurven, die auseinanderlaufen können.
+
+| Sektor | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|---|
+| | Freude | Zuversicht | Angst | Überraschung | Trauer | Enttäuschung | Ärger | Neugier |
+| Faktor | 1,0 | 1,0 | **1,5** | 1,0 | **1,5** | **1,5** | **1,5** | 1,0 |
+
+**Der Fading-Affect-Bias, und ausdrücklich nur hier** (Walker & Skowronski; Ritchie et al. 2016). Wirkte er auf den Ausschlag, verlöre Kriegsgeschichte über Monate gegen Gartenkräuter und die Valenzblindheit der Faszination fiele **durch Absicht** (Konzept §2.5). Das alte Unrecht zieht schwächer am Gefühl und gleich stark an der Aufmerksamkeit.
+
+**Nicht gespeichert**, wie Richtung, Ladung und Zug — der Wert hängt am heutigen Tag.
+
+`[gemessen]` 03.09.2026 gegen den echten Bestand — und der Befund ist die Abwesenheit:
+
+| | |
+|---|---|
+| **Fäden gerechnet** | 5 von 5 |
+| **Sektoren** | 1 (viermal) und 8 (einmal) |
+| **größter Abstand** | **0,000000** |
+
+> **Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen.** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe** — genau die Klasse, die der zweite Zugriff *„der Bestand statt der Zeugen"* finden soll. Die Trennung ist an denselben Daten mit getauschter Emotion **gerechnet** (0,007 bis 0,014 bei diesem Alter) und nicht gemessen.
+
+**Und sie hat ein Fenster.** `[gerechnet]` bei 0,9 und Halbstrecke 60 Tage: 3,9 % nach einer Woche, **14,3 % nach 120 Tagen**, wieder 3,7 % nach fünf Jahren. An beiden Enden verschwindet der Unterschied — jung mangels Zeit, alt, weil beide Stimmen gegen denselben Boden laufen.
+
+**11 Zeugen** (`tests/test_praegung_einfaerbung.py`), davon einer auf die Verdrahtung. Gegenproben 4/4, 4/4, 1/1 und 5/5.
+
+> **Der siebte Schritt stand von Anfang an in der Ersetzungsliste des Tageslauf-Zeugen** — zum ersten Mal, seit die Klasse bekannt ist. Beim fünften und sechsten Schritt fehlte er je einmal, und beim fünften schrieb die Suite dabei in den Produktivbestand.
 
 
 ---

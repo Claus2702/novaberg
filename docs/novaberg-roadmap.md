@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **18:57 UTC** (gemessen via `date -u`). Davor 02.09.2026, 18:45 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **19:30 UTC** (gemessen via `date -u`). Davor 03.09.2026, 18:57 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 152 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 153 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,57 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 03.09.2026, 19:30 UTC — Scheibe 6: Die zweite Stimme des Verfalls ✅
+
+**Ein Faden verblasst ab heute in zwei Takten.** Wie stark er noch **zieht**, und wie stark er noch **fühlt**:
+
+```
+ausschlag_aktuell : Faltung mit t                  → Ladung, Faszination
+einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc
+```
+
+**Eine Kurve, zwei Uhren** — nicht zwei Rechnungen. `ausschlag_aktuell_falten` bekam einen `zeitfaktor`, der auf die **Abstände** wirkt und nicht auf Boden und Alpha. Zwei getrennte Funktionen wären zwei Kurven, die auseinanderlaufen können.
+
+| Sektor | 1 Freude | 2 Zuversicht | 3 Angst | 4 Überraschung | 5 Trauer | 6 Enttäuschung | 7 Ärger | 8 Neugier |
+|---|---|---|---|---|---|---|---|---|
+| Faktor | 1,0 | 1,0 | **1,5** | 1,0 | **1,5** | **1,5** | **1,5** | 1,0 |
+
+**Der Fading-Affect-Bias, und ausdrücklich nur hier.** Wirkte er auf den Ausschlag, verlöre Kriegsgeschichte über Monate gegen Gartenkräuter — und die Valenzblindheit der Faszination fiele nicht durch einen Rechenfehler, sondern durch Absicht. Das alte Unrecht zieht schwächer am Gefühl und gleich stark an der Aufmerksamkeit.
+
+### Die Zahl kam nicht von dort, wo das Konzept sie vermutete
+
+Das Konzept nannte `EMOTION_AROUSAL_DECAY` als Bauform. **Die Tabelle sagt das Gegenteil:** Trauer 0,02 — *„gräbt sich ein"* — gegen Freude 0,10. Eine Ableitung daraus hätte den Bias umgekehrt.
+
+> Beide sind für sich richtig und beschreiben zwei verschiedene Größen auf zwei verschiedenen Zeitskalen: die **Erregung im Turn** gegen den **Affekt einer Erinnerung über Monate**. Der Satz im Konzept ist markiert, nicht gelöscht.
+
+Der Betrag kommt stattdessen aus der Asymmetrie, die derselbe Abschnitt schon nennt: Das Charakter-Rad zieht 0,60 nach oben und 0,40 nach unten, Verhältnis **1,5**. So trägt das Projekt eine Asymmetrie und nicht zwei. **Sektor 4 bleibt bei 1,0** — der Bias spricht über Valenz, Überraschung trägt keine, und alles darüber wäre eine unbelegte Behauptung.
+
+### Der Bestand kann sie nicht zeigen
+
+`[gemessen]` über alle fünf Fäden: **größter Abstand 0,000000.**
+
+> **Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen** — vier in Sektor 1, einer in Sektor 8. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**.
+
+Damit warten **vier** Bauteile auf dieselbe fehlende Eingabe: die Einfärbung, der bimodale Fall des Sektor-Histogramms, Regel 4 der Strangrichtung und das Gewicht für `unbestimmt`. Das steht in der Fundliste, nicht als Umbau.
+
+Die Trennung ist deshalb an denselben Daten mit getauschter Emotion **gerechnet** — 0,007 bis 0,014 bei diesem Alter — und sie hat ein Fenster:
+
+| Tage | 7 | 30 | 60 | **120** | 180 | 365 | 730 | 1825 |
+|---|---|---|---|---|---|---|---|---|
+| relativer Abstand | 3,9 % | 10,4 % | 13,3 % | **14,3 %** | 13,6 % | 10,8 % | 7,4 % | 3,7 % |
+
+**An beiden Enden verschwindet der Unterschied** — jung mangels Zeit, alt, weil beide Stimmen gegen denselben Boden laufen. Das ist keine Schwäche, sondern die Aussage des Bodens: Ein Faden wird leiser, nie stumm.
+
+### Und ein Messfehler, der fast in den Bericht gewandert wäre
+
+Eine Gegenprobe schrieb `memory/praegung.py` und kopierte sie binnen derselben Sekunde zurück. Der Bytecode-Cache hält die Quell-Zeit sekundengenau und sah die Datei als unverändert — **der Lauf nach der Wiederherstellung fuhr weiter den geänderten Stand.**
+
+> **Diesmal fiel es auf, weil der Zeuge rot blieb. Der gefährliche Fall ist der umgekehrte:** Ein Eingriff, der durch den Cache gar nicht ankommt, meldet *grün* — und sieht aus wie ein fehlender Zeuge. Alle vier Gegenproben sind mit geleertem Cache wiederholt worden: 4/4, 4/4, 1/1, 5/5.
+
+**11 Zeugen**, davon einer auf die Verdrahtung. Suite **2900 grün, 0 übersprungen**. Der siebte Schritt des Tageslaufs stand **von Anfang an** in der Ersetzungsliste des Zeugen — zum ersten Mal, seit die Klasse bekannt ist.
 
 ---
 
