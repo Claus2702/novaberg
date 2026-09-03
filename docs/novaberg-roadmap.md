@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **20:25 UTC** (gemessen via `date -u`). Davor 03.09.2026, 19:45 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **20:35 UTC** (gemessen via `date -u`). Davor 03.09.2026, 20:25 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
