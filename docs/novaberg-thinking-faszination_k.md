@@ -1122,8 +1122,8 @@ Stimmen gegen denselben Boden laufen. Sie ist am größten zwischen etwa einem u
 nie stumm, und was leise ist, kann sich nicht mehr weit unterscheiden.
 
 `[gemessen]` 03.09.2026 gegen den echten Bestand: **`abstand_max = 0,0` bei 5 von 5 Fäden.** Alle
-liegen in Sektor 1 und 8 — die Prägungsschicht hat bis heute **keinen einzigen negativen Faden**
-aufgenommen. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**; die Trennung ist
+liegen in Sektor 1 und 8 — ~~die Prägungsschicht hat bis heute **keinen einzigen negativen Faden**
+aufgenommen.~~ **[Am selben Tag berichtigt: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC, Salienz 0,732 / Ausschlag 0,77. Er steht nicht im Bestand, weil er nach Befund verworfen wurde. Der Korpus ist positiv durch eine Löschung, nicht durch das Tor.]** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**; die Trennung ist
 an denselben Daten mit getauschter Emotion gerechnet (0,007 bis 0,014) und nicht gemessen.
 
 **Die Trennung ist bindend:**

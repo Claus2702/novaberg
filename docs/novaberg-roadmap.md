@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **19:30 UTC** (gemessen via `date -u`). Davor 03.09.2026, 18:57 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **19:45 UTC** (gemessen via `date -u`). Davor 03.09.2026, 19:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 153 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 154 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,52 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 03.09.2026, 19:45 UTC — Eine Messreihe gegen die Rechnung ✅
+
+**Vier Reihen, alle mit echten Eingaben aus dem Bestand** — keine Live-Turns, kein Eingriff ins Produktivsystem.
+
+### A — Die Deckung, und sie ist der Befund
+
+**47,9 % des Korpus tragen keinen Sektor** (1590 von 3317 LZG-Knoten). Davon sind 1572 `neutral` — kanonisch und gültig sektorlos. **Drei Werte sind Ausreißer:**
+
+| Wert | Knoten | Warum er durchfällt |
+|---|---|---|
+| `überrascht` | 12 | **Umlautschreibung** — abgebildet ist nur `ueberrascht` |
+| `mitgefühl` | 4 | steht in keiner der drei Tabellen |
+| `zuversicht` | 2 | ist ein **Sektorname**, kein Emotionswert |
+
+Alle drei stehen außerhalb von `EMOTION_KANON`, den die Perzeption einhalten soll; dieselben vier fehlen auch in `EMOTION_VALENZ` und tragen dort keine Ladung.
+
+> **Und die Messung hat einen Defekt im Code von heute Morgen gefunden.** `sektor_faktor` warnte bei jedem sektorlosen Wert — das wären **47,9 % des Bestandes** gewesen, und die drei echten Ausreißer lägen darin begraben. Der Kanon trennt jetzt den Regelfall vom Befund: `neutral` auf `debug`, alles außerhalb auf `warning`.
+
+### B — Das Tor über 60 echte Prüfungen
+
+**6 durchgelassen (10,0 %)**, 37 an der Salienz gescheitert, 17 am Ausschlag. Der Schwellen-Sweep:
+
+| Salienz | 0,5 | 0,6 | 0,7 |
+|---|---|---|---|
+| **Ausschlag 0,7** | 25,0 % | 13,3 % | 6,7 % |
+
+### C und D — die Faltung und die Einfärbung auf echtem Material
+
+29 verschiedene echte Ausschlagswerte durch die Formkurve und den Verfall über T+0 bis T+365. Die Einfärbung trennt am stärksten Eingang: T+30 **0,7333 gegen 0,6571**, T+120 **0,4667 gegen 0,4000**, T+365 **0,3129 gegen 0,2790** — dieselben 10 bis 14 %, die die synthetische Rechnung vorhergesagt hatte.
+
+### Was die Reihe berichtigt hat
+
+**Die Aussage von heute Vormittag war falsch.** Das Tor hat sehr wohl einen negativen Faden durchgelassen: **Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC**, Salienz 0,732 und Ausschlag 0,77. Er steht nicht in `praegung_faden` — er ist der am selben Tag *nach Befund verworfene*.
+
+> **Der Korpus ist positiv, weil eine Zeile gelöscht wurde, nicht weil das Tor negative Reize abweist.** Das ist der wichtigere Befund und dreht die offene Frage um: Nicht *„kommt je etwas Negatives durch"*, sondern *„wie oft kommt es durch, und was ist mit dem einen passiert"*.
+
+### Und ein Log, der seine eigene Geschichte mitmisst
+
+Von acht Torzeilen, die die **heutigen** Schwellen passieren würden, tragen **zwei** das Urteil *abgelehnt* — begründet mit *„salienz 0.73 < 0.75"* und *„salienz 0.65 < 0.7"*. Beide sind gegen ältere Werte gefallen; die Schwelle wurde am 31.08.2026 auf 0,60 gezogen.
+
+> **Wer den Log gegen `urteil` auswertet, misst die Geschichte der Konstante mit.** Gerettet hat es der Grundtext, der die damalige Schwelle nennt — ohne ihn wäre die Abweichung ein Widerspruch ohne Auflösung gewesen.
+
+Suite **2901 grün, 0 übersprungen**.
 
 ---
 
@@ -50,7 +96,7 @@ Der Betrag kommt stattdessen aus der Asymmetrie, die derselbe Abschnitt schon ne
 
 `[gemessen]` über alle fünf Fäden: **größter Abstand 0,000000.**
 
-> **Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen** — vier in Sektor 1, einer in Sektor 8. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**.
+> ~~**Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen**~~ **[Am selben Tag berichtigt: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC, Salienz 0,732 / Ausschlag 0,77. Er steht nicht im Bestand, weil er nach Befund verworfen wurde. Der Korpus ist positiv durch eine Löschung, nicht durch das Tor.]** — vier in Sektor 1, einer in Sektor 8. Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe**.
 
 Damit warten **vier** Bauteile auf dieselbe fehlende Eingabe: die Einfärbung, der bimodale Fall des Sektor-Histogramms, Regel 4 der Strangrichtung und das Gewicht für `unbestimmt`. Das steht in der Fundliste, nicht als Umbau.
 

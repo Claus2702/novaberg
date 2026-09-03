@@ -325,7 +325,7 @@ einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc
 | **Sektoren** | 1 (viermal) und 8 (einmal) |
 | **größter Abstand** | **0,000000** |
 
-> **Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen.** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe** — genau die Klasse, die der zweite Zugriff *„der Bestand statt der Zeugen"* finden soll. Die Trennung ist an denselben Daten mit getauschter Emotion **gerechnet** (0,007 bis 0,014 bei diesem Alter) und nicht gemessen.
+> ~~**Die Prägungsschicht hat bis heute keinen einzigen negativen Faden aufgenommen.**~~ **[Am selben Tag berichtigt: Das Tor hat einen durchgelassen — Faden 41, `traurigkeit`, 31.08.2026 18:41 UTC, Salienz 0,732 / Ausschlag 0,77. Er steht nicht im Bestand, weil er nach Befund verworfen wurde. Der Korpus ist positiv durch eine Löschung, nicht durch das Tor.]** Der Mechanismus ist gebaut, bezeugt und im Bestand **ohne Eingabe** — genau die Klasse, die der zweite Zugriff *„der Bestand statt der Zeugen"* finden soll. Die Trennung ist an denselben Daten mit getauschter Emotion **gerechnet** (0,007 bis 0,014 bei diesem Alter) und nicht gemessen.
 
 **Und sie hat ein Fenster.** `[gerechnet]` bei 0,9 und Halbstrecke 60 Tage: 3,9 % nach einer Woche, **14,3 % nach 120 Tagen**, wieder 3,7 % nach fünf Jahren. An beiden Enden verschwindet der Unterschied — jung mangels Zeit, alt, weil beide Stimmen gegen denselben Boden laufen.
 
