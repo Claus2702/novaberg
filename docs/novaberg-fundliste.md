@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 3. September 2026, 07:10 UTC (zwei Funde aus dem Praegungszug — ein toter Import im Bestand und ein System der Rechenkette ohne eigenen Abschnitt; ein Eintrag vom 01.09. geschlossen, weil der Eigentuemer die Frage entschieden hat). Davor 2. September 2026, 19:20 UTC (drei Funde aus Scheibe 3 und 4 — die Suite als Schreiber, die ungemessene Strang-Schwelle, die Abfrage die Paare zaehlte; dazu drei widersprechende Sektor-4-Tabellen. Zwei Eintraege am selben Tag geschlossen). Davor 1. September 2026, 19:05 UTC (vier Funde aus den Termin-Turns des Abends). Davor 30. August 2026, 22:38 UTC
+**Stand:** 3. September 2026, 19:00 UTC (zwei Funde aus dem Praegungszug — ein toter Import im Bestand und ein System der Rechenkette ohne eigenen Abschnitt; ein Eintrag vom 01.09. geschlossen, weil der Eigentuemer die Frage entschieden hat). Davor 2. September 2026, 19:20 UTC (drei Funde aus Scheibe 3 und 4 — die Suite als Schreiber, die ungemessene Strang-Schwelle, die Abfrage die Paare zaehlte; dazu drei widersprechende Sektor-4-Tabellen. Zwei Eintraege am selben Tag geschlossen). Davor 1. September 2026, 19:05 UTC (vier Funde aus den Termin-Turns des Abends). Davor 30. August 2026, 22:38 UTC
 **Offen:** **132 Funde — gezaehlt am 30.08.2026, 08:30 UTC** (151 Fundzeilen der Form `- **JJJJ-MM-TT**` im Abschnitt *Offen*, davon **19** mit `~~`; neu: der GV-Prompt spricht das Modell als Nova an — Entscheidung offen)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 85 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md

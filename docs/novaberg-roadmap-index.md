@@ -36,7 +36,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
-| 2026-09-03 | laufend | ## | [03.09.2026, 07:15 UTC — Scheibe 5: Der Prägungszug ✅](novaberg-roadmap.md#03092026-0715-utc--scheibe-5-der-prägungszug) |
+| 2026-09-03 | laufend | ## | [03.09.2026, 18:57 UTC — Scheibe 5: Der Prägungszug ✅](novaberg-roadmap.md#03092026-1857-utc--scheibe-5-der-prägungszug) |
 | (2026-09-03) | laufend | ### | · [Zwei Bauentscheidungen, die aus Regeln folgen](novaberg-roadmap.md#zwei-bauentscheidungen-die-aus-regeln-folgen) |
 | (2026-09-03) | laufend | ### | · [Gemessen gegen den echten Bestand](novaberg-roadmap.md#gemessen-gegen-den-echten-bestand) |
 | (2026-09-03) | laufend | ### | · [Was die Gegenprobe fand und kein Zeuge hielt](novaberg-roadmap.md#was-die-gegenprobe-fand-und-kein-zeuge-hielt) |

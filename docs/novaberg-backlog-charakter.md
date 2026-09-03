@@ -1,7 +1,7 @@
 # Novaberg — Backlog: Charakter — Profile, Raeder, Haltung, Emotion, Destillation
 
 **Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 70 Eintraege.
-**Stand:** 3. September 2026, 07:20 UTC (`FASZINATION-PRAEGUNG` nachgezogen — **Scheibe 5, der Praegungszug**, gebaut und im Betrieb belegt; offen bleiben ein Leser fuer den Zug und der sektorabhaengige Verfall). Davor 2. September 2026, 19:40 UTC (Scheibe 3a/b/c und 4 gebaut und im Betrieb belegt; die Faltung ohne Aufrufer ist behoben).
+**Stand:** 3. September 2026, 18:57 UTC (`FASZINATION-PRAEGUNG` nachgezogen — **Scheibe 5, der Praegungszug**, gebaut und im Betrieb belegt; offen bleiben ein Leser fuer den Zug und der sektorabhaengige Verfall). Davor 2. September 2026, 19:40 UTC (Scheibe 3a/b/c und 4 gebaut und im Betrieb belegt; die Faltung ohne Aufrufer ist behoben).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.

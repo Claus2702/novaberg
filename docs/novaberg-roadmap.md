@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **07:15 UTC** (gemessen via `date -u`). Davor 02.09.2026, 18:45 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **18:57 UTC** (gemessen via `date -u`). Davor 02.09.2026, 18:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,7 +21,7 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 ---
 
-## 03.09.2026, 07:15 UTC — Scheibe 5: Der Prägungszug ✅
+## 03.09.2026, 18:57 UTC — Scheibe 5: Der Prägungszug ✅
 
 **Das letzte Stück vor der Faszination.** Richtung und Ladung standen seit zwei Tagen und wurden von niemandem gelesen; seit heute liest sie der Zug.
 
