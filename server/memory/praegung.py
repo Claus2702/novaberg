@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 import psycopg2
 
 from config import (
+    EMOTION_KANON,
     EMOTION_SEKTOR_MAP,
     EMOTION_VALENZ,
     PRAEGUNG_ALPHA,
@@ -1417,11 +1418,20 @@ def sektor_faktor(emotion: str) -> tuple[float, int | None]:
     Fading-Affect-Bias, und ausdruecklich nur auf der Einfaerbung.
 
     Vorbedingung: keine.
-    Nachbedingung: `(faktor, sektor)`. Eine unbekannte Emotion ergibt **1,0 und
-        None** — die neutrale Zeitachse, nicht eine erfundene Beschleunigung —
-        und wird gemeldet: Ein Vorgabewert ueber 1,0 waere eine Aussage ueber die
-        Valenz einer Emotion, die in keiner Tabelle steht.
-    Fehlerfaelle: siehe Nachbedingung; der Aufrufer laeuft weiter.
+    Nachbedingung: `(faktor, sektor)`. Alles ohne Sektor ergibt **1,0 und None**
+        — die neutrale Zeitachse, nicht eine erfundene Beschleunigung: Ein
+        Vorgabewert darueber waere eine Aussage ueber die Valenz einer Emotion,
+        die in keiner Tabelle steht.
+    Fehlerfaelle: **Zwei Faelle, und sie werden getrennt gemeldet.** `neutral`
+        steht im `EMOTION_KANON` und hat gueltig keinen Sektor — das ist der
+        **Regelfall** und keine Meldung wert. Ein Wert *ausserhalb* des Kanons
+        ist ein Befund und wird gewarnt.
+
+        `[gemessen]` 03.09.2026: **47,9 % des Korpus** (1590 von 3317 LZG-Knoten)
+        tragen keinen Sektor, davon 1572 `neutral`. Eine Warnung je Fall haette
+        fast die Haelfte des Bestandes gemeldet und die echten Ausreisser darin
+        begraben — `ueberrascht` in Umlautschreibung (12), `mitgefuehl` (4) und
+        `zuversicht` (2), das ein **Sektorname** ist und kein Emotionswert.
 
     Args:
         emotion: Die Emotion des Fadens.
@@ -1432,11 +1442,21 @@ def sektor_faktor(emotion: str) -> tuple[float, int | None]:
     # ── Eingabe ────────────────────────────────
     sektor: int | None = EMOTION_SEKTOR_MAP.get(emotion or "")
     if sektor is None or not 1 <= sektor <= len(PRAEGUNG_SEKTOR_FAKTOR):
-        logger.warning(
-            f"Praegung: Emotion '{emotion}' hat keinen Sektor — die Einfaerbung "
-            f"laeuft auf der neutralen Zeitachse (1,0). Ein Vorgabewert darueber "
-            f"waere eine Aussage ueber ihre Valenz"
-        )
+        # **Der Kanon trennt den Regelfall vom Befund.** `neutral` gehoert dazu
+        # und hat gueltig keinen Sektor; alles ausserhalb ist ein Wert, den die
+        # Perzeption nicht haette liefern duerfen.
+        if (emotion or "") in EMOTION_KANON:
+            logger.debug(
+                f"Praegung: '{emotion}' ist kanonisch und sektorlos — die "
+                f"Einfaerbung laeuft auf der neutralen Zeitachse"
+            )
+        else:
+            logger.warning(
+                f"Praegung: Emotion '{emotion}' steht nicht im EMOTION_KANON und "
+                f"hat keinen Sektor — die Einfaerbung laeuft auf der neutralen "
+                f"Zeitachse (1,0). Ein Vorgabewert darueber waere eine Aussage "
+                f"ueber ihre Valenz"
+            )
         return (1.0, None)
 
     # ── Ausgabe ────────────────────────────────

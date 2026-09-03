@@ -137,12 +137,25 @@ class EineBeruehrungHebtBeideTest(unittest.TestCase):
 class DieUnbekannteEmotionTest(unittest.TestCase):
     """Zusicherung 5 und 6 — wo keine Aussage vorliegt, wird keine erfunden."""
 
-    def test_ohne_sektor_laeuft_die_neutrale_achse_und_es_wird_gemeldet(self) -> None:
+    def test_ausserhalb_des_kanons_wird_gewarnt(self) -> None:
         with self.assertLogs("ki_server.praegung", level="WARNING") as protokoll:
             faktor, sektor = sektor_faktor("gibtsnicht")
 
         self.assertEqual((faktor, sektor), (1.0, None))
-        self.assertIn("neutralen Zeitachse", "".join(protokoll.output))
+        self.assertIn("EMOTION_KANON", "".join(protokoll.output))
+
+    def test_neutral_ist_der_regelfall_und_keine_warnung(self) -> None:
+        """`[gemessen]` 03.09.2026: **47,9 % des Korpus** tragen keinen Sektor,
+        davon 1572 von 1590 `neutral`. Eine Warnung je Fall haette fast die
+        Haelfte des Bestandes gemeldet — und die drei echten Ausreisser darin
+        begraben."""
+        with self.assertNoLogs("ki_server.praegung", level="WARNING"):
+            faktor, sektor = sektor_faktor("neutral")
+
+        self.assertEqual(
+            (faktor, sektor), (1.0, None),
+            "`neutral` laeuft nicht auf der neutralen Zeitachse",
+        )
 
     def test_sektor_vier_traegt_keine_beschleunigung(self) -> None:
         """Der Bias spricht ueber Valenz; Ueberraschung traegt keine."""
