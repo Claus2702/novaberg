@@ -293,12 +293,14 @@ Emotions-Baseline.
 
 | Phase | Inhalt | Status |
 |-------|--------|--------|
-| Phase 1 | Pipeline-Log (Tabelle + log_entscheidung in allen Nodes) | ⬜ |
+| Phase 1 | Pipeline-Log (Tabelle + Helper-API, schreibende Knoten und Agenten) | ✅ Chat 104 |
 | Phase 2 | pipeline_search Tool (Thinker + Responder) | ⬜ |
 | Phase 3 | Vorsaetze-Tabelle + SelbstreflexionsAgent | ⬜ |
 | Phase 4 | Vorsatz-Wirkung im Responder/GV/EI | ⬜ |
 | Phase 5 | Aktionen aus Selbstreflexion (Queue, jeder Agent) | ⬜ |
 | Phase 6 | Vorsatz-Evaluation + Charakter-Verschiebung (experimentell) | ⬜ |
+
+Bauteile mit Vorbedingungen stehen seit v0.2 in `novaberg-metakognition_k.md` §7 — `MK-1` bis `MK-6`, je mit ZIEL, TEST, MESSUNG und Gegenprobe.
 
 
 ### Client & Visualisierung
