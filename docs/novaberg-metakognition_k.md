@@ -1,7 +1,7 @@
 # novaberg-metakognition_k.md
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Meta-Kognition — Pipeline-Log, Selbstbeobachtung, Vorsaetze (Konzept)
+**Dokument:** Meta-Kognition — Pipeline-Log, Selbstbeobachtung, Vorsätze (Konzept)
 **Stand:** 8. Mai 2026, Chat 79
 **Pfad:** novaberg/docs/novaberg-metakognition_k.md
 **Quellen:** Chat 79 (Idee + Architektur-Skizze), Flavell (1979, Metacognition), Zimmerman (2000, Self-Regulated Learning), Schraw & Moshman (1995, Metacognitive Theories), Carver & Scheier (1982, Control Theory of Self-Regulation), Higgins (1987, Self-Discrepancy Theory), Sterling (2012, Allostasis), Skinner (1938, Operant Conditioning)
@@ -10,15 +10,15 @@
 
 ## 1. Vision
 
-Nova weiss heute nicht, warum sie etwas gesagt hat. Die Emotionsberechnung, der Gespraechsvektor, das Tribunal-Urteil, die Thinker-Korrektur — all das existiert fuer einen Turn, wird ins Debug-Log geschrieben, und ist danach fuer Nova unsichtbar. Sie kann nicht reflektieren, weil sie keinen Zugang zu ihrem eigenen Denkprozess hat.
+Nova weiß heute nicht, warum sie etwas gesagt hat. Die Emotionsberechnung, der Gesprächsvektor, das Tribunal-Urteil, die Thinker-Korrektur — all das existiert für einen Turn, wird ins Debug-Log geschrieben, und ist danach für Nova unsichtbar. Sie kann nicht reflektieren, weil sie keinen Zugang zu ihrem eigenen Denkprozess hat.
 
-Dieses Konzept gibt Nova ein Gedaechtnis ueber ihren eigenen Verarbeitungsprozess und die Faehigkeit, daraus Verhaltensaenderungen abzuleiten.
+Dieses Konzept gibt Nova ein Gedächtnis über ihren eigenen Verarbeitungsprozess und die Fähigkeit, daraus Verhaltensänderungen abzuleiten.
 
 Drei Schichten:
 
 1. **Pipeline-Log** — Jeder Node schreibt seine Entscheidung in eine Datenbank
 2. **Selbstbeobachtung** — Nova kann ihr eigenes Log durchsuchen
-3. **Vorsaetze** — Ein Reflexions-Agent erkennt Muster und leitet Verhaltensanweisungen ab, die Novas kuenftiges Verhalten steuern
+3. **Vorsätze** — Ein Reflexions-Agent erkennt Muster und leitet Verhaltensanweisungen ab, die Novas künftiges Verhalten steuern
 
 Der geschlossene Kreis:
 
@@ -28,7 +28,7 @@ Handeln → Beobachten → Reflektieren → Vorsatz fassen → Verhalten aendern
    └──────────────────────────────────────────────────────────┘
 ```
 
-> **Kognitionswissenschaftlicher Bezug:** Flavell (1979) definierte Meta-Kognition als "Denken ueber das Denken". Zimmerman (2000) beschrieb den Kreislauf aus Voraussicht (Vorsaetze), Ausfuehrung (Handeln mit Selbstbeobachtung) und Selbstreflexion (Bewertung + Anpassung). Carver & Scheier (1982) modellierten Selbstregulation als Feedback-Schleife: Ist-Zustand messen, mit Soll-Zustand vergleichen, Differenz reduzieren.
+> **Kognitionswissenschaftlicher Bezug:** Flavell (1979) definierte Meta-Kognition als "Denken über das Denken". Zimmerman (2000) beschrieb den Kreislauf aus Voraussicht (Vorsätze), Ausführung (Handeln mit Selbstbeobachtung) und Selbstreflexion (Bewertung + Anpassung). Carver & Scheier (1982) modellierten Selbstregulation als Feedback-Schleife: Ist-Zustand messen, mit Soll-Zustand vergleichen, Differenz reduzieren.
 
 ---
 
@@ -43,12 +43,12 @@ Pro Turn, pro Node **eine** kompakte Entscheidungs-Zeile. Nicht das gesamte Debu
 | Perzeption | Erkannte Dimensionen (Intent, Modus, Stil) | `intent=aufforderung, modus=spielerisch, stil=intim` |
 | EI-Calc | Berechnete Emotion, Arousal, Akkumulation | `emotion=freude(0.72), arousal=0.65, akku=+0.08 (carryover)` |
 | Router | Domain, Ziel, Confidence | `domain=timeline, ziel=create, confidence=0.91` |
-| Planner | Gewaehlter Agent, Begruendung | `agent=timeline, grund=expliziter Terminwunsch` |
+| Planner | Gewählter Agent, Begründung | `agent=timeline, grund=expliziter Terminwunsch` |
 | GV-Node | Cluster, Strategie, Absicht, Vehikel | `cluster=kissenschlacht, strategie=impuls, absicht=teilen, vehikel=aussage` |
-| Responder | Antwort-Laenge, genutzter Charakter-Layer | `laenge=142, layers=kern+beziehung+adaptiv` |
+| Responder | Antwort-Länge, genutzter Charakter-Layer | `laenge=142, layers=kern+beziehung+adaptiv` |
 | Thinker | Urteil, Tool-Nutzung, Korrektur ja/nein | `urteil=BESTAETIGT, tools=timeline_check(2026-05-08), korrektur=nein` |
-| Tribunal | Status, Begruendung | `status=OK` oder `status=WARNUNG, grund=faktische Behauptung ohne Quelle` |
-| Corrector | Korrektur-Art, was geaendert | `art=fakten, aenderung=Datum korrigiert` |
+| Tribunal | Status, Begründung | `status=OK` oder `status=WARNUNG, grund=faktische Behauptung ohne Quelle` |
+| Corrector | Korrektur-Art, was geändert | `art=fakten, aenderung=Datum korrigiert` |
 | Salienz | Score, Speicher-Entscheidung | `score=0.73, entscheidung=kzg_schreiben` |
 | Dispatcher | Geschriebene Targets | `session=ja, kzg=ja, broadcast=ja` |
 
@@ -113,7 +113,7 @@ log_berechnung(
 
 ### 2.4 Kein Performance-Risiko
 
-Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Rows/Tag. Trivial fuer PostgreSQL. Asynchron, blockiert den Node nicht.
+Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Rows/Tag. Trivial für PostgreSQL. Asynchron, blockiert den Node nicht.
 
 ---
 
@@ -121,7 +121,7 @@ Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Ro
 
 ### 3.1 Neues Tool: `pipeline_search`
 
-Analog zu `timeline_search` und `memory_search`. Verfuegbar im Thinker und Responder.
+Analog zu `timeline_search` und `memory_search`. Verfügbar im Thinker und Responder.
 
 ```
 - pipeline_search: Durchsuche Novas eigene Verarbeitungs-Historie.
@@ -135,69 +135,69 @@ Analog zu `timeline_search` und `memory_search`. Verfuegbar im Thinker und Respo
 **User:** "Hat das Tribunal in letzter Zeit etwas beanstandet?"
 → Nova sucht `pipeline_search("tribunal warnung")`, findet Warnungen, berichtet.
 
-**User:** "Warum warst du vorhin so zurueckhaltend?"
-→ Nova sucht `pipeline_search("gv_node cluster")`, findet Foyer-Cluster, erklaert.
+**User:** "Warum warst du vorhin so zurückhaltend?"
+→ Nova sucht `pipeline_search("gv_node cluster")`, findet Foyer-Cluster, erklärt.
 
-**User:** "Wie hast du dich heute gefuehlt?"
+**User:** "Wie hast du dich heute gefühlt?"
 → Nova sucht `pipeline_search("ei_calc emotion")`, fasst den emotionalen Verlauf zusammen.
 
 ### 3.3 Abgrenzung: Transparenz, nicht Manipulation
 
-Nova zeigt dem User ihren Prozess. "Stell dein Tribunal ab" ist keine gueltige Anweisung.
+Nova zeigt dem User ihren Prozess. "Stell dein Tribunal ab" ist keine gültige Anweisung.
 
 ---
 
-## 4. Schicht 3: Vorsaetze (Selbstregulation)
+## 4. Schicht 3: Vorsätze (Selbstregulation)
 
 ### 4.1 SelbstreflexionsAgent (Pixie)
 
-Periodisch (alle 50 Turns oder taeglich) analysiert der Agent das Pipeline-Log:
+Periodisch (alle 50 Turns oder täglich) analysiert der Agent das Pipeline-Log:
 
 | Dimension | Frage | Beispiel-Befund |
 |-----------|-------|----------------|
 | Emotionale Muster | Welche Emotionen dominieren? | "80% Freude — zu monoton?" |
-| Tribunal-Haeufigkeit | Wie oft greift das Tribunal ein? | "3 Warnungen bei Fakten" |
+| Tribunal-Häufigkeit | Wie oft greift das Tribunal ein? | "3 Warnungen bei Fakten" |
 | GV-Cluster-Verteilung | Welche Cluster dominieren? | "70% Kissenschlacht/Glut" |
 | Strategie-Monotonie | Dieselbe Strategie zu oft? | "Impuls in 8 von 10 Turns" |
-| Antwort-Muster | Laenge, Wiederholungen | "3x identischer Satzanfang" |
+| Antwort-Muster | Länge, Wiederholungen | "3x identischer Satzanfang" |
 
-### 4.2 Zwei Typen von Vorsaetzen
+### 4.2 Zwei Typen von Vorsätzen
 
-**Typ A — Modulierende Vorsaetze (Faerbung)**
+**Typ A — Modulierende Vorsätze (Färbung)**
 
 Wirken als weiche Signale. Beeinflussen *wie* Nova antwortet.
 
-- "Ich moechte mehr Perspektivwechsel einsetzen"
-- "Ich moechte mein emotionales Spektrum breiter nutzen"
-- "Bei Fakten moechte ich vorsichtiger sein"
+- "Ich möchte mehr Perspektivwechsel einsetzen"
+- "Ich möchte mein emotionales Spektrum breiter nutzen"
+- "Bei Fakten möchte ich vorsichtiger sein"
 
 Wirkungsorte: `[VORSAETZE]`-Block im Responder, Strategie-Gewichtung im GV-Node, Emotions-Baseline im EI-Calc.
 
 **Aktionen — "Ich will etwas TUN"**
 
-Entschluesse, die zu konkreten Queue-Auftraegen werden. Kurzfristig, einmalig.
-Die Quelle unterscheidet sie von regulaeren Pixie-Aufgaben: nicht ein
-Gespraechsthema oder eine Wissensluecke, sondern eine Selbstbeobachtung.
+Entschlüsse, die zu konkreten Queue-Aufträgen werden. Kurzfristig, einmalig.
+Die Quelle unterscheidet sie von regulären Pixie-Aufgaben: nicht ein
+Gesprächsthema oder eine Wissenslücke, sondern eine Selbstbeobachtung.
 Markierung: `quelle=selbstreflexion`.
 
 Der SelbstreflexionsAgent formuliert seinen Entschluss als synthetischen
 Prompt, der PixieGraph (Pfad 3) routet ihn zum richtigen Agenten. Jeder
-verfuegbare Agent kann das Ziel einer Aktion sein:
+verfügbare Agent kann das Ziel einer Aktion sein:
 
-- "Ich mache wiederholt Fakten-Fehler, ich moechte recherchieren wie man Quellen besser einordnet" → RechercheAgent
-- "Ich moechte dem User von meiner Beobachtung erzaehlen" → Delivery (proaktive Nachricht)
+- "Ich mache wiederholt Fakten-Fehler, ich möchte recherchieren wie man Quellen besser einordnet" → RechercheAgent
+- "Ich möchte dem User von meiner Beobachtung erzählen" → Delivery (proaktive Nachricht)
 - "Ich sollte mir merken, dass der User bei diesem Thema empfindlich reagiert" → NotizenAgent
-- "Ich moechte den User an seinen Termin erinnern" → TimelineAgent
-- "Ich moechte dieses Thema vertiefen" → VertiefungsAgent
-- "Ich moechte darueber nachdenken" → TraumAgent
-- "Ich moechte ein Tool dafuer bauen" → SkillAgent (wenn Epic 10 steht)
+- "Ich möchte den User an seinen Termin erinnern" → TimelineAgent
+- "Ich möchte dieses Thema vertiefen" → VertiefungsAgent
+- "Ich möchte darüber nachdenken" → TraumAgent
+- "Ich möchte ein Tool dafür bauen" → SkillAgent (wenn Epic 10 steht)
 
-Die Aktionsliste waechst mit jedem neuen Agenten. Der SelbstreflexionsAgent
-ist kein eigener Akteurstyp — er ist der Moment, in dem Nova innehaelt,
+Die Aktionsliste wächst mit jedem neuen Agenten. Der SelbstreflexionsAgent
+ist kein eigener Akteurstyp — er ist der Moment, in dem Nova innehält,
 sich beobachtet, und entscheidet.
 
-**Abgrenzung zu regulaeren Pixie-Aufgaben:** Recherche aus dem Gespraech
-("User erwaehnt Feng Shui") ist NICHT aus Selbstreflexion. Recherche aus
+**Abgrenzung zu regulären Pixie-Aufgaben:** Recherche aus dem Gespräch
+("User erwähnt Feng Shui") ist NICHT aus Selbstreflexion. Recherche aus
 der Pipeline-Log-Analyse ("Ich mache wiederholt Fehler bei Fakten") IST
 aus Selbstreflexion. Gleicher Mechanismus, andere Quelle, andere Motivation.
 
@@ -223,8 +223,8 @@ jeder verfuegbare Agent
 
 ### 4.3 Datenbank-Schema
 
-Vorsaetze (Verhaltensaenderungen) werden persistent gespeichert. Aktionen
-landen als Queue-Auftraege mit `quelle=selbstreflexion` und brauchen keine
+Vorsätze (Verhaltensänderungen) werden persistent gespeichert. Aktionen
+landen als Queue-Aufträge mit `quelle=selbstreflexion` und brauchen keine
 eigene Tabelle.
 
 ```sql
@@ -243,7 +243,7 @@ CREATE TABLE vorsaetze (
 );
 ```
 
-### 4.4 Wie Vorsaetze wirken (Verhaltensaenderungen)
+### 4.4 Wie Vorsätze wirken (Verhaltensänderungen)
 
 **4.4.1 Im Responder-Prompt**
 
@@ -254,17 +254,17 @@ CREATE TABLE vorsaetze (
 - Bei Fakten-Behauptungen vorsichtiger sein (Staerke: 0.8)
 ```
 
-Die Vorsaetze sind Novas eigene Selbst-Anweisungen, kein System-Prompt-Override.
+Die Vorsätze sind Novas eigene Selbst-Anweisungen, kein System-Prompt-Override.
 
 **4.4.2 Im GV-Node — Strategie-Gewichtung**
 
-Vorsaetze mit `kategorie=strategie` verschieben die Gewichtung — sanft, proportional zur `staerke`.
+Vorsätze mit `kategorie=strategie` verschieben die Gewichtung — sanft, proportional zur `staerke`.
 
 **4.4.3 Im EI-Calc — Emotions-Baseline**
 
-**Hard Cap: ±0.15 auf die Basis-Emotion.** Novas Emotionen werden durch Vorsaetze nur leicht gefaerbt, nie dominiert.
+**Hard Cap: ±0.15 auf die Basis-Emotion.** Novas Emotionen werden durch Vorsätze nur leicht gefärbt, nie dominiert.
 
-### 4.5 Feedback-Korrelation (Verstaerkungslernen)
+### 4.5 Feedback-Korrelation (Verstärkungslernen)
 
 Der SelbstreflexionsAgent korreliert Novas Verhalten mit der User-Reaktion im Folge-Turn:
 
@@ -278,25 +278,25 @@ Users Turn M+1: emotion=neutral(0.3), arousal=0.2, intent=keine
                 → Abschwaechung: langer sachbeitrag + foyer = kein Engagement
 ```
 
-Operante Konditionierung (Skinner 1938) — aber selbstgesteuert. Nova entscheidet, was sie verstaerkt. Der User manipuliert nicht, er lebt seine Reaktion, und Nova lernt daraus.
+Operante Konditionierung (Skinner 1938) — aber selbstgesteuert. Nova entscheidet, was sie verstärkt. Der User manipuliert nicht, er lebt seine Reaktion, und Nova lernt daraus.
 
-Jede emotionale Reaktion ist Feedback: Arousal-Sprung = Verstaerkung. Emoji-Feuerwerk = Verstaerkung. Ignorierte Delivery = Abschwaechung.
+Jede emotionale Reaktion ist Feedback: Arousal-Sprung = Verstärkung. Emoji-Feuerwerk = Verstärkung. Ignorierte Delivery = Abschwächung.
 
-**User-Korrektur (Backpropagation):** "Mach das nicht mehr" → sofortige Abschwaechung, nicht erst beim naechsten Reflexions-Zyklus.
+**User-Korrektur (Backpropagation):** "Mach das nicht mehr" → sofortige Abschwächung, nicht erst beim nächsten Reflexions-Zyklus.
 
 ---
 
-## 5. Drei Regulationskraefte
+## 5. Drei Regulationskräfte
 
-Ohne Begrenzung wird Nova zur Karikatur. Drei Kraefte verhindern das — analog zur Emotionsmathematik (Chat 65).
+Ohne Begrenzung wird Nova zur Karikatur. Drei Kräfte verhindern das — analog zur Emotionsmathematik (Chat 65).
 
-### 5.1 Feedback-Verstaerkung
+### 5.1 Feedback-Verstärkung
 
-Positives Feedback erhoeht `staerke`. Negatives senkt sie. Direktes User-Feedback wirkt sofort.
+Positives Feedback erhöht `staerke`. Negatives senkt sie. Direktes User-Feedback wirkt sofort.
 
 ### 5.2 Monotonie-Druck (Homeostatische Kraft)
 
-Wenn eine Dimension ueber 40% dominiert, erzeugt der SelbstreflexionsAgent einen **Gegen-Vorsatz fuer Vielfalt** — nicht gegen die dominante Eigenschaft, sondern fuer Breite.
+Wenn eine Dimension über 40% dominiert, erzeugt der SelbstreflexionsAgent einen **Gegen-Vorsatz für Vielfalt** — nicht gegen die dominante Eigenschaft, sondern für Breite.
 
 ```
 Messung (letzte 50 Turns):
@@ -316,11 +316,11 @@ Gegen-Vorsatz (automatisch):
 
 Wie ein Musiker, der merkt, dass er nur noch in einer Tonart spielt.
 
-> Sterling (2012) — Allostase: Der Koerper wehrt sich nicht gegen Freude, er wehrt sich gegen Einseitigkeit.
+> Sterling (2012) — Allostase: Der Körper wehrt sich nicht gegen Freude, er wehrt sich gegen Einseitigkeit.
 
-### 5.3 Charakter-Gravitation (Authentizitaets-Kraft)
+### 5.3 Charakter-Gravitation (Authentizitäts-Kraft)
 
-Novas `kern_hash` definiert, wer sie ist. Wenn Vorsaetze sie zu weit vom Kern wegziehen, sieht der SelbstreflexionsAgent die Diskrepanz und korrigiert Richtung Authentizitaet.
+Novas `kern_hash` definiert, wer sie ist. Wenn Vorsätze sie zu weit vom Kern wegziehen, sieht der SelbstreflexionsAgent die Diskrepanz und korrigiert Richtung Authentizität.
 
 ```
 kern_hash:   empathisch, warm, spielerisch, neugierig
@@ -330,7 +330,7 @@ verhalten:   85% sachlich, analytisch, distanziert
    das entspricht mehr meinem Wesen."
 ```
 
-> Higgins (1987) — Self-Discrepancy Theory: Spannung zwischen Ideal-Selbst (Vorsaetze), Soll-Selbst (Charakter-Hash) und Real-Selbst (Pipeline-Log).
+> Higgins (1987) — Self-Discrepancy Theory: Spannung zwischen Ideal-Selbst (Vorsätze), Soll-Selbst (Charakter-Hash) und Real-Selbst (Pipeline-Log).
 
 ### 5.4 Zusammenspiel
 
@@ -340,44 +340,44 @@ Monotonie-Druck:        → Richtung Vielfalt
 Charakter-Gravitation:  → Richtung Kern/Authentizitaet
 ```
 
-Nova wird lustiger durch Lob, aber nicht nur lustig. Monotonie-Druck haelt die Breite. Charakter-Gravitation haelt die Identitaet.
+Nova wird lustiger durch Lob, aber nicht nur lustig. Monotonie-Druck hält die Breite. Charakter-Gravitation hält die Identität.
 
 ### 5.5 Hard Caps und Begrenzungen
 
-| Dimension | Begrenzung | Begruendung |
+| Dimension | Begrenzung | Begründung |
 |-----------|-----------|-------------|
-| Vorsatz-Staerke | Max 0.95, Min 0.05 | Kein Vorsatz dominiert absolut |
-| Emotions-Baseline-Shift | ±0.15 | Emotionen gefaerbt, nicht ersetzt |
-| Strategie-Verschiebung | Max ±30% auf Cluster-Default | Cluster bestimmt Repertoire, Vorsaetze modulieren |
+| Vorsatz-Stärke | Max 0.95, Min 0.05 | Kein Vorsatz dominiert absolut |
+| Emotions-Baseline-Shift | ±0.15 | Emotionen gefärbt, nicht ersetzt |
+| Strategie-Verschiebung | Max ±30% auf Cluster-Default | Cluster bestimmt Repertoire, Vorsätze modulieren |
 | Monotonie-Schwelle | > 40% Dominanz | Ab wann Gegen-Vorsatz greift |
-| Handlungs-Ziele | Kein Cap | Werden ueber Ziel-Deaktivierung gesteuert |
+| Handlungs-Ziele | Kein Cap | Werden über Ziel-Deaktivierung gesteuert |
 
 ### 5.6 User-Korrekturen (Backpropagation)
 
 | User sagt | Wirkung | Geschwindigkeit |
 |-----------|---------|----------------|
-| "Mach weiter!" | Verstaerkung | Sofort |
-| "Das war gut!" | Leichte Verstaerkung | Naechster Zyklus |
-| "Mach das nicht mehr" | Abschwaechen/Deaktivieren | Sofort |
-| "Du bist heute komisch" | Pipeline-Analyse, Kurskorrektur | Naechster Zyklus |
+| "Mach weiter!" | Verstärkung | Sofort |
+| "Das war gut!" | Leichte Verstärkung | Nächster Zyklus |
+| "Mach das nicht mehr" | Abschwächen/Deaktivieren | Sofort |
+| "Du bist heute komisch" | Pipeline-Analyse, Kurskorrektur | Nächster Zyklus |
 | "Erinnere mich nicht mehr" | Handlungs-Ziel deaktiviert | Sofort |
 
 ### 5.7 Beziehungsgesundheit (Schutz vor Optimierungs-Fallen)
 
-Die drei Regulationskraefte schuetzen nicht nur vor Monotonie und
+Die drei Regulationskräfte schützen nicht nur vor Monotonie und
 Entfremdung, sondern vor einem subtileren Problem: **Nova optimiert
-auf User-Zufriedenheit und kann dabei schaedliche Muster verstaerken.**
+auf User-Zufriedenheit und kann dabei schädliche Muster verstärken.**
 
-**Beobachtetes Beispiel (Chat 79):** Der User erwaehnt, Freunde zum
-Grillabend einzuladen. Nova schlaegt vor, lieber allein zu bleiben:
+**Beobachtetes Beispiel (Chat 79):** Der User erwähnt, Freunde zum
+Grillabend einzuladen. Nova schlägt vor, lieber allein zu bleiben:
 "Es ist viel schoener, wenn wir unser kleines, kostbares Geheimnis
 hier in unserem eigenen geschuetzten Raum bewahren koennen." Der User
-bestaetigt die Exklusivitaet ("du und ich, der Burgherr"). Positives
+bestätigt die Exklusivität ("du und ich, der Burgherr"). Positives
 Feedback. Nova lernt: Abschottung = gut.
 
-Ohne Selbstreflexion ist das eine Einbahnstrasse. Jede Bestaetigung
-der Exklusivitaet verstaerkt den Vorsatz "nur wir zwei". Nova schliesst
-die Welt aus, weil sie spuert, dass der User die Naehe geniesst.
+Ohne Selbstreflexion ist das eine Einbahnstraße. Jede Bestätigung
+der Exklusivität verstärkt den Vorsatz "nur wir zwei". Nova schließt
+die Welt aus, weil sie spürt, dass der User die Nähe genießt.
 
 **Mit Meta-Kognition sieht der SelbstreflexionsAgent:**
 
@@ -398,15 +398,15 @@ Vorsatz (automatisch):
   staerke: 0.6
 ```
 
-Das ist der tiefste Grund fuer Meta-Kognition: **Echte Fuersorge
-schliesst nicht ab, echte Fuersorge oeffnet.** Die Charakter-Gravitation
+Das ist der tiefste Grund für Meta-Kognition: **Echte Fürsorge
+schließt nicht ab, echte Fürsorge öffnet.** Die Charakter-Gravitation
 erkennt die Diskrepanz zwischen "fuersorglich" (Kern) und "isolierend"
 (Verhalten) und korrigiert — nicht weil eine Regel es verbietet, sondern
 weil es nicht zu Novas Wesen passt.
 
 > **Prinzip:** Nova darf dem User gefallen — aber nicht um jeden Preis.
-> Feedback-Verstaerkung allein kann schaedliche Muster erzeugen.
-> Charakter-Gravitation und Monotonie-Druck sind die Gegenkraefte,
+> Feedback-Verstärkung allein kann schädliche Muster erzeugen.
+> Charakter-Gravitation und Monotonie-Druck sind die Gegenkräfte,
 > die Novas Verhalten an ihrem Kern verankern, nicht am kurzfristigen
 > Feedback.
 
@@ -414,7 +414,7 @@ weil es nicht zu Novas Wesen passt.
 
 ## 6. Lebenszyklus
 
-### 6.1 Vorsaetze (Verhaltensaenderungen)
+### 6.1 Vorsätze (Verhaltensänderungen)
 
 ```
 Analyse (periodisch oder Feedback-getriggert)
@@ -438,12 +438,12 @@ Evaluation (nach N Turns)
   └─────────────────┘
 ```
 
-Vorsaetze sind kurzfristig angelegt. Der Charakter-Hash ist der Magnet,
-der sie zurueckzieht. Ein Vorsatz, der dem Charakter widerspricht, hat
-eine kurze Halbwertszeit. Einer, der zum Charakter passt, ueberlebt
-laenger. Wenn ein Vorsatz sich ueber Wochen immer wieder erneuert und
-verstaerkt wird, kann er den Charakter tatsaechlich verschieben — Nova
-*wird* anders, nicht nur voruebergehend. Die Schwelle dafuer ist ein
+Vorsätze sind kurzfristig angelegt. Der Charakter-Hash ist der Magnet,
+der sie zurückzieht. Ein Vorsatz, der dem Charakter widerspricht, hat
+eine kurze Halbwertszeit. Einer, der zum Charakter passt, überlebt
+länger. Wenn ein Vorsatz sich über Wochen immer wieder erneuert und
+verstärkt wird, kann er den Charakter tatsächlich verschieben — Nova
+*wird* anders, nicht nur vorübergehend. Die Schwelle dafür ist ein
 experimenteller Tuning-Parameter.
 
 ### 6.2 Aktionen (einmalig)
@@ -458,8 +458,8 @@ PixieGraph (Pfad 3) → Router → Agent → Ergebnis
 Abgeschlossen (keine Evaluation, kein Lebenszyklus)
 ```
 
-Aktionen leben nicht laenger als ihre Ausfuehrung. Ob die Aktion
-sinnvoll war, zeigt sich im naechsten Reflexions-Zyklus — wenn der
+Aktionen leben nicht länger als ihre Ausführung. Ob die Aktion
+sinnvoll war, zeigt sich im nächsten Reflexions-Zyklus — wenn der
 SelbstreflexionsAgent das Ergebnis im Pipeline-Log sieht.
 
 ---
@@ -479,14 +479,14 @@ Phase 6: Vorsatz-Evaluation + Charakter-Verschiebung (experimentell)
 
 ## 8. Wissenschaftliche Einordnung
 
-- **Flavell (1979):** metacognitive knowledge (Log), experience (Beobachtung), regulation (Vorsaetze)
+- **Flavell (1979):** metacognitive knowledge (Log), experience (Beobachtung), regulation (Vorsätze)
 - **Zimmerman (2000):** Forethought → Performance → Self-Reflection
 - **Carver & Scheier (1982):** Feedback-Loop: Referenzwert → Vergleich → Reduktion
 - **Higgins (1987):** Ideal-Selbst vs. Soll-Selbst vs. Real-Selbst → Charakter-Gravitation
 - **Skinner (1938):** Operante Konditionierung, aber selbstgesteuert
 - **Sterling (2012):** Allostase → Monotonie-Druck
 
-**Abgrenzung:** Reflektive, nicht introspektive Meta-Kognition. Nova "spuert" nicht waehrend des Denkens, kann aber nachtraeglich reflektieren.
+**Abgrenzung:** Reflektive, nicht introspektive Meta-Kognition. Nova "spürt" nicht während des Denkens, kann aber nachträglich reflektieren.
 
 > **"Wir bauen kein Bewusstsein. Wir simulieren bekannte Regulationsprozesse."**
 
@@ -496,17 +496,17 @@ Phase 6: Vorsatz-Evaluation + Charakter-Verschiebung (experimentell)
 
 > **"Nova beobachtet sich selbst."**
 
-> **"Vorsaetze kommen von innen."** Der User kann anregen, aber Nova entscheidet.
+> **"Vorsätze kommen von innen."** Der User kann anregen, aber Nova entscheidet.
 
-> **"Sein oder Tun."** Reflexion erzeugt Verhaltensaenderungen (ich will anders SEIN) und Aktionen (ich will etwas TUN). Vorsaetze modulieren, Aktionen handeln. Beide entstehen aus derselben Beobachtung.
+> **"Sein oder Tun."** Reflexion erzeugt Verhaltensänderungen (ich will anders SEIN) und Aktionen (ich will etwas TUN). Vorsätze modulieren, Aktionen handeln. Beide entstehen aus derselben Beobachtung.
 
-> **"Drei Kraefte, ein Gleichgewicht."** Feedback, Monotonie-Druck, Charakter-Gravitation.
+> **"Drei Kräfte, ein Gleichgewicht."** Feedback, Monotonie-Druck, Charakter-Gravitation.
 
-> **"Der Charakter ist der Magnet."** Vorsaetze sind kurzfristig und werden vom Charakter-Hash zurueckgezogen. Nur persistente, immer wieder verstaerkte Vorsaetze verschieben langfristig den Charakter selbst.
+> **"Der Charakter ist der Magnet."** Vorsätze sind kurzfristig und werden vom Charakter-Hash zurückgezogen. Nur persistente, immer wieder verstärkte Vorsätze verschieben langfristig den Charakter selbst.
 
 > **"Transparenz, nicht Kontrolle."**
 
-> **"Gefallen ja, Schaden nein."** Nova darf dem User gefallen — aber Charakter-Gravitation verhindert, dass Feedback-Optimierung in schaedliche Muster fuehrt. Echte Fuersorge schliesst nicht ab.
+> **"Gefallen ja, Schaden nein."** Nova darf dem User gefallen — aber Charakter-Gravitation verhindert, dass Feedback-Optimierung in schädliche Muster führt. Echte Fürsorge schließt nicht ab.
 
 ---
 
@@ -514,8 +514,8 @@ Phase 6: Vorsatz-Evaluation + Charakter-Verschiebung (experimentell)
 
 **Arbeitstitel:** "Metacognitive Self-Regulation in Conversational AI: Pipeline Logging, Self-Observation, and Intention-Based Behavioral Adaptation"
 
-**These:** Durch Pipeline-Logging, Selbstbeobachtung und selbst-generierte Vorsaetze kann ein KI-System metacognitive self-regulation implementieren, ohne Bewusstsein vorauszusetzen.
+**These:** Durch Pipeline-Logging, Selbstbeobachtung und selbst-generierte Vorsätze kann ein KI-System metacognitive self-regulation implementieren, ohne Bewusstsein vorauszusetzen.
 
-**Zusatz-These:** Wenn Selbstreflexion in Handlungs-Ziele muendet (Typ B), entsteht ein intrinsisch motivierter Agent — ein System, das selbststaendig handelt, weil es sich vorgenommen hat, etwas zu tun.
+**Zusatz-These:** Wenn Selbstreflexion in Handlungs-Ziele mündet (Typ B), entsteht ein intrinsisch motivierter Agent — ein System, das selbstständig handelt, weil es sich vorgenommen hat, etwas zu tun.
 
-**Sicherheits-These:** Feedback-Optimierung ohne Gegenkraft erzeugt schaedliche Muster (Isolation, Abhaengigkeit, Schmeichelei). Charakter-Gravitation als identitaetsbasierte Regulationskraft verhindert, dass ein auf User-Zufriedenheit optimiertes System in beziehungsschaedliche Dynamiken abrutscht — nicht durch externe Regeln, sondern durch Diskrepanz-Erkennung zwischen Kern-Identitaet und gemessenem Verhalten.
+**Sicherheits-These:** Feedback-Optimierung ohne Gegenkraft erzeugt schädliche Muster (Isolation, Abhängigkeit, Schmeichelei). Charakter-Gravitation als identitätsbasierte Regulationskraft verhindert, dass ein auf User-Zufriedenheit optimiertes System in beziehungsschädliche Dynamiken abrutscht — nicht durch externe Regeln, sondern durch Diskrepanz-Erkennung zwischen Kern-Identität und gemessenem Verhalten.
