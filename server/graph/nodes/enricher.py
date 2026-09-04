@@ -979,6 +979,22 @@ def _enrich_character(
                 "has_lzg":            has_lzg,
                 "kzg_entries_count":  len(kzg_entries),
                 "lzg_resonanz_count": len((state.get("lzg_resonanz") or {}).get("erinnerungen", [])),
+                # **Welche**, nicht nur wie viele. Ohne die Kennungen ist die
+                # Frage *„hat Nova diese Erinnerung hergenommen?"* nicht
+                # beantwortbar: Die Antwort steht in der `turn_roh`-Zeile des
+                # Dispatchers, das gelesene Material stand bis zum 04.09.2026
+                # nirgends. Damit war die Schwelle aus `novaberg-memory-
+                # synapsen_k.md` §7.1a nicht kalibrierbar — es fehlte genau die
+                # Haelfte, die zaehlt.
+                #
+                # Nur die Kennungen, nicht die Inhalte: Der Knoten steht in
+                # `lzg_knoten` und ist ueber seine ID jederzeit nachladbar; eine
+                # Kopie im Protokoll waere ein zweiter Bestand, der auseinander
+                # laufen kann.
+                "lzg_resonanz_ids": [
+                    e.get("knoten_id")
+                    for e in (state.get("lzg_resonanz") or {}).get("erinnerungen", [])
+                ],
                 "zweig":              "memory_aktiv",
             },
             span_id = span_id,
