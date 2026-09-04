@@ -232,6 +232,142 @@ CREATE INDEX IF NOT EXISTS idx_lzg_haltung_knoten
     ON lzg_knoten_haltung (knoten_id, aktiv);
 
 -- ───────────────────────────────────────────────
+-- abstrakt_knoten — die geschlossenen Saetze
+-- ───────────────────────────────────────────────
+-- Die abstrakte Schicht aus `novaberg-thinking-faszination_k.md` §4.4: Ein
+-- Traeger haengt nicht an sich selbst, sondern an abstrakten Knoten — und
+-- **deshalb erbt der Zwilling.** Wer sich fuer ein Werkzeug fasziniert und
+-- ein baugleiches daneben aufnimmt, faszinieren sich fuer dasselbe; die
+-- Zuwendung erbt er nicht.
+--
+-- **Warum eine eigene Tabelle und keine Zeilen in `lzg_knoten`:** Das Konzept
+-- legt beide Sorten in dieselbe Schicht, und `lzg_knoten_haltung.
+-- praemisse_knoten_id` zeigt heute auf `lzg_knoten`. Gemessen am 03.09.2026
+-- lesen aber **24 Stellen in 13 Modulen** aus `lzg_knoten`, 22 davon nach
+-- Kriterien statt nach `id` — Enricher, emotionale Gravitation, Spreading,
+-- Charakter-Agent, Wissensluecken, Re-Embedding. Sechs abstrakte Knoten
+-- dort waeren aus jeder einzelnen auszuschliessen, und ein vergessener
+-- Ausschluss ist ein stiller Fehler: eine Qualitaet, die im Spreading als
+-- Erinnerung auftaucht. Der Preis des Umzugs ist null — `lzg_knoten_haltung`
+-- traegt 0 Zeilen, `praemisse_knoten_id` ist nie benutzt worden.
+-- §6.1 stuetzt es: `neuheit` wurde ausdruecklich ausgesondert, weil es „die
+-- Lage im Graphen" ist. Die sechs Dimensionen sind es gerade nicht.
+--
+-- **`art` ist der Typ-Diskriminator, und er ist kein Ordnungsmerkmal.** Ohne
+-- ihn sickert die Valenz von der Werte- auf die Qualitaetsseite (§4.4), und
+-- Kriegsgeschichte truege weniger Faszination als Gartenkraeuter — der
+-- Fehler waere fest im Schema verbaut. Die Wert-Kante ist
+-- vorzeichenbehaftet (`lzg_knoten_haltung.ladung`), die Qualitaets-Kante
+-- nicht: 0,8, nicht „gut 0,8".
+--
+-- **Nicht `lzg_knoten.dimension` benutzen.** Die Spalte traegt eine
+-- INHALTSkategorie (kognition, kontext, emotion, …) und darunter
+-- ausgerechnet den Wert `werte` — 161 Zeilen am 03.09.2026. Wer sie als
+-- Knotentyp liest, bekommt 161 Episoden als Werte-Knoten.
+--
+-- Das Vokabular ist **gesetzt, nicht geerntet** (§5): Drei Ernteversuche
+-- sind am 30.08.2026 gemessen gescheitert, jeder gab die Form seines Korpus
+-- zurueck. Deshalb stehen die sechs Qualitaeten unten im Schema.
+CREATE TABLE IF NOT EXISTS abstrakt_knoten (
+    id           SERIAL      PRIMARY KEY,
+
+    -- Der Typ-Diskriminator. Geschlossene Menge, als CHECK erzwungen:
+    -- ein dritter Wert waere ein stiller Fehler, kein neuer Fall.
+    art          TEXT        NOT NULL,
+    name         TEXT        NOT NULL,
+    beschreibung TEXT        NOT NULL DEFAULT '',
+
+    -- Woher der Begriff stammt. Bei gesetztem Vokabular ist das die
+    -- Literaturstelle — ohne sie ist der Satz nicht nachpruefbar.
+    herkunft     TEXT        NOT NULL DEFAULT '',
+    erstellt_am  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_abstrakt_knoten UNIQUE (art, name),
+    CONSTRAINT chk_abstrakt_art   CHECK (art IN ('qualitaet', 'wert'))
+);
+
+-- Die sechs Qualitaetsdimensionen (Konzept §6.1). Idempotent, damit der
+-- Aufbau von null reproduzierbar bleibt.
+--
+-- **Warum sechs und nicht acht:** `neuheit` ist die Lage im Graphen, keine
+-- Eigenschaft des Traegers — sie gehoert als Kanteneigenschaft in den
+-- Spreading-Pass. `bewaeltigbarkeit` ist bei Silvia eine Relation zwischen
+-- Reiz und Person und damit ein Tor beim LESEN, kein Merkmal beim Schreiben.
+--
+-- Am Bestand geprueft (§6.2, 30.08.2026): 50 zufaellige Knoten von Hand
+-- bewertet, 26 mit dominanter Dimension, kein Kollaps auf `komplexitaet`.
+-- Die vier ohne Ausschlag sind die richtigen — eine Groesse, die Faszination
+-- messen soll, muss auch Null sagen koennen.
+INSERT INTO abstrakt_knoten (art, name, beschreibung, herkunft) VALUES
+    ('qualitaet', 'komplexitaet',
+     'Wie viele unterscheidbare Teile und Beziehungen der Gegenstand traegt.',
+     'Berlyne 1960, kollative Variablen'),
+    ('qualitaet', 'ungewissheit',
+     'Wie viel offen bleibt. Die einzige erschoepfbare Dimension — die Erklaerung beendet sie.',
+     'Berlyne 1960, kollative Variablen'),
+    ('qualitaet', 'konflikt',
+     'Zwei Eigenschaften, die einander widersprechen. Nicht guenstig und nicht stabil fasziniert — guenstig UND stabil.',
+     'Berlyne 1960, kollative Variablen'),
+    ('qualitaet', 'weite',
+     'Die Entfernung vom Greifbaren; Groessenordnungen, die den Massstab sprengen.',
+     'Kaplan 1995 (vastness); Keltner & Haidt 2003'),
+    ('qualitaet', 'schemasprengung',
+     'Der Gegenstand passt in kein vorhandenes Schema und verlangt, dass es umgebaut wird.',
+     'Keltner & Haidt 2003 (need for accommodation)'),
+    ('qualitaet', 'bedrohungsrelevanz',
+     'Der Gegenstand beruehrt etwas, das gefaehrlich werden koennte — die Faszination am Abgrund.',
+     'Scrivner 2021, morbid curiosity')
+ON CONFLICT (art, name) DO NOTHING;
+
+-- ───────────────────────────────────────────────
+-- traeger_qualitaet — die vorzeichenlose Kante
+-- ───────────────────────────────────────────────
+-- Traeger → Qualitaet, mit einer Auspraegung in [0,1] (Konzept §4.4).
+--
+-- **Vorzeichenlos ist der ganze Punkt.** Eine negative Auspraegung waere
+-- eine Wert-Aussage an einer Qualitaets-Kante; das Schema lehnt sie ab,
+-- nicht der Aufrufer. `lzg_knoten_haltung` steht daneben und laesst genau
+-- das zu — die beiden Tabellen unterscheiden sich in dieser einen Zeile,
+-- und darin liegt der Unterschied zwischen normativ und deskriptiv.
+--
+-- **Zwei Zustaende genuegen, nicht drei.** §4.5 verlangt fuer die WERT-Kante
+-- anwesend/abwesend/ungeprueft, weil ein Profil, das nur besetzte Werte
+-- kennt, das Fehlen einer Eigenschaft nicht ausdruecken kann. Hier traegt
+-- die Zeilenanwesenheit dieselbe Unterscheidung: Ein Profillauf schreibt
+-- alle sechs Dimensionen auf einmal, also heisst keine Zeile „ungeprueft"
+-- und `auspraegung = 0.0` „gemessen abwesend".
+--
+-- **Zum Loeschverhalten:** `CASCADE` wie beim direkten Nachbarn
+-- `lzg_knoten_haltung`, und aus demselben Grund — der Graph loescht keine
+-- Knoten, er laesst sie ruhen (`aktiv = FALSE`); CASCADE greift nur bei
+-- Reset oder Bereinigung, und dann ist eine Annotation ohne ihren
+-- Gegenstand nichts wert. `SET NULL` scheidet zusaetzlich aus, weil eine
+-- Qualitaetskante ohne Traeger bedeutungslos ist.
+CREATE TABLE IF NOT EXISTS traeger_qualitaet (
+    id            SERIAL           PRIMARY KEY,
+    knoten_id     INTEGER          NOT NULL REFERENCES lzg_knoten(id)     ON DELETE CASCADE,
+    qualitaet_id  INTEGER          NOT NULL REFERENCES abstrakt_knoten(id) ON DELETE CASCADE,
+
+    -- Wie viel wovon. 0.0 heisst gemessen abwesend, nicht ungeprueft.
+    auspraegung   DOUBLE PRECISION NOT NULL,
+
+    -- Woher die Bewertung stammt — ohne Herkunft ist sie nicht nachrechenbar.
+    quelle        TEXT             NOT NULL DEFAULT '',
+
+    -- Wie oft der Traeger profiliert wurde. Eine zweite Bewertung
+    -- verstaerkt die vorhandene, sie dupliziert sie nicht.
+    haeufigkeit   INTEGER          NOT NULL DEFAULT 1,
+    erstellt_am   TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    verstaerkt_am TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_traeger_qualitaet     UNIQUE (knoten_id, qualitaet_id),
+    CONSTRAINT chk_traeger_auspraegung  CHECK (auspraegung >= 0.0 AND auspraegung <= 1.0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_traeger_qualitaet_knoten
+    ON traeger_qualitaet (knoten_id);
+
+-- ───────────────────────────────────────────────
 -- charakter_hash
 -- ───────────────────────────────────────────────
 -- character_id Default '' (NICHT 'nova'): entspricht dem Live-Stand.
