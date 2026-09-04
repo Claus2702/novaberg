@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
+**Stand:** 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`

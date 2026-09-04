@@ -1745,7 +1745,7 @@ durch Messung, nicht durch Bauen:
 |---|---|---|
 | Faden-Tor | wartet auf `KZG-SALIENZ-NEUBAU` | Salienz steht auf [0…1], **hinfällig** |
 | Verstärkung | Schwelle lehnt nichts ab | `EMGRAV-SCHWELLE-TOT` **behoben** |
-| Reaktivierung zählbar | nein, kein Schlüssel | `knoten_id` im `pipeline_log` |
+| Reaktivierung zählbar | nein, kein Schlüssel | ~~`knoten_id` im `pipeline_log`~~ **[Widerlegt 04.09.2026: Das Protokoll trägt keine einzige LZG-Reaktivierung — alle 105 Aktivierungen der Gravitation sind KZG-Schlüssel. Die brauchbare Verlaufsquelle ist der Promotion-Pfad, und dessen Zähler messen bis zur Behebung der Verstärkungsschleife Wiederholung statt Wiederkehr (`novaberg-memory-synapsen_k.md` §7.1a). Seit dem 04.09.2026 protokolliert der Enricher zusätzlich `lzg_resonanz_ids` — das gelesene Material je Turn.]** |
 | Verdichtung | `PIXIE_AKTIV = False` angenommen | steht auf `true`, **erfüllt** |
 
 **Die Prägungsschicht hängt an keiner der drei verbliebenen offenen Zeilen.** MS-Welle, Synapsen P4
