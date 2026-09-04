@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026** (gemessen via `date -u`). Davor 03.09.2026, 21:30 UTC.
+**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026, 13:00 UTC** (gemessen via `date -u`). Davor 03.09.2026, 21:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,36 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 04.09.2026, 13:00 UTC — die Verstärkung hängt jetzt an der Verwendung ✅
+
+**Gebaut:** `memory/usage_reinforcement.py` und `_verwendung_verstaerken` im Dispatcher — der letzte
+Node vor `END`, der als einziger beide Hälften hat: die fertige Antwort und das gelesene Material.
+Damit ist `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben.
+
+**Die Schwelle ist abgeleitet, nicht gesetzt.** `[gemessen]` über **75.975 Paare**: P99,9 = 0,5412,
+P99,99 = 0,6672. **0,55** lässt je Antwort ein bis drei von 3.039 Knoten durch.
+
+**Gegen den Bestand belegt:** 15 Antworten mit je zwei nahen und drei zufälligen Kandidaten —
+**13 von 15** Turns verstärken, **24 von 30** nahen Kandidaten werden genommen, **0 von 45
+fremden**. Kein falscher Positiver.
+
+**Eine Regel fiel vor ihrem Bau.** §7.1a verlangte die Nähe *je Segment*, nach dem Vorbild von
+`FADEN-EMBEDDING-VERDUENNT`. `[gemessen]`: **25 von 25** Antworten ergeben genau ein Segment, und
+die Segmentierung kostet **1,53 s** als Modellaufruf — im synchronen Dispatcher reine Latenz für ein
+feststehendes Ergebnis. Das Einbetten der Antwort kostet 0,151 s.
+
+**Dazu die Instrumentierung, die die Frage überhaupt messbar macht:** Der Enricher protokolliert
+`lzg_resonanz_ids` statt nur ihrer Zahl. Bis dahin stand in 1296 Zeilen, *wie viele* Erinnerungen
+gelesen wurden, und in keiner einzigen, *welche*.
+
+**Die Gegenprobe fand die Lücke, die sie finden soll:** Der erste Durchgang sagte 0 rot voraus und
+zählte 0 — kein Zeuge prüfte, dass `dispatch` die Funktion überhaupt ruft. Nach zwei
+Verdrahtungszeugen: 2 vorhergesagt, 2 gezählt. **Suite 2966 grün, 0 übersprungen.**
+
+**Was aussteht:** der Betriebsbeleg. Gemessen wurde gegen den Bestand, nicht in einem echten Turn.
 
 ---
 

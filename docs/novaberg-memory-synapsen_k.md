@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 4. September 2026 (**§7.1a neu — Verstärkung setzt Verwendung voraus, nicht Nachbarschaft**: Der Ort ist der Dispatcher, nicht der Responder. Gemessen: 95,2 % aller Verstärkungen tragen `cosine = 1.0000`, ein einzelner KZG-Eintrag erzeugte bis zu 91 Verstärkungen über acht Tage, und 91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns. §9.2 verschärft. **Dasselbe Bild wie am 12.07.2026, andere Ursache.**). Davor 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
+**Stand:** 4. September 2026 (**§7.1a gebaut** — `memory/usage_reinforcement.py`, gerufen vom Dispatcher; Schwelle **0,55** aus 75.975 Paaren abgeleitet, Deckel 3. Gegen den Bestand: 13 von 15 Turns verstärken, 24 von 30 nahen Kandidaten genommen, **0 von 45 fremden**. Die Segmentregel ist **vor dem Bau widerlegt** — 25 von 25 Antworten ergeben ein Segment, und die Segmentierung kostete 1,53 s im Turn. Davor am selben Tag: **§7.1a — das Erkennungskriterium ist entschieden**: Embedding-Naehe zwischen Antwort und Erinnerung, **je Segment**, weil die Selbstauskunft des Verfassers fantasieren koennte und der Ganztext verduennt. Die Schwelle wird gemessen, nicht gesetzt — die Naehe trennt schwach (0,355 gegen 0,504 ueber 19.900 Paare). Davor am selben Tag: **§7.1a neu — Verstärkung setzt Verwendung voraus, nicht Nachbarschaft**: Der Ort ist der Dispatcher, nicht der Responder. Gemessen: 95,2 % aller Verstärkungen tragen `cosine = 1.0000`, ein einzelner KZG-Eintrag erzeugte bis zu 91 Verstärkungen über acht Tage, und 91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns. §9.2 verschärft. **Dasselbe Bild wie am 12.07.2026, andere Ursache.**). Davor 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
 
 > **Gemessen am 02.08.2026, nicht geschätzt:** 1108 Knoten, 110.340 Kanten, alte Tabelle 0 Zeilen. Kantenzusammensetzung: embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %.
 >
@@ -628,6 +628,78 @@ Er hat beide Eingänge bereits:
 
 **Was fehlt, ist der Abgleich zwischen beiden** — und der Aufruf von `knoten_verstaerken` auf
 seinem Ergebnis.
+
+#### Woran „hergenommen" erkannt wird — entschieden am 04.09.2026
+
+**Über die Embedding-Nähe zwischen Antwort und Erinnerung.** Entspricht die Antwort einer
+Erinnerung, wird diese Erinnerung verstärkt.
+
+**Die naheliegende Alternative ist verworfen, und der Grund ist die Rollenteilung.** Die fachliche
+Antwort baut der **Verfasser** — der Responder findet nur noch den Stil. Der Verfasser *könnte* also
+angeben, welche Erinnerung er hergenommen hat. **Er könnte aber auch fantasieren**, und eine
+Selbstauskunft ist an dieser Stelle nicht nachprüfbar: Sie erzeugte eine Verstärkung, die wie eine
+Messung aussieht und keine ist. Gemessene Nähe schlägt behauptete Verwendung.
+
+> **Der Vorbehalt gehört an die Entscheidung, nicht hinter sie.** Die Größe, auf der sie steht,
+> trennt schwach. `[gemessen]` 01.09.2026 über **19.900 Knotenpaare**: ohne geteiltes Thema Median
+> **0,355**, mit geteiltem **0,504** — **die Verteilungen überlappen breit.** Eine Schwelle darauf
+> wird gemessen und nicht gesetzt, und sie braucht eine Nulllinie, bevor sie scharf geschaltet wird.
+
+~~**Und die Antwort geht nicht als Ganzes hinein.**~~ **[Widerlegt am 04.09.2026, vor dem Bau.]**
+Der Entwurf sah eine Segmentierung vor, mit dem Vorbild `FADEN-EMBEDDING-VERDUENNT` (behoben
+01.09.2026): Dort trug der Faden den Vektor des ganzen Turns, während Salienz und Emotion aus dem
+stärksten Segment kamen — *„ein Mittel verdünnte ihn"*.
+
+**Die Übertragung hält nicht.** `[gemessen]` 04.09.2026 über 25 echte Antworten: **25 von 25
+ergeben genau ein Segment.** Antworten dieser Bauart zerfallen nicht, und die Segmentierung kostet
+dabei **1,53 s Median** als Modellaufruf. Im Dispatcher, der **synchron im Turn** läuft, wäre das
+reine Latenz für ein Ergebnis, das feststeht. Das Einbetten der Antwort kostet **0,151 s**.
+
+**Die Nähe wird deshalb über den Antworttext gerechnet.** Der Vorbehalt bleibt gültig und wandert
+in die Beobachtung: Sollte der Verfasser künftig längere, mehrteilige Antworten schreiben, ist die
+Segmentzahl neu zu messen — die Regel steht auf einer Zahl, nicht auf einem Prinzip.
+
+**Die Eingänge, und was ihnen fehlt:**
+
+| | liegt vor | fehlt |
+|---|---|---|
+| die Antwort | `state["antwort_inhalt"]` | ihre Segmentierung und deren Vektoren |
+| das gelesene Material | `erinnerungen[]` mit `knoten_id` und `inhalt` | **das Embedding** — nachzuladen aus `lzg_knoten` über die vorliegenden IDs |
+
+#### Die Schwelle: 0,55 — abgeleitet, nicht gesetzt
+
+`[gemessen]` 04.09.2026 über **75.975 Paare** (25 echte Antworten des Paares `meister` gegen 3.039
+aktive Knoten):
+
+| Quantil | Nähe | Knoten je Antwort darüber |
+|---|---:|---:|
+| P50 | 0,2664 | ~1.520 |
+| P90 | 0,3874 | ~304 |
+| P99 | 0,4770 | ~30 |
+| **P99,9** | **0,5412** | **~3** |
+| P99,99 | 0,6672 | <1 |
+
+**0,55 liegt zwischen P99,9 und P99,99.** Je Antwort passieren ein bis drei von 3.039 Knoten, und
+**15 von 25** Turns tragen überhaupt eine Verstärkung — die Größenordnung, die dieser Abschnitt
+verlangt: *sie liest drei und nimmt eine*. Zum Vergleich: 0,50 ließe rund 30 Knoten je Antwort
+durch, 0,60 weniger als einen.
+
+> **Der Vorbehalt gehört an die Zahl.** Die Verteilung oben ist die **Gesamt**verteilung und enthält
+> die Treffer; eine echte Nulllinie über nachweislich fremde Knoten gibt es nicht, weil die Ground
+> Truth fehlt. Das macht die Schwelle eher zu hoch als zu niedrig — die konservative Richtung. Seit
+> dem 04.09.2026 protokolliert der Enricher `lzg_resonanz_ids`; damit ist sie über Laufzeit an
+> echten Turns nachmessbar, ohne Rekonstruktion.
+
+Dazu ein Deckel, `VERWENDUNG_MAX_JE_TURN = 3`: Der Lesepfad liefert heute im Mittel 1,90 und
+höchstens 3 Erinnerungen, der Deckel ist also keine Beschränkung, sondern eine Zusicherung gegen
+einen künftig breiteren Lesepfad.
+
+`[gemessen]` 04.09.2026 gegen den echten Bestand, 15 Antworten mit je 2 nahen und 3 zufälligen Kandidaten: **13 von 15 Turns** tragen eine Verstärkung, **24 von 30** nahen Kandidaten werden genommen — und **0 von 45 fremden**. Kein falscher Positiver.
+
+**Was der Betrag der Schwelle nicht darf:** die Trennschärfe ersetzen. Fällt die Nulllinie so aus,
+dass keine Schwelle zwischen Verwendung und Nachbarschaft trennt, ist das ein Befund über das
+Kriterium — dann trägt die Embedding-Nähe die Aussage nicht, und die Entscheidung ist neu zu
+treffen. **Eine Schwelle, die alles durchlässt, ist derselbe Defekt wie gar keine Sperre.**
 
 #### Was heute stattdessen gilt, und was es anrichtet
 

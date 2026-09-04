@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Stand:** 4. September 2026 — `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben: Verstaerkt wird, was die Antwort hergenommen hat, gemessen an der Embedding-Naehe, gerufen vom Dispatcher. Davor 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
 **Inhalt:** **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
@@ -32,6 +32,36 @@
 Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste ist ein
 **Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat**; der zweite
 ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
+
+### `VERSTAERKUNG-OHNE-VERWENDUNG` — sie sitzt im Hintergrundlauf statt im Dispatcher
+
+**Zustand:** ✅ **behoben am 04.09.2026**, am Tag seines Befundes. `memory/usage_reinforcement.py` rechnet die Naehe zwischen Antwort und gelesenen Erinnerungen; `graph/nodes/dispatcher.py::_verwendung_verstaerken` ruft sie nach `_turn_roh_schreiben`. Schwelle **0,55**, Deckel 3. `tests/test_usage_reinforcement.py` (16 Zeugen, Gegenprobe 0/0 dann 2/2 — die erste fand, dass kein Zeuge den **Aufruf** prueft). `[gemessen]` 04.09.2026 gegen den echten Bestand, 15 Antworten mit je 2 nahen und 3 zufälligen Kandidaten: **13 von 15 Turns** tragen eine Verstärkung, **24 von 30** nahen Kandidaten werden genommen — und **0 von 45 fremden**. Kein falscher Positiver. **Der Betriebsbeleg steht aus**: gemessen wurde gegen den Bestand, nicht in einem echten Turn.
+
+**Symptom.** `novaberg-memory-synapsen_k.md` §7.1a verlangt seit heute: Verstaerkt wird nur, was Nova in ihrer Antwort **hergenommen** hat, und der Ort ist der **Dispatcher** — der letzte Node vor `END`, der ohnehin alle Schreibvorgaenge verteilt. Der Responder formuliert; er persistiert nicht.
+
+Gegen den Code gehalten:
+
+| Pruefung | erwartet | gemessen |
+|---|---|---:|
+| Dispatcher ruft `knoten_verstaerken` | ja | **0** |
+| Dispatcher liest `lzg_resonanz` | ja | **0** |
+| Responder verstaerkt | nein | 0 ✅ |
+| Lesepfad verstaerkt | nein | 0 ✅ |
+| einziger Aufrufer | Dispatcher | `agents/synapsen_promotion/agent.py:487` |
+
+**Wirkung.** Die Verstaerkung laeuft in einem asynchronen Hintergrundlauf, **der die Antwort nie sieht**. Ausgeloest wird sie von einem Embedding-Match — also von Aehnlichkeit, nicht von Verwendung. Damit kann das System nicht unterscheiden, ob Nova eine Erinnerung benutzt oder nur danebengelegen hat.
+
+**Die Eingaenge liegen bereit** und werden nicht gelesen: `state["antwort_inhalt"]` traegt die fertige Antwort, `state["lzg_resonanz"]["erinnerungen"]` das gelesene Material mit Pfad. Beide Kanaele sind deklariert; der Dispatcher hat den ersten, den zweiten liest heute nur der Reducer.
+
+**Was fertig waere.** Der Dispatcher gleicht Antwort gegen gelesenes Material ab und ruft `knoten_verstaerken` auf der Schnittmenge.
+
+~~**Offen ist die Absicht davor:** woran „hergenommen" erkannt wird.~~ → **Entschieden am 04.09.2026: ueber die Embedding-Naehe, je Segment der Antwort.** Die Selbstauskunft des Verfassers ist verworfen — er baut die fachliche Antwort und *koennte* es wissen, aber er koennte auch fantasieren, und eine Verstaerkung auf einer Behauptung sieht aus wie eine Messung. Der Ganztext scheidet aus, weil er verduennt (`FADEN-EMBEDDING-VERDUENNT`). Die Regel steht in `novaberg-memory-synapsen_k.md` §7.1a.
+
+**Damit ist der Eintrag baubar, mit drei benannten Kosten:** Die Erinnerungen im Kanal tragen `knoten_id` und `inhalt`, **aber kein Embedding** — es ist ueber die IDs aus `lzg_knoten` nachzuladen. Die Antwort ist zu segmentieren und einzubetten, also Embed-Aufrufe je Turn. Und **die Schwelle ist zu messen, nicht zu setzen**: `[gemessen]` 01.09.2026 ueber 19.900 Knotenpaare trennt diese Naehe schwach (Median 0,355 ohne, 0,504 mit geteiltem Thema, breite Ueberlappung). Faellt die Nulllinie so aus, dass keine Schwelle Verwendung von Nachbarschaft trennt, ist das ein Befund gegen das Kriterium selbst.
+
+**Prioritaet:** hoch — er traegt die Aussage der ganzen Schicht und ist seit dem 04.09.2026 baubar.
+
+---
 
 ### `PROFIL-SCHLUESSEL-MIT-LEERRAUM` — ein Leerzeichen kostet den Traeger dauerhaft
 
