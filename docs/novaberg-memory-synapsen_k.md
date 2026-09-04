@@ -1463,26 +1463,32 @@ Das Pipeline-Log macht den gesamten Pipeline-Verlauf zu einer einzigen, durchsuc
 
 Eine einzige Tabelle für alles, was im Pipeline-Verlauf entsteht — Utterances, Node-Entscheidungen, LLM-Aufrufe, DB-Zugriffe, Spans, Fehler. Keine getrennten Tabellen für Dialog und Forensik. Vorteil: ein Filter-Pfad, eine Wahrheit. Wenn Nova etwas wissen will, fragt sie *eine* Tabelle.
 
+**Nachgezogen am 04.09.2026 gegen die laufende Datenbank** (`\d pipeline_log`, Container `ki_postgres`) und `db/init.sql:550-567`. Beide stimmen überein; der Entwurf darunter tat es nicht mehr. Was sich geändert hat: **zwei Spalten kamen hinzu** (`user_id`, `character_id`, Chat 104), und **von den sieben entworfenen Indizes sind fünf gebaut** — mit anderen Namen, ohne den `WHERE`-Teilindex auf `span_id`, ohne die Einzelindizes auf `quelle`, `node` und `art`, und **ohne den GIN-Index auf `inhalt`**, den §10.5 als größte Einzelposition der Wachstums-Schätzung führt.
+
 ```sql
 CREATE TABLE IF NOT EXISTS pipeline_log (
-    id              BIGSERIAL PRIMARY KEY,
-    erstellt_am     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id              BIGSERIAL    PRIMARY KEY,
+    erstellt_am     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     turn_id         VARCHAR(100) NOT NULL,
-    span_id         UUID NULL,
-    quelle          VARCHAR(50) NOT NULL,
-    node            VARCHAR(50) NOT NULL,
-    art             VARCHAR(30) NOT NULL,
-    inhalt          JSONB NOT NULL
+    span_id         UUID         NULL,
+    quelle          VARCHAR(50)  NOT NULL,
+    node            VARCHAR(50)  NOT NULL,
+    art             VARCHAR(30)  NOT NULL,
+    inhalt          JSONB        NOT NULL,
+    user_id         VARCHAR(50)  NULL,      -- Chat 104, Paar-Scope
+    character_id    VARCHAR(50)  NULL       -- Chat 104, Paar-Scope
 );
 
-CREATE INDEX idx_pipeline_log_erstellt_am ON pipeline_log (erstellt_am DESC);
-CREATE INDEX idx_pipeline_log_turn_id     ON pipeline_log (turn_id);
-CREATE INDEX idx_pipeline_log_span_id     ON pipeline_log (span_id) WHERE span_id IS NOT NULL;
-CREATE INDEX idx_pipeline_log_quelle      ON pipeline_log (quelle, erstellt_am DESC);
-CREATE INDEX idx_pipeline_log_node        ON pipeline_log (node);
-CREATE INDEX idx_pipeline_log_art         ON pipeline_log (art);
-CREATE INDEX idx_pipeline_log_inhalt      ON pipeline_log USING gin (inhalt);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_turn     ON pipeline_log (turn_id);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_span     ON pipeline_log (span_id);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_node_art ON pipeline_log (node, art);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_erstellt ON pipeline_log (erstellt_am DESC);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_paar     ON pipeline_log (user_id, character_id);
 ```
+
+**Die Paar-Spalten sind nullable, und das ist eine Entscheidung.** Turn-Nodes und paar-gebundene Hintergrund-Agenten tragen sie; Wartungsläufe über *alle* Paare (`synapsen_decay`) lassen sie bewusst NULL — ein Halb-Paar wäre schlimmer als beides-NULL, weil es bei `WHERE user_id=… AND character_id=…` durchs Raster fiele.
+
+> **Der Entwurf oben war die Absicht, `db/init.sql` ist der Stand.** Wer die Tabelle nachschlägt, liest die `init.sql`; dieser Abschnitt wird gegen sie nachgezogen, nicht umgekehrt.
 
 **Spalten im Detail:**
 
@@ -1497,7 +1503,7 @@ CREATE INDEX idx_pipeline_log_inhalt      ON pipeline_log USING gin (inhalt);
 
 ### 10.2 Art-Werte
 
-Elf Werte decken die Pipeline-Verarbeitung phänomenologisch und technisch ab. Phänomenologisch sechs (Eingang, Verarbeitung, Ausgabe, Reflexion). Technisch fünf (DB-Zugriff, Fehler, Spans, Token).
+~~Elf Werte~~ → **Dreizehn, nachgezogen am 04.09.2026** gegen die Wrapper in `memory/pipeline_log.py:453-647`. Zwei Änderungen gegenüber dem Entwurf: `db_zugriff` heißt gebaut **`db_write`** und hat mit **`db_read`** ein Gegenstück bekommen; dazu kam **`turn_roh`** (Chat 104).
 
 | Art | Bedeutung | Beispiel `inhalt` |
 |-----|-----------|-------------------|
@@ -1505,15 +1511,19 @@ Elf Werte decken die Pipeline-Verarbeitung phänomenologisch und technisch ab. P
 | `prompt` | LLM-Aufruf-Inhalt (System + User) | `{"system": "...", "user": "...", "modell": "gemma4-gpu"}` |
 | `berechnung` | Algorithmische Entscheidung | `{"intentionen": ["information_teilen", "planung"], "dimension": "interessen", "score": 0.73}` |
 | `switch` | Verzweigungs-Entscheidung mit zwei oder mehr Optionen | `{"entscheidung": "accepted", "grund": "expliziter Terminwunsch"}` |
-| `db_zugriff` | Schreibender DB-Zugriff (Anlegen/Ändern/Löschen) | `{"tabelle": "lzg_knoten", "operation": "insert", "id": 247}` |
+| `db_write` | Schreibender DB-Zugriff (Anlegen/Ändern/Löschen) — hieß im Entwurf `db_zugriff` | `{"tabelle": "lzg_knoten", "operation": "insert", "id": 247}` |
+| `db_read` | Lesender Zugriff: SELECT, Redis-GET/HGETALL, Cache-Lookup | `{"tabelle": "lzg_knoten", "treffer": 3}` |
 | `ausgabe` | Output des Nodes | `{"text": "Glückwunsch zu Annas Geburtstag!"}` |
 | `fehler` | Exception oder Validierungs-Fehler | `{"typ": "JSONParseError", "message": "..."}` |
 | `bemerkung` | freier Reflexions-Eintrag, etwa für späteres Debugging oder spontane Notizen | `"GV-Cluster-Wechsel überraschend abrupt"` |
 | `span_start` | Node-Lauf beginnt | `null` oder Marker |
 | `span_end` | Node-Lauf endet | `null` oder `{"status": "ok"}` |
 | `token` | Token-Anzahl pro LLM-Aufruf | `{"prompt": 980, "completion": 267, "total": 1247}` |
+| `turn_roh` | Das vollständige Reiz-Reaktions-Paar eines Turns. **Kein Forensik-Eintrag** — dauerhaft, von der Löschung ausgenommen (§10.5) | `{"user_prompt": "…", "response": "…", "user_emotion": {…}, "nova_emotion": {…}, "herkunft": "…"}` |
 
-**Lesen wird nicht geloggt.** Nur schreibende DB-Zugriffe (Anlegen, Ändern, Löschen) erzeugen einen `db_zugriff`-Eintrag. Lese-Abfragen wären zu zahlreich und für die Forensik nicht relevant.
+~~**Lesen wird nicht geloggt.** Nur schreibende DB-Zugriffe (Anlegen, Ändern, Löschen) erzeugen einen `db_zugriff`-Eintrag. Lese-Abfragen wären zu zahlreich und für die Forensik nicht relevant.~~ → **Überholt, gemessen am 04.09.2026:** Lesen wird geloggt, seit es `db_read` gibt — **5.315 Zeilen im Bestand**, geschrieben allein von `db_zugriff` (dem Node, nicht der Art). Die Befürchtung, Lese-Einträge seien zu zahlreich, hat sich nicht bestätigt: Sie sind 3,4 % des Logs, während `berechnung` 36 % trägt.
+
+> **Drei Werte sind definiert und werden nie geschrieben** *(gemessen 04.09.2026)*: `prompt`, `bemerkung` und `token` haben serverweit keinen Aufrufer und im Bestand keine einzige Zeile. Die Tabelle oben ist als Definition richtig und als Bild des Betriebs zu weit — wer aus ihr schließt, was im Log steht, liest eine Absicht. Vertieft in `novaberg-metakognition_k.md` §2.2.
 
 **Span-Korrelation:** `span_start`, `span_end` und `token` tragen dieselbe `span_id` pro Node-Lauf. Filter über `WHERE span_id = X` gibt den kompletten Lauf eines Nodes — Eingang, Berechnung, LLM-Aufruf, Token-Kosten, Ausgabe.
 
@@ -1595,6 +1605,8 @@ LIMIT 10;
 ### 10.5 Vorhaltung und Löschung
 
 Pipeline-Log-Einträge werden 365 Tage vorgehalten. Ein Pixie-Task läuft täglich und löscht ältere Einträge. Konstante in `config.py`:
+
+> **Eine Ausnahme kam mit Chat 104 hinzu und fehlte hier** *(nachgezogen 04.09.2026)*: **`art = 'turn_roh'` wird nicht gelöscht.** Die Löschung läuft mit `WHERE erstellt_am < NOW() - make_interval(days => %s) AND art <> 'turn_roh'` (`memory/pipeline_log.py:364`), aufgerufen aus dem täglichen `synapsen_decay`-Lauf (`agents/synapsen_decay/agent.py:344`). Rohturns sind die nicht wiederherstellbare Quelle der Charakter-Destillation; nur die Forensik-Arten verfallen. Ein Satz „alles wird 365 Tage vorgehalten" beschreibt die Tabelle seither nicht mehr vollständig.
 
 ```python
 LZG_PIPELINE_LOG_VORHALTUNG_TAGE = 365

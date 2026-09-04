@@ -62,7 +62,7 @@ Die dritte Spalte hält den heutigen Stand.
 | Corrector | Korrektur-Art, was geändert | **schreibt nicht** |
 | Salienz | Score, Speicher-Entscheidung | **schreibt** — `berechnung`, `switch`, `fehler`, `span_start`/`span_end` |
 | Dispatcher | Geschriebene Targets | **schreibt** — `db_write`, `fehler`, **`turn_roh`** (§2.5) |
-| Verfasser | Urteil über den Einwand, bevor Text entsteht | **schreibt** — `berechnung` · *nachgetragen (Chat 186)*, im Mai-Konzept nicht vorgesehen |
+| Verfasser | Urteil über den Einwand, bevor Text entsteht | **schreibt nur den Widerspruchsfall** — `berechnung`, und zwar ausschließlich bei `abweichend`; im Bestand **3 Zeilen**, die letzte vom 12.08.2026 · *nachgetragen (Chat 186)* |
 | Haltungsraum | Umfang, Fragen, Nähe, Wärme, Drängen | **schreibt** — `berechnung`/`fehler` über den Wrapper `_pipeline_zeile` (`haltung.py:102`) · *nachgetragen (Chat 186)* |
 
 **Vier von elf.** Es schreiben: GV-Node, Salienz, Dispatcher und EI-Calc — letzterer nicht selbst, sondern über den Nachbar-Node `ei_calc_persist`. Es schreiben nicht: Perzeption, Router, Planner, Responder, Thinker, Tribunal, Corrector. Alle elf Nodes existieren (`character_graph.py:60-87`).
@@ -71,7 +71,9 @@ Die dritte Spalte hält den heutigen Stand.
 
 > **Das Log trägt heute Berechnung und Schreibvorgang. Es trägt kein Urteil und keine Wahl.**
 
-Der Bestand ist dabei **breiter** als die Tabelle, nur eben quer zu ihr: Gezählt am 04.09.2026 schreiben **22 Dateien** hinein — neben den sechs Knoten oben fünf weitere (`enricher`, `db_zugriff`, `praegung`, `sachlage`, `emotionale_gravitation`), sechs Hintergrund-Agenten und der KZG-Speicher. Mehr Zeilen heilen die Lücke nicht: Sie liegen alle auf derselben Seite der Trennlinie.
+**Am Bestand nachgeprüft, nicht nur am Code** *(04.09.2026, laufende Datenbank)*. Über 154.383 Zeilen kommen **21 verschiedene `node`-Werte** vor. Von den elf Knoten dieser Tabelle stehen genau die vier darunter, die oben als schreibend geführt sind; **Perzeption, Router, Planner, Responder, Thinker, Tribunal und Corrector haben nicht eine einzige Zeile.** Die Trennlinie ist damit kein Ergebnis der Suchmethode, sondern des Bestands.
+
+Der Bestand ist dabei **breiter** als die Tabelle, nur eben quer zu ihr: Die übrigen 15 Namen sind Hintergrund-Agenten und Knoten, die das Mai-Konzept nicht kennt. Die Rangfolge zeigt zugleich, wovon das Log lebt — `synapsen_promotion` **73.864**, `zustellung` **17.784**, `salienz` **15.951**, `enricher` **13.350**. Mehr Zeilen heilen die Lücke nicht: Sie liegen alle auf derselben Seite der Trennlinie.
 
 **Zur Zeile Thinker.** `node_annotations` wird von Planner, Thinker (vier Stellen) und Verfasser geschrieben, vom Tribunal in dessen Prompt und vom `event_consumer` in die Client-Anzeige gelesen — **nirgends persistiert** *(auditiert Chat 186)*. Ob er den Reasoning-Pass überhaupt ausführt, ist in den Turn-Dauern nicht nachweisbar: Die Residuen liegen bei den Widerspruchs-Turns zwischen −21 und +10 Sekunden, alle innerhalb einer Standardabweichung von ±12 bis 14 Sekunden — nirgends ein Ausschlag in der Größenordnung eines Denkvorgangs. Quelle: `novaberg-sykophanz-eindaemmung_k.md` §5.2, mit dem dortigen Zusatz *„Ableitung, keine Messung"*.
 
@@ -89,7 +91,7 @@ Der Bestand ist dabei **breiter** als die Tabelle, nur eben quer zu ihr: Gezähl
 
 **Gegen `db/init.sql:550-567` gehalten** *(auditiert Chat 186)*: Spalten, Typen, NULL-Regeln und alle fünf Indizes stimmen überein, keine Abweichung. Der Pfad im Hinweis unten ist zu lesen als `novaberg/db/init.sql`; ein Verzeichnis `server/db/` gibt es nicht.
 
-> **Zum Verweis auf §10 gehört sein Zustand** *(auditiert Chat 186)*: Die DDL dort führt **acht** Spalten — `user_id` und `character_id` aus Chat 104 fehlen —, sieben Indizes statt der fünf gebauten, und §10.2 nennt „11 Werte", wo es dreizehn sind. §10 ist damit die vereinbarte **Heimat** der vollständigen DDL, aber heute nicht ihr aktueller Stand. Wer die Tabelle nachschlagen will, liest `db/init.sql`. → Fundliste 04.09.2026.
+> **§10 ist am 04.09.2026 nachgezogen worden**, nachdem dieser Verweis den Drift sichtbar machte: Die DDL dort führte acht Spalten statt zehn, sieben Indizes statt der fünf gebauten, „11 Werte" statt dreizehn, `db_zugriff` statt `db_write`, kein `db_read`, kein `turn_roh` — und die Retention-Ausnahme für Rohturns fehlte ganz. Gegen die **laufende Datenbank** gehalten, nicht nur gegen `init.sql`; beide stimmen überein.
 
 **Doku-Drift-Hinweis (Chat 104):** Das hier zuvor dokumentierte Schema
 (`event_source`/`node_name`/`entscheidung`/`details`) existierte in dieser Form
@@ -104,7 +106,9 @@ Helper-API durchgesetzt (je ein Wrapper in `memory/pipeline_log.py`):
 
 > **Wie „per Helper-API durchgesetzt" zu lesen ist** *(auditiert Chat 186)*: Das Fehlen der CHECK-Constraint ist Absicht und als solche kommentiert (`init.sql:544-547`). Eine **Laufzeitprüfung** gibt es aber auch nicht: Jeder der 13 Wrapper setzt sein Literal selbst, `_log_eintrag` (`pipeline_log.py:393`) prüft nichts. Was den Wertebereich hält, ist die **Kapselung** — und die ist geprüft: kein `_log_eintrag`-Aufruf und kein `INSERT INTO pipeline_log` außerhalb des Moduls. Die Formulierung stimmt also, mit dem Zusatz, dass die Durchsetzung an der Kapselung hängt und nicht an einer Prüfung.
 
-**Definiert ist nicht betrieben.** Drei der 13 Arten haben serverweit **keinen einzigen Aufrufer**: `prompt`, `bemerkung`, `token` *(auditiert Chat 186)*. Die Liste oben stimmt als Definition und nicht als Betriebsbild. **Wer die Taxonomie liest und daraus schließt, was im Log steht, liest eine Absicht.**
+**Definiert ist nicht betrieben.** Drei der 13 Arten haben serverweit **keinen einzigen Aufrufer**: `prompt`, `bemerkung`, `token` *(auditiert Chat 186)*. Am Bestand bestätigt: Über 154.383 Zeilen kommen **10 Arten** vor, diese drei sind nicht darunter — sie wurden nie geschrieben, nicht bloß selten. Die Liste oben stimmt als Definition und nicht als Betriebsbild. **Wer die Taxonomie liest und daraus schließt, was im Log steht, liest eine Absicht.**
+
+Die Verteilung sagt zugleich, was das Log wirklich ist *(04.09.2026)*: `berechnung` 56.042 · `span_start`/`span_end` 28.610/28.571 · `db_write` 25.872 · `db_read` 5.315 · `switch` 4.488 · `ausgabe` 2.256 · `eingang` 2.144 · **`turn_roh` 1.023** · `fehler` 63.
 
 Dieselbe Klasse beschreibt `novaberg-lesson_l_default-wie-fehlschlag.md`: Eine definierte Art ohne Erzeuger sieht im Schema aus wie eine genutzte — die Struktur belegt ihre Verwendung nicht.
 
@@ -137,9 +141,19 @@ log_berechnung(
 
 ### 2.4 Kein Performance-Risiko
 
-Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Rows/Tag. Trivial für PostgreSQL. Asynchron, blockiert den Node nicht.
+~~Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Rows/Tag.~~ → **überholt (Chat 186), gemessen am 04.09.2026 an der laufenden Datenbank.** Trivial für PostgreSQL. Asynchron, blockiert den Node nicht.
 
-> **Die drei Zahlen sind Schätzungen vom Mai 2026 — `Annahme`.** Eine echte Zeilenzahl steht nicht in diesem Dokument; sie ist nur an der laufenden Datenbank zu erheben und wird hier nicht geraten. Die Bauart trägt die Aussage trotzdem: Geschrieben wird nicht synchron, sondern über einen Puffer (`PipelineLogBuffer`, `asyncio.Queue`), den ein Writer-Task alle `LZG_PIPELINE_LOG_FLUSH_SEKUNDEN` (Vorgabe 10) als Batch wegschreibt *(auditiert Chat 186)*. Was die Schätzung unterschätzt, ist die **Menge**: Es schreiben 22 Dateien, nicht 10 Knoten, und ein Knoten schreibt je Lauf mehrere Zeilen (Span-Klammer plus Inhalt).
+| Größe | Stand 04.09.2026 |
+|---|---|
+| Zeilen gesamt | **154.383** |
+| verschiedene `turn_id` | **22.545** |
+| Zeitraum | 27.07. bis 04.09.2026 (39 Tage) |
+| Zeilen je Tag | **≈ 3.959** |
+| Zeilen je Turn | ≈ 6,8 |
+
+**Die Schätzung lag um den Faktor acht daneben, und zwar in der Menge, nicht in der Bewertung.** Der Schluss stimmt weiterhin: 154.383 Zeilen sind für PostgreSQL nichts, und geschrieben wird nicht synchron, sondern über einen Puffer (`PipelineLogBuffer`, `asyncio.Queue`), den ein Writer-Task alle `LZG_PIPELINE_LOG_FLUSH_SEKUNDEN` (Vorgabe 10) als Batch wegschreibt *(auditiert Chat 186)*.
+
+Falsch war die Rechengrundlage. **Die Hälfte des Logs stammt nicht aus Gesprächs-Turns:** `synapsen_promotion` allein trägt **73.864 Zeilen (47,8 %)**, die Zustellung weitere 17.784. Ein „Turn" im Sinne der `turn_id` ist überwiegend ein Hintergrundlauf, und ein Node schreibt je Lauf mehrere Zeilen — die Span-Klammer allein sind zwei (`span_start` 28.610, `span_end` 28.571).
 
 **Die Vorhaltung** *(auditiert Chat 186)*. `delete_expired_entries` (`pipeline_log.py:314`) löscht mit `WHERE erstellt_am < NOW() - make_interval(days => %s) AND art <> 'turn_roh'` (Zeile 364); die Frist steht in `LZG_PIPELINE_LOG_VORHALTUNG_TAGE` mit der Vorgabe **365** (`config.py:3332`). Rohturns sind ausgenommen und bleiben dauerhaft (§2.5).
 
@@ -151,11 +165,15 @@ Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Ro
 
 Das Mai-Konzept sah eine **Entscheidungszeile pro Node** vor, also Forensik. Was daraus geworden ist, ist eine zweite Sorte Inhalt in derselben Tabelle, mit anderer Lebensdauer und anderem Abnehmer. Der Unterschied ist an drei Stellen sichtbar:
 
-- **Die Retention nimmt sie aus** *(auditiert Chat 186)*, mit `AND art <> 'turn_roh'` — der Mechanismus samt Aufrufer steht in §2.4. **Rohturns verfallen nicht**; sie sind die nicht wiederherstellbare Quelle, die Forensik-Arten verfallen weiter.
+- **Die Retention nimmt sie aus** *(auditiert Chat 186)*, mit `AND art <> 'turn_roh'` — der Mechanismus samt Aufrufer steht in §2.4. **Rohturns verfallen nicht**; sie sind die nicht wiederherstellbare Quelle, die Forensik-Arten verfallen weiter. Im Bestand **1.023 Zeilen** (04.09.2026).
 - **Das Paar ist Pflicht, nicht optional.** Bei den Forensik-Wrappern sind `user_id`/`character_id` nullable (Wartungsläufe über alle Paare lassen sie bewusst NULL); `log_turn_roh` verlangt beide.
 - **Sie hat Leser, die Forensik-Arten nicht haben.** Das Log wird heute an vier Stellen gelesen — dreimal von der Charakter-Destillation (`agents/charakter/agent.py:578-613`), einmal von der Herkunftsauflösung des Wissens-Rückwegs (`wissen_rueckweg/herkunft.py:70`). Beide liegen im **Hintergrundpfad**; das ist die Brücke zu §3, und dort wird sie aufgegriffen. Der Satz aus `novaberg-charakter-resonanz_k.md` §2, das einzige `FROM pipeline_log` sei das `DELETE` der Retention, gilt für den Stand Chat 108 und ist am heutigen Code **überholt (Chat 186)**.
 
 Der dort in §2 als *überholt Chat 104* markierte Absatz zu `pipeline_log` beschreibt denselben Vorgang aus der anderen Richtung: Für die Charakter-Resonanz war das der Beleg, dass die Quelle existiert; hier ist es der Beleg, dass diese Tabelle zwei Aufgaben trägt.
+
+> **„Dauerhaft" gilt ab dem 27.07.2026, nicht davor** *(gemessen 04.09.2026)*. Der älteste Eintrag der Tabelle — jeder Art — stammt von diesem Tag, und er trägt **`id = 1`**: Diese Tabelle hat nie eine ältere Zeile getragen. Die in `novaberg-charakter-resonanz_k.md` §2.1 genannten **150 Rohturns seit dem 10.07.** (Stand 25.07.2026, davon 111 verwertbar) sind im heutigen Bestand **nicht enthalten**.
+>
+> Die Retention ist als Ursache ausgeschlossen: Sie läuft bei 365 Tagen, die Tabelle ist 39 Tage alt, und `turn_roh` ist ohnehin ausgenommen. Der Schnitt liegt vor dem Beginn dieser Tabelle, nicht in ihrem Betrieb — **die Ausnahme hat gehalten, was vor ihr lag, war nicht in ihrer Reichweite.** Was das für die Charakter-Destillation bedeutet, gehört in jenes Konzept und ist hier nur festgehalten. → Fundliste 04.09.2026.
 
 ---
 
@@ -824,7 +842,9 @@ Phase 6: Vorsatz-Evaluation + Charakter-Verschiebung (experimentell)
   - **Der Magnet zog zum Zerrbild** (§5.3, gesperrt). Der `kern_hash` beschreibt gemessen den Nutzer — 15 von 15 Top-Knoten auf ehrlichen Gewichten —, und aus ihm sind bereits Langfristziele in Ich-Form entstanden („Enklave"). Eine Gravitation dorthin wäre kein Regler, sondern ein Verstärker. Die Ziel-Invalidierung ist inzwischen gebaut, Charakter-Resonanz Bauteil 4 nicht.
   - **Ein stärkeres Bauteil als der `[VORSAETZE]`-Block hat gemessen nichts bewegt** (§4.4.1). `SYK-B1` erzwingt ein maschinenlesbares Urteil vor dem ersten Satz und ließ die Kapitulationsrate bei 87 % — der Markierungspfad ist gesättigt. Typ A ist damit auf die Oberfläche begrenzt, bis das Gegenteil gemessen ist.
 
-  Dazu vier kleinere Berichtigungen: **`haltung` hat seit dem 12.08.2026 Leser** — Responder und Verfasser —, der Kanal gilt nicht mehr als blind (§3.4). **`verhaltensweisen` ist ein Schema-Entwurf**, keine Tabelle (§4.1). **Drei der 13 `art`-Werte haben keinen Aufrufer** (§2.2) — definiert ist nicht betrieben. Und **§2.2 führt die DDL nicht mehr vollständig**, sondern nur die tragenden Spalten samt Verweis auf `novaberg-memory-synapsen_k.md` §10; dabei fiel auf, dass §10 die Paar-Spalten aus Chat 104 nicht kennt.
+  Dazu vier kleinere Berichtigungen: **`haltung` hat seit dem 12.08.2026 Leser** — Responder und Verfasser —, der Kanal gilt nicht mehr als blind (§3.4). **`verhaltensweisen` ist ein Schema-Entwurf**, keine Tabelle (§4.1). **Drei der 13 `art`-Werte haben keinen Aufrufer** (§2.2) — definiert ist nicht betrieben. Und **§2.2 führt die DDL nicht mehr vollständig**, sondern nur die tragenden Spalten samt Verweis auf `novaberg-memory-synapsen_k.md` §10.
+
+  **Am selben Tag gegen die laufende Datenbank gemessen**, nachdem der Zugriff geöffnet war. Das schloss die letzte tragende Annahme und brachte drei Befunde: Die Mengenschätzung aus §2.4 lag um den **Faktor acht** daneben (154.383 Zeilen, ≈ 3.959 je Tag statt 500), die **Trennlinie ist am Bestand bestätigt** — die sieben stummen Nodes haben nicht eine Zeile, die drei toten `art`-Werte nie eine —, und **`turn_roh` beginnt bei `id = 1` am 27.07.2026**: Die 150 Rohturns, die `charakter-resonanz_k` §2.1 für den 25.07. zählt, sind im Bestand nicht enthalten (§2.5, Fundliste). Der Verweis-Fund führte außerdem dazu, dass §10 selbst nachgezogen wurde — dort war der Drift größer als hier: `db_zugriff` statt `db_write`, kein `db_read`, kein `turn_roh`, keine Retention-Ausnahme, und der Satz „Lesen wird nicht geloggt" gegen 5.315 gemessene `db_read`-Zeilen.
 
   **Aktionen laufen nicht mehr am Erkenntniszyklus vorbei** (§4.2, §6.2) — ein Entschluss aus Selbstbeobachtung ist ein Thema mit Salienz und tritt bei Schritt 1 ein. **§7 trägt statt sechs Phasen sieben Bauteile `MK-1a` bis `MK-6`**, jedes mit ZIEL/TEST/MESSUNG/Gegenprobe und seiner Vorbedingung; vier davon hängen an Arbeit in anderen Konzepten. Neu außerdem §2.5 (Rollenerweiterung `turn_roh`) und §3.4 (was heute nicht beobachtbar wird). Die Umlaute sind in einem eigenen, rein mechanischen Commit normalisiert worden.
 
