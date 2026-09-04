@@ -424,13 +424,25 @@ def _verwendung_verstaerken(state: ConversationState, postgres_url: str) -> None
             "verwendet":  ergebnis["verwendet"],
             "verstaerkt": ergebnis["verstaerkt"],
             "naehen":     ergebnis["naehen"],
+            # Die Entscheidung, nicht nur ihr Ergebnis.
+            # Bis zum 04.09.2026 stand hier nur `verwendet: 0`, und die
+            # zwei ersten Betriebszeilen konnten nicht sagen, warum: ob die
+            # Kandidaten knapp unter der Schwelle lagen oder das Einbetten
+            # ausfiel, sah identisch aus.
+            "naehen_alle":           ergebnis["naehen_alle"],
+            "knappster_verworfener": ergebnis["knappster_verworfener"],
+            "schwelle":              ergebnis["schwelle"],
+            "deckel":                ergebnis["deckel"],
+            "ausgang":               ergebnis["ausgang"],
         },
         user_id      = state.get("user_id", ""),
         character_id = state.get("character_id", ""),
     )
     logger.info(
         f"Dispatcher: {ergebnis['verstaerkt']} von {ergebnis['geprueft']} "
-        f"gelesenen Erinnerungen verstaerkt (Naehen {ergebnis['naehen']})"
+        f"gelesenen Erinnerungen verstaerkt (Naehen {ergebnis['naehen']}, "
+        f"Ausgang {ergebnis['ausgang']}, Schwelle {ergebnis['schwelle']}, "
+        f"knappster verworfener {ergebnis['knappster_verworfener']})"
     )
 
 
