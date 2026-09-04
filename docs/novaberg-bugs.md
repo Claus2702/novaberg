@@ -1,9 +1,9 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 3. September 2026, 20:45 UTC (`PERZEPTION-EMOTION-AUSSER-KANON` um die Bestandszahlen ergaenzt — **18 Knoten**, darunter `ueberrascht` in Umlautform als **zweite** Emotion derselben Klasse und `zuversicht`, ein **Sektorname** als Emotionswert; dazu der zweite Verbraucher der Sektorkarte). Davor 2. September 2026, 19:40 UTC (zwei Kennungen aus dem Termin-Gespraech vom 01.09.: `TIMELINE-SCHREIBT-OHNE-AUFTRAG` und `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` — beide standen seit gestern nur in der Fundliste). Davor 1. September 2026, 15:10 UTC (`FALTUNG-OHNE-AUFRUFER` **am Tag seines Befundes behoben und ins Archiv umgezogen** — die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb; Bilanz **48 offen / 55 im Archiv**, gezaehlt). Davor 1. September 2026, 14:05 UTC (`FALTUNG-OHNE-AUFRUFER` neu — die vierte Messreihe erzeugte **4 Beruehrungen**, und `ausschlag_aktuell` blieb bei allen vier Faeden unveraendert: `ausschlag_aktuell_falten` hat keinen Aufrufer. Bilanz **49 offen / 54 im Archiv**, gezaehlt). Davor 1. September 2026 (`FADEN-EMBEDDING-VERDUENNT` am Tag seines Befundes behoben und ins Archiv umgezogen — der Praegungsfaden trug den Vektor des ganzen Turns, obwohl Salienz und Emotion aus einem Segment kamen; Bilanz **48 offen / 54 im Archiv**, gezaehlt). Davor 30. August 2026 (`EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und ins Archiv umgezogen — die Gravitationsschwelle lehnt wieder ab, 0,71 Aktivierungen je Turn statt 2,00). Davor 28. August 2026, 20:45 UTC (Datenpunkt an `VERFASSER-KOPFBLOCK-FAELLT-AUS`, 1 von 1). Davor 27. August 2026, 10:54 UTC (**die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist wiederholt** — 19,7 % gegen 16,2 %, gepaart 15 von 21 und p = 0,078: der Befund haelt, knapp. Davor 26.08.2026, 23:01 UTC: (**die Temperatur war die Ursache** — der Knoten `charakter_hash` steht auf **0.0**: vier Laeufe auf demselben Material sind dort zeichengleich statt 32,9 % ueberdeckend. Damit faellt die Ursache von `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`, und die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist zu wiederholen — ihre Decke lag bei 32 % und liegt jetzt bei 100 %. Davor 22:25 UTC: (**der Kern-Medoid ist gebaut, gemessen und verworfen** — 0,2908 → 0,2615 bei dreifachen Kosten, nicht von Rauschen unterscheidbar; `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` bleibt offen, aber ein Weg ist geprueft und ausgeschlossen. Davor 21:24 UTC: (**`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` neu** — die drei Rad-Laeufe der Festlegung `F-RAD-2` lesen alle denselben Kern, und dessen Neuziehung bewegt den Faktor um **0,2908** gegen **0,0550** innerhalb eines Kerns: das 5,3-fache, und 29 % der ganzen Skala. Davor 21:00 UTC: (**die Rauschgrenze der Destillation steht** — zwei Laeufe aus identischem Material teilen nur 27–32 % ihres Wortschatzes; damit hat die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` endlich eine Skala, und der Befund haelt. Davor 20:05 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist gebaut und bleibt offen** — die geschichtete Auswahl laeuft, die Bindung an das juengste Themenband faellt von 28,4 % auf 10,8 %, aber das Schliesskriterium ist mit den heutigen Vergleichskorpora nicht messbar. Davor 19:42 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist baubereit** — das Auswahlkriterium steht seit heute: festes Zeichenbudget beim Vierfachen des heutigen, darin zeitlich geschichtet. `gewicht_absolut` ist als Selektor ausgeschieden (Korrelation **−0,716** gegen die Zeit, im juengsten Zeitblock σ 0,27), und die Kostenannahme gegen ein groesseres Budget ist widerlegt: eine volle Destillation aus zehn Calls dauert **261 s**. Keine Kennung kam hinzu oder fiel weg. Davor: 25. August 2026, 19:29 UTC (**`BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`** — eine am Vortag gebaute Log-Zeile meldete elfmal `8 von 8`, waehrend ein Feld leer ausgeliefert wurde; behoben, im Archiv. Davor, 18:16 UTC: (**zwei neue Kennungen, beide am selben Tag behoben und im Archiv**: `PROMPT-CONSUMER-OHNE-ABRAEUMEN` und `VORHER-ZUSTAND-OHNE-SPUR` — beide ueber einen `F841`-Treffer sichtbar geworden, beide mit Zeugen und Gegenprobe. Davor, 10:05 UTC: (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
+**Stand:** 4. September 2026 (**drei Kennungen zur Verstaerkung** — `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN` und `VERSTAERKUNG-OHNE-VERWENDUNG`. Die ersten beiden bilden eine geschlossene Schleife: 95,2 % aller Verstaerkungen tragen `cosine = 1.0000`, ein Eintrag erzeugte 91 davon ueber acht Tage. Der dritte wartet auf eine Konzeptentscheidung. Bilanz **156 offene Kennungen**, gemessen mit der Registerbilanz — davor 153). Davor 3. September 2026, 20:45 UTC (`PERZEPTION-EMOTION-AUSSER-KANON` um die Bestandszahlen ergaenzt — **18 Knoten**, darunter `ueberrascht` in Umlautform als **zweite** Emotion derselben Klasse und `zuversicht`, ein **Sektorname** als Emotionswert; dazu der zweite Verbraucher der Sektorkarte). Davor 2. September 2026, 19:40 UTC (zwei Kennungen aus dem Termin-Gespraech vom 01.09.: `TIMELINE-SCHREIBT-OHNE-AUFTRAG` und `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` — beide standen seit gestern nur in der Fundliste). Davor 1. September 2026, 15:10 UTC (`FALTUNG-OHNE-AUFRUFER` **am Tag seines Befundes behoben und ins Archiv umgezogen** — die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb; Bilanz **48 offen / 55 im Archiv**, gezaehlt). Davor 1. September 2026, 14:05 UTC (`FALTUNG-OHNE-AUFRUFER` neu — die vierte Messreihe erzeugte **4 Beruehrungen**, und `ausschlag_aktuell` blieb bei allen vier Faeden unveraendert: `ausschlag_aktuell_falten` hat keinen Aufrufer. Bilanz **49 offen / 54 im Archiv**, gezaehlt). Davor 1. September 2026 (`FADEN-EMBEDDING-VERDUENNT` am Tag seines Befundes behoben und ins Archiv umgezogen — der Praegungsfaden trug den Vektor des ganzen Turns, obwohl Salienz und Emotion aus einem Segment kamen; Bilanz **48 offen / 54 im Archiv**, gezaehlt). Davor 30. August 2026 (`EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und ins Archiv umgezogen — die Gravitationsschwelle lehnt wieder ab, 0,71 Aktivierungen je Turn statt 2,00). Davor 28. August 2026, 20:45 UTC (Datenpunkt an `VERFASSER-KOPFBLOCK-FAELLT-AUS`, 1 von 1). Davor 27. August 2026, 10:54 UTC (**die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist wiederholt** — 19,7 % gegen 16,2 %, gepaart 15 von 21 und p = 0,078: der Befund haelt, knapp. Davor 26.08.2026, 23:01 UTC: (**die Temperatur war die Ursache** — der Knoten `charakter_hash` steht auf **0.0**: vier Laeufe auf demselben Material sind dort zeichengleich statt 32,9 % ueberdeckend. Damit faellt die Ursache von `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`, und die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` ist zu wiederholen — ihre Decke lag bei 32 % und liegt jetzt bei 100 %. Davor 22:25 UTC: (**der Kern-Medoid ist gebaut, gemessen und verworfen** — 0,2908 → 0,2615 bei dreifachen Kosten, nicht von Rauschen unterscheidbar; `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` bleibt offen, aber ein Weg ist geprueft und ausgeschlossen. Davor 21:24 UTC: (**`RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` neu** — die drei Rad-Laeufe der Festlegung `F-RAD-2` lesen alle denselben Kern, und dessen Neuziehung bewegt den Faktor um **0,2908** gegen **0,0550** innerhalb eines Kerns: das 5,3-fache, und 29 % der ganzen Skala. Davor 21:00 UTC: (**die Rauschgrenze der Destillation steht** — zwei Laeufe aus identischem Material teilen nur 27–32 % ihres Wortschatzes; damit hat die Rechnung hinter `KERNHASH-TRAEGT-KEINE-PERSON` endlich eine Skala, und der Befund haelt. Davor 20:05 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist gebaut und bleibt offen** — die geschichtete Auswahl laeuft, die Bindung an das juengste Themenband faellt von 28,4 % auf 10,8 %, aber das Schliesskriterium ist mit den heutigen Vergleichskorpora nicht messbar. Davor 19:42 UTC: (**`KERNHASH-TRAEGT-KEINE-PERSON` ist baubereit** — das Auswahlkriterium steht seit heute: festes Zeichenbudget beim Vierfachen des heutigen, darin zeitlich geschichtet. `gewicht_absolut` ist als Selektor ausgeschieden (Korrelation **−0,716** gegen die Zeit, im juengsten Zeitblock σ 0,27), und die Kostenannahme gegen ein groesseres Budget ist widerlegt: eine volle Destillation aus zehn Calls dauert **261 s**. Keine Kennung kam hinzu oder fiel weg. Davor: 25. August 2026, 19:29 UTC (**`BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`** — eine am Vortag gebaute Log-Zeile meldete elfmal `8 von 8`, waehrend ein Feld leer ausgeliefert wurde; behoben, im Archiv. Davor, 18:16 UTC: (**zwei neue Kennungen, beide am selben Tag behoben und im Archiv**: `PROMPT-CONSUMER-OHNE-ABRAEUMEN` und `VORHER-ZUSTAND-OHNE-SPUR` — beide ueber einen `F841`-Treffer sichtbar geworden, beide mit Zeugen und Gegenprobe. Davor, 10:05 UTC: (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform**, `[gemessen]` 30.08.2026. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
-**Offen hier:** **48 Eintraege, alle mit eigenem Abschnitt** — dieses Register erfuellt die Formregel unten vollstaendig, es traegt **keine** Kennung in Tabellenform. Davon tragen 91 `Zustand:`-Zeilen *offen* und 20 *unbelegt — braucht Messturn*; **kein Eintrag ist abgeschlossen und wartet auf den Umzug**.
+**Offen hier:** **156 Kennungen**, `[gemessen]` 04.09.2026 mit der Registerbilanz; alle mit eigenem Abschnitt. **Die frueheren „48" stammten aus einer Handzaehlung** und standen seit dem 01.09. gegen die Maschinenzahl — dieses Register erfuellt die Formregel unten vollstaendig, es traegt **keine** Kennung in Tabellenform. Davon tragen 91 `Zustand:`-Zeilen *offen* und 20 *unbelegt — braucht Messturn*; **kein Eintrag ist abgeschlossen und wartet auf den Umzug**.
 
 ---
 
@@ -89,6 +89,81 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 > Zwischen dem Pruefstand der Eintraege (`00c16b6`, 20.08.) und dem Tag lagen 15 Commits, aber nur
 > **vier** geaenderte Server-Dateien — ein Kriterium statt 25 Einzelpruefungen. Zwei Eintraege
 > erwiesen sich dabei als laengst erledigt.
+
+---
+
+## 04.09.2026 — die Verstärkung hängt am falschen Ereignis
+
+Drei Kennungen aus einer Frage des Eigentuemers: *„EI-Calc ist lesend. Lesend verstaerkt nicht. Erzeugte Prompts reaktivieren und verstaerken. Kollidieren wir hier?"* Die Antwort ist ja — und die Ursache liegt tiefer als die Frage: **Nicht das Lesen verstaerkt, sondern die blosse Nachbarschaft im Schreibpfad.** Die verfeinerte Regel steht seit heute in `novaberg-memory-synapsen_k.md` §7.1a.
+
+### `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` — der Eintrag verstaerkt seinen eigenen Knoten
+
+**Zustand:** offen — am Bestand gemessen am 04.09.2026.
+
+**Symptom.** `novaberg-memory-synapsen_k.md` §7.7 verlangt woertlich: *„Der KZG-Eintrag wird nach erfolgreicher Promotion vollstaendig aus Redis geloescht. […] Das macht den Schritt 4 der Promotion einfach: `DEL kzg:{user}:{char}:{id}`."*
+
+**Der Code sagt ausdruecklich das Gegenteil.** `agents/synapsen_promotion/agent.py`, Modul-Docstring: *„Der KZG-Hash wird wie im alten Pfad NICHT geloescht — er verfaellt ueber seine TTL."* Ein Grep ueber die Datei findet kein `DEL` auf den KZG-Schluessel; geloescht werden nur die Queue-Listen.
+
+**Wirkung.** Der Eintrag lebt weiter, geht erneut in die Promotion und **matcht dort den Knoten, der aus ihm selbst entstanden ist**:
+
+| | |
+|---|---:|
+| Reinforcements gesamt | **14.947** auf 1.538 Knoten (Faktor 9,7) |
+| davon mit `cosine = 1.0000` | **14.227 = 95,2 %** |
+| Maximum je (Turn, Knoten) | **91** |
+| verteilt ueber | **8 und mehr Kalendertage** |
+
+Ein Knoten steht bei `haeufigkeit` 92 aus **einem einzigen** Turn; sein `gewicht_roh` liegt bei 10,10 an der Kappung `LZG_KNOTEN_GEWICHT_CAP`.
+
+**Dasselbe Bild gab es am 12.07.2026** — 2.910 Reinforcements auf 302 Knoten, Faktor 9,6, `cosine_max = 1.0000`. Damals wurde der **ganze Bestand zurueckgesetzt**; die Ursache war das casing-blinde Embedding, das seither gewechselt hat. **Gleiches Bild, andere Ursache** (der Bruch-Hinweis steht in `novaberg-memory-synapsen_k.md` Punkt 9).
+
+**Was fertig waere.** Schritt 4 der Promotion loescht den KZG-Hash, und eine Wiederholungsmessung zeigt `cosine = 1.0000` nur noch dort, wo sie hingehoert: nirgends.
+
+**Prioritaet:** hoch — der Defekt verfaelscht `haeufigkeit` und `gewicht_roh` des gesamten LZG.
+
+### `KZG-THEMA-VERSTAERKT-NACHBARN` — ein geteiltes Thema genuegt
+
+**Zustand:** offen — am Bestand gemessen am 04.09.2026.
+
+**Symptom.** `memory/kzg.py:486` scannt bei **jedem** `kzg_store` die ganze Paar-Partition (`redis_client.keys(prefix*)`) und verstaerkt **jeden** Eintrag, der mindestens **ein einziges Thema** teilt: `haeufigkeit` +1, Salienz neu gerechnet, **und die TTL neu gesetzt**.
+
+`[gemessen]` 04.09.2026 ueber 2.911 KZG-Eintraege des Paares `meister:nova`, Stichprobe 400:
+
+| | |
+|---|---:|
+| `haeufigkeit` im Mittel | **8,1** |
+| Maximum | **110** |
+| Eintraege mit mindestens einer Verstaerkung | **257 von 400 = 64 %** |
+
+**Wirkung.** Das ist die Sperre aus §7.1a von der anderen Seite: **Verstaerkung durch Nachbarschaft, nicht durch Verwendung.** Ein Eintrag mit gaengigen Themen steigt ueber `KZG_SALIENZ_HIGH`, bekommt bei jedem verwandten Turn 30 Tage TTL neu und laeuft nie ab — womit er dauerhaft Futter fuer `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` liefert. **Die beiden Defekte bilden zusammen eine geschlossene Schleife**, und keiner von beiden allein erklaert die Zahlen.
+
+**Was fertig waere.** Die thematische Verstaerkung folgt §7.1a: Sie greift nur fuer Eintraege, die in der Antwort tatsaechlich hergenommen wurden — oder sie faellt weg.
+
+**Prioritaet:** hoch.
+
+### `VERSTAERKUNG-OHNE-VERWENDUNG` — sie sitzt im Hintergrundlauf statt im Dispatcher
+
+**Zustand:** offen — gegen den Code geprueft am 04.09.2026.
+
+**Symptom.** `novaberg-memory-synapsen_k.md` §7.1a verlangt seit heute: Verstaerkt wird nur, was Nova in ihrer Antwort **hergenommen** hat, und der Ort ist der **Dispatcher** — der letzte Node vor `END`, der ohnehin alle Schreibvorgaenge verteilt. Der Responder formuliert; er persistiert nicht.
+
+Gegen den Code gehalten:
+
+| Pruefung | erwartet | gemessen |
+|---|---|---:|
+| Dispatcher ruft `knoten_verstaerken` | ja | **0** |
+| Dispatcher liest `lzg_resonanz` | ja | **0** |
+| Responder verstaerkt | nein | 0 ✅ |
+| Lesepfad verstaerkt | nein | 0 ✅ |
+| einziger Aufrufer | Dispatcher | `agents/synapsen_promotion/agent.py:487` |
+
+**Wirkung.** Die Verstaerkung laeuft in einem asynchronen Hintergrundlauf, **der die Antwort nie sieht**. Ausgeloest wird sie von einem Embedding-Match — also von Aehnlichkeit, nicht von Verwendung. Damit kann das System nicht unterscheiden, ob Nova eine Erinnerung benutzt oder nur danebengelegen hat.
+
+**Die Eingaenge liegen bereit** und werden nicht gelesen: `state["antwort_inhalt"]` traegt die fertige Antwort, `state["lzg_resonanz"]["erinnerungen"]` das gelesene Material mit Pfad. Beide Kanaele sind deklariert; der Dispatcher hat den ersten, den zweiten liest heute nur der Reducer.
+
+**Was fertig waere.** Der Dispatcher gleicht Antwort gegen gelesenes Material ab und ruft `knoten_verstaerken` auf der Schnittmenge. **Offen ist die Absicht davor:** woran „hergenommen" erkannt wird — woertliche Uebernahme, Embedding-Naehe der Antwort zur Erinnerung, oder eine Angabe des Modells selbst. Ohne diese Entscheidung ist der Eintrag nicht baubar.
+
+**Prioritaet:** hoch — er traegt die Aussage der ganzen Schicht, aber er wartet auf eine Konzeptentscheidung.
 
 ---
 

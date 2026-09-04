@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **21:30 UTC** (gemessen via `date -u`). Davor 03.09.2026, 20:35 UTC.
+**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026** (gemessen via `date -u`). Davor 03.09.2026, 21:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,46 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 04.09.2026 — Verstärkung setzt Verwendung voraus, und der Code weiß es nicht ✅
+
+**Ausgelöst von einer Frage, nicht von einem Auftrag:** *„EI-Calc ist lesend. Lesend verstärkt nicht.
+Erzeugte Prompts reaktivieren und verstärken. Kollidieren wir hier?"* — gestellt beim Zuschnitt der
+nächsten Faszinations-Scheibe, und sie hat den Bau angehalten.
+
+**Die Sperre gegen passives Wachsen stand schon** (`novaberg-memory-synapsen_k.md` §7.1, mit Hebb
+begründet), und **der Code hält sie**: Kein Lesepfad verstärkt, der Responder rührt das Gedächtnis
+nicht an. **Was niemand sperrte, war die Nachbarschaft im Schreibpfad.**
+
+**§7.1a neu:** Verstärkt wird ausschließlich, was Nova in ihrer Antwort **hergenommen** hat — und der
+Ort ist der **Dispatcher**, nicht der Responder. Der Responder formuliert, er persistiert nicht; der
+Dispatcher ist der letzte Node vor `END` und verteilt ohnehin alle Schreibvorgänge. §9.2 verschärft.
+
+**Drei Kennungen, `[gemessen]` am selben Tag:**
+
+- **`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`** — §7.7 verlangt `DEL kzg:…` nach der Promotion; der Code
+  sagt im Docstring ausdrücklich *„wird wie im alten Pfad NICHT geloescht"*. Der Eintrag geht erneut
+  durch und **matcht den Knoten, der aus ihm selbst entstand**: **95,2 % der 14.947 Verstärkungen
+  tragen `cosine = 1.0000`**, bis zu **91 je Turn über acht Kalendertage**, ein Knoten steht bei
+  `haeufigkeit` 92 aus **einem** Turn.
+- **`KZG-THEMA-VERSTAERKT-NACHBARN`** — `kzg_store` verstärkt jeden Eintrag der Partition mit **einem
+  geteilten Thema** und setzt seine TTL neu. Stichprobe 400 von 2.911: `haeufigkeit` Mittel **8,1**,
+  Maximum **110**, **64 %** verstärkt. **Die beiden bilden eine geschlossene Schleife.**
+- **`VERSTAERKUNG-OHNE-VERWENDUNG`** — der Dispatcher ruft `knoten_verstaerken` **0-mal** und liest
+  `lzg_resonanz` **0-mal**; einziger Aufrufer ist ein Hintergrundlauf, **der die Antwort nie sieht**.
+  Beide Eingänge liegen bereit und werden nicht gelesen.
+
+**Dasselbe Bild gab es am 12.07.2026** — 2.910 Reinforcements auf 302 Knoten, Faktor 9,6,
+`cosine_max = 1.0000`; damals wurde der ganze Bestand zurückgesetzt. **Gleiches Bild, andere
+Ursache** — der Nachtrag steht in `novaberg-embedding-casing-blind_k.md`, damit niemand wieder zum
+Embedding greift.
+
+**Was dadurch nicht baubar ist:** `bindung_roh` (§10.2 der Faszination). Über verschiedene Turns
+gezählt fallen die Träger mit Wiederkehr ≥ 2 von **1.250 auf 106**, das Mittel von 2,64 auf **1,04**
+— **91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns.** Kein Produktivcode
+geändert, Suite unberührt.
 
 ---
 

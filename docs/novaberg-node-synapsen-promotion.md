@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `agents/synapsen_promotion/agent.py`: der Weg vom Kurzzeit- ins Langzeitgedächtnis
-**Stand:** 1. September 2026 (angelegt — der Agent hatte kein Moduldokument, und der Defekt `PROMOTION-NUR-EIN-PAAR` wurde deshalb zunächst im Dokument seines abgelösten Vorgängers vermerkt)
+**Stand:** 4. September 2026 (**zwei Defekte gegen das Konzept**: Der KZG-Hash wird entgegen §7.7 nach der Promotion **nicht geloescht** — der Eintrag geht erneut durch und matcht den Knoten, der aus ihm selbst entstand: **95,2 % aller 14.947 Verstaerkungen tragen `cosine = 1.0000`**, bis zu 91 je Turn ueber acht Tage. Und die Verstaerkung sitzt hier statt im Dispatcher, wo sie nach dem neuen §7.1a hingehoert. Beleg und Kennungen: `novaberg-memory-synapsen_k.md` §7.1a, `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `VERSTAERKUNG-OHNE-VERWENDUNG`.). Davor 1. September 2026 (angelegt — der Agent hatte kein Moduldokument, und der Defekt `PROMOTION-NUR-EIN-PAAR` wurde deshalb zunächst im Dokument seines abgelösten Vorgängers vermerkt)
 **Pfad:** novaberg/docs/novaberg-node-synapsen-promotion.md
 **Konzept:** `novaberg-memory-synapsen_k.md` (P4 — Knoten, Kanten, Spreading)
 **Vorgänger:** `novaberg-pixie-promotion.md` — der `PromotionAgent`, den es nicht mehr gibt; die Zwei-Call-Bauart und die EVA-Härtung sind dort beschrieben und hier eingegangen

@@ -1,6 +1,7 @@
 # EMBEDDING-CASING-BLIND
 
 **Status:** Befund belegt, Sprint offen
+**Nachtrag 04.09.2026 — das Bild ist zurueck, die Ursache ist eine andere.** `[gemessen]` heute: **14.947 Reinforcements auf 1.538 Knoten (Faktor 9,7)**, `cosine = 1.0000` in **95,2 %** — gegen 2.910 auf 302 (Faktor 9,6) am 12.07.2026. Das casing-blinde Embedding ist **nicht** die Ursache: Der KZG-Eintrag wird entgegen `novaberg-memory-synapsen_k.md` §7.7 nach der Promotion nicht geloescht und matcht den Knoten, der aus ihm selbst entstand. **Wer diese Zahlen sieht, greife nicht wieder zum Embedding** — die Kennung ist `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`.
 **Priorität:** höchste — oberhalb von `broadcast()` / Lügende Logs
 **Chat:** 107
 **Betrifft:** die Grundschicht des gesamten semantischen Gedächtnisses

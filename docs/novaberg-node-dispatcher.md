@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Dispatcher
-**Stand:** 11. Juli 2026, Chat 104 (Turn-Rohdaten-Schreiber ergänzt)
+**Stand:** 4. September 2026 (**der Dispatcher ist der vorgesehene Ort der Knoten-Verstaerkung und tut es nicht** — `novaberg-memory-synapsen_k.md` §7.1a: Verstaerkt wird, was Nova in der Antwort hergenommen hat, und zwar hier, weil der Responder formuliert und nicht persistiert. Gemessen: `knoten_verstaerken` **0 Aufrufe**, `lzg_resonanz` **0-mal gelesen**. Beide Eingaenge liegen bereit — `state["antwort_inhalt"]` und `state["lzg_resonanz"]["erinnerungen"]`. Beleg und Kennungen: `novaberg-memory-synapsen_k.md` §7.1a, `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `VERSTAERKUNG-OHNE-VERWENDUNG`.). Davor 11. Juli 2026, Chat 104 (Turn-Rohdaten-Schreiber ergänzt)
 **Pfad:** novaberg/docs/novaberg-node-dispatcher.md
 **Quellen:** nova-01-m-h.md
 **Datei:** `graph/nodes/dispatcher.py`
