@@ -154,6 +154,11 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
     **Wer den Tageslauf erweitert, erweitert diese Liste** — sonst schreibt der
     naechste Schritt hier still weiter.
 
+    `[4×]` — 03.09.2026: Der **achte** Schritt (die Qualitaetsprofile) kam dazu
+    und steht ebenfalls von Anfang an hier. Er ist der erste, dessen Ausbleiben
+    nicht nur laese oder schriebe, sondern **Modellaufrufe ausloeste** — bis zu
+    zwanzig je Suitenlauf, gegen den Produktivbestand.
+
     `[3×]` — 03.09.2026: Der **siebte** Schritt (die Einfaerbungen) kam dazu
     und steht **von Anfang an** in der Liste — zum ersten Mal, seit die Klasse
     bekannt ist. Ohne ihn liefe er gegen `POSTGRES_URL` ueber den ganzen
@@ -185,6 +190,10 @@ class TageslaufRuftDenBestandslaufTest(unittest.TestCase):
              patch(f"{AGENT_MODUL}.praegung.alle_einfaerbungen",
                    return_value={"gerechnet": 0, "gesamt": 0, "je_sektor": {},
                                  "abstand_max": 0.0, "error": None}), \
+             patch(f"{AGENT_MODUL}.quality_profile.profil_lauf",
+                   return_value={"versucht": 0, "profiliert": 0,
+                                 "gescheitert": 0, "traeger_gesamt": 0,
+                                 "kanten_gesamt": 0, "error": None}), \
              patch.object(SynapsenDecayAgent, "_richtungen_protokollieren",
                           return_value=0):
             zustand: AgentState = SynapsenDecayAgent().invoke(

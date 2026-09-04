@@ -49,7 +49,7 @@ from config import (
     POSTGRES_URL,
     SYNAPSEN_DECAY_AKTIV,
 )
-from memory import lzg_knoten, pipeline_log, praegung
+from memory import lzg_knoten, pipeline_log, praegung, quality_profile
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from tools.db_manager import db_manager
 
@@ -430,13 +430,49 @@ class SynapsenDecayAgent(BaseAgent):
             #    kalibrierbar wird.
             einfaerbung_result: dict = praegung.alle_einfaerbungen(POSTGRES_URL)
 
+            # 8. Die Qualitaetsprofile — der Erzeuger der abstrakten Schicht
+            #    (`novaberg-thinking-faszination_k.md` §5, §6). Ein
+            #    Modellaufruf je Traeger, deshalb **gedeckelt**: 368
+            #    Kandidaten standen am 03.09.2026 im Bestand, und ebenso
+            #    viele Aufrufe passen nicht in einen Heartbeat-Platz.
+            #
+            #    **Er steht hier und nicht im Turn**, weil er nichts
+            #    entscheidet, was der Turn braucht: Ein Profil beschreibt den
+            #    Gegenstand und aendert sich zwischen zwei Tagen nicht. Der
+            #    Turn-Pfad liest es spaeter, er erzeugt es nicht.
+            #
+            #    **Eigener Audit-Eintrag**, aus demselben Grund wie beim
+            #    dritten Schritt: Ein Lauf ohne Kandidaten und ein Lauf, der
+            #    nicht lief, sind sonst dasselbe.
+            self._audit_log(
+                DEFAULT_USER_ID, "qualitaet_profil", "gestartet", f"run_id={run_id}",
+            )
+            profil_result: dict = quality_profile.profil_lauf(POSTGRES_URL)
+            if profil_result["error"]:
+                self._audit_log(
+                    DEFAULT_USER_ID, "qualitaet_profil", "fehler",
+                    profil_result["error"],
+                )
+            else:
+                self._audit_log(
+                    DEFAULT_USER_ID, "qualitaet_profil", "erledigt",
+                    f"{profil_result['profiliert']} von "
+                    f"{profil_result['versucht']} Traegern profiliert, "
+                    f"Bestand {profil_result['traeger_gesamt']}",
+                )
+            logger.info(
+                f"Synapsen-Decay: {profil_result['profiliert']} von "
+                f"{profil_result['versucht']} Traegern profiliert "
+                f"({profil_result['gescheitert']} gescheitert)"
+            )
+
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
                 e
                 for e in (
                     decay_result["error"], cleanup_result["error"],
                     queue_result["error"], faltung_result["error"],
-                    einfaerbung_result["error"],
+                    einfaerbung_result["error"], profil_result["error"],
                 )
                 if e is not None
             ]
@@ -446,6 +482,7 @@ class SynapsenDecayAgent(BaseAgent):
                 "queue_verfall": queue_result,
                 "praegung_faltung": faltung_result,
                 "praegung_einfaerbung": einfaerbung_result,
+                "qualitaet_profil": profil_result,
             }
 
             ende_inhalt = {
@@ -459,6 +496,9 @@ class SynapsenDecayAgent(BaseAgent):
                 "faeden_gesamt": faltung_result["gesamt"],
                 "einfaerbungen": einfaerbung_result["gerechnet"],
                 "einfaerbung_abstand_max": einfaerbung_result["abstand_max"],
+                "profile_versucht": profil_result["versucht"],
+                "profile_geschrieben": profil_result["profiliert"],
+                "profile_bestand": profil_result["traeger_gesamt"],
             }
 
             if fehler:
