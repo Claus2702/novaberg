@@ -5,7 +5,7 @@
 **Stand:** 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
-**Status:** ⬜ nicht gebaut — Entwurf. Alle Zahlen der Rechnung sind **Setzungen zum Messen**. Die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
+**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6) und die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) sind gebaut und im Betrieb; die Faszination selbst (§10.6) ist es nicht. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
 **Voraussetzung:** `novaberg-memory-synapsen-p4-entscheidungen_k.md` (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
 **Betrifft:** `novaberg-thinking-curiosity_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-charakter-resonanz_k.md` · `novaberg-node-ei-calc.md` · `novaberg-node-emotionale-gravitation.md` · `novaberg-thinking-drive_k.md`
 
@@ -502,8 +502,29 @@ unter 0,5.
 | `bedrohungsrelevanz` | 1 | Codeberg (schwach) |
 | ohne Ausschlag | 4 | ein Termin · ein Werkdatum · ein Sternfaktum · eine Definitionsfrage |
 
-**Der Satz trägt.** Kein Kollaps auf `komplexitaet`. Und die vier ohne Ausschlag sind die
-richtigen: Eine Größe, die Faszination messen soll, **muss auch Null sagen können.**
+~~**Der Satz trägt.** Kein Kollaps auf `komplexitaet`.~~ **[Widerlegt für die maschinelle
+Bewertung, 03.09.2026 — die Handmessung selbst bleibt stehen.]** Der erste Lauf des gebauten
+Erzeugers über **25 Träger** ergab **23 dominant `komplexitaet`**, die übrigen zwei `weite`;
+**vier der sechs Dimensionen waren an keinem einzigen Träger die stärkste.** Hier war
+`komplexitaet` mit 2 von 26 die zweitschwächste. Beleg und Vorbehalte:
+`novaberg-memory-qualitaetsprofil.md` §6b.
+
+> **Die naheliegende Erklärung ist ausgeschlossen.** Der Verdacht war, `komplexitaet` messe
+> die Textlänge — jeder Kandidat ist per Filter ein Sachtext über 400 Zeichen. Vier kurze
+> Proben widerlegen es: 34 Zeichen → 0,0 · 125 Zeichen → 0,0 · 203 Zeichen → **1,0** · und
+> eine Probe mit `weite` 1,0 bei `komplexitaet` 0,5. **Die Dimensionen trennen innerhalb
+> eines kurzen Textes, und die Skala kann Null sagen.**
+>
+> **Zwei Erklärungen stehen noch, und keine Messung trennt sie bisher:** der gefilterte Korpus
+> ist homogen (lange, oft reaktivierte Astrophysik-Texte *sind* alle komplex), oder Modell und
+> Mensch bewerten verschieden. **Der Zugriff, der es entscheidet, ist benannt und nicht
+> gemacht:** dieselben Knoten maschinell und von Hand, Zeile für Zeile. Die Handmessung unten
+> liegt nur als Verteilung vor, nicht als Liste.
+
+Und die vier ohne Ausschlag sind die
+richtigen: Eine Größe, die Faszination messen soll, **muss auch Null sagen können.** Das hat
+die maschinelle Bewertung bestätigt — zwei triviale Proben liegen auf allen sechs Dimensionen
+bei 0,0.
 
 Zwei Astronomie-Knoten in derselben Stichprobe: Nur der über neo-whiteheadianische Prozessphysik
 trägt `schemasprengung`; der über die Fusion eines Sterns halber Sonnenmasse trägt nichts. **Die
@@ -1708,7 +1729,7 @@ war eine Stichprobenaussage, keine Eigenschaft der Größe.
 | 2 | Synapsen P4 — Knoten, Kanten, Spreading | blockiert durch (1) |
 | 3 | ~~**`KZG-SALIENZ-NEUBAU`** — das Faden-Tor steht darauf~~ | **hinfällig als Vorbedingung** — `[gemessen]` 30.08.2026 über 2.747 Läufe steht `salienz_effektiv` auf [0…1], Maximum exakt 1,000, keiner darüber. Der Skalenbruch ist am 24.08.2026 behoben; der Sprint bleibt offen (die Formel ist nicht idempotent), **aber das Tor braucht ihn nicht** |
 | 4 | ~~**`EMGRAV-SCHWELLE-TOT`** — solange jeder Knoten die Schwelle reißt, kann kein Faden verfallen~~ | **erfüllt** — behoben am 30.08.2026, gemessen 0,71 Aktivierungen je Turn statt 2,00 |
-| 5 | **abstrakte Schicht** — Qualitäts- und Werte-Knoten mit Typ-Diskriminator | offen; `praemisse_knoten_id` liegt leer |
+| 5 | **abstrakte Schicht** — Qualitäts- und Werte-Knoten mit Typ-Diskriminator | ~~offen~~ → **Qualitätsseite gebaut am 03.09.2026**: `abstrakt_knoten` (Typ-Diskriminator `art`) und `traeger_qualitaet` (vorzeichenlose Kante), Erzeuger als achter Schritt des Tageslaufs, Merkmalszug als Leser. **25 Träger, 150 Kanten im Bestand.** Die **Werte**seite trägt keine Zeile — `praemisse_knoten_id` wartet weiter. Die abstrakten Knoten liegen in einer **eigenen Tabelle** statt in `lzg_knoten`; Grund und Messwert in `novaberg-memory-qualitaetsprofil.md` §3a |
 | 6 | `charakter_rad_messung` liefert eine stabile Reihe | gebaut, braucht Laufzeit |
 | 7 | ~~`PIXIE_AKTIV` steht auf `False`~~ | **erfüllt** — `PIXIE_AKTIV=true` im laufenden Container, `[gemessen]` 30.08.2026; nur der Code-Default in `config.py:360` ist `false` |
 | 8 | Haltungsraum bekommt einen Leser | offen |

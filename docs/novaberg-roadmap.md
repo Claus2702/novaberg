@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 3. September 2026 — juengster Eintrag **20:35 UTC** (gemessen via `date -u`). Davor 03.09.2026, 20:25 UTC.
+**Stand:** 3. September 2026 — juengster Eintrag **21:30 UTC** (gemessen via `date -u`). Davor 03.09.2026, 20:35 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,52 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 03.09.2026, 21:30 UTC — Die abstrakte Schicht bekommt ihre Qualitätsseite ✅
+
+**Gebaut:** `abstrakt_knoten` und `traeger_qualitaet` (DDL, angekündigt und freigegeben), der
+Erzeuger `memory/quality_profile.py` als **achter Schritt des Tageslaufs**, der Speicher
+`memory/repositories/quality_profile_repository.py` und der Leser `ei/fascination.py::merkmalszug`.
+Damit steht der **zweite von neun Faktoren** der Faszination (`novaberg-thinking-faszination_k.md`
+§10.6) — nach dem Prägungszug vom selben Tag, und der erste, der nicht ohne Leser bleibt.
+
+**Vorbedingung 5 des Konzepts ist zur Hälfte erfüllt.** Die Qualitätsseite trägt 25 Träger;
+die Werteseite trägt keine Zeile, und `praemisse_knoten_id` wartet weiter.
+
+**Die abstrakten Knoten liegen in einer eigenen Tabelle statt in `lzg_knoten`** — eine
+Abweichung vom Konzept §4.4 mit Messwert: **24 Lesestellen in 13 Modulen, 22 davon nach
+Kriterien statt nach `id`.** Sechs abstrakte Knoten dort wären aus jeder einzelnen
+auszuschließen; ein vergessener Ausschluss wäre eine Qualität, die im Spreading als Erinnerung
+auftaucht. Der Preis war null: `lzg_knoten_haltung` trägt 0 Zeilen.
+
+**`[gemessen]` gegen den Bestand:** 29 Träger versucht, **25 profiliert, 25 Träger / 150 Kanten**,
+6,5 bis 8,1 s je Träger, Merkmalszug **1,0350 bis 1,2100**. Sechs Vorhersagen vorher
+aufgeschrieben, **drei getroffen**.
+
+**Und der Hauptbefund ist negativ: die Dominanz kollabiert auf `komplexitaet` — 23 von 25.**
+Vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste. Das widerspricht der
+Handmessung in Konzept §6.2 (*„Kein Kollaps auf `komplexitaet`"*, dort 2 von 26) unmittelbar.
+**Die naheliegende Erklärung ist widerlegt:** Vier kurze Proben zeigen, dass die Dimensionen
+innerhalb eines kurzen Textes trennen und die Skala Null sagen kann — `komplexitaet` misst
+nicht die Textlänge. Zwei Erklärungen stehen noch (homogener Korpus, oder Modell gegen Mensch),
+und **die Messung, die sie trennt, ist benannt und nicht gemacht**. Beleg:
+`novaberg-memory-qualitaetsprofil.md` §6b.
+
+**Ein Defekt dabei gefunden und behoben:** Alle vier Fehlschläge trugen dieselbe Ursache — das
+Modell schrieb `"un gewissheit"` in einen Bezeichner, den es wörtlich vorgegeben bekam. Die
+Behebung räumt **nur Leerraum** ab, laut und mit scharfer Kanon-Prüfung darunter; im Bestand
+belegt, 6 von 6 im Nachlauf.
+
+**Und einen Zeugendefekt fand die Gegenprobe:** Zwei Zeugen bezogen ihre Erwartung aus der
+Konstante, die sie prüfen sollten — `MERKMALSZUG_BONUS` auf 0.0 ließ **alle 37 grün**. Nach dem
+Ausschreiben der Literale: **3 vorhergesagt, 3 gezählt.**
+
+ **Zweite Kontrolle, 21:38 UTC — der Betrieb statt der Zeugen:** `profil_lauf` selbst gegen den Bestand gefahren (bis dahin nur gegen Mocks bezeugt) — **3 versucht, 3 profiliert, 0 gescheitert**, Buchfuehrung geht auf, Bestand **28 Traeger / 168 Kanten**. **Der Betriebsbeleg ueber den Tageslauf steht aus** — der laeuft taeglich gegen 19:58 UTC und lief zuletzt vor dem Bau.
+
+**Zeugen:** `tests/test_quality_profile_schema.py` (6, rote Phase 6/6 gesehen) ·
+`tests/test_quality_profile.py` (32). **Suite 2945 grün, 0 übersprungen** (davor 2901).
 
 ---
 

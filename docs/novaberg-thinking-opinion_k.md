@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Wie Nova zu einer eigenen Haltung kommt
-**Stand:** 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
+**Stand:** 3. September 2026, 21:30 UTC (**der Ort fuer die Praemisse-Kante existiert** — `abstrakt_knoten` traegt seit heute einen Typ-Diskriminator `art`; die Qualitaetsseite ist gefuellt, die Werteseite traegt keine Zeile, und `praemisse_knoten_id` zeigt weiterhin auf `lzg_knoten`, wo die abstrakten Knoten **nicht** liegen. §5a). Davor 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
 **Pfad:** novaberg/docs/novaberg-thinking-opinion_k.md
 **Status:** Konzept. Skelett steht, Kalibrierung offen. Bewusst offene Punkte sind durchgehend mit ⬜ markiert und in §10 gesammelt.
 **Verwandt:** novaberg-thinking-drive_k.md · novaberg-thinking-frames_k.md · novaberg-memory-synapsen_k.md · novaberg-node-gv_k.md · novaberg-node-tribunal.md · novaberg-pixie.md · novaberg-ei.md
@@ -111,7 +111,7 @@ Drei Eigenschaften halten:
 | `knoten_id`, `eigenschaft` | der Gegenstand; leere Eigenschaft = die Sache als ganze (die grobe Stufe aus §9) |
 | `ladung` | Vorzeichen **und** Stärke, −1.0 bis +1.0, als `CHECK` im Schema |
 | `emotion`, `quelle` | die Emotion dahinter; die Herkunft ist **Pflicht** — ohne sie ist eine Haltung nicht nachrechenbar |
-| `praemisse_knoten_id` | die Prämisse als **Kante**, wie §5 sie verlangt. Bis es Werte-Knoten gibt, bleibt sie leer |
+| `praemisse_knoten_id` | die Prämisse als **Kante**, wie §5 sie verlangt. Bis es Werte-Knoten gibt, bleibt sie leer — **und seit dem 03.09.2026 gibt es den Ort dafür**: `abstrakt_knoten` trägt einen Typ-Diskriminator `art` mit den Werten `qualitaet` und `wert`. Die Qualitätsseite ist gefüllt (sechs gesetzte Dimensionen, 25 profilierte Träger), **die Werteseite trägt keine Zeile.** Achtung beim Anschluss: Der Fremdschlüssel zeigt heute noch auf `lzg_knoten`, die abstrakten Knoten liegen aber **nicht** dort — Grund und Messwert in `novaberg-memory-qualitaetsprofil.md` §3a |
 | `staerke_roh` / `_decay`, `haeufigkeit`, `aktiv` | die Dynamik des Knotens (`F-VERFALL-1`): eine Haltung ist Gedächtnis, kein Faktum |
 
 **Drei Entscheidungen, die im Code stehen:**

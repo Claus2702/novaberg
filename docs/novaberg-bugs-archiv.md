@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Stand:** 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
 **Inhalt:** **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
@@ -32,6 +32,32 @@
 Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste ist ein
 **Schwellwert auf einer Groesse, die ihren dokumentierten Wertebereich verlassen hat**; der zweite
 ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
+
+### `PROFIL-SCHLUESSEL-MIT-LEERRAUM` — ein Leerzeichen kostet den Traeger dauerhaft
+
+**Zustand:** behoben am 03.09.2026 ✅
+**Symptom.** `[gemessen]` 03.09.2026, 21:21 UTC: Der Erstlauf der Qualitaetsprofile ueber 20
+Traeger verlor **4**, und alle vier mit derselben Meldung — *„Schluesselsatz weicht vom Kanon
+ab — fehlend ['ungewissheit'], unerwartet ['un gewissheit']"*. Das Modell setzt ein Leerzeichen
+in einen Bezeichner, den es im Prompt woertlich vorgegeben bekommt, und zwar reproduzierbar an
+derselben Stelle: viermal `ungewissheit`, nie eine andere Dimension.
+**Wirkung.** Nicht ein verlorener Lauf, sondern ein **dauerhaft verlorener Traeger.** Die
+Kandidatensuche nimmt, wer noch keine Kante traegt; ein an dieser Stelle gescheiterter Traeger
+traegt keine und wird deshalb wieder gezogen — gegen dasselbe Modell, mit demselben Prompt,
+bei Temperatur 0,0. Er faellt bei jedem Lauf erneut aus, und der Deckel von 20 Traegern je Lauf
+fuellt sich mit Wiederholungen.
+**Was ihn sichtbar machte.** Die Pruefung gegen den **Kanon** statt gegen eine Teilmenge: Sie
+nennt beide Seiten, fehlend und unerwartet, und damit stand der Grund in der ersten Zeile. Eine
+Teilmengen-Pruefung haette *„ungewissheit fehlt"* gemeldet und den Rest verschwiegen.
+**Die Abhilfe raeumt nur Leerraum ab.** `_schluessel_entraeumen` zieht Leerraum in Schluesseln
+zusammen, schreibt jede Berichtigung ins Log und verwirft, wenn dabei zwei Schluessel
+kollidieren. Die Kanon-Pruefung darunter bleibt scharf — ein erfundener Name faellt weiterhin
+durch, und ein Zeuge haelt genau das fest (`neu heit` → verworfen).
+**Im Bestand belegt.** Die drei erneut gezogenen Traeger (4692, 3944, 1533) sind profiliert:
+6 von 6, 0 gescheitert.
+**Prioritaet:** mittel — der Verlust war still im Sinne der Wirkung, nicht der Meldung.
+
+---
 
 ### `FALTUNG-OHNE-AUFRUFER` — die Beruehrung wird geschrieben und nie gelesen
 
