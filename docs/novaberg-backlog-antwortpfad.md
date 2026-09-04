@@ -293,14 +293,17 @@ Emotions-Baseline.
 
 | Phase | Inhalt | Status |
 |-------|--------|--------|
-| Phase 1 | Pipeline-Log (Tabelle + Helper-API, schreibende Knoten und Agenten) | ✅ Chat 104 |
+| Phase 1a | Pipeline-Log — Tabelle, Helper-API, Retention | ✅ Chat 104 |
+| Phase 1b | Die urteilenden und wählenden Knoten schreiben — Perzeption, Router, Planner, Responder, Thinker, Tribunal, Corrector | ⬜ |
 | Phase 2 | pipeline_search Tool (Thinker + Responder) | ⬜ |
 | Phase 3 | Vorsaetze-Tabelle + SelbstreflexionsAgent | ⬜ |
 | Phase 4 | Vorsatz-Wirkung im Responder/GV/EI | ⬜ |
 | Phase 5 | Aktionen aus Selbstreflexion (Queue, jeder Agent) | ⬜ |
 | Phase 6 | Vorsatz-Evaluation + Charakter-Verschiebung (experimentell) | ⬜ |
 
-Bauteile mit Vorbedingungen stehen seit v0.2 in `novaberg-metakognition_k.md` §7 — `MK-1` bis `MK-6`, je mit ZIEL, TEST, MESSUNG und Gegenprobe.
+Bauteile mit Vorbedingungen stehen seit v0.2 in `novaberg-metakognition_k.md` §7 — `MK-1a` bis `MK-6`, je mit ZIEL, TEST, MESSUNG und Gegenprobe.
+
+**Phase 1 ist am 04.09.2026 geteilt worden, und das ist der Befund des Audits:** Die Tabelle läuft seit Chat 104, aber das ZIEL *„jeder Node schreibt seine Entscheidung"* ist an **4 von 11 Knoten** belegt. Die sieben stummen haben über 154.383 Zeilen keine einzige — und es sind genau die, die **wählen und urteilen**. Solange 1b offen ist, beantwortet ein `pipeline_search` (Phase 2) Fragen nach Rechenwegen statt nach Entscheidungen; 1b ist deshalb dessen Vorbedingung.
 
 
 ### Client & Visualisierung

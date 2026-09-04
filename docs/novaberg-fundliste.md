@@ -246,7 +246,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
-- **2026-09-04** — **Der Doku-Nachzug zur Metakognitions-Ueberarbeitung (v0.2) steht aus.** Der Scope war auf drei Dateien begrenzt — `novaberg-metakognition_k.md`, die Epic-Tabelle in `novaberg-backlog-antwortpfad.md`, diese Liste. **Chronik und Featureliste sind nicht nachgezogen**, obwohl die Ueberarbeitung eine Statusaenderung traegt (Schicht 1 von ⬜ auf *teilweise gebaut*, Phase 1 des Epics auf ✅). Kein Termin.
+- ~~**2026-09-04** — **Der Doku-Nachzug zur Metakognitions-Ueberarbeitung (v0.2) steht aus.**~~ → **Erledigt am 04.09.2026, 17:10 UTC.** Chronik und Featureliste nachgezogen; dabei **faellt die Ampel der Phase 1 von 🟢 auf 🟠** — das ZIEL *„jeder Node schreibt seine Entscheidung"* ist an 4 von 11 Knoten belegt. Der Nachzug hat damit mehr getan als abgehakt: Er hat die Statusaenderung erst sichtbar gemacht, die im Konzept schon stand.
 
 - ~~**2026-09-04** — **`novaberg-memory-synapsen_k.md` §10 fuehrt die `pipeline_log`-DDL veraltet.**~~ → **Erledigt am 04.09.2026**, nachdem der Eigentuemer den Scope dafuer geoeffnet hat. Nachgezogen gegen die **laufende Datenbank** (`\d pipeline_log`), nicht nur gegen `init.sql`; beide stimmen ueberein. Der Drift war groesser als der Fund sagte: acht Spalten statt zehn, sieben Indizes statt fuenf, *„11 Werte"* statt dreizehn, `db_zugriff` statt `db_write`, kein `db_read`, kein `turn_roh` — und **die Retention-Ausnahme fuer Rohturns fehlte ganz**. Dazu ein widerlegter Satz: *„Lesen wird nicht geloggt"* (5.315 `db_read`-Zeilen im Bestand). Alles markiert statt geloescht.
 

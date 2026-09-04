@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026, 13:00 UTC** (gemessen via `date -u`). Davor 03.09.2026, 21:30 UTC.
+**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026, 17:10 UTC** (gemessen via `date -u`). Davor 04.09.2026, 13:00 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,51 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 04.09.2026, 17:10 UTC — das Pipeline-Log trägt kein Urteil ✅
+
+**Kein Code.** Das Metakognitions-Konzept vom Mai 2026 ist zum ersten Mal gegen den Bestand gehalten
+worden — erst gegen den Code, dann gegen die laufende Datenbank. Ergebnis: `novaberg-metakognition_k.md`
+v0.2, `novaberg-memory-synapsen_k.md` §10 nachgezogen, eine Ampel gefallen.
+
+**Der tragende Befund ist eine Trennlinie, keine Zahl.** Von den elf Nodes, für die das Konzept eine
+Entscheidungszeile vorsah, schreiben **vier**. Die sieben stummen — Perzeption, Router, Planner,
+Responder, Thinker, Tribunal, Corrector — haben über **154.383 Zeilen** `[gemessen 04.09.2026]`
+**nicht eine einzige**. Und die Lücke ist keine zufällige:
+
+> **Was schreibt, sind Berechnungs- und Schreib-Nodes. Was schweigt, sind die Nodes, die wählen und
+> urteilen. Das Log trägt Berechnung und Schreibvorgang — kein Urteil und keine Wahl.**
+
+An den eigenen Beispielen des Konzepts nachgeprüft: *„Warum warst du zurückhaltend"* ist beantwortbar
+(GV-Node), *„wie hast du dich gefühlt"* sogar dauerhaft (`turn_roh` trägt `nova_emotion`, von der
+Retention ausgenommen) — *„hat das Tribunal etwas beanstandet"* **nicht**. `tribunal_verdict` lebt
+allein im State. Das eine unbeantwortbare Beispiel ist das, das nach einer Wertung fragt.
+
+**Drei Zahlen sind gefallen.** Die Mengenschätzung des Konzepts lag um **Faktor acht** daneben —
+3.959 statt 500 Zeilen je Tag —, und der Grund erklärt sie: Die Hälfte des Logs ist kein Gespräch,
+`synapsen_promotion` allein trägt 47,8 %. Die drei Arten ohne Aufrufer (`prompt`, `bemerkung`,
+`token`) rücken von *„kein Aufrufer"* auf *„nie eine Zeile"*. Und `synapsen_k` §10, die vereinbarte
+Heimat der DDL, führte acht Spalten statt zehn, `db_zugriff` statt `db_write`, kein `db_read`, kein
+`turn_roh`, keine Retention-Ausnahme — dazu den Satz *„Lesen wird nicht geloggt"* gegen **5.315**
+gemessene `db_read`-Zeilen. Schema und laufende Tabelle stimmen dagegen exakt überein.
+
+**Zwei weitere Sätze fielen an anderer Stelle:** Der Monotonie-Druck (§5.2) sieht ein leeres Feld
+nicht — die 40-%-Schwelle feuert auf `tone` und `beziehungs_dynamik`, nicht auf die Verlaufsformen,
+wo drei Werte ganz fehlen. Und die Charakter-Gravitation (§5.3) ist **gesperrt**, solange der
+`kern_hash` das Zerrbild trägt: Ein Magnet, der zum Zerrbild zieht, ist kein Regler, sondern ein
+Verstärker.
+
+**Ein neuer Fund, den nur die Datenbank zeigen konnte:** Der Bestand beginnt bei `id = 1` am
+27.07.2026. Die 150 Rohturns, die `novaberg-charakter-resonanz_k.md` §2.1 für den 25.07. zählt, sind
+darin **nicht enthalten**. Retention ist als Ursache ausgeschlossen — 365 Tage Frist, 39 Tage alte
+Tabelle, `turn_roh` ohnehin ausgenommen. Warum, ist offen und steht in der Fundliste.
+
+**Ampel:** Metakognition Phase 1 von 🟢 auf 🟠 — nicht weil etwas kaputtging, sondern weil das ZIEL
+zum ersten Mal gegen den Bestand gehalten wurde. §7 trägt statt sechs Phasen sieben Bauteile
+`MK-1a` bis `MK-6`, jedes mit ZIEL/TEST/MESSUNG/Gegenprobe und Vorbedingung. **Suite unberührt bei
+2966.**
 
 ---
 
