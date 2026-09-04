@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026, 17:10 UTC** (gemessen via `date -u`). Davor 04.09.2026, 13:00 UTC.
+**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026, 23:40 UTC** (gemessen via `date -u`). Davor 04.09.2026, 17:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,43 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 04.09.2026, 23:40 UTC — der erste Betriebsbeleg war stumm, jetzt ist er es nicht mehr ✅
+
+**Der Anlass war ein Nullbefund.** Die Verwendungs-Verstärkung (§7.1a) lief in ihren ersten zwei
+echten Turns und verstärkte nichts: `geprueft: 3, verwendet: 0, naehen: []`. Gegen die
+Bestandsmessung desselben Tages — 13 von 15 Turns verstärken — war das erklärungsbedürftig, **und
+die Zeile konnte nichts dazu sagen.**
+
+**Sechs Ausgänge sahen in ihr gleich aus:** leere Antwort, keine gelesenen Erinnerungen,
+ausgefallenes Einbetten, leerer Vektor, unlesbare Nähe — und der Normalfall *nichts über der
+Schwelle*. Fünf davon sind Ausfälle, einer ist ein Ergebnis, und alle schrieben `verwendet: 0`.
+
+**Gebaut:** `used_memories_find` liefert einen `Verwendungsbefund` statt einer nackten Liste. Die
+Protokollzeile trägt seither `naehen_alle` (die Nähe **jeder** geprüften Erinnerung, auch der
+verworfenen), `knappster_verworfener`, `schwelle`, `deckel` und `ausgang`. Damit ist ein
+Nullbefund von einer zu hohen Schwelle unterscheidbar — vorher war er es nicht.
+
+**Die zwei Zeilen davor sind einmalig nachgerechnet** (`labor/2026-09-04_verwendung_nullbefund_nachrechnen.py`,
+Antwort einbetten, Nähe zu den `lzg_resonanz_ids` desselben Turns):
+
+| Turn | Nähen | knappster verworfener |
+|---|---|---|
+| 15:05 UTC | 0,2400 · 0,1500 · 0,2935 | **0,2935** |
+| 16:06 UTC | 0,3620 · 0,4334 · 0,4121 | **0,4334** |
+
+**Der Nullbefund ist richtig, und die Schwelle steht nicht zu hoch.** Alle sechs Werte liegen unter
+dem Maximum der Zufallsverteilung (0,5305 über 75.975 Paare) — die gelesenen Erinnerungen waren
+Nachbarschaft. Was fehlt, sind Turns, in denen Nova eine Erinnerung wirklich aufgreift; beide
+Antworten waren kurz (142 und 202 Zeichen).
+
+**Suite 2974 grün, 0 übersprungen** (davor 2966, acht neue Zeugen). **Gegenprobe: 4 vorhergesagt,
+4 gezählt** — der Eingriff war, die Sammlung der Nähen zu entfernen. Harte Wand sauber.
+
+**Was aussteht:** Der Betriebsbeleg der neuen Zeile. Die Änderung wirkt erst nach einem Neustart
+des Servers.
 
 ---
 

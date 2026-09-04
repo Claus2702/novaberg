@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 4. September 2026 (**§7.1a gebaut** — `memory/usage_reinforcement.py`, gerufen vom Dispatcher; Schwelle **0,55** aus 75.975 Paaren abgeleitet, Deckel 3. Gegen den Bestand: 13 von 15 Turns verstärken, 24 von 30 nahen Kandidaten genommen, **0 von 45 fremden**. Die Segmentregel ist **vor dem Bau widerlegt** — 25 von 25 Antworten ergeben ein Segment, und die Segmentierung kostete 1,53 s im Turn. Davor am selben Tag: **§7.1a — das Erkennungskriterium ist entschieden**: Embedding-Naehe zwischen Antwort und Erinnerung, **je Segment**, weil die Selbstauskunft des Verfassers fantasieren koennte und der Ganztext verduennt. Die Schwelle wird gemessen, nicht gesetzt — die Naehe trennt schwach (0,355 gegen 0,504 ueber 19.900 Paare). Davor am selben Tag: **§7.1a neu — Verstärkung setzt Verwendung voraus, nicht Nachbarschaft**: Der Ort ist der Dispatcher, nicht der Responder. Gemessen: 95,2 % aller Verstärkungen tragen `cosine = 1.0000`, ein einzelner KZG-Eintrag erzeugte bis zu 91 Verstärkungen über acht Tage, und 91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns. §9.2 verschärft. **Dasselbe Bild wie am 12.07.2026, andere Ursache.**). Davor 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
+**Stand:** 4. September 2026, 23:40 UTC (**§7.1a — die Protokollzeile traegt jetzt die Entscheidung**: Der erste Betriebsbeleg war ein Nullbefund, in dem **sechs Ausgaenge gleich aussahen**; die Zeile fuehrt seither `naehen_alle`, `knappster_verworfener`, `schwelle`, `deckel` und `ausgang`. Fuer die zwei Zeilen davor einmalig nachgerechnet: knappster verworfener **0,2935** und **0,4334** — beide unter dem Maximum der Zufallsverteilung (0,5305), **der Nullbefund ist richtig und die Schwelle steht nicht zu hoch**. Suite **2974**.). Davor 4. September 2026 (**§7.1a gebaut** — `memory/usage_reinforcement.py`, gerufen vom Dispatcher; Schwelle **0,55** aus 75.975 Paaren abgeleitet, Deckel 3. Gegen den Bestand: 13 von 15 Turns verstärken, 24 von 30 nahen Kandidaten genommen, **0 von 45 fremden**. Die Segmentregel ist **vor dem Bau widerlegt** — 25 von 25 Antworten ergeben ein Segment, und die Segmentierung kostete 1,53 s im Turn. Davor am selben Tag: **§7.1a — das Erkennungskriterium ist entschieden**: Embedding-Naehe zwischen Antwort und Erinnerung, **je Segment**, weil die Selbstauskunft des Verfassers fantasieren koennte und der Ganztext verduennt. Die Schwelle wird gemessen, nicht gesetzt — die Naehe trennt schwach (0,355 gegen 0,504 ueber 19.900 Paare). Davor am selben Tag: **§7.1a neu — Verstärkung setzt Verwendung voraus, nicht Nachbarschaft**: Der Ort ist der Dispatcher, nicht der Responder. Gemessen: 95,2 % aller Verstärkungen tragen `cosine = 1.0000`, ein einzelner KZG-Eintrag erzeugte bis zu 91 Verstärkungen über acht Tage, und 91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns. §9.2 verschärft. **Dasselbe Bild wie am 12.07.2026, andere Ursache.**). Davor 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
 
 > **Gemessen am 02.08.2026, nicht geschätzt:** 1108 Knoten, 110.340 Kanten, alte Tabelle 0 Zeilen. Kantenzusammensetzung: embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %.
 >
@@ -741,6 +741,42 @@ wiederkehrendsten.
 `[gemessen]` 04.09.2026: Zählt man Berührungen über **verschiedene Turns** statt über Zeilen,
 fallen die Träger mit Wiederkehr ≥ 2 von **1.250 auf 106**, das Mittel von 2,64 auf **1,04**.
 **91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns.**
+
+#### Die Protokollzeile trägt die Entscheidung, nicht ihr Ergebnis
+
+**Der erste Betriebsbeleg war ein Nullbefund, und er konnte nicht sagen, warum.** Die beiden ersten
+echten Turns (04.09.2026, 15:05 und 16:06 UTC) schrieben `geprueft: 3, verwendet: 0, naehen: []` —
+und in dieser Zeile sehen **sechs verschiedene Ausgänge gleich aus**: leere Antwort, keine gelesenen
+Erinnerungen, ausgefallenes Einbetten, leerer Vektor, unlesbare Nähe, und der Normalfall *nichts
+über der Schwelle*. Fünf davon sind Ausfälle, einer ist ein Ergebnis.
+
+Seit dem 04.09.2026 trägt die Zeile deshalb die Größen, aus denen die Entscheidung entstand
+— die Eingangsgrößen einzeln, den geltenden Maßstab und eine Herkunftsmarke:
+
+| Feld | Was es beantwortet |
+|---|---|
+| `naehen_alle` | die Nähe **jeder** geprüften Erinnerung, auch der verworfenen |
+| `knappster_verworfener` | wie weit die Schwelle vom Bestand entfernt steht |
+| `schwelle`, `deckel` | der Maßstab, gegen den verglichen wurde |
+| `ausgang` | welcher der sechs Wege die Zeile erzeugt hat |
+
+> **Ohne `naehen_alle` ist ein Nullbefund nicht von einer zu hohen Schwelle zu unterscheiden.** Das
+> ist derselbe Satz wie bei der Nulllinie eine Ebene tiefer: Wer nur die Treffer protokolliert,
+> kann die Trennschärfe seines eigenen Kriteriums nie nachprüfen.
+
+**Die Reparatur wirkt nur nach vorn.** Für die zwei Zeilen davor ist
+die Zahl einmalig nachgerechnet worden, aus `turn_roh` und den `lzg_resonanz_ids` des Enrichers
+(`labor/2026-09-04_verwendung_nullbefund_nachrechnen.py`):
+
+| Turn | Nähen der gelesenen Erinnerungen | knappster verworfener |
+|---|---|---|
+| 15:05 UTC | 0,2400 · 0,1500 · 0,2935 | **0,2935** |
+| 16:06 UTC | 0,3620 · 0,4334 · 0,4121 | **0,4334** |
+
+**Der Nullbefund ist inhaltlich richtig, und die Schwelle steht nicht zu hoch.** Alle sechs Werte
+liegen unter dem Maximum der Zufallsverteilung (0,5305 über 75.975 Paare) — die gelesenen
+Erinnerungen waren Nachbarschaft, keine Verwendung. Was fehlt, sind Turns, in denen Nova eine
+Erinnerung wirklich aufgreift; beide Antworten waren kurz (142 und 202 Zeichen).
 
 ### 7.2 Reihenfolge der Schritte
 
