@@ -37,6 +37,7 @@ from config import (
 )
 from graph.reiz import reiz_text
 from graph.state import ConversationState, reiz_herkunft
+from memory import usage_reinforcement
 from memory.pipeline_log import log_db_write, log_fehler, log_turn_roh
 from memory.repositories.verbindung_repository import VerbindungRepository
 from memory.session import session_summarize_if_needed, session_turn_store
@@ -364,6 +365,75 @@ def _session_turn_schreiben(state: ConversationState) -> None:
     session_summarize_if_needed(cfg_redis_client, user_id, character_id)
 
 
+def _verwendung_verstaerken(state: ConversationState, postgres_url: str) -> None:
+    """Verstaerkt die Erinnerungen, die die Antwort hergenommen hat (§7.1a).
+
+    **Ein Turn ohne gelesene Erinnerungen ist der Normalfall** — `[gemessen]`
+    04.09.2026: 851 von 1296 Enricher-Laeufen lieferten ueberhaupt welche, im
+    Mittel 1,90. Ohne Material kehrt die Funktion still zurueck; das ist kein
+    Uebersprung, sondern die Abwesenheit eines Gegenstands.
+
+    **Ein Fehlschlag beendet den Turn nicht.** Die Antwort ist zu diesem
+    Zeitpunkt zugestellt und protokolliert; eine ausgefallene Verstaerkung
+    kostet einen Datenpunkt, kein Gespraech. Sie wird laut vermerkt.
+
+    Vorbedingung: keine.
+    Nachbedingung: Der Zustandsverbund bleibt unberuehrt — dieser Knoten
+        schreibt in die Datenbank, nicht in den State. Das Ergebnis steht im
+        Log und im Pipeline-Protokoll.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    erinnerungen: list = (state.get("lzg_resonanz") or {}).get("erinnerungen", [])
+    antwort: str = state.get("antwort_inhalt") or ""
+    if not erinnerungen or not antwort.strip():
+        return
+
+    knoten_ids: list[int] = [
+        int(e["knoten_id"]) for e in erinnerungen
+        if isinstance(e, dict) and isinstance(e.get("knoten_id"), int)
+    ]
+    if len(knoten_ids) != len(erinnerungen):
+        logger.error(
+            f"Dispatcher: {len(erinnerungen) - len(knoten_ids)} von "
+            f"{len(erinnerungen)} Erinnerungen ohne brauchbare `knoten_id` — "
+            f"sie koennen nicht verstaerkt werden"
+        )
+    if not knoten_ids:
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        ergebnis: dict = usage_reinforcement.reinforce_used(
+            postgres_url, antwort, knoten_ids
+        )
+    except Exception as fehler:  # noqa: BLE001 — der Turn ist zugestellt, er darf nicht daran scheitern
+        logger.exception(
+            f"{type(fehler).__name__}: Dispatcher: Verstaerkung der "
+            f"hergenommenen Erinnerungen fehlgeschlagen"
+        )
+        return
+
+    # ── Ausgabe-Verifikation ────────────────────
+    log_db_write(
+        turn_id = state.get("turn_id", ""),
+        node    = "dispatcher",
+        quelle  = "memory",
+        inhalt  = {
+            "schritt":    "verwendung_verstaerkung",
+            "geprueft":   ergebnis["geprueft"],
+            "verwendet":  ergebnis["verwendet"],
+            "verstaerkt": ergebnis["verstaerkt"],
+            "naehen":     ergebnis["naehen"],
+        },
+        user_id      = state.get("user_id", ""),
+        character_id = state.get("character_id", ""),
+    )
+    logger.info(
+        f"Dispatcher: {ergebnis['verstaerkt']} von {ergebnis['geprueft']} "
+        f"gelesenen Erinnerungen verstaerkt (Naehen {ergebnis['naehen']})"
+    )
+
+
 def _turn_roh_schreiben(state: ConversationState) -> None:
     """Schreibt das vollstaendige Reiz-Reaktions-Paar (a-d) roh ins pipeline_log.
 
@@ -662,6 +732,20 @@ def dispatch(
     # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
     _session_turn_schreiben(state)
     _turn_roh_schreiben(state)
+
+    # ── Verstärkung der hergenommenen Erinnerungen (§7.1a) ──
+    # **Der eine Weg, auf dem im Turn überhaupt verstärkt wird.** Lesen
+    # verstärkt nicht (§7.1), Nachbarschaft auch nicht — nur was Nova in der
+    # Antwort tatsächlich hergenommen hat.
+    #
+    # **Hier und nicht im Responder:** Der Responder formuliert, er
+    # persistiert nicht. Verstärkung ist ein Schreibvorgang, und die laufen
+    # über diesen Knoten — den letzten vor `END`, der als einziger beide
+    # Hälften zugleich hat: die fertige Antwort und das gelesene Material.
+    #
+    # **Nach `_turn_roh_schreiben`**, damit die Antwort auch dann protokolliert
+    # ist, wenn das Einbetten ausfällt.
+    _verwendung_verstaerken(state, postgres_url)
 
     logger.info(
         f"Dispatcher: gv_detail={'vorhanden' if state.get('gv_detail') else 'LEER'}, "

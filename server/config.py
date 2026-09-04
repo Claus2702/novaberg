@@ -2033,6 +2033,46 @@ QUALITAET_PROFIL_JE_LAUF: int = 20
 # und ungemessen — er ist erst kalibrierbar, wenn Profile im Bestand stehen.
 MERKMALSZUG_BONUS: float = 0.35
 
+# ─────────────────────────────────────────────────────────────
+# Verstaerkung setzt Verwendung voraus
+# `novaberg-memory-synapsen_k.md` §7.1a
+# ─────────────────────────────────────────────────────────────
+# Ab welcher Naehe zwischen der Antwort und einer gelesenen Erinnerung gilt
+# die Erinnerung als **hergenommen** — und wird verstaerkt.
+#
+# **Der Wert ist abgeleitet, nicht gesetzt.** `[gemessen]` 04.09.2026 ueber
+# **75.975 Paare** (25 echte Antworten des Paares `meister` gegen 3.039
+# aktive Knoten):
+#
+#   P50   0,2664      P99    0,4770  (~30 Knoten je Antwort)
+#   P90   0,3874      P99,9  0,5412  (~3 Knoten je Antwort)
+#                     P99,99 0,6672  (<1)
+#
+# 0,55 liegt zwischen P99,9 und P99,99: Je Antwort passieren **ein bis drei**
+# von 3.039 Knoten, und **15 von 25** Turns tragen ueberhaupt eine
+# Verstaerkung. Das ist die Groessenordnung, die das Konzept verlangt — sie
+# liest drei und nimmt eine. Zum Vergleich: 0,50 liesse ~30 Knoten je Antwort
+# durch, 0,60 weniger als einen.
+#
+# **Der Vorbehalt gehoert an die Zahl.** Die Verteilung oben ist die
+# **Gesamt**verteilung und enthaelt die Treffer; eine echte Nulllinie ueber
+# nachweislich fremde Knoten gibt es nicht, weil die Ground Truth fehlt. Das
+# macht die Schwelle eher zu hoch als zu niedrig — die konservative Richtung.
+# Ab dem 04.09.2026 protokolliert der Enricher `lzg_resonanz_ids`; damit ist
+# sie ueber Laufzeit an echten Turns nachmessbar.
+VERWENDUNG_NAEHE_SCHWELLE: float = float(
+    os.getenv("VERWENDUNG_NAEHE_SCHWELLE", "0.55")
+)
+
+# Wie viele Erinnerungen ein Turn hoechstens verstaerken darf.
+# `[gemessen]` 04.09.2026: Der Lesepfad liefert im Mittel **1,90** und
+# hoechstens **3** Erinnerungen je Turn — der Deckel ist damit heute keine
+# Beschraenkung, sondern eine Zusicherung gegen einen kuenftig breiteren
+# Lesepfad. Ohne ihn truege ein Turn, der zwanzig Erinnerungen liest, zwanzig
+# Verstaerkungen bei, und die Verwendung waere wieder von Nachbarschaft nicht
+# zu unterscheiden.
+VERWENDUNG_MAX_JE_TURN: int = int(os.getenv("VERWENDUNG_MAX_JE_TURN", "3"))
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest
