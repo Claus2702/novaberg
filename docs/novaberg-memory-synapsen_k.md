@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
+**Stand:** 4. September 2026 (**§7.1a neu — Verstärkung setzt Verwendung voraus, nicht Nachbarschaft**: Der Ort ist der Dispatcher, nicht der Responder. Gemessen: 95,2 % aller Verstärkungen tragen `cosine = 1.0000`, ein einzelner KZG-Eintrag erzeugte bis zu 91 Verstärkungen über acht Tage, und 91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns. §9.2 verschärft. **Dasselbe Bild wie am 12.07.2026, andere Ursache.**). Davor 30. August 2026, 17:40 UTC (§4.1: was die Skala [0…10] bedeutet — Dauer, nicht Wichtigkeit; der Anlagewert 3,25–3,96 und seine Jahresrechnung). Davor 30. August 2026 (§8.4.4: der Block in den Namen seines Lesers; 29.08.: die Zeile `Sprecher:` je Erinnerung, der Lesepfad lädt `beobachter`); davor 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
 
 > **Gemessen am 02.08.2026, nicht geschätzt:** 1108 Knoten, 110.340 Kanten, alte Tabelle 0 Zeilen. Kantenzusammensetzung: embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %.
 >
@@ -595,6 +595,80 @@ Kanten entstehen ausschließlich beim Anlegen eines neuen Knotens, und nur dann.
 **Was nicht auslöst:** Reine Co-Aktivierung im Lesepfad erzeugt *keine* neuen Kanten und verstärkt auch keine bestehenden. Wenn der Enricher zwei alte Knoten gemeinsam in den Kontext zieht, entsteht daraus nichts Persistentes. Begründung: Selbstverstärkendes Verwachsen muss strukturell ausgeschlossen werden, sonst kollabiert das Netz mit der Zeit zu einer durchverbundenen Masse. Im menschlichen Gehirn bilden sich Synapsen nicht durch Nichtstun — Lesen aus dem Gedächtnis ist Nichtstun in genau diesem Sinn.
 
 Diese Sperre wirkt sich auch auf Punkt 4 (Lesepfad) aus: Der dort angedachte „Co-Aktivierungs-Boost" entfällt komplett. Das Retrieval ist passiv.
+
+### 7.1a Verstärkung setzt Verwendung voraus — nicht Nachbarschaft
+
+**§7.1 sperrt das Lesen. Diese Regel sperrt den zweiten Weg: die bloße Nachbarschaft im
+Schreibpfad.** Beide Sperren haben denselben Grund — selbstverstärkendes Verwachsen —, aber sie
+greifen an verschiedenen Stellen, und die zweite fehlte.
+
+> **Verstärkt wird ausschließlich, was Nova in ihrer Antwort tatsächlich hergenommen hat.**
+
+Der Ablauf, in vier Schritten:
+
+1. Die Gedächtnissysteme lesen LZG und KZG — Ähnlichkeit, Assoziation, Themennähe. **Das
+   verstärkt nichts** (§7.1). Es sind Dinge, die *in Betracht kommen*.
+2. Was in Betracht kommt, fließt in den Prompt.
+3. **Nova entscheidet bei der Formulierung der Antwort, was sie davon hernimmt.** Sie liest
+   hundert Dinge und verwendet drei.
+4. **Nur diese drei werden verstärkt** — sofern es sie als Knoten schon gibt.
+
+#### Der Ort ist der Dispatcher, nicht der Responder
+
+**Der Responder hat diese Aufgabe nicht.** Er formuliert; er persistiert nicht. Verstärkung ist
+ein Schreibvorgang, und Schreibvorgänge laufen über den **Dispatcher** — den letzten Node vor
+`END`, der ohnehin `pending_writes` verteilt und die Verbindungszeile schreibt.
+
+Er hat beide Eingänge bereits:
+
+| Eingang | Woher | Was er trägt |
+|---|---|---|
+| `state["antwort_inhalt"]` | Verfasser | die fertige Antwort |
+| `state["lzg_resonanz"]["erinnerungen"]` | Enricher | das gelesene Material mit Pfad |
+
+**Was fehlt, ist der Abgleich zwischen beiden** — und der Aufruf von `knoten_verstaerken` auf
+seinem Ergebnis.
+
+#### Was heute stattdessen gilt, und was es anrichtet
+
+Zwei Mechanismen verstärken, **beide am Schreiben eines neuen Eintrags, keiner an der
+Verwendung**:
+
+| Mechanismus | Auslöser | Wirkung |
+|---|---|---|
+| `kzg_store` — thematische Verstärkung | ein neuer Eintrag teilt **ein einziges Thema** | `haeufigkeit` +1, Salienz neu, **TTL neu gesetzt** |
+| `synapsen_promotion` → `knoten_verstaerken` | Embedding-Match ≥ Schwelle | `haeufigkeit` +1, `gewicht_roh` +0,1 |
+
+Der erste scannt bei **jedem** Turn die ganze Paar-Partition und verstärkt jeden Eintrag mit
+einem gemeinsamen Thema-Tag. `[gemessen]` 04.09.2026 über 2.911 KZG-Einträge des Paares
+`meister:nova`, Stichprobe 400: `haeufigkeit` im Mittel **8,1**, Maximum **110**, und **64 %**
+tragen mindestens eine Verstärkung.
+
+**Daraus wird eine geschlossene Schleife:** Ein Eintrag mit gängigen Themen wird bei jedem
+verwandten Turn verstärkt → seine Salienz steigt über `KZG_SALIENZ_HIGH` → seine TTL wird neu
+auf 30 Tage gesetzt → er läuft nicht ab → er geht erneut in die Promotion → dort matcht er
+**den Knoten, der aus ihm selbst entstanden ist** → verstärkt ihn → von vorn.
+
+`[gemessen]` 04.09.2026 über 14.947 Reinforcements: **95,2 % tragen `cosine = 1.0000`**, also
+einen identischen Vektor. Ein einzelner KZG-Eintrag erzeugte bis zu **91** Verstärkungen
+desselben Knotens, verteilt über **acht und mehr Kalendertage**. Über den Bestand: 14.947
+Verstärkungen auf 1.538 Knoten — **Faktor 9,7**.
+
+> **Dieses Bild gab es schon einmal.** Am 12.07.2026 standen 2.910 Reinforcements auf 302
+> Knoten bei `cosine_max = 1.0000` — **Faktor 9,6** —, und der ganze Bestand wurde
+> zurückgesetzt (siehe den Bruch-Hinweis in Punkt 9). Damals war die Ursache das casing-blinde
+> Embedding, das seither gewechselt hat. **Dasselbe Bild, andere Ursache** — und das ist der
+> Grund, warum die Sperre als Regel gehört und nicht als Einzelbehebung.
+
+#### Die Folge für die Zähler
+
+`haeufigkeit` und `gewicht_roh` messen heute **nicht Wiederkehr, sondern Wiederholung**. Jede
+Auswahl, die darauf sortiert, zieht die am häufigsten wiederholten Einträge statt der
+wiederkehrendsten.
+
+`[gemessen]` 04.09.2026: Zählt man Berührungen über **verschiedene Turns** statt über Zeilen,
+fallen die Träger mit Wiederkehr ≥ 2 von **1.250 auf 106**, das Mittel von 2,64 auf **1,04**.
+**91,5 % der scheinbaren Wiederkehr sind Wiederholung desselben Turns.**
 
 ### 7.2 Reihenfolge der Schritte
 
@@ -1243,6 +1317,8 @@ Im Schema 4.1 hat der Knoten drei Stärke-Werte und zwei Zeitstempel:
 ### 9.2 Berechnungsschema
 
 **Bei Anlage und bei Aktivierung** (echte Verstärkung im Schreibpfad — neuer KZG-Eintrag betrifft denselben Knoten erneut):
+
+> **Der Klammersatz ist seit dem 04.09.2026 zu eng gefasst und wird durch §7.1a verschärft.** *„Betrifft denselben Knoten erneut"* liest der Code heute als Embedding-Match — und dabei matcht ein KZG-Eintrag den Knoten, der aus ihm selbst entstanden ist (`cosine = 1.0000` in 95,2 % aller Verstärkungen). **Verstärkung setzt Verwendung in der Antwort voraus**, nicht Nachbarschaft; der Ort ist der Dispatcher.
 
 ```
 gewicht_roh      = gewicht_roh + LZG_KNOTEN_REINFORCEMENT_BOOST
