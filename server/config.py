@@ -1971,6 +1971,68 @@ PRAEGUNG_SEKTOR_FAKTOR: tuple[float, ...] = (
     1.0,   # 8 Neugier         positiv
 )
 
+# ─────────────────────────────────────────────────────────────
+# Die abstrakte Schicht — Qualitaetsprofile
+# `novaberg-thinking-faszination_k.md` §5, §6, §10.1
+# ─────────────────────────────────────────────────────────────
+# **Der Kanon existiert als Konstante**, nicht nur im Schema. Eine
+# geschlossene Wertemenge ohne deklarierte Obermenge ist nicht validierbar —
+# man kann sie benutzen, aber nicht pruefen. Die Antwort eines Sprachmodells
+# ist die unzuverlaessigste Quelle im System; ohne diesen Satz waere ein
+# erfundener Dimensionsname von einem gueltigen Nein nicht zu unterscheiden.
+#
+# Die Reihenfolge ist die des Konzepts §6.1 und traegt keine Bedeutung — der
+# Merkmalszug nimmt das Maximum, nicht die erste Dimension.
+QUALITAET_KANON: tuple[str, ...] = (
+    "komplexitaet",
+    "ungewissheit",
+    "konflikt",
+    "weite",
+    "schemasprengung",
+    "bedrohungsrelevanz",
+)
+
+# Die erlaubten Auspraegungen. **Drei Stufen, keine freie Skala** (§5): Die
+# bewaehrte Bauart ist ein LLM-Call, der jede Dimension einzeln mit
+# 0.0/0.5/1.0 bewertet — wie die Raeder. Der Versuch, eine abstrakte Groesse
+# ueber Cosine-Distanz zu gewinnen, ist in Chat 114 gemessen gescheitert
+# (Kunstfiguren ±0,24, echter Charakter +0,036 mit wechselndem Vorzeichen).
+# Der Unterschied ist die Form der Frage, nicht die Feinheit der Skala.
+QUALITAET_STUFEN: tuple[float, ...] = (0.0, 0.5, 1.0)
+
+# **Profiliert wird erst, was wiedergekehrt ist** (§6.3): Man fragt sich nicht
+# beim ersten Mal, was einen an einer Sache fasziniert. Ein LLM-Call je
+# Traeger ist der Preis, und die Daempfung liegt in der Groesse selbst.
+#
+# Dazu ein Laengenfilter — die Sachtexte sind mehrere hundert Woerter, die
+# Sprechakt-Vermerke ein bis zwei Saetze; ein Laengenschnitt trifft fast
+# dieselbe Menge wie eine Formklassifikation und kostet keinen Aufruf.
+#
+# `[gemessen]` 03.09.2026 ueber 3318 Knoten: Wiederkehr >= 2 allein trifft
+# 1538, Laenge >= 400 allein 1283, **beide zusammen 368**. Das ist die
+# Groessenordnung des Erstlaufs.
+QUALITAET_WIEDERKEHR_MIN: int = 2
+QUALITAET_LAENGE_MIN:     int = 400
+
+# **Gedeckelt je Tageslauf, nicht in einem Zug.** 368 Modellaufrufe passen
+# nicht in einen Heartbeat-Platz; bei diesem Deckel fuellt sich der Bestand
+# in rund drei Wochen, und ein Ausfall kostet einen Tag statt eines Laufs.
+QUALITAET_PROFIL_JE_LAUF: int = 20
+
+# Der Zuschlag des Merkmalszugs (§10.1).
+#
+# **Ein Mittelwert waere falsch:** Eine Dimension auf 1,0 und fuenf auf 0
+# ergaeben 0,17, und der Zauberer bekaeme keine Faszination — obwohl gerade
+# seine Fingerfertigkeit die Ungewissheit traegt. Ein Produkt verstiesse
+# gegen Regel (a) aus §10.0: keine Null aus einer Multiplikation.
+#
+#   merkmalszug = m_max + MERKMALSZUG_BONUS * Mittel(uebrige fuenf)
+#
+# **Die staerkste Dimension traegt allein und vollstaendig. Kombination ist
+# ein Zuschlag, keine Bedingung.** Der Wert ist eine Setzung aus dem Konzept
+# und ungemessen — er ist erst kalibrierbar, wenn Profile im Bestand stehen.
+MERKMALSZUG_BONUS: float = 0.35
+
 # Herkunft der Zahl (F-INTENS-1: die Schwelle traegt ihr Raster im Kommentar).
 # Sie gilt gegen Gravitationswerte auf [0,1] — beide Quellen liefern seit dem
 # 30.08.2026 auf dieser Skala (LZG teilt durch LZG_KNOTEN_GEWICHT_CAP, KZG liest
@@ -2224,6 +2286,16 @@ NODE_LLM_CONFIG: dict = {
     "query_rewrite": {
         "temperature": 0.0,
         "max_output_tokens": 64,
+    },
+    # Sechs Zahlen aus drei erlaubten Stufen, kein freier Text. Dieselbe
+    # Sorte Aufgabe wie die Destillation und deshalb dieselbe Temperatur:
+    # Wer ein festes Feld fuellt, braucht keine Streuung. Der Deckel reicht
+    # fuer sechs Zeilen JSON mit Begruendung und ist nicht knapp gesetzt —
+    # eine abgeschnittene Antwort waere ein unvollstaendiges Profil, und das
+    # ist teurer als ein paar Token.
+    "qualitaet_profil": {
+        "temperature": 0.0,
+        "max_output_tokens": 512,
     },
     "planner": {
         "temperature": 0.2,
