@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 11:05 UTC** (gemessen via `date -u`). Davor 05.09.2026, 10:20 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 14:19 UTC** (gemessen via `date -u`). Davor 05.09.2026, 11:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 33 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 34 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,50 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 14:19 UTC — der Längenfilter: was ihn ersetzen könnte, und ob er ersetzt werden muss ✅
+
+**Die Frage war, ob die Themen eines Knotens den Zeichenschnitt ersetzen können. Sie können es
+nicht — und die Messung fand ein Merkmal, das es kann, dazu einen Grund, den Filter ganz in Frage
+zu stellen.**
+
+**Die Themen tragen es nicht.** Gemessen über die 1598 Knoten mit `aktiv` und `haeufigkeit >= 2`:
+Kein häufiges Thema trennt lange Sachtexte von kurzen Sprechakt-Vermerken — `Entropie` mit 106
+Vorkommen liegt bei **29,2 %** über 400 Zeichen, das beste überhaupt bei 87,5 % und nur 16
+Vorkommen. Der Grund steht im Erzeugungspfad: Die Themen entstehen im Salienz-Knoten aus dem
+**Turn**, nicht aus dem gespeicherten Satz.
+
+**Die Eröffnungsformel trägt.** Sie ist im Verdichtungs-Prompt als Form vorgeschrieben und damit
+kein Textzufall: Die Frageform liegt bei **0 von 115** über der Schwelle, die Erklärform bei 4,3 %
+von 417 — die Einsichtsform bei **56,7 % von 409**.
+
+> **Damit ist der Preis des Zeichenschnitts beziffert: 177 Einsichten unter 400 Zeichen**, die
+> heute nie ein Profil bekommen. Der Satz, der Filter treffe *„fast dieselbe Menge wie eine
+> Formklassifikation"*, ist gegen diesen Stellvertreter widerlegt — in der Einsichtsklasse gehen
+> **43 %** verloren.
+
+**Die vorgelagerte Frage wiegt schwerer als die Antwort.** Der Filter schützt nicht die
+Richtigkeit: Die Skala kann selbst Null sagen, gemessen an einem 34-Zeichen-Satz und einem
+125-Zeichen-Termin. Was er tut, zeigt der Bestand — **49 von 50 Trägern schlagen voll aus, einer
+schwach, keiner null**, und der kürzeste Träger misst 410 Zeichen, einen über der Schwelle.
+
+> **Im ganzen Bestand steht keine gemessene Null, weil das Unauffällige nie hineinkommt.** Genau
+> die fehlt als Gegenprobe zum offenen Vorbehalt, ob der `komplexitaet`-Kollaps am homogenen
+> Korpus liegt oder an der Bewertung.
+
+Dazu: Ein ausgefilterter Knoten ist kein Träger mit Faszination 0, sondern **gar kein Träger** —
+*nicht geprüft* und *nicht faszinierend* sind nicht unterscheidbar. Und die Dämpfung, um die es
+dem Filter geht, steht ohnehin woanders: 20 Profile je Tageslauf, sortiert nach Lesespur.
+**Eine Reihenfolge verzögert, ein Filter schließt aus.**
+
+**Drei Wege stehen offen, keiner ist entschieden und keiner gebaut:** die Formel an Stelle der
+Länge · die Formel als zusätzlicher Sortierschlüssel bei gestrichenem Längenfilter · den Filter
+behalten. Der Wiederkehr-Filter ist von allen dreien unberührt.
+
+**Nachgezogen:** `novaberg-memory-qualitaetsprofil.md` §4a/§4b (neu), Featureliste, Backlog
+`FASZINATION-PRAEGUNG`. Kein Produktivcode, Suite unberührt bei **3061**.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`
-**Stand:** 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
+**Stand:** 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
 **Pfad:** novaberg/docs/novaberg-memory-qualitaetsprofil.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §4 (der Träger), §5 (das gesetzte Vokabular), §6 (die sechs Dimensionen), §10.1 (der Merkmalszug)
 **Zustand:** 🟠 gebaut, läuft, **und sein Ergebnis steht unter einem Vorbehalt** — Speicher, Erzeuger und Leser stehen, aber vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste
@@ -114,12 +114,95 @@ Knoten passieren nur **7** die 400 Zeichen. Der Rest sind Sprechakt-Vermerke —
 überwiegend Material liefert, das als Träger untauglich ist.
 
 **Profiliert wird erst, was wiedergekehrt ist** (Konzept §6.3) — man fragt sich nicht beim
-ersten Mal, was einen an einer Sache fasziniert. Der Längenfilter trifft fast dieselbe Menge
-wie eine Formklassifikation: Die Sachtexte sind mehrere hundert Wörter, die
-Sprechakt-Vermerke ein bis zwei Sätze.
+ersten Mal, was einen an einer Sache fasziniert. ~~Der Längenfilter trifft fast dieselbe Menge
+wie eine Formklassifikation: Die Sachtexte sind mehrere hundert Wörter, die Sprechakt-Vermerke
+ein bis zwei Sätze.~~ → **Widerlegt am 05.09.2026** gegen die Eröffnungsformel als Stellvertreter
+der Formklassifikation: In der Einsichtsklasse gehen **43 %** verloren (§4a).
 
 `[gemessen]` 03.09.2026 über 3318 Knoten: Wiederkehr ≥ 2 allein trifft **1538**, Länge ≥ 400
 allein **1283**, beide zusammen **368**.
+
+### 4a. Sachtext gegen Sprechakt — eine geprüfte Möglichkeit, nicht umgesetzt
+
+**Stand 05.09.2026: gemessen, nicht gebaut.** Der Längenfilter steht unverändert. Was hier steht,
+ist der geprüfte Ersatz und der Grund, warum er nicht eingesetzt ist.
+
+**Die Themen tragen es nicht.** Der naheliegende Ersatz wäre `lzg_knoten.themen` — er kostet
+keinen Modellaufruf, weil der Salienz-Knoten die Themen ohnehin vergibt. Gemessen über die
+**1598** Knoten mit `aktiv` und `haeufigkeit >= 2`, je Thema mit mindestens 15 Vorkommen der
+Anteil mit `length(inhalt) >= 400`:
+
+| Thema | Vorkommen | Anteil ≥ 400 |
+|---|---|---|
+| `Gravitationslinseneffekt` | 16 | 87,5 % |
+| `Neutronensterne` | 23 | 56,5 % |
+| `Hawking-Strahlung` | 30 | 43,3 % |
+| `Entropie` | 106 | 29,2 % |
+| `Kohärenz` | 33 | 9,1 % |
+
+**Kein häufiges Thema trennt.** Der Grund steht im Erzeugungspfad: Die Themen entstehen im
+Salienz-Knoten aus dem **Turn**, nicht aus dem gespeicherten Satz. Ein Sprechakt-Vermerk aus
+einem Fachgespräch trägt dieselben Tags wie der Sachtext daneben.
+
+**Was trennt, ist die Eröffnungsformel** — und sie ist kein Textzufall, sondern in
+`prompts/default/kzg_verdichtung.impuls_task.txt` als Form vorgeschrieben. Dieselbe Menge,
+dieselbe Messung:
+
+| Eröffnung | Knoten | Anteil ≥ 400 | Länge ⌀ |
+|---|---|---|---|
+| `… hat gefragt …` | 115 | **0,0 %** | 172 |
+| `… hat erklärt …` | 417 | 4,3 % | 249 |
+| sonstige mit Trägerpräfix | 366 | 5,5 % | 214 |
+| `… ist aufgegangen, dass …` | 409 | **56,7 %** | 412 |
+| ohne Trägerpräfix | 281 | 44,1 % | 763 |
+
+Die Frageform liegt bei **null** langen Knoten von 115. Die Klasse ohne Trägerpräfix ist gemischt
+— Rechercheergebnisse über 1400 Zeichen neben Situationsvermerken unter 70; dort trägt
+`dimension` mit (`interessen` gegen `kontext`).
+
+**Damit ist der Preis des heutigen Filters beziffert:** 409 Knoten tragen die Einsichtsformel,
+**232** davon sind ≥ 400 Zeichen. **177 Einsichten fallen durch den Zeichenschnitt** — Stichproben
+liegen zwischen 250 und 365 Zeichen und tragen Sachgehalt.
+
+### 4b. Warum sie nicht umgesetzt ist
+
+**Weil die Messung eine vorgelagerte Frage aufgeworfen hat: ob überhaupt vorab gefiltert werden
+soll.** Solange die offen ist, wäre ein besserer Filter eine Verbesserung am möglicherweise
+falschen Bauteil.
+
+**Der Filter schützt nicht die Richtigkeit.** Die Skala kann selbst Null sagen — §6b hält die
+Gegenprobe: ein 34-Zeichen-Satz und ein 125-Zeichen-Termin liegen auf allen sechs Dimensionen bei
+0,0. Was der Filter stattdessen tut, zeigt der Bestand vom 05.09.2026:
+
+| Ausschlag über die sechs Dimensionen | Träger |
+|---|---|
+| trägt (Maximum 1,0) | 49 |
+| schwach (Maximum 0,5) | 1 |
+| ganz null | **0** |
+
+Der kürzeste Träger misst **410** Zeichen — einen über der Schwelle. **Im ganzen Bestand steht
+keine gemessene Null**, weil das Unauffällige nie hineinkommt. Damit fehlt genau die Gegenprobe,
+die den Vorbehalt aus §6b entscheiden könnte: homogener Korpus oder abweichende Bewertung.
+
+Dazu ein zweiter Effekt. `bestandslauf` rechnet über `_TRAEGER_MIT_PROFIL`, und der Kommentar
+daneben begründet das richtig: *ein Träger ohne Profil hat keinen Merkmalszug und gehört in die
+Fußnote, nicht in die Reihe.* **Die Vorentscheidung fällt aber schon im Filter** — ein
+ausgefilterter Knoten ist kein Träger mit Faszination 0, sondern gar kein Träger. *Nicht geprüft*
+und *nicht faszinierend* sind an dieser Stelle nicht unterscheidbar.
+
+**Die Dämpfung steht ohnehin an anderer Stelle.** `QUALITAET_PROFIL_JE_LAUF` deckelt auf 20
+Profile je Tageslauf, und `candidates_load` sortiert nach Lesespur, Brücken-Turns und
+`haeufigkeit`. **Eine Reihenfolge verzögert, ein Filter schließt aus.** Bei hartem Tagesdeckel
+leistet die Reihenfolge dieselbe Dämpfung, ohne die Menge dauerhaft zu beschneiden; der Preis ist
+Zeit — 1598 statt 395 Kandidaten, bei 20 je Lauf rund 80 statt 20 Tage bis zur Sättigung, und die
+ersten 20 Tage füllen dieselben Träger, weil die Sortierung sie zuerst nimmt.
+
+**Der Wiederkehr-Filter ist davon nicht berührt.** Seine Begründung trägt unabhängig (Konzept
+§6.3): Man fragt sich nicht beim ersten Mal, was einen an einer Sache fasziniert.
+
+**Drei Wege stehen offen, und die Wahl ist eine Absichtsfrage:** die Formel als Filter an Stelle
+der Länge · die Formel als zusätzlicher Sortierschlüssel bei gestrichenem Längenfilter · den
+Längenfilter behalten. **Entschieden ist keiner, gebaut ist keiner.**
 
 ## 5. Der Merkmalszug — ein weiches ODER
 
