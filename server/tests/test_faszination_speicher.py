@@ -203,6 +203,7 @@ class DerTageslaufRuftDenBestandslaufTest(unittest.TestCase):
         leer: dict = {"error": None, "total_processed": 0, "deactivated_count": 0,
                       "deleted_count": 0, "verarbeitet": 0, "deaktiviert": 0}
         fasz: dict = {"traeger": 5, "gerechnet": 5, "ohne_bindung": 2,
+                      "ohne_strang": 1,
                       "werte": {"11": 0.5}, "roh_min": 0.0, "roh_median": 0.2,
                       "roh_max": 0.5, "error": None}
         with patch(f"{AGENT_MODUL}.SYNAPSEN_DECAY_AKTIV", True), \
@@ -245,4 +246,27 @@ class DerTageslaufRuftDenBestandslaufTest(unittest.TestCase):
         self.assertIn(
             "faszination_bestand", phasen,
             "Ohne Protokollzeile ist die Verteilung spaeter nicht auswertbar",
+        )
+
+        # **Die Phase allein genuegt nicht.** Eine Zeile, die es gibt und die
+        # gesuchte Zahl nicht traegt, sieht in jeder Zaehlung wie ein Beleg aus
+        # — dieselbe Klasse wie die stumme Verwendungszeile: sechs Ausgaenge,
+        # eine Zeile, kein Unterschied.
+        zeile: dict = next(
+            ruf[0][1] for ruf in forensik.call_args_list
+            if len(ruf[0]) > 1 and isinstance(ruf[0][1], dict)
+            and ruf[0][1].get("phase") == "faszination_bestand"
+        )
+        for feld in ("traeger", "gerechnet", "ohne_bindung", "ohne_strang",
+                     "roh_min", "roh_median", "roh_max"):
+            self.assertIn(
+                feld, zeile,
+                f"Die Buchfuehrung des Bestandslaufs verliert '{feld}' auf dem "
+                f"Weg ins Protokoll — in der Reihe ueber Tage ist die Zahl "
+                f"dann nicht mehr da",
+            )
+        self.assertEqual(
+            1, zeile["ohne_strang"],
+            "Ohne diese Zahl ist nicht ablesbar, ob der Strangzug (§10.3a) im "
+            "Bestand ueberhaupt greift",
         )

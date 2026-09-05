@@ -487,7 +487,8 @@ class SynapsenDecayAgent(BaseAgent):
             logger.info(
                 f"Synapsen-Decay: Faszination ueber "
                 f"{faszination_result['gerechnet']} Traeger gerechnet, "
-                f"{faszination_result['ohne_bindung']} ohne Bindung "
+                f"{faszination_result['ohne_bindung']} ohne Bindung, "
+                f"{faszination_result['ohne_strang']} ohne Strangbezug "
                 f"(roh {faszination_result['roh_min']} bis "
                 f"{faszination_result['roh_max']})"
             )
@@ -496,6 +497,11 @@ class SynapsenDecayAgent(BaseAgent):
                 "traeger":      faszination_result["traeger"],
                 "gerechnet":    faszination_result["gerechnet"],
                 "ohne_bindung": faszination_result["ohne_bindung"],
+                # **Ohne diese Zahl ist in der Reihe nicht ablesbar, ob der
+                # Strangzug (§10.3a) ueberhaupt greift.** Der Bestandslauf
+                # rechnet sie und gibt sie in seiner Nachbedingung zurueck;
+                # bis zum 05.09.2026 verlor sie der Weg ins Protokoll.
+                "ohne_strang":  faszination_result["ohne_strang"],
                 "roh_min":      faszination_result["roh_min"],
                 "roh_median":   faszination_result["roh_median"],
                 "roh_max":      faszination_result["roh_max"],
