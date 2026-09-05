@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 18:12 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 18:51 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 37 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 38 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,75 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 18:51 UTC — eine Schreibvariante ist kein unbekannter Wert ✅
+
+**Setzung des Eigentuemers nach der Modellpruefung:**
+
+> *„Wir koennen, wenn wir bestimmte Begriffe erwarten, durchaus mit Python die Fehler
+> korrigieren und ü nach ue migrieren ohne aehnliches. Das waere eine Absicherung."*
+
+Der Anlass ist `PERZEPTION-EMOTION-AUSSER-KANON`: Das Modell schreibt Deutsch, der Kanon
+steht in ASCII. `ueberrascht` kam **12 mal** als `überrascht` an und fiel damit aus
+`EMOTION_KANON` — der Wert trug danach keinen Sektor und keine Valenz.
+
+`utils/canon.py::to_canonical` zieht einen Wert an der **Naht** auf seine kanonische Form,
+in drei Stufen: im Kanon → unveraendert; mit aufgeloesten Umlauten und in Kleinschreibung
+im Kanon → gezogen, mit einer Zeile im Protokoll; sonst `None` und der Aufrufer
+entscheidet.
+
+**Drei Entscheidungen daran, und jede haette man auch anders treffen koennen:**
+
+- **Die Naht, nicht der Verbraucher.** Der Wert wird in der Perzeption gezogen, wo er
+  entsteht — nicht im EI-Calc, der ihn liest. Sonst stuende die Umlautform weiterhin in
+  den Sitzungsturns und im Langzeitgedaechtnis, und genau dort sind die 18 Ausreisser
+  gefunden worden.
+- **Additiv, nicht ersetzend.** Ein Wert, der auch nach dem Aufloesen unbekannt bleibt,
+  kommt **unveraendert** zurueck. Ein Rueckfall auf `neutral` haette die Meldung
+  stromabwaerts genommen und aus einem sichtbaren Fehler einen unsichtbaren gemacht.
+- **Die Synonyme gehoeren in die Menge.** `ueberraschung` steht nicht im Kanon und ist
+  trotzdem gueltig; wer nur gegen den Kanon zoege, verwuerfe ein Synonym in Umlautform,
+  statt es zu retten.
+
+> **Die Abbildung ist einseitig, und das ist der Kern der Sache.** `ü` → `ue` ist sicher,
+> die Umkehrung nicht: `neue` wuerde zu `neü`. Der Helfer ersetzt deshalb nie auf
+> Verdacht, sondern **prueft nach dem Aufloesen noch einmal gegen die Menge** — er raet
+> nicht, er sucht ein Ziel.
+
+### Am Bestand gemessen, nicht am Beispiel
+
+Ueber 3391 Knoten mit Emotionswert:
+
+| Wert | Knoten | Ergebnis |
+|---|---:|---|
+| `überrascht` | **12** | → `ueberrascht` |
+| `mitgefühl` | 4 | bleibt unbekannt |
+| `zuversicht` | 2 | bleibt unbekannt |
+
+**12 von 18 gerettet, und die sechs Reste sind keine Schreibfehler.** `mitgefuehl` steht
+**weder im Kanon noch in der Synonymkarte** — die Aufloesung findet kein Ziel, und welchem
+Kanonwert Mitgefuehl zuzuordnen ist, ist eine Setzung ueber Novas Emotionsmodell, keine
+Textoperation. `zuversicht` ist ein Sektorname und kein Emotionswert.
+
+**Der Bestand ist nicht umgeschrieben.** Der Zug wirkt ab jetzt; die 18 Knoten bleiben,
+wie sie sind (`F-VERFALL-1`).
+
+### Dabei eine Dublette abgeraeumt
+
+`graph/einwand.py` fuehrte seit dem 22.08.2026 eine eigene Umlaut-Tabelle — fuer denselben
+Zweck, aus demselben Anlass. Sie holt die Abbildung jetzt aus `utils/canon.py`. **Zwei
+Tabellen fuer dieselbe Sache laufen auseinander, sobald eine ein Zeichen dazubekommt**, und
+die Abweichung faellt an genau der Stelle auf, an der sie teuer ist.
+
+**Suite 3145 gruen, 0 uebersprungen** (davor 3129). 16 Zeugen, Gegenprobe **8 vorhergesagt
+/ 8 gezaehlt**.
+
+**Was der Zug NICHT deckt:** `sprach_stil`, `intent` und `tone` haben weiterhin **keinen
+Kanon** — der Helfer ist fuer sie gebaut, aber es gibt keine Menge, gegen die er pruefen
+koennte. Das ist die zweite offene Kennung derselben Familie, und beim Intent ist der
+Vorgabewert zugleich der Maximalwert seiner Tabelle.
 
 ---
 
