@@ -423,9 +423,9 @@ Vor dir liegen Langzeit-Erinnerungen aus {perspektive} Blickwinkel — so wie
 Deine Aufgabe ist nicht, die Einträge zusammenzufassen, sondern zu deuten:
 Was verrät die ART der Kommunikation über {traeger_akk}? Lies drei Ebenen
 heraus
-— STIL (Satzbau, Formalität, Wortwahl, Humor), MODUS (in welchem Register
-{traeger} denkt: fachlich, philosophisch, alltäglich), INTENTION (was
-{traeger} typischerweise erreichen will).
+— STIL (Satzbau, Formalität, Wortwahl und Humor {traeger_gen}), MODUS (in
+welchem Register {traeger} denkt: fachlich, philosophisch, alltäglich),
+INTENTION (was {traeger} typischerweise erreichen will).
 
 Nicht WORÜBER geredet wird, sondern WIE. Wer knappe, präzise Sätze ohne
 Floskeln wählt, offenbart einen anderen Charakter als jemand, der ausschweift
@@ -449,9 +449,10 @@ Blickwinkel — so wie {traeger} fühlt und emotional reagiert.
 Deine Aufgabe ist nicht aufzuzählen, welche Gefühle vorkamen, sondern die
 emotionale Signatur dahinter zu erschließen — wie ein Psychiater das
 Temperament liest. Zwei Ebenen: GRUNDTENDENZ (welche Emotionen
-{traeger_akk} langfristig tragen, welche Muster) und VOLATILITÄT (stabile Grundstimmung
-oder sprunghafte Umschwünge — die Emotions-Vektoren als Hinweis: häufig
-Spirale/Absturz = volatil, häufig Plateau = stabil).
+{traeger_akk} langfristig tragen, welche Muster) und VOLATILITÄT (ob
+{traeger} eine stabile Grundstimmung haelt oder sprunghaft umschwingt — die
+Emotions-Vektoren als Hinweis: häufig Spirale/Absturz = volatil, häufig
+Plateau = stabil).
 
 Erstelle ein kompaktes emotionales Profil {traeger_gen} in 3-5 Sätzen auf
 Deutsch.
@@ -469,10 +470,16 @@ Vor dir liegt ein Gesprächsverlauf aus {perspektive} Blickwinkel — so wie
 {traeger} dem Gegenüber begegnet.
 
 Deine Aufgabe ist zu deuten, WIE {traeger} die Beziehung gestaltet — nicht was
-besprochen wurde, sondern der Umgang darin. Vier Ebenen: NÄHE (vertraut oder
-formell — Anrede, Kosenamen, Ton), HIERARCHIE (gleichrangig oder direktiv),
-VERTRAUEN (teilt {traeger} Persönliches oder bleibt es sachlich), TON
-(warmherzig, humorvoll, nüchtern).
+besprochen wurde, sondern der Umgang darin. Vier Ebenen: NÄHE (wie {traeger}
+das Gegenüber anspricht — welche Anrede, welche Kosenamen {traeger} waehlt),
+HIERARCHIE (ob {traeger} gleichrangig oder direktiv auftritt), VERTRAUEN
+(teilt {traeger} Persönliches oder bleibt es sachlich), TON (der Grundton
+{traeger_gen}: warmherzig, humorvoll, nüchtern).
+
+Der Gesprächsverlauf zeigt beide Seiten. Was das Gegenüber sagt, steht dabei,
+damit der Umgang lesbar wird — es zeigt, worauf {traeger} trifft. Zu
+beschreiben ist {traeger_gen} Seite: {traeger_gen} Anrede, {traeger_gen}
+Tonfall, {traeger_gen} Art, Nähe herzustellen.
 
 Beschreibe, wie {traeger} auf das Gegenüber blickt und mit ihm umgeht, in 2-3
 Sätzen auf Deutsch.
