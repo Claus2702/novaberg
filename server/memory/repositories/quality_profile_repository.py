@@ -258,13 +258,28 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
     Sprechakt-Vermerke ein bis zwei Saetze, und ein Laengenschnitt trifft
     fast dieselbe Menge wie eine Formklassifikation.
 
-    Die haeufigsten zuerst — wer oft wiederkehrt, ist der bessere Kandidat
-    fuer die Kalibrierung des Satzes.
+    ~~Die haeufigsten zuerst — wer oft wiederkehrt, ist der bessere Kandidat.~~
+    **Berichtigt am 05.09.2026: `haeufigkeit` misst Wiederholung, nicht
+    Wiederkehr.** Ueber verschiedene Turns gezaehlt fallen die Traeger mit
+    Wiederkehr >= 2 von 1.250 auf 106 — 91,5 % der scheinbaren Wiederkehr sind
+    Wiederholung desselben Turns (`novaberg-memory-synapsen_k.md` §7.1a). Eine
+    Sortierung darauf waehlt die durch die KZG-Schleife aufgeblaehten Knoten.
+
+    **Sortiert wird deshalb nach der Zahl verschiedener Turns**, die einen
+    Knoten beruehrt haben — die Bruecke `verbindung` zaehlt sie. Das ist die
+    Groesse, die der Docstring immer gemeint hat. `haeufigkeit` bleibt als
+    zweiter Schluessel: Ein Knoten ohne Bruecke faellt sonst ans Ende, obwohl
+    ueber ihn nichts Schlechtes bekannt ist, sondern nichts.
+
+    `[gemessen 05.09.2026]`: Die profilierten Knoten tragen `haeufigkeit` **56,1**
+    gegen **5,5** im Schnitt aller aktiven — die alte Sortierung hat genau die
+    aufgeblaehten gewaehlt. Von 36 je Turn gelesenen Knoten trugen **2** ein
+    Profil.
 
     Vorbedingung: `limit` ist positiv. Wird geprueft und laut verworfen.
     Nachbedingung: Bis zu `limit` Eintraege mit `id`, `inhalt`, `haeufigkeit`,
-        `themen`; bei einem Datenbankfehler eine leere Liste, und der Fehler
-        steht im Log.
+        `themen` und `beruehrt` (Zahl verschiedener Turns); bei einem
+        Datenbankfehler eine leere Liste, und der Fehler steht im Log.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(limit, int) or limit <= 0:
@@ -278,15 +293,20 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
     try:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute(
-            "SELECT k.id, k.inhalt, k.haeufigkeit, k.themen "
+            "SELECT k.id, k.inhalt, k.haeufigkeit, k.themen, "
+            "       COALESCE(b.turns, 0) AS beruehrt "
             "FROM lzg_knoten k "
+            "LEFT JOIN ("
+            "      SELECT lzg_id, count(DISTINCT turn_id) AS turns "
+            "      FROM verbindung WHERE lzg_id IS NOT NULL GROUP BY lzg_id"
+            "  ) b ON b.lzg_id = k.id "
             "WHERE k.aktiv "
             "  AND k.haeufigkeit >= %s "
             "  AND length(k.inhalt) >= %s "
             "  AND NOT EXISTS ("
             "      SELECT 1 FROM traeger_qualitaet t WHERE t.knoten_id = k.id"
             "  ) "
-            "ORDER BY k.haeufigkeit DESC, k.id "
+            "ORDER BY COALESCE(b.turns, 0) DESC, k.haeufigkeit DESC, k.id "
             "LIMIT %s",
             (QUALITAET_WIEDERKEHR_MIN, QUALITAET_LAENGE_MIN, limit),
         )

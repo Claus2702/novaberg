@@ -33,6 +33,8 @@ from ei.fascination import dominante_dimension, merkmalszug
 from memory import quality_profile
 from memory.repositories import quality_profile_repository as speicher
 
+REPO: str = "memory.repositories.quality_profile_repository"
+
 AGENT_MODUL: str = "agents.synapsen_decay.agent"
 PROFIL_MODUL: str = "memory.quality_profile"
 
@@ -527,3 +529,39 @@ class DerTageslaufRuftDenErzeugerTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DieAuswahlFolgtDerEchtenWiederkehrTest(unittest.TestCase):
+    """Berichtigt am 05.09.2026 — `haeufigkeit` misst Wiederholung.
+
+    Die alte Sortierung waehlte die durch die KZG-Schleife aufgeblaehten
+    Knoten: `[gemessen]` tragen die profilierten `haeufigkeit` **56,1** gegen
+    **5,5** im Schnitt aller aktiven, und von 36 je Turn gelesenen Knoten
+    trugen **zwei** ein Profil.
+    """
+
+    def test_die_abfrage_sortiert_nach_beruehrten_turns(self) -> None:
+        """Die Zahl verschiedener Turns aus der Bruecke, nicht `haeufigkeit`."""
+        with patch(f"{REPO}.psycopg2.connect") as verbindung:
+            zeiger = verbindung.return_value.cursor.return_value
+            zeiger.fetchall.return_value = []
+            speicher.candidates_load(POSTGRES_URL, 20)
+            sql = zeiger.execute.call_args[0][0]
+
+        self.assertIn("count(DISTINCT turn_id)", sql)
+        self.assertIn("FROM verbindung", sql)
+        self.assertIn("ORDER BY COALESCE(b.turns, 0) DESC", sql)
+
+    def test_haeufigkeit_bleibt_zweiter_schluessel(self) -> None:
+        """Ein Knoten ohne Bruecke faellt sonst ans Ende — ohne Grund.
+
+        Ueber ihn ist nichts Schlechtes bekannt, sondern nichts.
+        """
+        with patch(f"{REPO}.psycopg2.connect") as verbindung:
+            zeiger = verbindung.return_value.cursor.return_value
+            zeiger.fetchall.return_value = []
+            speicher.candidates_load(POSTGRES_URL, 20)
+            sql = zeiger.execute.call_args[0][0]
+
+        self.assertIn("k.haeufigkeit DESC", sql)
+        self.assertIn("LEFT JOIN", sql)
