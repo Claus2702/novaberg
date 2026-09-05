@@ -23,12 +23,20 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from config import PROMPTS, get_node_config, redis_client
+from config import (
+    EMOTION_KANON,
+    EMOTION_SYNONYM_MAP,
+    MODUS_KANON,
+    PROMPTS,
+    get_node_config,
+    redis_client,
+)
 from graph.personality import InternalPersonality, Personality
 from graph.reiz import reiz_text
 from graph.state import ConversationState
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
+from utils.canon import to_canonical
 
 logger = logging.getLogger("ki_server.perzeption")
 
@@ -78,6 +86,37 @@ def _arousal_lesen(roh: object) -> float:
         return 0.5
 
 
+#: Was fuer das Emotionsfeld als bekannt gilt: der Kanon **und** die Synonyme.
+#:
+#: **Die Synonyme gehoeren dazu, sonst nimmt die Absicherung etwas weg.**
+#: `glueck` steht nicht im Kanon und ist trotzdem ein gueltiger Wert — die
+#: Aufloesung auf `freude` macht der EI-Calc. Wer hier nur gegen den Kanon
+#: zoege, wuerde ein Synonym in Umlautform verwerfen, statt es zu retten.
+_EMOTION_ODER_SYNONYM: frozenset[str] = frozenset(EMOTION_KANON) | frozenset(EMOTION_SYNONYM_MAP)
+
+
+def _kanonisch(wert: object, kanon: frozenset[str] | set[str], feld: str) -> str:
+    """Zieht einen Modellwert auf seine kanonische Form, sonst laesst er ihn.
+
+    Vorbedingung: `wert` ist der rohe Wert aus der Modellantwort; `kanon` ist
+    die Menge, die das Feld erlaubt.
+    Nachbedingung: die kanonische Form, wenn sie sich finden liess — sonst
+    **der Wert unveraendert**.
+    Fehlerfaelle: keine.
+
+    **Der Rueckfall auf den Rohwert ist Absicht und macht die Aenderung
+    additiv.** Ein unbekannter Wert lief bisher durch und wurde spaeter
+    gemeldet (`EMOTION_KANON`-Pruefung im EI-Calc, `modus_pruefen` in
+    `ei/utils.py`); daran aendert sich nichts. Neu ist nur, dass eine
+    **Schreibvariante** nicht mehr als unbekannter Wert endet. Wer hier auf
+    einen Vorgabewert zuruecksetzte, verloere die Meldung stromabwaerts und
+    machte aus einem sichtbaren Fehler einen unsichtbaren.
+    """
+    return to_canonical(wert, kanon, feld, "perzeption") or (
+        wert if isinstance(wert, str) else ""
+    )
+
+
 def _wahrnehmung_lesen(ergebnis: dict) -> Wahrnehmung:
     """Liest die acht Felder aus den drei Abschnitten des Modell-Ergebnisses.
 
@@ -97,9 +136,11 @@ def _wahrnehmung_lesen(ergebnis: dict) -> Wahrnehmung:
         intent             = rational.get("intent",      leer.intent),
         tone               = rational.get("tone",        leer.tone),
         thema              = rational.get("thema",       leer.thema),
-        emotion            = emotional.get("emotion",    leer.emotion),
+        emotion            = _kanonisch(emotional.get("emotion", leer.emotion),
+                                        _EMOTION_ODER_SYNONYM, "emotion"),
         arousal            = _arousal_lesen(emotional.get("arousal", leer.arousal)),
-        modus              = psychologisch.get("modus",              leer.modus),
+        modus              = _kanonisch(psychologisch.get("modus", leer.modus),
+                                        MODUS_KANON, "modus"),
         sprach_stil        = psychologisch.get("sprach_stil",        leer.sprach_stil),
         beziehungs_dynamik = psychologisch.get("beziehungs_dynamik",
                                               leer.beziehungs_dynamik),

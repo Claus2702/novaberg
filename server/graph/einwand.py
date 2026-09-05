@@ -28,6 +28,8 @@ keine Luecke dieses Moduls, sondern eine des Pfades.
 import re
 from dataclasses import dataclass
 
+from utils.canon import UMLAUT_MAP
+
 # ── Die einzige Quelle der gueltigen Werte ──────────────────────
 #
 # Sie stehen hier und NUR hier. Der Prompt bekommt sie zur Laufzeit eingesetzt
@@ -180,9 +182,12 @@ _KOPFFELDER: frozenset[str] = frozenset(
 
 #: Umlaute auf ihre ASCII-Doppel. Der Prompt schreibt `GEPRUEFT` vor, das
 #: Modell schreibt deutsch.
-_UMLAUTE: dict[int, str] = str.maketrans({
-    "Ä": "AE", "Ö": "OE", "Ü": "UE", "ä": "AE", "ö": "OE", "ü": "UE", "ß": "SS",
-})
+#:
+#: **Die Abbildung steht seit dem 05.09.2026 in `utils/canon.py`** und wird
+#: hier nur noch geholt. Zwei Tabellen fuer dieselbe Sache laufen auseinander,
+#: sobald eine von beiden ein Zeichen dazubekommt — und die Abweichung faellt
+#: an genau der Stelle auf, an der sie teuer ist.
+_UMLAUTE: dict[int, str] = UMLAUT_MAP
 
 
 def _feldname(roh: str) -> str:
