@@ -91,6 +91,27 @@ class EbenenTest(unittest.TestCase):
         """Ein leerer Modellname überspringt die Ebene, statt zu raten."""
         self.assertEqual(self._laden(modell="")["b.rules"], "default-b")
 
+    def test_ein_modellname_mit_schraegstrich_findet_sein_verzeichnis(self) -> None:
+        """Ein Fernmodell nennt den Anbieter mit: `anbieter/modell-0731`.
+
+        **Unveraendert eingesetzt ergaebe das ein verschachteltes
+        Verzeichnis**, und das Zwischenglied waere eine Ebene, die niemand
+        nachschlaegt — genau das, was `test_jedes_verzeichnis_ist_erreichbar`
+        als totes Material meldet. Der Name wird deshalb flach gemacht.
+        """
+        (self.wurzel / "anbieter_modell-0731").mkdir()
+        (self.wurzel / "anbieter_modell-0731" / "b.rules.txt").write_text(
+            "fern-b", encoding="utf-8",
+        )
+
+        geladen = self._laden(modell="anbieter/modell-0731")
+
+        self.assertEqual(geladen["b.rules"], "fern-b")
+        self.assertFalse(
+            (self.wurzel / "anbieter").exists(),
+            "der Lader hat ein Zwischenverzeichnis erwartet statt eines flachen",
+        )
+
     def test_ein_unbekanntes_modell_ist_kein_fehler(self) -> None:
         """Ein Modell ohne eigenes Verzeichnis lässt den Bestand unberührt."""
         bestand: dict = self._laden(connector="mistral", modell="gibtsnicht")
@@ -142,7 +163,7 @@ class BestandTest(unittest.TestCase):
         `default`, ein Connectorname, oder eines der Modelle eines
         Connectors.
         """
-        from config import OLLAMA_CONNECTORS
+        from config import MODELL_NACH_BACKEND, OLLAMA_CONNECTORS
 
         erreichbar: set[str] = {"default"} | set(OLLAMA_CONNECTORS)
         for eintrag in OLLAMA_CONNECTORS.values():
@@ -150,6 +171,11 @@ class BestandTest(unittest.TestCase):
                 wert for schluessel, wert in eintrag.items()
                 if schluessel.endswith("_model")
             }
+        # **Die Connector-Tabelle kennt nur die eigene Maschine.** Seit dem
+        # 05.09.2026 kann hinter dem Chat-Worker ein Fernmodell stehen, und
+        # seine Modellebene traegt dessen Namen — flach geschrieben, weil ein
+        # Schraegstrich sonst ein Zwischenverzeichnis erzeugte.
+        erreichbar |= {wert.replace("/", "_") for wert in MODELL_NACH_BACKEND.values()}
 
         prompts: Path = Path(__file__).resolve().parent.parent / "prompts"
         vorhanden: set[str] = {p.name for p in prompts.iterdir() if p.is_dir()}

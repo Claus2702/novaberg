@@ -93,7 +93,14 @@ def prompt_laden(
     for ebene, schluessel in (("Modell", modell), ("Connector", connector)):
         if not schluessel:
             continue
-        bloecke: dict[str, str] = _bloecke_lesen(os.path.join(prompt_dir, schluessel))
+        # **Ein Modellname kann einen Schraegstrich tragen** — bei einem
+        # Fernzugang nennt er den Anbieter mit: `deepseek/deepseek-v4-flash-0731`.
+        # Unveraendert eingesetzt ergaebe das ein **verschachteltes** Verzeichnis,
+        # und das Zwischenglied (`prompts/deepseek/`) waere eine Ebene, die
+        # niemand nachschlaegt — genau das, was `test_prompt_loader_ebenen`
+        # als totes Material meldet. Der Name wird deshalb flach gemacht.
+        verzeichnis: str = schluessel.replace("/", "_")
+        bloecke: dict[str, str] = _bloecke_lesen(os.path.join(prompt_dir, verzeichnis))
         prompts.update(bloecke)
         if bloecke:
             logger.info(
