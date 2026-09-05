@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 19:45 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 20:16 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 39 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 40 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,78 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 20:16 UTC — die Laenge stand schon im Zustand, nur las sie niemand ✅
+
+**Der Auftrag war, Novas Antworten zu kuerzen — und zwar nur fuer das Fernmodell, ueber die
+Prompt-Modellebene.** Genau die folgt seit heute Mittag dem antwortenden Modell; der Weg
+war also schon gebaut.
+
+### Was die Messung zutage foerderte
+
+Die Regie des Responders fordert im Betrieb **60–175 Zeichen** — eine **gerechnete**
+Vorgabe aus dem Haltungsraum (`umfang` 0,40). Das Fernmodell lieferte **996 Zeichen im
+Median**, das **5,7-fache der Obergrenze**. Das lokale Modell lag bei 226 und damit
+ebenfalls darueber, aber in derselben Groessenordnung.
+
+> **Die Laengenvorgabe war nicht abwesend, sie wurde nicht befolgt.** Ein Prompt, der in
+> **Zeichen** rechnet, verlangt vom Modell eine Zaehlung, die es nicht leisten kann. In
+> Saetzen und Absaetzen formuliert, greift dieselbe Vorgabe.
+
+Der Override liegt unter `prompts/deepseek_deepseek-v4-flash-0731/` und traegt
+`responder.rules` vollstaendig — die Modellebene **ersetzt** einen Block, sie ergaenzt ihn
+nicht. Genau dafuer gibt es seit heute einen Zeugen: Jedes Absatz-Stichwort des Defaults
+muss im Override wiederkehren, sonst gilt eine Regel fuer das aktive Modell **nicht mehr**,
+und nichts meldet es.
+
+| Fassung | Zeichen je Antwort |
+|---|---|
+| ohne Override | 996 (Median) |
+| eng (fuenf Saetze) | 206–229 |
+| **mittel (zwei Absaetze, Antwort zuerst)** | **168 / 258** |
+
+Die enge Fassung war zu eng: Sie liess die **Frage unbeantwortet** und fuellte den Platz
+mit einer Rueckfrage. Die mittlere stellt die Antwort ausdruecklich voran.
+
+### Dabei ein Verzeichnis, das niemand nachschlaegt
+
+Der erste Versuch legte die Modellebene unter `prompts/deepseek/deepseek-v4-flash-0731/` —
+der Modellname traegt einen Schraegstrich, und `os.path.join` macht daraus ein
+**verschachteltes** Verzeichnis. Das Zwischenglied `prompts/deepseek/` waere eine Ebene, die
+niemand nachschlaegt.
+
+**Gefunden hat es ein Zeuge, der seit dem 23.08.2026 steht** und genau darauf gebaut ist:
+*„Ein Verzeichnis, das keine Ebene je nachschlaegt, ist totes Material."* Der Lader macht
+den Namen jetzt flach (`/` → `_`), und der Zeuge kennt die Fernmodelle — seine Menge kam
+aus `OLLAMA_CONNECTORS` und damit **nur von der eigenen Maschine**. Das ist die **vierte
+Fundstelle** der Klasse *nach dem konfigurierten statt dem antwortenden Modell
+geschluesselt* an einem Tag, und die einzige, die von einer bestehenden Pruefung kam statt
+von einer Frage.
+
+### Der Befund, der bleibt
+
+**Der Korridor selbst ist fuer Fachfragen zu eng.** 60–175 Zeichen sind zehn bis
+fuenfundzwanzig Woerter; im Korridor liest sich eine Antwort dann so: *„Die Jets entstehen
+durch Akkretion und Magnetfelder. Sollen wir als Naechstes …?"* — formal richtig,
+inhaltlich duerftig.
+
+Der Korridor haengt an `umfang` aus dem Haltungsraum, und die Anlage, die ihn hebt, ist
+`wissbegier`. Sie soll nach `novaberg-thinking-faszination_k.md` §11 nicht themenblind
+wirken, sondern als `wissbegier × faszination` — und die Faszination ist heute ueberall 0.
+**Novas Knappheit bei Fachfragen ist damit kein Defekt, sondern die Folge einer Groesse,
+die noch nicht traegt.** Setzung des Eigentuemers:
+
+> *„Fuer die Fragen wollten wir doch die Neugier einbauen, Wissbegier, deswegen haetten wir
+> Faszination gebraucht. Der Teil ist im Entstehen."*
+
+**Der Override ist deshalb ausdruecklich ein Provisorium** (§11a): Er tut, was die Regie
+ohnehin will, und muss weichen, sobald der Faszinations-Leser den Korridor weitet — sonst
+deckelt er ihn.
+
+**Suite 3155 gruen, 0 uebersprungen** (davor 3151). 3 Zeugen fuer die Override-Deckung und
+einer fuer die Namensnormalisierung, Gegenproben 1/1 und 1/1.
 
 ---
 
