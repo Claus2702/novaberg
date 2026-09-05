@@ -16,7 +16,14 @@ import logging
 
 from agents.charakter import rad_messreihe
 from config import POSTGRES_URL
+from ei.fascination import (
+    bindung_roh,
+    faszination,
+    merkmalszug,
+    modulatoren_aus_turn,
+)
 from graph.state import ConversationState, pipeline_quelle
+from memory.fascination_store import traegerdaten_lesen
 from memory.pipeline_log import log_berechnung
 from memory.praegung import (
     faden_anlegen,
@@ -182,7 +189,7 @@ def _konfrontation_des_paares(user_id: str, character_id: str) -> float | None:
 
 def _zug_protokollieren(
     state: ConversationState, user_id: str, character_id: str,
-) -> None:
+) -> float:
     """Rechnet den Praegungszug dieses Turns und schreibt ihn ins Protokoll.
 
     Konzept §10.3. **Kein Bestand, kein Verhalten — eine Beobachtungszeile.**
@@ -210,7 +217,8 @@ def _zug_protokollieren(
         character_id: die Figur.
 
     Returns:
-        Nichts — der Node schreibt ins Protokoll, nicht in den Verbund.
+        Den Zug — er ist einer der neun Faktoren der Faszination und liegt
+        nur hier vor. 1.0, wenn er nicht gerechnet werden konnte.
     """
     # ── Eingabe ────────────────────────────────
     reiz_vektor: list[float] = state.get("prompt_embedding") or []
@@ -240,6 +248,117 @@ def _zug_protokollieren(
             inhalt |= ergebnis
 
     # ── Ausgabe ────────────────────────────────
+    log_berechnung(
+        turn_id      = state.get("turn_id", "unbekannt"),
+        node         = "praegung",
+        quelle       = pipeline_quelle(state),
+        inhalt       = inhalt,
+        user_id      = user_id,
+        character_id = character_id,
+    )
+    # Der Zug ist zugleich einer der neun Faktoren der Faszination (§10.6).
+    # 1.0 ist der neutrale Wert: kein Zug, aber auch keine Daempfung.
+    zug = inhalt.get("zug")
+    return float(zug) if isinstance(zug, (int, float)) else 1.0
+
+
+def _faszination_protokollieren(
+    state:        ConversationState,
+    user_id:      str,
+    character_id: str,
+    zug:          float,
+) -> None:
+    """Rechnet die Faszination der beruehrten Traeger und protokolliert sie.
+
+    **Der Ort ist derselbe wie beim Praegungszug, und der Grund ist der
+    Zug selbst:** Er ist einer der neun Faktoren (§10.6) und liegt genau
+    hier vor. Ihn ueber den State zu reichen, hiesse ihn zweimal zu haben.
+
+    **Die Traeger sind die in diesem Turn gelesenen Erinnerungen.** Nicht der
+    ganze Bestand: Faszination ist eine Groesse *im Turn*, und ein Knoten, den
+    der Lesepfad nie angeboten hat, war an diesem Turn nicht beteiligt.
+
+    **Die Zeile wird auch dann geschrieben, wenn nichts gerechnet werden
+    konnte**, mit dem Grund. Ein Turn ohne Zeile waere von einem Turn ohne
+    Traeger nicht zu unterscheiden — dieselbe Lehre wie beim Faden-Tor.
+
+    Vorbedingung: keine — ein Turn ohne gelesene Erinnerungen ist der
+        Normalfall.
+    Nachbedingung: genau eine `pipeline_log`-Zeile `faszination`.
+    """
+    # ── Eingabe ────────────────────────────────
+    resonanz: dict = state.get("lzg_resonanz") or {}
+    erinnerungen: list = resonanz.get("erinnerungen") or []
+    knoten_ids: list[int] = [
+        int(e["knoten_id"]) for e in erinnerungen
+        if isinstance(e, dict) and str(e.get("knoten_id", "")).isdigit()
+    ]
+    inhalt: dict = {"schritt": "faszination", "traeger_geprueft": len(knoten_ids)}
+
+    if not knoten_ids:
+        inhalt |= {"werte": {}, "grund": "keine gelesenen Erinnerungen"}
+        _log_faszination(state, user_id, character_id, inhalt)
+        return
+
+    # ── Verarbeitung ───────────────────────────
+    external = state.get("external")
+    internal = state.get("internal")
+    if external is None or internal is None:
+        inhalt |= {"werte": {}, "grund": "external oder internal fehlt"}
+        _log_faszination(state, user_id, character_id, inhalt)
+        return
+
+    modulatoren: dict[str, float] = modulatoren_aus_turn(
+        arousal         = float(getattr(external.emotion, "arousal", 0.5)),
+        emotion         = str(getattr(internal.emotion, "emotion", "")),
+        emotions_vector = str(getattr(internal.emotion, "emotions_vector", "")),
+        intent          = str(getattr(external.emotion, "intent", "")),
+        mode            = str(getattr(external.emotion, "mode", "")),
+        wissbegier      = None,
+    )
+
+    daten: dict[int, dict] = traegerdaten_lesen(POSTGRES_URL, knoten_ids)
+    werte: dict[str, float] = {}
+    rohe:  dict[str, float] = {}
+    ohne_profil: int = 0
+    for knoten_id in knoten_ids:
+        eintrag: dict = daten.get(knoten_id) or {}
+        profil: dict = eintrag.get("profil") or {}
+        if not profil:
+            # Kein Profil, kein Merkmalszug, keine Faszination — und das ist
+            # die Aussage der Groesse, kein Ausfall.
+            ohne_profil += 1
+            continue
+        bindung: float = bindung_roh(
+            eintrag.get("tage", 0),
+            eintrag.get("turns", 0),
+            eintrag.get("eigenimpuls"),
+        )
+        wert, roh = faszination(bindung, merkmalszug(profil), zug, modulatoren)
+        werte[str(knoten_id)] = round(wert, 4)
+        rohe[str(knoten_id)] = round(roh, 4)
+
+    # ── Ausgabe ────────────────────────────────
+    inhalt |= {
+        "werte":        werte,
+        "rohe":         rohe,
+        "ohne_profil":  ohne_profil,
+        "praegungszug": round(zug, 4),
+        # Die Modulatoren einzeln: Ohne sie ist der Wert nicht nachrechenbar,
+        # und die Frage, ob der Turn oder der Traeger ihn getragen hat, waere
+        # aus der Zeile nicht zu beantworten.
+        "modulatoren":  {k: round(v, 4) for k, v in modulatoren.items()},
+    }
+    _log_faszination(state, user_id, character_id, inhalt)
+
+
+def _log_faszination(
+    state:        ConversationState,
+    user_id:      str,
+    character_id: str,
+    inhalt:       dict,
+) -> None:
+    """Schreibt die Faszinationszeile — ein Ort, damit keiner sie vergisst."""
     log_berechnung(
         turn_id      = state.get("turn_id", "unbekannt"),
         node         = "praegung",
@@ -290,6 +409,17 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
     verlauf: list[dict]   = state.get("nova_emotions_verlauf") or []
     user_id:      str     = state.get("user_id", "")
     character_id: str     = state.get("character_id", "")
+
+    # **Beide Protokolle stehen vor den Rueckkehrpfaden, und das ist eine
+    # Berichtigung vom 05.09.2026.** Der Docstring sagte *immer eine Zeile
+    # praegung_zug*, und der Code hielt es nicht: Bei fehlender Salienz oder
+    # leerem Verlauf kehrte der Node zurueck, bevor er schrieb. Genau die
+    # Turns, in denen etwas fehlt, blieben damit unprotokolliert — und ein
+    # fehlender Eintrag ist von einem Turn ohne Zug nicht zu unterscheiden.
+    # Beide Groessen haengen nicht am Tor: Ein Turn kann eine Praegung
+    # anziehen und einen Traeger beruehren, ohne selbst eine zu hinterlassen.
+    zug: float = _zug_protokollieren(state, user_id, character_id)
+    _faszination_protokollieren(state, user_id, character_id, zug)
 
     if salienz is None:
         logger.error(
@@ -366,8 +496,6 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
         user_id      = user_id,
         character_id = character_id,
     )
-
-    _zug_protokollieren(state, user_id, character_id)
 
     if durch and faden_id is None:
         logger.error(
