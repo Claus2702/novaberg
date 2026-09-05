@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 14:19 UTC** (gemessen via `date -u`). Davor 05.09.2026, 11:05 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 14:53 UTC** (gemessen via `date -u`). Davor 05.09.2026, 14:19 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 34 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 35 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,64 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 14:53 UTC — die Reihe bekommt einen Leser, und dabei fällt ein stummes Feld auf ✅
+
+**Der Bestandslauf schreibt seit dem 05.09. eine Zeile je Tag. Gelesen hat sie niemand — und eine
+Reihe, die niemand liest, ist keine.**
+
+**Gebaut: `tools/fascination_series.py`** (`series_load`, `series_report`). Er hält die
+`pipeline_log`-Zeilen der Phase `faszination_bestand` chronologisch gegeneinander und beantwortet
+die eine Frage, für die der Lauf gebaut wurde: *Bewegt sich die Trägerseite, und reicht ihre Spanne
+für eine Kalibrierung?* Punktzahl, Median-Spanne, bewegte Träger, Deckel erreicht oder nicht — und
+**nie eine Ampel ohne Grund**.
+
+> **Die Zahl der bewegten Träger trägt die Aussage, nicht der Median.** Ein Median kann stillstehen,
+> während einzelne Träger steigen und andere fallen. Bewegt sich über die ganze Reihe kein einziger,
+> meldet der Auswerter *nicht kalibrierfähig* — ein Befund über den Bestand, nicht über die Rechnung.
+
+**Er rechnet nichts nach.** Jede Zahl stammt aus der Zeile, die der Lauf geschrieben hat; eine
+zweite Rechnung ergäbe eine zweite Wahrheit, und der Unterschied fiele erst auf, wenn jemand beide
+vergleicht.
+
+**Der Befund kam aus dem Bau, nicht aus einer Prüfung.** Die Protokollzeile trug **`ohne_strang`
+nicht** — der Bestandslauf rechnet den Zähler und gibt ihn in seiner Nachbedingung zurück, der
+Aufrufer im Tageslauf ließ ihn fallen. Damit wäre in der Reihe nicht ablesbar gewesen, ob der
+Strangzug im Bestand überhaupt greift.
+
+> **Die Rechenkette führte das Feld bereits.** Es stand seit dem Bau in der Feldliste der Phase —
+> der Code schrieb es nie. Zwei Seiten, die dasselbe beschreiben, und niemand hielt sie
+> gegeneinander. Der bisherige Zeuge prüfte, **dass** die Zeile entsteht, nicht **was** sie trägt;
+> eine Zeile ohne die gesuchte Zahl sieht in jeder Zählung wie ein Beleg aus.
+
+**Ein `None` bleibt ein `None`.** Zeilen von vor heute tragen das Feld nicht; der Auswerter meldet
+dafür *nicht gemessen* und nicht *null Träger ohne Strangbezug*. Beide sähen in der Tabelle gleich
+aus, und nur einer ist eine Auskunft.
+
+**Gemessen am laufenden System, 14:38 UTC** — der Bestandslauf direkt angestoßen, nach dem Neustart
+mit vollständigem Code:
+
+| Größe | 01:20 UTC | 14:38 UTC |
+|---|---|---|
+| gerechnet | 50 | 50 |
+| ohne Bindung | 7 | 7 |
+| ohne Strangbezug | — | **0** |
+| roh Median | 0,2831 | **0,3374** |
+| roh max | 0,5249 | **0,6437** |
+
+Der Strangzug trifft seine Vorhersage: angekündigt war ein Median von 0,3377, gemessen sind
+**0,3374** — die Differenz ist der Qualitätsverfall über dreizehn Stunden.
+
+**Die Reihe hat trotzdem null Punkte.** Der direkte Aufruf umgeht den Aufrufer, der die Zeile
+schreibt; ein Schreibversuch über den Buffer scheitert außerhalb des Agenten (*Buffer nicht
+initialisiert*), und das ist richtig so. **Punkt 1 entsteht im Tageslauf gegen 19:58 UTC.** Der
+Auswerter am echten Bestand meldet genau das: *keine Zeile — der neunte Schritt ist noch nicht
+gelaufen.*
+
+**Suite 3071 grün, 0 übersprungen** (davor 3061). Gegenprobe am Auswerter: `kalibrierfaehig` fest
+auf `True` — **3 vorhergesagt, 3 gezählt**. Rote Phase des ersten Zeugen: 1 vorhergesagt, 1 gezählt.
 
 ---
 
