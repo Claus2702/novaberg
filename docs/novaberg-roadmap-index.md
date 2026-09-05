@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 672 Abschnitte in 5 Dateien — 288 mit eigenem Datum, 383 geerbt, 1 ohne.
+**Umfang:** 683 Abschnitte in 5 Dateien — 299 mit eigenem Datum, 383 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 409 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 420 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 672 Marken, 672 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 683 Marken, 683 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,17 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-05 | laufend | ## | [05.09.2026, 11:05 UTC — 26 Bezeichner, die kein vollständiger Nachzug fand ✅](novaberg-roadmap.md#05092026-1105-utc--26-bezeichner-die-kein-vollständiger-nachzug-fand) |
+| 2026-09-05 | laufend | ## | [05.09.2026, 10:20 UTC — zwei Fragen des Eigentümers, zwei Defekte ✅](novaberg-roadmap.md#05092026-1020-utc--zwei-fragen-des-eigentümers-zwei-defekte) |
+| 2026-09-05 | laufend | ## | [05.09.2026, 01:20 UTC — die Trägerseite bekommt ihren eigenen Lauf ✅](novaberg-roadmap.md#05092026-0120-utc--die-trägerseite-bekommt-ihren-eigenen-lauf) |
+| 2026-09-05 | laufend | ## | [05.09.2026, 01:15 UTC — die Faszination rechnet im Betrieb, und ihr erster Wert ist null ✅](novaberg-roadmap.md#05092026-0115-utc--die-faszination-rechnet-im-betrieb-und-ihr-erster-wert-ist-null) |
+| 2026-09-05 | laufend | ## | [05.09.2026, 00:36 UTC — die Faszination läuft im Turn, und findet nichts vor ✅](novaberg-roadmap.md#05092026-0036-utc--die-faszination-läuft-im-turn-und-findet-nichts-vor) |
+| 2026-09-05 | laufend | ## | [05.09.2026, 00:15 UTC — die Faszination rechnet, und sie hängt am falschen Ende ✅](novaberg-roadmap.md#05092026-0015-utc--die-faszination-rechnet-und-sie-hängt-am-falschen-ende) |
+| 2026-09-04 | laufend | ## | [04.09.2026, 23:40 UTC — der erste Betriebsbeleg war stumm, jetzt ist er es nicht mehr ✅](novaberg-roadmap.md#04092026-2340-utc--der-erste-betriebsbeleg-war-stumm-jetzt-ist-er-es-nicht-mehr) |
+| 2026-09-04 | laufend | ## | [04.09.2026, 17:10 UTC — das Pipeline-Log trägt kein Urteil ✅](novaberg-roadmap.md#04092026-1710-utc--das-pipeline-log-trägt-kein-urteil) |
+| 2026-09-04 | laufend | ## | [04.09.2026, 13:00 UTC — die Verstärkung hängt jetzt an der Verwendung ✅](novaberg-roadmap.md#04092026-1300-utc--die-verstärkung-hängt-jetzt-an-der-verwendung) |
+| 2026-09-04 | laufend | ## | [04.09.2026 — Verstärkung setzt Verwendung voraus, und der Code weiß es nicht ✅](novaberg-roadmap.md#04092026--verstärkung-setzt-verwendung-voraus-und-der-code-weiß-es-nicht) |
+| 2026-09-03 | laufend | ## | [03.09.2026, 21:30 UTC — Die abstrakte Schicht bekommt ihre Qualitätsseite ✅](novaberg-roadmap.md#03092026-2130-utc--die-abstrakte-schicht-bekommt-ihre-qualitätsseite) |
 | 2026-09-03 | laufend | ## | [03.09.2026, 20:25 UTC — Vier Turns gegen das Produktivsystem, und keiner kam durch ✅](novaberg-roadmap.md#03092026-2025-utc--vier-turns-gegen-das-produktivsystem-und-keiner-kam-durch) |
 | (2026-09-03) | laufend | ### | · [Die Bauart des Reizes wiegt schwerer als sein Thema](novaberg-roadmap.md#die-bauart-des-reizes-wiegt-schwerer-als-sein-thema) |
 | (2026-09-03) | laufend | ### | · [Nova hat kein negatives Register für diese Reize](novaberg-roadmap.md#nova-hat-kein-negatives-register-für-diese-reize) |

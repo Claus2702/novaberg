@@ -470,44 +470,44 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | ANT | 229 | unlesbar | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 249 | offen | `GRAPH-SACKGASSE-UNGEPRUEFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-antwortpfad.md) |
 | ANT | 272 | offen | `META-KOGNITION` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
-| ANT | 307 | abgeschlossen | `CLIENT-RENDER` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
-| ANT | 320 | offen | `PENDING-RELEVANZ` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
-| ANT | 322 | offen | `ROUTE-MISS1` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
-| ANT | 335 | offen | `INTENT-TOTE-ZWEIGE` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
-| ANT | 336 | offen | `NOVA-ZUSAGE-OHNE-DECKUNG` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
-| ANT | 405 | abgeschlossen | `EPIC-GRAPH-NEUORDNUNG` | [EPIC-GRAPH-NEUORDNUNG — HumanGraph und CharacterGrap](novaberg-backlog-antwortpfad.md) |
-| ANT | 424 | abgeschlossen | `EPIC-SESSION-TRENNUNG` | [EPIC-SESSION-TRENNUNG — eine Sitzung je Paar ✅](novaberg-backlog-antwortpfad.md) |
-| ANT | 450 | offen | `VISION-TURNORCHESTRATOR` | [VISION-TURNORCHESTRATOR — ein Dirigent ueber den Tur](novaberg-backlog-antwortpfad.md) |
-| ANT | 465 | offen | `EPIC-CLIENT-WEBSOCKET` | [EPIC-CLIENT-WEBSOCKET — der Client haengt am Ereigni](novaberg-backlog-antwortpfad.md) |
-| ANT | 498 | offen | `ROUTE-CHAR-NOTIZ` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-antwortpfad.md) |
-| ANT | 518 | offen | `GV-P` | [Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integr](novaberg-backlog-antwortpfad.md) |
-| ANT | 550 | offen | `REDUCER-NACHZUEGLER` | [REDUCER-NACHZUEGLER — was der Reducer-Umbau offengel](novaberg-backlog-antwortpfad.md) |
-| ANT | 560 | offen | `REDUCER-CONFIG-DEAD` | [REDUCER-NACHZUEGLER — was der Reducer-Umbau offengel](novaberg-backlog-antwortpfad.md) |
-| ANT | 571 | offen | `THINKER-TOOL-FORMAT` | [Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)](novaberg-backlog-antwortpfad.md) |
-| ANT | 589 | offen | `THINK-TRANSITION-INFO` | [Sprint: THINK-TRANSITION-INFO — Thinker bekommt Vera](novaberg-backlog-antwortpfad.md) |
-| ANT | 616 | offen | `KONZEPT-COGNITIVE-PIPELINE` | [KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schl](novaberg-backlog-antwortpfad.md) |
-| ANT | 696 | offen | `TRIB-PERSON-DRIFT` | [Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Nov](novaberg-backlog-antwortpfad.md) |
-| ANT | 754 | offen | `ROUTE-MISS1` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 756 | offen | `EMOTE-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 757 | offen | `TOPOS-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 758 | offen | `ABER-SAG-MAL` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 759 | offen | `REDUCER-MULTILINE` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 760 | offen | `ROUTE-CHAR-NOTIZ` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 761 | offen | `RESP-DEAD` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 802 | offen | `DELEGATION-STATE-UNDEKLARIERT` | [Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrverme](novaberg-backlog-antwortpfad.md) |
-| ANT | 819 | offen | `PLANNER-AKTIV-RELIKT` | [Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige lies](novaberg-backlog-antwortpfad.md) |
-| ANT | 836 | offen | `WEB-CONTEXT-ALTPFAD` | [Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, ](novaberg-backlog-antwortpfad.md) |
-| ANT | 853 | offen | `BUILDER-CREATE-INITIAL-STATE-TOT` | [Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruf](novaberg-backlog-antwortpfad.md) |
-| ANT | 870 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
-| ANT | 910 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
-| ANT | 929 | abgeschlossen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
-| ANT | 942 | abgeschlossen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
-| ANT | 955 | abgeschlossen | `SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME` | [Feature: SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME — die Rue](novaberg-backlog-antwortpfad.md) |
-| ANT | 966 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
-| ANT | 979 | abgeschlossen | `SACHLAGE-SCHEIBE-6-AUFLOESER` | [Feature: SACHLAGE-SCHEIBE-6-AUFLOESER — der Frame-Au](novaberg-backlog-antwortpfad.md) |
-| ANT | 990 | abgeschlossen | `SACHLAGE-SCHEIBE-7-PLAUSIBILITAET` | [Feature: SACHLAGE-SCHEIBE-7-PLAUSIBILITAET — Behaupt](novaberg-backlog-antwortpfad.md) |
-| ANT | 1001 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
-| ANT | 1012 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
+| ANT | 312 | abgeschlossen | `CLIENT-RENDER` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 325 | offen | `PENDING-RELEVANZ` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 327 | offen | `ROUTE-MISS1` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 340 | offen | `INTENT-TOTE-ZWEIGE` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 341 | offen | `NOVA-ZUSAGE-OHNE-DECKUNG` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 410 | abgeschlossen | `EPIC-GRAPH-NEUORDNUNG` | [EPIC-GRAPH-NEUORDNUNG — HumanGraph und CharacterGrap](novaberg-backlog-antwortpfad.md) |
+| ANT | 429 | abgeschlossen | `EPIC-SESSION-TRENNUNG` | [EPIC-SESSION-TRENNUNG — eine Sitzung je Paar ✅](novaberg-backlog-antwortpfad.md) |
+| ANT | 455 | offen | `VISION-TURNORCHESTRATOR` | [VISION-TURNORCHESTRATOR — ein Dirigent ueber den Tur](novaberg-backlog-antwortpfad.md) |
+| ANT | 470 | offen | `EPIC-CLIENT-WEBSOCKET` | [EPIC-CLIENT-WEBSOCKET — der Client haengt am Ereigni](novaberg-backlog-antwortpfad.md) |
+| ANT | 503 | offen | `ROUTE-CHAR-NOTIZ` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-antwortpfad.md) |
+| ANT | 523 | offen | `GV-P` | [Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integr](novaberg-backlog-antwortpfad.md) |
+| ANT | 555 | offen | `REDUCER-NACHZUEGLER` | [REDUCER-NACHZUEGLER — was der Reducer-Umbau offengel](novaberg-backlog-antwortpfad.md) |
+| ANT | 565 | offen | `REDUCER-CONFIG-DEAD` | [REDUCER-NACHZUEGLER — was der Reducer-Umbau offengel](novaberg-backlog-antwortpfad.md) |
+| ANT | 576 | offen | `THINKER-TOOL-FORMAT` | [Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)](novaberg-backlog-antwortpfad.md) |
+| ANT | 594 | offen | `THINK-TRANSITION-INFO` | [Sprint: THINK-TRANSITION-INFO — Thinker bekommt Vera](novaberg-backlog-antwortpfad.md) |
+| ANT | 621 | offen | `KONZEPT-COGNITIVE-PIPELINE` | [KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schl](novaberg-backlog-antwortpfad.md) |
+| ANT | 701 | offen | `TRIB-PERSON-DRIFT` | [Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Nov](novaberg-backlog-antwortpfad.md) |
+| ANT | 759 | offen | `ROUTE-MISS1` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 761 | offen | `EMOTE-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 762 | offen | `TOPOS-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 763 | offen | `ABER-SAG-MAL` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 764 | offen | `REDUCER-MULTILINE` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 765 | offen | `ROUTE-CHAR-NOTIZ` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 766 | offen | `RESP-DEAD` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 807 | offen | `DELEGATION-STATE-UNDEKLARIERT` | [Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrverme](novaberg-backlog-antwortpfad.md) |
+| ANT | 824 | offen | `PLANNER-AKTIV-RELIKT` | [Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige lies](novaberg-backlog-antwortpfad.md) |
+| ANT | 841 | offen | `WEB-CONTEXT-ALTPFAD` | [Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, ](novaberg-backlog-antwortpfad.md) |
+| ANT | 858 | offen | `BUILDER-CREATE-INITIAL-STATE-TOT` | [Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruf](novaberg-backlog-antwortpfad.md) |
+| ANT | 875 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
+| ANT | 915 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
+| ANT | 934 | abgeschlossen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
+| ANT | 947 | abgeschlossen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
+| ANT | 960 | abgeschlossen | `SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME` | [Feature: SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME — die Rue](novaberg-backlog-antwortpfad.md) |
+| ANT | 971 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
+| ANT | 984 | abgeschlossen | `SACHLAGE-SCHEIBE-6-AUFLOESER` | [Feature: SACHLAGE-SCHEIBE-6-AUFLOESER — der Frame-Au](novaberg-backlog-antwortpfad.md) |
+| ANT | 995 | abgeschlossen | `SACHLAGE-SCHEIBE-7-PLAUSIBILITAET` | [Feature: SACHLAGE-SCHEIBE-7-PLAUSIBILITAET — Behaupt](novaberg-backlog-antwortpfad.md) |
+| ANT | 1006 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
+| ANT | 1017 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |

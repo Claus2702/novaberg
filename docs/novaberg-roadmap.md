@@ -1,13 +1,14 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 10:20 UTC** (gemessen via `date -u`). Davor 05.09.2026, 01:20 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 11:05 UTC** (gemessen via `date -u`). Davor 05.09.2026, 10:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 155 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 33 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +19,37 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 11:05 UTC — 26 Bezeichner, die kein vollständiger Nachzug fand ✅
+
+**Der Doku-Nachzug war vollständig und die Rechnung trotzdem nicht auffindbar.** Ein Lauf über die
+**hinzugefügten Namen** — nicht über die geänderten Dateien — fand **26 Bezeichner**, die in keinem
+Dokument standen: zehn aus dem Bau desselben Tages, zwei aus dem Vortag, die bereits einen Nachzug
+überlebt hatten, und **vierzehn Konstanten aus `config.py`**.
+
+> **Dateiliste und Namensliste sind zwei Mengen, nicht zwei Wege zur selben.** Die erste beantwortet,
+> *welches Dokument anzufassen ist*; die zweite, *ob die neue Größe auffindbar ist*. Wer nur die erste
+> fährt, hält ein vollständiges Ergebnis in der Hand und hat die zweite Frage nicht gestellt.
+
+**Gebaut:** `novaberg-thinking-faszination_k.md` **§10.6a „Wo die Rechnung steht"** — eine Bezeichner-
+tabelle mit Modul und Abschnitt, eine Konstantentabelle mit Wert und Herkunft. Dazu der Satz, der für
+alle zwanzig gilt: **keine ist gemessen.** Ihre Kalibrierung braucht die Reihe des Bestandslaufs über
+Tage, weil der Bestand den Wirkungsbereich von Deckel und Halbstrecken nicht erreicht.
+
+Ergänzt wurden außerdem die sechs Ausgangsmarken der Verwendungs-Verstärkung in
+`novaberg-memory-synapsen_k.md` §7.1a und die Feldlisten der beiden neuen Protokollzeilen in
+`novaberg-graph-rechenkette.md`.
+
+**Fünf der Lücken waren selbst verursacht:** In der Referenztabelle stand `FASZ_AROUSAL_MIN` · `_MAX`
+statt der vollen Namen. Eine Nachschlagetabelle, die Namen kürzt, kostet die eine Eigenschaft, für die
+sie geschrieben wurde — **der Grep ist ihre einzige Zugriffsart.** Ausgeschrieben.
+
+**Zwei Bezeichner bleiben absichtlich undokumentiert:** `_aus_tabelle` und `_in_spanne`, private Helfer
+eines Moduls ohne eigene Konzeptgröße.
+
+Kein Produktivcode, Suite unberührt bei **3061**.
 
 ---
 
