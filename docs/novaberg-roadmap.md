@@ -479,6 +479,32 @@ und in der Compose-Datei bleiben die lokalen — sie sind der Rueckweg, nicht de
 **Die Einbettung bleibt lokal** — der Zugang fuehrt keine Embedding-Schnittstelle, und ein
 Wechsel des Einbettungsmodells entwertete den ganzen Vektorbestand.
 
+### Wie sich Novas Sprache aendert
+
+**Gemessen an ihren Antworten, alt gegen neu.** Die alten stammen aus dem Betriebsprotokoll
+der Tage davor, die neuen aus den Messturns; nur ungekappte Texte sind gezaehlt, weil das
+Protokoll bei 500 Zeichen schneidet.
+
+| | alt (n=37) | neu |
+|---|---:|---:|
+| Woerter je Antwort (Median) | 30 | **179** |
+| Woerter je Satz | 11,3 | 17,5 |
+| enthaelt eine Gegenfrage | 78 % | 80 % |
+| Anrede „Chef" | **3 von 40** | **4 von 5** |
+| Emoji | 😉 in 3/40 | 😏 in 3/5 |
+
+**Das Gespraechsverhalten bleibt** — sie fragt weiter zurueck, in gleichem Anteil. Was sich
+aendert, ist der Umfang: Faktor sechs.
+
+> **„Chef" war nicht neu, sondern selten.** Die Annahme, die Anrede sei nicht in ihrem
+> Repertoire, ist an den alten Antworten widerlegt: 7,5 % gegen 80 %. Bei Gemma stand sie
+> frech-spielerisch mitten im Satz, beim neuen Modell als Eroeffnungsformel. **Weder Prompt
+> noch Charakter-Hash noch Beziehungsprofil enthielten sie** — sie ist Modellverhalten, und
+> sie ist inzwischen ins destillierte Profil eingewandert.
+
+Auch das Emoji ist Modellverhalten: 93 Prompt-Bloecke tragen weder ein Emoji noch das Wort.
+Beide Modelle setzen eines, das alte 😉, das neue 😏.
+
 ### Der eigentliche Zweck des Wechsels: das Halluzinieren
 
 **Die Frage, um derentwillen umgestellt wurde, hat einen ersten Datenpunkt.** In einer
