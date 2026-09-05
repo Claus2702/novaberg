@@ -425,6 +425,8 @@ meldet der Lauf es** — sonst fiele es erst auf, wenn jemand die Werte ansieht.
 hält die Zeilen chronologisch gegeneinander und beantwortet die eine Frage, für die der Lauf gebaut
 wurde — *bewegt sich die Trägerseite, und reicht ihre Spanne für eine Kalibrierung?* Er rechnet
 nichts nach; jede Zahl stammt aus der Zeile, die der Lauf geschrieben hat.
+**Prüfstand:** `tests/test_fascination_series.py` (10) — darunter der Zeuge, dass eine Reihe ohne
+einen einzigen bewegten Träger **nicht** als kalibrierfähig durchgeht.
 
 ### S15 — Ressourcen-Routing · S16 — Aufgabenblock
 

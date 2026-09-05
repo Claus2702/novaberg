@@ -1801,7 +1801,7 @@ zweite Wahrheit.
 > Bestand, nicht über die Rechnung.
 
 Ein neu hinzugekommener Träger zählt dabei nicht als Bewegung: Sonst meldete jeder Profil-Lauf eine
-bewegte Reihe, ohne dass sich ein einziger Wert geändert hätte.
+bewegte Reihe, ohne dass sich ein einziger Wert geändert hätte. Zeugen: `tests/test_fascination_series.py` (10).
 
 **`ohne_strang` fehlte in der Protokollzeile**, bis der Bau des Auswerters es zeigte — der
 Bestandslauf rechnete den Zähler, der Aufrufer im Tageslauf schrieb ihn nicht. Damit wäre in der
