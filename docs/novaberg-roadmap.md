@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 00:36 UTC** (gemessen via `date -u`). Davor 05.09.2026, 00:15 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 01:15 UTC** (gemessen via `date -u`). Davor 05.09.2026, 00:36 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,45 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 01:15 UTC — die Faszination rechnet im Betrieb, und ihr erster Wert ist null ✅
+
+**Die Kette ist einmal ganz durchgezogen** — von der Profilierung über den Lesepfad bis zur
+gerechneten Zahl. Zwei Bausteine dafür, beide aus Messungen entstanden.
+
+**Erstens: Ein Totalausfall des Profil-Laufs war kein Fehler.** `profil_lauf` meldete `error: None`
+nach 20 versuchten und 0 profilierten Trägern, weil seine einzige Prüfung war, ob die Buchführung
+aufgeht — und 0 + 20 = 20 tut das. Der Tageslauf hätte `erledigt` geschrieben. Dazu ein Endpunkt
+`POST /admin/qualitaet/lauf`, weil der Lauf den Serverprozess braucht: Der Hintergrund-Worker lebt
+im Lifespan, ein Labor-Skript daneben bekommt ihn nicht.
+
+**Zweitens: Die Profil-Auswahl folgt jetzt dem, was gelesen wird** — und das war der zweite Anlauf
+am selben Tag. Die Sortierung nach der Brücke `verbindung` zählt, wie oft ein Knoten **entstand**,
+nicht wie oft er **gelesen** wird. Der Betriebslauf zeigte es: Von neun in drei Turns gelesenen
+Knoten erfüllten **vier alle Filterkriterien und hatten trotzdem kein Profil** — sie waren nie an
+der Reihe. Erster Schlüssel ist seither die Lesespur aus den `lzg_resonanz_ids` (2,8 ms über 13.554
+Zeilen). Danach zwei Profil-Läufe: Bestand von 28 über 40 auf **50 Träger, 300 Kanten**.
+
+**Und dann rechnete sie — auf null.**
+
+> **Knoten 8685 trug 6 Qualitäten und 0 Brücken:** dreimal gelesen, nie über `verbindung`
+> entstanden. `bindung_roh(0, 0, None)` ist 0, und ein Faktor 0 löscht das ganze Produkt.
+
+**Dahinter steht eine unentschiedene Absichtsfrage, und sie ist nicht eigenmächtig zu entscheiden:**
+Die Brücke zählt Schreibvorgänge, keine Lesevorgänge. Ein Knoten, der in zwanzig Turns gelesen wurde
+und in keinem entstand, hat nach der heutigen Rechnung keine Bindung. §10.2 sagt *„Zahl
+verschiedener Tage, an denen der Träger einen Turn **berührt** hat"* und lässt offen, ob Lesen
+berührt. Gegen ja spricht §7.1 (*Lesen verstärkt nicht*); für ja, dass Faszination keine Verstärkung
+ist, sondern eine Beobachtung über den Träger. **Bis zur Entscheidung gilt die enge Lesart, und die
+Folge ist benannt:** Ein gut profilierter, oft gelesener Knoten kann Faszination 0 haben.
+
+**Nebenbei vollständig belegt: die Verwendungs-Verstärkung.** Drei Turns verstärkten 1 von 3, dann
+**3 von 3** und **3 von 3** — und die erweiterte Zeile zeigt, was vorher unsichtbar war: Ein
+Kandidat lag bei **0,5483 gegen die Schwelle 0,55**, also 0,0017 darunter.
+
+Suite 3047 grün, harte Wand sauber.
 
 ---
 

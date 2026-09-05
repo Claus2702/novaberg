@@ -1540,6 +1540,31 @@ Verfallsformen im selben Konzept wären eine Setzung, die niemand getroffen hat.
 **Die Halbstrecke über Berührungen ist nicht kalibrierbar** — `[gemessen 05.09.2026]` trägt **kein
 einziger der 28 profilierten Träger mehr als eine Berührung**.
 
+> ### ⬜ Offene Absichtsfrage: Ist Lesen eine Berührung?
+>
+> **Der erste im Betrieb gerechnete Faszinationswert war 0,0, und der Grund ist diese Frage**
+> (05.09.2026, 01:06 UTC, Knoten 8685). Der Knoten trug **6 Qualitäten und 0 Brücken**: dreimal
+> gelesen, nie über `verbindung` berührt. `bindung_roh(0, 0, None)` ist 0 — und ein Faktor 0 löscht
+> das ganze Produkt.
+>
+> **Die Brücke `verbindung` zählt Schreibvorgänge**, nicht Lesevorgänge: Sie entsteht, wenn ein Turn
+> einen KZG-Eintrag erzeugt, der später in einen LZG-Knoten wandert. Ein Knoten, der in zwanzig
+> Turns gelesen wurde und in keinem entstand, hat nach der heutigen Rechnung **keine Bindung**.
+>
+> §10.2 sagt *„Zahl verschiedener Tage, an denen der Träger einen Turn **berührt** hat"* — und lässt
+> offen, ob Lesen berührt. Beide Lesarten haben ein Argument:
+>
+> - **Nein.** §7.1 sperrt genau das: *Lesen verstärkt nicht.* Wer Lesen als Berührung zählt, baut
+>   dieselbe Schleife wieder auf, die den Bestand aufgebläht hat.
+> - **Ja.** Die Sperre in §7.1 gilt dem **Gedächtnisgewicht** — sie soll verhindern, dass ein
+>   Knoten wächst, weil er angeboten wurde. Faszination ist keine Verstärkung, sondern eine
+>   Beobachtung *über* den Träger, und ein Thema, das zwanzigmal im Gespräch auftaucht, bindet
+>   erkennbar Aufmerksamkeit.
+>
+> **Die Frage ist nicht entschieden und wird hier nicht entschieden.** Sie betrifft, was das System
+> sein soll, nicht wie es gebaut wird. Bis dahin gilt die enge Lesart, und die Folge steht oben:
+> **Ein gut profilierter, oft gelesener Knoten kann Faszination 0 haben.**
+
 **Der Verfall läuft im Lesepfad, nicht beim Aufrufer** (`memory/fascination_store.py`): Die Kante
 weiß, wann sie zuletzt berührt wurde, der Knoten nicht — und ein zweiter Leser könnte den Schritt
 vergessen. Die **rohe** Ausprägung kommt daneben zurück; ohne sie wäre später nicht zu trennen, ob
