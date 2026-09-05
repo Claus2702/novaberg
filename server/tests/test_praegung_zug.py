@@ -280,7 +280,9 @@ class DerNodeRuftDenZugTest(unittest.TestCase):
              patch(f"{NODE_MODUL}._konfrontation_des_paares", return_value=0.5), \
              patch(f"{NODE_MODUL}.log_berechnung",
                    side_effect=lambda **kw: geschrieben.append(kw)):
-            _zug_protokollieren(dict(self.ZUSTAND), "meister", "nova")
+            _zug_protokollieren(
+                dict(self.ZUSTAND), "meister", "nova", [0.2] * 768, "segment",
+            )
 
         self.assertEqual(zug.call_count, 1, "Der Node rechnet den Zug nicht")
         self.assertEqual(len(geschrieben), 1)
@@ -293,16 +295,56 @@ class DerNodeRuftDenZugTest(unittest.TestCase):
         from graph.nodes.praegung import _zug_protokollieren
         geschrieben: list[dict] = []
 
-        ohne = dict(self.ZUSTAND) | {"prompt_embedding": []}
         with patch(f"{NODE_MODUL}.praegungszug") as zug, \
              patch(f"{NODE_MODUL}.log_berechnung",
                    side_effect=lambda **kw: geschrieben.append(kw)):
-            _zug_protokollieren(ohne, "meister", "nova")
+            _zug_protokollieren(dict(self.ZUSTAND), "meister", "nova", [], "keins")
 
         self.assertEqual(zug.call_count, 0)
         inhalt = geschrieben[0]["inhalt"]
         self.assertIsNone(inhalt["zug"])
-        self.assertEqual(inhalt["grund"], "kein prompt_embedding")
+        self.assertEqual(inhalt["grund"], "kein Vektor fuer diesen Turn")
+
+    def test_die_zeile_nennt_die_herkunft_des_vektors(self) -> None:
+        """Berichtigt am 05.09.2026 — der Zug las den gemittelten Turn.
+
+        Ein Rueckfall auf den Turn-Vektor ist von einem scharfen Segmentvektor
+        sonst nicht zu unterscheiden, und die Naehe ist auf beiden verschieden
+        viel wert: Ein Turn ueber zwei Themen liegt zwischen beiden und
+        **keinem** der zugehoerigen Straenge nahe. Derselbe Defekt wie
+        `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben.
+        """
+        from graph.nodes.praegung import _zug_protokollieren
+        geschrieben: list[dict] = []
+
+        with patch(f"{NODE_MODUL}.praegungszug",
+                   return_value={"zug": 1.3, "strang_id": 1}), \
+             patch(f"{NODE_MODUL}._konfrontation_des_paares", return_value=0.5), \
+             patch(f"{NODE_MODUL}.log_berechnung",
+                   side_effect=lambda **kw: geschrieben.append(kw)):
+            _zug_protokollieren(
+                dict(self.ZUSTAND), "meister", "nova", [0.2] * 768, "segment",
+            )
+
+        self.assertEqual("segment", geschrieben[0]["inhalt"]["vektor_quelle"])
+
+    def test_der_zug_rechnet_auf_dem_uebergebenen_vektor(self) -> None:
+        """Nicht auf `prompt_embedding` — sonst waere die Umstellung wirkungslos."""
+        from graph.nodes.praegung import _zug_protokollieren
+
+        scharf: list[float] = [0.9] * 768
+        with patch(f"{NODE_MODUL}.praegungszug",
+                   return_value={"zug": 1.1}) as zug, \
+             patch(f"{NODE_MODUL}._konfrontation_des_paares", return_value=0.5), \
+             patch(f"{NODE_MODUL}.log_berechnung"):
+            _zug_protokollieren(
+                dict(self.ZUSTAND), "meister", "nova", scharf, "segment",
+            )
+
+        self.assertEqual(
+            scharf, zug.call_args.kwargs["reiz_vektor"],
+            "Der Zug muss den Segmentvektor rechnen, nicht den Turn-Vektor",
+        )
 
     def test_das_turn_tor_ruft_den_zug_auch_bei_ablehnung(self) -> None:
         """Ein Turn kann eine Praegung anziehen, ohne selbst eine zu hinterlassen."""

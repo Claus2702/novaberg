@@ -157,7 +157,10 @@ class DerZugWirdWeitergereichtTest(unittest.TestCase):
             zustand = _zustand([])
             zustand["prompt_embedding"] = [0.1] * 768
             self.assertEqual(
-                1.42, _zug_protokollieren(zustand, "meister", "nova"),
+                1.42,
+                _zug_protokollieren(
+                    zustand, "meister", "nova", [0.1] * 768, "segment",
+                ),
             )
 
     def test_ohne_zug_kommt_der_neutrale_wert(self) -> None:
@@ -166,9 +169,9 @@ class DerZugWirdWeitergereichtTest(unittest.TestCase):
 
         with patch(f"{NODE}.log_berechnung"):
             zustand = _zustand([])
-            zustand["prompt_embedding"] = []
             self.assertEqual(
-                1.0, _zug_protokollieren(zustand, "meister", "nova"),
+                1.0,
+                _zug_protokollieren(zustand, "meister", "nova", [], "keins"),
             )
 
 

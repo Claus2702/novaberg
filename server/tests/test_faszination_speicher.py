@@ -140,9 +140,10 @@ class DerBestandslaufMisstDieTraegerseiteAlleinTest(unittest.TestCase):
         zeiger = MagicMock()
         # 1. die Traegerliste, 2. der Anker, 3. die Profile
         zeiger.fetchall.side_effect = [
-            [(11,)],
+            [(11,)],                               # die Traegerliste
             [],                                    # keine Bruecke -> Bindung 0
-            [(11, "komplexitaet", 1.0, 0.0)],
+            [(11, "komplexitaet", 1.0, 0.0)],      # das Profil
+            [],                                    # kein Strangbezug
         ]
         conn = MagicMock()
         conn.cursor.return_value.__enter__.return_value = zeiger
@@ -150,13 +151,14 @@ class DerBestandslaufMisstDieTraegerseiteAlleinTest(unittest.TestCase):
             ergebnis = fascination_store.bestandslauf(POSTGRES_URL)
         self.assertEqual(1, ergebnis["gerechnet"])
         self.assertEqual(1, ergebnis["ohne_bindung"])
+        self.assertEqual(1, ergebnis["ohne_strang"])
         self.assertEqual(0.0, ergebnis["roh_max"])
 
     def test_ein_flacher_bestand_meldet_sich(self) -> None:
         """Sonst faellt es erst auf, wenn jemand die Werte ansieht."""
         zeiger = MagicMock()
         zeiger.fetchall.side_effect = [
-            [(11,)], [], [(11, "komplexitaet", 1.0, 0.0)],
+            [(11,)], [], [(11, "komplexitaet", 1.0, 0.0)], [],
         ]
         conn = MagicMock()
         conn.cursor.return_value.__enter__.return_value = zeiger
@@ -171,12 +173,17 @@ class DerBestandslaufMisstDieTraegerseiteAlleinTest(unittest.TestCase):
             [(11,), (12,)],
             [(11, 3, 3, 1, 2), (12, 1, 1, 0, 1)],
             [(11, "komplexitaet", 1.0, 0.0), (12, "weite", 0.5, 0.0)],
+            [(11, 7, 0.8, 5, 0.4)],                # nur 11 liegt bei einem Strang
         ]
         conn = MagicMock()
         conn.cursor.return_value.__enter__.return_value = zeiger
         with patch(f"{MODUL}.psycopg2.connect", MagicMock(return_value=conn)):
             ergebnis = fascination_store.bestandslauf(POSTGRES_URL)
         self.assertEqual(2, ergebnis["gerechnet"])
+        self.assertEqual(
+            1, ergebnis["ohne_strang"],
+            "Ein Traeger ohne Strangbezug wird gezaehlt, nicht uebergangen",
+        )
         self.assertIsNotNone(ergebnis["roh_median"])
         self.assertLessEqual(ergebnis["roh_min"], ergebnis["roh_max"])
         self.assertEqual(2, len(ergebnis["werte"]))

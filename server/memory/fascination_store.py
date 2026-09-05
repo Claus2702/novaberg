@@ -26,6 +26,7 @@ from ei.fascination import (
     faszination,
     merkmalszug,
     qualitaet_verfall,
+    strangzug,
 )
 
 logger = logging.getLogger("ki_server.memory.fascination_store")
@@ -186,8 +187,8 @@ def bestandslauf(postgres_url: str) -> dict:
 
     Vorbedingung: keine — ein Bestand ohne profilierte Traeger ist der
         Zustand vor dem ersten Profil-Lauf und kein Fehler.
-    Nachbedingung: {traeger, gerechnet, ohne_bindung, werte, roh_min,
-        roh_median, roh_max, error}. `ohne_bindung` zaehlt die Traeger, deren
+    Nachbedingung: {traeger, gerechnet, ohne_bindung, ohne_strang, werte,
+        roh_min, roh_median, roh_max, error}. `ohne_bindung` zaehlt die Traeger, deren
         Anker 0 ergibt — **sie sind der heutige Regelfall** und der Grund,
         warum die Reihe zunaechst flach liegt (§10.2, die offene Frage, ob
         Lesen eine Beruehrung ist).
@@ -200,8 +201,9 @@ def bestandslauf(postgres_url: str) -> dict:
     """
     # ── Eingabe-Validierung ─────────────────────
     ergebnis: dict = {
-        "traeger": 0, "gerechnet": 0, "ohne_bindung": 0, "werte": {},
-        "roh_min": None, "roh_median": None, "roh_max": None, "error": None,
+        "traeger": 0, "gerechnet": 0, "ohne_bindung": 0, "ohne_strang": 0,
+        "werte": {}, "roh_min": None, "roh_median": None, "roh_max": None,
+        "error": None,
     }
     try:
         conn = psycopg2.connect(postgres_url)
@@ -226,6 +228,10 @@ def bestandslauf(postgres_url: str) -> dict:
 
     # ── Verarbeitung ────────────────────────────
     daten: dict[int, dict] = traegerdaten_lesen(postgres_url, ids)
+    # **Der Strangzug ist auf der Traegerseite die tragende Groesse** (§10.3a):
+    # Er misst, wie nah ein Traeger einer Praegung liegt, und ist das einzige
+    # Stueck der Praegungsschicht, das ausserhalb eines Turns rechnen kann.
+    naehen: dict[int, dict] = traeger_strangnaehe(postgres_url, ids)
     rohe: list[float] = []
     for knoten_id in ids:
         eintrag: dict = daten.get(knoten_id) or {}
@@ -239,9 +245,18 @@ def bestandslauf(postgres_url: str) -> dict:
         )
         if bindung <= 0.0:
             ergebnis["ohne_bindung"] += 1
-        # Der Praegungszug steht auf 1.0 — er ist eine Turn-Groesse und hat
-        # ausserhalb eines Turns keinen Reiz, gegen den er rechnen koennte.
-        wert, roh = faszination(bindung, merkmalszug(profil), 1.0, None)
+        strang: dict = naehen.get(knoten_id) or {}
+        if not strang:
+            ergebnis["ohne_strang"] += 1
+        # Der **Praegungszug** steht auf 1.0 — er ist eine Turn-Groesse und hat
+        # ausserhalb eines Turns keinen Reiz, gegen den er rechnen koennte. Der
+        # **Strangzug** dagegen gehoert dem Traeger und rechnet auch hier.
+        wert, roh = faszination(
+            bindung, merkmalszug(profil), 1.0,
+            {"strangzug": strangzug(
+                strang.get("naehe"), int(strang.get("faden_zahl", 0)),
+            )},
+        )
         ergebnis["werte"][str(knoten_id)] = round(wert, 4)
         rohe.append(roh)
         ergebnis["gerechnet"] += 1
@@ -263,7 +278,114 @@ def bestandslauf(postgres_url: str) -> dict:
         )
     logger.info(
         f"Faszination: {ergebnis['gerechnet']} von {ergebnis['traeger']} "
-        f"Traegern gerechnet, {ergebnis['ohne_bindung']} ohne Bindung; "
+        f"Traegern gerechnet, {ergebnis['ohne_bindung']} ohne Bindung, "
+        f"{ergebnis['ohne_strang']} ohne Strangbezug; "
         f"roh {ergebnis['roh_min']} … {ergebnis['roh_max']}"
     )
     return ergebnis
+
+
+# Die Naehe eines Traegers zu jedem Strang seines Paares, in **einer** Abfrage.
+# Der Vektor des Knotens gegen das Zentroid — dieselbe Rechnung wie beim
+# Praegungszug, nur mit dem Traeger statt dem Reiz.
+_TRAEGER_STRANGNAEHE = """
+SELECT k.id,
+       s.id                                   AS strang_id,
+       1 - (s.zentroid <=> k.embedding)       AS naehe,
+       s.faden_zahl,
+       s.valenz
+FROM lzg_knoten k
+JOIN praegung_strang s
+  ON s.user_id = k.user_id AND s.character_id = k.character_id
+WHERE k.id = ANY(%s)
+  AND k.embedding IS NOT NULL
+ORDER BY k.id, naehe DESC
+"""
+
+
+def traeger_strangnaehe(
+    postgres_url: str,
+    knoten_ids:   list[int],
+) -> dict[int, dict]:
+    """Wie nah ein Traeger am Mittelpunkt eines Praegungsstrangs liegt.
+
+    **Das ist eine andere Groesse als der Praegungszug (§10.3), und die
+    Verwechslung war der Fund vom 05.09.2026.** Der Zug misst die Lage
+    **des Turns** zum Strang und liefert *einen* Wert je Turn — alle Traeger
+    eines Turns bekommen denselben. Diese Funktion misst die Lage **des
+    Traegers**, und damit unterscheidet sich ein Knoten im Zentrum eines
+    Strangs von einem am Rand.
+
+    Der Eigentuemer hat es so beschrieben: Ein Strang ist ein kleiner Bereich
+    im 768-dimensionalen Raum mit einem Einflussgebiet; liegt ein Knoten in
+    dessen Naehe, entsteht Faszination fuer diesen Knoten — **in der Mitte
+    stark, am Rand schwach**.
+
+    **Genommen wird der naechste Strang, nicht die Summe aller.** Ein Knoten
+    gehoert in die Naehe *eines* Themas; ueber mehrere zu summieren hiesse,
+    dass viele schwache Beruehrungen eine starke ergeben — und genau das ist
+    die Nachbarschaft, gegen die §7.1a gebaut ist.
+
+    **Das Paar kommt aus dem Knoten, nicht vom Aufrufer.** Ein Knoten traegt
+    `user_id` und `character_id`; ein Strang auch. Sie zu verbinden ist
+    richtiger als ein Parameter: Der Aufrufer koennte das falsche Paar
+    uebergeben, und ein Traeger wuerde dann an fremden Praegungen gemessen.
+
+    Vorbedingung: `knoten_ids` sind LZG-Kennungen.
+    Nachbedingung: {knoten_id: {strang_id, naehe, faden_zahl, valenz}} fuer
+        jeden Knoten mit Embedding und mindestens einem Strang. **Ein Knoten
+        ohne Eintrag hat keinen Strangbezug** — das ist eine Aussage, kein
+        fehlender Wert.
+
+    Args:
+        postgres_url: Verbindungs-URL (Hausstil: Parameter, kein Modul-Global).
+        knoten_ids:   die Traeger.
+
+    Returns:
+        Der naechste Strang je Traeger samt seiner Naehe.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ids: list[int] = sorted({int(k) for k in (knoten_ids or []) if k is not None})
+    if not ids:
+        return {}
+
+    # ── Verarbeitung ────────────────────────────
+    naechste: dict[int, dict] = {}
+    try:
+        conn = psycopg2.connect(postgres_url)
+    except psycopg2.Error as fehler:
+        logger.exception(
+            f"Faszination: Strangnaehe nicht lesbar — {type(fehler).__name__}"
+        )
+        return {}
+    try:
+        with conn.cursor() as cur:
+            cur.execute(_TRAEGER_STRANGNAEHE, (ids,))
+            for knoten_id, strang_id, naehe, faden_zahl, valenz in cur.fetchall():
+                schluessel = int(knoten_id)
+                # Die Abfrage liefert je Knoten absteigend nach Naehe — der
+                # erste ist der naechste Strang.
+                if schluessel in naechste:
+                    continue
+                naechste[schluessel] = {
+                    "strang_id":  int(strang_id),
+                    "naehe":      round(float(naehe), 4),
+                    "faden_zahl": int(faden_zahl),
+                    "valenz":     float(valenz) if valenz is not None else None,
+                }
+    except psycopg2.Error as fehler:
+        logger.exception(
+            f"Faszination: Strangnaehe nicht lesbar — {type(fehler).__name__}"
+        )
+        return {}
+    finally:
+        conn.close()
+
+    # ── Ausgabe-Verifikation ────────────────────
+    ohne: int = len(ids) - len(naechste)
+    if ohne:
+        logger.info(
+            f"Faszination: {ohne} von {len(ids)} Traegern ohne Strangbezug — "
+            f"sie liegen in keinem Praegungsgebiet"
+        )
+    return naechste

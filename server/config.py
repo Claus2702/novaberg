@@ -2224,6 +2224,32 @@ BINDUNG_GEWICHTE: dict[str, float] = {
 BINDUNG_HALBSTRECKE_WIEDERKEHR:   float = 3.0   # drei verschiedene Tage
 BINDUNG_HALBSTRECKE_VERWEILDAUER: float = 3.0   # drei Turns je Episode
 
+# ─────────────────────────────────────────────────────────────
+# Der Strangzug — die Lage des **Traegers** zu einer Praegung
+# `novaberg-thinking-faszination_k.md` §10.3a
+# ─────────────────────────────────────────────────────────────
+#
+#   strangzug = 1.0 + FASZ_STRANGZUG_HUB * naehe * saettigung(faden_zahl)
+#
+# **Eine andere Groesse als der Praegungszug, und die Verwechslung war der
+# Fund vom 05.09.2026.** Der Praegungszug (§10.3) misst die Lage **des Turns**
+# zum Strang und liefert einen Wert je Turn — alle Traeger eines Turns
+# bekommen denselben. Der Strangzug misst die Lage **des Traegers**: Ein
+# Knoten im Zentrum eines Strangs unterscheidet sich damit von einem am Rand.
+#
+# Vorgabe des Eigentuemers (05.09.2026): *„Ein Strang ist ein kleiner Bereich
+# im 768-dimensionalen Raum und hat ein Einflussgebiet. Liegt das Embedding
+# eines Knotens darin, wird dafuer Faszination empfunden — in der Mitte stark,
+# am Rand schwach."*
+#
+# **Die Fadenzahl traegt mit, weil ein starker Strang weiter zieht.** Sie geht
+# gesaettigt ein (`n/(n+H)`), damit ein Strang mit vierzig Faeden nicht
+# vierzigmal so weit zieht wie einer mit einem. `[gemessen 05.09.2026]`: Der
+# groesste Strang des Bestandes traegt **7 Faeden**, der Median liegt bei 2 —
+# die Halbstrecke 3 liegt dazwischen und ist eine Setzung, keine Optimierung.
+FASZ_STRANGZUG_HUB:              float = 0.60   # dieselbe Spanne wie §10.3
+FASZ_STRANGZUG_HALBSTRECKE_FAEDEN: float = 3.0
+
 # Der harte Deckel der Zusammenfuehrung (§10.6). Das Roh-Aequivalent von
 # faszination = 1.0; jede daraus abgeleitete Konstante nennt es im Kommentar
 # (Regel (7) der Wertekonvention).

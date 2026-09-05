@@ -188,7 +188,11 @@ def _konfrontation_des_paares(user_id: str, character_id: str) -> float | None:
 
 
 def _zug_protokollieren(
-    state: ConversationState, user_id: str, character_id: str,
+    state:           ConversationState,
+    user_id:         str,
+    character_id:    str,
+    segment_vektor:  list[float],
+    segment_quelle:  str,
 ) -> float:
     """Rechnet den Praegungszug dieses Turns und schreibt ihn ins Protokoll.
 
@@ -206,7 +210,7 @@ def _zug_protokollieren(
     Vorbedingung: keine.
     Nachbedingung: eine Zeile `praegung_zug` unter dem Knoten `praegung`, mit
         Zug, Strang, Naehe, Ladung und Richtung.
-    Fehlerfaelle: Ein Turn ohne `prompt_embedding` hat keinen Ort auf der
+    Fehlerfaelle: Ein Turn ohne jeden Vektor hat keinen Ort auf der
         Landkarte; das wird als Grund protokolliert und nicht als Zug 1,0
         ausgegeben — sonst waere „kein Reiz" von „kein Strang" nicht zu
         unterscheiden.
@@ -221,15 +225,18 @@ def _zug_protokollieren(
         nur hier vor. 1.0, wenn er nicht gerechnet werden konnte.
     """
     # ── Eingabe ────────────────────────────────
-    reiz_vektor: list[float] = state.get("prompt_embedding") or []
-    inhalt: dict = {"schritt": "praegung_zug"}
+    reiz_vektor: list[float] = segment_vektor or []
+    # **Die Herkunft steht in der Zeile**, weil ein Rueckfall auf den
+    # Turn-Vektor sonst von einem scharfen Segmentvektor nicht zu
+    # unterscheiden waere — und die Naehe auf beiden verschieden viel wert ist.
+    inhalt: dict = {"schritt": "praegung_zug", "vektor_quelle": segment_quelle}
 
     # ── Verarbeitung ───────────────────────────
     if not reiz_vektor:
-        inhalt |= {"zug": None, "grund": "kein prompt_embedding"}
+        inhalt |= {"zug": None, "grund": "kein Vektor fuer diesen Turn"}
         logger.warning(
-            "Praegung-Zug: kein prompt_embedding in diesem Turn — ohne Ort auf "
-            "der Landkarte gibt es keine Aehnlichkeit und keinen Zug"
+            "Praegung-Zug: weder Segment- noch Turn-Vektor in diesem Turn — "
+            "ohne Ort auf der Landkarte gibt es keine Aehnlichkeit und keinen Zug"
         )
     else:
         ergebnis: dict | None = praegungszug(
@@ -418,7 +425,23 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
     # fehlender Eintrag ist von einem Turn ohne Zug nicht zu unterscheiden.
     # Beide Groessen haengen nicht am Tor: Ein Turn kann eine Praegung
     # anziehen und einen Traeger beruehren, ohne selbst eine zu hinterlassen.
-    zug: float = _zug_protokollieren(state, user_id, character_id)
+    # **Der Zug misst das staerkste Segment, nicht den gemittelten Turn** —
+    # berichtigt am 05.09.2026. Bis dahin las er `prompt_embedding`, und das
+    # ist derselbe Defekt, der fuer den Faden am 01.09.2026 behoben wurde
+    # (`FADEN-EMBEDDING-VERDUENNT`, siehe `_faden_embedding`): Ein Turn ueber
+    # zwei Themen bekommt einen Vektor zwischen beiden und liegt danach
+    # **keinem** der zugehoerigen Straenge nahe. Die Naehe eines Mittelwerts
+    # ist keine Naehe.
+    #
+    # **Einmal gerechnet, zweimal benutzt.** Der Faden braucht denselben
+    # Vektor; ihn hier zu holen kostet den Embed-Aufruf nur, wenn der Turn
+    # ueberhaupt ein Segment traegt — und spart ihn beim Faden.
+    segment_vektor, segment_quelle = _faden_embedding(
+        segment.get("_segment_text", "") if segment else "", state,
+    )
+    zug: float = _zug_protokollieren(
+        state, user_id, character_id, segment_vektor, segment_quelle,
+    )
     _faszination_protokollieren(state, user_id, character_id, zug)
 
     if salienz is None:
@@ -453,9 +476,9 @@ def praegung_pruefen(state: ConversationState) -> ConversationState:
     faden_id: int | None = None
     embedding_quelle: str = ""
     if durch:
-        embedding, embedding_quelle = _faden_embedding(
-            segment.get("_segment_text", ""), state,
-        )
+        # Derselbe Vektor, den der Zug oben schon gerechnet hat — ein zweiter
+        # Embed-Aufruf ueber denselben Text liefert dasselbe und kostet 0,15 s.
+        embedding, embedding_quelle = segment_vektor, segment_quelle
         faden_id = faden_anlegen(
             POSTGRES_URL,
             user_id       = user_id,

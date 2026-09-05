@@ -39,6 +39,8 @@ from config import (
     FASZ_INTENT_FAKTOREN,
     FASZ_MAXIMUM,
     FASZ_MODUS_FAKTOREN,
+    FASZ_STRANGZUG_HALBSTRECKE_FAEDEN,
+    FASZ_STRANGZUG_HUB,
     FASZ_VERLAUF_FAKTOREN,
     MERKMALSZUG_BONUS,
     QUALITAET_KANON,
@@ -626,3 +628,54 @@ def profil_verfallen(
         name: qualitaet_verfall(name, wert, tage, beruehrungen)
         for name, wert in (profil or {}).items()
     }
+
+
+def strangzug(naehe: float | None, faden_zahl: int) -> float:
+    """Wie stark eine Praegung diesen **Traeger** anzieht — §10.3a.
+
+        strangzug = 1.0 + HUB * naehe * saettigung(faden_zahl)
+
+    **Nicht zu verwechseln mit dem Praegungszug** (§10.3): Der misst die Lage
+    **des Turns** zum Strang und liefert einen Wert je Turn; alle Traeger
+    eines Turns bekommen denselben. Dieser hier misst die Lage **des
+    Traegers**, und erst damit unterscheidet sich ein Knoten im Zentrum eines
+    Strangs von einem an seinem Rand.
+
+    **In der Mitte stark, am Rand schwach** — die Naehe ist das Mass, nicht
+    eine Schwelle. Ein Knoten ohne Strangbezug bekommt 1.0: **neutral, nicht
+    null.** Regel (a) aus §10.0 gilt hier wie ueberall — eine Null im Produkt
+    loeschte auch alles, was der Traeger sonst mitbringt.
+
+    **Die Fadenzahl traegt mit, weil ein starker Strang weiter zieht**, und
+    zwar gesaettigt: Vierzig Faeden ziehen nicht vierzigmal so weit wie einer.
+
+    Rein. Vorbedingung: `naehe` in [-1, 1] oder None (kein Strangbezug),
+        `faden_zahl` >= 0. Eine negative Naehe bedeutet Gegenlage und zieht
+        nicht — sie wird auf 0 gesetzt, nicht gespiegelt.
+    Nachbedingung: ein Faktor in [1.0, 1.0 + FASZ_STRANGZUG_HUB].
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if naehe is None:
+        return 1.0
+    wert: float = float(naehe)
+    if not -1.0 <= wert <= 1.0:
+        logger.error(
+            f"Faszination: Strangnaehe {wert:.4f} liegt ausserhalb [-1, 1] — "
+            f"geklemmt; eine Kosinusnaehe kann das nicht sein"
+        )
+        wert = max(-1.0, min(1.0, wert))
+    if wert <= 0.0:
+        # Gegenlage zieht nicht — und sie stoesst auch nicht ab: Der Traeger
+        # hat mit dieser Praegung nichts zu tun.
+        return 1.0
+
+    # ── Verarbeitung ────────────────────────────
+    staerke: float = norm_saettigung(
+        max(0, int(faden_zahl)), FASZ_STRANGZUG_HALBSTRECKE_FAEDEN,
+    )
+    faktor: float = 1.0 + FASZ_STRANGZUG_HUB * wert * staerke
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return _in_spanne(
+        faktor, 1.0, 1.0 + FASZ_STRANGZUG_HUB, "strangzug",
+    )

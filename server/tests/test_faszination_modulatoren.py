@@ -418,5 +418,57 @@ class DerVerfallIstJeDimensionVerschiedenTest(unittest.TestCase):
         self.assertAlmostEqual(1.0, verfallen["ungewissheit"], 9)
 
 
+class DerStrangzugMisstDieLageDesTraegersTest(unittest.TestCase):
+    """§10.3a — in der Mitte stark, am Rand schwach.
+
+    Vorgabe des Eigentuemers (05.09.2026): *„Ein Strang ist ein kleiner
+    Bereich im 768-dimensionalen Raum und hat ein Einflussgebiet. Liegt das
+    Embedding eines Knotens darin, wird dafuer Faszination empfunden."*
+
+    **Nicht zu verwechseln mit dem Praegungszug**, der die Lage des **Turns**
+    misst und je Turn einen Wert liefert — alle Traeger bekommen denselben.
+    """
+
+    def test_naeher_zieht_staerker(self) -> None:
+        self.assertGreater(
+            fascination.strangzug(0.9, 5), fascination.strangzug(0.4, 5),
+        )
+
+    def test_ein_starker_strang_zieht_weiter(self) -> None:
+        """Die Gravitation: dieselbe Naehe, mehr Faeden, mehr Zug."""
+        self.assertGreater(
+            fascination.strangzug(0.6, 20), fascination.strangzug(0.6, 1),
+        )
+
+    def test_ohne_strangbezug_ist_er_neutral(self) -> None:
+        """1.0, **nicht 0** — Regel (a) aus §10.0 gilt auch hier."""
+        self.assertEqual(1.0, fascination.strangzug(None, 0))
+
+    def test_gegenlage_zieht_nicht_und_stoesst_nicht_ab(self) -> None:
+        """Eine negative Naehe heisst: hat mit dieser Praegung nichts zu tun."""
+        self.assertEqual(1.0, fascination.strangzug(-0.5, 7))
+
+    def test_die_spanne_wird_eingehalten(self) -> None:
+        for naehe in (0.0, 0.25, 0.5, 0.75, 1.0):
+            for faeden in (0, 1, 5, 100):
+                wert = fascination.strangzug(naehe, faeden)
+                self.assertGreaterEqual(wert, 1.0)
+                self.assertLessEqual(wert, 1.0 + 0.60 + 1e-9)
+
+    def test_eine_unmoegliche_naehe_meldet_sich(self) -> None:
+        with self.assertLogs("ki_server.ei.fascination", "ERROR"):
+            fascination.strangzug(1.8, 5)
+
+    def test_er_hebt_die_faszination_eines_nahen_traegers(self) -> None:
+        """Der Zweck: Zwei gleich profilierte Traeger, verschiedene Lage."""
+        mitte, _ = fascination.faszination(
+            0.5, 1.0, 1.0, {"strangzug": fascination.strangzug(0.9, 7)},
+        )
+        rand, _ = fascination.faszination(
+            0.5, 1.0, 1.0, {"strangzug": fascination.strangzug(0.2, 7)},
+        )
+        self.assertGreater(mitte, rand)
+
+
 if __name__ == "__main__":
     unittest.main()
