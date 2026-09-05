@@ -246,6 +246,13 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-09-05** — **Die Meinungsbildung hat kein Konzept-Eintrag in der Featureliste.** `novaberg-thinking-opinion_k.md` steht seit Wochen und traegt inzwischen eine Setzung des Eigentuemers (§2a); die Featureliste nennt es an **keiner** Zeile — gezaehlt ueber `Meinungsbild|valenzierte Synapsen|opinion_k`: null Treffer ausserhalb des Kopfes. Die Pflegeregel verlangt, dass jedes angelegte Konzept Zeilen liefert.
+
+- **2026-09-05** — **Ein Bind-Mount macht neuen Code sichtbar und nicht wirksam.** `/app` zeigt auf `server/`; der Python-Prozess traegt den Stand seines Starts. Am 05.09. war der Server 00:59 UTC gestartet, der letzte Bauteil 09:25 UTC committet — beide Betriebsbelege des Handzettels waren damit **unmoeglich, nicht ausstehend**, und die ausbleibende Protokollzeile haette wie ein Verdrahtungsfehler ausgesehen. Verwandt mit der DDL-Reload-Falle, aber nicht dieselbe: Dort fehlt das Schema, hier der Code.
+
+- **2026-09-05** — **Eine Abfrage nach der falschen Spalte meldete null statt zu scheitern.** Die Faszinationszeilen wurden in `node` und `art` gesucht; sie stehen unter `inhalt->>'schritt'`. Ergebnis: *keine Zeilen* statt **12**. Derselbe leere Grep wie in `22_STILLE_FEHLER` — das Muster stimmte, der Gegenstandsbereich nicht.
+
+
 - **2026-09-05** — **Das Findemittel der Chronik lief zwei Tage nicht, obwohl es sich rechnen laesst.** `novaberg-roadmap-index.md` sagt im eigenen Kopf *„Sie wird gerechnet, nicht geschrieben"* und nennt das Werkzeug — gerechnet wurde sie zuletzt am **03.09.2026, 20:32 UTC**. Dazwischen liegen **12 Commits, die die Chronik geaendert haben**; der Index fuehrte **672 Abschnitte** gegen tatsaechliche **683**. Die Ursache ist kein Versaeumnis am Einzelfall: **Kein Ausloeser nennt ihn.** Der Nachzug leitet seine Kandidaten aus geaenderten Dateien ab, und ein gerechnetes Findemittel wird von keiner Datei *genannt* — es wird von einer Datei *abgeleitet*. Dieselbe Klasse wie die Chronik selbst, deren Ausloeser deshalb *„immer"* lautet.
 
 - **2026-09-05** — **Der August liegt weiter in der laufenden Chronik, obwohl der Monat abgeschlossen ist.** `novaberg-roadmap.md` traegt **155 Kapitel aus 08/2026** neben **33 aus 09/2026**; die Konvention sieht abgeschlossene Monate in `novaberg-roadmap-{jjjj-mm}.md` vor. Die Zeitraumtabelle im Kopf fuehrte bis heute **nur** die 155 und nannte den laufenden Monat gar nicht — die Zeile fehlte, nicht die Zahl. Ergaenzt; der **Umzug** steht aus und ist eine Entscheidung, keine Nebenarbeit.

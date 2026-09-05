@@ -1854,6 +1854,7 @@ stumm ein Faktor 1,0, und der ist von einem gemessenen neutralen Wert nicht zu u
 | `QUALITAET_VERFALL_HALBSTRECKE_BERUEHRUNGEN` | 5 | Setzung — **nicht kalibrierbar**, kein Träger hat mehr als eine Berührung |
 | `QUALITAET_VERFALL_UEBER_BERUEHRUNGEN` | `{ungewissheit}` | §10.4 — die eine erschöpfbare Dimension |
 | `FASZ_MAXIMUM` | 2,0 | Deckel; **am Bestand nie erreicht**, höchster Rohwert 0,6442 |
+| `MINDEST_PUNKTE` | 2 | Setzung (`tools/fascination_series.py`) — unter zwei Punkten gibt es einen Wert und keine Bewegung; der Auswerter meldet das statt eine flache Reihe zu behaupten |
 
 > **Die drei Tabellen sind vollständig gegen ihren Kanon**, und ein Zeuge hält beide Seiten
 > zusammen. Ein fehlender Schlüssel fände stumm den neutralen Faktor 1,0 — und ein Vorgabewert in
