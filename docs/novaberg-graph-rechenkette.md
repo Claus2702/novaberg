@@ -396,12 +396,26 @@ Strang und liefert einen Wert je Turn; der Strangzug misst die Lage **des Träge
 unterscheidet sich ein Knoten im Zentrum eines Strangs von einem am Rand.
 
 **Ausgang:** eine `pipeline_log`-Zeile `faszination` je Turn — **auch im leeren Fall, mit Grund**.
-Sie trägt Werte, Rohwerte, Modulatoren, Prägungszug und Strangzug je Träger. Nichts wird in den
-Bestand geschrieben.
+Nichts wird in den Bestand geschrieben. Die Felder, damit sie jemand findet, der sie sucht:
+
+| Feld | Inhalt |
+|---|---|
+| `traeger_geprueft` | wie viele gelesene Erinnerungen geprüft wurden |
+| `ohne_profil` | wie viele davon kein Qualitätsprofil hatten — **getrennt gezählt**, sonst sähe ein Turn mit zehn profillosen Trägern leer aus |
+| `werte` / `rohe` | je Träger die Faszination und ihr Rohwert vor der Glättung |
+| `straenge` | je Träger sein `strangzug` — ohne ihn wäre nicht zu sehen, ob ein hoher Wert aus der Lage zu einer Prägung kommt oder aus Bindung und Merkmalen |
+| `modulatoren` | die sechs Turn-Faktoren einzeln |
+| `praegungszug` | der Zug aus S38 |
+| `grund` | nur im leeren Fall: *keine gelesenen Erinnerungen* oder *external/internal fehlt* |
 
 **Dazu ein Bestandslauf** als neunter Schritt des Tageslaufs: dieselbe Rechnung **ohne** Modulatoren
 und ohne Prägungszug, über alle profilierten Träger. Er trennt die Trägerseite von der Turnseite —
 `[gemessen 05.09.2026]` spannen die Modulatoren Faktor 16,2, die Trägerseite 2,0.
+
+Seine Protokollzeile trägt die Phase **`faszination_bestand`** mit `traeger`, `gerechnet`,
+**`ohne_bindung`** (Träger, deren Anker 0 ergibt — heute der Regelfall), **`ohne_strang`**,
+`roh_min` / `roh_median` / `roh_max` und den Werten je Träger. **Steht der ganze Bestand auf null,
+meldet der Lauf es** — sonst fiele es erst auf, wenn jemand die Werte ansieht.
 
 ### S15 — Ressourcen-Routing · S16 — Aufgabenblock
 
