@@ -49,7 +49,13 @@ from config import (
     POSTGRES_URL,
     SYNAPSEN_DECAY_AKTIV,
 )
-from memory import lzg_knoten, pipeline_log, praegung, quality_profile
+from memory import (
+    fascination_store,
+    lzg_knoten,
+    pipeline_log,
+    praegung,
+    quality_profile,
+)
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from tools.db_manager import db_manager
 
@@ -466,6 +472,39 @@ class SynapsenDecayAgent(BaseAgent):
                 f"({profil_result['gescheitert']} gescheitert)"
             )
 
+            # 9. Die Traegerseite der Faszination ueber den Bestand
+            #    (`novaberg-thinking-faszination_k.md` §10.6). **Ohne
+            #    Turn-Modulatoren, und das ist der Zweck:** Am 05.09.2026
+            #    gemessen spannen die sechs Modulatoren Faktor 16,2, die
+            #    Traegerseite nur 2,0 — im Turn ist deshalb nicht zu trennen,
+            #    ob ein hoher Wert vom Traeger oder von der Lage kommt.
+            #
+            #    **Er schreibt nichts in den Bestand.** Was der Groesse fehlt,
+            #    ist nicht der letzte Wert, sondern die Reihe ueber die Zeit —
+            #    und ohne sie sind der Deckel und die beiden Halbstrecken des
+            #    Ankers nicht kalibrierbar.
+            faszination_result: dict = fascination_store.bestandslauf(POSTGRES_URL)
+            logger.info(
+                f"Synapsen-Decay: Faszination ueber "
+                f"{faszination_result['gerechnet']} Traeger gerechnet, "
+                f"{faszination_result['ohne_bindung']} ohne Bindung "
+                f"(roh {faszination_result['roh_min']} bis "
+                f"{faszination_result['roh_max']})"
+            )
+            self._log_forensik(run_id, {
+                "phase": "faszination_bestand",
+                "traeger":      faszination_result["traeger"],
+                "gerechnet":    faszination_result["gerechnet"],
+                "ohne_bindung": faszination_result["ohne_bindung"],
+                "roh_min":      faszination_result["roh_min"],
+                "roh_median":   faszination_result["roh_median"],
+                "roh_max":      faszination_result["roh_max"],
+                # Die Werte je Traeger: ohne sie waere die Reihe eine
+                # Verteilung ohne Traeger, und die Frage *wer* fasziniert
+                # spaeter nicht zu beantworten.
+                "werte":        faszination_result["werte"],
+            })
+
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
                 e
@@ -473,6 +512,7 @@ class SynapsenDecayAgent(BaseAgent):
                     decay_result["error"], cleanup_result["error"],
                     queue_result["error"], faltung_result["error"],
                     einfaerbung_result["error"], profil_result["error"],
+                    faszination_result["error"],
                 )
                 if e is not None
             ]
@@ -483,6 +523,7 @@ class SynapsenDecayAgent(BaseAgent):
                 "praegung_faltung": faltung_result,
                 "praegung_einfaerbung": einfaerbung_result,
                 "qualitaet_profil": profil_result,
+                "faszination_bestand": faszination_result,
             }
 
             ende_inhalt = {
@@ -498,6 +539,8 @@ class SynapsenDecayAgent(BaseAgent):
                 "einfaerbung_abstand_max": einfaerbung_result["abstand_max"],
                 "profile_versucht": profil_result["versucht"],
                 "profile_geschrieben": profil_result["profiliert"],
+                "faszination_gerechnet": faszination_result["gerechnet"],
+                "faszination_roh_median": faszination_result["roh_median"],
                 "profile_bestand": profil_result["traeger_gesamt"],
             }
 

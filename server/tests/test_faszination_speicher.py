@@ -15,6 +15,7 @@ from config import POSTGRES_URL
 from memory import fascination_store
 
 MODUL: str = "memory.fascination_store"
+AGENT_MODUL: str = "agents.synapsen_decay.agent"
 
 
 def _verbindung(anker: list, profil: list) -> MagicMock:
@@ -117,3 +118,124 @@ class EineQualitaetAusserhalbDesKanonsWirdUebergangenTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DerBestandslaufMisstDieTraegerseiteAlleinTest(unittest.TestCase):
+    """§10.6 — ohne Turn-Modulatoren, und das ist der Zweck.
+
+    `[gemessen 05.09.2026]` spannen die sechs Modulatoren Faktor **16,2**, die
+    Traegerseite nur **2,0**. Im Turn ist deshalb nicht zu trennen, ob ein
+    hoher Wert vom Traeger oder von der Lage kommt.
+    """
+
+    def test_ein_bestand_ohne_profile_ist_kein_fehler(self) -> None:
+        """Der Zustand vor dem ersten Profil-Lauf."""
+        with patch(f"{MODUL}.psycopg2.connect", _verbindung([], [])) as _:
+            ergebnis = fascination_store.bestandslauf(POSTGRES_URL)
+        self.assertEqual(0, ergebnis["traeger"])
+        self.assertIsNone(ergebnis["error"])
+
+    def test_traeger_ohne_bindung_werden_gezaehlt(self) -> None:
+        """Sie sind der heutige Regelfall und der Grund fuer die flache Reihe."""
+        zeiger = MagicMock()
+        # 1. die Traegerliste, 2. der Anker, 3. die Profile
+        zeiger.fetchall.side_effect = [
+            [(11,)],
+            [],                                    # keine Bruecke -> Bindung 0
+            [(11, "komplexitaet", 1.0, 0.0)],
+        ]
+        conn = MagicMock()
+        conn.cursor.return_value.__enter__.return_value = zeiger
+        with patch(f"{MODUL}.psycopg2.connect", MagicMock(return_value=conn)):
+            ergebnis = fascination_store.bestandslauf(POSTGRES_URL)
+        self.assertEqual(1, ergebnis["gerechnet"])
+        self.assertEqual(1, ergebnis["ohne_bindung"])
+        self.assertEqual(0.0, ergebnis["roh_max"])
+
+    def test_ein_flacher_bestand_meldet_sich(self) -> None:
+        """Sonst faellt es erst auf, wenn jemand die Werte ansieht."""
+        zeiger = MagicMock()
+        zeiger.fetchall.side_effect = [
+            [(11,)], [], [(11, "komplexitaet", 1.0, 0.0)],
+        ]
+        conn = MagicMock()
+        conn.cursor.return_value.__enter__.return_value = zeiger
+        with patch(f"{MODUL}.psycopg2.connect", MagicMock(return_value=conn)), \
+             self.assertLogs("ki_server.memory.fascination_store", "WARNING"):
+            fascination_store.bestandslauf(POSTGRES_URL)
+
+    def test_die_verteilung_wird_berichtet(self) -> None:
+        """Ohne Minimum, Median und Maximum ist die Reihe nicht auswertbar."""
+        zeiger = MagicMock()
+        zeiger.fetchall.side_effect = [
+            [(11,), (12,)],
+            [(11, 3, 3, 1, 2), (12, 1, 1, 0, 1)],
+            [(11, "komplexitaet", 1.0, 0.0), (12, "weite", 0.5, 0.0)],
+        ]
+        conn = MagicMock()
+        conn.cursor.return_value.__enter__.return_value = zeiger
+        with patch(f"{MODUL}.psycopg2.connect", MagicMock(return_value=conn)):
+            ergebnis = fascination_store.bestandslauf(POSTGRES_URL)
+        self.assertEqual(2, ergebnis["gerechnet"])
+        self.assertIsNotNone(ergebnis["roh_median"])
+        self.assertLessEqual(ergebnis["roh_min"], ergebnis["roh_max"])
+        self.assertEqual(2, len(ergebnis["werte"]))
+
+
+class DerTageslaufRuftDenBestandslaufTest(unittest.TestCase):
+    """Die Verdrahtung — sie ist die Lehre vom 04.09.2026.
+
+    Dort rief kein Zeuge den Knoten, nur die Funktion; der fehlende Aufruf
+    blieb unbemerkt, und die Gegenprobe sagte 0 rot voraus.
+    """
+
+    def test_der_neunte_schritt_laeuft_und_protokolliert(self) -> None:
+        from agents.base import AgentState
+        from agents.synapsen_decay.agent import SynapsenDecayAgent
+
+        leer: dict = {"error": None, "total_processed": 0, "deactivated_count": 0,
+                      "deleted_count": 0, "verarbeitet": 0, "deaktiviert": 0}
+        fasz: dict = {"traeger": 5, "gerechnet": 5, "ohne_bindung": 2,
+                      "werte": {"11": 0.5}, "roh_min": 0.0, "roh_median": 0.2,
+                      "roh_max": 0.5, "error": None}
+        with patch(f"{AGENT_MODUL}.SYNAPSEN_DECAY_AKTIV", True), \
+             patch(f"{AGENT_MODUL}.fascination_store.bestandslauf",
+                   return_value=fasz) as gerufen, \
+             patch(f"{AGENT_MODUL}.lzg_knoten.run_node_decay", return_value=leer), \
+             patch(f"{AGENT_MODUL}.pipeline_log.delete_expired_entries",
+                   return_value=leer), \
+             patch(f"{AGENT_MODUL}.ShadowAuftragRepository.verfall_lauf",
+                   return_value=leer), \
+             patch(f"{AGENT_MODUL}.db_manager"), \
+             patch(f"{AGENT_MODUL}.praegung.alle_faeden_nachfuehren",
+                   return_value={"gefaltet": 0, "gesamt": 0, "error": None}), \
+             patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",
+                   return_value=(0, 0)), \
+             patch(f"{AGENT_MODUL}.praegung.alle_einfaerbungen",
+                   return_value={"gerechnet": 0, "gesamt": 0, "je_sektor": {},
+                                 "abstand_max": 0.0, "error": None}), \
+             patch(f"{AGENT_MODUL}.quality_profile.profil_lauf",
+                   return_value={"versucht": 0, "profiliert": 0,
+                                 "gescheitert": 0, "traeger_gesamt": 0,
+                                 "kanten_gesamt": 0, "error": None}), \
+             patch.object(SynapsenDecayAgent, "_richtungen_protokollieren",
+                          return_value=0), \
+             patch.object(SynapsenDecayAgent, "_log_forensik") as forensik:
+            zustand = SynapsenDecayAgent().invoke(
+                AgentState(auftrag="", kontext={}),
+            )
+
+        gerufen.assert_called_once()
+        self.assertEqual(
+            5, zustand["ergebnis"]["faszination_bestand"]["gerechnet"],
+            "Der Tageslauf ruft den Bestandslauf nicht oder verwirft sein "
+            "Ergebnis — die Reihe ueber die Zeit entstuende nie",
+        )
+        phasen = [
+            ruf[0][1].get("phase") for ruf in forensik.call_args_list
+            if len(ruf[0]) > 1 and isinstance(ruf[0][1], dict)
+        ]
+        self.assertIn(
+            "faszination_bestand", phasen,
+            "Ohne Protokollzeile ist die Verteilung spaeter nicht auswertbar",
+        )

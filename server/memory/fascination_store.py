@@ -16,11 +16,17 @@ sondern die Aussage der Groesse.
 """
 
 import logging
+import statistics
 
 import psycopg2
 
 from config import QUALITAET_KANON
-from ei.fascination import qualitaet_verfall
+from ei.fascination import (
+    bindung_roh,
+    faszination,
+    merkmalszug,
+    qualitaet_verfall,
+)
 
 logger = logging.getLogger("ki_server.memory.fascination_store")
 
@@ -155,3 +161,109 @@ def traegerdaten_lesen(
             f"Qualitaetsprofil — sie haben keinen Merkmalszug"
         )
     return daten
+
+
+# Die Traeger, ueber die der Bestandslauf rechnet: alle mit Qualitaetsprofil.
+# Ein Traeger ohne Profil hat keinen Merkmalszug und damit keine Faszination
+# — er gehoert nicht in die Reihe, sondern in ihre Fussnote.
+_TRAEGER_MIT_PROFIL = """
+SELECT DISTINCT knoten_id FROM traeger_qualitaet ORDER BY knoten_id
+"""
+
+
+def bestandslauf(postgres_url: str) -> dict:
+    """Rechnet die **Traegerseite** der Faszination ueber alle profilierten Traeger.
+
+    **Ohne Turn-Modulatoren, und das ist der Zweck.** Am 05.09.2026 gemessen
+    spannen die sechs Modulatoren Faktor **16,2**, die Traegerseite nur
+    **2,0** — im Turn ist deshalb nicht zu trennen, ob ein hoher Wert vom
+    Traeger oder von der Lage kommt. Dieser Lauf misst die eine Haelfte allein
+    und macht ihre Entwicklung ueber Tage ablesbar.
+
+    **Er schreibt nichts in den Bestand**, nur eine Protokollzeile je Lauf.
+    Die Faszination hat keine Tabelle, und sie braucht heute keine: Was
+    fehlt, ist die Reihe ueber die Zeit, nicht der letzte Wert.
+
+    Vorbedingung: keine — ein Bestand ohne profilierte Traeger ist der
+        Zustand vor dem ersten Profil-Lauf und kein Fehler.
+    Nachbedingung: {traeger, gerechnet, ohne_bindung, werte, roh_min,
+        roh_median, roh_max, error}. `ohne_bindung` zaehlt die Traeger, deren
+        Anker 0 ergibt — **sie sind der heutige Regelfall** und der Grund,
+        warum die Reihe zunaechst flach liegt (§10.2, die offene Frage, ob
+        Lesen eine Beruehrung ist).
+
+    Args:
+        postgres_url: Verbindungs-URL (Hausstil: Parameter, kein Modul-Global).
+
+    Returns:
+        Die Buchfuehrung des Laufs samt Verteilung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ergebnis: dict = {
+        "traeger": 0, "gerechnet": 0, "ohne_bindung": 0, "werte": {},
+        "roh_min": None, "roh_median": None, "roh_max": None, "error": None,
+    }
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(_TRAEGER_MIT_PROFIL)
+                ids: list[int] = [int(z[0]) for z in cur.fetchall()]
+        finally:
+            conn.close()
+    except psycopg2.Error as fehler:
+        ergebnis["error"] = f"Traegerliste nicht lesbar: {type(fehler).__name__}"
+        logger.exception(f"Faszination: {ergebnis['error']}")
+        return ergebnis
+
+    ergebnis["traeger"] = len(ids)
+    if not ids:
+        logger.info(
+            "Faszination: kein profilierter Traeger im Bestand — "
+            "der Lauf hat nichts zu rechnen"
+        )
+        return ergebnis
+
+    # ── Verarbeitung ────────────────────────────
+    daten: dict[int, dict] = traegerdaten_lesen(postgres_url, ids)
+    rohe: list[float] = []
+    for knoten_id in ids:
+        eintrag: dict = daten.get(knoten_id) or {}
+        profil: dict = eintrag.get("profil") or {}
+        if not profil:
+            continue
+        bindung: float = bindung_roh(
+            eintrag.get("tage", 0),
+            eintrag.get("turns", 0),
+            eintrag.get("eigenimpuls"),
+        )
+        if bindung <= 0.0:
+            ergebnis["ohne_bindung"] += 1
+        # Der Praegungszug steht auf 1.0 — er ist eine Turn-Groesse und hat
+        # ausserhalb eines Turns keinen Reiz, gegen den er rechnen koennte.
+        wert, roh = faszination(bindung, merkmalszug(profil), 1.0, None)
+        ergebnis["werte"][str(knoten_id)] = round(wert, 4)
+        rohe.append(roh)
+        ergebnis["gerechnet"] += 1
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if rohe:
+        geordnet = sorted(rohe)
+        ergebnis["roh_min"] = round(geordnet[0], 4)
+        ergebnis["roh_max"] = round(geordnet[-1], 4)
+        ergebnis["roh_median"] = round(statistics.median(geordnet), 4)
+    if ergebnis["gerechnet"] and ergebnis["ohne_bindung"] == ergebnis["gerechnet"]:
+        # **Kein Fehler, aber eine Meldung wert:** Steht der ganze Bestand auf
+        # null, misst die Reihe nichts — und das faellt sonst erst auf, wenn
+        # jemand die Werte ansieht.
+        logger.warning(
+            f"Faszination: alle {ergebnis['gerechnet']} gerechneten Traeger "
+            f"haben Bindung 0 — die Reihe liegt flach; vermutlich fehlen die "
+            f"Bruecken (§10.2)"
+        )
+    logger.info(
+        f"Faszination: {ergebnis['gerechnet']} von {ergebnis['traeger']} "
+        f"Traegern gerechnet, {ergebnis['ohne_bindung']} ohne Bindung; "
+        f"roh {ergebnis['roh_min']} … {ergebnis['roh_max']}"
+    )
+    return ergebnis
