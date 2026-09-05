@@ -565,3 +565,46 @@ class DieAuswahlFolgtDerEchtenWiederkehrTest(unittest.TestCase):
 
         self.assertIn("k.haeufigkeit DESC", sql)
         self.assertIn("LEFT JOIN", sql)
+
+
+class EinTotalausfallMeldetSichTest(unittest.TestCase):
+    """Gefunden am 05.09.2026 — die Buchfuehrung ging auf, der Lauf nicht.
+
+    Ein Lauf mit 20 versuchten und 0 profilierten Traegern lieferte
+    `error: None`, weil 0 + 20 = 20 stimmt. Der Tageslauf haette `erledigt`
+    ins `hintergrund_log` geschrieben, und niemand haette es erfahren.
+    """
+
+    def test_kein_einziger_profiliert_ist_ein_fehler(self) -> None:
+        with patch(f"{PROFIL_MODUL}.speicher.qualities_load", return_value={"a": 1}), \
+             patch(f"{PROFIL_MODUL}.speicher.candidates_load",
+                   return_value=[{"id": i, "inhalt": "x"} for i in range(3)]), \
+             patch(f"{PROFIL_MODUL}.traeger_profilieren", return_value=None), \
+             patch(f"{PROFIL_MODUL}.speicher.profile_count", return_value=(0, 0)):
+            ergebnis = quality_profile.profil_lauf("postgres://x")
+        self.assertEqual(3, ergebnis["gescheitert"])
+        self.assertIsNotNone(
+            ergebnis["error"],
+            "Ein Lauf, bei dem nichts gelang, darf nicht als fehlerfrei gelten",
+        )
+
+    def test_einzelne_fehlschlaege_bleiben_gezaehlt(self) -> None:
+        """Sie sind der erwartete Betrieb — nur der Totalausfall ist es nicht."""
+        with patch(f"{PROFIL_MODUL}.speicher.qualities_load", return_value={"a": 1}), \
+             patch(f"{PROFIL_MODUL}.speicher.candidates_load",
+                   return_value=[{"id": i, "inhalt": "x"} for i in range(3)]), \
+             patch(f"{PROFIL_MODUL}.traeger_profilieren", side_effect=[None, {"a": 1.0}, None]), \
+             patch(f"{PROFIL_MODUL}.speicher.profile_count", return_value=(1, 1)):
+            ergebnis = quality_profile.profil_lauf("postgres://x")
+        self.assertEqual(2, ergebnis["gescheitert"])
+        self.assertEqual(1, ergebnis["profiliert"])
+        self.assertIsNone(ergebnis["error"])
+
+    def test_ein_leerer_kandidatensatz_ist_kein_fehler(self) -> None:
+        """Der Normalfall, sobald der Bestand aufgeholt hat."""
+        with patch(f"{PROFIL_MODUL}.speicher.qualities_load", return_value={"a": 1}), \
+             patch(f"{PROFIL_MODUL}.speicher.candidates_load", return_value=[]), \
+             patch(f"{PROFIL_MODUL}.speicher.profile_count", return_value=(5, 30)):
+            ergebnis = quality_profile.profil_lauf("postgres://x")
+        self.assertEqual(0, ergebnis["versucht"])
+        self.assertIsNone(ergebnis["error"])

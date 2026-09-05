@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from config import redis_client
+from memory.quality_profile import profil_lauf
 
 logger = logging.getLogger("ki_server.admin")
 
@@ -78,3 +79,33 @@ def dateien_index_lauf() -> dict | JSONResponse:
 
     logger.info("Admin: Indexlauf beendet — status=%s", zustand.get("status"))
     return {"status": zustand.get("status"), "bilanz": zustand.get("ergebnis")}
+
+
+@router.post("/qualitaet/lauf")
+def qualitaetsprofil_lauf(deckel: int = 0):
+    """Stoesst den Profil-Lauf an, der sonst nur im Tageslauf laeuft.
+
+    **Der Lauf braucht den Serverprozess**, und das ist der Grund fuer diesen
+    Endpunkt: `traeger_profilieren` ruft den Hintergrund-Worker, und der lebt
+    im Lifespan der Anwendung. Ein Labor-Skript daneben bekommt ihn nicht —
+    `submit_sync` scheitert dort mit *Worker nicht gestartet*.
+
+    Damit ist der Schritt messbar, ohne auf den naechsten Tageslauf zu warten;
+    er schreibt dasselbe wie dort, nur frueher.
+
+    Args:
+        deckel: Wie viele Traeger hoechstens. 0 nimmt den Vorgabewert des
+            Tageslaufs (`QUALITAET_PROFIL_JE_LAUF`).
+
+    Returns:
+        Die Buchfuehrung des Laufs — versucht, profiliert, gescheitert,
+        Bestand und `error`.
+    """
+    ergebnis: dict = profil_lauf(deckel=deckel)
+    logger.info(
+        f"Admin: Qualitaetsprofil-Lauf angestossen — "
+        f"{ergebnis['profiliert']} von {ergebnis['versucht']} profiliert"
+    )
+    if ergebnis.get("error"):
+        return JSONResponse(status_code=500, content=ergebnis)
+    return ergebnis

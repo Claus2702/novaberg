@@ -318,6 +318,11 @@ def profil_lauf(postgres_url: str = POSTGRES_URL, deckel: int = 0) -> dict:
     `versucht`, `profiliert` und `gescheitert` gehen auf, damit ein Lauf, der
     nichts fand, von einem, der nicht lief, unterscheidbar bleibt.
 
+    **Ein Totalausfall ist dennoch ein Fehler** (seit 05.09.2026). Gehen
+    `versucht > 0` und `profiliert == 0` zusammen, ist die Buchfuehrung in
+    Ordnung und der Lauf trotzdem gescheitert — ohne diese Zeile schriebe der
+    Tageslauf `erledigt`, und niemand erfuehre davon.
+
     Vorbedingung: keine — ein leerer Kandidatensatz ist der Normalfall,
         sobald der Bestand aufgeholt hat.
     Nachbedingung: {versucht, profiliert, gescheitert, traeger_gesamt,
@@ -355,6 +360,18 @@ def profil_lauf(postgres_url: str = POSTGRES_URL, deckel: int = 0) -> dict:
             f"Buchfuehrung geht nicht auf: {ergebnis['versucht']} versucht, "
             f"{ergebnis['profiliert']} profiliert, {ergebnis['gescheitert']} "
             f"gescheitert"
+        )
+        logger.error(f"Qualitaetsprofil: {ergebnis['error']}")
+    elif ergebnis["versucht"] > 0 and ergebnis["profiliert"] == 0:
+        # **Ein Totalausfall ist ein Fehler, kein Ergebnis** — gefunden am
+        # 05.09.2026: Ein Lauf mit 20 versuchten und 0 profilierten Traegern
+        # meldete `error: None`, weil die Buchfuehrung aufging (0 + 20 = 20).
+        # Der Tageslauf haette `erledigt` ins hintergrund_log geschrieben.
+        # Einzelne Fehlschlaege bleiben weiterhin nur gezaehlt: Sie sind der
+        # erwartete Betrieb, ein Totalausfall ist es nicht.
+        ergebnis["error"] = (
+            f"Kein einziger von {ergebnis['versucht']} Traegern profiliert — "
+            f"das ist ein Ausfall, kein leerer Kandidatensatz"
         )
         logger.error(f"Qualitaetsprofil: {ergebnis['error']}")
     traeger, kanten = speicher.profile_count(postgres_url)
