@@ -540,20 +540,28 @@ class DieAuswahlFolgtDerEchtenWiederkehrTest(unittest.TestCase):
     trugen **zwei** ein Profil.
     """
 
-    def test_die_abfrage_sortiert_nach_beruehrten_turns(self) -> None:
-        """Die Zahl verschiedener Turns aus der Bruecke, nicht `haeufigkeit`."""
+    def test_die_abfrage_sortiert_zuerst_nach_der_lesespur(self) -> None:
+        """Ein Profil dient der Faszination, und die rechnet ueber Gelesenes.
+
+        Zweiter Anlauf am 05.09.2026: Die erste Fassung sortierte nach der
+        Bruecke `verbindung` — die zaehlt aber, wie oft ein Knoten
+        **entstand**, nicht wie oft er **gelesen** wird. Von neun in drei
+        Turns gelesenen Knoten trugen vier alle Filterkriterien und trotzdem
+        kein Profil.
+        """
         with patch(f"{REPO}.psycopg2.connect") as verbindung:
             zeiger = verbindung.return_value.cursor.return_value
             zeiger.fetchall.return_value = []
             speicher.candidates_load(POSTGRES_URL, 20)
             sql = zeiger.execute.call_args[0][0]
 
-        self.assertIn("count(DISTINCT turn_id)", sql)
+        self.assertIn("lzg_resonanz_ids", sql)
         self.assertIn("FROM verbindung", sql)
-        self.assertIn("ORDER BY COALESCE(b.turns, 0) DESC", sql)
+        self.assertIn("ORDER BY COALESCE(l.mal, 0) DESC", sql)
+        self.assertIn("COALESCE(b.turns, 0) DESC", sql)
 
-    def test_haeufigkeit_bleibt_zweiter_schluessel(self) -> None:
-        """Ein Knoten ohne Bruecke faellt sonst ans Ende — ohne Grund.
+    def test_haeufigkeit_bleibt_letzter_schluessel(self) -> None:
+        """Ein Knoten ohne Lesespur faellt sonst ans Ende — ohne Grund.
 
         Ueber ihn ist nichts Schlechtes bekannt, sondern nichts.
         """

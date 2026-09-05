@@ -265,11 +265,24 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
     Wiederholung desselben Turns (`novaberg-memory-synapsen_k.md` §7.1a). Eine
     Sortierung darauf waehlt die durch die KZG-Schleife aufgeblaehten Knoten.
 
-    **Sortiert wird deshalb nach der Zahl verschiedener Turns**, die einen
-    Knoten beruehrt haben — die Bruecke `verbindung` zaehlt sie. Das ist die
-    Groesse, die der Docstring immer gemeint hat. `haeufigkeit` bleibt als
-    zweiter Schluessel: Ein Knoten ohne Bruecke faellt sonst ans Ende, obwohl
-    ueber ihn nichts Schlechtes bekannt ist, sondern nichts.
+    **Der erste Schluessel ist, wie oft ein Knoten gelesen wurde** — die Zahl
+    seiner Vorkommen in den `lzg_resonanz_ids` des Enrichers. Sie ist die
+    Groesse, die zaehlt: Ein Profil dient der Faszination, und die rechnet
+    ueber die Traeger, die der Lesepfad im Turn anbietet.
+
+    **Das ist am 05.09.2026 gemessen worden, und es war ein zweiter Anlauf.**
+    Der erste sortierte nach der Zahl verschiedener Turns aus `verbindung` —
+    aber die Bruecke zaehlt, wie oft ein Knoten **entstanden oder verstaerkt**
+    wurde, nicht wie oft er **gelesen** wird. Von neun in drei Turns gelesenen
+    Knoten trugen **vier alle Filterkriterien und trotzdem kein Profil**; sie
+    waren schlicht nie an der Reihe.
+
+    Danach `beruehrt` und `haeufigkeit` als zweiter und dritter Schluessel:
+    Ein Knoten ohne Lesespur faellt sonst ans Ende, obwohl ueber ihn nichts
+    Schlechtes bekannt ist, sondern nichts.
+
+    **Die Lesespur kostet 2,8 ms** `[gemessen 05.09.2026]` ueber 13.554
+    Enricher-Zeilen — bezahlbar fuer einen Lauf, der einmal am Tag faellt.
 
     `[gemessen 05.09.2026]`: Die profilierten Knoten tragen `haeufigkeit` **56,1**
     gegen **5,5** im Schnitt aller aktiven — die alte Sortierung hat genau die
@@ -278,7 +291,8 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
 
     Vorbedingung: `limit` ist positiv. Wird geprueft und laut verworfen.
     Nachbedingung: Bis zu `limit` Eintraege mit `id`, `inhalt`, `haeufigkeit`,
-        `themen` und `beruehrt` (Zahl verschiedener Turns); bei einem
+        `themen`, `beruehrt` (Zahl verschiedener Turns) und `gelesen`
+        (Zahl der Lesevorgaenge); bei einem
         Datenbankfehler eine leere Liste, und der Fehler steht im Log.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -293,20 +307,32 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
     try:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute(
+            "WITH gelesen AS ("
+            "      SELECT jsonb_array_elements_text("
+            "                 (inhalt->>'lzg_resonanz_ids')::jsonb"
+            "             )::int AS id"
+            "      FROM pipeline_log"
+            "      WHERE node = 'enricher' AND inhalt ? 'lzg_resonanz_ids'"
+            "  ), lesezahl AS ("
+            "      SELECT id, count(*) AS mal FROM gelesen GROUP BY id"
+            "  ) "
             "SELECT k.id, k.inhalt, k.haeufigkeit, k.themen, "
-            "       COALESCE(b.turns, 0) AS beruehrt "
+            "       COALESCE(b.turns, 0) AS beruehrt, "
+            "       COALESCE(l.mal, 0)   AS gelesen "
             "FROM lzg_knoten k "
             "LEFT JOIN ("
             "      SELECT lzg_id, count(DISTINCT turn_id) AS turns "
             "      FROM verbindung WHERE lzg_id IS NOT NULL GROUP BY lzg_id"
             "  ) b ON b.lzg_id = k.id "
+            "LEFT JOIN lesezahl l ON l.id = k.id "
             "WHERE k.aktiv "
             "  AND k.haeufigkeit >= %s "
             "  AND length(k.inhalt) >= %s "
             "  AND NOT EXISTS ("
             "      SELECT 1 FROM traeger_qualitaet t WHERE t.knoten_id = k.id"
             "  ) "
-            "ORDER BY COALESCE(b.turns, 0) DESC, k.haeufigkeit DESC, k.id "
+            "ORDER BY COALESCE(l.mal, 0) DESC, COALESCE(b.turns, 0) DESC, "
+            "         k.haeufigkeit DESC, k.id "
             "LIMIT %s",
             (QUALITAET_WIEDERKEHR_MIN, QUALITAET_LAENGE_MIN, limit),
         )
