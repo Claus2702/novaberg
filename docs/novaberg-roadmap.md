@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 01:15 UTC** (gemessen via `date -u`). Davor 05.09.2026, 00:36 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 01:20 UTC** (gemessen via `date -u`). Davor 05.09.2026, 01:15 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,34 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 01:20 UTC — die Trägerseite bekommt ihren eigenen Lauf ✅
+
+**Aus dem Missverhältnis wurde ein Bauteil, keine Korrektur.** Die sechs Turn-Modulatoren spannen
+Faktor 16,2, die Trägerseite 2,0 — solange beide nur im Turn zusammen gerechnet werden, ist ein
+hoher Wert nicht zuzuordnen. Der **neunte Schritt des Tageslaufs** rechnet die Trägerseite allein:
+Bindung mal Merkmalszug, ohne Modulatoren und ohne Prägungszug, weil keiner von beiden außerhalb
+eines Turns einen Reiz hat, gegen den er rechnen könnte.
+
+**Erster Lauf über den Bestand:** 50 Träger gerechnet, **7 ohne Bindung**, Rohwerte 0,0 bis
+**0,5249**, Median 0,2831. Die sieben sind genau die nach Lesespur profilierten — gelesen, nie
+über eine Brücke entstanden. Die offene Absichtsfrage in Zahlen.
+
+Er schreibt nichts in den Bestand. **Was der Größe fehlt, ist nicht der letzte Wert, sondern die
+Reihe über die Zeit**, und ohne sie sind Deckel und Halbstrecken nicht kalibrierbar. Ein durchgehend
+flacher Bestand meldet sich, statt still durchzulaufen.
+
+**Dabei ein Vorbehalt aus dem Konzept überholt:** §11 hielt fest, `state["haltung"]` habe *keinen
+einzigen Leser* (Stand 03.08.2026). Gemessen am 04.09. lesen ihn **Responder und Verfasser beide**,
+seit dem 12.08.2026. Damit fällt der Grund, aus dem der dort beschriebene Faszinations-Leser nicht
+gebaut werden konnte — **und ein anderer tritt an seine Stelle:** Die Faszination ist heute überall
+0; wer `wissbegier` durch `wissbegier × faszination` ersetzt, macht Novas Antworten kürzer, auf einer
+Größe, die nichts trägt. **Nicht gebaut, und der Grund steht im Konzept.**
+
+Gegenprobe 1/1, Suite 3052 grün, harte Wand sauber. **Was aussteht:** der Betriebsbeleg des neunten
+Schritts — er fällt beim nächsten Tageslauf um 19:59 UTC an.
 
 ---
 
