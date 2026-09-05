@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 14:53 UTC** (gemessen via `date -u`). Davor 05.09.2026, 14:19 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 15:05 UTC** (gemessen via `date -u`). Davor 05.09.2026, 14:53 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 35 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 36 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,50 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 15:05 UTC — die Meinung sitzt unter der Faszination, nicht über ihr ✅
+
+**Die Frage war, wozu eine Größe ohne Leser überhaupt gebraucht wird. Die Antwort setzt der
+Eigentümer, und sie kehrt eine Baureihenfolge um.**
+
+> *„Wir halten fest, dass wir mit Prägung und Faszination eine Meinungsbildung erreichen können, bei
+> der Nova Dinge bewerten kann. Sie kann sie als gut oder als schlecht sehen. Diese Meinung ist schon
+> eine Stufe unterhalb der Faszination. Sie kann durch Fäden und Stränge eine positive oder eine
+> negative Meinung über etwas haben, indem sie emotional positiv oder negativ damit verbunden ist.
+> Das ist eine emotionale Einstellung. Die fachliche Beurteilung ist ein Recherche-Vorgang, der ihr
+> Informationen darüber gibt, ob etwas oder dessen Bestandteile gut sind oder nicht."*
+
+**Damit schließt sich ein offener Punkt der Meinungsbildung zur Hälfte.** `opinion_k` §2 trennt seit
+langem (A) Haltung von (B) rationaler Einschätzung und ließ offen, wo genau die Grenze läuft. Sie
+läuft **entlang der Quelle**: (A) kommt aus Fäden und Strängen und sagt etwas über Nova, (B) kommt
+aus einer Recherche und sagt etwas über die Sache. Offen bleibt die Kombination beider in einer
+Live-Antwort — der Willensstrang.
+
+> **Die Stufung ist eine Bauabhängigkeit, und sie läuft anders herum als gedacht.** Die Faszination
+> ist valenzblind: Sie sagt, wie stark etwas bindet, nicht in welche Richtung. Die Richtung sitzt
+> eine Ebene tiefer, in der `valenz` des Strangs — **und die ist gebaut und im Bestand.** Wer die
+> emotionale Einstellung bauen will, braucht nicht auf die Faszination zu warten.
+
+`[gemessen 05.09.2026]` Neun Stränge, Valenz von **0,3500 bis 1,0000**; der größte (7 Fäden) trägt
+0,6286. **Alle neun sind positiv** — Nova könnte heute *gut* sagen und nicht *schlecht*. Die Skala
+ist vorzeichenbehaftet und trennt fein (`begeisterung` 1,00 gegen `freude` 0,80); der Bestand nutzt
+ihre negative Hälfte nur nicht. Derselbe Befund wie in §7.9 der Faszination: 1,24 % Grundrate, das
+Faden-Tor existiert erst seit dem 31.08.2026, im Erwartungswert rund 80 Turns für einen einzigen
+negativen Faden. **Laufzeit, kein Umbau.**
+
+**Und eine Abgrenzung, die vor einem Fehler schützt:** Die fachliche Beurteilung ist ein Vorgang und
+kein Speicher. Wer ein Rechercheergebnis in einen Strang schriebe, machte aus einer Auskunft eine
+Charaktereigenschaft.
+
+**Gebaut:** `novaberg-thinking-opinion_k.md` §2a und `novaberg-thinking-faszination_k.md` §8.5 —
+dieselbe Setzung aus beiden Richtungen, damit sie von beiden Seiten gefunden wird. Kein
+Produktivcode, Suite unberührt bei **3071**.
+
+**Der Anlass war eine Suche, die nichts fand.** Auf die Frage, welches andere Konzept die Faszination
+braucht, ergab die Zählung über alle zehn `thinking-*_k.md`: **keines**. Die Absicht existierte, das
+Dokument dazu nicht.
 
 ---
 

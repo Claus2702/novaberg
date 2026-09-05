@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Wie Nova zu einer eigenen Haltung kommt
-**Stand:** 3. September 2026, 21:30 UTC (**der Ort fuer die Praemisse-Kante existiert** — `abstrakt_knoten` traegt seit heute einen Typ-Diskriminator `art`; die Qualitaetsseite ist gefuellt, die Werteseite traegt keine Zeile, und `praemisse_knoten_id` zeigt weiterhin auf `lzg_knoten`, wo die abstrakten Knoten **nicht** liegen. §5a). Davor 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
+**Stand:** 5. September 2026, 15:05 UTC (**§2a neu — woher (A) kommt**: Setzung des Eigentümers, dass Prägung und Faszination die Meinungsbildung tragen. Die Grenze zwischen (A) und (B) läuft entlang der **Quelle** — Fäden und Stränge gegen Recherche —, und die Meinung liegt **eine Stufe unterhalb** der valenzblinden Faszination: Die Valenz sitzt im Strang und ist dort **gebaut und im Bestand**, neun Stränge. Vorbehalt: alle neun tragen eine **positive** Valenz). Davor 3. September 2026, 21:30 UTC (**der Ort fuer die Praemisse-Kante existiert** — `abstrakt_knoten` traegt seit heute einen Typ-Diskriminator `art`; die Qualitaetsseite ist gefuellt, die Werteseite traegt keine Zeile, und `praemisse_knoten_id` zeigt weiterhin auf `lzg_knoten`, wo die abstrakten Knoten **nicht** liegen. §5a). Davor 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
 **Pfad:** novaberg/docs/novaberg-thinking-opinion_k.md
 **Status:** Konzept. Skelett steht, Kalibrierung offen. Bewusst offene Punkte sind durchgehend mit ⬜ markiert und in §10 gesammelt.
 **Verwandt:** novaberg-thinking-drive_k.md · novaberg-thinking-frames_k.md · novaberg-memory-synapsen_k.md · novaberg-node-gv_k.md · novaberg-node-tribunal.md · novaberg-pixie.md · novaberg-ei.md
@@ -40,7 +40,73 @@ Der Stolperstein, der das lange verschleiert hat: Dieselbe Oberfläche — „Ki
 >
 > Der Befund ist stärker als „fehlt": Der Nutzer widerspricht einem Fakt, den er selbst gesetzt hat, und Nova übernimmt ihn — **fünf von fünf** gut gebauten Sonden, obwohl derselbe Fakt fünf Turns später sechsmal von sechs richtig zurückkommt. Es liegt keine rationale Einschätzung dazwischen. Siehe `novaberg-sykophanz-eindaemmung_k.md`.
 
-⬜ **Bewusst offen:** Die genaue Grenze zwischen (A) und (B), und wie eine live-Antwort beide sauber kombiniert, ohne sie zu verwechseln. Noch nicht vertieft.
+⬜ **Bewusst offen:** ~~Die genaue Grenze zwischen (A) und (B)~~ → **zur Hälfte gesetzt am 05.09.2026, siehe §2a**: Die Grenze läuft entlang der **Quelle** — (A) kommt aus Fäden und Strängen, (B) aus einer Recherche. Offen bleibt, **wie eine live-Antwort beide sauber kombiniert**, ohne sie zu verwechseln.
+
+---
+
+## 2a. Woher (A) kommt: Prägung und Faszination — Setzung des Eigentümers, 05.09.2026
+
+§2 trennt Haltung von rationaler Einschätzung und lässt offen, **woraus** die Haltung entsteht. Der
+Eigentümer hat das am 05.09.2026 gesetzt:
+
+> *„Wir halten fest, dass wir mit Prägung und Faszination eine Meinungsbildung erreichen können, bei
+> der Nova Dinge bewerten kann. Sie kann sie als gut oder als schlecht sehen. Diese Meinung ist schon
+> eine Stufe unterhalb der Faszination. Sie kann durch Fäden und Stränge eine positive oder eine
+> negative Meinung über etwas haben, indem sie emotional positiv oder negativ damit verbunden ist.
+> Das ist eine emotionale Einstellung. Die fachliche Beurteilung ist ein Recherche-Vorgang, der ihr
+> Informationen darüber gibt, ob etwas oder dessen Bestandteile gut sind oder nicht."*
+
+**Damit ist der offene Punkt aus §2 zur Hälfte geschlossen.** Die Grenze zwischen (A) und (B) läuft
+nicht entlang *Haltung gegen Vernunft*, sondern entlang der **Quelle**:
+
+| | (A) emotionale Einstellung | (B) fachliche Beurteilung |
+|---|---|---|
+| Quelle | Fäden und Stränge — was Nova emotional besetzt hat | Recherche — was über die Sache und ihre Bestandteile bekannt ist |
+| Trägt | eine Valenz, positiv oder negativ | Informationen, aus denen sich ein Urteil ableiten lässt |
+| Entsteht | über Wochen, im Hintergrund | im Vorgang, auf Anlass |
+| Sagt etwas über | Nova | die Sache |
+
+**Beide sind Meinungen, und sie können auseinanderfallen.** Eine Sache, die fachlich taugt, kann
+emotional negativ besetzt sein — und umgekehrt. Das ist kein Widerspruch, der aufzulösen wäre; es
+ist die Lage, in der ein Mensch sagt *„ich weiß, dass es gut ist, ich mag es trotzdem nicht"*.
+
+### Die Stufung, und warum sie die Reihenfolge des Baus umkehrt
+
+**Die Meinung liegt eine Stufe unterhalb der Faszination — und ist damit früher verfügbar.**
+
+Die Faszination ist ein Produkt aus neun Faktoren und **valenzblind**: Sie sagt, wie stark etwas
+bindet, nicht in welche Richtung (`novaberg-thinking-faszination_k.md` §2.4). Die Valenz sitzt eine
+Ebene tiefer, im **Strang** — und dort ist sie gebaut und im Bestand.
+
+`[gemessen 05.09.2026]` Neun Stränge, jeder mit einer Valenz aus `EMOTION_VALENZ`:
+
+| Fäden im Strang | Valenz |
+|---|---|
+| 7 | 0,6286 |
+| 4 | 0,8375 |
+| 3 · 2 · 2 | je 0,3500 |
+| 1 (viermal) | 1,0000 · 0,8000 · 0,3500 · 0,3500 |
+
+**Die Größe, die eine Meinung tragen könnte, existiert also bereits — die Faszination, die auf ihr
+aufsetzt, steht bei niedrigen Werten und hat keinen Leser.** Wer (A) bauen will, braucht nicht auf
+die Faszination zu warten.
+
+> **Ein Vorbehalt, und er ist gemessen:** Alle neun Stränge tragen eine **positive** Valenz. Nova
+> könnte heute nur *gut* sagen, nie *schlecht*. Das ist kein Defekt der Rechnung — die Skala ist
+> vorzeichenbehaftet und trennt (`begeisterung` 1,00 gegen `freude` 0,80) —, sondern der Zustand
+> des Bestandes: Novas negatives Register liegt bei 1,24 % Grundrate, und das Faden-Tor existiert
+> erst seit dem 31.08.2026. Für einen einzigen negativen Faden braucht es im Erwartungswert rund
+> 80 Turns. **Was hier hilft, ist Laufzeit und kein Umbau.**
+
+### Was (B) dabei ist, und was es nicht ist
+
+**Die fachliche Beurteilung ist ein Vorgang, kein Speicher.** Sie holt Informationen darüber, ob
+eine Sache oder ihre Bestandteile taugen — und genau deshalb gehört sie nicht in die valenzierten
+Synapsen aus §5. Wer sie dort ablegte, machte aus einem Rechercheergebnis eine Charaktereigenschaft.
+
+Das trifft den Befund aus §2 an seiner Wurzel: Von (B) ist **nichts** vorhanden, und der Nutzer
+setzt sich in fünf von fünf Sonden durch. Eine Recherche, die widerspricht, ist der Gegenzug —
+`novaberg-sykophanz-eindaemmung_k.md`.
 
 ---
 
@@ -203,14 +269,14 @@ Damit lässt sich der Mechanismus auf Themen-Ebene zünden und live beobachten, 
 
 ## 10. Bewusst offene Punkte (Sammlung)
 
-1. ⬜ Grenze zwischen Haltung (A) und rationaler Einschätzung (B); saubere Kombination beider in einer live-Antwort (§2).
+1. ⬜ ~~Grenze zwischen Haltung (A) und rationaler Einschätzung (B)~~ → **gesetzt am 05.09.2026 (§2a): entlang der Quelle** — (A) aus Fäden und Strängen, (B) aus einer Recherche. **Offen bleibt die saubere Kombination beider in einer live-Antwort** (§2).
 
    **Dieser Punkt hat seit Chat 126 einen Namen: der Willensstrang.** Nicht (A) und nicht (B), sondern die Instanz, die beide führt und daraus einen Einwand komponiert — das *„Du hast im Prinzip recht, aber…"*. Es ist kein neuer Baustein, sondern die **Klammer um drei Stränge**, die einzeln vorliegen und nichts voneinander wissen:
 
    | Strang | Stand |
    |---|---|
    | **Fakten** | vorhanden und intakt — der Abruf liefert den richtigen Wert |
-   | **Haltung** | entworfen (dieses Dokument), hängt an valenzierten Kanten |
+   | **Haltung** | entworfen (dieses Dokument), hängt an valenzierten Kanten — **die emotionale Hälfte ist gebaut und im Bestand**: neun Stränge mit Valenz (§2a) |
    | **Selbstbeobachtung** | entworfen — `novaberg-metakognition_k.md` §5.2/§5.3 |
 
    **Was der Strang zusätzlich verlangt:** Zustimmung und Vorbehalt *gleichzeitig*, mit Mischungsverhältnis. Ein Aufzählungswert kann das nicht ausdrücken; eine Zahl allein ist weicher als Prosa und lädt zum Ausweichen ein. Die Form, die beides hält, trennt Entscheidung und Beschreibung — der diskrete Wert bindet, die Stärke steuert den Ton (§7), und ein Quellenfeld sagt, ob der Vorbehalt aus einem Fakt, aus einer Haltung oder aus beidem stammt.
@@ -228,6 +294,7 @@ Damit lässt sich der Mechanismus auf Themen-Ebene zünden und live beobachten, 
 
 ## 11. Verwandte Dokumente
 
+- **novaberg-thinking-faszination_k.md** — die Prägungsschicht: Fäden, Stränge und ihre Valenz. **Die Quelle von (A)** (§2a); die Faszination selbst sitzt eine Stufe darüber und ist valenzblind.
 - **novaberg-thinking-drive_k.md** — Ziele als Gravitationspunkte; Werte/Ziele als oberste Destillations-Schicht (§5).
 - **novaberg-memory-synapsen_k.md** — Knoten/Kanten, Schalen, Spreading-Aktivierung; das Substrat, das valenziert wird.
 - **novaberg-node-gv_k.md** — der Konvergenzpunkt der Anwendung; Landschaft statt Route.
