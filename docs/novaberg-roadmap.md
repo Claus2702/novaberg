@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 18:51 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 19:45 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 38 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 39 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,77 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 19:45 UTC — eine Deutungsebene ohne Subjekt sucht sich eines ✅
+
+**Der Befund kam aus einer Frage des Eigentuemers**, nicht aus einer Pruefung: *„Lass uns
+den Prompt anschauen, ob es einen Anlass geben koennte, dass man die Sprechrichtung
+vertauschen koennte."*
+
+Das Beziehungsprofil aus der Perspektive des Menschen hatte ergeben: *„Er adressiert Nova
+als 'Chef'."* **Die Richtung ist vertauscht** — die Figur nennt den Menschen so.
+
+### Der Prompt gab den Anlass, und die Stelle ist benennbar
+
+Von den vier Deutungsebenen nannten **drei keinen Sprecher**:
+
+```
+NÄHE (vertraut oder formell — Anrede, Kosenamen, Ton)     ← kein Sprecher
+HIERARCHIE (gleichrangig oder direktiv)                    ← kein Sprecher
+VERTRAUEN (teilt {traeger} Persönliches oder …)            ← Traeger genannt
+TON (warmherzig, humorvoll, nüchtern)                      ← kein Sprecher
+```
+
+Drei Umstaende treffen darin zusammen, und keiner allein reicht:
+
+1. **`NAEHE` erklaert die Anrede zum Merkmal, ohne zu sagen, wessen.**
+2. **Das Material traegt beide Sprecher** — notwendigerweise: Ein Beziehungsprofil braucht
+   den Umgang, also beide Seiten. Der Docstring der Funktion begruendet genau das.
+3. **Die einzige Anrede im Material stammt vom Gegenueber.** Der Mensch spricht die Figur
+   in diesen Begegnungen mit keinem Namen an; sie nennt ihn „Chef".
+
+Dazu ein vierter, schwaecherer: Der Traeger heisst im Text *„der Nutzer"*, das Gegenueber
+traegt einen **Namen**. Dieselbe Asymmetrie ist beim Kern-Hash schon einmal gemessen und
+dort mit dem Traegernamen im Text beantwortet worden.
+
+> **Eine Deutungsebene ohne Subjekt ist keine Anweisung, sondern eine Einladung.** Das
+> Modell soll etwas deuten, und wem es zufaellt, entscheidet der Text — nicht der Auftrag.
+
+**Der Bestand ueber alle vier Profil-Prompts: 5 von 9 Ebenen ohne Traeger** (Beziehung
+drei, Intention eine, Emotion eine). Alle fuenf sind geschaerft, positiv formuliert nach
+`F-PROMPT-1` — kein Verbot, sondern der Traeger als Subjekt jeder Ebene.
+
+### Gemessen, nicht behauptet
+
+Fuenf Laeufe je Prompt-Fassung, dasselbe Material, Kriterium vorher aufgeschrieben:
+
+| Fassung | verdreht |
+|---|---|
+| alt | **3 von 5** |
+| neu | **0 von 5** |
+
+Der Zeuge prueft am **gerenderten** Prompt, nicht an der Vorlage: In der Vorlage steht
+`{traeger}` — ob er nach dem Einsetzen in jeder Klammer steht, sieht man erst am fertigen
+Text, und den bekommt das Modell. Er sucht die Ebenen ueber ein Muster, statt sie
+aufzuzaehlen, und **prueft zuerst, ob er ueberhaupt welche findet**: Ein Muster ohne
+Treffer meldet sonst *„keine Verstoesse"* und ist von einer erfuellten Regel nicht zu
+unterscheiden.
+
+**Die Rad-Prompts stehen ausdruecklich nicht in der geprueften Menge**, und der Grund ist
+ihr Material: Sie bekommen ein fertiges Profil, keinen Gespraechsverlauf — dort gibt es
+keinen zweiten Sprecher, mit dem sich der Traeger verwechseln liesse. Das Kriterium ist
+deshalb nicht der Name des Prompts, sondern ob er einen Traeger **kennt**.
+
+**Suite 3151 gruen, 0 uebersprungen** (davor 3145). 6 Zeugen, Gegenprobe 1 vorhergesagt /
+1 gezaehlt.
+
+**Dabei gefunden und nicht behoben:** Das Herkunftsfeld der Rad-Messung nennt
+`PIXIE_ANALYSE_MODEL` — das konfigurierte Analyse-Modell, nicht das antwortende. Die
+Laeufe um 18:28 UTC, vierundzwanzig Minuten nach der Umstellung, tragen alle
+`qwen36-cpu`. **Dritte Fundstelle derselben Klasse an einem Tag**, und die erste in einem
+Feld, dessen Zweck die Herkunft ist.
 
 ---
 
