@@ -479,6 +479,27 @@ und in der Compose-Datei bleiben die lokalen — sie sind der Rueckweg, nicht de
 **Die Einbettung bleibt lokal** — der Zugang fuehrt keine Embedding-Schnittstelle, und ein
 Wechsel des Einbettungsmodells entwertete den ganzen Vektorbestand.
 
+### Der eigentliche Zweck des Wechsels: das Halluzinieren
+
+**Die Frage, um derentwillen umgestellt wurde, hat einen ersten Datenpunkt.** In einer
+Antwort ueber 40-Hz-Gamma-Stimulation nannte Nova eine Studie beim Namen und mit Kennung:
+`NCT05260177`. Gegen das oeffentliche Register geprueft (`clinicaltrials.gov`, API v2):
+
+| Angabe | Register |
+|---|---|
+| ALZLIGHT | ✓ (offizieller Titel *„ALZLIGHT Stage III"*) |
+| randomisiert | ✓ |
+| doppelblind | ✓ (dreifach maskiert) |
+| **62 Patienten** | ✓ **exakt** |
+| „Invisible Spectral Flicker" | ✓ steht woertlich im Datensatz |
+| Gamma-Oszillationen als primaerer Endpunkt | ✓ |
+| Alzheimer | ✓ |
+| **Phase II** | ✗ — das Register fuehrt `NA`, der Titel *„Stage III"* |
+
+**Sieben von acht Detailangaben korrekt.** Das ist ein Datenpunkt und keine Reihe — aber
+er faellt in die Richtung, die man am wenigsten erwartet: Die praezise Kennung samt
+Teilnehmerzahl ist das Gegenteil der Klasse, gegen die geprueft wurde.
+
 **Suite 3129 gruen, 0 uebersprungen** (davor 3071 — 58 neue Zeugen). Gegenproben 1/1, 1/1, 1/1 und **2 statt vorhergesagter 1**; dazu zwei Gegenproben des Waechters im echten Pfad.
 
 **Ein eigener Befund an der Pruefstrecke, der hierher gehoert, weil er die Klasse ist:**
