@@ -20,6 +20,7 @@ import logging
 import psycopg2
 
 from config import QUALITAET_KANON
+from ei.fascination import qualitaet_verfall
 
 logger = logging.getLogger("ki_server.memory.fascination_store")
 
@@ -42,8 +43,12 @@ WHERE v.lzg_id = ANY(%s)
 GROUP BY v.lzg_id
 """
 
+# `verstaerkt_am` traegt den Zeitverfall (§10.4). Er wird **hier** gelesen und
+# nicht beim Aufrufer gerechnet: Die Kante weiss, wann sie zuletzt beruehrt
+# wurde, der Knoten nicht.
 _PROFILE = """
-SELECT tq.knoten_id, ak.name, tq.auspraegung
+SELECT tq.knoten_id, ak.name, tq.auspraegung,
+       EXTRACT(EPOCH FROM (NOW() - tq.verstaerkt_am)) / 86400.0 AS tage
 FROM traeger_qualitaet tq
 JOIN abstrakt_knoten ak ON ak.id = tq.qualitaet_id
 WHERE tq.knoten_id = ANY(%s)
@@ -61,7 +66,10 @@ def traegerdaten_lesen(
 
     Vorbedingung: `knoten_ids` sind LZG-Kennungen. Eine leere Liste ist der
         Normalfall eines Turns ohne gelesene Erinnerungen und kein Fehler.
-    Nachbedingung: {knoten_id: {tage, turns, eigenimpuls, profil}}. Ein Knoten
+    Nachbedingung: {knoten_id: {tage, turns, eigenimpuls, profil, roh_profil}}.
+        `profil` traegt die **verfallenen** Auspraegungen (§10.4), `roh_profil`
+        die gespeicherten daneben — ohne sie waere spaeter nicht zu trennen, ob
+        ein niedriger Wert so bewertet wurde oder verfallen ist. Ein Knoten
         ohne Bruecke traegt tage=0, turns=0; einer ohne bekannte Herkunft
         traegt `eigenimpuls=None` — **nicht 0.0**, denn *unbekannt* ist nicht
         *vom Nutzer* (§10.2). Ein Knoten ohne Profil traegt ein leeres.
@@ -79,7 +87,9 @@ def traegerdaten_lesen(
         return {}
 
     daten: dict[int, dict] = {
-        k: {"tage": 0, "turns": 0, "eigenimpuls": None, "profil": {}} for k in ids
+        k: {"tage": 0, "turns": 0, "eigenimpuls": None,
+            "profil": {}, "roh_profil": {}}
+        for k in ids
     }
 
     # ── Verarbeitung ────────────────────────────
@@ -105,11 +115,24 @@ def traegerdaten_lesen(
 
             cur.execute(_PROFILE, (ids,))
             unbekannt: set[str] = set()
-            for knoten_id, name, auspraegung in cur.fetchall():
+            for knoten_id, name, auspraegung, tage in cur.fetchall():
                 if name not in QUALITAET_KANON:
                     unbekannt.add(str(name))
                     continue
-                daten[int(knoten_id)]["profil"][str(name)] = float(auspraegung)
+                eintrag = daten[int(knoten_id)]
+                # **Der Verfall wird hier angewandt, nicht beim Aufrufer.**
+                # Die Alternative waere, `tage` mit durchzureichen — dann
+                # koennte ein zweiter Leser ihn vergessen, und ein
+                # unverfallenes Profil ist von einem frischen nicht zu
+                # unterscheiden. Die Beruehrungen sind die des Traegers:
+                # Wer den Knoten ansieht, sieht seine Qualitaeten an.
+                eintrag["profil"][str(name)] = qualitaet_verfall(
+                    str(name),
+                    float(auspraegung),
+                    float(tage or 0.0),
+                    int(eintrag.get("turns", 0)),
+                )
+                eintrag.setdefault("roh_profil", {})[str(name)] = float(auspraegung)
             if unbekannt:
                 logger.warning(
                     f"Faszination: {len(unbekannt)} Qualitaetsnamen ausserhalb "
