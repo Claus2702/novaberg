@@ -134,6 +134,10 @@ class ThinkSplitNormalizer(ThinkingNormalizer):
 # Normalizer; Default ist No-Op, damit ein Modell ohne den Split
 # unveraendert laeuft. Bei LLM_PROFILE="claude" ist der Ollama-Split kein
 # Thema → immer No-Op.
+#
+# **Ein Modell hinter einem fremden Rueckhalt braucht diesen Schalter nicht
+# mehr**: Seit dem 05.09.2026 kommt der Modellname aus der Backend-Wahl, und
+# ein Ziel ausserhalb der eigenen Maschine traegt keinen der Staemme unten.
 
 # Modelle (GPU), die den Ollama content/thinking-Split zeigen (Ollama #10976).
 # Match gegen das aufgeloeste Modell, NICHT gegen den Connector-Namen:
@@ -144,17 +148,30 @@ _MODELLE_MIT_SPLIT: tuple[str, ...] = ("gemma4",)
 
 
 def get_thinking_normalizer() -> ThinkingNormalizer:
-    """Liefert den Normalizer fuer das aktuell konfigurierte Modell.
+    """Liefert den Normalizer fuer das Modell, das tatsaechlich antwortet.
 
-    Vorbedingung: config-Modul geladen (LLM_PROFILE, OLLAMA_MODEL).
+    Vorbedingung: config-Modul geladen (LLM_PROFILE, `antwortendes_chat_modell`).
     Nachbedingung: ThinkingNormalizer-Instanz (ThinkSplitNormalizer fuer
                    bekannte Split-Modelle, sonst No-Op-Basis).
-    Fehlerfaelle: keine — bei unbekanntem Connector greift der No-Op-Pfad,
+    Fehlerfaelle: keine — bei einem unbekannten Modell greift der No-Op-Pfad,
                   fail-safe in Richtung "Loop laeuft wie heute weiter".
+
+    **Der Name kommt aus der Backend-Wahl und nicht aus `OLLAMA_MODEL`.** Bis
+    zum 05.09.2026 stand hier das **konfigurierte** GPU-Modell des Connectors.
+    Solange der Chat-Worker auf einem Ollama-Backend lief, war das dasselbe;
+    bei einem fremden Rueckhalt haette der Split-Normalizer **weiter gegriffen**,
+    weil `OLLAMA_MODEL` unveraendert `gemma4-gpu` sagt — ein Aufraeumer fuer
+    einen Split, den das antwortende Modell gar nicht erzeugt.
+
+    Es ist dieselbe Fehlerklasse wie beim Prompt-Lader und ihre **zweite
+    Fundstelle**: Zwei Stellen schluesselten nach dem konfigurierten Modell,
+    beide fielen erst auf, als ein Backend dazukam, das kein Ollama ist. Die
+    zweite hat kein Nachdenken gefunden, sondern ein Kriterium — die Frage,
+    welche Stellen im Baum ein Ollama-Backend **voraussetzen**.
     """
     # Lokaler Import: vermeidet einen Modul-Import-Zyklus, wenn tools/
     # spaeter aus config heraus referenziert wird.
-    from config import LLM_PROFILE, OLLAMA_MODEL
+    from config import LLM_PROFILE, antwortendes_chat_modell
 
     if LLM_PROFILE != "lokal":
         logger.info(
@@ -163,16 +180,17 @@ def get_thinking_normalizer() -> ThinkingNormalizer:
         )
         return ThinkingNormalizer()
 
-    if any(stamm in OLLAMA_MODEL for stamm in _MODELLE_MIT_SPLIT):
+    modell: str = antwortendes_chat_modell()
+    if any(stamm in modell for stamm in _MODELLE_MIT_SPLIT):
         logger.info(
             "ThinkingNormalizer: Modell=%r — ThinkSplitNormalizer aktiv "
             "(content/thinking-Split wird abgefangen)",
-            OLLAMA_MODEL,
+            modell,
         )
         return ThinkSplitNormalizer()
 
     logger.info(
         "ThinkingNormalizer: Modell=%r — No-Op (kein bekannter Split)",
-        OLLAMA_MODEL,
+        modell,
     )
     return ThinkingNormalizer()
