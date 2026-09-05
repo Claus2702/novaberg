@@ -3751,13 +3751,74 @@ ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN: float = float(
 # Prompt-System (Modell- und Connector-Segregation)
 # ─────────────────────────────────────────────
 # **Beide Schluessel, und der Grund steht in `prompt_loader.py`.** Der
-# Gespraechspfad haengt am GPU-Modell, nicht am Connector: `gemma4` und
-# `qwen36` fahren dort dasselbe. Ein Block, der fuer das antwortende Modell
-# gebaut ist, gehoert unter `prompts/{OLLAMA_MODEL}/`; einer, der fuer diese
+# Gespraechspfad haengt am antwortenden Modell, nicht am Connector: `gemma4`
+# und `qwen36` fahren dort dasselbe. Ein Block, der fuer das antwortende
+# Modell gebaut ist, gehoert unter `prompts/{modell}/`; einer, der fuer diese
 # Zusammenstellung gilt, unter `prompts/{OLLAMA_CONNECTOR}/`.
 
 
-PROMPTS: dict[str, str] = prompt_laden(OLLAMA_CONNECTOR, modell=OLLAMA_MODEL)
+#: Welches Modell hinter welchem Worker-Backend spricht.
+#:
+#: **Der Kanon steht als Konstante und nicht im Funktionsrumpf**, damit ein
+#: Zeuge ihn gegen die Menge halten kann, die
+#: `services/model_services/registry.py::_build_backend` kennt. Zwei
+#: Aufzaehlungen desselben Kanons an zwei Stellen laufen sonst auseinander,
+#: und die Abweichung faellt erst auf, wenn jemand umschaltet.
+MODELL_NACH_BACKEND: dict[str, str] = {
+    "ollama_gpu":         OLLAMA_MODEL,
+    "ollama_cpu_analyse": PIXIE_ANALYSE_MODEL,
+    "ollama_cpu_sprache": SHADOW_MODEL,
+    "anthropic":          ANTHROPIC_MODEL,
+    "openrouter":         OPENROUTER_MODEL,
+}
+
+
+def antwortendes_chat_modell() -> str:
+    """Nennt das Modell, das der Chat-Worker tatsaechlich fuehrt.
+
+    Vorbedingung: `MODEL_WORKER_BACKENDS["chat"]` traegt einen Wert aus dem
+    Kanon, den `services/model_services/registry.py::_build_backend` kennt.
+    Nachbedingung: der Modellname, unter dem die Prompt-Modellebene gesucht
+    wird.
+    Fehlerfaelle: `ValueError` bei einem Backend ausserhalb des Kanons —
+    kein stiller Rueckfall auf `OLLAMA_MODEL`.
+
+    **Warum das nicht einfach `OLLAMA_MODEL` sein darf.** Die Modellebene
+    traegt Bloecke, die fuer ein bestimmtes Modell geschrieben sind; heute
+    sieben unter `prompts/gemma4-gpu/` (Perzeption, Router, Salienz,
+    Tribunal). Waere sie nach dem **konfigurierten** GPU-Modell
+    geschluesselt, bekaeme ein Modell hinter einem anderen Backend genau
+    diese Bloecke untergeschoben — Regeln fuer Gemma unter einem Modell, das
+    nie Gemma war.
+
+    `[gemessen]` — 05.09.2026: Der Fall war bis dahin folgenlos, weil der
+    Chat-Worker immer auf `ollama_gpu` stand und beide Werte deckungsgleich
+    waren. Er steht seit dem 23.08.2026 in `novaberg-fundliste.md` mit dem
+    Satz *„die Reichweite ist neu"* — sie wird es mit dem ersten Backend,
+    das kein Ollama ist.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    backend: str = MODEL_WORKER_BACKENDS["chat"]
+    if backend not in MODELL_NACH_BACKEND:
+        logger.error(
+            f"Chat-Backend {backend!r} steht nicht im Kanon dieser Abbildung "
+            f"— bekannt sind {sorted(MODELL_NACH_BACKEND)}. Die Prompt-"
+            f"Modellebene waere sonst nach einem Modell geschluesselt, das "
+            f"nicht spricht."
+        )
+        raise ValueError(f"Unbekanntes Chat-Backend: {backend!r}")
+
+    # ── Verarbeitung & Ausgabe-Verifikation ─────
+    modell: str = MODELL_NACH_BACKEND[backend]
+    logger.info(
+        f"Prompt-Modellebene: Backend {backend!r} spricht {modell!r}"
+    )
+    return modell
+
+
+PROMPTS: dict[str, str] = prompt_laden(
+    OLLAMA_CONNECTOR, modell=antwortendes_chat_modell(),
+)
 
 
 # --- NMCP: Takt des Quotenabgleichs ---
