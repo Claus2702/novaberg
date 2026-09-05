@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 01:20 UTC** (gemessen via `date -u`). Davor 05.09.2026, 01:15 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 10:20 UTC** (gemessen via `date -u`). Davor 05.09.2026, 01:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,48 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 10:20 UTC — zwei Fragen des Eigentümers, zwei Defekte ✅
+
+**Beide Einwände waren richtig, und beide trafen Stellen, an denen die Doku es schon besser wusste.**
+
+**Erstens: Der Prägungszug maß den gemittelten Turn.** Er las `state["prompt_embedding"]` — und ein
+Turn über zwei Themen bekommt einen Vektor zwischen beiden, der danach **keinem** der zugehörigen
+Stränge nahe liegt. Die Nähe eines Mittelwerts ist keine Nähe.
+
+> **Das ist derselbe Defekt, der für den Faden am 01.09.2026 behoben wurde** — und die Begründung
+> stand seither **wörtlich im selben Modul**, zwanzig Zeilen über der Stelle, die sie ignorierte.
+> Die Behebung hatte den gefundenen Fall repariert und nicht nach dem nächsten gesucht.
+> `FADEN-EMBEDDING-VERDUENNT` ist deshalb auf `[2×]` hochgestuft, mit der Konsequenz: **Wer einen
+> Defekt behebt, sucht die zweite Stelle derselben Klasse — im selben Modul zuerst.**
+
+Der Zug nimmt jetzt denselben Segmentvektor wie der Faden, **einmal gerechnet und zweimal benutzt**,
+und die Zeile trägt `vektor_quelle`.
+
+**Zweitens: Die Nähe wurde für den Turn gemessen, nie für den Träger.** Alle Träger eines Turns
+bekamen denselben Prägungszug — ein Knoten im Zentrum eines Strangs und einer am Rand waren nicht zu
+unterscheiden. **§10.3a ist neu**: der `strangzug`, die Lage des Trägers zu seiner nächsten Prägung.
+
+Vorgabe des Eigentümers: *„Ein Strang ist ein kleiner Bereich im 768-dimensionalen Raum und hat ein
+Einflussgebiet. Liegt das Embedding eines Knotens darin, wird dafür Faszination empfunden — in der
+Mitte stark, am Rand schwach."*
+
+`[gemessen]` an fünf Trägern: Nähen von **0,6736** bis **0,4484**, fünf verschiedene Werte. Und die
+Gravitation wirkt: Knoten 12051 zieht bei 0,6324 an einem Strang mit **7 Fäden** **1,2656**; Knoten
+8685 liegt mit 0,6736 **näher**, aber an einem mit **2 Fäden**, und zieht nur 1,1617.
+
+Über alle 50 profilierten Träger hebt er den Median der Rohwerte von **0,2828 auf 0,3377** und das
+Maximum von 0,5243 auf **0,6442**; **0 von 50** liegen außerhalb jedes Strangs. **Damit rechnet die
+Prägungsschicht erstmals auf der Trägerseite mit** — die 22 Fäden in 9 Strängen kommen in die
+Rechnung.
+
+**Ein eigener Fehler dabei:** Einer meiner Patches fiel **still durch** — ein `replace` ohne
+`assert`. Der Bestandslauf sah verdrahtet aus und war es nicht; aufgefallen ist es nur, weil die
+Werte sich kaum bewegten. Alle Ersetzungen prüfen seither.
+
+7 Zeugen, Gegenprobe 1/1, **Suite 3061 grün**, harte Wand sauber.
 
 ---
 

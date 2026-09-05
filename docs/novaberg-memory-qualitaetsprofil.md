@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`
-**Stand:** 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
+**Stand:** 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
 **Pfad:** novaberg/docs/novaberg-memory-qualitaetsprofil.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §4 (der Träger), §5 (das gesetzte Vokabular), §6 (die sechs Dimensionen), §10.1 (der Merkmalszug)
 **Zustand:** 🟠 gebaut, läuft, **und sein Ergebnis steht unter einem Vorbehalt** — Speicher, Erzeuger und Leser stehen, aber vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste
@@ -88,7 +88,30 @@ kontext, emotion, …) und darunter ausgerechnet den Wert `werte` — **161 Zeil
 ## 4. Die Kandidaten
 
 `candidates_load`: `aktiv` **und** `haeufigkeit >= 2` **und** `length(inhalt) >= 400` **und**
-noch keine Kante. Die häufigsten zuerst.
+noch keine Kante. ~~Die häufigsten zuerst.~~ → **Berichtigt am 05.09.2026, in zwei Anläufen.**
+
+**Sortiert wird nach der Lesespur** — wie oft ein Knoten in den `lzg_resonanz_ids` des Enrichers
+vorkam —, danach nach Brücken-Turns, zuletzt nach `haeufigkeit`.
+
+**Der erste Anlauf am selben Tag war schon eine Berichtigung und traf trotzdem daneben.** Er
+sortierte nach der Zahl verschiedener Turns aus `verbindung`, weil `haeufigkeit` Wiederholung misst
+statt Wiederkehr (`novaberg-memory-synapsen_k.md` §7.1a). Das war richtig und nicht genug: **Die
+Brücke zählt, wie oft ein Knoten entstand — nicht, wie oft er gelesen wird.**
+
+Der Betriebslauf zeigte es: Von **neun in drei Turns gelesenen Knoten erfüllten vier alle
+Filterkriterien und hatten trotzdem kein Profil.** Sie waren nie an der Reihe.
+
+> **Ein Profil dient der Faszination, und die rechnet über die Träger, die der Lesepfad im Turn
+> anbietet.** Was gelesen wird, ist deshalb der erste Schlüssel.
+
+`[gemessen 05.09.2026]`: Die profilierten Knoten trugen `haeufigkeit` **56,1** gegen **5,5** im
+Schnitt aller aktiven — die alte Sortierung wählte genau die durch die KZG-Schleife aufgeblähten.
+Die Lesespur kostet **2,8 ms** über 13.554 Enricher-Zeilen.
+
+**Der Längenfilter bleibt der größere Engpass, und er ist nicht behoben:** Von 36 je Turn gelesenen
+Knoten passieren nur **7** die 400 Zeichen. Der Rest sind Sprechakt-Vermerke — dieselbe Familie wie
+`DESTILLAT-SUBJEKT-SCHABLONE`. Der Filter tut, was er soll; der Befund ist, dass der Lesepfad
+überwiegend Material liefert, das als Träger untauglich ist.
 
 **Profiliert wird erst, was wiedergekehrt ist** (Konzept §6.3) — man fragt sich nicht beim
 ersten Mal, was einen an einer Sache fasziniert. Der Längenfilter trifft fast dieselbe Menge
@@ -195,6 +218,16 @@ Tageslauf ruft — war bis dahin **nur gegen Mocks bezeugt**.
 {'versucht': 3, 'profiliert': 3, 'gescheitert': 0,
  'traeger_gesamt': 28, 'kanten_gesamt': 168, 'error': None}
 ```
+
+**Seit dem 05.09.2026 ist ein Totalausfall ein Fehler.** `profil_lauf` meldete `error: None` nach
+**20 versuchten und 0 profilierten** Trägern, weil seine einzige Prüfung war, ob die Buchführung
+aufgeht — und 0 + 20 = 20 tut das. Der Tageslauf hätte `erledigt` ins `hintergrund_log` geschrieben.
+Einzelne Fehlschläge bleiben nur gezählt: Sie sind der erwartete Betrieb, ein Totalausfall ist es
+nicht.
+
+**Und der Lauf ist seither anstoßbar:** `POST /admin/qualitaet/lauf` — er braucht den Serverprozess,
+weil `traeger_profilieren` den Hintergrund-Worker ruft und der im Lifespan lebt; ein Labor-Skript
+daneben scheitert mit *Worker nicht gestartet*.
 
 Die Buchführung geht auf, der Deckel greift, `qualities_load` und `candidates_load` liefern
 gegen das echte Schema. **Die Dominanz bleibt: 26 von 28 `komplexitaet`.**

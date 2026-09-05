@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 4. September 2026 — `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben: Verstaerkt wird, was die Antwort hergenommen hat, gemessen an der Embedding-Naehe, gerufen vom Dispatcher. Davor 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Stand:** 5. September 2026 — `FADEN-EMBEDDING-VERDUENNT` auf `[2×]` hochgestuft: Dieselbe Klasse stand im selben Modul an einer zweiten Stelle (der Praegungszug las weiter den gemittelten Turn) und ist am 05.09.2026 behoben. Davor 4. September 2026 — `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben: Verstaerkt wird, was die Antwort hergenommen hat, gemessen an der Embedding-Naehe, gerufen vom Dispatcher. Davor 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
 **Inhalt:** **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
@@ -184,6 +184,24 @@ Zwei der Auftraege waren zwei Minuten alt, elf standen laenger.
 **Die Klasse ist allgemeiner als der Fall.** Wo eine Begruendung fuer **eine** von mehreren Eigenschaften desselben Objekts formuliert wird, gilt sie meist fuer alle — und die uebrigen werden nicht mitgezogen. Hier lag die Begruendung im Docstring der Funktion, die das Segment waehlt; das Embedding wurde vierzig Zeilen weiter unten aus einer anderen Quelle geholt.
 
 **Verwandt:** `novaberg-lesson_l_groesse-am-falschen-ort.md` — dort dieselbe Familie mit vertauschten Groessen statt vertauschten Quellen.
+
+> ### `[2×]` — dieselbe Klasse stand im selben Modul noch an einer zweiten Stelle
+>
+> **Behoben am 05.09.2026, vier Tage nach diesem Eintrag.** Der **Praegungszug** las weiterhin
+> `state["prompt_embedding"]` — denselben gemittelten Turn, aus demselben Grund falsch. Ein Turn
+> ueber zwei Themen bekommt einen Vektor zwischen beiden und liegt danach **keinem** der
+> zugehoerigen Straenge nahe; die Naehe eines Mittelwerts ist keine Naehe.
+>
+> **Die Begruendung stand seit dem 01.09. woertlich im selben Modul** — in `_faden_embedding`,
+> zwanzig Zeilen ueber der Stelle, die sie ignorierte. Die Behebung hatte den **gefundenen Fall**
+> repariert und nicht nach dem naechsten gesucht.
+>
+> **Gefunden hat es eine Frage des Eigentuemers** (*„wenn mehrere Saetze mit verschiedenen Themen
+> kommen, wie wollen wir dann die Naehe ausrechnen?"*), kein Zeuge und keine Pruefung.
+>
+> **Die Klasse ist damit hochgestuft und die Konsequenz benannt:** Wer einen Defekt behebt, sucht
+> die **zweite Stelle derselben Klasse — im selben Modul zuerst.** Ein Grep auf die Quelle, aus der
+> der falsche Wert kam (`prompt_embedding`), haette sie in Sekunden gezeigt.
 
 ### `EMGRAV-SCHWELLE-TOT` — die Gravitationsschwelle kann nicht mehr ablehnen
 

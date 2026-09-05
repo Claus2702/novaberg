@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 5. September 2026, 01:20 UTC (**die Trägerseite bekommt einen eigenen Tageslauf** — Bindung mal Merkmalszug ohne Modulatoren, damit die beiden Hälften trennbar werden; erster Lauf **50 Träger, 7 ohne Bindung, roh 0,0 bis 0,5249**. Dazu: der Vorbehalt in §11 ist überholt, `state["haltung"]` hat seit dem 12.08.2026 zwei Leser — **der Faszinations-Leser wird trotzdem nicht gebaut**, solange die Größe überall 0 ist. Suite 3052.). Davor 5. September 2026, 00:36 UTC (**§10 ist vollständig gebaut** — dazu der Verfall je Dimension (§10.4) mit seinem Aufrufer im Lesepfad und ein **Erzeuger im Turn**: Die Faszination wird je Turn über die gelesenen Erinnerungen gerechnet und als `pipeline_log`-Zeile protokolliert, mit Modulatoren, Rohwerten und Prägungszug. **Im Betrieb belegt** — vier Zeilen über vier Turns. **Befund: kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil**; von 36 gelesenen passieren nur 7 den Längenfilter. Die Profil-Auswahl folgt seither der **echten Wiederkehr** statt `haeufigkeit`. Suite 3044.). Davor 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 5. September 2026, 10:20 UTC (**§10.3a neu — der Strangzug**: die Lage des **Trägers** zu einer Prägung, getrennt vom Turn-Zug aus §10.3, der nur die Lage des *Turns* misst. Nähe als Maß, Fadenzahl als Gravitation, ohne Bezug 1,0 statt 0. **Der Zug misst außerdem seit heute das stärkste Segment statt des gemittelten Turns** — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben. Über 50 Träger hebt der Strangzug den Median von 0,2828 auf **0,3377**, 0 von 50 ohne Strangbezug. Suite 3061.). Davor 5. September 2026, 01:20 UTC (**die Trägerseite bekommt einen eigenen Tageslauf** — Bindung mal Merkmalszug ohne Modulatoren, damit die beiden Hälften trennbar werden; erster Lauf **50 Träger, 7 ohne Bindung, roh 0,0 bis 0,5249**. Dazu: der Vorbehalt in §11 ist überholt, `state["haltung"]` hat seit dem 12.08.2026 zwei Leser — **der Faszinations-Leser wird trotzdem nicht gebaut**, solange die Größe überall 0 ist. Suite 3052.). Davor 5. September 2026, 00:36 UTC (**§10 ist vollständig gebaut** — dazu der Verfall je Dimension (§10.4) mit seinem Aufrufer im Lesepfad und ein **Erzeuger im Turn**: Die Faszination wird je Turn über die gelesenen Erinnerungen gerechnet und als `pipeline_log`-Zeile protokolliert, mit Modulatoren, Rohwerten und Prägungszug. **Im Betrieb belegt** — vier Zeilen über vier Turns. **Befund: kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil**; von 36 gelesenen passieren nur 7 den Längenfilter. Die Profil-Auswahl folgt seither der **echten Wiederkehr** statt `haeufigkeit`. Suite 3044.). Davor 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
 **Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6), die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) und seit dem 05.09.2026 die **ganze Rechnung** (§10.2, §10.5, §10.6) sind gebaut. **Die Faszination rechnet und protokolliert, sie wirkt noch nicht** — sie läuft je Turn im Prägungsknoten und schreibt eine `pipeline_log`-Zeile, aber **niemand liest sie**. Und sie hat heute kaum Eingabe: Von 36 je Turn gelesenen Knoten tragen 2 ein Qualitätsprofil. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
@@ -1516,6 +1516,61 @@ dieselbe Bauart wie Richtung und Ladung im Tageslauf, und aus demselben Grund: d
 Rechenfunktion ohne Aufrufer dasteht und die Reihe entsteht, an der die Konstanten kalibrierbar
 werden.
 
+### 10.3a Der Strangzug — die Lage des **Trägers** zu einer Prägung
+
+**Der Prägungszug (§10.3) und diese Größe sind zwei verschiedene Dinge, und ihre Verwechslung war
+der Fund vom 05.09.2026.** §10.3 misst die Lage **des Turns** zum Strang und liefert *einen* Wert je
+Turn — alle Träger eines Turns bekommen denselben. Damit unterscheidet sich ein Knoten im Zentrum
+eines Strangs von einem an seinem Rand **nicht**, und genau diese Unterscheidung ist die Sache.
+
+> **Vorgabe des Eigentümers, 05.09.2026:** *„Ein Strang ist ein kleiner Bereich in diesem
+> 768-dimensionalen Raum und hat ein gewisses Einflussgebiet. Wenn das Embedding eines Knotens
+> innerhalb dieser Gravitation liegt, wird dafür eine Faszination empfunden — und die Nähe zum
+> Mittelpunkt ist das Maß ihrer Stärke: am Rand eher schwach, in der Mitte eher stark."*
+
+```
+strangzug = 1.0 + STRANGZUG_HUB · naehe · saettigung(faden_zahl)
+```
+
+`naehe` ist die Kosinusnähe zwischen dem **Knotenvektor** und dem **Zentroid** des nächsten Strangs.
+
+**Drei Entscheidungen stecken darin:**
+
+- **Der nächste Strang, nicht die Summe aller.** Ein Knoten gehört in die Nähe *eines* Themas; über
+  mehrere zu summieren hieße, dass viele schwache Berührungen eine starke ergeben — genau die
+  Nachbarschaft, gegen die §7.1a gebaut ist.
+- **Die Fadenzahl trägt mit, gesättigt.** Ein starker Strang zieht weiter — das ist die *Gravitation*
+  aus der Vorgabe. Gesättigt, weil vierzig Fäden nicht vierzigmal so weit ziehen wie einer.
+- **Ohne Strangbezug 1,0, nicht 0.** Regel (a) aus §10.0 gilt hier wie überall: Eine Null löschte
+  auch alles, was der Träger sonst mitbringt. Eine **negative** Nähe zieht ebenfalls nicht und stößt
+  auch nicht ab — sie heißt, dass der Träger mit dieser Prägung nichts zu tun hat.
+
+`[gemessen 05.09.2026]` an fünf Trägern: Nähen von **0,6736** bis **0,4484**, fünf verschiedene
+Werte — die Größe trennt. Und die Gravitation wirkt: Knoten 12051 liegt bei 0,6324 an einem Strang
+mit **7 Fäden** und zieht **1,2656**; Knoten 8685 liegt mit 0,6736 **näher**, aber an einem Strang
+mit **2 Fäden**, und zieht nur 1,1617.
+
+Über alle 50 profilierten Träger hebt der Strangzug den Median der Rohwerte von **0,2828 auf 0,3377**
+und das Maximum von 0,5243 auf **0,6442**; **0 von 50** liegen außerhalb jedes Strangs.
+
+> **Damit rechnet die Prägungsschicht erstmals auf der Trägerseite mit.** Der Prägungszug ist eine
+> Turn-Größe und steht außerhalb eines Turns auf 1,0; der Strangzug gehört dem Träger und rechnet
+> auch im Bestandslauf.
+
+#### Der Zug misst seit dem 05.09.2026 das Segment, nicht den Turn
+
+**Ein Turn über zwei Themen bekommt einen Vektor zwischen beiden und liegt danach keinem der
+zugehörigen Stränge nahe.** Die Nähe eines Mittelwerts ist keine Nähe.
+
+Der Zug las bis dahin `prompt_embedding`. **Das ist derselbe Defekt, der für den Faden am 01.09.2026
+behoben wurde** (`FADEN-EMBEDDING-VERDUENNT`): Dort trug das Faden-Embedding den ganzen Turn,
+während Salienz und Emotion aus dem stärksten Segment kamen — die Verdünnung, gegen die die
+Segmentwahl gebaut ist. Die Begründung stand seither wörtlich im Modul; der Zug folgte ihr nicht.
+
+Er nimmt jetzt denselben Segmentvektor wie der Faden, **einmal gerechnet und zweimal benutzt**, und
+die Protokollzeile trägt `vektor_quelle`: Ein Rückfall auf den Turn-Vektor wäre sonst von einem
+scharfen Segmentvektor nicht zu unterscheiden, und die Nähe ist auf beiden verschieden viel wert.
+
 ### 10.4 Der Verfall der Qualitäten ist je Dimension verschieden
 
 | Art | Verfall |
@@ -1540,30 +1595,24 @@ Verfallsformen im selben Konzept wären eine Setzung, die niemand getroffen hat.
 **Die Halbstrecke über Berührungen ist nicht kalibrierbar** — `[gemessen 05.09.2026]` trägt **kein
 einziger der 28 profilierten Träger mehr als eine Berührung**.
 
-> ### ⬜ Offene Absichtsfrage: Ist Lesen eine Berührung?
+> ### ✅ Entschieden am 05.09.2026: Lesen ist keine Berührung
 >
-> **Der erste im Betrieb gerechnete Faszinationswert war 0,0, und der Grund ist diese Frage**
-> (05.09.2026, 01:06 UTC, Knoten 8685). Der Knoten trug **6 Qualitäten und 0 Brücken**: dreimal
-> gelesen, nie über `verbindung` berührt. `bindung_roh(0, 0, None)` ist 0 — und ein Faktor 0 löscht
-> das ganze Produkt.
+> **Die Frage kam aus dem Betrieb.** Der erste gerechnete Faszinationswert war 0,0 (Knoten 8685:
+> **6 Qualitäten, 0 Brücken**, fünfmal gelesen). `bindung_roh(0, 0, None)` ist 0, und ein Faktor 0
+> löscht das Produkt. Betroffen sind **9 von 51 Knoten mit Lesespur** — darunter die drei
+> meistgelesenen des Bestandes.
 >
-> **Die Brücke `verbindung` zählt Schreibvorgänge**, nicht Lesevorgänge: Sie entsteht, wenn ein Turn
-> einen KZG-Eintrag erzeugt, der später in einen LZG-Knoten wandert. Ein Knoten, der in zwanzig
-> Turns gelesen wurde und in keinem entstand, hat nach der heutigen Rechnung **keine Bindung**.
+> **Die Entscheidung des Eigentümers, und sie ist grundsätzlicher als die Frage:**
 >
-> §10.2 sagt *„Zahl verschiedener Tage, an denen der Träger einen Turn **berührt** hat"* — und lässt
-> offen, ob Lesen berührt. Beide Lesarten haben ein Argument:
+> > Faszination entsteht aus **Fäden**, und Fäden entstehen aus hoher Salienz und Valenz — daraus,
+> > dass etwas Eindruck gemacht hat. Fäden tragen eine Emotion; über Themenähnlichkeit binden sie
+> > sich zu **Strängen**. Diese Stränge *sind* die vorhandenen Eindrücke, die geprägt haben.
+> > **Faszination ist ihre Bündelung — sie ist bereits da.** Lesen verstärkt hier nichts. Verstärkt
+> > wird, was geschrieben oder berührt wird; Lesen allein nicht.
 >
-> - **Nein.** §7.1 sperrt genau das: *Lesen verstärkt nicht.* Wer Lesen als Berührung zählt, baut
->   dieselbe Schleife wieder auf, die den Bestand aufgebläht hat.
-> - **Ja.** Die Sperre in §7.1 gilt dem **Gedächtnisgewicht** — sie soll verhindern, dass ein
->   Knoten wächst, weil er angeboten wurde. Faszination ist keine Verstärkung, sondern eine
->   Beobachtung *über* den Träger, und ein Thema, das zwanzigmal im Gespräch auftaucht, bindet
->   erkennbar Aufmerksamkeit.
->
-> **Die Frage ist nicht entschieden und wird hier nicht entschieden.** Sie betrifft, was das System
-> sein soll, nicht wie es gebaut wird. Bis dahin gilt die enge Lesart, und die Folge steht oben:
-> **Ein gut profilierter, oft gelesener Knoten kann Faszination 0 haben.**
+> **Damit gilt die enge Lesart, und der Grund ist nicht die Vorsicht vor der Schleife, sondern die
+> Sache selbst:** Wer liest, fügt dem Eindruck nichts hinzu. Die Bindung misst, was ein Thema im
+> Leben des Paares tatsächlich bewegt hat — nicht, wie oft ein Abrufpfad es angeboten hat.
 
 **Der Verfall läuft im Lesepfad, nicht beim Aufrufer** (`memory/fascination_store.py`): Die Kante
 weiß, wann sie zuletzt berührt wurde, der Knoten nicht — und ein zweiter Leser könnte den Schritt

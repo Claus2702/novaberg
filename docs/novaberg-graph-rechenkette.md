@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 3. September 2026, 19:30 UTC (**S36 trägt seine zweite Stimme** — die Einfärbung aus derselben Faltung mit `t × sektor_faktor`; im Bestand ohne Wirkung, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**S38 neu** — der Prägungszug: er liest Richtung und Ladung aus S37 und hebt daraus je Turn eine Zahl auf [1,0 … 1,6]; das Maximum mit exaktem Abbruch, der Hub aus der Spanne abgeleitet. §12 Prüfstand nachgezogen). Davor 2. September 2026, 19:30 UTC (**S37 neu** — der Strang mit seinen vier Rechnungen; zwei davon ausdruecklich ohne Bestand, weil sie am Zustand haengen. §12 Pruefstand nachgezogen). Davor 1. September 2026, 18:30 UTC (§12 Pruefstand: S8 ist halb geprueft, S36 von Anfang an — die Liste stand auf dem Stand vom 08.08.2026). Davor 1. September 2026, 16:50 UTC (S33: Novas eigener Zielsog zieht, statt im `max()` zu konkurrieren — ungetort, ueber eine Logistische; Eingang `zielsog_roh` neu). Davor 1. September 2026, 15:30 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn **und einmal taeglich ueber den Bestand**; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 5. September 2026, 10:20 UTC (**S39 neu** — der Strangzug und die Faszination: der Strangzug misst die Lage **des Trägers** zu einer Prägung, S38 die Lage **des Turns**; dazu die Zusammenführung aus neun Faktoren und ein Bestandslauf ohne Modulatoren. **S38 berichtigt:** Der Zug las das `prompt_embedding` und misst seit heute das stärkste Segment — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, vier Tage länger stehengeblieben). Davor 3. September 2026, 19:30 UTC (**S36 trägt seine zweite Stimme** — die Einfärbung aus derselben Faltung mit `t × sektor_faktor`; im Bestand ohne Wirkung, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**S38 neu** — der Prägungszug: er liest Richtung und Ladung aus S37 und hebt daraus je Turn eine Zahl auf [1,0 … 1,6]; das Maximum mit exaktem Abbruch, der Hub aus der Spanne abgeleitet. §12 Prüfstand nachgezogen). Davor 2. September 2026, 19:30 UTC (**S37 neu** — der Strang mit seinen vier Rechnungen; zwei davon ausdruecklich ohne Bestand, weil sie am Zustand haengen. §12 Pruefstand nachgezogen). Davor 1. September 2026, 18:30 UTC (§12 Pruefstand: S8 ist halb geprueft, S36 von Anfang an — die Liste stand auf dem Stand vom 08.08.2026). Davor 1. September 2026, 16:50 UTC (S33: Novas eigener Zielsog zieht, statt im `max()` zu konkurrieren — ungetort, ueber eine Logistische; Eingang `zielsog_roh` neu). Davor 1. September 2026, 15:30 UTC (**S36 neu** — die Faltung des Praegungs-Ausschlags laeuft seit heute im Turn **und einmal taeglich ueber den Bestand**; §11a — **die vier Knoten-Dateien, die hier absichtlich kein System tragen**, mit Grund je Datei; ohne sie war eine bewusste Auslassung von einer vergessenen nicht zu unterscheiden). Davor 29. August 2026, spät (der `[SACHLAGE]`-Beitrag in den Namen des Lesers; der Rückfrage-Gegenstand des Verfassers trägt seine Herkunft, `question_target_origin`). Davor mittags (S14a: Stufen 5–7 — Frame-Auflöser, Plausibilität, Wissensträger und Recherche, dazu der Sprecher gedeckter Eigenschaften, Scheibe 9; Beitrag des `[SACHLAGE]`-Blocks erweitert). Davor 28. August 2026, abends (S27: die Rückfrage-Zeile trägt ihren Gegenstand aus S14a; S14a: Stufe 0, die Wiederaufnahme einer früheren Blase; `thema` benennt die Sache, der Verlauf trägt Novas Antworten ganz; S8: der Eingang trägt die Motivation von jetzt — der Lader rechnet den Verfall, `ZIEL_DEAKTIVIERUNGS_SCHWELLE` in `config.py`). Davor am selben Tag (**S14a** neu — die Sachlage zwischen Reducer und Router: Verstehen, Verlauf, kurzfristiges Ziel, Brücke; S8 kennt das Bauart-Tor des kurzfristigen Ziels. Der Knoten war seit dem Morgen gebaut und stand hier nicht — gefunden von der Frage nach dem Ganzen). Davor: 22. August 2026 (S11a liefert **zwei** Bloecke — `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]`, getrennt nach dem Eigentum an der Wurzel). Davor: 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -333,9 +333,16 @@ sie gleich, trägt kein Faden einen Wert, der älter ist als der Lauf.
 
 ### S38 — Der Prägungszug (03.09.2026)
 
-**Eingang:** das `prompt_embedding` des Turns · die Stränge des Paares mit ihren Zentroiden · je
+**Eingang:** ~~das `prompt_embedding` des Turns~~ → **der Vektor des stärksten Segments**
+(berichtigt 05.09.2026) · die Stränge des Paares mit ihren Zentroiden · je
 Strang die Richtung (S37) und die Ladung (S37) · das Charakter-Rad beider Räder für das
 Konfrontationsmaß.
+
+> **Warum das Segment und nicht der Turn.** Ein Turn über zwei Themen bekommt einen Vektor zwischen
+> beiden und liegt danach **keinem** der zugehörigen Stränge nahe — die Nähe eines Mittelwerts ist
+> keine Nähe. Derselbe Defekt war für das Faden-Embedding am 01.09.2026 behoben worden
+> (`FADEN-EMBEDDING-VERDUENNT`); der Zug las vier Tage länger weiter den Turn. Der Vektor wird
+> einmal gerechnet und für Faden **und** Zug benutzt; die Zugzeile trägt `vektor_quelle`.
 
 **Rechnung:**
 
@@ -369,6 +376,32 @@ gegen eine nachgebildete Verbindung sieht das nicht.
 Kreuzprobe eines fremden Themas **1,0693** bei sim 0,2245.
 
 **Absicht:** `novaberg-thinking-faszination_k.md` §10.3.
+
+### S39 — Der Strangzug und die Faszination (05.09.2026)
+
+**Eingang:** die im Turn gelesenen Erinnerungen (`lzg_resonanz`) · je Träger sein Qualitätsprofil
+(verfallen, §10.4) und seine Anker-Zähler aus der Brücke · die Zentroide der Stränge des Paares ·
+der Prägungszug aus S38 · die sechs Turn-Modulatoren.
+
+**Rechnung:**
+
+```
+strangzug   = 1.0 + 0,60 · naehe(knoten, zentroid) · saettigung(faden_zahl, 3)   # 1,0 … 1,6
+faszination = sin( min(roh, 2.0) / 2.0 · pi/2 ) ^ 0.5                            # 0 … 1
+  mit roh   = bindung · merkmalszug · praegungszug · strangzug · sechs Modulatoren
+```
+
+**Der Strangzug ist eine andere Größe als S38.** Der Prägungszug misst die Lage **des Turns** zum
+Strang und liefert einen Wert je Turn; der Strangzug misst die Lage **des Trägers** — erst damit
+unterscheidet sich ein Knoten im Zentrum eines Strangs von einem am Rand.
+
+**Ausgang:** eine `pipeline_log`-Zeile `faszination` je Turn — **auch im leeren Fall, mit Grund**.
+Sie trägt Werte, Rohwerte, Modulatoren, Prägungszug und Strangzug je Träger. Nichts wird in den
+Bestand geschrieben.
+
+**Dazu ein Bestandslauf** als neunter Schritt des Tageslaufs: dieselbe Rechnung **ohne** Modulatoren
+und ohne Prägungszug, über alle profilierten Träger. Er trennt die Trägerseite von der Turnseite —
+`[gemessen 05.09.2026]` spannen die Modulatoren Faktor 16,2, die Trägerseite 2,0.
 
 ### S15 — Ressourcen-Routing · S16 — Aufgabenblock
 

@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding, Prägungszug) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung, Zug); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 3. September 2026, 20:35 UTC (**§6b — die zweite Kontrolle hebt den Befund der Messreihe auf**: Novas negatives Register existiert (35 von 2825 Knoten im echten Paar), und der Nullbefund war der Erwartungswert 0,27). Davor 3. September 2026, 20:25 UTC (**§6b — der Betriebsbeleg der Scheiben 5 und 6**: vier Messturns, kein Faden, aber die ersten vier `praegung_zug`-Zeilen; dazu **woher die Emotion eines Fadens kommt** — aus Novas Antwort, nicht aus dem Reiz, und das stand nirgends). Davor 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 5. September 2026, 10:20 UTC (**§6c — der Knoten rechnet die Faszination**: je Turn über die gelesenen Erinnerungen, mit `strangzug` je Träger; **der Zug misst seit heute das stärkste Segment statt des gemittelten Turns** — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben. Dabei fand ein Verdrahtungszeuge, dass der Knoten sein *„immer eine Zeile `praegung_zug`"* **nicht hielt**: Bei fehlender Salienz kehrte er zurück, bevor er schrieb.). Davor 3. September 2026, 20:35 UTC (**§6b — die zweite Kontrolle hebt den Befund der Messreihe auf**: Novas negatives Register existiert (35 von 2825 Knoten im echten Paar), und der Nullbefund war der Erwartungswert 0,27). Davor 3. September 2026, 20:25 UTC (**§6b — der Betriebsbeleg der Scheiben 5 und 6**: vier Messturns, kein Faden, aber die ersten vier `praegung_zug`-Zeilen; dazu **woher die Emotion eines Fadens kommt** — aus Novas Antwort, nicht aus dem Reiz, und das stand nirgends). Davor 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
-**Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4, 5 und 6** gebaut (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. **Der Zug hat noch keinen Leser, und die Einfärbung hat keinen Verbraucher und im Bestand keine Eingabe**
+**Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4, 5 und 6** gebaut (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. ~~**Der Zug hat noch keinen Leser**~~ → **seit dem 05.09.2026 liest ihn die Faszination** (§6c): Sie rechnet je Turn über die gelesenen Erinnerungen und nimmt den Zug als einen ihrer Faktoren. **Die Einfärbung hat weiterhin keinen Verbraucher und im Bestand keine Eingabe**
 
 ---
 
@@ -34,9 +34,10 @@ vorbei.
 |---|---|---|
 | `pending_writes` | liest | Salienz **und** perzipierte Emotion, aus `salienz_obj` des stärksten Segments |
 | `nova_emotions_verlauf` | liest | nur die **Stärke** der Turn-Emotion, nicht die Führung |
-| `prompt_embedding` | liest | Ort auf der Themenlandkarte |
+| ~~`prompt_embedding`~~ | liest | ~~Ort auf der Themenlandkarte~~ → **überholt (05.09.2026):** Der Ort kommt aus dem **stärksten Segment**, nicht aus dem gemittelten Turn — und zwar für Faden **und** Zug. `prompt_embedding` ist nur noch der Rückfall, wenn der Embed-Dienst ausfällt |
+| `lzg_resonanz` | liest | die im Turn gelesenen Erinnerungen — die Träger, für die die Faszination rechnet |
 | `praegung_faden` | schreibt | eine Zeile bei Durchlass |
-| `pipeline_log` | schreibt | `schritt: praegung_tor` — **bei jeder Prüfung** |
+| `pipeline_log` | schreibt | `schritt: praegung_tor` — **bei jeder Prüfung** · `praegung_zug` und `faszination` — **bei jedem Turn**, auch wenn der Node vorzeitig zurückkehrt |
 
 **Kein Feld des Verbunds wird verändert.**
 
@@ -366,6 +367,46 @@ Das ist mit `beobachter = assistant` stimmig — die Prägung ist Novas thematis
 
 ---
 
+## 6c. Der Knoten rechnet die Faszination — seit dem 05.09.2026
+
+**Der Prägungszug hat seinen ersten Leser, und es ist derselbe Knoten.** Er ist einer der neun
+Faktoren der Faszination (`novaberg-thinking-faszination_k.md` §10.6) und liegt nur hier vor;
+`_zug_protokollieren` gibt ihn deshalb zurück, statt ihn ins Protokoll fallen zu lassen.
+
+**Die Träger sind die im Turn gelesenen Erinnerungen**, nicht der ganze Bestand: Faszination ist
+eine Größe *im Turn*, und ein Knoten, den der Lesepfad nie angeboten hat, war an diesem Turn nicht
+beteiligt.
+
+Die Zeile `faszination` trägt Werte, **Rohwerte**, die sechs Turn-Modulatoren, den Prägungszug und
+den **Strangzug je Träger** — genug, um die Zahl nachzurechnen statt sie zu glauben. Der Rohwert
+steht neben dem geglätteten, weil die Glättung über dem Deckel nicht umkehrbar ist.
+
+**Auch der leere Turn schreibt**, mit Grund. Ein Turn ohne Zeile wäre von einem Turn ohne Träger
+nicht zu unterscheiden — dieselbe Lehre wie beim Faden-Tor, wo `EMGRAV-SCHWELLE-TOT` wochenlang
+unbemerkt blieb, weil nichts gezählt wurde.
+
+### Der Verdrahtungszeuge fand, dass der Knoten sein eigenes *immer* nicht hielt
+
+Der Docstring von `praegung_pruefen` sagte: *„Dazu **immer** eine Zeile `praegung_zug` — sie hängt
+nicht am Tor."* Der Code kehrte bei fehlender Salienz oder leerem Verlauf zurück, **bevor** er
+schrieb. Damit blieben **genau die Turns unprotokolliert, in denen etwas fehlte** — und ein
+fehlender Eintrag ist von einem Turn ohne Zug nicht zu unterscheiden.
+
+Beide Protokolle stehen jetzt vor den Rückkehrpfaden. **Gefunden hat es kein Einzelzeuge**, sondern
+der Zeuge auf die Verdrahtung — der, den die Lehre vom 04.09.2026 verlangt: Dort riefen alle Zeugen
+die Funktion selbst, keiner prüfte, dass der Knoten sie ruft.
+
+### Was der erste Betriebslauf zeigte
+
+**Kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil** (05.09.2026, vier Turns).
+`[gemessen]`: 28 von 3.363 aktiven Knoten waren profiliert, **2 von 36** gelesenen. Die
+Profil-Auswahl folgt seither der **Lesespur** statt `haeufigkeit`; der größere Anteil liegt aber am
+Längenfilter, den nur **7 von 36** gelesenen Knoten passieren — der Rest sind Sprechakt-Vermerke.
+
+**Der erste gerechnete Wert war 0,0**, und das ist eine Entscheidung des Eigentümers, kein Defekt:
+Der Träger hatte 6 Qualitäten und **0 Brücken**. Lesen zählt nicht als Berührung — Faszination ist
+die Bündelung dessen, was durch Salienz und Valenz schon geprägt wurde.
+
 ## 7. Offene Punkte
 
 ~~**Die Verstärkung fehlt.**~~ → **Gebaut am 01.09.2026 (Scheibe 2).** Drei der vier Bauteile
@@ -505,12 +546,21 @@ Log-Zeile seit dem 01.09.2026 auch die **verfehlte** Nähe — die drei nächste
 Abstand. Eine Reihe ohne Berührungen sagte sonst nicht, ob die Schwelle um 0,01 oder um 0,30
 verfehlt wurde.
 
-**Das Embedding ist seit dem 01.09.2026 scharf.** Salienz und Emotion des Fadens kamen schon
-immer aus dem stärksten Segment, mit der ausdrücklichen Begründung, ein Mittel verdünne den
-einschneidenden Satz. **Für das Embedding galt das nicht** — es kam aus `prompt_embedding` und
-trug den ganzen Turn. Fällt der Embed-Dienst aus, steht in der Torzeile jetzt
+**Das Embedding ist seit dem 01.09.2026 scharf** — **und der Zug seit dem 05.09.2026.** Salienz und
+Emotion des Fadens kamen schon immer aus dem stärksten Segment, mit der ausdrücklichen Begründung,
+ein Mittel verdünne den einschneidenden Satz. **Für das Embedding galt das nicht** — es kam aus
+`prompt_embedding` und trug den ganzen Turn. Fällt der Embed-Dienst aus, steht in der Torzeile jetzt
 `embedding_quelle: "prompt"`: Ohne dieses Feld wäre ein grob eingebetteter Faden von einem
 scharfen nicht zu unterscheiden, und die Nähe-Schwelle stünde auf gemischtem Material.
+
+> **Und für den Prägungszug galt es vier Tage länger.** Die Begründung stand seit dem 01.09. wörtlich
+> in diesem Modul; der Zug las trotzdem weiter `prompt_embedding`. Ein Turn über zwei Themen bekommt
+> einen Vektor zwischen beiden und liegt danach **keinem** der zugehörigen Stränge nahe — die Nähe
+> eines Mittelwerts ist keine Nähe. Seit dem 05.09.2026 nimmt er denselben Segmentvektor wie der
+> Faden, **einmal gerechnet und zweimal benutzt**, und die Zugzeile trägt `vektor_quelle`.
+>
+> **Eine behobene Fehlerklasse bleibt an ihrer zweiten Stelle stehen, wenn die Behebung nur den
+> gefundenen Fall repariert.** Gefunden hat es eine Frage des Eigentümers, kein Zeuge.
 
 **Der Ausschlag ist eine Näherung — aber eine schärfere als am 30.08.2026.** Er stammt aus dem
 Verlauf und trägt damit Historie; das Konzept will die Stärke *im Moment des Erlebens*.
