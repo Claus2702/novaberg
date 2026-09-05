@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
-**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6) und die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) sind gebaut und im Betrieb; die Faszination selbst (§10.6) ist es nicht. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
+**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6), die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) und seit dem 05.09.2026 die **ganze Rechnung** (§10.2, §10.5, §10.6) sind gebaut. **Die Faszination rechnet, sie wirkt noch nicht** — es gibt keinen Schreibpfad und keinen Leser; sie ist bisher nur im Labor über den Bestand gelaufen. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
 **Voraussetzung:** `novaberg-memory-synapsen-p4-entscheidungen_k.md` (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
 **Betrifft:** `novaberg-thinking-curiosity_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-charakter-resonanz_k.md` · `novaberg-node-ei-calc.md` · `novaberg-node-emotionale-gravitation.md` · `novaberg-thinking-drive_k.md`
 
@@ -1418,6 +1418,27 @@ bindung_roh   = 0.50 · norm(wiederkehr) + 0.20 · norm(verweildauer) + 0.30 · 
 Thema, das der Nutzer dreimal einbringt, **seine** Faszination belegt, nicht ihre. Die Wiederkehr
 wiegt am schwersten, weil sie Faszination von Neugier trennt.
 
+#### Gebaut am 05.09.2026 — zwei Entscheidungen gegen den naheliegenden Weg
+
+**`norm` ist eine Sättigung, keine Min-Max-Streckung.** `norm(n) = n / (n + H)`, mit `H` als
+Halbstrecke: Bei `n = H` steht der Term auf 0,5, und die Kurve erreicht 1 nie — passend zu Zählern
+ohne Obergrenze (§13). Eine Normierung über den Bestand hätte einen **wandernden Bezugspunkt**:
+Derselbe Träger bekäme morgen einen anderen Wert, weil ein *anderer* Träger gewachsen ist, und was
+gemessen wurde, wäre danach nicht mehr von der Skala zu trennen.
+
+**Die Halbstrecken sind aus der Bedeutung gesetzt, nicht aus der Verteilung** — beide auf 3. Der
+Grund steht in der Messung: `[gemessen]` 04.09.2026 über **2.377 Knoten mit Brücke** tragen
+**2.362 die Wiederkehr 1**, dreizehn die 2, je einer die 3 und die 4; bei der Verweildauer stehen
+**2.320 auf einem einzigen Turn**. **Beide Zähler trennen heute nichts.** Eine aus dieser Verteilung
+abgeleitete Halbstrecke wäre eine Aussage über das Alter der Brücke (39 Tage), nicht über die Sache.
+
+**`eigenimpuls` darf fehlen, und das ist keine Bequemlichkeit.** Die Brücke `verbindung` trägt
+**keine Herkunftsspalte** — die Herkunft steht in der Rohturn-Zeile, und **318 von 1.027 Rohturns
+tragen keine** `[gemessen 04.09.2026]`. Wer daraus 0,0 machte, zählte *„unbekannt"* wie *„der Nutzer
+hat es aufgebracht"* und senkte damit genau die Träger, über deren Herkunft nichts bekannt ist.
+Fehlt der Term, werden die **Gewichte der beiden übrigen renormiert**; der Wert bleibt auf derselben
+Skala und stützt sich nur auf weniger Belege.
+
 ### 10.3 Der Prägungszug — verstärkt nur, dämpft nie
 
 **Gebaut am 03.09.2026** (`memory/praegung.py::praegungszug`, gerufen je Turn vom Faden-Tor).
@@ -1566,6 +1587,46 @@ Konstanten**, damit die Exponenten nicht später angeglichen werden.
 
 > **Die Seltenheit ist konstruiert, nicht erhofft.** Qualitäten sind häufig — fast jeder komplexe
 > Text trägt `komplexitaet`. Prägungen sind selten. **Ihr Produkt ist selten.**
+
+#### Gebaut und zum ersten Mal gerechnet — 05.09.2026
+
+Die Rechnung steht vollständig. Der Erstlauf über den Bestand nimmt die **27 Träger**, die
+zugleich ein Qualitätsprofil und eine Brücke haben, und setzt einen mittleren Turn als
+Modulator-Lage (die häufigsten Werte des Korpus), damit Träger- und Turnseite trennbar bleiben.
+Der Prägungszug steht dabei auf 1,0 — **kein Träger dieses Bestandes trägt einen Faden**, und das
+ist der ehrliche Wert, keine Füllung.
+
+| Größe | Ergebnis |
+|---|---|
+| `faszination` | min **0,5451** · Median **0,5712** · max **0,7580** |
+| `roh` | min 0,3841 · Median 0,4231 · max **0,7792** |
+| am Deckel (2,0) | **0 von 27** |
+| verschiedene Werte (3 Stellen) | **9 von 27** |
+
+**Der Deckel wird nie erreicht, und die Halbstrecken sind damit nicht prüfbar.** Beide Setzungen
+bleiben ungemessen — nicht, weil niemand gemessen hätte, sondern weil der Bestand ihren
+Wirkungsbereich nicht erreicht. Das ist ein Befund über die Messbarkeit, keiner über die Werte.
+
+**Die Größe trennt heute kaum**, und die Ursache ist der Anker: 25 der 27 Träger stehen auf
+derselben Bindung 0,2500, weil Wiederkehr und Verweildauer beide auf 1 liegen. Die zwei Träger an
+der Spitze (0,4750) unterscheiden sich allein dadurch, dass **alle** ihre Berührungen aus einem
+eigenen Impuls kamen.
+
+> ### Der Befund, der schwerer wiegt als die Kalibrierung
+>
+> **Die sechs Turn-Modulatoren spannen Faktor 16,2 — die Trägerseite am gemessenen Bestand nur
+> Faktor 2,0.** `[gemessen 05.09.2026]`: Modulatorprodukt zwischen 0,2249 und 3,6328; Trägerseite
+> zwischen 0,2850 und 0,5748.
+>
+> Damit hängt die Faszination eines Trägers heute **achtmal stärker davon ab, in welchem Turn man
+> sie abfragt, als davon, welcher Träger es ist** — für eine Bindungsgröße am Träger ist das
+> verkehrt herum.
+>
+> **Zwei Lesarten, und die Messung trennt sie nicht.** Entweder ist der Bestand zu jung — die
+> Trägerseite wächst mit Bindung und Prägung, beide stehen heute am unteren Rand — oder die
+> Modulator-Spannen aus §10.5 sind zu weit. Der Unterschied ist erst an einem Bestand zu
+> entscheiden, der Fäden trägt. **Bis dahin wird nichts angeglichen:** Eine Spanne zu verengen,
+> weil die andere Seite noch leer ist, hieße die Kurve an den Mangel anzupassen.
 
 ### 10.7 Warum die Krise **nicht** auf null setzt
 

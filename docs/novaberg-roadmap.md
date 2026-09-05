@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 4. September 2026 — juengster Eintrag **04.09.2026, 23:40 UTC** (gemessen via `date -u`). Davor 04.09.2026, 17:10 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 00:15 UTC** (gemessen via `date -u`). Davor 04.09.2026, 23:40 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,39 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 00:15 UTC — die Faszination rechnet, und sie hängt am falschen Ende ✅
+
+**Gebaut:** die sechs Turn-Modulatoren (§10.5), der Anker `bindung_roh` (§10.2) und die
+Zusammenführung (§10.6). Damit ist die Rechnung aus §10 vollständig — neun Faktoren, eine Glättung,
+ein Deckel. 39 Zeugen, **Suite 3013 grün**.
+
+**Zwei Entscheidungen gegen den naheliegenden Weg.** Der Anker normiert über eine **Sättigung**
+`n/(n+H)` statt über den Bestand: Eine Min-Max-Skala wanderte, und derselbe Träger bekäme morgen
+einen anderen Wert, weil ein anderer gewachsen ist. Und **`eigenimpuls` darf fehlen** — die Brücke
+trägt keine Herkunftsspalte, 318 von 1.027 Rohturns tragen keine; wer daraus 0,0 machte, zählte
+*„unbekannt"* wie *„der Nutzer hat es aufgebracht"*. Bei None renormieren die übrigen Gewichte.
+
+**Erstlauf über 27 Träger** (die mit Qualitätsprofil **und** Brücke): Faszination 0,5451 bis 0,7580,
+Median 0,5712, **9 verschiedene Werte bei 27 Trägern**. Der Deckel 2,0 wird nie erreicht — höchster
+Rohwert 0,7792 —, also sind weder er noch die Halbstrecken am heutigen Bestand prüfbar. 25 der 27
+stehen auf derselben Bindung, weil Wiederkehr und Verweildauer beide auf 1 liegen.
+
+> **Der Befund, der schwerer wiegt als die Kalibrierung:** Die sechs Turn-Modulatoren spannen
+> **Faktor 16,2**, die Trägerseite nur **2,0**. Die Faszination eines Trägers hängt heute achtmal
+> stärker davon ab, **in welchem Turn** man sie abfragt, als davon, **welcher Träger** es ist —
+> für eine Bindungsgröße am Träger verkehrt herum.
+
+Ob der Bestand nur zu jung ist oder die Spannen zu weit sind, trennt die Messung nicht; das
+entscheidet erst ein Bestand mit Fäden. **Angeglichen wird bis dahin nichts** — eine Spanne zu
+verengen, weil die andere Seite leer ist, hieße die Kurve an den Mangel anzupassen.
+
+**Ein Zeuge hat sich selbst widerlegt** und steht mit seiner Berichtigung da: Er verglich die
+Wiederkehr auf halber Strecke gegen einen vollen Eigenimpuls und nannte den Unterschied Gewicht.
+
+**Was aussteht:** Die Faszination **rechnet, sie wirkt nicht** — kein Schreibpfad, kein Leser.
 
 ---
 
