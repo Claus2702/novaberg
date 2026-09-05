@@ -1743,6 +1743,63 @@ Rohwerte von 0,0 bis **0,5249**, Median 0,2831. Die sieben sind genau die nach L
 **Ein durchgehend flacher Bestand meldet sich.** Stehen alle Träger auf null, misst die Reihe nichts,
 und das fiele sonst erst auf, wenn jemand die Werte ansieht.
 
+### 10.6a Wo die Rechnung steht — die Bezeichner
+
+**Damit sie jemand findet, der sie sucht.** Die Rechnung liegt in zwei Modulen: `ei/fascination.py`
+rechnet **rein** (keine Datenbank, kein Modell, kein Zustand), `memory/fascination_store.py` holt,
+was sie braucht. Diese Trennung ist der Grund, warum die Rechnung im Labor über den ganzen Bestand
+laufen kann, ohne einen Turn zu fahren.
+
+| Bezeichner | Ort | §  |
+|---|---|---|
+| `merkmalszug` | `ei/fascination.py` | 10.1 |
+| `bindung_roh`, `norm_saettigung` | `ei/fascination.py` | 10.2 |
+| `praegungszug` | `memory/praegung.py` | 10.3 |
+| `strangzug` | `ei/fascination.py` | 10.3a |
+| `qualitaet_verfall`, `profil_verfallen` | `ei/fascination.py` | 10.4 |
+| `f_arousal`, `f_besetzung`, `f_verlauf`, `f_intent`, `f_modus`, `f_anlage` | `ei/fascination.py` | 10.5 |
+| `modulatoren_aus_turn` — die Klammer um die sechs | `ei/fascination.py` | 10.5 |
+| `faszination` — die Zusammenführung | `ei/fascination.py` | 10.6 |
+| `traegerdaten_lesen`, `traeger_strangnaehe`, `bestandslauf` | `memory/fascination_store.py` | 10.2, 10.3a, 10.6 |
+| `_faszination_protokollieren` — der Erzeuger im Turn | `graph/nodes/praegung.py` | 10.6 |
+
+**`modulatoren_aus_turn` ist eine Klammer und kein Komfort:** Ein einzeln vergessener Modulator wäre
+stumm ein Faktor 1,0, und der ist von einem gemessenen neutralen Wert nicht zu unterscheiden.
+
+### Die Konstanten
+
+| Konstante | Wert | Herkunft |
+|---|---|---|
+| `MERKMALSZUG_BONUS` | 0,35 | Setzung (§10.1) |
+| `BINDUNG_GEWICHTE` | 0,50 / 0,20 / 0,30 | Aussage des Konzepts (§10.2) |
+| `BINDUNG_HALBSTRECKE_WIEDERKEHR` · `BINDUNG_HALBSTRECKE_VERWEILDAUER` | je 3 | aus der Bedeutung gesetzt, **nicht** aus der Verteilung — sie wäre eine Aussage über das Alter der Brücke |
+| `FASZ_AROUSAL_SCHEITEL` | 0,65 | Berlyne (§2.1) |
+| `FASZ_AROUSAL_MIN` · `FASZ_AROUSAL_MAX` | 0,70 · 1,35 | die Spanne aus §10.5 |
+| `FASZ_AROUSAL_BREITE_LINKS` · `FASZ_AROUSAL_BREITE_RECHTS` | 0,65 · 0,35 | **je Flanke ihr eigener Abstand** — der Scheitel liegt nicht in der Mitte, und über eine Breite normiert erreichte nur die linke ihr Minimum |
+| `FASZ_BESETZUNG_NEUTRAL` · `FASZ_BESETZUNG_SEKTOR` · `FASZ_BESETZUNG_AWE` | 0,70 · 1,10 · 1,20 | §10.5; **valenzblind** — jeder besetzte Sektor wiegt gleich |
+| `FASZ_AWE_EMOTIONEN` | `{ehrfurcht, awe, staunen}` | die Awe-Dyade, der eine Zustand, den die Literatur mit Faszination verbindet (§2.1) |
+| `FASZ_VERLAUF_FAKTOREN` | 9 Werte, 0,80…1,25 | §10.5 nennt fünf, vier sind nach derselben Achse ergänzt (**Bewegung**, nicht Richtung) |
+| `FASZ_INTENT_FAKTOREN` | 6 Werte, 0,85…1,20 | §10.5 nennt fünf, `smalltalk` ergänzt |
+| `FASZ_MODUS_FAKTOREN` | 10 Werte, 0,90…1,15 | §10.5 nennt vier, sechs nach derselben Frage ergänzt: *wird hier ein Gegenstand vertieft?* |
+| `FASZ_ANLAGE_MIN` · `FASZ_ANLAGE_MAX` | 0,75 · 1,30 | §10.5, aus `charakter_rad_messung` |
+| `FASZ_STRANGZUG_HUB` | 0,60 | dieselbe Spanne wie `PRAEGUNG_ZUG_HUB` (§10.3a) |
+| `FASZ_STRANGZUG_HALBSTRECKE_FAEDEN` | 3 | Setzung; größter Strang trägt 7 Fäden, Median 2 |
+| `QUALITAET_VERFALL_BODEN` | 0,40 | höher als der Faden-Boden (0,20): Was verfällt, ist die Zugkraft, nicht der Bestand |
+| `QUALITAET_VERFALL_HALBSTRECKE_TAGE` | 180 | länger als der Faden (60): ein Faden ist ein Erlebnis, eine Qualität eine Eigenschaft |
+| `QUALITAET_VERFALL_HALBSTRECKE_BERUEHRUNGEN` | 5 | Setzung — **nicht kalibrierbar**, kein Träger hat mehr als eine Berührung |
+| `QUALITAET_VERFALL_UEBER_BERUEHRUNGEN` | `{ungewissheit}` | §10.4 — die eine erschöpfbare Dimension |
+| `FASZ_MAXIMUM` | 2,0 | Deckel; **am Bestand nie erreicht**, höchster Rohwert 0,6442 |
+
+> **Die drei Tabellen sind vollständig gegen ihren Kanon**, und ein Zeuge hält beide Seiten
+> zusammen. Ein fehlender Schlüssel fände stumm den neutralen Faktor 1,0 — und ein Vorgabewert in
+> einem Produkt ist von einem gesetzten nicht zu unterscheiden. Trifft trotzdem ein Wert außerhalb
+> des Kanons ein, wird 1,0 zurückgegeben **und gemeldet**: `[gemessen 04.09.2026]` trägt der Bestand
+> in `intent` 28-mal `philosophischer_austausch`, einen Modus-Wert.
+
+**Keine dieser Zahlen ist gemessen.** Sie sind Setzungen mit Herkunft, und ihre Kalibrierung braucht
+die Reihe des Bestandslaufs über Tage — der Bestand erreicht heute den Wirkungsbereich von Deckel
+und Halbstrecken nicht.
+
 ### 10.7 Warum die Krise **nicht** auf null setzt
 
 ```

@@ -679,6 +679,11 @@ aktive Knoten):
 | **P99,9** | **0,5412** | **~3** |
 | P99,99 | 0,6672 | <1 |
 
+Die Zahl steht als `VERWENDUNG_NAEHE_SCHWELLE` in `config.py`, der Deckel als
+`VERWENDUNG_MAX_JE_TURN`; gerechnet wird sie in `used_memories_find`, die Buchführung führt
+`reinforce_used` (beide `memory/usage_reinforcement.py`), und der Dispatcher ruft sie über
+`_verwendung_verstaerken`.
+
 **0,55 liegt zwischen P99,9 und P99,99.** Je Antwort passieren ein bis drei von 3.039 Knoten, und
 **15 von 25** Turns tragen überhaupt eine Verstärkung — die Größenordnung, die dieser Abschnitt
 verlangt: *sie liest drei und nimmt eine*. Zum Vergleich: 0,50 ließe rund 30 Knoten je Antwort
@@ -758,7 +763,7 @@ Seit dem 04.09.2026 trägt die Zeile deshalb die Größen, aus denen die Entsche
 | `naehen_alle` | die Nähe **jeder** geprüften Erinnerung, auch der verworfenen |
 | `knappster_verworfener` | wie weit die Schwelle vom Bestand entfernt steht |
 | `schwelle`, `deckel` | der Maßstab, gegen den verglichen wurde |
-| `ausgang` | welcher der sechs Wege die Zeile erzeugt hat |
+| `ausgang` | welcher der sechs Wege die Zeile erzeugt hat — `AUSGANG_GERECHNET`, `AUSGANG_ANTWORT_LEER`, `AUSGANG_OHNE_KANDIDAT`, `AUSGANG_EMBED_FEHLER`, `AUSGANG_VEKTOR_LEER`, `AUSGANG_DB_FEHLER` (`memory/usage_reinforcement.py`) |
 
 > **Ohne `naehen_alle` ist ein Nullbefund nicht von einer zu hohen Schwelle zu unterscheiden.** Das
 > ist derselbe Satz wie bei der Nulllinie eine Ebene tiefer: Wer nur die Treffer protokolliert,
