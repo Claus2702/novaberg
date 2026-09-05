@@ -26,6 +26,7 @@ from config import (
     FASZ_BESETZUNG_NEUTRAL,
     FASZ_BESETZUNG_SEKTOR,
     FASZ_INTENT_FAKTOREN,
+    FASZ_MAXIMUM,
     FASZ_MODUS_FAKTOREN,
     FASZ_VERLAUF_FAKTOREN,
     MODUS_KANON,
@@ -209,6 +210,145 @@ class KeinFaktorLoeschtDieBindungTest(unittest.TestCase):
             * fascination.f_anlage(1.0)
         )
         self.assertGreater(produkt, 1.0)
+
+
+class DerAnkerNormiertOhneBezugspunktTest(unittest.TestCase):
+    """§10.2 — Saettigung statt Min-Max, damit der Massstab nicht wandert."""
+
+    def test_die_halbstrecke_steht_auf_der_haelfte(self) -> None:
+        """Die definierende Eigenschaft der Kurve."""
+        self.assertAlmostEqual(
+            0.5, fascination.norm_saettigung(3.0, 3.0), 9,
+        )
+
+    def test_null_bleibt_null_und_die_kurve_erreicht_nie_eins(self) -> None:
+        self.assertEqual(0.0, fascination.norm_saettigung(0.0, 3.0))
+        self.assertLess(fascination.norm_saettigung(1_000_000.0, 3.0), 1.0)
+
+    def test_die_kurve_steigt_streng(self) -> None:
+        """Ein Zaehler mehr darf nie weniger bedeuten."""
+        werte = [fascination.norm_saettigung(n, 3.0) for n in range(12)]
+        self.assertTrue(all(werte[i] < werte[i + 1] for i in range(len(werte) - 1)))
+
+    def test_eine_halbstrecke_von_null_meldet_sich(self) -> None:
+        """Sie waere eine leere Konfiguration, kein Grenzfall."""
+        with self.assertLogs("ki_server.ei.fascination", "ERROR"):
+            self.assertEqual(0.0, fascination.norm_saettigung(5.0, 0.0))
+
+
+class UnbekannteHerkunftSenktNichtTest(unittest.TestCase):
+    """Der Kern von `bindung_roh`: None ist nicht 0.
+
+    Die Bruecke `verbindung` traegt keine Herkunftsspalte, und **318 von 1027
+    Rohturns tragen keine Herkunft** `[gemessen 04.09.2026]`. Wer daraus 0.0
+    machte, zaehlte *unbekannt* wie *der Nutzer hat es aufgebracht*.
+    """
+
+    def test_none_liegt_ueber_null(self) -> None:
+        self.assertGreater(
+            fascination.bindung_roh(1, 1, None),
+            fascination.bindung_roh(1, 1, 0.0),
+        )
+
+    def test_bei_none_werden_die_gewichte_renormiert(self) -> None:
+        """Der Wert bleibt auf derselben Skala, nur auf weniger Belegen.
+
+        Ohne Renormierung faehle er um genau das Gewicht des fehlenden Terms
+        — und waere mit einem vollstaendigen Wert nicht mehr vergleichbar.
+        """
+        voll: float = fascination.bindung_roh(3, 3, 0.5)
+        ohne: float = fascination.bindung_roh(3, 3, None)
+        self.assertAlmostEqual(0.5, ohne, 9, "Zwei Terme auf 0,5 ergeben 0,5")
+        self.assertAlmostEqual(0.5, voll, 9)
+
+    def test_der_volle_anker_bleibt_in_der_spanne(self) -> None:
+        self.assertAlmostEqual(0.0, fascination.bindung_roh(0, 0, 0.0), 9)
+        self.assertLess(fascination.bindung_roh(10_000, 10_000, 1.0), 1.0 + 1e-9)
+
+    def test_ein_anteil_ausserhalb_wird_geklemmt_und_gemeldet(self) -> None:
+        with self.assertLogs("ki_server.ei.fascination", "ERROR"):
+            fascination.bindung_roh(1, 1, 1.4)
+
+    def test_die_wiederkehr_wiegt_am_schwersten(self) -> None:
+        """§10.2 — sie trennt Faszination von Neugier.
+
+        **Verglichen wird bei gleicher normierter Auspraegung**, nicht bei
+        gleicher Rohzahl. Die erste Fassung dieses Zeugen stellte die
+        Wiederkehr auf ihrer Halbstrecke (norm = 0,5) gegen einen
+        Eigenimpuls von 1,0 und schlug fehl — sie mass die Auspraegung und
+        nannte es Gewicht. Beide Terme stehen hier auf 0,5.
+        """
+        auf_halb: float = 0.5
+        drei_tage: float = 3.0   # BINDUNG_HALBSTRECKE_WIEDERKEHR -> norm 0,5
+        nur_wiederkehr:   float = fascination.bindung_roh(drei_tage, 0, 0.0)
+        nur_verweildauer: float = fascination.bindung_roh(0, drei_tage, 0.0)
+        nur_eigenimpuls:  float = fascination.bindung_roh(0, 0, auf_halb)
+        self.assertGreater(nur_wiederkehr, nur_eigenimpuls)
+        self.assertGreater(nur_eigenimpuls, nur_verweildauer)
+
+
+class DieZusammenfuehrungTest(unittest.TestCase):
+    """§10.6 — neun Faktoren, eine Glaettung, der Rohwert bleibt."""
+
+    def test_der_deckel_ergibt_exakt_eins(self) -> None:
+        wert, roh = fascination.faszination(FASZ_MAXIMUM, 1.0, 1.0, None)
+        self.assertAlmostEqual(1.0, wert, 9)
+        self.assertAlmostEqual(FASZ_MAXIMUM, roh, 9)
+
+    def test_der_rohwert_ueberlebt_die_deckelung(self) -> None:
+        """Ohne ihn misst eine spaetere Kalibrierung die Kurve, nicht den Bestand.
+
+        Zwei Traeger weit ueber dem Deckel stehen beide auf 1,0 — der
+        Unterschied steckt dann nur noch im Rohwert.
+        """
+        _, roh_a = fascination.faszination(2.0, 2.0, 1.0, None)
+        _, roh_b = fascination.faszination(2.0, 2.0, 2.0, None)
+        self.assertAlmostEqual(4.0, roh_a, 9)
+        self.assertAlmostEqual(8.0, roh_b, 9)
+        self.assertNotEqual(roh_a, roh_b)
+
+    def test_die_kurve_ist_steil_unten(self) -> None:
+        """Eine entstehende Faszination soll sichtbar werden (§10.6)."""
+        wert, _ = fascination.faszination(0.1, 1.0, 1.0, None)
+        self.assertGreater(
+            wert, 0.1 / FASZ_MAXIMUM,
+            "sin^0.5 muss schwache Werte anheben, sonst verschwinden sie",
+        )
+
+    def test_ein_fehlender_zug_loescht_alles(self) -> None:
+        """Ein Traeger ohne Bindung hat keine Faszination — das ist gewollt.
+
+        Regel (a) aus §10.0 verbietet die Null aus einem **Modulator**, nicht
+        aus einem Zug: Die drei Zuege sind die Sache selbst.
+        """
+        wert, roh = fascination.faszination(0.0, 1.0, 1.0, None)
+        self.assertEqual(0.0, wert)
+        self.assertEqual(0.0, roh)
+
+    def test_ein_modulator_auf_null_wird_uebergangen_und_gemeldet(self) -> None:
+        """Er waere ein Baufehler — und darf die Bindung nicht loeschen."""
+        with self.assertLogs("ki_server.ei.fascination", "ERROR"):
+            wert, _ = fascination.faszination(
+                0.5, 1.0, 1.0, {"f_kaputt": 0.0},
+            )
+        self.assertGreater(wert, 0.0)
+
+    def test_negative_zuege_werden_gemeldet(self) -> None:
+        with self.assertLogs("ki_server.ei.fascination", "ERROR"):
+            fascination.faszination(-1.0, 1.0, 1.0, None)
+
+    def test_die_klammer_liefert_genau_sechs_modulatoren(self) -> None:
+        """Keiner darf vergessen werden — ein fehlender waere stumm 1.0."""
+        m = fascination.modulatoren_aus_turn(
+            0.65, "neugierig", "eskalation", "knowledge", "lernmodus", 0.8,
+        )
+        self.assertEqual(6, len(m))
+        self.assertTrue(all(f > 0.0 for f in m.values()))
+        self.assertEqual(
+            {"f_arousal", "f_besetzung", "f_verlauf",
+             "f_intent", "f_modus", "f_anlage"},
+            set(m),
+        )
 
 
 if __name__ == "__main__":

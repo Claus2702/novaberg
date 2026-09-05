@@ -2143,6 +2143,46 @@ FASZ_MODUS_FAKTOREN: dict[str, float] = {
 FASZ_ANLAGE_MIN: float = 0.75
 FASZ_ANLAGE_MAX: float = 1.30
 
+# ─────────────────────────────────────────────────────────────
+# Der Anker — Bindung ueber Episoden
+# `novaberg-thinking-faszination_k.md` §10.2
+# ─────────────────────────────────────────────────────────────
+#
+#   bindung_roh = 0.50 * norm(wiederkehr)
+#               + 0.20 * norm(verweildauer)
+#               + 0.30 * eigenimpuls
+#
+# **Die Gewichtung ist eine Aussage** (§10.2): Der Eigenimpuls wiegt schwerer
+# als die Verweildauer, weil ein Thema, das der Nutzer dreimal einbringt,
+# **seine** Faszination belegt, nicht ihre. Die Wiederkehr wiegt am schwersten,
+# weil sie Faszination von Neugier trennt.
+BINDUNG_GEWICHTE: dict[str, float] = {
+    "wiederkehr":   0.50,
+    "verweildauer": 0.20,
+    "eigenimpuls":  0.30,
+}
+
+# **Die Normierung ist eine Saettigung, keine Min-Max-Streckung** — und das ist
+# eine Entscheidung gegen den naheliegenden Weg. Eine Normierung ueber den
+# Bestand haette einen **wandernden Bezugspunkt**: Derselbe Traeger bekaeme
+# morgen einen anderen Wert, weil ein anderer Traeger gewachsen ist. Was
+# gemessen wurde, waere danach nicht mehr von der Skala zu trennen.
+#
+#   norm(n) = n / (n + H)
+#
+# H ist die **Halbstrecke**: bei n = H steht der Term auf 0,5. Die Kurve ist
+# nach oben offen und erreicht 1 nie — passend zu Zaehlern ohne Obergrenze
+# (§13, *Die Normierung der Zaehler*).
+#
+# `[gemessen]` 04.09.2026 ueber 2.377 Knoten mit Bruecke: **2.362 tragen
+# wiederkehr = 1**, 13 tragen 2, je einer 3 und 4. Bei der Verweildauer stehen
+# 2.320 auf einem einzigen Turn. **Beide Zaehler trennen heute nichts** — die
+# Bruecke ist 39 Tage alt, und Wiederkehr braucht Kalenderzeit. Die
+# Halbstrecken sind deshalb aus der **Bedeutung** gesetzt und nicht aus der
+# Verteilung: Sie waere eine Aussage ueber das Alter des Bestandes.
+BINDUNG_HALBSTRECKE_WIEDERKEHR:   float = 3.0   # drei verschiedene Tage
+BINDUNG_HALBSTRECKE_VERWEILDAUER: float = 3.0   # drei Turns je Episode
+
 # Der harte Deckel der Zusammenfuehrung (§10.6). Das Roh-Aequivalent von
 # faszination = 1.0; jede daraus abgeleitete Konstante nennt es im Kommentar
 # (Regel (7) der Wertekonvention).

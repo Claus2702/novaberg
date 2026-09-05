@@ -11,16 +11,20 @@ Heute steht hier ein Faktor von neun:
                       x f_arousal x f_besetzung x f_verlauf
                       x f_intent  x f_modus     x f_anlage
 
-`merkmalszug` (§10.1) und die sechs Turn-Modulatoren (§10.5) rechnen hier,
-`praegungszug` (§10.3) in `memory/praegung.py`. `bindung_roh` (§10.2) ist
-nicht gebaut, und damit auch nicht die Zusammenfuehrung (§10.6).
+`merkmalszug` (§10.1), `bindung_roh` (§10.2) und die sechs Turn-Modulatoren
+(§10.5) rechnen hier, `praegungszug` (§10.3) in `memory/praegung.py`. Die
+Zusammenfuehrung (§10.6) steht am Ende dieser Datei.
 
 Reine Funktionen: keine Datenbank, kein Modell, kein Zustand.
 """
 
 import logging
+import math
 
 from config import (
+    BINDUNG_GEWICHTE,
+    BINDUNG_HALBSTRECKE_VERWEILDAUER,
+    BINDUNG_HALBSTRECKE_WIEDERKEHR,
     FASZ_ANLAGE_MAX,
     FASZ_ANLAGE_MIN,
     FASZ_AROUSAL_BREITE_LINKS,
@@ -33,6 +37,7 @@ from config import (
     FASZ_BESETZUNG_NEUTRAL,
     FASZ_BESETZUNG_SEKTOR,
     FASZ_INTENT_FAKTOREN,
+    FASZ_MAXIMUM,
     FASZ_MODUS_FAKTOREN,
     FASZ_VERLAUF_FAKTOREN,
     MERKMALSZUG_BONUS,
@@ -328,3 +333,215 @@ def _in_spanne(wert: float, unten: float, oben: float, name: str) -> float:
             f"[{unten}, {oben}] — geklemmt; die Rechnung ist zu pruefen"
         )
     return max(unten, min(oben, wert))
+
+
+# ─────────────────────────────────────────────
+# Der Anker — Bindung ueber Episoden (§10.2)
+# ─────────────────────────────────────────────
+
+
+def norm_saettigung(zahl: float, halbstrecke: float) -> float:
+    """Normiert einen nach oben offenen Zaehler auf [0, 1).
+
+        norm(n) = n / (n + H)
+
+    **Bezugspunktfrei, und das ist der Grund fuer diese Form.** Eine Min-Max-
+    Streckung ueber den Bestand haette einen wandernden Massstab: Derselbe
+    Traeger bekaeme morgen einen anderen Wert, weil ein anderer gewachsen ist
+    — und was gemessen wurde, waere danach nicht mehr von der Skala zu
+    trennen. Hier haengt der Wert allein am eigenen Zaehler.
+
+    Bei `zahl == halbstrecke` steht das Ergebnis exakt auf 0,5. Die Kurve
+    erreicht 1 nie; das passt zu Zaehlern ohne Obergrenze (§13).
+
+    Rein. Vorbedingung: `zahl` >= 0 und `halbstrecke` > 0. Beides wird
+        geprueft — eine negative Zahl deutet auf einen Zaehlfehler, eine
+        Halbstrecke <= 0 auf eine leere Konfiguration.
+    Nachbedingung: ein Wert in [0, 1).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    n: float = float(zahl)
+    h: float = float(halbstrecke)
+    if n < 0.0:
+        logger.error(
+            f"Faszination: Zaehler {n} ist negativ — als 0 gewertet; "
+            f"ein Zaehler zaehlt nicht rueckwaerts"
+        )
+        n = 0.0
+    if h <= 0.0:
+        logger.error(
+            f"Faszination: Halbstrecke {h} ist nicht positiv — die Normierung "
+            f"liefert 0.0; die Konstante ist zu pruefen"
+        )
+        return 0.0
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return n / (n + h)
+
+
+def bindung_roh(
+    wiederkehr:   float,
+    verweildauer: float,
+    eigenimpuls:  float | None,
+) -> float:
+    """Die Bindung eines Traegers ueber Episoden — §10.2.
+
+        bindung_roh = 0.50 * norm(wiederkehr)
+                    + 0.20 * norm(verweildauer)
+                    + 0.30 * eigenimpuls
+
+    **`eigenimpuls` darf None sein, und das ist keine Bequemlichkeit.** Die
+    Bruecke `verbindung` traegt keine Herkunft; sie steht in der Rohturn-Zeile,
+    und **318 von 1027 Rohturns haben keine** `[gemessen 04.09.2026]`. Wer
+    daraus 0.0 machte, zaehlte *„unbekannt"* wie *„der Nutzer hat es
+    aufgebracht"* — und senkte damit genau die Traeger, ueber deren Herkunft
+    nichts bekannt ist.
+
+    **Bei None werden die Gewichte der beiden uebrigen Terme renormiert**, so
+    dass die Summe wieder 1.0 ergibt. Der Wert bleibt damit auf derselben
+    Skala und ist mit einem vollstaendigen vergleichbar; er stuetzt sich nur
+    auf weniger Belege.
+
+    Rein. Vorbedingung: die Zaehler sind >= 0, `eigenimpuls` liegt in [0, 1]
+        oder ist None.
+    Nachbedingung: ein Wert in [0, 1].
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    anteil: float | None = None
+    if eigenimpuls is not None:
+        anteil = float(eigenimpuls)
+        if not 0.0 <= anteil <= 1.0:
+            logger.error(
+                f"Faszination: eigenimpuls {anteil:.4f} liegt ausserhalb "
+                f"[0, 1] — geklemmt; er ist ein Anteil, kein Zaehler"
+            )
+            anteil = max(0.0, min(1.0, anteil))
+
+    # ── Verarbeitung ────────────────────────────
+    teile: dict[str, float] = {
+        "wiederkehr":   norm_saettigung(
+            wiederkehr, BINDUNG_HALBSTRECKE_WIEDERKEHR),
+        "verweildauer": norm_saettigung(
+            verweildauer, BINDUNG_HALBSTRECKE_VERWEILDAUER),
+    }
+    if anteil is not None:
+        teile["eigenimpuls"] = anteil
+
+    gewicht_summe: float = sum(BINDUNG_GEWICHTE[name] for name in teile)
+    if gewicht_summe <= 0.0:
+        logger.error(
+            "Faszination: kein Bindungsterm traegt ein Gewicht — "
+            "BINDUNG_GEWICHTE ist zu pruefen"
+        )
+        return 0.0
+    wert: float = sum(
+        BINDUNG_GEWICHTE[name] * anteil_wert for name, anteil_wert in teile.items()
+    ) / gewicht_summe
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return _in_spanne(wert, 0.0, 1.0, "bindung_roh")
+
+
+# ─────────────────────────────────────────────
+# Die Zusammenfuehrung (§10.6)
+# ─────────────────────────────────────────────
+
+
+def faszination(
+    bindung:      float,
+    merkmalszug_wert: float,
+    praegungszug_wert: float,
+    modulatoren:  dict[str, float] | None = None,
+) -> tuple[float, float]:
+    """Die Faszination eines Traegers im laufenden Turn — neun Faktoren.
+
+        roh = bindung x merkmalszug x praegungszug
+                      x f_arousal x f_besetzung x f_verlauf
+                      x f_intent  x f_modus     x f_anlage
+
+        faszination = sin( min(roh, FASZ_MAXIMUM) / FASZ_MAXIMUM * pi/2 ) ^ 0.5
+
+    **Die Seltenheit ist konstruiert, nicht erhofft** (§10.6): Qualitaeten
+    sind haeufig — fast jeder komplexe Text traegt `komplexitaet`. Praegungen
+    sind selten. Ihr Produkt ist selten.
+
+    **`sin^0.5` ist hier richtig, anders als beim Faden** (§7.2): Dieser Wert
+    entsteht aus einem Produkt vieler Faktoren, nicht aus einem einzelnen
+    Erlebnis, und soll auch schwache Faszinationen sichtbar machen. Die Kurve
+    ist steil unten, damit eine entstehende Faszination sichtbar wird, und
+    flach oben, damit ein intensiver Tag keine Dauerfaszination erzeugt; am
+    Deckel steht sie exakt auf 1,0.
+
+    **Der Rohwert wird mit zurueckgegeben, und das ist kein Komfort.** Die
+    Glaettung ist nicht umkehrbar, sobald der Deckel greift: Zwei Traeger mit
+    roh = 2,0 und roh = 6,0 stehen beide auf 1,0. Wer spaeter kalibriert,
+    braucht die Zahl davor — sonst misst er die Kurve statt den Bestand.
+
+    Rein. Vorbedingung: die drei Zuege sind >= 0; `modulatoren` traegt die
+        sechs Faktoren aus §10.5 oder ist None (dann moduliert nichts).
+    Nachbedingung: (faszination in [0, 1], roh >= 0).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    zuege: dict[str, float] = {
+        "bindung": float(bindung),
+        "merkmalszug": float(merkmalszug_wert),
+        "praegungszug": float(praegungszug_wert),
+    }
+    for name, wert in zuege.items():
+        if wert < 0.0:
+            logger.error(
+                f"Faszination: {name} ist {wert:.4f} und damit negativ — "
+                f"als 0 gewertet; ein Zug zieht nicht rueckwaerts"
+            )
+            zuege[name] = 0.0
+
+    # ── Verarbeitung ────────────────────────────
+    roh: float = zuege["bindung"] * zuege["merkmalszug"] * zuege["praegungszug"]
+    for name, faktor in (modulatoren or {}).items():
+        if faktor <= 0.0:
+            # Regel (a) aus §10.0: keine Null aus einer Multiplikation. Ein
+            # Modulator, der 0 liefert, ist ein Baufehler in dieser Datei.
+            logger.error(
+                f"Faszination: Modulator '{name}' lieferte {faktor:.4f} — "
+                f"uebergangen; kein Turn darf die Bindung loeschen"
+            )
+            continue
+        roh *= float(faktor)
+
+    gedeckelt: float = min(roh, FASZ_MAXIMUM)
+    wert: float = math.sin(gedeckelt / FASZ_MAXIMUM * math.pi / 2) ** 0.5
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if roh > FASZ_MAXIMUM:
+        logger.info(
+            f"Faszination: roh {roh:.4f} ueber dem Deckel {FASZ_MAXIMUM} — "
+            f"geglaettet auf 1.0; der Rohwert bleibt im Rueckgabewert"
+        )
+    return (_in_spanne(wert, 0.0, 1.0, "faszination"), roh)
+
+
+def modulatoren_aus_turn(
+    arousal:          float,
+    emotion:          str,
+    emotions_vector:  str,
+    intent:           str,
+    mode:             str,
+    wissbegier:       float | None = None,
+) -> dict[str, float]:
+    """Baut die sechs Modulatoren eines Turns — die Klammer um §10.5.
+
+    Sie steht hier, damit der Aufrufer die Reihenfolge nicht kennen muss und
+    **keiner der sechs vergessen werden kann**: Ein fehlender Faktor waere
+    stumm ein Faktor 1,0, und das ist von einem gemessenen neutralen Wert
+    nicht zu unterscheiden.
+
+    Rein. Nachbedingung: genau sechs Eintraege, jeder > 0.
+    """
+    return {
+        "f_arousal":    f_arousal(arousal),
+        "f_besetzung":  f_besetzung(emotion),
+        "f_verlauf":    f_verlauf(emotions_vector),
+        "f_intent":     f_intent(intent),
+        "f_modus":      f_modus(mode),
+        "f_anlage":     f_anlage(wissbegier),
+    }
