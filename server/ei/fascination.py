@@ -42,6 +42,10 @@ from config import (
     FASZ_VERLAUF_FAKTOREN,
     MERKMALSZUG_BONUS,
     QUALITAET_KANON,
+    QUALITAET_VERFALL_BODEN,
+    QUALITAET_VERFALL_HALBSTRECKE_BERUEHRUNGEN,
+    QUALITAET_VERFALL_HALBSTRECKE_TAGE,
+    QUALITAET_VERFALL_UEBER_BERUEHRUNGEN,
 )
 
 logger = logging.getLogger("ki_server.ei.fascination")
@@ -544,4 +548,81 @@ def modulatoren_aus_turn(
         "f_intent":     f_intent(intent),
         "f_modus":      f_modus(mode),
         "f_anlage":     f_anlage(wissbegier),
+    }
+
+
+# ─────────────────────────────────────────────
+# Der Verfall der Qualitaeten (§10.4)
+# ─────────────────────────────────────────────
+
+
+def qualitaet_verfall(
+    dimension:    str,
+    auspraegung:  float,
+    tage:         float,
+    beruehrungen: int,
+) -> float:
+    """Die verfallene Auspraegung einer Qualitaet — je Dimension verschieden.
+
+    **`ungewissheit` verfaellt mit der Zahl der Beruehrungen, alle uebrigen
+    mit der Zeit** (§10.4). Der Satz dahinter: *Faszination erlischt genau
+    dann, wenn ihre tragende Dimension erschoepfbar ist.* Wer eine Sache oft
+    genug angesehen hat, weiss, wie sie ausgeht — aber ihre Komplexitaet
+    vergeht nicht dadurch, dass niemand hinsieht.
+
+    Die Kurve ist dieselbe wie beim Praegungsverfall: hyperbolisch mit Boden,
+    `v(x) = boden + (1 - boden) / (1 + x/H)`. **Der Boden liegt hoeher** als
+    dort (0,40 gegen 0,20), weil eine Qualitaet beschreibt, was eine Sache
+    *ist*: Was verfaellt, ist ihre Zugkraft, nicht ihr Bestand.
+
+    Rein. Vorbedingung: `dimension` gehoert zum Kanon — sonst wird der
+        Zeitverfall angewandt und gemeldet, denn er ist der Regelfall.
+        `auspraegung` in [0, 1]; `tage` und `beruehrungen` >= 0.
+    Nachbedingung: ein Wert in [0, auspraegung].
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    wert: float = float(auspraegung)
+    if not 0.0 <= wert <= 1.0:
+        logger.error(
+            f"Faszination: Auspraegung {wert:.4f} von '{dimension}' liegt "
+            f"ausserhalb [0, 1] — geklemmt"
+        )
+        wert = max(0.0, min(1.0, wert))
+    if dimension not in QUALITAET_KANON:
+        logger.warning(
+            f"Faszination: '{dimension}' gehoert nicht zum Qualitaets-Kanon — "
+            f"Zeitverfall angewandt; der Kanon ist zu pruefen"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    if dimension in QUALITAET_VERFALL_UEBER_BERUEHRUNGEN:
+        strecke: float = max(0.0, float(beruehrungen))
+        halbstrecke: float = QUALITAET_VERFALL_HALBSTRECKE_BERUEHRUNGEN
+    else:
+        strecke = max(0.0, float(tage))
+        halbstrecke = QUALITAET_VERFALL_HALBSTRECKE_TAGE
+
+    boden: float = QUALITAET_VERFALL_BODEN
+    anteil: float = boden + (1.0 - boden) / (1.0 + strecke / halbstrecke)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return _in_spanne(wert * anteil, 0.0, wert, "qualitaet_verfall")
+
+
+def profil_verfallen(
+    profil:       dict[str, float],
+    tage:         float,
+    beruehrungen: int,
+) -> dict[str, float]:
+    """Wendet den Verfall auf ein ganzes Profil an — je Dimension ihre Regel.
+
+    Die Klammer um `qualitaet_verfall`, damit der Aufrufer die Trennung
+    zwischen den beiden Verfallsarten nicht kennen muss und sie nicht auf
+    halbem Weg vergessen kann.
+
+    Rein. Nachbedingung: dieselben Schluessel, verfallene Werte.
+    """
+    return {
+        name: qualitaet_verfall(name, wert, tage, beruehrungen)
+        for name, wert in (profil or {}).items()
     }

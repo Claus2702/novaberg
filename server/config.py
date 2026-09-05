@@ -2144,6 +2144,47 @@ FASZ_ANLAGE_MIN: float = 0.75
 FASZ_ANLAGE_MAX: float = 1.30
 
 # ─────────────────────────────────────────────────────────────
+# Der Verfall der Qualitaeten — je Dimension verschieden
+# `novaberg-thinking-faszination_k.md` §10.4
+# ─────────────────────────────────────────────────────────────
+#
+# **Faszination erlischt genau dann, wenn ihre tragende Dimension
+# erschoepfbar ist.** Neugier haengt *immer* an einer Luecke, Faszination
+# *manchmal* — und deshalb verfallen die sechs Dimensionen nicht gleich:
+#
+#   `ungewissheit`  verfaellt mit der **Zahl der Beruehrungen**. Wer eine
+#                   Sache oft genug angesehen hat, weiss, wie sie ausgeht.
+#   alle uebrigen   verfallen mit der **Zeit seit der letzten Beruehrung**.
+#                   Komplexitaet erschoepft sich nicht durch Hinsehen.
+QUALITAET_VERFALL_UEBER_BERUEHRUNGEN: frozenset[str] = frozenset({
+    "ungewissheit",
+})
+
+# **Dieselbe Kurvenform wie beim Praegungsverfall, und das ist eine
+# Entscheidung.** `v(x) = boden + (1 - boden) / (1 + x/H)` — hyperbolisch mit
+# Boden, mit dem fetten Schwanz, den Vergessenskurven zeigen. Zwei
+# verschiedene Verfallsformen im selben Konzept waeren eine Setzung, die
+# niemand getroffen hat; wer die Form aendern will, aendert beide oder
+# begruendet den Unterschied.
+#
+# **Der Boden ist hoeher als beim Faden (0,20).** Eine Qualitaet beschreibt,
+# was eine Sache **ist** — Komplexitaet vergeht nicht dadurch, dass niemand
+# hinsieht. Was verfaellt, ist ihre Zugkraft, nicht ihr Bestand.
+QUALITAET_VERFALL_BODEN: float = 0.40
+
+# Nach wie vielen Tagen ohne Beruehrung die halbe Spanne ueber dem Boden
+# erreicht ist. **Deutlich laenger als der Faden** (60 Tage): Ein Faden ist
+# ein Erlebnis und verblasst, eine Qualitaet ist eine Eigenschaft.
+QUALITAET_VERFALL_HALBSTRECKE_TAGE: float = 180.0
+
+# Nach wie vielen Beruehrungen die halbe Spanne erreicht ist. **Setzung mit
+# Herkunft, nicht Messung:** `[gemessen 05.09.2026]` traegt kein einziger der
+# 28 profilierten Traeger mehr als eine Beruehrung — die Groesse ist am
+# heutigen Bestand nicht kalibrierbar. Fuenf ist die Zahl, bei der ein Mensch
+# eine Sache typischerweise nicht mehr fuer offen haelt.
+QUALITAET_VERFALL_HALBSTRECKE_BERUEHRUNGEN: float = 5.0
+
+# ─────────────────────────────────────────────────────────────
 # Der Anker — Bindung ueber Episoden
 # `novaberg-thinking-faszination_k.md` §10.2
 # ─────────────────────────────────────────────────────────────

@@ -30,6 +30,9 @@ from config import (
     FASZ_MODUS_FAKTOREN,
     FASZ_VERLAUF_FAKTOREN,
     MODUS_KANON,
+    QUALITAET_KANON,
+    QUALITAET_VERFALL_BODEN,
+    QUALITAET_VERFALL_UEBER_BERUEHRUNGEN,
 )
 from ei import fascination
 
@@ -349,6 +352,70 @@ class DieZusammenfuehrungTest(unittest.TestCase):
              "f_intent", "f_modus", "f_anlage"},
             set(m),
         )
+
+
+class DerVerfallIstJeDimensionVerschiedenTest(unittest.TestCase):
+    """§10.4 — Faszination erlischt, wenn ihre Dimension erschoepfbar ist."""
+
+    def test_ungewissheit_verfaellt_ueber_beruehrungen(self) -> None:
+        """Wer oft genug hingesehen hat, weiss, wie es ausgeht."""
+        frisch: float = fascination.qualitaet_verfall("ungewissheit", 1.0, 0, 0)
+        oft:    float = fascination.qualitaet_verfall("ungewissheit", 1.0, 0, 20)
+        self.assertAlmostEqual(1.0, frisch, 9)
+        self.assertLess(oft, frisch)
+
+    def test_ungewissheit_ignoriert_die_zeit(self) -> None:
+        """Eine offene Frage wird nicht dadurch beantwortet, dass Zeit vergeht."""
+        self.assertAlmostEqual(
+            1.0, fascination.qualitaet_verfall("ungewissheit", 1.0, 3650, 0), 9,
+        )
+
+    def test_komplexitaet_verfaellt_ueber_die_zeit(self) -> None:
+        lange: float = fascination.qualitaet_verfall("komplexitaet", 1.0, 3650, 0)
+        self.assertLess(lange, 1.0)
+
+    def test_komplexitaet_ignoriert_beruehrungen(self) -> None:
+        """Sie erschoepft sich nicht durch Hinsehen — der Kern von §10.4."""
+        self.assertAlmostEqual(
+            1.0, fascination.qualitaet_verfall("komplexitaet", 1.0, 0, 500), 9,
+        )
+
+    def test_die_beiden_regime_sind_wirklich_getrennt(self) -> None:
+        """Sonst waere die Unterscheidung eine Behauptung im Kommentar."""
+        for dimension in QUALITAET_KANON:
+            ueber_zeit = fascination.qualitaet_verfall(dimension, 1.0, 3650, 0)
+            ueber_ber  = fascination.qualitaet_verfall(dimension, 1.0, 0, 500)
+            if dimension in QUALITAET_VERFALL_UEBER_BERUEHRUNGEN:
+                self.assertAlmostEqual(1.0, ueber_zeit, 9, dimension)
+                self.assertLess(ueber_ber, 1.0, dimension)
+            else:
+                self.assertLess(ueber_zeit, 1.0, dimension)
+                self.assertAlmostEqual(1.0, ueber_ber, 9, dimension)
+
+    def test_der_boden_wird_nie_unterschritten(self) -> None:
+        """Was verfaellt, ist die Zugkraft — nicht der Bestand der Eigenschaft."""
+        tief: float = fascination.qualitaet_verfall("komplexitaet", 1.0, 10**9, 0)
+        self.assertGreaterEqual(tief, QUALITAET_VERFALL_BODEN - 1e-9)
+
+    def test_der_verfall_hebt_nie_an(self) -> None:
+        """Er ist ein Verfall — die Nachbedingung ist [0, auspraegung]."""
+        for tage in (0, 1, 10, 400):
+            self.assertLessEqual(
+                fascination.qualitaet_verfall("weite", 0.5, tage, 0), 0.5 + 1e-9,
+            )
+
+    def test_eine_unbekannte_dimension_meldet_sich(self) -> None:
+        """Sie faellt in den Zeitverfall — den Regelfall — und wird gemeldet."""
+        with self.assertLogs("ki_server.ei.fascination", "WARNING"):
+            fascination.qualitaet_verfall("erhabenheit", 1.0, 0, 0)
+
+    def test_das_ganze_profil_verfaellt_je_nach_regel(self) -> None:
+        """Die Klammer darf die Trennung nicht auf halbem Weg vergessen."""
+        profil = {"komplexitaet": 1.0, "ungewissheit": 1.0}
+        verfallen = fascination.profil_verfallen(profil, tage=3650, beruehrungen=0)
+        self.assertEqual(set(profil), set(verfallen))
+        self.assertLess(verfallen["komplexitaet"], 1.0)
+        self.assertAlmostEqual(1.0, verfallen["ungewissheit"], 9)
 
 
 if __name__ == "__main__":
