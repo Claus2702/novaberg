@@ -13,12 +13,17 @@ from dataclasses import dataclass
 from typing import Optional
 
 import anthropic
+import httpx
 import ollama
 
 from config import (
     ANTHROPIC_PRICE_INPUT_PER_M,
     ANTHROPIC_PRICE_OUTPUT_PER_M,
     DEFAULT_USER_ID,
+    OPENROUTER_DENKEN_AUS,
+    OPENROUTER_GEFUEHRTE_PARAMETER,
+    OPENROUTER_PRICE_INPUT_PER_M,
+    OPENROUTER_PRICE_OUTPUT_PER_M,
 )
 
 logger = logging.getLogger("ki_server.llm_provider")
@@ -513,6 +518,357 @@ class AnthropicProvider(LLMProvider):
             content=result,
             token_total=input_tokens + output_tokens,
             thinking="",
+        )
+
+
+def _ungefuehrte_melden(nutzlast: dict, caller: str) -> None:
+    """Meldet die Schrauben der Nutzlast, die der Anbieter nicht fuehrt.
+
+    Vorbedingung: `nutzlast` ist die fertige Anfrage;
+    `OPENROUTER_GEFUEHRTE_PARAMETER` traegt die `supported_parameters` des
+    gewaehlten Anbieters.
+    Nachbedingung: eine Warnung je Aufruf, wenn etwas ins Leere ginge; sonst
+    Stille. Die Nutzlast wird **nicht** veraendert — was gesendet wurde, steht
+    im Protokoll, und der Anbieter entscheidet.
+
+    **Der Fall, um dessentwillen der Helfer existiert:** Responder und
+    Verfasser setzen `presence_penalty` (0,3) und `repeat_penalty` (1,1) gegen
+    Wiederholungen. Der am 05.09.2026 gewaehlte Anbieter fuehrt beide nicht.
+    Ohne diese Zeile wuerde Novas Sprache repetitiver, und die Ursache stuende
+    nirgends.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not OPENROUTER_GEFUEHRTE_PARAMETER:
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    # `model`, `messages` und `provider` sind Transport, keine Schrauben —
+    # sie stehen in keiner `supported_parameters`-Liste und gehoeren nicht
+    # in die Meldung.
+    transport: frozenset[str] = frozenset({"model", "messages", "provider"})
+    ungefuehrt: list[str] = sorted(
+        schluessel
+        for schluessel in nutzlast
+        if schluessel not in transport
+        and schluessel not in OPENROUTER_GEFUEHRTE_PARAMETER
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if ungefuehrt:
+        logger.warning(
+            "OpenRouter [%s]: der Anbieter fuehrt %s nicht — die Werte gehen "
+            "mit und wirken nicht. Gefuehrt sind: %s",
+            caller or "ohne Aufrufer", ungefuehrt,
+            sorted(OPENROUTER_GEFUEHRTE_PARAMETER),
+        )
+
+
+def _antwort_auswerten(
+    antwort: httpx.Response,
+    caller:  str,
+) -> tuple[str, str, int, int]:
+    """Prueft die Antwort des Anbieters und gibt ihre vier tragenden Werte.
+
+    Vorbedingung: `antwort` ist die Rueckgabe des HTTP-Aufrufs; ihr Rumpf
+    ist noch nicht gelesen worden.
+    Nachbedingung: `(inhalt, denken, eingangs-token, ausgangs-token)` —
+    `inhalt` ist eine Zeichenkette, die beiden Zaehlerstaende sind Zahlen.
+    Fehlerfaelle: `RuntimeError` bei HTTP >= 400, bei einem `error`-Objekt
+    im Rumpf und bei fehlenden `choices`; `TypeError`, wenn der Rumpf kein
+    Objekt ist oder `content` keine Zeichenkette.
+
+    **Zwei Fehlerformen, und die zweite ist die teure.** Ein abgelehnter
+    Aufruf kommt als HTTP-Status ausserhalb 2xx — der faellt auf. Ein
+    Anbieter hinter OpenRouter kann aber auch **mit HTTP 200 und einem
+    `error`-Objekt im Rumpf** antworten; wer nur den Status prueft, liest
+    danach `choices[0]` auf einer Antwort, die keine hat, und sieht einen
+    IndexError statt der Begruendung.
+    """
+    if antwort.status_code >= 400:
+        logger.error(
+            f"OpenRouter [{caller}]: HTTP {antwort.status_code} — "
+            f"Rumpf: {antwort.text[:1200]}"
+        )
+        raise RuntimeError(
+            f"OpenRouter antwortete mit HTTP {antwort.status_code}"
+        )
+
+    daten: dict = antwort.json()
+    if not isinstance(daten, dict):
+        logger.error(
+            f"OpenRouter [{caller}]: Rumpf ist {type(daten).__name__}, "
+            f"erwartet Objekt — Vertragsbruch des Anbieters"
+        )
+        raise TypeError("OpenRouter-Antwort ist kein Objekt")
+
+    if daten.get("error"):
+        logger.error(
+            f"OpenRouter [{caller}]: HTTP {antwort.status_code}, aber "
+            f"error im Rumpf — {str(daten['error'])[:600]}"
+        )
+        raise RuntimeError(f"OpenRouter meldete einen Fehler: {daten['error']}")
+
+    wahlen: list = daten.get("choices") or []
+    if not wahlen:
+        logger.error(
+            f"OpenRouter [{caller}]: keine choices im Rumpf, "
+            f"Schluessel={sorted(daten)} — Rumpf: {str(daten)[:1200]}"
+        )
+        raise RuntimeError("OpenRouter-Antwort ohne choices")
+
+    nachricht: dict = wahlen[0].get("message") or {}
+    inhalt:    str  = nachricht.get("content") or ""
+    denken:    str  = nachricht.get("reasoning") or ""
+    grund:     str  = str(wahlen[0].get("finish_reason", "(nicht gemeldet)"))
+
+    verbrauch: dict = daten.get("usage") or {}
+    input_tokens:  int = _zaehlerstand(verbrauch.get("prompt_tokens"))
+    output_tokens: int = _zaehlerstand(verbrauch.get("completion_tokens"))
+
+    # Der Umschlag, bevor irgendetwas aus ihm eine Entscheidung wird —
+    # dieselbe Vorsichtsmassnahme wie beim Ollama-Weg, in der Form dieses
+    # Protokolls. Der Abbruchgrund unterscheidet eine beendete Erzeugung
+    # (`stop`) von einer abgeschnittenen (`length`) und von einer
+    # Werkzeugwahl (`tool_calls`).
+    logger.info(
+        f"Anbieter-Umschlag [{caller}]: modell={daten.get('model')!r}, "
+        f"finish_reason={grund!r}, in={input_tokens}, out={output_tokens}, "
+        f"content={len(inhalt)} Zeichen, reasoning={len(denken)} Zeichen"
+    )
+    if output_tokens > 0 and not inhalt and not denken:
+        logger.error(
+            f"Anbieter-Umschlag [{caller}]: {output_tokens} Ausgabe-Token "
+            f"erzeugt und WEDER content NOCH reasoning gefuellt — die "
+            f"Ausgabe ist zwischen Erzeugung und Antwortfeldern verloren. "
+            f"finish_reason={grund!r}. Rumpf: {str(daten)[:1200]}"
+        )
+
+    if not isinstance(inhalt, str):
+        logger.error(
+            f"OpenRouterProvider: content ist {type(inhalt).__name__}, "
+            f"erwartet str — Vertragsbruch des Anbieters, caller={caller}"
+        )
+        raise TypeError("OpenRouter-content ist keine Zeichenkette")
+
+    return (
+        inhalt,
+        denken if isinstance(denken, str) else "",
+        input_tokens,
+        output_tokens,
+    )
+
+
+class OpenRouterProvider(LLMProvider):
+    """LLM-Provider fuer OpenRouter — ein Zugang, viele Anbieter.
+
+    OpenRouter spricht das OpenAI-Chat-Protokoll und leitet an den Anbieter
+    hinter der Modell-ID weiter. Deshalb ist hier **kein** Anbieter-SDK im
+    Spiel: ein `httpx.Client`, eine Nutzlast, eine Antwort. Der Client wird
+    hereingereicht und nicht hier gebaut — wie beim `OllamaProvider`, und aus
+    demselben Grund: Wer die Verbindung besitzt, kann sie im Zeugen ersetzen.
+    """
+
+    #: Kumulierte Kosten dieses Prozesses in USD. Klassenvariable wie beim
+    #: `AnthropicProvider` — drei Worker koennen drei Instanzen halten, die
+    #: Rechnung ist trotzdem eine.
+    _session_cost_usd: float = 0.0
+
+    def __init__(
+        self,
+        client:     httpx.Client,
+        model:      str,
+        api_key:    str,
+        url:        str,
+        ctx_limit:  int,
+        anbieter:   Optional[dict] = None,
+    ) -> None:
+        """Bindet Verbindung, Modell-ID, Schluessel, Ziel, Fenster und Anbieter.
+
+        Vorbedingung: `client` ist ein einsatzbereiter HTTP-Client, `model` eine
+        dem Zugang bekannte Modell-ID, `ctx_limit` das Kontextfenster **beim
+        gewaehlten Anbieter**.
+        Nachbedingung: der Provider ist aufrufbereit; er haelt keine Verbindung
+        selbst und baut keine.
+        Fehlerfaelle: keine — ein falscher Schluessel oder eine unbekannte
+        Modell-ID faellt beim ersten Aufruf auf, nicht hier.
+
+        `anbieter` ist der `provider`-Block der Nutzlast — welcher Anbieter den
+        Aufruf beantworten darf. **None heisst: der Zugang waehlt selbst**, und
+        das ist fuer eine Messreihe die falsche Antwort (siehe `chat`).
+        """
+        self._client:    httpx.Client   = client
+        self._model:     str            = model
+        self._api_key:   str            = api_key
+        self._url:       str            = url
+        self._ctx_limit: int            = ctx_limit
+        self._anbieter:  Optional[dict] = anbieter
+
+    def _log_token_usage(
+        self,
+        caller_label:  str,
+        input_tokens:  int,
+        output_tokens: int,
+        ctx_limit:     int,
+    ) -> None:
+        """Loggt Token-Verbrauch, Kosten und die Auslastung des Fensters.
+
+        Vorbedingung: beide Zaehlerstaende sind Zahlen (siehe `_zaehlerstand`);
+        `ctx_limit` ist das Kontextfenster des Modells.
+        Nachbedingung: genau eine Zeile; ihr Rang haengt an der Auslastung —
+        ueber 80 % eine Warnung, ueber 100 % ein Fehler.
+
+        Das Fenster kommt als Argument und nicht aus `self` — dieselbe Bauart
+        wie beim `OllamaProvider`. Die Methode fuehrt damit Buch und liest
+        keinen Instanzzustand.
+        """
+        cost_input:  float = input_tokens  / 1_000_000 * OPENROUTER_PRICE_INPUT_PER_M
+        cost_output: float = output_tokens / 1_000_000 * OPENROUTER_PRICE_OUTPUT_PER_M
+        cost_call:   float = cost_input + cost_output
+
+        OpenRouterProvider._session_cost_usd += cost_call
+
+        auslastung: float = (
+            input_tokens / ctx_limit * 100 if ctx_limit > 0 else 0.0
+        )
+        zeile: str = (
+            f"LLM-Call{caller_label}: in={input_tokens:,}, out={output_tokens:,} "
+            f"| ${cost_call:.6f} (Σ ${OpenRouterProvider._session_cost_usd:.4f}) "
+            f"| {auslastung:.0f}% von {ctx_limit:,}"
+        )
+        if auslastung >= 100:
+            logger_tokens.error(f"{zeile} — CONTEXT UEBERSCHRITTEN")
+        elif auslastung >= 80:
+            logger_tokens.warning(f"{zeile} — CONTEXT KRITISCH")
+        else:
+            logger_tokens.info(zeile)
+
+    def chat(
+        self,
+        messages:          list[dict],
+        system:            str             = "",
+        temperature:       float           = 0.7,
+        top_p:             Optional[float] = None,
+        repeat_penalty:    Optional[float] = None,
+        presence_penalty:  Optional[float] = None,
+        max_output_tokens: Optional[int]   = None,
+        think:             bool            = False,
+        expect_json:       bool            = False,
+        caller:            str             = "",
+        num_ctx:           Optional[int]   = None,
+    ) -> LLMAntwort:
+        """Chat-Completion ueber das OpenAI-Protokoll von OpenRouter.
+
+        Vorbedingung: `messages` ist nicht leer.
+        Nachbedingung: `LLMAntwort` mit dem Text des Modells, der Summe beider
+        Zaehlerstaende und — bei `think=True` — dem Reasoning-Trace.
+        Fehlerfaelle: `ValueError` ohne Nachrichten; die Fehlerformen der
+        Antwort behandelt `_antwort_auswerten`.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if not messages:
+            logger.error(
+                "OpenRouterProvider.chat: leere Nachrichtenliste, caller=%r — "
+                "der Anbieter antwortet darauf mit HTTP 400, und die Kosten "
+                "des Fehlversuchs fallen trotzdem an",
+                caller,
+            )
+            raise ValueError("OpenRouterProvider.chat ohne Nachrichten")
+
+        chat_messages: list[dict] = []
+        if system:
+            chat_messages.append({"role": "system", "content": system})
+        chat_messages.extend(m for m in messages if m.get("role") != "system")
+
+        # ── Verarbeitung ────────────────────────────
+        nutzlast: dict = {
+            "model":       self._model,
+            "messages":    chat_messages,
+            "temperature": temperature,
+        }
+        if top_p is not None:
+            nutzlast["top_p"] = top_p
+        if presence_penalty is not None:
+            nutzlast["presence_penalty"] = presence_penalty
+        # Der Name ist der einzige Unterschied: Ollama nennt sie
+        # `repeat_penalty`, das OpenAI-Protokoll `repetition_penalty`.
+        if repeat_penalty is not None:
+            nutzlast["repetition_penalty"] = repeat_penalty
+        if max_output_tokens is not None:
+            nutzlast["max_tokens"] = max_output_tokens
+
+        # **Hier ist `expect_json` eine Fessel und keine Bitte.** Das
+        # OpenAI-Protokoll kennt `response_format`, und die Modellliste weist
+        # es fuer die eingesetzte ID aus (`structured_outputs`,
+        # `response_format` in `supported_parameters`, geprueft 05.09.2026).
+        # Der `AnthropicProvider` muss an derselben Stelle melden, dass er
+        # nicht erzwingt — dieser nicht.
+        if expect_json:
+            nutzlast["response_format"] = {"type": "json_object"}
+
+        # Reasoning ist beim Anbieter ein Schalter und der Trace ein eigenes
+        # Feld der Antwort (`message.reasoning`). Damit ist `think` hier
+        # abbildbar — anders als bei Claude, wo der Trace als Content-Block
+        # kommt und der Provider ihn bewusst nicht abbildet.
+        # **`think=False` muss das Denken ausdruecklich abschalten.** Bei einem
+        # Modell, das von sich aus denkt, ist das Fehlen des Schalters kein
+        # neutraler Zustand: Der Trace zaehlt gegen `max_tokens` und nimmt der
+        # Antwort den Platz weg. Gemessen am 05.09.2026 mit 64 Token Grenze:
+        # ohne Schalter **null Zeichen Inhalt** und 238 Zeichen Denken, mit
+        # `reasoning_effort="none"` 69 Zeichen Inhalt bei 22 Token.
+        if think:
+            nutzlast["reasoning"] = {"enabled": True}
+        elif OPENROUTER_DENKEN_AUS:
+            nutzlast["reasoning_effort"] = OPENROUTER_DENKEN_AUS
+
+        # `num_ctx` hat im OpenAI-Protokoll kein Gegenstueck. Es wird zur
+        # Signatur-Konsistenz angenommen und **gemeldet**, nicht verschwiegen:
+        # Ein Konsument, der sein Fenster bewusst klein haelt, soll im
+        # Protokoll finden, dass die Schraube hier ins Leere greift.
+        if num_ctx is not None:
+            logger.debug(
+                "OpenRouterProvider.chat: num_ctx=%s ignoriert "
+                "(das OpenAI-Protokoll kennt kein num_ctx), caller=%r",
+                num_ctx, caller,
+            )
+
+        # **Der Anbieter wird benannt, nicht dem Zugang ueberlassen.** Hinter
+        # einer Modell-ID stehen viele; sie unterscheiden sich in Preis,
+        # Quantisierung, Kontextfenster und darin, ob sie `response_format`
+        # ueberhaupt fuehren. Ohne diesen Block waere jeder Aufruf eine
+        # Ausschreibung mit wechselndem Gewinner.
+        if self._anbieter:
+            nutzlast["provider"] = self._anbieter
+
+        # **Was der Anbieter nicht fuehrt, wird gemeldet — nicht verschwiegen.**
+        # Ein Sampling-Wert, den der Aufrufer bewusst gesetzt hat und der
+        # unterwegs verfaellt, ist genau die Sorte stiller Fehler, die man
+        # spaeter am Verhalten sieht und nirgends nachlesen kann.
+        _ungefuehrte_melden(nutzlast, caller)
+
+        antwort = self._client.post(
+            self._url,
+            headers={
+                "Authorization": f"Bearer {self._api_key}",
+                "Content-Type":  "application/json",
+            },
+            json=nutzlast,
+        )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        inhalt, denken, input_tokens, output_tokens = _antwort_auswerten(
+            antwort, caller,
+        )
+
+        caller_label: str = f" [{caller}]" if caller else ""
+        self._log_token_usage(
+            caller_label, input_tokens, output_tokens, self._ctx_limit,
+        )
+        logger.debug(f"OPENROUTER RAW [{caller}]: '{inhalt[:500]}'")
+
+        return LLMAntwort(
+            content=inhalt,
+            token_total=input_tokens + output_tokens,
+            thinking=denken,
         )
 
 

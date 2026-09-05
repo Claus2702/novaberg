@@ -326,7 +326,7 @@ EMBED_MODEL: str = os.getenv("EMBED_MODEL", "nomic-embed-text-v2-moe")
 # ─────────────────────────────────────────────
 # Jeder LLM-Worker (chat, background_analyse, background_sprache) waehlt sein
 # Backend per Env-Variable. Erlaubte Werte: "ollama_gpu", "ollama_cpu_analyse",
-# "ollama_cpu_sprache", "anthropic".
+# "ollama_cpu_sprache", "anthropic", "openrouter".
 # Hinweis: "anthropic" ist im Schema waehlbar, aber Block 2 testet das noch
 # nicht smoke — vor der ersten Claude-Runde muss ein eigenes Smoke laufen.
 # Architektur-Doku: docs/novaberg-microservice-modell-queue_k.md.
@@ -348,6 +348,124 @@ ANTHROPIC_API_KEY:            str   = os.getenv("ANTHROPIC_API_KEY",   "")
 ANTHROPIC_MODEL:              str   = os.getenv("ANTHROPIC_MODEL",     "claude-sonnet-4-6")
 ANTHROPIC_PRICE_INPUT_PER_M:  float = float(os.getenv("ANTHROPIC_PRICE_INPUT_PER_M",  "3.0"))
 ANTHROPIC_PRICE_OUTPUT_PER_M: float = float(os.getenv("ANTHROPIC_PRICE_OUTPUT_PER_M", "15.0"))
+
+# ─────────────────────────────────────────────
+# OpenRouter — Backend "openrouter" (per Worker wählbar, siehe MODEL_WORKER_BACKENDS)
+# ─────────────────────────────────────────────
+# **Ein Zugang, viele Modelle.** OpenRouter spricht das OpenAI-Chat-Protokoll
+# und leitet an den Anbieter hinter der Modell-ID weiter. Der Wechsel des
+# Modells ist damit eine Zeichenkette, kein zweiter Provider.
+#
+# Die Modell-ID ist am 05.09.2026 gegen die Modellliste geprueft
+# (`GET https://openrouter.ai/api/v1/models`, 431 Eintraege): Sie existiert,
+# traegt 1.310.720 Token Kontext und kennt `response_format` sowie
+# `structured_outputs`. **Eine ID, die dort nicht steht, wird mit HTTP 400
+# beantwortet** — deshalb steht sie hier als Vorgabewert und nicht als
+# Vermutung im Prompt.
+OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_MODEL:   str = os.getenv("OPENROUTER_MODEL", "deepseek/deepseek-v4-flash-0731")
+OPENROUTER_URL:     str = os.getenv(
+    "OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions",
+)
+
+# ── Der Anbieter hinter der Modell-ID ───────
+#
+# **Eine Modell-ID ist bei diesem Zugang kein Modell, sondern eine
+# Ausschreibung.** Am 05.09.2026 gemessen: **29 Anbieter** liefern
+# `deepseek/deepseek-v4-flash-0731`, und sie unterscheiden sich in allem, was
+# eine Messung traegt:
+#
+#   Eingangspreis   $0,04998 bis $0,44000 je Million — Faktor 8,8
+#   Ausgangspreis   $0,09996 bis $1,32000 je Million — Faktor 13,2
+#   Quantisierung   13x fp8, 5x fp4, 1x bf16, 10x unbekannt
+#   Kontextfenster  262.144 bis 1.310.720
+#   `response_format`  4 der 29 fuehren es NICHT — dort faellt die Fessel aus
+#   Verfuegbarkeit  von 3,96 % (Makora) bis 100 %
+#
+# **Ohne Festlegung waehlt der Zugang selbst, und zwar pro Aufruf.** Ein
+# Vergleich zweier Modelle, dessen eine Seite mal in fp4 und mal in bf16
+# rechnet, misst den Anbieterwechsel mit — er ist dann keine Messung mehr.
+# Deshalb steht hier ein Anbieter und kein Rueckfall.
+OPENROUTER_PROVIDER: str = os.getenv("OPENROUTER_PROVIDER", "baidu")
+
+# Die Quantisierung als zweiter Riegel. Sie ist bei einem Anbieter mit nur
+# einem Endpunkt redundant und bei einem mit mehreren der Unterschied
+# zwischen zwei Modellen.
+OPENROUTER_QUANTISIERUNG: str = os.getenv("OPENROUTER_QUANTISIERUNG", "fp8")
+
+# **Rueckfall aus: lieber ein Fehler als eine unbemerkt andere Rechnung.**
+# Ein Ausweichen auf den naechsten Anbieter ist im Betrieb bequem und in
+# einer Messreihe ein stiller Fehler — die Zahlen daneben gaelten dann fuer
+# ein anderes Modell.
+OPENROUTER_FALLBACKS: bool = os.getenv("OPENROUTER_FALLBACKS", "false").lower() == "true"
+
+# Was der gewaehlte Anbieter an Sampling-Schrauben fuehrt — sein
+# `supported_parameters` aus `GET /models/{id}/endpoints`, gemessen am
+# 05.09.2026 fuer `baidu/fp8`.
+#
+# **Der Kanon steht hier, damit ein Aufrufer nicht ins Leere schraubt.** Der
+# Responder und der Verfasser setzen `presence_penalty` (0,3) und
+# `repeat_penalty` (1,1) gegen Wiederholungen; **Baidu fuehrt beide nicht**.
+# Ohne diese Liste gingen sie mit und wuerden verworfen, ohne dass irgendwo
+# etwas stuende — Novas Sprache wuerde repetitiver, und niemand haette einen
+# Anhaltspunkt.
+OPENROUTER_GEFUEHRTE_PARAMETER: frozenset[str] = frozenset(
+    os.getenv(
+        "OPENROUTER_GEFUEHRTE_PARAMETER",
+        "temperature,top_p,max_tokens,stop,response_format,structured_outputs,"
+        "tools,tool_choice,reasoning,include_reasoning,reasoning_effort",
+    ).split(",")
+)
+
+# **Wie das Modell dazu gebracht wird, NICHT zu denken.**
+#
+# `[gemessen]` — 05.09.2026, dieselbe Frage mit `max_tokens=64`, nur der
+# Schalter wechselt:
+#
+#   ohne Feld               finish=length  out=64  content=0     reasoning=238
+#   reasoning.exclude=True  finish=length  out=64  content=0     reasoning=0
+#   reasoning.enabled=False finish=length  out=64  content=224   reasoning=0
+#   reasoning_effort=none   finish=stop    out=22  content=69    reasoning=0
+#
+# **Das Modell denkt von sich aus, und der Trace zaehlt gegen `max_tokens`.**
+# Ohne diesen Schalter kaeme bei `query_rewrite` (64 Token) eine **leere**
+# Antwort, bei Perzeption, Router und Tribunal (je 512) eine abgeschnittene —
+# ein Ausfall, der wie ein stummes Modell aussieht und keiner ist.
+#
+# `exclude` ist die schlechteste der Varianten: Es rechnet und verbirgt das
+# Ergebnis, das Budget ist trotzdem fort.
+#
+# Leer setzen schaltet die Zeile ab — fuer ein Modell, das `reasoning_effort`
+# nicht fuehrt.
+OPENROUTER_DENKEN_AUS: str = os.getenv("OPENROUTER_DENKEN_AUS", "none")
+
+# Das Kontextfenster des Modells **beim gewaehlten Anbieter** — Baidu fuehrt
+# 1.048.576, nicht die 1.310.720 der Spitze (Cloudflare). Es geht in **keine**
+# Nutzlast — OpenRouter kennt kein `num_ctx` —, sondern allein in die
+# Warnschwellen der Token-Buchfuehrung. Ohne es waere die Auslastungszeile
+# eine Zahl ohne Bezug.
+OPENROUTER_NUM_CTX: int = int(os.getenv("OPENROUTER_NUM_CTX", "1048576"))
+
+# Preise in USD je Million Token, am 05.09.2026 vom **Endpunkt** gelesen
+# (`GET /models/{id}/endpoints`, `baidu/fp8`), nicht aus der aggregierten
+# Modellliste — die nannte $0,065/$0,18 und meinte damit einen anderen
+# Anbieter.
+#
+# **Sie tragen einen Rabatt von 64,3 %** (`pricing.discount: 0.643`), und die
+# Schnittstelle nennt **keine Frist dazu**. Der Listenpreis waere $0,14 und
+# $0,28. Ein Werkzeug haelt die Zahlen hier gegen den Endpunkt:
+# `tools/openrouter_price_watch.py`.
+#
+# Sie sind Buchhaltung und gehen in keine Entscheidung; steht ein falscher
+# Wert hier, ist die Kostenzeile falsch und sonst nichts.
+OPENROUTER_PRICE_INPUT_PER_M:  float = float(os.getenv("OPENROUTER_PRICE_INPUT_PER_M",  "0.04998"))
+OPENROUTER_PRICE_OUTPUT_PER_M: float = float(os.getenv("OPENROUTER_PRICE_OUTPUT_PER_M", "0.09996"))
+
+# Frist eines einzelnen HTTP-Aufrufs. **Sie steht ueber der Frist des
+# Hintergrund-Workers nicht**: Ein Aufruf, der laenger braucht als der
+# Aufrufer wartet, erzeugt Kosten fuer eine Antwort, die niemand mehr liest
+# (`F-FRIST-1`).
+OPENROUTER_TIMEOUT_S: float = float(os.getenv("OPENROUTER_TIMEOUT_S", "180"))
 
 # ─────────────────────────────────────────────
 # Pixie-Einstellungen (Background Task)
@@ -3637,6 +3755,8 @@ ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN: float = float(
 # `qwen36` fahren dort dasselbe. Ein Block, der fuer das antwortende Modell
 # gebaut ist, gehoert unter `prompts/{OLLAMA_MODEL}/`; einer, der fuer diese
 # Zusammenstellung gilt, unter `prompts/{OLLAMA_CONNECTOR}/`.
+
+
 PROMPTS: dict[str, str] = prompt_laden(OLLAMA_CONNECTOR, modell=OLLAMA_MODEL)
 
 

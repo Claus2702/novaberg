@@ -14,12 +14,15 @@ entsprechend `shutdown()`.
 
 Backend-Wahl pro Worker: gesteuert ueber `config.MODEL_WORKER_BACKENDS`.
 Jeder Wert dort waehlt einen Backend-Builder in `_build_backend`. Wechsel
-zwischen Ollama-GPU/CPU und Anthropic erfolgt rein konfigurativ (Env).
+zwischen Ollama-GPU/CPU, Anthropic und OpenRouter erfolgt rein konfigurativ
+(Env).
 """
 
 from __future__ import annotations
 
 import logging
+
+import httpx
 
 from config import (
     ANTHROPIC_API_KEY,
@@ -28,13 +31,26 @@ from config import (
     OLLAMA_CPU_NUM_CTX,
     OLLAMA_GPU_NUM_CTX,
     OLLAMA_MODEL,
+    OPENROUTER_API_KEY,
+    OPENROUTER_FALLBACKS,
+    OPENROUTER_MODEL,
+    OPENROUTER_NUM_CTX,
+    OPENROUTER_PROVIDER,
+    OPENROUTER_QUANTISIERUNG,
+    OPENROUTER_TIMEOUT_S,
+    OPENROUTER_URL,
     PIXIE_ANALYSE_MODEL,
     PIXIE_ANALYSE_NUM_CTX,
     SHADOW_MODEL,
     ollama_cpu_chat,
     ollama_gpu_chat,
 )
-from services.llm_provider import AnthropicProvider, LLMProvider, OllamaProvider
+from services.llm_provider import (
+    AnthropicProvider,
+    LLMProvider,
+    OllamaProvider,
+    OpenRouterProvider,
+)
 from services.model_services.background_worker import BackgroundWorker
 from services.model_services.chat_worker import ChatWorker
 from services.model_services.embed_worker import EmbedWorker
@@ -42,12 +58,46 @@ from services.model_services.embed_worker import EmbedWorker
 logger = logging.getLogger(__name__)
 
 
+def _anbieter_block() -> dict | None:
+    """Baut den `provider`-Block der Nutzlast aus der Konfiguration.
+
+    Vorbedingung: keine.
+    Nachbedingung: der Block, oder `None`, wenn kein Anbieter festgelegt ist.
+    `None` heisst ausdruecklich **der Zugang waehlt selbst** — zulaessig, aber
+    fuer eine Messreihe untauglich (`config.OPENROUTER_PROVIDER`).
+
+    **`only` und nicht `order`.** `order` ist eine Reihenfolge und erlaubt dem
+    Zugang, weiterzugehen; `only` ist eine Menge. Zusammen mit
+    `allow_fallbacks=False` ist ein Aufruf, den der gewaehlte Anbieter nicht
+    beantworten kann, ein **Fehler** und kein stiller Wechsel zu einem anderen
+    Preis und einer anderen Quantisierung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not OPENROUTER_PROVIDER:
+        logger.warning(
+            "OpenRouter ohne festgelegten Anbieter — der Zugang waehlt pro "
+            "Aufruf selbst. Preis, Quantisierung und Kontextfenster sind dann "
+            "nicht die konfigurierten."
+        )
+        return None
+
+    # ── Verarbeitung & Ausgabe-Verifikation ─────
+    block: dict = {
+        "only":            [OPENROUTER_PROVIDER],
+        "allow_fallbacks": OPENROUTER_FALLBACKS,
+    }
+    if OPENROUTER_QUANTISIERUNG:
+        block["quantizations"] = [OPENROUTER_QUANTISIERUNG]
+    logger.info("OpenRouter-Anbieter festgelegt: %s", block)
+    return block
+
+
 def _build_backend(kind: str) -> LLMProvider:
     """Baut die LLMProvider-Instanz fuer einen Worker aus dem Config-Schluessel.
 
     Vorbedingung: `kind` ist einer der Werte aus `MODEL_WORKER_BACKENDS`.
     Erlaubt: "ollama_gpu", "ollama_cpu_analyse", "ollama_cpu_sprache",
-    "anthropic".
+    "anthropic", "openrouter".
     Nachbedingung: Rueckgabe ist ein einsatzbereiter LLMProvider.
     Fehlerfaelle: ValueError bei unbekanntem Schluessel (fail-loud, kein
     silent default — Developer-Handbook §3).
@@ -68,6 +118,26 @@ def _build_backend(kind: str) -> LLMProvider:
                 "ist nicht gesetzt"
             )
         return AnthropicProvider(ANTHROPIC_MODEL, ANTHROPIC_API_KEY)
+    if kind == "openrouter":
+        if not OPENROUTER_API_KEY:
+            raise ValueError(
+                "Worker-Backend 'openrouter' gewaehlt, aber OPENROUTER_API_KEY "
+                "ist nicht gesetzt"
+            )
+        # **Jeder Worker bekommt seinen eigenen Client.** Der Grund ist
+        # derselbe wie bei den drei Ollama-Verbindungen in `config.py`
+        # (`F-RIEGEL-1`): Ein `httpx.Client` haelt einen Verbindungspool, und
+        # ein geteilter Pool ist geteilter Zustand zwischen Threads. Die
+        # Worker rufen ueber `asyncio.to_thread` — sie laufen also wirklich
+        # nebeneinander.
+        return OpenRouterProvider(
+            httpx.Client(timeout=OPENROUTER_TIMEOUT_S),
+            OPENROUTER_MODEL,
+            OPENROUTER_API_KEY,
+            OPENROUTER_URL,
+            OPENROUTER_NUM_CTX,
+            _anbieter_block(),
+        )
 
     # ── Fail-loud ───────────────────────────────
     raise ValueError(f"Unbekanntes Worker-Backend: {kind!r}")
