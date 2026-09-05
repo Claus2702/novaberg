@@ -2034,6 +2034,121 @@ QUALITAET_PROFIL_JE_LAUF: int = 20
 MERKMALSZUG_BONUS: float = 0.35
 
 # ─────────────────────────────────────────────────────────────
+# Die sechs Turn-Modulatoren der Faszination
+# `novaberg-thinking-faszination_k.md` §10.5
+# ─────────────────────────────────────────────────────────────
+# Sie beantworten nicht *ob* ein Traeger fasziniert, sondern *wie stark der
+# laufende Turn dazu beitraegt*. Alle sechs sind Faktoren um 1.0 und duerfen
+# nie 0 werden — Regel (a) aus §10.0: keine Null aus einer Multiplikation.
+#
+# **Jeder Kanonwert traegt einen eigenen Eintrag, auch der seltene.** Ein
+# fehlender Schluessel faende sonst einen stillen Vorgabewert, und ein
+# Vorgabewert in einem Produkt ist von einem gemessenen Faktor nicht zu
+# unterscheiden. Die Tabellen sind deshalb **vollstaendig gegen ihren Kanon**;
+# `tests/test_faszination_modulatoren.py` haelt beide Seiten zusammen.
+#
+# **Die Spannen stammen aus dem Konzept und sind bindend.** Das Konzept nennt
+# je Tabelle nur die tragenden Werte; die uebrigen sind hier nach derselben
+# Systematik ergaenzt und als Setzung gekennzeichnet. Die Verteilung des
+# Bestandes steht daneben `[gemessen 04.09.2026, 1027 Rohturns]`, damit
+# ablesbar ist, welcher Eintrag ueberhaupt traegt.
+
+# f_arousal — umgekehrtes U mit Scheitel bei 0,65 (Berlyne).
+# Spanne 0.70 … 1.35. Weder Reglosigkeit noch Ueberreizung binden
+# Aufmerksamkeit muehelos; dazwischen liegt das Maximum.
+FASZ_AROUSAL_SCHEITEL: float = 0.65
+FASZ_AROUSAL_MIN:      float = 0.70
+FASZ_AROUSAL_MAX:      float = 1.35
+# **Die beiden Flanken sind verschieden breit, und das ist keine Nachlaessigkeit.**
+# Der Scheitel liegt bei 0,65; nach links sind es 0,65 bis zum Rand, nach
+# rechts nur 0,35. Eine ueber *eine* Breite normierte Parabel erreichte den
+# Minimalwert deshalb nur links — bei arousal = 1.0 stuende sie noch bei 1,16.
+# Jede Flanke wird darum ueber ihren eigenen Abstand normiert, und beide
+# Raender des Wertebereichs erreichen FASZ_AROUSAL_MIN.
+# Die rechte Flanke faellt damit steiler, was §10.5 ausdruecklich verlangt
+# (*ueber 0,85 fallend*): Ueberreizung entzieht schneller als Reglosigkeit.
+FASZ_AROUSAL_BREITE_LINKS:  float = round(FASZ_AROUSAL_SCHEITEL, 6)
+FASZ_AROUSAL_BREITE_RECHTS: float = round(1.0 - FASZ_AROUSAL_SCHEITEL, 6)
+
+# f_besetzung — `neutral` 0.70, jeder besetzte Sektor 1.10, Awe-Dyade 1.20.
+# `SEKTOR_GRUPPE` wird bewusst ignoriert (§10.5): Faszination ist valenzblind,
+# ein negativ besetzter Sektor bindet so gut wie ein positiver.
+FASZ_BESETZUNG_NEUTRAL: float = 0.70
+FASZ_BESETZUNG_SEKTOR:  float = 1.10
+FASZ_BESETZUNG_AWE:     float = 1.20
+# Die Awe-Dyade: Ehrfurcht = Furcht + Ueberraschung (Plutchik). Sie ist der
+# eine Zustand, den die Literatur ausdruecklich mit Faszination verbindet
+# (§2.1). Die Schreibweisen stehen beide, weil der Bestand beide traegt.
+FASZ_AWE_EMOTIONEN: frozenset[str] = frozenset({
+    "ehrfurcht", "awe", "staunen",
+})
+
+# f_verlauf — Spanne 0.80 … 1.25 ueber `EMOTIONS_VEKTOREN` (9 Werte).
+# Aus dem Konzept: aufsteigend 1.25, `plateau` 0.90, scharf fallend 0.80.
+# **Die Achse ist die Bewegung, nicht die Richtung** — `eskalation` ist
+# negativ und steht trotzdem oben, weil ein sich aufbauender Zustand bindet.
+FASZ_VERLAUF_FAKTOREN: dict[str, float] = {
+    # aufsteigend — Konzept
+    "aufbluehen":     1.25,   # [gemessen] 69 von 1027
+    "eskalation":     1.25,   # [gemessen] 213 — der zweithaeufigste Wert
+    # aufsteigend, aber aus dem Tief heraus und sanfter — Setzung
+    "erholung":       1.10,   # [gemessen] 12
+    # flach — Konzept nennt `plateau`, `stabilisierung` folgt ihm
+    "plateau":        0.90,   # [gemessen] 592 — der haeufigste Wert
+    "stabilisierung": 0.95,   # Setzung: Beruhigung ist flach, aber gerichtet
+    # fallend, sanft — Setzung
+    "abkuehlung":     0.85,   # [gemessen] 100
+    # fallend, scharf — Konzept
+    "absturz":        0.80,   # [gemessen] 16
+    "spirale":        0.80,   # [gemessen] 0 — im Bestand nie vorgekommen
+    "einbruch":       0.80,   # Setzung: dieselbe Klasse wie `absturz`
+}
+
+# f_intent — Spanne 0.85 … 1.20 ueber den Intent-Kanon (6 Werte).
+# Aus dem Konzept: `knowledge`/`creative` 1.20, `personal` 1.05,
+# `task`/`meta` 0.85. `smalltalk` ergaenzt.
+FASZ_INTENT_FAKTOREN: dict[str, float] = {
+    "knowledge":  1.20,   # [gemessen] 395 — der haeufigste Wert
+    "creative":   1.20,   # [gemessen] 78
+    "personal":   1.05,   # [gemessen] 214
+    "task":       0.85,   # [gemessen] 123
+    "meta":       0.85,   # [gemessen] 83
+    "smalltalk":  0.85,   # Setzung: am wenigsten an einen Gegenstand gebunden
+}
+
+# f_modus — Spanne 0.90 … 1.15 ueber `MODUS_KANON` (10 Werte).
+# Aus dem Konzept: `lernmodus`/`philosophischer_austausch` 1.15,
+# `berichtend`/`arbeitsmodus` 0.90. Die uebrigen sechs sind Setzungen nach
+# derselben Frage: **Wird in diesem Modus ein Gegenstand vertieft?**
+FASZ_MODUS_FAKTOREN: dict[str, float] = {
+    # vertiefend — Konzept
+    "lernmodus":                 1.15,   # [gemessen] 190
+    "philosophischer_austausch": 1.15,   # [gemessen] 192
+    # vertiefend — Setzung, dieselbe Klasse
+    "fachgespraech":             1.15,   # [gemessen] 84
+    # offen, aber nicht auf einen Gegenstand gerichtet — Setzung
+    "kreativ":                   1.05,   # [gemessen] 0
+    "emotional":                 1.00,   # [gemessen] 136
+    "beratend":                  1.00,   # [gemessen] 8
+    "spielerisch":               0.95,   # [gemessen] 63
+    "alltag":                    0.95,   # [gemessen] 244 — der haeufigste Wert
+    # abwickelnd — Konzept
+    "arbeitsmodus":              0.90,   # [gemessen] 57
+    "berichtend":                0.90,   # [gemessen] 53
+}
+
+# f_anlage — Spanne 0.75 … 1.30, aus `charakter_rad_messung`.
+# Die eine der zwoelf Radspeichen, die die Zuwendung zum **Gegenstand**
+# beschreibt statt zur Person: `wissbegier <-> langeweile` (§10.5).
+FASZ_ANLAGE_MIN: float = 0.75
+FASZ_ANLAGE_MAX: float = 1.30
+
+# Der harte Deckel der Zusammenfuehrung (§10.6). Das Roh-Aequivalent von
+# faszination = 1.0; jede daraus abgeleitete Konstante nennt es im Kommentar
+# (Regel (7) der Wertekonvention).
+FASZ_MAXIMUM: float = 2.0
+
+# ─────────────────────────────────────────────────────────────
 # Verstaerkung setzt Verwendung voraus
 # `novaberg-memory-synapsen_k.md` §7.1a
 # ─────────────────────────────────────────────────────────────
