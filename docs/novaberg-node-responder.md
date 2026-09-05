@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
+**Stand:** 5. September 2026, 20:28 UTC (die **Zeichenspanne** der Regie wird nicht von jedem Modell befolgt — 996 statt 175 Zeichen beim Fernmodell; ein Override auf der Prompt-Modellebene formuliert sie in Saetzen und ist als Provisorium vermerkt). Davor 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -73,6 +73,24 @@ Vor dem 13.08.2026 mischte der Prompt alle drei Bedeutungen: In sieben von dreiz
 Die Anweisung darf nicht fehlen. Ohne sie entschiede der Vorgabewert, und der naheliegende wäre, die Notiz durchzureichen — genau das ist am 31.07.2026 einmal passiert, damals mit dem Hypothesentext des Hintergrundagenten. Die Umwandlung ist keine Inhaltsänderung: Verboten ist dem Responder, eine Behauptung **hinzuzufügen**; die Form war immer seine.
 
 **`[REGIE FUER DIESE REPLIK]`** ist der einzige anweisende Block: Werkzeug und Vehikel aus dem GV-Knoten, der Umfang als **Zeichenspanne**, die abweichenden Haltungswörter, der Energiesatz und die EI-Mikroanweisung. Er steht am Ende der Nutzer-Nachricht.
+
+> **Die Zeichenspanne wird nicht von jedem Modell befolgt** — gemessen am 05.09.2026. Die
+> Regie forderte 60–175 Zeichen; das lokale Modell lieferte 226 im Median, das Fernmodell
+> **996**, also das 5,7-fache der Obergrenze. **Ein Prompt, der in Zeichen rechnet,
+> verlangt eine Zählung über die eigene Ausgabe, die ein Sprachmodell beim Erzeugen nicht
+> hat.** In Sätzen und Absätzen formuliert greift dieselbe Vorgabe (168 und 258 Zeichen).
+>
+> Abgeholfen ist über die **Prompt-Modellebene**: `prompts/deepseek_deepseek-v4-flash-0731/`
+> trägt einen eigenen `responder.rules`-Block mit einer Vorgabe in Sätzen. **Das ist
+> ausdrücklich ein zweiter Weg neben der Regie** — der Kommentar an der Regie sagt, die
+> alte Längenregel sei entfernt worden, damit es keinen gibt. Solange beide dasselbe wollen,
+> stört das nicht; sobald der Faszinations-Leser den Korridor weitet, würde der Block ihn
+> deckeln. Er ist als Provisorium vermerkt
+> (`novaberg-thinking-faszination_k.md` §11a).
+>
+> **Der Befund darüber hinaus:** Der Fehler war unsichtbar, solange ein Modell zufällig
+> nahe lag. Ein Modellwechsel ist deshalb auch eine Prüfung der Prompts — er trennt die
+> Anweisungen, die tragen, von denen, die nur neben einem gutmütigen Modell standen.
 
 > **Die Zeichenspanne trägt seit dem 20.08.2026 drei Einflüsse**, nicht einen. Der Raum setzt `umfang`, die Tabelle `UMFANG_SPANNE` übersetzt ihn in Zeichen — **an diesem Tag halbiert** —, und die Länge der Äußerung deckelt ihn, sofern der Turn **ausschließlich** leichte Intentionen trägt (`smalltalk`, `bestaetigung`, `abschluss`, `humor`). Eine inhaltliche darunter setzt den Deckel aus: *„Erkläre mir die Tritiumvorkommen"* ist kurz und verlangt trotzdem Sachlänge. Die Zeile selbst sieht unverändert aus — eine Spanne und ein Wort —, weil der Prompt keine Rechnung lesen soll. Gerechnet wird das in `ei/haltungssprache.py::spanne_fuer_turn`.
 >

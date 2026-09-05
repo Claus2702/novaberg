@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Connector-Segregation
-**Stand:** 23. August 2026 (die Prompt-Segregation hat eine Modellebene bekommen — der Gespraechspfad haengt am GPU-Modell, nicht am Connector; davor: 15. April 2026, Chat 46)
+**Stand:** 5. September 2026, 20:28 UTC (§7 neu — die Modellebene haengt seither am **antwortenden** Modell, nicht mehr am konfigurierten GPU-Modell, und ein Modellname mit Schraegstrich wird flach gemacht). Davor 23. August 2026 (die Prompt-Segregation hat eine Modellebene bekommen — ~~der Gespraechspfad haengt am GPU-Modell~~, siehe §7; davor: 15. April 2026)
 **Pfad:** novaberg/docs/novaberg-architecture_l_connector.md
 **Kontext:** Migration von Mistral Small 3.2 auf Google Gemma 4 26B MoE
 
@@ -99,6 +99,42 @@ Das Pattern ist universell fuer jedes System das mit wechselnden LLM-Backends ar
 
 ---
 
+## 7. Die Modellebene haengt am antwortenden Modell (05.09.2026)
+
+**Der Satz im Kopf dieses Dokuments war eine Vereinfachung, die genau so lange trug, wie
+jedes Backend ein lokales war.** Die Modellebene wurde mit `OLLAMA_MODEL` geschluesselt —
+dem **konfigurierten** GPU-Modell des Connectors. Welches Modell tatsaechlich antwortet,
+entscheidet aber `MODEL_WORKER_BACKENDS["chat"]`.
+
+Solange dort ein Ollama-Backend stand, waren beide Werte gleich. Mit dem ersten fremden
+Rueckhalt faellt das auseinander: Das neue Modell bekaeme die Bloecke unter
+`prompts/gemma4-gpu/` — Regeln, die fuer ein anderes Modell geschrieben sind.
+
+`config.antwortendes_chat_modell()` loest den Namen seither ueber `MODELL_NACH_BACKEND`
+aus dem Backend auf. Bei `ollama_gpu` liefert es unveraendert `OLLAMA_MODEL`; ein Zeuge
+haelt diese Gleichheit fest, damit ein Abschalten nicht wie eine Umstellung aussieht.
+
+### Ein Modellname kann einen Schraegstrich tragen
+
+Ein Fernmodell nennt den Anbieter mit: `deepseek/deepseek-v4-flash-0731`. Unveraendert in
+den Pfad eingesetzt ergaebe das ein **verschachteltes** Verzeichnis, und das Zwischenglied
+`prompts/deepseek/` waere eine Ebene, die niemand nachschlaegt. Der Lader macht den Namen
+deshalb flach (`/` → `_`); gesucht wird unter
+`prompts/deepseek_deepseek-v4-flash-0731/`.
+
+**Gefunden hat das ein Zeuge, der seit dem 23.08.2026 steht** — *„ein Verzeichnis, das
+keine Ebene je nachschlaegt, ist totes Material"*. Seine Menge der erreichbaren Namen kam
+aus `OLLAMA_CONNECTORS` und damit **nur von der eigenen Maschine**; sie kennt jetzt auch
+die Fernmodelle.
+
+> **Die Ebene ersetzt einen Block, sie ergaenzt ihn nicht.** Wer einen Block ueberschreibt,
+> um einen Absatz zu aendern, uebernimmt die Pflege aller uebrigen —
+> `tests/test_prompt_override_deckung.py` haelt fest, dass jedes Absatz-Stichwort des
+> Defaults im Override wiederkehrt.
+
+---
+
 → Architektur: novaberg-architecture.md §2.1.1
 → Connector-Dict: config.py OLLAMA_CONNECTORS
+→ Modell je Backend: config.py MODELL_NACH_BACKEND
 → Loader: server/prompt_loader.py
