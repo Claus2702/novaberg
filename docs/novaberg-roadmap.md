@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 15:05 UTC** (gemessen via `date -u`). Davor 05.09.2026, 14:53 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 18:12 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 36 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 37 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,261 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 18:12 UTC — Nova spricht ueber ein Fernmodell ✅
+
+**Das Ziel war ein Modellwechsel zum Vergleich: alle drei Graphen sollen statt der lokalen
+Modelle an einem grossen Modell laufen, um zu sehen, wie sich das Halluzinieren aendert.**
+
+Der Wechsel ist konfigurativ und war es schon vorher — **die Messung dazu gehoert in die
+Chronik, weil sie den Zuschnitt der Arbeit bestimmt hat**: 35 Aufrufe von
+`model_service.chat.submit`, 16 von `background.submit`, verteilt ueber 63 Dateien, und
+**kein einziger Chat-Aufruf daneben**. Die verbliebenen Direktzugriffe auf einen
+Modell-Client sind die Statusabfrage in `api/health.py` (`list()`/`pull()`, kein Erzeugen)
+und die Embedding-Pfade, die ausdruecklich nicht Teil der Backend-Wahl sind. Der Graph
+kennt kein Modell; er kennt eine Rolle. Damit war die Arbeit nicht *„drei Graphen
+umstellen"*, sondern **ein Rueckhalt dazu und drei Umgebungsvariablen**.
+
+### Der Anbieter
+
+`OpenRouterProvider` in `services/llm_provider.py`, angeschlossen als vierter Wert von
+`MODEL_WORKER_BACKENDS` (`ollama_gpu`, `ollama_cpu_analyse`, `ollama_cpu_sprache`,
+`anthropic`, **`openrouter`**). Kein Anbieter-SDK: Das Ziel spricht das OpenAI-Chat-
+Protokoll, und `httpx` liegt seit jeher im Baum. Die Modell-ID waehlt den Anbieter — ein
+Zugang, viele Modelle.
+
+**Drei Dinge sind dort anders als bei den beiden bestehenden Rueckhalten:**
+
+- **`expect_json` ist eine Fessel und keine Bitte.** Das Protokoll kennt `response_format`,
+  und die Modellliste weist es fuer die eingesetzte ID aus. Der Claude-Rueckhalt muss an
+  derselben Stelle melden, dass er nicht erzwingt; dieser nicht.
+- **`think` ist abbildbar.** Der Schalter geht als `reasoning` in die Nutzlast, der Trace
+  kommt aus `message.reasoning` und landet in `LLMAntwort.thinking` — dieselbe Trennung,
+  die der lokale Weg ueber sein `thinking`-Feld hat.
+- **Zwei Fehlerformen, und die zweite ist die teure.** Ein abgelehnter Aufruf kommt als
+  HTTP-Status ausserhalb 2xx. Ein Anbieter hinter dem Zugang kann aber auch **mit HTTP 200
+  und einem `error`-Objekt im Rumpf** antworten; wer nur den Status prueft, liest danach
+  `choices[0]` auf einer Antwort ohne choices und sieht einen IndexError statt der
+  Begruendung.
+
+> **Die Gegenprobe hat an genau dieser Stelle einen zu weichen Zeugen gefunden, und das
+> ist ihr Ertrag des Tages.** Der erste Zeuge verlangte nur `RuntimeError`. Mit
+> abgeschalteter `error`-Pruefung blieb er **gruen** — der Aufruf faellt eine Zeile
+> spaeter ueber die fehlenden `choices`, und ein Test, der nur die Ausnahmeklasse prueft,
+> sieht zwischen den beiden Wegen keinen Unterschied. Er prueft seither den **Grund des
+> Anbieters** im Wortlaut. Danach traf die Gegenprobe 1/1.
+
+### Die Prompts folgten dem falschen Modell
+
+**Der Fund lag quer zum Bau und stand seit dem 23.08.2026 in der Fundliste**, mit dem
+Satz *„die Reichweite ist neu"*. Er wurde mit diesem Umbau zum ersten Mal wirksam:
+
+`PROMPTS` wurde mit `modell=OLLAMA_MODEL` geladen — dem **konfigurierten** GPU-Modell des
+Connectors. Welches Modell tatsaechlich spricht, entscheidet aber
+`MODEL_WORKER_BACKENDS["chat"]`. Solange dort `ollama_gpu` stand, waren beide
+deckungsgleich und der Fall folgenlos. **Beim ersten fremden Rueckhalt bekaeme das neue
+Modell die sieben Bloecke unter `prompts/gemma4-gpu/` untergeschoben** — Perzeption,
+Router, Salienz (zwei) und Tribunal (drei), also Regeln, die fuer ein anderes Modell
+geschrieben sind. Fuer einen Vergleich des Halluzinierens waere das ein verfaelschter
+Messstand: Man haette zwei Modelle verglichen und dabei einem von beiden fremde Regeln
+untergelegt.
+
+`config.antwortendes_chat_modell()` loest den Namen jetzt ueber `MODELL_NACH_BACKEND` aus
+dem Backend auf. Bei `ollama_gpu` liefert es unveraendert `OLLAMA_MODEL` — der Bestand
+verhaelt sich gleich, und ein eigener Zeuge haelt das fest.
+
+> **Zwei Aufzaehlungen desselben Kanons stehen jetzt an zwei Stellen, und ein Zeuge haelt
+> sie zusammen.** `_build_backend` baut, `MODELL_NACH_BACKEND` benennt. Der Zeuge prueft
+> **beide Richtungen** — die Teilmengen-Falle ist genau hier zu Hause: Wer nur fragt, ob
+> der Bauer jeden Schluessel der Abbildung kennt, sieht einen ueberzaehligen Bauer nicht.
+> Die Menge der baubaren Schluessel wird dafuer aus dem Quelltext gelesen und nicht als
+> dritte Liste gefuehrt.
+
+### Und der Reasoning-Aufraeumer auch — dieselbe Klasse, zweite Fundstelle
+
+**Gefunden hat sie kein zweiter Durchgang, sondern ein Kriterium:** die Frage, welche
+Stellen im Baum ein Ollama-Backend **voraussetzen** — nicht die Liste der Dateien, die
+angefasst worden waren.
+
+`get_thinking_normalizer()` waehlt den Aufraeumer fuer den content/thinking-Split
+(Ollama #10976) durch einen Namensvergleich — und verglich `OLLAMA_MODEL`. Bei einem
+fremden Rueckhalt haette er **weiter gegriffen**, weil dort unveraendert `gemma4-gpu`
+steht: ein Aufraeumer fuer einen Split, den das antwortende Modell nicht erzeugt.
+
+**Ein zweiter Schalter dafuer existierte und waere die Wiederholung des Fehlers gewesen.**
+`LLM_PROFILE` haette den Aufraeumer stillegen koennen — aber er haette beim Umstellen
+mitgesetzt werden muessen, und genau das vergisst man. Eine Entscheidung, zwei Schalter,
+und der zweite entscheidet still mit. Die Wahl liest jetzt dieselbe Quelle wie der
+Prompt-Lader; `LLM_PROFILE` bleibt unveraendert wirksam, ein Zeuge haelt das fest.
+
+> **Die Gegenprobe war hier grosszuegiger als die Vorhersage:** angesagt war **1** roter
+> Zeuge, gemessen wurden **2**. Der dritte Fall (`qwen36-cpu` ueber
+> `ollama_cpu_sprache`) faellt unter denselben Riss — auch dort sagt `OLLAMA_MODEL`
+> `gemma4-gpu`. Die Abweichung steht hier, weil eine Vorhersage nur dann etwas wert ist,
+> wenn auch ihr Danebenliegen aufgeschrieben wird.
+
+### Eine Modell-ID ist keine Modellwahl — sie ist eine Ausschreibung
+
+**Der Eigentuemer wollte den rabattierten Preis eines bestimmten Anbieters nutzen. Die
+Pruefung dieser Absicht hat den Bau umgeworfen.**
+
+`GET /models/{id}/endpoints` am 05.09.2026: **29 Anbieter** liefern
+`deepseek/deepseek-v4-flash-0731`, und sie sind nicht austauschbar.
+
+| Groesse | Spanne ueber die 29 |
+|---|---|
+| Eingangspreis | $0,04998 bis $0,44000 je Million — **Faktor 8,8** |
+| Ausgangspreis | $0,09996 bis $1,32000 je Million — **Faktor 13,2** |
+| Quantisierung | 13x fp8, 5x fp4, 1x bf16, 10x unbekannt |
+| Kontextfenster | 262.144 bis 1.310.720 |
+| `response_format` | **4 der 29 fuehren es nicht** |
+| Verfuegbarkeit | 3,96 % bis 100 % |
+
+**Drei Dinge, die vorher falsch im Code standen**, alle aus der aggregierten Modellliste
+statt vom Endpunkt: der Preis ($0,065/$0,18 — das ist ein anderer Anbieter), das
+Kontextfenster (1.310.720 — das ist Cloudflare; der gewaehlte fuehrt 1.048.576) und die
+stille Annahme, `response_format` sei gesetzt.
+
+**Ohne Festlegung waehlt der Zugang pro Aufruf.** Fuer einen Vergleich des Halluzinierens
+ist das toedlich: Eine Seite, die mal in fp4 und mal in bf16 rechnet, misst den
+Anbieterwechsel mit. Die Nutzlast traegt deshalb `provider: {only: [...],
+allow_fallbacks: false, quantizations: [...]}` — **`only` und nicht `order`**, weil
+`order` eine Reihenfolge ist und dem Zugang erlaubt weiterzugehen.
+
+### Was der gewaehlte Anbieter nicht kann, steht jetzt im Protokoll
+
+Sein `supported_parameters` fuehrt **elf** Schrauben — und **weder `presence_penalty` noch
+`repetition_penalty`**. Responder und Verfasser setzen beide (0,3 und 1,1) gegen
+Wiederholungen; sie waeren mitgegangen und verfallen, ohne dass irgendwo etwas stuende.
+**Novas Sprache waere repetitiver geworden, und die Ursache haette nirgends gestanden.**
+
+Der Provider meldet sie jetzt als Warnung — und **entfernt sie nicht**: Was gesendet wurde,
+steht im Protokoll, und der Anbieter entscheidet.
+
+### Der Rabatt hat keine Frist, also einen Waechter
+
+Die Schnittstelle nennt ihn als Feld (`pricing.discount: 0.643` — **64,3 %**) und sagt
+nichts ueber sein Ende. `tools/openrouter_price_watch.py` haelt die Konfiguration gegen
+den lebenden Endpunkt: Preis, Rabatt, Kontextfenster, Quantisierung und die gefuehrten
+Parameter. Rueckgabewert 1 bei jedem Unterschied, damit er aus einem Zeitplan laufen kann,
+ohne dass jemand ihn liest. **Er braucht keinen Schluessel.**
+
+**Im echten Pfad belegt, in beide Richtungen:** Der Lauf meldet
+*„$0,04998 ein / $0,09996 aus je Million, Rabatt 64,3 % — 0 Befunde"*. Mit verstelltem
+Preis Rueckgabewert 1; mit verstellter Quantisierung ein Abbruch, der die **28 tatsaechlich
+angebotenen Endpunkte** aufzaehlt — genau die Meldung, die jemand braucht, wenn der
+Anbieter verschwindet und der Rueckfall aus ist.
+
+### Das Modell denkt, ob man will oder nicht — und der Trace frisst die Antwort
+
+**Der Befund, der die Umstellung um eine Stunde verzoegert hat, und zwar zu Recht.**
+
+DeepSeek V4 Flash denkt **von sich aus**, auch ohne Reasoning-Schalter — und der Trace
+zaehlt gegen `max_tokens`. Dieselbe Frage mit `max_tokens=64`, nur der Schalter wechselt:
+
+| Nutzlast | finish | out | content | reasoning |
+|---|---|---:|---:|---:|
+| ohne Reasoning-Feld | length | 64 | **0 Zeichen** | 238 |
+| `reasoning.exclude=True` | length | 64 | **0 Zeichen** | 0 |
+| `reasoning.enabled=False` | length | 64 | 224 Zeichen | 0 |
+| `reasoning_effort="none"` | **stop** | **22** | 69 Zeichen | 0 |
+
+**`query_rewrite` haette eine leere Antwort bekommen** (64 Token), Perzeption, Router und
+Tribunal eine abgeschnittene (je 512). Ein Ausfall, der wie ein stummes Modell aussieht
+und keiner ist. `exclude` ist die schlechteste Variante: Es rechnet und verbirgt das
+Ergebnis, das Budget ist trotzdem fort.
+
+> **Kein Schalter ist kein neutraler Zustand.** Bei einem Modell, das von sich aus denkt,
+> ist das Fehlen einer Angabe eine Entscheidung — und zwar die teure. `think=False` setzt
+> seither ausdruecklich `reasoning_effort="none"`.
+
+### Die Messung
+
+**Am 05.09.2026 um 18:04 UTC umgestellt** — alle drei Worker auf `openrouter`, Einbettung
+weiter lokal. Der Start belegt beides, was der Umbau versprochen hat:
+
+```
+Prompt-Modellebene: Backend 'openrouter' spricht 'deepseek/deepseek-v4-flash-0731'
+Prompts: Keine Overrides ueber Modell 'deepseek/deepseek-v4-flash-0731'
+ChatWorker 'chat' konfiguriert: Backend=OpenRouterProvider
+OpenRouter-Anbieter festgelegt: {'only': ['baidu'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+```
+
+Vor der Umstellung lud dieselbe Zeile **sieben** Bloecke ueber `gemma4-gpu`. Der Nachzug
+der Modellebene ist damit nicht nur bezeugt, sondern im Betrieb sichtbar.
+
+**Zwei echte Turns, Astrophysik.** Elf Modellaufrufe je Turn, Perzeption bis Responder,
+alle Analyse-Aufrufe mit gueltigem JSON (`parsed=True`), `reasoning=0` durchweg.
+
+| | |
+|---|---|
+| Kosten je Turn | **$0,0014** |
+| Dauer Perzeption→Responder | rund 35 s |
+| Novas Emotion im zweiten Turn | `begeisterung`, Arousal 0,7 |
+
+Novas Antwort traegt ihren Charakter: *„Ah, Chef, jetzt wird's schoen — die sind gar nicht
+Gegner, sondern zwei Stufen derselben Treppe!"*
+
+> **Ein Fehlalarm, und die Aufklaerung gehoert dazu, weil der Fehlschluss zuerst
+> geschrieben war.** Der erste Turn meldete `nova_emotions_verlauf ist leer` als ERROR.
+> Die naheliegende Zuschreibung — *das kommt vom Modellwechsel* — stuetzte sich auf 27
+> Vergleichsturns ohne diese Zeile. **Sie war falsch.** `SESSION_TTL` ist vier Stunden,
+> die letzte Aeusserung lag **17,7 Stunden** zurueck; die Session war fort, und die 27
+> Vergleichsturns liefen alle *innerhalb* einer. Der zweite Turn trug den Verlauf, die
+> Zeile kam kein zweites Mal.
+>
+> **Die Zahl war richtig und die Schlussfolgerung falsch** — ein Vergleich braucht nicht
+> nur eine Menge, sondern die Frage, ob die Menge denselben Zustand teilt.
+
+### Die zweite Kontrolle: was der Hintergrund kostet
+
+**Der Bau sah auf den Turn, die Kontrolle auf den Tag** — ein Kriterium, das im Bau nicht
+vorkam: *Welche Stellen setzen voraus, dass ein Modellaufruf nichts kostet?* Lokal war
+jeder gratis.
+
+Gezaehlt ueber das Betriebsprotokoll vom 04.09.2026 13:10 bis 05.09.2026 08:55 (rund
+20 Stunden, **noch mit den lokalen Modellen**):
+
+| | |
+|---|---:|
+| Modellaufrufe | **2002** |
+| Eingangstoken | 3.787.077 |
+| Ausgangstoken | 372.983 |
+| **zum Rabattpreis** | **$0,27 je Tag — rund $8 im Monat** |
+| zum Listenpreis | $0,76 je Tag — rund $23 im Monat |
+
+**Das Verhaeltnis 10:1 zwischen Eingang und Ausgang ist die eigentliche Aussage.** Novas
+Kosten haengen fast vollstaendig daran, wie viel Kontext in einen Aufruf geht, nicht
+daran, wie viel sie sagt. Der Anbieter fuehrt zwar einen Cache-Preis (ein Fuenftel), aber
+**kein implizites Caching** (`supports_implicit_caching: false`) — er greift nur, wenn
+jemand ihn ausdruecklich benutzt. Das ist ungebaut.
+
+**Das Ende des Rabatts verdreifacht die Rechnung**, von acht auf dreiundzwanzig Dollar im
+Monat. Der Waechter meldet den Tag; die Zahl daneben sagt, dass er kein Notfall ist.
+
+### Zustand
+
+**Gemessen, im Betrieb und dauerhaft** — Setzung des Eigentuemers am 05.09.2026:
+
+> *„Die Umstellung ist jetzt erstmal dauerhaft, bis wir es explizit wieder zuruecksetzen."*
+
+Die drei Worker-Variablen stehen seither in der Umgebungsdatei neben der Compose-Datei,
+nicht mehr nur in einem Aufruf. **Belegt mit einer erzwungenen Neuerzeugung ohne jede
+Kommandozeilen-Variable:** alle drei Worker melden `openrouter`. Die Vorgabewerte im Code
+und in der Compose-Datei bleiben die lokalen — sie sind der Rueckweg, nicht der Zustand.
+
+**Die Einbettung bleibt lokal** — der Zugang fuehrt keine Embedding-Schnittstelle, und ein
+Wechsel des Einbettungsmodells entwertete den ganzen Vektorbestand.
+
+**Suite 3129 gruen, 0 uebersprungen** (davor 3071 — 58 neue Zeugen). Gegenproben 1/1, 1/1, 1/1 und **2 statt vorhergesagter 1**; dazu zwei Gegenproben des Waechters im echten Pfad.
+
+**Ein eigener Befund an der Pruefstrecke, der hierher gehoert, weil er die Klasse ist:**
+Ein Zwischenlauf des Strukturpruefers lief mit falschem relativem Pfad und gab **leere
+Ausgabe statt eines Fehlers**; die Leere wurde als *„kein Befund"* gelesen. Der Befund war
+die ganze Zeit da. **Ein Werkzeug, das nicht auffindbar ist, meldet Erfolg** — derselbe
+Satz, den `19_WERKZEUGE` fuer die Pipe schon traegt, hier ueber den Arbeitspfad.
 
 ---
 
