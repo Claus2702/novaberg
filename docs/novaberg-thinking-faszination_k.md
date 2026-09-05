@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 5. September 2026, 00:36 UTC (**§10 ist vollständig gebaut** — dazu der Verfall je Dimension (§10.4) mit seinem Aufrufer im Lesepfad und ein **Erzeuger im Turn**: Die Faszination wird je Turn über die gelesenen Erinnerungen gerechnet und als `pipeline_log`-Zeile protokolliert, mit Modulatoren, Rohwerten und Prägungszug. **Im Betrieb belegt** — vier Zeilen über vier Turns. **Befund: kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil**; von 36 gelesenen passieren nur 7 den Längenfilter. Die Profil-Auswahl folgt seither der **echten Wiederkehr** statt `haeufigkeit`. Suite 3044.). Davor 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
-**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6), die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) und seit dem 05.09.2026 die **ganze Rechnung** (§10.2, §10.5, §10.6) sind gebaut. **Die Faszination rechnet, sie wirkt noch nicht** — es gibt keinen Schreibpfad und keinen Leser; sie ist bisher nur im Labor über den Bestand gelaufen. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
+**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6), die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) und seit dem 05.09.2026 die **ganze Rechnung** (§10.2, §10.5, §10.6) sind gebaut. **Die Faszination rechnet und protokolliert, sie wirkt noch nicht** — sie läuft je Turn im Prägungsknoten und schreibt eine `pipeline_log`-Zeile, aber **niemand liest sie**. Und sie hat heute kaum Eingabe: Von 36 je Turn gelesenen Knoten tragen 2 ein Qualitätsprofil. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
 **Voraussetzung:** `novaberg-memory-synapsen-p4-entscheidungen_k.md` (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
 **Betrifft:** `novaberg-thinking-curiosity_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-charakter-resonanz_k.md` · `novaberg-node-ei-calc.md` · `novaberg-node-emotionale-gravitation.md` · `novaberg-thinking-drive_k.md`
 
@@ -1525,6 +1525,29 @@ werden.
 
 > **Ein Satz aus v0.1 war zu absolut.** Faszination erlischt **genau dann, wenn ihre tragende
 > Dimension erschöpfbar ist.** Neugier hängt *immer* an einer Lücke, Faszination *manchmal*.
+
+**Gebaut am 05.09.2026.** Die Kurve ist **dieselbe wie beim Prägungsverfall** — hyperbolisch mit
+Boden, `v(x) = boden + (1 − boden) / (1 + x/H)` —, und das ist eine Entscheidung: Zwei verschiedene
+Verfallsformen im selben Konzept wären eine Setzung, die niemand getroffen hat. Wer die Form ändert,
+ändert beide oder begründet den Unterschied.
+
+| Größe | Wert | Herkunft |
+|---|---|---|
+| Boden | **0,40** | höher als beim Faden (0,20): Eine Qualität beschreibt, was eine Sache *ist* — was verfällt, ist ihre **Zugkraft**, nicht ihr Bestand |
+| Halbstrecke Zeit | **180 Tage** | deutlich länger als der Faden (60): Ein Faden ist ein Erlebnis, eine Qualität eine Eigenschaft |
+| Halbstrecke Berührungen | **5** | Setzung: die Zahl, bei der ein Mensch eine Sache nicht mehr für offen hält |
+
+**Die Halbstrecke über Berührungen ist nicht kalibrierbar** — `[gemessen 05.09.2026]` trägt **kein
+einziger der 28 profilierten Träger mehr als eine Berührung**.
+
+**Der Verfall läuft im Lesepfad, nicht beim Aufrufer** (`memory/fascination_store.py`): Die Kante
+weiß, wann sie zuletzt berührt wurde, der Knoten nicht — und ein zweiter Leser könnte den Schritt
+vergessen. Die **rohe** Ausprägung kommt daneben zurück; ohne sie wäre später nicht zu trennen, ob
+ein niedriger Wert so bewertet wurde oder verfallen ist.
+
+Am Bestand sichtbar: Knoten 1408 mit drei Turns verliert bei `ungewissheit` **0,5 → 0,387**, während
+seine zeitverfallenden Dimensionen bei 0,996 stehen. **Die beiden Regime trennen in echten Daten**,
+nicht nur in Zeugen.
 
 ### 10.5 Die Turn-Modulatoren
 

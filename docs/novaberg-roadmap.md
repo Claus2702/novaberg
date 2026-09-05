@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 00:15 UTC** (gemessen via `date -u`). Davor 04.09.2026, 23:40 UTC.
+**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 00:36 UTC** (gemessen via `date -u`). Davor 05.09.2026, 00:15 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,44 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 05.09.2026, 00:36 UTC — die Faszination läuft im Turn, und findet nichts vor ✅
+
+**Gebaut:** der Verfall je Dimension (§10.4) samt Aufrufer im Lesepfad, ein **Erzeuger im Turn**, und
+die Profil-Auswahl auf die echte Wiederkehr umgestellt. **Suite 3044 grün.**
+
+**Der Erzeuger schreibt jeden Turn**, auch den leeren — mit Grund. Ein Turn ohne Zeile wäre von einem
+Turn ohne Träger nicht zu unterscheiden. Die Zeile trägt Werte, **Rohwerte**, die sechs Modulatoren
+und den Prägungszug: genug, um die Zahl nachzurechnen statt sie zu glauben.
+
+**Der Verdrahtungszeuge fand einen Widerspruch, den die Einzelzeugen nicht finden konnten.** Der
+Prägungsknoten versprach im Docstring *„immer eine Zeile `praegung_zug` — sie hängt nicht am Tor"* und
+kehrte bei fehlender Salienz zurück, bevor er schrieb. **Genau die Turns, in denen etwas fehlt,
+blieben unprotokolliert.** Beide Protokolle stehen jetzt vor den Rückkehrpfaden. Dieser Zeuge
+existiert wegen des 04.09.2026 — dort riefen alle Zeugen die Funktion selbst, keiner prüfte den
+Aufruf durch den Knoten, und die Gegenprobe sagte 0 rot voraus und behielt recht.
+
+**Im Betrieb belegt, vier Turns, und der Befund ist ein Nullbefund mit Ursache:**
+
+> **Kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil.** `[gemessen]` 28 von 3.363
+> aktiven Knoten sind profiliert (0,8 %); von 36 je Turn gelesenen sind es **2**.
+
+**Die Ursache ist gemessen und liegt nicht dort, wo sie zuerst schien.** Die Profil-Auswahl sortierte
+nach `haeufigkeit` — und die misst Wiederholung, nicht Wiederkehr: Die profilierten Knoten tragen
+`haeufigkeit` **56,1 gegen 5,5** im Schnitt, die Auswahl hat also genau die durch die KZG-Schleife
+aufgeblähten gewählt. Das ist umgestellt auf die Zahl **verschiedener Turns** aus der Brücke.
+
+**Der größere Anteil liegt aber am Längenfilter:** Von 36 gelesenen Knoten passieren nur **7** die
+400 Zeichen. Der Rest sind Sprechakt-Vermerke — dieselbe Familie wie `DESTILLAT-SUBJEKT-SCHABLONE`.
+Der Filter tut, was er soll; **der Befund ist, dass der Lesepfad überwiegend Material liefert, das
+als Träger untauglich ist.** Nicht repariert, festgehalten.
+
+**Der Verfall trennt in echten Daten:** Knoten 1408 mit drei Turns verliert bei `ungewissheit`
+0,5 → 0,387, seine zeitverfallenden Dimensionen stehen bei 0,996.
+
+Gegenproben 4/4, 1/1 und 2/2. Harte Wand sauber.
 
 ---
 
