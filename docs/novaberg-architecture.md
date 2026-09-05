@@ -804,6 +804,7 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-lesson_l_stichprobe-trifft-den-pfad.md | Die Stichprobe ist repräsentativ für den Pfad, den sie trifft |
 | novaberg-lesson_l_fehlschlag-als-absicht.md | Ein Fehlschlag darf nie wie eine Absicht aussehen (der getarnte Miss) |
 | novaberg-lesson_l_analyse-ersetzt-keine-messung.md | Ein Analyse-Upgrade ersetzt keine Messung |
+| novaberg-lesson_l_zweite-fundstelle-nach-behebung.md | Eine behobene Fehlerklasse steht an ihrer zweiten Stelle weiter (Grep auf die Quelle des falschen Werts) |
 | novaberg-lesson_l_konzept-spricht-code.md | Ein Konzept, das in Code-Sprache spricht, wird für einen Befund gehalten |
 | novaberg-lesson_l_ableitung-als-messung.md | Eine Ableitung ist keine Messung — auch wenn sie stimmt |
 | novaberg-lesson_l_gelesen-ist-nicht-wirksam.md | Die gelesene Quelle ist nicht die wirksame (zwei Speicher, einer gilt) |
