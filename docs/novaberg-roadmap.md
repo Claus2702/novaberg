@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 19:05 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:55 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 19:45 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:55 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -22,7 +22,7 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 ---
 
-## 06.09.2026, 19:05 UTC — was nicht gesagt wurde, steht ohne Anfuehrungszeichen 🔧
+## 06.09.2026, 19:45 UTC — was nicht gesagt wurde, steht ohne Anfuehrungszeichen 🔧
 
 **Der Eigentuemer hat den einzigen verbliebenen Weg freigegeben.** Nachdem fuenf Prompt-Fassungen
 dieses Tages ohne belegte Wirkung geblieben sind, sitzt die Abhilfe zu `F-ZITAT-1` jetzt in der
@@ -83,9 +83,31 @@ keine Ausreisser, sondern **ganze zitierte Saetze**, alle im Kern. Sie werden we
 entwertet. Ein Anheben aendert auch die Meldung und damit die Vergleichbarkeit aller heutigen Quoten;
 das ist eine Entscheidung und steht in der Fundliste.
 
-**Offen: der Betriebsbeleg.** Der Anschlag im echten Ausloesepfad ist nicht belegt
-(`19_WERKZEUGE/riegel-im-echten-pfad.md`) — er braucht einen Destillationszyklus, und das produktive
-Paar trug nach dem Neustart um 19:00:30 UTC kein `hash_dirty`.
+**Der Betriebsbeleg steht seit 19:42 UTC.** Ein Messturn (Astronomie, ohne Zeitangabe und ohne
+Vorhaben, `F-MESS-1`) setzte `hash_dirty`, der Heartbeat destillierte:
+
+```
+19:42:17  hintergrund_log 52306  gestartet  Paar (meister, nova), hash_dirty gesetzt
+19:42:54  Kern-Hash (nova): 4 Beleg(e) ohne Fundstelle im Material
+19:42:54  Kern-Hash (nova): 4 Beleg(e) entwertet
+19:43:10  hintergrund_log 52307  erledigt   2 Profile destilliert, gespeichert: ja
+```
+
+**Beide Zeilen in der gebauten Reihenfolge** — erst die Meldung mit der Rohzahl, dann der Eingriff.
+**Und das Schliesskriterium sagte *kein gespeichertes Profil*, also wurde der Bestand gezaehlt:** Die
+vier gemeldeten Belege stehen im Kern **ohne** Anfuehrungszeichen, die uebrigen **20 Zitate mit** —
+4 von 24 ungedeckt, **17 %**, im Band der Nulllinie.
+
+> **Die vier bestaetigen den Befund, nicht nur den Bau.** Es sind **Stilmittel**, keine erfundenen
+> Redewiedergaben — abstrakte Wendungen, die das Modell in Anfuehrungszeichen gesetzt hatte. Genau
+> dort ist die Entwertung richtig: Aus der angeblich zitierten Wendung wird die Formulierung, die sie
+> ist. Kein Satz ist veraendert, kein Wort verloren.
+
+**Das Messgeraet hat sich dabei zweimal selbst getaeuscht.** Die HTTP-Antwort kam nach **0 s** und
+`hash_dirty` stand erst Sekunden spaeter — das Werkzeug meldete *kein Ausloeser*. Und der erste
+Beobachter horchte auf `destilliert`, traf damit die Zeile *Herkunft 'destilliert'*, die bei **jedem**
+Turn steht, und meldete Erfolg **fuenf Minuten bevor der Zyklus lief**. Das enge Muster traf nach
+320 s.
 
 ---
 
