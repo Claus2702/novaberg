@@ -131,7 +131,74 @@ class CharakterAgent(BaseAgent):
     def build_graph(self):
         return None
 
+    @staticmethod
+    def _audit_log(user_id: str, status: str, ergebnis: str) -> None:
+        """Schreibt einen hintergrund_log-Eintrag (Audit-Pflicht).
+
+        **Warum er erst am 06.09.2026 entstand, ist selbst der Beleg fuer ihn.**
+        An diesem Tag sollte gezaehlt werden, wie oft der Agent destilliert —
+        und das `hintergrund_log` trug **keine einzige** Zeile dieses Agenten.
+        Die Zahl musste ueber das Serverlog und die Rad-Messreihe rekonstruiert
+        werden, also ueber zwei Nebenwirkungen statt ueber die Spur, die es
+        dafuer gibt.
+
+        **Geschrieben wird nur, wenn der Lauf arbeitet.** Der Agent prueft alle
+        zehn Minuten und findet meist kein `hash_dirty`; ein Eintrag je Pruefung
+        waere 144 Zeilen am Tag, die nichts sagen, in einem Log mit ueber 50 000
+        Zeilen. Dasselbe Muster wie `ziel_decay`, der bei `aktiv: False`
+        ebenfalls schweigt.
+
+        Failsafe: Bei DB-Fehler nur `logger.critical`, kein Retry — sonst droht
+        Endlos-Rekursion bei kaputter Audit-Senke.
+
+        Args:
+            user_id:  der Mensch des Paares, fuer das destilliert wurde.
+            status:   `gestartet`, `erledigt` oder `fehler`.
+            ergebnis: die Zahlen des Laufs im Klartext.
+        """
+        try:
+            db_manager.execute(
+                """
+                INSERT INTO hintergrund_log
+                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
+                VALUES (%s, %s, %s, %s, NOW())
+                """,
+                (user_id, "charakter_hash", status, ergebnis),
+            )
+        # Breit gefangen und **nicht** weitergereicht: Eine kaputte Audit-Senke
+        # darf den Lauf nicht mitreissen, und ein Retry darauf waere die
+        # Rekursion, vor der das Muster in `ziel_decay` warnt.
+        except Exception as ex:  # noqa: BLE001
+            logger.critical(
+                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
+                f"(verlorener Audit-Eintrag: charakter_hash/{status}/{ergebnis[:100]})"
+            )
+
     def invoke(self, state: AgentState) -> AgentState:
+        """Faehrt den Lauf und sorgt dafuer, dass er eine Spur hinterlaesst.
+
+        **Der Wrapper existiert wegen des Fehlerfalls.** Der Pixie-Dispatch
+        faengt eine Exception und schreibt sie ins Log, aber nicht ins
+        `hintergrund_log` — ohne diese Stelle bliebe ein abgebrochener Lauf
+        dort als `gestartet` ohne Abschluss stehen, und ein Lauf, der vor dem
+        Dirty-Check scheitert, ganz ohne Zeile.
+
+        Die Exception wird **weitergereicht**, nicht geschluckt: Der Dispatch
+        entscheidet ueber Wiedervorlage und Retry, nicht dieser Agent.
+        """
+        try:
+            return self._profile_destillieren(state)
+        # Breit gefangen und sofort weitergereicht: Die Spur soll fuer **jeden**
+        # Abbruch entstehen, nicht nur fuer die vorhergesehenen — eine engere
+        # Klausel liesse genau die Faelle ohne Zeile, die niemand erwartet hat.
+        except Exception as fehler:  # noqa: BLE001
+            self._audit_log(
+                AKTIVES_PAAR_USER_ID, "fehler",
+                f"{type(fehler).__name__}: {fehler}",
+            )
+            raise
+
+    def _profile_destillieren(self, state: AgentState) -> AgentState:
         """Destilliert 5 Charakter-Profile aus dem kanonischen Paar.
 
         Seit Chat 60: Ein kanonisches Paar pro (User, Charakter)-Beziehung.
@@ -167,6 +234,10 @@ class CharakterAgent(BaseAgent):
                 f"CharakterAgent: Lade KZG fuer Paar "
                 f"({kanon_user_id}, {kanon_character_id}) — "
                 f"kanonisches Schema, Perspektive ueber beobachter"
+            )
+            self._audit_log(
+                kanon_user_id, "gestartet",
+                f"Paar ({kanon_user_id}, {kanon_character_id}), hash_dirty gesetzt",
             )
 
             # Profil-Konfigurationen: User-Profil (beobachter=user) und
@@ -515,6 +586,16 @@ class CharakterAgent(BaseAgent):
             # Dirty-Flag erst nach beiden Profil-Builds loeschen.
             if paar_etwas_gespeichert:
                 redis_client.delete(f"hash_dirty:{kanon_user_id}:{kanon_character_id}")
+
+            # **Der Abschluss nennt beide Zahlen, auch die Null.** Ein Lauf, der
+            # nichts gespeichert hat, ist ein Ergebnis (das Material war
+            # unveraendert) und von einem ausgefallenen nur an dieser Zeile zu
+            # unterscheiden.
+            self._audit_log(
+                kanon_user_id, "erledigt",
+                f"{gesamt_destilliert} Profile destilliert, "
+                f"gespeichert: {'ja' if paar_etwas_gespeichert else 'nein'}",
+            )
 
         state["ergebnis"] = {"destilliert": gesamt_destilliert}
         state["status"] = "abgeschlossen"

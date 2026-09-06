@@ -109,12 +109,19 @@ class CharakterAgentPaarTest(unittest.TestCase):
     """
 
     def _paar_namen(self) -> list[list[str]]:
-        """Liest die Namen aus der Zuweisung an `paare` in `invoke`."""
+        """Liest die Namen aus der Zuweisung an `paare` im Lauf des Agenten.
+
+        **Gelesen wird `_profile_destillieren`, nicht `invoke`.** Seit dem
+        06.09.2026 ist `invoke` ein Wrapper, der den Fehlerfall ins
+        `hintergrund_log` schreibt; die Paarliste steht eine Ebene tiefer. Der
+        Zeuge hat den Umbau gemeldet — er wurde rot, weil er die Liste nicht
+        mehr fand.
+        """
         import agents.charakter.agent as charakter_mod
 
         # dedent, weil die Quelle einer Methode eingerueckt beginnt.
         quelle: str = textwrap.dedent(
-            inspect.getsource(charakter_mod.CharakterAgent.invoke)
+            inspect.getsource(charakter_mod.CharakterAgent._profile_destillieren)
         )
         baum = ast.parse(quelle)
         paare: list[list[str]] = []
@@ -133,6 +140,13 @@ class CharakterAgentPaarTest(unittest.TestCase):
                 self.assertIsInstance(eintrag, ast.Tuple)
                 paare.append([getattr(teil, "id", "") for teil in eintrag.elts])
 
+        # **Die Selbstpruefung, die am 06.09.2026 gefehlt hat.** Findet der
+        # Leser keine Zuweisung, ist seine Liste leer — und eine leere Liste
+        # erfuellt jede Aussage der Form *darin steht kein X*. Der Zeuge auf
+        # den Fallback waere so gruen geblieben, waehrend er nichts mehr las.
+        self.assertTrue(
+            paare, "keine Zuweisung an 'paare' gefunden — der Leser liest ins Leere"
+        )
         return paare
 
     def test_die_paarliste_kommt_aus_der_konfiguration(self) -> None:
