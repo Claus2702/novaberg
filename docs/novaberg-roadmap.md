@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 17:55 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:45 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 19:05 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:55 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,73 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 06.09.2026, 19:05 UTC — was nicht gesagt wurde, steht ohne Anfuehrungszeichen 🔧
+
+**Der Eigentuemer hat den einzigen verbliebenen Weg freigegeben.** Nachdem fuenf Prompt-Fassungen
+dieses Tages ohne belegte Wirkung geblieben sind, sitzt die Abhilfe zu `F-ZITAT-1` jetzt in der
+Struktur: `zitate_entwerten` nimmt einem Beleg **ohne Fundstelle** die Anfuehrungszeichen.
+
+**Der Satz bleibt.** Aus *Nova nennt sich selbst „Waechterin des Zeitplans"* wird *Nova nennt sich
+selbst Waechterin des Zeitplans* — aus dem angeblichen Zitat wird die Deutung, die es ist. Nichts
+wird geloescht, nichts umformuliert; das zweite braeuchte einen neuen Modellaufruf.
+
+| Groesse | gemessen | zugesichert |
+|---|---:|---:|
+| Belege ohne Fundstelle **nach** dem Eingriff | **0** | 0 |
+| Zitate nach dem Eingriff | **250** von 282 | 282 − 32 |
+| Zeichen ueber 20 Laeufe | 95 774 → **95 710** | Differenz 2 je Beleg |
+| Laeufe mit Eingriff | **14 von 20** | — |
+
+**20 echte Kern-Destillationen gegen das gepinnte Ziel**, dasselbe Material und derselbe Prompt wie
+am Nachmittag (`in=3852`). **Kein gedecktes Zitat ging verloren, und der Eingriff fasste kein
+Zeichen ausser den Anfuehrungszeichen an** — beides ist eine Zusicherung der Funktion und in dieser
+Messung gehalten.
+
+**Entwertet wird nur die erste Klasse.** Ein *Einzelbeleg als Dauerzug* behaelt seine Zeichen: Sein
+Wortlaut steht im Material, zu viel behauptet das Dauerwort daneben.
+`PROFIL-VERALLGEMEINERT-EINZELBELEG` bleibt offen und ist nicht mitgebaut.
+
+**Die Gegenprobe hat die Zeugen geaendert, nicht den Bau.** Vorhergesagt waren vier rote Tests bei
+einem entgrenzten Eingriff, rot wurde **einer**: Traegt ein Profil nur gedeckte Belege, kehrt die
+Funktion vorzeitig zurueck und der Eingriff wird nie erreicht — drei von vier Grenz-Zeugen pruefen
+ihn also gar nicht. Zwei Zeugen sind ergaenzt, die die Grenze **neben** einem echten Eingriff
+halten; die wiederholte Gegenprobe liefert drei rote.
+
+> **Und die dritte gepinnte Runde derselben Fassung lag bei 11 %** gegen 16 % am Nachmittag. Die
+> Streuung zwischen Runden ist damit zum dritten Mal groesser als jeder Unterschied zwischen den
+> Fassungen — der Grund, warum dieser Bau an der Struktur sitzt und nicht im Text.
+
+**Die zweite Kontrolle hat den Bau geaendert, und zwar an einer Zusicherung dieses Tages.** Sie ging
+ueber den **Bestand** statt ueber Zeugen — 70 gespeicherte Profiltexte, 350 alt/neu-Paare, 500 000
+Zufallsproben — und fand zweierlei:
+
+**Erstens:** Die Vorbedingung *„der Profiltext enthaelt kein `\x00`"* stand im Docstring des Helfers
+mit dem Zusatz, der Aufrufer pruefe das — und **von zwei Aufrufern tat es einer**. Ein eingebettetes
+Maskierungszeichen liess `deckung_beanstanden` denselben Beleg **zweimal** melden.
+
+> **Eine Vorbedingung, deren Einhaltung der Aufrufer zusichert, gilt nur so weit wie der
+> aufmerksamste Aufrufer.**
+
+Sie sitzt seither im Helfer selbst; `_belege_klassifizieren` ueberspringt eine Marke ohne Beleg laut,
+statt zu stuerzen. **Der erste Reparaturversuch ersetzte die falsche Meldung durch einen Absturz** —
+gefunden vom neuen Zeugen, der die Reparatur belegen sollte. Im Bestand: **0 von 70** Profiltexten
+tragen das Zeichen.
+
+**Zweitens ein Befund, der nicht repariert ist** — siehe unten.
+
+**Die 60-Zeichen-Grenze von `ZITAT` hat die Rolle gewechselt, ohne angefasst zu werden.** Sie war die
+Reichweite einer **Logzeile** und ist seit heute die eines **Eingriffs in erzeugten Text**. An den 70
+Profiltexten gemessen: **117 von 125** Anfuehrungspaaren liegen darin, **8 nicht** — und die acht sind
+keine Ausreisser, sondern **ganze zitierte Saetze**, alle im Kern. Sie werden weder gemeldet noch
+entwertet. Ein Anheben aendert auch die Meldung und damit die Vergleichbarkeit aller heutigen Quoten;
+das ist eine Entscheidung und steht in der Fundliste.
+
+**Offen: der Betriebsbeleg.** Der Anschlag im echten Ausloesepfad ist nicht belegt
+(`19_WERKZEUGE/riegel-im-echten-pfad.md`) — er braucht einen Destillationszyklus, und das produktive
+Paar trug nach dem Neustart um 19:00:30 UTC kein `hash_dirty`.
 
 ---
 
