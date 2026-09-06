@@ -503,6 +503,112 @@ Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 # Hilfsfunktionen
 # ─────────────────────────────────────────────
 
+#: Woerter, mit denen ein Profil eine Beobachtung zum Dauerzug erklaert.
+#:
+#: **Sie sind nicht verboten** — sie sind die richtige Wahl, wenn das Material
+#: sie traegt. Geprueft wird deshalb nicht ihr Vorkommen, sondern ihre Deckung.
+DAUERWORT: re.Pattern = re.compile(
+    r"\b(durchgehend|durchweg|stets|immer|ausnahmslos|konsequent|"
+    r"grunds[\u00e4a]tzlich|typischerweise|typisch|generell|in der Regel|"
+    r"regelm[\u00e4a][\u00dfs]ig|st[\u00e4a]ndig)\b", re.IGNORECASE)
+
+#: Ein woertlicher Beleg im Profiltext. Die Prompts liefern das Material in
+#: deutschen Anfuehrungszeichen, und das Modell zitiert daraus in denselben.
+ZITAT: re.Pattern = re.compile(r"\u201e([^\u201c\u201e]{3,60})\u201c")
+
+#: Satzgrenze — grob, aber ausreichend: Gesucht wird die Nachbarschaft von
+#: Dauerwort und Beleg, nicht eine Grammatik.
+SATZ: re.Pattern = re.compile(r"[^.!?]+[.!?]?")
+
+#: Der maskierte Beleg. Er traegt keine Satzzeichen und ueberlebt die Trennung.
+MARKE: re.Pattern = re.compile(r"\x00(\d+)\x00")
+
+
+def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
+    """Meldet Belege im Profil, die das Material nicht traegt.
+
+    **Die Ausgabe-Verifikation zu `PROFIL-VERALLGEMEINERT-EINZELBELEG`.** Das
+    Beziehungsprofil nannte am 06.09.2026 eine Anrede *durchgehend*, die in
+    **1 von 20** Begegnungen des Prompt-Materials stand. Vier Prompt-Fassungen
+    dagegen sind gemessen und ausgeschlossen (`labor/2026-09-06_deckung_ergebnis.md`)
+    — deshalb steht die Pruefung hier, an der Ausgabe, und nicht im Prompt.
+
+    **Beanstandet wird, nicht verworfen.** Das Profil wird gespeichert; die
+    Zeile sagt, worauf es sich stuetzt. Ein Verwerfen waere eine zweite
+    Entscheidung — es kostet einen neuen Aufruf und laesst im Zweifel gar kein
+    Profil stehen, was schlechter ist als ein zu starkes Wort.
+
+    **Der Prompt ist das Material.** Er traegt die Eintraege woertlich, also
+    ist *„kommt im Prompt vor"* genau die Frage *„hatte das Modell einen
+    Beleg"*. Gezaehlt werden Vorkommen, nicht Eintraege — ein Beleg, der
+    einmal im ganzen Material steht, ist ein Einzelbeleg.
+
+    **Zwei Klassen, und beide sind am 06.09.2026 am Bestand belegt:**
+
+    | Klasse | Was gemessen wurde |
+    |---|---|
+    | Beleg ohne Fundstelle | zwei Laeufe zitierten Wendungen, die im Material **0**-mal vorkommen |
+    | Einzelbeleg als Dauerzug | die Anrede steht **1**-mal und heisst *durchgehend* |
+
+    **Was sie nicht findet, steht hier, damit niemand sie dafuer haelt:** Ein
+    Dauerwort ohne woertlichen Beleg im selben Satz ist nicht pruefbar — es
+    gibt nichts nachzuschlagen. Die Pruefung deckt die belegte Haelfte.
+
+    Args:
+        prompt:      der gerenderte Prompt, also das Material im Wortlaut.
+        profil:      die bereinigte Antwort des Modells.
+        profil_name: fuer die Logzeile, damit sie das Profil benennt.
+
+    Returns:
+        Zahl der Beanstandungen. 0 heisst: jeder Beleg ist gedeckt.
+    """
+    # ── Eingabe-Validierung ──
+    if not prompt or not profil:
+        logger.debug(
+            f"{profil_name}: Deckungspruefung uebersprungen — "
+            f"Prompt {len(prompt)} Zeichen, Profil {len(profil)} Zeichen"
+        )
+        return 0
+
+    # ── Verarbeitung ──
+    # **Die Zitate werden vor der Satztrennung maskiert.** Ein Beleg traegt
+    # oft selbst ein Satzzeichen (*„Und die Huelle?“`), und ohne die Maske
+    # zerschneidet die Trennung ihn — Dauerwort und Beleg landen dann in
+    # verschiedenen Saetzen, und die Pruefung schweigt. Gefunden vom eigenen
+    # Zeugen, nicht im Betrieb.
+    belege: list[str] = ZITAT.findall(profil)
+    maskiert: str = profil
+    for nummer, beleg in enumerate(belege):
+        maskiert = maskiert.replace(f"„{beleg}“", f"\x00{nummer}\x00", 1)
+
+    ohne_fundstelle: list[str] = []
+    einzelbeleg: list[str] = []
+    for satz in SATZ.findall(maskiert):
+        hat_dauerwort: bool = bool(DAUERWORT.search(satz))
+        for nummer in MARKE.findall(satz):
+            beleg = belege[int(nummer)]
+            treffer: int = prompt.lower().count(beleg.lower())
+            if treffer == 0:
+                ohne_fundstelle.append(beleg)
+            elif treffer == 1 and hat_dauerwort:
+                einzelbeleg.append(beleg)
+
+    # ── Ausgabe-Verifikation ──
+    if ohne_fundstelle:
+        logger.warning(
+            f"{profil_name}: {len(ohne_fundstelle)} Beleg(e) ohne Fundstelle "
+            f"im Material — {ohne_fundstelle}. Das Profil wird gespeichert; "
+            "die Belege stammen nicht aus den Eintraegen, die im Prompt standen"
+        )
+    if einzelbeleg:
+        logger.warning(
+            f"{profil_name}: {len(einzelbeleg)} Einzelbeleg(e) als Dauerzug "
+            f"formuliert — {einzelbeleg}, je 1 Vorkommen im Material. Das "
+            "Profil wird gespeichert; das Wort behauptet mehr als der Beleg traegt"
+        )
+    return len(ohne_fundstelle) + len(einzelbeleg)
+
+
 def _antwort_bereinigen(text: str) -> str:
     """Entfernt Markdown-Artefakte, fuehrende/trailing Anfuehrungszeichen, Whitespace."""
     text = text.strip()
@@ -617,6 +723,7 @@ def _llm_call(prompt: str, profil_name: str) -> str:
 
     ergebnis = _antwort_bereinigen(response.text)
     logger.info(f"{profil_name} destilliert: '{ergebnis[:80]}...'")
+    deckung_beanstanden(prompt, ergebnis, profil_name)
     return ergebnis
 
 
