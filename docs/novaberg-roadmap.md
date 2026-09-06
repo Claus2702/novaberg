@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 10:52 UTC** (gemessen via `date -u`). Davor 06.09.2026, 10:29 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 11:31 UTC** (gemessen via `date -u`). Davor 06.09.2026, 10:52 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,47 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 06.09.2026, 11:31 UTC — der Riegel hatte recht, die Einordnung nicht ✅
+
+**Der Profil-Erzeuger hat seit seinem Einbau am 03.09.2026 keinen einzigen Traeger profiliert.**
+Zwei Laeufe im `hintergrund_log`, beide `0 von 20`. Im Betriebslog steht bei jedem Traeger
+`SpurVerletzungError`, und der ganze Schritt dauerte **0,09 Sekunden** — kein Modellaufruf ging
+hinaus.
+
+**Die Ursache ist kein Defekt.** Der Tageslauf faehrt die `cpu`-Spur, und dort ist das
+Sprachmodell verriegelt, weil ein Modellaufruf die schnelle Spur minutenlang haelt. Ein Profil
+kostet **einen Modellaufruf je Traeger**. Der Riegel hat gehalten, was er verspricht — gebrochen
+wurde die Zusicherung daneben: `lastart` von `synapsen_decay` sagt in seinem eigenen Docstring
+*„Reine Rechnung ueber Bestandswerte, kein Modellaufruf"*, und der Einbau hat sie uebergangen.
+Der Erstlauf am 03.09. lief von Hand, also **ausserhalb jeder Spur**, wo der Riegel schweigt —
+deshalb sah der Bau richtig aus.
+
+**Der Schritt ist ausgezogen: `agents/qualitaet_profil/`.** Ein eigener Agent statt `lastart =
+"llm"` am Tageslauf — der ist zu neun Zehnteln reine Rechnung, und die uebrigen Schritte haetten
+hinter dem Modell gewartet. **`lastart` steht im neuen Agenten absichtlich nicht:** Die Vorgabe in
+`agents/base.py` ist `llm` und ausdruecklich so gewaehlt; sie zu wiederholen hiesse, eine tragende
+Vorgabe zu kopieren.
+
+**Der Takt ist eine Setzung des Eigentuemers: einmal am Tag.** Gemessen an diesem Tag standen
+**350 Kandidaten** offen; bei 20 je Lauf fuellt sich der Bestand in rund **18 Tagen**.
+
+### Der Beleg, und er kam von selbst
+
+| Lauf | Spur | Ergebnis |
+|---|---|---|
+| 05.09. 19:59, im Tageslauf | `cpu` | **0 von 20**, `SpurVerletzungError` |
+| 06.09. 11:28, eigener Agent | `llm` | **20 von 20 profiliert** |
+
+Bestand danach **70 Traeger**, nach einem Admin-Lauf ueber zwei weitere **72 / 432 Kanten**;
+offene Kandidaten **350 → 328**.
+
+**Zeugen:** `tests/test_quality_profile.py` — die zwei Verdrahtungszeugen vom Tageslauf auf den
+Agenten umgezogen, drei neue fuer die Spur. **Der alte Zeuge haette den Befund nie gefunden:** Er
+ersetzte den Erzeuger und sah die Spur nicht, in der der echte Lauf steht.
+**Suite:** 3178 → **3181 gruen**. Gegenprobe 1 rot (Agent auf `cpu`). Harte Wand sauber.
 
 ---
 
