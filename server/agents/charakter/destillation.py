@@ -380,9 +380,11 @@ Beschreibe das dauerhafte Wesen {traeger_gen} auf Deutsch. Tiefenwerte,
 dauerhafte Interessen, Denkweise, Grundhaltung. Zeitlos — keine
 Tagesstimmung, keine aktuellen Projekte.
 
-Nimm dir den Raum, den der Gegenstand braucht. Verdichte nicht: Behalte die
-Wendungen, den Ton und das Beilaeufige, an dem man {traeger_akk} erkennt. Ein
-Beispiel im Wortlaut sagt mehr als ein Urteil darueber.
+Nimm dir den Raum, den der Gegenstand braucht — und nicht mehr: rund 3000
+Zeichen, hoechstens 4000. Das sind etwa fuenf Absaetze. Verdichte nicht zum
+Urteil: Behalte die Wendungen, den Ton und das Beilaeufige, an dem man
+{traeger_akk} erkennt. Ein Beispiel im Wortlaut sagt mehr als ein Urteil
+darueber — aber ein Zug, der einmal belegt ist, braucht keinen zweiten Beleg.
 
 Einträge:
 {eintraege}

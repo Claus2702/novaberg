@@ -1,4 +1,4 @@
-"""Zeugen dafuer, dass der Kern-Prompt keinen Deckel mehr traegt.
+"""Zeugen dafuer, dass der Kern-Prompt keinen Deckel, aber einen Richtwert traegt.
 
 **Gemessen, nicht gewaehlt** (11.08.2026). `KERN_HASH_PROMPT` verlangte bis
 dahin »ein kompaktes Persoenlichkeitsprofil in 2-5 Saetzen« — eine Vorgabe
@@ -29,6 +29,13 @@ Streichen des Deckels ein stiller Ausfall statt einer Aenderung: die Frist
 des Aufrufs und der Token-Deckel des Knotens. Ein offener Prompt unter einer
 zu knappen Frist liefert **gar nichts**, unter einem zu knappen Token-Deckel
 einen mitten im Wort abgeschnittenen Text. Beide Zeugen stehen unten.
+
+**Nachtrag 06.09.2026 — der Richtwert.** Derselbe Prompt lieferte unter dem
+Fernmodell 8587 Zeichen (Nova) und 7381 (Mensch) — das Zwei- bis Dreifache
+der offenen Fassung von damals. Der Prompt nennt seither rund 3000 Zeichen
+als Richtwert und 4000 als Obergrenze. **Das ist kein zurueckgekehrter
+Deckel:** Der Korridor ist der gemessene, und die beiden Saetze, die den
+Wortlaut verlangen, stehen unveraendert daneben.
 """
 
 import unittest
@@ -56,6 +63,24 @@ class KernOhneDeckelTest(unittest.TestCase):
         """
         self.assertIn("Nimm dir den Raum", KERN_HASH_PROMPT)
         self.assertIn("Verdichte nicht", KERN_HASH_PROMPT)
+
+    def test_der_umfang_traegt_einen_richtwert(self) -> None:
+        """Rot, sobald der Richtwert fehlt — der Deckel bleibt trotzdem weg.
+
+        **Der Richtwert holt eine Drift zurueck, er stellt den Deckel nicht
+        wieder auf.** Die Gegenprobe vom 11.08.2026 hat die offene Fassung
+        bei 3288 und 2545 Zeichen gemessen; unter dem Fernmodell lieferte
+        derselbe Prompt am 06.09.2026 **8587** Zeichen fuer Nova und 7381
+        fuer den Menschen. Das ist das Zwei- bis Dreifache dessen, was
+        damals als »offen« gemessen und fuer gut befunden wurde.
+
+        Ein Richtwert im gemessenen Korridor nimmt dem Text nicht den
+        Wortlaut — deshalb steht er **neben** »Nimm dir den Raum« und
+        »Verdichte nicht«, nicht an ihrer Stelle. Die beiden Zeugen darueber
+        bleiben gruen; faellt einer von ihnen, ist der Deckel zurueck.
+        """
+        self.assertIn("rund 3000", KERN_HASH_PROMPT)
+        self.assertIn("hoechstens 4000", KERN_HASH_PROMPT)
 
     def test_der_traeger_steht_weiterhin_zweimal_im_offenen_teil(self) -> None:
         """Der Prompt bleibt fuer beide Perspektiven formatierbar.
