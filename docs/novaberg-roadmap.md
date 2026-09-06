@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 15:55 UTC** (gemessen via `date -u`). Davor 06.09.2026, 15:40 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 16:15 UTC** (gemessen via `date -u`). Davor 06.09.2026, 15:55 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,40 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 16:15 UTC — Anfuehrungszeichen sind fuer den Wortlaut reserviert ✅
+
+**Setzung des Eigentuemers:** *Das Modell darf nichts zitieren, was nicht wirklich gesagt wurde.*
+Als `F-ZITAT-1` im Register, mit dem Wortlaut und der Messung, die sie ausgeloest hat.
+
+**Gebaut ist die `ZITATREGEL` in allen fuenf Profil-Prompts.** Sie fuehrt positiv (`F-PROMPT-1`):
+Anfuehrungszeichen sind fuer den Wortlaut reserviert, eigene Deutungen stehen daneben — statt das
+Erfinden zu verbieten.
+
+| Runde | ohne Zitatregel | mit Zitatregel |
+|---|---:|---:|
+| 1, exakter Vergleich | 24 % (59 von 244) | **10 %** (28 von 276) |
+| 2, normalisiert | 21 % (54 von 257) | **9 %** (25 von 264) |
+
+**n = 20 je Fassung, zwei Runden, dieselbe Richtung.** Das ist die **erste Prompt-Aenderung dieses
+Tages, die ueber die Streuung hinaus wirkt** — drei Fassungen gegen die Verallgemeinerung hatten es
+am Vormittag nicht getan, und der Unterschied liegt nicht am Fleiss, sondern am Gegenstand: Eine
+Belegdichte kann das Modell nicht nachzaehlen, die Herkunft eines Zitats schon.
+
+**Die Pruefung normalisiert seither vor dem Vergleich** — Anfuehrungszeichen aller Formen,
+Gedankenstriche, Auszeichnungszeichen, Kleinschreibung. Der Anlass stand in ihren eigenen Meldungen:
+Ein Zitat mit Sternchen und eines in einfachen Anfuehrungszeichen standen im Material und galten als
+erfunden. **Der Effekt ist klein** (ein bis drei Punkte); der Grund ist die Richtung des Fehlers —
+ein Falschalarm wuerde einen echten Beleg entwerten, sobald aus der Meldung ein Eingriff wird.
+
+**Die Setzung ist damit angenaehert, nicht erfuellt.** Rund ein Zehntel der Zitate steht weiterhin
+nicht im Material. Nach `F-PROMPT-1` gilt fuer den Rest: *Wo ein Verhalten verlaesslich sein muss,
+wird es in der Struktur erzwungen und nicht im Text* — der naechste Schritt waere, ein unbelegtes
+Zitat im gespeicherten Profil zu **entwerten**: Die Anfuehrungszeichen fallen, der Satz bleibt. Das
+ist ein Eingriff in den erzeugten Text und deshalb eine eigene Entscheidung.
+
+14 Zeugen (`tests/test_destillation_deckung.py`), Suite **3201 gruen, 0 uebersprungen** (davor
+3197), harte Wand 0, Linter unveraendert. Belege in `labor/2026-09-06_zitatregel_ergebnis.md`.
 
 ## 06.09.2026, 15:55 UTC — wer zitiert, erfindet ein Fuenftel 🔬
 
