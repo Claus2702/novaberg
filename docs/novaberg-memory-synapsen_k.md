@@ -1559,7 +1559,7 @@ CREATE INDEX IF NOT EXISTS idx_pipeline_log_paar     ON pipeline_log (user_id, c
 | `bemerkung` | freier Reflexions-Eintrag, etwa für späteres Debugging oder spontane Notizen | `"GV-Cluster-Wechsel überraschend abrupt"` |
 | `span_start` | Node-Lauf beginnt | `null` oder Marker |
 | `span_end` | Node-Lauf endet | `null` oder `{"status": "ok"}` |
-| `token` | Token-Anzahl pro LLM-Aufruf | `{"prompt": 980, "completion": 267, "total": 1247}` |
+| `token` | Token-Anzahl **und Kosten** pro LLM-Aufruf | `{"modell": "deepseek/…", "input_tokens": 1689, "output_tokens": 185, "kosten_usd": 0.00010291}` — **seit 06.09.2026 gefüllt**; davor stand die Art hier im Konzept, der Helfer `log_token` im Code und **0 Zeilen** in der Tabelle. Die Felder heißen nicht wie im Entwurf: `input_tokens`/`output_tokens` statt `prompt`/`completion`, kein `total` (es ist die Summe), dafür `kosten_usd` und `modell`. Die `turn_id` trägt `hintergrund`, wenn der Aufruf zu keinem Turn gehört |
 | `turn_roh` | Das vollständige Reiz-Reaktions-Paar eines Turns. **Kein Forensik-Eintrag** — dauerhaft, von der Löschung ausgenommen (§10.5) | `{"user_prompt": "…", "response": "…", "user_emotion": {…}, "nova_emotion": {…}, "herkunft": "…"}` |
 
 ~~**Lesen wird nicht geloggt.** Nur schreibende DB-Zugriffe (Anlegen, Ändern, Löschen) erzeugen einen `db_zugriff`-Eintrag. Lese-Abfragen wären zu zahlreich und für die Forensik nicht relevant.~~ → **Überholt, gemessen am 04.09.2026:** Lesen wird geloggt, seit es `db_read` gibt — **5.315 Zeilen im Bestand**, geschrieben allein von `db_zugriff` (dem Node, nicht der Art). Die Befürchtung, Lese-Einträge seien zu zahlreich, hat sich nicht bestätigt: Sie sind 3,4 % des Logs, während `berechnung` 36 % trägt.
@@ -1622,9 +1622,9 @@ ORDER BY erstellt_am ASC;
 **Token-Verbrauch der letzten 24 Stunden:**
 ```sql
 SELECT 
-    SUM((inhalt->>'total')::int) AS total_tokens,
-    SUM((inhalt->>'prompt')::int) AS prompt_tokens,
-    SUM((inhalt->>'completion')::int) AS completion_tokens
+    SUM((inhalt->>'input_tokens')::int)  AS prompt_tokens,
+    SUM((inhalt->>'output_tokens')::int) AS completion_tokens,
+    SUM((inhalt->>'kosten_usd')::numeric) AS kosten_usd
 FROM pipeline_log
 WHERE art = 'token' AND erstellt_am > NOW() - INTERVAL '24 hours';
 ```

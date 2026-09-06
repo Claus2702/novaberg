@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 09:06 UTC** (gemessen via `date -u`). Davor 05.09.2026, 20:16 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 10:29 UTC** (gemessen via `date -u`). Davor 06.09.2026, 10:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,133 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 06.09.2026, 10:29 UTC — die Anzeige ist beim Oeffnen schon gefuellt ✅
+
+**Der Befund aus dem ersten Betriebsblick:** Die Statuszeile bekam ihre Zahlen erst mit der ersten
+Antwort. Bis dahin standen dort drei Striche — obwohl der Tag laengst lief und der Hintergrund die
+ganze Zeit kostete.
+
+**`GET /drive/kosten`** liefert die drei Betraege und einen offenen Preisbefund. Der Posten `turn`
+nennt den **zuletzt abgerechneten** Turn, nicht die Summe aller: Beim Start gibt es keinen
+laufenden, und eine Summe waere eine vierte Zahl mit einer vierten Bedeutung. **Der Filter gegen
+`hintergrund` ist der Kern der Abfrage** — ohne ihn zeigte die Statuszeile die Summe aller
+Hintergrundlaeufe als Kosten eines Turns, eine Zahl um eine Groessenordnung daneben. Ein Zeuge
+haelt ihn.
+
+**Der Client fragt in einem eigenen Thread**, nicht im UI-Thread: Ein nicht erreichbarer Server
+fror das Fenster sonst bis zum Timeout ein. Das Ergebnis geht ueber `GLib.idle_add` zurueck.
+**Ein Preisbefund aus dem letzten Tageslauf erreicht den Menschen damit beim Oeffnen** und nicht
+erst beim naechsten Turn.
+
+**Im Betrieb belegt:** `{"turn": 0.00318, "heute": 0.02094, "monat": 0.02094,
+"letzter_turn": "a4c897f4…"}`.
+
+**Zeugen:** `tests/test_kosten_summen.py` (2 neu, 7 gesamt).
+**Suite:** 3170 → **3172 gruen**. Gegenprobe 1 rot. Harte Wand sauber.
+
+---
+
+## 06.09.2026, 10:20 UTC — was der Betrieb kostet, steht jetzt in der Fusszeile ✅
+
+**Der Auftrag:** Kosten je Turn, Tagesverbrauch und Monatsverbrauch im Client, dazu ein Fenster,
+wenn der Preis springt.
+
+### Die Trennung, die es nur im Provider gibt
+
+`ChatResponse` traegt `token_total` — die **Summe**. Aus einer Summe laesst sich kein Preis rechnen,
+solange Ausgabe doppelt so teuer ist wie Eingabe. Die Rechnung sitzt deshalb dort, wo beide Zahlen
+getrennt vorliegen: im Provider, unmittelbar nach dem Umschlag.
+
+### Zwei Befunde, die die Bauart bestimmt haben
+
+**`log_token` gab es schon — ohne einen einzigen Aufrufer.** Ein Helfer fuer genau diesen Zweck,
+`art = 'token'` mit **0 Zeilen** im Bestand `[gemessen 06.09.2026]`. Nichts Neues zu bauen, nur zu
+verdrahten. Und die Vorhaltung liegt bei **365 Tagen** — der Monatsverbrauch ist damit aus
+`pipeline_log` rechenbar, **kein DDL**.
+
+**Die Kontextvariable erreicht den Worker nicht.** Seine Schleife wird beim Serverstart einmal als
+Task gestartet und traegt den Kontext **dieses** Zeitpunkts. Gemessen mit gleichem Aufbau: Der
+Aufrufer sieht `turn-4711`, die Schleife sieht den Vorgabewert. Die Kennung reist deshalb als Feld
+im Request; der Worker setzt sie unmittelbar vor dem Aufruf, wo `asyncio.to_thread` sie in den
+Provider-Thread kopiert — und **nimmt sie danach zurueck**, sonst buchte der naechste Aufruf ohne
+eigenen Turn auf den vorigen.
+
+**Zwei Setzpunkte statt fuenfzehn Handgriffen:** `ChatRequest.turn_id` holt sich die Kennung ueber
+`default_factory` selbst. Gesetzt wird sie einmal im Prompt-Consumer (HumanGraph) und einmal im
+Event-Consumer (CharacterGraph). An sechs der fuenfzehn Request-Stellen ist der State gar nicht im
+Sichtfeld — sie waeren einzeln nicht erreichbar gewesen.
+
+### Was die drei Zahlen bedeuten — und was nicht
+
+**Tag und Monat zaehlen jeden Aufruf, auch den ohne Turn.** Pixie, Tageslauf und jede Destillation
+kosten Geld, ohne dass jemand etwas gefragt haette; sie tragen die Kennung `hintergrund`. **Die
+Tagessumme ist deshalb groesser als die Summe der Turns** — das ist der Befund, keine Ungenauigkeit,
+und der Client glaettet ihn nicht. `None` heisst *nicht ermittelt* und zeigt einen Strich: Stuende
+dort `$0.0000`, saehe ein ausgefallener Zaehler aus wie ein kostenloser Betrieb.
+
+### Der Waechter hat einen Aufrufer
+
+`pruefen()` aus `main()` herausgeloest und als **zehnter Schritt** in den Tageslauf gehaengt, mit
+eigenem Audit-Eintrag — ein Waechter ohne Befund und ein Waechter, der nicht lief, sind sonst
+dasselbe. **Der Befund geht nach Redis, nicht direkt an die Clients:** Der Tageslauf hat keinen
+Event-Loop, und `broadcast_threadsafe` braucht einen. Die naechste Antwort nimmt ihn mit, der
+Client macht ein Fenster daraus. Bei einem Preis, der sich hoechstens taeglich bewegt, ist das
+frueh genug.
+
+**Im Betrieb belegt, 10:12 UTC:** Die ersten Verbrauchszeilen stehen — `pixie/hash` und
+`charakter/ziele`, alle als `hintergrund` gebucht, $0,00010 bis $0,00111 je Aufruf. Tagessumme zu
+diesem Zeitpunkt **$0,0075**.
+
+**Zeugen:** `tests/test_model_costs.py` (6), `tests/test_kosten_summen.py` (5).
+**Suite:** 3159 → **3170 gruen**, 0 uebersprungen. Gegenprobe 2 + 2 rot. Harte Wand sauber.
+
+**Betriebsbeleg, 06.09.2026 nach einem echten Turn:** `Turn: $0.0016 · Heute: $0.009 · Monat:
+$0.01` in der Fusszeile. Gegen die Datenbank geprueft: **zwei Turns mit eigener Kennung** — 23 und
+9 Modellaufrufe fuer $0,0030 und $0,0023 — neben 45 Hintergrund-Aufrufen fuer $0,0085. Die
+Zuordnung traegt also, und die Zahl, die dabei auffaellt, ist eine andere als erwartet: **ein Turn
+kostet neun bis dreiundzwanzig Modellaufrufe.**
+
+**Der Beleg hat einen Darstellungsfehler gezeigt und er ist behoben.** `Heute: $0.009` und `Monat:
+$0.01` sind **derselbe Wert** — $0,013799, einmal auf drei und einmal auf zwei Stellen gerundet.
+Solange der Monat jung ist, sind Tag und Monat gleich; verschiedene Stellenzahlen machen daraus
+zwei Zahlen, die man gegeneinander liest. Seither tragen alle drei vier Stellen.
+
+**Geklaert am selben Tag, 10:35 UTC:** Ein zweiter Beleg zeigt die vollstaendige Zeile —
+`Verbunden · Turn: $0.0032 · Heute: $0.0222 · Monat: $0.0222 · Pixie: idle`, und zwar **beim
+Oeffnen gefuellt** (`Pixie: idle`, also vor dem ersten Turn). Das Kosten-Label verdraengt die
+Verbindungsanzeige **nicht**; der erste Beleg war ein Bildausschnitt. Die Zeile steht seither auf
+🟢. Die Client-Suite bleibt davon unberuehrt — sie war schon auf der Nulllinie rot (`requests`
+fehlt in der Bauumgebung) und ist keine Auskunft ueber diese Aenderung.
+
+---
+
+## 06.09.2026, 09:45 UTC — ein gueltiger Wert ohne Sektor ✅
+
+**Die Setzung des Eigentuemers:** `mitgefuehl` gehoert zu `traurigkeit` — *„naeher an Traurigkeit,
+geteilter Schmerz"*. Die Gegenkandidatin war `zufriedenheit` (Sektor 2, wo `vertrauen` und
+`geborgenheit` stehen); sie haette eine **positive** Valenz behauptet. Der Wert kam ueber 849
+Rohturns 27-mal und lag in vier LZG-Knoten.
+
+**Die Zeile in der Synonymkarte reichte nicht — gemessen, nicht vermutet.** Nach dem Eintrag gab
+`sektor_faktor("mitgefuehl")` weiterhin `(1.0, None)` **samt Warnung**: Die Funktion schlaegt direkt
+in `EMOTION_SEKTOR_MAP` nach, und die traegt nur die 16 Kanonwerte. Der Wert war damit **gueltig und
+trotzdem sektorlos** — die Synonymkarte kannte ihn, der Verbraucher nicht.
+
+**Dieselbe Luecke sass ein zweites Mal im Strang-Histogramm.** Dort fiel ein Synonym in `unbekannt`
+und faerbte nicht mit, und die Valenzrechnung uebersprang es. Beide Naehte loesen jetzt auf, so wie
+es `ei/berechnung.py::emotion_kanonisieren` und `lzg_knoten.py:865` an ihren eigenen schon taten.
+
+**Gemessen nach dem Umbau:** `mitgefuehl` → `(1.5, 5)` wie `traurigkeit` · `glueck` → `(1.0, 1)`
+statt sektorlos · `neutral` → `(1.0, None)` **ohne** Warnung (Regelfall) · ein erfundener Wert →
+`(1.0, None)` **mit** Warnung. Die Trennung von Regelfall und Befund haelt.
+
+**Zeugen:** `tests/test_praegung_einfaerbung.py` (3 neu).
+**Suite:** 3156 → **3159 gruen**, 0 uebersprungen. Gegenprobe: ohne die Aufloesung 2 rot.
+**Offen bleibt:** `zuversicht` als Emotionswert (ein Sektorname) und der Riegel an der Perzeption —
+`PERZEPTION-EMOTION-AUSSER-KANON` ist nicht geschlossen, nur um seine inhaltliche Haelfte kuerzer.
 
 ---
 
