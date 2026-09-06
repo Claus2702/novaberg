@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 13:20 UTC** (gemessen via `date -u`). Davor 06.09.2026, 11:31 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 13:40 UTC** (gemessen via `date -u`). Davor 06.09.2026, 13:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,40 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 13:40 UTC — vier Fassungen gegen die Verallgemeinerung, keine traegt 🔬
+
+**Der Prompt-Wortlaut ist nicht der Hebel — gemessen, nicht ueberlegt.** Nach der Entscheidung des
+Eigentuemers war der naechstliegende Weg, den Profil-Prompts ein Mass fuer die Belegdichte
+mitzugeben. Vier Fassungen sind gebaut und am Fernmodell gegen dasselbe Material gefahren; gezaehlt
+wurden Dauerwoerter (*durchgehend, stets, immer, typisch*) im erzeugten Beziehungsprofil.
+
+| Fassung | n | unveraendert | mit Aenderung |
+|---|---:|---:|---:|
+| Deckungsregel, die die starken Woerter als Beispiel nennt | 5 | 2 | 6 |
+| Zaehlanweisung (*zaehle nach, in wie vielen Eintraegen*) | 5 | 2 | 7 |
+| Bindung an den Ausschnitt, ohne Haeufigkeitswoerter | 5 | 1 | 5 |
+| dasselbe, nachgemessen | 20 | 8 von 20 Laeufen | 9 von 20 |
+| das Wort *durchgehend* faellt aus dem Satz zur Pronomenwahl | 20 | 10 von 20 Laeufen | 8 von 20 |
+
+**Bei n = 20 bewegt keine Fassung die Zahl ueber ihre Streuung hinaus.** Die Nulllinie der
+unveraenderten Fassung liegt bei **8 bis 10 von 20 Laeufen mit mindestens einem Dauerwort** und in
+beiden Runden bei **11 Dauerwoertern gesamt**.
+
+**Die drei n=5-Zeilen sind Rauschen, und sie haben unterwegs eine falsche Korrektur ausgeloest.**
+Nach der ersten Messung (2 gegen 6) galt als belegt, dass die Regel das Wort selbst liefert; die
+zweite Fassung wurde daraufhin umgeschrieben. Bei n = 20 blieb von dem Vorzeichen nichts uebrig.
+**Eine Wirkung an einem Modelltext hat erst dann eine Zahl, wenn ihre Streuung danebensteht** — als
+Lesson in `21_MESSUNG` uebernommen.
+
+**Der Befund selbst haelt, und zwar schaerfer als am Vormittag.** Gemessen wurde bis dahin gegen
+1662 Wissensdateien; der Prompt bekommt aber nur **20 Begegnungen**, und die Anrede steht dort in
+**1 von 20** Eintraegen. Das Profil nennt sie *durchgehend*.
+
+**Der Code steht unveraendert.** Eine Fassung ohne belegte Wirkung waere ein zweiter Satz, der
+dasselbe behauptet. Was bleibt, ist eine Absichtsfrage: die **Ausgabe pruefen** oder das **Material
+aendern**. Suite unveraendert **3181 gruen, 0 uebersprungen**; Belege in
+`labor/2026-09-06_deckung_ergebnis.md`.
 
 ## 06.09.2026, 13:20 UTC — die Verallgemeinerung ist nicht gewuenscht 📋
 
