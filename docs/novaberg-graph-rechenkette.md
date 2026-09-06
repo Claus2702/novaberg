@@ -275,6 +275,9 @@ trägt einen `zeitfaktor`; er streckt die **Abstände**, nicht Boden und Alpha:
 ```
 ausschlag_aktuell : Faltung mit t                  → Ladung, Faszination (S38)
 einfaerbung       : Faltung mit t × sektor_faktor  → Ziele, LZG, EI-Calc (ungebaut)
+                    seit 06.09.2026 löst `sektor_faktor` Synonyme auf, bevor es
+                    die Sektorkarte fragt — `mitgefuehl` war gültig und trotzdem
+                    sektorlos, weil die Karte nur die 16 Kanonwerte trägt
 ```
 
 **Der Fading-Affect-Bias, und ausdrücklich nur auf der zweiten Zeile.** Negative Sektoren tragen

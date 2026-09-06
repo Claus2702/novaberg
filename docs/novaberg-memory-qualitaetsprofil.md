@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`
-**Stand:** 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
+**Stand:** 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
 **Pfad:** novaberg/docs/novaberg-memory-qualitaetsprofil.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §4 (der Träger), §5 (das gesetzte Vokabular), §6 (die sechs Dimensionen), §10.1 (der Merkmalszug)
 **Zustand:** 🟠 gebaut, läuft, **und sein Ergebnis steht unter einem Vorbehalt** — Speicher, Erzeuger und Leser stehen, aber vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste
@@ -25,12 +25,36 @@ geprüft hat.
 
 ## 2. Position
 
-Der Erzeuger sitzt **nicht** im Turn, sondern als achter Schritt im Tageslauf des
-`SynapsenDecayAgent`:
+Der Erzeuger sitzt **nicht** im Turn, sondern in einem **eigenen Pixie-Agenten**:
+`agents/qualitaet_profil/`, Takt täglich, Spur `llm`.
+
+> **Bis zum 06.09.2026 war er der achte Schritt im Tageslauf des `SynapsenDecayAgent` — und hat
+> dort in drei Tagen keinen einzigen Träger profiliert.** Zwei Läufe im `hintergrund_log`, beide
+> `0 von 20`, jedes Mal `SpurVerletzungError`, der ganze Schritt in **0,09 Sekunden**
+> `[gemessen 06.09.2026]`.
+>
+> **Der Riegel hat gehalten, was er verspricht.** Der Tageslauf fährt die `cpu`-Spur, in der das
+> Sprachmodell verriegelt ist (`services/model_services/spur.py`) — und ein Profil kostet **einen
+> Modellaufruf je Träger**. Gebrochen war die Zusicherung daneben: `lastart` von `synapsen_decay`
+> sagt in seinem eigenen Docstring *„Reine Rechnung über Bestandswerte, kein Modellaufruf"*.
+>
+> **Warum der Bau trotzdem richtig aussah:** Der Erstlauf am 03.09.2026 lief von Hand, also
+> **außerhalb jeder Spur** — dort schweigt der Riegel ausdrücklich.
+>
+> **Ein eigener Agent statt `lastart = "llm"` am Tageslauf:** Der ist zu neun Zehnteln reine
+> Rechnung, und seine übrigen Schritte hätten hinter dem Modell gewartet. Der neue Agent setzt
+> `lastart` **nicht** — die Vorgabe in `agents/base.py` ist `llm` und für genau diesen Fall so
+> gewählt.
+>
+> **Beleg:** 05.09. im Tageslauf `0 von 20`; 06.09. 11:28 im eigenen Agenten **20 von 20**.
+> Bestand 50 → **72 Träger / 432 Kanten**, offene Kandidaten 350 → **328**.
+
+Der Tageslauf trägt seither neun Schritte, Nummer 8 bleibt als benannte Lücke stehen:
 
 ```
 Knoten-Decay → pipeline_log-TTL → Queue-Verfall → Prägungs-Faltung
-  → Strang-Nachzug → Strang-Richtungen → Einfärbung → **Qualitätsprofile**
+  → Strang-Nachzug → Strang-Richtungen → Einfärbung → (8: ausgezogen)
+  → Trägerseite der Faszination → Preiswächter
 ```
 
 **Der Grund ist die Sorte der Größe.** Ein Profil beschreibt den Gegenstand und ändert sich
@@ -191,7 +215,7 @@ ausgefilterter Knoten ist kein Träger mit Faszination 0, sondern gar kein Träg
 und *nicht faszinierend* sind an dieser Stelle nicht unterscheidbar.
 
 **Die Dämpfung steht ohnehin an anderer Stelle.** `QUALITAET_PROFIL_JE_LAUF` deckelt auf 20
-Profile je Tageslauf, und `candidates_load` sortiert nach Lesespur, Brücken-Turns und
+Profile je Lauf (seit 06.09.2026 je Agentenlauf, täglich — Setzung des Eigentümers), und `candidates_load` sortiert nach Lesespur, Brücken-Turns und
 `haeufigkeit`. **Eine Reihenfolge verzögert, ein Filter schließt aus.** Bei hartem Tagesdeckel
 leistet die Reihenfolge dieselbe Dämpfung, ohne die Menge dauerhaft zu beschneiden; der Preis ist
 Zeit — 1598 statt 395 Kandidaten, bei 20 je Lauf rund 80 statt 20 Tage bis zur Sättigung, und die
