@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 10:29 UTC** (gemessen via `date -u`). Davor 06.09.2026, 10:20 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 10:52 UTC** (gemessen via `date -u`). Davor 06.09.2026, 10:29 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,40 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 06.09.2026, 10:52 UTC — die vierte Fundstelle derselben Klasse ✅
+
+**Nach dem konfigurierten statt dem antwortenden Modell geschluesselt** — dreimal am 05.09.2026
+gefunden und geschlossen, einmal offengeblieben, weil es fuer die Hintergrund-Rollen kein
+Gegenstueck zu `antwortendes_chat_modell` gab.
+
+**Gemessen vor dem Umbau:** **24 Erhebungen** in `charakter_rad_messung` zwischen dem 05.09.
+18:28 UTC und dem 06.09. 08:05 UTC tragen `qwen36-cpu` — obwohl seit dem 05.09. 18:04 UTC
+`deepseek/deepseek-v4-flash-0731` antwortet. Bei einem Herkunftsfeld wiegt das schwerer als bei
+einer Modellwahl: Es soll gerade sagen, wer gemessen hat, und **`F-RAD-2` stuetzt sich darauf**.
+
+**`antwortendes_modell(rolle)`** loest jetzt alle drei Worker-Rollen auf; `antwortendes_chat_modell`
+bleibt und ruft nur noch durch. Kein stiller Rueckfall: Eine unbekannte Rolle und ein unbekanntes
+Backend brechen beide, weil ein Vorgabewert von einer richtigen Antwort nicht zu unterscheiden
+waere.
+
+**Ein zweiter Fehler stand daneben und war folgenlos.** Das Feld trug die Konstante des
+**Analyse**-Modells, waehrend alle fuenf Profile **und beide Raeder** ueber `_llm_call` laufen — und
+der faehrt `modus="sprache"`. Im aktiven Connector tragen `PIXIE_ANALYSE_MODEL` und `SHADOW_MODEL`
+denselben Wert, deshalb ist es nie aufgefallen. Es faellt auf, sobald jemand die beiden Rollen
+trennt. Die Herkunftsangabe nennt deshalb ausdruecklich `background_sprache`.
+
+**Zeugen:** `tests/test_antwortendes_modell.py` (6).
+**Suite:** 3172 → **3178 gruen**. Gegenprobe 1 rot. Harte Wand sauber.
+
+**Der Bestand ist nach Freigabe berichtigt** — 24 Zeilen auf `deepseek/deepseek-v4-flash-0731`,
+in einer Transaktion mit vorheriger Sicherung der Kennungen. **Die Abgrenzung war eindeutig, und
+das ist keine Annahme:** Zwischen der letzten Erhebung unter dem Nahmodell (05.09., 00:26 UTC) und
+der ersten unter dem Fernmodell (18:28 UTC) liegen **17 Stunden ohne jede Zeile**. Die beiden
+Zeitfenster ueberlappen seither nicht — die Reihe ist nach dem Instrument trennbar, das sie
+erzeugt hat, und genau dafuer steht das Feld.
 
 ---
 

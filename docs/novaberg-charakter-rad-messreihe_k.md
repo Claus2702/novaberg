@@ -182,6 +182,8 @@ Seine Destillation begründete ausdrücklich, warum sie **ein echtes Rad** speic
 
 **`modell` und `temperatur` stehen dabei, weil der Maßstab mitwandert.** Ein Rad, das mit einem anderen Modell erhoben wurde, ist mit einem anderen Instrument gemessen; ohne diese Felder wäre ein Modellwechsel später von einer Charakterbewegung nicht zu unterscheiden.
 
+> **Und genau das ist einmal passiert.** `[gemessen 06.09.2026]`: **24 Erhebungen** zwischen dem 05.09. 18:28 UTC und dem 06.09. 08:05 UTC tragen `qwen36-cpu`, obwohl seit dem 05.09. 18:04 UTC `deepseek/deepseek-v4-flash-0731` antwortet. Das Feld wurde aus der **konfigurierten** Konstante `PIXIE_ANALYSE_MODEL` gefüllt statt aus dem Sprecher. Seit dem 06.09.2026 löst `config.antwortendes_modell("background_sprache")` es auf — die Rolle ist `sprache`, weil alle Profile und beide Räder über `_llm_call` laufen und der `modus="sprache"` fährt. **Der Bestand ist am 06.09.2026 berichtigt** — 24 Zeilen auf `deepseek/deepseek-v4-flash-0731` gesetzt, nach Freigabe des Eigentümers. Die beiden Zeitfenster überlappen seither nicht: `qwen36-cpu` endet am 05.09. um 00:26 UTC, `deepseek` beginnt um 18:28 UTC — dazwischen liegen 17 Stunden ohne Erhebung, und genau daran war die Abgrenzung eindeutig.
+
 **`quelle_pruefsumme` ist die Spalte, die eine Stunde Arbeit spart.** Am 31.07. war die Frage „Rauschen oder Bewegung?" nur durch Nachstellen der Destillation zu beantworten. Mit ihr ist es eine Gruppierung.
 
 **`charakter_hash` behält `nutzer_gewichtung` und `nutzer_gewichtung_rad`** als materialisierten Lesewert. Regel (1) erlaubt das ausdrücklich: *„Das Ergebnis darf zusätzlich gespeichert werden — nie stattdessen."* Dieselbe Bauart wie `motivation` neben `motivation_basis`.
