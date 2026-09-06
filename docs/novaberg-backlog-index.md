@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 438 Eintraege mit Kennung — 366 offen, 69 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 438 Eintraege mit Kennung — 365 offen, 70 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 437 von 438 Eintraegen zugeordnet.
 
@@ -382,7 +382,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | HGR | 805 | offen | `PIXIE-TURN-ID-LEER` | [Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter Characte](novaberg-backlog-hintergrund.md) |
 | HGR | 836 | abgeschlossen | `QUEUE-VERFALL-KONZEPT` | [QUEUE-VERFALL-KONZEPT — der Stapel und die Queue bra](novaberg-backlog-hintergrund.md) |
 | HGR | 875 | offen | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | [IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angel](novaberg-backlog-hintergrund.md) |
-| CHA | 26 | offen | `DECKUNG-BRAUCHT-EINEN-ANDEREN-ORT` | [Block 06.09.2026 — aus der Deckungsmessung am Profil](novaberg-backlog-charakter.md) |
+| CHA | 26 | abgeschlossen | `DECKUNG-BRAUCHT-EINEN-ANDEREN-ORT` | [Block 06.09.2026 — aus der Deckungsmessung am Profil](novaberg-backlog-charakter.md) |
 | CHA | 36 | abgeschlossen | `FALTUNG-OHNE-PERIODISCHEN-LAUF` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
 | CHA | 37 | offen | `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
 | CHA | 47 | offen | `SCHWELLEN-AUF-TESTMATERIAL-KALIBRIERT` | [Block 31.08.2026 — aus der Reizstaerke-Kalibrierung](novaberg-backlog-charakter.md) |

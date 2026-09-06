@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 14:05 UTC** (gemessen via `date -u`). Davor 06.09.2026, 13:40 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 14:35 UTC** (gemessen via `date -u`). Davor 06.09.2026, 14:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,57 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 14:35 UTC — ein Dauerwort wird beanstandet ✅
+
+**Der Eigentuemer hat den Ort entschieden**, nachdem der Prompt-Weg gemessen ausgeschieden war:
+*die Ausgabe wird geprueft*. Gebaut ist `deckung_beanstanden` in `agents/charakter/destillation.py`,
+gerufen von `_llm_call` — also fuer **alle fuenf** Profile, nicht nur fuer das, an dem der Befund
+entstand.
+
+**Der Prompt ist das Material.** Er traegt die Eintraege woertlich, also beantwortet *steht das
+Zitat im Prompt* genau die Frage *hatte das Modell einen Beleg*. Zwei Klassen werden gemeldet:
+
+| Klasse | Bedingung | am Bestand belegt |
+|---|---|---|
+| **Beleg ohne Fundstelle** | 0 Vorkommen im Material | zwei Laeufe zitierten Wendungen, die es nicht gibt |
+| **Einzelbeleg als Dauerzug** | 1 Vorkommen, im selben Satz wie ein Dauerwort | die Anrede aus 1 von 20 Begegnungen, *durchgehend* genannt |
+
+**Beanstandet heisst gemeldet, nicht verworfen.** Das Profil wird gespeichert; die Logzeile sagt,
+worauf es sich stuetzt. Ein Verwerfen kostet einen neuen Aufruf und laesst im Zweifel gar kein
+Profil stehen — das waere der teurere Fehler.
+
+**Die Messung am echten Lauf** (20 Beziehungsprofile, dasselbe Material, Fernmodell): **3 Laeufe mit
+Beanstandung von 20**, 3 von 50 Zitaten (6 %), alle drei aus der zweiten Klasse. Ein Vorlauf ergab
+4 von 20. **Weder tot noch Rauschmelder.**
+
+**Zwei Zeugen haben den Bau geaendert, bevor er stand:** Die Satztrennung zerschnitt Zitate mit
+eigenem Satzzeichen — Dauerwort und Beleg landeten in verschiedenen Saetzen, und die Pruefung
+schwieg; seither werden Zitate vor der Trennung maskiert. Und `assertLogs` horchte auf den
+Modulpfad, waehrend der Logger unter `ki_server` haengt — ein Zeuge, der gruen gewesen waere, weil
+er am falschen Ort lauscht.
+
+**Zwei Grenzen stehen im Docstring und am Defekt:** Ein Dauerwort **ohne** woertlichen Beleg ist
+nicht pruefbar, und der Anschlag im **vollen** Betriebspfad ist nicht belegt — im Messlauf war der
+Transport ersetzt, gerufen wurde die echte Pruefung mit echtem Prompt und echter Modellantwort.
+
+**Die zweite Kontrolle fragte nach der Reichweite statt nach dem Bau:** Die Pruefung haengt in
+`_llm_call` und laeuft fuer alle fuenf Profile — findet sie im Material eines Profils keine
+Anfuehrungszeichen, ist sie dort **blind**, und zwar unsichtbar. Gezaehlt am gerenderten Prompt,
+**5 von 5** tragen Belege:
+
+| Profil | Prompt (Zeichen) | Belege |
+|---|---:|---:|
+| Kern-Hash | 12 304 | 39 |
+| Adaptive-Hash | 16 032 | 12 |
+| Intentions-Profil | 24 506 | 10 |
+| Emotions-Profil | 20 146 | 10 |
+| Beziehungsprofil | 26 703 | 12 |
+
+10 Zeugen (`tests/test_destillation_deckung.py`), Gegenprobe **5 rot wie vorhergesagt**, Suite
+**3191 gruen, 0 uebersprungen** (davor 3181), harte Wand 0. `PROFIL-VERALLGEMEINERT-EINZELBELEG`
+bleibt offen: Die Verallgemeinerung geschieht weiter, sie ist jetzt sichtbar.
+`DECKUNG-BRAUCHT-EINEN-ANDEREN-ORT` ist am Tag seiner Anlage geschlossen.
 
 ## 06.09.2026, 14:05 UTC — die Schleife zieht nicht, sie steht 🔬
 
