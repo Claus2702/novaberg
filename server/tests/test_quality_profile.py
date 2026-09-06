@@ -36,6 +36,7 @@ from memory.repositories import quality_profile_repository as speicher
 REPO: str = "memory.repositories.quality_profile_repository"
 
 AGENT_MODUL: str = "agents.synapsen_decay.agent"
+PROFIL_AGENT_MODUL: str = "agents.qualitaet_profil.agent"
 PROFIL_MODUL: str = "memory.quality_profile"
 
 # Ein vollstaendiges Profil, in dem eine Dimension traegt und der Rest schweigt
@@ -452,79 +453,106 @@ class DerLaufFuehrtBuchTest(unittest.TestCase):
         gesucht.assert_not_called()
 
 
-class DerTageslaufRuftDenErzeugerTest(unittest.TestCase):
+class DerProfilAgentRuftDenErzeugerTest(unittest.TestCase):
     """Die Verdrahtung — ohne sie bleibt der Erzeuger gebaut und ungerufen.
 
     An dieser Schicht ist genau das binnen zwei Tagen dreimal der Befund
-    gewesen: eine Rechenfunktion ohne Aufrufer. Der Zeuge ersetzt jeden
-    Schritt des Tageslaufs, auch die, um die es hier nicht geht — was nicht
-    ersetzt ist, laeuft gegen `POSTGRES_URL`.
+    gewesen: eine Rechenfunktion ohne Aufrufer.
+
+    **Der Zeuge ist am 06.09.2026 vom Tageslauf auf den eigenen Agenten
+    umgezogen, und der Grund ist gemessen:** Im Tageslauf war der Schritt
+    zwar gerufen — aber er hat **nie einen Traeger profiliert**, zwei Laeufe
+    `0 von 20`, jedes Mal `SpurVerletzungError`. Ein Zeuge, der nur prueft,
+    *dass* gerufen wird, haette das nie gefunden: Er ersetzt den Erzeuger und
+    sieht die Spur nicht, in der der echte Lauf steht. **Deshalb steht unten
+    ein zweiter, der die Spur prueft.**
     """
 
     def test_invoke_ruft_den_profillauf(self) -> None:
-        """Der achte Schritt, und er darf keinen Modellaufruf ausloesen."""
+        """Der Agent ruft den Erzeuger und traegt sein Ergebnis."""
         from agents.base import AgentState
-        from agents.synapsen_decay.agent import SynapsenDecayAgent
+        from agents.qualitaet_profil.agent import QualitaetProfilAgent
 
-        leer: dict = {"error": None, "total_processed": 0, "deactivated_count": 0,
-                      "deleted_count": 0, "verarbeitet": 0, "deaktiviert": 0,
-                      "gefaltet": 0, "gesamt": 0}
-        with patch(f"{AGENT_MODUL}.SYNAPSEN_DECAY_AKTIV", True), \
-             patch(f"{AGENT_MODUL}.lzg_knoten.run_node_decay", return_value=leer), \
-             patch(f"{AGENT_MODUL}.pipeline_log.delete_expired_entries", return_value=leer), \
-             patch(f"{AGENT_MODUL}.ShadowAuftragRepository.verfall_lauf", return_value=leer), \
-             patch(f"{AGENT_MODUL}.db_manager"), \
-             patch(f"{AGENT_MODUL}.praegung.alle_faeden_nachfuehren", return_value=leer), \
-             patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",
-                   return_value=(0, 0)), \
-             patch(f"{AGENT_MODUL}.praegung.alle_einfaerbungen",
-                   return_value={"gerechnet": 0, "gesamt": 0, "je_sektor": {},
-                                 "abstand_max": 0.0, "error": None}), \
-             patch.object(SynapsenDecayAgent, "_richtungen_protokollieren",
-                          return_value=0), \
-             patch(f"{AGENT_MODUL}.quality_profile.profil_lauf",
+        with patch(f"{PROFIL_AGENT_MODUL}.db_manager"), \
+             patch(f"{PROFIL_AGENT_MODUL}.quality_profile.profil_lauf",
                    return_value={"versucht": 2, "profiliert": 2,
                                  "gescheitert": 0, "traeger_gesamt": 2,
                                  "kanten_gesamt": 12, "error": None}) as gerufen:
-            zustand: AgentState = SynapsenDecayAgent().invoke(
+            zustand: AgentState = QualitaetProfilAgent().invoke(
                 AgentState(auftrag="", kontext={}),
             )
         gerufen.assert_called_once()
-        self.assertEqual("abgeschlossen", zustand["status"])
-        self.assertIn("qualitaet_profil", zustand["ergebnis"])
-        self.assertEqual(2, zustand["ergebnis"]["qualitaet_profil"]["profiliert"])
+        self.assertEqual("erledigt", zustand["status"])
+        self.assertEqual(2, zustand["ergebnis"]["profiliert"])
 
-    def test_ein_fehler_im_profillauf_faerbt_den_tageslauf(self) -> None:
+    def test_ein_fehler_im_profillauf_faerbt_den_lauf(self) -> None:
         """Ein Schritt, dessen Fehlschlag niemand sieht, ist kein Schritt."""
         from agents.base import AgentState
-        from agents.synapsen_decay.agent import SynapsenDecayAgent
+        from agents.qualitaet_profil.agent import QualitaetProfilAgent
 
-        leer: dict = {"error": None, "total_processed": 0, "deactivated_count": 0,
-                      "deleted_count": 0, "verarbeitet": 0, "deaktiviert": 0,
-                      "gefaltet": 0, "gesamt": 0}
-        with patch(f"{AGENT_MODUL}.SYNAPSEN_DECAY_AKTIV", True), \
-             patch(f"{AGENT_MODUL}.lzg_knoten.run_node_decay", return_value=leer), \
-             patch(f"{AGENT_MODUL}.pipeline_log.delete_expired_entries", return_value=leer), \
-             patch(f"{AGENT_MODUL}.ShadowAuftragRepository.verfall_lauf", return_value=leer), \
-             patch(f"{AGENT_MODUL}.db_manager"), \
-             patch(f"{AGENT_MODUL}.praegung.alle_faeden_nachfuehren", return_value=leer), \
-             patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",
-                   return_value=(0, 0)), \
-             patch(f"{AGENT_MODUL}.praegung.alle_einfaerbungen",
-                   return_value={"gerechnet": 0, "gesamt": 0, "je_sektor": {},
-                                 "abstand_max": 0.0, "error": None}), \
-             patch.object(SynapsenDecayAgent, "_richtungen_protokollieren",
-                          return_value=0), \
-             patch(f"{AGENT_MODUL}.quality_profile.profil_lauf",
+        with patch(f"{PROFIL_AGENT_MODUL}.db_manager"), \
+             patch(f"{PROFIL_AGENT_MODUL}.quality_profile.profil_lauf",
                    return_value={"versucht": 0, "profiliert": 0,
                                  "gescheitert": 0, "traeger_gesamt": 0,
                                  "kanten_gesamt": 0,
                                  "error": "Der Kanon ist nicht lesbar"}):
-            zustand: AgentState = SynapsenDecayAgent().invoke(
+            zustand: AgentState = QualitaetProfilAgent().invoke(
                 AgentState(auftrag="", kontext={}),
             )
         self.assertEqual("fehler", zustand["status"])
         self.assertIn("Kanon", zustand["fehler"])
+
+
+class DieSpurTraegtDenModellaufrufTest(unittest.TestCase):
+    """Der Zeuge, der den Befund vom 06.09.2026 gefunden haette.
+
+    **Ein Profil kostet einen Modellaufruf je Traeger.** Der Erzeuger lief
+    von 03.09. bis 06.09.2026 im Tageslauf, und der faehrt die `cpu`-Spur, in
+    der das Sprachmodell verriegelt ist (`services/model_services/spur.py`).
+    Ergebnis: zwei Laeufe, **0 von 20**, `SpurVerletzungError` bei jedem
+    Traeger, Laufzeit 0,09 s.
+
+    **Der Riegel hat richtig gehandelt.** Der Fehler stand in der
+    Einordnung: Ein Agent, der das Modell ruft, gehoert in die `llm`-Spur.
+    """
+
+    def test_der_profil_agent_faehrt_die_langsame_spur(self) -> None:
+        """Rot, sobald jemand ihn auf `cpu` stellt.
+
+        Er setzt `lastart` nicht selbst — die Vorgabe in `agents/base.py`
+        ist `llm` und ausdruecklich so gewaehlt. Der Zeuge prueft die
+        Wirkung, nicht die Schreibweise.
+        """
+        from agents.qualitaet_profil.agent import QualitaetProfilAgent
+        self.assertEqual("llm", QualitaetProfilAgent().lastart)
+
+    def test_der_tageslauf_bleibt_die_schnelle_spur_und_ruft_kein_modell(self) -> None:
+        """Die Zusicherung, die der Auszug wiederherstellt.
+
+        `synapsen_decay` verspricht in seinem eigenen Docstring *„Reine
+        Rechnung ueber Bestandswerte, kein Modellaufruf"*. Rot, sobald dort
+        wieder ein Erzeuger mit Modellaufruf einzieht.
+        """
+        import pathlib
+
+        from agents.synapsen_decay.agent import SynapsenDecayAgent
+        self.assertEqual("cpu", SynapsenDecayAgent().lastart)
+
+        quelle: str = pathlib.Path(
+            "/app/agents/synapsen_decay/agent.py",
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("quality_profile.profil_lauf", quelle)
+
+    def test_der_takt_ist_taeglich(self) -> None:
+        """Setzung des Eigentuemers, 06.09.2026 — mit ihrer Rechnung.
+
+        350 Kandidaten standen offen, 20 je Lauf: rund 18 Tage. Die Zahl
+        steht im Docstring des Agenten, damit die Wahl nachrechenbar bleibt.
+        """
+        from agents.qualitaet_profil.agent import QualitaetProfilAgent
+        aufgabe = QualitaetProfilAgent().periodic_task()
+        self.assertIsNotNone(aufgabe)
+        self.assertEqual(86_400, aufgabe.interval)
 
 
 if __name__ == "__main__":

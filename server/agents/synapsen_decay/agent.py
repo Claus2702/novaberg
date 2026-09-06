@@ -441,41 +441,21 @@ class SynapsenDecayAgent(BaseAgent):
             #    kalibrierbar wird.
             einfaerbung_result: dict = praegung.alle_einfaerbungen(POSTGRES_URL)
 
-            # 8. Die Qualitaetsprofile — der Erzeuger der abstrakten Schicht
-            #    (`novaberg-thinking-faszination_k.md` §5, §6). Ein
-            #    Modellaufruf je Traeger, deshalb **gedeckelt**: 368
-            #    Kandidaten standen am 03.09.2026 im Bestand, und ebenso
-            #    viele Aufrufe passen nicht in einen Heartbeat-Platz.
+            # 8. **Die Qualitaetsprofile stehen hier nicht mehr** — sie sind
+            #    am 06.09.2026 in `agents/qualitaet_profil/` ausgezogen.
             #
-            #    **Er steht hier und nicht im Turn**, weil er nichts
-            #    entscheidet, was der Turn braucht: Ein Profil beschreibt den
-            #    Gegenstand und aendert sich zwischen zwei Tagen nicht. Der
-            #    Turn-Pfad liest es spaeter, er erzeugt es nicht.
+            #    **Der Grund ist gemessen, nicht vermutet:** Der Schritt lief
+            #    hier seit dem 03.09.2026 und hat **nie einen Traeger
+            #    profiliert** — zwei Laeufe, beide `0 von 20`, jedes Mal
+            #    `SpurVerletzungError`. Ein Profil kostet einen Modellaufruf,
+            #    und dieser Agent faehrt die `cpu`-Spur, in der das
+            #    Sprachmodell verriegelt ist. **Der Riegel hat richtig
+            #    gehandelt** — der Docstring von `lastart` sagt *„kein
+            #    Modellaufruf"*, und der Einbau hat diese Zusicherung
+            #    gebrochen.
             #
-            #    **Eigener Audit-Eintrag**, aus demselben Grund wie beim
-            #    dritten Schritt: Ein Lauf ohne Kandidaten und ein Lauf, der
-            #    nicht lief, sind sonst dasselbe.
-            self._audit_log(
-                DEFAULT_USER_ID, "qualitaet_profil", "gestartet", f"run_id={run_id}",
-            )
-            profil_result: dict = quality_profile.profil_lauf(POSTGRES_URL)
-            if profil_result["error"]:
-                self._audit_log(
-                    DEFAULT_USER_ID, "qualitaet_profil", "fehler",
-                    profil_result["error"],
-                )
-            else:
-                self._audit_log(
-                    DEFAULT_USER_ID, "qualitaet_profil", "erledigt",
-                    f"{profil_result['profiliert']} von "
-                    f"{profil_result['versucht']} Traegern profiliert, "
-                    f"Bestand {profil_result['traeger_gesamt']}",
-                )
-            logger.info(
-                f"Synapsen-Decay: {profil_result['profiliert']} von "
-                f"{profil_result['versucht']} Traegern profiliert "
-                f"({profil_result['gescheitert']} gescheitert)"
-            )
+            #    Die Nummer 8 bleibt als Luecke stehen, damit die uebrigen
+            #    Schritte ihre Nummern behalten und die Chronik lesbar bleibt.
 
             # 9. Die Traegerseite der Faszination ueber den Bestand
             #    (`novaberg-thinking-faszination_k.md` §10.6). **Ohne
@@ -522,7 +502,7 @@ class SynapsenDecayAgent(BaseAgent):
                 for e in (
                     decay_result["error"], cleanup_result["error"],
                     queue_result["error"], faltung_result["error"],
-                    einfaerbung_result["error"], profil_result["error"],
+                    einfaerbung_result["error"],
                     faszination_result["error"],
                 )
                 if e is not None
@@ -583,7 +563,6 @@ class SynapsenDecayAgent(BaseAgent):
                 "queue_verfall": queue_result,
                 "praegung_faltung": faltung_result,
                 "praegung_einfaerbung": einfaerbung_result,
-                "qualitaet_profil": profil_result,
                 "faszination_bestand": faszination_result,
             }
 
@@ -598,11 +577,8 @@ class SynapsenDecayAgent(BaseAgent):
                 "faeden_gesamt": faltung_result["gesamt"],
                 "einfaerbungen": einfaerbung_result["gerechnet"],
                 "einfaerbung_abstand_max": einfaerbung_result["abstand_max"],
-                "profile_versucht": profil_result["versucht"],
-                "profile_geschrieben": profil_result["profiliert"],
                 "faszination_gerechnet": faszination_result["gerechnet"],
                 "faszination_roh_median": faszination_result["roh_median"],
-                "profile_bestand": profil_result["traeger_gesamt"],
             }
 
             if fehler:

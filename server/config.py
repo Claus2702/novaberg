@@ -2153,6 +2153,15 @@ QUALITAET_LAENGE_MIN:     int = 400
 # **Gedeckelt je Tageslauf, nicht in einem Zug.** 368 Modellaufrufe passen
 # nicht in einen Heartbeat-Platz; bei diesem Deckel fuellt sich der Bestand
 # in rund drei Wochen, und ein Ausfall kostet einen Tag statt eines Laufs.
+#: Wie oft der Profil-Agent drankommt. **Einmal am Tag — Setzung des
+#: Eigentuemers, 06.09.2026.** Gemessen an diesem Tag: **350 Kandidaten**
+#: offen; bei 20 je Lauf fuellt sich der Bestand in rund **18 Tagen**.
+PIXIE_QUALITAET_INTERVALL_SEKUNDEN: int = 86_400
+
+#: Seine Dringlichkeit im Heartbeat. Wie der Tageslauf: Ein Wartungslauf
+#: draengt nicht, er soll nur zuverlaessig drankommen.
+PIXIE_QUALITAET_PRIORITAET: float = PIXIE_DECAY_PRIORITAET
+
 QUALITAET_PROFIL_JE_LAUF: int = 20
 
 # Der Zuschlag des Merkmalszugs (§10.1).
