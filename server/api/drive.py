@@ -27,6 +27,7 @@ from config import (
     GRAVITATIONS_SALIENZ_FAKTOR,
     GRAVITATIONS_SCHWELLE,
     POSTGRES_URL,
+    PREIS_BEFUND_KEY,
     SACHLAGE_VERFALL_SEKUNDEN,
     ZIEL_DEAKTIVIERUNGS_SCHWELLE,
     ZIEL_KURZFRISTIG_DECAY_STUNDEN,
@@ -38,9 +39,11 @@ from config import (
 from ei.gravitation import _cosine_similarity
 from graph.nodes.sachlage import question_target
 from memory.kurzziel import short_goal_key
+from memory.pipeline_log import kosten_summen
 from memory.sachlage_history import history_recent
 from memory.session import session_turns_retrieve
 from memory.ziele import ziel_paar_bestimmen, ziele_aktive_laden, ziele_live_bewerten
+from services.model_costs import BACKGROUND_TURN
 
 logger = logging.getLogger("ki_server.drive")
 
@@ -248,6 +251,60 @@ def kontext_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_
         POSTGRES_URL, user_id, character_id, limit=KONTEXT_VERLAUF_ZEILEN,
     )
     return antwort
+
+
+@router.get("/kosten")
+def kosten_lesen():
+    """Liefert die drei Betraege und einen offenen Preisbefund.
+
+    **Fuer den Start des Clients.** Die Statuszeile bekommt ihre Zahlen
+    sonst erst mit der ersten Antwort — bis dahin stuenden dort drei
+    Striche, obwohl der Tag laengst laeuft und der Hintergrund kostet.
+
+    Der Posten `turn` nennt den **zuletzt abgerechneten** Turn, nicht die
+    Summe aller: Beim Start gibt es keinen laufenden, und die Summe waere
+    eine vierte Zahl mit einer vierten Bedeutung.
+
+    Vorbedingung: keine.
+    Nachbedingung: `{"turn", "heute", "monat", "preis_warnung"}`. Die
+        Betraege sind `None`, wenn die Abfrage ausfiel — der Client zeigt
+        dafuer einen Strich und nicht `$0.0000`.
+    Fehlerfaelle: Ein Fehlschlag wird gemeldet und als `None` gereicht; eine
+        Statuszeile darf den Start nicht kosten.
+    """
+    letzter_turn: str = ""
+    try:
+        with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT turn_id FROM pipeline_log
+                 WHERE art = 'token' AND turn_id <> %s
+                 ORDER BY id DESC LIMIT 1
+                """,
+                (BACKGROUND_TURN,),
+            )
+            zeile = cur.fetchone()
+            letzter_turn = zeile[0] if zeile else ""
+    except Exception as fehler:  # noqa: BLE001 — siehe Fehlerfaelle
+        logger.error("Kosten: letzter Turn nicht ermittelbar: %s", fehler)
+
+    summen: dict | None = kosten_summen(POSTGRES_URL, letzter_turn)
+
+    preis_warnung: dict | None = None
+    try:
+        roh = redis_client.get(PREIS_BEFUND_KEY)
+        if roh:
+            preis_warnung = json.loads(roh)
+    except Exception as fehler:  # noqa: BLE001
+        logger.error("Kosten: Preisbefund nicht lesbar: %s", fehler)
+
+    return {
+        "turn":          (summen or {}).get("turn"),
+        "heute":         (summen or {}).get("heute"),
+        "monat":         (summen or {}).get("monat"),
+        "letzter_turn":  letzter_turn,
+        "preis_warnung": preis_warnung,
+    }
 
 
 @router.get("/goals")

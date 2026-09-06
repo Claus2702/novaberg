@@ -454,10 +454,20 @@ OPENROUTER_NUM_CTX: int = int(os.getenv("OPENROUTER_NUM_CTX", "1048576"))
 # **Sie tragen einen Rabatt von 64,3 %** (`pricing.discount: 0.643`), und die
 # Schnittstelle nennt **keine Frist dazu**. Der Listenpreis waere $0,14 und
 # $0,28. Ein Werkzeug haelt die Zahlen hier gegen den Endpunkt:
-# `tools/openrouter_price_watch.py`.
+# `services/price_watch.py`.
 #
 # Sie sind Buchhaltung und gehen in keine Entscheidung; steht ein falscher
 # Wert hier, ist die Kostenzeile falsch und sonst nichts.
+#: Wo ein Befund des Preiswaechters liegt, bis ihn eine Antwort mitnimmt.
+#: **Redis und nicht der direkte Zuruf:** Der Tageslauf hat keinen
+#: Event-Loop, und `broadcast_threadsafe` braucht einen.
+PREIS_BEFUND_KEY: str = "preis_befund"
+
+#: Wie lange ein Befund liegen bleibt. Zwei Tage — laenger als der Abstand
+#: zweier Tagelaeufe, damit ein Befund nicht verfaellt, bevor ihn jemand
+#: gesehen hat, und kurz genug, dass ein behobener nicht ewig nachhallt.
+PREIS_BEFUND_TTL_S: int = 172_800
+
 OPENROUTER_PRICE_INPUT_PER_M:  float = float(os.getenv("OPENROUTER_PRICE_INPUT_PER_M",  "0.04998"))
 OPENROUTER_PRICE_OUTPUT_PER_M: float = float(os.getenv("OPENROUTER_PRICE_OUTPUT_PER_M", "0.09996"))
 

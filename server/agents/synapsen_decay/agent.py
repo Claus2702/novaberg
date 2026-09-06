@@ -37,6 +37,7 @@ Halbreaktivierung (§9.3) ist NICHT hier, sondern im Schreibpfad von
 memory/lzg_knoten.py (P6 Teil B).
 """
 
+import json
 import logging
 import uuid
 
@@ -47,7 +48,10 @@ from config import (
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
     PIXIE_DECAY_PRIORITAET,
     POSTGRES_URL,
+    PREIS_BEFUND_KEY,
+    PREIS_BEFUND_TTL_S,
     SYNAPSEN_DECAY_AKTIV,
+    redis_client,
 )
 from memory import (
     fascination_store,
@@ -57,6 +61,7 @@ from memory import (
     quality_profile,
 )
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
+from services import price_watch
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.synapsen_decay")
@@ -522,6 +527,56 @@ class SynapsenDecayAgent(BaseAgent):
                 )
                 if e is not None
             ]
+            # 10. Der Preiswaechter (`services/price_watch.py`).
+            #
+            #     **Er stand seit dem 05.09.2026 fertig da und hatte keinen
+            #     Aufrufer** — ein Werkzeug fuer einen Menschen, der daran
+            #     denkt. Der Rabatt von 64,3 % traegt die Wirtschaftlichkeit,
+            #     und die Schnittstelle nennt **kein Ende**: Ein Preis, der
+            #     still auf Listenniveau zurueckginge, faende sich in der
+            #     Rechnung und sonst nirgends.
+            #
+            #     **Der Befund geht nach Redis, nicht direkt an die
+            #     Clients.** Hier ist kein Event-Loop zur Hand, und
+            #     `broadcast_threadsafe` braucht einen. Die naechste Antwort
+            #     nimmt ihn mit; bei einem Preis, der sich hoechstens
+            #     taeglich bewegt, ist das frueh genug.
+            #
+            #     **Eigener Audit-Eintrag:** Ein Waechter ohne Befund und
+            #     ein Waechter, der nicht lief, sind sonst dasselbe.
+            self._audit_log(
+                DEFAULT_USER_ID, "preis_waechter", "gestartet", f"run_id={run_id}",
+            )
+            try:
+                preis_bericht: dict = price_watch.pruefen()
+                preis_befunde: list = preis_bericht["befunde"]
+                if preis_befunde:
+                    redis_client.set(
+                        PREIS_BEFUND_KEY,
+                        json.dumps(preis_bericht),
+                        ex=PREIS_BEFUND_TTL_S,
+                    )
+                    logger.warning(
+                        "Preiswaechter: %d Befund(e) — %s",
+                        len(preis_befunde), "; ".join(preis_befunde),
+                    )
+                else:
+                    redis_client.delete(PREIS_BEFUND_KEY)
+                self._audit_log(
+                    DEFAULT_USER_ID, "preis_waechter", "erledigt",
+                    f"{len(preis_befunde)} Befund(e), "
+                    f"${preis_bericht['input_per_m']:.5f} ein / "
+                    f"${preis_bericht['output_per_m']:.5f} aus",
+                )
+            except Exception as preis_fehler:  # noqa: BLE001
+                # Ein Waechter, der den Endpunkt nicht erreicht, darf den
+                # Tageslauf nicht kosten — aber er darf auch nicht so
+                # aussehen, als haette er nichts gefunden.
+                self._audit_log(
+                    DEFAULT_USER_ID, "preis_waechter", "fehler", str(preis_fehler),
+                )
+                logger.error("Preiswaechter: %s", preis_fehler)
+
             state["ergebnis"] = {
                 "decay": decay_result,
                 "cleanup": cleanup_result,

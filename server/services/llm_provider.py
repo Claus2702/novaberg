@@ -25,6 +25,7 @@ from config import (
     OPENROUTER_PRICE_INPUT_PER_M,
     OPENROUTER_PRICE_OUTPUT_PER_M,
 )
+from services.model_costs import record_usage
 
 logger = logging.getLogger("ki_server.llm_provider")
 logger_tokens = logging.getLogger("ki_server.llm")
@@ -649,6 +650,11 @@ def _antwort_auswerten(
             f"erwartet str — Vertragsbruch des Anbieters, caller={caller}"
         )
         raise TypeError("OpenRouter-content ist keine Zeichenkette")
+
+    # **Hier und nirgends spaeter.** Auf dem Rueckweg traegt `ChatResponse`
+    # nur `token_total`; aus einer Summe laesst sich kein Preis rechnen,
+    # solange Ausgabe doppelt so teuer ist wie Eingabe.
+    record_usage(caller, str(daten.get("model") or ""), input_tokens, output_tokens)
 
     return (
         inhalt,

@@ -25,6 +25,7 @@ import uuid
 from api.websocket import broadcast_threadsafe
 from config import ASSISTANT_USER_ID, graph_run_lock, redis_client, shutdown_event
 from services.events import event_erzeugen, event_wartet
+from services.model_costs import BACKGROUND_TURN, CURRENT_TURN
 from services.prompt_eingang import (
     block_zu_prompt,
     naechster_block,
@@ -225,9 +226,18 @@ async def _block_verarbeiten(
         # entstand am 01.08.2026 ein Deadlock: Der Loop stand, und mit ihm
         # jede Logzeile. Der Riegel wird vom Waechter erworben, bevor er die
         # Queue anfasst, und im `finally` des Loops freigegeben.
-        letzter, ausfall = await asyncio.to_thread(
-            _pfad1_fahren, conversation_graph, zustand, kopf, loop,
-        )
+        # **Der eine Setzpunkt des HumanGraph.** Jeder `ChatRequest`, den ein
+        # Knoten dieses Laufs erzeugt, holt die Kennung von hier — statt sie
+        # an fuenfzehn Stellen von Hand einzusetzen, von denen sechs den
+        # State gar nicht im Sichtfeld haben. `asyncio.to_thread` kopiert
+        # den Kontext in den Thread, in dem der Graph laeuft.
+        marke = CURRENT_TURN.set(turn_id or BACKGROUND_TURN)
+        try:
+            letzter, ausfall = await asyncio.to_thread(
+                _pfad1_fahren, conversation_graph, zustand, kopf, loop,
+            )
+        finally:
+            CURRENT_TURN.reset(marke)
 
         nutzlast: dict = _ereignis_nutzlast(
             turn_id, empfangen_am, prompt, letzter, ausfall,

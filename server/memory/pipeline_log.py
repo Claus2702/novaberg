@@ -311,6 +311,88 @@ def _batch_insert_sync(
         conn.close()
 
 
+def kosten_summen(postgres_url: str, turn_id: str = "") -> dict[str, float] | None:
+    """Summiert die Kosten der Modellaufrufe — Turn, Tag und Monat.
+
+    **Die drei Zahlen messen nicht dasselbe, und das ist beabsichtigt.** Tag
+    und Monat zaehlen **jeden** Aufruf, auch den, der zu keinem Turn gehoert:
+    Pixie, Tageslauf und jede Destillation kosten Geld, ohne dass jemand
+    etwas gefragt haette. Die Tagessumme ist deshalb **groesser** als die
+    Summe der Turns — wer beide gegeneinander haelt, misst den Hintergrund.
+
+    Der Tag laeuft nach UTC, wie jede andere Zeitangabe dieses Systems; der
+    Monat ist der Kalendermonat, nicht die letzten 30 Tage.
+
+    Vorbedingung: `postgres_url` zeigt auf die Datenbank.
+    Nachbedingung: Drei Betraege, nie `None` — ein Zeitraum ohne Aufrufe
+        ergibt `0.0` und ist damit von einem Fehlschlag zu unterscheiden,
+        der `None` zurueckgibt.
+    Fehlerfaelle: Bei einem Datenbankfehler `None` statt erfundener Nullen —
+        eine Buchhaltung, die schweigt, sieht sonst aus wie eine, die nichts
+        zu melden hat.
+
+    Args:
+        postgres_url: Verbindung.
+        turn_id: Der Turn, dessen Kosten eigens ausgewiesen werden. Leer
+            ergibt `0.0` fuer diesen Posten, nicht die Summe aller Turns.
+
+    Returns:
+        `{"turn": float, "heute": float, "monat": float}` oder None.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not postgres_url:
+        logger.error("kosten_summen: keine Verbindung angegeben")
+        return None
+
+    conn = None
+    try:
+        conn = psycopg2.connect(postgres_url)
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    COALESCE(SUM(CASE WHEN turn_id = %s
+                                      THEN (inhalt->>'kosten_usd')::numeric END), 0),
+                    COALESCE(SUM(CASE WHEN erstellt_am >= date_trunc('day', NOW())
+                                      THEN (inhalt->>'kosten_usd')::numeric END), 0),
+                    COALESCE(SUM(CASE WHEN erstellt_am >= date_trunc('month', NOW())
+                                      THEN (inhalt->>'kosten_usd')::numeric END), 0)
+                FROM pipeline_log
+                 WHERE art = 'token'
+                   AND erstellt_am >= date_trunc('month', NOW())
+                """,
+                (turn_id or "\x00",),
+            )
+            zeile = cur.fetchone()
+
+        # ── Ausgabe-Verifikation ────────────────
+        if not zeile or len(zeile) != 3:
+            logger.error(
+                "kosten_summen: Abfrage lieferte %r statt dreier Summen", zeile,
+            )
+            return None
+
+        summen: dict[str, float] = {
+            "turn":  float(zeile[0]),
+            "heute": float(zeile[1]),
+            "monat": float(zeile[2]),
+        }
+        if summen["turn"] > summen["heute"] + 1e-9:
+            logger.error(
+                "kosten_summen: Turn (%.6f) kostet mehr als der ganze Tag "
+                "(%.6f) — die Zeitraeume ueberlappen nicht, wie sie sollten",
+                summen["turn"], summen["heute"],
+            )
+        return summen
+
+    except Exception as fehler:  # noqa: BLE001 — siehe Fehlerfaelle
+        logger.error("kosten_summen: %s", fehler)
+        return None
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 def delete_expired_entries(
     postgres_url: str,
     retention_days: int | None = None,

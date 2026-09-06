@@ -61,3 +61,50 @@ def zeit_kurz(iso: str) -> str:
         return zeitpunkt.strftime(_ANZEIGE)
 
     return zeitpunkt.astimezone(datetime.timezone.utc).strftime(_ANZEIGE) + " UTC"
+
+
+def kosten_zeile(
+    turn:  float | None,
+    heute: float | None,
+    monat: float | None,
+) -> str:
+    """Baut die Kostenzeile der Statusleiste — drei Posten, eine Genauigkeit.
+
+    **Alle drei mit vier Nachkommastellen.** Der erste Betriebsblick am
+    06.09.2026 zeigte `Heute: $0.009 · Monat: $0.01` — **derselbe Wert**,
+    $0,013799, einmal auf drei und einmal auf zwei Stellen gerundet.
+    Solange der Monat jung ist, sind Tag und Monat gleich; verschiedene
+    Stellenzahlen machen daraus zwei Zahlen, die man gegeneinander liest.
+    Vier Stellen, weil ein ganzer Turn bei $0,0016 bis $0,0032 liegt und
+    bei zweien verschwaende.
+
+    **Ein Strich ist keine Null.** `None` heisst *nicht ermittelt*; stuende
+    dort `$0.0000`, saehe ein ausgefallener Zaehler aus wie ein kostenloser
+    Betrieb.
+
+    Vorbedingung: keine — jeder Posten darf `None` sein.
+    Nachbedingung: Eine Zeile mit drei benannten Posten, nie leer.
+    Fehlerfaelle: keine.
+
+    Args:
+        turn: Kosten des Turns in USD.
+        heute: Kosten des laufenden Tages (UTC), Hintergrund eingerechnet.
+        monat: Kosten des laufenden Kalendermonats.
+
+    Returns:
+        Zum Beispiel `Turn: $0.0032 · Heute: $0.0222 · Monat: $0.0222`.
+    """
+    # ── Verarbeitung ────────────────────────────
+    def _betrag(wert: float | None) -> str:
+        return "—" if wert is None else f"${wert:.4f}"
+
+    zeile: str = (
+        f"Turn: {_betrag(turn)} · "
+        f"Heute: {_betrag(heute)} · "
+        f"Monat: {_betrag(monat)}"
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if zeile.count("·") != 2:
+        logger.error(f"kosten_zeile: {zeile!r} traegt nicht drei Posten")
+    return zeile

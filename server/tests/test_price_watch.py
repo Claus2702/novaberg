@@ -22,7 +22,7 @@ import unittest
 from typing import Optional
 from unittest.mock import patch
 
-from tools import openrouter_price_watch as watch
+from services import price_watch as watch
 
 EINGANG: float = 0.04998
 AUSGANG: float = 0.09996

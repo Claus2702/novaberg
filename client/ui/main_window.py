@@ -20,14 +20,18 @@ eigentliche Geschäftslogik sitzt in :class:`ChatView` und
 """
 
 import logging
+import threading
 
 import gi
+import requests
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, Gtk  # noqa: E402
+from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
 from config import (  # noqa: E402
     DEFAULT_USER_ID,
+    PANEL_REQUEST_TIMEOUT,
+    SERVER_URL,
     STATUSBAR_BG_COLOR,
     STATUSBAR_TEXT_COLOR,
     TOOLBAR_BG_COLOR,
@@ -101,6 +105,11 @@ class MainWindow(Gtk.ApplicationWindow):
         # Flag: Warten wir auf eine WebSocket-Antwort nach Pfad 1?
         self._awaiting_response: bool = False
 
+        # Der zuletzt gezeigte Preisbefund. Er reist mit **jeder** Antwort
+        # mit, solange er in Redis liegt — ohne diese Sperre oeffnete sich
+        # bei jedem Turn dasselbe Fenster erneut.
+        self._letzte_preis_warnung: str = ""
+
         # UI-Baum aufsetzen
         self._build_ui()
 
@@ -113,7 +122,51 @@ class MainWindow(Gtk.ApplicationWindow):
         # Dauer-WebSocket starten
         self._stream.start_websocket()
 
+        # Die Kostenanzeige einmal fuellen, bevor die erste Antwort kommt.
+        # Sonst stuenden dort drei Striche, obwohl der Tag laengst laeuft
+        # und der Hintergrund die ganze Zeit kostet.
+        threading.Thread(
+            target=self._kosten_initial_laden, daemon=True,
+        ).start()
+
         logger.info("MainWindow ist bereit")
+
+    def _kosten_initial_laden(self) -> None:
+        """Holt die drei Betraege einmal beim Start — in einem eigenen Thread.
+
+        **Nicht im UI-Thread**, weil ein nicht erreichbarer Server das
+        Fenster sonst bis zum Timeout einfriert. Das Ergebnis geht ueber
+        `GLib.idle_add` zurueck, wie jeder andere Zugriff auf die Widgets.
+
+        Vorbedingung: keine.
+        Nachbedingung: Die Statuszeile traegt die Betraege — oder weiter
+            Striche, wenn der Server schweigt.
+        Fehlerfaelle: keine nach aussen. Ein Fehlschlag wird gemeldet; die
+            Anzeige bleibt auf ihrem Strich, und das ist die richtige
+            Auskunft: nicht ermittelt.
+        """
+        try:
+            antwort = requests.get(
+                f"{SERVER_URL}/drive/kosten", timeout=PANEL_REQUEST_TIMEOUT,
+            )
+            antwort.raise_for_status()
+            daten: dict = antwort.json()
+        except Exception as fehler:  # noqa: BLE001 — siehe Fehlerfaelle
+            logger.error(f"Kosten beim Start nicht ladbar: {fehler}")
+            return
+
+        logger.info(
+            f"Kosten beim Start: Turn={daten.get('turn')}, "
+            f"Heute={daten.get('heute')}, Monat={daten.get('monat')} "
+            f"(letzter Turn: {daten.get('letzter_turn') or '(keiner)'})"
+        )
+        GLib.idle_add(
+            self._status_bar.set_kosten,
+            daten.get("turn"), daten.get("heute"), daten.get("monat"),
+        )
+        # Ein Befund, der beim letzten Tageslauf entstand, soll den Menschen
+        # nicht erst beim naechsten Turn erreichen.
+        GLib.idle_add(self._preis_warnung_zeigen, daten.get("preis_warnung"))
 
     # ═════════════════════════════════════════════════════════════
     # UI-Aufbau
@@ -394,9 +447,66 @@ class MainWindow(Gtk.ApplicationWindow):
         if momentum:
             self._status_bar.set_pixie_status(f"Pixie: momentum={momentum}")
 
+        # Was der Betrieb kostet. **`None` wird durchgereicht, nicht zu 0
+        # gemacht** — die Statuszeile zeigt dafuer einen Strich, und ein
+        # ausgefallener Zaehler sieht damit nicht aus wie ein kostenloser
+        # Turn. Ein Server ohne diese Felder (aeltere Fassung) fuehrt
+        # ebenfalls zum Strich statt zu einer erfundenen Null.
+        self._status_bar.set_kosten(
+            meta.get("kosten_turn"),
+            meta.get("kosten_heute"),
+            meta.get("kosten_monat"),
+        )
+
+        # Ein Preisbefund wird laut. Siehe `_preis_warnung_zeigen`.
+        self._preis_warnung_zeigen(meta.get("preis_warnung"))
+
         # Turn-Daten an alle offenen turn_reactive-Panels weiterleiten.
         turn_data: dict = {"antwort": antwort, **meta}
         self._registry.broadcast_turn(turn_data)
+
+    def _preis_warnung_zeigen(self, bericht: dict | None) -> None:
+        """Oeffnet ein Fenster, wenn der Preiswaechter etwas gefunden hat.
+
+        Vorbedingung: `bericht` ist der Befund aus der Antwort-Nutzlast oder
+            `None`.
+        Nachbedingung: Hoechstens ein Fenster je Befund — derselbe Befund
+            reist mit **jeder** Antwort mit, solange er in Redis liegt, und
+            ohne diese Sperre oeffnete sich bei jedem Turn ein neues.
+        Fehlerfaelle: keine.
+
+        **Warum ein Fenster und keine Zeile in der Statuszeile:** Der Rabatt
+        traegt die Wirtschaftlichkeit des Betriebs, und die Schnittstelle
+        nennt kein Ende. Eine Aenderung, die den Preis verdreifacht, darf
+        nicht dort stehen, wo man sie uebersieht.
+
+        Args:
+            bericht: `{"modell", "anbieter", "input_per_m", "output_per_m",
+                "rabatt", "befunde"}` oder None.
+        """
+        if not bericht or not bericht.get("befunde"):
+            return
+
+        kennung: str = str(bericht.get("befunde"))
+        if kennung == self._letzte_preis_warnung:
+            return
+        self._letzte_preis_warnung = kennung
+
+        rabatt = bericht.get("rabatt")
+        text: str = (
+            f"{bericht.get('modell', '?')} ueber {bericht.get('anbieter', '?')}\n"
+            f"${bericht.get('input_per_m', 0):.5f} ein / "
+            f"${bericht.get('output_per_m', 0):.5f} aus je Million\n"
+            f"Rabatt: {f'{float(rabatt) * 100:.1f} %' if rabatt else 'keiner'}\n\n"
+            + "\n".join(f"• {b}" for b in bericht["befunde"])
+        )
+        logger.warning(f"Preiswaechter meldet: {text}")
+
+        dialog = Gtk.AlertDialog()
+        dialog.set_modal(True)
+        dialog.set_message("Der Preis hat sich geaendert")
+        dialog.set_detail(text)
+        dialog.show(self)
 
     def _handle_error(self, message: str) -> None:
         logger.error(f"Stream-Fehler: {message}")

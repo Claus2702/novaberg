@@ -14,13 +14,15 @@ import json
 import logging
 
 from api.websocket import broadcast, broadcast_threadsafe
-from config import shutdown_event
+from config import POSTGRES_URL, PREIS_BEFUND_KEY, redis_client, shutdown_event
+from memory.pipeline_log import kosten_summen
 from services.events import (
     MAX_SELF_TRIGGERS,
     event_erzeugen,
     event_naechstes,
     event_self_trigger_erlaubt,
 )
+from services.model_costs import BACKGROUND_TURN, CURRENT_TURN
 from services.prompt_eingang import turn_beenden, turn_beginnen
 
 logger = logging.getLogger("ki_server.event_consumer")
@@ -632,6 +634,21 @@ def _antwort_nutzlast_bauen(
     """
     zustand_internal = zustand.get("internal")
 
+    kosten: dict[str, float] | None = kosten_summen(POSTGRES_URL, turn_id)
+
+    # **Der Befund des Preiswaechters reist mit der naechsten Antwort.** Der
+    # Tageslauf, der ihn erhebt, hat keinen Event-Loop und kann die Clients
+    # nicht selbst ansprechen; hier ist der erste Ort, an dem beides
+    # zusammenkommt. Ein Fehlschlag beim Lesen darf die Antwort nicht
+    # kosten — er wird gemeldet und die Warnung entfaellt.
+    preis_warnung: dict | None = None
+    try:
+        roh = redis_client.get(PREIS_BEFUND_KEY)
+        if roh:
+            preis_warnung = json.loads(roh)
+    except Exception as fehler:  # noqa: BLE001
+        logger.error("Preisbefund nicht lesbar: %s", fehler)
+
     nutzlast: dict = {
         "typ":                "character_response",
         "nachricht":          zustand.get("response", ""),
@@ -654,6 +671,18 @@ def _antwort_nutzlast_bauen(
         "reiz_herkunft":      (event.get("payload") or {}).get("reiz_herkunft", ""),
         "modell":             zustand.get("model", ""),
         "token_total":        zustand.get("token_total", 0),
+        # **Drei Betraege, die nicht dasselbe messen.** `kosten_turn` zaehlt
+        # nur diesen Turn; Tag und Monat zaehlen **jeden** Aufruf, auch die
+        # des Hintergrunds. Die Tagessumme ist deshalb groesser als die
+        # Summe der Turns — der Client muss das benennen, nicht glaetten.
+        # `None` heisst "nicht ermittelt" und ist von 0,0 zu unterscheiden.
+        "kosten_turn":        (kosten or {}).get("turn"),
+        "kosten_heute":       (kosten or {}).get("heute"),
+        "kosten_monat":       (kosten or {}).get("monat"),
+        # Der Befund des Preiswaechters, oder None. Der Client macht daraus
+        # ein Fenster — eine Zeile in der Statuszeile waere zu leise fuer
+        # eine Aenderung, die die Wirtschaftlichkeit umwirft.
+        "preis_warnung":      preis_warnung,
         "emotion":            zustand_internal.emotion.emotion              if zustand_internal else "",
         "arousal":            zustand_internal.emotion.arousal              if zustand_internal else 0.0,
         "emotions_vektor":    zustand_internal.emotion.emotions_vector      if zustand_internal else "",
@@ -848,6 +877,11 @@ async def _event_verarbeiten(
             f"der Nachlauf laeuft weiter"
         )
 
+    # **Der Setzpunkt des CharacterGraph** — das Gegenstueck zu dem im
+    # Prompt-Consumer. Beide Graphen eines Turns buchen damit auf dieselbe
+    # Kennung, und was danach laeuft (Pixie, Tageslauf) faellt zurueck auf
+    # `hintergrund`.
+    marke = CURRENT_TURN.set(turn_id or BACKGROUND_TURN)
     try:
         result: dict = await asyncio.to_thread(
             _graph_streamen,
@@ -858,6 +892,7 @@ async def _event_verarbeiten(
         logger.exception(f"{type(fehler).__name__}: Event-Consumer: Graph-Fehler")
         return
     finally:
+        CURRENT_TURN.reset(marke)
         graph_run_lock.release()
 
     # ── Antwort per WebSocket senden ──

@@ -30,6 +30,7 @@ from typing import Any
 from config import MODEL_BACKGROUND_TIMEOUT_S
 from services import postprocess
 from services.llm_provider import LLMAntwort, LLMProvider
+from services.model_costs import BACKGROUND_TURN, CURRENT_TURN
 from services.model_services.types import BackgroundRequest, BackgroundResponse
 from services.model_services.worker_base import ModelWorker
 
@@ -184,10 +185,16 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
 
         max_versuche: int = self._max_cjk_retries + 1
         for versuch in range(max_versuche):
-            antwort = await asyncio.to_thread(
-                backend.chat,
-                **self._kwargs_fuer_call(aktuelle_messages, request, caller_label),
-            )
+            # Siehe ChatWorker: gesetzt und zurueckgenommen, weil die
+            # Schleife ein einziger Task ueber die ganze Laufzeit ist.
+            marke = CURRENT_TURN.set(request.turn_id or BACKGROUND_TURN)
+            try:
+                antwort = await asyncio.to_thread(
+                    backend.chat,
+                    **self._kwargs_fuer_call(aktuelle_messages, request, caller_label),
+                )
+            finally:
+                CURRENT_TURN.reset(marke)
             text = antwort.content
 
             if not postprocess.contains_cjk(text):

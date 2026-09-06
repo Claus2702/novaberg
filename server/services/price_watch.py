@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Haelt die konfigurierten OpenRouter-Preise gegen den lebenden Endpunkt.
 
+**Lag bis zum 06.09.2026 unter `tools/` und ist in die Service-Schicht
+umgezogen.** Der Tageslauf ist Geschaeftsablauf und darf Infrastruktur
+nicht importieren (A8b); solange der Waechter dort lag, hatte er entweder
+keinen Aufrufer oder einen, der die Schichtgrenze bricht. Der Aufruf von
+Hand heisst seither `python -m services.price_watch`.
+
 Der Endpunkt fuer `deepseek/deepseek-v4-flash-0731` trug am 05.09.2026 einen
 Rabatt von 64,3 % (`pricing.discount: 0.643`). **Die Schnittstelle nennt die
 Hoehe des Rabatts, nie sein Ende.** Ein Preis, der still auf Listenniveau
@@ -13,8 +19,8 @@ gefuehrt wird. Vier von 29 Anbietern hinter dieser Modell-ID fuehren es nicht,
 und ohne es ist `expect_json` wieder eine Bitte statt einer Fessel.
 
 AUFRUF
-    python -m tools.openrouter_price_watch
-    python -m tools.openrouter_price_watch --json
+    python -m services.price_watch
+    python -m services.price_watch --json
 
 Rueckgabewert 0 heisst: Endpunkt und Konfiguration stimmen ueberein. Alles
 andere ist ein Befund — damit das Werkzeug aus einem Zeitplan laufen kann,
@@ -39,7 +45,7 @@ from config import (
     OPENROUTER_QUANTISIERUNG,
 )
 
-logger = logging.getLogger("ki_server.tools.price_watch")
+logger = logging.getLogger("ki_server.services.price_watch")
 
 #: Wo die Endpunktliste liegt. Braucht keinen Schluessel.
 ENDPOINT_URL: str = "https://openrouter.ai/api/v1/models/{model}/endpoints"
@@ -185,6 +191,52 @@ def compare(endpoint: dict) -> list[str]:
     return befunde
 
 
+def pruefen() -> dict:
+    """Fuehrt die Pruefung aus und liefert ihr Ergebnis als Daten.
+
+    **Der Kern von `main`, herausgeloest, damit ihn jemand anderes rufen
+    kann als eine Kommandozeile.** Der Waechter hatte bis zum 06.09.2026
+    keinen Aufrufer — er war ein Werkzeug fuer einen Menschen, der daran
+    denkt. Diese Funktion ist die Naht fuer den Tageslauf und den Start.
+
+    Vorbedingung: die OpenRouter-Konstanten sind gesetzt; der Endpunkt ist
+    ueber das Netz erreichbar. Ein Schluessel wird **nicht** gebraucht.
+    Nachbedingung: ein Bericht mit `befunde` (moeglicherweise leer), den
+        gemessenen Preisen und dem Anbieter.
+    Fehlerfaelle: die Ausnahmen von `fetch_endpoints` und `pick_provider`
+        brechen durch — ein Waechter, der seinen Gegenstand nicht findet,
+        darf nicht *„keine Befunde"* melden.
+
+    Returns:
+        `{"modell", "anbieter", "input_per_m", "output_per_m", "rabatt",
+          "befunde"}`.
+    """
+    # ── Verarbeitung ────────────────────────────
+    with httpx.Client(timeout=30.0) as client:
+        endpunkte = fetch_endpoints(client, OPENROUTER_MODEL)
+        endpunkt = pick_provider(
+            endpunkte, OPENROUTER_PROVIDER, OPENROUTER_QUANTISIERUNG,
+        )
+    befunde: list[str] = compare(endpunkt)
+    preise: dict = endpunkt.get("pricing") or {}
+
+    # ── Ausgabe-Verifikation ────────────────────
+    bericht: dict = {
+        "modell":       OPENROUTER_MODEL,
+        "anbieter":     endpunkt.get("tag"),
+        "input_per_m":  float(preise.get("prompt", 0)) * 1_000_000,
+        "output_per_m": float(preise.get("completion", 0)) * 1_000_000,
+        "rabatt":       preise.get("discount"),
+        "befunde":      befunde,
+    }
+    if bericht["input_per_m"] <= 0 and bericht["output_per_m"] <= 0:
+        logger.error(
+            "Preiswaechter: beide Preise sind 0 — der Endpunkt hat keine "
+            "Preisangabe geliefert, das ist kein Gratis-Angebot",
+        )
+    return bericht
+
+
 def main() -> int:
     """Fuehrt die Pruefung aus und liefert den Rueckgabewert.
 
@@ -198,32 +250,19 @@ def main() -> int:
     """
     # ── Eingabe-Validierung & Verarbeitung ──────
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    with httpx.Client(timeout=30.0) as client:
-        endpunkte = fetch_endpoints(client, OPENROUTER_MODEL)
-        endpunkt = pick_provider(
-            endpunkte, OPENROUTER_PROVIDER, OPENROUTER_QUANTISIERUNG,
-        )
-    befunde = compare(endpunkt)
-    preise = endpunkt.get("pricing") or {}
+    bericht: dict = pruefen()
+    befunde: list[str] = bericht["befunde"]
 
     # ── Ausgabe-Verifikation ────────────────────
     if "--json" in sys.argv:
-        print(json.dumps({
-            "model":        OPENROUTER_MODEL,
-            "provider":     endpunkt.get("tag"),
-            "input_per_m":  float(preise.get("prompt", 0)) * 1_000_000,
-            "output_per_m": float(preise.get("completion", 0)) * 1_000_000,
-            "discount":     preise.get("discount"),
-            "findings":     befunde,
-        }, indent=1))
+        print(json.dumps(bericht, indent=1))
         return 1 if befunde else 0
 
     logger.info(
         "%s ueber %s — $%.5f ein / $%.5f aus je Million, Rabatt %s",
-        OPENROUTER_MODEL, endpunkt.get("tag"),
-        float(preise.get("prompt", 0)) * 1_000_000,
-        float(preise.get("completion", 0)) * 1_000_000,
-        f"{float(preise['discount']) * 100:.1f} %" if preise.get("discount") else "keiner",
+        bericht["modell"], bericht["anbieter"],
+        bericht["input_per_m"], bericht["output_per_m"],
+        f"{float(bericht['rabatt']) * 100:.1f} %" if bericht.get("rabatt") else "keiner",
     )
     for befund in befunde:
         logger.warning("  BEFUND: %s", befund)

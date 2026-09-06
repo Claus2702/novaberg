@@ -18,6 +18,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from services.model_costs import CURRENT_TURN
+
 logger = logging.getLogger(__name__)
 
 
@@ -108,6 +110,14 @@ class ChatRequest:
         caller: Freitext zur Identifikation im Token-Log (z.B. "agent.chat",
                 "promotion_klassifikation"). Wird im Worker an den Provider
                 durchgereicht.
+        turn_id: Der Turn, dem die **Kosten** dieses Aufrufs zugerechnet
+                 werden. Leer heisst `hintergrund` — Pixie und Tageslauf
+                 kosten Geld, ohne zu einem Turn zu gehoeren.
+                 **Warum als Feld und nicht als Kontextvariable:** Die
+                 Worker-Schleife wird beim Serverstart einmal als Task
+                 gestartet und traegt den Kontext **dieses** Zeitpunkts.
+                 Gemessen am 06.09.2026: Der Aufrufer sieht `turn-4711`,
+                 die Schleife sieht den Vorgabewert.
         future: Wird vom Worker beim Submit angelegt — KEIN
                 `field(default_factory=asyncio.Future)`, sonst entsteht eine
                 Future ohne laufenden Loop (Loop-Binding-Lesson).
@@ -124,6 +134,7 @@ class ChatRequest:
     think:             bool            = False
     num_ctx:           Optional[int]   = None
     caller:            str             = ""
+    turn_id:           str             = field(default_factory=CURRENT_TURN.get)
     future:            Optional[asyncio.Future] = None
 
 
@@ -185,6 +196,8 @@ class BackgroundRequest:
                  hier ein kleines num_ctx setzen, lange Destillation den
                  vollen Kontext.
         caller: Freitext fuer das Token-Log.
+        turn_id: Der Turn, dem die Kosten zugerechnet werden. Leer heisst
+                 `hintergrund` — der Hintergrund gehoert zu keinem Turn.
         future: Wird vom Worker beim Submit angelegt (Loop-Binding-Lesson).
     """
 
@@ -197,6 +210,7 @@ class BackgroundRequest:
     max_output_tokens: Optional[int]   = None
     num_ctx:           Optional[int]   = None
     caller:            str             = ""
+    turn_id:           str             = field(default_factory=CURRENT_TURN.get)
     future:            Optional[asyncio.Future] = None
 
 

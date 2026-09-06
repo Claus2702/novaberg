@@ -25,6 +25,7 @@ from typing import Any
 
 from services import postprocess
 from services.llm_provider import LLMAntwort, LLMProvider
+from services.model_costs import BACKGROUND_TURN, CURRENT_TURN
 from services.model_services.types import ChatRequest, ChatResponse
 from services.model_services.worker_base import ModelWorker
 
@@ -168,7 +169,17 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
 
         # Provider-chat ist sync — in Thread auslagern, damit die Worker-
         # Schleife nicht blockiert (gleiches Muster wie EmbedWorker).
-        antwort: LLMAntwort = await asyncio.to_thread(self._backend.chat, **kwargs)
+        #
+        # **Der Turn wird hier gesetzt und hier zurueckgenommen.** Die
+        # Worker-Schleife ist **ein** Task ueber die ganze Laufzeit: Ein
+        # gesetzter Wert bliebe sonst stehen und der naechste Aufruf ohne
+        # eigenen Turn buchte auf den vorigen. `asyncio.to_thread` kopiert
+        # den Kontext in den Thread — der Provider sieht ihn also.
+        marke = CURRENT_TURN.set(request.turn_id or BACKGROUND_TURN)
+        try:
+            antwort: LLMAntwort = await asyncio.to_thread(self._backend.chat, **kwargs)
+        finally:
+            CURRENT_TURN.reset(marke)
 
         text:   str         = antwort.content
         parsed: dict | None = None
