@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 5. September 2026 — juengster Eintrag **05.09.2026, 20:16 UTC** (gemessen via `date -u`). Davor 05.09.2026, 15:05 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 09:06 UTC** (gemessen via `date -u`). Davor 05.09.2026, 20:16 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,38 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 06.09.2026, 09:06 UTC — derselbe Prompt, das dreifache Profil ✅
+
+**Der Kern-Prompt hat sich nicht geaendert — das Modell darunter schon.** Am 12.08.2026 lieferte
+die offene Destillation am produktiven Paar **3578 Zeichen**; heute, unter dem Fernmodell, sind es
+**8587** fuer die Figur und **7381** fuer den Menschen. Beide Seiten wurden um 08:43 UTC in einem
+Zug destilliert.
+
+**Warum das nicht nur Laenge ist:** Novas vier Profile lagen zusammen bei **12 289 Zeichen** und
+gehen ungefiltert in den `[PERSON A]`-Block **jedes** Turns (`responder.py:281`). Das Dreifache
+der gemessenen Fassung ist keine dreifache Tiefe — es ist dieselbe Aussage mit mehr Belegen.
+
+**Der Eingriff ist ein Richtwert, kein Deckel.** `KERN_HASH_PROMPT` nennt seit heute *rund 3000
+Zeichen, hoechstens 4000, etwa fuenf Absaetze*. Die Gegenprobe vom 11.08.2026, die den Deckel
+fallen liess, hatte die offene Fassung bei **3288 und 2545** Zeichen gemessen — der Richtwert
+holt den Text also **in den Korridor zurueck, in dem die Messung ihn fuer gut befunden hat**.
+Die beiden Saetze, die den Wortlaut verlangen (»Nimm dir den Raum«, »Verdichte nicht«), stehen
+unveraendert daneben, und ihre Zeugen bleiben gruen.
+
+**Die Lesson bleibt damit stehen.** Sie sagte: *Ein Deckel von zwei bis fuenf Saetzen kauft nichts
+und vervierfacht die Streuung.* Sie sagte nicht: *Laenge ist gut.* Was heute gemessen wurde, ist
+eine Modell-Drift gegen einen unveraenderten Prompt — und die Antwort darauf ist eine Zahl im
+gemessenen Band, keine Rueckkehr zum Deckel.
+
+**Zeuge:** `tests/test_kern_offen.py::test_der_umfang_traegt_einen_richtwert`.
+**Suite:** 3155 → **3156 gruen**, 0 uebersprungen. Gegenprobe: ohne den Richtwert 1 rot.
+**Nicht gemessen:** ob das Fernmodell den Richtwert einhaelt. Das zeigt erst die naechste
+Destillation — der Prompt ist gesetzt, die Wirkung steht aus.
+
+**Doku:** `novaberg-pixie-character-hash.md` (Kasten in §3, Kopf).
 
 ---
 
