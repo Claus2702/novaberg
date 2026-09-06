@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 15:05 UTC** (gemessen via `date -u`). Davor 06.09.2026, 14:35 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 15:40 UTC** (gemessen via `date -u`). Davor 06.09.2026, 15:05 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,54 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 15:40 UTC — der Agent schreibt seine Spur, und beide Bauten schlagen im Betrieb an ✅
+
+**Der `CharakterAgent` hinterliess bis heute keine Zeile im `hintergrund_log`** — aufgefallen beim
+Zaehlen der Destillationszyklen, das deshalb ueber Serverlog und Rad-Messreihe gehen musste.
+
+| Zustand | Wann | Inhalt |
+|---|---|---|
+| `gestartet` | nach dem Dirty-Check, je Paar | das Paar, und dass `hash_dirty` gesetzt war |
+| `erledigt` | am Ende des Paar-Durchlaufs | destillierte Profile, und ob gespeichert wurde |
+| `fehler` | jede Exception | Typ und Text; die Exception wird **weitergereicht** |
+
+**Der Leerlauf schweigt** — der Agent prueft alle zehn Minuten und findet meist kein `hash_dirty`;
+ein Eintrag je Pruefung waeren 144 Zeilen am Tag ohne Aussage. Ein eigener Zeuge haelt die
+Sparsamkeit fest, weil sie im Betrieb wie mehr Sorgfalt aussieht und beim naechsten Umbau sonst
+still verlorengeht.
+
+**Der Betriebsbeleg, nach Neustart und gesetztem `hash_dirty`:**
+
+```
+14:55:23 | gestartet | Paar (meister, nova), hash_dirty gesetzt
+14:56:21 | erledigt  | 2 Profile destilliert, gespeichert: ja
+```
+
+**Im selben Lauf hat die Deckungspruefung ihren Anschlag im echten Pfad** — bis dahin war sie nur im
+Messlauf mit ersetztem Transport belegt. **4 Meldungen bei 10 Profilen**, darunter je ein
+*Einzelbeleg als Dauerzug* in beiden Kernen.
+
+**Und der Betrieb liefert einen Befund ueber die Pruefung selbst:** Die Klasse *Beleg ohne
+Fundstelle* schlaegt **beim Kern haeufig** an — 3 und 6 Meldungen in zwei Laeufen —, waehrend sie im
+Beziehungsprofil ueber 20 Laufe **nie** ansprang. Die gemeldeten Stellen lesen sich wie **eigene
+Wendungen des Modells in Anfuehrungszeichen**, nicht wie Zitate aus dem Material. Ob das ein
+erfundener Beleg ist oder ein Stilmittel, kann die Pruefung nicht unterscheiden — das ist eine
+Absichtsfrage und keine Implementierung; sie liegt beim Eigentuemer.
+
+**Ein bestehender Zeuge wurde durch den Umbau rot und hat dabei einen zweiten Defekt gezeigt.**
+`tests/test_aktives_paar.py` liest die Paarliste aus dem Quelltext von `invoke`, die jetzt in
+`_profile_destillieren` steht. Sein Nachbar — *der Fallback steht nicht in der Paarliste* — **waere
+gruen geblieben**: Eine leere Liste erfuellt jede Aussage der Form *darin steht kein X*. Der Leser
+prueft seither zuerst, ob er ueberhaupt etwas gefunden hat.
+
+6 Zeugen (`tests/test_charakter_audit.py`), Gegenprobe **1 rot**, Suite **3197 gruen, 0
+uebersprungen** (davor 3191), harte Wand 0, Linter **25 Befunde = die Nulllinie von HEAD** (zwei
+`noqa: BLE001` mit Begruendung, beide fuer bewusst breites Fangen).
+
+> **Zur Auswertung des Serverlogs:** Es mischt Suite und Betrieb — die Zeugen laufen im selben
+> Container gegen dasselbe Log. Fuer den Betriebsbeleg zaehlen nur Zeilen nach dem Neustart
+> (`21_MESSUNG/log-mischt-suite-und-betrieb.md`).
 
 ## 06.09.2026, 15:05 UTC — der Destillationstakt, aus zwei Quellen gezaehlt 🔬
 
