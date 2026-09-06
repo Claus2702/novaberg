@@ -128,5 +128,38 @@ class TestDerAufruferExistiert(unittest.TestCase):
         self.assertIn("Hoho", "\n".join(log.output))
 
 
+class TestFormatierungIstKeineErfindung(unittest.TestCase):
+    """Derselbe Wortlaut in anderer Schreibung bleibt ein Beleg.
+
+    `[gemessen]` 06.09.2026: Unter den unbelegten Belegen eines Messlaufs
+    standen ein Zitat mit Auszeichnungs-Sternchen und eines mit einfachen
+    Anfuehrungszeichen — beide im Material vorhanden, nur anders geschrieben.
+    **Ein Falschalarm dieser Sorte ist teurer als eine verpasste Erfindung:**
+    Er wuerde einen echten Beleg entwerten.
+    """
+
+    def test_sternchen_zaehlen_nicht(self) -> None:
+        profil = "Er sagt *„Die wird abgesprengt.“* und meint es so."
+        self.assertEqual(deckung_beanstanden(MATERIAL, profil, "Profil"), 0)
+
+    def test_einfache_anfuehrungszeichen_zaehlen_nicht(self) -> None:
+        profil = "Er fragt „Und die Huelle, ‚Kollege‘?“ zurueck."
+        # Der Beleg steht im Material ohne die inneren Zeichen — normalisiert
+        # bleibt der Unterschied trotzdem bestehen, weil Zeichen entfernt und
+        # nicht Woerter verglichen werden. Der Zeuge haelt die Grenze fest.
+        self.assertEqual(deckung_beanstanden(MATERIAL, profil, "Profil"), 1)
+
+    def test_grossschreibung_und_leerzeichen_zaehlen_nicht(self) -> None:
+        profil = "Er sagt „DIE   WIRD  ABGESPRENGT.“ ganz nebenbei."
+        self.assertEqual(deckung_beanstanden(MATERIAL, profil, "Profil"), 0)
+
+    def test_die_normalisierung_veraendert_das_profil_nicht(self) -> None:
+        """Sie ist eine Vergleichsform, kein Eingriff in den Text."""
+        profil = "Er sagt *„Die wird abgesprengt.“*"
+        vorher = profil
+        deckung_beanstanden(MATERIAL, profil, "Profil")
+        self.assertEqual(profil, vorher)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -360,6 +360,26 @@ INITIATIVE_RAD_LEER: dict[str, dict[str, float]] = {
 # Prompts — User (meister)
 # ─────────────────────────────────────────────
 
+#: Die Zitatregel, die jeder Profil-Prompt mitfuehrt.
+#:
+#: **Setzung des Eigentuemers vom 06.09.2026:** *Das Modell darf nichts
+#: zitieren, was nicht wirklich gesagt wurde.*
+#:
+#: **Der Anlass ist gemessen und nicht vermutet.** Im ersten Betriebslauf der
+#: Deckungspruefung meldete sie 3 und 6 Belege ohne Fundstelle in den beiden
+#: Kernen; ueber zwei Runden zu je fuenf Laeufen sind es **17 bis 24 % aller
+#: Zitate**, und zwar bei zwei Modellen zweier Familien. Die Ursache liegt im
+#: Auftrag *ein Beispiel im Wortlaut* — wer ihm folgt, setzt Anfuehrungszeichen
+#: auch um eigene Formulierungen.
+#:
+#: **Sie fuehrt, sie verbietet nicht** (`F-PROMPT-1`): Sie sagt, was in
+#: Anfuehrungszeichen gehoert und was daneben steht.
+ZITATREGEL: str = """
+Anfuehrungszeichen sind fuer den Wortlaut reserviert: Was darin steht, stammt
+Zeichen fuer Zeichen aus den Eintraegen und laesst sich dort wiederfinden.
+Deine eigenen Formulierungen stehen daneben, ohne Anfuehrungszeichen — sie
+tragen deine Deutung, und dafuer brauchen sie keine fremde Stimme."""
+
 KERN_HASH_PROMPT: str = """Du bist ein erfahrener psychologischer Profiler.
 Vor dir liegen Langzeit-Erinnerungen aus {perspektive} Blickwinkel — Aussagen,
 Reaktionen und Beobachtungen, so wie {traeger} die Welt wahrnimmt und auf sie
@@ -385,6 +405,7 @@ Zeichen, hoechstens 4000. Das sind etwa fuenf Absaetze. Verdichte nicht zum
 Urteil: Behalte die Wendungen, den Ton und das Beilaeufige, an dem man
 {traeger_akk} erkennt. Ein Beispiel im Wortlaut sagt mehr als ein Urteil
 darueber — aber ein Zug, der einmal belegt ist, braucht keinen zweiten Beleg.
+""" + ZITATREGEL + """
 
 Einträge:
 {eintraege}
@@ -409,6 +430,7 @@ aktiv, wie ist die aktuelle Stimmung? Deute die Lage, nicht nur die Liste.
 
 Erstelle ein kompaktes Profil der aktuellen Verfassung {traeger_gen} in 2-4
 Sätzen auf Deutsch.
+""" + ZITATREGEL + """
 
 Einträge:
 {eintraege}
@@ -435,6 +457,7 @@ und ausschmückt — unabhängig vom Thema.
 
 Erstelle ein kompaktes Kommunikations-Profil {traeger_gen} in 3-5 Sätzen auf
 Deutsch. Beschreibe den Charakter hinter der Sprache, nicht die Statistik.
+""" + ZITATREGEL + """
 
 Einträge:
 {eintraege}
@@ -458,6 +481,7 @@ Plateau = stabil).
 
 Erstelle ein kompaktes emotionales Profil {traeger_gen} in 3-5 Sätzen auf
 Deutsch.
+""" + ZITATREGEL + """
 
 Einträge:
 {eintraege}
@@ -485,6 +509,7 @@ Tonfall, {traeger_gen} Art, Nähe herzustellen.
 
 Beschreibe, wie {traeger} auf das Gegenüber blickt und mit ihm umgeht, in 2-3
 Sätzen auf Deutsch.
+""" + ZITATREGEL + """
 
 Einträge:
 {eintraege}
@@ -522,6 +547,41 @@ SATZ: re.Pattern = re.compile(r"[^.!?]+[.!?]?")
 
 #: Der maskierte Beleg. Er traegt keine Satzzeichen und ueberlebt die Trennung.
 MARKE: re.Pattern = re.compile(r"\x00(\d+)\x00")
+
+
+#: Zeichen, die denselben Wortlaut verschieden aussehen lassen. Der Schluessel
+#: wird durch den Wert ersetzt, bevor verglichen wird.
+ZITAT_ZEICHEN: dict[str, str] = {
+    "\u201e": '"', "\u201c": '"', "\u201d": '"', "\u00ab": '"', "\u00bb": '"',
+    "\u201a": "'", "\u2018": "'", "\u2019": "'", "\u2039": "'", "\u203a": "'",
+    "\u2013": "-", "\u2014": "-", "\u2026": "...", "\u00a0": " ",
+    "*": "", "_": "",
+}
+
+
+def zitat_normalisieren(text: str) -> str:
+    """Macht Wortlaut vergleichbar, der nur anders formatiert ist.
+
+    **Ohne sie meldet die Pruefung Formatierung als Erfindung.** `[gemessen]`
+    06.09.2026: Unter den unbelegten Belegen standen
+    *»\u002ar streicht ... liebevoll uebers Haar\u002a«* mit Sternchen und ein
+    Filmtitel in einfachen Anfuehrungszeichen — beides steht im Material, nur
+    in anderer Schreibung. Ein Falschalarm dieser Sorte ist teurer als eine
+    verpasste Erfindung: Er wuerde einen echten Beleg entwerten.
+
+    Vereinheitlicht werden Anfuehrungszeichen aller Formen, Gedankenstriche,
+    Auslassungspunkte, geschuetzte Leerzeichen und die Auszeichnungszeichen
+    `\u002a` und `_`; danach Kleinschreibung und einfache Leerzeichen.
+
+    Args:
+        text: Profiltext oder Material, in beliebiger Schreibung.
+
+    Returns:
+        Der Text in Vergleichsform. Er wird nie gespeichert oder ausgegeben.
+    """
+    for zeichen, ersatz in ZITAT_ZEICHEN.items():
+        text = text.replace(zeichen, ersatz)
+    return " ".join(text.lower().split())
 
 
 def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
@@ -576,6 +636,7 @@ def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
     # zerschneidet die Trennung ihn — Dauerwort und Beleg landen dann in
     # verschiedenen Saetzen, und die Pruefung schweigt. Gefunden vom eigenen
     # Zeugen, nicht im Betrieb.
+    material: str = zitat_normalisieren(prompt)
     belege: list[str] = ZITAT.findall(profil)
     maskiert: str = profil
     for nummer, beleg in enumerate(belege):
@@ -587,7 +648,7 @@ def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
         hat_dauerwort: bool = bool(DAUERWORT.search(satz))
         for nummer in MARKE.findall(satz):
             beleg = belege[int(nummer)]
-            treffer: int = prompt.lower().count(beleg.lower())
+            treffer: int = material.count(zitat_normalisieren(beleg))
             if treffer == 0:
                 ohne_fundstelle.append(beleg)
             elif treffer == 1 and hat_dauerwort:
