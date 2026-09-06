@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 16:30 UTC** (gemessen via `date -u`). Davor 06.09.2026, 16:15 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 17:45 UTC** (gemessen via `date -u`). Davor 06.09.2026, 16:30 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,42 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 17:45 UTC — der Betriebsbeleg, und ein Messgeraet, das woanders hinsah 🔬
+
+**Nach dem zweiten Neustart tragen alle drei Bauten des Tages den Betrieb.** Der Zyklus um 17:11 UTC
+schrieb sein Audit — `gestartet 17:11:25`, `erledigt 17:12:29 — 2 Profile destilliert, gespeichert:
+ja` — und die Deckungspruefung meldete **viermal**: je ein *Einzelbeleg als Dauerzug* im
+Beziehungs- und im Emotionsprofil, dazu 8 und 9 *Belege ohne Fundstelle* in den beiden Kernen.
+
+**Mit Nenner gelesen:** Kern des Menschen **8 von 22** Zitaten (36 %), Novas Kern **9 von 31**
+(29 %) — deutlich ueber dem Labormittel von 10 %. Die Suche nach dem Unterschied hat drei Stufen
+gebraucht:
+
+| Verdacht | Befund |
+|---|---|
+| anderes Material | **ausgeschlossen** — der Betriebsaufruf trug `in=3852` Token, jeder Laborlauf ebenso |
+| andere Parameter | **ausgeschlossen** — Temperatur, Strafterm, Ausgabegrenze identisch; `expect_json=False` bewirkt beim Provider nichts |
+| Streuung | **bestaetigt** — zwoelf Einzellaeufe: 0 % bis 35 %, Median 18 %, einer ueber 29 % |
+
+**Und dabei fiel das eigentliche auf.** Die zwoelf Laeufe streuten in der **Laenge** von 2702 bis
+14 052 Zeichen, waehrend derselbe Prompt im Betrieb 5074 lieferte — und zwei Runden derselben
+Fassung ergaben 9,5 % gegen 20 %. **Die Werkzeuge bauten ihren Provider ohne den Anbieter-Block der
+Registry** (`only`, `quantizations`); ohne ihn waehlt der Vermittler je Aufruf frei. Sie massen ein
+anderes Ziel als den Betrieb.
+
+> **Die Konfiguration endet nicht am Modell.** Wer ueber einen Vermittler misst, dem gehoert die
+> Anbieterwahl dazu — sie bestimmt, **wer** antwortet. Als vierter Fall an
+> `21_MESSUNG/konfiguration-mitsenden.md` eingetragen; die drei vorigen betrafen Kontextfenster,
+> Temperatur und Quelle.
+
+**Zwei Folgen stehen an:** Die Zahlen der Zitatregel (**24 % → 10 %**) stammen aus dem ungepinnten
+Ziel und sind gegen das des Betriebs **noch nicht bestaetigt** — die gepinnte Wiederholung lief zum
+Sitzungsende noch. Und der **Umfangs-Richtwert des Kern-Prompts wird nicht gehalten**: *rund 3000,
+hoechstens 4000* gegen gemessene 2702 bis 14 052 Zeichen, neun von zwoelf Laeufen darueber. Beides
+in der Fundliste.
+
+Suite **3202 gruen, 0 uebersprungen**.
 
 ## 06.09.2026, 16:30 UTC — die Luecke der Faszination wird nachpruefbar ✅
 
