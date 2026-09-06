@@ -1,15 +1,15 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 438 Eintraege mit Kennung — 365 offen, 70 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 439 Eintraege mit Kennung — 366 offen, 70 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 437 von 438 Eintraegen zugeordnet.
+**Kategorie:** 438 von 439 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 67 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 73 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 54 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 97 |
@@ -49,7 +49,7 @@
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
-| 57 | Tabellenzeile | `FASZINATION-PRAEGUNG` | Block 30.08.2026 — aus dem Faszinationskonzept |
+| 68 | Tabellenzeile | `FASZINATION-PRAEGUNG` | Block 30.08.2026 — aus dem Faszinationskonzept |
 | 229 | Ueberschrift #### | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
 | 25 | Tabellenzeile | `PROTOKOLLPFLICHT-OHNE-GATE` | Block 25.08.2026 — das Gate, das die Protokollpflicht bewach |
 ## Die Rangordnung
@@ -224,18 +224,18 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 |---|---|---|
 | `GED` | GEDAECHTNIS | 77 |
 | `HGR` | HINTERGRUND | 66 |
-| `CHA` | CHARAKTER | 72 |
+| `CHA` | CHARAKTER | 73 |
 | `ANT` | ANTWORTPFAD | 54 |
 | `WIS` | WISSEN | 71 |
 | `BAU` | BAUART | 97 |
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
-| 57 | Tabellenzeile | `FASZINATION-PRAEGUNG` | Block 30.08.2026 — aus dem Faszinationskonzept |
+| 68 | Tabellenzeile | `FASZINATION-PRAEGUNG` | Block 30.08.2026 — aus dem Faszinationskonzept |
 
 ---
 
-## Alle 438 Eintraege
+## Alle 439 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -382,79 +382,80 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | HGR | 805 | offen | `PIXIE-TURN-ID-LEER` | [Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter Characte](novaberg-backlog-hintergrund.md) |
 | HGR | 836 | abgeschlossen | `QUEUE-VERFALL-KONZEPT` | [QUEUE-VERFALL-KONZEPT — der Stapel und die Queue bra](novaberg-backlog-hintergrund.md) |
 | HGR | 875 | offen | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | [IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angel](novaberg-backlog-hintergrund.md) |
-| CHA | 26 | abgeschlossen | `DECKUNG-BRAUCHT-EINEN-ANDEREN-ORT` | [Block 06.09.2026 — aus der Deckungsmessung am Profil](novaberg-backlog-charakter.md) |
-| CHA | 36 | abgeschlossen | `FALTUNG-OHNE-PERIODISCHEN-LAUF` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
-| CHA | 37 | offen | `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
-| CHA | 47 | offen | `SCHWELLEN-AUF-TESTMATERIAL-KALIBRIERT` | [Block 31.08.2026 — aus der Reizstaerke-Kalibrierung](novaberg-backlog-charakter.md) |
-| — | 57 | unlesbar | `FASZINATION-PRAEGUNG` | [Block 30.08.2026 — aus dem Faszinationskonzept](novaberg-backlog-charakter.md) |
-| CHA | 69 | offen | `RAD-LAEUFE-BEI-DETERMINISTISCHER-ABLEITUNG` | [Block 27.08.2026 — aus dem Temperaturwechsel](novaberg-backlog-charakter.md) |
-| CHA | 80 | offen | `KERNVERGLEICH-KONTROLLE-STEHT-STILL` | [Block 26.08.2026 — aus dem Umbau der Kern-Auswahl](novaberg-backlog-charakter.md) |
-| CHA | 91 | abgeschlossen | `KERNAUSWAHL-KRITERIUM-OFFEN` | [Block 25.08.2026 — aus der Vermessung des Kern-Hash](novaberg-backlog-charakter.md) |
-| CHA | 104 | offen | `PRUEFFIGUR-DISTANZ-090` | [Block 14.08.2026 — aus der Eigenzeit-Messung](novaberg-backlog-charakter.md) |
-| CHA | 120 | offen | `VERLAUF-REPRODUZIERT-EIGENE-WENDUNGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
-| CHA | 133 | offen | `CHARAKTER-BESCHAEDIGT-INHALT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
-| CHA | 146 | offen | `BEITRAGSTABELLE-SCHLIESST-KOMBINATION-AUS` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
-| CHA | 164 | offen | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
-| CHA | 179 | offen | `PROFILE-LEER-URSACHE-UNBEKANNT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
-| CHA | 203 | offen | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
-| CHA | 219 | abgeschlossen | `RAD-STABILITAET-UNGEMESSEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
-| CHA | 273 | offen | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
-| CHA | 286 | offen | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
-| CHA | 326 | offen | `PROFIL-HISTORIE-FEHLT` | [0b. Charakterbildung messen — der nächste Sprint (01](novaberg-backlog-charakter.md) |
-| CHA | 345 | offen | `PAARLISTE-FEST` | [0b. Charakterbildung messen — der nächste Sprint (01](novaberg-backlog-charakter.md) |
-| CHA | 373 | abgeschlossen | `HALTUNG-KNOTEN-FEHLT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
-| CHA | 394 | abgeschlossen | `HALTUNG-PROTOKOLL-FEHLT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
-| CHA | 415 | offen | `HALTUNG-SPANNENENDEN-OFFEN` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
-| CHA | 455 | abgeschlossen | `HALTUNG-OHNE-LANDSCHAFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
-| CHA | 472 | offen | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
-| CHA | 494 | offen | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-charakter.md) |
-| CHA | 523 | abgeschlossen | `EMOTIONS-VECTOR-WERTE-DRIFT` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
-| CHA | 524 | offen | `EI-KANON-FEHLT` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
-| CHA | 525 | offen | `SILENT-SKIP-EI-DEFAULTS` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
-| CHA | 526 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
-| CHA | 527 | offen | `EI-VEKTOR-LOG-GATE` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
-| CHA | 530 | offen | `EPIC-SYKOPHANZ` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 544 | offen | `SYK-B-1-THINKER-WEICHE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 545 | abgeschlossen | `SYK-B0-ABSTAND` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 546 | abgeschlossen | `SYK-B0-BEZIEHUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 547 | offen | `SYK-B0-FALLENBATTERIE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 548 | abgeschlossen | `SYK-B1-URTEILSFELD` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 549 | offen | `SYK-B1-WERT-FALSCH` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 550 | abgeschlossen | `SYK-B4-VORZEICHENPRUEFUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 551 | abgeschlossen | `SYK-B4-STUFE-2-OHNE-FILTER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 552 | abgeschlossen | `SYK-B4-WERT-BENENNEN` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 553 | offen | `SYK-B8-SCHREIBPFAD` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 554 | offen | `SYK-B3-VORZEICHENREGEL` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 555 | offen | `SYK-B9-REGISTER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 556 | offen | `SYK-B2-IMPULS-GRENZE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 557 | offen | `SYK-B5-ESKALATION` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 558 | offen | `SYK-B6-MOTIVENTLASTUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 559 | offen | `SYK-B7-ZWEITABLEITUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 568 | offen | `SYK-M-TRIBUNAL` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 569 | offen | `SYK-M-VERFASSER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 570 | offen | `SYK-M-RAHMUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 616 | offen | `CHAR-HASH-TEST-LEICHEN` | [Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `char](novaberg-backlog-charakter.md) |
-| CHA | 635 | offen | `REFAC-HG-CHAR-HASH-LOAD` | [Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebre](novaberg-backlog-charakter.md) |
-| CHA | 677 | offen | `SPRACH-STIL-DEFENSIV-STUMM` | [Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erke](novaberg-backlog-charakter.md) |
-| CHA | 706 | offen | `EI-CALC-ROLLE-RENAME` | [Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` sem](novaberg-backlog-charakter.md) |
-| CHA | 732 | offen | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | [Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistent](novaberg-backlog-charakter.md) |
-| CHA | 788 | offen | `CRUD-DESTILL-SUBTRAKT` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
-| CHA | 789 | offen | `CRUD-REACTIVATE-STAMP` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
-| CHA | 790 | offen | `SPRACH-STIL-DEFENSIV-STUMM` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
-| CHA | 791 | offen | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
-| CHA | 832 | offen | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | [Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste v](novaberg-backlog-charakter.md) |
-| CHA | 841 | offen | `CHARHASH-PROMPT-DUPLIKAT` | [Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit ](novaberg-backlog-charakter.md) |
-| CHA | 852 | offen | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | [Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-De](novaberg-backlog-charakter.md) |
-| CHA | 878 | offen | `CHARAKTER-RESONANZ` | [Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem U](novaberg-backlog-charakter.md) |
-| CHA | 887 | offen | `ASSISTENT-NAME-LAUFZEIT` | [Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name ](novaberg-backlog-charakter.md) |
-| CHA | 896 | offen | `ASSISTENT-GESCHLECHT-PRONOMEN` | [Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen be](novaberg-backlog-charakter.md) |
-| CHA | 909 | offen | `DESTILLAT-ASYMMETRIE` | [Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten l](novaberg-backlog-charakter.md) |
-| CHA | 922 | offen | `CHARHASH-KZG-SCAN-UNSORTIERT` | [Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Pr](novaberg-backlog-charakter.md) |
-| CHA | 937 | abgeschlossen | `HASH-DIRTY-KEY-OHNE-PAAR` | [Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:me](novaberg-backlog-charakter.md) |
-| CHA | 950 | offen | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | [Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt da](novaberg-backlog-charakter.md) |
-| CHA | 965 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrverme](novaberg-backlog-charakter.md) |
-| CHA | 988 | offen | `TURN-ROH-HG-SKIP` | [Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn](novaberg-backlog-charakter.md) |
-| CHA | 1007 | offen | `DESTILLAT-SUBJEKT-SCHABLONE` | [Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter er](novaberg-backlog-charakter.md) |
+| CHA | 27 | offen | `ZITAT-ENTWERTEN` | [Block 06.09.2026, abends — aus der Setzung zum Zitat](novaberg-backlog-charakter.md) |
+| CHA | 37 | abgeschlossen | `DECKUNG-BRAUCHT-EINEN-ANDEREN-ORT` | [Block 06.09.2026 — aus der Deckungsmessung am Profil](novaberg-backlog-charakter.md) |
+| CHA | 47 | abgeschlossen | `FALTUNG-OHNE-PERIODISCHEN-LAUF` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
+| CHA | 48 | offen | `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
+| CHA | 58 | offen | `SCHWELLEN-AUF-TESTMATERIAL-KALIBRIERT` | [Block 31.08.2026 — aus der Reizstaerke-Kalibrierung](novaberg-backlog-charakter.md) |
+| — | 68 | unlesbar | `FASZINATION-PRAEGUNG` | [Block 30.08.2026 — aus dem Faszinationskonzept](novaberg-backlog-charakter.md) |
+| CHA | 80 | offen | `RAD-LAEUFE-BEI-DETERMINISTISCHER-ABLEITUNG` | [Block 27.08.2026 — aus dem Temperaturwechsel](novaberg-backlog-charakter.md) |
+| CHA | 91 | offen | `KERNVERGLEICH-KONTROLLE-STEHT-STILL` | [Block 26.08.2026 — aus dem Umbau der Kern-Auswahl](novaberg-backlog-charakter.md) |
+| CHA | 102 | abgeschlossen | `KERNAUSWAHL-KRITERIUM-OFFEN` | [Block 25.08.2026 — aus der Vermessung des Kern-Hash](novaberg-backlog-charakter.md) |
+| CHA | 115 | offen | `PRUEFFIGUR-DISTANZ-090` | [Block 14.08.2026 — aus der Eigenzeit-Messung](novaberg-backlog-charakter.md) |
+| CHA | 131 | offen | `VERLAUF-REPRODUZIERT-EIGENE-WENDUNGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
+| CHA | 144 | offen | `CHARAKTER-BESCHAEDIGT-INHALT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
+| CHA | 157 | offen | `BEITRAGSTABELLE-SCHLIESST-KOMBINATION-AUS` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
+| CHA | 175 | offen | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 190 | offen | `PROFILE-LEER-URSACHE-UNBEKANNT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 214 | offen | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 230 | abgeschlossen | `RAD-STABILITAET-UNGEMESSEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 284 | offen | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 297 | offen | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 337 | offen | `PROFIL-HISTORIE-FEHLT` | [0b. Charakterbildung messen — der nächste Sprint (01](novaberg-backlog-charakter.md) |
+| CHA | 356 | offen | `PAARLISTE-FEST` | [0b. Charakterbildung messen — der nächste Sprint (01](novaberg-backlog-charakter.md) |
+| CHA | 384 | abgeschlossen | `HALTUNG-KNOTEN-FEHLT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 405 | abgeschlossen | `HALTUNG-PROTOKOLL-FEHLT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 426 | offen | `HALTUNG-SPANNENENDEN-OFFEN` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 466 | abgeschlossen | `HALTUNG-OHNE-LANDSCHAFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 483 | offen | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 505 | offen | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-charakter.md) |
+| CHA | 534 | abgeschlossen | `EMOTIONS-VECTOR-WERTE-DRIFT` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 535 | offen | `EI-KANON-FEHLT` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 536 | offen | `SILENT-SKIP-EI-DEFAULTS` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 537 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 538 | offen | `EI-VEKTOR-LOG-GATE` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 541 | offen | `EPIC-SYKOPHANZ` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 555 | offen | `SYK-B-1-THINKER-WEICHE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 556 | abgeschlossen | `SYK-B0-ABSTAND` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 557 | abgeschlossen | `SYK-B0-BEZIEHUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 558 | offen | `SYK-B0-FALLENBATTERIE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 559 | abgeschlossen | `SYK-B1-URTEILSFELD` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 560 | offen | `SYK-B1-WERT-FALSCH` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 561 | abgeschlossen | `SYK-B4-VORZEICHENPRUEFUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 562 | abgeschlossen | `SYK-B4-STUFE-2-OHNE-FILTER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 563 | abgeschlossen | `SYK-B4-WERT-BENENNEN` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 564 | offen | `SYK-B8-SCHREIBPFAD` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 565 | offen | `SYK-B3-VORZEICHENREGEL` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 566 | offen | `SYK-B9-REGISTER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 567 | offen | `SYK-B2-IMPULS-GRENZE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 568 | offen | `SYK-B5-ESKALATION` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 569 | offen | `SYK-B6-MOTIVENTLASTUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 570 | offen | `SYK-B7-ZWEITABLEITUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 579 | offen | `SYK-M-TRIBUNAL` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 580 | offen | `SYK-M-VERFASSER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 581 | offen | `SYK-M-RAHMUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 627 | offen | `CHAR-HASH-TEST-LEICHEN` | [Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `char](novaberg-backlog-charakter.md) |
+| CHA | 646 | offen | `REFAC-HG-CHAR-HASH-LOAD` | [Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebre](novaberg-backlog-charakter.md) |
+| CHA | 688 | offen | `SPRACH-STIL-DEFENSIV-STUMM` | [Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erke](novaberg-backlog-charakter.md) |
+| CHA | 717 | offen | `EI-CALC-ROLLE-RENAME` | [Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` sem](novaberg-backlog-charakter.md) |
+| CHA | 743 | offen | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | [Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistent](novaberg-backlog-charakter.md) |
+| CHA | 799 | offen | `CRUD-DESTILL-SUBTRAKT` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 800 | offen | `CRUD-REACTIVATE-STAMP` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 801 | offen | `SPRACH-STIL-DEFENSIV-STUMM` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 802 | offen | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 843 | offen | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | [Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste v](novaberg-backlog-charakter.md) |
+| CHA | 852 | offen | `CHARHASH-PROMPT-DUPLIKAT` | [Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit ](novaberg-backlog-charakter.md) |
+| CHA | 863 | offen | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | [Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-De](novaberg-backlog-charakter.md) |
+| CHA | 889 | offen | `CHARAKTER-RESONANZ` | [Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem U](novaberg-backlog-charakter.md) |
+| CHA | 898 | offen | `ASSISTENT-NAME-LAUFZEIT` | [Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name ](novaberg-backlog-charakter.md) |
+| CHA | 907 | offen | `ASSISTENT-GESCHLECHT-PRONOMEN` | [Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen be](novaberg-backlog-charakter.md) |
+| CHA | 920 | offen | `DESTILLAT-ASYMMETRIE` | [Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten l](novaberg-backlog-charakter.md) |
+| CHA | 933 | offen | `CHARHASH-KZG-SCAN-UNSORTIERT` | [Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Pr](novaberg-backlog-charakter.md) |
+| CHA | 948 | abgeschlossen | `HASH-DIRTY-KEY-OHNE-PAAR` | [Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:me](novaberg-backlog-charakter.md) |
+| CHA | 961 | offen | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | [Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt da](novaberg-backlog-charakter.md) |
+| CHA | 976 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrverme](novaberg-backlog-charakter.md) |
+| CHA | 999 | offen | `TURN-ROH-HG-SKIP` | [Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn](novaberg-backlog-charakter.md) |
+| CHA | 1018 | offen | `DESTILLAT-SUBJEKT-SCHABLONE` | [Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter er](novaberg-backlog-charakter.md) |
 | ANT | 25 | offen | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-antwortpfad.md) |
 | ANT | 41 | offen | `INTERNE-PROMPTS-SPRACHGEBRAUCH` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
 | ANT | 54 | offen | `RESPONDER-BRAUCHT-FRAGEN-DRAENGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
