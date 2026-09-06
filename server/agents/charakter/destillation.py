@@ -584,6 +584,111 @@ def zitat_normalisieren(text: str) -> str:
     return " ".join(text.lower().split())
 
 
+def _belege_maskieren(profil: str) -> tuple[str, list[str]]:
+    r"""Ersetzt jeden woertlichen Beleg durch eine Marke ohne Satzzeichen.
+
+    **Ein Beleg traegt oft selbst ein Satzzeichen** (*„Und die Huelle?“*), und
+    ohne die Maske zerschneidet die Satztrennung ihn — Dauerwort und Beleg
+    landen dann in verschiedenen Saetzen, und die Pruefung schweigt. Gefunden
+    vom eigenen Zeugen, nicht im Betrieb.
+
+    **Sie steht als eigene Funktion, weil zwei Verbraucher dieselbe Zerlegung
+    brauchen:** `deckung_beanstanden` meldet, `zitate_entwerten` greift ein.
+    Zwei getrennte Zerlegungen wuerden auseinanderlaufen, sobald eine sich
+    aendert — und der Eingriff traefe dann eine andere Stelle als die Meldung.
+
+    **Sie prueft ihre Vorbedingung selbst, und das ist der Unterschied zur
+    ersten Fassung.** Dort stand sie im Docstring mit dem Zusatz *„der
+    Aufrufer prueft das"* — und von zwei Aufrufern tat es einer. Die zweite
+    Kontrolle hat den Fall vorgerechnet: Ein `\x00` im Profiltext liess
+    `deckung_beanstanden` denselben Beleg **zweimal** melden, weil `MARKE` das
+    fremde Zeichen als dritte Marke las. **Eine Vorbedingung, deren Einhaltung
+    der Aufrufer zusichert, gilt nur so weit wie der aufmerksamste Aufrufer.**
+
+    Nachbedingung: Jede Marke im Ergebnis hat einen Index in der Liste. Ein
+        Beleg, den `str.replace` nicht wiederfand, traegt keine Marke und wird
+        von keinem Verbraucher gesehen — die Liste ist damit eine Obermenge.
+        Traegt `profil` das Maskierungszeichen, ist die Liste **leer** und der
+        Text unveraendert: kein Verbraucher sieht dann einen Beleg, und keiner
+        meldet oder entwertet etwas Falsches.
+
+    Args:
+        profil: die bereinigte Antwort des Modells.
+
+    Returns:
+        Der maskierte Text und die Belege in der Reihenfolge ihrer Marken.
+        Die Nummer einer Marke ist der Index in dieser Liste.
+    """
+    # ── Eingabe-Validierung ──
+    if "\x00" in profil:
+        logger.error(
+            "Profil enthaelt das Maskierungszeichen selbst — keine Belege "
+            "erhoben. Weder Deckungspruefung noch Entwertung greifen; der "
+            "Text bleibt unveraendert"
+        )
+        return profil, []
+
+    # ── Verarbeitung ──
+    belege: list[str] = ZITAT.findall(profil)
+    maskiert: str = profil
+    for nummer, beleg in enumerate(belege):
+        maskiert = maskiert.replace(f"„{beleg}“", f"\x00{nummer}\x00", 1)
+    return maskiert, belege
+
+
+def _belege_klassifizieren(
+    prompt: str, maskiert: str, belege: list[str]
+) -> tuple[list[int], list[int]]:
+    """Trennt die Belege in ungedeckte und als Dauerzug formulierte.
+
+    **Der Prompt ist das Material.** Er traegt die Eintraege woertlich, also
+    ist *„kommt im Prompt vor"* genau die Frage *„hatte das Modell einen
+    Beleg"*. Gezaehlt werden Vorkommen, nicht Eintraege.
+
+    Vorbedingung: `maskiert` und `belege` stammen aus **einem** Aufruf von
+        `_belege_maskieren`. Aus zwei Aufrufen gemischt zeigen die Nummern auf
+        andere Belege, und der Eingriff traefe die falsche Stelle.
+    Nachbedingung: Die beiden Listen sind disjunkt — jede Marke faellt in
+        hoechstens eine Klasse, weil die Zaehlung `treffer` sie entscheidet.
+
+    Args:
+        prompt:   der gerenderte Prompt, also das Material im Wortlaut.
+        maskiert: der Profiltext mit Marken statt Belegen.
+        belege:   die Belege in der Reihenfolge ihrer Marken.
+
+    Returns:
+        Zwei Listen von Marken-Nummern: ohne Fundstelle (0 Vorkommen) und
+        Einzelbeleg als Dauerzug (1 Vorkommen im Satz eines Dauerworts).
+        **Nummern statt Texte**, damit der Eingriff genau das Vorkommen
+        trifft, das die Pruefung gemeint hat — derselbe Wortlaut kann
+        zweimal im Profil stehen und nur einmal ungedeckt sein.
+    """
+    material: str = zitat_normalisieren(prompt)
+    ohne_fundstelle: list[int] = []
+    einzelbeleg: list[int] = []
+    for satz in SATZ.findall(maskiert):
+        hat_dauerwort: bool = bool(DAUERWORT.search(satz))
+        for marke in MARKE.findall(satz):
+            nummer: int = int(marke)
+            if nummer >= len(belege):
+                # **Eine Marke ohne Beleg ist kein Randfall, sondern das
+                # Zeichen, dass der Text schon eine trug.** `_belege_maskieren`
+                # meldet das und erhebt dann keine Belege; hier darf es nicht
+                # zum Absturz fuehren. Ueberspringen ist richtig — der
+                # vermeintliche Beleg ist Text des Modells, kein Zitat.
+                logger.error(
+                    f"Marke {nummer} hat keinen Beleg ({len(belege)} erhoben) "
+                    "— uebersprungen. Der Profiltext trug das Maskierungszeichen"
+                )
+                continue
+            treffer: int = material.count(zitat_normalisieren(belege[nummer]))
+            if treffer == 0:
+                ohne_fundstelle.append(nummer)
+            elif treffer == 1 and hat_dauerwort:
+                einzelbeleg.append(nummer)
+    return ohne_fundstelle, einzelbeleg
+
+
 def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
     """Meldet Belege im Profil, die das Material nicht traegt.
 
@@ -631,28 +736,10 @@ def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
         return 0
 
     # ── Verarbeitung ──
-    # **Die Zitate werden vor der Satztrennung maskiert.** Ein Beleg traegt
-    # oft selbst ein Satzzeichen (*„Und die Huelle?“`), und ohne die Maske
-    # zerschneidet die Trennung ihn — Dauerwort und Beleg landen dann in
-    # verschiedenen Saetzen, und die Pruefung schweigt. Gefunden vom eigenen
-    # Zeugen, nicht im Betrieb.
-    material: str = zitat_normalisieren(prompt)
-    belege: list[str] = ZITAT.findall(profil)
-    maskiert: str = profil
-    for nummer, beleg in enumerate(belege):
-        maskiert = maskiert.replace(f"„{beleg}“", f"\x00{nummer}\x00", 1)
-
-    ohne_fundstelle: list[str] = []
-    einzelbeleg: list[str] = []
-    for satz in SATZ.findall(maskiert):
-        hat_dauerwort: bool = bool(DAUERWORT.search(satz))
-        for nummer in MARKE.findall(satz):
-            beleg = belege[int(nummer)]
-            treffer: int = material.count(zitat_normalisieren(beleg))
-            if treffer == 0:
-                ohne_fundstelle.append(beleg)
-            elif treffer == 1 and hat_dauerwort:
-                einzelbeleg.append(beleg)
+    maskiert, belege = _belege_maskieren(profil)
+    ohne_nummern, einzel_nummern = _belege_klassifizieren(prompt, maskiert, belege)
+    ohne_fundstelle: list[str] = [belege[nummer] for nummer in ohne_nummern]
+    einzelbeleg: list[str] = [belege[nummer] for nummer in einzel_nummern]
 
     # ── Ausgabe-Verifikation ──
     if ohne_fundstelle:
@@ -668,6 +755,104 @@ def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
             "Profil wird gespeichert; das Wort behauptet mehr als der Beleg traegt"
         )
     return len(ohne_fundstelle) + len(einzelbeleg)
+
+
+def zitate_entwerten(prompt: str, profil: str, profil_name: str) -> str:
+    """Nimmt einem Beleg ohne Fundstelle die Anfuehrungszeichen.
+
+    **Die Struktur zu `F-ZITAT-1`**, nachdem der Prompt-Weg gemessen
+    ausgeschieden ist. Die `ZITATREGEL` bewegte die Quote unbelegter Zitate
+    gegen das **gepinnte** Ziel des Betriebs von 18 % auf 16 % (n = 20 je
+    Fassung) — zwei Punkte bei einer Streuung, die zwischen zwei Runden um
+    zehn springt. Damit gilt `F-PROMPT-1`: Wo ein Verhalten verlaesslich sein
+    muss, wird es in der Struktur erzwungen und nicht im Text.
+
+    **Der Satz bleibt, die Zeichen fallen.** Aus *Nova nennt sich selbst
+    „Waechterin des Zeitplans“* wird *Nova nennt sich selbst Waechterin des
+    Zeitplans* — aus dem angeblichen Zitat wird die Deutung, die es ist.
+    Nichts wird geloescht und nichts umformuliert; beides waere ein zweiter
+    Eingriff und das zweite braeuchte einen neuen Modellaufruf.
+
+    **Nur die Klasse *Beleg ohne Fundstelle*.** Ein Einzelbeleg als Dauerzug
+    steht im Material — sein Wortlaut ist echt, und die Anfuehrungszeichen
+    sind dort richtig. Zu viel behauptet das Dauerwort daneben, und das ist
+    `PROFIL-VERALLGEMEINERT-EINZELBELEG` und nicht diese Funktion.
+
+    **Sie trennt Erfindung und Stilmittel nicht — und muss es nicht.** Im
+    Kern setzt das Modell auch eigene Wendungen in Anfuehrungszeichen
+    (`[gemessen]` 06.09.2026: 3 und 6 Meldungen in zwei Kern-Laeufen, im
+    Beziehungsprofil ueber 20 Laeufe keine). Fuer beide ist dieselbe Abhilfe
+    die richtige — Anfuehrungszeichen sind fuer den Wortlaut reserviert.
+
+    **Ihre Reichweite ist die von `ZITAT`, und die endet bei 60 Zeichen.**
+    `[gemessen]` 06.09.2026 an den 70 gespeicherten Profiltexten: **117 von
+    125** Anfuehrungspaaren liegen darin, **8 nicht** (6,4 %, Median 19, Max
+    101). Die acht sind keine Ausreisser, sondern **ganze zitierte Saetze** —
+    und alle stehen im Kern. Sie werden weder gemeldet noch entwertet.
+    **Die Grenze war bis heute die Reichweite einer Logzeile und ist seit
+    dieser Funktion die eines Eingriffs**; ob sie dort richtig liegt, ist
+    nicht entschieden und steht in der Fundliste.
+
+    Args:
+        prompt:      der gerenderte Prompt, also das Material im Wortlaut.
+        profil:      die bereinigte Antwort des Modells.
+        profil_name: fuer die Logzeile, damit sie das Profil benennt.
+
+    Returns:
+        Das Profil ohne Anfuehrungszeichen um ungedeckte Belege. Ist nichts
+        zu entwerten, ist es der unveraenderte Text.
+    """
+    # ── Eingabe-Validierung ──
+    if not prompt or not profil:
+        logger.debug(
+            f"{profil_name}: Entwertung uebersprungen — "
+            f"Prompt {len(prompt)} Zeichen, Profil {len(profil)} Zeichen"
+        )
+        return profil
+    # ── Verarbeitung ──
+    maskiert, belege = _belege_maskieren(profil)
+    ohne_nummern, _ = _belege_klassifizieren(prompt, maskiert, belege)
+    if not ohne_nummern:
+        return profil
+    zu_entwerten: set[int] = set(ohne_nummern)
+
+    def _zuruecksetzen(treffer: re.Match) -> str:
+        """Setzt eine Marke zurueck — mit Anfuehrungszeichen oder ohne.
+
+        Vorbedingung: `treffer` stammt aus `MARKE` auf demselben `maskiert`,
+            seine Nummer ist damit ein gueltiger Index in `belege`.
+        Nachbedingung: Das Ergebnis ist der Beleg selbst, genau dann wenn
+            seine Nummer in `zu_entwerten` steht; sonst der Beleg in
+            Anfuehrungszeichen, also der Text von vorher.
+        """
+        nummer: int = int(treffer.group(1))
+        beleg: str = belege[nummer]
+        return beleg if nummer in zu_entwerten else f"„{beleg}“"
+
+    entwertet: str = MARKE.sub(_zuruecksetzen, maskiert)
+
+    # ── Ausgabe-Verifikation ──
+    # **Zwei Zusicherungen, und die zweite ist die eigentliche.** Eine
+    # stehengebliebene Marke waere ein Steuerzeichen im gespeicherten Profil;
+    # eine andere Laenge als *zwei Zeichen weniger je entwertetem Beleg*
+    # hiesse, dass der Eingriff mehr angefasst hat als die Anfuehrungszeichen.
+    # Ein Eingriff in erzeugten Text darf nicht im Zweifel gewinnen.
+    erwartet: int = len(profil) - 2 * len(zu_entwerten)
+    if "\x00" in entwertet or len(entwertet) != erwartet:
+        logger.error(
+            f"{profil_name}: Entwertung verworfen — Ergebnis {len(entwertet)} "
+            f"Zeichen statt {erwartet} erwarteter oder Marke stehengeblieben. "
+            "Der Text bleibt unveraendert"
+        )
+        return profil
+
+    logger.warning(
+        f"{profil_name}: {len(zu_entwerten)} Beleg(e) entwertet — "
+        f"{[belege[nummer] for nummer in sorted(zu_entwerten)]}. Die "
+        "Anfuehrungszeichen sind gefallen, der Satz steht: das Material "
+        "traegt diesen Wortlaut nicht (F-ZITAT-1)"
+    )
+    return entwertet
 
 
 def _antwort_bereinigen(text: str) -> str:
@@ -784,8 +969,11 @@ def _llm_call(prompt: str, profil_name: str) -> str:
 
     ergebnis = _antwort_bereinigen(response.text)
     logger.info(f"{profil_name} destilliert: '{ergebnis[:80]}...'")
+    # **Erst melden, dann eingreifen.** Die Zahl der Beanstandung ist die
+    # Messgroesse des Rohtextes; nach der Entwertung meldet dieselbe Pruefung
+    # null, und die Wirkung waere nicht mehr ablesbar.
     deckung_beanstanden(prompt, ergebnis, profil_name)
-    return ergebnis
+    return zitate_entwerten(prompt, ergebnis, profil_name)
 
 
 # ─────────────────────────────────────────────
