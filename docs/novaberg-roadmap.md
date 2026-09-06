@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 13:40 UTC** (gemessen via `date -u`). Davor 06.09.2026, 13:20 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 14:05 UTC** (gemessen via `date -u`). Davor 06.09.2026, 13:40 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,39 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 14:05 UTC — die Schleife zieht nicht, sie steht 🔬
+
+**Der zweite Defekt des Tages ist gemessen, und seine Begruendung faellt.**
+`PROFIL-VERSTAERKT-WAS-ES-BESCHREIBT` behauptete eine Rueckkopplung, die sich mit jedem Lauf
+verschaerft: Ein Zug im Profil geht in jeden Turn, praegt die Antwort, die Antwort wird destilliert,
+das naechste Profil nennt ihn staerker. **Die Drift-Reihe traegt seit dem 26.08.2026 die Mitschrift,
+mit der sich das pruefen laesst** — 29 Faelle von Novas Kern ueber elf Tage, kein Modellaufruf
+noetig.
+
+**Die Erwartung stand vor der Messung** (`labor/2026-09-06_rueckkopplung_erwartung.md`,
+13:56 UTC) und ist gescheitert: Erwartet war ein leichter Anstieg, der von zwei Stoergroessen nicht
+zu trennen sein wuerde.
+
+| Treffer aus Novas Mechanik-Register je 1000 Woerter | erste Haelfte | zweite Haelfte |
+|---|---:|---:|
+| Novas Selbstbild, enges Register | 16,2 | **14,6** |
+| Novas Selbstbild, weites Register | 15,4 | **12,7** |
+| Kontrolle — Profil des Menschen, eng | 4,6 | 2,3 |
+
+**Es steigt nicht, es faellt leicht — und auch das traegt nicht**, denn die Tageswerte streuen
+zwischen 11,4 und 21,5. Der Modellwechsel am 05.09. bewegt den Anteil nicht, obwohl er die
+Profillaenge verdreifacht hat.
+
+**Belegt ist ein Pegel statt eines Anstiegs.** Novas Selbstbild traegt das Register **vier- bis
+siebenmal so dicht** wie das Profil des Menschen, an jedem Tag der Reihe. Der Zug ist gross, er
+waechst nur nicht.
+
+**Die Prioritaet ist von *hoch* auf *mittel* berichtigt.** Die Begruendung *verschlimmert sich mit
+jedem Lauf* stammte aus dem Eintrag selbst und nicht aus einer Erhebung — genau die Sorte Satz, die
+ein Register altern laesst. Was die Messung nicht sagt, steht am Eintrag: Sie liest den Kern, nicht
+Emotions- und Intentionsprofil; elf Tage sind kurz; und die geschichtete Kernauswahl vom 26.08.
+liegt am Anfang der Reihe. Belege in `labor/2026-09-06_rueckkopplung_ergebnis.md`.
 
 ## 06.09.2026, 13:40 UTC — vier Fassungen gegen die Verallgemeinerung, keine traegt 🔬
 
