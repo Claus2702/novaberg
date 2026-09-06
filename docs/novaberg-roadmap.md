@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 17:45 UTC** (gemessen via `date -u`). Davor 06.09.2026, 16:30 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 17:55 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,34 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 17:55 UTC — die Zitatregel faellt mit dem Messgeraet 🔬
+
+**Die gepinnte Wiederholung ist da, und sie kehrt das Ergebnis des Nachmittags um.**
+
+| Ziel | ohne Zitatregel | mit Zitatregel |
+|---|---:|---:|
+| ungepinnt, Runde 1 | 24 % | **10 %** |
+| ungepinnt, Runde 2 | 21 % | **9 %** |
+| **gepinnt, wie der Betrieb** | 18 % (44 von 243) | **16 %** (46 von 286) |
+
+**Zwei Punkte, bei einer Streuung, die zwischen zwei Runden um zehn springt.** Die Halbierung war an
+das ungepinnte Ziel gebunden — an ein Modell, das der Betrieb nicht benutzt.
+
+> **Damit traegt keine der fuenf Prompt-Fassungen dieses Tages.** Vier gegen die Verallgemeinerung,
+> eine gegen die erfundenen Zitate; jede sah in der ersten Messung wirksam aus, keine haelt gegen
+> die Streuung ihres eigenen Aufbaus.
+
+**Die Betriebszahlen des 17:11-Zyklus fuegen sich damit ein** (36 % und 29 %): Sie waren keine
+Ausreisser, sondern das Ziel, das gilt.
+
+**Die `ZITATREGEL` bleibt stehen** — sie sagt nichts Falsches, und `F-ZITAT-1` gilt unveraendert.
+Was faellt, ist die Behauptung ihrer Wirkung. **Der Prompt-Weg ist fuer diese Setzung ausgeschieden
+wie fuer die Verallgemeinerung zuvor;** offen bleibt die Struktur: das unbelegte Zitat im
+gespeicherten Profil entwerten, die Anfuehrungszeichen fallen lassen, den Satz stehen. Ein Eingriff
+in den erzeugten Text und eine Entscheidung des Eigentuemers.
+
+Kein Code beruehrt, Suite unveraendert **3202 gruen, 0 uebersprungen**.
 
 ## 06.09.2026, 17:45 UTC — der Betriebsbeleg, und ein Messgeraet, das woanders hinsah 🔬
 
