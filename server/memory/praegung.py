@@ -22,6 +22,7 @@ import psycopg2
 from config import (
     EMOTION_KANON,
     EMOTION_SEKTOR_MAP,
+    EMOTION_SYNONYM_MAP,
     EMOTION_VALENZ,
     PRAEGUNG_ALPHA,
     PRAEGUNG_ANZAHL_SAETTIGUNG,
@@ -483,6 +484,11 @@ def strang_histogramm_rechnen(postgres_url: str, strang_id: int) -> dict | None:
             # ── Verarbeitung ───────────────────────────
             histogramm: list[int] = [0] * 8
             unbekannt:  int = 0
+            # **Synonyme werden vor der Sektorfrage aufgeloest.** Sonst faellt
+            # ein gueltiger Wert wie `mitgefuehl` in `unbekannt` und faerbt
+            # nicht mit, obwohl sein Sektor feststeht — dieselbe Naht wie in
+            # `sektor_faktor` (06.09.2026).
+            zeilen = [(EMOTION_SYNONYM_MAP.get(e, e), n) for e, n in zeilen]
             for emotion, anzahl in zeilen:
                 sektor = EMOTION_SEKTOR_MAP.get(emotion)
                 if sektor is None:
@@ -1440,12 +1446,22 @@ def sektor_faktor(emotion: str) -> tuple[float, int | None]:
         Der Zeitfaktor und der Sektor, oder `(1.0, None)`.
     """
     # ── Eingabe ────────────────────────────────
-    sektor: int | None = EMOTION_SEKTOR_MAP.get(emotion or "")
+    # **Das Synonym wird hier aufgeloest, nicht beim Aufrufer.**
+    # `EMOTION_SEKTOR_MAP` traegt nur die 16 Kanonwerte — ein gueltiges
+    # Synonym faende dort nichts und liefe als *unbekannter Wert* in die
+    # Warnung, obwohl sein Sektor feststeht. `[gemessen]` 06.09.2026:
+    # `sektor_faktor("mitgefuehl")` gab `(1.0, None)` **nachdem** die
+    # Synonymkarte den Wert bereits kannte. Dieselbe Aufloesung machen
+    # `ei/berechnung.py::emotion_kanonisieren` und `lzg_knoten.py:865`
+    # jeweils an ihrer eigenen Naht — diese hier fehlte.
+    roh: str = emotion or ""
+    kanonisch: str = EMOTION_SYNONYM_MAP.get(roh, roh)
+    sektor: int | None = EMOTION_SEKTOR_MAP.get(kanonisch)
     if sektor is None or not 1 <= sektor <= len(PRAEGUNG_SEKTOR_FAKTOR):
         # **Der Kanon trennt den Regelfall vom Befund.** `neutral` gehoert dazu
         # und hat gueltig keinen Sektor; alles ausserhalb ist ein Wert, den die
         # Perzeption nicht haette liefern duerfen.
-        if (emotion or "") in EMOTION_KANON:
+        if kanonisch in EMOTION_KANON:
             logger.debug(
                 f"Praegung: '{emotion}' ist kanonisch und sektorlos — die "
                 f"Einfaerbung laeuft auf der neutralen Zeitachse"

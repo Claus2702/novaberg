@@ -1638,6 +1638,14 @@ EMOTION_SYNONYM_MAP: dict[str, str] = {
     "melancholie": "traurigkeit", "kummer": "verzweiflung",
     "niedergeschlagenheit": "traurigkeit", "nachdenklich": "traurigkeit",
     "leere": "traurigkeit",
+    # `mitgefuehl` ist **eine Setzung des Eigentuemers** (06.09.2026), keine
+    # Ableitung: *„naeher an Traurigkeit, geteilter Schmerz"*. Der Wert kam
+    # ueber den Bestand 27-mal und trug bis dahin **keinen Sektor** — die
+    # Einfaerbung lief auf der neutralen Zeitachse (1,0) und meldete jeden
+    # Fall als Befund. Die Gegenkandidatin war `zufriedenheit` (Sektor 2, wo
+    # `vertrauen` und `geborgenheit` stehen); sie haette eine **positive**
+    # Valenz behauptet. Genau darum ist die Zeile keine Aufraeumarbeit.
+    "mitgefuehl": "traurigkeit",
     # → Sektor 6 Enttäuschung (inkl. Ekel-Achse)
     "frust": "frustration", "ernuechterung": "enttaeuschung",
     "verbitterung": "frustration", "desillusionierung": "enttaeuschung",

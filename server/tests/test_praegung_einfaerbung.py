@@ -243,5 +243,44 @@ class DerTageslaufRuftDieReiheTest(unittest.TestCase):
         )
 
 
+class SynonymFindetSeinenSektorTest(unittest.TestCase):
+    """Ein gueltiges Synonym faerbt mit — es faellt nicht in die Warnung.
+
+    **Setzung des Eigentuemers, 06.09.2026:** `mitgefuehl` gehoert zu
+    `traurigkeit` — *„naeher an Traurigkeit, geteilter Schmerz"*. Die
+    Gegenkandidatin war `zufriedenheit` (Sektor 2), sie haette eine positive
+    Valenz behauptet.
+
+    **Warum die Zeile in der Synonymkarte allein nicht reichte** `[gemessen
+    06.09.2026]`: `sektor_faktor` schlug direkt in `EMOTION_SEKTOR_MAP` nach,
+    und die traegt nur die 16 Kanonwerte. Der Wert war damit **gueltig und
+    trotzdem sektorlos** — `(1.0, None)` samt Warnung, obwohl die Zuordnung
+    feststand. Dieselbe Naht fehlte im Strang-Histogramm, wo ein Synonym in
+    `unbekannt` fiel statt mitzufaerben.
+    """
+
+    def test_mitgefuehl_faerbt_wie_traurigkeit(self) -> None:
+        """Rot, sobald die Aufloesung wieder verlorengeht."""
+        from memory.praegung import sektor_faktor
+        self.assertEqual(sektor_faktor("mitgefuehl"), sektor_faktor("traurigkeit"))
+
+    def test_der_sektor_ist_fuenf_und_der_faktor_negativ(self) -> None:
+        """Die Setzung selbst — sie steht hier und nicht nur im Protokoll."""
+        from memory.praegung import sektor_faktor
+        faktor, sektor = sektor_faktor("mitgefuehl")
+        self.assertEqual(sektor, 5)
+        self.assertGreater(faktor, 1.0)
+
+    def test_ein_unbekannter_wert_bleibt_ein_befund(self) -> None:
+        """Die Aufloesung darf die Meldung nicht mitnehmen.
+
+        `neutral` ist kanonisch und sektorlos — der Regelfall, keine Warnung.
+        Ein erfundener Wert ist beides nicht und muss weiter melden.
+        """
+        from memory.praegung import sektor_faktor
+        with self.assertLogs("ki_server.praegung", level="WARNING"):
+            self.assertEqual(sektor_faktor("quatsch"), (1.0, None))
+
+
 if __name__ == "__main__":
     unittest.main()
