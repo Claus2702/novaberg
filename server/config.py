@@ -3791,6 +3791,53 @@ MODELL_NACH_BACKEND: dict[str, str] = {
 }
 
 
+def antwortendes_modell(rolle: str) -> str:
+    """Nennt das Modell, das hinter einer Worker-Rolle tatsaechlich antwortet.
+
+    **Die Verallgemeinerung von `antwortendes_chat_modell`, seit 06.09.2026.**
+    Die Rollen des Hintergrunds hatten kein Gegenstueck; wer ihr Modell
+    protokollieren wollte, griff zur **konfigurierten** Konstante — und die
+    nennt seit dem Backendwechsel etwas anderes als den Sprecher.
+
+    `[gemessen]` — 06.09.2026 gegen `charakter_rad_messung`: **24 Erhebungen**
+    seit dem Wechsel am 05.09. 18:04 UTC tragen `qwen36-cpu`, obwohl
+    `deepseek/deepseek-v4-flash-0731` gemessen hat. Die Reihe ist damit
+    nicht nach dem Modell trennbar, das sie erzeugt hat, und `F-RAD-2`
+    stuetzt sich auf sie.
+
+    Vorbedingung: `rolle` steht in `MODEL_WORKER_BACKENDS`, und deren Wert
+        im Kanon von `MODELL_NACH_BACKEND`.
+    Nachbedingung: der Modellname des Sprechers.
+    Fehlerfaelle: `ValueError` bei unbekannter Rolle **oder** unbekanntem
+        Backend — kein stiller Rueckfall auf eine Konstante, denn genau der
+        waere von einer richtigen Antwort nicht zu unterscheiden.
+
+    Args:
+        rolle: `chat`, `background_analyse` oder `background_sprache`.
+
+    Returns:
+        Die Modell-ID, die unter dieser Rolle antwortet.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if rolle not in MODEL_WORKER_BACKENDS:
+        logger.error(
+            f"Worker-Rolle {rolle!r} ist unbekannt — bekannt sind "
+            f"{sorted(MODEL_WORKER_BACKENDS)}."
+        )
+        raise ValueError(f"Unbekannte Worker-Rolle: {rolle!r}")
+
+    backend: str = MODEL_WORKER_BACKENDS[rolle]
+    if backend not in MODELL_NACH_BACKEND:
+        logger.error(
+            f"Backend {backend!r} der Rolle {rolle!r} steht nicht im Kanon "
+            f"— bekannt sind {sorted(MODELL_NACH_BACKEND)}."
+        )
+        raise ValueError(f"Unbekanntes Backend: {backend!r}")
+
+    # ── Verarbeitung & Ausgabe-Verifikation ─────
+    return MODELL_NACH_BACKEND[backend]
+
+
 def antwortendes_chat_modell() -> str:
     """Nennt das Modell, das der Chat-Worker tatsaechlich fuehrt.
 
@@ -3815,21 +3862,14 @@ def antwortendes_chat_modell() -> str:
     Satz *„die Reichweite ist neu"* — sie wird es mit dem ersten Backend,
     das kein Ollama ist.
     """
-    # ── Eingabe-Validierung ─────────────────────
-    backend: str = MODEL_WORKER_BACKENDS["chat"]
-    if backend not in MODELL_NACH_BACKEND:
-        logger.error(
-            f"Chat-Backend {backend!r} steht nicht im Kanon dieser Abbildung "
-            f"— bekannt sind {sorted(MODELL_NACH_BACKEND)}. Die Prompt-"
-            f"Modellebene waere sonst nach einem Modell geschluesselt, das "
-            f"nicht spricht."
-        )
-        raise ValueError(f"Unbekanntes Chat-Backend: {backend!r}")
-
     # ── Verarbeitung & Ausgabe-Verifikation ─────
-    modell: str = MODELL_NACH_BACKEND[backend]
+    # Die Aufloesung selbst steht in `antwortendes_modell`; hier bleibt nur
+    # die Protokollzeile, die zur Prompt-Modellebene gehoert und nicht zu
+    # jeder Rolle.
+    modell: str = antwortendes_modell("chat")
     logger.info(
-        f"Prompt-Modellebene: Backend {backend!r} spricht {modell!r}"
+        f"Prompt-Modellebene: Backend {MODEL_WORKER_BACKENDS['chat']!r} "
+        f"spricht {modell!r}"
     )
     return modell
 

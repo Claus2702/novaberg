@@ -43,7 +43,6 @@ from agents.charakter.rad_messreihe import (
 from config import (
     AKTIVES_PAAR_USER_ID,
     ASSISTANT_USER_ID,
-    PIXIE_ANALYSE_MODEL,
     PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
     PIXIE_CHARAKTER_KERN_BUDGET_ZEICHEN,
     PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE,
@@ -52,6 +51,7 @@ from config import (
     PIXIE_CHARAKTER_PRIORITAET,
     POSTGRES_URL,
     ZIEL_MAX_LANGFRISTIG,
+    antwortendes_modell,
     get_node_config,
     redis_client,
 )
@@ -268,7 +268,7 @@ class CharakterAgent(BaseAgent):
                                 "lauf":         nummer,
                                 "zeichen":      len(fassung or ""),
                                 "fassung":      fassung or "",
-                                "modell":       PIXIE_ANALYSE_MODEL,
+                                "modell":       antwortendes_modell("background_sprache"),
                             },
                             user_id      = _u,
                             character_id = _c,
@@ -376,7 +376,7 @@ class CharakterAgent(BaseAgent):
                                 speichen     = {**rad.get("hoch", {}),
                                                 **rad.get("runter", {})},
                                 faktor       = faktor,
-                                modell       = PIXIE_ANALYSE_MODEL,
+                                modell       = antwortendes_modell("background_sprache"),
                                 temperatur   = float(_n.get("temperature", 0.2)),
                                 presence_penalty = float(
                                     _n.get("presence_penalty", 0.0)),
@@ -1061,7 +1061,7 @@ class CharakterAgent(BaseAgent):
                 rad_art      = RAD_ART_INITIATIVE,
                 speichen     = {**rad.get("hoch", {}), **rad.get("runter", {})},
                 faktor       = versatz,
-                modell       = PIXIE_ANALYSE_MODEL,
+                modell       = antwortendes_modell("background_sprache"),
                 temperatur   = float(node_cfg.get("temperature", 0.2)),
                 presence_penalty = float(node_cfg.get("presence_penalty", 0.0)),
                 quelle       = quelle,
