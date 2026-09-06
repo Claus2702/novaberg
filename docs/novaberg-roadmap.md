@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 16:15 UTC** (gemessen via `date -u`). Davor 06.09.2026, 15:55 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 16:30 UTC** (gemessen via `date -u`). Davor 06.09.2026, 16:15 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,35 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 16:30 UTC — die Luecke der Faszination wird nachpruefbar ✅
+
+**Der Handzettel fuehrt den Faszinations-Leser als gesperrt, *solange die Faszination im Turn 0
+ist*. Gemessen ist beides — und es sind zwei verschiedene Zahlen:**
+
+| | |
+|---|---:|
+| aktive LZG-Knoten | 3430 |
+| davon mit Qualitaetsprofil | **72** (2,1 %) |
+| Zuwachs je Tag (03., 05., 06.09.) | 28 · 22 · 22 |
+| Faszination im **Bestand** (Hintergrundlauf 15:56 UTC) | 72 von 72 gerechnet, roh **0,0 bis 0,7182** |
+| Faszination im **Turn** (letzter, 10:34 UTC) | 3 geprueft, **3 ohne Profil**, `werte: {}` |
+
+**Im Bestand steht sie nicht mehr auf null** — die Aussage des Handzettels gilt dort nicht mehr.
+**Im Turn steht sie weiter leer**, weil die gelesenen Traeger kein Profil hatten. Nur die zweite
+Zahl entscheidet ueber die Sperre.
+
+**Und die zweite Zahl war nicht nachpruefbar.** Die Protokollzeile nannte `ohne_profil: 3` und
+nicht, **welche** Traeger das waren — damit liess sich nicht nachsehen, ob der Profil-Erzeuger, der
+taeglich 20 aufholt, die **gelesenen** trifft. Seit heute steht `ohne_profil_ids` daneben, aus
+derselben Not wie die Modulatoren in derselben Zeile: Ohne die Eingangsgroesse ist das Ergebnis
+nicht nachrechenbar (`18_NACHVOLLZIEHBARKEIT`).
+
+1 Zeuge dazu (`tests/test_faszination_erzeuger.py`, jetzt 12), Gegenprobe 1 rot, Suite **3202
+gruen, 0 uebersprungen**, harte Wand 0.
+
+> **Der Betriebsbeleg steht aus:** Der laufende Server traegt weder diese Zeile noch die
+> `ZITATREGEL` — beide kamen nach dem Neustart um 14:53 UTC.
 
 ## 06.09.2026, 16:15 UTC — Anfuehrungszeichen sind fuer den Wortlaut reserviert ✅
 
