@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 11:31 UTC** (gemessen via `date -u`). Davor 06.09.2026, 10:52 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 13:20 UTC** (gemessen via `date -u`). Davor 06.09.2026, 11:31 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,31 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 13:20 UTC — die Verallgemeinerung ist nicht gewuenscht 📋
+
+**Kein Code — eine Entscheidung des Eigentuemers und ihre Folge im Register.** Die Durchsicht der
+Charakter-Profile hatte am Vormittag drei Funde hinterlassen; einer davon trug eine offene
+Absichtsfrage: *Die Destillation soll beobachten, was da ist — ist die Rueckkopplung dann ein Defekt
+oder ein Merkmal?* Der Eigentuemer hat entschieden: **die Verallgemeinerung ist nicht gewuenscht.**
+
+Damit sind aus zwei Fundzeilen zwei Kennungen geworden:
+
+| Kennung | Befund | Prio |
+|---|---|---|
+| `PROFIL-VERALLGEMEINERT-EINZELBELEG` | Das Beziehungsprofil nennt eine Anrede *durchgehend*, die in **4 von 1662** Quellen steht (0,24 %, siebenmal). **Die Lizenz steht woertlich im Prompt** — `agents/charakter/destillation.py:387`: *„ein Zug, der einmal belegt ist, braucht keinen zweiten Beleg."* Keine der neun Deutungsebenen der vier Profil-Prompts verlangt ein Deckungsmass | mittel |
+| `PROFIL-VERSTAERKT-WAS-ES-BESCHREIBT` | Der destillierte Zug geht als *„Ihre gewachsene Persoenlichkeit"* in **jeden** Turn (`graph/nodes/responder.py:283`), praegt die naechste Antwort und damit das Material der naechsten Destillation. **Die Guete der Destillation ist hier der Verstaerker, nicht der Schutz** | hoch |
+
+**Nicht dieselbe Klasse wie die Sprechrichtung** (05.09.2026 behoben): Dort fehlte der Sprecher,
+hier fehlt das Mass.
+
+**Beim Zaehlen fiel die Zaehlvorschrift auf.** Der im Kopf von `novaberg-bugs.md` vorgeschriebene
+Ausdruck trifft nur die Backtick-Form der Ueberschriften und liefert **52**, waehrend die Kopfzahl
+**155** den Altbestand (`#### KENNUNG` ohne Backticks, 103 Eintraege) mitzaehlt. Die Vorschrift
+traegt seither beide Ausdruecke mit ihren Zahlen. Bestand danach: **157 offene Kennungen**.
+
+**Drei Handzettel-Entscheidungen sind im selben Zug gefallen:** die `.env` bleibt wie sie ist, die
+Stimme hat niedere Prioritaet, der Anbieterwechsel ruht.
 
 ## 06.09.2026, 11:31 UTC — der Riegel hatte recht, die Einordnung nicht ✅
 
