@@ -263,6 +263,50 @@ Beim Bau des Haltungs-Knotens vorgeführt: Wird die abgehende Kante eines Knoten
 
 Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-Text) und Sprachausgabe (Text-to-Speech). Voice wuerde die natuerlichste Form der Interaktion ermoeglichen — ein Gespraech statt Texteingabe. Voraussetzung: die emotionale Intelligenz muss in der Sprachausgabe ankommen (Tonlage, Tempo, Pausen entsprechend Arousal und Emotions-Vektor). Konzept steht noch aus.
 
+### Recherchiert am 06.09.2026 — die Machbarkeit steht, die Entscheidung nicht
+
+**Text und Sprache lassen sich kombinieren, aber als zwei Events.** Matrix hat keinen
+Nachrichtentyp, den ein Client gleichzeitig als lesbaren Text und als abspielbares Audio darstellt.
+Der belastbare Weg ist `m.text`, unmittelbar gefolgt von `m.audio`, beide mit `sender: @nova`. Zwei
+Auswege sind keine: das Transkript im `body` eines `m.audio` (Clients zeigen `body` dort als
+Dateinamen-Fallback) und Extensible Events (MSC1767 — im Protokoll vorgesehen, in FluffyChat und
+Element praktisch nicht getragen).
+
+**Drei Voraussetzungen stehen schon**, und das macht den Weg kurz:
+
+| Was | Wo |
+|---|---|
+| Der Raum ist **unverschlüsselt** — Medien ohne Geräteschlüssel les- und schreibbar | `matrix_bot/matrix_api.py::raum_anlegen` |
+| Der Medien-Upload existiert — allerdings mit hart gesetztem `Content-Type: image/png` | `matrix_bot/matrix_api.py::bild_hochladen` |
+| Was Audio heute verwirft, ist **eine Zeile** | `matrix_bot/bot.py`, Filter `msgtype != "m.text"` |
+
+**Der Rahmen der Modellwahl ist die Hardware, nicht die Qualität: AMD RX 7900 XTX mit ROCm.**
+
+| Kandidat | Befund `[recherchiert 06.09.2026]` |
+|---|---|
+| **Qwen3-TTS VoiceDesign** | Apache 2.0, 10 Sprachen **mit Deutsch**, Steuerung von Klangfarbe, Emotion und Prosodie **über eine natürlichsprachige Anweisung**, 97 ms Latenz; GGML-Port `qwentts.cpp` mit **Vulkan-Backend** — läuft ohne ROCm-Bastelei |
+| `whisper.cpp` | ROCm- und Vulkan-Backends. **Die Falle:** Alle fertigen Docker-Whisper-Server bauen auf faster-whisper/CTranslate2 — **CUDA-only**, sie fallen auf dieser Karte still auf CPU zurück |
+| Qwen3-ASR-1.7B | Apache 2.0, 30 Sprachen, Streaming — aber PyTorch statt fertigem Binary |
+| Kokoro | **kein Deutsch**, fällt raus, obwohl überall als bestes Kleinmodell gehandelt |
+| Breeze TTS 2 | Platz 1 der Open-Weights-Arena (Elo 1215, 25.08.2026) — **CUDA-Pflicht**, Non-Commercial-Lizenz, und die Modellkarte nennt nur Englisch und Chinesisch gegen die 50 Sprachen der Ankündigung |
+| Ein Modell für beides | **`llama.cpp` kann keine Audio-Ausgabe, für kein Modell.** Qwen3-Omni ist als GGUF ein Hörer, kein Sprecher |
+
+> **Die Kupplung, die den Ausschlag gibt:** `ei/haltungssprache.py` erzeugt bereits deutsche
+> Haltungssprache aus Arousal und Emotions-Vektor — und VoiceDesign nimmt genau so einen Satz
+> entgegen. Zwischen Novas Zustand und ihrer Stimme stünde **kein Zahlenregler**, den jemand
+> kalibrieren muss. Damit ist die Voraussetzung oben ("die emotionale Intelligenz muss in der
+> Sprachausgabe ankommen") keine Zusatzarbeit, sondern eine Naht.
+
+**Der Cloud-Weg, an der Modellliste gemessen** (431 Modelle): 46 nehmen Audio entgegen, **vier geben
+Audio aus — davon zwei Musik**. Für Sprache bleiben `openai/gpt-audio` ($32 ein / $64 aus je
+Million) und `gpt-audio-mini` ($0,60 / $2,40), Faktor 53 und 27. **Ein Haken, den die Liste selbst
+verrät:** Bei beiden fehlen `modalities` und `audio` in `supported_parameters` — die Felder, mit
+denen man Audio überhaupt bestellt. **Ob OpenRouter die Ausgabe durchreicht, ist unbelegt.** Für die
+*Eingabe* ist der Fernweg dagegen billig: Gemini-Flash-Lite ab **$0,30 je Million Audio-Token**.
+
+**Offen ist die Entscheidung, nicht die Machbarkeit:** Cloud oder lokal — sie steht im Register der
+offenen Entscheidungen.
+
 ---
 
 
