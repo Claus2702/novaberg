@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 14:35 UTC** (gemessen via `date -u`). Davor 06.09.2026, 14:05 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 15:05 UTC** (gemessen via `date -u`). Davor 06.09.2026, 14:35 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,37 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 15:05 UTC — der Destillationstakt, aus zwei Quellen gezaehlt 🔬
+
+**Die eigene Fundzeile von 14:05 ist praezisiert, und ein Konzeptsatz faellt dabei.** Der Fund
+lautete: *Novas Kern wird viel seltener neu destilliert, als das Konzept nahelegt*, gestuetzt auf
+2,6 Fassungen je Tag in der Mitschrift der Drift-Reihe.
+
+**Aus einer zweiten, unabhaengigen Quelle nachgezaehlt** (`charakter_rad_messung`, 24.08.–06.09.):
+im **Median 4 Erhebungen je Tag**, zwei Rad-Arten je Zyklus — also rund **zwei Destillationszyklen
+taeglich**, an zwei Tagen acht Erhebungen. **Der 03.09. traegt in beiden Quellen null.**
+
+| Quelle | Zahl je Tag | was sie zaehlt |
+|---|---:|---|
+| Drift-Mitschrift, 3-h-Takt | 2,6 | Fassungen, die ein Abgriff **gesehen** hat |
+| Rad-Messreihe | 4 Erhebungen | Raeder, die nach einer Destillation erhoben wurden |
+
+**Die 2,6 ist damit eine Untergrenze, keine Betriebsrate** — zwischen zwei Abgriffen kann mehr als
+eine Fassung entstehen, und der Sammler sieht nur die letzte. Der Sammel-Takt greift also **dichter
+ab, als neue Fassungen entstehen**; die Reihe verliert nichts.
+
+**Was der Fund trifft, ist der Satz, der den Takt begruendet:** *Pixie destilliert ohnehin alle zehn
+Minuten.* Pixie **prueft** alle zehn Minuten und destilliert nur bei gesetztem `hash_dirty`
+(`agents/charakter/agent.py:158`). Im Konzept durchgestrichen und mit den gemessenen Zahlen ersetzt
+(`40_DOKU_GRUNDSAETZE`: widerlegt wird markiert, nicht geloescht).
+
+**Fuer die Rueckkopplungs-Messung aendert sich nichts** — mehr Zyklen zwischen den Abgriffen machen
+den ausbleibenden Anstieg staerker, nicht schwaecher.
+
+**Nebenbefund, bekannt und hier belegt:** Der `CharakterAgent` schreibt **keinen** Eintrag ins
+`hintergrund_log` — die Zaehlung musste deshalb ueber Serverlog und Rad-Messreihe gehen. Die
+Featureliste fuehrt das seit laengerem als offenen Punkt des Agenten.
 
 ## 06.09.2026, 14:35 UTC — ein Dauerwort wird beanstandet ✅
 
