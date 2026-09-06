@@ -144,6 +144,30 @@ class EinTraegerOhneProfilHatKeineFaszinationTest(unittest.TestCase):
         self.assertEqual(1, inhalt["ohne_profil"])
         self.assertEqual(1, len(inhalt["werte"]))
 
+    def test_die_traeger_ohne_profil_stehen_einzeln_da(self) -> None:
+        """Sonst ist die Luecke nicht nachpruefbar.
+
+        `ohne_profil: 3` sagt, dass die Faszination leer blieb — aber nicht,
+        **an welchen** Traegern. Der Profil-Erzeuger holt taeglich 20 auf; ob
+        er die gelesenen trifft, laesst sich ohne die Kennungen spaeter nicht
+        beantworten. `[gemessen]` 06.09.2026: Genau diese Frage stand an und
+        war aus dem Protokoll nicht zu beantworten.
+        """
+        from graph.nodes.praegung import _faszination_protokollieren
+
+        with patch(f"{NODE}.log_berechnung") as geschrieben, \
+             patch(f"{NODE}.traegerdaten_lesen",
+                   return_value={11: _traeger(profil=False),
+                                 12: _traeger(profil=True),
+                                 13: _traeger(profil=False)}):
+            _faszination_protokollieren(
+                _zustand([11, 12, 13]), "meister", "nova", 1.0,
+            )
+        inhalt = geschrieben.call_args.kwargs["inhalt"]
+        self.assertEqual([11, 13], inhalt["ohne_profil_ids"])
+        self.assertEqual(2, inhalt["ohne_profil"])
+        self.assertEqual(["12"], list(inhalt["werte"]))
+
 
 class DerZugWirdWeitergereichtTest(unittest.TestCase):
     """Er liegt nur im Praegungsknoten vor und ist einer der neun Faktoren."""

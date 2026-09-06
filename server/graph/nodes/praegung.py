@@ -327,14 +327,14 @@ def _faszination_protokollieren(
     daten: dict[int, dict] = traegerdaten_lesen(POSTGRES_URL, knoten_ids)
     werte: dict[str, float] = {}
     rohe:  dict[str, float] = {}
-    ohne_profil: int = 0
+    ohne_profil: list[int] = []
     for knoten_id in knoten_ids:
         eintrag: dict = daten.get(knoten_id) or {}
         profil: dict = eintrag.get("profil") or {}
         if not profil:
             # Kein Profil, kein Merkmalszug, keine Faszination — und das ist
             # die Aussage der Groesse, kein Ausfall.
-            ohne_profil += 1
+            ohne_profil.append(knoten_id)
             continue
         bindung: float = bindung_roh(
             eintrag.get("tage", 0),
@@ -349,7 +349,14 @@ def _faszination_protokollieren(
     inhalt |= {
         "werte":        werte,
         "rohe":         rohe,
-        "ohne_profil":  ohne_profil,
+        "ohne_profil":  len(ohne_profil),
+        # **Die Traeger ohne Profil einzeln, nicht nur gezaehlt** (06.09.2026).
+        # Aus derselben Not wie die Modulatoren daneben: `ohne_profil: 3` sagt,
+        # dass die Faszination leer blieb, aber nicht, **an welchen** Traegern
+        # — und damit laesst sich spaeter nicht nachsehen, ob die Luecke
+        # inzwischen geschlossen ist. Der Profil-Erzeuger holt taeglich 20
+        # Traeger auf; ob er die **gelesenen** trifft, ist genau diese Frage.
+        "ohne_profil_ids": ohne_profil,
         "praegungszug": round(zug, 4),
         # Die Modulatoren einzeln: Ohne sie ist der Wert nicht nachrechenbar,
         # und die Frage, ob der Turn oder der Traeger ihn getragen hat, waere
