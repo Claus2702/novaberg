@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 15:40 UTC** (gemessen via `date -u`). Davor 06.09.2026, 15:05 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 15:55 UTC** (gemessen via `date -u`). Davor 06.09.2026, 15:40 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -21,6 +21,41 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 06.09.2026, 15:55 UTC — wer zitiert, erfindet ein Fuenftel 🔬
+
+**Die Frage des Eigentuemers zur Deckungspruefung: haengt die unbelegte Zitierweise am Modell?**
+Gemessen mit demselben Kern-Prompt und demselben Material (12 304 Zeichen, 39 Belege), je fuenf
+Laeufe, zwei Runden:
+
+| Modell | Runde 1 | Runde 2 | Zitate je Lauf |
+|---|---:|---:|---|
+| `deepseek/deepseek-v4-flash-0731` (Betrieb) | **21 %** ohne Fundstelle | **17 %** | 0–28 |
+| `qwen/qwen3.7-flash` | **16 %** | **24 %** | 6–20 |
+| `mistralai/mistral-nemo` | — | **0 Zitate** | 0 |
+| `openai/gpt-oss-120b` | ausgefallen (HTTP 400) | — | — |
+
+**Nein — nicht modellspezifisch.** Der Unterschied zwischen den beiden zitierenden Modellen ist
+kleiner als die Streuung **eines** Modells zwischen zwei Runden; nach der heute Mittag ergaenzten
+Messregel traegt er damit nichts.
+
+**Die beiden Ausfaelle sind selbst Auskuenfte.** `mistral-nemo` zitiert gar nicht und schreibt
+766–1073 Zeichen — unter einem Drittel des Umfangs-Richtwerts; null Meldungen heisst dort *nichts zu
+pruefen*, nicht *treuer*. `gpt-oss-120b` lehnt den Aufruf fuenfmal identisch ab: *Reasoning is
+mandatory for this endpoint and cannot be disabled*.
+
+> **Die Ursache liegt im Auftrag, nicht in der Marke.** Der Kern-Prompt verlangt *ein Beispiel im
+> Wortlaut sagt mehr als ein Urteil darueber* — und wer dem folgt, setzt Anfuehrungszeichen auch um
+> eigene Formulierungen.
+
+**Damit hat die offene Absichtsfrage eine Zahl:** Die Klasse *Beleg ohne Fundstelle* meldet rund ein
+Fuenftel aller Zitate, in jedem Lauf, bei jedem zitierenden Modell. Ob das gemeldet werden soll,
+entscheidet der Eigentuemer; die Messung nimmt ihm die Vermutung ab.
+
+**Zur Erwartung, die vorher feststand:** Zwei ihrer drei Punkte sind eingetroffen. Der dritte —
+*Unterschiede um Faktor zwei bis drei zwischen den Modellen* — ist es nicht, und die Moeglichkeit,
+dass ein Modell **gar nicht** zitiert, stand nicht darin. Kein Code beruehrt, Suite unveraendert
+**3197**.
 
 ## 06.09.2026, 15:40 UTC — der Agent schreibt seine Spur, und beide Bauten schlagen im Betrieb an ✅
 
