@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Faszination aus Bindung, Qualität und Prägung; Prägung als emotionale Erinnerung
-**Stand:** 6. September 2026, 21:00 UTC (**die Faszination rechnet zum ersten Mal im Turn** — `werte {"6982": 0.5725}` statt `{}`; der Engpass war die Längenschwelle, die 0 von 95 gelesenen Trägern als Kandidat offen hielt. Davor: 6. September 2026, 16:30 UTC (**der Stand der Abdeckung ist gemessen** — 72 von 3430 Knoten profiliert, im Bestand rechnet die Faszination Werte bis 0,7182, im Turn bleibt sie leer; neuer Abschnitt hinter §11. Davor: 5. September 2026, 20:16 UTC (**§11a neu** — der Modellwechsel hat den Umfang sichtbar gemacht: Die Regie fordert 60–175 Zeichen, das Fernmodell lieferte 996 im Median. Ein Prompt-Override auf der Modellebene haelt ihn im Korridor und **ist ausdruecklich ein Provisorium**, das mit dem Faszinations-Leser weicht. Dazu die Setzung des Eigentuemers, dass die Rueckfrage der Vorgriff auf die Wissbegier ist). Davor 5. September 2026, 15:50 UTC (**§12 und §13 nachgezogen**: Keine der vier Falsifikationsproben ist gefahren — sie kosten keinen Bau und sind das einzige Verfahren, das die Größe gegen ihren Entwurf prüft. Und die Trägerabdeckung ist beziffert: **50 auf 3387 aktive Knoten, 1,5 %**). Davor 5. September 2026, 15:05 UTC (**§8.5 neu — der Strang trägt die Meinung**: Setzung des Eigentümers, dass Prägung und Faszination die Meinungsbildung tragen. Die emotionale Einstellung liegt **eine Stufe unterhalb** der valenzblinden Faszination und ist bereits gebaut — neun Stränge mit Valenz, alle positiv. Die fachliche Beurteilung ist ein Recherche-Vorgang und gehört nicht in den Strang. `novaberg-thinking-opinion_k.md` §2a). Davor 5. September 2026, 14:53 UTC (**§10.6 — die Reihe bekommt einen Leser**: `tools/fascination_series.py` beantwortet, ob sie kalibrieren kann; die Zahl der **bewegten Träger** trägt die Aussage, nicht der Median. Dabei ein Defekt gefunden — die Protokollzeile trug `ohne_strang` nicht, obwohl der Lauf es rechnet und die Rechenkette es führt. 10 Zeugen, Suite **3071**). Davor 5. September 2026, 14:19 UTC (**§6.3 — das Versprechen des Längenfilters ist widerlegt**, er treffe *fast dieselbe Menge wie eine Formklassifikation*: 177 von 409 Einsichten fallen durch den Zeichenschnitt. Die Eröffnungsformel trennt, die Themen nicht. Offen bleibt die vorgelagerte Frage, ob vorab gefiltert werden soll — im Bestand steht **keine gemessene Null**. Gemessen, nicht gebaut). Davor 5. September 2026, 10:20 UTC (**§10.3a neu — der Strangzug**: die Lage des **Trägers** zu einer Prägung, getrennt vom Turn-Zug aus §10.3, der nur die Lage des *Turns* misst. Nähe als Maß, Fadenzahl als Gravitation, ohne Bezug 1,0 statt 0. **Der Zug misst außerdem seit heute das stärkste Segment statt des gemittelten Turns** — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben. Über 50 Träger hebt der Strangzug den Median von 0,2828 auf **0,3377**, 0 von 50 ohne Strangbezug. Suite 3061.). Davor 5. September 2026, 01:20 UTC (**die Trägerseite bekommt einen eigenen Tageslauf** — Bindung mal Merkmalszug ohne Modulatoren, damit die beiden Hälften trennbar werden; erster Lauf **50 Träger, 7 ohne Bindung, roh 0,0 bis 0,5249**. Dazu: der Vorbehalt in §11 ist überholt, `state["haltung"]` hat seit dem 12.08.2026 zwei Leser — **der Faszinations-Leser wird trotzdem nicht gebaut**, solange die Größe überall 0 ist. Suite 3052.). Davor 5. September 2026, 00:36 UTC (**§10 ist vollständig gebaut** — dazu der Verfall je Dimension (§10.4) mit seinem Aufrufer im Lesepfad und ein **Erzeuger im Turn**: Die Faszination wird je Turn über die gelesenen Erinnerungen gerechnet und als `pipeline_log`-Zeile protokolliert, mit Modulatoren, Rohwerten und Prägungszug. **Im Betrieb belegt** — vier Zeilen über vier Turns. **Befund: kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil**; von 36 gelesenen passieren nur 7 den Längenfilter. Die Profil-Auswahl folgt seither der **echten Wiederkehr** statt `haeufigkeit`. Suite 3044.). Davor 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
+**Stand:** 7. September 2026 (**die Faszination hat einen Leser** — `wissbegier` wirkt nicht mehr themenblind; §11 neu gefasst, und zwei Aussagen dieses Abschnitts waren falsch: die Umfangszelle gibt es seit dem 08.08.2026 nicht, und die volle Turn-Faszination steht sieben Knoten hinter jedem Leser. Suite **3249**). Davor 6. September 2026, 21:00 UTC (**die Faszination rechnet zum ersten Mal im Turn** — `werte {"6982": 0.5725}` statt `{}`; der Engpass war die Längenschwelle, die 0 von 95 gelesenen Trägern als Kandidat offen hielt. Davor: 6. September 2026, 16:30 UTC (**der Stand der Abdeckung ist gemessen** — 72 von 3430 Knoten profiliert, im Bestand rechnet die Faszination Werte bis 0,7182, im Turn bleibt sie leer; neuer Abschnitt hinter §11. Davor: 5. September 2026, 20:16 UTC (**§11a neu** — der Modellwechsel hat den Umfang sichtbar gemacht: Die Regie fordert 60–175 Zeichen, das Fernmodell lieferte 996 im Median. Ein Prompt-Override auf der Modellebene haelt ihn im Korridor und **ist ausdruecklich ein Provisorium**, das mit dem Faszinations-Leser weicht. Dazu die Setzung des Eigentuemers, dass die Rueckfrage der Vorgriff auf die Wissbegier ist). Davor 5. September 2026, 15:50 UTC (**§12 und §13 nachgezogen**: Keine der vier Falsifikationsproben ist gefahren — sie kosten keinen Bau und sind das einzige Verfahren, das die Größe gegen ihren Entwurf prüft. Und die Trägerabdeckung ist beziffert: **50 auf 3387 aktive Knoten, 1,5 %**). Davor 5. September 2026, 15:05 UTC (**§8.5 neu — der Strang trägt die Meinung**: Setzung des Eigentümers, dass Prägung und Faszination die Meinungsbildung tragen. Die emotionale Einstellung liegt **eine Stufe unterhalb** der valenzblinden Faszination und ist bereits gebaut — neun Stränge mit Valenz, alle positiv. Die fachliche Beurteilung ist ein Recherche-Vorgang und gehört nicht in den Strang. `novaberg-thinking-opinion_k.md` §2a). Davor 5. September 2026, 14:53 UTC (**§10.6 — die Reihe bekommt einen Leser**: `tools/fascination_series.py` beantwortet, ob sie kalibrieren kann; die Zahl der **bewegten Träger** trägt die Aussage, nicht der Median. Dabei ein Defekt gefunden — die Protokollzeile trug `ohne_strang` nicht, obwohl der Lauf es rechnet und die Rechenkette es führt. 10 Zeugen, Suite **3071**). Davor 5. September 2026, 14:19 UTC (**§6.3 — das Versprechen des Längenfilters ist widerlegt**, er treffe *fast dieselbe Menge wie eine Formklassifikation*: 177 von 409 Einsichten fallen durch den Zeichenschnitt. Die Eröffnungsformel trennt, die Themen nicht. Offen bleibt die vorgelagerte Frage, ob vorab gefiltert werden soll — im Bestand steht **keine gemessene Null**. Gemessen, nicht gebaut). Davor 5. September 2026, 10:20 UTC (**§10.3a neu — der Strangzug**: die Lage des **Trägers** zu einer Prägung, getrennt vom Turn-Zug aus §10.3, der nur die Lage des *Turns* misst. Nähe als Maß, Fadenzahl als Gravitation, ohne Bezug 1,0 statt 0. **Der Zug misst außerdem seit heute das stärkste Segment statt des gemittelten Turns** — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben. Über 50 Träger hebt der Strangzug den Median von 0,2828 auf **0,3377**, 0 von 50 ohne Strangbezug. Suite 3061.). Davor 5. September 2026, 01:20 UTC (**die Trägerseite bekommt einen eigenen Tageslauf** — Bindung mal Merkmalszug ohne Modulatoren, damit die beiden Hälften trennbar werden; erster Lauf **50 Träger, 7 ohne Bindung, roh 0,0 bis 0,5249**. Dazu: der Vorbehalt in §11 ist überholt, `state["haltung"]` hat seit dem 12.08.2026 zwei Leser — **der Faszinations-Leser wird trotzdem nicht gebaut**, solange die Größe überall 0 ist. Suite 3052.). Davor 5. September 2026, 00:36 UTC (**§10 ist vollständig gebaut** — dazu der Verfall je Dimension (§10.4) mit seinem Aufrufer im Lesepfad und ein **Erzeuger im Turn**: Die Faszination wird je Turn über die gelesenen Erinnerungen gerechnet und als `pipeline_log`-Zeile protokolliert, mit Modulatoren, Rohwerten und Prägungszug. **Im Betrieb belegt** — vier Zeilen über vier Turns. **Befund: kein einziger im Turn gelesener Knoten trug ein Qualitätsprofil**; von 36 gelesenen passieren nur 7 den Längenfilter. Die Profil-Auswahl folgt seither der **echten Wiederkehr** statt `haeufigkeit`. Suite 3044.). Davor 5. September 2026, 00:15 UTC (**§10 ist vollständig gerechnet** — die sechs Turn-Modulatoren (§10.5), der Anker (§10.2) und die Zusammenführung (§10.6) sind gebaut, 39 Zeugen, Suite 3013. **Erstlauf über 27 Träger:** Faszination 0,5451 bis 0,7580, Median 0,5712, **9 verschiedene Werte bei 27 Trägern**; der Deckel 2,0 wird nie erreicht und ist damit nicht prüfbar. **Hauptbefund:** Die Turn-Modulatoren spannen Faktor 16,2, die Trägerseite nur 2,0 — die Größe hängt heute achtmal stärker am Turn als am Träger.). Davor 3. September 2026, 20:35 UTC (die Aussage „die Schicht hat keinen negativen Faden“ ist als Erwartungswert-Irrtum markiert — 1,24 % Grundrate, 22 Gelegenheiten, erwartet 0,27). Davor 3. September 2026, 20:25 UTC (§7.3 — **wessen Emotion der Faden trägt**: Novas Antwort, nicht der Reiz; im Betrieb belegt und bis heute nirgends aufgeschrieben). Davor 3. September 2026, 19:30 UTC (§7.9 — **die Einfärbung ist gebaut**: eine Faltung, zwei Uhren; der Sektorfaktor aus der Rad-Asymmetrie statt aus `EMOTION_AROUSAL_DECAY`, deren Werte den Bias umkehren würden. Der Bestand trägt **keinen negativen Faden** — die Trennung ist gerechnet, nicht gemessen). Davor 3. September 2026, 18:57 UTC (§10.3 — **der Prägungszug ist gebaut**: der Hub aus der Spanne abgeleitet, `unbestimmt` mit halbem Gewicht nach Vorgabe des Eigentümers, das Maximum mit exaktem Abbruch; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087). Davor 2. September 2026, 19:50 UTC (§16 — sechs verworfene und ein nicht gewaehlter Weg aus dem Bau der Valenz, darunter die Kreisgeometrie und der eigene Valenz-Vektor; dazu der Zeiger auf die Erregungsachse als **zweite** Achse). Davor 2. September 2026 (§7.7 — die Zuordnung, die Richtung und die Ladung gebaut; die Staerke-Formel des Eigentuemers loest die alte ab, `EMOTION_VALENZ` gibt der Valenz Zwischenstufen. §7.8 — das Sektor-Histogramm). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-thinking-faszination_k.md
 **Typ:** Konzept
-**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6), die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1) und seit dem 05.09.2026 die **ganze Rechnung** (§10.2, §10.5, §10.6) sind gebaut. **Die Faszination rechnet und protokolliert, sie wirkt noch nicht** — sie läuft je Turn im Prägungsknoten und schreibt eine `pipeline_log`-Zeile, aber **niemand liest sie**. Und sie hat heute kaum Eingabe: Von 36 je Turn gelesenen Knoten tragen 2 ein Qualitätsprofil. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
+**Status:** 🟠 in Arbeit — die **Prägungsschicht** (§7, Scheiben 1–6), die **Qualitätsseite der abstrakten Schicht** (§4, §5, §6, §10.1), seit dem 05.09.2026 die **ganze Rechnung** (§10.2, §10.5, §10.6) und seit dem 07.09.2026 der **Leser** (§11) sind gebaut. **Die Faszination wirkt seit dem 07.09.2026** — sie moduliert den Beitrag von `wissbegier` im Haltungsraum, und damit Novas Fragenlust. Sie wirkt über die **Trägerseite**, nicht über die volle Turn-Rechnung: Die entsteht im Prägungsknoten und damit sieben Knoten hinter jedem Leser. Und sie hat heute kaum Eingabe: Von 36 je Turn gelesenen Knoten tragen 2 ein Qualitätsprofil. Alle nicht als gemessen gekennzeichneten Zahlen der Rechnung sind **Setzungen zum Messen**; die Zahlen der Messabschnitte sind Messungen und als solche gekennzeichnet.
 **Voraussetzung:** `novaberg-memory-synapsen-p4-entscheidungen_k.md` (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
 **Betrifft:** `novaberg-thinking-curiosity_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-charakter-resonanz_k.md` · `novaberg-node-ei-calc.md` · `novaberg-node-emotionale-gravitation.md` · `novaberg-thinking-drive_k.md`
 
@@ -1885,8 +1885,8 @@ berechnet** — Regel (2).
 
 | Signatur | Woran messbar | Zustand |
 |---|---|---|
-| **Sie fragt mehr** | `fragen` im Haltungsraum | gerechnet, **kein Leser** |
-| **Sie schreibt länger — aber nur hier** | `umfang`, nach Träger aufgeschlüsselt | gerechnet, **kein Leser** |
+| **Sie fragt mehr** | `fragen` im Haltungsraum | **gebaut am 07.09.2026** — der Leser steht |
+| ~~**Sie schreibt länger — aber nur hier**~~ | ~~`umfang`, nach Träger aufgeschlüsselt~~ | **gegenstandslos** — siehe den Kasten unten |
 | **Sie bringt es selbst auf** | Turn-Herkunft im `pipeline_log` | Datengrundlage vorhanden |
 | **Es kommt wieder** | Wiederauftreten nach n Turns ohne Anlass | braucht P4 |
 | **Ein Thema bringt seine Stimmung mit** | Grundemotion aus dem Strang in EI-Calc (§8.3) | ungebaut |
@@ -1901,6 +1901,102 @@ wirken soll die Anlage **mal der Bindung an diesen Träger**. Damit ist sie kein
 Verbraucher des Haltungsraums, sondern der **Ersatz für einen dort bereits als fragwürdig
 markierten Term**.
 
+### Gebaut am 07.09.2026 — und zwei Aussagen dieses Abschnitts waren falsch
+
+**Der Leser steht.** `wissbegier` wirkt seit dem 07.09.2026 nicht mehr themenblind: Ihr
+Beitrag im Haltungsraum wird mit der Faszination der in diesem Turn gelesenen Erinnerungen
+moduliert (`ei/haltung.py::faszinations_faktor`, angewandt in `_modifikation`). Damit hat
+die Größe zum ersten Mal eine Wirkung; bis dahin wurde sie gerechnet und protokolliert.
+
+**Erste falsche Aussage: der Umfang.** Der Absatz unten spricht von *„+0,30 auf den
+Umfang"* — **diese Zelle gibt es seit dem 08.08.2026 nicht mehr.** Sie wurde damals mit
+Begründung gestrichen: `umfang` ist die Länge von Novas eigenem Text, `wissbegier` eine
+**rezeptive** Disposition, und *„Interesse an dem, was der andere bringt, äußert sich
+darin, sich ihm zuzuwenden, nicht darin, den Raum zu füllen"*. Was die Speiche heute
+trägt, ist `fragen +0.40` und `draengen +0.20`.
+
+> **Der beschriebene Ersatz war einen Monat lang gegenstandslos, ohne dass es auffiel.**
+> Das Konzept beschrieb eine Zelle, die der Code nicht mehr hatte — und weil es den
+> *Ersatz* eines Terms forderte und nicht dessen *Anlage*, sah der Satz aus wie eine
+> Bauanweisung statt wie ein Widerspruch. Ein Zeuge hält den Befund jetzt fest
+> (`test_eine_groesse_ohne_die_speiche_bleibt_unberuehrt`): Wer die Umfangszelle wieder
+> einträgt, macht ihn rot und weiß dann, dass er zugleich diesen Abschnitt einlöst.
+
+**Zweite falsche Aussage: welche Faszination gemeint sein kann.** Der Haltungsraum steht
+im Graphen **sieben Knoten vor** dem Prägungsknoten:
+
+```
+gv_node → haltungsraum → verfasser → responder → … → salience → praegung
+```
+
+Die volle Faszination aus §10.6 entsteht erst ganz hinten und erreicht **keinen** Leser
+der Haltung im selben Turn — auch nicht Responder und Verfasser, die beide vor ihr
+liegen. **Vorziehen lässt sie sich nicht:** Das Faden-Tor braucht die Salienz (§7.3), und
+die entsteht erst nach der Antwort.
+
+Verwendet wird deshalb die **Trägerseite** — `bindung × merkmalszug` mit dem Strangzug als
+einzigem Modulator, dieselbe Rechnung wie im Bestandslauf (§10.6,
+`memory/fascination_store.py::faszination_der_gelesenen`). Sie ist die Hälfte, die nicht
+am Turn hängt, und genau das, was der Satz *„die Anlage mal der Bindung an diesen
+Träger"* meint.
+
+| Entscheidung | Wert | Grund |
+|---|---|---|
+| Aggregation über mehrere Träger | **Maximum** | Ein faszinierender Gegenstand unter fünf gelesenen macht neugierig; das Mittel löschte ihn gegen vier gleichgültige. Dieselbe Wahl wie bei `traeger_strangnaehe`, die den nächsten Strang nimmt statt der Summe aller |
+| Kein gelesener Träger mit Profil | **neutral (1,0)**, nicht 0 | *„Keine Bindung bekannt"* und *„Bindung gemessen und null"* sind zwei Lagen. `[gemessen 07.09.2026]` tragen **38 von 95** je Turn gelesenen Knoten ein Profil — ein Turn ohne profilierten Träger ist heute die Mehrheit |
+| Roher Wert oder Abbildungsfaktor | **Faktor um 1,0** (`F-NAHT-1`) | Die Faszination liegt in [0, 1]; wer sie roh multipliziert, dämpft in **jedem** Turn — und ein Turn ohne Profil stünde besser da als einer mit halber Faszination. Die Größe würde Abdeckung messen statt Bindung |
+
+Die Spanne steht auf **0,60 … 1,40** (Setzungen zum Messen) mit neutralem Punkt bei
+**0,36** — und der ist **gemessen, nicht gesetzt** (`HALTUNG_FASZINATION_*`).
+
+> **Die erste Fassung stand auf 0,50 und war gegen die falsche Verteilung geeicht — die
+> zweite Kontrolle hat es gefunden, kein Zeuge.** Sie nahm den Median der *Turn*-Faszination
+> (0,5712 über 27 Träger; erster Turn-Wert 0,5725). Das ist die Größe **mit** den sechs
+> Turn-Modulatoren, die zusammen Faktor 16,2 spannen. Der Leser rechnet mit der
+> **Trägerseite**, und die liegt eine halbe Spanne tiefer.
+
+`[gemessen 07.09.2026]` über die letzten 25 echten Turns — je Turn **median 1** profilierter
+Träger (max 2), das Maximum ist damit fast immer ein Einzelwert:
+
+| | neutral 0,50 | neutral 0,36 |
+|---|---:|---:|
+| Turns mit einem Wert | 15 von 25 | 15 von 25 |
+| Faszination je Turn | 0,2704 … 0,5177, Median 0,3619 | dieselbe Größe |
+| Faktor | 0,8163 … 1,0142, Median **0,8895** | 0,9004 … 1,0986, Median **1,0012** |
+| dämpfend / hebend | **12 / 3** | **6 / 9** |
+
+> **Ein Modulator, dessen neutraler Punkt neben der Verteilung liegt, verschiebt — er
+> moduliert nicht.** Mit 0,50 hätte Nova im Mittel **weniger** gefragt als vor dem Umbau,
+> und das wäre als *„die Faszination wirkt"* durchgegangen. Es ist dieselbe Klasse wie eine
+> Schwelle, die nie auslöst, mit umgekehrtem Vorzeichen: Sie löst immer aus, und zwar in
+> eine Richtung.
+
+**Der Wert wandert und gehört in die Kalibrierreihe.** 15 Turns sind eine kleine Stichprobe,
+und die Profilabdeckung wächst um 20 Träger je Tag — je mehr gelesene Knoten ein Profil
+tragen, desto höher das Maximum über sie. Ein Zeuge hält den Punkt in der gemessenen Spanne
+(`test_der_neutrale_punkt_liegt_in_der_gemessenen_spanne`); die **Eichung** selbst kann kein
+Zeuge halten, nur eine Messung.
+
+**Was die Rechnung bewirkt, ist gemessen** — `[gemessen 07.09.2026]`, Landschaft
+`werkstatt` mit Novas gemessenem Rad (`wissbegier` 0,97):
+
+| Turn | Faszination | `fragen` ohne → mit |
+|---|---:|---|
+| schwächster von 15 | 0,2704 | 0,9026 → **0,8722** |
+| Median | 0,3619 | 0,9026 → **0,9029** |
+| stärkster | 0,5177 | 0,9026 → **0,9326** |
+
+**Was damit noch nicht belegt ist:** dass sich Novas *Antworten* dadurch ändern. Der
+Präzedenzfall steht im Backlog als `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` — die Anwesenheit
+eines Wertes im Prompt ist nicht seine Wirkung. Die Prüfform ist derselbe Turn mit und
+ohne Modulation.
+
+> **Der Betriebsbeleg über einen echten Turn steht aus, und der Grund liegt außerhalb.**
+> Zwei Messturns am 07.09.2026 brachen am **Router** ab — `HTTP 429` von OpenRouter,
+> Anbieter Baidu, `rpm_rate_limit_exceeded` auf `deepseek/deepseek-v4-flash-0731`. Der
+> Graph erreichte den Haltungsraum nicht; beide Turns kamen bis zum Enricher und haben
+> gelesen, aber keine Haltung gerechnet. Ein Fremddefekt, kein Befund über den Umbau.
+
 > ~~**Vorbehalt.** Am 03.08.2026 bestätigt: `state["haltung"]` hat **keinen einzigen Leser**.~~
 > → **Überholt, gemessen am 04.09.2026 am laufenden Code.** `HALTUNG-OHNE-LESER` ist behoben:
 > **Responder und Verfasser lesen ihn beide** in ihre Vorgaben (`responder.py:802-812`, der
@@ -1911,7 +2007,10 @@ markierten Term**.
 > tritt an seine Stelle: **Die Faszination ist heute überall 0** (§10.2, die offene Frage). Wer
 > `wissbegier` durch `wissbegier × faszination` ersetzt, setzt den Umfangsterm auf null und macht
 > Novas Antworten kürzer — eine echte Verhaltensänderung auf einer Größe, die nichts trägt.
-> **Der Leser wird deshalb nicht gebaut, solange die Bindung leer ist.**
+> ~~**Der Leser wird deshalb nicht gebaut, solange die Bindung leer ist.**~~ →
+> **Überholt am 07.09.2026.** Die Bindung ist seit dem 06.09.2026, 20:52 UTC nicht mehr
+> leer, und der Leser rechnet nicht mit dem rohen Wert, sondern mit einem Faktor um 1,0 —
+> ein leerer Wert löscht den Term deshalb ohnehin nicht mehr, er lässt ihn stehen.
 
 ### 11a. Ein Provisorium, das mit dem Leser wieder verschwindet (05.09.2026)
 
@@ -1929,6 +2028,14 @@ oder knapp daneben.
 > Kommentar an der Regie sagt: *„die alte Längenregel ist entfernt, es gibt also keinen
 > zweiten Weg."* Der Override **ist** ein zweiter Weg. Solange beide dasselbe wollen,
 > stört das nicht; sobald die Faszination den Korridor weitet, würde er sie deckeln.
+>
+> **Er bleibt stehen — der Leser vom 07.09.2026 löst ihn nicht ab.** Dieser Absatz
+> erwartet einen Leser, der den **Umfang** weitet; gebaut ist einer, der `fragen` und
+> `draengen` moduliert, weil `wissbegier` seit dem 08.08.2026 keine Umfangszelle mehr hat
+> (siehe den Kasten in §11). Die Faszination weitet den Korridor also gar nicht, und der
+> Override deckelt nichts, was jemand geöffnet hätte. **Die Bedingung, unter der er weicht,
+> ist damit nicht erfüllt, sondern verschoben** — auf den Tag, an dem entschieden wird, ob
+> die Umfangszelle zurückkommt.
 
 **Und die Messung bestätigt die Konstruktion dieses Abschnitts von der anderen Seite.** Im
 Korridor liest sich eine Fachantwort so: *„Die Jets entstehen durch Akkretion und

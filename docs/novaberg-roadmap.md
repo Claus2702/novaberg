@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 21:00 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:55 UTC.
+**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026** (gemessen via `date -u`). Davor 06.09.2026, 21:00 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,68 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 07.09.2026 — die Faszination hat einen Leser, und der neutrale Punkt war falsch geeicht 🔬
+
+**Sie rechnete seit dem 06.09.2026 im Turn und wirkte auf nichts.** Seit heute moduliert sie
+den Beitrag von `wissbegier` im Haltungsraum: `wissbegier` ist eine **Anlage**, und was daraus
+im einzelnen Turn wird, haengt am Gegenstand.
+
+**Zwei Aussagen des Konzepts waren falsch, und beide fielen erst beim Bauen auf.**
+
+- **Der Umfang.** §11 beschreibt den Ersatz eines Terms *„+0,30 auf den Umfang"* — **die Zelle
+  gibt es seit dem 08.08.2026 nicht mehr**, damals mit Begruendung gestrichen. Was `wissbegier`
+  heute traegt, ist `fragen +0.40` und `draengen +0.20`. Der beschriebene Ersatz war einen Monat
+  lang gegenstandslos.
+- **Der Zeitpunkt.** Der Haltungsraum steht **sieben Knoten vor** dem Praegungsknoten; die volle
+  Turn-Faszination entsteht ganz hinten und erreicht keinen Leser der Haltung. Vorziehen geht
+  nicht — das Faden-Tor braucht die Salienz. Verwendet wird die **Traegerseite**
+  (`bindung x merkmalszug x strangzug`), die Haelfte, die nicht am Turn haengt.
+
+**Der Faktor ist ein Abbildungsfaktor, kein roher Wert** (`F-NAHT-1`). Die Faszination liegt in
+[0, 1]; roh multipliziert daempfte sie in **jedem** Turn, und ein Turn ohne profilierten Traeger
+stuende besser da als einer mit halber Faszination — die Groesse maesse Abdeckung statt Bindung.
+`[gemessen]` tragen **38 von 99** je Turn gelesenen Knoten ein Profil.
+
+### Die zweite Kontrolle hat die eigene Setzung widerlegt
+
+**Der neutrale Punkt stand auf 0,50 und war gegen die falsche Verteilung geeicht** — gegen den
+Median der *Turn*-Faszination (0,5712), also der Groesse **mit** den sechs Turn-Modulatoren, die
+zusammen Faktor 16,2 spannen. Der Leser rechnet mit der Traegerseite, und die liegt eine halbe
+Spanne tiefer.
+
+`[gemessen 07.09.2026]` ueber die letzten 25 echten Turns, je Turn median **1** profilierter
+Traeger:
+
+| | neutral 0,50 | neutral 0,36 |
+|---|---:|---:|
+| Faszination je Turn | 0,2704 … 0,5177, Median 0,3619 | dieselbe Groesse |
+| Faktor | 0,8163 … 1,0142, Median **0,8895** | 0,9004 … 1,0986, Median **1,0012** |
+| daempfend / hebend | **12 / 3** | **6 / 9** |
+
+> **Ein Modulator, dessen neutraler Punkt neben der Verteilung liegt, verschiebt — er moduliert
+> nicht.** Mit 0,50 haette Nova im Mittel **weniger** gefragt als vor dem Umbau, und das waere
+> als *„die Faszination wirkt"* durchgegangen.
+
+**Kein Zeuge hat das gefunden**, und keiner konnte: Die Zeugen fuehren den neutralen Punkt
+symbolisch und wandern mit ihm mit. Gefunden hat es der Zugriff *der Bestand statt der Zeugen* —
+die Rechnung ueber echte gelesene Knoten. Ein Zeuge haelt den Punkt seither in der gemessenen
+Spanne, mit Literalen aus der Messung.
+
+**Wirkung, Landschaft `werkstatt` mit Novas gemessenem Rad** (`wissbegier` 0,97):
+`fragen` 0,9026 → **0,8722 / 0,9029 / 0,9326** fuer schwaechsten, mittleren und staerksten Turn.
+
+**Der Betriebsbeleg ueber einen echten Turn steht aus.** Zwei Messturns brachen am **Router** ab —
+`HTTP 429` von OpenRouter, `rpm_rate_limit_exceeded` auf `deepseek/deepseek-v4-flash-0731`; der
+Graph erreichte den Haltungsraum nicht. Ein Fremddefekt.
+
+**Dabei hat die harte Wand angeschlagen** (`N806` an zwei frischen Zeilen) — der erste
+Wand-Treffer dieser Sitzung, behoben.
+
+Suite **3250 gruen, 0 uebersprungen** (davor 3225). Gegenprobe: der Rueckbau des Faktors macht
+genau den Kernzeugen rot (1/1).
 
 ---
 

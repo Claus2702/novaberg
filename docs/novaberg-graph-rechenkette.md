@@ -613,9 +613,23 @@ Zug          0.00   0.09   0.25   0.49   1.00
 Ziehen dürfen **sechs von zwölf** Speichen — die ganze Abwendungsseite: *Ziehen darf, was sich abwendet, nicht was sich zuwendet.* Bei zwei gleichzeitigen Ausschlägen gewinnt der stärkere Zug; sie summieren sich nicht.
 
 > `wissbegier` war bis zum 12.08.2026 als einzige Zuwendungsspeiche zugelassen und ist gestrichen: Sie ist das **Ergebnis** einer Eigenschaft und kein Zustand, der überstimmt — gemessen zog sie beim produktiven Paar in 14 von 14 Landschaften.
-**Beitrag:** **Heute keiner.** Die Haltung wird gerechnet, protokolliert und im Client angezeigt, aber **kein Prompt liest sie** — der einzige Konsument von `state["haltung"]` ist die Anzeige im Event-Consumer. Das ist die Reihenfolge des Sprints und kein Versehen: Die Zahlen sollen gegen echte Turns prüfbar sein, ohne diese Turns beeinflusst zu haben. `novaberg-haltungsraum_k.md` Status, `novaberg-sykophanz-eindaemmung_k.md` §Haltungsraum.
-**Reinheit:** rein, ohne jeden Datenzugriff. `haltung_berechnen`, `_normieren`, `speichen_spanne`, `_modifikation`, `_uebersteuerer`, `_rad_pruefen`, `_verrechnen`.
-**Prüfstand:** `test_haltung.py`, `test_haltung_knoten.py`.
+
+**Ein sechster Faktor seit dem 07.09.2026: die Faszination.** Der Beitrag von `wissbegier` — und nur ihrer — wird vor der Summierung mit einem Faktor multipliziert, der aus der Faszination der in diesem Turn gelesenen Erinnerungen folgt:
+
+```
+beitrag[wissbegier][größe] × ausprägung × faszinations_faktor(f)
+
+f            —      0.00   0.18   0.36   0.68   1.00
+Faktor      1.00    0.60   0.80   1.00   1.20   1.40
+```
+
+Der neutrale Punkt **0,36** ist gemessen: der Median der Größe über 25 echte Turns (15 tragen einen Wert, 0,2704 bis 0,5177). Eine erste Fassung stand auf 0,50, geeicht am Median der **Turn**-Faszination statt der Trägerseite — sie hätte in 12 von 15 Turns gedämpft.
+
+
+Der Strich ist der Fall *„kein gelesener Träger trägt ein Qualitätsprofil"* und wirkt **neutral**, nicht als Null: Er ist heute die Mehrheit der Turns (38 von 95 gelesenen Knoten profiliert, `[gemessen 07.09.2026]`), und eine rohe Multiplikation machte aus der Größe ein Maß der Profil-Abdeckung statt der Bindung. Der Faktor trifft den **Beitrag**, nicht die Ausprägung — jene ist eine Messung des Rades in [0, 1] und würde von einem Faktor über 1,0 aus ihrer Spanne getrieben. `novaberg-thinking-faszination_k.md` §11.
+**Beitrag:** ~~**Heute keiner.** … **kein Prompt liest sie** — der einzige Konsument von `state["haltung"]` ist die Anzeige im Event-Consumer.~~ → **Zweimal überholt.** Seit dem **12.08.2026** lesen Responder und Verfasser die Haltung in ihre Vorgaben (`responder.py` Regie-Block, `verfasser.py` Mengen- und Rückfragevorgabe); seit dem **07.09.2026** ist der Beitrag von `wissbegier` themengebunden. `novaberg-haltungsraum_k.md` Status, `novaberg-sykophanz-eindaemmung_k.md` §Haltungsraum.
+**Reinheit:** rein, ohne jeden Datenzugriff. `haltung_berechnen`, `faszinations_faktor`, `_normieren`, `speichen_spanne`, `_modifikation`, `_uebersteuerer`, `_rad_pruefen`, `_verrechnen`. **Der Faszinationswert kommt als Parameter herein** — geladen wird er im Knoten (`memory/fascination_store.py::faszination_der_gelesenen`), damit die Rechnung ohne Datenbank prüfbar bleibt.
+**Prüfstand:** `test_haltung.py`, `test_haltung_knoten.py`, `test_haltung_faszination.py`.
 **Absicht:** `novaberg-haltungsraum_k.md` §2, §6.
 
 **Gekappt wird weiterhin nicht, und der Grund hat sich umgedreht.** Bis zum 08.08.2026 wurde addiert (`grund + summe`); das setzte zwei Skalen gleich, die es nicht sind, und verließ über die volle Charakterspanne in **62 von 62** Nicht-Grenz-Zellen die Spanne. Nicht zu kappen war schon damals richtig — Kappen erzeugt genau die toten Enden, die der Raum nicht haben darf: Zwei Landschaften, die oben anstoßen, wären nicht mehr zu unterscheiden. Seit der Wegform ist ein Überlauf **kein erwarteter Zustand mehr, sondern ein Defekt.** Bei `neigung` und `uebersteuerung` ist er unmöglich; erreichbar bliebe allein eine Grenzzelle mit einem Grundwert über 0,5, und die gibt es im Bestand nicht. Das Feld `ausserhalb` bleibt als Prüfung stehen und meldet seither als `error`.

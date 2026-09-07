@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — eine Fläche aus Gesprächslandschaft und Zuwendung, aus der Grenzen folgen
-**Stand:** 15. August 2026 (v0.11)
+**Stand:** 7. September 2026 (**`wissbegier` ist themengebunden** — die Faszination moduliert ihren Beitrag; der Kasten bei der Speichentabelle in §2.0). Davor 15. August 2026 (v0.11)
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten**, **Protokoll** und seit dem 15.08.2026 der **Stand** stehen und laufen im Produktivsystem; es fehlen der Prompt-Block (§3) und die Ablösung der alten Längenregel (§6). **Nova verhält sich noch unverändert:** Die Haltung wird gerechnet, protokolliert, angezeigt und aufbewahrt, aber kein Prompt liest sie — und der erste Leser des Standes, der Zuwendungs-Riegel, ist noch nicht gebaut.
+**Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten**, **Protokoll** und seit dem 15.08.2026 der **Stand** stehen und laufen im Produktivsystem. ~~**Nova verhält sich noch unverändert**~~ → **überholt:** Seit dem 12.08.2026 lesen Responder und Verfasser die Haltung (`HALTUNG-OHNE-LESER` behoben), und seit dem 07.09.2026 ist der Beitrag von `wissbegier` **themengebunden** — er wird mit der Faszination der gelesenen Erinnerungen moduliert (§2.0, der Kasten bei der Speichentabelle).
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (14 Cluster) · `novaberg-charakter-resonanz_k.md` (Räder)
 **Betrifft:** `novaberg-node-verfasser_k.md` · `novaberg-node-responder.md`
 
@@ -178,6 +178,12 @@ Modifikation je Speiche bei voller Ausprägung; halbe Ausprägung wirkt halb. `�
 > **Sie senkt den Umfang auch nicht.** Eine ruhige, gespannt zuhörende Nova stellt kurze Fragen; „Raum lassen" ein zweites Mal zu kodieren wäre derselbe Fehler mit umgekehrtem Vorzeichen. **Der Gegenpol bleibt** — `langeweile → umfang −0.4` ist direkt: kein Interesse, nichts zu sagen, „Hmmm… ja." Die Tabelle ist nicht als Spiegelpaare gebaut (`treue` hat keinen Umfangsbeitrag, ihr Gegenpol `selbstbezogen` +0.1), also verlangt der eine Wert den anderen nicht.
 >
 > **Gemessen:** Der Anlassfall aus §1 — `kissenschlacht`, scherzhafter Einzeiler — geht von **0,43 auf 0,26**. Die Erreichbarkeit bleibt: `dienst` + `pflicht` + `selbstbezogen` ergeben bei voller Ausprägung genau die neue Aufwärtsspanne, also n = 1 und Umfang 1,0. **Weil der Abbildungsfaktor abgeleitet ist, erzeugt das Streichen einer Zelle kein totes Ende.**
+
+> **Und seit dem 07.09.2026 ist die ganze Zeile themengebunden.** `wissbegier` wirkte bis dahin in jedem Turn gleich stark, gleich worüber gesprochen wurde — sie ist aber eine **Anlage**, und was daraus im einzelnen Turn wird, hängt am Gegenstand. Ihr Beitrag (`fragen` und `draengen`, **beide**) wird deshalb mit der Faszination der in diesem Turn gelesenen Erinnerungen multipliziert: `ei/haltung.py::faszinations_faktor`, angewandt in `_modifikation`, Spanne **0,60 … 1,40** um einen neutralen Punkt bei **0,36** — und der ist gemessen, nicht gesetzt: Er ist der Median der Größe, die tatsächlich eingeht (15 von 25 echten Turns tragen einen Wert, 0,2704 bis 0,5177). Eine erste Fassung stand auf 0,50 und hätte in 12 von 15 Turns gedämpft statt differenziert.
+>
+> **Der Faktor trifft den Beitrag, nicht die Ausprägung.** Die Ausprägung ist eine Messung des Rades und liegt in [0, 1]; ein Faktor über 1,0 triebe sie aus ihrer Spanne. Der Beitrag ist bereits eine Rechengröße mit eigener Spanne (`speichen_spanne`).
+>
+> **Ohne profilierten Träger bleibt es beim alten Wert** — nicht bei null. `[gemessen 07.09.2026]` tragen 38 von 95 je Turn gelesenen Knoten ein Qualitätsprofil; ein Turn ohne einen ist heute die Mehrheit, und eine rohe Multiplikation machte aus der Größe ein Maß der Abdeckung statt der Bindung. Herleitung und die beiden dabei widerlegten Aussagen in `novaberg-thinking-faszination_k.md` §11.
 
 ### Wer ziehen darf — und wohin
 
