@@ -45,6 +45,7 @@ from config import redis_client
 from ei.haltung import GROESSEN, Haltung, haltung_berechnen
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import nutzer_gewichtung_rad_laden
+from memory.fascination_store import faszination_der_gelesenen
 from memory.haltung import Standkopf, haltung_speichern
 from memory.pipeline_log import log_berechnung, log_fehler
 
@@ -56,7 +57,33 @@ logger = logging.getLogger("ki_server.graph.haltung")
 KNOTEN: str = "haltungsraum"
 
 
-def _protokoll_inhalt(haltung: Haltung, rad_quelle: str, speichen: int) -> dict:
+def _gelesene_traeger(state: ConversationState) -> list[int]:
+    """Die LZG-Knoten, die der Lesepfad in diesem Turn angeboten hat.
+
+    **Dieselbe Menge wie im Praegungsknoten** (`_faszination_protokollieren`),
+    und das ist Absicht: Beide fragen nach der Faszination *dieses* Turns, nur
+    an zwei Stellen des Graphen. Waeren es zwei verschiedene Mengen, waere die
+    Zahl im Haltungsraum nicht gegen die im Protokoll haltbar.
+
+    Rein bis auf den Zustand. Vorbedingung: keine — ein Turn ohne gelesene
+        Erinnerungen ist der Normalfall.
+    Nachbedingung: Kennungen aus `lzg_resonanz`, ohne Dubletten und ohne
+        nicht-numerische Einträge.
+    """
+    resonanz:     dict = state.get("lzg_resonanz") or {}
+    erinnerungen: list = resonanz.get("erinnerungen") or []
+    return [
+        int(e["knoten_id"]) for e in erinnerungen
+        if isinstance(e, dict) and str(e.get("knoten_id", "")).isdigit()
+    ]
+
+
+def _protokoll_inhalt(
+    haltung:    Haltung,
+    rad_quelle: str,
+    speichen:   int,
+    fasz_lauf:  dict | None = None,
+) -> dict:
     """Baut den Inhalt der Protokollzeile — drei Zahlen je Groesse, nicht eine.
 
     Ohne Grundwert und Modifikation ist am Ergebnis nicht erkennbar, ob die
@@ -71,10 +98,16 @@ def _protokoll_inhalt(haltung: Haltung, rad_quelle: str, speichen: int) -> dict:
             'default', weil jenes ein Rad meint, das erhoben wurde und nichts
             ergab. Im Protokoll bleiben beide unterscheidbar.
         speichen:   Zahl der belegten Speichen, die in die Rechnung gingen.
+        fasz_lauf:  die Buchfuehrung von `faszination_der_gelesenen`. **Sie
+            gehoert in die Zeile, nicht nur der Wert**: `faszination: null`
+            entsteht aus einem Turn ohne gelesene Erinnerung genauso wie aus
+            einem, in dem fuenf gelesen wurden und keine ein Profil trug — und
+            das sind zwei ganz verschiedene Befunde ueber die Abdeckung.
 
     Returns:
         Ein JSON-taugliches Abbild ohne Objekte.
     """
+    lauf: dict = fasz_lauf or {}
     return {
         "cluster":      haltung.cluster,
         "rad_quelle":   rad_quelle,
@@ -96,6 +129,17 @@ def _protokoll_inhalt(haltung: Haltung, rad_quelle: str, speichen: int) -> dict:
         # je Zeile in die Tiefe zu steigen.
         "ausserhalb":   [n for n, w in haltung.werte.items() if w.ausserhalb],
         "uebersteuert": [n for n, w in haltung.werte.items() if w.art == "uebersteuerung"],
+        # **Rohwert und Faktor getrennt**, weil ein Faktor von 1.00 aus zwei
+        # verschiedenen Lagen entsteht: kein profilierter Traeger gelesen
+        # (`faszination: null`), oder Bindung genau am neutralen Punkt. Ohne
+        # den Rohwert danebenzuschreiben waere die eine von der anderen in
+        # keiner Auswertung zu trennen — dieselbe Klasse wie beim Praegungszug,
+        # wo drei Zustaende auf 1,0 fallen.
+        "faszination":  haltung.faszination,
+        "fasz_faktor":  round(haltung.fasz_faktor, 4),
+        "fasz_traeger":    lauf.get("traeger", 0),
+        "fasz_mit_profil": lauf.get("mit_profil", 0),
+        "fasz_error":      lauf.get("error"),
     }
 
 
@@ -378,7 +422,19 @@ def haltung_bestimmen(state: ConversationState, postgres_url: str) -> Conversati
         _ausfall_protokollieren(state, f"Rad nicht ladbar ({quelle})", cluster)
         return state
 
-    haltung: Haltung | None = haltung_berechnen(cluster, rad)
+    # **Die Faszination der in diesem Turn gelesenen Erinnerungen.** Nur die
+    # Traegerseite: Die volle Rechnung liegt im Praegungsknoten und damit
+    # sieben Knoten hinter diesem — sie kaeme fuer jeden Leser der Haltung zu
+    # spaet, und vorziehen laesst sie sich nicht (das Faden-Tor braucht die
+    # Salienz). Ein Fehlschlag ist kein Grund, den Turn ohne Haltung zu
+    # lassen: `None` wirkt neutral, und eine unmodulierte Wissbegier ist der
+    # Zustand vor dem 07.09.2026.
+    fasz_lauf: dict = faszination_der_gelesenen(
+        postgres_url, _gelesene_traeger(state)
+    )
+    faszination: float | None = fasz_lauf.get("faszination")
+
+    haltung: Haltung | None = haltung_berechnen(cluster, rad, faszination)
 
     if haltung is None:
         # `haltung_berechnen` hat den Fall bereits mit Wert benannt.
@@ -421,7 +477,7 @@ def haltung_bestimmen(state: ConversationState, postgres_url: str) -> Conversati
     _pipeline_zeile(
         state,
         log_berechnung,
-        _protokoll_inhalt(haltung, quelle, len(rad)),
+        _protokoll_inhalt(haltung, quelle, len(rad), fasz_lauf),
         "Berechnung",
     )
 

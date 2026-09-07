@@ -389,3 +389,102 @@ def traeger_strangnaehe(
             f"sie liegen in keinem Praegungsgebiet"
         )
     return naechste
+
+
+def faszination_der_gelesenen(
+    postgres_url: str,
+    knoten_ids:   list[int],
+) -> dict:
+    """Die Traegerseiten-Faszination der in **einem Turn gelesenen** Knoten.
+
+    **Sie ist nicht dieselbe Zahl wie die des Praegungsknotens, und sie darf
+    es nicht sein.** Der Praegungsknoten rechnet die volle Faszination mit
+    Praegungszug und den sechs Turn-Modulatoren — er steht aber als vorletzter
+    Knoten des Graphen, sieben Knoten hinter dem Haltungsraum, und kann
+    deshalb keinen Leser im selben Turn bedienen. Vorziehen laesst er sich
+    nicht: Das Faden-Tor braucht die Salienz, und die entsteht erst nach der
+    Antwort.
+
+    **Was hier gerechnet wird, ist die Haelfte, die nicht am Turn haengt** —
+    `bindung x merkmalszug` mit dem Strangzug als einzigem Modulator, exakt
+    wie im `bestandslauf`, nur ueber die gelesenen Knoten statt ueber den
+    ganzen Bestand. Genau diese Haelfte meint §11 mit *„die Bindung an diesen
+    Traeger"*.
+
+    **Genommen wird das Maximum, nicht das Mittel.** Ein faszinierender
+    Gegenstand unter fuenf gelesenen macht neugierig; das Mittel loeschte ihn
+    gegen vier gleichgueltige. Dieselbe Wahl wie bei `traeger_strangnaehe`,
+    die den naechsten Strang nimmt statt der Summe aller — und aus demselben
+    Grund: Naehe zu *einer* Sache ist die Aussage, nicht ihre Haeufigkeit.
+
+    Vorbedingung: `knoten_ids` sind LZG-Kennungen aus `lzg_resonanz`. Eine
+        leere Liste ist der Normalfall eines Turns ohne gelesene Erinnerungen.
+    Nachbedingung: {faszination, traeger, mit_profil, werte, error}.
+        **`faszination` ist None, wenn kein gelesener Knoten ein Profil
+        trug** — nicht 0.0: „keine Bindung bekannt" und „Bindung gemessen und
+        null" sind zwei Lagen, und nur die erste darf neutral wirken.
+
+    Args:
+        postgres_url: Verbindungs-URL (Hausstil: Parameter, kein Modul-Global).
+        knoten_ids:   die in diesem Turn gelesenen LZG-Knoten.
+
+    Returns:
+        Den hoechsten Traegerwert samt Buchfuehrung, wie sie ins Protokoll geht.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ergebnis: dict = {
+        "faszination": None, "traeger": 0, "mit_profil": 0,
+        "werte": {}, "error": None,
+    }
+    ids: list[int] = sorted({
+        int(k) for k in (knoten_ids or [])
+        if not isinstance(k, bool) and isinstance(k, (int, float))
+    })
+    ergebnis["traeger"] = len(ids)
+    if not ids:
+        return ergebnis
+
+    # ── Verarbeitung ────────────────────────────
+    daten:  dict[int, dict] = traegerdaten_lesen(postgres_url, ids)
+    naehen: dict[int, dict] = traeger_strangnaehe(postgres_url, ids)
+    hoechster: float | None = None
+    for knoten_id in ids:
+        eintrag: dict = daten.get(knoten_id) or {}
+        profil:  dict = eintrag.get("profil") or {}
+        if not profil:
+            # Kein Profil, kein Merkmalszug — die Aussage der Groesse, kein
+            # Ausfall. Der Knoten faellt aus der Auswahl, nicht auf null.
+            continue
+        bindung: float = bindung_roh(
+            eintrag.get("tage", 0),
+            eintrag.get("turns", 0),
+            eintrag.get("eigenimpuls"),
+        )
+        strang: dict = naehen.get(knoten_id) or {}
+        wert, _roh = faszination(
+            bindung, merkmalszug(profil), 1.0,
+            {"strangzug": strangzug(
+                strang.get("naehe"), int(strang.get("faden_zahl", 0)),
+            )},
+        )
+        ergebnis["werte"][str(knoten_id)] = round(wert, 4)
+        ergebnis["mit_profil"] += 1
+        if hoechster is None or wert > hoechster:
+            hoechster = wert
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if hoechster is not None:
+        if not 0.0 <= hoechster <= 1.0:
+            logger.error(
+                f"Faszination: hoechster Traegerwert {hoechster:.4f} liegt "
+                "ausserhalb [0, 1] — verworfen, der Haltungsraum bekommt "
+                "keinen Wert statt eines falschen"
+            )
+            ergebnis["error"] = "Wert ausserhalb [0, 1]"
+            return ergebnis
+        ergebnis["faszination"] = round(hoechster, 4)
+    logger.info(
+        f"Faszination (Haltung): {ergebnis['mit_profil']} von {len(ids)} "
+        f"gelesenen Traegern mit Profil, hoechster {ergebnis['faszination']}"
+    )
+    return ergebnis

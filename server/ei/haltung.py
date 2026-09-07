@@ -21,6 +21,12 @@ eine Grenze damit gar nicht.
 import logging
 from dataclasses import dataclass
 
+from config import (
+    HALTUNG_FASZINATION_MAX,
+    HALTUNG_FASZINATION_MIN,
+    HALTUNG_FASZINATION_NEUTRAL,
+)
+
 logger = logging.getLogger("ki_server.ei.haltung")
 
 
@@ -348,12 +354,21 @@ class Haltung:
     """Das Ergebnis einer Haltungsrechnung fuer einen Turn.
 
     Attributes:
-        cluster: die Landschaft, aus der die Grundwerte stammen.
-        werte:   je Groessenname ein Groessenwert, vollstaendig ueber GROESSEN.
+        cluster:     die Landschaft, aus der die Grundwerte stammen.
+        werte:       je Groessenname ein Groessenwert, vollstaendig ueber
+                     GROESSEN.
+        faszination: der rohe Faszinationswert dieses Turns, oder None, wenn
+                     kein gelesener Traeger ein Qualitaetsprofil trug.
+        fasz_faktor: der daraus abgeleitete Abbildungsfaktor. **Er steht
+                     neben dem Rohwert und nicht statt seiner**, weil 1.0 aus
+                     zwei verschiedenen Lagen entsteht — keine Bindung
+                     bekannt, oder Bindung genau am neutralen Punkt.
     """
 
-    cluster: str
-    werte:   dict[str, Groessenwert]
+    cluster:     str
+    werte:       dict[str, Groessenwert]
+    faszination: float | None = None
+    fasz_faktor: float        = 1.0
 
     def kurzfassung(self) -> str:
         """Eine Zeile fuer die Spur — lesbar ohne Umweg ueber das Protokoll."""
@@ -368,7 +383,12 @@ class Haltung:
             if wert.ausserhalb:
                 stueck += " !"
             teile.append(stueck)
-        return f"{self.cluster} · " + " · ".join(teile)
+        # Der Faktor steht nur da, wenn er etwas tut. Eine Zeile, die in jedem
+        # Turn "fasz 1.00" traegt, macht den Fall unsichtbar, in dem er wirkt.
+        zusatz: str = ""
+        if self.faszination is not None:
+            zusatz = f" · fasz {self.faszination:.2f} → ×{self.fasz_faktor:.2f}"
+        return f"{self.cluster} · " + " · ".join(teile) + zusatz
 
 
 def speichen_spanne(groesse: str) -> tuple[float, float]:
@@ -435,18 +455,111 @@ def _normieren(summe: float, groesse: str) -> float:
     return summe / grenze
 
 
-def _modifikation(rad: dict[str, float], groesse: str) -> float:
+# Welche Speiche die Faszination moduliert. **Genau eine, und es ist
+# dieselbe, die auch umgekehrt in die Faszination eingeht** (`f_anlage`,
+# `novaberg-thinking-faszination_k.md` §10.5): `wissbegier` beschreibt als
+# einzige der zwoelf die Zuwendung zum **Gegenstand** statt zur Person.
+#
+# **Die Rueckkopplung ist beabsichtigt und heute halbseitig.** `f_anlage`
+# wird im Praegungsknoten mit `wissbegier = None` gerufen — die Anlage geht
+# also derzeit *nicht* in die Faszination ein, nur die Faszination in die
+# Anlage. Wer das schliesst, schliesst eine Schleife und muss sie messen.
+FASZINATION_SPEICHE: str = "wissbegier"
+
+
+def faszinations_faktor(faszination: float | None) -> float:
+    """Der Abbildungsfaktor zwischen Faszination und Haltungsbeitrag.
+
+    **Der benannte Abbildungsfaktor der Naht** (`F-NAHT-1`), zweiseitig um
+    einen neutralen Punkt: Unterhalb von `HALTUNG_FASZINATION_NEUTRAL`
+    daempft er bis `HALTUNG_FASZINATION_MIN`, oberhalb hebt er bis
+    `HALTUNG_FASZINATION_MAX`, am neutralen Punkt ist er exakt 1.0.
+
+    **Der rohe Wert waere hier falsch, obwohl er verfuehrerisch aussieht.**
+    Faszination liegt in [0, 1]; wer sie unmittelbar multipliziert, daempft
+    in **jedem** Turn — und ein Turn ohne profilierten Traeger (Faktor 1.0)
+    stuende dann besser da als einer mit halber Faszination. Die Groesse
+    maesse Abdeckung statt Bindung, und zwar genau solange, wie die
+    Profilabdeckung unvollstaendig ist. `[gemessen]` 07.09.2026: 38 von 95 je
+    Turn gelesenen Knoten tragen ein Profil.
+
+    Rein. Vorbedingung: `faszination` liegt in [0, 1] oder ist None. **None
+        ist der ehrliche Fall** — kein gelesener Traeger trug ein Profil —
+        und liefert 1.0: keine Bindung bekannt, also weder Hebung noch
+        Daempfung. Werte ausserhalb werden geklemmt und gemeldet, weil sie
+        auf einen Rechenfehler beim Aufrufer deuten.
+    Nachbedingung: ein Faktor in
+        [HALTUNG_FASZINATION_MIN, HALTUNG_FASZINATION_MAX]; exakt 1.0 bei
+        None und am neutralen Punkt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if faszination is None:
+        return 1.0
+    if isinstance(faszination, bool) or not isinstance(faszination, (int, float)):
+        logger.error(
+            f"Haltung: Faszination {faszination!r} ist keine Zahl — neutral "
+            "gewertet; der Aufrufer reicht einen fremden Typ durch"
+        )
+        return 1.0
+    wert: float = float(faszination)
+    if not 0.0 <= wert <= 1.0:
+        logger.error(
+            f"Haltung: Faszination {wert:.4f} liegt ausserhalb [0, 1] — "
+            "geklemmt; der Aufrufer rechnet auf einer anderen Skala"
+        )
+        wert = max(0.0, min(1.0, wert))
+
+    # ── Verarbeitung ────────────────────────────
+    if wert < HALTUNG_FASZINATION_NEUTRAL:
+        anteil: float = wert / HALTUNG_FASZINATION_NEUTRAL
+        faktor: float = (
+            HALTUNG_FASZINATION_MIN
+            + anteil * (1.0 - HALTUNG_FASZINATION_MIN)
+        )
+    else:
+        anteil = (wert - HALTUNG_FASZINATION_NEUTRAL) / (
+            1.0 - HALTUNG_FASZINATION_NEUTRAL
+        )
+        faktor = 1.0 + anteil * (HALTUNG_FASZINATION_MAX - 1.0)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not HALTUNG_FASZINATION_MIN <= faktor <= HALTUNG_FASZINATION_MAX:
+        logger.error(
+            f"Haltung: Faszinationsfaktor {faktor:.4f} aus {wert:.4f} liegt "
+            f"ausserhalb [{HALTUNG_FASZINATION_MIN}, "
+            f"{HALTUNG_FASZINATION_MAX}] — geklemmt, die Abbildung ist defekt"
+        )
+        faktor = max(
+            HALTUNG_FASZINATION_MIN, min(HALTUNG_FASZINATION_MAX, faktor)
+        )
+    return faktor
+
+
+def _modifikation(
+    rad: dict[str, float], groesse: str, fasz_faktor: float = 1.0
+) -> float:
     """Summiert die Speichenbeitraege einer Groesse.
 
     Erst summieren, dann verrechnen: Die Reihenfolge der Speichen darf das
     Ergebnis nicht bestimmen.
 
+    **Der Faszinationsfaktor trifft genau eine Speiche** —
+    `FASZINATION_SPEICHE` —, und er trifft ihren **Beitrag**, nicht ihre
+    Auspraegung. Die Auspraegung ist eine Messung des Rades und liegt in
+    [0, 1]; ein Faktor ueber 1.0 truebe sie aus ihrer Spanne heraus und
+    machte jede spaetere Pruefung gegen das Rad unmoeglich. Der Beitrag
+    dagegen ist bereits eine Rechengroesse mit eigener Spanne
+    (`speichen_spanne`), in die er sauber hineinwaechst.
+
     Vorbedingung: `rad` enthaelt nur bekannte Speichennamen und Auspraegungen
     in [0.0, 1.0]. Pruefung erfolgt beim Aufrufer (`haltung_berechnen`).
+    `fasz_faktor` kommt aus `faszinations_faktor`.
     Nachbedingung: Summe der beteiligten Beitraege, Vorzeichen erhalten.
     """
     return sum(
-        SPEICHEN_BEITRAG.get(speiche, {}).get(groesse, 0.0) * auspraegung
+        SPEICHEN_BEITRAG.get(speiche, {}).get(groesse, 0.0)
+        * auspraegung
+        * (fasz_faktor if speiche == FASZINATION_SPEICHE else 1.0)
         for speiche, auspraegung in rad.items()
     )
 
@@ -629,16 +742,31 @@ def _verrechnen(grund: float, summe: float, art: str, groesse: str) -> float:
     return grund + n * ((1.0 - grund) if n > 0 else grund)
 
 
-def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
+def haltung_berechnen(
+    cluster:     str,
+    rad:         dict[str, float],
+    faszination: float | None = None,
+) -> Haltung | None:
     """Rechnet aus Landschaft und Zuwendungsrad die fuenf Verhaltensgroessen.
 
-    Reine Funktion ohne Datenzugriff: Der Aufrufer laedt Cluster und Rad und
-    uebergibt sie (Schichtregel — rechnen und laden bleiben getrennt).
+    Reine Funktion ohne Datenzugriff: Der Aufrufer laedt Cluster, Rad und
+    Faszination und uebergibt sie (Schichtregel — rechnen und laden bleiben
+    getrennt).
+
+    **Die Faszination macht `wissbegier` themengebunden** (§11): Bis zum
+    07.09.2026 wirkte die Speiche in jedem Turn gleich stark, gleich worueber
+    gesprochen wurde. Sie ist aber eine **Anlage** — die Bereitschaft, sich
+    fuer etwas zu interessieren —, und was daraus im einzelnen Turn wird,
+    haengt am Gegenstand. Der Faktor traegt genau diesen Unterschied hinein.
 
     Args:
-        cluster: Landschaftsname, muss in CLUSTER_GRUNDWERT stehen.
-        rad:     Speichenname -> Auspraegung in [0.0, 1.0]. Leere Raeder sind
-                 zulaessig; dann bleibt es bei den Grundwerten.
+        cluster:     Landschaftsname, muss in CLUSTER_GRUNDWERT stehen.
+        rad:         Speichenname -> Auspraegung in [0.0, 1.0]. Leere Raeder
+                     sind zulaessig; dann bleibt es bei den Grundwerten.
+        faszination: der Faszinationswert der in diesem Turn gelesenen
+                     Erinnerungen, in [0, 1] — oder None, wenn keine davon
+                     ein Qualitaetsprofil trug. **None ist der Normalfall,
+                     solange die Profilabdeckung waechst**, und wirkt neutral.
 
     Returns:
         Eine `Haltung` mit einem Eintrag je Groesse aus GROESSEN, oder None,
@@ -671,10 +799,14 @@ def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
     grundwerte: dict[str, float] = CLUSTER_GRUNDWERT[cluster]
     grenzen:    frozenset[str]   = CLUSTER_GRENZE.get(cluster, frozenset())
     werte:      dict[str, Groessenwert] = {}
+    # Einmal abgebildet, nicht je Groesse: Der Faktor haengt am Turn, nicht an
+    # der Zelle, und fuenf Aufrufe derselben reinen Funktion waeren fuenf
+    # Gelegenheiten, sie in einer davon zu vergessen.
+    fasz_faktor: float = faszinations_faktor(faszination)
 
     for groesse in GROESSEN:
         grund:  float = grundwerte[groesse]
-        summe:  float = _modifikation(rad, groesse)
+        summe:  float = _modifikation(rad, groesse, fasz_faktor)
         # **Nicht mehr auf Grenzzellen beschraenkt.** Bis zum 11.08.2026 stand
         # hier `if groesse in grenzen`, und weil `naehe` in keiner der
         # vierzehn Landschaften eine Grenze ist, war die Uebersteuerung
@@ -750,4 +882,9 @@ def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
                 "Defekt der Rechenform an."
             )
 
-    return Haltung(cluster=cluster, werte=werte)
+    return Haltung(
+        cluster     = cluster,
+        werte       = werte,
+        faszination = faszination,
+        fasz_faktor = fasz_faktor,
+    )

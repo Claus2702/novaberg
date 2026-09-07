@@ -466,3 +466,80 @@ class DieSpurZeigtDieHaltungTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DieFaszinationErreichtDieRechnungTest(unittest.TestCase):
+    """Die Verdrahtung, nicht der Baustein.
+
+    `test_haltung_faszination.py` prueft, was der Faktor in der Rechnung tut.
+    Hier steht die Frage davor: **Kommt er dort ueberhaupt an?** Ein Knoten,
+    der die Faszination holt und dann `haltung_berechnen(cluster, rad)` ruft,
+    liefe gruen durch jeden Rechnungszeugen — und Novas Verhalten bliebe
+    unveraendert.
+    """
+
+    def _mit_faszination(self, lauf: dict) -> AbstractContextManager[MagicMock]:
+        """Ersetzt den Faszinationsleser des Knotens."""
+        return patch(
+            "graph.nodes.haltung.faszination_der_gelesenen", return_value=lauf,
+        )
+
+    def test_der_gelesene_wert_steht_in_der_haltung(self) -> None:
+        """Er wird geholt **und** durchgereicht — zwei Schritte, ein Zeuge."""
+        lauf: dict = {
+            "faszination": 0.90, "traeger": 3, "mit_profil": 2,
+            "werte": {}, "error": None,
+        }
+        with _mit_rad(RAD_GEMESSEN), self._mit_faszination(lauf):
+            ergebnis = haltung_bestimmen(_state(), "postgres://ungenutzt")
+        self.assertEqual(0.90, ergebnis["haltung"].faszination)
+        self.assertGreater(ergebnis["haltung"].fasz_faktor, 1.0)
+
+    def test_die_gelesenen_traeger_kommen_aus_der_resonanz(self) -> None:
+        """Dieselbe Menge wie im Praegungsknoten, nicht eine zweite Auswahl."""
+        with _mit_rad(RAD_GEMESSEN), \
+             patch("graph.nodes.haltung.faszination_der_gelesenen") as leser:
+            leser.return_value = {
+                "faszination": None, "traeger": 0, "mit_profil": 0,
+                "werte": {}, "error": None,
+            }
+            haltung_bestimmen(
+                _state(lzg_resonanz={"erinnerungen": [
+                    {"knoten_id": 7}, {"knoten_id": "9"}, {"kein_id": 1},
+                ]}),
+                "postgres://ungenutzt",
+            )
+        self.assertEqual([7, 9], leser.call_args[0][1])
+
+    def test_ein_turn_ohne_resonanz_fragt_mit_leerer_liste(self) -> None:
+        """Der Normalfall — und er darf keine Datenbank anfassen."""
+        with _mit_rad(RAD_GEMESSEN), \
+             patch("graph.nodes.haltung.faszination_der_gelesenen") as leser:
+            leser.return_value = {
+                "faszination": None, "traeger": 0, "mit_profil": 0,
+                "werte": {}, "error": None,
+            }
+            ergebnis = haltung_bestimmen(_state(), "postgres://ungenutzt")
+        self.assertEqual([], leser.call_args[0][1])
+        self.assertIsNone(ergebnis["haltung"].faszination)
+        self.assertEqual(1.0, ergebnis["haltung"].fasz_faktor)
+
+    def test_die_protokollzeile_traegt_rohwert_faktor_und_abdeckung(self) -> None:
+        """Ohne die Abdeckung ist ein `faszination: null` nicht deutbar.
+
+        Fuenf gelesene Knoten ohne Profil und null gelesene Knoten ergeben
+        denselben Wert — und sagen Verschiedenes ueber den Stand der
+        Profilierung.
+        """
+        lauf: dict = {
+            "faszination": None, "traeger": 5, "mit_profil": 0,
+            "werte": {}, "error": None,
+        }
+        with _mit_rad(RAD_GEMESSEN), self._mit_faszination(lauf), \
+             patch("graph.nodes.haltung.log_berechnung") as schreiber:
+            haltung_bestimmen(_state(), "postgres://ungenutzt")
+        inhalt: dict = schreiber.call_args.kwargs["inhalt"]
+        self.assertIsNone(inhalt["faszination"])
+        self.assertEqual(1.0, inhalt["fasz_faktor"])
+        self.assertEqual(5, inhalt["fasz_traeger"])
+        self.assertEqual(0, inhalt["fasz_mit_profil"])

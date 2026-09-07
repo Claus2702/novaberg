@@ -2323,6 +2323,57 @@ FASZ_ANLAGE_MIN: float = 0.75
 FASZ_ANLAGE_MAX: float = 1.30
 
 # ─────────────────────────────────────────────────────────────
+# Die Rueckrichtung: die Faszination moduliert den Haltungsraum
+# `novaberg-thinking-faszination_k.md` §11
+# ─────────────────────────────────────────────────────────────
+#
+# **`wissbegier` ist eine Anlage und darf nicht themenblind wirken** — wirken
+# soll die Anlage **mal der Bindung an das gerade gelesene Thema** (§11). Das
+# ist die einzige Stelle, an der die Faszination heute etwas bewirkt; ueberall
+# sonst wird sie gerechnet und protokolliert.
+#
+# **Ein Faktor um 1.0, nicht der rohe Wert** — dieselbe Bauart wie die sechs
+# Turn-Modulatoren und aus demselben Grund: Die Faszination liegt in [0, 1],
+# und wer sie roh multipliziert, daempft in **jedem** Turn. Ein Turn ohne
+# profilierten Traeger stuende dann besser da als einer mit halber
+# Faszination — die Groesse wuerde Abdeckung messen statt Bindung. Die Naht
+# zwischen den beiden Skalen traegt deshalb einen benannten Abbildungsfaktor
+# (`F-NAHT-1`).
+#
+# **Der neutrale Punkt liegt bei 0.36 — gemessen, nicht gesetzt.** Er ist der
+# Median der Groesse, die hier tatsaechlich eingeht: `[gemessen 07.09.2026]`
+# ueber die letzten 25 echten Turns liefert `faszination_der_gelesenen` in 15
+# von ihnen einen Wert, und der liegt zwischen **0.2704 und 0.5177**, Median
+# **0.3619**.
+#
+# **Die erste Fassung stand auf 0.50 und war gegen die falsche Verteilung
+# geeicht.** Sie nahm den Median der **Turn**-Faszination (0.5712 ueber 27
+# Traeger, erster Turn-Wert 0.5725) — das ist die Groesse *mit* den sechs
+# Turn-Modulatoren, die zusammen Faktor 16,2 spannen. Der Leser rechnet mit
+# der **Traegerseite**, und die liegt eine halbe Spanne tiefer. Die Folge war
+# gemessen und eindeutig: **12 von 15 Turns unter dem neutralen Punkt**,
+# Median-Faktor 0.8895 — der Leser haette Novas Wissbegier systematisch
+# gedaempft statt sie zu differenzieren, und sie haette im Mittel **weniger**
+# gefragt als vor dem Umbau.
+#
+# > **Ein Modulator, dessen neutraler Punkt neben der Verteilung liegt,
+# > verschiebt — er moduliert nicht.** Das ist dieselbe Klasse wie eine
+# > Schwelle, die nie ausloest, mit umgekehrtem Vorzeichen: Sie loest immer
+# > aus, und zwar in eine Richtung.
+#
+# **Der Wert wandert und gehoert in die Kalibrierreihe.** 15 Turns sind eine
+# kleine Stichprobe, und die Profilabdeckung waechst um 20 Traeger je Tag —
+# je mehr gelesene Knoten ein Profil tragen, desto hoeher das Maximum ueber
+# sie. Je Turn sind es heute **median 1** profilierter Traeger (max 2), das
+# Maximum ist damit fast immer ein Einzelwert.
+#
+# Die Spanne ist enger als bei `f_anlage`, weil sie auf einen Beitrag wirkt,
+# der bereits im Ergebnis steht, und nicht auf einen Faktor unter neun.
+HALTUNG_FASZINATION_MIN:     float = 0.60
+HALTUNG_FASZINATION_MAX:     float = 1.40
+HALTUNG_FASZINATION_NEUTRAL: float = 0.36
+
+# ─────────────────────────────────────────────────────────────
 # Der Verfall der Qualitaeten — je Dimension verschieden
 # `novaberg-thinking-faszination_k.md` §10.4
 # ─────────────────────────────────────────────────────────────
