@@ -363,6 +363,26 @@ class OllamaProvider(LLMProvider):
         caller_label  = f" [{caller}]" if caller else ""
         self._log_token_usage(caller_label, input_tokens, output_tokens, total_tokens, ctx_limit)
 
+        # **Die Lesezeit des Prompts — die Groesse, in der der Prefix-Cache
+        # sichtbar wird.** Ollama meldet sie in Nanosekunden; sie stand bis
+        # zum 07.09.2026 in jeder Antwort und wurde nirgends gelesen. Ohne
+        # sie ist nicht zu erkennen, ob ein Aufruf den Cache getroffen hat:
+        # Die Token-Zahl ist in beiden Faellen dieselbe, die Zeit
+        # unterscheidet sich um Faktor 115 (CPU) bzw. 8–9 (GPU).
+        #
+        # **Und der lokale Pfad bekommt damit ueberhaupt erst eine
+        # Buchhaltung.** `record_usage` hatte bis heute genau einen Aufrufer,
+        # und der lag im Fern-Weg — jede Verbrauchszeile im Bestand stammt
+        # von dort. Ein Kostenvergleich lokal gegen fern war deshalb nicht
+        # moeglich, ohne dass es jemandem auffiel.
+        record_usage(
+            caller or "unbenannt",
+            str(response.get("model") or self._model),
+            input_tokens,
+            output_tokens,
+            _zaehlerstand(response.get("prompt_eval_duration")),
+        )
+
         # ── Ausgabe-Verifikation ────────────────────
         # `message` ist ein Dict. Kein Objekt-Zweig: Die Antwort des Clients ist
         # ein festgelegter Typ, und wenn sie es nicht ist, soll es hier laut

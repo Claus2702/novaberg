@@ -207,3 +207,32 @@ der Default von fuenf Minuten — **jeder Kaltstart kostet 17,9 s Ladezeit** auf
 `OLLAMA_KV_CACHE_TYPE` steht auf `f16`; `q8_0` halbiert den KV-Speicher bei kaum messbarem
 Verlust. Der Cache selbst braucht keine Einstellung, sondern eine Eigenschaft der Prompts:
 **das Stabile muss vorn stehen.**
+
+## 11. Der Cache ist jetzt sichtbar — und er trifft nicht
+
+**Seit dem 07.09.2026 traegt jede Verbrauchszeile die Lesezeit des Prompts.**
+`prompt_eval_duration` stand in jeder Ollama-Antwort und wurde nirgends gelesen; erfasst war
+allein `prompt_eval_count`, und **die Tokenzahl ist bei kaltem und warmem Prefix dieselbe.**
+Neu sind `prompt_lesen_s` und `prompt_lesen_tps` in der `token`-Zeile.
+
+> **Dabei fiel eine zweite Luecke auf: `record_usage` hatte genau einen Aufrufer, und der lag
+> im Fern-Weg.** Jede Verbrauchszeile des Bestands stammt von OpenRouter; der lokale Pfad
+> buchte nicht. Ein Kostenvergleich lokal gegen fern war damit unmoeglich, ohne dass es
+> jemandem auffiel.
+
+**Erster Betriebsbeleg, zwei Aufrufe eines Turns:**
+
+| Knoten | Token | Lesen | Rate |
+|---|---:|---:|---:|
+| `salienz` | 2177 | 0,847 s | **2 570 tps** |
+| `perzeption` | 1442 | 0,579 s | **2 489 tps** |
+
+**Beide liegen in der kalten Groessenordnung** (§10: GPU kalt 2 455 tps, warm 19 000 bis
+22 000). Der Cache trifft nicht — und der Grund steht in der Aufruferliste: **neun
+verschiedene Prompt-Typen teilen sich ein Modell**, bei `OLLAMA_NUM_PARALLEL=2` also zwei
+Slots. Sie verdraengen einander.
+
+**Was daraus folgt, ist eine Architekturfrage und keine Einstellung.** Entweder mehr Slots —
+jeder haelt einen weiteren Prefix, aber jeder wird kleiner — oder ein **gemeinsamer stabiler
+Prompt-Kopf** ueber alle Aufrufer, der von allen geteilt wird. **Die Zahlen dafuer stehen
+jetzt im Bestand**; vorher waere die Entscheidung geraten worden.

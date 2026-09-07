@@ -70,11 +70,47 @@ def cost_usd(input_tokens: int, output_tokens: int) -> float:
     ) / PER_MILLION
 
 
+def _lesezeit(input_tokens: int, prompt_eval_ns: int) -> dict:
+    """Die Lesezeit des Prompts und die Rate, in der der Prefix-Cache sichtbar wird.
+
+    **Die Token-Zahl allein zeigt den Cache nicht.** Sie ist bei kaltem und
+    warmem Prefix identisch; nur die Zeit unterscheidet die beiden Faelle.
+    `[gemessen 07.09.2026]` an demselben Prompt: **11,61 s kalt gegen 0,09 s
+    warm** auf der CPU (Faktor 115), 787 ms gegen 88 ms auf der GPU (Faktor
+    8–9). Wer optimieren will, ohne diese Zahl zu haben, optimiert blind.
+
+    **Die Rate steht neben der Zeit, weil erst sie vergleichbar ist.** Zwei
+    Sekunden fuer 300 Token und zwei fuer 5000 sind derselbe Zeitwert und
+    zwei verschiedene Befunde.
+
+    **Kein Urteil, nur die Zahl.** Ob ein Lauf den Cache getroffen hat, waere
+    eine Schwelle — und die haette hier keine Herkunft. Der Unterschied ist
+    ein Faktor 100; wer die Reihe ansieht, braucht keine Schwelle.
+
+    Rein. Vorbedingung: keine. Nachbedingung: ein leeres Dict, wenn die
+        Groesse nicht gemeldet wurde — **ein fehlendes Feld ist von einer
+        gemessenen Null zu unterscheiden**, und ein Fernanbieter meldet sie
+        nicht.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ns: int = max(0, int(prompt_eval_ns or 0))
+    if ns <= 0:
+        return {}
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    sekunden: float = ns / 1_000_000_000
+    felder: dict = {"prompt_lesen_s": round(sekunden, 4)}
+    if input_tokens > 0:
+        felder["prompt_lesen_tps"] = round(input_tokens / sekunden, 1)
+    return felder
+
+
 def record_usage(
     caller: str,
     model:  str,
     input_tokens:  int,
     output_tokens: int,
+    prompt_eval_ns: int = 0,
 ) -> None:
     """Schreibt eine Verbrauchszeile fuer einen Modellaufruf.
 
@@ -94,6 +130,9 @@ def record_usage(
         model: Die Modell-ID, die geantwortet hat.
         input_tokens: Eingabe-Token.
         output_tokens: Ausgabe-Token.
+        prompt_eval_ns: Wie lange das Modell gebraucht hat, um den Prompt zu
+            **lesen** (Nanosekunden, wie Ollama sie meldet). 0 heisst *nicht
+            gemeldet* — ein Fernanbieter liefert die Groesse nicht.
     """
     # **Der Import sitzt in der Funktion, nicht im Kopf.** `memory` zieht
     # ueber seine `__init__` den Modelldienst nach, und der laedt den
@@ -111,6 +150,7 @@ def record_usage(
                 "input_tokens":  int(input_tokens or 0),
                 "output_tokens": int(output_tokens or 0),
                 "kosten_usd":    kosten,
+                **_lesezeit(input_tokens, prompt_eval_ns),
             },
         )
     except Exception as fehler:  # noqa: BLE001 — siehe Fehlerfaelle
