@@ -291,6 +291,27 @@ OLLAMA_CONNECTORS: dict = {
         "analyse_model":   "qwen3-32b-cpu",
         "analyse_num_ctx": 32768,
     },
+    # **Feldtest ab 07.09.2026, auf zwei bis drei Tage angelegt.** Er
+    # unterscheidet sich von `qwen36` in **einer** Zeile: dem GPU-Modell. Der
+    # Hintergrund bleibt auf `qwen36-cpu`, damit Destillation und Analyse
+    # vergleichbar bleiben und der Test nur eine Groesse bewegt.
+    #
+    # `gemma4-a4b-gpu` ist derselbe Bautyp wie `gemma4-gpu` — 26B-A4B, MoE —
+    # und unterscheidet sich in drei Punkten: **QAT** statt nachtraeglicher
+    # Quantisierung, drei Monate juenger, und ein **uncensored**-Finetune.
+    # `[gemessen 07.09.2026]` ueber sechs Reize: Durchsatz 99,26 gegen 96,42
+    # tps, Antwortlaenge gleich — **der Durchsatz ist kein Argument**, weder
+    # dafuer noch dagegen. Was zu pruefen ist, ist die Guete.
+    #
+    # **Zurueck geht es ohne Code-Aenderung:** `OLLAMA_CONNECTOR=qwen36`.
+    "gemma4a4b": {
+        "gpu_model":       "gemma4-a4b-gpu",
+        "gpu_num_ctx":     32768,
+        "cpu_model":       "qwen36-cpu",
+        "cpu_num_ctx":     262144,
+        "analyse_model":   "qwen36-cpu",
+        "analyse_num_ctx": 262144,
+    },
     "qwen36": {
         "gpu_model":       "gemma4-gpu",
         "gpu_num_ctx":     32768,
