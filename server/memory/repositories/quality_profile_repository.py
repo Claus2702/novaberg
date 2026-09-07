@@ -253,10 +253,27 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
     """Die naechsten Traeger, die ein Profil verdienen und keines haben.
 
     **Profiliert wird erst, was wiedergekehrt ist** (§6.3) — man fragt sich
-    nicht beim ersten Mal, was einen an einer Sache fasziniert. Dazu ein
+    nicht beim ersten Mal, was einen an einer Sache fasziniert. ~~Dazu ein
     Laengenfilter: Die Sachtexte sind mehrere hundert Woerter, die
     Sprechakt-Vermerke ein bis zwei Saetze, und ein Laengenschnitt trifft
-    fast dieselbe Menge wie eine Formklassifikation.
+    fast dieselbe Menge wie eine Formklassifikation.~~
+
+    **Der Laengenfilter bleibt, sein Zweck nicht.** `[gemessen 06.09.2026]`
+    ueber die 83 gelesenen Knoten, die den Wiederkehr-Filter passieren:
+    Sachaussagen liegen im Mittel bei **271** Zeichen, Sprechakt-Vermerke bei
+    **281** — die Laenge trennt die beiden Klassen nicht. Die Schwelle 400
+    liess **8** Sprechakt-Vermerke durch und **1** Sachaussage.
+
+    **Die Wirkung war der teure Teil:** Von 95 je gelesenen Traegern standen
+    **0** als Kandidat offen — die Warteschlange dieses Agenten enthielt
+    keinen einzigen Knoten, den der Lesepfad im Turn anbietet. Die Faszination
+    meldete in **jedem** protokollierten Turn `werte: {}`.
+
+    **Die Klassifikation liegt beim Modell.** Der Profil-Prompt erlaubt 0.0
+    auf allen sechs Dimensionen, ein Nullprofil wird geschrieben, und der
+    Traeger faellt danach ueber `NOT EXISTS` aus dieser Abfrage. Die Schwelle
+    faengt seither nur noch den Ein-Satz-Vermerk (50 bis 59 Zeichen im
+    Bestand) und steht bei 100 — die Begruendung samt Preis in `config.py`.
 
     ~~Die haeufigsten zuerst — wer oft wiederkehrt, ist der bessere Kandidat.~~
     **Berichtigt am 05.09.2026: `haeufigkeit` misst Wiederholung, nicht

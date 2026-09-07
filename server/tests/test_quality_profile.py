@@ -25,10 +25,16 @@ gefehlt hat:
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
+import json
 import unittest
 from unittest.mock import MagicMock, patch
 
-from config import MERKMALSZUG_BONUS, POSTGRES_URL, QUALITAET_KANON
+from config import (
+    MERKMALSZUG_BONUS,
+    POSTGRES_URL,
+    QUALITAET_KANON,
+    QUALITAET_LAENGE_MIN,
+)
 from ei.fascination import dominante_dimension, merkmalszug
 from memory import quality_profile
 from memory.repositories import quality_profile_repository as speicher
@@ -601,6 +607,88 @@ class DieAuswahlFolgtDerEchtenWiederkehrTest(unittest.TestCase):
 
         self.assertIn("k.haeufigkeit DESC", sql)
         self.assertIn("LEFT JOIN", sql)
+
+
+class DieLaengenschwelleTrenntNichtWasSieSollTest(unittest.TestCase):
+    """Der Waechter ueber `QUALITAET_LAENGE_MIN` — mit Zahlen aus dem Bestand.
+
+    **Die Schwelle stand bis zum 06.09.2026 auf 400 und war der Grund, warum
+    die Faszination im Turn leer blieb.** `[gemessen 06.09.2026]` ueber die 83
+    gelesenen Knoten, die den Wiederkehr-Filter passieren:
+
+        Sachaussage im Rahmen    32 Knoten, Mittel 271 Zeichen,  1 ueber 400
+        Sprechakt / Beziehung    29 Knoten, Mittel 281 Zeichen,  8 ueber 400
+        ohne erkennbaren Rahmen  22 Knoten, Mittel 753 Zeichen,  9 ueber 400
+
+    **Die beiden Klassen, die der Schnitt trennen soll, liegen 10 Zeichen
+    auseinander.** Die Schwelle 400 liess acht Sprechakt-Vermerke durch und
+    genau eine Sachaussage — und hielt **0 von 95** je gelesenen Traegern als
+    Kandidat offen. Die Faszination meldete in jedem protokollierten Turn
+    `werte: {}`.
+
+    **Diese Zeugen nennen Zahlen und keine Symbole** (`20_TESTS` §4j): Ein
+    Zeuge, der die Schwelle gegen sich selbst prueft, bleibt gruen, wo immer
+    sie steht — und genau das ist hier zweimal passiert.
+    """
+
+    #: Der gemessene Mittelwert der Klasse, die profiliert werden SOLL.
+    SACHAUSSAGE_MITTEL: int = 271
+    #: Die laengsten reinen Ein-Satz-Vermerke im Bestand.
+    EIN_SATZ_VERMERK_MAX: int = 59
+
+    def test_die_schwelle_schneidet_nicht_in_die_sachaussagen(self) -> None:
+        """Bei 400 fiel die Klasse fast vollstaendig heraus — 1 von 32."""
+        self.assertLess(
+            QUALITAET_LAENGE_MIN, self.SACHAUSSAGE_MITTEL,
+            f"Die Schwelle {QUALITAET_LAENGE_MIN} liegt ueber dem Mittel der "
+            f"Sachaussagen ({self.SACHAUSSAGE_MITTEL} Zeichen) und schneidet "
+            f"damit in die Klasse, die profiliert werden soll"
+        )
+
+    def test_die_schwelle_faengt_den_ein_satz_vermerk(self) -> None:
+        """Sie soll nicht verschwinden, nur den offensichtlichen Rest fangen."""
+        self.assertGreater(
+            QUALITAET_LAENGE_MIN, self.EIN_SATZ_VERMERK_MAX,
+            f"Die Schwelle {QUALITAET_LAENGE_MIN} laesst Ein-Satz-Vermerke "
+            f"durch (bis {self.EIN_SATZ_VERMERK_MAX} Zeichen im Bestand)"
+        )
+
+    def test_die_abfrage_bekommt_die_schwelle_aus_der_konfiguration(self) -> None:
+        """Sonst waechst der Waechter oben ueber einer toten Zahl.
+
+        Die beiden Zeugen darueber pruefen eine Konstante; dieser prueft, dass
+        die Konstante auch die ist, die in der Abfrage landet.
+        """
+        with patch(f"{REPO}.psycopg2.connect") as verbindung:
+            zeiger = verbindung.return_value.cursor.return_value
+            zeiger.fetchall.return_value = []
+            speicher.candidates_load(POSTGRES_URL, 20)
+            parameter = zeiger.execute.call_args[0][1]
+
+        self.assertIn(QUALITAET_LAENGE_MIN, parameter)
+
+    def test_die_klassifikation_liegt_beim_modell_nicht_am_filter(self) -> None:
+        """Ein Nullprofil wird geschrieben — sonst kaeme der Traeger wieder.
+
+        **Das ist die Zusicherung, die den gesenkten Filter traegt.** Der
+        Prompt erlaubt 0.0 auf allen sechs Dimensionen; wuerde ein solcher
+        Traeger nicht gespeichert, fiele er nicht ueber `NOT EXISTS` aus der
+        Auswahl und der Agent profilierte ihn jeden Tag erneut.
+        """
+        null_profil: dict[str, float] = {name: 0.0 for name in QUALITAET_KANON}
+        antwort = MagicMock()
+        antwort.text = json.dumps(null_profil)
+        with patch(f"{PROFIL_MODUL}.model_service") as dienst, \
+             patch(f"{PROFIL_MODUL}.get_node_config", return_value={}), \
+             patch(f"{PROFIL_MODUL}.speicher.quality_upsert", return_value=1) as schreiber:
+            dienst.background.submit_sync.return_value = antwort
+            ergebnis = quality_profile.traeger_profilieren(
+                POSTGRES_URL, 4711, "ein Traeger ohne jede Qualitaet",
+                {name: i for i, name in enumerate(QUALITAET_KANON)},
+            )
+
+        self.assertEqual(ergebnis, null_profil)
+        self.assertEqual(schreiber.call_count, len(QUALITAET_KANON))
 
 
 class EinTotalausfallMeldetSichTest(unittest.TestCase):

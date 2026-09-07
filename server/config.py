@@ -2140,15 +2140,49 @@ QUALITAET_STUFEN: tuple[float, ...] = (0.0, 0.5, 1.0)
 # beim ersten Mal, was einen an einer Sache fasziniert. Ein LLM-Call je
 # Traeger ist der Preis, und die Daempfung liegt in der Groesse selbst.
 #
-# Dazu ein Laengenfilter — die Sachtexte sind mehrere hundert Woerter, die
+# Dazu ein Laengenfilter — ~~die Sachtexte sind mehrere hundert Woerter, die
 # Sprechakt-Vermerke ein bis zwei Saetze; ein Laengenschnitt trifft fast
-# dieselbe Menge wie eine Formklassifikation und kostet keinen Aufruf.
+# dieselbe Menge wie eine Formklassifikation und kostet keinen Aufruf.~~
 #
 # `[gemessen]` 03.09.2026 ueber 3318 Knoten: Wiederkehr >= 2 allein trifft
 # 1538, Laenge >= 400 allein 1283, **beide zusammen 368**. Das ist die
 # Groessenordnung des Erstlaufs.
+#
+# **Das Versprechen ist am 06.09.2026 widerlegt: Die Laenge trennt die beiden
+# Klassen nicht.** Ueber die 83 Knoten, die der Lesepfad im Turn anbietet und
+# die den Wiederkehr-Filter passieren, nach der Form ihres Satzanfangs
+# klassifiziert:
+#
+#     Sachaussage im Rahmen    32 Knoten, Mittel 271 Zeichen, davon  1 ueber 400
+#     Sprechakt / Beziehung    29 Knoten, Mittel 281 Zeichen, davon  8 ueber 400
+#     ohne erkennbaren Rahmen  22 Knoten, Mittel 753 Zeichen, davon  9 ueber 400
+#
+# **Die beiden Klassen, die der Schnitt trennen soll, liegen bei 271 und 281.**
+# Die Schwelle 400 liess acht Sprechakt-Vermerke durch und genau eine
+# Sachaussage — sie trifft nicht zu streng, sie trifft falsch herum. Und die
+# Wirkung war die teure Seite davon: **0 von 95 je gelesenen Traegern standen
+# als Kandidat offen**, alle 18, die die Filter passierten, waren laengst
+# profiliert. Die Faszination blieb im Turn leer, weil ihre Warteschlange
+# leer war — `traeger_geprueft: 3, ohne_profil: 3, werte: {}` in **jedem**
+# protokollierten Turn.
+#
+# **Die Klassifikation liegt beim Modell, nicht hier.** Der Profil-Prompt
+# erlaubt ausdruecklich 0.0 auf allen sechs Dimensionen, ein Nullprofil wird
+# geschrieben, und der Traeger faellt danach aus der Kandidatenmenge. Ein
+# Formfilter davor waere eine zweite, schlechtere Kopie dieses Urteils — der
+# Versuch, ihn als Regex zu bauen, sortierte in der Gegenprobe **drei von
+# sechs** Stichproben falsch ein (*„Nova ist aufgegangen, dass ..."* ist eine
+# Einsicht, kein Sprechakt).
+#
+# **Die Schwelle faengt seither nur noch den Ein-Satz-Vermerk.** Die kuerzesten
+# Knoten im Bestand liegen bei 50 bis 59 Zeichen (*„Der Nutzer hat ein kleines,
+# freches Maedchen bei sich."*); 100 haelt Abstand dazu. **Der Preis ist
+# benannt:** Die kuerzeste gemessene Sachaussage hat 89 Zeichen und faellt
+# weiterhin durch. `[gemessen 06.09.2026]` offene Kandidaten unter den
+# gelesenen: **0** bei 400, **55** bei 100 — bei 20 je Lauf und Sortierung nach
+# Lesespur drei Tage statt 153.
 QUALITAET_WIEDERKEHR_MIN: int = 2
-QUALITAET_LAENGE_MIN:     int = 400
+QUALITAET_LAENGE_MIN:     int = 100
 
 # **Gedeckelt je Tageslauf, nicht in einem Zug.** 368 Modellaufrufe passen
 # nicht in einen Heartbeat-Platz; bei diesem Deckel fuellt sich der Bestand
