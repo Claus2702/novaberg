@@ -138,3 +138,72 @@ die Fernmodelle.
 → Connector-Dict: config.py OLLAMA_CONNECTORS
 → Modell je Backend: config.py MODELL_NACH_BACKEND
 → Loader: server/prompt_loader.py
+
+---
+
+## 8. Was jeder Anbieter fuehrt — gemessen am 07.09.2026
+
+**Der Kanon `OPENROUTER_GEFUEHRTE_PARAMETER` in `config.py` stand von Hand fuer *einen*
+Anbieter da.** Er stammt aus `GET /models/{id}/endpoints`, und dieselbe Quelle beantwortet
+die Frage fuer **alle** — `labor/werkzeug/anbieter_faehigkeiten.py` liest sie aus.
+
+`[gemessen]` ueber **29 Anbieter** desselben Modells. Die Auskunft ist schaerfer als die
+Preistabelle:
+
+| Anbieter | in/M | out/M | cache/M | `repetition_penalty` |
+|---|---:|---:|---:|---|
+| DeepInfra | 0,060 | 0,180 | 0,015 | ja |
+| CoreWeave | 0,130 | 0,280 | 0,070 | ja |
+| Parasail | 0,140 | 0,280 | 0,050 | ja |
+| **Baidu** | 0,140 | 0,280 | 0,028 | **nein** |
+
+> **Der genutzte Anbieter fuehrt keine der drei Sampling-Schrauben** — weder
+> `repetition_penalty` noch `presence_penalty` noch `frequency_penalty`. Responder und
+> Verfasser setzen zwei davon gegen Wiederholungen; sie gehen ins Leere. Der Kanon faengt
+> das ab, damit sie nicht stumm verworfen werden — **aber die Wirkung fehlt trotzdem**, und
+> das ist ein Grund zum Anbieterwechsel unabhaengig vom Preis.
+
+**Der Preis war der laute Grund, nicht der einzige.** Am 07.09.2026 fiel der Rabatt weg:
+konfiguriert $0.04998/$0.09996 je Million, lebend $0.14000/$0.28000 — **Faktor 2,80**.
+
+## 9. Warum die Modellwahl an der **aktiven** Parameterzahl haengt
+
+**`ollama show` nennt die Gesamtzahl, nicht die aktive** — und bei einem MoE entscheidet die
+aktive ueber den Durchsatz. `[gemessen 07.09.2026]` auf der eigenen Maschine:
+
+| Modell | Bauart | aktiv | Durchsatz |
+|---|---|---:|---:|
+| `gemma4-gpu` (GPU) | MoE 26B | 3,8 Mrd. | **96,4 tps** |
+| `gemma4-a4b-gpu` (GPU) | MoE 26B | 4 Mrd. | **99,3 tps** |
+| `qwen36-cpu` (CPU) | MoE 35B | 3 Mrd. | **18,3 tps** |
+
+**Ein dense-Modell derselben Groessenordnung waere um ein Vielfaches langsamer.** Qwen 3.8
+27B ist dense — 27 Mrd. aktiv, also rund neunmal die Rechenarbeit von 3 Mrd.; auf der CPU
+hochgerechnet **rund 2 tps**, und ein `pixie/hash`-Lauf ginge von 22 s auf etwa 200 s. Die
+MoE-Variante desselben Hauses (Flash-Next, 512 Experten, 10 aktiv) traegt die richtige
+Bauart und **103 GB** — bei 61 GB Arbeitsspeicher ausser Reichweite.
+
+> **Der Ort fuer ein klugeres und langsameres Modell ist `analyse_model`**, das der Connector
+> ohnehin getrennt fuehrt. Die Destillation laeuft taeglich, nicht je Turn; dort sind 200 s
+> belanglos — und dort sitzen die Defekte, die ein besseres Modell beheben wuerde
+> (`PROFIL-VERALLGEMEINERT-EINZELBELEG`, unbelegte Zitate).
+
+## 10. Der Prefix-Cache — gemessen, nicht konfiguriert
+
+`llama.cpp` haelt den KV-Cache eines wiederkehrenden Prompt-Anfangs von selbst.
+`[gemessen 07.09.2026]`, derselbe Prompt dreimal:
+
+| | kalt | warm | Faktor |
+|---|---:|---:|---:|
+| GPU (1934 Token) | 787,7 ms | 88 ms | **8–9** |
+| CPU (1915 Token) | 11,61 s | 0,09 s | **115** |
+
+**Auf der CPU wiegt er das Vielfache**, weil dort das Lesen teuer ist — und genau dort laeuft
+der Hintergrund. Auf `pixie/hash` hochgerechnet (5418 ein / 403 aus): **72,8 s** mit
+entladenem Modell, **54,9 s** geladen mit kaltem Prompt, **22,3 s** warm.
+
+**Zwei Stellschrauben sind unkonfiguriert:** `OLLAMA_KEEP_ALIVE` ist nicht gesetzt, es gilt
+der Default von fuenf Minuten — **jeder Kaltstart kostet 17,9 s Ladezeit** auf der CPU.
+`OLLAMA_KV_CACHE_TYPE` steht auf `f16`; `q8_0` halbiert den KV-Speicher bei kaum messbarem
+Verlust. Der Cache selbst braucht keine Einstellung, sondern eine Eigenschaft der Prompts:
+**das Stabile muss vorn stehen.**
