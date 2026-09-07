@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026** (gemessen via `date -u`). Davor 06.09.2026, 21:00 UTC.
+**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026, 14:19 UTC** (gemessen via `date -u`). Davor 06.09.2026, 21:00 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -72,9 +72,28 @@ Spanne, mit Literalen aus der Messung.
 **Wirkung, Landschaft `werkstatt` mit Novas gemessenem Rad** (`wissbegier` 0,97):
 `fragen` 0,9026 → **0,8722 / 0,9029 / 0,9326** fuer schwaechsten, mittleren und staerksten Turn.
 
-**Der Betriebsbeleg ueber einen echten Turn steht aus.** Zwei Messturns brachen am **Router** ab —
-`HTTP 429` von OpenRouter, `rpm_rate_limit_exceeded` auf `deepseek/deepseek-v4-flash-0731`; der
-Graph erreichte den Haltungsraum nicht. Ein Fremddefekt.
+### Im Betrieb belegt — 14:19:25 UTC
+
+Ein echter Turn, `wartezimmer`, Rad `destilliert`: 3 gelesene Traeger, **1 mit Profil**,
+Faszination **0,5176** → Faktor **1,0985**. Dasselbe Rad mit und ohne gerechnet:
+
+| Groesse | ohne | mit | Δ |
+|---|---:|---:|---:|
+| `fragen` | 0,583699 | **0,620650** | **+0,036951** |
+| `draengen` | 0,487351 | 0,498847 | +0,011496 |
+| `umfang` · `naehe` · `waerme` | — | — | **exakt 0** |
+
+Der „mit"-Wert ist zeichengleich mit dem, was der Turn ins Protokoll geschrieben hat — die
+Rechnung im Betrieb ist genau diese, und die Isolation auf **eine** Speichenzeile ist damit
+nicht nur bezeugt, sondern gemessen.
+
+> **Ein Vergleich ueber verschiedene Tage traegt hier nicht.** Dieselbe Landschaft trug am
+> 05.09. `fragen` 0,6355 und am 06.09. 0,5997 — beides **ohne** Faktor, allein weil das
+> destillierte Rad wandert. Deshalb dasselbe Rad zweimal statt zweier Tage.
+
+**Zwei Anlaeufe davor brachen am Router ab** — `HTTP 429` von OpenRouter,
+`rpm_rate_limit_exceeded`; ein Fremddefekt. **Offen bleibt**, ob das Modell der geaenderten
+Vorgabe folgt: Belegt ist die Vorgabe, nicht die Antwort.
 
 **Dabei hat die harte Wand angeschlagen** (`N806` an zwei frischen Zeilen) — der erste
 Wand-Treffer dieser Sitzung, behoben.
