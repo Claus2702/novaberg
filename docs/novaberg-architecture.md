@@ -130,6 +130,22 @@ ollama_gpu_client      ollama_cpu_client            AnthropicProvider   OpenRout
 
 Backend-Wahl pro Worker ist config-gesteuert (`MODEL_WORKER_BACKENDS`), nicht
 hartverdrahtet: `ChatWorker` ist single-backend, `BackgroundWorker` dual-backend
+
+> **Der `ChatWorker` bedient nicht nur das Gespräch, und sein Name sagt das nicht.**
+> `[gemessen 07.09.2026]`: `agent/wissen_rueckweg/zuordnung` — ein **Hintergrund**agent —
+> läuft über ihn und wechselte deshalb das Backend mit, als `WORKER_BACKEND_CHAT` für einen
+> Feldtest auf lokal gestellt wurde. Niemand hat das entschieden; es folgte aus der
+> Zuordnung. Der Agent ist kein kleiner Posten: **204 Aufrufe in 33 Stunden**, nach
+> `pixie/hash` der zweitgrößte Kostenblock.
+>
+> **Wer ein Backend je Worker umstellt, stellt damit alle Aufrufer dieses Workers um** — und
+> die Liste der Aufrufer steht nirgends. Vor einer Umstellung ist sie zu erheben
+> (`caller=` in der Zeile `ChatWorker 'chat': …` des Server-Logs), sonst umfasst eine
+> Messung mehr, als ihr Aufsteller glaubt.
+>
+> Zweiter Fall derselben Klasse: Der Connector `qwen36` fährt im Gespräch **gemma4-gpu** und
+> unterscheidet sich von `gemma4` nur im Hintergrund. Dort steht die Warnung im Code — hier
+> fehlte sie.
 (`analyse` für Reasoning/JSON, `sprache` für Fliesstext), `EmbedWorker` fest auf GPU.
 
 **Alle drei Graphen laufen über diese Worker** — Mensch, Charakter und Agent
