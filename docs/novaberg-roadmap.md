@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026, 14:19 UTC** (gemessen via `date -u`). Davor 06.09.2026, 21:00 UTC.
+**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026, 19:07 UTC** (gemessen via `date -u`). Davor 06.09.2026, 21:00 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,45 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 07.09.2026, 19:07 UTC — ein neues Gespraechsmodell im Feldtest 🔬
+
+**`gemma4-a4b-gpu` steht seit 19:07:49 UTC im Gespraechspfad**, angelegt auf zwei bis drei
+Tage. Derselbe Bautyp wie das Bestandsmodell — 26B-A4B, MoE — mit drei Unterschieden:
+**QAT** statt nachtraeglicher Quantisierung, drei Monate juenger, und ein
+**uncensored**-Finetune.
+
+**Der Durchsatz ist kein Argument, weder dafuer noch dagegen** `[gemessen]` ueber sechs
+Reize je Modell, Reihenfolge je Runde getauscht:
+
+| | `gemma4-gpu` | `gemma4-a4b-gpu` |
+|---|---:|---:|
+| Durchsatz | 96,42 tps | **99,26 tps** |
+| Spanne | 94,95–97,47 | 97,88–100,11 |
+| Token / Zeichen | 1424 / 6560 | 1447 / 6880 |
+
+Die Spannen ueberschneiden sich nicht — 6 von 6 Runden —, aber 2,9 % sind praktisch
+bedeutungslos. **Eine Erwartung von „ueber 200 tps" waere um Faktor 2 danebengelegen**, und
+zwar aus einem Irrtum ueber den Bestand: Das alte Modell galt als 25,2-Mrd.-Dense und ist
+laut `config.py:226` selbst ein **26B-A4B**. Was `ollama show` als *25.2B parameters*
+ausgibt, ist die Gesamtzahl; die aktive steht nur im Kommentar der Konfiguration.
+
+**Der Test bewegt eine Groesse.** Der Connector `gemma4a4b` unterscheidet sich von `qwen36`
+in **einer** Zeile — dem GPU-Modell; Hintergrund und Analyse bleiben auf `qwen36-cpu` und
+auf dem Fernmodell. Zurueck geht es ohne Code-Aenderung ueber `OLLAMA_CONNECTOR=qwen36`.
+
+> **Der Schalter hat beim ersten Anlauf nicht gegriffen, und der Start sah sauber aus.**
+> `docker-compose.yml` setzte `OLLAMA_CONNECTOR` **hart** und schlug damit die `.env`; der
+> Log meldete `Modell=gemma4-gpu` bei umgestellter Umgebung. **Ein Schalter, dessen Wirkung
+> niemand nachsieht, ist eine Behauptung** — dieselbe Lehre wie beim Pixie-Schalter der
+> Messreihen, an einer zweiten Stelle. Der Eintrag liest jetzt aus der Umgebung.
+
+**Was der Test beantwortet und was nicht.** Er zeigt, wie sich das neue Modell im Betrieb
+schlaegt. Er beantwortet **nicht**, ob es besser ist als das alte *lokale* — dafuer haette
+zuvor mit `qwen36` lokal gefahren werden muessen. Und er vermischt zwei Wechsel: Modell
+**und** fern → lokal.
 
 ---
 
