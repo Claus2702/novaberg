@@ -202,6 +202,32 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 **Die vier Einträge der Reihe 3 sind derselbe Engpass von vier Seiten** und werden nicht einzeln bewertet — wer einen angeht, misst die anderen drei mit. Ihre Reihenfolge untereinander steht bei `AUFTRAGSARTEN-OHNE-AGENTEN`.
 
+### Der Bestand dieser Datei, gemessen am 06.09.2026
+
+**Sie ist zwölf Tage alt, und das steht hier, weil es sonst niemand sieht.** Der letzte Durchgang war
+am 25.08.2026; die Datei trägt sein Datum an 22 Stellen.
+
+| | |
+|---|---:|
+| Band A | **1** Eintrag (`UNREGISTRIERTER-AGENT-GEWINNT`) |
+| Band B | rund 20 |
+| Band C und D | **leer** |
+| ungebändert | **171** |
+
+**Kein Gegenstand der Arbeit seit dem 25.08.2026 trägt ein Band** — die Charakter-Profile, die
+Deckungsprüfung, die Zitatregel, die Entwertung, die Faszination im Turn. `[gemessen 06.09.2026]`
+tragen von 157 offenen Bug-Kennungen **20** die Zustandszeile *unbelegt — braucht Messturn*, und
+`PROFIL-VERSTAERKT-WAS-ES-BESCHREIBT` ist am 06.09.2026 von *hoch* auf *mittel* berichtigt worden,
+ohne dass die Bänder es gesehen haben.
+
+> **Eine Rangordnung, die nicht weiß, wie alt sie ist, wird gelesen wie eine aktuelle.** Das ist
+> derselbe Bruch, den `40_DOKU_GRUNDSAETZE/statusregister-altert.md` beschreibt: Wer sie liest,
+> prüft sie nicht nach — sonst hätte er sie nicht gebraucht. Deshalb steht hier eine Zahl und kein
+> Vorsatz.
+
+**Die eigene Vorschrift für den nächsten Durchgang steht unten** und ist unverändert gültig: zuerst
+die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
+
 ### Was mit den übrigen 171 ist
 
 **Sie sind nicht C oder D — sie sind ungebändert**, und das ist eine ehrliche Angabe und keine Auslassung. Ein Band im Sinne von Regel 2 entsteht durch Vergleich; 166 Einträge in einem Zug zu bebändern hieße, genau das Verfahren zu wiederholen, gegen das dieser Abschnitt geschrieben ist.

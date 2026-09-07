@@ -1,6 +1,7 @@
 # Novaberg — Backlog, Rangordnung
 
 **Inhalt:** die Baender und die laufenden Reihen, nach denen offene Arbeit geordnet wird.
+**Stand:** 6. September 2026 — **der letzte Durchgang war am 25.08.2026**, also zwölf Tage davor. Band A traegt einen Eintrag, Band C und D sind leer, 171 sind ungebaendert, und kein Gegenstand der Arbeit seit dem 25.08. traegt ein Band. Die Zahlen stehen im Abschnitt *Der Bestand dieser Datei*.
 **Das Backlog:** [`novaberg-backlog.md`](novaberg-backlog.md) · **Findemittel:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md)
 
 > **Diese Datei stand bis zum 25.08.2026 als Abschnitt im Backlog.** Sie ist herausgeloest worden, weil das Backlog nach Gegenstand geteilt wird und die Rangordnung **quer zu allen Gegenstaenden** liegt: Sie sagt, was als Naechstes angefasst wird, und das entscheidet sich nicht je Kategorie. Das Findemittel bindet sie ein, damit sie an der Stelle steht, an der ueber alle Teile hinweg gesucht wird.
@@ -153,6 +154,32 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | `AUFTRAGSARTEN-OHNE-AGENTEN` · `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` · `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` · `RECHERCHE-RETRY-BLOCKIERT-QUEUE` · `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` | 3 |
 
 **Die vier Einträge der Reihe 3 sind derselbe Engpass von vier Seiten** und werden nicht einzeln bewertet — wer einen angeht, misst die anderen drei mit. Ihre Reihenfolge untereinander steht bei `AUFTRAGSARTEN-OHNE-AGENTEN`.
+
+### Der Bestand dieser Datei, gemessen am 06.09.2026
+
+**Sie ist zwölf Tage alt, und das steht hier, weil es sonst niemand sieht.** Der letzte Durchgang war
+am 25.08.2026; die Datei trägt sein Datum an 22 Stellen.
+
+| | |
+|---|---:|
+| Band A | **1** Eintrag (`UNREGISTRIERTER-AGENT-GEWINNT`) |
+| Band B | rund 20 |
+| Band C und D | **leer** |
+| ungebändert | **171** |
+
+**Kein Gegenstand der Arbeit seit dem 25.08.2026 trägt ein Band** — die Charakter-Profile, die
+Deckungsprüfung, die Zitatregel, die Entwertung, die Faszination im Turn. `[gemessen 06.09.2026]`
+tragen von 157 offenen Bug-Kennungen **20** die Zustandszeile *unbelegt — braucht Messturn*, und
+`PROFIL-VERSTAERKT-WAS-ES-BESCHREIBT` ist am 06.09.2026 von *hoch* auf *mittel* berichtigt worden,
+ohne dass die Bänder es gesehen haben.
+
+> **Eine Rangordnung, die nicht weiß, wie alt sie ist, wird gelesen wie eine aktuelle.** Das ist
+> derselbe Bruch, den `40_DOKU_GRUNDSAETZE/statusregister-altert.md` beschreibt: Wer sie liest,
+> prüft sie nicht nach — sonst hätte er sie nicht gebraucht. Deshalb steht hier eine Zahl und kein
+> Vorsatz.
+
+**Die eigene Vorschrift für den nächsten Durchgang steht unten** und ist unverändert gültig: zuerst
+die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ### Was mit den übrigen 171 ist
 
