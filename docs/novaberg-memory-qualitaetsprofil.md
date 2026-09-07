@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`
-**Stand:** 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
+**Stand:** 6. September 2026, 21:00 UTC (`date -u`; **der Längenfilter ist entschieden** — `QUALITAET_LAENGE_MIN` 400 → 100, weil die Länge Sachaussage (271) und Sprechakt-Vermerk (281) nicht trennt und die Warteschlange 0 von 95 gelesenen Trägern enthielt; die Faszination rechnet seither im Turn). Davor 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
 **Pfad:** novaberg/docs/novaberg-memory-qualitaetsprofil.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §4 (der Träger), §5 (das gesetzte Vokabular), §6 (die sechs Dimensionen), §10.1 (der Merkmalszug)
 **Zustand:** 🟠 gebaut, läuft, **und sein Ergebnis steht unter einem Vorbehalt** — Speicher, Erzeuger und Leser stehen, aber vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste
@@ -132,7 +132,7 @@ Filterkriterien und hatten trotzdem kein Profil.** Sie waren nie an der Reihe.
 Schnitt aller aktiven — die alte Sortierung wählte genau die durch die KZG-Schleife aufgeblähten.
 Die Lesespur kostet **2,8 ms** über 13.554 Enricher-Zeilen.
 
-**Der Längenfilter bleibt der größere Engpass, und er ist nicht behoben:** Von 36 je Turn gelesenen
+~~**Der Längenfilter bleibt der größere Engpass, und er ist nicht behoben:**~~ → **behoben am 06.09.2026, siehe unten.** Von 36 je Turn gelesenen
 Knoten passieren nur **7** die 400 Zeichen. Der Rest sind Sprechakt-Vermerke — dieselbe Familie wie
 `DESTILLAT-SUBJEKT-SCHABLONE`. Der Filter tut, was er soll; der Befund ist, dass der Lesepfad
 überwiegend Material liefert, das als Träger untauglich ist.
@@ -224,9 +224,40 @@ ersten 20 Tage füllen dieselben Träger, weil die Sortierung sie zuerst nimmt.
 **Der Wiederkehr-Filter ist davon nicht berührt.** Seine Begründung trägt unabhängig (Konzept
 §6.3): Man fragt sich nicht beim ersten Mal, was einen an einer Sache fasziniert.
 
-**Drei Wege stehen offen, und die Wahl ist eine Absichtsfrage:** die Formel als Filter an Stelle
+~~**Drei Wege stehen offen, und die Wahl ist eine Absichtsfrage:** die Formel als Filter an Stelle
 der Länge · die Formel als zusätzlicher Sortierschlüssel bei gestrichenem Längenfilter · den
-Längenfilter behalten. **Entschieden ist keiner, gebaut ist keiner.**
+Längenfilter behalten. **Entschieden ist keiner, gebaut ist keiner.**~~
+
+→ **Am 06.09.2026 entschieden und gebaut, und zwar über einen vierten Weg, den die drei nicht
+nannten: Der Filter bleibt, sein Zweck fällt weg.** `QUALITAET_LAENGE_MIN` steht auf **100** und
+fängt seither nur noch den Ein-Satz-Vermerk (50–59 Zeichen im Bestand); die inhaltliche Ablehnung
+liegt beim Modell, das 0.0 auf allen sechs Dimensionen sagen darf und dessen Nullprofil geschrieben
+wird — der Träger fällt danach über `NOT EXISTS` aus der Auswahl.
+
+**Der Anlass war eine Zahl, die die Sperre der Faszination erklärt:** Von 95 je gelesenen Knoten
+standen bei Schwelle 400 **null** als Kandidat offen — 18 passierten beide Filter, und alle 18
+trugen längst ein Profil. Die Warteschlange enthielt keinen Träger, den der Lesepfad im Turn
+anbietet, und die Faszination meldete in jedem protokollierten Turn `werte: {}`.
+
+**Die Länge trennt die beiden Klassen nicht** `[gemessen 06.09.2026]`:
+
+| Art | n | Mittel | davon ≥ 400 |
+|---|---:|---:|---:|
+| Sachaussage im Rahmen | 32 | **271** | **1** |
+| Sprechakt / Beziehung | 29 | **281** | **8** |
+| ohne erkennbaren Rahmen | 22 | 753 | 9 |
+
+Die Schwelle 400 ließ acht Sprechakt-Vermerke durch und genau eine Sachaussage — **sie trifft nicht
+zu streng, sie trifft falsch herum.**
+
+> **Der erste der drei Wege wurde versucht und ist an der Gegenprobe gescheitert.** Ein Regex auf den
+> Satzanfang sortierte drei von sechs Stichproben falsch ein: *„Nova ist aufgegangen, dass…"* ist eine
+> Einsicht, kein Sprechakt. Eine Formklassifikation vor dem Modell ist eine zweite, schlechtere Kopie
+> eines Urteils, das im Prompt bereits steht.
+
+**Wirkung:** Warteschlange 0 → 55 → **35** nach einem Lauf von 20, Bestand **92 Träger / 552 Kanten**
+(davor 72 / 432), **0 von 20** neuen Profilen sind Nullprofile. Am 06.09.2026, 20:52:54 UTC trug ein
+Turn zum ersten Mal einen Faszinationswert: `werte {"6982": 0.5725}`.
 
 ## 5. Der Merkmalszug — ein weiches ODER
 

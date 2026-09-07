@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 19:45 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:55 UTC.
+**Stand:** 6. September 2026 — juengster Eintrag **06.09.2026, 21:00 UTC** (gemessen via `date -u`). Davor 06.09.2026, 17:55 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,59 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 06.09.2026, 21:00 UTC — die Faszination rechnet zum ersten Mal im Turn 🔬
+
+**Sie war seit dem 05.09.2026 vollstaendig gerechnet und meldete in jedem
+protokollierten Turn `werte: {}`.** Der Grund lag nicht am fehlenden Leser und
+nicht an der Auswahl, sondern an einer Konstante:
+
+| | |
+|---|---:|
+| je gelesene Knoten | 95 |
+| passieren den Wiederkehr-Filter | 83 |
+| passieren den Laengenfilter (>= 400) | **21** |
+| passieren beide | 18 |
+| **davon bereits profiliert** | **18** |
+
+**Die Warteschlange des Profil-Erzeugers enthielt null gelesene Traeger.** Die
+Sortierung nach Lesespur vom 05.09.2026 arbeitet vollstaendig — sie hatte nur
+nichts mehr zu tun.
+
+**Die Laenge misst das Falsche.** Nach der Form des Satzanfangs klassifiziert
+liegen Sachaussagen bei **271** Zeichen im Mittel und Sprechakt-Vermerke bei
+**281**; die Schwelle 400 liess **8** Vermerke durch und **1** Sachaussage.
+
+> **Sie trifft nicht zu streng, sie trifft falsch herum.**
+
+**Eine Formklassifikation davor waere eine zweite Kopie eines Urteils, das das
+Modell schon faellt** — der Prompt erlaubt 0.0 auf allen sechs Dimensionen, ein
+Nullprofil wird geschrieben, und der Traeger faellt danach aus der Auswahl. Der
+Versuch, sie als Regex zu bauen, sortierte in der Gegenprobe **drei von sechs**
+Stichproben falsch ein.
+
+**Der Eingriff ist eine Zahl:** `QUALITAET_LAENGE_MIN` 400 → 100.
+
+| | vorher | nachher |
+|---|---:|---:|
+| Warteschlange | **0** | 55 → **35** |
+| gelesene Traeger mit Profil | 18 | **38** |
+| Bestand | 72 / 432 | **92 / 552** |
+
+**Die Probe auf die Entscheidung ist bestanden: 0 von 20** neuen Profilen sind
+Nullprofile.
+
+```
+20:52:54 | traeger_geprueft 3 | ohne_profil 2 | werte {"6982": 0.5725}
+19:36:50 | traeger_geprueft 3 | ohne_profil 3 | werte {}
+```
+
+**Der erste Wert, den ein Turn je getragen hat.** Vier Zeugen bewachen die
+Schwelle beidseitig — sie nennen Zahlen aus dem Bestand statt Symbole
+(`20_TESTS` §4j), und die Gegenprobe traf in beide Richtungen ihre Vorhersage.
+Suite **3221 → 3225**.
 
 ---
 
