@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Rangordnung
 
 **Inhalt:** die Baender und die laufenden Reihen, nach denen offene Arbeit geordnet wird.
-**Stand:** 6. September 2026 — **der letzte Durchgang war am 25.08.2026**, also zwölf Tage davor. Band A traegt einen Eintrag, Band C und D sind leer, 171 sind ungebaendert, und kein Gegenstand der Arbeit seit dem 25.08. traegt ein Band. Die Zahlen stehen im Abschnitt *Der Bestand dieser Datei*.
+**Stand:** 7. September 2026 — **Band A ist neu gefuellt**, nach Vorgabe des Eigentuemers auf Haltungsraum, Neugier und Profilabdeckung. Vier Eintraege: drei neue (A1 bis A3) und `UNREGISTRIERTER-AGENT-GEWINNT`, der bleibt und **blockiert** ist. Die Profilabdeckung ist geprueft und bekommt ausdruecklich **kein** Band. Davor 6. September 2026 — **der letzte Durchgang war am 25.08.2026**, also zwölf Tage davor. Band A traegt einen Eintrag, Band C und D sind leer, 171 sind ungebaendert, und kein Gegenstand der Arbeit seit dem 25.08. traegt ein Band. Die Zahlen stehen im Abschnitt *Der Bestand dieser Datei*.
 **Das Backlog:** [`novaberg-backlog.md`](novaberg-backlog.md) · **Findemittel:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md)
 
 > **Diese Datei stand bis zum 25.08.2026 als Abschnitt im Backlog.** Sie ist herausgeloest worden, weil das Backlog nach Gegenstand geteilt wird und die Rangordnung **quer zu allen Gegenstaenden** liegt: Sie sagt, was als Naechstes angefasst wird, und das entscheidet sich nicht je Kategorie. Das Findemittel bindet sie ein, damit sie an der Stelle steht, an der ueber alle Teile hinweg gesucht wird.
@@ -83,6 +83,58 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 **Einer wurde bestaetigt und gehoert nicht nach A:** `RECHERCHE-SALIENZ-KONSTANT` — das Literal `"salienz": 0.7` steht unveraendert in `agents/recherche/agent.py`. Er entwertet eine gespeicherte Groesse, zerstoert aber nichts; das ist Band **C**.
 
 > **Kein stiller Deckel:** Von 41 offenen Eintraegen sind **5** von Hand gegen den Code gehalten worden, ausgewaehlt danach, ob ihr Wortlaut laufenden Verlust behauptet. **Die uebrigen 36 sind ungeprueft** und koennen denselben Zustand tragen wie die beiden oben — erledigt und unmarkiert. Der Durchgang ist damit begonnen und nicht abgeschlossen.
+
+### Band A — neu gefuellt am 07.09.2026, drei Eintraege
+
+**Vorgabe des Eigentuemers:** Haltungsraum, Neugier und Profilabdeckung werden angegangen. Die
+Rangvergabe folgt der Regel dieses Abschnitts — **gegen den Code gehalten, nicht gegen den
+Eintrag** — und der Durchgang ist gemessen, nicht erinnert.
+
+**Der Anlass ist ein Muster ueber die drei, kein Einzelbefund.** Nebeneinander gemessen tragen
+sie dieselbe Krankheit in verschiedenen Stadien: **Eine Groesse wird sauber gerechnet,
+gespeichert — und bewegt nichts.** Die Haltung wird gerechnet *und gelesen* und bindet das
+Modell trotzdem nicht; die Neugier wird gerechnet und gespeichert und hat keinen Leser; die
+Faszination hat seit dem 07.09.2026 einen Leser und moduliert damit genau den Regler, der
+nicht bindet.
+
+> **Daraus folgt die Reihenfolge innerhalb des Bandes: A1 ist eine Messung, kein Bau.** Eine
+> vierte Groesse hilft nicht, solange die drei vorhandenen nichts bewegen — und ob sie etwas
+> bewegen, entscheidet keine Ueberlegung, sondern dieselbe Turnreihe mit und ohne Block.
+
+| Kennung | Reihe | Was er anhaelt |
+|---|---|---|
+| **A1** · `UMFANGSREGLER-BINDET-NICHT` | 2 | [ANT] **Er entwertet jede Aussage ueber die Wirkung des Haltungsraums — und damit die von zwei weiteren Eintraegen.** `[gemessen 17.08.2026]` Die Streuung der Antwortlaenge bei **identischer** Vorgabe betraegt **2,68**, die Spanne der Vorgabe selbst **1,50**: *„Damit ist der Regler kein Regler, sondern eine Tendenz."* Solange das gilt, ist jede Groesse ohne belegbare Wirkung, die ueber diesen Weg laeuft — `MASSBLOCK-IM-BETRIEB-UNGEMESSEN`, die halbierten Korridore vom 27.08. und seit dem 07.09.2026 der **Faszinations-Leser**, dessen Betriebsbeleg zwar die geaenderte *Vorgabe* zeigt (`fragen` 0,5837 → 0,6207), aber nicht die geaenderte Antwort. **Die Pruefform steht seit dem 20.08.2026 zweimal im Backlog und ist nie gefahren worden:** dieselbe Turnreihe desselben Reizes mit und ohne Block, Ist-Laenge gegen Korridor. **Er ist deshalb A1 und nicht A2** — er beantwortet die Frage, ob die anderen beiden ueberhaupt eine Wirkung haben koennen. ⬜ **offen** |
+| **A2** · `NEUGIER-KONZEPT-WIDERSPRICHT-DEM-CODE` | 3 | [WIS] **Niemand kann heute sagen, was von der Neugier gebaut ist — die Doku gibt die falsche Auskunft.** `novaberg-thinking-curiosity_k.md` sagt woertlich: *„Die Formel dieses Dokuments — `NOVA_NEUGIER x Resonanz x Neuheit` (§3.3) — wurde nie gebaut."* Genau diese Formel steht in `agents/wissensluecken/berechnung.py::neugier_vektor_berechnen`, gebaut am **27.07.2026** (`f62302a`) — **demselben Tag, an dem der Vermerk geschrieben wurde**, und seither nie nachgezogen. Dazu zwei Befunde am Bestand `[gemessen 07.09.2026]`: **`neugier_vektor` hat keinen Leser** ausserhalb seines eigenen Agenten (dieselbe Klasse wie `HALTUNG-OHNE-LESER`, hier sechs Wochen unbemerkt), und der **Wertebereich wird zu 23 % genutzt** — 0,0102 bis 0,1148 bei Spanne [0 … 0,5] ueber 1745 Zeilen, Mittel 0,0641. **Er steht vor jedem Bau an der Neugier**, weil sonst gegen ein Konzept gebaut wird, das seinen eigenen Gegenstand nicht kennt. ⬜ **offen — neu am 07.09.2026** |
+| **A3** · `LUECKEN-WERDEN-NIE-GESCHLOSSEN` | 3 | [WIS] **1745 Luecken, ausnahmslos `offen`** `[gemessen 07.09.2026]` — der aelteste Eintrag vom 27.07.2026, der juengste von heute. **In 42 Tagen ist keine einzige geschlossen worden**, und der Bestand hat sich seit der letzten Zaehlung (785) mehr als verdoppelt. Die Statuswerte `geschlossen` und `ausgeschlossen` existieren und haben **keinen Schreiber**. Ein Speicher, der nur waechst, ist kein Gedaechtnis einer Wissenslage, sondern eine Halde — und der Erkenntniszyklus, der auf ihm aufsetzt, arbeitet gegen eine Menge, die seine eigene Arbeit nie kleiner macht. ⬜ **offen** |
+
+**Was der Durchgang sonst ergab, mit Zahlen.**
+
+**Die Profilabdeckung ist geprueft und bekommt ausdruecklich kein Band** — sie war der dritte
+genannte Gegenstand, und die Messung sagt, dass dort nichts anzufassen ist:
+
+| | |
+|---|---:|
+| profiliert von aktiven Knoten | 112 / 3430 (3,3 %) |
+| profiliert von **gelesenen** Knoten | **58 / 99 (59 %)** — vormittags 38 |
+| gelesene ohne Profil | 41, bei 20 je Lauf **zwei Laeufe** |
+
+**Die Gesamtabdeckung ist die falsche Bezugsgroesse.** Die Auswahl folgt seit dem 05.09.2026 der
+Lesespur und trifft sie; der Lauf um 11:30 UTC schrieb 20 Profile, praktisch alle auf gelesene
+Knoten. Ein Band-A-Eintrag waere hier ein Eintrag gegen einen Mechanismus, der arbeitet.
+
+**Und ein Befund quer zu allen dreien, der noch keine Kennung hat, weil er noch keine Menge
+hat:** Jede der gemessenen Groessen nutzt ihren Wertebereich zu **rund einem Viertel** —
+`neugier_vektor` 23 % von [0 … 0,5], der Faszinationsfaktor 25 % von [0,60 … 1,40], die
+Faszination selbst erreicht ihren Deckel 2,0 nie. Drei unabhaengig gesetzte Spannen, dreimal
+dasselbe Verhaeltnis. **Die Frage, ueber wie viele kalibrierte Konstanten das gilt, ist zaehlbar
+und nicht gezaehlt** — solange sie es nicht ist, waere ein Band eine Stimmung.
+
+**`UNREGISTRIERTER-AGENT-GEWINNT` bleibt in Band A und ist blockiert.** Entscheidung des
+Eigentuemers am 07.09.2026: `vertiefen` kann nicht gebaut werden, bevor die Recherche umgebaut
+ist, und die haengt daran, dass Neugier, Faszination und Wille stehen — sonst stimmen die Themen
+und ihre Auswahl nicht. **Er zerstoert weiter Material und ist trotzdem nicht der naechste
+Handgriff**; das ist eine Lage, die das Band benennen muss statt sie durch Umsortieren
+aufzuloesen.
 
 ### Band A — die geschlossenen Eintraege
 
