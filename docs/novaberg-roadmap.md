@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026, 21:24 UTC** (gemessen via `date -u`). Davor 07.09.2026, 19:07 UTC.
+**Stand:** 8. September 2026 — juengster Eintrag **08.09.2026** (gemessen via `date -u`). Davor 07.09.2026, 21:24 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 41 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 42 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,55 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 08.09.2026 — ein Vermerk, der sich in seinem eigenen Text widerlegt 📄
+
+**Das Neugier-Konzept gab an zwei Stellen die falsche Auskunft über den eigenen
+Gegenstand, und zwar seit 42 Tagen.** Der Namens- und Zustandsvermerk vom 27.07.2026
+sagt wörtlich: *„Die Formel dieses Dokuments — `NOVA_NEUGIER × Resonanz × Neuheit`
+(§3.3) — wurde nie gebaut."*
+
+| Aussage vom 27.07.2026 | Befund am 08.09.2026 |
+|---|---|
+| *„Die Formel … wurde nie gebaut"* | `berechnung.py::neugier_vektor_berechnen` gibt genau sie zurück — gebaut mit `f62302a` am **27.07.2026**, demselben Tag |
+| *„Insbesondere fehlt der Neuheits-Faktor vollständig"* | `neuheit_berechnen` steht zwanzig Zeilen darüber und geht als zweiter Faktor ein |
+
+> **Der Vermerk trägt seine eigene Widerlegung.** Seine Tabelle trennt drei Größen
+> sauber — `aufnahmebereitschaft`, `wissensluecken`, `neugier_vektor`. Der Satz
+> darunter wirft zwei davon wieder zusammen: Die *„sechs Zustands- und
+> Situationsfaktoren seit Chat 71"* sind die **Aufnahmebereitschaft**, und die war
+> nie strittig. Über den `neugier_vektor` sagen sie nichts.
+
+**Was heute gilt, gemessen statt erinnert:** `aufnahmebereitschaft` ist gebaut **und
+gelesen** (vier Dateien, sie steuert `wissensluecken_finden`); `wissensluecken` ist
+gebaut; `neugier_vektor` ist gebaut, gerechnet, gespeichert — **und außerhalb seines
+eigenen Agenten von niemandem gelesen**. Das ist als
+`NEUGIER-VEKTOR-OHNE-LESER` eingetragen, dieselbe Klasse wie `HALTUNG-OHNE-LESER`,
+hier sechs Wochen unbemerkt.
+
+### Der dritte Befund war keiner der gesuchten
+
+**`TRAUM_NEUGIER_SCHWELLE` aus §3.4 existiert nicht** — weder in `config.py` noch
+sonst im Code, und `neugier_vektor` wird an keiner Stelle gegen eine Schwelle
+geprüft. **Und das ist ein Glück, kein Mangel:** Über **1762** Zeilen reicht der Wert
+von **0,0102 bis 0,1148** bei einem Mittel von **0,0640**. Die im Konzept genannte
+Schwelle von **0,25** wäre **kein einziges Mal** überschritten worden.
+
+> **Wäre §3.4 gebaut worden, stünde der Mechanismus still.** Die Schwelle ist gegen
+> die Beispieltabelle des Konzepts geeicht (*Resonanz 0,8 × Neuheit 0,9 = 0,58*),
+> nicht gegen Messwerte — und ein Produkt zweier echter Cosine-Ähnlichkeiten ist
+> strukturell klein. Der Wert nutzt **23 %** seiner Spanne.
+
+**Was daraus für einen Bau an der Neugier folgt**, ist nicht *„die Formel muss noch
+gebaut werden"*, sondern: **Die gebaute Formel braucht einen Leser, und ihre Skala
+braucht eine Eichung an Messwerten.** Solange sie niemand liest, ist die Skala
+ohnehin folgenlos.
+
+**Kein Produktivcode berührt.** Die zwanzig Formelstellen des Dokuments bleiben
+unverändert, aus dem Grund, den der Vermerk selbst nennt: Eine durchgängige
+Umbenennung gehört in den Bau, nicht in eine Berichtigung.
 
 ---
 

@@ -636,6 +636,26 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 ---
 
+### `NEUGIER-VEKTOR-OHNE-LESER` — gerechnet, gespeichert, von niemandem gelesen
+
+**Zustand:** offen — gemessen am 08.09.2026 gegen HEAD `cb7e899`.
+
+**Befund.** `neugier_vektor` wird je Kandidat aus `NOVA_NEUGIER × Resonanz × Neuheit` gerechnet und in `wissensluecken` geschrieben — **1762 Zeilen im Bestand**. Außerhalb von `agents/wissensluecken/` liest ihn **niemand**: kein Knoten, kein Agent, keine Auswahl, keine Schwelle. Er ist eine gespeicherte Zahl ohne Verbraucher.
+
+**Dieselbe Klasse wie `HALTUNG-OHNE-LESER`**, dort zwei Wochen unbemerkt, hier **sechs**. Und dieselbe Krankheit, die am 07.09.2026 an drei Gegenständen nebeneinander gemessen wurde: *Eine Größe wird sauber gerechnet, gespeichert — und bewegt nichts.*
+
+**Die Skala ist gegen eine Beispieltabelle geeicht, nicht gegen Messwerte.** Über 1762 Zeilen reicht der Wert von **0,0102 bis 0,1148**, Mittel **0,0640** — **23 %** der Spanne [0 … 0,5]. Das Konzept rechnet in §3.3 mit *Resonanz 0,8 × Neuheit 0,9* und kommt auf 0,58; echte Cosine-Ähnlichkeiten liegen weit darunter, und ein Produkt zweier Werte unter Eins ist strukturell klein.
+
+> **Die im Konzept genannte Schwelle hätte den Mechanismus stillgelegt.** `TRAUM_NEUGIER_SCHWELLE` (§3.4, Default 0,25) ist **nicht gebaut** — und über 1762 Zeilen wäre sie **kein einziges Mal** überschritten worden. Dass sie fehlt, ist der Grund, warum überhaupt Lücken entstehen.
+
+**Warum das zusammengehört und nicht zwei Einträge sind:** Solange die Größe keinen Leser hat, ist ihre Skala folgenlos — eine Eichung ohne Verbraucher bewegt so wenig wie die Größe selbst. Wer den Leser baut, muss beides zugleich entscheiden.
+
+**Verwandt und getrennt zu führen:** `LUECKEN-WERDEN-NIE-GESCHLOSSEN` (Band A3) betrifft den **Status** der Zeilen, dieser Eintrag ihren **Wert**.
+
+**Geschlossen, wenn** `neugier_vektor` mindestens einen Leser außerhalb seines Agenten hat und seine Skala an gemessenen Werten geeicht ist — nicht an der Beispieltabelle des Konzepts.
+
+---
+
 ### `TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT` — die Antwort existiert, ihre Spur nicht
 
 **Zustand:** offen — gefunden am 07.09.2026, 20:43 UTC im laufenden Betrieb, gegen HEAD `bcdeb19`.
