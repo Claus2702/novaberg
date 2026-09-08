@@ -83,6 +83,30 @@ def regie_status():
     return {"regie_aus": aus}
 
 
+@router.get("/naehte")
+def naht_spannen(tage: int = 0):
+    """Ist-Spanne gegen Zielspanne je Naht, in zwei Zeitfenstern.
+
+    **Fuer das Naht-Panel des Clients.** Er zeigt, welche Groesse ihre
+    Zielspanne verlaesst und welche sie kaum ausschoepft — die zweite
+    Richtung hat sonst keinen Waechter.
+
+    Args:
+        tage: Breite des jungen Fensters. 0 nimmt den Vorgabewert.
+
+    Returns:
+        `{"tage": int, "naehte": [...], "fehler": int}`.
+    """
+    from memory.naht_spannen import FENSTER_TAGE, spannen_erheben
+
+    ergebnis: dict = spannen_erheben(tage or FENSTER_TAGE)
+    logger.info(
+        "Admin: Naht-Spannen abgefragt — %d Naehte, %d Fehler",
+        len(ergebnis["naehte"]), ergebnis["fehler"],
+    )
+    return ergebnis
+
+
 # `response_model=None` ist Pflicht und keine Zierde: FastAPI leitet aus der
 # Rueckgabeannotation ein Antwortmodell ab und wirft beim IMPORT, wenn dort
 # ein Response-Typ steht. Der Import passiert in `main.py` auf Modulebene —

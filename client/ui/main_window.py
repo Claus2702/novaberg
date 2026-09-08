@@ -65,6 +65,7 @@ _TOOLBAR_PANELS: list[str] = [
     "🌌 Gravitationsgraph",
     "🧭 Gesprächsvektor",
     "🫧 Gesprächskontext",
+    "📏 Nahtspannen",
     "Fakten",
     "System",
     "Pixie",
