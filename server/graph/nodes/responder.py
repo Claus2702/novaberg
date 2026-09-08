@@ -15,7 +15,11 @@ EI-MIKRO (seit Chat 19):
 import logging
 import re
 from datetime import datetime
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
+
+if TYPE_CHECKING:
+    from ei.haltung import Haltung
 
 from config import (
     ASSISTANT_NAME,
@@ -25,10 +29,12 @@ from config import (
     PROMPTS,
     TIMEZONE,
     get_node_config,
+    redis_client,
 )
 from graph.antwort_spur import antwort_setzen
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
+from memory.pipeline_log import log_berechnung
 from memory.session import (
     Verlaufsbeitrag,
     sprecher_bezeichnen,
@@ -718,6 +724,218 @@ def _lage_zeilen(gv_detail: dict) -> list[str]:
     return zeilen
 
 
+#: Woran die Umfangszeile erkannt wird, wenn sie entfernt werden soll.
+#: Das Wort steht so in `regie_zeilen` und ist dort die erste Zeile — die
+#: Nachbedingung der Funktion sagt es ausdruecklich (*„die Zahl zuerst, weil
+#: sie bindet"*). Geprueft wird trotzdem, statt sich darauf zu verlassen:
+#: Verschiebt jemand die Reihenfolge, misst die Reihe sonst still das Falsche.
+UMFANGSZEILE_MARKE: str = "Umfang:"
+
+#: Der Redis-Schluessel des Messschalters. Er steht auch in `api/admin.py`;
+#: doppelt gefuehrt, weil ein gemeinsamer Ort einen Import vom Graphen in die
+#: API-Schicht hiesse und die Schichtung dafuer zu wertvoll ist. Der Zeuge
+#: `test_regieblock_schalter` haelt beide Seiten auf demselben Wert.
+REGIE_AUS_SCHLUESSEL: str = "mess:regie_aus"
+
+
+def _umfangszeile_abgeschaltet() -> bool:
+    """Sagt, ob die Messreihe die Umfangszeile gerade aus dem Prompt nimmt.
+
+    **Ein Messzustand, kein Betriebszustand.** Steht der Schluessel, bekommt
+    Nova die einzige Laengenzahl ihres Prompts nicht — im Betrieb ist das ein
+    Defekt und nur waehrend einer Reihe erwuenscht (`UMFANGSREGLER-BINDET-NICHT`,
+    Band A1). Deshalb ist der Rueckgabewert nur die halbe Aufgabe: Der Aufrufer
+    meldet den Stand bei jedem Turn, damit ein vergessener Schalter im Log
+    steht und nicht in den Zahlen.
+
+    Vorbedingung: keine.
+    Nachbedingung: `True`, wenn der Schluessel gesetzt ist.
+    Fehlerfaelle: Ein nicht erreichbarer Redis bedeutet **nicht** abgeschaltet
+        — die Vorgabe bleibt dann im Prompt. Ein Ausfall des Messschalters
+        darf nicht dazu fuehren, dass der Betrieb ohne Laengenvorgabe laeuft.
+
+    Returns:
+        Ob die Umfangszeile fuer diesen Turn zu entfernen ist.
+    """
+    # ── Verarbeitung ────────────────────────────
+    try:
+        return redis_client.exists(REGIE_AUS_SCHLUESSEL) > 0
+    except Exception as fehler:
+        logger.warning(
+            "Responder: Messschalter nicht lesbar (%s: %s) — die "
+            "Umfangsvorgabe bleibt im Prompt",
+            type(fehler).__name__, fehler,
+        )
+        return False
+
+
+def _ohne_umfangszeile(regie: list[str]) -> list[str]:
+    """Nimmt die Umfangszeile aus der Regie und laesst den Rest stehen.
+
+    **Warum nicht der ganze Regie-Aufruf entfaellt.** `regie_zeilen` liefert
+    drei Dinge — Umfang, abweichende Haltungswoerter, Energie. Wer den Aufruf
+    ueberspringt, nimmt drei Dinge weg und misst den Unterschied von dreien;
+    die Pruefform fragt nach **einem**. Der Arm *ohne Block* unterscheidet
+    sich deshalb um genau die Zeile, die eine Zahl traegt.
+
+    Vorbedingung: `regie` ist die Rueckgabe von `regie_zeilen`, deren erste
+        Zeile laut Nachbedingung die Umfangszeile ist.
+    Nachbedingung: Eine Zeile weniger, die uebrigen unveraendert in ihrer
+        Reihenfolge.
+    Fehlerfaelle: Traegt die erste Zeile die Marke nicht, wird **nichts**
+        entfernt und laut gemeldet. Eine stille Entfernung der falschen Zeile
+        waere ein Messfehler, den niemand sieht — und die Reihe verglicht dann
+        zwei Arme, die sich in etwas anderem unterscheiden als geglaubt.
+
+    Args:
+        regie: die Zeilen aus `regie_zeilen`.
+
+    Returns:
+        Die Zeilen ohne die Umfangszeile, oder unveraendert im Fehlerfall.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not regie or not regie[0].startswith(UMFANGSZEILE_MARKE):
+        logger.error(
+            "Responder: Messschalter steht, aber die erste Regie-Zeile ist "
+            "keine Umfangszeile (%r) — es wird NICHTS entfernt. Die Reihe "
+            "misst sonst einen Unterschied, den sie nicht gemacht hat.",
+            regie[0] if regie else "",
+        )
+        return regie
+
+    # ── Verarbeitung ────────────────────────────
+    return regie[1:]
+
+
+def _regie_belegen(
+    state: ConversationState, unten: int, oben: int,
+    haltung: "Haltung", block_aus: bool,
+) -> None:
+    """Schreibt den Korridor dieses Turns ins `pipeline_log`.
+
+    **Die Groesse fehlte im Beleg.** Am 07.09.2026 trug `pipeline_log` keine
+    einzige `responder`-Zeile; der Korridor, gegen den jede Laengenmessung
+    dieses Projekts prueft, war nur aus `haltungsraum/berechnung` und einer
+    Kopie der Grenzen aus `UMFANG_SPANNE` nachzubilden. Diese Nachbildung
+    uebergeht den Abschlag fuer leichte Turns (`spanne_fuer_turn`) — bei
+    Fachfragen faellt das nicht auf, bei Smalltalk schon.
+
+    Vorbedingung: `state` traegt eine `turn_id`. Fehlt sie, wird nicht
+        geschrieben — eine Zeile ohne Turnbezug ist keiner Messung zuzuordnen.
+    Nachbedingung: Eine Zeile `responder`/`berechnung` mit Korridor, `umfang`
+        und dem Stand des Messschalters.
+    Fehlerfaelle: Ein Forensik-Schreibfehler darf den Turn nicht toeten —
+        gekapselt und als `warning` gemeldet, wie in den uebrigen Knoten.
+
+    Args:
+        state: Zustand, aus dem Turn- und Paarbezug stammen.
+        unten: Untergrenze des Korridors in Zeichen.
+        oben: Obergrenze des Korridors in Zeichen.
+        haltung: die Haltung dieses Turns, fuer `umfang` und Cluster.
+        block_aus: ob die Umfangszeile aus dem Prompt genommen wurde.
+    """
+    # ── Ausgabe: der Stand des Schalters, bei jedem Turn ─
+    #
+    # **`warning` und nicht `info`, solange er steht.** Ein Schalter, der nach
+    # einer abgebrochenen Reihe stehenbleibt, nimmt dem Betrieb still seine
+    # Laengenvorgabe. Am 13.08.2026 hielt eine von Hand gesetzte Pixie-Pause
+    # den Dienst sieben Stunden an, ohne dass eine Zeile davon sprach.
+    if block_aus:
+        logger.warning(
+            "Responder: MESSZUSTAND — die Umfangszeile (%d bis %d Zeichen) "
+            "ist aus dem Prompt genommen. Nova antwortet ohne Laengenvorgabe.",
+            unten, oben,
+        )
+
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Responder-Protokoll: kein turn_id im State — die Korridor-Zeile "
+            "waere keiner Messung zuzuordnen und wird nicht geschrieben"
+        )
+        return
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        log_berechnung(
+            turn_id      = turn_id,
+            node         = "responder",
+            quelle       = pipeline_quelle(state),
+            inhalt       = {
+                "schritt":     "regie",
+                "korridor":    {"unten": unten, "oben": oben},
+                "umfang":      round(haltung.werte["umfang"].ergebnis, 4),
+                "cluster":     haltung.cluster,
+                "block_aus":   block_aus,
+            },
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            "Responder-Protokoll (Korridor) nicht geschrieben (%s: %s) — der "
+            "Turn laeuft weiter, die Reihe hat eine Luecke",
+            type(fehler).__name__, fehler,
+        )
+
+
+def _ergebnislaenge_belegen(state: ConversationState) -> None:
+    """Schreibt die Ist-Laenge der Antwort neben ihren Korridor.
+
+    **Warum sie nicht aus `turn_roh` zu nehmen ist.** Diese Zeile schreibt der
+    Dispatcher, und er ueberspringt sie, wenn die Antwort ihn nicht erreicht:
+    `[gemessen 07.09.2026, 20:43 UTC]` Ein Turn erzeugte 1722 Zeichen, der
+    `salienz`-Agent scheiterte danach an seinem eigenen JSON, und der
+    Dispatcher meldete *„turn_roh uebersprungen — keine Nova-Antwort"*. Die
+    Antwort existierte, ihre Laenge nicht.
+
+    **Damit war die Ergebnisgroesse jeder Laengenmessung an einen Schritt
+    gekoppelt, der nach ihr kommt und ausfallen kann.** Ein Ausfall, der mit
+    dem gemessenen Arm zusammenhinge, verzerrte die Reihe, ohne eine Luecke
+    zu hinterlassen, die jemand sieht — er sieht aus wie ein Turn, den es
+    nicht gab.
+
+    Vorbedingung: `state` traegt `turn_id` und `response`.
+    Nachbedingung: Eine Zeile `responder`/`berechnung` mit `schritt=ergebnis`
+        und der Zeichenzahl der Antwort.
+    Fehlerfaelle: Ein Forensik-Schreibfehler darf den Turn nicht toeten —
+        gekapselt und als `warning` gemeldet.
+
+    Args:
+        state: Zustand nach der Generierung, mit `response`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Responder-Protokoll: kein turn_id im State — die Ist-Laenge "
+            "waere keiner Messung zuzuordnen und wird nicht geschrieben"
+        )
+        return
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        log_berechnung(
+            turn_id      = turn_id,
+            node         = "responder",
+            quelle       = pipeline_quelle(state),
+            inhalt       = {
+                "schritt":   "ergebnis",
+                "ist_zeichen": len(state.get("response", "")),
+                "tokens":      state.get("token_total", 0),
+            },
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            "Responder-Protokoll (Ist-Laenge) nicht geschrieben (%s: %s) — "
+            "der Turn laeuft weiter, die Reihe hat eine Luecke",
+            type(fehler).__name__, fehler,
+        )
+
+
 def _sprachstil_block(state: ConversationState) -> str:
     """Baut den Sprachstil-Block, der hinter den Verlauf gehaengt wird.
 
@@ -759,7 +977,7 @@ def _sprachstil_block(state: ConversationState) -> str:
     """
     # ── Eingabe ─────────────────────────────────
     from ei.dreischicht import STRATEGIE_NAMEN
-    from ei.haltungssprache import regie_zeilen
+    from ei.haltungssprache import regie_zeilen, spanne_fuer_turn
 
     gv_detail: dict = state.get("gv_detail", {}) or {}
     cluster:   str  = gv_detail.get("cluster", "")
@@ -840,9 +1058,28 @@ def _sprachstil_block(state: ConversationState) -> str:
             intentionen: tuple[str, ...] = () if eigener else tuple(
                 state.get("user_intentionen") or (),
             )
-            zeilen.extend(
-                regie_zeilen(haltung, arousal, reiz_zeichen, intentionen),
+            # **Der Korridor wird immer gerechnet und belegt** — auch wenn er
+            # gleich nicht in den Prompt geht. Die Pruefform von
+            # `UMFANGSREGLER-BINDET-NICHT` vergleicht beide Arme gegen
+            # DIESELBE Bezugsgroesse; ein Arm ohne belegten Korridor waere
+            # nur gegen eine Nachbildung auswertbar.
+            #
+            # Und er fehlte bisher ganz: `pipeline_log` trug am 07.09.2026
+            # keine einzige `responder`-Zeile. Die Groesse, gegen die jede
+            # Laengenmessung dieses Projekts prueft, stand nirgends im
+            # Betriebsbeleg — nachgebildet wurde sie in der Auswertung, mit
+            # einer Kopie der Grenzen aus `UMFANG_SPANNE`.
+            unten, oben = spanne_fuer_turn(
+                haltung.werte["umfang"].ergebnis, reiz_zeichen, intentionen,
             )
+            regie: list[str] = regie_zeilen(
+                haltung, arousal, reiz_zeichen, intentionen,
+            )
+            block_aus: bool = _umfangszeile_abgeschaltet()
+            if block_aus:
+                regie = _ohne_umfangszeile(regie)
+            _regie_belegen(state, unten, oben, haltung, block_aus)
+            zeilen.extend(regie)
             # Die EI-Mikroanweisung schliesst die Regie ab: Sie ist situativ
             # gerechnet und traegt genau die Faelle, die der Haltungsraum nicht
             # kennt — Anti-Therapeut, Energie-Spiegelung, Rueckbezug.
@@ -1059,5 +1296,6 @@ def respond(
         f"Responder: Antwort generiert ({len(state['response'])} Zeichen, "
         f"{state['token_total']} Tokens)"
     )
+    _ergebnislaenge_belegen(state)
 
     return state

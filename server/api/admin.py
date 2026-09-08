@@ -36,6 +36,53 @@ def pixie_status():
     return {"paused": paused}
 
 
+# ── Der Messschalter fuer die Umfangszeile ────────────────────────────
+#
+# **Wozu er da ist.** `UMFANGSREGLER-BINDET-NICHT` verlangt als Pruefform
+# *„dieselbe Turnreihe desselben Reizes mit und ohne Block"*. Ohne einen
+# Schalter zur Laufzeit gaebe es diese Reihe nicht: Zwei Faehrten, durch
+# einen Neustart getrennt, sind nicht dieselbe Reihe — dazwischen liegen ein
+# Kaltstart, ein geleerter Prefix-Cache und ein gewachsenes Gedaechtnis.
+#
+# **Er liegt in Redis und nicht in der Umgebung**, aus demselben Grund wie
+# `pixie:paused` (`F-MESS-2`): Eine Umgebungsvariable wird beim Import
+# gelesen und waere nur mit einem Neustart zu aendern — also genau das, was
+# hier vermieden werden soll.
+#
+# **Er ist ein Instrument und kein Merkmal.** Steht er, fehlt Nova die
+# einzige Laengenzahl im Prompt; das ist im Betrieb ein Defekt und nur
+# waehrend einer Messreihe erwuenscht. Deshalb meldet der Responder seinen
+# Stand bei JEDEM Turn als `warning` — ein vergessener Schalter soll im Log
+# schreien, nicht schweigen.
+REGIE_AUS_SCHLUESSEL: str = "mess:regie_aus"
+
+
+@router.post("/regie/aus")
+def regie_abschalten():
+    """Nimmt die Umfangszeile aus dem Responder-Prompt — nur fuer Messreihen."""
+    redis_client.set(REGIE_AUS_SCHLUESSEL, "1")
+    logger.warning(
+        "Admin: Umfangszeile abgeschaltet — Nova bekommt ab jetzt KEINE "
+        "Laengenvorgabe. Das ist ein Messzustand, kein Betriebszustand."
+    )
+    return {"regie_aus": True}
+
+
+@router.post("/regie/an")
+def regie_einschalten():
+    """Stellt die Umfangszeile wieder her."""
+    redis_client.delete(REGIE_AUS_SCHLUESSEL)
+    logger.info("Admin: Umfangszeile wieder im Prompt")
+    return {"regie_aus": False}
+
+
+@router.get("/regie/status")
+def regie_status():
+    """Sagt, ob die Umfangszeile gerade im Prompt steht."""
+    aus: bool = redis_client.exists(REGIE_AUS_SCHLUESSEL) > 0
+    return {"regie_aus": aus}
+
+
 # `response_model=None` ist Pflicht und keine Zierde: FastAPI leitet aus der
 # Rueckgabeannotation ein Antwortmodell ab und wirft beim IMPORT, wenn dort
 # ein Response-Typ steht. Der Import passiert in `main.py` auf Modulebene —
