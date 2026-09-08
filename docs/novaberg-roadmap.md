@@ -65,6 +65,35 @@ gebaut werden"*, sondern: **Die gebaute Formel braucht einen Leser, und ihre Ska
 braucht eine Eichung an Messwerten.** Solange sie niemand liest, ist die Skala
 ohnehin folgenlos.
 
+### Nachgemessen: es ist die Eichung, nicht das Material
+
+**Die Frage war, ob die Schwelle unerreicht bleibt, weil das Material zu dünn ist oder
+weil die Argumente falsch geeicht sind.** Die Faktoren einzeln beantworten sie:
+
+| Faktor | max über 1762 Zeilen | Skala genutzt |
+|---|---:|---:|
+| `resonanz` | **0,4322** | **43 %** |
+| `neuheit` | 0,8343 | 83 % |
+| Produkt | 0,1148 | 23 % |
+
+**Die Neuheit arbeitet, die Resonanz ist der Engpass** — und zwar konstruktiv, nicht
+empirisch: Eine Cosine-Similarity zwischen zwei unabhängig entstandenen Texten liegt bei
+0,2 bis 0,5; **1,0 heißt identischer Text**. Wer sie als Faktor in [0 … 1] einsetzt,
+multipliziert mit einer Zahl, deren Spanne er nie gemessen hat. Selbst die beobachteten
+Maxima ergäben nur 0,180 — die Konzeptschwelle von 0,25 ist auch damit nicht erreichbar.
+
+**Damit ist es ein Fall von `F-NAHT-1`, und die Festlegung ist hier nicht eingelöst.** Sie
+verlangt zwischen zwei Skalen einen benannten, abgeleiteten Abbildungsfaktor; die Formel
+führt drei Skalen roh zusammen. **Die Festlegung ist am selben Tag geschärft worden:** An
+der Naht liegen alle zusammengeführten Größen auf derselben Skala, normiert über ihre je
+eigene **gemessene** Spanne — die Verarbeitung dahinter darf sie verschieden behandeln.
+
+**Und das Muster ist nicht auf die Neugier beschränkt.** Sieben Stellen führen eine
+Cosine-Größe roh in ein Produkt; zwei geprüft, beide tragen den Befund, fünf ungeprüft.
+Der schärfere der beiden geprüften ist `ei/gravitation.py:736`: **Dieselbe Zeile normiert
+das Gewicht sorgfältig und lässt die `similarity` daneben roh** — das Prinzip ist an der
+Stelle bekannt und wird auf einen von zwei Faktoren angewandt. In der Fundliste.
+
 **Kein Produktivcode berührt.** Die zwanzig Formelstellen des Dokuments bleiben
 unverändert, aus dem Grund, den der Vermerk selbst nennt: Eine durchgängige
 Umbenennung gehört in den Bau, nicht in eine Berichtigung.

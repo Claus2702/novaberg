@@ -648,6 +648,26 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 > **Die im Konzept genannte Schwelle hätte den Mechanismus stillgelegt.** `TRAUM_NEUGIER_SCHWELLE` (§3.4, Default 0,25) ist **nicht gebaut** — und über 1762 Zeilen wäre sie **kein einziges Mal** überschritten worden. Dass sie fehlt, ist der Grund, warum überhaupt Lücken entstehen.
 
+#### Welcher der beiden Faktoren die Skala drückt — nachgemessen am 08.09.2026
+
+**Die Frage war, ob das Material zu dünn ist oder die Argumente falsch geeicht sind.** Die Faktoren einzeln beantworten sie:
+
+| Faktor | min | Mittel | **max** | σ | Skala genutzt |
+|---|---:|---:|---:|---:|---:|
+| `resonanz` | 0,0319 | 0,2239 | **0,4322** | 0,0616 | **43 %** |
+| `neuheit` | 0,1771 | 0,5821 | **0,8343** | 0,0804 | **83 %** |
+| Zug | 0,0102 | 0,0640 | 0,1148 | 0,0158 | 23 % |
+
+**Es ist die Eichung, nicht das Material — und die Stelle ist die Resonanz.** Die Neuheit schöpft ihre Skala zu 83 % aus; sie arbeitet. Die Resonanz kommt über 1762 Zeilen **nie über 0,4322**.
+
+**Der Grund ist strukturell und kein Defekt der Daten.** Resonanz ist eine Cosine-Similarity zwischen Fragment- und Charakter-Embedding. Zwischen zwei unabhängig entstandenen Texten liegt die bei 0,2 bis 0,5; **1,0 heißt identischer Text**. Die Formel behandelt sie als Faktor in [0 … 1] und unterstellt damit eine Obergrenze, die nur ein Selbstvergleich erreicht.
+
+> **Selbst die beobachteten Maxima reichen nicht an die Konzeptschwelle.** 0,5 × 0,4322 × 0,8343 = **0,180** — und die beiden Höchstwerte treten nie am selben Kandidaten auf, weshalb der höchste gemessene Zug bei 0,1148 liegt. Gegen eine Schwelle von 0,25 ist der Mechanismus **konstruktiv** nicht auslösbar, nicht nur empirisch.
+
+**Damit ist es ein Fall von `F-NAHT-1`, und die Festlegung ist hier nicht eingelöst.** Sie verlangt zwischen zwei Skalen einen **benannten, abgeleiteten** Abbildungsfaktor, *„aus der Quelltabelle berechnet, nicht gesetzt, damit er mit ihr mitwandert"*. `NOVA_NEUGIER × resonanz × neuheit` führt drei Skalen roh zusammen: einen gesetzten Regler in [0 … 1] und zwei Cosine-Größen mit je eigener, nirgends benannter Spanne.
+
+**Was das für den Bau bedeutet — und was daran eine Absichtsfrage ist.** Die Rechnung ist ableitbar: Die Spanne der Resonanz ist über 1762 Zeilen gemessen und könnte den Faktor tragen, wie `speichen_spanne` es im Haltungsraum tut. **Ob** die Skala ausgeschöpft werden soll, ist es nicht — eine Größe, die ihren Deckel erreicht, sagt etwas anderes über die Welt als eine, die es nie tut. Vorgabe des Eigentümers am 08.09.2026: Die Kalibrierung soll die volle Skala erreichbar machen; was das im Einzelnen heißt, ist eine Justierung nach dem Bau des Lesers.
+
 **Warum das zusammengehört und nicht zwei Einträge sind:** Solange die Größe keinen Leser hat, ist ihre Skala folgenlos — eine Eichung ohne Verbraucher bewegt so wenig wie die Größe selbst. Wer den Leser baut, muss beides zugleich entscheiden.
 
 **Verwandt und getrennt zu führen:** `LUECKEN-WERDEN-NIE-GESCHLOSSEN` (Band A3) betrifft den **Status** der Zeilen, dieser Eintrag ihren **Wert**.
