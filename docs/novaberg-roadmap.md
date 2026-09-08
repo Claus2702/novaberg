@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026, 19:07 UTC** (gemessen via `date -u`). Davor 06.09.2026, 21:00 UTC.
+**Stand:** 7. September 2026 — juengster Eintrag **07.09.2026, 21:24 UTC** (gemessen via `date -u`). Davor 07.09.2026, 19:07 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 40 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 41 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,83 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 07.09.2026, 21:24 UTC — der Regler bewegt weniger, als er zittert 🔬
+
+**Die Pruefform zu `UMFANGSREGLER-BINDET-NICHT` ist gefahren.** Sie stand seit dem
+20.08.2026 zweimal im Backlog und war nie ausgefuehrt worden: dieselbe Turnreihe desselben
+Reizes **mit und ohne Block**, Ist-Laenge gegen Korridor. 16 Turns, Cross-over ueber zwei
+Durchgaenge, kein Ausfall, Waermespitze 77,2 °C.
+
+| Arm | n | Mittel | Streuung innerhalb | Ist/Obergrenze | ueber | unter |
+|---|---:|---:|---:|---:|---:|---:|
+| **mit** Block | 8 | 791,5 Z. | **6,03** | **1,39** | 7/8 | **0/8** |
+| **ohne** Block | 8 | 1162,1 Z. | **3,38** | **2,00** | 7/8 | **0/8** |
+
+> **Der tragende Befund ist ein Verhaeltnis, keine Einzelzahl.** Der Unterschied
+> **zwischen** den Armen betraegt Faktor **1,47**, die Streuung **innerhalb** eines Arms bei
+> gleicher Stellung **3,38 bis 6,03**. Was der Block zwischen An und Aus ausmacht, ist
+> kleiner als das, was er bei gleicher Stellung ohnehin schwanken laesst.
+
+**Er wirkt trotzdem** — 6 von 8 Reizpaaren sind ohne ihn laenger, der Ueberhang faellt von
+2,00 auf 1,39. **Bei n = 8 ist das nicht abgesichert** (Vorzeichentest p = 0,289). Und die
+Einseitigkeit ist schaerfer als im Bestand: **keine einzige** der 16 Antworten lag unter der
+Untergrenze — auch nicht im Arm ganz ohne Vorgabe.
+
+**Damit ist die Frage keine Kalibrierfrage mehr, sondern eine Bauform-Frage:** Eine bessere
+Zahl im Prompt durchdringt denselben Rauschteppich nicht. Drei Eintraege erben das als
+Einschraenkung ihrer Aussagekraft — `MASSBLOCK-IM-BETRIEB-UNGEMESSEN`, die halbierten
+Korridore vom 27.08. und der Faszinations-Leser vom Vormittag, der genau diesen Regler
+moduliert.
+
+### Das Instrument, das die Reihe erst moeglich machte
+
+**Ein Messschalter in Redis**, `POST /admin/regie/{aus,an}` — zur Laufzeit, wie
+`pixie:paused` und aus demselben Grund: Zwei Faehrten ueber einen Neustart getrennt sind
+nicht dieselbe Reihe. Er nimmt **genau die Umfangszeile**; Haltungswoerter und Energie
+stehen in beiden Armen, sonst verglichen die Arme drei Unterschiede statt einem.
+
+**Und der Responder belegt seither seinen eigenen Korridor.** Er stand nirgends im
+`pipeline_log` — jede Laengenauswertung dieses Projekts hat ihn bisher aus
+`haltungsraum/berechnung` und einer **Kopie** der Grenzen aus `UMFANG_SPANNE` nachgebildet.
+Diese Nachbildung uebergeht den Abschlag fuer leichte Turns; bei Fachfragen faellt das nicht
+auf, bei Smalltalk schon.
+
+### Zwei Befunde, die beim Messen anfielen und schwerer wiegen als die Reihe
+
+**`TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT` (neu).** Ein Probeturn erzeugte 1722 Zeichen; der
+`salienz`-Agent scheiterte danach an seinem eigenen JSON, und der Dispatcher meldete
+*„turn_roh uebersprungen — keine Nova-Antwort"*. **Die Antwort existierte, ihre Spur
+nicht** — und `turn_roh` ist die Zeile, aus der jede Laengen- und Kostenmessung dieses
+Projekts ihre Ergebnisgroesse zieht. Ein so ausgefallener Turn sieht nicht aus wie ein
+Fehler, sondern wie ein Turn, den es nie gab. Der Responder belegt seine Ist-Laenge deshalb
+selbst; **wie viele Turns im Bestand so fehlen, ist ungezaehlt.**
+
+**Der Haltungsraum ist ueber die Wiederholung desselben Reizes nicht stabil.** Bei **3 von
+8 Paaren** wechselte der Cluster zwischen den Armen — *„Wodurch entstehen die Jets eines
+Quasars?"* traf einmal `schlachtfeld` (Korridor 60–175) und einmal `foyer` (350–700). Der
+Befund der Vormessung hiess *„acht Sachfragen derselben Machart trafen fuenf Lagen"*; hier
+trifft **ein** Reiz zwei Lagen. Ein Cross-over-Entwurf setzt voraus, dass der Reiz die
+Bedingung festlegt — er tut es nicht. Die fuenf Paare mit gleichem Korridor sind deshalb
+getrennt ausgewiesen: **+242,8 Zeichen** im Mittel, vier von fuenf positiv.
+
+### Was der erste Lauf lehrte, bevor er verworfen wurde
+
+**Er meldete Rueckgabewert 0 nach 2 von 16 Turns.** `docker exec -i` liest stdin bis EOF und
+frass die Heredoc-Reizliste der Schleife; nach dem ersten Reiz war sie leer. Die Bilanz
+*„2 Turns mit Antwort, 0 ohne"* las sich wie ein sauberer Lauf mit zwei geplanten Turns.
+
+> **Ein unvollstaendiger Lauf, der wie ein vollstaendiger aussieht, ist die teuerste Sorte
+> Messfehler.** Die Reihe traegt seither drei Riegel: kein Behaelter-Aufruf liest stdin, die
+> Reize laufen ueber einen eigenen Dateideskriptor, und die Reihe kennt ihre **Sollzahl**
+> und wird laut, wenn sie sie verfehlt.
+
+**Belege:** `labor/messreihen/2026-09-08_regieblock_erwartung.md` (vor der Messung
+aufgeschrieben, mit einem Vorergebnis, das gegen die eigene Vorhersage stand),
+`2026-09-08_regieblock_ergebnis.md`, `labor/werkzeug/regieblock_reihe.sh`. Suite **3264**
+(davor 3255), 11 neue Zeugen, Gegenprobe 2/2, harte Wand sauber.
 
 ---
 

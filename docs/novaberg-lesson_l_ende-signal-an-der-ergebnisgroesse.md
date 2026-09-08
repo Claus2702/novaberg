@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Typ:** Lesson (`_l`)
-**Stand:** 7. September 2026
+**Stand:** 7. September 2026, 21:24 UTC — um die schaerfere Fassung des Falls ergaenzt
 **Anlass:** Ein Messwerkzeug für Turnreihen gegen das Produktivsystem
 
 ---
@@ -56,3 +56,49 @@ für Messturns festgehalten; die Regel gilt genauso für das **Werkzeug**, das s
 
 > Dieselbe Verwechslung mit umgekehrtem Vorzeichen: Ein Werkzeug nahm einmal **Stille** als
 > Ende. Hier nimmt es **Ausbleiben** als Fortdauer.
+
+---
+
+## Die schärfere Fassung, am selben Tag gefunden — 07.09.2026, 20:43 UTC
+
+**Nicht nur das Ende-Signal darf nicht an der Ergebnisgröße hängen. Die Ergebnisgröße selbst
+darf nicht an einem Schritt hängen, der nach ihr kommt.**
+
+Der Fall oben betraf das *Warten*: Ein ausgefallener Turn sah aus wie ein laufender. Der Fall
+hier betrifft die *Messung*: Ein Turn erzeugte eine Antwort von **1722 Zeichen** — und
+hinterließ keine `turn_roh`-Zeile, weil ein Agent **hinter** der Antwort an seinem eigenen
+JSON scheiterte und der Dispatcher meldete: *„turn_roh übersprungen — keine Nova-Antwort"*.
+
+`turn_roh` ist die Zeile, aus der jede Längen-, Kosten- und Verhaltensmessung dieses Projekts
+ihre Ergebnisgröße zieht.
+
+> **Ein so ausgefallener Vorgang hinterlässt keine Lücke, die jemand zählen könnte.** Er
+> sieht nicht aus wie ein Fehler, sondern wie ein Vorgang, den es nie gab. Fällt er in einer
+> Reihe in einem Arm häufiger an als im anderen, verzerrt er das Ergebnis — und die Bilanz
+> geht trotzdem auf.
+
+**Die Abhilfe ist dieselbe Bewegung wie oben, eine Stufe früher:** Die Größe wird dort
+belegt, wo sie **entsteht**, nicht dort, wo sie zuletzt vorbeikommt. Der Responder schreibt
+seither seinen Korridor vor der Antwort und seine Ist-Länge danach — beide vor jedem Schritt,
+der ausfallen kann.
+
+**Die Probe darauf ist billig und steht nirgends sonst:** Wer eine Ergebnisgröße aus einer
+Tabelle liest, zählt einmal nach, wie viele Vorgänge sie **nicht** erreicht haben. Findet er
+das nicht heraus, kennt er die Grundgesamtheit seiner Messung nicht.
+
+## Der dritte Fall derselben Klasse, zwei Stunden später
+
+**Ein Lauf, der 2 von 16 Turns fuhr und Rückgabewert 0 meldete.** `docker exec -i` liest
+stdin bis EOF und fraß die Reizliste der Schleife; nach dem ersten Reiz war sie leer. Die
+Bilanz *„2 Turns mit Antwort, 0 ohne"* las sich wie ein sauberer Lauf mit zwei geplanten
+Turns.
+
+**Auch hier fehlte die Grundgesamtheit** — diesmal nicht in der Datenbank, sondern im
+Werkzeug selbst. Es kannte seine eigene Sollzahl nicht und konnte deshalb nicht bemerken,
+dass es sie verfehlt hatte.
+
+> **Ein unvollständiger Lauf, der wie ein vollständiger aussieht, ist teurer als ein Lauf,
+> der abbricht.** Der abgebrochene meldet sich; dieser wandert als Beleg in den Backlog.
+
+**Die Abhilfe:** Die Sollzahl steht im Werkzeug und wird am Ende geprüft. Eine falsche Zahl
+dort lässt die Prüfung anschlagen — sie führt nicht in einen stillen Durchlauf.
