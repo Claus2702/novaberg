@@ -489,8 +489,24 @@ PREIS_BEFUND_KEY: str = "preis_befund"
 #: gesehen hat, und kurz genug, dass ein behobener nicht ewig nachhallt.
 PREIS_BEFUND_TTL_S: int = 172_800
 
-OPENROUTER_PRICE_INPUT_PER_M:  float = float(os.getenv("OPENROUTER_PRICE_INPUT_PER_M",  "0.04998"))
-OPENROUTER_PRICE_OUTPUT_PER_M: float = float(os.getenv("OPENROUTER_PRICE_OUTPUT_PER_M", "0.09996"))
+#: Die Preise je Million Token, gegen die `cost_usd` rechnet.
+#:
+#: **Sie sind eine Momentaufnahme, und das ist keine Nachlaessigkeit, sondern
+#: der Befund.** `[gemessen]` Der Preiswaechter meldete am 07.09.2026 lebend
+#: $0,14000 / $0,28000 — Faktor 2,80 gegen die damalige Konfiguration und
+#: *„der Rabatt ist fort"*. Am 08.09.2026 meldete er $0,06496 / $0,12992 bei
+#: 53,6 % Rabatt: **binnen eines Tages Faktor 2,15 nach unten.**
+#:
+#: **Eine Konfigurationskonstante kann diesem Preis nicht folgen.** Jede
+#: nachgezogene Zahl ist am naechsten Tag wieder falsch, und die Kostenspalte
+#: rechnet still weiter. Die strukturelle Abhilfe waere der Preis **aus der
+#: Antwort**; ob der Endpunkt ihn mitliefert, ist ungeprueft (der
+#: Anbieter-Umschlag fuehrt nur Token). Bis dahin gilt: Der Waechter meldet
+#: die Abweichung, ein Mensch entscheidet, und der Stand steht hier mit Datum.
+#:
+#: Stand: 08.09.2026, uebernommen nach Vorgabe des Eigentuemers.
+OPENROUTER_PRICE_INPUT_PER_M:  float = float(os.getenv("OPENROUTER_PRICE_INPUT_PER_M",  "0.06496"))
+OPENROUTER_PRICE_OUTPUT_PER_M: float = float(os.getenv("OPENROUTER_PRICE_OUTPUT_PER_M", "0.12992"))
 
 # Frist eines einzelnen HTTP-Aufrufs. **Sie steht ueber der Frist des
 # Hintergrund-Workers nicht**: Ein Aufruf, der laenger braucht als der
