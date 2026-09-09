@@ -50,6 +50,7 @@ from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden
 from memory.pipeline_log import log_berechnung, log_fehler
+from memory.repositories.wissensluecken_repository import staerkste_luecken
 from memory.session import format_session_turns_numbered
 from services.model_services import ChatRequest, EmbedRequest, model_service
 
@@ -488,6 +489,7 @@ def _hypothese_destillieren(
     resonanz_kontext:  str,
     farbton:           str = "",
     wissensluecken:    list[dict] | None = None,
+    offene_fragen:     list[dict] | None = None,
     strategie_aktiv:   bool = False,
     dreischicht_block: str = "",
 ) -> tuple[str, dict]:
@@ -642,6 +644,35 @@ def _hypothese_destillieren(
             "einbringen — aber nur wenn sie zum Gespraechsfluss passen."
         )
         logger.info(f"GV4: {len(wissensluecken)} Luecken in Prompt eingefuegt")
+
+    # Novas offene Fragen — der erste Leser der Tabelle `wissensluecken`.
+    #
+    # **Ein eigener Block und nicht derselbe wie oben.** Die GV4-Luecken
+    # sagen, was im laufenden Gespraech naheliegt und noch nicht gefallen
+    # ist; sie gelten fuer einen Turn. Diese hier sagen, was Nova ueber den
+    # Turn hinaus umtreibt — sie stehen seit Tagen oder Wochen und sind aus
+    # ihrer Seite gewachsen, nicht aus dieser Aeusserung. In einen Block
+    # geworfen waeren beide dasselbe, und genau diese beiden Groessen sind
+    # im Neugier-Konzept schon einmal verwechselt worden.
+    if offene_fragen:
+        fragen_zeilen: list[str] = [
+            f"- {f['thema'][:120]} (seit {f['alter_tage']} Tagen)"
+            for f in offene_fragen
+        ]
+        user_parts.append(
+            "[OFFENE FRAGEN]\n"
+            "Themen, die dich ueber dieses Gespraech hinaus beschaeftigen:\n"
+            + "\n".join(fragen_zeilen)
+            + "\n\nDu darfst eine davon aufgreifen, wenn sie sich anbietet — "
+            "als eigenes Interesse, nicht als Pflicht."
+        )
+        # Der Zug steht im Log, nicht im Prompt: Er ordnet die Auswahl, und
+        # eine Zahl im Prompt waere eine Vorgabe, deren Wirkung niemand
+        # gemessen hat (`UMFANGSREGLER-BINDET-NICHT`).
+        logger.info(
+            "GV: %d offene Frage(n) in den Prompt gegeben (staerkster Zug %.4f)",
+            len(offene_fragen), offene_fragen[0]["neugier_vektor"],
+        )
 
     user_message: str = "\n\n".join(user_parts)
 
@@ -1201,6 +1232,16 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     if strategie_aktiv and lage.aufnahmebereitschaft > 0:
         wissensluecken = wissensluecken_finden(state, lage.aufnahmebereitschaft)
 
+    # Novas eigene offene Fragen — an dieselbe Bedingung gebunden wie die
+    # GV4-Luecken, und aus demselben Grund: Ist sie nicht aufnahmebereit,
+    # traegt sie auch keine eigenen Themen hinein. `aufnahmebereitschaft`
+    # sagt, ob jetzt der Moment dafuer ist; der Zug sagt, wohin sie will.
+    offene_fragen: list[dict] = []
+    if strategie_aktiv and lage.aufnahmebereitschaft > 0:
+        offene_fragen = staerkste_luecken(
+            state.get("user_id", ""), state.get("character_id", ""),
+        )
+
     # 3e. Der Teil der Dreischicht, der nur den Prompt bedient. Die Messung —
     #     Achsen, Sektor, Cluster — ist oben schon gelaufen; hier kommt dazu,
     #     was ohne LLM-Lauf niemand braucht: das Repertoire des Clusters und
@@ -1217,6 +1258,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         state, max_laenge, resonanz_kontext,
         farbton=lage.farbton,
         wissensluecken=wissensluecken,
+        offene_fragen=offene_fragen,
         strategie_aktiv=strategie_aktiv,
         dreischicht_block=dreischicht_block,
     )
