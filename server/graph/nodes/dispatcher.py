@@ -36,9 +36,9 @@ from config import (
     redis_client as cfg_redis_client,
 )
 from graph.reiz import reiz_text
-from graph.state import ConversationState, reiz_herkunft
+from graph.state import ConversationState, pipeline_quelle, reiz_herkunft
 from memory import usage_reinforcement
-from memory.pipeline_log import log_db_write, log_fehler, log_turn_roh
+from memory.pipeline_log import log_berechnung, log_db_write, log_fehler, log_turn_roh
 from memory.repositories.verbindung_repository import VerbindungRepository
 from memory.session import session_summarize_if_needed, session_turn_store
 from plugins import get_registry
@@ -459,10 +459,29 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
     (kein wertloser Pseudo-Turn). Ein Serialisierungs-Fehler kracht sichtbar ins
     Log, reisst aber weder den Turn-Abschluss noch die uebrigen Persist-Schritte.
     """
+    # **Jeder Ausstieg hinterlaesst seinen Grund im Protokoll, nicht nur im
+    # Container-Log** (09.09.2026). Die drei Warnungen unten standen als
+    # `logger.warning` da und waren damit an den Neustart des Containers
+    # gebunden; die Frage *„warum fehlt dieser Turn"* war Tage spaeter nicht
+    # mehr beantwortbar. Ein ausgefallener Turn hinterlaesst keine Luecke, die
+    # jemand zaehlen koennte — er sieht aus wie ein Turn, den es nie gab.
+    def _uebersprungen(grund: str, **felder: object) -> None:
+        """Schreibt den Grund, aus dem kein `turn_roh` entstand."""
+        log_berechnung(
+            turn_id = state.get("turn_id", "unbekannt"),
+            node    = "dispatcher",
+            quelle  = pipeline_quelle(state),
+            inhalt  = {"schritt": "turn_roh_uebersprungen", "grund": grund, **felder},
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+
     user_id:      str = state.get("user_id", "")
     character_id: str = state.get("character_id", "")
     if not user_id or not character_id:
         logger.warning("Dispatcher: turn_roh nicht geschrieben — user_id oder character_id fehlt")
+        _uebersprungen("paar_unvollstaendig",
+                       hat_user=bool(user_id), hat_character=bool(character_id))
         return
 
     external = state.get("external")
@@ -472,11 +491,32 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
             "Dispatcher: turn_roh uebersprungen — external oder internal fehlt "
             f"(external={external is not None}, internal={internal is not None})"
         )
+        _uebersprungen("personality_fehlt",
+                       hat_external=external is not None, hat_internal=internal is not None)
         return
 
     response: str = state.get("response", "")
     if not response:
-        logger.warning("Dispatcher: turn_roh uebersprungen — keine Nova-Antwort (response leer)")
+        # **Der HumanGraph hat konstruktiv keine Antwort** — er verarbeitet die
+        # Nutzeraeusserung, bevor Nova formuliert hat. Er nimmt denselben
+        # Dispatcher und muesste sonst bei **jedem** Turn einen Ausfall melden;
+        # eine Meldung, die im Normalfall erscheint, besetzt den Platz, an dem
+        # sonst jemand nachsaehe (`22_STILLE_FEHLER`).
+        #
+        # **Die Zeile bleibt trotzdem stehen, nur ihr Grund unterscheidet.**
+        # Wer zaehlen will, wie oft eine erzeugte Antwort verlorenging, braucht
+        # beide Faelle getrennt — und wer sie weglaesst, macht den erwarteten
+        # Fall vom stillen Ausfall wieder ununterscheidbar.
+        erwartet: bool = pipeline_quelle(state) == "user"
+        logger.log(
+            logging.INFO if erwartet else logging.WARNING,
+            "Dispatcher: turn_roh uebersprungen — keine Nova-Antwort "
+            f"({'HumanGraph, erwartet' if erwartet else 'response leer'})",
+        )
+        _uebersprungen(
+            "kein_antwortpfad" if erwartet else "response_leer",
+            writes=len(state.get("pending_writes", []) or []),
+        )
         return
 
     try:
@@ -628,12 +668,52 @@ def dispatch(
     """
     writes: list = state.get("pending_writes", []) or []
 
+    # **Die Spur steht vor jeder Verzweigung.** Der Dispatcher schrieb bis zum
+    # 09.09.2026 ausschliesslich bei Erfolg — `turn_roh` und
+    # `verwendung_verstaerkung`, sonst nichts. Damit war "nicht gelaufen" von
+    # "erfolglos gelaufen" nicht zu unterscheiden, und zwar genau an dem
+    # Knoten, dessen Ausbleiben protokolliert werden soll
+    # (`TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT`).
+    #
+    # **Sie traegt die Eingangsgroessen, nicht nur die Tatsache.** Ein Eintrag
+    # "Dispatcher lief" beantwortet die naechste Frage nicht; die vier Felder
+    # unten sind genau die, an denen die beiden Schreibpfade entscheiden.
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "dispatcher",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "schritt":         "eingang",
+            "writes":          len(writes),
+            "hat_response":    bool(state.get("response")),
+            "hat_external":    state.get("external") is not None,
+            "hat_internal":    state.get("internal") is not None,
+            "paar_vollstaendig": bool(state.get("user_id")) and bool(state.get("character_id")),
+        },
+        user_id      = state.get("user_id", ""),
+        character_id = state.get("character_id", ""),
+    )
+
     if not writes:
-        logger.info("Dispatcher: Keine pending_writes — Durchlauf")
+        logger.info("Dispatcher: Keine pending_writes — Durchlauf ohne Verteilung")
         # Auch ohne Writes wollen wir den kurzfristigen Drive-Snapshot
         # persistieren, damit das Ziele-Panel z.B. nach Begruessungs-Turns
         # nicht auf veraltete Daten zeigt.
         _persist_short_term_drive(state)
+
+        # **Der Turn-Abschluss haengt nicht an der Verteilung.** Bis zum
+        # 09.09.2026 stand hier ein `return state`, und er uebersprang damit
+        # `_session_turn_schreiben` und `_turn_roh_schreiben` — zwei Schritte,
+        # die mit den `pending_writes` nichts zu tun haben. Ein Turn, dessen
+        # Salienz-Knoten ausfiel, verlor so seine Antwort aus dem dauerhaften
+        # Protokoll: **Er sah nicht aus wie ein Fehler, sondern wie ein Turn,
+        # den es nie gab.**
+        #
+        # **Was der frueh ausgestiegene Turn nicht bekommt, ist die
+        # Verstaerkung** — sie setzt voraus, dass Nova etwas hergenommen hat,
+        # und ohne Writes ist das nicht feststellbar.
+        _session_turn_schreiben(state)
+        _turn_roh_schreiben(state)
         return state
 
     user_id:  str  = state["user_id"]
