@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 8. September 2026 — juengster Eintrag **08.09.2026** (gemessen via `date -u`). Davor 07.09.2026, 21:24 UTC.
+**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026** (gemessen via `date -u`). Davor 08.09.2026.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 42 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 43 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,101 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 09.09.2026 — eine Naht, die im Bestand ruhig aussah 🔬
+
+**200 Turns lokal, in zehn thematischen Faeden zu je zwanzig.** 196 mit
+Antwort, keine Atempause noetig, Seiteneffekte null — `lzg_knoten`,
+`wissensluecken` und `timeline` unveraendert.
+
+**Der Ertrag ist nicht der, fuer den die Reihe aufgesetzt wurde.**
+
+### `eigen_pfad` bricht unter Last
+
+Vor der Reihe stand die Naht bei **77,7 %** Ausschoepfung und galt als
+unauffaellig. Danach sind es **393,4 %**, und **156 von 160** Werten liegen
+ueber ihrer Zielspanne [0 … 1]; der Hoechstwert bei **4,097**.
+
+> **Eine Naht, die im Bestand ruhig aussieht, kann unter Last brechen.** Der
+> Bestand enthielt zu wenige Turns mit hoher Eigen-Salienz. Fuer die
+> Nahtspannen-Tafel heisst das: Ein niedriger Wert dort ist keine Entwarnung,
+> sondern eine Aussage ueber das Material, das bisher durchgelaufen ist.
+
+**Die Ursache liegt eine Ebene tiefer.** Die Salienz-Formel rechnet korrekt —
+der Erregungszuschlag bleibt mit 0,255 unter seinem Maximum 0,3. Ueberzulaufen
+beginnt ein **Eingang**: `ziel_gravitation` kommt mit **5,8285** herein, wo
+`sprachlich` bei 0,65 liegt. `gravitationsterm_berechnen` bildet die **Summe**
+ueber alle aktivierten Ziele, und die ist unbeschraenkt.
+
+**Zwei Verbraucher, verschiedene Rechenart** — `max(antriebe)` in `eigen_pfad`
+und `min(1; basis + term)` im Salienz-Boost. Von **498** Boosts tragen **277
+(55,6 %)** einen Term >= 1,0; dort ist die Salienz danach **immer** 1,0,
+waehrend die Bewertung des Modells im Mittel bei 0,327 liegt. **Die
+Ziel-Gravitation loescht die Bewertung aus, statt sie zu verschieben** — und
+`gekappt` stand in 61 von 61 Faellen auf `true`, obwohl der Code die Kappung
+als Ausnahme fuehrt.
+
+### Die Abhilfe stand drei Zeilen ueber der Fundstelle
+
+Die Salienz-Formel verwendet fuer den **Zielsog** bereits die Auffuellregel —
+*„schliesst einen Teil der Luecke nach oben und kann deshalb nie senken und nie
+ueber 1 gehen, ohne Normierung, ohne Kappung"*. Der Gravitationsterm daneben
+nutzt sie nicht.
+
+**Vorher gerechnet, ohne einen einzigen Turn** — der Bestand traegt je Boost
+Basis, Term und Ergebnis. Mit `sin_sqrt_norm(term, cap=6,0)` und Auffuellung
+statt Addition:
+
+| Leser | heute | nach der Normierung |
+|---|---|---|
+| **B** Boost, 498 Zeilen | 307 exakte Einsen, KZG 95,2 % | **5** Einsen, KZG **95,4 %** |
+| **A** `eigen_pfad`, 426 Zeilen | bis 4,097 · 160 gekappt | bis **0,965** · **0** gekappt |
+
+Der Cap ist **aus der gemessenen Spanne abgeleitet** (max 5,995, P99 5,925),
+nicht gesetzt. In A gewinnt die Gravitation das `max()` danach in 146 statt 214
+Faellen — der sprachliche Antrieb kommt in **68 Faellen** wieder durch; der
+Gewinnerwechsel `eigen` ↔ `pflicht` betrifft **8 von 426** Zeilen.
+
+**Die Gedaechtnisbildung bricht nicht ein.** Offen bleibt **eine**
+Absichtsfrage: Das Praegungstor faellt von 76,7 % auf 58,2 %.
+
+### Der Leser der Wissensluecken — Betriebsbeleg zur Haelfte
+
+Die Tabelle `wissensluecken` hatte **keinen Leser**: 1782 Zeilen, ausnahmslos
+`offen`, und beide Zugriffe kamen aus ihrem eigenen Agenten zur
+Dublettenvermeidung. **Damit war `LUECKEN-WERDEN-NIE-GESCHLOSSEN` (A3) die
+Folge und nicht der Gegenstand** — *geschlossen* heisst *„Nova weiss es jetzt"*,
+und das kann nur feststellen, wer die Luecke zum Lernen benutzt hat.
+
+`staerkste_luecken` liest sie seit dem 08.09.2026, mit eigenem Prompt-Block
+`[OFFENE FRAGEN]`, getrennt von den GV4-Luecken. **Eine Anzahl statt einer
+Schwelle** — eine Schwelle waere gegen eine Skala gesetzt, die 20 % ihres
+Bereichs nutzt.
+
+**Ab Turn 3 der Reihe erscheinen alle drei Zeilen zusammen.** Ueber 119
+ausgewertete Turns geschah das **dreimal**: Der Leser haengt an
+`strategie_aktiv`, und das misst weder Reiz- noch Gespraechslaenge, sondern die
+Zahl erlaubter Gedankenspruenge aus dem Gefuehlsregister. Nuechterne Sachfragen
+erzeugen dort 1 — in 116 von 119 Turns. **Die Bedingung ist neu zu waehlen, und
+das ist eine Absichtsfrage.**
+
+### Was gegen die eigene Arbeit steht
+
+**Ein bekannter Messgeraet-Defekt kam als Ergebnis zurueck.** `docker logs
+--since` filtert in dieser Umgebung nicht; drei Zaehlerspalten der Reihe standen
+bei 223, waehrend die Bedingung dreimal erfuellt war. Der Defekt war am 08.09.
+aufgefallen und nicht behoben worden.
+
+**Und ein Bezeichner wurde zweimal falsch gelesen** — `strategie_aktiv`, erst
+als Reizlaenge, dann als Gespraechslaenge. Beide Male plausibel, beide Male
+falsch.
+
+**Belege:** `labor/messreihen/2026-09-09_lange_reihe_ergebnis.md`,
+`2026-09-09_gespraechsreihe_erwartung.md`, `labor/werkzeug/lange_reihe.sh`,
+`gravitation_beide_leser.py`. Suite **3277** (davor 3266), 11 neue Zeugen,
+Gegenprobe 1/1.
 
 ---
 
