@@ -188,10 +188,15 @@ class NahtPanel(PanelBase):
             1 for n in naehte
             if n["gesamt"]["ueberschreitung"] and not n["jung"]["ueberschreitung"]
         )
+        # **`or 0` waere hier der Defekt, nicht die Abkuerzung.** Eine Naht
+        # ohne benannte Zielspanne hat keine Ausschoepfung; `None or 0`
+        # machte daraus eine von 0 % und zaehlte sie als karg mit. Der
+        # erste Lauf im Client meldete so **9 statt 5** — die vier
+        # unbenannten waren stillschweigend dabei.
         karg: int = sum(
             1 for n in naehte
-            if (n["jung"]["ausschoepfung"] or 0) < _KARG_GRENZE
-            and n["jung"]["n"] > 0
+            if n["jung"]["ausschoepfung"] is not None
+            and n["jung"]["ausschoepfung"] < _KARG_GRENZE
         )
         ohne_ziel: int = sum(1 for n in naehte if n["ziel"] is None)
 
@@ -344,7 +349,8 @@ class NahtPanel(PanelBase):
             farbe, deckung = _UEBER_HEX, (0.55 if blass else 1.0)
         elif blass:
             farbe, deckung = _ALT_HEX, 0.55
-        elif (teil["ausschoepfung"] or 0) < _KARG_GRENZE:
+        elif (teil["ausschoepfung"] is not None
+              and teil["ausschoepfung"] < _KARG_GRENZE):
             farbe, deckung = _KARG_HEX, 1.0
         else:
             farbe, deckung = _JUNG_HEX, 1.0
