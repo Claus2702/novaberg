@@ -70,6 +70,8 @@ Sie legen den Nullpunkt fest. **Eine Nabe wird nicht kalibriert, sie wird gesetz
 
 `SPEICHEN_BEITRAG` (12 Speichen × 5 Größen) · `CLUSTER_GRUNDWERT` (14 Landschaften × 5 Größen) · `GRAVITATIONS_SALIENZ_FAKTOR = 0.5`
 
+> **Zu `GRAVITATIONS_SALIENZ_FAKTOR`: Der Faktor ist nicht das Problem, die Größe darunter ist es.** `[gemessen 09.09.2026]` Er skaliert eine **Summe** über alle aktivierten Ziele, und die ist unbeschränkt — der Term erreicht **5,995**. Eine Kalibrierung des Faktors allein kann das nicht heilen: Jeder Wert, der die heutige Summe in die Spanne brächte, verschöbe die kleinen Terme ins Bedeutungslose. **Die Naht braucht eine Normierung, keinen anderen Faktor** (`GRAVITATIONSTERM-OHNE-OBERGRENZE`).
+
 Die dichteste und am schlechtesten belegte Klasse. Der bekannte Befund: **10 von 14 Landschaften laufen über den Korridor**, ausschließlich nach oben, `waerme` achtmal, `naehe` sechsmal (gemessen 31.07.2026, vollständig gerechnet bei festem Rad). Die zwei Auswege — kleinere Beiträge oder Sättigung auf die Summe — stehen in `novaberg-haltungsraum_k.md` §6 und sind zu entscheiden, nicht abzuleiten.
 
 ### 3.3 Schwellen — unterhalb derer nichts geschieht

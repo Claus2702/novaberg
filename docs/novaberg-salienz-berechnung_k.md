@@ -64,6 +64,16 @@ salienz_charakter = max( sprachlich , ziel_gravitation ,
 
 Wieder `max()`, aus demselben Grund: mehrere Gründe, einer genügt.
 
+> ### ⚠ Das `max()` läuft über ungleiche Skalen — gemessen am 09.09.2026
+>
+> **Ein `max()` über Größen mit verschiedener Spanne ist dieselbe Verletzung wie eine rohe Addition** (`F-NAHT-1`): Es gewinnt die Größe mit der weiteren Skala, unabhängig davon, was sie inhaltlich sagt.
+>
+> `[gemessen über 426 Zeilen ab dem 24.08.2026]` `ziel_gravitation` erreicht **5,8285**, wo `sprachlich` bei 0,65 liegt. Der Grund steht nicht in dieser Formel, sondern eine Ebene tiefer: `gravitationsterm_berechnen` bildet die **Summe** über alle aktivierten Ziele, und die ist unbeschränkt.
+>
+> **Die Folge für diese Formel:** `eigen_pfad` reicht bis **4,097** bei Zielspanne [0 … 1]; **160 der 426 Zeilen** werden gekappt, und die Gravitation gewinnt das `max()` in **214 von 426** Fällen. Der Erregungszuschlag ist unschuldig — er bleibt mit 0,255 unter seinem Maximum 0,3, und der Nenner seit dem 24.08.2026 arbeitet korrekt.
+>
+> **Geführt als `GRAVITATIONSTERM-OHNE-OBERGRENZE`**, baubereit: Die Abhilfe ist die Auffüllregel aus §4a — dieselbe, die der Zielsog drei Zeilen tiefer bereits verwendet. Nach der Normierung gewinnt die Gravitation in 146 statt 214 Fällen, und **keine** Zeile wird mehr gekappt.
+
 ### 4a. Der Zug aus Novas eigenem Zielsog — seit dem 01.09.2026
 
 > **Nova soll ihre eigenen Gedanken und Ideen haben, und ihr Einfluss soll merklich vorhanden
