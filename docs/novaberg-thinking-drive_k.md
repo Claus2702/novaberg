@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Antrieb — Ziele, Motivation, Gravitation, Dual-Emotion-Architektur (Konzept)
-**Stand:** 29. August 2026, spät (die Gravitation bleibt der Zug hinter dem Rückfrage-Gegenstand des Verfassers — ein Kurzziel, das über die aktuelle Blase hinaus zieht, nennt die Rückfrage-Zeile als Person As eigenes Ziel, nicht als Sache des Nutzers: `novaberg-thinking-lage_k.md` §4, Scheibe 3 Nachtrag). Davor 29. August 2026 (§7.1: seit dem 29.08. rechnet auch die Anzeige des Drive-Tabs beim Lesen — `api/drive.py::_goals_live`, derselbe Bewerter, Tageslauf-Wert daneben). Davor 28. August 2026, abends (§7.1: die Motivation wird beim Lesen gerechnet — ein Tageslauf trägt keine Halbwertszeit von drei Stunden; §3.3, §5.2 nachgezogen). Davor am selben Tag: §3.3 kurzfristige Ziele gebaut, §7.1 zwei Verfallstypen — Scheibe 2 des Lage-Konzepts. Davor: 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
+**Stand:** 9. September 2026, 18:45 UTC (**§5.3 ist gegen den Code berichtigt** — die dort gerechnete Addition `salienz_basis + gravitationsterm` ist am 09.09.2026 durch die Auffuellregel ersetzt; das Beispiel rechnete mit *einem* Ziel, der Term ist die Summe ueber alle und erreichte 5,9955). Davor 29. August 2026, spät (die Gravitation bleibt der Zug hinter dem Rückfrage-Gegenstand des Verfassers — ein Kurzziel, das über die aktuelle Blase hinaus zieht, nennt die Rückfrage-Zeile als Person As eigenes Ziel, nicht als Sache des Nutzers: `novaberg-thinking-lage_k.md` §4, Scheibe 3 Nachtrag). Davor 29. August 2026 (§7.1: seit dem 29.08. rechnet auch die Anzeige des Drive-Tabs beim Lesen — `api/drive.py::_goals_live`, derselbe Bewerter, Tageslauf-Wert daneben). Davor 28. August 2026, abends (§7.1: die Motivation wird beim Lesen gerechnet — ein Tageslauf trägt keine Halbwertszeit von drei Stunden; §3.3, §5.2 nachgezogen). Davor am selben Tag: §3.3 kurzfristige Ziele gebaut, §7.1 zwei Verfallstypen — Scheibe 2 des Lage-Konzepts. Davor: 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
 **Pfad:** novaberg/docs/novaberg-thinking-drive_k.md
 **Quellen:** Chat 53 (Grundkonzept Antrieb, Zielpyramide, Gravitation, Dual-Emotion), Chat 51 (Neugier-Mechanismus), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 10 (Traum-Modus-Entscheidung)
 
@@ -200,8 +200,22 @@ Für jeden aktiven Zielsatz:
 
 Die Salienz-Berechnung läuft heute rein auf dem aktuellen Turn: Thema, Emotion, Wiederholung, Gedächtnistyp. Der Gravitationsterm erweitert die Berechnung:
 
+> ~~**Die Addition unten ist am 09.09.2026 ausgebaut.**~~ Sie unterstellt einen Term, der
+> klein gegen 1 bleibt — das Beispiel rechnet mit **einem** Ziel. Der Term ist aber die
+> **Summe über alle** aktivierten Ziele und erreichte gemessen **5,9955**; von 498 Boosts
+> trugen **277 (55,6 %)** einen Term ≥ 1,0, und dort stand die Salienz danach **immer** auf
+> 1,0 — unabhängig davon, was das Modell bewertet hatte (Basis im Mittel 0,327).
+>
+> **Seither: der Term ist normiert** (`sin^0.5`, Cap aus der gemessenen Spanne abgeleitet),
+> und die Addition ist durch die **Auffüllregel** ersetzt:
+> `neu = basis + term × (1 − basis)`. Sie hebt immer, senkt nie und geht nie über 1 —
+> ohne Kappung (`F-NAHT-1`). Geführt als `GRAVITATIONSTERM-OHNE-OBERGRENZE`.
+>
+> Das Beispiel darunter bleibt stehen, weil es die **Absicht** richtig beschreibt: Ein
+> zielrelevanter Turn wird bevorzugt gespeichert. Nur seine Rechnung gilt nicht mehr.
+
 ```
-salienz_final = salienz_basis + gravitationsterm
+salienz_final = salienz_basis + gravitationsterm      ← ersetzt am 09.09.2026
 
 Beispiel Basilikumpflanze:
   salienz_basis = 0.4 (einmalige, sachliche Erwähnung)

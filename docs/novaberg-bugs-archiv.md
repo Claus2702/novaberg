@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 5. September 2026 — `FADEN-EMBEDDING-VERDUENNT` auf `[2×]` hochgestuft: Dieselbe Klasse stand im selben Modul an einer zweiten Stelle (der Praegungszug las weiter den gemittelten Turn) und ist am 05.09.2026 behoben. Davor 4. September 2026 — `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben: Verstaerkt wird, was die Antwort hergenommen hat, gemessen an der Embedding-Naehe, gerufen vom Dispatcher. Davor 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Stand:** 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt: eine unbeschraenkte Summe ueberschrieb in 55,6 % der Faelle die Salienz-Bewertung des Modells; seither ist der Term auf [0, 1] normiert und der Boost fuellt auf. **Sein zweiter Ertrag liegt neben dem Bau:** die Absichtsfrage, an der er haengen sollte, war dreifach falsch gerechnet und loeste sich in einen einzigen verlorenen Praegungsfaden auf. Davor 5. September 2026 — `FADEN-EMBEDDING-VERDUENNT` auf `[2×]` hochgestuft: Dieselbe Klasse stand im selben Modul an einer zweiten Stelle (der Praegungszug las weiter den gemittelten Turn) und ist am 05.09.2026 behoben. Davor 4. September 2026 — `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben: Verstaerkt wird, was die Antwort hergenommen hat, gemessen an der Embedding-Naehe, gerufen vom Dispatcher. Davor 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
 **Inhalt:** **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
@@ -24,6 +24,84 @@
 **Die Abschnittsueberschriften stammen aus der Quelldatei** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Zustand er hat. Jeder Eintrag hier ist abgeschlossen; ein Abschnitt namens `## Offene Bugs` beschreibt in dieser Datei nur die Herkunft seiner Eintraege.
 
 **Hier wird nicht gearbeitet.** Wer einen dieser Befunde wieder aufmachen muss, verschiebt den Eintrag zurueck nach `novaberg-bugs.md` — mit neuem Zustand und neuem Datum. Eine Kennung wird nie wiederverwendet und steht nie in beiden Dateien.
+
+---
+
+## 09.09.2026 — eine Summe ohne Deckel, und eine Vorher-Rechnung, die drei Schritte danebenlag
+
+Ein Eintrag, **am Tag seines Befundes behoben**. Er ist zugleich der Beleg dafuer, dass eine
+Vorher-Rechnung dieselbe Pruefung braucht wie eine Messung: Die eine Absichtsfrage, an der der Bau
+haengen sollte, war gegen die falsche Schwelle, die falsche Zaehlebene und den falschen Leser
+gerechnet — und **jeder der drei Fehler allein** haette die Zahl gehalten.
+
+### `GRAVITATIONSTERM-OHNE-OBERGRENZE` — eine Summe ohne Deckel loescht die Bewertung
+
+**Zustand:** ✅ **behoben am 09.09.2026**, am Tag seines Befundes. Die Normierung sitzt im **Erzeuger** (`ei/gravitation.py::gravitationsterm_berechnen` liefert `sin^0.5(summe × faktor, GRAVITATIONSTERM_CAP)` in [0, 1]), der HumanGraph-Boost **fuellt auf statt zu addieren** (`ei/utils.py::fill_gap_upward`), und der Gravitationsterm steht seither als eigene Naht in der Tafel (`memory/naht_spannen.py`). `tests/test_gravitationsterm_normierung.py` — 25 Zeugen, Gegenprobe **7 vorhergesagt / 7 gezaehlt**. Suite **3311 gruen, 0 uebersprungen**.
+
+**Betriebsbeleg** `[gemessen 09.09.2026, 19:5x UTC]`: zwei Turns mit aktivierten Zielen, Pixie pausiert, Seiteneffekte in `lzg_knoten`, `wissensluecken`, `timeline`, `notizen`, `ziele` und den Wissensdateien **saemtlich null**. Der Boost rechnete `0,3 + 0,2508 → 0,48` (additiv waeren es 0,55 gewesen); `gekappt` stand **160 von 187** Mal auf `true` in den Zeilen desselben Tages **vor** dem Umbau und **0 von 4** danach.
+
+> **Die eine offene Absichtsfrage war gegenstandslos, und das war ein Fund ueber die Vorher-Rechnung.** Sie lautete *„Praegungstor 76,7 % → 58,2 %, rund ein Fuenftel weniger Praegungsfaeden — Korrektur oder Verlust?"*. Nachgerechnet sind es **125 → 124 Faeden**: ein Turn von 322. Drei Fehler lagen uebereinander, und jeder einzelne haette die Zahl gehalten — **die falsche Schwelle** (0,70 ist `PRAEGUNG_TOR_AUSSCHLAG`, auf der Salienz steht `PRAEGUNG_TOR_SALIENZ` = **0,60**), **die falsche Zaehlebene** (Log-Zeilen statt des staerksten Segments je Turn) und **der falsche Leser** (das Tor haengt an Leser A: von 343 Tor-Zeilen treffen **329** das Maximum der `salienz_formel`-Zeilen und nur **155** das der Boosts). Die Gegenprobe, die es fand, kostete eine Abfrage: 125 gerechnete Faeden gegen 125 tatsaechliche `urteil='faden'`.
+
+**Befund.** `gravitationsterm_berechnen` bildet die **Summe** der Aktivierungsstaerken ueber *alle* aktivierten Ziele und skaliert sie mit `GRAVITATIONS_SALIENZ_FAKTOR` (0,5). Der einzelne Beitrag ist harmlos — `similarity` liegt als Cosine bei 0,2 bis 0,5, `motivation` um 0,5. **Unbeschraenkt ist die Summe:** Sie waechst mit der Zahl aktivierter Ziele, und niemand deckelt sie. `[gemessen 09.09.2026]` Der Term erreicht **5,995**.
+
+Der Docstring sagt es offen: *„kann > 1.0 sein, wird bei der Salienz gecapped."* Das war einmal ein Randfall.
+
+**Zwei Verbraucher, verschiedene Rechenart — und beide leiden anders.**
+
+| | Ort | Rechnung | Wirkung |
+|---|---|---|---|
+| **A** | `ei/salienz.py` | `max(antriebe)` → `eigen_pfad` | 5,83 gewinnt immer gegen `sprachlich` 0,65 |
+| **B** | `graph/nodes/salience.py:826` | `min(1; basis + term)` | ueberschreibt die Bewertung des Modells |
+
+**B ist der sichtbare Schaden.** Von **498** Boosts im Bestand tragen **277 (55,6 %)** einen Term >= 1,0. Dort ist die Salienz danach **immer** 1,0 — unabhaengig davon, was das Modell bewertet hat; dessen Basis liegt im Mittel bei **0,327**. Bei **308 (61,8 %)** ist das Ergebnis exakt 1,0.
+
+> **Die Ziel-Gravitation loescht die Salienz-Bewertung aus, statt sie zu verschieben.** Und `gekappt` stand in **61 von 61** Faellen der Messreihe auf `true`. Der Code sagt zur Kappung, sie bleibe stehen, *„damit sie nicht als Messergebnis durchgeht"* — sie ist der Normalfall geworden. Genau das benennt `F-NAHT-1` als totes Ende: Kappen *„macht aus zwei verschiedenen Lagen dieselbe Zahl"*.
+
+**A ist der schwerere Fall, und er faellt erst unter Last auf.** `[gemessen ueber 426 Zeilen ab 24.08.2026]` `eigen_pfad` reicht bis **4,097**, **160** Zeilen liegen ueber 1,0. Die Ziel-Gravitation gewinnt das `max()` in **214 von 426** Faellen — nicht weil sie inhaltlich staerker waere, sondern weil sie mit einer weiteren Skala antritt. **Ein `max()` ueber ungleiche Skalen ist dieselbe Verletzung wie eine rohe Addition.**
+
+**Warum es im Bestand unsichtbar war:** Vor der Reihe stand `eigen_pfad` bei 77,7 % Ausschoepfung und galt als unauffaellig — es lagen zu wenige Turns mit hoher Eigen-Salienz darin. Unter 196 Turns springt die Ausschoepfung auf **393,4 %**. **Eine Naht, die im Bestand ruhig aussieht, kann unter Last brechen.**
+
+#### Die Abhilfe steht drei Zeilen ueber der Fundstelle
+
+Die Salienz-Formel verwendet fuer den **Zielsog** bereits die Auffuellregel — *„schliesst einen Teil der Luecke nach oben und kann deshalb nie senken und nie ueber 1 gehen, ohne Normierung, ohne Kappung"*. Der Gravitationsterm daneben nutzt sie nicht.
+
+```
+neu = basis + sin_sqrt_norm(term, cap) * (1 - basis)
+```
+
+`sin_sqrt_norm` fuehrt das Projekt schon in `ei/utils.py`; der **Cap 6,0 ist aus der gemessenen Spanne abgeleitet** (max 5,995, P99 5,925), nicht gesetzt. Damit erfuellt die Form `F-NAHT-1` in allen drei Punkten: aus der Quelle berechnet, nicht gekappt, ordnungserhaltend — und sie ist konstruktiv sicher, weil die Saettigung 1 nie erreicht.
+
+> **Die naive Form waere falsch.** `sin^0.5` **additiv** auf die Basis gelegt hebt den Wert und macht es schlimmer: 399 exakte Einsen statt heute 308. Erst die Auffuellung dreht es um.
+
+#### Die Vorher-Rechnung — ohne einen einzigen Turn
+
+**Leser B, 498 Boosts:**
+
+| | Mittel | genau 1,0 | KZG-Schwelle | Praegungstor | KZG high |
+|---|---:|---:|---:|---:|---:|
+| heute | 0,865 | **307** | 95,2 % | 76,7 % | 67,5 % |
+| **cap=6,0** | 0,751 | **5** | **95,4 %** | 58,2 % | 40,6 % |
+| *ohne Gravitation* | *0,327* | *0* | *11,2 %* | *3,4 %* | *0,0 %* |
+
+**Leser A, 426 Zeilen:** `eigen_pfad` 0,163…4,097 → 0,163…**0,965**; ueber 1,0 gekappt **160 → 0**; Gravitation gewinnt das `max()` **214 → 146**; Gewinner wechselt `eigen` ↔ `pflicht` in **8 Zeilen (1,9 %)**.
+
+**Die Gedaechtnisbildung bricht nicht ein** — die KZG-Schwelle passieren weiterhin 95,4 %. Was verschwindet, ist das tote Ende, und der sprachliche Antrieb kommt in **68 Faellen** wieder durch.
+
+**Die eine Absichtsfrage, die keine Rechnung beantwortet:** Das Praegungstor faellt von 76,7 % auf 58,2 % — rund ein Fuenftel weniger Praegungsfaeden. Das sind Turns, die heute nur deshalb ueber die Schwelle kommen, weil der Term sie hebt. Korrektur oder Verlust?
+
+**Belege:** `labor/messreihen/2026-09-09_lange_reihe_ergebnis.md`, `labor/werkzeug/gravitation_beide_leser.py`, `labor/werkzeug/gravitation_normierung.py`.
+
+**Belege des Baus:** `labor/werkzeug/praegungstor_nach_normierung.py` (die berichtigte Rechnung samt Gegenprobe gegen die Tor-Urteile), `labor/werkzeug/gravitation_betriebsbeleg.sh`, `labor/messreihen/2026-09-09_gravitation_je_turn.txt` und `..._praegung_tor.txt` (die Rohdaten, aus `pipeline_log` gezogen und dauerhaft abgelegt).
+
+**Was nicht mitgebaut ist, und warum.** `sin_sqrt_norm` bildet jeden Rohwert **ab** dem Cap auf 1,0 ab — dort beginnt dasselbe tote Ende wieder, und der Abstand betraegt **0,075 %** (Maximum 5,9955 gegen Cap 6,0). Ein Waechter im Erzeuger meldet den ersten Rohwert, der ihn erreicht; die Abhilfe waere dann eine **flachere Kurve**, nicht ein hoeherer Cap, denn ein nachgezogener Cap verschoebe die Skala rueckwirkend. Die konstruktiv geschlossene Alternative `roh / (roh + k)` ist am Bestand gerechnet und **verworfen**: mit k = 1,65 (dem Median der 499 Rohterme) erreicht **keine** Boost-Zeile mehr `KZG_SALIENZ_HIGH` — 43,2 % → 0,0 %. Sie tauscht ein totes Ende von 1,9 % gegen eine ganze Schwellenstufe.
+
+**Der Bestand traegt zwei Skalengenerationen ohne Herkunftsfeld.** Jede Auswertung ueber `gravitationsterm` schneidet auf einen Zeitraum; dieselbe Klasse wie `KOSTENSPALTE-MISCHT-PREISGENERATIONEN`.
+
+**Geschlossen war die Bedingung:** `gravitationsterm` liegt an beiden Lesern in [0, 1], ohne Kappung, und `gekappt` ist wieder die Ausnahme statt des Normalfalls. Alle drei sind belegt.
+
+---
+
+---
 
 ---
 

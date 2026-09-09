@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026, 17:55 UTC** (gemessen via `date -u`). Davor 09.09.2026.
+**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026, 18:45 UTC** (gemessen via `date -u`). Davor 09.09.2026, 17:55 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 44 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 45 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,73 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 09.09.2026, 18:45 UTC — die Summe hat einen Deckel, und die Absichtsfrage hatte keinen Gegenstand 🔧
+
+**ZIEL:** Der Gravitationsterm liegt an beiden Lesern in [0, 1] und ueberschreibt die
+Salienz-Bewertung des Modells nicht mehr.
+**TEST:** `tests/test_gravitationsterm_normierung.py` — 25 Zeugen ueber Spanne,
+Ordnungserhaltung, Rechnung, Waechter, Auffuellregel und die Nahtliste.
+**MESSUNG:** zwei Turns mit aktivierten Zielen im echten Betrieb.
+
+**Die Normierung sitzt im Erzeuger, nicht an den Lesern.** `gravitationsterm_berechnen`
+liefert seither `sin^0.5(summe × faktor, GRAVITATIONSTERM_CAP)` und damit einen Wert in
+[0, 1]; beide Verbraucher bekommen ihn auf **derselben** Skala wie ihre uebrigen Eingaenge.
+Das ist die Naht — was dahinter geschieht, bleibt jedem Leser ueberlassen (`F-NAHT-1` in
+der Fassung vom 08.09.2026). Der HumanGraph-Boost **fuellt seither auf statt zu addieren**:
+`neu = basis + term × (1 − basis)`, benannt als `ei/utils.py::fill_gap_upward`.
+
+| | vorher | nachher |
+|---|---:|---:|
+| `gekappt` in den Zeilen desselben Tages | **160 von 187** | **0 von 4** |
+| `eigen_pfad` (gerechnet, 721 Zeilen) | 0,163 … **4,097** | 0,163 … **0,965** |
+| Gravitation gewinnt das `max()` | 214 | **146** |
+| genau 1,0 im Boost (gerechnet, 468 Zeilen) | **307** | **5** |
+| KZG-Schwelle | 95,2 % | **95,3 %** |
+
+**Der Cap ist abgeleitet, nicht gesetzt:** max 5,9955, P99 5,8834 ueber 3712 protokollierte
+Zeilen. Was er nicht kann, steht als Waechter im Code: Oberhalb von 6,0 bildet `sin^0.5`
+jeden Wert auf 1,0 ab, und der Abstand betraegt **0,075 %**. Die Abhilfe waere dann eine
+flachere Kurve, nicht ein hoeherer Cap — ein nachgezogener Cap verschoebe die Skala
+rueckwirkend.
+
+**Die konstruktiv geschlossene Alternative ist gerechnet und verworfen.** `roh / (roh + k)`
+erreicht 1 nie und ist auf ganz [0, ∞) streng monoton. Mit k = 1,65 (dem Median der 499
+Rohterme) erreicht jedoch **keine** Boost-Zeile mehr `KZG_SALIENZ_HIGH`: 43,2 % → **0,0 %**.
+Sie tauscht ein totes Ende von 1,9 % gegen eine ganze Schwellenstufe.
+
+### Die eine Absichtsfrage war gegenstandslos — und das ist der zweite Ertrag des Tages
+
+Der Eintrag trug seit gestern eine Frage an den Eigentuemer: *„Das Praegungstor faellt von
+76,7 % auf 58,2 % — rund ein Fuenftel weniger Praegungsfaeden. Korrektur oder Verlust?"*
+
+**Nachgerechnet sind es 125 → 124 Faeden: ein Turn von 322.**
+
+> **Drei Fehler lagen uebereinander, und jeder einzelne haette die Zahl gehalten.**
+>
+> - **Die falsche Schwelle.** Das Werkzeug rechnete gegen **0,70** — das ist
+>   `PRAEGUNG_TOR_AUSSCHLAG`, die Schwelle auf einer *anderen* Groesse. Auf der Salienz
+>   steht `PRAEGUNG_TOR_SALIENZ` = **0,60**.
+> - **Die falsche Zaehlebene.** Es zaehlte Log-Zeilen; das Tor sieht das **staerkste
+>   Segment je Turn**.
+> - **Der falsche Leser.** Es rechnete gegen den Boost; das Tor haengt am Eigen-Pfad. Von
+>   343 Tor-Zeilen treffen **329** das Maximum der `salienz_formel`-Zeilen und nur **155**
+>   das der Boosts.
+>
+> **Die Gegenprobe, die es fand, kostete eine Abfrage:** die gerechnete Fadenzahl gegen die
+> tatsaechlichen `urteil='faden'` halten — 125 gegen 125. Sie stand nicht daneben, weil die
+> Rechnung eine *Vorher*-Rechnung war und es fuer *vorher* keine Wahrheit zu geben schien.
+> Die Haelfte *heute* ist in derselben Tabelle voll pruefbar.
+
+**Die Naht bewacht jetzt ihre Ursache, nicht nur ihre Folge.** Der Gravitationsterm stand
+nicht in `NAEHTE`; die Tafel fuehrte `eigen_pfad` und meldete dort 393,4 % Ausschoepfung.
+Er hat seither eine eigene Zeile mit Zielspanne [0, 1] — und zwei Zeugen darauf, weil eine
+fehlende Zeile in einer Kandidatenliste unsichtbar ist.
+
+**Suite 3311 gruen, 0 uebersprungen** (davor 3286). Gegenprobe: 7 vorhergesagt, 7 gezaehlt.
+Kennung `GRAVITATIONSTERM-OHNE-OBERGRENZE`, im Archiv.
 
 ---
 

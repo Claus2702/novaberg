@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
+**Stand:** 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -318,7 +318,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor aus `user_prompt` |
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle. Feld je Ziel seit Chat 126 `aktivierungs_staerke` (vorher `gravitation`); das Ziel-Embedding bleibt **draußen** — es trägt die Verschiebung und hat im State keinen Leser |
-| `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
+| `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term, **normiert auf [0, 1]** seit dem 09.09.2026 |
 
 **CharacterGraph (`_enrich_character`):**
 
@@ -329,7 +329,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor |
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle, Feld `aktivierungs_staerke` (siehe HG-Tabelle) |
-| `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
+| `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term, **normiert auf [0, 1]** seit dem 09.09.2026 |
 | `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | Scan ueber **KZG und LZG** auf Eintraege mit Emotion (`ei/gravitation.py`). ~~hoch-arousal~~ — **einen Arousal-Filter gibt es nicht:** §5.7 des Konzepts verlangt „Emotion ≠ neutral und Arousal ueber Schwelle", der Code liest `arousal`, fuehrt es mit und loggt es, vergleicht es aber nie. Offener Punkt, kein Defekt (Backlog-Epic). Verbraucher: Node `emotionale_gravitation` |
 | `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
 | `state["lzg_resonanz"]` | dict | n.a. | Spreading-Lesepfad (§3.3): Kontext-Rahmen (Anker-Anzahl, Sprung-Tiefe, Cluster, Nova-Sektor) + Erinnerungen mit Pfad; Transport zum Formatter via Reducer-Durchreiche |
