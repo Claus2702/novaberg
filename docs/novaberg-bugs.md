@@ -709,7 +709,21 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 ### `TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT` — die Antwort existiert, ihre Spur nicht
 
-**Zustand:** offen — gefunden am 07.09.2026, 20:43 UTC im laufenden Betrieb, gegen HEAD `bcdeb19`.
+**Zustand:** offen — **eine Ursache ist am 09.09.2026 behoben, die Menge ist gezaehlt, und die Diagnose des ersten Befundes ist widerlegt.** Der Eintrag bleibt offen, weil nicht belegt ist, dass es nur diese eine Ursache war (unten).
+
+**Die Zaehlung, die hier offen stand** `[gemessen 09.09.2026]`: **15 von 227** Turns mit erzeugter Antwort tragen keine `turn_roh`-Zeile — **6,6 %**. **14 davon nach demselben Ausfall**, `json_parsing` im Salienz-Knoten. Der fuenfzehnte ist ein Messturn desselben Tages ohne Fehlerzeile und wird getrennt gefuehrt.
+
+> **Die Diagnose oben traegt nicht.** *„Der Dispatcher liest `response` aus einem Zustand, den ein spaeterer Knoten geleert hat"* stuetzt sich auf **eine** Logzeile. Die Ursache steht in `dispatcher.py`, im ersten Drittel von `dispatch()`: `if not writes: … return state` — ein frueher Rueckkehrpfad, der `_session_turn_schreiben` und `_turn_roh_schreiben` uebersprang, **zwei Schritte, die mit den `pending_writes` nichts zu tun haben**. Beide laufen seither auch dort; nur die Verstaerkung bleibt aus, weil sie ohne Writes nicht feststellbar ist.
+
+> **Und der Knoten war an dieser Stelle selbst unbeobachtbar.** Er schrieb ausschliesslich bei Erfolg — `turn_roh` und `verwendung_verstaerkung`, sonst nichts. Damit war *nicht gelaufen* von *erfolglos gelaufen* nicht zu unterscheiden, und **eine Zaehlung ueber fehlende Dispatcher-Zeilen zaehlt dieselbe Aussage zweimal**: `turn_roh` ist eine der beiden. Seit dem 09.09.2026 steht eine Eingangszeile vor jeder Verzweigung, mit den vier Groessen, an denen die Schreibpfade entscheiden, und jeder Ausstieg von `_turn_roh_schreiben` hinterlaesst seinen Grund.
+
+**Betriebsbeleg** `[gemessen 09.09.2026, 20:41–20:43 UTC]`: Ein Turn, beide Graphlaeufe getrennt sichtbar — HumanGraph `eingang` (writes 1, `hat_response=false`) und `turn_roh_uebersprungen` mit Grund `kein_antwortpfad`; CharacterGraph `eingang` (`hat_response=true`) und `turn_roh`. Bestand 1292 → **1293**. Seiteneffekte in `lzg_knoten`, `timeline` und `notizen` null, Pixie pausiert.
+
+> **Der erste Betriebsturn nach dem Bau fand einen Fehler des Baus.** Der HumanGraph nimmt denselben Dispatcher und hat **konstruktiv** keine Antwort — er meldete `response_leer` bei jedem Turn. Eine Warnung im Regelfall begraebt den Befund (`22_STILLE_FEHLER`). Die Zeile bleibt, ihr Grund unterscheidet seither `kein_antwortpfad` vom echten Ausfall; drei Zeugen halten die Trennung.
+
+**Warum der Eintrag trotzdem offen bleibt.** Ob die 14 Faelle **alle** ueber den fruehen Rueckkehrpfad liefen, ist nicht mehr feststellbar: Zum Zeitpunkt ihres Auftretens gab es die Spur nicht, und HumanGraph wie CharacterGraph teilen dieselbe `turn_id`. Ein zweiter Weg ist offen — ein Knoten hinter dem Responder, der eine Ausnahme wirft und den Graphen abbricht, sodass der Dispatcher gar nicht laeuft. **Erst die naechste Messung an der neuen Spur trennt die beiden.**
+
+**Der urspruengliche Befund, unveraendert:**
 
 **Befund.** Ein Turn erzeugte eine Antwort von **1722 Zeichen** (`Responder: Antwort generiert`, 20:43:00). Der `salienz`-Agent scheiterte danach an seinem eigenen JSON (`Expecting ',' delimiter`), die Praegung fiel aus, und der Dispatcher meldete drei Minuten spaeter: **`Dispatcher: turn_roh uebersprungen — keine Nova-Antwort (response leer)`**. In `pipeline_log` steht fuer diesen Turn **keine `turn_roh`-Zeile**.
 
@@ -723,7 +737,9 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 **Was zu messen waere, bevor jemand daran baut:** wie oft das im Bestand vorkommt. Der Zugriff ist da — Turns mit `responder`/`token`-Zeile, aber ohne `turn_roh` mit derselben `turn_id`.
 
-**Geschlossen, wenn** ein Turn mit erzeugter Antwort seine `turn_roh`-Zeile bekommt, auch wenn ein Knoten hinter dem Responder ausfaellt.
+**Geschlossen, wenn** ein Turn mit erzeugter Antwort seine `turn_roh`-Zeile bekommt, auch wenn ein Knoten hinter dem Responder ausfaellt — **und die Zaehlung ueber die neue Spur bei null steht.** Die erste Haelfte ist gebaut und bezeugt, die zweite ist eine Messung, die noch niemand gefahren hat.
+
+**Beleg:** `tests/test_dispatcher_turn_abschluss.py` (11 Zeugen, Gegenprobe 8 vorhergesagt / 7 gezaehlt — der achte ist ein Verbotszeuge, den ein Rueckbau der Faehigkeit nicht rot machen kann).
 
 ---
 

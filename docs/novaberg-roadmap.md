@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026, 18:45 UTC** (gemessen via `date -u`). Davor 09.09.2026, 17:55 UTC.
+**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026, 20:43 UTC** (gemessen via `date -u`). Davor 09.09.2026, 18:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 45 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 46 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,72 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 09.09.2026, 20:43 UTC — ein Turn, den es nie gab, hinterlaesst jetzt eine Spur 🔧
+
+**ZIEL:** Ein Turn mit erzeugter Antwort bekommt seine `turn_roh`-Zeile, auch wenn kein
+Knoten einen Schreibauftrag hinterlassen hat.
+**TEST:** `tests/test_dispatcher_turn_abschluss.py` — 11 Zeugen.
+**MESSUNG:** ein echter Turn, beide Graphlaeufe getrennt belegt.
+
+**Die Zahl, die der Eintrag offen liess:** `[gemessen]` **15 von 227** Turns mit erzeugter
+Antwort tragen keine `turn_roh`-Zeile — **6,6 %**, und **14 davon nach demselben Ausfall**
+(`json_parsing` im Salienz-Knoten). `turn_roh` ist die Zeile, aus der jede Laengen-, Kosten-
+und Verhaltensmessung dieses Projekts ihre Ergebnisgroesse zieht.
+
+### Die Diagnose des Eintrags war falsch, und der Grund dafuer ist der Befund
+
+Er sagte: *„Der Dispatcher liest `response` aus einem Zustand, den ein spaeterer Knoten
+geleert hat."* Die Ursache steht im ersten Drittel von `dispatch()`:
+
+    if not writes:
+        …
+        return state          ← vor _session_turn_schreiben und _turn_roh_schreiben
+
+**Ein frueher Rueckkehrpfad, der zwei Schritte ueberspringt, die mit seiner Bedingung nichts
+zu tun haben.** Scheitert der Salienz-Knoten, entstehen keine `pending_writes` — und der
+Turn verliert seine Antwort aus dem dauerhaften Protokoll, obwohl sie erzeugt wurde.
+
+> **Warum das so lange nicht pruefbar war: Der Dispatcher schrieb ausschliesslich bei
+> Erfolg.** `turn_roh` und `verwendung_verstaerkung`, sonst nichts. Damit war *nicht
+> gelaufen* von *erfolglos gelaufen* nicht zu unterscheiden — an genau dem Knoten, dessen
+> Ausbleiben protokolliert werden soll. **Eine Zaehlung ueber fehlende Dispatcher-Zeilen
+> zaehlt dieselbe Aussage zweimal**, denn `turn_roh` ist eine der beiden; genau diesen
+> Zirkelschluss habe ich unterwegs gezogen und danach berichtigt.
+
+Er schreibt seither eine **Eingangszeile vor jeder Verzweigung** — Zahl der Writes, ob
+`response`, `external`, `internal` und das Paar vorliegen —, und jeder Ausstieg von
+`_turn_roh_schreiben` hinterlaesst seinen Grund im Protokoll statt nur im Container-Log.
+
+### Der erste Betriebsturn nach dem Bau fand einen Fehler des Baus
+
+**Der HumanGraph nimmt denselben Dispatcher und hat konstruktiv keine Antwort** — er
+verarbeitet die Nutzeraeusserung, bevor Nova formuliert hat. Er meldete `response_leer` bei
+**jedem** Turn. Eine Warnung im Regelfall begraebt den Befund
+(`22_STILLE_FEHLER/warnung-meldet-den-regelfall.md`, dort der zweite Fall). Die Zeile bleibt
+stehen, ihr Grund unterscheidet seither `kein_antwortpfad` vom echten Ausfall — wer die Zeile
+im erwarteten Fall ganz weglaesst, macht ihn vom stillen Ausfall wieder ununterscheidbar.
+
+**Betriebsbeleg** `[gemessen 20:41–20:43 UTC]`, ein Turn, beide Laeufe getrennt sichtbar:
+
+| Zeit | Schritt | Grund | writes | response | Quelle |
+|---|---|---|---:|---|---|
+| 20:41:24 | `eingang` | | 1 | false | user |
+| 20:41:25 | `turn_roh_uebersprungen` | `kein_antwortpfad` | 1 | | user |
+| 20:42:58 | `eingang` | | 1 | **true** | character |
+| 20:43:00 | `turn_roh` | | | | character |
+
+Bestand 1292 → **1293**; Seiteneffekte in `lzg_knoten`, `timeline` und `notizen` null.
+
+**Der Eintrag bleibt offen.** Ob alle 14 Faelle ueber den fruehen Rueckkehrpfad liefen, ist
+nicht mehr feststellbar — zu ihrer Zeit gab es die Spur nicht. Ein zweiter Weg ist offen: ein
+Knoten hinter dem Responder, der wirft und den Graphen abbricht. **Erst die naechste Messung
+an der neuen Spur trennt die beiden.**
+
+**Suite 3324 gruen, 0 uebersprungen** (davor 3313). Gegenprobe: 8 vorhergesagt, 7 gezaehlt —
+der achte ist ein Verbotszeuge, den ein Rueckbau der Faehigkeit nicht rot machen kann.
 
 ---
 
