@@ -25,9 +25,11 @@ from config import (
     EMOTIONALE_GRAVITATIONS_SCHWELLE,
     GRAVITATIONS_SALIENZ_FAKTOR,
     GRAVITATIONS_SCHWELLE,
+    GRAVITATIONSTERM_CAP,
     LZG_KNOTEN_GEWICHT_CAP,
     REDIS_URL,
 )
+from ei.utils import sin_sqrt_norm
 
 logger = logging.getLogger("ki_server.ei.gravitation")
 
@@ -127,6 +129,32 @@ def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
 
     return float(dot / (norm_a * norm_b))
 
+
+
+@dataclass
+class Gravitationsterm:
+    """Der Salienz-Gravitationsterm mit der Groesse, aus der er entstand.
+
+    **Die Rohsumme steht neben dem Ergebnis, nicht nur im Debug-Log.**
+    `novaberg-convention-abgeleitete-werte.md` Regel (1): Jede Groesse, aus der
+    sich ein Wert berechnet, ist ein eigenes Feld — das Ergebnis darf
+    zusaetzlich gespeichert werden, nie stattdessen. Ohne `roh` waere die
+    Spanne, aus der `cap` abgeleitet ist, nach dem Umbau nicht mehr
+    nachmessbar, und ueber dem Cap ist die Kurve nicht invertierbar.
+
+    Attributes:
+        roh: Summe der Aktivierungs-Staerken x `GRAVITATIONS_SALIENZ_FAKTOR`,
+            unbeschraenkt. `[gemessen 09.09.2026]` bis 5,9955.
+        normiert: `sin^0.5(roh, cap)`, in [0, 1]. Das ist der Wert, den beide
+            Leser bekommen.
+        cap: Die Obergrenze der Kurve, mit der `normiert` entstand — sie steht
+            dabei, weil ein spaeter geaenderter Cap den Bestand sonst
+            stillschweigend uminterpretierte.
+    """
+
+    roh:      float
+    normiert: float
+    cap:      float
 
 def ziel_gravitation_berechnen(
     turn_embedding: list[float],
@@ -284,33 +312,102 @@ def zielsog_staerkster(
     return max(0.0, min(1.0, staerkste))
 
 
-def gravitationsterm_berechnen(aktivierte_ziele: list[ActivatedGoal]) -> float:
+def gravitationsterm_berechnen(aktivierte_ziele: list[ActivatedGoal]) -> Gravitationsterm:
     """Berechnet den Salienz-Gravitationsterm aus aktivierten Zielen.
 
     Der Term ist die Summe aller Gravitationswerte, skaliert mit dem
-    Salienz-Faktor. Er wird in Phase 2 auf die Basis-Salienz addiert.
+    Salienz-Faktor und **auf [0, 1) normiert**. Beide Verbraucher — der
+    Eigen-Pfad in `ei/salienz.py` und der HumanGraph-Boost in
+    `graph/nodes/salience.py` — bekommen ihn damit auf derselben Skala wie
+    ihre uebrigen Eingaenge (`F-NAHT-1`).
+
+    **Die Summe ist unbeschraenkt, das Ergebnis nicht.** Sie waechst mit der
+    Zahl aktivierter Ziele; `[gemessen 09.09.2026]` erreichte sie **5,995**.
+    Roh weitergegeben brach sie an beiden Lesern die Skala: im Boost trugen
+    **277 von 498** Zeilen einen Term >= 1,0 und die Salienz stand danach
+    **immer** auf 1,0, unabhaengig von der Bewertung des Modells (Basis im
+    Mittel 0,327); im Eigen-Pfad gewann er das `max()` in 214 von 426 Faellen
+    — nicht weil er inhaltlich staerker waere, sondern weil er mit einer
+    anderen Skala antrat.
+
+    **Normiert statt gekappt.** Kappen macht aus zwei verschiedenen Lagen
+    dieselbe Zahl, also ein totes Ende genau dort, wo der Beitrag am
+    staerksten zieht (`F-NAHT-1`). `sin_sqrt_norm` ist auf [0, cap] streng
+    monoton; `GRAVITATIONSTERM_CAP` ist aus der gemessenen Spanne abgeleitet
+    (max 5,9955, P99 5,8834), nicht gesetzt.
+
+    **Oberhalb des Caps ist sie es nicht — und der Abstand ist klein.**
+    `sin_sqrt_norm` bildet jeden Rohwert >= cap auf 1.0 ab; dort faengt genau
+    das tote Ende wieder an, das die Normierung beseitigt. `[gemessen
+    09.09.2026 ueber 3712 Zeilen]` Das Maximum liegt bei **5,9955**, also
+    **0,075 %** unter dem Cap; keine Zeile liegt darueber, und die neun
+    hoechsten tragen fuenf unterscheidbare Werte. Der Wachposten unten meldet
+    den ersten Rohwert, der den Cap erreicht.
+
+    **Die konstruktiv geschlossene Form waere `roh / (roh + k)`** — sie
+    erreicht 1 nie und bleibt auf ganz [0, unendlich) streng monoton. Sie ist
+    am Bestand gerechnet und **verworfen**: Mit k = 1,65 (dem Median der
+    Rohterme) erreicht **keine** Boost-Zeile mehr `KZG_SALIENZ_HIGH` (43,2 %
+    → 0,0 %). Sie tauscht ein totes Ende von 1,9 % gegen eine ganze
+    Schwellenstufe.
+
+    **Der Rohwert reist mit, er wird nicht ersetzt.** Ohne ihn waere im
+    Nachhinein nicht mehr zu trennen, ob ein hoher Term aus einem starken Ziel
+    kam oder aus vielen schwachen — und die Spanne, aus der der Cap stammt,
+    waere nicht mehr nachmessbar (`novaberg-convention-abgeleitete-werte.md`
+    Regel 1: das Ergebnis darf **zusaetzlich** gespeichert werden, nie
+    stattdessen).
 
     Args:
         aktivierte_ziele: Liste der aktivierten Ziele (aus ziel_gravitation_berechnen).
 
     Returns:
-        Gravitationsterm als Float (kann > 1.0 sein, wird bei der Salienz gecapped).
+        Ein `Gravitationsterm` mit Rohsumme, normiertem Wert in [0, 1] und dem
+        Cap, mit dem gerechnet wurde. Leere Liste ergibt lauter Nullen beim
+        Wert und den geltenden Cap.
     """
+    # ── Eingabe-Validierung ─────────────────────
     if not aktivierte_ziele:
-        return 0.0
+        return Gravitationsterm(roh=0.0, normiert=0.0, cap=GRAVITATIONSTERM_CAP)
 
+    # ── Verarbeitung ────────────────────────────
     # Summe der Aktivierungs-Stärken × Salienz-Faktor.
     # Bei mehreren aktivierten Zielen verstärken sie sich.
     gesamt: float = sum(g.aktivierungs_staerke for g in aktivierte_ziele)
-    term:   float = gesamt * GRAVITATIONS_SALIENZ_FAKTOR
+    roh:    float = gesamt * GRAVITATIONS_SALIENZ_FAKTOR
+    term:   float = sin_sqrt_norm(roh, GRAVITATIONSTERM_CAP)
 
     logger.debug(
         f"Gravitationsterm: {len(aktivierte_ziele)} Ziele, "
         f"summe={gesamt:.3f}, faktor={GRAVITATIONS_SALIENZ_FAKTOR}, "
-        f"term={term:.3f}"
+        f"roh={roh:.3f}, cap={GRAVITATIONSTERM_CAP}, term={term:.3f}"
     )
 
-    return round(term, 4)
+    # ── Ausgabe-Verifikation ────────────────────
+    # **Der Waechter steht am Eingang, nicht am Ergebnis.** Das Ergebnis liegt
+    # per Konstruktion in [0, 1]; eine Pruefung darauf koennte nie anschlagen
+    # und besetzte nur den Platz, an dem sonst jemand nachsaehe. Was
+    # beobachtet werden muss, ist der **Rohwert**: Ab `GRAVITATIONSTERM_CAP`
+    # bildet `sin_sqrt_norm` jeden Wert auf 1.0 ab, und ab dort faellt die
+    # Ordnung zusammen. Der gemessene Hoechstwert vom 09.09.2026 liegt
+    # 0,075 % unter dem Cap — dieser Fall ist nah, nicht fern.
+    #
+    # **Die Abhilfe waere dann nicht ein hoeherer Cap, sondern eine flachere
+    # Kurve.** Ein nachgezogener Cap verschoebe die ganze Skala rueckwirkend
+    # und machte den Bestand mit dem Neuen unvergleichbar.
+    if roh >= GRAVITATIONSTERM_CAP:
+        logger.warning(
+            f"Gravitationsterm: roh={roh:.4f} erreicht den Cap "
+            f"{GRAVITATIONSTERM_CAP} bei {len(aktivierte_ziele)} Zielen — "
+            f"ab hier ist die Normierung nicht mehr ordnungserhaltend, die "
+            f"Steilheit der Kurve ist neu zu pruefen"
+        )
+
+    return Gravitationsterm(
+        roh      = round(roh, 4),
+        normiert = round(term, 4),
+        cap      = GRAVITATIONSTERM_CAP,
+    )
 
 
 # ─────────────────────────────────────────────

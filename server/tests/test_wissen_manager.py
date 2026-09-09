@@ -40,6 +40,7 @@ import psycopg2
 
 import graph.nodes.enricher as enricher_mod
 from config import LZG_KNOTEN_GEWICHT_CAP, POSTGRES_URL, WISSEN_RETRIEVAL_SCHWELLE
+from ei.gravitation import Gravitationsterm
 from plugins.wissen_manager.manager import WissenManager
 
 DIM: int = 768
@@ -299,7 +300,8 @@ class PluginReihenfolgeTest(unittest.TestCase):
             p(patch.object(enricher_mod, "_load_raw_turns", return_value=[]))
             p(patch.object(enricher_mod, "_create_prompt_embedding", return_value=NAH))
             p(patch.object(
-                enricher_mod, "_compute_ziele_und_gravitation", return_value=([], 0.0, 0.0),
+                enricher_mod, "_compute_ziele_und_gravitation",
+                return_value=([], Gravitationsterm(roh=0.0, normiert=0.0, cap=6.0), 0.0),
             ))
             p(patch.object(enricher_mod, "_vorturn_cluster_lesen", return_value="foyer"))
             p(patch.object(enricher_mod, "spreading_lesen", return_value=[]))

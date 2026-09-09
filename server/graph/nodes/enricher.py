@@ -344,8 +344,10 @@ def _compute_ziele_und_gravitation(
 
     Vorbedingung: embedding gueltig, postgres_url verbunden, Turn-Paar gesetzt.
     Nachbedingung: Tupel (aktivierte_ziele, gravitationsterm, zielsog_roh),
-                   gebildet ausschliesslich aus Zielen dieser Beziehung.
-                   Alle drei leer / 0.0, wenn keine Ziele vorhanden sind.
+                   gebildet ausschliesslich aus Zielen dieser Beziehung. Der
+                   Gravitationsterm ist ein `Gravitationsterm` und traegt die
+                   Rohsumme neben dem normierten Wert. Alle drei leer / 0.0,
+                   wenn keine Ziele vorhanden sind.
 
     **Der dritte Wert laeuft am Tor vorbei.** `zielsog_roh` ist die staerkste
     Zielstaerke ohne `GRAVITATIONS_SCHWELLE` — die Salienz braucht ein Mass,
@@ -361,7 +363,7 @@ def _compute_ziele_und_gravitation(
 
     # ── Verarbeitung ────────────────────────────
     aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
-    grav: float = gravitationsterm_berechnen(aktiviert)
+    grav = gravitationsterm_berechnen(aktiviert)
     sog:  float = zielsog_staerkster(embedding, ziele)
 
     # ── Ausgabe ─────────────────────────────────
@@ -494,13 +496,14 @@ def _enrich_human(
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
-    state["gravitationsterm"] = gravitationsterm
+    state["gravitationsterm"] = gravitationsterm.normiert
     state["zielsog_roh"]      = zielsog_roh
 
     if aktivierte_ziele:
         logger.info(
             f"Enricher (HG): {len(aktivierte_ziele)} Ziele aktiviert, "
-            f"Gravitationsterm={gravitationsterm:.3f}"
+            f"Gravitationsterm={gravitationsterm.normiert:.3f} "
+            f"(roh {gravitationsterm.roh:.3f}, Cap {gravitationsterm.cap})"
         )
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -514,6 +517,12 @@ def _enrich_human(
             "embedding_dim":          len(state.get("prompt_embedding") or []),
             "aktivierte_ziele_count": len(state.get("aktivierte_ziele", [])),
             "gravitationsterm":       state.get("gravitationsterm", 0.0),
+            # **Die Rohsumme neben dem Ergebnis** — ohne sie ist die Spanne,
+            # aus der `GRAVITATIONSTERM_CAP` abgeleitet ist, nach dem Umbau
+            # nicht mehr nachmessbar, und ueber dem Cap ist die Kurve nicht
+            # invertierbar (`novaberg-convention-abgeleitete-werte.md` Regel 1).
+            "gravitationsterm_roh":   gravitationsterm.roh,
+            "gravitationsterm_cap":   gravitationsterm.cap,
         },
         span_id = span_id,
         user_id      = user_id,
@@ -823,13 +832,14 @@ def _enrich_character(
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
-    state["gravitationsterm"] = gravitationsterm
+    state["gravitationsterm"] = gravitationsterm.normiert
     state["zielsog_roh"]      = zielsog_roh
 
     if aktivierte_ziele:
         logger.info(
             f"Enricher: {len(aktivierte_ziele)} Ziele aktiviert, "
-            f"Gravitationsterm={gravitationsterm:.3f}"
+            f"Gravitationsterm={gravitationsterm.normiert:.3f} "
+            f"(roh {gravitationsterm.roh:.3f}, Cap {gravitationsterm.cap})"
         )
 
     # Lokale Initialisierung, damit der Switch-Inhalt unten den KZG-Count
@@ -1185,6 +1195,8 @@ def _enrich_character(
             "memory_entries_count":              len(state.get("memory_entries", [])),
             "aktivierte_ziele_count":            len(state.get("aktivierte_ziele", [])),
             "gravitationsterm":                  state.get("gravitationsterm", 0.0),
+            "gravitationsterm_roh":              gravitationsterm.roh,
+            "gravitationsterm_cap":              gravitationsterm.cap,
             "emotionale_gravitationspunkte_count": len(
                 state.get("emotionale_gravitationspunkte", [])
             ),

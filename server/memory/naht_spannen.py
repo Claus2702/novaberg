@@ -126,6 +126,18 @@ NAEHTE: tuple[Naht, ...] = (
     _log("Salienz", "salienz", "eigen_pfad", (0.0, 1.0)),
     _log("Salienz", "salienz", "pflicht_pfad", (0.0, 1.0)),
     _log("Salienz", "salienz", "zielsog", None),
+
+    # **Die Groesse, die die Naht am 09.09.2026 gebrochen hat, stand nicht in
+    # dieser Liste.** Die Tafel fuehrte `eigen_pfad` und sah dort 393,4 %
+    # Ausschoepfung — den Schaden, nicht die Ursache. Der Gravitationsterm ist
+    # seither auf [0, 1] normiert; ohne eigene Zeile hier waere sein Rueckfall
+    # wieder nur an der Folgegroesse ablesbar.
+    #
+    # **Der Bestand traegt zwei Skalengenerationen ohne Herkunftsfeld.** Ueber
+    # das ganze Fenster gerechnet meldet diese Naht bis 600 %; die Zahl ist
+    # erst ab dem 09.09.2026 eine Aussage ueber die Naht. Dieselbe Klasse wie
+    # `KOSTENSPALTE-MISCHT-PREISGENERATIONEN`.
+    _log("Salienz", "salienz", "gravitationsterm", (0.0, 1.0)),
 )
 
 

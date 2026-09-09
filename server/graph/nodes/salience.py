@@ -24,6 +24,7 @@ import redis
 
 from config import ASSISTANT_NAME, PROMPTS, get_node_config
 from ei.salienz import SalienzErgebnis, salienz_effektiv_berechnen
+from ei.utils import fill_gap_upward
 from graph.reiz import reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import nutzer_gewichtung_laden
@@ -822,14 +823,26 @@ def analyze(
         # Dieselbe Klasse wie die Log-Zeile darueber — an einer Stelle
         # diagnostiziert, sass sie schon an der zweiten.
         elif gravitationsterm > 0.0 and roh_wert is not None:
+            # **Auffuellend, nicht addierend** (09.09.2026). Bis heute stand
+            # hier `min(1.0, basis + term)`, und der Term war unbeschraenkt:
+            # `[gemessen]` von 498 Boosts trugen **277 (55,6 %)** einen Term
+            # >= 1,0 — dort war die Salienz danach **immer** 1,0, waehrend die
+            # Bewertung des Modells im Mittel bei 0,327 lag. Die Gravitation
+            # loeschte die Bewertung aus, statt sie zu verschieben.
+            #
+            # Der Term ist seither normiert (`gravitationsterm_berechnen`),
+            # und die Auffuellregel haelt den Rest: Sie hebt immer, senkt nie
+            # und geht nie ueber 1 — ohne Kappung. `[gerechnet am Bestand]`
+            # 307 exakte Einsen werden zu 5, die KZG-Schwelle passieren
+            # weiterhin 95,4 % statt 95,2 %.
             salienz_basis: float = roh_wert
-            salienz_neu:   float = min(1.0, salienz_basis + gravitationsterm)
+            salienz_neu:   float = fill_gap_upward(salienz_basis, gravitationsterm)
             salienz_obj["salienz"] = round(salienz_neu, 2)
             salienz_segment        = salienz_obj["salienz"]
 
             logger.info(
                 f"Salienz: Gravitationsboost — "
-                f"basis={salienz_basis:.2f} + grav={gravitationsterm:.3f} "
+                f"basis={salienz_basis:.2f} aufgefuellt um grav={gravitationsterm:.3f} "
                 f"= {salienz_neu:.2f}"
             )
 

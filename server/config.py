@@ -1805,6 +1805,26 @@ EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Ar
 GRAVITATIONS_SCHWELLE:        float = 0.40
 GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms auf die Salienz
 
+# ── Die Obergrenze des Gravitationsterms (09.09.2026) ───────────────────────
+# Der Term ist die **Summe** ueber alle aktivierten Ziele und war damit
+# unbeschraenkt: `[gemessen 09.09.2026]` er erreicht **5,995**. Beide
+# Verbraucher brachen daran die Skala — im HumanGraph-Boost trugen **277 von
+# 498** Zeilen einen Term >= 1,0 und die Salienz stand danach immer auf 1,0,
+# waehrend die Bewertung des Modells im Mittel bei 0,327 lag; im Eigen-Pfad
+# gewann er das `max()` in 214 von 426 Faellen, und `eigen_pfad` reichte bis
+# 4,097 bei Zielspanne [0…1].
+#
+# **Der Cap ist aus der gemessenen Spanne abgeleitet, nicht gesetzt** (max
+# 5,995, P99 5,925) — die naechste Zahl darueber. Er ist die Obergrenze der
+# `sin^0.5`-Normierung in `gravitationsterm_berechnen`; die Saettigung
+# erreicht 1 konstruktiv nie, bleibt streng monoton und macht deshalb aus
+# zwei verschiedenen Lagen nie dieselbe Zahl (`F-NAHT-1`).
+#
+# **Waechst der Term dauerhaft ueber diese Spanne, ist die Steilheit der Kurve
+# neu zu pruefen** — nicht der Cap zu erhoehen: Die Normierung bleibt auch
+# darueber geschlossen, sie flacht nur ab.
+GRAVITATIONSTERM_CAP:         float = 6.0
+
 # ── Der Zug aus Novas eigenem Zielsog (01.09.2026) ──────────────────────────
 # Novas Antrieb soll die Salienz ihrer Aeusserung **heben**, nicht mit ihr
 # konkurrieren. Bis heute stand er als zweiter Operand in einem `max()` und

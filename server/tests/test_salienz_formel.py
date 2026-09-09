@@ -292,11 +292,16 @@ class FormelImNodeTest(unittest.TestCase):
 
     def test_humangraph_rechnet_die_formel_nicht(self) -> None:
         """Der Nutzer-Eintrag behaelt seine Salienz — dort greift weiter der
-        alte Gravitationsboost, bis Bauteil 1 ihn ausbaut.
+        Gravitationsboost, bis Bauteil 1 ihn ausbaut.
+
+        **Auffuellend seit dem 09.09.2026**, nicht mehr addierend: 0,5 + 0,3 ×
+        (1 - 0,5) = 0,65. Vorher stand hier `min(1; 0,5 + 0,3) = 0,8` — eine
+        Form, die ab einem Term von 0,5 jede Basis auf dieselbe Zahl schickte
+        (`GRAVITATIONSTERM-OHNE-OBERGRENZE`).
         """
         _, ergebnis = self._mit_faktor("human", [0.5], salienz_human=0.7, gravitationsterm=0.3)
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
-        self.assertEqual(gespeichert, 0.8)
+        self.assertEqual(gespeichert, 0.65)
 
     def test_agentgraph_faellt_auf_den_eigen_pfad(self) -> None:
         """Ein eigener Gedanke hat keine Nutzeraeusserung — und trotzdem eine

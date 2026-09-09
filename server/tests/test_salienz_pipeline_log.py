@@ -210,7 +210,9 @@ class SalienzGravitationTest(unittest.TestCase):
         self.assertEqual(len(boost), 1)
         self.assertEqual(boost[0].inhalt["salienz_basis"],    0.5)
         self.assertEqual(boost[0].inhalt["gravitationsterm"], 0.2)
-        self.assertEqual(boost[0].inhalt["salienz_neu"],      0.7)
+        # Auffuellend seit dem 09.09.2026: 0,5 + 0,2 × (1 - 0,5) = 0,6.
+        # Vorher `min(1; 0,5 + 0,2) = 0,7`.
+        self.assertEqual(boost[0].inhalt["salienz_neu"],      0.6)
 
 
 class SalienzFehlerpfadTest(unittest.TestCase):

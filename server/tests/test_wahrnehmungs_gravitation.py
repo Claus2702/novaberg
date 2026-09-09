@@ -37,7 +37,7 @@ from ei.dreischicht import (
     GRAVITATION_FAKTOR_ANWEISUNG,
     INTENTION_ANWEISUNG,
 )
-from ei.gravitation import ActivatedGoal, wahrnehmung_verschieben
+from ei.gravitation import ActivatedGoal, Gravitationsterm, wahrnehmung_verschieben
 
 GRAVITATION_LOGGER: str = "ki_server.ei.gravitation"
 
@@ -350,7 +350,9 @@ class EnricherVerdrahtungTest(unittest.TestCase):
             p(patch.object(enricher_mod, "_create_prompt_embedding", return_value=ROH))
             p(patch.object(
                 enricher_mod, "_compute_ziele_und_gravitation",
-                return_value=(ziele, 0.5, 0.0),
+                # Der zweite Wert ist seit dem 09.09.2026 ein `Gravitationsterm`
+                # und traegt die Rohsumme neben dem normierten Wert.
+                return_value=(ziele, Gravitationsterm(roh=1.0, normiert=0.5, cap=6.0), 0.0),
             ))
             p(patch.object(enricher_mod, "_vorturn_cluster_lesen", return_value=CLUSTER_FREI))
             p(patch.object(enricher_mod, "spreading_lesen", return_value=[]))

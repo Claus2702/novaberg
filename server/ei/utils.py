@@ -83,3 +83,28 @@ def sin_sqrt_norm(wert: float, cap: float) -> float:
         return 0.0
     anteil: float = min(wert / cap, 1.0)
     return math.sin(anteil * math.pi / 2) ** 0.5
+
+
+def fill_gap_upward(basis: float, anteil: float) -> float:
+    """Die Auffuellregel: schliesst einen Teil der Luecke nach oben.
+
+        neu = basis + anteil * (1 - basis)
+
+    **Sie kann nie senken und nie ueber 1 gehen** — ohne Normierung, ohne
+    Kappung. Das unterscheidet sie von der Addition, die eine Obergrenze
+    erzwingt und damit aus zwei verschiedenen Lagen dieselbe Zahl macht
+    (`F-NAHT-1`).
+
+    Die Form steht seit dem 01.09.2026 im Zielsog des Eigen-Pfads
+    (`ei/salienz.py`) und seit dem 09.09.2026 im Gravitationsboost
+    (`graph/nodes/salience.py`). Sie traegt hier einen Namen, damit beide
+    dieselbe Regel benutzen und ein Zeuge sie einzeln erreichen kann.
+
+    Args:
+        basis: der Ausgangswert in [0, 1].
+        anteil: wie viel der Luecke `1 - basis` geschlossen wird, in [0, 1].
+
+    Returns:
+        Ein Wert in [basis, 1].
+    """
+    return basis + anteil * (1.0 - basis)
