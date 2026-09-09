@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026** (gemessen via `date -u`). Davor 08.09.2026.
+**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026, 17:55 UTC** (gemessen via `date -u`). Davor 09.09.2026.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 43 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 44 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,70 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 09.09.2026, 17:55 UTC — der Betrieb laeuft vollstaendig lokal 🔧
+
+**Ein lokales Modell kostet keinen Anbieter Geld — und wurde bis heute so
+gebucht, als taete es das.** `cost_usd` rechnete jeden Aufruf mit den
+OpenRouter-Preisen und bekam das Modell **nicht einmal als Argument**.
+`[gemessen]` An einem Tag mit lokalem Gespraechspfad standen **1,16 USD** fuer
+5210 Aufrufe von `gemma4-a4b-gpu` in der Kostenspalte, gegen **0,0116 USD** fuer
+die 57 echten Fernaufrufe.
+
+> **Sichtbar wurde der Fehler durch die Abhilfe eines anderen.** Bis zum
+> 07.09.2026 buchte der lokale Pfad ueberhaupt nicht — `record_usage` hatte
+> einen einzigen Aufrufer, und der lag im Fern-Weg. Erst als die Buchung beide
+> Pfade erfasste, schlug die fehlende Modellunterscheidung durch.
+
+Die Menge der lokalen Modelle ist aus `OLLAMA_CONNECTORS` **abgeleitet**, nicht
+danebengepflegt — ein neuer Connector bringt sein Modell von selbst mit.
+**Bewusst keine Namensheuristik:** Ein Fernmodell am Schraegstrich zu erkennen
+waere eine Annahme ueber Namen statt ueber Herkunft. Eine fehlende Modellangabe
+bucht zum Fernpreis **und meldet sich** — eine stille Null machte einen defekten
+Aufrufer von einem lokalen Modell ununterscheidbar. 9 Zeugen, Gegenprobe 1/1,
+Betriebsbeleg: ein echter Turn bucht **0,000000** ueber alle vier Aufrufe.
+
+### Der Anbieter wird nicht mehr verwendet
+
+**Der Preis stieg in vier Tagen um Faktor 8,8, und der Rabatt verschwand ohne
+Ankuendigung:**
+
+| Tag | Eingang je Million | gegen die Konfiguration |
+|---|---:|---:|
+| 05.09. | $0,04998 | — |
+| 07.09. | $0,14000 | 2,80 |
+| 08.09. | $0,06496 | 1,30 |
+| **09.09.** | **$0,44000** | **6,77** |
+
+Der letzte Wert ist der **Listenpreis**, den `config.py` als oberes Ende der
+Anbieterspanne fuehrt; beim Ausgang $1,32000 gegen $0,09996 am Anfang.
+
+**Der Waechter hat dreimal gemeldet, jedes Mal von selbst.** Sein Docstring sagt
+seit dem 06.09.2026: *„Die Schnittstelle nennt die Hoehe des Rabatts, nie sein
+Ende."* Er ist das eine Stueck dieser Kette, das zuverlaessig arbeitet.
+
+**Entscheidung des Eigentuemers:** Der Anbieter wird nicht mehr verwendet. Seit
+17:55 UTC laufen alle drei Worker lokal — `chat` auf `gemma4-a4b-gpu`, `analyse`
+und `sprache` auf `qwen36-cpu`. Der `OpenRouterProvider` bleibt gebaut und
+bezeugt; er wird nur nicht mehr konfiguriert.
+
+### Was das kostet, und was ungemessen bleibt
+
+**Der Betrieb kostet ab jetzt keinen Anbieter mehr Geld.** Heute liefen **57**
+Fernaufrufe, **kein einziger davon ein Gespraechsturn** — alles Hintergrund,
+davon `pixie/hash` allein mit **135.601** Eingabe-Token.
+
+**Zwei Folgen sind ungemessen und stehen als Wachposten:** Die
+Charakter-Destillation bekommt jetzt ein deutlich kleineres Modell, und der
+Preiswaechter meldet weiter ueber ein Modell, das niemand mehr benutzt.
+
+**Und der Bestand der Kostenspalte bleibt falsch** — er mischt drei
+Preisgenerationen und zwei Modellklassen, ohne ein Feld, das sagt, mit welchem
+Preis gerechnet wurde (`KOSTENSPALTE-MISCHT-PREISGENERATIONEN`).
+
+Suite **3286** (davor 3277).
 
 ---
 

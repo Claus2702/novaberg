@@ -247,6 +247,8 @@ Embedding (`nomic-embed-text-v2-moe` seit 12.07.2026) ist bewusst **nicht** Teil
 | `PIXIE_ANALYSE_MODEL` | aus Connector (`qwen3-32b-cpu`) | Pixie Analyse-Modell (Backend `ollama_cpu_analyse`) |
 | `SHADOW_MODEL` | aus Connector (`gemma4-cpu`) | Pixie Sprach-Modell (Backend `ollama_cpu_sprache`) |
 | `WORKER_BACKEND_CHAT` | `"ollama_gpu"` | Backend des ChatWorker (siehe §2.7) |
+
+> **Seit dem 09.09.2026, 17:55 UTC laufen alle drei Worker lokal.** `chat` auf `gemma4-a4b-gpu`, `analyse` und `sprache` auf `qwen36-cpu`. **Entscheidung des Eigentuemers:** Der Fernanbieter wird nicht mehr verwendet — er hob den Preis in vier Tagen von $0,04998 auf **$0,44000** je Million und liess den Rabatt ohne Ankuendigung fallen. Der `OpenRouterProvider` bleibt gebaut und bezeugt; er wird nur nicht mehr konfiguriert. **Damit kostet der Betrieb keinen Anbieter mehr Geld**, und `kosten_usd` bucht ueberall null.
 | `WORKER_BACKEND_BG_ANALYSE` | `"ollama_cpu_analyse"` | Analyse-Backend des BackgroundWorker |
 | `WORKER_BACKEND_BG_SPRACHE` | `"ollama_cpu_sprache"` | Sprach-Backend des BackgroundWorker |
 | `LLM_PROFILE` | `"lokal"` | Nur noch Schalter für den ThinkingNormalizer: bei `!= "lokal"` läuft dieser als No-Op (kein Ollama-`<think>`-Split nötig). Die alte globale Profil-Umschaltung ist durch `WORKER_BACKEND_*` ersetzt. |
