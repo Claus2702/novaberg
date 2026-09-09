@@ -25,6 +25,7 @@ import logging
 from contextvars import ContextVar
 
 from config import (
+    OLLAMA_CONNECTORS,
     OPENROUTER_PRICE_INPUT_PER_M,
     OPENROUTER_PRICE_OUTPUT_PER_M,
 )
@@ -43,8 +44,51 @@ CURRENT_TURN: ContextVar[str] = ContextVar("CURRENT_TURN", default=BACKGROUND_TU
 PER_MILLION: int = 1_000_000
 
 
-def cost_usd(input_tokens: int, output_tokens: int) -> float:
+def _lokale_modelle() -> frozenset[str]:
+    """Alle Modellnamen, die auf dieser Maschine laufen.
+
+    **Aus `OLLAMA_CONNECTORS` abgeleitet, nicht gesetzt** — damit die Menge
+    mit der Konfiguration mitwandert. Ein neuer Connector bringt sein Modell
+    von selbst mit; eine gepflegte Zweitliste altert lautlos, und genau diese
+    Klasse hat dieses Projekt fuenfmal getroffen.
+
+    **Keine Namensheuristik.** Der naheliegende Weg waere gewesen, ein
+    Fernmodell am Schraegstrich in `anbieter/modell` zu erkennen. Das ist eine
+    Annahme ueber Namen, keine ueber Herkunft — und `19_WERKZEUGE` haelt fest,
+    dass ein Werkzeug sein Pruefobjekt oft an einer Namensheuristik erkennt und
+    genau daran scheitert.
+
+    Vorbedingung: keine.
+    Nachbedingung: Die Namen aller `*_model`-Eintraege aller Connectoren.
+    """
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return frozenset(
+        wert
+        for eintrag in OLLAMA_CONNECTORS.values()
+        for schluessel, wert in eintrag.items()
+        if schluessel.endswith("_model") and isinstance(wert, str)
+    )
+
+
+#: Die Modelle, die auf dieser Maschine antworten. Sie kosten keinen Anbieter
+#: Geld — nur Strom, und der steht auf keiner Rechnung, die dieses Feld fuehrt.
+LOKALE_MODELLE: frozenset[str] = _lokale_modelle()
+
+
+def cost_usd(input_tokens: int, output_tokens: int, modell: str = "") -> float:
     """Was dieser Aufruf gekostet hat, in US-Dollar.
+
+    **Ein lokales Modell kostet null.** `[gemessen 09.09.2026]` Bis heute
+    rechnete diese Funktion jeden Aufruf mit den OpenRouter-Preisen — sie
+    bekam das Modell nicht einmal als Argument. An einem Tag mit lokalem
+    Gespraechspfad standen so **1,16 USD** fuer 5210 Aufrufe von
+    `gemma4-a4b-gpu` in der Spalte, gegen **0,0116 USD** fuer die 57 echten
+    Fernaufrufe.
+
+    **Sichtbar wurde der Fehler durch die Abhilfe eines anderen.** Bis zum
+    07.09.2026 buchte der lokale Pfad ueberhaupt nicht — `record_usage` hatte
+    einen einzigen Aufrufer, und der lag im Fern-Weg. Erst als die Buchung
+    beide Pfade erfasste, schlug die fehlende Modellunterscheidung durch.
 
     Vorbedingung: beide Zaehlerstaende sind nicht-negativ.
     Nachbedingung: der Betrag, nie negativ.
@@ -55,13 +99,31 @@ def cost_usd(input_tokens: int, output_tokens: int) -> float:
     Args:
         input_tokens: Eingabe-Token des Aufrufs.
         output_tokens: Ausgabe-Token des Aufrufs.
+        modell: Das Modell, das geantwortet hat. **Leer bedeutet nicht
+            kostenlos:** Ein Aufrufer, der es nicht mitgibt, ist defekt, und
+            die Rechnung faellt dann konservativ auf den Fernpreis zurueck —
+            lieber zu viel gebucht als still zu wenig. Sie meldet es.
 
     Returns:
-        Die Kosten in USD.
+        Die Kosten in USD; 0.0 fuer ein Modell aus `LOKALE_MODELLE`.
     """
     # ── Eingabe-Validierung ─────────────────────
     ein: int = max(0, int(input_tokens or 0))
     aus: int = max(0, int(output_tokens or 0))
+
+    if modell in LOKALE_MODELLE:
+        return 0.0
+
+    if not modell:
+        # Fail loud: Ein Aufrufer ohne Modellangabe bucht zum Fernpreis, und
+        # das ist im Zweifel zu viel. Eine stille Null waere die schlechtere
+        # Wahl — sie machte einen defekten Aufrufer von einem lokalen Modell
+        # ununterscheidbar.
+        logger.error(
+            "Kosten: Aufruf ohne Modellangabe — es wird zum Fernpreis "
+            "gebucht (%d ein / %d aus). Der Aufrufer gibt das antwortende "
+            "Modell nicht weiter.", ein, aus,
+        )
 
     # ── Verarbeitung ────────────────────────────
     return (
@@ -140,7 +202,7 @@ def record_usage(
     from memory.pipeline_log import log_token
 
     try:
-        kosten: float = cost_usd(input_tokens, output_tokens)
+        kosten: float = cost_usd(input_tokens, output_tokens, model)
         log_token(
             turn_id = CURRENT_TURN.get(),
             node    = caller or "unbenannt",

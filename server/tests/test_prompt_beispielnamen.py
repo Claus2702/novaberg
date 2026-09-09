@@ -46,6 +46,8 @@ KEINE_NAMEN: frozenset[str] = frozenset({
                 # (`test_kurzziel`), kein Gespraechsname
     "Sektor",   # "aus Sektor 4 steht in der Tabelle nahe null" — der
                 # Plutchik-Sektor der Praegungsschicht, kein Gespraechsname
+    "Aufrufen", # "aus Aufrufen, die nichts kosten" — der Slot nimmt das
+                # substantivierte Verb mit (`test_kosten_modell`)
     "Zusicherung",  # "aus Zusicherung 7" — die Zeugenkoepfe dieses Projekts
                 # nummerieren ihre Zusicherungen und verweisen aufeinander.
                 # Stehendes Vokabular, kein Gespraechsname
