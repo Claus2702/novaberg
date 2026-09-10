@@ -206,7 +206,8 @@ Konsumenten lesen mit Absicht aus genau einem der beiden Personality-Slots. Welc
 | `dispatcher.py` Session-Persist | `internal.emotion` (Nova-Werte für Assistant-Turn) |
 | `agents/kzg/dispatch.py` | bei `beobachter=assistant` aus `internal`, sonst `external` |
 | `agents/delegation/dispatch.py` | `external.emotion` (Delegation arbeitet auf User-Werten) |
-| `ei/neugier.py`, `ei/wissensluecken.py`, `ei/farbton.py` | `internal.emotion` und `internal.character` |
+| `ei/neugier.py`, `ei/wissensluecken.py` | `internal.emotion` und `internal.character` |
+| `ei/farbton.py` | `internal.emotion` — **und `external.emotion` fuer Intent und Beziehungsdynamik** (Setzung des Eigentuemers, 10.09.2026): Die beiden beschreiben ein Verhaeltnis und nicht eine Lage, und ein Verhaeltnis hat zwei Seiten |
 | `ei/dreischicht.py` Achsen Nähe/Tiefe | `internal.raum` (seit Chat 114, vorher die Labels aus `internal.emotion`) |
 | `ei/raum.py` | `internal.raum` schreibend, Ziel aus `external.emotion` bzw. bei Eigen-Impulsen aus `internal.emotion` |
 | `_ei_calc_character` Empathie-Quelle | `external.emotion` (User-Werte als Modulations-Eingabe) |

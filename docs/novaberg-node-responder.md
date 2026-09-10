@@ -64,6 +64,10 @@ Vor dem 13.08.2026 mischte der Prompt alle drei Bedeutungen: In sieben von dreiz
 
 **`[SZENE]`** trägt dieselbe Lage in drei Körnungen (Landschaft, Sektor, sechs Achsen — darunter die Initiative) und **den Farbton**, der den Responder bis dahin nie erreichte. Eine Wirkung des Farbtons ist nicht nachgewiesen; er steht dort, weil er die Lage beschreibt.
 
+> **Seit dem 10.09.2026 wird er hier neu gerechnet, nicht uebernommen.** Bis dahin nahm der Block den Text aus `gv_detail` woertlich — und das ist die Fassung des **Gespraechsvektors**, der analysiert und deshalb in dritter Person ueber Nova spricht. Der Responder ist der Ort, an dem das Modell die Rolle traegt; dort gehoert die Anrede hin — der Analyst spricht ueber die Figur, der Schauspieler bekommt seine Regie. Aus *„Nova ist offen und zugewandt, der Nutzer haelt Abstand."* wird hier *„Du bist offen und zugewandt, der Nutzer haelt Abstand."*
+>
+> **Der Ausloeser ist unveraendert der GV-Lauf:** Traegt `gv_detail` keinen Farbton, traegt der Block auch keinen. Berichtigt wurde die Formulierung, nicht die Bedingung.
+
 **`[PERSON B — WER ER IST]`** trägt den Kern des Menschen. Bis zum 13.08.2026 erreichte vom Nutzer ein einziges Profil den Prompt — sein Beziehungsprofil, auf 300 Zeichen gekappt —, während von Nova alle fünf hineingingen.
 
 **`[ZWISCHEN BEIDEN]`** beschriftet beide Richtungen. Nach dem Paar-Schema sind `(nova, mensch)` und `(mensch, nova)` verschiedene Aussagen; unbeschriftet nebeneinander sahen sie aus wie zwei Fassungen derselben.

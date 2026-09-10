@@ -448,13 +448,17 @@ Alle sechs Systeme dieser Stufe laufen im GV-Knoten. **S17 bis S21 stehen vor be
 
 ### S17 — Farbton
 
-**Eingang:** acht Felder aus `internal.emotion`.
+**Eingang:** acht Felder aus `internal.emotion`; **zwei davon zusaetzlich aus `external.emotion`** (Intent und Beziehungsdynamik, seit dem 10.09.2026).
 **Rechnung:** Acht unabhängige Funktionen tragen je einen Satz bei — oder schweigen. Ein neutraler Wert ergibt den leeren String, kein Füllsatz. Redundanz wird unterdrückt: `sachlich` neben `formell` sagt dasselbe und schweigt.
-**Beitrag:** Der `[SITUATION]`-Block des GV-Prompts.
-**Reinheit:** rein. `farbton_berechnen`, `lage_beschreiben`, die acht `_farbe_*`.
-**Prüfstand:** keiner.
+**Beitrag:** Der `[SITUATION]`-Block des GV-Prompts **und der `[SZENE]`-Block des Responders** — dort seit dem 10.09.2026 neu gerechnet statt aus `gv_detail` uebernommen, weil die beiden Leser verschiedene Namen brauchen.
+**Reinheit:** rein. `farbton_berechnen`, `lage_beschreiben`, `_zwei_seiten`, `_gebeugt`, die acht `_farbe_*`.
+**Prüfstand:** `test_farbton_raum.py` (22 Zeugen, seit dem 10.09.2026) — davor keiner.
 
-> **Quelle und Text stimmen nicht überein.** `farbton_berechnen` liest seit der Personality-Migration durchgehend `internal`, also **Novas** Zustand; vor der Migration lasen dieselben Zeilen die flachen Perzeptionswerte des **Nutzers**. Die Satztexte sind unverändert und sprechen weiter über ihn — „Der Nutzer teilt etwas Persönliches", „Der Nutzer hält Abstand", „Der Nutzer ist konfrontativ". Damit steht im `[SITUATION]`-Block eine Aussage über den Nutzer, die aus Novas Registerlabels stammt. `auditiert` 08.08.2026 an `ei/farbton.py` und `git show` des Migrations-Commits. Entweder die Quelle oder der Text ist zu korrigieren; welches von beidem, ist eine Entscheidung und steht als Zeile in `novaberg-fundliste.md`.
+> ~~**Quelle und Text stimmen nicht überein.**~~ → **Am 10.09.2026 aufgeloest, und die Entscheidung war keine der beiden angebotenen.** Der Befund stand richtig: `farbton_berechnen` las seit der Personality-Migration durchgehend `internal`, also **Novas** Zustand, waehrend die Satztexte unveraendert ueber den Nutzer sprachen — vor der Migration lasen dieselben Zeilen die flachen Perzeptionswerte des Nutzers, und da stimmten beide zusammen. `auditiert` 08.08.2026, `[gemessen 10.09.2026 ueber 1348 Turns]`: **711 Saetze** behaupteten eine Haltung des Nutzers, die am Nutzer anders gemessen war.
+>
+> **Die Abhilfe korrigiert weder Quelle noch Text, sondern den Gegenstand.** Der Farbton beschreibt den **Raum**, und ein Raum entsteht aus beiden Seiten: `_farbe_intent` und `_farbe_dynamik` lesen `internal` **und** `external` und nennen beide — *„Nova ist offen und zugewandt, der Nutzer haelt Abstand."* Die Asymmetrie wird dabei **benannt und nicht verrechnet**; sie ist die Aussage, nicht ihr Fehler. Setzung des Eigentuemers vom 10.09.2026.
+>
+> **Was offen bleibt:** `_farbe_stil`, `_farbe_tone` und `_farbe_modus` sprechen ueber den Raum und behaupten nichts ueber den Nutzer — sie messen ihn aber weiter aus einer Seite. Keine Falschaussage, eine unvollstaendige Messung; Zeile in `novaberg-fundliste.md`.
 
 ### S18 — Aufnahmebereitschaft
 

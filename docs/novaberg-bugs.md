@@ -3161,7 +3161,13 @@ mit §9.3. Die Konstanten entsprechen §10.2 und Anhang A.3/A.4.
 
 #### GV-FARBTON-SUBJEKTWECHSEL — der Farbton behauptet etwas über den Nutzer und misst Nova ⚠️
 
-**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert und am Code belegt**: `ei/farbton.py:198-202` liest `state.get("internal")`, also Novas Werte; `:72` formuliert daraus *„Der Nutzer haelt Abstand."* — genau der Satz aus dem Beleg. Das gilt fuer die ganze Tabelle: acht Saetze beginnen mit *„Der Nutzer"*.
+**Zustand:** ✅ **behoben am 10.09.2026 — mit benanntem Rest.** Die Absichtsfrage, auf die der Eintrag wartete, ist entschieden (Setzung des Eigentuemers, 10.09.2026): Der Farbton beschreibt **den Raum**, also wie sich beide aktiv zueinander verhalten — nicht eine Seite. `_farbe_intent` und `_farbe_dynamik` lesen seither `internal` **und** `external` und nennen beide Seiten; die Namen richten sich nach dem Leser — angesprochen wird nie der Charakter, sondern der Schauspieler ueber die Rolle. 22 Zeugen in `tests/test_farbton_raum.py`, drei Gegenproben (2, 8 und 3 vorhergesagt, alle drei so gezaehlt), Betriebsbeleg am 10.09.2026. **Auf einem Impuls-Turn bleibt die zweite Quelle ungelesen** — dort ist `external` eine Kopie von `internal`; 81 von 154 solchen Turns haetten sonst einen Paarsatz aus zweimal demselben Wert getragen.
+
+**Der Rest, den die Abhilfe nicht deckt:** Der Eintrag nennt **vier** betroffene Farben. `_farbe_stil`, `_farbe_tone` und `_farbe_modus` sprechen bereits ueber den Raum (*„Der Ton ist sachlich"*, *„Das Gespraech ist fachlich"*) und behaupten nichts ueber den Nutzer — sie **messen** den Raum aber weiter aus einer Seite. Das ist keine Falschaussage mehr, sondern eine unvollstaendige Messung; die Zeile dazu steht in `novaberg-fundliste.md`.
+
+**Was gemessen war, bevor es behoben wurde** `[10.09.2026, ueber 1348 Turns]`: **1164 (86,3 %)** trugen mindestens einen Satz ueber den Nutzer aus Novas Werten. Bei der Dynamik waren **419 von 826 (50,7 %)** gegen den am Nutzer gemessenen Wert falsch, beim Intent **292 von 904 (32,3 %)** — zusammen **711 falsche Aussagen** im Bestand. Haeufigster Einzelfall: **167-mal** *„Der Nutzer ist offen und vertraut"* bei gemessener `distanz`.
+
+~~**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert und am Code belegt**: `ei/farbton.py:198-202` liest `state.get("internal")`, also Novas Werte; `:72` formuliert daraus *„Der Nutzer haelt Abstand."* — genau der Satz aus dem Beleg. Das gilt fuer die ganze Tabelle: acht Saetze beginnen mit *„Der Nutzer"*.~~
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel-hoch.**
 
 **Symptom:** `farbton_berechnen` liest durchgehend `internal` (Nova), formuliert aber
@@ -3180,8 +3186,10 @@ Messung an Nova beruht. Eine dichte Fachantwort Novas lässt den nächsten Turn 
 Nutzer gehe auf Abstand. Konzept §10.1 nennt für `_farbe_dynamik` ausdrücklich das Beispiel
 „Der Nutzer öffnet sich" — gemeint ist die Perzeption des Nutzers.
 
-**Entscheidung nötig:** Welche der acht Farben Nova beschreiben sollen und welche den
-Nutzer. Der Node liest beides und hat beide Quellen zur Hand.
+~~**Entscheidung nötig:** Welche der acht Farben Nova beschreiben sollen und welche den
+Nutzer. Der Node liest beides und hat beide Quellen zur Hand.~~ → **Am 10.09.2026 entschieden, und die Antwort war keine der beiden angebotenen.** Der Eigentuemer: *„Der Raum sagt, wie sich beide aktiv zueinander verhalten. Nicht einer aktiv und der zweite passiv, sondern beide gemeinsam schaffen den Raum."* Die Frage bot Nova **oder** Nutzer an; die Antwort ist **beide**, und die Asymmetrie wird benannt statt verrechnet — *„Nova ist offen und zugewandt, der Nutzer haelt Abstand."* Ein Mittelwert haette geloescht, was der Block zeigen soll.
+
+> **Der Sollzustand stand die ganze Zeit im Modul selbst.** `_farbe_dynamik` fragte im Docstring *„Wie nah sind wir uns?"* — beidseitig —, `_farbe_modus` trug die Regel *„Die Saetze beschreiben den Raum, nicht den Nutzer"*, und `lage_beschreiben` die Zusage *„Die Beschreibung adressiert niemanden"*. Drei Stellen nannten ihn, vier Zeilen dazwischen brachen ihn. **Was fehlte, war nicht die Regel, sondern die zweite Quelle.**
 
 #### GV4-QUELLEN-SILENT-SKIP — die zwei Wissenslücken-Suchen tragen das Muster, das den Entity-Hop vier Monate versteckt hat ⚠️
 

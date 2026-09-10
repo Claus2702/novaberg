@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 10. September 2026 — juengster Eintrag **10.09.2026, 20:26 UTC** (gemessen via `date -u`). Davor 10.09.2026, 18:53 UTC.
+**Stand:** 11. September 2026 — juengster Eintrag **11.09.2026, 00:15 UTC** (gemessen via `date -u`). Davor 10.09.2026, 20:26 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,123 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 11.09.2026, 00:15 UTC — der Raum entsteht aus beiden, und der Farbton sagte nur einen 🔧
+
+**ZIEL:** Der Farbton beschreibt, wie sich beide Seiten zueinander verhalten — nicht
+eine Seite aus den Werten der anderen.
+**TEST:** `tests/test_farbton_raum.py` — 18 Zeugen, davon drei auf die Verdrahtung.
+**MESSUNG:** Der Bestand (1348 Turns) neu gerechnet, dazu ein echter Turn.
+
+**Der Befund war seit dem 08.08.2026 dokumentiert und wartete auf eine Absicht.**
+`GV-FARBTON-SUBJEKTWECHSEL` beschrieb ihn genau: `farbton_berechnen` liest seit der
+Personality-Migration `internal`, also **Novas** Zustand, waehrend die Satztexte
+unveraendert ueber den Nutzer sprachen. Vor der Migration lasen dieselben Zeilen die
+Perzeptionswerte des Nutzers — da stimmte beides zusammen. **Die Migration drehte die
+Quelle, der Text blieb stehen.**
+
+`[gemessen ueber 1348 Turns]` **1164 (86,3 %)** trugen mindestens einen Satz ueber den
+Nutzer aus Novas Werten:
+
+| Dimension | Saetze ueber den Nutzer | davon gegen den Messwert |
+|---|---:|---:|
+| Beziehungsdynamik | 826 (61,3 %) | **419 (50,7 %)** |
+| Intent | 904 (67,1 %) | 292 (32,3 %) |
+
+Haeufigster Einzelfall: **167-mal** stand *Der Nutzer ist offen und vertraut* im Kontext,
+waehrend der Nutzer im selben Turn `distanz` trug.
+
+### Die Entscheidung war keine der beiden, die der Eintrag anbot
+
+Das Defektregister fragte, *welche der acht Farben Nova beschreiben sollen und welche den
+Nutzer*. Der Eigentuemer entschied am 10.09.2026 anders: **beide gemeinsam.**
+
+> *„Der Raum sagt, wie sich beide aktiv zueinander verhalten. Nicht einer aktiv und der
+> zweite passiv, sondern beide gemeinsam schaffen den Raum."*
+
+Daraus folgt, dass die Asymmetrie **benannt und nicht verrechnet** wird — ein Mittelwert
+haette geloescht, was der Block zeigen soll. `_farbe_intent` und `_farbe_dynamik` lesen
+seither `internal` **und** `external`:
+
+| Lage | vorher | seither |
+|---|---|---|
+| beide `vertrauen` | Der Nutzer ist offen und vertraut. | Nova und der Nutzer sind offen und zugewandt. |
+| Nova `vertrauen`, Nutzer `distanz` | Der Nutzer ist offen und vertraut. | Nova ist offen und zugewandt, der Nutzer haelt Abstand. |
+
+**Der Sollzustand stand die ganze Zeit im Modul.** `_farbe_dynamik` fragte im Docstring
+*Wie nah sind wir uns?*, `_farbe_modus` trug die Regel *Die Saetze beschreiben den Raum,
+nicht den Nutzer*, und `lage_beschreiben` die Zusage *Die Beschreibung adressiert
+niemanden*. Drei Stellen nannten ihn, vier Zeilen dazwischen brachen ihn — was fehlte,
+war nicht die Regel, sondern die zweite Quelle.
+
+### Die Namen gehoeren dem Leser, nicht dem Block
+
+Der Farbton hat **zwei** Leser, und die Suche nach `[SITUATION]` fand nur einen: Der
+Responder fuehrt ihn unter `[SZENE]` und uebernahm bis dahin den fertigen GV-Text. Damit
+stand die Fassung des **Analysten** im Drehbuch des **Schauspielers**.
+
+**Ein Block mit mehreren Lesern traegt die Namen je Leser** — das Modell ist der Schauspieler und der Charakter der Auftrag; angesprochen wird nie der Charakter — dieselbe
+Bauart wie `sachlage_block(…, leser=…)`. Der Farbton hat sie seither auch:
+
+| Leser | Rolle | Fassung |
+|---|---|---|
+| Gespraechsvektor | analysiert, spielt nicht | Nova ist offen und zugewandt, der Nutzer haelt Abstand. |
+| Responder | traegt die Rolle | Du bist offen und zugewandt, der Nutzer haelt Abstand. |
+| Verfasser | sachlich, Person A/B | Person A ist offen und zugewandt, Person B haelt Abstand. |
+| Hintergrundagent | hat keine zweite Seite | Abstand liegt im Raum. |
+
+**Der Ausloeser blieb unveraendert:** Ohne Farbton im `gv_detail` traegt der `[SZENE]`-Block
+auch keinen. Berichtigt wurde die Formulierung, nicht die Bedingung.
+
+### Was bleibt
+
+`_farbe_stil`, `_farbe_tone` und `_farbe_modus` sprechen ueber den Raum und behaupten
+nichts ueber den Nutzer — sie **messen** ihn aber weiter aus einer Seite. Keine
+Falschaussage mehr, eine unvollstaendige Messung. Zeile in der Fundliste.
+
+Dazu die `[AUFGABE]` des GV-Prompts selbst: Zwei ihrer drei Fragen lauten *Was beschaeftigt
+den Nutzer?* und *Welcher Gedanke kommt in seinem Kopf als naechstes?* — Nova kommt darin
+nicht vor. **Die sieben Nutzer-Saetze waren kein Ausrutscher, sondern passten zum Auftrag,
+den der Prompt stellt.** Ob die Aufgabe mitwandert, ist nicht entschieden.
+
+### Der eigene Bau hatte die Luecke, die er behob
+
+**Auf einem Impuls-Turn ist `external` eine Kopie von `internal`** und beschreibt Novas
+vorige Antwort, nicht den Nutzer. Der frisch gebaute Farbton las sie trotzdem als zweite
+Seite — und sagte *Nova und der Nutzer sind einander zugewandt*, gestuetzt auf zweimal
+denselben Wert. `[gemessen]` **81 von 154 Impuls-Turns (52,6 %)** haetten diesen Paarsatz
+getragen; bei Impulsen tragen **66,9 %** beider Seiten dieselbe Dynamik, bei
+Nutzer-Turns 38,7 %.
+
+**Das ist genau die Klasse, die dieser Umbau behebt** — ein Wert, der aussieht wie eine
+Messung. Seither unterscheidet der Knoten zwei Faelle: **keine zweite Seite** (der
+Hintergrundagent, akteurslose Form) und **zweite Seite ohne Messung** (der Impuls-Turn,
+Novas Haelfte allein). Gefunden hat es die Nachfrage des Eigentuemers nach der Sicht des
+Ausloesers, nicht die Suite: Die Aenderung machte **keinen einzigen Zeugen rot**, weil
+der Fall unbezeugt war.
+
+### Die Aufgabe folgt dem Ausloeser, und der ist nicht immer der Nutzer
+
+Der `[SITUATION]`-Block beschreibt den Raum; die `[AUFGABE]` daneben tut etwas anderes und
+soll es tun: Sie nimmt die Aeusserung des **Ausloesers**, erkennt dessen Absicht und
+fuehrt sie weiter — *Was beschaeftigt den Nutzer gerade? Welcher Gedanke kommt in seinem
+Kopf als naechstes?* Das ist der Grund, warum Nova beteiligt wirkt statt nur zu antworten.
+
+**Meist ist der Ausloeser der Nutzer. Auf einem eigenen Impuls ist es Nova**, und dann
+fragte der Prompt nach der falschen Seite: Der Faden, der weitergefuehrt werden soll, ist
+ihr eigener. `[gemessen]` **154 von 1350 Turns** (11,4 %).
+
+Der Knoten waehlt seither zwischen zwei Fassungen — `gv.task` und `gv.task.impuls`, die
+nach Nova fragt und den Anstoss ausdruecklich nennt. **Dieselbe Unterscheidung, die das
+Skip-Tor schon trifft**, das einen eigenen Impuls nie abweist. 4 Zeugen, gefangen an der
+Modellgrenze statt am Erzeuger.
+
+**Suite:** 3382 gruen, 0 uebersprungen (davor 3356). **Gegenproben:** Verdrahtung
+herausgenommen — 2 vorhergesagt, 2 gezaehlt; alten Defekt wieder eingesetzt — 8
+vorhergesagt, 8 gezaehlt; Impuls wieder als zweite Seite gelesen — 3 vorhergesagt, 3
+gezaehlt; Aufgabe wieder immer auf den Nutzer — 2 vorhergesagt, 2 gezaehlt.
 
 ---
 

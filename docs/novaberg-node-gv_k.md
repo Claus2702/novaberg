@@ -467,7 +467,7 @@ User-Nachricht; ein neunter kommt fertig aus `ei/dreischicht.py` und trägt selb
 |---|---|---|
 | `[GEDANKEN]` | System | Bis zu drei aktivierte Ziele als Zielsätze — *„Gedanken, die dir gerade durch den Kopf gehen"*. Quelle `aktivierte_ziele` |
 | `[SACHLAGE]` | System | Das sachliche Verstehen des Turns, **vor** dem Farbton: erst was der Fall ist, dann wie es sich anfühlt. Hier in den Namen *Nova* und *der Nutzer*, beim Verfasser als *Person A/B* |
-| `[SITUATION]` | System | Der situative Farbton, als Parameter übergeben und nicht hier gerechnet |
+| `[SITUATION]` | System | Der situative Farbton, als Parameter übergeben und nicht hier gerechnet. **Seit dem 10.09.2026 beschreibt er den Raum aus beiden Seiten** — *Nova ist offen und zugewandt, der Nutzer haelt Abstand* statt einer Aussage ueber den Nutzer aus Novas Werten (Setzung des Eigentuemers, 10.09.2026). Hier in den Namen des GV, der analysiert; derselbe Farbton geht in den `[SZENE]`-Block des Responders und traegt dort die Anrede |
 | `[GESPRAECHSVERLAUF]` | User | Die bisherigen Turns als Text |
 | `[AKTUELLER PROMPT]` | User | Die Äußerung dieses Turns |
 | `[EMOTIONALER ZUSTAND]` | User | Emotion, Arousal, Vektor, Modus |
@@ -820,6 +820,22 @@ für Novas nächsten Gedankenschritt. Bedingung: Vektorlänge ≥ 2, kein Krisen
 
 Die Strategie ist Teil des `[AUFGABE]`-Blocks (nicht separat), um Prompt-Widersprüche
 zu vermeiden. Template in `gv.task.txt` mit `{strategie_block}`-Platzhalter.
+
+> **Seit dem 11.09.2026 gibt es zwei Fassungen, und die Auswahl folgt dem Ausloeser.**
+> Die Aufgabe fragt, was den Ausloeser beschaeftigt und welcher Gedanke bei ihm als
+> naechstes kommt — der Knoten soll dessen Absicht erkennen und **weiterfuehren**; darauf
+> beruht, dass Nova beteiligt wirkt statt nur zu antworten.
+>
+> | Fassung | wann | erste Frage |
+> |---|---|---|
+> | `gv.task.txt` | Nutzer-Turn, auch der Thinker-Retry | *Was beschaeftigt den Nutzer gerade?* |
+> | `gv.task.impuls.txt` | `reiz_herkunft = eigener_impuls` | *Was beschaeftigt Nova gerade?* |
+>
+> **Der Grund ist derselbe wie beim Skip-Tor** (§10.1a): Auf einem Impuls-Turn gibt es
+> keine Nutzer-Aeusserung, die weitergefuehrt werden koennte — der Faden ist Novas
+> eigener. `[gemessen 10.09.2026]` **154 von 1350 Turns** tragen diese Herkunft (11,4 %).
+> Die Impuls-Fassung nennt den Anstoss ausdruecklich; ohne diesen Satz waere die gedrehte
+> Frage nur eine Umbenennung.
 
 Vollständige Strategie-Architektur: siehe `novaberg-gv-strategie_k.md`.
 
