@@ -222,8 +222,25 @@ def _szenenblock(state: ConversationState) -> str:
     Nachbedingung: nichtleerer Block; die Zeitangabe steht immer.
     """
     # ── Eingabe ─────────────────────────────────
+    # Lokaler Import wie bei den uebrigen `ei`-Bausteinen dieses Moduls.
+    from ei.farbton import LESER_RESPONDER, farbton_berechnen
+
     gv_detail: dict = state.get("gv_detail") or {}
-    farbton: str = gv_detail.get("farbton", "")
+
+    # **Der Farbton wird hier neu gerechnet, nicht uebernommen** (10.09.2026).
+    # `gv_detail` traegt die Fassung des GV-Knotens, und der analysiert: Sie
+    # spricht ueber Nova in dritter Person. Der Responder ist der Ort, an dem
+    # das Modell die Rolle traegt — dort gehoert `du` hin (`F-PROMPT-2`).
+    # Uebernommen wuerde die Analysten-Fassung, und Nova laese im eigenen
+    # Drehbuch einen Satz ueber sich statt einer Regieanweisung an sich.
+    #
+    # **Die Bedingung bleibt der GV-Lauf.** Ohne Farbton im `gv_detail` trug
+    # der Block bisher keinen; das ist unveraendert — hier wird die
+    # Formulierung berichtigt, nicht der Ausloeser verschoben.
+    farbton: str = (
+        farbton_berechnen(state, leser=LESER_RESPONDER)
+        if gv_detail.get("farbton") else ""
+    )
 
     # ── Verarbeitung ────────────────────────────
     # **Dieselbe Lage in drei Koernungen**, von grob nach fein: die Landschaft

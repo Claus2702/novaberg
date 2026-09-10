@@ -34,6 +34,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from graph.nodes import gespraechsvektor as gv_modul
@@ -172,3 +173,67 @@ class OhneWahrnehmungBleibtDasTorOffenTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DieAufgabeFolgtDemAusloeserTest(unittest.TestCase):
+    """Der Knoten fuehrt den Faden des Ausloesers weiter — und der wechselt.
+
+    **Die Aufgabe ist auf die Sicht des Ausloesers ausgerichtet, nicht auf den
+    Kanal.** Sie fragt, was ihn beschaeftigt und welcher Gedanke bei ihm als
+    naechstes kommt; der Knoten soll dessen Absicht erkennen und weiterfuehren,
+    damit Nova beteiligter wirkt statt nur zu antworten.
+
+    Meist ist der Ausloeser der Nutzer. **Auf einem eigenen Impuls ist es
+    Nova** — und dann fragt die Nutzer-Fassung nach der falschen Seite: Der
+    Faden, der weitergefuehrt werden soll, ist ihr eigener.
+    `[gemessen 10.09.2026]` 154 von 1350 Turns tragen `eigener_impuls` (11,4 %).
+
+    Zeuge: Die Erwartung stammt aus der Setzung des Eigentuemers vom
+    11.09.2026, nicht aus dem Code — dieselbe Unterscheidung, die das Skip-Tor
+    oben schon trifft.
+    """
+
+    def _system_prompt(self, zustand: dict) -> str:
+        """Faengt den gebauten System-Prompt an der Modellgrenze ab.
+
+        Gefangen wird am `submit_sync`, also an der Grenze zum Modell — nicht
+        an der Funktion, die den Block auswaehlt. Ein Zeuge auf den Erzeuger
+        bliebe gruen, wenn der Aufruf wegfiele.
+        """
+        gefangen: dict = {}
+
+        def fangen(anfrage: object) -> object:
+            gefangen["system"] = getattr(anfrage, "system", "") or ""
+            return SimpleNamespace(text="Hypothese", token_total=0)
+
+        with patch.object(gv_modul.model_service.chat, "submit_sync", fangen):
+            gv_modul._hypothese_destillieren(
+                zustand, max_laenge=1, resonanz_kontext="",
+            )
+        return str(gefangen.get("system", ""))
+
+    def test_der_nutzer_turn_fragt_nach_dem_nutzer(self) -> None:
+        prompt: str = self._system_prompt(_turn(intent="knowledge"))
+
+        self.assertIn("Was beschaeftigt den Nutzer", prompt)
+        self.assertNotIn("Was beschaeftigt Nova", prompt)
+
+    def test_der_eigene_impuls_fragt_nach_nova(self) -> None:
+        prompt: str = self._system_prompt(_impuls(intent="knowledge"))
+
+        self.assertIn("Was beschaeftigt Nova", prompt)
+        self.assertNotIn("Was beschaeftigt den Nutzer", prompt)
+
+    def test_der_impuls_sagt_ausdruecklich_wessen_faden_gilt(self) -> None:
+        """Ohne den Satz waere die gedrehte Frage nur eine Umbenennung."""
+        prompt: str = self._system_prompt(_impuls(intent="knowledge"))
+
+        self.assertIn("Anstoss dieses Turns kam von Nova selbst", prompt)
+
+    def test_der_thinker_retry_bleibt_beim_nutzer(self) -> None:
+        """Gleiche Quelle, echte Nutzer-Aeusserung — also die Nutzer-Fassung."""
+        prompt: str = self._system_prompt(
+            _turn({}, "character", intent="knowledge")
+        )
+
+        self.assertIn("Was beschaeftigt den Nutzer", prompt)

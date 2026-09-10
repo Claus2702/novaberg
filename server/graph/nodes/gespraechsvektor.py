@@ -566,8 +566,21 @@ def _hypothese_destillieren(
     # Situativer Farbton (kommt als Parameter, nicht mehr hier berechnet)
     farbton_block: str = f"\n\n[SITUATION]\n{farbton}" if farbton else ""
 
+    # **Die Aufgabe folgt dem Ausloeser, nicht dem Kanal.** Sie fragt, was den
+    # Ausloeser beschaeftigt und welcher Gedanke bei ihm als naechstes kommt —
+    # der Knoten soll dessen Absicht erkennen und **weiterfuehren**. Meist ist
+    # das der Nutzer; auf einem eigenen Impuls ist es Nova, und dann fragt die
+    # Nutzer-Fassung nach der falschen Seite: Der Faden, der weitergefuehrt
+    # werden soll, ist ihr eigener.
+    #
+    # `[gemessen 10.09.2026]` **154 von 1350 Turns** tragen
+    # `herkunft = eigener_impuls` (11,4 %). Dieselbe Unterscheidung wie am
+    # Skip-Tor, das einen eigenen Impuls nie abweist (`F-GV-1`).
+    aufgaben_block: str = (
+        "gv.task.impuls" if reiz_ist_eigener_gedanke(state) else "gv.task"
+    )
     system_parts.append(
-        PROMPTS["gv.task"].format(
+        PROMPTS[aufgaben_block].format(
             max_laenge=max_laenge,
             strategie_block=PROMPTS["gv.strategie"] if strategie_aktiv else (
                 "Beschreibe die LANDSCHAFT — nicht die Route.\n"

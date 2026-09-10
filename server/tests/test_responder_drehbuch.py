@@ -155,10 +155,22 @@ class SzeneTest(unittest.TestCase):
     """Die Lage als Rahmen — mit dem Farbton, der sie zum ersten Mal erreicht."""
 
     def test_der_farbton_steht_in_der_szene(self) -> None:
-        """`FARBTON-OHNE-LESER`: acht Dimensionen, gerechnet und nie gelesen."""
-        szene: str = _szenenblock(_state())
+        """`FARBTON-OHNE-LESER`: acht Dimensionen, gerechnet und nie gelesen.
 
-        self.assertIn("Der Nutzer verfolgt einen Wissenspfad.", szene)
+        **Seit dem 10.09.2026 in der Fassung des Lesers.** Der Block trug bis
+        dahin den Text aus `gv_detail` woertlich — die Fassung des GV, der
+        analysiert und deshalb *ueber* Nova spricht. Im Drehbuch des
+        Schauspielers gehoert die Anrede hin (`F-PROMPT-2`).
+        """
+        zustand: dict = _state()
+        zustand["internal"].emotion.relationship_dynamic = "vertrauen"
+        zustand["external"].emotion.relationship_dynamic = "distanz"
+
+        szene: str = _szenenblock(zustand)
+
+        self.assertIn("Du bist offen und zugewandt", szene)
+        self.assertIn("der Nutzer haelt Abstand", szene)
+        self.assertNotIn("Nova ist", szene)
 
     def test_ohne_farbton_bleibt_die_szene_stehen(self) -> None:
         """Der Zwilling: Der Block traegt die Lage auch ohne Farbton."""

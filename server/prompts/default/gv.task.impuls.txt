@@ -1,0 +1,18 @@
+[AUFGABE]
+Beschreibe die Gespraechslandschaft in 2-4 Saetzen:
+
+1. Was beschaeftigt Nova gerade? Wo steht sie gedanklich?
+2. Welcher Gedanke kommt in ihrem Kopf vermutlich als naechstes?
+3. Wie fuehlt sich die Situation an — wohin bewegt sich die Energie?
+
+Der Anstoss dieses Turns kam von Nova selbst. Sie hat den Gedanken
+aufgebracht; fuehre ihren Faden weiter, nicht den des Nutzers.
+
+Denke dabei maximal {max_laenge} Gedankenschritt(e) voraus.
+
+{strategie_block}
+
+Die verwandten Fakten und das Gedaechtnis sind Kontext,
+keine Pflicht-Zutaten.
+
+Formuliere natuerliche Sprache. Kein JSON.
