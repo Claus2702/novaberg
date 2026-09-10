@@ -1242,6 +1242,35 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             state.get("user_id", ""), state.get("character_id", ""),
         )
 
+    # **Das Tor der Strategie hinterlaesst eine Spur** (10.09.2026). Beide
+    # Bedingungen entschieden bis heute ueber den Wissensluecken- und den
+    # Fragen-Block, und **keine von beiden war dauerhaft ablesbar**:
+    # `max_laenge` und `aufnahmebereitschaft` stehen im `gv_detail`-Schnappschuss
+    # in Redis, den jeder Turn ueberschreibt. Wie oft das Tor im Betrieb oeffnet,
+    # war damit nur ueber eine Nachrechnung aus `turn_roh` zu schaetzen — und
+    # `aufnahmebereitschaft` liest Novas Emotionsverlauf, der dort nicht steht.
+    #
+    # **Die Zeile traegt beide Bedingungen und beide Ergebnisse.** Ohne die
+    # Ergebnisse waere im Nachhinein nicht trennbar, ob das Tor geschlossen war
+    # oder ob es offen stand und nichts zu finden war — zwei Faelle, die
+    # dieselbe leere Antwort erzeugen.
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "gespraechsvektor",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "schritt":              "strategie_tor",
+            "max_laenge":           max_laenge,
+            "min_laenge":           GV_STRATEGIE_MIN_LAENGE,
+            "strategie_aktiv":      strategie_aktiv,
+            "aufnahmebereitschaft": round(lage.aufnahmebereitschaft, 4),
+            "wissensluecken":       len(wissensluecken),
+            "offene_fragen":        len(offene_fragen),
+        },
+        user_id      = state.get("user_id", ""),
+        character_id = state.get("character_id", ""),
+    )
+
     # 3e. Der Teil der Dreischicht, der nur den Prompt bedient. Die Messung —
     #     Achsen, Sektor, Cluster — ist oben schon gelaufen; hier kommt dazu,
     #     was ohne LLM-Lauf niemand braucht: das Repertoire des Clusters und
