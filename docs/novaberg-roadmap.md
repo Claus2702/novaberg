@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 9. September 2026 — juengster Eintrag **09.09.2026, 20:43 UTC** (gemessen via `date -u`). Davor 09.09.2026, 18:45 UTC.
+**Stand:** 10. September 2026 — juengster Eintrag **10.09.2026, 18:53 UTC** (gemessen via `date -u`). Davor 09.09.2026, 20:43 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 46 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 47 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,68 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 10.09.2026, 18:53 UTC — die Messvorschrift hatte den gemessenen Effekt erzeugt 🔬
+
+**Die Ausgangszahl:** Ueber 119 Turns stand die Vektorlaenge **116-mal auf 1**, und
+der Block mit Novas offenen Fragen erschien dreimal. Vorgabe des Eigentuemers:
+erst klaeren, ob es Gruende fuer die Zahlen gibt, dann justieren.
+
+### Der Grund lag im Messaufbau, nicht im System
+
+Die Laengenrechnung startet bei 1,0 und braucht netto **+0,5** fuer eine 2. In
+der Reihe, aus der die Zahl stammt (157 Turns): Emotion **100 % `neugierig`**
+(+0,725), Modus **100 %** der drei Werte mit −0,3, Dynamik **96,2 % `distanz`**
+(−0,5), Stil 84,1 % `fachlich` (0). Summe im Mittel **−0,075** — der volle
+positive Beitrag der Neugier wird exakt aufgezehrt.
+
+> **`F-MESS-1` beschraenkt Messturns auf wissenschaftliche Themen, um Termine
+> und Notizen zu vermeiden — und erzeugt damit `lernmodus`, `distanz` und
+> `fachlich`.** Genau die drei Groessen, die die Laenge druecken. Die Regel, die
+> die Messung sauber haelt, stellt den gemessenen Effekt her.
+
+### Die Gegenprobe: eine entworfene Reihe ueber das volle Spektrum
+
+51 Turns gegen ein Testpaar, Reize ueber alle zehn Modi, beide Emotionsrichtungen,
+alle Dynamiken. Acht der zehn Modi wurden vergeben, die Dynamik traegt sechs
+Werte, die Emotion acht.
+
+| Reihe | n | `laenge = 1` | Tor offen |
+|---|---:|---:|---:|
+| alte Reihe, nur Wissenschaft | 157 | 99,4 % | **0,6 %** |
+| Bestand, gewachsen | 1293 | 55,5 % | 36,5 % |
+| **Spektrum-Reihe** | 43 | 48,8 % | **51,2 %** |
+
+**Am Tor ist nichts zu justieren.** Die zweite Bedingung ist ebenfalls keine:
+`aufnahmebereitschaft` liegt bei **0,4744 … 0,9535**, Median 0,7774, **null in
+0 von 43** — sie belegt 47,9 % ihrer Spanne.
+
+### Was dabei auffiel und eine Kennung bekam
+
+**`kreativ` wurde in 0 von 1347 Turns vergeben** — der einzige Modus, der die
+Laenge hebt (+0,3). Fuenf Reize zielten ausdruecklich darauf und wurden alle
+`philosophischer_austausch` (−0,3). Die Option steht im Prompt, und `spielerisch`
+vergab dasselbe Modell sechsmal. `MODUS-KREATIV-WIRD-NIE-VERGEBEN`.
+
+**Der Leser blieb blind, und das war ein Fehler des Aufbaus.** Alle 1818
+Wissensluecken gehoeren dem Paar `meister`; das Testpaar hat null. Das Tor
+oeffnete 22-mal, `offene_fragen` blieb 43-mal null — nicht weil der Leser nicht
+greift, sondern weil es nichts zu greifen gab.
+
+**Zwei Erinnerungs-Anker entstanden aus Saetzen ohne Termin**, einer davon aus
+*„Draussen ist es still, nur ein leises Brummen"*, ein zweiter mit einem Datum
+**neun Tage in der Vergangenheit**.
+
+### Vorbereitet: das Tor hinterlaesst jetzt eine Spur
+
+`strategie_aktiv` und `aufnahmebereitschaft` standen ausschliesslich im
+`gv_detail`-Schnappschuss, den jeder Turn ueberschreibt — die erste Groesse war
+aus `turn_roh` nachrechenbar, die zweite nicht. Der GV-Knoten schreibt seither
+eine `strategie_tor`-Zeile mit beiden Bedingungen **und** beiden Ergebnissen:
+*Tor zu* und *Tor offen, nichts gefunden* erzeugen sonst dieselbe leere Antwort.
+`tests/test_gv_strategie_tor.py`, 5 Zeugen.
 
 ---
 
