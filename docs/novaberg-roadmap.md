@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 10. September 2026 — juengster Eintrag **10.09.2026, 18:53 UTC** (gemessen via `date -u`). Davor 09.09.2026, 20:43 UTC.
+**Stand:** 10. September 2026 — juengster Eintrag **10.09.2026, 20:26 UTC** (gemessen via `date -u`). Davor 10.09.2026, 18:53 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 47 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 48 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,91 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 10.09.2026, 20:26 UTC — sechs Wertefelder, zwei mit Zug, und die Ausreisser sassen bei den vier ohne 🔧
+
+**ZIEL:** Kein Wert aus der Modellantwort laeuft ungeprueft durch, und ein Wert in
+der falschen Spalte wird als solcher benannt.
+**TEST:** `tests/test_perzeption_kanon.py` — 27 Zeugen.
+**MESSUNG:** 30 Reize direkt gegen das Modell, dazu drei echte Turns.
+
+### Der Befund, der den Bau ausgeloest hat
+
+`[gemessen ueber 2694 Perzeptionen]` Von 16.164 Feldwerten stehen **327
+ausserhalb ihres Kanons — 2,0 %**, und die Verteilung ist nicht zufaellig:
+
+| Dimension | erlaubt | vorgekommen | ausserhalb | Kanon-Zug |
+|---|---:|---:|---:|---|
+| `tone` | 4 | **16** | **153 (5,7 %)** | nein |
+| `intent` | 6 | 12 | **119 (4,4 %)** | nein |
+| `sprach_stil` | 6 | 11 | 39 (1,4 %) | nein |
+| `emotion` | 17 | 24 | 14 (0,5 %) | **ja** |
+| `modus` | 10 | 11 | 1 (0,0 %) | **ja** |
+| `beziehungs_dynamik` | 6 | 7 | 1 (0,0 %) | nein |
+
+**Die beiden Dimensionen mit Zug sind sauber, drei der vier ohne sind es
+nicht.** Der Zusammenhang benennt die Abhilfe selbst.
+
+### Die Hauptmenge sind keine Schreibvarianten
+
+`philosophischer_austausch` steht **108-mal** in `intent` — ein *Modus*-Wert.
+`begeisterung` **59-mal** in `tone` — eine *Emotion*. `sachlich` **19-mal** in
+`sprach_stil` — ein *Ton*.
+
+> **Das Modell hat die Sache erkannt und die Spalte verfehlt.** Eine Meldung
+> *„unbekannter Wert"* verschweigt genau das — und ein Deutsch-Englisch-Array
+> faengt diese Klasse nicht.
+
+### Gebaut
+
+**Vier fehlende Wertemengen als Konstanten.** `tone`, `sprach_stil`,
+`beziehungs_dynamik` und der Perzeptions-`intent` standen nur als Aufzaehlung im
+Prompt; `11_EVA` nennt genau das — eine geschlossene Menge ohne deklarierte
+Obermenge ist benutzbar und nicht pruefbar. Fuenf Zeugen halten jede Konstante
+wortgleich gegen die Prompt-Datei.
+
+**Alle sechs Felder am Zug**, statt zweier. **`to_canonical` benennt das fremde
+Feld**, wenn ein unbekannter Wert in einem anderen Kanon steht — der
+Rueckgabewert aendert sich nicht, die Meldung schon. **Und jeder Ausreisser
+bekommt eine Zeile im `pipeline_log`**: Bis heute war es eine `logger.warning`,
+und deshalb wusste niemand, dass `tone` sechzehn Werte traegt.
+
+**Dabei gefunden: `INTENT_KANON` war vergeben** — er traegt die sechzehn
+Intentionen der *Salienz*, die Perzeption kennt sechs andere. Ueberschneidung:
+ein Wert. Dieselbe Verwechslung eine Ebene hoeher.
+
+### Die Ursache von `MODUS-KREATIV-WIRD-NIE-VERGEBEN` ist gemessen
+
+Zwei Arme gegen dasselbe Modell, dieselben drei Kreativ-Reize je zehnmal:
+
+| Arm | `kreativ` als Modus |
+|---|---:|
+| Prompt des Betriebs | **1 von 30** |
+| mit Wertelegende | **11 von 30** |
+
+**Die Gesamtqualitaet aendert die Legende nicht** — ueber 30 Reize aller zehn
+Modi trifft der Betriebs-Prompt **23 von 30** (76,7 %), der ergaenzte 24. Das
+Modell verteilt gut; der Ausfall betrifft gezielt diesen einen Wert. **Die
+Legende ist gemessen und nicht gebaut:** Der ergaenzte Arm vergab zusaetzlich
+9-mal `creative` — das Wort steht in drei Dimensionen, und der Zug zieht
+Schreibvarianten, keine Uebersetzungen.
+
+### Was die Gegenprobe fand
+
+**Der erste Anlauf sagte 11 rote Zeugen voraus und ergab 1.** Der Rueckbau nahm
+vier der sechs Felder vom Zug und entfernte das Ausreisser-Protokoll
+vollstaendig — und **kein einziger Zeuge** wurde davon rot. Die 19 belegten, dass
+der Zug *kann*, nicht dass er *gerufen wird* (`20_TESTS/verdrahtung.md`). Acht
+Verdrahtungs-Zeugen spaeter: **8 vorhergesagt, 9 gezaehlt.**
+
+**Betriebsbeleg** `[gemessen 20:23:49 UTC]`: Die erste Zeile im echten Turn
+meldet `tone` mit `begeisternd` — eine **Wortform** von `begeisterung`, vom Zug
+nicht zu retten und in keinem fremden Kanon. Damit liegt der erste Eintrag einer
+Synonymkarte als Betriebsbeleg vor statt als Vermutung.
+
+**Suite 3356 gruen, 0 uebersprungen** (davor 3329).
 
 ---
 
