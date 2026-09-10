@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
+**Stand:** 10. September 2026, 20:26 UTC (**alle sechs Wertefelder laufen durch den Kanon-Zug** — bis heute taten es zwei, und genau die vier ohne trugen die Ausreisser: von 16.164 Feldwerten stehen **327 ausserhalb** (2,0 %), `tone` mit 5,7 % an der Spitze. Die vier fehlenden Wertemengen sind als Konstanten deklariert, der Zug benennt das **fremde Feld**, wenn ein unbekannter Wert einem anderen gehoert, und jeder Ausreisser bekommt eine `kanon_ausreisser`-Zeile im `pipeline_log`. `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE`). Davor der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -139,6 +139,10 @@ Gemessen über 180 Turns der Charakterbildungs-Messreihe:
 - **Neutral (1):** `neutral`
 
 > **Hinweis:** Die Kategorien im Perzeption-Prompt weichen leicht vom Plutchik-Modell ab — `stolz` und `erleichterung` sind nicht im Prompt enthalten, dafür `ueberrascht` und `verwundert` als eigene Kategorie. Nicht-kanonische Emotionen werden im Enricher über `EMOTION_SYNONYM_MAP` auf die kanonischen Formen gemappt. Unbekannte Emotionen erzeugen einen Error-Log.
+>
+> **Seit dem 10.09.2026 gilt das für alle sechs Wertefelder, nicht nur für die Emotion.** `_wahrnehmung_lesen` zieht `intent`, `tone`, `emotion`, `modus`, `sprach_stil` und `beziehungs_dynamik` über `to_canonical` gegen ihren Kanon — `thema` bleibt draußen, es ist Freitext. **Der Rückfall auf den Rohwert bleibt**: Ein unbekannter Wert läuft durch und wird gemeldet, statt auf einen Vorgabewert zurückgesetzt zu werden, der wie eine Messung aussähe.
+>
+> **Und die Meldung nennt das fremde Feld.** `[gemessen über 2694 Perzeptionen]` Die Hauptmenge der Ausreißer sind keine Schreibvarianten, sondern richtige Werte in der falschen Spalte: `philosophischer_austausch` steht **108-mal** in `intent`, `begeisterung` **59-mal** in `tone`, `sachlich` **19-mal** in `sprach_stil`. Jeder Ausreißer bekommt eine `kanon_ausreisser`-Zeile mit Feld, Wert und fremdem Feld; der saubere Lauf schreibt nichts.
 
 → Plutchik-Modell: `novaberg-ei-plutchik.md`
 

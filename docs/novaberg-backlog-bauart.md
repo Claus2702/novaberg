@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 97 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 99 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -106,6 +106,50 @@ Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetz
 
 **Die Befunde bleiben gültig.** Sie ruhen auf Formeln, Konstanten und Codestellen, nicht auf den Zahlen — die Zahlen waren ihr Beleg, nicht ihre Ursache. `KZG-SALIENZ-SKALENBRUCH` ist eine Aussage über eine Dämpfungskurve und einen Deckel; die hält, solange der Code sie trägt.
 
+
+### Gemessen am 10.09.2026 — zwei Wege, die eine Messung hinter sich haben und keinen Bau
+
+Beide Eintraege stehen hier, weil sie **Arbeit** sind und kein Defekt: Ihre Befunde liegen
+als Kennung im Register, ihr *Weg* ist gemessen und nicht gegangen.
+
+#### Die Wertelegende fuer `modus` und `sprach_stil`
+
+Der Perzeptions-Prompt erklaert `intent`, `arousal`, `emotion` und `beziehungs_dynamik`
+**Wert fuer Wert**; diese beiden bekommen je einen Satz und keine einzige Werterklaerung.
+`[gemessen 10.09.2026]` gegen dasselbe Modell, dieselben drei Reize je zehnmal:
+
+| Arm | `kreativ` als Modus |
+|---|---:|
+| Prompt des Betriebs | **1 von 30** |
+| mit Wertelegende | **11 von 30** |
+
+**Die Gesamtqualitaet aendert sie nicht** — ueber 30 Reize aller zehn Modi trifft der
+Betriebs-Prompt 23 von 30, der ergaenzte 24.
+
+**Warum sie trotzdem nicht gebaut ist:** Der ergaenzte Arm vergab zusaetzlich **9-mal
+`creative`** — den englischen `intent`-Wert in der Modus-Spalte. Das Wort steht in **drei**
+Dimensionen, und der Kanon-Zug zieht Schreibvarianten, keine Uebersetzungen. Die Legende
+allein tauscht einen Ausfall gegen einen anderen; sie braucht die Entscheidung, ob eine der
+beiden Dimensionen umbenannt wird. **Das ist eine Absichtsfrage und liegt beim Eigentuemer.**
+
+Kennung: `MODUS-KREATIV-WIRD-NIE-VERGEBEN`. Werkzeug: `tools/perzeption_prompt_probe.py`.
+
+#### Vier klassifizierte Groessen persistieren
+
+`type`, `momentum` und `direction` (aus `router.task.txt`) und `valenz` (aus
+`salienz.dimensionen.txt`) werden **nirgends gespeichert**. Sie steuern eine Entscheidung und
+hinterlassen keine Spur — im `pipeline_log` steht **keine einzige Zeile** mit `momentum` oder
+`direction`, und damit ist die Entscheidung des Routers im Nachhinein nicht nachvollziehbar.
+
+**Setzung des Eigentuemers am 10.09.2026:** *„Wir sollten diese vielleicht persistieren, weil
+wir sonst auch nicht die Entscheidung im pipeline_log nachvollziehen koennen."*
+
+**Dieselbe Klasse ist an zwei Stellen derselben Woche behoben worden** — der Dispatcher
+schrieb nur bei Erfolg (09.09.), das Strategie-Tor stand nur im Redis-Schnappschuss (10.09.).
+Beide Male war die Groesse erst messbar, nachdem sie eine Zeile bekam. **Der Aufwand ist
+jeweils eine Protokollzeile; der Ertrag ist, dass die Frage ueberhaupt gestellt werden kann.**
+
+---
 
 ### Nachgemessen am 01.08.2026 — die Salienz steht wieder oben
 

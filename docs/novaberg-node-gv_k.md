@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 1. September 2026, 14:30 UTC (§8.0a neu — **die neun Bloecke, die der Knoten wirklich baut**; vier davon nannte das Dokument nie. Es beschrieb die Absicht vollstaendig und die Prompt-Struktur gar nicht). Davor 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
+**Stand:** 10. September 2026, 20:26 UTC (**das Laengen-Tor hinterlaesst eine Spur** — beide Bedingungen standen nur im `gv_detail`-Schnappschuss, den jeder Turn ueberschreibt; die `strategie_tor`-Zeile im `pipeline_log` traegt seither `max_laenge`, `aufnahmebereitschaft` **und** beide Ergebnisse. `[gemessen 10.09.2026]` Ueber ein entworfenes Spektrum oeffnet das Tor in **51,2 %** der Turns, ueber eine rein wissenschaftliche Reihe in **0,6 %** — die Messvorschrift hatte den Befund erzeugt). Davor §8.0a neu — **die neun Bloecke, die der Knoten wirklich baut**; vier davon nannte das Dokument nie. Es beschrieb die Absicht vollstaendig und die Prompt-Struktur gar nicht). Davor 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
 **Nachtrag 28.08.2026:** Der System-Prompt des GV-Calls traegt zusaetzlich den `[SACHLAGE]`-Block — das sachliche Verstehen des Turns aus `graph/nodes/sachlage.py`, vor dem Farbton. Konzept: `novaberg-thinking-lage_k.md`. **Nachtrag 29.08.2026:** Derselbe Block trägt seit den Scheiben 6–8 des Lage-Konzepts auch die Deckung aus dem Gedächtnis, die Zweifel der Plausibilitätsprüfung und den Antwortstoff samt Suchtreffern (`sachlage_block`) — der GV sieht damit, was Nova zur Sache weiß, bevor er das Vehikel wählt. **Nachtrag 29.08.2026, spaet:** Der Block spricht in den Namen seines Lesers (`sachlage_block(…, leser=LESER_GV)`): hier *Nova* und *der Nutzer* in dritter Person — der GV analysiert, er spielt nicht; der Verfasser bekommt denselben Block mit *Person A* und *Person B* (F-PROMPT-2: das Modell wird nie als der Charakter angesprochen). Der GV-Prompt traegt selbst noch einmal *»dein«* (Fundliste 29.08.).
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
@@ -840,6 +840,22 @@ siehe Backlog GV4b.
 lohnt bei einem Ein-Schritt-Vektor nicht. Die **Aufnahmebereitschaft** steht davor und
 wird in jedem Turn gerechnet: Sie ist ein Zustand Novas, keine Funktion der Vektorlänge,
 und sie ist rein (State-Lesen, Lookups, Arithmetik).
+
+> **Seit dem 10.09.2026 ist beides ablesbar.** Die Zeile `strategie_tor` (`node='gespraechsvektor'`,
+> `art='berechnung'`) trägt `max_laenge`, `min_laenge`, `strategie_aktiv`, `aufnahmebereitschaft`
+> **und** die Zahl der gefundenen Lücken und offenen Fragen. Ohne die beiden Ergebnisse wäre
+> *Tor zu* von *Tor offen, nichts gefunden* nicht zu trennen — zwei Fälle mit derselben leeren
+> Antwort.
+>
+> **Was die erste Messung ergab** `[gemessen 10.09.2026]`: Über ein entworfenes Spektrum aller
+> zehn Modi öffnet das Tor in **51,2 %** der Turns (43 Zeilen), über den gewachsenen Bestand in
+> **36,5 %** (1293 Turns) — und über eine rein wissenschaftliche Reihe in **0,6 %** (157 Turns).
+> **Die Zahl, die zwei Tage lang als Systembefund galt, beschrieb die Messvorschrift**
+> (`F-MESS-1`, Nachtrag vom 10.09.2026).
+>
+> **Die Aufnahmebereitschaft ist dabei nie die Hürde:** 0,4744 bis 0,9535 über 43 Turns, Median
+> 0,7774, **null in 0 von 43** — sie wird nur im Krisenfall null, und der trat im Bestand in
+> **1 von 1293** Turns ein.
 
 **Erweitert am 08.08.2026 — dieselbe Regel, zwei Tore weiter vorn.** Chat 116 zog die
 Bereitschaft vor die Längen-*Schwelle* (Länge < 2), aber nicht vor die beiden frühen
