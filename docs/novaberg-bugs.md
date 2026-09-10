@@ -837,7 +837,13 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 **Warum es teuer ist:** Eine falsche Bestaetigung wird geglaubt. Derselbe Satz steht bei `RESPONDER-ERFINDET-DATUM` im Archiv.
 
-**Geschlossen, wenn** eine Auskunft ueber kommende Termine keine Zeile nennt, deren `event_time` in der Vergangenheit liegt.
+**Zweiter Fall, gemeldet vom Eigentuemer am 10.09.2026** — und er zeigt die Klasse von einer anderen Seite: **Derselbe Termin wurde in einem Gespraech zuerst als *heute um 13 Uhr* und unmittelbar danach als *morgen* ausgegeben.** Nicht ein falsches Datum gegen die Tabelle, sondern **zwei Relativangaben, die einander widersprechen** — die Auskunft rechnet die gespeicherte `event_time` offenbar nicht gegen den laufenden Tag, sondern formuliert frei.
+
+> **Ein Widerspruch innerhalb eines Gespraechs ist die billigste Pruefform, die es gibt** — er braucht keine Tabelle, nur zwei Saetze nebeneinander. Dass er auffiel, ist dem Menschen zu verdanken und keiner Pruefung.
+
+**Herkunft dieses Datenpunktes: eine Beobachtung, keine Messung.** Turn-Kennung und Zeitpunkt sind nicht erhoben, der Wortlaut stammt aus der Schilderung. Wer ihn nachmisst, sucht nach zwei Auskuenften desselben Termins in einem Gespraech mit verschiedenen Relativangaben.
+
+**Geschlossen, wenn** eine Auskunft ueber kommende Termine keine Zeile nennt, deren `event_time` in der Vergangenheit liegt — **und zwei Auskuenfte ueber denselben Eintrag im selben Gespraech dieselbe Relativangabe tragen.**
 
 ---
 
