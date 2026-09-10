@@ -24,19 +24,24 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from config import (
+    BEZIEHUNGS_DYNAMIK_KANON,
     EMOTION_KANON,
     EMOTION_SYNONYM_MAP,
     MODUS_KANON,
+    PERZEPTION_INTENT_KANON,
+    PERZEPTION_TONE_KANON,
     PROMPTS,
+    SPRACH_STIL_KANON,
     get_node_config,
     redis_client,
 )
 from graph.personality import InternalPersonality, Personality
 from graph.reiz import reiz_text
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
+from memory.pipeline_log import log_berechnung
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
-from utils.canon import to_canonical
+from utils.canon import fremdes_feld, strip_umlauts, to_canonical
 
 logger = logging.getLogger("ki_server.perzeption")
 
@@ -95,6 +100,24 @@ def _arousal_lesen(roh: object) -> float:
 _EMOTION_ODER_SYNONYM: frozenset[str] = frozenset(EMOTION_KANON) | frozenset(EMOTION_SYNONYM_MAP)
 
 
+#: **Alle sechs Wertemengen, die ein Perzeptions-Lauf liefert.** Das
+#: Verzeichnis ist der Gegenstand von `fremdes_feld`: Ein Wert, der im eigenen
+#: Feld unbekannt ist und in einem anderen steht, ist keine Schreibvariante,
+#: sondern eine verrutschte Spalte.
+#:
+#: `[gemessen 10.09.2026 ueber 2694 Perzeptionen]` Genau diese Klasse traegt
+#: die Hauptmenge: `philosophischer_austausch` steht 108-mal in `intent`,
+#: `begeisterung` 59-mal in `tone`, `sachlich` 19-mal in `sprach_stil`.
+_FELDER_KANON: dict[str, frozenset[str] | set[str]] = {
+    "intent":             PERZEPTION_INTENT_KANON,
+    "tone":               PERZEPTION_TONE_KANON,
+    "emotion":            _EMOTION_ODER_SYNONYM,
+    "modus":              MODUS_KANON,
+    "sprach_stil":        SPRACH_STIL_KANON,
+    "beziehungs_dynamik": BEZIEHUNGS_DYNAMIK_KANON,
+}
+
+
 def _kanonisch(wert: object, kanon: frozenset[str] | set[str], feld: str) -> str:
     """Zieht einen Modellwert auf seine kanonische Form, sonst laesst er ihn.
 
@@ -112,7 +135,7 @@ def _kanonisch(wert: object, kanon: frozenset[str] | set[str], feld: str) -> str
     einen Vorgabewert zuruecksetzte, verloere die Meldung stromabwaerts und
     machte aus einem sichtbaren Fehler einen unsichtbaren.
     """
-    return to_canonical(wert, kanon, feld, "perzeption") or (
+    return to_canonical(wert, kanon, feld, "perzeption", _FELDER_KANON) or (
         wert if isinstance(wert, str) else ""
     )
 
@@ -131,19 +154,30 @@ def _wahrnehmung_lesen(ergebnis: dict) -> Wahrnehmung:
     psychologisch: dict = ergebnis.get("psychologisch", {})
 
     # ── Ausgabe ─────────────────────────────────
+    # **Alle sechs Wertefelder laufen durch den Zug** (10.09.2026). Bis heute
+    # taten es zwei — `emotion` und `modus` —, und genau die beiden waren
+    # sauber: `[gemessen ueber 2694 Perzeptionen]` 0,5 % und 0,0 % ausserhalb
+    # ihres Kanons, gegen **5,7 %** bei `tone`, **4,4 %** bei `intent` und
+    # 1,4 % bei `sprach_stil`. Der Zusammenhang benennt die Abhilfe selbst.
+    #
+    # `thema` bleibt draussen: Es ist Freitext, keine geschlossene Menge.
     leer = Wahrnehmung()
     return Wahrnehmung(
-        intent             = rational.get("intent",      leer.intent),
-        tone               = rational.get("tone",        leer.tone),
+        intent             = _kanonisch(rational.get("intent", leer.intent),
+                                        PERZEPTION_INTENT_KANON, "intent"),
+        tone               = _kanonisch(rational.get("tone", leer.tone),
+                                        PERZEPTION_TONE_KANON, "tone"),
         thema              = rational.get("thema",       leer.thema),
         emotion            = _kanonisch(emotional.get("emotion", leer.emotion),
                                         _EMOTION_ODER_SYNONYM, "emotion"),
         arousal            = _arousal_lesen(emotional.get("arousal", leer.arousal)),
         modus              = _kanonisch(psychologisch.get("modus", leer.modus),
                                         MODUS_KANON, "modus"),
-        sprach_stil        = psychologisch.get("sprach_stil",        leer.sprach_stil),
-        beziehungs_dynamik = psychologisch.get("beziehungs_dynamik",
-                                              leer.beziehungs_dynamik),
+        sprach_stil        = _kanonisch(psychologisch.get("sprach_stil", leer.sprach_stil),
+                                        SPRACH_STIL_KANON, "sprach_stil"),
+        beziehungs_dynamik = _kanonisch(psychologisch.get("beziehungs_dynamik",
+                                                          leer.beziehungs_dynamik),
+                                        BEZIEHUNGS_DYNAMIK_KANON, "beziehungs_dynamik"),
     )
 
 
@@ -297,6 +331,76 @@ def _build_system_prompt(today: str, session_turns: str | None = None, rolle: st
     return "\n\n".join(bloecke)
 
 
+def _ausreisser_protokollieren(
+    state: ConversationState, wahr: Wahrnehmung, rolle: str,
+) -> None:
+    """Schreibt jeden Wert, der seinen Kanon verfehlt hat, ins Protokoll.
+
+    **Warum nicht die Logzeile genuegt, die `to_canonical` schon schreibt.**
+    Sie steht im Container-Log und ist mit dem naechsten Neustart weg. Genau
+    deshalb wusste bis zum 10.09.2026 niemand, dass `tone` **sechzehn**
+    verschiedene Werte traegt, wo vier erlaubt sind — die Zahl liess sich erst
+    aus `turn_roh` rekonstruieren, und auch das nur, weil die Perzeption
+    dorthin durchschlaegt. Eine Groesse, die eine Entscheidung traegt und keine
+    dauerhafte Spur hinterlaesst, ist im Nachhinein nur zu schaetzen.
+
+    **Die Zeile nennt das fremde Feld, wenn es eines gibt.** *„`intent` traegt
+    `philosophischer_austausch`"* ist eine andere Auskunft als *„unbekannter
+    Wert"*: Die erste sagt, dass das Modell die Sache erkannt und die Spalte
+    verfehlt hat, und nur sie fuehrt zur Ursache.
+
+    **Der saubere Lauf schreibt nichts.** Eine Zeile je Turn waere der
+    Regelfall und damit kein Befund (`22_STILLE_FEHLER`); gemessen betrifft es
+    2,0 % der Feldwerte.
+
+    Vorbedingung: `wahr` ist gelesen und gezogen.
+    Nachbedingung: eine Protokollzeile, wenn mindestens ein Feld seinen Kanon
+        verfehlt — sonst keine.
+    Fehlerfaelle: keine eigenen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    gemessen: dict[str, str] = {
+        "intent":             wahr.intent,
+        "tone":               wahr.tone,
+        "emotion":            wahr.emotion,
+        "modus":              wahr.modus,
+        "sprach_stil":        wahr.sprach_stil,
+        "beziehungs_dynamik": wahr.beziehungs_dynamik,
+    }
+
+    # ── Verarbeitung ────────────────────────────
+    ausreisser: list[dict] = []
+    for feld, wert in gemessen.items():
+        if not wert or wert in _FELDER_KANON[feld]:
+            continue
+        ausreisser.append({
+            "feld":         feld,
+            "wert":         wert,
+            "fremdes_feld": fremdes_feld(
+                strip_umlauts(wert.strip()).lower(), feld, _FELDER_KANON,
+            ),
+        })
+
+    if not ausreisser:
+        return
+
+    # ── Ausgabe ─────────────────────────────────
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "perzeption",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "schritt":     "kanon_ausreisser",
+            "rolle":       rolle,
+            "anzahl":      len(ausreisser),
+            "ausreisser":  ausreisser,
+            "verwechselt": sum(1 for a in ausreisser if a["fremdes_feld"]),
+        },
+        user_id      = state.get("user_id", ""),
+        character_id = state.get("character_id", ""),
+    )
+
+
 def perceive(
     state: ConversationState,
 ) -> ConversationState:
@@ -329,6 +433,7 @@ def perceive(
     wahr: Wahrnehmung = _wahrnehmung_erheben(eingabe_text, system_prompt)
 
     # ── Ausgabe-Verifikation ────────────────────
+    _ausreisser_protokollieren(state, wahr, rolle)
     _wahrnehmung_schreiben(ziel, wahr)
     logger.info(
         f"Perzeption: rolle={rolle}, "

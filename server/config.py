@@ -1552,6 +1552,60 @@ INTENT_KANON: set[str] = {
     "bestaetigung", "widerspruch", "abschluss", "hilferuf", "humor",
 }
 
+# ─────────────────────────────────────────────
+# Die vier Wertemengen der Perzeption (10.09.2026)
+# ─────────────────────────────────────────────
+# **Dieselbe Begruendung wie bei `INTENT_KANON` darueber, eine Ebene weiter:**
+# Eine geschlossene Wertemenge ohne deklarierte Obermenge ist benutzbar und
+# nicht pruefbar. Diese vier standen bis heute **nur** als Aufzaehlung im
+# Prompt — und genau sie tragen die Ausreisser.
+#
+# `[gemessen 10.09.2026 ueber 2694 Perzeptionen]`:
+#
+#     Dimension     erlaubt  vorgekommen  ausserhalb   Kanon-Zug
+#     tone                4          16   153 (5,7 %)  nein
+#     intent              6          12   119 (4,4 %)  nein
+#     sprach_stil         6          11    39 (1,4 %)  nein
+#     beziehungs_dyn.     6           7     1 (0,0 %)  nein
+#     emotion            17          24    14 (0,5 %)  **ja**
+#     modus              10          11     1 (0,0 %)  **ja**
+#
+# **Die beiden Dimensionen mit Zug sind sauber, drei der vier ohne sind es
+# nicht.** Der Zusammenhang benennt die Abhilfe selbst.
+#
+# **Die Hauptmenge sind keine Schreibvarianten, sondern verrutschte Spalten:**
+# `philosophischer_austausch` steht 108-mal in `intent` (ein Modus-Wert),
+# `begeisterung` 59-mal in `tone` (eine Emotion), `sachlich` 19-mal in
+# `sprach_stil` (ein Ton). Deshalb meldet `to_canonical` seit heute, **welchem**
+# fremden Kanon ein unbekannter Wert angehoert — ein Deutsch-Englisch-Array
+# faengt diese Klasse nicht.
+
+# **`PERZEPTION_INTENT_KANON` und nicht `INTENT_KANON`.** Der Name ist oben
+# vergeben, und zwar fuer eine **andere** Menge: `INTENT_KANON` sind die
+# sechzehn Intentionen der **Salienz**, diese hier sind die sechs der
+# **Perzeption**. Zwei Wertemengen unter einem Begriff sind genau die
+# Verwechslung, die das Modell in seinen Ausgaben auch macht.
+PERZEPTION_INTENT_KANON: frozenset[str] = frozenset({
+    "smalltalk", "knowledge", "personal", "task", "creative", "meta",
+})
+
+# Der Ton, in dem der Assistent antworten soll. **`kreativ` steht hier UND als
+# Modus** — das Modell vergibt es 161-mal hier und **null-mal** dort
+# (`MODUS-KREATIV-WIRD-NIE-VERGEBEN`).
+PERZEPTION_TONE_KANON: frozenset[str] = frozenset({
+    "empathisch", "sachlich", "kreativ", "direkt",
+})
+
+# Wie der Nutzer formuliert — Satzlaenge, Formalitaet, Slang.
+SPRACH_STIL_KANON: frozenset[str] = frozenset({
+    "locker", "formell", "fachlich", "emotional", "jugendlich", "neutral",
+})
+
+# Wie der Nutzer sich zum Assistenten stellt.
+BEZIEHUNGS_DYNAMIK_KANON: frozenset[str] = frozenset({
+    "vertrauen", "distanz", "angriff", "hilfesuchend", "dankbar", "neutral",
+})
+
 # Die Perspektive einer Gedaechtniszeile — die dritte Spalte des Paar-Schemas.
 #
 # **`user_id` traegt den Menschen, `character_id` die Figur; wer die Zeile

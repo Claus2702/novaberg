@@ -56,6 +56,7 @@ def to_canonical(
     canon:  Collection[str],
     field:  str,
     caller: str = "",
+    fremde: Optional[dict[str, Collection[str]]] = None,
 ) -> Optional[str]:
     """Gibt den Wert in kanonischer Form, oder `None`, wenn er nicht dazu passt.
 
@@ -75,6 +76,19 @@ def to_canonical(
     2. **Kleinschreibung und aufgeloeste Umlaute stehen im Kanon** — die
        kanonische Form zurueck, mit einer Zeile auf `info`.
     3. **Sonst** `None`. Der Aufrufer entscheidet, was das bedeutet.
+
+    **`fremde` benennt die Verwechslung, statt sie als Muell zu melden.**
+    `[gemessen 10.09.2026 ueber 2694 Perzeptionen]` Die Hauptmenge der
+    Ausreisser sind **keine** Schreibvarianten, sondern richtige Werte in der
+    falschen Spalte: `philosophischer_austausch` steht 108-mal im Feld
+    `intent`, `begeisterung` 59-mal in `tone`, `sachlich` 19-mal in
+    `sprach_stil`. Eine Meldung *„unbekannter Wert"* verschweigt das
+    Entscheidende — dass das Modell die Sache erkannt und nur die Spalte
+    verfehlt hat.
+
+    Der Rueckgabewert aendert sich dadurch **nicht**: Auch ein erkannter
+    Fremdwert ist im eigenen Feld ungueltig. Was sich aendert, ist, was in der
+    Meldung steht — und damit, ob jemand die Ursache findet.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(value, str) or not value:
@@ -96,9 +110,46 @@ def to_canonical(
     # Keine Ausgabe-Verifikation, und das ist Absicht: Der Nichttreffer **ist**
     # das Ergebnis. Eine Marke ueber einer Meldung sieht beim Lesen aus wie
     # eine Pruefung und ist keine (`11_EVA` §4).
+    heimat: Optional[str] = fremdes_feld(normalisiert, field, fremde)
+    if heimat:
+        logger.warning(
+            "Kanon [%s]: Feld %r traegt %r — das ist ein gueltiger Wert des "
+            "Feldes %r. Die Sache ist erkannt, die Spalte verfehlt; der "
+            "Aufrufer entscheidet.",
+            caller or "ohne Aufrufer", field, value, heimat,
+        )
+        return None
+
     logger.warning(
         "Kanon [%s]: Feld %r traegt %r — steht auch nach dem Aufloesen der "
-        "Umlaute nicht im Kanon (%d erlaubte Werte). Der Aufrufer entscheidet.",
+        "Umlaute nicht im Kanon (%d erlaubte Werte) und in keinem anderen "
+        "bekannten Feld. Der Aufrufer entscheidet.",
         caller or "ohne Aufrufer", field, value, len(canon),
     )
+    return None
+
+
+def fremdes_feld(
+    wert:   str,
+    field:  str,
+    fremde: Optional[dict[str, Collection[str]]] = None,
+) -> Optional[str]:
+    """Sagt, zu welchem anderen Feld ein Wert gehoert — oder `None`.
+
+    **Getrennt von `to_canonical`, weil der Aufrufer die Antwort oft selbst
+    braucht.** Wer den Fremdwert nicht nur melden, sondern zaehlen oder ins
+    Protokoll schreiben will, kommt sonst nicht an ihn heran, ohne die
+    Logzeile zu parsen — und eine Pruefung, die ihre Meldung liest statt ihren
+    Gegenstand, ist am 25.08.2026 einmal teuer gewesen
+    (`22_STILLE_FEHLER/pruefung-liest-die-meldung.md`).
+
+    Vorbedingung: `wert` ist bereits normalisiert (klein, ohne Umlaute).
+    Nachbedingung: der Name des fremden Feldes, oder `None`. Das eigene Feld
+        wird uebersprungen; mehrere Treffer ergeben den ersten in der
+        Reihenfolge des Wortverzeichnisses.
+    Fehlerfaelle: keine.
+    """
+    for name, menge in (fremde or {}).items():
+        if name != field and wert in menge:
+            return name
     return None
