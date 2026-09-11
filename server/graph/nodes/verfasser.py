@@ -28,7 +28,7 @@ Konzept: novaberg-node-verfasser_k.md
 import logging
 from datetime import datetime
 
-from config import PROMPTS, get_node_config
+from config import PROMPTS, VERFASSER_IMPULS_NAHE, get_node_config
 from ei.haltungssprache import stoffzeilen
 from graph.einwand import kopf_anweisung, urteil_lesen
 
@@ -289,6 +289,40 @@ def _question_target(sachlage: dict, state: dict) -> tuple[str | None, bool]:
     return gegenstand, eigener_zug
 
 
+def _uebergangsblock(state: ConversationState) -> str:
+    """Der Brueckenblock, wenn der Fund fern vom Gespraech liegt.
+
+    Vorbedingung: keine. Fehlt die Naehe im Payload — jeder Weg ausser der
+        Zustellung —, gibt es nichts zu ueberbruecken und der Block entfaellt.
+    Nachbedingung: Der Block oder der leere String.
+    Fehlerfaelle: Ein unbrauchbarer Wert wird gemeldet und wie eine fehlende
+        Naehe behandelt. **Nicht still als 0.0**: Das waere die staerkste
+        Aussage (*ganz fernes Thema*) aus einer fehlenden.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    payload: dict = state.get("event_payload") or {}
+    roh = payload.get("thema_naehe")
+    if roh is None:
+        return ""
+    try:
+        naehe: float = float(roh)
+    except (TypeError, ValueError):
+        logger.warning(
+            "Verfasser: thema_naehe %r ist keine Zahl — kein Uebergangsblock",
+            roh,
+        )
+        return ""
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    if naehe >= VERFASSER_IMPULS_NAHE:
+        return ""
+    logger.info(
+        "Verfasser: Impuls liegt fern (Naehe %.2f < %.2f) — Uebergangsblock gesetzt",
+        naehe, VERFASSER_IMPULS_NAHE,
+    )
+    return PROMPTS["verfasser.impuls_ferne"]
+
+
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt des Verfassers: Auftrag plus Wissen.
 
@@ -330,6 +364,17 @@ def _build_system_prompt(state: ConversationState) -> str:
         # (`novaberg-bugs.md` -> VERFASSER-KENNT-DIE-QUELLE-NICHT).
         PROMPTS["verfasser.eigener_impuls"] if reiz_ist_eigener_gedanke(state)
         else PROMPTS["verfasser.fremder_reiz"],
+        # **Liegt der Fund fern, braucht er eine Bruecke** (11.09.2026).
+        # Die Auswahl der Zustellung laesst ab `THEMEN_SCHWELLE` (0,30)
+        # durch — bewusst, damit ein Fund aus einem frueheren Auftrag nicht
+        # fuer immer liegen bleibt. Der Preis ist ein Themenwechsel, und
+        # ohne Uebergang wirkt er eingeworfen.
+        #
+        # `[Betriebsbeleg 11.09.2026]` Ein Eintrag mit Naehe **0,37** wurde
+        # zugestellt, waehrend das Gespraech bei einem anderen Gegenstand
+        # stand. Der Beitrag war sprachlich gelungen, kein Satz abgeschrieben
+        # — und sprang ohne ein Wort des Uebergangs.
+        _uebergangsblock(state),
         # Die Anreden folgen der Konstellation des Auftrags: "du" ist der
         # Verfasser, ueber Person A wird in dritter Person gesprochen, und der
         # Mensch heisst Person B. Vorher stand hier "den NUTZER" und "mit

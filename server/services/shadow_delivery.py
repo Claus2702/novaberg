@@ -36,7 +36,12 @@ from datetime import datetime
 import numpy as np
 import redis
 
-from config import ASSISTANT_USER_ID, shutdown_event
+from config import (
+    ASSISTANT_USER_ID,
+    PIXIE_DELIVERY_PAUSE_SCHLUESSEL,
+    PIXIE_PAUSE_SCHLUESSEL,
+    shutdown_event,
+)
 from ei.utils import NEGATIVE_EMOTIONEN
 from memory.haltung import haltung_lesen
 from memory.pipeline_log import log_berechnung
@@ -325,6 +330,16 @@ def _besten_eintrag_finden(
             bester_score   = gesamt_score
             bester_eintrag = eintrag
             bester_index   = idx
+            # **Die thematische Naehe reist mit.** Ohne sie weiss der
+            # Verfasser nicht, ob er direkt anknuepfen kann oder einen
+            # Uebergang bauen muss — und springt dann ohne einen.
+            # `[Betriebsbeleg 11.09.2026]` Ein Eintrag mit 0,37 Naehe wurde
+            # zugestellt, waehrend das Gespraech bei einem anderen Thema
+            # stand; der Beitrag war sprachlich gelungen und thematisch ohne
+            # Bruecke. Die Schwelle liegt bei 0,30 — sie laesst bewusst auch
+            # Ferneres durch, weil ein Fund aus einem frueheren Auftrag sonst
+            # nie zugestellt wuerde.
+            bester_eintrag["_thema_naehe"] = round(thema_sim, 4)
 
     if bester_eintrag is None:
         logger.debug("Delivery: Kein kompatibler Eintrag gefunden")
@@ -758,6 +773,9 @@ def _impuls_in_den_charaktergraph(
                 "current_emotion":  eintrag.get("emotion", ""),
                 "gespraechs_modus": eintrag.get("modus", ""),
                 "prompt_thema":     eintrag.get("thema", ""),
+                # Wie nah der Fund am laufenden Gespraech liegt, [0,1].
+                # Der Verfasser baut daraus den Uebergang.
+                "thema_naehe":      eintrag.get("_thema_naehe"),
                 "impuls_aufgabe":   eintrag.get("aufgabe", ""),
                 # Der Turn, aus dem der Gedanke entstand — das zweite Ende
                 # der Sachlage-Bruecke. Steht immer im Payload, auch als
@@ -922,6 +940,37 @@ async def shadow_delivery_loop(
             if shutdown_event.is_set():
                 logger.info("Shadow Delivery: Shutdown erkannt — beende Loop")
                 break
+
+            # ── Pause (`pixie:paused`) — gilt fuer die Zustellung wie fuer
+            # den Scheduler ────────────────────
+            #
+            # **Der Scheduler anzuhalten genuegt nicht.** Er erzeugt keine
+            # neuen Auftraege mehr, aber was fertig auf dem Stapel liegt,
+            # wurde weiter zugestellt — mit voller Turnlast und mitten in
+            # einem laufenden Gespraech.
+            #
+            # `[gemessen 10.09.2026]` Waehrend einer Messreihe mit
+            # bestaetigtem `{"paused": true}` liefen **fuenf Zustellungen mit
+            # `durchgelassen: true`** und **ein vollstaendiger Fremdturn**
+            # mitten in der Reihe; sein Reiz war ein Rechercheergebnis. Damit
+            # war weder die Reihe hintergrundfrei (`F-MESS-2` verlangt genau
+            # das) noch der Betrieb vor einem Impuls geschuetzt, der sich
+            # zwischen zwei Nutzeraeusserungen schiebt.
+            #
+            # Derselbe Schluessel, dieselbe Bauart wie in
+            # `services/pixie/scheduler.py` — ein zweiter Schalter waere eine
+            # zweite Wahrheit.
+            # **Zwei Schluessel, und einer genuegt.** Der Vollschalter haelt
+            # Agenten und Zustellung an; der Teilschalter nur die Zustellung.
+            # Wer den Hintergrund arbeiten lassen will, ohne dass seine
+            # Ergebnisse mitten in eine Reihe fallen, setzt den zweiten
+            # (11.09.2026).
+            if (redis_client.exists(PIXIE_PAUSE_SCHLUESSEL)
+                    or redis_client.exists(PIXIE_DELIVERY_PAUSE_SCHLUESSEL)):
+                logger.debug(
+                    "Shadow Delivery: Pausiert — Zustellung verworfen"
+                )
+                continue
 
             # Alle User mit aktiven WebSocket-Verbindungen prüfen
             for user_id in list(websocket_map.keys()):

@@ -90,12 +90,23 @@ class VerfasserPromptTest(unittest.TestCase):
 
         Geprueft wird deshalb, dass der Block eine **Richtung** nennt und
         keine Wand: Wem der Gedanke gehoert und was mit ihm zu tun ist.
+
+        **Am 11.09.2026 hat die zweite Richtung gewechselt, die erste nicht.**
+        Bis dahin stand hier `SIE EROEFFNET` — mit dem Zusatz *„statt an etwas
+        anzuknuepfen. Was Person B zuletzt sagte, ist Vorgeschichte und nicht
+        der Anlass."* Das war eine uebersteuerte Abhilfe: Um die falsche
+        Zuschreibung zu verhindern, war der Anschluss ans Gespraech ganz
+        untersagt, und ein Beitrag ohne Anschluss wirkt eingeworfen. Seither
+        `SIE KNUEPFT AN` — ebenfalls eine Richtung, nicht eine Wand. Die
+        Herkunftszusicherung darueber bleibt unberuehrt und wird in
+        `DieHerkunftBleibtScharf` (`tests/test_impuls_anschluss.py`) eigens
+        gehalten.
         """
         prompt: str = verf_mod._build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, "character"))
 
         self.assertIn("ES IST IHRE ENTDECKUNG", prompt)
-        self.assertIn("SIE EROEFFNET", prompt)
+        self.assertIn("SIE KNUEPFT AN", prompt)
 
     def test_der_block_traegt_kein_verbot_mehr(self) -> None:
         """Die Gegenrichtung, und sie ist der eigentliche Zeuge.
