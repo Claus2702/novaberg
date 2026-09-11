@@ -367,13 +367,56 @@ def _formel_aus_dem_state(
     """
     # ── Eingabe-Validierung / Verarbeitung / Ausgabe ──
     return salienz_effektiv_berechnen(
-        sprachlich        = sprachlich,
-        ziel_gravitation  = gravitationsterm,
-        arousal           = arousal,
-        salienz_human     = state.get("salienz_human"),
-        nutzer_gewichtung = nutzer_gewichtung,
-        zielsog           = state.get("zielsog_roh") or 0.0,
+        sprachlich             = sprachlich,
+        ziel_gravitation       = gravitationsterm,
+        arousal                = arousal,
+        salienz_human          = state.get("salienz_human"),
+        nutzer_gewichtung      = nutzer_gewichtung,
+        zielsog                = state.get("zielsog_roh") or 0.0,
+        emotionale_gravitation = _staerkste_emotionale_gravitation(state),
     )
+
+
+def _staerkste_emotionale_gravitation(state: ConversationState) -> float:
+    """Der staerkste Zug einer aktivierten Erinnerung auf diesen Turn.
+
+    **Das Maximum, nicht die Summe** — dieselbe Entscheidung wie beim
+    Gravitationsterm am 09.09.2026, und aus demselben Grund: Eine Summe ueber
+    aktivierte Punkte ist unbeschraenkt und traegt den Vergleich mit den
+    uebrigen Antrieben nicht. Der staerkste Punkt beantwortet die Frage, die
+    der Antrieb stellt — wie sehr zieht die staerkste Erinnerung —, und liegt
+    durch Konstruktion auf derselben Skala wie sie.
+
+    **Der Kanal hat seit dem 30.08.2026 einen Schreiber und bis heute keinen
+    Leser fuer diesen Zweck.** `enricher` befuellt
+    `emotionale_gravitationspunkte`; der EmGrav-Knoten liest sie, um den
+    Emotionsverlauf zu modulieren. Die Salienz sah sie nie.
+
+    Vorbedingung: keine — ein fehlender oder leerer Kanal heisst "keine
+        Erinnerung aktiviert" und ergibt 0.0.
+    Nachbedingung: Ein Wert auf [0.0, 1.0].
+    Fehlerfaelle: Ein Punkt ohne brauchbaren `gravitation`-Wert wird
+        uebergangen und gemeldet — still zu 0.0 zu machen hiesse, einen
+        fehlenden Wert von einem gemessenen Nullzug nicht mehr zu
+        unterscheiden.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    punkte: list = state.get("emotionale_gravitationspunkte") or []
+    werte: list[float] = []
+    for punkt in punkte:
+        roh = punkt.get("gravitation") if isinstance(punkt, dict) else None
+        if isinstance(roh, (int, float)):
+            werte.append(float(roh))
+        else:
+            logger.warning(
+                "Salienz: emotionaler Gravitationspunkt ohne brauchbaren "
+                "Wert (%r) — fuer den Antrieb uebergangen", roh,
+            )
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    if not werte:
+        return 0.0
+    return min(1.0, max(werte))
 
 
 def analyze(

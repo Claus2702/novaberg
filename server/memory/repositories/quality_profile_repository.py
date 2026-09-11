@@ -23,6 +23,7 @@ import psycopg2
 import psycopg2.extras
 
 from config import (
+    QUALITAET_FRISCHE_TAGE,
     QUALITAET_KANON,
     QUALITAET_LAENGE_MIN,
     QUALITAET_WIEDERKEHR_MIN,
@@ -294,9 +295,23 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
     Knoten trugen **vier alle Filterkriterien und trotzdem kein Profil**; sie
     waren schlicht nie an der Reihe.
 
-    Danach `beruehrt` und `haeufigkeit` als zweiter und dritter Schluessel:
+    Danach `beruehrt` und `haeufigkeit` als dritter und vierter Schluessel:
     Ein Knoten ohne Lesespur faellt sonst ans Ende, obwohl ueber ihn nichts
     Schlechtes bekannt ist, sondern nichts.
+
+    **Seit dem 11.09.2026 steht die Frische davor: wie oft ein Knoten in den
+    letzten `QUALITAET_FRISCHE_TAGE` Tagen gelesen wurde.** Die Gesamtlesezahl
+    allein waehlt die historisch haeufigen — und ein Knoten, der heute zum
+    ersten Mal gelesen wird, traegt 1 und steht hinter allen, die zwanzigmal
+    gelesen wurden. Genau ihn braucht die Faszination aber **jetzt**.
+
+    `[gemessen 10.09.2026 ueber eine Reihe von 19 Turns]` **42 gelesene
+    Traeger ohne Profil**; davon **22 offen in der Warteschlange** (also
+    Kandidat und nicht an der Reihe), 11 unter der Laengenschwelle, 9 unter
+    der Wiederkehr. Ueber 363 Turns Historie meldete die Faszination in
+    **74,1 %** der Faelle `werte: {}`. Bei **1497 offenen Kandidaten** und 20
+    je Tageslauf braeuchte der Bestand 75 Tage; die Frische-Sortierung wartet
+    nicht darauf, sondern holt die gerade gebrauchten vor.
 
     **Die Lesespur kostet 2,8 ms** `[gemessen 05.09.2026]` ueber 13.554
     Enricher-Zeilen — bezahlbar fuer einen Lauf, der einmal am Tag faellt.
@@ -308,9 +323,10 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
 
     Vorbedingung: `limit` ist positiv. Wird geprueft und laut verworfen.
     Nachbedingung: Bis zu `limit` Eintraege mit `id`, `inhalt`, `haeufigkeit`,
-        `themen`, `beruehrt` (Zahl verschiedener Turns) und `gelesen`
-        (Zahl der Lesevorgaenge); bei einem
-        Datenbankfehler eine leere Liste, und der Fehler steht im Log.
+        `themen`, `beruehrt` (Zahl verschiedener Turns), `gelesen` (Zahl aller
+        Lesevorgaenge) und `zuletzt_gelesen` (davon die der letzten
+        `QUALITAET_FRISCHE_TAGE` Tage); bei einem Datenbankfehler eine leere
+        Liste, und der Fehler steht im Log.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(limit, int) or limit <= 0:
@@ -327,15 +343,21 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
             "WITH gelesen AS ("
             "      SELECT jsonb_array_elements_text("
             "                 (inhalt->>'lzg_resonanz_ids')::jsonb"
-            "             )::int AS id"
+            "             )::int AS id,"
+            "             erstellt_am"
             "      FROM pipeline_log"
             "      WHERE node = 'enricher' AND inhalt ? 'lzg_resonanz_ids'"
             "  ), lesezahl AS ("
-            "      SELECT id, count(*) AS mal FROM gelesen GROUP BY id"
+            "      SELECT id, count(*) AS mal,"
+            "             count(*) FILTER ("
+            "                 WHERE erstellt_am > NOW() - (%s || ' days')::interval"
+            "             ) AS zuletzt"
+            "      FROM gelesen GROUP BY id"
             "  ) "
             "SELECT k.id, k.inhalt, k.haeufigkeit, k.themen, "
-            "       COALESCE(b.turns, 0) AS beruehrt, "
-            "       COALESCE(l.mal, 0)   AS gelesen "
+            "       COALESCE(b.turns, 0)   AS beruehrt, "
+            "       COALESCE(l.mal, 0)     AS gelesen, "
+            "       COALESCE(l.zuletzt, 0) AS zuletzt_gelesen "
             "FROM lzg_knoten k "
             "LEFT JOIN ("
             "      SELECT lzg_id, count(DISTINCT turn_id) AS turns "
@@ -348,10 +370,11 @@ def candidates_load(postgres_url: str, limit: int) -> list[dict]:
             "  AND NOT EXISTS ("
             "      SELECT 1 FROM traeger_qualitaet t WHERE t.knoten_id = k.id"
             "  ) "
-            "ORDER BY COALESCE(l.mal, 0) DESC, COALESCE(b.turns, 0) DESC, "
-            "         k.haeufigkeit DESC, k.id "
+            "ORDER BY COALESCE(l.zuletzt, 0) DESC, COALESCE(l.mal, 0) DESC, "
+            "         COALESCE(b.turns, 0) DESC, k.haeufigkeit DESC, k.id "
             "LIMIT %s",
-            (QUALITAET_WIEDERKEHR_MIN, QUALITAET_LAENGE_MIN, limit),
+            (QUALITAET_FRISCHE_TAGE, QUALITAET_WIEDERKEHR_MIN,
+             QUALITAET_LAENGE_MIN, limit),
         )
         zeilen = cursor.fetchall()
     except psycopg2.Error as fehler:

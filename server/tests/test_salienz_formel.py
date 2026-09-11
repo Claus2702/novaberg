@@ -49,14 +49,16 @@ def _rechne(
     arousal: float = 0.0,
     human=None,
     gewichtung=None,
+    emgrav: float = 0.0,
 ):
     """Kurzform fuer den Formel-Aufruf mit benannten Vorgaben."""
     return salienz_effektiv_berechnen(
-        sprachlich        = sprachlich,
-        ziel_gravitation  = ziel,
-        arousal           = arousal,
-        salienz_human     = human,
-        nutzer_gewichtung = gewichtung,
+        sprachlich             = sprachlich,
+        ziel_gravitation       = ziel,
+        arousal                = arousal,
+        salienz_human          = human,
+        nutzer_gewichtung      = gewichtung,
+        emotionale_gravitation = emgrav,
     )
 
 
@@ -189,16 +191,45 @@ class HerkunftImErgebnisTest(unittest.TestCase):
 
     def test_antriebe_stehen_benannt_nicht_gezaehlt(self) -> None:
         antriebe: dict = _rechne(sprachlich=0.4, ziel=0.25).antriebe
-        self.assertEqual(antriebe, {"sprachlich": 0.4, "ziel_gravitation": 0.25})
+        self.assertEqual(antriebe, {
+            "sprachlich":             0.4,
+            "ziel_gravitation":       0.25,
+            "emotionale_gravitation": 0.0,
+        })
 
     def test_fehlende_antriebe_werden_mitgefuehrt(self) -> None:
-        """Zwei von vier Antrieben schweigen — das gehoert ins Ergebnis, sonst
-        sieht ein max() ueber zwei aus wie eines ueber vier.
+        """Einer von vier Antrieben schweigt — das gehoert ins Ergebnis, sonst
+        sieht ein max() ueber drei aus wie eines ueber vier.
+
+        **Bis zum 11.09.2026 waren es zwei.** `emotionale_gravitation` stand
+        hier mit dem Grund *unnormiert, Werte weit ueber 1.0* — der seit dem
+        30.08.2026 nicht mehr galt: `[gemessen ueber 888 Kandidaten]` Spanne
+        0,184 bis 0,708, kein Wert ueber 1,0.
         """
         ergebnis = _rechne(sprachlich=0.4)
         self.assertEqual(ergebnis.nicht_angeschlossen, ANTRIEBE_NICHT_ANGESCHLOSSEN)
-        self.assertIn("emotionale_gravitation", ergebnis.nicht_angeschlossen)
         self.assertIn("neugier", ergebnis.nicht_angeschlossen)
+        self.assertNotIn("emotionale_gravitation", ergebnis.nicht_angeschlossen)
+
+    def test_die_emotionale_gravitation_kann_das_max_gewinnen(self) -> None:
+        """Ein Antrieb, der nie gewinnt, ist von einem fehlenden nicht zu
+        unterscheiden. `[gerechnet 11.09.2026 ueber 488 Turns]` 9,0 % Gewinnanteil.
+        """
+        ergebnis = _rechne(sprachlich=0.2, ziel=0.1, emgrav=0.6)
+
+        self.assertEqual(ergebnis.antriebe["emotionale_gravitation"], 0.6)
+        self.assertGreater(ergebnis.eigen_pfad,
+                           _rechne(sprachlich=0.2, ziel=0.1).eigen_pfad)
+
+    def test_ein_negativer_wert_wird_gemeldet_nicht_verschluckt(self) -> None:
+        with self.assertLogs("ki_server.ei.salienz", level="WARNING") as log:
+            ergebnis = _rechne(sprachlich=0.4, emgrav=-0.5)
+
+        self.assertEqual(ergebnis.antriebe["emotionale_gravitation"], 0.0)
+        self.assertTrue(
+            any("emotionale_gravitation" in z for z in log.output),
+            f"Keine Meldung: {log.output}",
+        )
 
 
 class NutzerGewichtungLadenTest(unittest.TestCase):

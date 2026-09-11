@@ -32,7 +32,12 @@ import logging
 import time
 
 from agents import AgentRegistry
-from config import PIXIE_LOCK_TTL_SEKUNDEN, redis_client
+from config import (
+    PIXIE_AGENTEN_PAUSE_SCHLUESSEL,
+    PIXIE_LOCK_TTL_SEKUNDEN,
+    PIXIE_PAUSE_SCHLUESSEL,
+    redis_client,
+)
 from services.model_services.spur import SPUR_LLM, spur_setzen, spur_zuruecksetzen
 from services.pixie.dispatch import abschluss, agent_ausfuehren
 from services.pixie.kandidaten import kandidaten_sammeln
@@ -78,8 +83,14 @@ async def pixie_heartbeat(app_state, spur: str = SPUR_LLM) -> None:
         logger.debug(f"Pixie[{spur}]: Letzter Zyklus laeuft noch — Heartbeat verworfen")
         return
 
-    # Guard: Pause (Admin-API Kompatibilitaet) — gilt fuer beide Spuren
-    if redis_client.exists("pixie:paused"):
+    # Guard: Pause — gilt fuer beide Spuren.
+    #
+    # **Zwei Schluessel, und einer genuegt.** Der Vollschalter haelt Agenten
+    # und Zustellung an; der Teilschalter nur die Agenten. Wer eine Reihe mit
+    # zugestellten Impulsen, aber ohne frische Recherchen fahren will, setzt
+    # den zweiten (11.09.2026).
+    if (redis_client.exists(PIXIE_PAUSE_SCHLUESSEL)
+            or redis_client.exists(PIXIE_AGENTEN_PAUSE_SCHLUESSEL)):
         logger.debug(f"Pixie[{spur}]: Pausiert — Heartbeat verworfen")
         return
 

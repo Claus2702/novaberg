@@ -49,9 +49,23 @@ logger = logging.getLogger("ki_server.ei.salienz")
 # Ohne diese Liste saehe ein max() ueber zwei Antriebe genauso aus wie eines
 # ueber vier, und die Luecke waere unbeobachtbar.
 ANTRIEBE_NICHT_ANGESCHLOSSEN: tuple[str, ...] = (
-    "emotionale_gravitation",   # gebaut, aber unnormiert (Werte weit ueber 1.0)
     "neugier",                  # Rueckkopplung Wissensluecken -> Neugier fehlt
 )
+# **`emotionale_gravitation` stand hier bis zum 11.09.2026** mit dem Grund
+# *„gebaut, aber unnormiert (Werte weit ueber 1.0)"*. Der Grund war seit dem
+# 30.08.2026 hinfaellig: `gravitation_lzg_berechnen` teilt seither durch
+# `LZG_KNOTEN_GEWICHT_CAP` (Bug EMGRAV-SCHWELLE-TOT), und die Rueckgabe liegt
+# auf [0, EMOTIONALE_GRAVITATION_FAKTOR_LZG]. `[gemessen 11.09.2026 ueber 888
+# Kandidaten aus 447 Turns]` Spanne **0,184 bis 0,708**, **kein einziger Wert
+# ueber 1,0**. Der Eintrag hat elf Tage laenger gestanden als sein Grund.
+#
+# **Vor dem Anschliessen wurde am 11.09.2026 nachgerechnet, ob er ueberhaupt sichtbar wird:**
+# `[gerechnet 11.09.2026 ueber 488 Turns mit beiden Groessen]` Die emotionale Gravitation
+# gewaenne das `max()` in **44 Faellen (9,0 %)**, weitere 62 liegen im oberen
+# Fuenftel darunter. Das ist der Unterschied zu `ziel_gravitation`, die am
+# 01.09.2026 in 4 von 2786 Zeilen entschied und deshalb vom `max()` in einen
+# Zug umgebaut wurde — ein Antrieb, der rechnet und unter einem `max()`
+# verschwindet, sieht von aussen aus wie einer, der nicht angeschlossen ist.
 
 
 @dataclass
@@ -164,12 +178,13 @@ def zielsog_zug_staerke(zielsog: float) -> float:
 
 def salienz_effektiv_berechnen(
     *,
-    sprachlich:        float,
-    ziel_gravitation:  float,
-    arousal:           float,
-    salienz_human:     float | None,
-    nutzer_gewichtung: float | None,
-    zielsog:           float = 0.0,
+    sprachlich:            float,
+    ziel_gravitation:      float,
+    arousal:               float,
+    salienz_human:         float | None,
+    nutzer_gewichtung:     float | None,
+    zielsog:               float = 0.0,
+    emotionale_gravitation: float = 0.0,
 ) -> SalienzErgebnis:
     """Berechnet die Salienz eines Segments aus Novas Aeusserung.
 
@@ -190,6 +205,12 @@ def salienz_effektiv_berechnen(
             die Luecke nach oben; wie stark, sagt `zielsog_zug_staerke`.
             Vorgabe 0.0 heisst "kein Sog" und laesst den Pfad unveraendert —
             das ist der Zustand jedes Aufrufers, der sie nicht kennt.
+        emotionale_gravitation: Der staerkste Zug einer emotional aufgeladenen
+            Erinnerung auf diesen Turn, 0.0-1.0 — **ein Antrieb, kein Zug**:
+            Er konkurriert im `max()`, weil er dort gemessen sichtbar bleibt
+            (9,0 % Gewinnanteil, siehe oben). Vorgabe 0.0 heisst "keine
+            Erinnerung aktiviert" und ist der Zustand jedes Aufrufers, der sie
+            nicht kennt.
 
     Vorbedingung: sprachlich und ziel_gravitation sind nicht negativ.
     Nachbedingung: effektiv liegt in [0.0, 1.0]; gewinner benennt den Pfad, aus
@@ -210,10 +231,20 @@ def salienz_effektiv_berechnen(
         )
         ziel_gravitation = 0.0
 
+    # Dieselbe Pruefung wie bei den beiden anderen Antrieben: Ein negativer
+    # Wert traegt nichts bei, aber er soll nicht still verschwinden.
+    if emotionale_gravitation < 0.0:
+        logger.warning(
+            f"Salienz-Formel: emotionale_gravitation {emotionale_gravitation:.3f} "
+            f"negativ — auf 0.0 gesetzt"
+        )
+        emotionale_gravitation = 0.0
+
     # ── Verarbeitung: der Eigen-Pfad ────────────
     antriebe: dict[str, float] = {
-        "sprachlich":       round(sprachlich, 4),
-        "ziel_gravitation": round(ziel_gravitation, 4),
+        "sprachlich":             round(sprachlich, 4),
+        "ziel_gravitation":       round(ziel_gravitation, 4),
+        "emotionale_gravitation": round(emotionale_gravitation, 4),
     }
 
     # **Der Zuschlag hebt, und die Normierung haelt die Skala.** Bis zum

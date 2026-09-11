@@ -541,6 +541,48 @@ PIXIE_INTERVALL_SEKUNDEN: int = int(os.getenv("PIXIE_INTERVALL_SEKUNDEN", "120")
 PIXIE_CPU_INTERVALL_SEKUNDEN: int = int(os.getenv("PIXIE_CPU_INTERVALL_SEKUNDEN", "30"))
 PIXIE_LOCK_TTL_SEKUNDEN:  int = int(os.getenv("PIXIE_LOCK_TTL_SEKUNDEN", "600"))
 
+# **Der Pausenschalter, an einer Stelle benannt.** Er liegt in Redis und nicht
+# in der Umgebung, weil eine Umgebungsvariable beim Import gelesen wird und nur
+# mit einem Neustart zu aendern waere — waehrend einer Messreihe ist genau das
+# der Fall, den der Schalter vermeiden soll (`F-MESS-2`).
+#
+# **Drei Leser, ein Schluessel:** die Admin-Endpunkte, der Pixie-Scheduler und
+# die Zustellschleife. Bis zum 11.09.2026 stand er viermal als Zeichenkette im
+# Code, und die Zustellschleife las ihn gar nicht — der Schalter hielt den
+# Scheduler an und liess fertige Impulse weiter zustellen.
+PIXIE_PAUSE_SCHLUESSEL: str = "pixie:paused"
+
+# **Zwei Haelften, die sich getrennt anhalten lassen** (11.09.2026, Vorgabe des
+# Eigentuemers). `pixie:paused` oben haelt beide an — das ist der Schalter fuer
+# eine Messreihe, die ueberhaupt keinen Hintergrund sehen soll.
+#
+# **Fuer einen Test reicht das nicht.** Wer pruefen will, ob ein zugestellter
+# Impuls an das Gespraech anschliesst, braucht die Zustellung **an** und den
+# Rechercheagenten **aus**: Sonst schiebt sich waehrend der Reihe ein frischer
+# Fund dazwischen, und die geprueften Impulse sind andere als die
+# vorbereiteten. Umgekehrt will eine Messung am Hintergrund die Agenten laufen
+# lassen, ohne dass ihre Ergebnisse mitten in die Reihe zugestellt werden.
+#
+# **Ein gesetzter Teilschalter wirkt wie der Vollschalter fuer seine Haelfte.**
+# Beide Leser pruefen `pixie:paused ODER ihren eigenen` — damit bleibt der
+# Vollschalter, was er war, und niemand muss zwei Schluessel loeschen, um ihn
+# zurueckzunehmen.
+# **Ab welcher thematischen Naehe ein zugestellter Fund ohne Bruecke
+# auskommt.** Darunter setzt der Verfasser einen Uebergangsblock.
+#
+# **0,55 liegt zwischen der Zustellschwelle und dem Anschluss.** Die Auswahl
+# der Zustellung laesst ab 0,30 durch — bewusst, damit ein Fund aus einem
+# frueheren Auftrag nicht fuer immer liegen bleibt. `[Betriebsbeleg
+# 11.09.2026]` Ein Eintrag mit **0,37** wurde zugestellt, waehrend das
+# Gespraech bei einem anderen Gegenstand stand, und sprang ohne ein Wort des
+# Uebergangs. Der Wert ist gesetzt und nicht abgeleitet: Eine Spanne
+# gemessener Naehen mit dem Urteil *„brauchte eine Bruecke"* daneben gibt es
+# noch nicht.
+VERFASSER_IMPULS_NAHE: float = 0.55
+
+PIXIE_AGENTEN_PAUSE_SCHLUESSEL:  str = "pixie:agenten_paused"
+PIXIE_DELIVERY_PAUSE_SCHLUESSEL: str = "pixie:delivery_paused"
+
 # --- Pixie Aging (Verhungerungsschutz, Chat 113) ---
 # Eine faellige periodische Aufgabe steigt in der Prioritaet, solange sie nicht
 # laeuft. Ohne das gewinnt eine dauerhaft gefuellte Shadow-Queue (Eintraege bis
@@ -2308,6 +2350,25 @@ PIXIE_QUALITAET_INTERVALL_SEKUNDEN: int = 86_400
 PIXIE_QUALITAET_PRIORITAET: float = PIXIE_DECAY_PRIORITAET
 
 QUALITAET_PROFIL_JE_LAUF: int = 20
+
+# **Wie weit zurueck ein Lesevorgang als „frisch" zaehlt.** Die Kandidatensuche
+# sortiert seit dem 11.09.2026 zuerst danach, wie oft ein Traeger in diesem
+# Fenster gelesen wurde, und erst danach nach seiner Gesamtlesezahl.
+#
+# **Der Grund ist eine Messung, keine Schaetzung.** `[11.09.2026]` Ueber 363
+# Turns meldete die Faszination in **74,1 %** der Faelle `werte: {}` — kein
+# einziger gelesener Traeger trug ein Profil. Von 42 solchen Traegern einer
+# Messreihe standen **22 als offene Kandidaten** in der Warteschlange: richtig
+# eingereiht und nicht an der Reihe. Bei 1497 offenen Kandidaten und 20 je
+# Tageslauf braucht der Bestand **75 Tage**; ein Knoten, der heute zum ersten
+# Mal gelesen wird, traegt Lesezahl 1 und steht hinter allen, die zwanzigmal
+# gelesen wurden — obwohl die Faszination genau ihn jetzt braucht.
+#
+# **Sieben Tage, weil das Fenster den Gespraechsverlauf abdecken soll und nicht
+# den Bestand.** Kuerzer faenge nur den heutigen Tag und liesse einen Traeger
+# fallen, der gestern dreimal vorkam; laenger naeherte sich wieder der
+# Gesamtlesezahl an, deren Schlagseite die Sortierung gerade behebt.
+QUALITAET_FRISCHE_TAGE: int = 7
 
 # Der Zuschlag des Merkmalszugs (§10.1).
 #

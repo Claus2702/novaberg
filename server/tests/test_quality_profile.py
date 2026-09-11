@@ -339,6 +339,65 @@ class DerSpeicherLehntEineWertAussageAbTest(unittest.TestCase):
         """
         self.assertEqual([], speicher.candidates_load(POSTGRES_URL, 0))
 
+    def test_die_frisch_gelesenen_stehen_vorn(self) -> None:
+        """Wer zuletzt gelesen wurde, wird zuerst profiliert.
+
+        **Die Gesamtlesezahl allein waehlt die historisch haeufigen.** Ein
+        Knoten, der heute zum ersten Mal gelesen wird, traegt 1 und stuende
+        hinter allen, die zwanzigmal gelesen wurden — obwohl die Faszination
+        genau ihn jetzt braucht. `[gemessen 11.09.2026]` Ueber 363 Turns
+        meldete sie in **74,1 %** der Faelle `werte: {}`; von 42 gelesenen
+        Traegern einer Messreihe standen **22 als offene Kandidaten** in der
+        Warteschlange — richtig eingereiht und nicht an der Reihe.
+
+        Geprueft wird die **Anwesenheit der Spalte am echten Bestand** und
+        dass die Liste monoton in ihr faellt.
+
+        **Was dieser Zeuge nicht traegt, und das ist gemessen:** In der
+        Gegenprobe vom 11.09.2026 — Frische aus dem `ORDER BY` entfernt —
+        blieb er **gruen**. Im heutigen Bestand sind `zuletzt_gelesen` und
+        `gelesen` fast deckungsgleich, weil die offenen Kandidaten ohnehin
+        frisch sind; nach beiden Spalten sortiert faellt dieselbe Liste. Die
+        Zusicherung ueber die **Reihenfolge der Schluessel** traegt deshalb
+        `test_die_abfrage_sortiert_zuerst_nach_der_lesespur`, der die Abfrage
+        selbst liest. Dieser hier belegt, dass die Spalte ankommt und
+        auswertbar ist — nicht, dass sie den Vorrang hat.
+        """
+        kandidaten: list = speicher.candidates_load(POSTGRES_URL, 25)
+        if not kandidaten:
+            self.skipTest("kein offener Kandidat im Bestand")
+
+        for eintrag in kandidaten:
+            self.assertIn("zuletzt_gelesen", eintrag)
+
+        frische: list = [int(k["zuletzt_gelesen"]) for k in kandidaten]
+        self.assertEqual(
+            frische, sorted(frische, reverse=True),
+            f"Die Kandidaten fallen nicht monoton in der Frische: {frische}",
+        )
+
+    def test_die_frische_schlaegt_die_gesamtzahl(self) -> None:
+        """Kein Kandidat mit weniger frischen Lesevorgaengen steht vorn.
+
+        Der Zwilling zum Zeugen darueber — und mit derselben gemessenen
+        Grenze: Solange `zuletzt_gelesen` und `gelesen` im Bestand
+        deckungsgleich sind, greift er nicht. **Er wird scharf, sobald der
+        Bestand aelter wird** und Knoten auftauchen, die oft, aber nicht
+        kuerzlich gelesen wurden. Bis dahin ist er eine Beobachtung, keine
+        Wand; das steht hier, damit ihn niemand fuer eine haelt.
+        """
+        kandidaten: list = speicher.candidates_load(POSTGRES_URL, 25)
+        if len(kandidaten) < 2:
+            self.skipTest("zu wenige Kandidaten fuer einen Vergleich")
+
+        for vorn, hinten in zip(kandidaten, kandidaten[1:], strict=False):
+            if int(vorn["zuletzt_gelesen"]) > int(hinten["zuletzt_gelesen"]):
+                continue
+            self.assertEqual(
+                int(vorn["zuletzt_gelesen"]), int(hinten["zuletzt_gelesen"]),
+                "Ein Kandidat mit weniger frischen Lesevorgaengen steht vorn",
+            )
+
 
 class DerErzeugerSchreibtAlleSechsOderKeineTest(unittest.TestCase):
     """Ein Teilprofil waere im Bestand von einem Abbruch nicht zu trennen."""
@@ -582,6 +641,11 @@ class DieAuswahlFolgtDerEchtenWiederkehrTest(unittest.TestCase):
         **entstand**, nicht wie oft er **gelesen** wird. Von neun in drei
         Turns gelesenen Knoten trugen vier alle Filterkriterien und trotzdem
         kein Profil.
+
+        **Dritter Anlauf am 11.09.2026: die Frische steht davor.** Die
+        Gesamtlesezahl waehlt die historisch haeufigen; ein heute erstmals
+        gelesener Knoten traegt 1 und stuende hinter allen mit zwanzig. Die
+        Lesespur bleibt Schluessel, sie ist nur nicht mehr der erste.
         """
         with patch(f"{REPO}.psycopg2.connect") as verbindung:
             zeiger = verbindung.return_value.cursor.return_value
@@ -591,7 +655,8 @@ class DieAuswahlFolgtDerEchtenWiederkehrTest(unittest.TestCase):
 
         self.assertIn("lzg_resonanz_ids", sql)
         self.assertIn("FROM verbindung", sql)
-        self.assertIn("ORDER BY COALESCE(l.mal, 0) DESC", sql)
+        self.assertIn("ORDER BY COALESCE(l.zuletzt, 0) DESC", sql)
+        self.assertIn("COALESCE(l.mal, 0) DESC", sql)
         self.assertIn("COALESCE(b.turns, 0) DESC", sql)
 
     def test_haeufigkeit_bleibt_letzter_schluessel(self) -> None:
