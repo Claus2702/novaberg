@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt: eine unbeschraenkte Summe ueberschrieb in 55,6 % der Faelle die Salienz-Bewertung des Modells; seither ist der Term auf [0, 1] normiert und der Boost fuellt auf. **Sein zweiter Ertrag liegt neben dem Bau:** die Absichtsfrage, an der er haengen sollte, war dreifach falsch gerechnet und loeste sich in einen einzigen verlorenen Praegungsfaden auf. Davor 5. September 2026 — `FADEN-EMBEDDING-VERDUENNT` auf `[2×]` hochgestuft: Dieselbe Klasse stand im selben Modul an einer zweiten Stelle (der Praegungszug las weiter den gemittelten Turn) und ist am 05.09.2026 behoben. Davor 4. September 2026 — `VERSTAERKUNG-OHNE-VERWENDUNG` am Tag seines Befundes behoben: Verstaerkt wird, was die Antwort hergenommen hat, gemessen an der Embedding-Naehe, gerufen vom Dispatcher. Davor 3. September 2026, 21:30 UTC — `PROFIL-SCHLUESSEL-MIT-LEERRAUM` am Tag seines Befundes behoben und abgelegt: Das Modell schrieb ein Leerzeichen in einen Bezeichner, den es woertlich vorgegeben bekam, und kostete 4 von 20 Traegern. Davor 1. September 2026, 15:10 UTC — `FALTUNG-OHNE-AUFRUFER` am Tag seines Befundes behoben und abgelegt: die Faltung hat einen Aufrufer, `ausschlag_aktuell` bewegt sich im Betrieb. Davor am selben Tag `PROMOTION-NUR-EIN-PAAR` und `FADEN-EMBEDDING-VERDUENNT`, ebenfalls am Tag ihres Befundes. Davor 30. August 2026 — `EMGRAV-SCHWELLE-TOT` und `EMGRAV-KANDIDAT-OHNE-KENNUNG` am Tag nach ihrem Befund behoben und abgelegt. Davor 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** **55 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
+**Inhalt:** **56 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -363,6 +363,52 @@ eine `pipeline_log`-Zeile im Node. **Keine DDL noetig** — `pipeline_log.inhalt
 Wert tragen — das brach die Zusicherung aus P9a (*„was in der Spalte steht, kommt zurueck"*), die
 gegen einen zweiten Verfallsabzug beim Lesen steht. `gewicht` ist wieder der **gespeicherte** Wert;
 der normierte steht als `gewicht_norm` daneben. Gefunden hat es die Suite, nicht der Bau.
+
+---
+
+## 11.09.2026, morgens — ein Schalter, der die Haelfte anhielt, die man nicht braucht
+
+#### `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` — die Pause stoppte den Erzeuger und nicht die Auslieferung ✅
+
+**Zustand:** behoben am 11.09.2026, am Tag seines Befundes, mit drei Zeugen und einer
+Gegenprobe (2 vorhergesagt, 2 gezaehlt) sowie einem Betriebsbeleg ueber 20 Turns.
+
+**Anlass.** Eine Messreihe soll ohne Hintergrundlast laufen; der Schalter dafuer setzt
+`pixie:paused` in Redis, und eine Statusabfrage bestaetigt die Wirkung. Beides
+funktionierte: Gemeldet wurde `{"paused": true}`, und der Scheduler stand still.
+
+**Symptom.** `[gemessen 10.09.2026]` Waehrend einer Reihe mit bestaetigter Pause liefen
+**fuenf Zustellungen mit `durchgelassen: true`** und **ein vollstaendiger Fremdturn**
+mitten in der Reihe. Sein Reiz war das Ergebnis einer Hintergrundrecherche, das im Feld
+fuer die Nutzeraeusserung landete; die Perzeption bewertete es als Gegenueber
+(`intent: task`, `emotion: freude`), und die Antwort des Turns bezog sich auf den Reiz
+zwei Minuten davor.
+
+**Ursache.** `pixie:paused` wurde an genau **einer** Stelle gelesen —
+`services/pixie/scheduler.py`. Der Zustellpfad `services/shadow_delivery.py` kannte den
+Schluessel nicht und lieferte weiter aus, was fertig auf dem Stapel lag. Der Schalter
+haelt damit den **Erzeuger** an und nicht die **Auslieferung**.
+
+**Auswirkung, zweifach.** Eine Messreihe mit pausiertem Pixie war **nicht**
+hintergrundfrei — die Anforderung, dass Pixie waehrend einer Reihe pausiert, war nur zur
+Haelfte durchsetzbar. Und im Betrieb schiebt sich ein Recherchetext als Gespraechsturn
+zwischen zwei Nutzeraeusserungen; der Mensch sieht eine Antwort, die seine Frage
+uebergeht. **Genau so ist er gefunden worden** — als Beschwerde ueber Novas Verhalten,
+nicht als Messbefund.
+
+**Abhilfe.** Der Riegel steht vor der Nutzerschleife, mit demselben Schluessel und
+derselben Bauart wie im Scheduler. Der Schluessel selbst ist als
+`PIXIE_PAUSE_SCHLUESSEL` einmal benannt statt viermal als Zeichenkette hingeschrieben —
+**das ist der Teil, der die naechste Fundstelle auffindbar macht**: Vier Zeichenketten
+machen die Menge der Leser zu einer Textsuche, die niemand anstellt, solange nichts
+auffaellt.
+
+**Betriebsbeleg.** `[gemessen 11.09.2026]` **0 Fremdturns in 20 Turns**, gegen 1 in 19
+davor.
+
+> **Die Lehre steht ueber dem Einzelfall:** Ein Status, der die eigene Wirkung meldet,
+> deckt nur den Pfad ab, an dem er gelesen wird. Die Frage nach der **Menge der Leser**
+> ist eine zweite, und keine Statusabfrage beantwortet sie — sie kostet einen `grep`.
 
 ---
 

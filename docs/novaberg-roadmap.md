@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 11. September 2026 — juengster Eintrag **11.09.2026, 00:15 UTC** (gemessen via `date -u`). Davor 10.09.2026, 20:26 UTC.
+**Stand:** 11. September 2026 — juengster Eintrag **11.09.2026, 16:00 UTC** (gemessen via `date -u`). Davor 10.09.2026, 20:26 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -22,7 +22,259 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 ---
 
-## 11.09.2026, 00:15 UTC — der Raum entsteht aus beiden, und der Farbton sagte nur einen 🔧
+## 11.09.2026, 16:00 UTC — ein Impuls, der eingeworfen wirkte, und ein Schalter mit zwei Haelften 🔧
+
+**ZIEL:** Ein zugestellter Impuls schliesst an die Stelle des Gespraechs an, an der es
+steht — im Thema und im Ton. Und: Agenten und Zustellung lassen sich getrennt anhalten.
+**TEST:** `tests/test_impuls_anschluss.py` (15 Zeugen) · `tests/test_shadow_delivery_pause.py`
+(9) · `tests/test_verfasser_herkunft.py` nachgezogen.
+**MESSUNG:** 156 Impuls-Turns des Bestands, dazu zwei Proben mit ausgeloester Zustellung.
+
+### Der Befund stand im Prompt und war eine uebersteuerte Abhilfe
+
+`verfasser.eigener_impuls.txt` wies bis heute an: *„SIE EROEFFNET. Der erste Satz setzt
+etwas in den Raum, statt an etwas anzuknuepfen. Was Person B zuletzt sagte, ist
+Vorgeschichte und nicht der Anlass."* Die Zeile stammt vom 13.08.2026 und behob einen
+anderen Defekt — 13 von 14 Impulsen begannen mit *„Du hast …"* und schrieben Novas
+eigenen Gedanken dem Nutzer zu.
+
+> **Zwei Fragen waren vermischt worden.** *Von wem* ein Gedanke stammt und *woran* er
+> anschliesst sind verschieden. Um die falsche Zuschreibung zu verhindern, war der
+> Anschluss ganz verboten — und ein Beitrag ohne Anschluss wirkt eingeworfen.
+
+`[gemessen ueber 156 Impuls-Turns]` Uebernahmequote aus dem Material **Median 20 %,
+P90 41 %**; **29 Antworten (19 %)** mit einer woertlich uebernommenen Passage von sechs
+Woertern oder mehr; **6 Impulse (4 %)** im Berichts-Rohformat mit Ueberschriften wie
+`**WAS GEFUNDEN WURDE.**`.
+
+Drei Prompt-Dateien tragen seither beide Zusicherungen nebeneinander, und das Material
+ist ausdruecklich **Rohstoff**: Berichtsform ist die Ablageform, nicht die Sprechform.
+Gibt der Fund nichts her, *ist genau das die Auskunft* — ein Betriebsbeleg vom Vortag
+zeigte eine Recherche ueber Gamma-Oszillationen, die RTX-Grafikkarten fand, selbst
+meldete dass die Anfrage scheitert, und trotzdem zugestellt wurde.
+
+**Die Anweisungen stehen positiv** (`F-PROMPT-1`). Die erste Fassung dieses Umbaus trug
+drei Verbotsformen und ist daran korrigiert worden.
+
+### Zwei Haelften, zwei Schalter
+
+**Vorgabe des Eigentuemers.** Der Vollschalter reicht fuer eine Reihe, die keinen
+Hintergrund sehen soll — aber nicht fuer einen Test der Zustellung selbst: Dort soll der
+Stapel abgearbeitet werden, ohne dass frische Funde dazukommen.
+
+| Endpunkt | Wirkung |
+|---|---|
+| `POST /admin/pixie/pause` | beides, unveraendert |
+| `POST /admin/pixie/agenten/pause` | nur die Agenten |
+| `POST /admin/pixie/delivery/pause` | nur die Zustellung |
+| `POST /admin/delivery/jetzt` | loest eine Zustellung sofort aus, derselbe Pfad |
+
+Beide Leser pruefen *Vollschalter ODER eigener*; der Status meldet jede Haelfte einzeln.
+
+### Die Probe — und was sie sonst noch zeigte
+
+`[11.09.2026, zwei Laeufe]` Aufbau: Agenten pausiert, Zustellung an. Drei ruhige Turns,
+dann `POST /admin/delivery/jetzt` → **`zugestellt: true`**, der Turn lief vollstaendig
+durch.
+
+**Der Beitrag war sprachlich gelungen und thematisch gesprungen.** Kein Satz
+abgeschrieben, keine Berichtsueberschrift — aber das Gespraech stand bei Lagrange-Punkten
+und der Beitrag handelte von der Hubble-Spannung, **ohne ein Wort des Uebergangs**.
+Die Ursache steht im Log: `Affinitaet: 37 %` bei einer Zustellschwelle von 0,30.
+
+**Die Schwelle hochzudrehen waere falsch** — dann bliebe ein Fund aus einem frueheren
+Auftrag fuer immer liegen. Die Naehe reist seither mit dem Impuls; unter
+`VERFASSER_IMPULS_NAHE` (0,55) setzt der Verfasser einen Uebergangsblock: den Wechsel
+nennen, die Verbindung suchen, und wenn es keine gibt, das sagen.
+
+### Pausiert heisst nicht still
+
+**Der teuerste Befund des Tages, und er kostete eine Systemabschaltung.** Die Pause
+verhindert den naechsten Heartbeat-Zyklus; einen laufenden Agenten bricht sie nicht ab —
+richtig so, ein Abbruch verloere seine Arbeit. **Sichtbar war es nicht.**
+
+`[gemessen]` Die Agenten-Pause stand um 09:53:40; ein Recherche-Agent lief bis
+**10:03:41** weiter, waehrend der Status `agenten_pausiert: true` meldete. Um **10:23:17
+UTC** schaltete der Rechner hart ab — der Systemlog bricht mitten in einem Modelllauf ab,
+ohne Shutdown-Eintrag. **Die naheliegende Ursache Ueberhitzung ist nicht belegbar**, weil
+die Probe keinen Temperaturwaechter mitfuehrte.
+
+Der Status traegt seither `agenten_laufend` und **`bereit_fuer_messung`** — pausiert
+**und** still. Der Waechter steht seither im gemeinsamen Laborwerkzeug statt in jedem
+Messskript, misst waehrend der Turns, schreibt nach `temperatur.jsonl` mit und **bricht
+ab** statt zu warnen.
+
+**Suite:** 3417 gruen, 0 uebersprungen (davor 3396). **Gegenproben:** Anschlussblock
+entfernt 5/5 · Uebergangsblock ausgeschaltet 2 vorhergesagt / **1 gezaehlt** (die
+Vorhersage lag falsch, nicht der Zeuge) · Stille aus der Bereitschaft 1/1.
+
+---
+
+## 11.09.2026, 06:00 UTC — drei Zahnraeder nachgezogen: die Pause, die Gravitation, die Faszination 🔧
+
+**ZIEL:** Die Pixie-Pause haelt auch die Zustellung an; die emotionale Gravitation
+fliesst in die Salienz ein; die Faszination bekommt die Profile, die sie braucht.
+**TEST:** `tests/test_shadow_delivery_pause.py` (3 Zeugen) ·
+`tests/test_salienz_emgrav_naht.py` (7) · `tests/test_quality_profile.py` (2 neue) ·
+`tests/test_salienz_formel.py` (2 neue).
+**MESSUNG:** Der Bestand vor dem Bau, dazu eine Reihe von 20 Turns danach.
+
+### Die Pause galt nur zur Haelfte
+
+`pixie:paused` wurde an genau **einer** Stelle gelesen — im Scheduler. Der
+Zustellpfad kannte den Schluessel nicht und lieferte weiter aus, was fertig auf dem
+Stapel lag. `[gemessen 10.09.2026]` Bei bestaetigtem `{"paused": true}` liefen fuenf
+Zustellungen durch und **ein vollstaendiger Fremdturn mitten in einer Messreihe**.
+
+Der Riegel steht jetzt **vor** der Nutzerschleife, mit demselben Schluessel und
+derselben Bauart wie im Scheduler; der Schluessel selbst ist einmal benannt statt
+viermal hingeschrieben. Der Endpunkt-Docstring versprach *„Pausiert Pixie"* und
+meinte den Scheduler — er loest die Zusage jetzt ein.
+
+### Die Gravitation war seit elf Tagen anschliessbar
+
+Der Antrieb `emotionale_gravitation` stand im Salienz-Ergebnis als *nicht
+angeschlossen*, mit dem Grund **unnormiert, Werte weit ueber 1.0**. Der Grund war
+seit dem **30.08.2026** hinfaellig: `gravitation_lzg_berechnen` teilt seither durch
+`LZG_KNOTEN_GEWICHT_CAP`. `[gemessen 11.09.2026 ueber 888 Kandidaten aus 447 Turns]`
+Spanne **0,184 bis 0,708**, **kein einziger Wert ueber 1,0**.
+
+> **Der Eintrag hat elf Tage laenger gestanden als sein Grund** — dieselbe Klasse
+> wie die Sperre, die sich selbst haelt, nachdem ihre Bedingung entfallen ist.
+
+**Vor dem Anschliessen wurde nachgerechnet, ob der Antrieb ueberhaupt sichtbar
+wird.** `[gerechnet ueber 488 Turns mit beiden Groessen]` Er gewaenne das `max()` in
+**44 Faellen (9,0 %)**, weitere 62 liegen im oberen Fuenftel darunter. Das ist der
+Unterschied zum Zielsog, der in 4 von 2786 Zeilen entschied (0,14 %) und deshalb vom
+`max()` in einen Zug umgebaut wurde. Genommen wird das **Maximum** der aktivierten
+Punkte, nicht ihre Summe — eine Summe ist unbeschraenkt und traegt den Vergleich
+nicht, derselbe Fehler, der `ziel_gravitation` bis zum 09.09.2026 auf 4,097 trieb.
+
+### Die Faszination wartete auf Profile, die 75 Tage entfernt waren
+
+`[gemessen 11.09.2026]` Ueber **363 Turns** meldete sie in **74,1 %** der Faelle
+`werte: {}`. Von 410 je gelesenen Traegern hatten **376 kein Profil**. Die Ursache
+ist dreigeteilt: von 42 Traegern einer Messreihe standen **22 als offene Kandidaten
+in der Warteschlange** — richtig eingereiht und nicht an der Reihe —, 11 fielen unter
+die Laengenschwelle, 9 unter die Wiederkehr.
+
+**Der Tageslauf faellt zuverlaessig**, 20 Traeger je Tag, lueckenlos seit dem
+03.09.2026. Er reicht nur nicht: **1497 offene Kandidaten** sind bei 20 je Tag
+**75 Tage**. Und die Sortierung nach Gesamtlesezahl waehlt die historisch haeufigen —
+ein Knoten, der heute zum ersten Mal gelesen wird, traegt 1 und steht hinter allen
+mit zwanzig, obwohl die Faszination genau ihn **jetzt** braucht.
+
+Seither steht die **Frische** als erster Schluessel: wie oft ein Traeger in den
+letzten `QUALITAET_FRISCHE_TAGE` (7) Tagen gelesen wurde. Die Lesespur bleibt
+Schluessel, sie ist nur nicht mehr die erste. Nachgeprueft an der Abfrage: Die
+Kandidaten sind seither die zuletzt gelesenen (4, 3, 3, 3 …) statt der historisch
+haeufigsten.
+
+### Was die Gegenprobe ueber die eigenen Zeugen sagte
+
+Vier Gegenproben, drei trafen die Vorhersage: Riegel entfernt **2/2**, Kanal
+abgehaengt **5/5**, Impuls-Fassung ausgeschaltet **2/2**. Die vierte nicht: Frische
+aus dem `ORDER BY` entfernt — **3 vorhergesagt, 1 gezaehlt**.
+
+> **Zwei der drei Zeugen blieben gruen, obwohl die Sortierung weg war.** Im heutigen
+> Bestand sind `zuletzt_gelesen` und `gelesen` fast deckungsgleich, weil die offenen
+> Kandidaten ohnehin frisch sind — nach beiden Spalten sortiert faellt dieselbe
+> Liste. Die beiden tragen die Zusicherung **nicht**; das steht seither in ihrem
+> Docstring, damit sie niemand fuer eine Wand haelt. Die Reihenfolge der Schluessel
+> bewacht der Zeuge, der die Abfrage selbst liest.
+
+### Die Messung danach: zwanzig Turns
+
+`[gemessen 11.09.2026, 06:01–06:30 UTC]` 20 Turns, kein Ausfall, 73,1 °C Spitze.
+
+| | erste Reihe (10.09.) | nach dem Bau |
+|---|---|---|
+| Fremdturns bei pausiertem Pixie | **1 von 19** | **0 von 20** |
+| `emotionale_gravitation` belegt | nicht angeschlossen | **19 von 19**, 0,327–0,586 |
+| davon gewinnt sie das `max()` | — | **3 von 19 (15,8 %)** |
+| nicht angeschlossene Antriebe | zwei | nur noch `neugier` |
+
+**Die Gravitation greift haeufiger als vorausgerechnet** — 15,8 % gegen 9,0 % aus der
+Bestandsrechnung. Die uebrigen Naehte halten unveraendert: Empathie 20/20 gezogen,
+Landschaft in beiden Knoten 20/20 identisch, Rad 20/20 destilliert, kein fehlendes
+Initiative-Mass.
+
+**Die Faszination brauchte den Tageslauf, und der wurde angestossen.** Unmittelbar nach
+der Reihe stand sie unveraendert bei 11 von 20 Turns mit Wert — die Frische-Sortierung
+waehlt die Kandidaten, aber die Profile entstehen erst, wenn der Lauf faellt. Ein
+angestossener Lauf erzeugte **9 neue Profile, davon 7 fuer Traeger dieser Reihe (78 %)**;
+die offene Warteschlange der Reihe fiel von 32 auf 25. **Vor der Aenderung waren es 0 von
+20** — die Warteschlange dieses Agenten enthielt keinen einzigen Knoten, den der Lesepfad
+im Turn anbietet.
+
+> **Was damit nicht behoben ist:** 14 der 60 gelesenen Traeger fallen unter die
+> Laengenschwelle, 14 unter die Wiederkehr. Und 1511 offene Kandidaten bleiben 1511 —
+> die Sortierung aendert die Reihenfolge, nicht die Rate.
+
+**Suite:** 3396 gruen, 0 uebersprungen (davor 3382).
+
+---
+
+## 10.09.2026, 23:05 UTC — zwanzig Turns durch die ganze Kette, und vier Zahnraeder greifen nicht 🔬
+
+**ZIEL:** Feststellen, ob die Bauteile der Rechenkette im Betrieb zusammenwirken —
+Perzeption, Empathie, Raumzug, Achsen, Sektor, Landschaft, Aufnahmebereitschaft,
+Initiative, Salienz, Haltung, Praegung, Faszination.
+**TEST:** keiner — das ist eine Messung, kein Bau.
+**MESSUNG:** 20 entworfene Reize gegen das Produktivsystem, je Turn rund 30
+Protokollzeilen ueber zwoelf Knoten.
+
+**Der Aufbau durfte den Befund nicht erzeugen.** Eine rein fachliche Reihe stellt
+`lernmodus` + `distanz` + `fachlich` her und damit genau die Groessen, die sie messen
+soll — der Fehler vom 10.09.2026. Die 20 Reize decken deshalb zehn Modi, beide
+Emotionsrichtungen und sechs Dynamiken ab und bleiben durchgehend wissenschaftlich.
+**Der Aufbau hat getragen:** 6 Landschaften, 9 Sektoren, 13 verschiedene Naehe-Werte,
+5 Intents. 20 Turns, kein Ausfall, 73,4 °C Spitze.
+
+### Neun Naehte halten
+
+| Naht | Ergebnis |
+|---|---|
+| Empathie: Nutzer-Erregung zieht Novas | **19 von 19** gezogen, keine unveraendert |
+| Landschaft: Gespraechsvektor gegen Haltungsknoten | **19 von 19 identisch** |
+| Charakter-Rad | **19 von 19 destilliert**, nie aus einem Vorgabewert |
+| Initiative | **kein einziges fehlendes Mass** |
+| Richtungsquelle | **19 von 19 gemessen**, kein Rueckfall |
+| Kanon-Ausreisser | keine |
+| Praegungszug | 19 verschiedene Werte, 1,197–1,399 |
+
+### Vier greifen nicht
+
+**Zwei von vier Salienz-Antrieben haengen nicht an.** `emotionale_gravitation` und
+`neugier` stehen in **18 von 19** Turns in `nicht_angeschlossen`. Beide werden im selben
+Turn gerechnet — die Gravitation meldet Kandidaten, die Aufnahmebereitschaft steht
+ueberall ueber null. Zwei Pfade entscheiden allein, was fuer vier ausgelegt ist.
+
+**Die Faszination faellt aus, weil ihre Traeger kein Profil haben.** Je Turn drei
+geprueft; in **8 von 19** steht `ohne_profil: 3` — alle drei —, dann bleibt `werte: {}`.
+Gebaut, rechnend, ohne Eingabe.
+
+**Der Eigenzeit-Verfall erreicht den naechsten Leser nicht.** Ein Turn, drei Zeilen in
+dieser Reihenfolge: Der Verfall daempft **0,85 → 0,8415**, die Achse E liest danach
+**0,85**. Vier Erklaerungen sind geprueft und ausgeschlossen — zwei Graph-Laeufe, ein
+setzender Knoten dazwischen, das Level-Anheben, eine Kopie im Verfall. **Eingegrenzt,
+nicht gefunden.**
+
+**Die Pixie-Pause haelt den Scheduler an, nicht die Zustellung.** `pixie:paused` wird an
+genau **einer** Stelle gelesen; der Zustellpfad kennt den Schluessel nicht. Bei
+bestaetigtem `paused: true` liefen fuenf Zustellungen durch und **ein vollstaendiger
+Fremdturn mitten in der Reihe** — Reiz war ein Rechercheergebnis. **Zwei Folgen:** Eine
+Messreihe mit pausiertem Pixie ist nicht hintergrundfrei, und im Betrieb schiebt sich ein
+Recherchetext als Gespraechsturn zwischen zwei Nutzeraeusserungen.
+
+> **Der letzte Befund erklaert eine Beobachtung des Eigentuemers vom selben Abend:** Nova
+> gehe zweimal auf dasselbe Thema ein und uebergehe seine Anweisung. Der Fremdturn traegt
+> den Recherchetext im Feld fuer die Nutzeraeusserung; die Perzeption bewertet ihn als
+> Gegenueber, und die Antwort des Turns bezieht sich auf den Reiz davor.
+
+---
+
+## 10.09.2026, 22:25 UTC — der Raum entsteht aus beiden, und der Farbton sagte nur einen 🔧
 
 **ZIEL:** Der Farbton beschreibt, wie sich beide Seiten zueinander verhalten — nicht
 eine Seite aus den Werten der anderen.

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Formel und Herleitung der Salienz für beide Beobachter
-**Stand:** 9. September 2026, 18:45 UTC (§4: **das `max()` laeuft wieder ueber gleiche Skalen** — `ziel_gravitation` trat als unbeschraenkte Summe an und gewann es in 214 von 721 Zeilen; seither normiert, `eigen_pfad` bis 0,965 statt 4,097, gekappt 160 auf 0). Davor 1. September 2026, 17:25 UTC (§4a: **die Kurve dreimal gelegt** — die Vorgabe blieb, die Skala wechselte; die dritte Fassung steht auf den vier echten Betriebswerten und traegt im Betrieb +11,1 % statt +0,4 %). Davor 1. September 2026, 16:50 UTC (**§4a neu — der Zug aus Novas eigenem Zielsog**: der Antrieb konkurriert nicht mehr im `max()`, er zieht auf die Luecke nach oben; Kurve, verworfener Mittelwert-Entwurf und der ausdrueckliche Vorbehalt stehen dort). Davor 1. September 2026, 15:45 UTC (§4: der Antrieb `ziel_gravitation` ist gemessen — Mittel 0,034 gegen 0,692, entscheidend in **4 von 2786** Zeilen; die aeltere Angabe *„0.0 in allen betrachteten Laeufen"* ist damit praeziser gefasst). Davor 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
+**Stand:** 11. September 2026, 06:30 UTC (§4b neu: **die emotionale Gravitation ist angeschlossen** — ihr Sperrgrund *unnormiert* war seit dem 30.08.2026 hinfällig, gemessen 0,184–0,708 über 888 Kandidaten; vor dem Bau nachgerechnet, ob sie im `max()` sichtbar wird (9,0 % gerechnet, 15,8 % gemessen). Offen bleibt allein der Neugier-Bezug). Davor 9. September 2026, 18:45 UTC (§4: das `max()` läuft wieder über gleiche Skalen — `ziel_gravitation` trat als unbeschränkte Summe an und gewann es in 214 von 721 Zeilen; seither normiert, `eigen_pfad` bis 0,965 statt 4,097, gekappt 160 auf 0). Davor 1. September 2026, 17:25 UTC (§4a: **die Kurve dreimal gelegt** — die Vorgabe blieb, die Skala wechselte; die dritte Fassung steht auf den vier echten Betriebswerten und traegt im Betrieb +11,1 % statt +0,4 %). Davor 1. September 2026, 16:50 UTC (**§4a neu — der Zug aus Novas eigenem Zielsog**: der Antrieb konkurriert nicht mehr im `max()`, er zieht auf die Luecke nach oben; Kurve, verworfener Mittelwert-Entwurf und der ausdrueckliche Vorbehalt stehen dort). Davor 1. September 2026, 15:45 UTC (§4: der Antrieb `ziel_gravitation` ist gemessen — Mittel 0,034 gegen 0,692, entscheidend in **4 von 2786** Zeilen; die aeltere Angabe *„0.0 in allen betrachteten Laeufen"* ist damit praeziser gefasst). Davor 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
 **Pfad:** novaberg/docs/novaberg-salienz-berechnung_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -240,10 +240,33 @@ Mit dem Teiler ist der Ausdruck auf [0, 1] **geschlossen**, und die Kappung ist 
 |---|---|---|
 | **Sprachlich** | LLM-Lesung des Segmenttexts | **angeschlossen** |
 | **Ziel-Gravitation** | `cosine(segment, ziel) × motivation` | **angeschlossen**, `ei/gravitation.py` |
-| **Emotionale Gravitation** | `similarity × gewicht × zeit_decay × quellen_faktor` | gebaut, **nicht angeschlossen** — unnormiert |
+| **Emotionale Gravitation** | `max` über die aktivierten Punkte, je `similarity × gewicht_norm × zeit_decay × faktor` | **angeschlossen seit 11.09.2026**, `graph/nodes/salience.py::_staerkste_emotionale_gravitation` |
 | **Neugier-Bezug** | Wissenslücken-Detektor (GV4) | **nicht angeschlossen** — Rückkopplung Lücken → Neugier fehlt |
 
-~~**Alle drei sind bereits gerechnet und stehen im State. Keiner beeinflusst heute die Salienz.**~~ — **überholt seit Chat 112:** Ziel-Gravitation und die sprachliche Lesung sind angeschlossen. Der Nachsatz *„Nur die Ziel-Gravitation kommt an, und die als bloßer Zuschlag auf die LLM-Bewertung"* gilt weiterhin für den **HumanGraph**; für Novas eigene Äußerung ist der Zuschlag durch die Formel ersetzt.
+~~**Alle drei sind bereits gerechnet und stehen im State. Keiner beeinflusst heute die Salienz.**~~ — **überholt seit Chat 112:** Ziel-Gravitation und die sprachliche Lesung sind angeschlossen.
+
+### 4b. Die emotionale Gravitation — angeschlossen am 11.09.2026
+
+**Ihr Sperrgrund war elf Tage hinfällig, bevor ihn jemand nachgeprüft hat.** Die Spalte oben trug *„gebaut, nicht angeschlossen — unnormiert"*, und die Konstante im Code nannte denselben Grund: *Werte weit über 1.0*. Seit dem **30.08.2026** teilt `gravitation_lzg_berechnen` jedoch durch `LZG_KNOTEN_GEWICHT_CAP` — die Abhilfe zu `EMGRAV-SCHWELLE-TOT` —, und die Rückgabe liegt seither auf `[0, EMOTIONALE_GRAVITATION_FAKTOR_LZG]`.
+
+`[gemessen 11.09.2026 über 888 Kandidaten aus 447 Turns]` Spanne **0,184 bis 0,708**, **kein einziger Wert über 1,0**.
+
+> **Ein Eintrag altert in zwei Richtungen, und die zweite prüft niemand:** den Befund *„nicht angeschlossen"* hätte jede Messung bestätigt — die **Begründung** *„unnormiert"* war seit elf Tagen falsch, und sie war es, die den Anschluss zurückhielt.
+
+**Vor dem Anschließen wurde nachgerechnet, ob der Antrieb im `max()` überhaupt sichtbar wird.** Diese Frage stellt sich, seit der Zielsog als zweiter Operand in 4 von 2786 Zeilen entschied (0,14 %) und deshalb in einen Zug umgebaut wurde (§4a): *Ein Antrieb, der rechnet und unter einem `max()` verschwindet, sieht von außen aus wie einer, der nicht angeschlossen ist.*
+
+| | Wert |
+|---|---|
+| gerechnet über 488 Turns mit beiden Größen | **44 Siege (9,0 %)**, weitere 62 im oberen Fünftel |
+| gemessen über 19 Turns einer Reihe danach | **3 Siege (15,8 %)**, in **19 von 19** Turns belegt |
+
+**Genommen wird das Maximum der aktivierten Punkte, nicht ihre Summe.** Eine Summe ist unbeschränkt und trüge den Vergleich mit den übrigen Antrieben nicht — derselbe Fehler, der `ziel_gravitation` bis zum 09.09.2026 auf 4,097 trieb. Das Maximum beantwortet zudem die Frage, die der Antrieb stellt: *wie sehr zieht die stärkste Erinnerung*.
+
+**Der Kanal hatte seit dem 30.08.2026 einen Schreiber und keinen Leser für diesen Zweck.** `enricher` befüllt `emotionale_gravitationspunkte`; der EmGrav-Knoten liest sie, um den Emotionsverlauf zu modulieren. Die Salienz sah sie nie.
+
+**Ein Punkt ohne brauchbaren Wert wird gemeldet, nicht still zu 0.0 gemacht** — sonst wäre ein fehlender Wert von einem gemessenen Nullzug nicht mehr zu unterscheiden.
+
+**Damit bleibt ein Antrieb offen:** der Neugier-Bezug. Ihm fehlt die Rückkopplung Wissenslücken → Neugier, und das ist eine Konzeptfrage, keine Normierung. Der Nachsatz *„Nur die Ziel-Gravitation kommt an, und die als bloßer Zuschlag auf die LLM-Bewertung"* gilt weiterhin für den **HumanGraph**; für Novas eigene Äußerung ist der Zuschlag durch die Formel ersetzt.
 
 ### Der vierte Antrieb — warum die sprachliche Lesung dazukam
 

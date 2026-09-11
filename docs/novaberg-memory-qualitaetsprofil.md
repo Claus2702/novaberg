@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`
-**Stand:** 6. September 2026, 21:00 UTC (`date -u`; **der Längenfilter ist entschieden** — `QUALITAET_LAENGE_MIN` 400 → 100, weil die Länge Sachaussage (271) und Sprechakt-Vermerk (281) nicht trennt und die Warteschlange 0 von 95 gelesenen Trägern enthielt; die Faszination rechnet seither im Turn). Davor 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
+**Stand:** 11. September 2026, 06:40 UTC (`date -u`; **§4a neu — die Frische steht vor der Gesamtlesespur**: Die Faszination meldete in **74,1 %** von 363 Turns `werte: {}`, und von 42 gelesenen Trägern ohne Profil standen **22 als offene Kandidaten in der Warteschlange** — richtig eingereiht und nicht an der Reihe. Bei 1497 offenen Kandidaten und 20 je Tag sind das 75 Tage. Betriebsbeleg am selben Tag: **9 neue Profile, davon 7 für Träger der laufenden Reihe** gegen vorher 0 von 20). Davor 6. September 2026, 21:00 UTC (`date -u`; **der Längenfilter ist entschieden** — `QUALITAET_LAENGE_MIN` 400 → 100, weil die Länge Sachaussage (271) und Sprechakt-Vermerk (281) nicht trennt und die Warteschlange 0 von 95 gelesenen Trägern enthielt; die Faszination rechnet seither im Turn). Davor 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
 **Pfad:** novaberg/docs/novaberg-memory-qualitaetsprofil.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §4 (der Träger), §5 (das gesetzte Vokabular), §6 (die sechs Dimensionen), §10.1 (der Merkmalszug)
 **Zustand:** 🟠 gebaut, läuft, **und sein Ergebnis steht unter einem Vorbehalt** — Speicher, Erzeuger und Leser stehen, aber vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste
@@ -127,6 +127,39 @@ Filterkriterien und hatten trotzdem kein Profil.** Sie waren nie an der Reihe.
 
 > **Ein Profil dient der Faszination, und die rechnet über die Träger, die der Lesepfad im Turn
 > anbietet.** Was gelesen wird, ist deshalb der erste Schlüssel.
+
+### 4a. Dritter Anlauf am 11.09.2026: die Frische steht davor
+
+**Die Lesespur war richtig und wieder nicht genug.** Sie zählt **alle** Lesevorgänge und wählt
+damit die historisch häufigen — ein Knoten, der heute zum ersten Mal gelesen wird, trägt 1 und
+steht hinter allen, die zwanzigmal gelesen wurden. Genau ihn braucht die Faszination aber **jetzt**.
+
+`[gemessen 11.09.2026]` Über **363 Turns** meldete die Faszination in **74,1 %** der Fälle
+`werte: {}`. Von **410 je gelesenen Trägern hatten 376 kein Profil.** Die Ursache ist dreigeteilt —
+von 42 gelesenen Trägern einer Messreihe:
+
+| | Zahl |
+|---|---|
+| offene Kandidaten in der Warteschlange — richtig eingereiht, nicht an der Reihe | **22** |
+| unter der Längenschwelle (100 Zeichen) | 11 |
+| unter der Wiederkehr (`haeufigkeit >= 2`) | 9 |
+| inaktiv | 0 |
+
+**Der Tageslauf fällt zuverlässig** — 20 Träger je Tag, lückenlos seit dem 03.09.2026. Er reicht
+nur nicht: **1497 offene Kandidaten** sind bei 20 je Tag **75 Tage**.
+
+Erster Schlüssel ist seither, wie oft ein Träger in den letzten `QUALITAET_FRISCHE_TAGE` (7) Tagen
+gelesen wurde; die Gesamtlesespur bleibt zweiter. **Sieben Tage, weil das Fenster den
+Gesprächsverlauf abdecken soll und nicht den Bestand:** kürzer finge nur den heutigen Tag, länger
+näherte sich wieder der Gesamtzahl an, deren Schlagseite die Sortierung gerade behebt.
+
+> **Der Betriebsbeleg, am selben Tag:** Ein angestoßener Lauf erzeugte **9 neue Profile, davon 7
+> für Träger der laufenden Messreihe (78 %)**; die offene Warteschlange dieser Reihe fiel von 32
+> auf 25. **Vor der Änderung waren es 0 von 20.**
+
+**Was das nicht behebt:** Die Sortierung ändert die Reihenfolge, nicht die Rate — 1511 offene
+Kandidaten bleiben 1511. Und 14 der 60 gelesenen Träger fallen weiter unter die Längenschwelle,
+14 unter die Wiederkehr.
 
 `[gemessen 05.09.2026]`: Die profilierten Knoten trugen `haeufigkeit` **56,1** gegen **5,5** im
 Schnitt aller aktiven — die alte Sortierung wählte genau die durch die KZG-Schleife aufgeblähten.

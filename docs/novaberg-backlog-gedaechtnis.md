@@ -2058,14 +2058,20 @@ Dasselbe ist bei der Auswertung dieser Sitzung aufgefallen: Die Messgrundlage f�
 Das ist der Befund, an dem ein solcher Node ansetzt — die Frage ist nicht, ob Nova eine Sprache hat, sondern warum die Prosa im Kontext sie überschreibt.
 
 
-### Der Eigen-Pfad trägt einen von vier Antrieben
+### ~~Der Eigen-Pfad trägt einen von vier Antrieben~~ → zwei von vier, seit dem 11.09.2026
 
-Vor dem Anschluss der emotionalen Gravitation an die Salienz sind zwei Punkte zu klären:
+**Die emotionale Gravitation ist angeschlossen** (`graph/nodes/salience.py::_staerkste_emotionale_gravitation`), als Konkurrent im `max()` und mit dem **Maximum** der aktivierten Punkte statt ihrer Summe. `[gemessen 11.09.2026]` Sie trägt in 19 von 19 Turns einen Wert (0,327–0,586) und gewinnt das `max()` in 15,8 % — gerechnet waren 9,0 %.
 
-- Der **dreifache Verfall** im LZG-Zweig (`novaberg-fundliste.md`, 28.07.2026) — die Kurve wird dreimal angewandt, entgegen `novaberg-convention-abgeleitete-werte.md` §3(5)
-- Der **Quellenfaktor**: LZG 0.5 gegen KZG 0.8. Die Schatzkiste wird stärker gedämpft als der Zwischenspeicher — das steht gegen das Leitmotiv *„viel speichern, intelligent vergessen"*. Entscheidung offen
+> **Der Sperrgrund war elf Tage hinfällig.** Die Konstante nannte *„unnormiert, Werte weit über 1.0"*; seit dem 30.08.2026 teilt `gravitation_lzg_berechnen` durch `LZG_KNOTEN_GEWICHT_CAP` (Abhilfe zu `EMGRAV-SCHWELLE-TOT`), und über 888 Kandidaten liegt die Spanne bei **0,184 bis 0,708**.
 
-Die Rückkopplung Wissenslücken → Neugier existiert weiterhin nicht (`novaberg-thinking-curiosity_k.md`).
+**Die zwei Punkte unten sind beim Anschluss übergangen worden und bleiben offen.** Sie betreffen die **Höhe** des Werts, nicht seine Skala — beide machen ihn eher zu klein, und ein zu kleiner Antrieb verliert das `max()`, statt es zu verfälschen. Der Anschluss ist damit gültig und die Kalibrierung nicht:
+
+- Der **dreifache Verfall** im LZG-Zweig (`novaberg-fundliste.md`, 28.07.2026) — die Kurve wird dreimal angewandt, entgegen `novaberg-convention-abgeleitete-werte.md` §3(5). **Am 11.09.2026 gegen den Code gehalten: unverändert.**
+- Der **Quellenfaktor**: LZG 0.5 gegen KZG 0.8. Die Schatzkiste wird stärker gedämpft als der Zwischenspeicher — das steht gegen das Leitmotiv *„viel speichern, intelligent vergessen"*. Entscheidung offen; **die Konstanten stehen am 11.09.2026 unverändert.**
+
+> **Was das für die gemessenen 15,8 % heißt:** Sie sind eine **Untergrenze**. Fielen die beiden Dämpfungen weg, gewänne der Antrieb häufiger — wie viel häufiger, ist nicht gerechnet.
+
+**Offen bleibt der vierte Antrieb:** Die Rückkopplung Wissenslücken → Neugier existiert weiterhin nicht (`novaberg-thinking-curiosity_k.md`).
 
 ---
 

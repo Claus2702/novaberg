@@ -821,7 +821,7 @@ für Novas nächsten Gedankenschritt. Bedingung: Vektorlänge ≥ 2, kein Krisen
 Die Strategie ist Teil des `[AUFGABE]`-Blocks (nicht separat), um Prompt-Widersprüche
 zu vermeiden. Template in `gv.task.txt` mit `{strategie_block}`-Platzhalter.
 
-> **Seit dem 11.09.2026 gibt es zwei Fassungen, und die Auswahl folgt dem Ausloeser.**
+> **Seit dem 10.09.2026 gibt es zwei Fassungen, und die Auswahl folgt dem Ausloeser.**
 > Die Aufgabe fragt, was den Ausloeser beschaeftigt und welcher Gedanke bei ihm als
 > naechstes kommt — der Knoten soll dessen Absicht erkennen und **weiterfuehren**; darauf
 > beruht, dass Nova beteiligt wirkt statt nur zu antworten.

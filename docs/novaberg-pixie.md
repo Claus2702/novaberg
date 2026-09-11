@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 28. August 2026 (`ausloeser_turn_id` im Stapel-Eintrag, `build_impulse_embed_text` — Scheibe 4 des Lage-Konzepts). Davor: 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 11. September 2026, 16:00 UTC (**Agenten und Zustellung sind getrennt pausierbar**, und der Status meldet nicht nur *pausiert*, sondern auch *still* — eine Pause bricht keinen laufenden Agenten ab, und ein Recherche-Lauf lief zehn Minuten ueber sie hinweg. Dazu `POST /admin/delivery/jetzt` als Ausloeser fuer Messreihen). Davor 11. September 2026 (**die Pause haelt seither auch die Zustellung an** — sie galt nur fuer den Scheduler, waehrend fertige Impulse weiter zugestellt wurden; gemessen ein Fremdturn mitten in einer Messreihe bei bestaetigtem `paused: true`, danach 0 in 20). Davor 28. August 2026 (`ausloeser_turn_id` im Stapel-Eintrag, `build_impulse_embed_text` — Scheibe 4 des Lage-Konzepts). Davor: 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -138,6 +138,55 @@ Promotion-Queue Eintragsformat:
 > **Eine unvollstaendige Kette laesst nichts durch.** Fehlt ein Pflicht-Riegel, ist das Urteil keines; der Eintrag traegt `vollstaendig` und die fehlenden Namen, damit eine Auswertung den Ausfall vom blockierenden Riegel trennen kann.
 >
 > **Zwei Grenzen, beide benannt.** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`): Was davor abbricht — offene Rueckfrage, erschoepfter Burst, leerer Stapel —, erzeugt keinen. Und die Riegel 5 bis 7 entscheiden **innerhalb** der Zustellung und tragen ihre Werte noch nicht in denselben Eintrag ein.
+
+> **Die Pause hielt die Zustellung nicht an — bis zum 11.09.2026.** `pixie:paused` wurde an genau **einer** Stelle gelesen, im Scheduler: Er erzeugte dann keine neuen Auftraege mehr, aber was fertig auf dem Stapel lag, wurde weiter zugestellt.
+>
+> `[gemessen 10.09.2026]` Waehrend einer Messreihe mit bestaetigtem Status `{"paused": true}` liefen **fuenf Zustellungen mit `durchgelassen: true`** und **ein vollstaendiger Fremdturn** mitten in der Reihe; sein Reiz war ein Rechercheergebnis, das im Feld fuer die Nutzeraeusserung landete.
+>
+> **Zwei Folgen, und beide wiegen.** Eine Messreihe mit pausiertem Pixie war **nicht** hintergrundfrei. Und im Betrieb schiebt sich ein Recherchetext als Gespraechsturn zwischen zwei Nutzeraeusserungen — der Mensch sieht eine Antwort, die seine Frage uebergeht.
+>
+> **Der Riegel steht seither vor der Nutzerschleife**, mit demselben Schluessel und derselben Bauart wie im Scheduler; der Schluessel selbst ist einmal als `PIXIE_PAUSE_SCHLUESSEL` benannt statt viermal hingeschrieben. Betriebsbeleg am 11.09.2026: **0 Fremdturns in 20**, gegen 1 in 19 davor.
+
+> **Seit dem 11.09.2026 lassen sich beide Haelften getrennt anhalten.** Der
+> Vollschalter blieb, was er war; daneben stehen zwei Teilschalter:
+>
+> | Endpunkt | Wirkung |
+> |---|---|
+> | `POST /admin/pixie/pause` | **beides** — Agenten und Zustellung |
+> | `POST /admin/pixie/agenten/pause` | nur die Hintergrundagenten; die Zustellung laeuft |
+> | `POST /admin/pixie/delivery/pause` | nur die Zustellung; die Agenten arbeiten |
+>
+> **Wozu die Trennung da ist.** Wer pruefen will, *wie* ein zugestellter
+> Impuls formuliert ist, braucht die Zustellung an und den Rechercheagenten
+> aus — sonst schiebt sich waehrend der Reihe ein frischer Fund dazwischen.
+> Umgekehrt will eine Messung am Hintergrund die Agenten laufen lassen, ohne
+> dass ihre Ergebnisse mitten in die Reihe fallen. Beide Leser pruefen
+> *Vollschalter ODER eigener*, damit der Vollschalter unveraendert bleibt.
+>
+> **`GET /admin/pixie/status` meldet beide Haelften einzeln** — wer nur
+> `paused` liest, saehe `false` und hielte beides fuer laufend, waehrend eine
+> Haelfte steht.
+
+> **Pausiert heisst nicht still, und das war der teurere Befund.** Die Pause
+> verhindert den naechsten Heartbeat-Zyklus; **einen laufenden Agenten bricht
+> sie nicht ab** — richtig so, ein Abbruch verloere seine Arbeit.
+>
+> `[gemessen 11.09.2026]` Eine Messreihe setzte die Agenten-Pause um 09:53:40;
+> ein Recherche-Agent lief bis **10:03:41** weiter — zehn Minuten volle
+> Modellast, waehrend der Status `agenten_pausiert: true` meldete. Die Reihe
+> mass den Hintergrund mit, und der Rechner schaltete unter Last ab.
+>
+> Der Status traegt seither `agenten_laufend` (welche Spuren arbeiten) und
+> **`bereit_fuer_messung`** — pausiert **und** still. Die Verknuepfung steht
+> im Endpunkt und nicht beim Aufrufer: Sonst zieht sie jeder selbst, und einer
+> vergisst sie.
+
+> **`POST /admin/delivery/jetzt` loest eine Zustellung sofort aus**, statt auf
+> die Inaktivitaetsgrenze zu warten — derselbe Pfad, dieselbe Auswahl,
+> dieselben Graphen. Die Riegel gelten, wenn nichts anderes verlangt wird;
+> `riegel_uebergehen=true` setzt die Burst-Sperre zurueck und **schreibt eine
+> `warning`**. Ein Messinstrument, das schweigt, wird vergessen und
+> verfaelscht die naechste Messung.
 
 **Riegel 2 (`frequenz`) ist seit dem 15.08.2026 gebaut** — als **Schalter**, nicht als Frequenzmass: Hat Nova gerade die Initiative, darf ein Impuls kommen; hatte der Mensch sie, nicht. Er liest das Fuehrungsmass aus dem persistierten Haltungsstand und binarisiert es mit der vorhandenen `GV_INITIATIVE_SCHWELLE`. **Mit ihm ist die stuendliche Decke gefallen**; was die Wiederholung begrenzt, ist der Burst-Zaehler, was den Zeitpunkt beurteilt, sind die Riegel. Er ist **Pflicht-Riegel** — eine Kette ohne ihn laesst nicht durch. Herleitung und Messung in `novaberg-eigenzeit_k.md` §2.5.
 

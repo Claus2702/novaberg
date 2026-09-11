@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 1. September 2026, 14:30 UTC (§2.2: die Verlaufszeile heisst jetzt `[GESPRAECHSVERLAUF]` statt *Session-Verlauf* — der Block stand in der Tabelle und trug seinen Namen nicht). Davor 30. August 2026 (§2.2ab: `[GEDAECHTNIS]`, `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]` sprechen über Person A, nie mit ihr — der Gedächtnisblock in den Namen seines Lesers, zweiter Kanal `memory_context_verfasser`). Davor 29. August 2026, spät (`[SACHLAGE]` und `[SACHLAGE-BRUECKE]` sprechen über Person A und Person B, nie mit dem Charakter; `[MASS]`: die Rückfrage-Zeile sagt, wessen Zug der Gegenstand ist; mittags: `[SACHLAGE]` trägt seit den Scheiben 6–9 Deckung, Zweifel, Antwortstoff, Suchtreffer und Sprecher; die Nutzer-Fassung des Herkunftsblocks führt, §2.2a — Block-Tabelle). Davor 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 11. September 2026, 16:00 UTC (§2.2a-2 und §2.2a-3 neu: **der Impuls schließt an das Gespräch an** — die Abhilfe vom 13.08. hatte den Anschluss ganz verboten, um die falsche Zuschreibung zu verhindern; beide Zusicherungen stehen jetzt nebeneinander. Dazu die **Brücke für ferne Funde**: Die Nähe reist mit dem Impuls, unter 0,55 setzt der Verfasser einen Übergangsblock. Betriebsbeleg: ein Fund mit Nähe 0,37 sprang ohne ein Wort des Übergangs). Davor 1. September 2026, 14:30 UTC. Davor 30. August 2026 (§2.2ab: `[GEDAECHTNIS]`, `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]` sprechen über Person A, nie mit ihr — der Gedächtnisblock in den Namen seines Lesers, zweiter Kanal `memory_context_verfasser`). Davor 29. August 2026, spät (`[SACHLAGE]` und `[SACHLAGE-BRUECKE]` sprechen über Person A und Person B, nie mit dem Charakter; `[MASS]`: die Rückfrage-Zeile sagt, wessen Zug der Gegenstand ist; mittags: `[SACHLAGE]` trägt seit den Scheiben 6–9 Deckung, Zweifel, Antwortstoff, Suchtreffer und Sprecher; die Nutzer-Fassung des Herkunftsblocks führt, §2.2a — Block-Tabelle). Davor 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
@@ -173,6 +173,62 @@ Prompt, der in jedem Fall denselben Satz trägt, nicht prüfbar ist.
 > gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe
 > ihn ebenfalls braucht. Was beide brauchen, gehört an einen Ort — sonst läuft
 > die Kopie auseinander.
+
+### 2.2a-2 Der Impuls schließt an das Gespräch an (11.09.2026)
+
+**Die Abhilfe vom 13.08.2026 hatte übersteuert.** Um die falsche Zuschreibung
+zu verhindern, wies `verfasser.eigener_impuls.txt` an: *„SIE EROEFFNET. Der
+erste Satz setzt etwas in den Raum, statt an etwas anzuknüpfen. Was Person B
+zuletzt sagte, ist Vorgeschichte und nicht der Anlass."* Ein Beitrag ohne
+Anschluss wirkt eingeworfen; der Mensch beschrieb es als *maschinell
+eingefügt*.
+
+> **Zwei Fragen waren vermischt.** *Von wem* ein Gedanke stammt und *woran* er
+> anschließt sind verschieden. Die erste war gesichert, die zweite dabei
+> verloren gegangen.
+
+`[gemessen 11.09.2026 über 156 Impuls-Turns]` Die Übernahmequote aus dem
+Material liegt im Median bei **20 %**, im P90 bei **41 %**; **29 Antworten
+(19 %)** tragen eine wörtlich übernommene Passage von sechs Wörtern oder mehr,
+**6 Impulse (4 %)** kamen im Berichts-Rohformat (`**WAS GEFUNDEN WURDE.**`).
+
+**Drei Prompt-Dateien tragen den Fall:**
+
+| Datei | Rolle |
+|---|---|
+| `verfasser.eigener_impuls.txt` | Herkunft **und** Anschluss — mit einem Satz, der beide Fragen ausdrücklich trennt, damit der Prompt sich nicht widerspricht |
+| `verfasser.eigener_gedanke.txt` | Das Material als **Rohstoff**: Berichtsform ist die Ablageform, nicht die Sprechform. Gibt der Fund nichts her, *ist genau das die Auskunft* |
+| `responder.eigener_gedanke.txt` | Dieselben zwei Zusicherungen für die zweite Stufe — was beide brauchen, gehört an einen Ort |
+
+**Die Anweisungen stehen positiv** (`F-PROMPT-1`): *„SIE BRINGT DAS NEUE"*
+statt *„wiederholt nicht"*, *„SIE SPRICHT IN IHREN EIGENEN WORTEN"* statt
+*„kein Satz wörtlich"*. Die erste Fassung dieses Umbaus trug drei
+Verbotsformen und ist daran korrigiert worden.
+
+### 2.2a-3 Ein ferner Fund bekommt eine Brücke (11.09.2026)
+
+**Die Zustellschwelle und die Anschlussschwelle sind verschieden.** Die
+Auswahl der Zustellung lässt ab einer thematischen Nähe von **0,30** durch —
+bewusst, damit ein Fund aus einem früheren Auftrag nicht für immer liegen
+bleibt. Für einen Anschluss ohne Brücke reicht das nicht.
+
+`[Betriebsbeleg 11.09.2026]` Ein Eintrag mit Nähe **0,37** wurde zugestellt,
+während das Gespräch bei Lagrange-Punkten stand; der Beitrag handelte von der
+Hubble-Spannung. Sprachlich gelungen, kein Satz abgeschrieben — und **ohne ein
+Wort des Übergangs**.
+
+Die Nähe reist seither mit dem Impuls (`thema_naehe` im Event-Payload). Liegt
+sie unter `VERFASSER_IMPULS_NAHE` (**0,55**), setzt der Verfasser den Block
+`verfasser.impuls_ferne.txt`: den Wechsel nennen, die Verbindung suchen — und
+wenn es keine gibt, das sagen. *„Das hat jetzt nichts damit zu tun, aber …"*
+ist ein vollständiger Übergang und ehrlicher als eine erzwungene Verbindung.
+
+> **Die Schwelle nicht hochzudrehen war die Entscheidung.** Eine höhere
+> Zustellschwelle nähme Nova die Fähigkeit, ein Thema aufzugreifen, das sie
+> beauftragt bekam — sie soll wechseln dürfen, aber mit Übergang.
+
+**Ein fehlender Wert wird gemeldet, nicht als 0.0 gelesen.** Das wäre die
+stärkste Aussage — *ganz fernes Thema* — aus einer fehlenden.
 
 ### 2.2b Der Auftrag ist eine Aufgabe, kein Zuständigkeitsbereich (14.08.2026)
 

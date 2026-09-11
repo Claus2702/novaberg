@@ -224,7 +224,7 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 **Dieselben Punkte frischen Prägungsfäden auf** (seit dem 01.09.2026): Je reaktivierter Erinnerung — aus **beiden** Speichern, der Vektor kommt bei LZG aus der Tabelle und bei KZG aus Redis — wird der nächste Faden des Paars gesucht, und liegt er näher als `PRAEGUNG_BERUEHRUNG_NAEHE` (0,62), entsteht eine Zeile in `praegung_beruehrung`. Die Log-Zeile `praegung_auffrischung` zählt Kandidaten **und** Treffer — ohne die Kandidatenzahl wäre eine Reihe ohne Berührungen nicht von einer ohne Fäden zu unterscheiden. **Der Weg über KZG ist der häufigere:** Solange das Langzeitgedächtnis eines Paars dünn ist, kommt fast jede Reaktivierung von dort.
 
 **Rechnung der Injektion:** Je Punkt wird `min(0,5; gravitation × 0,25)` auf Novas Verlauf addiert — gedeckelt, weil Erinnerungen **färben** und nicht überschreiben sollen. Danach wird `internal.emotion` nachgezogen. **Der Faktor stand bis zum 31.08.2026 auf 0,6**; nach der Reizstärke-Kalibrierung sortierte dieselbe Injektion in 172 von 1178 Paarungen um statt in 2 — nicht weil sie gewachsen wäre, sondern weil das Feld enger wurde (Abstand Führung zu Platz zwei im Median 0,52 → 0,27). **Der Deckel greift dabei nie:** Der höchste im Bestand vorkommende Gravitationswert ist 0,558.
-**Beitrag:** Eine reaktivierte Erinnerung ändert nicht nur den Ton, sondern Novas Denkrichtung: Die Achsen von S20 und die Säulen von S18 stehen danach auf der neuen Lage.
+**Beitrag:** Eine reaktivierte Erinnerung ändert nicht nur den Ton, sondern Novas Denkrichtung: Die Achsen von S20 und die Säulen von S18 stehen danach auf der neuen Lage. **Seit dem 11.09.2026 ist sie zusätzlich ein Antrieb der Salienz-Formel (S33)** — der stärkste aktivierte Punkt, gelesen aus dem State-Kanal `emotionale_gravitationspunkte`, den S12 seit dem 30.08.2026 befüllt und für den es bis dahin keinen Leser auf diesem Weg gab.
 **Reinheit:** Scan unrein, Injektion rein (`emotionale_gravitation_auf_verlauf_anwenden`, `emotionale_gravitation_anwenden`).
 **Prüfstand:** `test_emotionale_gravitation_node.py`.
 **Absicht:** `novaberg-thinking-drive_k.md` §5.7, `novaberg-node-emotionale-gravitation.md`.
@@ -652,6 +652,7 @@ Der Strich ist der Fall *„kein gelesener Träger trägt ein Qualitätsprofil"*
 
 **Eingang:** Gedächtnis, Web-Recherche, Aufgabenblock, Gesprächsvektor, Session-Verlauf.
 **Rechnung:** Der Verfasser entscheidet, **was** gesagt wird. Vor dem ersten Satz fällt er ein Urteil über einen Einwand des Nutzers; das Urteil trägt die **Ausbausperre** — bei `bewertung == "abweichend"` darf der abweichende Wert zitiert, aber nicht als Prämisse verwendet werden. Die Vorzeichenprüfung zählt anschließend, ob Novas Text den abweichenden Wert übernommen hat. Sie entsteht nur bei `abweichend`; ein Turn ohne Einwand hinterlässt keine Spur, sonst wäre die Rate nicht lesbar. **Seit dem 28.08.2026 abends trägt die Rückfrage-Zeile des `[MASS]`-Blocks ihren Gegenstand** aus S14a (`question_target`: die wichtigste offene Eigenschaft des akuten Objekts, sonst das Vorhaben des kurzfristigen Ziels) — hinter Menge und Art, und nur, wo die Haltung eine Frage zulässt; im Labor traf die Rückfrage den Gegenstand 4/4 statt 1/4.
+**Auf einem Impuls-Turn kommt ein zweiter Auftrag dazu** (11.09.2026): Der Verfasser führt den Gedanken nicht nur als Novas eigenen, sondern **schließt ihn an die Stelle des Gesprächs an, an der es steht**. Liegt der Fund thematisch fern — `thema_naehe` unter `VERFASSER_IMPULS_NAHE` (0,55) —, setzt er zusätzlich einen Übergangsblock. Die Nähe reist mit dem Impuls aus der Zustellauswahl; fehlt sie, entfällt der Block und das wird gemeldet statt als 0.0 gelesen.
 **Beitrag:** Der Responder bekommt den Inhalt fertig und sieht Gedächtnis und Web **nicht mehr**. Er kann daraus folglich nichts erfinden — die Lehre aus vier Fix-Iterationen ist damit eine Eigenschaft der Bauart statt einer Fallunterscheidung.
 **Reinheit:** der Modellaufruf unrein; `urteil_lesen`, `kopf_anweisung`, `vorzeichen_pruefen`, `_gespraechsvektor_block` rein.
 **Prüfstand:** `test_verfasser.py`, `test_einwandsurteil.py`, `test_vorzeichenpruefung.py`.
@@ -698,7 +699,7 @@ Der Strich ist der Fall *„kein gelesener Träger trägt ein Qualitätsprofil"*
 
 ### S33 — Die Salienz-Formel
 
-**Eingang:** die Lesung des Segments, der Gravitationsterm aus S8, **der ungetorte Zielsog** (State-Kanal `zielsog_roh`, seit 01.09.2026), Novas Arousal, `salienz_human` aus S2, die Nutzer-Gewichtung des Rads.
+**Eingang:** die Lesung des Segments, der Gravitationsterm aus S8, **der ungetorte Zielsog** (State-Kanal `zielsog_roh`, seit 01.09.2026), **die emotionale Gravitation aus S12** (State-Kanal `emotionale_gravitationspunkte`, seit 11.09.2026), Novas Arousal, `salienz_human` aus S2, die Nutzer-Gewichtung des Rads.
 **Rechnung:**
 
 ```
@@ -709,6 +710,8 @@ salienz_charakter = gezogen × (1 + erregungs_zuschlag) ÷ (1 + MAX_ZUSCHLAG)
 ```
 
 Zwei Gründe, sich etwas zu merken, und es genügt einer — deshalb `max()` und keine Summe. Eine Summe höbe ein Segment, das beide Pfade schwach berührt, über eines, das einen davon voll trifft. Der Erregungs-Zuschlag wirkt als `(1 + z)` mit `z ≥ 0`: Er hebt und kann nie auslöschen.
+
+**Der vierte Antrieb, die emotionale Gravitation, ist seit dem 11.09.2026 angeschlossen** — als Konkurrent im `max()`, nicht als Zug. Ihr Sperrgrund *unnormiert* war seit dem 30.08.2026 hinfällig (`[gemessen]` 0,184 bis 0,708 über 888 Kandidaten); vor dem Anschließen wurde nachgerechnet, ob sie dort sichtbar wird — **9,0 % Gewinnanteil gerechnet, 15,8 % gemessen**. Genommen wird das Maximum der aktivierten Punkte, nicht ihre Summe. **Nicht angeschlossen bleibt allein der Neugier-Bezug.**
 
 **Novas eigener Zielsog steht seit dem 01.09.2026 nicht mehr im `max()`, sondern zieht.** Dort entschied er `[gemessen]` in **4 von 2786** Zeilen — Mittel 0,034 gegen 0,692. Die neue Form schließt einen Teil der **Lücke nach oben** und kann deshalb nie senken; wie viel, sagt eine Logistische über dem Sog selbst. Der Sog ist dabei **ungetort**: `GRAVITATIONS_SCHWELLE` entscheidet, woran Nova denkt (`[GEDANKEN]`-Block), nicht wie sehr ein Thema sie anzieht. Herleitung, verworfener Mittelwert-Entwurf und der ausdrückliche Vorbehalt in `novaberg-salienz-berechnung_k.md` §4a.
 **Beitrag:** Entscheidet, was von diesem Turn ins Gedächtnis wandert und damit im nächsten wieder auftauchen kann.
