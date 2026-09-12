@@ -40,15 +40,21 @@ from unittest.mock import patch
 
 from memory.repositories.wissensluecken_repository import (
     LUECKEN_JE_TURN,
+    OFFENE_FRAGEN_MIN_NAEHE,
     staerkste_luecken,
 )
 
+#: Ein Reizvektor. Sein Inhalt ist hier gleichgueltig — die Datenbank ist
+#: ersetzt; gebraucht wird er, weil der Leser seit dem 12.09.2026 ohne Reiz
+#: nichts waehlen darf.
+VEK: list[float] = [0.1, 0.2, 0.3]
 
-def zeile(thema: str, zug: float, tage: int = 5) -> dict:
+
+def zeile(thema: str, zug: float, tage: int = 5, naehe: float = 0.5) -> dict:
     """Eine Ergebniszeile, wie die Abfrage sie liefert."""
     return {
         "thema": thema, "neugier_vektor": zug, "neuheit": 0.6,
-        "resonanz": 0.3, "herkunft": "turn", "alter_tage": tage,
+        "resonanz": 0.3, "herkunft": "turn", "alter_tage": tage, "naehe": naehe,
     }
 
 
@@ -58,18 +64,18 @@ class DasPaarIstPflicht(unittest.TestCase):
     def test_leere_user_id(self):
         """Eine fehlende `user_id` ist ein Aufruffehler, kein leeres Ergebnis."""
         with self.assertRaises(ValueError) as fehler:
-            staerkste_luecken("", "nova")
+            staerkste_luecken("", "nova", VEK)
         self.assertIn("paargebunden", str(fehler.exception))
 
     def test_leere_character_id(self):
         """Dasselbe fuer die Figur."""
         with self.assertRaises(ValueError):
-            staerkste_luecken("meister", "")
+            staerkste_luecken("meister", "", VEK)
 
     def test_deckel_null(self):
         """Ein Deckel von 0 liefert nicht stillschweigend nichts."""
         with self.assertRaises(ValueError):
-            staerkste_luecken("meister", "nova", deckel=0)
+            staerkste_luecken("meister", "nova", VEK, deckel=0)
 
 
 class DieAbfrageFiltertUndOrdnet(unittest.TestCase):
@@ -81,7 +87,7 @@ class DieAbfrageFiltertUndOrdnet(unittest.TestCase):
             "memory.repositories.wissensluecken_repository.db_manager.select",
             return_value=[],
         ) as abfrage:
-            staerkste_luecken("meister", "nova")
+            staerkste_luecken("meister", "nova", VEK)
 
         sql: str = abfrage.call_args.args[0]
         self.assertIn("status = 'offen'", sql,
@@ -98,9 +104,9 @@ class DieAbfrageFiltertUndOrdnet(unittest.TestCase):
             "memory.repositories.wissensluecken_repository.db_manager.select",
             return_value=[],
         ) as abfrage:
-            staerkste_luecken("meister", "nova", deckel=7)
+            staerkste_luecken("meister", "nova", VEK, deckel=7)
 
-        self.assertEqual(abfrage.call_args.args[1], ("meister", "nova", 7))
+        self.assertEqual(abfrage.call_args.args[1][-1], 7)
 
     def test_ergebnis_wird_durchgereicht(self):
         """Die Zeilen kommen unveraendert zurueck."""
@@ -109,7 +115,95 @@ class DieAbfrageFiltertUndOrdnet(unittest.TestCase):
             "memory.repositories.wissensluecken_repository.db_manager.select",
             return_value=zeilen,
         ):
-            self.assertEqual(staerkste_luecken("meister", "nova"), zeilen)
+            self.assertEqual(staerkste_luecken("meister", "nova", VEK), zeilen)
+
+
+class NurWasDemReizNahIst(unittest.TestCase):
+    """Seit dem 12.09.2026 zuerst Naehe, dann Zug (`F-GV-2`).
+
+    Vorher kamen die drei mit dem hoechsten Zug ueberhaupt — in 15
+    Betriebsturns dieselben drei in jedem Turn, keine je aufgegriffen.
+    """
+
+    def abfrage(self, **kwargs):
+        with patch(
+            "memory.repositories.wissensluecken_repository.db_manager.select",
+            return_value=[],
+        ) as db:
+            staerkste_luecken("meister", "nova", VEK, **kwargs)
+        return db.call_args.args[0], db.call_args.args[1]
+
+    def test_die_naehe_steht_als_bedingung_in_der_abfrage(self):
+        sql, _ = self.abfrage()
+        self.assertIn("1 - (embedding <=> %s::vector) >= %s", sql,
+                      "Ohne die Bedingung kaemen wieder die staerksten ueberhaupt")
+
+    def test_die_ordnung_bleibt_der_zug(self):
+        """Unter den nahen entscheidet der Zug, nicht die Naehe."""
+        sql, _ = self.abfrage()
+        self.assertIn("ORDER BY neugier_vektor DESC", sql)
+        self.assertNotIn("ORDER BY embedding", sql)
+
+    def test_grenze_und_vektor_gehen_als_parameter(self):
+        _, params = self.abfrage(min_naehe=0.5)
+        self.assertEqual(params[0], "[0.1,0.2,0.3]")
+        self.assertEqual(params[3], "[0.1,0.2,0.3]")
+        self.assertEqual(params[4], 0.5)
+
+    def test_die_vorgabe_ist_die_gemessene_grenze(self):
+        _, params = self.abfrage()
+        self.assertEqual(params[4], OFFENE_FRAGEN_MIN_NAEHE)
+
+    def test_die_grenze_liegt_am_ersten_band_ueber_achtzig_prozent(self):
+        """Zahlen statt Symbol, gelesen je Naehe-Band an 64 Turns: 0,46–0,49
+        trug 8 von 12 passende Themen, 0,49–0,52 schon 10 von 12. Unter 0,46
+        waere der gewaehlte Zug in jedem zweiten Fall ein Wortanklang."""
+        self.assertGreater(OFFENE_FRAGEN_MIN_NAEHE, 0.46)
+        self.assertLessEqual(OFFENE_FRAGEN_MIN_NAEHE, 0.49)
+
+    def test_leerer_vektor_ist_ein_aufruffehler(self):
+        with self.assertRaises(ValueError):
+            staerkste_luecken("meister", "nova", [])
+
+    def test_bool_im_vektor_ist_keine_zahl(self):
+        with self.assertRaises(ValueError):
+            staerkste_luecken("meister", "nova", [0.1, True])
+
+    def test_nan_im_vektor_ist_keine_zahl(self):
+        with self.assertRaises(ValueError):
+            staerkste_luecken("meister", "nova", [0.1, float("nan")])
+
+    def test_grenze_ausserhalb_null_bis_eins(self):
+        with self.assertRaises(ValueError):
+            staerkste_luecken("meister", "nova", VEK, min_naehe=1.5)
+
+    def test_eine_zeile_unter_der_grenze_ist_ein_fehler(self):
+        """Hat die Bedingung nicht gegriffen, wird es laut — nicht still gefiltert."""
+        with patch(
+            "memory.repositories.wissensluecken_repository.db_manager.select",
+            return_value=[zeile("Fern", 0.1, naehe=0.2)],
+        ), self.assertRaises(RuntimeError):
+            staerkste_luecken("meister", "nova", VEK)
+
+    def test_leer_ist_ein_gueltiges_ergebnis(self):
+        with patch(
+            "memory.repositories.wissensluecken_repository.db_manager.select",
+            return_value=[],
+        ):
+            self.assertEqual(staerkste_luecken("meister", "nova", VEK), [])
+
+    def test_der_gv_knoten_uebergibt_den_reizvektor(self):
+        """Der Aufruf nimmt `prompt_embedding` — beim Impuls Novas Gedanke."""
+        from pathlib import Path
+
+        quelle: str = (
+            Path(__file__).resolve().parent.parent
+            / "graph" / "nodes" / "gespraechsvektor.py"
+        ).read_text(encoding="utf-8")
+        aufruf = quelle[quelle.index("offene_fragen = staerkste_luecken("):]
+        aufruf = aufruf[:aufruf.index("\n            )")]
+        self.assertIn("reiz_vektor", aufruf)
+        self.assertIn('reiz_vektor: list[float] = state.get("prompt_embedding")', quelle)
 
 
 class EinAusfallToetetDenTurnNicht(unittest.TestCase):
@@ -121,7 +215,7 @@ class EinAusfallToetetDenTurnNicht(unittest.TestCase):
             "memory.repositories.wissensluecken_repository.db_manager.select",
             side_effect=RuntimeError("Verbindung weg"),
         ):
-            self.assertEqual(staerkste_luecken("meister", "nova"), [])
+            self.assertEqual(staerkste_luecken("meister", "nova", VEK), [])
 
     def test_db_fehler_wird_gemeldet(self):
         """Und er wird laut — sonst sieht er aus wie ein leerer Bestand."""
@@ -131,7 +225,7 @@ class EinAusfallToetetDenTurnNicht(unittest.TestCase):
         ), self.assertLogs(
             "ki_server.memory.wissensluecken", level="ERROR",
         ) as protokoll:
-            staerkste_luecken("meister", "nova")
+            staerkste_luecken("meister", "nova", VEK)
 
         self.assertTrue(
             any("leerer Bestand" in z for z in protokoll.output),
@@ -150,7 +244,7 @@ class DerDeckelHaelt(unittest.TestCase):
             "memory.repositories.wissensluecken_repository.db_manager.select",
             return_value=zu_viele,
         ), self.assertRaises(RuntimeError) as fehler:
-            staerkste_luecken("meister", "nova")
+            staerkste_luecken("meister", "nova", VEK)
 
         self.assertIn("LIMIT", str(fehler.exception))
 

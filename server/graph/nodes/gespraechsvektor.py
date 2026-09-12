@@ -704,9 +704,10 @@ def _hypothese_destillieren(
         ]
         user_parts.append(
             "[OFFENE FRAGEN]\n"
-            "Themen, die dich ueber dieses Gespraech hinaus beschaeftigen:\n"
+            "Themen nah an diesem Gespraech, ueber die du selbst noch wenig "
+            "weisst:\n"
             + "\n".join(fragen_zeilen)
-            + "\n\nDu darfst eine davon aufgreifen, wenn sie sich anbietet — "
+            + "\n\nDu darfst aus einer davon nachfragen, wenn sie sich anbietet — "
             "als eigenes Interesse, nicht als Pflicht."
         )
         # Der Zug steht im Log, nicht im Prompt: Er ordnet die Auswahl, und
@@ -1279,11 +1280,24 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     # GV4-Luecken, und aus demselben Grund: Ist sie nicht aufnahmebereit,
     # traegt sie auch keine eigenen Themen hinein. `aufnahmebereitschaft`
     # sagt, ob jetzt der Moment dafuer ist; der Zug sagt, wohin sie will.
+    #
+    # **Seit dem 12.09.2026 nur, was dem Reiz nah ist** (`F-GV-2`). Der Vektor ist
+    # `prompt_embedding` — beim Nutzerturn seine Aeusserung, beim Impuls Novas
+    # eigener Gedanke; damit sucht ein Impuls-Turn genau Novas Luecken und
+    # keine des Nutzers. Fehlt der Vektor, gibt es keine Fragen, und das steht
+    # als Fehler im Log statt als leerer Bestand.
     offene_fragen: list[dict] = []
     if strategie_aktiv and lage.aufnahmebereitschaft > 0:
-        offene_fragen = staerkste_luecken(
-            state.get("user_id", ""), state.get("character_id", ""),
-        )
+        reiz_vektor: list[float] = state.get("prompt_embedding") or []
+        if reiz_vektor:
+            offene_fragen = staerkste_luecken(
+                state.get("user_id", ""), state.get("character_id", ""), reiz_vektor,
+            )
+        else:
+            logger.error(
+                "GV: kein prompt_embedding im Zustand — offene Fragen koennen "
+                "nicht nach Naehe gewaehlt werden, dieser Turn laeuft ohne sie",
+            )
 
     # **Das Tor der Strategie hinterlaesst eine Spur** (10.09.2026). Beide
     # Bedingungen entschieden bis heute ueber den Wissensluecken- und den
