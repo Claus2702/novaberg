@@ -963,8 +963,11 @@ und die Rollen sind vertauscht gegenüber der Planung:** Der Dispatcher schreibt
 kein TTL), das Panel holt es über `GET /drive/gv_detail`. Der WebSocket löst nur
 noch den Refresh aus, er trägt die Daten nicht.
 
-**Die beiden Wissens-Sektionen gehören zusammen.** Wissenslücken sagen, was Nova
-zum Thema *nicht* weiß, verwandte Erinnerungen, was sie dazu schon erlebt hat —
+**Die beiden Wissens-Sektionen gehören zusammen.** ~~Wissenslücken sagen, was Nova
+zum Thema *nicht* weiß~~ → **seit dem 12.09.2026 zwei Listen** (`novaberg-gv-strategie_k.md`
+Anhang A.0): die Lücke **beim Nutzer**, zu der Nova lenkt, und die Lücke **bei Nova**, aus
+der sie nachfragt — der Satz hier und §4.3 dort hatten Verschiedenes behauptet. Verwandte
+Erinnerungen sagen, was sie dazu schon erlebt hat —
 die zweite Wissensquelle des Nodes (§10.1). Sie war von ihrer Einführung bis
 Chat 116 schreib-only: geschrieben, nach Redis persistiert, über REST
 ausgeliefert und von keinem Leser abgeholt. Ob der Node in einem Turn überhaupt

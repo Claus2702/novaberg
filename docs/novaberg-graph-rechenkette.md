@@ -549,10 +549,10 @@ Die Normierung ist **asymmetrisch** — nach unten gegen den Abstand zum Minimum
 ### S22 — Wissenslücken
 
 **Eingang:** Turn-Embedding, LZG und KZG, Session-Turns, aktivierte Ziele, Aufnahmebereitschaft, Register.
-**Rechnung:** Kandidaten mit Similarity über 0,20 aus beiden Speichern. Bereits Erwähntes fällt über einen Token-Overlap von mehr als 40 % gegen die letzten acht Turns heraus, zu Ähnliches über eine Obergrenze. Die Relevanz ist ein Produkt aus sechs Systemen: `similarity × gewicht × quellen_faktor × (1 + neugier_boost) × aufnahmebereitschaft × register`. Am Ende Deduplizierung über Token-Overlap und Kappung auf `GV_LUECKEN_MAX`.
+**Rechnung:** Kandidaten mit Similarity über 0,20 aus beiden Speichern. Bereits Erwähntes fällt über einen Token-Overlap von mehr als 40 % gegen die letzten acht Turns heraus, zu Ähnliches über eine Obergrenze. Die Relevanz ist ein Produkt aus sechs Systemen: `similarity × gewicht_rang × quellen_faktor × (1 + neugier_boost) × aufnahmebereitschaft × register`. **`gewicht_rang` seit dem 12.09.2026:** der Rang des Gewichts in der eigenen Quelle (`ei/source_weights.py`), weil LZG-Gewicht (3–10) und KZG-Salienz (0–1) roh auf verschiedenen Skalen ins selbe Produkt gingen und das LZG allein dadurch 77 von 83 Plätzen besetzte. Am Ende Deduplizierung über Token-Overlap und Kappung auf `GV_LUECKEN_MAX`.
 **Beitrag:** Der `[WISSENSLUECKEN]`-Block des GV-Prompts.
-**Reinheit:** unrein. Rein sind `ist_bereits_erwaehnt`, `register_kompatibilitaet` und die Relevanzformel bei gegebenen Kandidaten.
-**Prüfstand:** `test_wissensluecken.py`.
+**Reinheit:** unrein. Rein sind `ist_bereits_erwaehnt`, `register_kompatibilitaet`, `weight_rank` und die Relevanzformel bei gegebenen Kandidaten. Die Gewichtsverteilung je Paar ist ein Lesezugriff auf beide Speicher, zwischengehalten für `GV_GEWICHT_VERTEILUNG_TTL_S`.
+**Prüfstand:** `test_wissensluecken.py`, `test_gv4_quellen_naht.py`.
 
 **Drei der sechs Systeme differenzieren nicht zwischen Kandidaten** — Aktualität hat keinen Aufrufer, Drive und Charakter benutzen das Turn-Embedding als Proxy und liefern für jeden Kandidaten denselben Wert. Bekannt als `GV4-SYSTEM-2-TOT` in `novaberg-bugs.md`.
 

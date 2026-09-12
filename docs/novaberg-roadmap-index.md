@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 834 Abschnitte in 5 Dateien — 348 mit eigenem Datum, 485 geerbt, 1 ohne.
+**Umfang:** 838 Abschnitte in 5 Dateien — 349 mit eigenem Datum, 488 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 571 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 575 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 834 Marken, 834 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 838 Marken, 838 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 20:20 UTC — die Neugier hat zwei Lücken, und die erste Naht ist geschlossen 🔧](novaberg-roadmap.md#12092026-2020-utc--die-neugier-hat-zwei-lücken-und-die-erste-naht-ist-geschlossen) |
+| (2026-09-12) | laufend | ### | · [Anlass: fünfzehn Betriebsturns](novaberg-roadmap.md#anlass-fünfzehn-betriebsturns) |
+| (2026-09-12) | laufend | ### | · [Die Entscheidung davor](novaberg-roadmap.md#die-entscheidung-davor) |
+| (2026-09-12) | laufend | ### | · [Bauteil 1: die Naht](novaberg-roadmap.md#bauteil-1-die-naht) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 19:30 UTC — ein Betriebsturn bricht ab, und die Absicht stand vollständig da 🔧](novaberg-roadmap.md#12092026-1930-utc--ein-betriebsturn-bricht-ab-und-die-absicht-stand-vollständig-da) |
 | (2026-09-12) | laufend | ### | · [Der Turn erreichte keine Antwort](novaberg-roadmap.md#der-turn-erreichte-keine-antwort) |
 | (2026-09-12) | laufend | ### | · [Die Prüfung ist gebaut, richtig platziert und nicht abgeschlossen](novaberg-roadmap.md#die-prüfung-ist-gebaut-richtig-platziert-und-nicht-abgeschlossen) |

@@ -431,6 +431,7 @@ project/
 │   │   ├── initiative.py                #   Achse I: wer im Turn die Richtung setzt (Chat 116, → novaberg-gv-initiative.md)
 │   │   ├── neugier.py                   #   GV4: sechs Saeulen × Persoenlichkeit → Aufnahmebereitschaft
 │   │   ├── wissensluecken.py            #   GV4: semantisch nahe, aber unbesprochene Konzepte
+│   │   ├── source_weights.py            #   GV4: Rang des Gewichts in der eigenen Quelle — die Naht zwischen LZG und KZG
 │   │   ├── gravitation.py               #   Emotionale Gravitation: Erinnerungen als Attraktoren (→ novaberg-node-emotionale-gravitation.md)
 │   │   ├── fascination.py               #   Die ganze Rechnung der Faszination: Merkmalszug, Anker, sechs Turn-Modulatoren, Strangzug, Verfall je Dimension, Zusammenfuehrung (→ novaberg-thinking-faszination_k.md §10)
 │   │   ├── salienz.py                   #   Salienz-Formel (→ novaberg-salienz-berechnung_k.md)

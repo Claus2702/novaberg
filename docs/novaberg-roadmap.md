@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 19:30 UTC** (gemessen via `date -u`). Davor 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 20:20 UTC** (gemessen via `date -u`). Davor 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 77 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 82 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -21,6 +21,58 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 12.09.2026, 20:20 UTC — die Neugier hat zwei Lücken, und die erste Naht ist geschlossen 🔧
+
+**ZIEL:** Ein Lückenkandidat gewinnt nicht allein dadurch, aus welchem Speicher er
+kommt — Langzeit- und Kurzzeitgedächtnis gehen mit demselben Gewichtsmaß in die
+Relevanz.
+**TEST:** `test_gv4_quellen_naht.py`, 24 Zeugen. Suite **3515 grün, 0 übersprungen**
+(davor 3491). Gegenprobe: das rohe Gewicht wieder eingesetzt — **3 vorhergesagt,
+3 gezählt**, dieselben Namen.
+**MESSUNG:** `wissensluecken_finden` selbst über die elf echten Nutzerturns des
+Abends, gegen den Bestand, ohne Schreibzugriff.
+
+### Anlass: fünfzehn Betriebsturns
+
+Der Eigentümer fuhr Turns, um das Produkt zu testen. Ausgewertet: Die Lückensuche
+lieferte in **11 von 11** Nutzerturns Lücken in den Prompt — **56 von 83** davon
+Vermerke über Novas eigene Äußerungen, **6 von 83** aus dem KZG, dieselben drei
+offenen Fragen in jedem Turn, und eine ausdrückliche Bitte wurde erst beim fünften
+Mal erfüllt. GV4 fiel in der Featureliste auf 🔴.
+
+### Die Entscheidung davor
+
+Zwei Konzepte meinten verschiedene Lücken — die des Nutzers und die Novas. Der
+Eigentümer hat vier Fragen entschieden: **beide Lücken, getrennt**; **Themen statt
+Sätze** als Kandidaten; **erst die Bitte erfüllen, dann Neugier**; offene Fragen
+**nur bei Turn-Nähe**. Festgehalten in `novaberg-gv-strategie_k.md` Anhang A.0 und
+als `F-GV-2`. Vier Bauteile, in einer Reihenfolge, die jede Wirkung zuordenbar hält.
+
+### Bauteil 1: die Naht
+
+`gewicht` war beim LZG `gewicht_decay` (3,03–10,0, Median 3,89), beim KZG die
+`salienz` (0,42–1,0, Median 0,97). **Welche Normierung, war eine Messung:**
+
+| Form | LZG / KZG in den Top-8 über elf echte Reize |
+|---|---|
+| roh | 74 / 8 |
+| geteilt durch die Obergrenze | 3 / 59 |
+| Min–Max | 4 / 48 |
+| **Rang in der eigenen Quelle** | **22 / 18** |
+
+Die linearen Formen kehren die Schieflage nur um. Gebaut ist der Rang
+(`ei/source_weights.py`), die Verteilung je Paar zehn Minuten zwischengehalten.
+**Durch den gebauten Pfad nachgemessen: 16 LZG / 19 KZG**, 35 Lücken.
+
+**Was es kostet:** `GV_LUECKEN_MIN_RELEVANZ = 0.15` war auf der rohen Skala gesetzt
+und lässt jetzt weniger durch; zwei der elf Turns bleiben leer. Kalibriert wird nach
+dem Themen-Umbau. **Was es nicht behebt:** 24 der 35 Lücken sind weiter Vermerke
+über Novas Äußerungen — die Kandidaten sind noch Sätze.
+
+**Zweite Kontrolle** — wer liest die Relevanz, deren Größenordnung sich geändert
+hat? Vier Leser, einer mit Schwelle (die Untergrenze, vermerkt), drei zeigen an.
+Kein Befund.
 
 ## 12.09.2026, 19:30 UTC — ein Betriebsturn bricht ab, und die Absicht stand vollständig da 🔧
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gesprächslandschaft — 64 Zustände, 6 Achsen, 13 Cluster, 7 Strategien, 4 Absichten, 3 Vehikel (Konzept)
-**Stand:** 12. September 2026 (Anhang A.1: `GV_CHARAKTER_RESONANZ_SCHWELLE` steht als **eine** Zahl vor sieben Verteilungen — Mediane 0,097 bis 0,282, bei zwei Paaren laesst 0,30 nichts durch). Davor 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
+**Stand:** 12. September 2026, abends (Anhang A.0 neu: **zwei Lücken, getrennt** — beim Nutzer und bei Nova —, Themen statt Sätze als Kandidaten, die Bitte vor der Neugier, offene Fragen nach Turn-Nähe; Entscheidung des Eigentümers nach 15 Betriebsturns). Davor 12. September 2026 (Anhang A.1: `GV_CHARAKTER_RESONANZ_SCHWELLE` steht als **eine** Zahl vor sieben Verteilungen — Mediane 0,097 bis 0,282, bei zwei Paaren laesst 0,30 nichts durch). Davor 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
 **Pfad:** novaberg/docs/novaberg-gv-strategie_k.md
 **Quellen:** Chat 71 (GV3+4, Strategie-Analyse, 64-Sektoren-Validierung, Dreischicht-Architektur), Chat 39 (GV-Grundkonzept), Chat 53 (Drive/Neugier), Chat 7 (6-Säulen-Wahrnehmung)
 
@@ -189,7 +189,7 @@ Der GV-Node findet durch 2-3 Sprünge ein **Ziel** (wohin will das Gespräch?). 
 
 **Woher kommt die Absicht?** Aus dem Drive-System und den Wissenslücken:
 - **Teilen:** Nova hat einen eigenen Gedanken (Selbstoffenbarung aus dem Charakter)
-- **Lenken:** Nova sieht eine Wissenslücke beim User (GV4) und will ihn dorthin führen
+- **Lenken:** Nova sieht eine Wissenslücke beim User (GV4) und will ihn dorthin führen — **seit dem 12.09.2026 eine von zwei Listen**; die andere ist Novas eigene Lücke, aus der sie nachfragt (Anhang A.0)
 - **Halten:** Die Situation erfordert Stabilität (Regen, Nebel, Gewitter)
 - **Säen:** Nova hat ein aktiviertes Ziel (Drive) und bereitet den Boden
 
@@ -666,13 +666,47 @@ Arbeitstitel: "The Conversational Landscape: A Six-Axis Model for Dialogue State
 
 ## Anhang A: Wissenslücken-Relevanzformel (GV4)
 
+### A.0 Zwei Lücken, und was ein Kandidat ist — Entscheidung des Eigentümers, 12.09.2026
+
+**Anlass.** `[gemessen über 15 Betriebsturns, 12.09.2026, 18:15–18:52 UTC]` Der Pfad lieferte in **11 von 11** Nutzerturns Lücken in den Prompt. Von 83 davon begannen **56** mit *Nova …* — Vermerke über eigene Äußerungen —, **6** kamen aus dem KZG, die Aufnahmebereitschaft stand in 14 von 15 Turns bei 0,82–0,99, die drei offenen Fragen waren in allen 15 dieselben, und eine ausdrückliche Bitte wurde erst beim fünften Mal erfüllt. Befunde einzeln in `novaberg-fundliste.md` (12.09.2026).
+
+**Dahinter lag ein Widerspruch zweier Konzepte:** §4.3 nennt als Quelle der Absicht *Lenken* *„eine Wissenslücke beim User"*; `novaberg-node-gv_k.md` sagt *„Wissenslücken sagen, was Nova zum Thema nicht weiß"*. Der Code entschied keins von beiden — er suchte Sätze, die dem Turn nahe sind.
+
+**Die vier Entscheidungen**, getroffen als Auswahl aus vorgelegten Möglichkeiten; die gewählte steht mit ihrer Beschreibung:
+
+| Frage | Entscheidung |
+|---|---|
+| Wessen Lücke? | **Beide, getrennt.** *„Zwei Listen mit eigener Absicht: Lücke beim Nutzer → Lenken/Säen; Lücke bei Nova → sie fragt nach. Impuls-Turns suchen dann nur Novas Lücken (auf `eigener_gedanke`)."* |
+| Was ist ein Kandidat? | **Themen der Knoten.** *„Die `themen`-Stichworte der LZG/KZG-Einträge statt ihrer Sätze — ein Konzept statt eines Sprechakts; der Sprecher fällt als Merkmal weg."* |
+| Dämpft eine Bitte die Neugier? | **Erst erfüllen, dann Neugier.** *„Bei `intent = task` wird die Bitte zuerst bedient; Neugier darf danach anhängen, aber nicht an ihre Stelle treten."* |
+| Welche offenen Fragen? | **Nach Turn-Nähe wählen.** *„Nicht die drei mit dem höchsten Zug überhaupt, sondern die mit dem höchsten Zug unter denen, die dem aktuellen Turn nah sind — oder keine."* |
+
+Die Festlegung dazu ist `F-GV-2`.
+
+**Die Bauform — Konzept, noch nicht gebaut:**
+
+| Liste | Absicht | Kandidat | Bedingung | Prompt-Block |
+|---|---|---|---|---|
+| **Lücke beim Nutzer** | Lenken, Säen | ein Thema aus Knoten nahe am Turn | im laufenden Gespräch nicht gefallen **und** in keinem Knoten mit `beobachter = user` des Paares als Thema geführt | `[WISSENSLUECKEN]` |
+| **Lücke bei Nova** | Nachfragen | eine offene Zeile aus `wissensluecken` | ihr Embedding liegt dem Turn nah — auf Impuls-Turns dem eigenen Gedanken; unter den nahen der höchste `neugier_vektor`; **leer ist zulässig** | `[OFFENE FRAGEN]` |
+
+- **Was *„der Nutzer kennt es nicht"* hier heißt, ist eine Annäherung und wird so benannt:** Er hat das Thema im Bestand des Paares nie berührt. Das ist kein Nachweis von Unkenntnis, nur das Fehlen eines Belegs dafür.
+- **Die Charakter-Resonanz wird auf dem Thema gemessen, nicht auf dem Satz,** aus dem es stammt. Der Satz trägt den Sprecher (+0,302 zwischen `assistant` und `user`), das Stichwort nicht.
+- **Die Relevanz führt zwei Quellen zusammen und braucht deshalb eine Naht** (`F-NAHT-1`): LZG-Gewicht (`gewicht_decay`, bis `LZG_KNOTEN_GEWICHT_CAP`) und KZG-Salienz ([0, 1]) werden je über ihre gemessene Spanne normiert, bevor sie ins Produkt gehen. **✅ Gebaut am 12.09.2026** als **Rang in der eigenen Quelle** (`ei/source_weights.py`). Die Form war eine Messung, keine Ableitung: vorher gerechnet über elf echte Nutzerturns ergab roh 74 LZG / 8 KZG, geteilt durch die Obergrenze 3 / 59, Min–Max 4 / 48, Rang 22 / 18 — die KZG-Salienz liegt mit Median 0,97 fast oben, das LZG-Gewicht mit Median 3,89 nahe unten, jede lineare Form kehrt die Schieflage nur um. **Durch den gebauten Pfad nachgemessen: 16 LZG / 19 KZG**, 35 Lücken über dieselben elf Reize. **Der Preis:** `GV_LUECKEN_MIN_RELEVANZ = 0.15` war auf der rohen Skala gesetzt und lässt jetzt weniger durch; zwei der elf Turns bleiben leer. Kalibriert wird nach dem Themen-Umbau, weil der die Kandidaten ohnehin austauscht.
+- **Die Bitte zuerst:** Trägt der Turn `user_emotion.intent = task`, erfahren GV und Verfasser, dass der Vorschlag oder die Auskunft vor jedem Gedankensprung steht.
+
+**Reihenfolge der Bauteile, und warum:** Naht → Novas Lücken nach Nähe → Themen und Nutzer-Lücke → Bitte zuerst. Jedes ändert eine andere Zahl des Betriebsbelegs (Quellenmischung · Fragenwechsel · Sprecheranteil · Antwortform); zusammen gebaut wäre eine Verschlechterung keinem zuzuordnen.
+
+**Offen und vor dem Bau zu messen:** die Schwelle der Turn-Nähe für Novas Lücken; die Kosten, Themen je Turn einzubetten (heute ein Aufruf je Text), und ob ein Zwischenspeicher dafür nötig ist.
+
 ### A.1 Formel
 
 ```
-relevanz = similarity × gewicht × session_akt × QF
+relevanz = similarity × gewicht_rang × session_akt × QF
          × (1 + neugier_boost) × aufnahmebereitschaft × register_kompatibilitaet
 
 session_akt:        1 − sin^0.5(turn/25 × π/2)     nur Session, sonst 1.0
+gewicht_rang:       Rang des Gewichts in der eigenen Quelle, [0,1]   seit 12.09.2026 (A.0)
 QF:                 0.6 einheitlich
 neugier_boost:      max(ziel_sim × motivation)       Schwelle 0.30
 aufnahmebereitschaft:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]

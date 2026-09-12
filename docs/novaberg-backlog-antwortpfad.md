@@ -970,6 +970,8 @@ Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis 
 
 **Entscheidung, keine Reparatur:** entweder den Wertebereich am Erzeuger dokumentieren und die Konsumenten darauf verpflichten, oder normieren und alle Leser mitziehen. ⬜ Prio niedrig
 
+**Neu bewertet am 12.09.2026 — die Spanne ist enger geworden, offen bleibt der Eintrag.** Das Gewicht im Produkt ist seit heute der Rang in der eigenen Quelle ([0, 1]) statt des rohen LZG-Gewichts (bis 10). Die Relevanz liegt damit bei `similarity × rang × 0,6 × (1 + neugier_boost) × aufnahmebereitschaft × register` — bei der Similarity-Obergrenze 0,92 und dem größten Registerfaktor 1,2 ohne anliegende Gravitation höchstens 0,66, mit ihr bis 1,32. **Über 1,0 geht sie also weiterhin, nur seltener.** Die Zeilennummern oben sind veraltet; die Leser sind am 12.09.2026 neu gezählt: vier — `_qualifizieren` (Untergrenze), der Prompt, `gv_detail` und das Panel (reine Anzeige).
+
 **Zusammenhang:** KZG-SALIENZ-KONSUMENTEN-DISSENS (drei Leser, drei Annahmen über dieselbe Zahl — dieselbe Familie).
 
 ---

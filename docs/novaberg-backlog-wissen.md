@@ -756,6 +756,8 @@ basis = k["similarity"] * k["gewicht"] * GV_QUELLEN_FAKTOR
 basis = k["similarity"] * k["gewicht"] * k.get("quellen_faktor", GV_QUELLEN_FAKTOR)
 ```
 
+> **Überholt am 12.09.2026, und die Folge betrifft jede neue Quelle.** Das Produkt rechnet seit heute mit `k["gewicht_rang"]` — dem Rang des Gewichts in der **eigenen** Quelle (`ei/source_weights.py`), weil LZG (3–10) und KZG (0–1) roh auf verschiedenen Skalen zusammenkamen. **Eine Agent-Quelle braucht deshalb zuerst eine eigene Gewichtsverteilung**; ohne sie verwirft `_rank_weights` ihre Kandidaten laut. Ein `quellen_faktor` je Quelle ist danach eine Gewichtung *nach* der Naht und damit zulässig, aber kein Ersatz für sie.
+
 
 ### Reihenfolge
 
