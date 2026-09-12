@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 21:26 UTC** (gemessen via `date -u`). Davor 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 21:47 UTC** (gemessen via `date -u`). Davor 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 85 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 86 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -21,6 +21,38 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 12.09.2026, 21:47 UTC — Wissensfragen sind Pflicht, außer das Rad gibt der Neugier Anlass 🔧
+
+**ZIEL:** Eine Wissensfrage wird zuerst beantwortet, außer im Zuwendungsrad des Paares
+liegt `wissbegier` um mehr als die Messunsicherheit über `pflicht`; eine Aufgabe kommt
+immer zuerst, ein Impuls nie.
+**TEST:** `test_bitte_zuerst.py`, 25 Zeugen, mit Radwerten aus dem Bestand. Suite
+**3586 grün, 0 übersprungen**. Gegenproben: Weitergabe auf dem Skip-Weg entfernt **1/1**,
+Rad-Bedingung umgekehrt **6/6**, Verfasser ignoriert die Entscheidung **2/2** — die
+letzte erst nach Löschen der Bytecode-Caches, weil der Eingriff davor gleich groß war
+und in derselben Sekunde lag.
+**MESSUNG:** zwei Betriebsturns mit der Entscheidungszeile im Pipeline-Log.
+
+### Die Entscheidung
+
+Wörtlich: *„Die Wissensfragen sind eher Pflicht, Neugier dann im Gegensatz dazu eher
+privater Natur. Ich würde es am Rad festmachen, ob eines davon in einer Relation
+vorkommt, die anlass dazu gibt, eines zu bevorzugen."* Gelesen als: Zuwendungsrad des
+Paares, Speichen `pflicht` und `wissbegier`; die Neugier braucht einen Abstand über der
+Messunsicherheit — **0,05, der Median der Laufspanne beider Speichen über 97
+Erhebungen** —, sonst bleibt die Pflicht.
+
+### Vorher gerechnet und gemessen
+
+Über die gespeicherten Räder hat die Neugier in **11 von 13** destillierten Paaren
+Anlass, auch beim produktiven (0,761 gegen 0,887; in 47 von 47 Erhebungen positiv).
+Pflicht bleibt in einem Paar, bei Gleichstand und in den Paaren mit Nullrad.
+
+Im Betrieb: *Nenne mir drei bekannte Pulsare* → `neugier_hat_anlass`, Abstand 0,1266 —
+die Antwort lieferte die Liste trotzdem zuerst und hängte eine eigene Frage an; eine
+Aufgabe → `aufgabe`, geliefert. Die Entscheidung trifft der GV-Knoten einmal und legt
+sie in `gv_detail`; der Verfasser liest nur dort.
 
 ## 12.09.2026, 21:26 UTC — die Bitte zuerst, und eine Nulllinie, die nichts zu verbessern ließ 🔧
 

@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 847 Abschnitte in 5 Dateien — 352 mit eigenem Datum, 494 geerbt, 1 ohne.
+**Umfang:** 850 Abschnitte in 5 Dateien — 353 mit eigenem Datum, 496 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 584 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 587 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 847 Marken, 847 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 850 Marken, 850 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,9 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 21:47 UTC — Wissensfragen sind Pflicht, außer das Rad gibt der Neugier Anlass 🔧](novaberg-roadmap.md#12092026-2147-utc--wissensfragen-sind-pflicht-außer-das-rad-gibt-der-neugier-anlass) |
+| (2026-09-12) | laufend | ### | · [Die Entscheidung](novaberg-roadmap.md#die-entscheidung) |
+| (2026-09-12) | laufend | ### | · [Vorher gerechnet und gemessen](novaberg-roadmap.md#vorher-gerechnet-und-gemessen) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 21:26 UTC — die Bitte zuerst, und eine Nulllinie, die nichts zu verbessern ließ 🔧](novaberg-roadmap.md#12092026-2126-utc--die-bitte-zuerst-und-eine-nulllinie-die-nichts-zu-verbessern-ließ) |
 | (2026-09-12) | laufend | ### | · [Der Bauteil](novaberg-roadmap.md#der-bauteil) |
 | (2026-09-12) | laufend | ### | · [Was die Messung zeigt — und was nicht](novaberg-roadmap.md#was-die-messung-zeigt--und-was-nicht) |
@@ -560,7 +563,7 @@
 | (2026-08-08) | laufend | ### | · [Die Kostenfrage, und ein Bauteil, das nie fahrbar war](novaberg-roadmap.md#die-kostenfrage-und-ein-bauteil-das-nie-fahrbar-war) |
 | (2026-08-08) | laufend | ### | · [B3, und dann die Naht zwischen Landschaft und Zuwendungsrad](novaberg-roadmap.md#b3-und-dann-die-naht-zwischen-landschaft-und-zuwendungsrad) |
 | 2026-08-07 | laufend | ## | [Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅](novaberg-roadmap.md#chat-131-07082026--die-trennung-von-kalibrieren-und-validieren-und-eine-zahl-die-ungenauer-ist-als-ihr-p-wert) |
-| (2026-08-07) | laufend | ### | · [Die Entscheidung](novaberg-roadmap.md#die-entscheidung) |
+| (2026-08-07) | laufend | ### | · [Die Entscheidung](novaberg-roadmap.md#die-entscheidung-1) |
 | (2026-08-07) | laufend | ### | · [Die Nachrechnung, die den Zuschnitt geändert hat](novaberg-roadmap.md#die-nachrechnung-die-den-zuschnitt-geändert-hat) |
 | (2026-08-07) | laufend | ### | · [Der Bezugspunkt wanderte, und eine Begründung von vorgestern fällt](novaberg-roadmap.md#der-bezugspunkt-wanderte-und-eine-begründung-von-vorgestern-fällt) |
 | (2026-08-07) | laufend | ### | · [Und dann fiel B6, wenige Stunden nach seiner Aufnahme](novaberg-roadmap.md#und-dann-fiel-b6-wenige-stunden-nach-seiner-aufnahme) |
