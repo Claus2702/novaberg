@@ -21,10 +21,12 @@ from config import (
     GV_QUELLEN_FAKTOR,
     POSTGRES_URL,
     redis_client,
+    redis_client_bytes,
 )
 from ei.neugier import register_kompatibilitaet
 from ei.utils import cosine_similarity
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
+from memory.pipeline_log import log_berechnung
 from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.ei.wissensluecken")
@@ -58,6 +60,7 @@ def lzg_kandidaten_suchen(
     turn_embedding: list[float],
     user_id:        str,
     character_id:   str,
+    kern_embedding: list[float] | None = None,
 ) -> list[dict]:
     """Sucht semantisch nahe Eintraege im LZG via pgvector.
 
@@ -72,12 +75,29 @@ def lzg_kandidaten_suchen(
 
         embedding_str: str = "[" + ",".join(str(v) for v in turn_embedding) + "]"
 
+        # **Die Kern-Naehe kommt aus derselben Abfrage** (12.09.2026). Der
+        # Charakter-Filter verglich bis heute den **Turn** mit dem Kern und
+        # setzte denselben Wert fuer alle zwanzig Kandidaten — ein globaler
+        # Schalter unter dem Namen eines Kandidatenfilters. Je Kandidat ein
+        # eigener Wert kostet hier **keinen** weiteren Aufruf: Der Vektor liegt
+        # in der Zeile, und ein zweiter Abstandsausdruck rechnet ihn mit.
+        #
+        # Ohne Kern-Embedding (Cold-Start) bleibt die Spalte NULL, und der
+        # Aufrufer sieht es am fehlenden Feld — kein Vorgabewert, derselbe Grund
+        # wie bei `resonanz_pruefbar` (Chat 107, GV-RESONANZ-FALLBACK-LUEGT).
+        kern_str: str | None = (
+            "[" + ",".join(str(v) for v in kern_embedding) + "]"
+            if kern_embedding else None
+        )
+
         cursor.execute(
             """
             SELECT inhalt,
                    1 - (embedding <=> %s::vector) AS similarity,
                    gewicht_decay,
-                   COALESCE(arousal, 0.3) AS gap_arousal
+                   COALESCE(arousal, 0.3) AS gap_arousal,
+                   CASE WHEN %s::vector IS NULL THEN NULL
+                        ELSE 1 - (embedding <=> %s::vector) END AS kern_naehe
             FROM lzg_knoten
             WHERE user_id = %s
               AND character_id = %s
@@ -85,22 +105,26 @@ def lzg_kandidaten_suchen(
             ORDER BY embedding <=> %s::vector
             LIMIT 10
             """,
-            (embedding_str, user_id, character_id, embedding_str),
+            (embedding_str, kern_str, kern_str,
+             user_id, character_id, embedding_str),
         )
 
         for row in cursor.fetchall():
-            inhalt, similarity, gewicht, gap_arousal = row
+            inhalt, similarity, gewicht, gap_arousal, kern_naehe = row
             # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.1 —
             # liess im alten Raum 93 % durch, filterte nichts. 0.20 liegt
             # knapp ueber dem neuen Grundrauschen (0.16).
             if similarity and similarity > 0.20:
-                kandidaten.append({
+                eintrag: dict = {
                     "konzept":    inhalt,
                     "similarity": float(similarity),
                     "gewicht":    float(gewicht) if gewicht else 0.5,
                     "gap_arousal": float(gap_arousal),
                     "quelle":     "lzg",
-                })
+                }
+                if kern_naehe is not None:
+                    eintrag["charakter_resonanz"] = float(kern_naehe)
+                kandidaten.append(eintrag)
 
         conn.close()
         logger.info(f"GV4-LZG: {len(kandidaten)} Kandidaten gefunden")
@@ -115,12 +139,21 @@ def kzg_kandidaten_suchen(
     turn_embedding: list[float],
     user_id:        str,
     character_id:   str,
+    kern_embedding: list[float] | None = None,
 ) -> list[dict]:
     """Sucht semantisch nahe Eintraege im KZG via RediSearch KNN.
 
-    Nutzt config.redis_client. Da wir nur Text-/Numeric-Felder zurueckliefern
-    (kein Embedding-Blob), spielt decode_responses=True hier keine Rolle —
-    die Query-Bytes werden via PARAMS unbeeinflusst durchgereicht.
+    **Nutzt `redis_client_bytes`, nicht `redis_client`** — seit dem 12.09.2026
+    holt die Abfrage das `embedding` mit, und ein float32-Blob ueberlebt
+    `decode_responses=True` nicht: redis-py liest die ganze Antwort als UTF-8,
+    und die Suche bricht mit `'utf-8' codec can't decode byte 0xd0` ab. Der
+    Abbruch wird gefangen und als Warnung protokolliert — also **null
+    Kandidaten, die aussehen wie ein leerer Speicher**. Deshalb dekodiert dieser
+    Pfad selbst, Feld fuer Feld, und laesst `embedding` als Bytes stehen.
+
+    Der frueher hier stehende Satz — *„da wir nur Text-/Numeric-Felder
+    zurueckliefern (kein Embedding-Blob), spielt decode_responses=True hier
+    keine Rolle"* — nannte die Bedingung, unter der er galt. Sie gilt nicht mehr.
 
     Returns:
         Liste von Dicts mit konzept, similarity, gewicht (=salienz), gap_arousal, quelle.
@@ -130,14 +163,17 @@ def kzg_kandidaten_suchen(
     try:
         query_blob: bytes = np.array(turn_embedding, dtype=np.float32).tobytes()
 
-        ergebnis = redis_client.execute_command(
+        ergebnis = redis_client_bytes.execute_command(
             "FT.SEARCH", "idx:kzg",
             f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}})"
             f"=>[KNN 10 @embedding $vec AS score]",
             "PARAMS", "2", "vec", query_blob,
             "SORTBY", "score",
             "LIMIT", "0", "10",
-            "RETURN", "4", "inhalt", "salienz", "arousal", "score",
+            # `embedding` kommt mit, damit die Kern-Naehe je Kandidat
+            # gerechnet werden kann — der Vektor liegt gespeichert, ein
+            # zweiter Modellaufruf waere Verschwendung.
+            "RETURN", "5", "inhalt", "salienz", "arousal", "score", "embedding",
             "DIALECT", "2",
         )
 
@@ -151,6 +187,12 @@ def kzg_kandidaten_suchen(
                 feld_dict: dict = {}
                 for i in range(0, len(felder), 2):
                     k = felder[i].decode("utf-8") if isinstance(felder[i], bytes) else felder[i]
+                    # **`embedding` bleibt rohes Byte-Feld.** Es ist ein
+                    # float32-Blob und kein Text; ein `decode("utf-8")` darauf
+                    # wirft oder liefert Muell.
+                    if k == "embedding":
+                        feld_dict[k] = felder[i + 1]
+                        continue
                     v = (
                         felder[i + 1].decode("utf-8")
                         if isinstance(felder[i + 1], bytes)
@@ -167,13 +209,20 @@ def kzg_kandidaten_suchen(
                 # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher
                 # 0.1 — filterte nichts. 0.20 knapp ueber Grundrauschen 0.16.
                 if inhalt and similarity > 0.20:
-                    kandidaten.append({
+                    eintrag: dict = {
                         "konzept":     inhalt,
                         "similarity":  similarity,
                         "gewicht":     salienz,
                         "gap_arousal": arousal,
                         "quelle":      "kzg",
-                    })
+                    }
+                    roh = feld_dict.get("embedding")
+                    if kern_embedding and isinstance(roh, bytes):
+                        eintrag["charakter_resonanz"] = cosine_similarity(
+                            np.frombuffer(roh, dtype=np.float32).tolist(),
+                            kern_embedding,
+                        )
+                    kandidaten.append(eintrag)
 
         logger.info(f"GV4-KZG: {len(kandidaten)} Kandidaten gefunden")
 
@@ -181,6 +230,35 @@ def kzg_kandidaten_suchen(
         logger.warning(f"GV4-KZG-Suche fehlgeschlagen: {fehler}")
 
     return kandidaten
+
+
+def _resonanz_pruefbar(kandidaten: list[dict], kern_embedding: list[float] | None) -> bool:
+    """Sagt, ob die Resonanz-Schwelle fuer DIESEN Stapel angewandt werden darf.
+
+    Zwei Bedingungen, und die zweite ist neu am 12.09.2026: Es braucht einen
+    Charakterkern **und** den Wert an **jedem** Kandidaten. Fehlt er bei einem,
+    faellt die Schwelle fuer den ganzen Turn aus — nicht fuer diesen einen.
+
+    **Der Grund ist die Unterscheidbarkeit.** Ein Kandidat ohne Wert waere sonst
+    entweder stillschweigend durchgelassen (dann entscheidet die Schwelle je
+    Kandidat etwas anderes) oder verworfen (dann kostet ein Defekt der Suche
+    eine Luecke, die es gab). Beides ist schlimmer als der Ausfall, und keins
+    von beiden waere im Log zu sehen.
+
+    **Eigene Funktion, weil eine Regel inline nur behauptet ist**
+    (`20_TESTS/entscheidung-inline-ist-nicht-bezeugbar.md`): Sie stand zuerst
+    als `bool(...) and all(...)` im Ablauf und war von aussen nur ueber
+    Datenbank und Redis erreichbar.
+
+    Vorbedingung: keine; `kandidaten` darf leer sein.
+    Nachbedingung: True genau dann, wenn ein Kern vorliegt und jeder Kandidat
+        `charakter_resonanz` traegt. Der Leerfall ist True — es gibt nichts,
+        was ungeprueft durchkaeme.
+    Fehlerfaelle: keine.
+    """
+    if not kern_embedding:
+        return False
+    return all("charakter_resonanz" in k for k in kandidaten)
 
 
 def _qualifizieren(kandidaten: list[dict], resonanz_pruefbar: bool) -> list[dict]:
@@ -193,11 +271,28 @@ def _qualifizieren(kandidaten: list[dict], resonanz_pruefbar: bool) -> list[dict
     gegen den Bestand (`22_STILLE_FEHLER`). Die naechste Kalibrierung haette
     dasselbe Problem gehabt.
 
-    **Die beiden Schwellen messen Verschiedenes, und nur eine je Kandidat.**
-    `relevanz` ist kandidateneigen. `charakter_resonanz` ist es **nicht**: Der
-    Aufrufer setzt fuer jeden Kandidaten `cosine(turn, kern)` — die Naehe des
-    **Turns** zum Charakterkern. Diese Schwelle wirkt deshalb als globaler
-    Schalter, alle oder keiner; der Fund dazu steht in der Fundliste.
+    **Beide Schwellen sind seit dem 12.09.2026 kandidateneigen.** Bis dahin
+    setzte der Aufrufer fuer jeden Kandidaten denselben Wert —
+    `cosine(turn, kern)`, die Naehe des **Turns** zum Charakterkern —, und die
+    Schwelle wirkte als globaler Schalter: alle oder keiner. Gemessen ueber
+    sieben Paare liess sie bei **zwei** von ihnen keinen einzigen Turn durch,
+    also nicht selten, sondern nie.
+
+    **Jetzt vergleicht sie den Kandidaten mit dem Kern**, und das kostet keinen
+    weiteren Modellaufruf: Der Vektor jedes Kandidaten liegt gespeichert — im
+    LZG als Spalte, im KZG als Feld —, und beide Suchen rechnen die Naehe mit.
+    `[vorher gerechnet ueber 4232 aktive Knoten]` Auf dieser Groesse trennt die
+    Schwelle bei **jedem** Paar: Mediane 0,405 bis 0,548 gegen 0,097 bis 0,282
+    beim Turn, und bei 0,30 passieren 70 bis 92 % statt 0 bis 27 %.
+
+    **Der Grenzwert ist deshalb vorerst unveraendert, und das ist Absicht.**
+    0,30 laesst auf dieser Groesse viel durch; der Arbeitspunkt liegt nach der
+    Vorausrechnung im Band 0,45 bis 0,50. Die Vorausrechnung lief aber ueber
+    **alle** aktiven Knoten und nicht ueber die zwanzig, die ein Turn wirklich
+    hochholt — die sind nach Turn-Naehe vorausgewaehlt. Eine Schwelle an einem
+    Stellvertreter zu setzen ist genau der Fehler, den
+    `21_MESSUNG/stellvertreter-eicht-nicht.md` beschreibt. Die Spur unten
+    erhebt die echte Verteilung; danach wird gesetzt.
 
     Vorbedingung: jeder Kandidat traegt `relevanz`; bei `resonanz_pruefbar`
         zusaetzlich `charakter_resonanz`.
@@ -225,7 +320,7 @@ def _qualifizieren(kandidaten: list[dict], resonanz_pruefbar: bool) -> list[dict
     # dieses Filters wochenlang unsichtbar.
     logger.info(
         "GV4: %d von %d qualifiziert (Relevanz unter %.2f: %d · "
-        "Turn-Resonanz unter %.2f: %d%s)",
+        "Kern-Resonanz unter %.2f: %d%s)",
         len(behalten), len(kandidaten), GV_LUECKEN_MIN_RELEVANZ, zu_schwach,
         GV_CHARAKTER_RESONANZ_SCHWELLE, zu_fern,
         "" if resonanz_pruefbar else ", Resonanz nicht pruefbar",
@@ -293,12 +388,39 @@ def wissensluecken_finden(
             logger.warning(f"GV4: Embedding fehlgeschlagen: {fehler}")
             return []
 
+    # ── 1b. Kern-Embedding, VOR den Suchen ──
+    # **Die Reihenfolge ist der Bauteil.** Bis zum 12.09.2026 entstand der Kern
+    # erst in Schritt 5, nach der Suche — und konnte deshalb nur mit dem Turn
+    # verglichen werden, nicht mit den Kandidaten. Er gehoert vor die Suche,
+    # weil beide ihn brauchen; ein Aufruf bleibt ein Aufruf.
+    kern_embedding: list[float] | None = None
+    nova_kern: str = internal.character.core if internal else ""
+    if nova_kern:
+        try:
+            kern_embedding = model_service.embed.submit_sync(
+                EmbedRequest(text=nova_kern)
+            ).embedding
+        except Exception as fehler:
+            # Zweig 2 — Infrastrukturdefekt (Kern vorhanden, Embedding
+            # scheitert): laut krachen statt still einen Wert erfinden.
+            logger.error(
+                "GV4: Kern-Embedding fehlgeschlagen (user=%s) — Resonanz-Pruefung "
+                "entfaellt: %s", user_id, fehler, exc_info=True,
+            )
+    else:
+        # Zweig 1 — legitimer Cold-Start: frisches Paar, noch keine
+        # Charakter-Destillation. Einmal pro Aufruf, nicht pro Kandidat.
+        logger.warning(
+            "GV4: kein Charakter-Kern (Cold-Start) fuer user=%s — "
+            "Resonanz-Pruefung entfaellt", user_id,
+        )
+
     # ── 2. Kandidaten aus LZG + KZG ──
     lzg_kandidaten: list[dict] = lzg_kandidaten_suchen(
-        turn_embedding, user_id, character_id
+        turn_embedding, user_id, character_id, kern_embedding=kern_embedding
     )
     kzg_kandidaten: list[dict] = kzg_kandidaten_suchen(
-        turn_embedding, user_id, character_id
+        turn_embedding, user_id, character_id, kern_embedding=kern_embedding
     )
     alle_kandidaten: list[dict] = lzg_kandidaten + kzg_kandidaten
 
@@ -364,45 +486,53 @@ def wissensluecken_finden(
     # GV-RESONANZ-FALLBACK-LUEGT): Der fruehere Fallback 0.5 hat nie etwas
     # entschieden — er lag ueber der Schwelle (0.40), also passierte ohnehin
     # jeder Kandidat. Er hat ein "nicht anwendbar" als "passt hervorragend"
-    # verkleidet; im v2-moe-Raum (p99 = 0.57) waere 0.5 ein Spitzenwert.
-    # Das Flag trifft dieselbe Entscheidung und sagt die Wahrheit darueber —
-    # kein Verhaltenswechsel, ehrliche Verbuchung.
-    # Fallback 0.0 wurde bewusst VERWORFEN: Er haette die Neugier beim
-    # frischen Paar bis zur ersten Charakter-Destillation abgewuergt —
-    # ausgerechnet dort, wo ungefilterte Neugier plausibel ist. Ein Feature
-    # abwuergen, um eine Buchfuehrung zu reparieren, waere der falsche Tausch.
-    nova_kern: str = internal.character.core if internal else ""
-    resonanz_pruefbar: bool = False
-    if nova_kern:
-        try:
-            request = EmbedRequest(text=nova_kern)
-            embed_response = model_service.embed.submit_sync(request)
-            kern_embedding: list[float] = embed_response.embedding
-            logger.debug(
-                "Wissensluecken: Charakter-Kern Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
-                len(kern_embedding),
-                embed_response.duration_seconds,
-            )
-            for k in gefiltert:
-                # Turn-Embedding als Proxy fuer Luecken-Embedding
-                k["charakter_resonanz"] = cosine_similarity(
-                    turn_embedding, kern_embedding
-                )
-            resonanz_pruefbar = True
-        except Exception as fehler:
-            # Zweig 2 — Infrastrukturdefekt (Kern vorhanden, Embedding
-            # scheitert): laut krachen statt still einen Wert erfinden.
-            # Der Turn laeuft ohne Resonanz-Pruefung weiter.
-            logger.error(
-                "GV4: Kern-Embedding fehlgeschlagen (user=%s) — Resonanz-Pruefung entfaellt: %s",
-                user_id, fehler, exc_info=True,
-            )
-    else:
-        # Zweig 1 — legitimer Cold-Start: frisches Paar, noch keine
-        # Charakter-Destillation. Einmal pro Aufruf, nicht pro Kandidat.
-        logger.warning(
-            "GV4: kein Charakter-Kern (Cold-Start) fuer user=%s — Resonanz-Pruefung entfaellt",
-            user_id,
+    # verkleidet. Das Flag trifft dieselbe Entscheidung und sagt die Wahrheit
+    # darueber. Fallback 0.0 wurde bewusst VERWORFEN: Er haette die Neugier
+    # beim frischen Paar abgewuergt, ausgerechnet dort, wo ungefilterte
+    # Neugier plausibel ist.
+    #
+    # **Seit dem 12.09.2026 steht hier keine Rechnung mehr, sondern eine
+    # Feststellung.** Die Naehe zum Kern ist in Schritt 2 je Kandidat mit der
+    # Suche entstanden; hier wird nur noch gezaehlt, ob sie vorliegt. Der
+    # frueher hier gerechnete Wert war fuer alle Kandidaten derselbe — die
+    # Naehe des **Turns** — und machte aus dem Filter einen globalen Schalter.
+    resonanz_pruefbar: bool = _resonanz_pruefbar(gefiltert, kern_embedding)
+    if kern_embedding and not resonanz_pruefbar:
+        # Ein Kern lag vor, und trotzdem fehlt der Wert bei mindestens einem
+        # Kandidaten: Das ist ein Defekt einer der beiden Suchen und **kein**
+        # Cold-Start. Er darf nicht als derselbe Fall durchlaufen.
+        ohne: int = sum(1 for k in gefiltert if "charakter_resonanz" not in k)
+        logger.error(
+            "GV4: Kern vorhanden, aber %d von %d Kandidaten ohne "
+            "`charakter_resonanz` — eine der beiden Suchen hat den Vektor "
+            "nicht geliefert. Die Resonanz-Pruefung entfaellt fuer diesen Turn.",
+            ohne, len(gefiltert),
+        )
+
+    # **Die Verteilung wird protokolliert, nicht nur die Entscheidung.**
+    # Der Grenzwert steht noch auf dem Wert, der fuer die Turn-Naehe gesetzt
+    # war; was er auf der Kandidaten-Naehe tut, sagt erst der Betrieb. Ohne
+    # diese Zeile waere die naechste Kalibrierung wieder auf einen
+    # Stellvertreter angewiesen (`21_MESSUNG/stellvertreter-eicht-nicht.md`).
+    if resonanz_pruefbar and gefiltert:
+        werte: list[float] = sorted(k["charakter_resonanz"] for k in gefiltert)
+        log_berechnung(
+            turn_id = state.get("turn_id", "unbekannt"),
+            node    = "wissensluecken",
+            quelle  = pipeline_quelle(state),
+            inhalt  = {
+                "schritt":   "gv4_kern_resonanz",
+                "n":         len(werte),
+                "min":       round(werte[0], 4),
+                "median":    round(werte[len(werte) // 2], 4),
+                "max":       round(werte[-1], 4),
+                "schwelle":  GV_CHARAKTER_RESONANZ_SCHWELLE,
+                "darueber":  sum(1 for w in werte if w >= GV_CHARAKTER_RESONANZ_SCHWELLE),
+                "quellen":   {"lzg": sum(1 for k in gefiltert if k["quelle"] == "lzg"),
+                              "kzg": sum(1 for k in gefiltert if k["quelle"] == "kzg")},
+            },
+            user_id      = user_id,
+            character_id = character_id,
         )
 
     qualifiziert: list[dict] = _qualifizieren(gefiltert, resonanz_pruefbar)

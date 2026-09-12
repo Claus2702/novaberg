@@ -209,6 +209,19 @@ MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION: bool = (
 )
 
 redis_client:   redis.Redis     = redis.from_url(REDIS_URL, decode_responses=True)
+
+# **Ein zweiter Client, der NICHT dekodiert** — fuer Abfragen, die einen Vektor
+# zurueckholen (12.09.2026). `decode_responses=True` laesst redis-py die ganze
+# Antwort als UTF-8 lesen, und ein float32-Blob ist keins: Die Suche bricht mit
+# `'utf-8' codec can't decode byte 0xd0` ab, **gefangen und als Warnung
+# protokolliert** — also null Kandidaten, die aussehen wie ein leerer Speicher.
+#
+# Gemessen am 12.09.2026 beim Bau des Kandidatenfilters: Der Docstring der
+# KZG-Suche nannte den Grund ausdruecklich (*„da wir nur Text-/Numeric-Felder
+# zurueckliefern (kein Embedding-Blob), spielt decode_responses=True hier keine
+# Rolle"*), und die Aenderung hat ihn ueberfahren. Die Suite blieb gruen, die
+# Zeugen auch; gefunden hat es ein Lauf gegen den echten Bestand.
+redis_client_bytes: redis.Redis = redis.from_url(REDIS_URL, decode_responses=False)
 graph_run_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()
 
