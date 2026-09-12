@@ -196,6 +196,13 @@ Der Filter vergleicht nicht mehr den **Turn** mit dem Kern, sondern **jede Lück
 | über der heutigen Schwelle 0,30 | **145 von 210 = 69 %**, je Turn 35 % bis 94 % |
 | Lücken, die den Prompt erreichten | **80 in 14 Turns; 10 von 14 Turns mit mindestens einer — 71 %** |
 
+> **Am selben Abend nachgezählt, und zwei Zeilen der Tabelle sagen weniger, als sie scheinen.** `[gemessen über 15 Turns, 18:15–18:52 UTC]`
+>
+> - ~~*„beide Quellen in jedem Turn"*~~ gilt für die **Kandidaten**. In den Prompt kommen **6 von 83** Lücken aus dem KZG: LZG-Gewicht (`gewicht_decay`, bis 10) und KZG-Salienz ([0, 1]) gehen als verschiedene Skalen in dasselbe Relevanzprodukt.
+> - ~~*„71 %"*~~ ist keine Trefferquote, sondern das Mischungsverhältnis zweier Turn-Sorten: **11 von 11** Nutzerturns tragen Lücken, **0 von 4** Impuls-Turns — auf Impulsen läuft die Suche nie (`user_prompt` leer).
+>
+> **Die Kern-Nähe-Verteilung darüber bleibt gültig**; sie ist über die Kandidaten erhoben. Befunde in `novaberg-fundliste.md` (12.09.2026).
+
 **Das ist die Verteilung, die den Grenzwert setzen darf** — über die tatsächlich hochgeholten Kandidaten, nicht über alle aktiven Knoten. Zum Vergleich: Am Vortag erreichten **0 von 40** Turns desselben Paares überhaupt eine Lücke.
 
 > **Zwei frühere Zahlen dieses Tages sind damit berichtigt.** *„Bei 0,30 passieren 90 %"* stammte aus **einem konstruierten Reiz** und ist keine Betriebsaussage; *„35 %"* aus einem **einzelnen** Turn. Der Betrieb sagt 69 % über 210 echte Kandidaten, und der Median liegt mit 0,400 **über** der Schwelle, nicht darunter.
