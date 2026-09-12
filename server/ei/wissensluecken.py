@@ -24,6 +24,7 @@ from config import (
     redis_client_bytes,
 )
 from ei.neugier import register_kompatibilitaet
+from ei.source_weights import SOURCES, load_weight_distributions, weight_rank
 from ei.utils import cosine_similarity
 from graph.state import ConversationState, pipeline_quelle
 from memory.pipeline_log import log_berechnung
@@ -328,6 +329,78 @@ def _qualifizieren(kandidaten: list[dict], resonanz_pruefbar: bool) -> list[dict
     return behalten
 
 
+def _rank_weights(
+    candidates: list[dict], user_id: str, character_id: str,
+) -> list[dict]:
+    """Setzt an jeden Kandidaten `gewicht_rang` — den Rang seines Gewichts in der eigenen Quelle.
+
+    Vorbedingung: `user_id` und `character_id` sind gesetzt; jeder Kandidat traegt
+        `quelle` (`lzg` oder `kzg`) und `gewicht`.
+    Nachbedingung: Jeder zurueckgegebene Kandidat traegt `gewicht_rang` in [0, 1].
+        Ein Kandidat, fuer dessen Quelle auch nach einem Neuladen keine
+        Verteilung vorliegt, faellt heraus — **laut**, als Fehler.
+    Fehlerfaelle: Ist die Verteilung nicht ladbar, kommt eine leere Liste zurueck
+        und ein Fehler steht im Log: Ohne gemeinsame Skala gibt es in diesem Turn
+        keine Luecken, und das darf nicht aussehen wie ein Turn ohne Kandidaten.
+
+    Args:
+        candidates: die Kandidaten nach den Filtern, beide Quellen gemischt.
+        user_id: der Mensch des Paares.
+        character_id: die Figur des Paares.
+
+    Returns:
+        Die Kandidaten mit gesetztem `gewicht_rang`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    unbekannt: list[str] = sorted({str(k.get("quelle")) for k in candidates} - set(SOURCES))
+    if unbekannt:
+        logger.error(
+            "GV4: Kandidaten mit unbekannter Quelle %s — erwartet %s; verworfen",
+            unbekannt, SOURCES,
+        )
+        candidates = [k for k in candidates if k.get("quelle") in SOURCES]
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        verteilungen: dict[str, list[float]] = load_weight_distributions(user_id, character_id)
+        if any(not verteilungen[k["quelle"]] for k in candidates):
+            # Ein Kandidat aus einer Quelle ohne Verteilung: Der Zwischenspeicher
+            # ist aelter als der erste Eintrag dieser Quelle. Einmal neu laden.
+            verteilungen = load_weight_distributions(user_id, character_id, refresh=True)
+    except Exception as fehler:
+        logger.error(
+            "GV4: Gewichtsverteilung fuer %s/%s nicht ladbar (%s: %s) — ohne "
+            "gemeinsame Skala keine Luecken in diesem Turn",
+            user_id, character_id, type(fehler).__name__, fehler, exc_info=True,
+        )
+        return []
+
+    ergebnis: list[dict] = []
+    for k in candidates:
+        verteilung: list[float] = verteilungen[k["quelle"]]
+        if not verteilung:
+            logger.error(
+                "GV4: Kandidat aus %s, aber keine Gewichtsverteilung dieser Quelle "
+                "fuer %s/%s — verworfen: '%s'",
+                k["quelle"], user_id, character_id, str(k.get("konzept", ""))[:60],
+            )
+            continue
+        try:
+            k["gewicht_rang"] = weight_rank(k["gewicht"], verteilung)
+        except ValueError:
+            logger.exception("GV4: Gewicht nicht einordbar — Kandidat verworfen")
+            continue
+        ergebnis.append(k)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(ergebnis) != len(candidates):
+        logger.error(
+            "GV4: %d von %d Kandidaten ohne Rang verworfen (Gruende oben)",
+            len(candidates) - len(ergebnis), len(candidates),
+        )
+    return ergebnis
+
+
 def wissensluecken_finden(
     state:             ConversationState,
     aufnahmebereitschaft: float,
@@ -444,11 +517,21 @@ def wissensluecken_finden(
         logger.info("GV4: Alle Kandidaten bereits erwaehnt oder zu aehnlich")
         return []
 
+    # ── 3b. Das Gewicht auf die gemeinsame Skala ──
+    # **Die Naht zwischen LZG und KZG.** Roh traegt das LZG `gewicht_decay`
+    # (3–10), das KZG `salienz` (0–1); im Produkt gewann das LZG allein durch
+    # seine Skala — 77 von 83 Luecken im Prompt, 12.09.2026. Das Gewicht geht
+    # deshalb als **Rang in der eigenen Quelle** ein. Das rohe Gewicht bleibt am
+    # Kandidaten stehen, damit die Rechnung nachvollziehbar bleibt.
+    gefiltert = _rank_weights(gefiltert, user_id, character_id)
+    if not gefiltert:
+        return []
+
     # ── 4. Relevanz berechnen ──
     aktivierte_ziele: list[dict] = state.get("aktivierte_ziele", [])
 
     for k in gefiltert:
-        basis: float = k["similarity"] * k["gewicht"] * GV_QUELLEN_FAKTOR
+        basis: float = k["similarity"] * k["gewicht_rang"] * GV_QUELLEN_FAKTOR
 
         # Neugier-Boost aus Ziel-Gravitation (Turn-Embedding als Proxy)
         neugier_boost: float = 0.0
@@ -565,6 +648,23 @@ def wissensluecken_finden(
     # ── 6. Top N ──
     qualifiziert.sort(key=lambda k: k["relevanz"], reverse=True)
     ergebnis: list[dict] = qualifiziert[:GV_LUECKEN_MAX]
+
+    # **Die Quellenmischung wird je Turn festgehalten, auch wenn sie leer ist.**
+    # Sie ist die Zahl, an der die Naht zwischen LZG und KZG gemessen wird; ohne
+    # diese Zeile stuende sie nur im Server-Log, das rotiert.
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "wissensluecken",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "schritt":    "gv4_quellen_naht",
+            "kandidaten": {q: sum(1 for k in gefiltert if k["quelle"] == q) for q in SOURCES},
+            "ergebnis":   {q: sum(1 for k in ergebnis if k["quelle"] == q) for q in SOURCES},
+            "rang":       [round(k["gewicht_rang"], 4) for k in ergebnis],
+        },
+        user_id      = user_id,
+        character_id = character_id,
+    )
 
     if ergebnis:
         logger.info(

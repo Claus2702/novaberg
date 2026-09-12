@@ -3211,6 +3211,12 @@ LUECKEN_SAAT_THEMEN:         int   = int(os.getenv("LUECKEN_SAAT_THEMEN", "8"))
 # Embedding-Dublettenpruefung. Die Liste darf unvollstaendig sein.
 LUECKEN_HINWEIS_THEMEN:      int   = int(os.getenv("LUECKEN_HINWEIS_THEMEN", "30"))
 GV_LUECKEN_MAX:                  int   = 8      # Erweitert Chat 71 (vorher 3)
+# ⚠ Seit dem 12.09.2026 auf einer anderen Skala als der, auf der sie gesetzt
+# wurde: Das Gewicht im Relevanzprodukt ist nicht mehr roh (LZG 3–10, KZG 0–1),
+# sondern der Rang in der eigenen Quelle [0, 1] (`ei/source_weights.py`). Die
+# Zahl blieb stehen und laesst dadurch weniger durch — vorher gerechnet ueber
+# elf echte Turns 43 statt 136 Kandidaten. Ungemessen auf der neuen Skala;
+# kalibriert wird nach dem Umbau der Kandidaten auf Themen.
 GV_LUECKEN_MIN_RELEVANZ:         float = 0.15   # Mindest-Gesamtrelevanz
 # Mindest-Gravitation fuer Ziel-Boost. Chat 107 geprueft und BEWUSST nicht
 # geaendert (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
@@ -3240,6 +3246,11 @@ GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
 # und steht in der Fundliste.
 GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.30
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
+# Wie lange die Gewichtsverteilung eines Paares zwischengehalten wird, bevor sie
+# neu geladen wird. Sie ist die Skala der Naht zwischen LZG und KZG und soll mit
+# dem Bestand wandern, aber nicht mit jedem Turn: Ein Laden liest alle aktiven
+# LZG-Knoten und alle KZG-Eintraege des Paares (12.09.2026: 3922 und 3548).
+GV_GEWICHT_VERTEILUNG_TTL_S:     float = 600.0
 GV_SESSION_AKT_CAP:              int   = 25     # Session-Decay: nach 25 Turns = 0
 GV_AUFNAHMEBEREITSCHAFT_CAP: float = 2.5  # sin^0.5 Normalisierung: Rohwert-Obergrenze
 GV_STRATEGIE_MIN_LAENGE:         int   = 2      # GV3-Strategie nur ab Vektorlaenge >= 2
