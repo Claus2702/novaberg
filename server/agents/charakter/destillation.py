@@ -496,16 +496,17 @@ Vor dir liegt ein Gesprächsverlauf aus {perspektive} Blickwinkel — so wie
 {traeger} dem Gegenüber begegnet.
 
 Deine Aufgabe ist zu deuten, WIE {traeger} die Beziehung gestaltet — nicht was
-besprochen wurde, sondern der Umgang darin. Vier Ebenen: NÄHE (wie {traeger}
-das Gegenüber anspricht — welche Anrede, welche Kosenamen {traeger} waehlt),
+besprochen wurde, sondern der Umgang darin. Vier Ebenen: NÄHE (wie nah
+{traeger} herangeht — vertraulich oder auf Abstand, zugewandt oder reserviert;
+gemeint ist die Art der Nähe, so wie ein Dritter sie am Umgang ablesen würde),
 HIERARCHIE (ob {traeger} gleichrangig oder direktiv auftritt), VERTRAUEN
 (teilt {traeger} Persönliches oder bleibt es sachlich), TON (der Grundton
 {traeger_gen}: warmherzig, humorvoll, nüchtern).
 
 Der Gesprächsverlauf zeigt beide Seiten. Was das Gegenüber sagt, steht dabei,
 damit der Umgang lesbar wird — es zeigt, worauf {traeger} trifft. Zu
-beschreiben ist {traeger_gen} Seite: {traeger_gen} Anrede, {traeger_gen}
-Tonfall, {traeger_gen} Art, Nähe herzustellen.
+beschreiben ist {traeger_gen} Seite: {traeger_gen} Haltung zum Gegenüber,
+{traeger_gen} Tonfall, {traeger_gen} Art, Nähe herzustellen.
 
 Beschreibe, wie {traeger} auf das Gegenüber blickt und mit ihm umgeht, in 2-3
 Sätzen auf Deutsch.
@@ -687,6 +688,78 @@ def _belege_klassifizieren(
             elif treffer == 1 and hat_dauerwort:
                 einzelbeleg.append(nummer)
     return ohne_fundstelle, einzelbeleg
+
+
+#: Eine genannte **Anredeform** im Profiltext: ein Anrede-Wort, dicht gefolgt
+#: von einer in Anfuehrungszeichen gesetzten Wortform.
+#:
+#: **Beides zusammen, und das ist Absicht.** *„spricht ihn respektvoll an"*
+#: beschreibt die Art des Umgangs und bleibt; *„adressiert ihn mit dem Titel
+#: X"* nennt die Form. Das Zitat daneben ist das trennende Merkmal — ohne es
+#: schluege die Pruefung bei jeder Umgangsbeschreibung an.
+#:
+#: **Die Wortgrenze ist nicht kosmetisch.** Ohne sie trifft `nennt` auch
+#: `benennt`; am Bestand gemessen war das ein Fehltreffer von zweien
+#: (`nova|mehmet`, *„benennt und normalisiert (\u201eist eigentlich ..."*).
+ANREDEFORM: re.Pattern = re.compile(
+    r"\b(?:Anrede|Anredeform|Kosename|Kosenamen|Titel|adressiert|anspricht|"
+    r"anzusprechen|nennt|redet)\b[^\"\u201e]{0,60}[\u201e\"]"
+)
+
+
+def anrede_beanstanden(profil: str, profil_name: str) -> int:
+    """Meldet eine genannte Anredeform im destillierten Profil.
+
+    **Die Struktur zu `F-PROFIL-1`.** Ein Profil beschreibt die Art des
+    Umgangs, nicht die Form der Anrede — entschieden vom Eigentuemer am
+    11.09.2026, nachdem **ein einziges Vorkommen in 854 Zeichen Profil** als
+    Eroeffnungsformel in **35 von 38** Antworten eines Tages zurueckkam. Der
+    Weg dorthin ist kurz: Das Profil geht ueber
+    `internal.character.relationship` in den Responder-Prompt **jedes** Turns,
+    und eine genannte Anredeform ist dort keine Beschreibung mehr, sondern
+    eine Anweisung.
+
+    **Warum hier und nicht nur im Prompt.** Der Prompt hat die Anrede bis
+    heute ausdruecklich verlangt; diese Aufforderung ist gestrichen, und das
+    ist die Ursache. `F-PROMPT-1` sagt trotzdem, was fuer die Verlaesslichkeit
+    gilt: Wo ein Verhalten verlaesslich sein muss, wird es in der Struktur
+    erzwungen und nicht im Text. Die Pruefung ist diese Struktur — und
+    zugleich das Messinstrument, an dem abzulesen ist, ob die
+    Prompt-Aenderung traegt.
+
+    **Gemeldet, nicht verworfen** — dieselbe Wahl wie bei
+    `deckung_beanstanden` und aus demselben Grund: Ein Verwerfen kostet einen
+    neuen Aufruf und laesst im Zweifel gar kein Profil stehen. Bleibt die Zahl
+    nach der Prompt-Aenderung ueber null, ist der naechste Schritt ein
+    Eingriff am Text und eine eigene Entscheidung.
+
+    `[Nulllinie 11.09.2026]` An den **70** gespeicherten Profiltexten (fuenf
+    Sorten, 14 Paare) schlaegt das Muster **2**-mal an — beide Male das
+    Beziehungsprofil desselben Paares, kein Fehltreffer.
+
+    Args:
+        profil:      die bereinigte Antwort des Modells.
+        profil_name: fuer die Logzeile, damit sie das Profil benennt.
+
+    Returns:
+        Zahl der Treffer. 0 heisst: keine Anredeform genannt.
+    """
+    # ── Eingabe-Validierung ──
+    if not profil:
+        return 0
+
+    # ── Verarbeitung ──
+    treffer: list[str] = ANREDEFORM.findall(profil)
+
+    # ── Ausgabe-Verifikation ──
+    if treffer:
+        logger.warning(
+            f"{profil_name}: {len(treffer)} genannte Anredeform(en) — "
+            f"{treffer}. Das Profil wird gespeichert; es soll die Art des "
+            "Umgangs beschreiben, nicht die Form der Anrede, weil die Form "
+            "aus dem Prompt jedes Turns als Formel zurueckkommt"
+        )
+    return len(treffer)
 
 
 def deckung_beanstanden(prompt: str, profil: str, profil_name: str) -> int:
@@ -973,6 +1046,7 @@ def _llm_call(prompt: str, profil_name: str) -> str:
     # Messgroesse des Rohtextes; nach der Entwertung meldet dieselbe Pruefung
     # null, und die Wirkung waere nicht mehr ablesbar.
     deckung_beanstanden(prompt, ergebnis, profil_name)
+    anrede_beanstanden(ergebnis, profil_name)
     return zitate_entwerten(prompt, ergebnis, profil_name)
 
 
@@ -1478,13 +1552,21 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
     """Destilliert das Beziehungsprofil aus dem **Wortlaut** der Turns.
 
     **Warum nicht mehr aus dem KZG-Inhalt.** Der Prompt fragt nach NAEHE —
-    Anrede, Kosenamen, Ton. Der KZG-Inhalt ist bereits eine Aussage in der
-    dritten Person: aus »jo« wird »Der Nutzer weiss nicht, was er hier tun
-    soll«. Die Anrede ueberlebt diese Umwandlung nicht, und mit ihr der
-    ganze Gegenstand der Frage. Gemessen am 09.08.2026: `distanz` stand in
-    jeder Zelle eines Kreuzversuchs auf 1.00 — bei beiden Materialien und
-    beiden Etiketten. Das Rad hat nicht die Beziehung gelesen, sondern die
-    Tonlage eines Aktenauszugs.
+    wie nah jemand herangeht, in Tonfall, Wortwahl und Ansprache. Der
+    KZG-Inhalt ist bereits eine Aussage in der dritten Person: aus »jo« wird
+    »Der Nutzer weiss nicht, was er hier tun soll«. Nichts davon ueberlebt
+    diese Umwandlung, und mit ihm der ganze Gegenstand der Frage. Gemessen am
+    09.08.2026: `distanz` stand in jeder Zelle eines Kreuzversuchs auf 1.00 —
+    bei beiden Materialien und beiden Etiketten. Das Rad hat nicht die
+    Beziehung gelesen, sondern die Tonlage eines Aktenauszugs.
+
+    **Seit dem 11.09.2026 ist die Anrede Material und nicht Ergebnis**
+    (`F-PROFIL-1`). Das Modell darf aus ihr schliessen; im Profiltext steht
+    die **Art** des Umgangs, nicht die **Form** der Anrede. Der Grund ist der
+    Rueckweg: Das Profil geht in den Responder-Prompt jedes Turns, und eine
+    genannte Anredeform wirkt dort als Anweisung — ein Vorkommen in 854
+    Zeichen erzeugte eine Eroeffnungsformel in 92 % der Antworten eines Tages.
+    Die Pruefung dazu ist `anrede_beanstanden`.
 
     Die Metadaten stehen weiterhin dabei, aber als Beiwerk. Ein `tone:
     sachlich` ist die fertige Charakterisierung; wer den Umgang deuten
@@ -1523,7 +1605,7 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
         )
         # **Beide Sprecher tragen ihren Namen, nicht ihre Rolle.** Anders als
         # beim Kern sind hier beide Seiten noetig — der Prompt fragt nach
-        # NAEHE, und Anrede ist relational. Was nicht bleiben darf, ist das
+        # NAEHE, und Naehe ist relational. Was nicht bleiben darf, ist das
         # relative "Gegenueber": Sein Bezugspunkt ist die Figur, waehrend der
         # Traeger im Prompt wechselt. Fuer das Profil des Menschen bezeichnete
         # dasselbe Wort damit ihn selbst, fuer ihres seinen Gespraechspartner.
@@ -1538,7 +1620,7 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
             f"Beziehungsprofil ({user_id}): zu keinem von "
             f"{len(kzg_eintraege)} KZG-Eintraegen ist ein Wortlaut "
             "erreichbar — kein Profil. Kein Rueckfall auf den KZG-Inhalt: "
-            "der traegt die Anrede nicht, nach der der Prompt fragt"
+            "der traegt den Umgangston nicht, nach dem der Prompt fragt"
         )
         return ""
 
