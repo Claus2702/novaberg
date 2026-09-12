@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
+**Stand:** 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
 **Inhalt:** **56 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
@@ -3755,3 +3755,57 @@ Bedingung wie der Strategie-Auftrag, oder der Auftrag gehört zum Block.
 **Geschlossen, wenn** Die Namensaufloesung im Telegram-Behaelter faellt laut aus statt still.
 
 ---
+
+---
+
+### Umgezogen am 12.09.2026 — aus dem offenen Register
+
+Der Eintrag ist an diesem Tag behoben worden; die Kennung bleibt unveraendert,
+weil Verweise darauf zeigen.
+
+#### GV-LAENGE-RUNDUNG-ZUR-GERADEN — ein Viertel der Nullen entsteht aus Pythons Rundungsregel ✅ behoben am 12.09.2026
+
+**Symptom.** Turns bekommen Vektorlänge 0 und damit kein Vorausdenken, obwohl die Rechnung 0,5 ergeben hat.
+
+**Ursache.** `_vektor_laenge_berechnen()` in `graph/nodes/gespraechsvektor.py` schließt mit `round(laenge)`. Python rundet zur **geraden** Zahl: `round(0.5)` ist 0, nicht 1. Ein Grenzwert, der auf der Kante liegt, entscheidet damit nach einer Regel, die an keiner Stelle genannt ist.
+
+**Warum es niemandem auffiel.** Eine 0 ist ein gültiges Ergebnis dieser Funktion — sie heißt „kein Vorausdenken". Von einer gerechneten 0 ist eine gerundete nicht zu unterscheiden, solange niemand die Summe **vor** der Rundung ansieht.
+
+**Belegt.** Über 845 Rohturns wiedergegeben: 96 Turns erreichen Länge 0, bei **25 davon (26 %)** liegt die Summe vor der Rundung bei mindestens 0,5. Die häufigste Lage dieser Art ist `berichtend | neutral | distanz | fachlich` — 1,0 minus 0,5 für `distanz`, sonst kein Beitrag, also genau 0,5.
+
+**Priorität.** Mittel. Seit `F-LAGE-1` kostet eine 0 nicht mehr die Landschafts-Ablesung, sondern nur noch das Vorausdenken. Die Kante bleibt trotzdem eine ungenannte Regel an einem Tor.
+
+**Nachtrag 12.09.2026 — dieselbe Regel hat eine zweite Kante, und die obere ist die teurere.** Der Befund oben beschreibt `round(0.5) → 0`, also den Verlust eines Schrittes am unteren Ende. **Am oberen Ende verliert dieselbe Regel den dritten Schritt vollständig, und zwar für drei der zehn Modi dauerhaft.**
+
+`[gemessen 12.09.2026]` Je Modus die günstigste Faktorstellung (positive Emotion, arousal 1.0, `vertrauen`, `locker`) durch `_vektor_laenge_berechnen`:
+
+| Modus-Zuschlag | beste Summe | Länge | Modi |
+|---|---:|---:|---|
+| 0.0 und +0.3 | 2.8 / 3.1 | 3 | `alltag`, `spielerisch`, `berichtend`, `arbeitsmodus`, `kreativ` |
+| −0.2 | 2.6 | 3 | `emotional`, `beratend` |
+| **−0.3** | **2.5** | **2** | `fachgespraech`, `lernmodus`, `philosophischer_austausch` |
+
+> **Zwei Zuschläge, die sich um ein Zehntel unterscheiden, trennen hier *erreichbar* von *unerreichbar*** — nicht weil 0,1 viel wäre, sondern weil die Rundungsregel genau zwischen ihnen liegt. In den drei Modi mit −0.3 liegen **794 von 1434 Rohturns (55,4 %)**.
+
+**Der Gegenbeleg aus dem Bestand:** 116 der 1434 Turns tragen Länge 3 — **keiner** in einem dieser drei Modi, alle mit `vertrauen` **und** `locker`, Modi `spielerisch` (62), `alltag` (44), `emotional` (8), `arbeitsmodus` (2). Die Kante ist also nicht theoretisch: Sie ist die Trennlinie, an der der Bestand endet.
+
+**Und sie greift ineinander mit `MODUS-KREATIV-WIRD-NIE-VERGEBEN`.** Über eine 20-Turn-Reihe in `lernmodus` und `philosophischer_austausch` gemessen: In **8 von 20** Turns hätte allein `modus = kreativ` die Länge 3 erzeugt, während arousal, Dynamik und Stil in **keinem einzigen** dafür reichten. Der eine Modus, der die drei fachlichen über die Kante heben könnte, ist der, den das Perzeptionsmodell noch nie vergeben hat. **Wer die Rundung behebt, hebt zugleich diesen Riegel** — und wer nur `kreativ` zum Leben bringt, lässt die Kante stehen.
+
+**Zustand: ✅ behoben am 12.09.2026.** `_vektor_laenge_berechnen` schließt mit `math.floor(laenge + 0.5)`; eine Summe genau auf der halben Stufe bekommt den höheren Schritt.
+
+**Die Absichtsfrage ist dabei entschieden** (Eigentümer, 12.09.2026): Der Mechanismus darf aktiv sein. Die Decke 2 in den drei fachlichen Modi war keine Setzung, sondern die Folge einer Rundungsregel — sie fällt.
+
+`[vorher gerechnet und nachgemessen, je 1434 Rohturns]` Die Vorhersage traf auf den Turn:
+
+| Länge | vorher | nachher |
+|---|---:|---:|
+| 0 | 123 | **80** |
+| 1 | 786 | **829** |
+| 2 | 409 | **384** |
+| 3 | 116 | **141** |
+
+**68 Turns (4,7 %) wechseln** — 43 von 0 auf 1, 25 von 2 auf 3 —, und es kippt ausschließlich an den Summen 0,50 und 2,50. **Die Quote des Strategie-Tors bleibt unverändert bei 36,6 %**, weil kein Wechsel die Schwelle 2 überschreitet: Der Eingriff gibt Schritte dazu, ohne das Tor zu verschieben.
+
+**Die Gegenprobe traf vorhergesagt:** Zeile zurückgedreht, 4 von 20 Zeugen rot — vorhergesagt 4. Suite **3463 grün, 0 übersprungen** (davor 3454).
+
+> **Ein bestehender Zeuge fiel, und er war der aufschlussreichste Teil des Baus.** `test_die_gerechnete_null_traegt_eine_landschaft` prüfte, dass eine *gerechnete* Null eine Landschaft trägt — und hatte als Vorlage die **häufigste** Nulllage des Bestandes gewählt: `berichtend | neutral | distanz | fachlich`, Summe genau 0,5. Das war keine gerechnete Null, sondern eine gerundete, und sie war häufig **wegen** dieses Defekts. Der Zeuge bezeugte also die Ursache seiner eigenen Vorlage. Er trägt jetzt eine echte negative Summe (−0,5), und daneben steht ein zweiter, der den Wechsel der alten Kante festhält.

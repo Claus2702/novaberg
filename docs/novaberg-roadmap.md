@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 13:05 UTC** samt Nachtraegen 13:30 und 14:10 UTC (gemessen via `date -u`). Davor 12.09.2026, 10:45 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 15:05 UTC** (gemessen via `date -u`). Davor 12.09.2026, 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,66 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 15:05 UTC — die Rundung, die eine Decke setzte, ist weg 🔧
+
+**ZIEL:** Eine Summe genau auf der halben Stufe bekommt den hoeheren Schritt —
+die Decke der fachlichen Modi ist eine Entscheidung und keine Rundungsregel.
+**TEST:** `tests/test_gv_laenge_rundung.py` (8 Zeugen) — beide Kanten, zwei Werte
+zwischen den Stufen als Gegenstueck, Deckel, Boden und die Krise getrennt von der
+Arithmetik; dazu ein neunter in `test_gv_landschaft_immer.py`, der den Wechsel der
+alten Kante festhaelt.
+**MESSUNG:** Dieselbe Rechnung ueber 1434 Rohturns vor und nach dem Eingriff.
+
+### Eine Zeile, und die Vorhersage traf auf den Turn
+
+`_vektor_laenge_berechnen` schloss mit `round(laenge)`, und Python rundet halbe
+Werte zur geraden Zahl. Das kostete an beiden Kanten je einen Schritt:
+`round(0.5) → 0` unten, `round(2.5) → 2` oben — und oben war 2,5 die **beste
+erreichbare** Summe in den drei Modi mit Zuschlag −0,3, in denen 794 der 1434
+Rohturns liegen. Die Laenge 3 war dort bei jeder Faktorstellung ausgeschlossen.
+
+| Laenge | vorher | nachher | vorhergesagt |
+|---|---:|---:|---:|
+| 0 | 123 | **80** | 80 |
+| 1 | 786 | **829** | 829 |
+| 2 | 409 | **384** | 384 |
+| 3 | 116 | **141** | 141 |
+
+**68 Turns (4,7 %) wechseln**, und es kippt ausschliesslich an den Summen 0,50
+und 2,50 — nichts dazwischen. **Die Quote des Strategie-Tors bleibt unveraendert
+bei 36,6 %:** Der Eingriff gibt Schritte dazu, ohne das Tor zu verschieben. Das
+ist der Grund, warum er zuerst kam — B und C aendern die Verteilung, und ihre
+Wirkung waere ohne diese Null nicht zuzuordnen.
+
+**Gegenprobe:** Zeile zurueckgedreht, **vorhergesagt 4 rote Zeugen, gezaehlt 4**
+von 20. Suite **3463 gruen, 0 uebersprungen** (davor 3454).
+
+### Ein bestehender Zeuge fiel, und er war der aufschlussreichste Teil
+
+`test_die_gerechnete_null_traegt_eine_landschaft` prueft, dass eine **gerechnete**
+Null eine Landschaft traegt. Als Vorlage hatte er die **haeufigste** Nulllage des
+Bestandes gewaehlt — `berichtend | neutral | distanz | fachlich`, Summe genau
+0,5. Das war keine gerechnete Null, sondern eine gerundete, und sie war haeufig
+**wegen** dieses Defekts.
+
+> **Der Fixpunkt des Zeugen war der Defekt selbst.** Wer einen Randfall als
+> Vertreter des Regelfalls waehlt, weil er im Bestand am haeufigsten ist,
+> bezeugt die Ursache seiner Haeufigkeit — und haelt die Behebung fuer einen
+> Rueckschritt.
+
+Er traegt jetzt eine echte negative Summe (−0,5); daneben steht ein zweiter, der
+festhaelt, dass die alte Kante einen Schritt bekommt.
+
+### Was damit entschieden ist und was nicht
+
+Die Absichtsfrage *„ist die Decke 2 in den fachlichen Modi gewollt"* ist
+beantwortet (Eigentuemer, 12.09.2026): Der Mechanismus darf aktiv sein. Damit
+faellt auch das Argument, `kreativ` sei der einzige Weg zum dritten Schritt —
+der Eintrag dazu bleibt offen, aber aus seinem eigenen Grund. Die beiden uebrigen
+Bauteile (`kreativ` vergeben, Tor 3 als Kandidatenfilter) stehen als Auftrag.
 
 ---
 

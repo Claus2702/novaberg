@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Plateau bei Vertrauen ist maximale Öffnung
-**Stand:** 12. September 2026 (§3 berichtigt: `beziehungs_dynamik` geht in die Laengenrechnung ein, und zwar als staerkster Beitrag neben der Emotion — alle 116 Turns mit Laenge 3 tragen `vertrauen`. Nicht ein geht dagegen `nova_beziehung`). Davor 18. April 2026, Chat 52
+**Stand:** 12. September 2026, 15:05 UTC (§3: die Kante bei den fachlichen Modi ist behoben, der Vorschlag betrifft damit die Richtung und nicht mehr die Erreichbarkeit). Davor 12. September 2026 (§3 berichtigt: `beziehungs_dynamik` geht in die Laengenrechnung ein, und zwar als staerkster Beitrag neben der Emotion — alle 116 Turns mit Laenge 3 tragen `vertrauen`. Nicht ein geht dagegen `nova_beziehung`). Davor 18. April 2026, Chat 52
 **Pfad:** novaberg/docs/novaberg-node-gv_l.md
 **Quellen:** Chat 52 (Session-Daten-Analyse Telegram-Gespräch 17.04.2026)
 
@@ -89,7 +89,7 @@ Assoziativ, persönlich, wandernd. Der Modus ist nicht Wissens-Exploration, sond
 
 **Vorschlag:** Wenn `emotions_vektor == "plateau"` UND `beziehungs_dynamik == "vertrauen"` UND `modus == "emotional"`, dann Tiefe hochsetzen statt runterzusetzen.
 
-> **Der Zielfall des Vorschlags ist teilweise schon erreichbar** (12.09.2026): `emotional` trägt −0,2 und erreicht mit `vertrauen` + `locker` bei hohem Arousal die Länge 3 — **8 der 116 Dreien im Bestand liegen dort.** Was der Vorschlag dagegen **nicht** löst, ist die Kante bei den drei fachlichen Modi (−0,3): Dort ist 3 bei jeder Stellung ausgeschlossen, weil die beste Summe exakt 2,5 ergibt und `round` zur geraden Zahl rundet (`novaberg-bugs.md` → `GV-LAENGE-RUNDUNG-ZUR-GERADEN`).
+> **Der Zielfall des Vorschlags ist teilweise schon erreichbar** (12.09.2026): `emotional` trägt −0,2 und erreicht mit `vertrauen` + `locker` bei hohem Arousal die Länge 3 — **8 der 116 Dreien im Bestand liegen dort.** ~~Was der Vorschlag dagegen **nicht** löst, ist die Kante bei den drei fachlichen Modi (−0,3): Dort ist 3 bei jeder Stellung ausgeschlossen.~~ → **Die Kante ist am 12.09.2026 gefallen** (`novaberg-bugs-archiv.md` → `GV-LAENGE-RUNDUNG-ZUR-GERADEN`): Die Rundung geht zur nächsten Zahl, und die drei fachlichen Modi erreichen die 3 bei bester Stellung. **Für den Vorschlag heißt das, dass sein Gegenstand schmaler geworden ist:** Was er noch hinzufügen würde, ist nicht die Erreichbarkeit, sondern die Richtung — `emotional` *herauf*zusetzen statt herab, wo Vertrauen und Plateau zusammentreffen.
 
 ### `_farbe_charakter` (TR6) als natürlicher Ort
 

@@ -172,7 +172,9 @@ was da ist, und nicht mehr behaupten, als sie gesehen hat.
 
 **Nachtrag 12.09.2026 — der Ausfall kostet mehr als Spielraum: er kostet den dritten Schritt, und zwar fuer die Haelfte des Bestandes.** Der Befund oben sagt, dass die Modus-Dimension ohne `kreativ` nur noch bremsen oder schweigen kann. **Gemessen ist jetzt die Folge daraus**: In `fachgespraech`, `lernmodus` und `philosophischer_austausch` (Zuschlag −0,3) ist Laenge 3 bei **jeder** Faktorstellung ausgeschlossen — die beste Summe ist exakt 2,5, und `round` rundet zur geraden Zahl (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`). Dort liegen **794 von 1434 Rohturns**.
 
-> **`kreativ` ist damit nicht ein hebender Wert unter mehreren, sondern der einzige, der diese drei Modi ueberhaupt ueber die Kante bringt** — +0,3 gegen −0,3 ist eine Differenz von 0,6 und die einzige im Kanon, die reicht.
+> ~~**`kreativ` ist damit nicht ein hebender Wert unter mehreren, sondern der einzige, der diese drei Modi ueberhaupt ueber die Kante bringt.**~~ → **Am 12.09.2026 ist die Kante gefallen** (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`, behoben): Die drei fachlichen Modi erreichen die 3 jetzt auch ohne `kreativ`, bei bester Stellung. **Der Befund dieses Eintrags bleibt unveraendert** — eine Dimension mit zehn Werten arbeitet faktisch mit neun, und der fehlende ist der einzige mit positivem Vorzeichen. **Was wegfaellt, ist nur seine Dringlichkeit aus dem fremden Grund:** Er war kurzzeitig der einzige Weg zum dritten Schritt in der Haelfte des Bestandes; das ist er nicht mehr.
+>
+> **Und die Absichtsfrage dieses Eintrags ist entschieden** (Eigentuemer, 12.09.2026): **`kreativ` darf vergeben werden.** Damit ist der zweite Ausgang des Abschnitts *Geschlossen, wenn* hinfaellig — die Tabelle bekommt keinen anderen hebenden Wert, sondern der Modus wird vergeben. Zu bauen ist die Wertelegende (gemessen 3,3 % → 36,7 %) **samt** dem Zug fuer das englische `creative`, das derselbe Lauf in 9 von 30 Faellen erzeugte und der Kanon-Zug nicht faengt.
 
 `[gemessen]` Ueber eine 20-Turn-Reihe in genau diesen beiden Modi: In **8 von 20** Turns haette allein `modus = kreativ` die 3 erzeugt; `arousal = 1.0`, `dynamik = vertrauen` und `stil = locker` erzeugten sie in **keinem einzigen**. Die Reihe erreichte 3 nie.
 
@@ -1874,36 +1876,6 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 **Belegt.** 849 Rohturns aus `pipeline_log`, `art='turn_roh'`, Feld `user_emotion.emotion`, ausgezählt am 08.08.2026.
 
 **Priorität.** Mittel. Betrifft 28 von 849 Turns (3,3 %), aber jeder davon bekommt eine Valenz, die nicht gemessen ist — und die Häufigkeit des Vorgabewerts ist genau die Zahl, an der die Entscheidung über die dritte Valenzstufe hängt.
-
-#### GV-LAENGE-RUNDUNG-ZUR-GERADEN — ein Viertel der Nullen entsteht aus Pythons Rundungsregel 🔧 offen
-
-**Symptom.** Turns bekommen Vektorlänge 0 und damit kein Vorausdenken, obwohl die Rechnung 0,5 ergeben hat.
-
-**Ursache.** `_vektor_laenge_berechnen()` in `graph/nodes/gespraechsvektor.py` schließt mit `round(laenge)`. Python rundet zur **geraden** Zahl: `round(0.5)` ist 0, nicht 1. Ein Grenzwert, der auf der Kante liegt, entscheidet damit nach einer Regel, die an keiner Stelle genannt ist.
-
-**Warum es niemandem auffiel.** Eine 0 ist ein gültiges Ergebnis dieser Funktion — sie heißt „kein Vorausdenken". Von einer gerechneten 0 ist eine gerundete nicht zu unterscheiden, solange niemand die Summe **vor** der Rundung ansieht.
-
-**Belegt.** Über 845 Rohturns wiedergegeben: 96 Turns erreichen Länge 0, bei **25 davon (26 %)** liegt die Summe vor der Rundung bei mindestens 0,5. Die häufigste Lage dieser Art ist `berichtend | neutral | distanz | fachlich` — 1,0 minus 0,5 für `distanz`, sonst kein Beitrag, also genau 0,5.
-
-**Priorität.** Mittel. Seit `F-LAGE-1` kostet eine 0 nicht mehr die Landschafts-Ablesung, sondern nur noch das Vorausdenken. Die Kante bleibt trotzdem eine ungenannte Regel an einem Tor.
-
-**Nachtrag 12.09.2026 — dieselbe Regel hat eine zweite Kante, und die obere ist die teurere.** Der Befund oben beschreibt `round(0.5) → 0`, also den Verlust eines Schrittes am unteren Ende. **Am oberen Ende verliert dieselbe Regel den dritten Schritt vollständig, und zwar für drei der zehn Modi dauerhaft.**
-
-`[gemessen 12.09.2026]` Je Modus die günstigste Faktorstellung (positive Emotion, arousal 1.0, `vertrauen`, `locker`) durch `_vektor_laenge_berechnen`:
-
-| Modus-Zuschlag | beste Summe | Länge | Modi |
-|---|---:|---:|---|
-| 0.0 und +0.3 | 2.8 / 3.1 | 3 | `alltag`, `spielerisch`, `berichtend`, `arbeitsmodus`, `kreativ` |
-| −0.2 | 2.6 | 3 | `emotional`, `beratend` |
-| **−0.3** | **2.5** | **2** | `fachgespraech`, `lernmodus`, `philosophischer_austausch` |
-
-> **Zwei Zuschläge, die sich um ein Zehntel unterscheiden, trennen hier *erreichbar* von *unerreichbar*** — nicht weil 0,1 viel wäre, sondern weil die Rundungsregel genau zwischen ihnen liegt. In den drei Modi mit −0.3 liegen **794 von 1434 Rohturns (55,4 %)**.
-
-**Der Gegenbeleg aus dem Bestand:** 116 der 1434 Turns tragen Länge 3 — **keiner** in einem dieser drei Modi, alle mit `vertrauen` **und** `locker`, Modi `spielerisch` (62), `alltag` (44), `emotional` (8), `arbeitsmodus` (2). Die Kante ist also nicht theoretisch: Sie ist die Trennlinie, an der der Bestand endet.
-
-**Und sie greift ineinander mit `MODUS-KREATIV-WIRD-NIE-VERGEBEN`.** Über eine 20-Turn-Reihe in `lernmodus` und `philosophischer_austausch` gemessen: In **8 von 20** Turns hätte allein `modus = kreativ` die Länge 3 erzeugt, während arousal, Dynamik und Stil in **keinem einzigen** dafür reichten. Der eine Modus, der die drei fachlichen über die Kante heben könnte, ist der, den das Perzeptionsmodell noch nie vergeben hat. **Wer die Rundung behebt, hebt zugleich diesen Riegel** — und wer nur `kreativ` zum Leben bringt, lässt die Kante stehen.
-
-**Was damit offen ist und eine Absicht braucht:** ob die Decke 2 in den drei fachlichen Modi gewollt ist. Der Zuschlag ist als Feintuning gesetzt (*„ein Schritt nach dem anderen"*), die Deckelung als hartes Limit 3 — dass beides zusammen die 3 für die Hälfte aller Turns ausschließt, steht in keinem Dokument.
 
 ### Turn-Verlust auf dem Hauptpfad (Chat 119)
 

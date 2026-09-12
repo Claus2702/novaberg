@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 817 Abschnitte in 5 Dateien — 344 mit eigenem Datum, 472 geerbt, 1 ohne.
+**Umfang:** 821 Abschnitte in 5 Dateien — 345 mit eigenem Datum, 475 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 554 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 558 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 817 Marken, 817 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 821 Marken, 821 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 15:05 UTC — die Rundung, die eine Decke setzte, ist weg 🔧](novaberg-roadmap.md#12092026-1505-utc--die-rundung-die-eine-decke-setzte-ist-weg) |
+| (2026-09-12) | laufend | ### | · [Eine Zeile, und die Vorhersage traf auf den Turn](novaberg-roadmap.md#eine-zeile-und-die-vorhersage-traf-auf-den-turn) |
+| (2026-09-12) | laufend | ### | · [Ein bestehender Zeuge fiel, und er war der aufschlussreichste Teil](novaberg-roadmap.md#ein-bestehender-zeuge-fiel-und-er-war-der-aufschlussreichste-teil) |
+| (2026-09-12) | laufend | ### | · [Was damit entschieden ist und was nicht](novaberg-roadmap.md#was-damit-entschieden-ist-und-was-nicht) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 13:05 UTC — zwei Messungen ohne Bau: eine Decke und eine Spreizung 📊](novaberg-roadmap.md#12092026-1305-utc--zwei-messungen-ohne-bau-eine-decke-und-eine-spreizung) |
 | (2026-09-12) | laufend | ### | · [Die Decke der Vektorlaenge ist modusabhaengig, und in drei Modi liegt sie bei 2](novaberg-roadmap.md#die-decke-der-vektorlaenge-ist-modusabhaengig-und-in-drei-modi-liegt-sie-bei-2) |
 | (2026-09-12) | laufend | ### | · [Die Resonanzschwelle ist global und die Groesse ist paarweise](novaberg-roadmap.md#die-resonanzschwelle-ist-global-und-die-groesse-ist-paarweise) |
