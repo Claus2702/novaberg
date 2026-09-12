@@ -47,7 +47,7 @@ from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.utils import NEGATIVE_EMOTIONEN, POSITIVE_EMOTIONEN, modus_pruefen
 from ei.wissensluecken import wissensluecken_finden
 from graph.format.memory_context import speaker_label
-from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
+from graph.reiz import is_request, reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden
 from memory.pipeline_log import log_berechnung, log_fehler
@@ -723,6 +723,21 @@ def _hypothese_destillieren(
             "GV: %d offene Frage(n) in den Prompt gegeben (staerkster Zug %.4f)",
             len(offene_fragen), offene_fragen[0]["neugier_vektor"],
         )
+
+    # **Die Bitte zuerst** (`F-GV-2`). Am 12.09.2026 bat der Nutzer viermal um
+    # einen Vorschlag und bekam viermal eine Gegenfrage; dieser Prompt kannte
+    # die Absicht nicht und sagte daneben *„Wenn die Wissensluecken einen
+    # spannenden naechsten Schritt zeigen, bring ihn ein."* Der Block steht
+    # zuletzt, damit er nach Luecken und offenen Fragen gelesen wird.
+    if is_request(state):
+        user_parts.append(
+            "[BITTE]\n"
+            "Der Nutzer bittet um etwas Konkretes. SPRUNG 1 erfuellt diese Bitte "
+            "mit dem, wonach gefragt ist. Ein Gedanke aus [WISSENSLUECKEN] oder "
+            "[OFFENE FRAGEN] darf erst danach anschliessen und tritt nie an ihre "
+            "Stelle. Das Vehikel ist keine Rueckfrage, die die Bitte zurueckgibt."
+        )
+        logger.info("GV: Bitte zuerst — [BITTE]-Block in den Prompt gegeben")
 
     user_message: str = "\n\n".join(user_parts)
 

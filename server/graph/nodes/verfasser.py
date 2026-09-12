@@ -37,7 +37,7 @@ from graph.einwand import kopf_anweisung, urteil_lesen
 # Wert — und der Fall, in dem sie gebraucht wird, ist
 # genau der, in dem niemand hinsieht.
 from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
-from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
+from graph.reiz import is_request, reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 from memory.pipeline_log import log_berechnung
@@ -156,6 +156,21 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
     if impuls:
         zeilen.append("")
         zeilen.append(f"Leitgedanke fuer diese Antwort: {impuls}")
+
+    # **Die Bitte zuerst** (`F-GV-2`): Der Verfasser bestimmt den Inhalt, also
+    # auch, ob die Antwort liefert oder zurueckfragt. Die Vorgabe steht hier
+    # und nicht nur im GV-Prompt, weil der Verfasser die Strategie als Material
+    # liest und eine Rueckfrage als Vehikel sonst befolgt. **In den Namen dieses
+    # Lesers** — Person A und Person B, nicht Nova und der Nutzer (`F-PROMPT-2`).
+    if is_request(state):
+        zeilen.append("")
+        zeilen.append(
+            "Person B hat um etwas Konkretes gebeten. Person A liefert es "
+            "zuerst, mit Inhalt statt Ankuendigung. Eine Rueckfrage oder ein "
+            "eigener Gedanke von Person A darf danach folgen, nicht an seiner "
+            "Stelle."
+        )
+        logger.info("Verfasser: Bitte zuerst — Vorgabe im GV-Block")
 
     # Die Ansage des Ausfalls. Sie steht zuletzt, damit sie nicht zwischen
     # Landschaft und Hypothese gelesen wird, als gehoerte sie zur Lage.

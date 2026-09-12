@@ -151,3 +151,45 @@ def reiz_level(state: dict) -> float | None:
         return None
 
     return level
+
+
+#: Die Absicht, bei der eine Bitte vor jeder Neugier steht (`F-GV-2`).
+#:
+#: **Nur `task`, und das ist eine Setzung am Wortlaut der Entscheidung.** Die
+#: Perzeption vergibt daneben `knowledge` fuer Wissensfragen — im Bestand des
+#: produktiven Paares 423 von 670 Nutzerturns gegen 81 mit `task`
+#: (12.09.2026). Ob auch eine Wissensfrage *erst beantwortet, dann erweitert*
+#: werden soll, ist nicht entschieden.
+REQUEST_INTENTS: frozenset[str] = frozenset({"task"})
+
+
+def is_request(state: dict) -> bool:
+    """Sagt, ob dieser Turn eine Bitte des Gegenuebers traegt, die vor jeder Neugier steht.
+
+    **Warum hier.** GV-Knoten und Verfasser brauchen dieselbe Auskunft; stuende
+    sie zweimal, liefe die Kopie auseinander — der Grund, aus dem diese Datei
+    existiert.
+
+    **Ein Impuls ist nie eine Bitte.** Auf einem Impuls-Turn hat niemand
+    gesprochen; `external` ist dort eine Kopie von `internal` und beschreibt
+    Novas vorige Antwort.
+
+    Vorbedingung: keine — ein fehlender Zustand heisst „keine Bitte".
+    Nachbedingung: True genau dann, wenn der Turn kein eigener Impuls ist und
+        die Perzeption des Gegenuebers eine Absicht aus `REQUEST_INTENTS`
+        vergeben hat.
+
+    Args:
+        state: der Zustand des Durchlaufs.
+
+    Returns:
+        Ob die Bitte zuerst bedient werden muss.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if reiz_ist_eigener_gedanke(state):
+        return False
+    external = state.get("external")
+    emotion = getattr(external, "emotion", None)
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return getattr(emotion, "intent", "") in REQUEST_INTENTS
