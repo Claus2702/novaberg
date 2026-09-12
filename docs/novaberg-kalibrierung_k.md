@@ -108,7 +108,13 @@ Belegt: Die Wahrnehmungs-Gravitation erreicht ihre Schwelle in **9,9 % der Turns
 
 Ein siebtes Paar (635 Z.) trägt nur **5** Turns und steht nicht in der Tabelle — bei dieser Zahl ist ein Median keine Verteilung. Seine Werte: 0,136 bis 0,491, also einer über der Schwelle.
 
-**Die Spannweite der Mediane ist 0,186 — bei einer Schwelle von 0,30.** Für zwei der Paare überschreitet **kein einziger** Turn sie, für ein drittes 2 %; für die beiden oberen 23 und 27 %. Nach dem Absatz über diesem Abschnitt ist das der beschriebene Defekt: Dieselbe Zahl trennt bei einem Paar und trennt beim anderen nichts.
+**Die Spannweite der Mediane ist 0,186 — bei einer Schwelle von 0,30.** Für zwei der Paare überschreitet **kein einziger** Turn sie, für ein drittes 2 %; für die beiden oberen 23 und 27 %.
+
+> ~~Nach dem Absatz über diesem Abschnitt ist das der beschriebene Defekt: Dieselbe Zahl trennt bei einem Paar und trennt beim anderen nichts.~~ → **Am 12.09.2026 vom Eigentümer entschieden, und die Hälfte dieses Satzes fällt weg.** Die Setzung lautet wörtlich: *„Paar dürfen verschieden sein. Immerhin adaptiert Nova einen Teil der Art des Gegenübers. Kein Paar ist gleich."*
+>
+> **Die Spreizung selbst ist damit kein Defekt, sondern das erwartete Verhalten.** Die Resonanz vergleicht den Turn mit Novas Kern **in diesem Paar**, und dieser Kern ist an das Gegenüber angepasst; dass er für verschiedene Menschen verschieden weit von demselben Thema liegt, ist die Anpassung und nicht ihr Fehler. Eine Angleichung über Paare hinweg wäre ein Eingriff in das Produkt.
+>
+> **Was als Befund bleibt, ist die engere Hälfte:** Für **zwei** Paare löst der Filter **nie** aus. Das ist keine Verschiedenheit, sondern ein Mechanismus, der dort abgeschaltet ist — und dafür gilt der Absatz über diesem Abschnitt unverändert. Die Setzung nennt diese Grenze ausdrücklich.
 
 **Die naheliegende Erklärung ist gemessen und trägt nicht.** Ein Backlog-Eintrag vermutete, ein fünfmal längerer Kern ziehe die Cosinus-Werte zur Mitte. Die Mediane ordnen sich **nicht** nach der Kernlänge: der höchste steht beim 2658-Zeichen-Kern, der niedrigste beim 807er, und die p10–p90-Spanne ist bei den langen Kernen *weiter*, nicht enger. **Die Messung kann die Ursache nicht isolieren**, denn die Turn-Korpora unterscheiden sich mit: Das oberste Paar trägt 150 gewachsene Turns über Wochen, die unteren je eine Messreihe eines Tages zu einem Thema. Was belegt ist, ist der **Befund**, nicht seine Ursache.
 
@@ -131,7 +137,26 @@ Ein siebtes Paar (635 Z.) trägt nur **5** Turns und steht nicht in der Tabelle 
 
 > **Damit sind es zwei Fragen und nicht eine.** Die Vielgestaltigkeit ist ein Befund über das **Maß** und gehört zur Embedding-Konvention; die Spreizung ist ein Befund über die **Paare** und bleibt offen. Wer das Maß repariert, hat die Paare nicht angeglichen — die Schwelle müsste danach nur höher liegen.
 
-**Offen und eine Absichtsfrage, keine Ableitung:** ob die Schwelle ein absoluter Wert bleiben soll oder ein Perzentil der Verteilung des jeweiligen Paares wird.
+### 3.3b Die Anpassung ist gemessen — und sie deckt nur einen Teil (12.09.2026)
+
+Die Setzung nennt einen Grund: *„Nova adaptiert einen Teil der Art des Gegenübers."* Eine Setzung wird nicht gemessen, ihre **Tatsachenhälfte** schon. Beide Kerne eines Paares liegen vor — Novas unter `(nova, mensch)`, der des Menschen unter `(mensch, nova)` —, also ist die Frage eine Matrix.
+
+`[gemessen 12.09.2026]` über sieben Paare, 14 Kerne:
+
+| Frage | Ergebnis |
+|---|---|
+| Liegt Novas Kern im Paar X am nächsten am Kern **dieses** Menschen? | **6 von 7** auf Rang 1 |
+| Mittel eigener Mensch gegen fremde Menschen | **0,593 gegen 0,514** — Abstand +0,079 |
+| Novas Kerne **untereinander** | 0,725 bis 0,858, Median **0,788** |
+| Die Menschen **untereinander** | 0,499 bis 0,756, Median **0,651** |
+
+- **Die Anpassung ist belegt.** Sie ist kein Postulat: In sechs von sieben Paaren ist der eigene Mensch der nächste von sieben, und der Abstand zwischen eigen und fremd ist mit +0,079 größer als die Spanne, um die die Facettenzerlegung das ganze Niveau hebt.
+- **Und sie deckt nur einen Teil — genau wie die Setzung sagt.** Novas Kerne liegen **enger zusammen** (0,788) als die Menschen (0,651). Als Abstand zur Identität gelesen (`1 − cos`, eine beschreibende Verhältniszahl und kein metrischer Abstand): 0,212 gegen 0,349, also rund **61 %** der Streuung der Menschen. Sie wandert mit, aber nicht den ganzen Weg.
+- **Die Ausnahme ist dieselbe wie bei der Resonanz, und das ist der aufschlussreichste Befund.** Das Paar mit dem niedrigsten Resonanz-Median (0,097, kein Turn über der Schwelle) ist auch das **einzige**, in dem Novas Kern nicht am nächsten am eigenen Menschen liegt — Rang 3 von 7. Dort ist also nicht die Schwelle zu hoch, sondern die Anpassung noch nicht geschehen: 29 Turns aus einem Tag.
+
+> **Damit hat die offene Frage einen Gegenstand, den sie vorher nicht hatte.** Der Filter ruht genau dort, wo noch keine gemeinsame Geschichte ist. Das ist entweder richtig — ohne Anpassung keine Resonanz — oder es ist der Moment, in dem Neugier am meisten trüge. Das ist eine Setzung und keine Ableitung.
+
+**Offen bleibt eine engere Frage, und die Setzung entscheidet sie nicht:** ob die Schwelle ein absoluter Wert bleibt oder ein Perzentil der Verteilung des jeweiligen Paares wird. **Beides ist mit der Setzung vereinbar** — ein Perzentil je Paar *erhält* den Unterschied und macht den Filter dennoch überall wirksam; ein absoluter Wert behandelt unterschiedlich angepasste Kerne gleich und schaltet den Filter bei zwei Paaren ab. Die Frage ist damit nicht mehr *„ist die Spreizung ein Defekt"*, sondern *„darf ein Mechanismus für ein Paar ruhen"*.
 
 ### 3.4 Verfall — wie schnell etwas verblasst
 

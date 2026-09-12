@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 13:05 UTC** samt Nachtrag 13:30 UTC (gemessen via `date -u`). Davor 12.09.2026, 10:45 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 13:05 UTC** samt Nachtraegen 13:30 und 14:10 UTC (gemessen via `date -u`). Davor 12.09.2026, 10:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -126,6 +126,38 @@ Turns merklich. Und ein Paar passiert auch auf dem Facetten-Maximum **nichts**
 81,8 °C Nulllinie: 95 Messpunkte, Mittel 75,5 °C, Maximum 85,5 °C, Grenze 90 nie
 gerissen, zwei Punkte ueber 85. Seiteneffekte gezaehlt und null — der Lauf liest
 nur (Notizen 1, Rohturns 1434, Wissensluecken 1908, alle unveraendert).
+
+### Nachtrag 14:10 UTC — die Setzung des Eigentuemers, und ihre Tatsachenhaelfte gemessen
+
+Die Spreizung war als Defekt vorgelegt. **Sie ist keiner** — Setzung des
+Eigentuemers, woertlich: *„Paar duerfen verschieden sein. Immerhin adaptiert Nova
+einen Teil der Art des Gegenuebers. Kein Paar ist gleich."* Aufgenommen als
+`F-PAAR-2`; eine Angleichung ueber Paare hinweg ist damit ein Eingriff in das
+Produkt und keine Kalibrierung.
+
+**Eine Setzung wird nicht gemessen, ihre Tatsachenhaelfte schon.** Beide Kerne
+eines Paares liegen vor, also ist die Frage eine Matrix. `[gemessen]` sieben
+Paare, 14 Kerne:
+
+| Frage | Ergebnis |
+|---|---|
+| Liegt Novas Kern im Paar X am naechsten am Kern **dieses** Menschen? | **6 von 7** auf Rang 1 |
+| Mittel eigener gegen fremde Menschen | 0,593 gegen 0,514 — Abstand **+0,079** |
+| Novas Kerne untereinander | 0,725 – 0,858, Median **0,788** |
+| Die Menschen untereinander | 0,499 – 0,756, Median **0,651** |
+
+**Die Anpassung ist damit belegt und ihr Umfang benannt.** Novas Kerne liegen
+**enger** zusammen als die Menschen — als Abstand zur Identitaet gelesen 0,212
+gegen 0,349, rund **61 %** der Streuung der Menschen. Sie wandert mit, aber nicht
+den ganzen Weg; das Wort *„einen Teil"* der Setzung trifft es.
+
+**Und die Ausnahme traegt mehr als die Regel.** Das Paar mit dem niedrigsten
+Resonanz-Median (0,097, kein Turn ueber der Schwelle) ist auch das **einzige**,
+in dem Novas Kern nicht am naechsten am eigenen Menschen liegt — Rang 3 von 7,
+bei 29 Turns aus einem Tag. **Der Filter ruht dort nicht, weil die Schwelle zu
+hoch ist, sondern weil die Anpassung noch nicht geschehen ist.** Damit hat die
+offene Frage einen Gegenstand: Ist Schweigen ohne gemeinsame Geschichte richtig,
+oder ist es der Moment, in dem Neugier am meisten truege?
 
 ### Zwei Absichtsfragen, die aus den Messungen folgen
 

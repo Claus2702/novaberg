@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 816 Abschnitte in 5 Dateien — 344 mit eigenem Datum, 471 geerbt, 1 ohne.
+**Umfang:** 817 Abschnitte in 5 Dateien — 344 mit eigenem Datum, 472 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 553 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 554 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 816 Marken, 816 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 817 Marken, 817 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -40,6 +40,7 @@
 | (2026-09-12) | laufend | ### | · [Die Decke der Vektorlaenge ist modusabhaengig, und in drei Modi liegt sie bei 2](novaberg-roadmap.md#die-decke-der-vektorlaenge-ist-modusabhaengig-und-in-drei-modi-liegt-sie-bei-2) |
 | (2026-09-12) | laufend | ### | · [Die Resonanzschwelle ist global und die Groesse ist paarweise](novaberg-roadmap.md#die-resonanzschwelle-ist-global-und-die-groesse-ist-paarweise) |
 | (2026-09-12) | laufend | ### | · [Nachtrag 13:30 UTC — die eigene Vermutung gemessen und halbiert](novaberg-roadmap.md#nachtrag-1330-utc--die-eigene-vermutung-gemessen-und-halbiert) |
+| (2026-09-12) | laufend | ### | · [Nachtrag 14:10 UTC — die Setzung des Eigentuemers, und ihre Tatsachenhaelfte gemessen](novaberg-roadmap.md#nachtrag-1410-utc--die-setzung-des-eigentuemers-und-ihre-tatsachenhaelfte-gemessen) |
 | (2026-09-12) | laufend | ### | · [Zwei Absichtsfragen, die aus den Messungen folgen](novaberg-roadmap.md#zwei-absichtsfragen-die-aus-den-messungen-folgen) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 10:45 UTC — drei Tore hintereinander, und keines sagte etwas 🔧](novaberg-roadmap.md#12092026-1045-utc--drei-tore-hintereinander-und-keines-sagte-etwas) |
 | (2026-09-12) | laufend | ### | · [Der Auftrag war der vierte Salienz-Antrieb — er ist nicht baubar](novaberg-roadmap.md#der-auftrag-war-der-vierte-salienz-antrieb--er-ist-nicht-baubar) |
