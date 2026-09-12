@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 20:31 UTC** (gemessen via `date -u`). Davor 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 20:53 UTC** (gemessen via `date -u`). Davor 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 83 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 84 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -21,6 +21,49 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 12.09.2026, 20:53 UTC — die Lücke beim Nutzer ist ein Thema, kein Satz 🔧
+
+**ZIEL:** In den Lückenblock geht ein **Thema** aus Novas Bestand nahe am Turn, das der
+Nutzer im Bestand des Paares nie berührt hat und das im Gespräch samt laufendem Reiz
+nicht gefallen ist; die Charakter-Resonanz entsteht auf dem Thema (`F-GV-2`, Bauteil 3
+von 4).
+**TEST:** `test_gv4_themen.py` (32 Zeugen), drei bestehende Dateien umgezogen —
+**16 rote Zeugen vorhergesagt, 16 gezählt**, die Zusicherungen der Satz-Resonanz
+umgedreht statt gelöscht. Suite **3561 grün, 0 übersprungen**. Gegenproben: Filter
+*vom Nutzer berührt* entfernt 2/2, Resonanz aus dem Turn statt dem Thema 3/3,
+Zwischenspeicher umgangen 1/1, laufender Reiz aus dem Erwähnt-Filter 1/1.
+**MESSUNG:** der gebaute Pfad über die 11 Abendturns und 20 frische Nutzerturns.
+
+### Vorher gemessen
+
+- **Der Sprecher verschwindet auf Themen:** Thema gegen Kern, Median 0,209 aus Nova-Knoten
+  gegen 0,200 aus Nutzer-Knoten — auf Sätzen waren es +0,302.
+- **Kosten:** 150 ms je Einbettung, rund 32 Themen je Turn. Ein Stapel von 32 kostet
+  280 ms bei zeichengleichen Vektoren; der Embed-Worker hat dafür einen Stapelweg,
+  die Themenvektoren liegen im Prozess zwischen.
+
+### Zwei Grenzen neu gelesen
+
+- **Resonanz 0,15** statt 0,30: Alltagsetiketten liegen darunter (*Tagesplanung* 0,126,
+  *Filmtitel* 0,139), Novas Themen darüber. Der Preis: rund ein Dutzend konkreter
+  Sachbegriffe fällt mit (*Messproblem* 0,103).
+- **Untergrenze 0,15 bleibt:** In Flirt- und Filmturns kommen 0 bis 1 Themen darüber,
+  in Sachturns 2 bis 6.
+
+### Nachher
+
+| | vorher (Betrieb) | nachher |
+|---|---|---|
+| Lücken | 83 in 11 Turns | 34 in 19 von 31 Turns |
+| Vermerke über Novas Äußerungen | 56 | **0** |
+| LZG / KZG | 77 / 6 | 13 / 21 |
+| Laufzeit der Lückensuche | — | 404 ms kalt, 187 ms warm |
+
+**Plausibilität nach Lesung etwa die Hälfte.** Das wörtliche Echo der eigenen Frage kam
+beim ersten Nachmessen noch vor und ist behoben — der laufende Reiz gehört zum
+Gespräch. Offen: Wortanklänge, ein semantisches Echo, ein wiederkehrendes
+Gesprächs-Etikett, und persönliche Themen fallen nur zufällig heraus (Fundliste).
 
 ## 12.09.2026, 20:31 UTC — Novas offene Fragen kommen nur noch, wenn sie zum Turn passen 🔧
 

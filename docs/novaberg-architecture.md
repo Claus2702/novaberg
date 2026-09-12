@@ -300,7 +300,7 @@ Alle Modell-Aufrufe laufen über eine In-Process-Microservice-Architektur in `se
 
 **Komponenten:**
 
-- `types.py` — typisierte Requests/Responses: `EmbedRequest`/`EmbedResponse`, `ChatRequest`/`ChatResponse`, `BackgroundRequest`/`BackgroundResponse`
+- `types.py` — typisierte Requests/Responses: `EmbedRequest`/`EmbedResponse`, `EmbedBatchRequest`/`EmbedBatchResponse` (mehrere Texte in einem Aufruf, seit 12.09.2026), `ChatRequest`/`ChatResponse`, `BackgroundRequest`/`BackgroundResponse`
 - `worker_base.py` — `ModelWorker`-Basisklasse mit FIFO-Queue, `submit` (async, aus dem Haupt-Loop) und `submit_sync` (Brücke für Worker-Thread-Konsumenten)
 - `embed_worker.py` — `EmbedWorker` (Rolle `embed`, GPU-fix), geteilt von Nova und Pixie
 - `chat_worker.py` — `ChatWorker` (Rolle `chat`, single-backend), `expect_json` → `parse_json_strict`
@@ -432,6 +432,7 @@ project/
 │   │   ├── neugier.py                   #   GV4: sechs Saeulen × Persoenlichkeit → Aufnahmebereitschaft
 │   │   ├── wissensluecken.py            #   GV4: semantisch nahe, aber unbesprochene Konzepte
 │   │   ├── source_weights.py            #   GV4: Rang des Gewichts in der eigenen Quelle — die Naht zwischen LZG und KZG
+│   │   ├── gap_topics.py                #   GV4: Themen als Lückenkandidaten, Themenbestand des Nutzers, Themenvektoren im Stapel
 │   │   ├── gravitation.py               #   Emotionale Gravitation: Erinnerungen als Attraktoren (→ novaberg-node-emotionale-gravitation.md)
 │   │   ├── fascination.py               #   Die ganze Rechnung der Faszination: Merkmalszug, Anker, sechs Turn-Modulatoren, Strangzug, Verfall je Dimension, Zusammenfuehrung (→ novaberg-thinking-faszination_k.md §10)
 │   │   ├── salienz.py                   #   Salienz-Formel (→ novaberg-salienz-berechnung_k.md)

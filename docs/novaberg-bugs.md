@@ -3204,6 +3204,8 @@ plus `log_fehler`); diese beiden sind es nicht.
 **Lösungsrichtung:** Dasselbe Muster wie `_entity_kontext_laden` — spezifische Exception,
 `logger.error`, Forensik-Eintrag.
 
+**Nachtrag 12.09.2026 — beim Umbau der Suchen gegen den Eintrag gehalten: unveraendert.** Beide Suchen liefern seit heute Knoten mit Themen statt Kandidaten und fragen nur `beobachter = 'assistant'`; ihr Fehlerpfad ist derselbe (`except Exception` → `warning` → leere Liste). Nicht im Vorbeigehen behoben. **Neu daneben, und anders gebaut:** Faellt die Einbettung der Themen oder der Themenbestand des Nutzers aus, meldet der Pfad einen **Fehler** und liefert keine Luecken (`ei/wissensluecken.py`, Schritte 3b und 3c).
+
 #### GV-ABSICHT-OHNE-KORRIDOR — alle vier Absichten werden in jedem Cluster angeboten ⚠️
 
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `ABSICHT_KANON` in `ei/dreischicht.py:369` fuehrt weiterhin alle vier Werte (`teilen`, `lenken`, `halten`, `saeen`) als eine Menge ohne Zuordnung zum Cluster; ein Korridor je Cluster ist im Code nicht angelegt.
@@ -3266,6 +3268,8 @@ Gewichtung zeigt sieben Striche, während der Prompt desselben Turns sieben Mal
 **Auswirkung:** Zwischen zwei Wissenslücken unterscheiden real nur Gedächtnis (System 1),
 Neugier (4) und Register (5). Der Code benennt den Proxy in einem Kommentar; das Konzept
 tut es nicht.
+
+**Nachtrag 12.09.2026 — System 6 differenziert jetzt, und zwar auf dem Thema.** Die Charakter-Resonanz entstand zuerst je Kandidat in der Suche (auf dem Gedaechtnissatz, trennte dort nach Sprecher) und seit dem Abend je **Thema** gegen den Kern, Schwelle 0,15. System 2 (Aktualitaet) und System 3 (Drive als Turn-Proxy) sind unveraendert; der Eintrag bleibt offen.
 
 #### GV-SKIP-BEGRUESSUNG-TOT — zwei von drei Skip-Gründen können nicht eintreten ⚠️
 

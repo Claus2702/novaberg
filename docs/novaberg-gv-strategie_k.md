@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gesprächslandschaft — 64 Zustände, 6 Achsen, 13 Cluster, 7 Strategien, 4 Absichten, 3 Vehikel (Konzept)
-**Stand:** 12. September 2026, abends (Anhang A.0 neu: **zwei Lücken, getrennt** — beim Nutzer und bei Nova —, Themen statt Sätze als Kandidaten, die Bitte vor der Neugier, offene Fragen nach Turn-Nähe; Entscheidung des Eigentümers nach 15 Betriebsturns). Davor 12. September 2026 (Anhang A.1: `GV_CHARAKTER_RESONANZ_SCHWELLE` steht als **eine** Zahl vor sieben Verteilungen — Mediane 0,097 bis 0,282, bei zwei Paaren laesst 0,30 nichts durch). Davor 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
+**Stand:** 12. September 2026, 20:53 UTC (Anhang A.0: **Bauteile 1–3 gebaut** — Naht, offene Fragen nach Nähe, Themen als Lücke beim Nutzer; A.1 und A.2 auf Themen nachgezogen). Davor 12. September 2026, abends (Anhang A.0 neu: **zwei Lücken, getrennt** — beim Nutzer und bei Nova —, Themen statt Sätze als Kandidaten, die Bitte vor der Neugier, offene Fragen nach Turn-Nähe; Entscheidung des Eigentümers nach 15 Betriebsturns). Davor 12. September 2026 (Anhang A.1: `GV_CHARAKTER_RESONANZ_SCHWELLE` steht als **eine** Zahl vor sieben Verteilungen — Mediane 0,097 bis 0,282, bei zwei Paaren laesst 0,30 nichts durch). Davor 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
 **Pfad:** novaberg/docs/novaberg-gv-strategie_k.md
 **Quellen:** Chat 71 (GV3+4, Strategie-Analyse, 64-Sektoren-Validierung, Dreischicht-Architektur), Chat 39 (GV-Grundkonzept), Chat 53 (Drive/Neugier), Chat 7 (6-Säulen-Wahrnehmung)
 
@@ -687,7 +687,7 @@ Die Festlegung dazu ist `F-GV-2`.
 
 | Liste | Absicht | Kandidat | Bedingung | Prompt-Block |
 |---|---|---|---|---|
-| **Lücke beim Nutzer** | Lenken, Säen | ein Thema aus Knoten nahe am Turn | im laufenden Gespräch nicht gefallen **und** in keinem Knoten mit `beobachter = user` des Paares als Thema geführt | `[WISSENSLUECKEN]` |
+| **Lücke beim Nutzer** | Lenken, Säen | ein Thema aus Knoten nahe am Turn | im laufenden Gespräch nicht gefallen **und** in keinem Knoten mit `beobachter = user` des Paares als Thema geführt — **✅ gebaut am 12.09.2026** (`ei/gap_topics.py`); der laufende Reiz zählt zum Gespräch | `[WISSENSLUECKEN]` |
 | **Lücke bei Nova** | Nachfragen | eine offene Zeile aus `wissensluecken` | ihr Embedding liegt dem Turn nah — auf Impuls-Turns dem eigenen Gedanken; unter den nahen der höchste `neugier_vektor`; **leer ist zulässig** — **✅ gebaut am 12.09.2026**, Nähe ≥ `OFFENE_FRAGEN_MIN_NAEHE = 0.49` (Eichung in `novaberg-kalibrierung_k.md` §3.3) | `[OFFENE FRAGEN]` |
 
 - **Was *„der Nutzer kennt es nicht"* hier heißt, ist eine Annäherung und wird so benannt:** Er hat das Thema im Bestand des Paares nie berührt. Das ist kein Nachweis von Unkenntnis, nur das Fehlen eines Belegs dafür.
@@ -697,12 +697,14 @@ Die Festlegung dazu ist `F-GV-2`.
 
 **Reihenfolge der Bauteile, und warum:** Naht → Novas Lücken nach Nähe → Themen und Nutzer-Lücke → Bitte zuerst. Jedes ändert eine andere Zahl des Betriebsbelegs (Quellenmischung · Fragenwechsel · Sprecheranteil · Antwortform); zusammen gebaut wäre eine Verschlechterung keinem zuzuordnen.
 
-**Offen und vor dem Bau zu messen:** ~~die Schwelle der Turn-Nähe für Novas Lücken~~ (gemessen: 0,49); die Kosten, Themen je Turn einzubetten (heute ein Aufruf je Text), und ob ein Zwischenspeicher dafür nötig ist.
+**Offen und vor dem Bau zu messen:** ~~die Schwelle der Turn-Nähe für Novas Lücken~~ (gemessen: 0,49); ~~die Kosten, Themen je Turn einzubetten, und ob ein Zwischenspeicher nötig ist~~ (gemessen: einzeln 150 ms je Thema bei rund 32 Themen je Turn; als Stapel 280 ms für 32, zeichengleiche Vektoren; mit Zwischenspeicher je Text **404 ms kalt, 187 ms warm** für die ganze Lückensuche).
+
+**Bauteil 3, gemessen durch den gebauten Pfad** (11 Abendturns und 20 frische Nutzerturns): **34 Lücken in 19 von 31 Turns, 0 davon Vermerke über Novas Äußerungen**, LZG 13 / KZG 21. Die Resonanz eines Themas zum Kern trennt nicht mehr nach Sprecher (Median 0,209 gegen 0,200); ihre Schwelle ist auf der neuen Paarung gelesen: **0,15**. **Plausibilität nach Lesung rund die Hälfte** — passend etwa *Phasenübergang zum Quark-Gluon-Plasma* auf eine Frage nach extremer Dichte; daneben Wortanklänge (*Chemotaxis* auf *Chemie*) und ein semantisches Echo der eigenen Frage (Nähe 0,697). Die Resonanz trennt Wissen nicht von Beziehung: Etiketten über das Gespräch selbst passieren (*Selbstreflexion über die eigene Selbstüberschätzung* in 3 von 11 Abendturns).
 
 ### A.1 Formel
 
 ```
-relevanz = similarity × gewicht_rang × session_akt × QF
+relevanz = naehe_thema × gewicht_rang × session_akt × QF
          × (1 + neugier_boost) × aufnahmebereitschaft × register_kompatibilitaet
 
 session_akt:        1 − sin^0.5(turn/25 × π/2)     nur Session, sonst 1.0
@@ -711,7 +713,8 @@ QF:                 0.6 einheitlich
 neugier_boost:      max(ziel_sim × motivation)       Schwelle 0.30
 aufnahmebereitschaft:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]
 register:           sachlich↑neutral↓emotional / offen↑emotional
-charakter_filter:   kern_hash-Resonanz ≥ 0.30   (GV_CHARAKTER_RESONANZ_SCHWELLE, seit 12.09.2026)
+naehe_thema:        cosine(Thema, Turn)   seit 12.09.2026 abends — vorher der Gedächtnissatz
+charakter_filter:   cosine(Thema, Kern) ≥ 0.15   (GV_CHARAKTER_RESONANZ_SCHWELLE; 0.30 galt für Sätze)
 ```
 
 **Wo der Filter sitzt:** `_qualifizieren(kandidaten, resonanz_pruefbar)` in `ei/wissensluecken.py` — Tor 3 des Lückenpfades. Es prüft `relevanz ≥ GV_LUECKEN_MIN_RELEVANZ` **und** die Resonanz, zählt beide Abweisungsgründe getrennt und schreibt seine Zahl **auch bei null** (seit dem 12.09.2026; davor war es eine Listen-Komprehension ohne Ausgabe, und ein geschlossenes Tor war von *„offen, nichts gefunden"* nicht zu unterscheiden).
@@ -729,7 +732,7 @@ charakter_filter:   kern_hash-Resonanz ≥ 0.30   (GV_CHARAKTER_RESONANZ_SCHWELL
 | 3. Drive | Will Nova das wissen? | Ziel-Gravitation |
 | 4. Neugier | Ist sie empfänglich? | 6 Säulen × NOVA_NEUGIER |
 | 5. Register | Welche Art Lücke passt? | Sachlich vs. offen × gap_arousal |
-| 6. Charakter | Passt es zu ihr? | kern_hash Cosine ≥ 0.40 |
+| 6. Charakter | Passt es zu ihr? | ~~kern_hash Cosine ≥ 0.40~~ → Thema gegen Kern ≥ 0.15 (seit 12.09.2026) |
 
 ### A.3 Neugier-Säulen
 
