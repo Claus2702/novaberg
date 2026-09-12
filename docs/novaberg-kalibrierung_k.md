@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 12. September 2026, 16:50 UTC (§3.3c: **der Grenzwert ist gesperrt** — die Kern-Naehe trennt nach `beobachter` (Abstand +0,302), nicht nach Passung; ein Anstieg auf den vorausgerechneten Arbeitspunkt machte daraus einen reinen Sprecher-Filter. Davor 16:20 UTC (§3.3c neu: **die Schwelle misst seit heute den Kandidaten** — die Naehe entsteht in beiden Suchen ohne weiteren Modellaufruf, und das Paar, bei dem vorher kein Turn passierte, laesst 6 von 8 Kandidaten durch. Der Grenzwert bleibt vorerst, weil die Vorausrechnung ein Stellvertreter war. Davor 13:30 UTC (§3.3a: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — Mediane 0,097 bis 0,282, die Schwelle ist global, bei zwei von sieben Paaren lässt sie **nichts** durch. **Dazu die Gegenprobe gegen den vermuteten Grund, und sie widerlegt ihn:** Die Zerlegung des Kerns in Facetten hebt jeden Median um 0,03 bis 0,10, lässt die Spreizung zwischen den Paaren aber unverändert bei 0,19 — Maß und Paar sind zwei Fragen). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
+**Stand:** 12. September 2026, 19:55 UTC (§3.3d neu: **die erste echte Verteilung aus dem Betrieb** — elf Turns, 145 von 210 Kandidaten ueber 0,30, Median 0,400, und **80 Luecken in 14 Turns** gegen 0 von 40 am Vortag; dazu die Setzung *der Mechanismus darf aktiv sein* an der Stelle, an der der Grenzwert gesetzt wird. Zwei frueher am Tag berichtete Quoten sind berichtigt). Davor 16:50 UTC (§3.3c: **der Grenzwert ist gesperrt** — die Kern-Naehe trennt nach `beobachter` (Abstand +0,302), nicht nach Passung; ein Anstieg auf den vorausgerechneten Arbeitspunkt machte daraus einen reinen Sprecher-Filter. Davor 16:20 UTC (§3.3c neu: **die Schwelle misst seit heute den Kandidaten** — die Naehe entsteht in beiden Suchen ohne weiteren Modellaufruf, und das Paar, bei dem vorher kein Turn passierte, laesst 6 von 8 Kandidaten durch. Der Grenzwert bleibt vorerst, weil die Vorausrechnung ein Stellvertreter war. Davor 13:30 UTC (§3.3a: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — Mediane 0,097 bis 0,282, die Schwelle ist global, bei zwei von sieben Paaren lässt sie **nichts** durch. **Dazu die Gegenprobe gegen den vermuteten Grund, und sie widerlegt ihn:** Die Zerlegung des Kerns in Facetten hebt jeden Median um 0,03 bis 0,10, lässt die Spreizung zwischen den Paaren aber unverändert bei 0,19 — Maß und Paar sind zwei Fragen). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -182,6 +182,25 @@ Der Filter vergleicht nicht mehr den **Turn** mit dem Kern, sondern **jede Lück
 > **Für GV4 ist das eine Umkehrung seines Zwecks:** Der Pfad sucht die Informationslücke **des Nutzers** und zieht mit diesem Filter Novas eigene Äußerungen vor. Ein Anstieg auf den vorausgerechneten Arbeitspunkt 0,45–0,50 machte daraus einen reinen `beobachter='assistant'`-Filter. **Zuerst die Größe, dann der Grenzwert.**
 
 **Offen bleibt eine engere Frage, und die Setzung entscheidet sie nicht:** ob die Schwelle ein absoluter Wert bleibt oder ein Perzentil der Verteilung des jeweiligen Paares wird. **Beides ist mit der Setzung vereinbar** — ein Perzentil je Paar *erhält* den Unterschied und macht den Filter dennoch überall wirksam; ein absoluter Wert behandelt unterschiedlich angepasste Kerne gleich und schaltet den Filter bei zwei Paaren ab. Die Frage ist damit nicht mehr *„ist die Spreizung ein Defekt"*, sondern *„darf ein Mechanismus für ein Paar ruhen"*.
+
+### 3.3d Die erste echte Verteilung — aus dem Betrieb, nicht aus einem Stellvertreter (12.09.2026)
+
+**Setzung des Eigentümers, 12.09.2026:** *Der Mechanismus darf aktiv sein* — auch bei einem neuen Paar. Sie ist der Grund, warum der Filter von der Turn- auf die Kandidaten-Nähe umgestellt wurde (§3.3c), und sie gilt für das Setzen des Grenzwerts weiter: Ein Wert, der bei einem Paar nichts durchlässt, löst die Frage nicht.
+
+`[gemessen 12.09.2026, 18:15–18:51 UTC]` Elf Betriebsturns mit der Spur `gv4_kern_resonanz`, produktives Paar:
+
+| | |
+|---|---|
+| Kandidaten je Turn | 17–20, **beide Quellen in jedem Turn** (KZG 8–10, LZG 9–10) |
+| Mediane der Kern-Nähe je Turn | 0,260 bis 0,488, Mitte **0,400** |
+| über der heutigen Schwelle 0,30 | **145 von 210 = 69 %**, je Turn 35 % bis 94 % |
+| Lücken, die den Prompt erreichten | **80 in 14 Turns; 10 von 14 Turns mit mindestens einer — 71 %** |
+
+**Das ist die Verteilung, die den Grenzwert setzen darf** — über die tatsächlich hochgeholten Kandidaten, nicht über alle aktiven Knoten. Zum Vergleich: Am Vortag erreichten **0 von 40** Turns desselben Paares überhaupt eine Lücke.
+
+> **Zwei frühere Zahlen dieses Tages sind damit berichtigt.** *„Bei 0,30 passieren 90 %"* stammte aus **einem konstruierten Reiz** und ist keine Betriebsaussage; *„35 %"* aus einem **einzelnen** Turn. Der Betrieb sagt 69 % über 210 echte Kandidaten, und der Median liegt mit 0,400 **über** der Schwelle, nicht darunter.
+
+**Der Grenzwert bleibt trotzdem gesperrt**, und zwar aus dem Grund in §3.3c: Die Größe trennt nach `beobachter`. Eine Anhebung auf das Band, das diese Verteilung nahelegt, verschärfte genau diese Schieflage. **Erst die Größe, dann der Wert** — und die 69 % sagen, dass dafür Zeit ist: Der Mechanismus arbeitet, er wählt nur nach dem falschen Merkmal aus.
 
 ### 3.4 Verfall — wie schnell etwas verblasst
 
