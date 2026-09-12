@@ -126,11 +126,22 @@ Der Perzeptions-Prompt erklaert `intent`, `arousal`, `emotion` und `beziehungs_d
 **Die Gesamtqualitaet aendert sie nicht** — ueber 30 Reize aller zehn Modi trifft der
 Betriebs-Prompt 23 von 30, der ergaenzte 24.
 
-**Warum sie trotzdem nicht gebaut ist:** Der ergaenzte Arm vergab zusaetzlich **9-mal
-`creative`** — den englischen `intent`-Wert in der Modus-Spalte. Das Wort steht in **drei**
-Dimensionen, und der Kanon-Zug zieht Schreibvarianten, keine Uebersetzungen. Die Legende
-allein tauscht einen Ausfall gegen einen anderen; sie braucht die Entscheidung, ob eine der
-beiden Dimensionen umbenannt wird. **Das ist eine Absichtsfrage und liegt beim Eigentuemer.**
+~~**Warum sie trotzdem nicht gebaut ist:** Der ergaenzte Arm vergab zusaetzlich **9-mal
+`creative`** — den englischen `intent`-Wert in der Modus-Spalte. Die Legende allein tauscht
+einen Ausfall gegen einen anderen; sie braucht die Entscheidung, ob eine der beiden
+Dimensionen umbenannt wird.~~ → **Am 12.09.2026 gebaut, und die Umbenennung war nicht
+noetig.** Der Eigentuemer hat die Absichtsfrage entschieden (*„kreativ darf vergeben
+werden"*), und der dritte Weg kostete weniger als beide erwogenen: Der Kanon-Zug bekam eine
+**Stufe fuer Uebersetzungen** (`MODUS_SYNONYM_MAP`), statt eine Dimension umzubenennen.
+**Keine Dimension heisst anders, und `creative` landet im richtigen Feld.**
+
+`[gemessen 12.09.2026]` Die gebaute Legende erreicht **30 von 30** auf den Kreativ-Reizen
+(Versuchsarm 11 von 30) bei **23 von 30** ueber das Spektrum — genau die Nulllinie — und
+**0** falsch vergebenen `kreativ`. **Die Uebersetzungsstufe griff dabei 0 von 30 mal:** Das
+Modell antwortete durchgehend deutsch. Sie bleibt als Riegel, ihre Notwendigkeit ist
+unbelegt. Was der Unterschied zum Versuchsarm ausmacht, ist **nicht** gemessen — dessen
+Wortlaut liegt nicht vor; die heutige Legende traegt einen Satz, der `kreativ` von
+`philosophischer_austausch` ausdruecklich scheidet.
 
 Kennung: `MODUS-KREATIV-WIRD-NIE-VERGEBEN`. Werkzeug: `tools/perzeption_prompt_probe.py`.
 

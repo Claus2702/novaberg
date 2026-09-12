@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 15:05 UTC** (gemessen via `date -u`). Davor 12.09.2026, 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 15:45 UTC** (gemessen via `date -u`). Davor 12.09.2026, 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,72 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 15:45 UTC — `kreativ` wird vergeben, und die Gegenfrage ist mitgemessen 🔧
+
+**ZIEL:** Die Perzeption vergibt `kreativ`, wo der Reiz kreativ ist — und kein
+Lauf landet wegen der Sprache im Vorgabewert.
+**TEST:** `tests/test_kanon_synonym.py` (7 Zeugen) fuer die dritte Stufe des
+Kanon-Zugs, dazu in `test_modus_kanon.py` ein Zeuge, der **jeden** Modus des
+Kanons im Prompt erklaert verlangt — die Luecke des Befundes kann nicht lautlos
+zurueckkommen.
+**MESSUNG:** Dieselben drei Kreativ-Reize wie die Nulllinie, je zehnmal, durch
+`perceive`; dazu das Spektrum aller zehn Modi als Gegenfrage.
+
+### Zwei Teile, und nur einer hat einen Eingang
+
+Beide Perzeptions-Prompts tragen jetzt eine **Wertelegende** fuer `modus`: zehn
+Werte mit Auswahlkriterium statt einer Aufzaehlung, und ein Satz, der die beiden
+trennt, die die Messung verwechselt hatte — *soll am Ende etwas Neues dastehen
+(kreativ) oder etwas Bestehendes verstanden sein (philosophischer_austausch)?*
+
+| Arm | `kreativ` als Modus |
+|---|---:|
+| Betriebs-Prompt 10.09.2026 | 1 von 30 |
+| Versuchsarm mit Legende 10.09.2026 | 11 von 30 |
+| **Betrieb seit heute** | **30 von 30** |
+
+**Ohne die Gegenfrage waere die Zahl wertlos:** Eine Legende, die zu allem
+`kreativ` sagt, erreicht dieselben 100 %. Ueber das Spektrum aller zehn Modi
+(30 Reize, drei je Modus) trifft der Betrieb **23 von 30** — **genau die
+Nulllinie** — und vergibt `kreativ` **0 mal** falsch. Der Wert ist gehoben, nicht
+ausgeweitet.
+
+**Der zweite Teil ist gebaut und ohne Eingabe.** Der Kanon-Zug hat eine dritte
+Stufe fuer **Uebersetzungen** (`MODUS_SYNONYM_MAP`, `creative` → `kreativ`),
+weil der Versuchsarm in 9 von 30 Laeufen das englische Wort erzeugte und der Zug
+nur Schreibvarianten fing. `[gemessen]` Mit der heutigen Legende griff sie in
+**0 von 30** Laeufen — das Modell antwortet durchgehend deutsch. **Sie bleibt als
+Riegel, ihre Notwendigkeit ist unbelegt**, und das gehoert an die Zahl.
+
+> **Warum die Uebersetzung nicht in den Kanon gehoert:** Ein englischer Wert im
+> Kanon passierte jede Pruefung und liefe in `GV_LAENGE_MODUS_DELTA.get(modus, 0.0)`
+> — also still in den Zuschlag von `alltag`. Die Legende allein haette den Modus
+> gehoben und gleichzeitig einen neuen stillen Vorgabewert erzeugt.
+
+### Was die Gegenfrage nebenbei fand
+
+Die sieben Fehlgriffe des Spektrums fallen fast alle auf **einen** Wert:
+`alltag → berichtend` dreimal, `emotional → berichtend` dreimal,
+`fachgespraech → lernmodus` einmal. **`berichtend` saugt zwei andere Modi auf**,
+und zwar unveraendert gegenueber der Nulllinie — die Legende hat es nicht
+verursacht und nicht behoben.
+
+### Gegenprobe und Preis
+
+Beide Eingriffe zurueckgedreht: **vorhergesagt 3 rote Zeugen, gezaehlt 3** von 49.
+Suite **3471 gruen, 0 uebersprungen** (davor 3463). Die harte Wand:
+`All checks passed`.
+
+**Der Preis steht in einer Zahl:** Die geduldete Lint-Menge dieser vier Dateien
+steigt von 20 auf **21** — `to_canonical` hat sechs Parameter gegen einen
+Grenzwert von fuenf. Die beiden Tabellen sind deshalb **schluesselwort-gebunden**;
+damit ist die positionelle Meldung weg und die Verwechslung zweier dicts am
+Aufrufer unmoeglich. Eine Zusammenfassung beider Tabellen in ein Objekt haette
+die Zahl gehalten und den Aufrufer unklarer gemacht — das waere eine Abstraktion
+fuer einen Zaehler.
 
 ---
 

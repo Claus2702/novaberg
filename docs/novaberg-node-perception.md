@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 10. September 2026, 20:26 UTC (**alle sechs Wertefelder laufen durch den Kanon-Zug** — bis heute taten es zwei, und genau die vier ohne trugen die Ausreisser: von 16.164 Feldwerten stehen **327 ausserhalb** (2,0 %), `tone` mit 5,7 % an der Spitze. Die vier fehlenden Wertemengen sind als Konstanten deklariert, der Zug benennt das **fremde Feld**, wenn ein unbekannter Wert einem anderen gehoert, und jeder Ausreisser bekommt eine `kanon_ausreisser`-Zeile im `pipeline_log`. `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE`). Davor der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
+**Stand:** 12. September 2026, 15:45 UTC (**der Kanon-Zug hat eine dritte Stufe** — Uebersetzungen und Wortgleiche je Feld, vor der Fremdfeld-Meldung; dazu erklaert der Prompt jeden der zehn Modi, statt sie nur aufzuzaehlen. `kreativ` stand in 0 von 1347 Turns und steht danach 30 von 30 auf Kreativ-Reizen, bei unveraenderter Gesamtquote). Davor 10. September 2026, 20:26 UTC (**alle sechs Wertefelder laufen durch den Kanon-Zug** — bis heute taten es zwei, und genau die vier ohne trugen die Ausreisser: von 16.164 Feldwerten stehen **327 ausserhalb** (2,0 %), `tone` mit 5,7 % an der Spitze. Die vier fehlenden Wertemengen sind als Konstanten deklariert, der Zug benennt das **fremde Feld**, wenn ein unbekannter Wert einem anderen gehoert, und jeder Ausreisser bekommt eine `kanon_ausreisser`-Zeile im `pipeline_log`. `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE`). Davor der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -140,6 +140,12 @@ Gemessen über 180 Turns der Charakterbildungs-Messreihe:
 
 > **Hinweis:** Die Kategorien im Perzeption-Prompt weichen leicht vom Plutchik-Modell ab — `stolz` und `erleichterung` sind nicht im Prompt enthalten, dafür `ueberrascht` und `verwundert` als eigene Kategorie. Nicht-kanonische Emotionen werden im Enricher über `EMOTION_SYNONYM_MAP` auf die kanonischen Formen gemappt. Unbekannte Emotionen erzeugen einen Error-Log.
 >
+> **Seit dem 12.09.2026 hat der Zug drei Stufen, nicht zwei.** Nach der exakten Form und der normalisierten (Kleinschreibung, aufgelöste Umlaute) kommt eine dritte: **Übersetzungen und Wortgleiche** aus einer Tabelle je Feld (`_FELDER_SYNONYME` → `MODUS_SYNONYM_MAP`). Sie steht **vor** der Fremdfeld-Meldung, weil ein auflösbarer Wert kein Ausreißer ist.
+>
+> **Warum eine Übersetzung nicht in den Kanon gehört:** Sie passierte dann jede Prüfung und liefe in die Tabellen ihres Feldes — `GV_LAENGE_MODUS_DELTA.get(modus, 0.0)` gibt ihr dort still den Zuschlag von `alltag`. Die Tabelle löst sie stattdessen an der Grenze auf. Anlass: Eine Wertelegende für `modus` erzeugte im Versuchsarm vom 10.09.2026 in **9 von 30** Läufen das englische `creative`. `[gemessen 12.09.2026]` Mit der gebauten Legende griff die Stufe in **0 von 30** Läufen — sie ist ein Riegel ohne belegten Eingang.
+>
+> **Beide Tabellen sind schlüsselwortgebunden** (`fremde=`, `synonyme=`): Sie sind Wissen *über die Felder*, beide dict, und am Aufrufer sonst verwechselbar.
+
 > **Seit dem 10.09.2026 gilt das für alle sechs Wertefelder, nicht nur für die Emotion.** `_wahrnehmung_lesen` zieht `intent`, `tone`, `emotion`, `modus`, `sprach_stil` und `beziehungs_dynamik` über `to_canonical` gegen ihren Kanon — `thema` bleibt draußen, es ist Freitext. **Der Rückfall auf den Rohwert bleibt**: Ein unbekannter Wert läuft durch und wird gemeldet, statt auf einen Vorgabewert zurückgesetzt zu werden, der wie eine Messung aussähe.
 >
 > **Und die Meldung nennt das fremde Feld.** `[gemessen über 2694 Perzeptionen]` Die Hauptmenge der Ausreißer sind keine Schreibvarianten, sondern richtige Werte in der falschen Spalte: `philosophischer_austausch` steht **108-mal** in `intent`, `begeisterung` **59-mal** in `tone`, `sachlich` **19-mal** in `sprach_stil`. Jeder Ausreißer bekommt eine `kanon_ausreisser`-Zeile mit Feld, Wert und fremdem Feld; der saubere Lauf schreibt nichts.
@@ -192,7 +198,7 @@ Zwei Fehlgriffe, beide systematisch und beide reproduzierbar:
 
 | Feld | Werte | Beschreibung |
 |------|-------|-------------|
-| `modus` | `MODUS_KANON` (`config.py`): `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` | Kommunikationsregister des Users |
+| `modus` | `MODUS_KANON` (`config.py`): `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` | Kommunikationsregister des Users | **Seit dem 12.09.2026 erklärt der Prompt jeden der zehn Werte** statt sie nur aufzuzählen, und `MODUS_SYNONYM_MAP` zieht `creative` auf `kreativ`. Vorher war `kreativ` in 0 von 1347 Turns vergeben, danach 30 von 30 auf Kreativ-Reizen bei unveränderter Gesamtquote (23 von 30 über alle Modi).
 | `sprach_stil` | `locker`, `formell`, `fachlich`, `emotional`, `jugendlich`, `neutral` | Wie der User formuliert |
 | `beziehungs_dynamik` | `vertrauen`, `distanz`, `angriff`, `hilfesuchend`, `dankbar`, `neutral` | Positionierung des Users zum Assistenten |
 

@@ -671,88 +671,88 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 82 | offen | `RAUCHTEST-ANWENDUNG-IMPORT` | [Block 15.08.2026 — aus dem Nachzug selbst](novaberg-backlog-bauart.md) |
 | BAU | 83 | abgeschlossen | `NACHZUG-KANDIDATEN-GATE` | [Block 15.08.2026 — aus dem Nachzug selbst](novaberg-backlog-bauart.md) |
 | BAU | 96 | offen | `SCHWELLE-OHNE-PAARUNG` | [Block 14.08.2026 — aus der Eigenzeit-Messung](novaberg-backlog-bauart.md) |
-| BAU | 183 | abgeschlossen | `BUGREGISTER-ZUSTAND-NICHT-LESBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 202 | offen | `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 228 | offen | `AUFSTELLUNG-NICHT-VERSIONIERT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 241 | offen | `REPEAT-PENALTY-OHNE-HERKUNFT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 254 | offen | `ANBIETERDAUERN-UNGELESEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 267 | offen | `DATEIEN-VERBUND-OHNE-MODULDOKUMENT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 280 | offen | `AGENT-MD-MIT-STELLWERTEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 293 | offen | `ENDPUNKTE-OHNE-BEDINGUNGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 306 | offen | `PRIVATE-MEMBER-OHNE-ZUSICHERUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 319 | offen | `FUNKTIONEN-ZU-TIEF-VERSCHACHTELT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 332 | offen | `KLASSEN-OHNE-GEMEINSAMES-FELD` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 345 | offen | `KANALZWANG-NUR-22-PROZENT-PRUEFBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 358 | offen | `NODE-LLM-CONFIG-RECHERCHE-OHNE-RUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 371 | offen | `ERLEDIGT-MARKE-STATT-STICHWORTLISTE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 384 | offen | `SCHWELLEN-OHNE-VERGLEICHSGEGENSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 397 | offen | `BEISPIELE-OHNE-HERKUNFTSMARKE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
-| BAU | 417 | offen | `KANAELE-OHNE-VERTRAG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 432 | offen | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 454 | offen | `DOKU-MEHRDEUTIGE-ANKER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 467 | offen | `AGENT-MD-NIE-GEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 480 | offen | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 493 | offen | `FUENF-STELLEN-FORM-MEHRFACH` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 506 | offen | `LOGGING-PROZENT-STATT-FSTRING` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 526 | offen | `GRAPH-TABELLE-OHNE-VERFASSER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 539 | offen | `BILD-VERWAIST` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 557 | offen | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 609 | offen | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 622 | offen | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 635 | offen | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
-| BAU | 653 | offen | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-bauart.md) |
-| BAU | 696 | abgeschlossen | `ERK-DOKU-NACHZUG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 700 | offen | `HERMES-SUBSTRAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 742 | offen | `REFAC-ENRICHER-EVA` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 743 | offen | `REFAC-LOGGER-HIERARCHIE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 744 | offen | `REFAC-SHUTDOWN-DISZIPLIN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 745 | offen | `REFAC-SCHEMA-MIGRIEREN-FAILMODE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 746 | offen | `SHUTDOWN-EVENT-ASYNC` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 747 | offen | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 748 | offen | `REFAC-UMLAUTE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 749 | offen | `REFAC-DB-INDEX-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 750 | offen | `REFAC-SEEDS-AUSLAGERN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 751 | offen | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 752 | offen | `REFAC-EVENT-PAYLOAD-SEEDING` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 754 | abgeschlossen | `TEST-WORKER-SHUTDOWN-COROUTINE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 755 | offen | `WORKER-SHUTDOWN-QUEUE-DRAIN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 756 | offen | `NODE-TOKEN-AUSLASTUNG-FALLBACK` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 757 | offen | `DIRECTIVE-DATACLASS` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 758 | offen | `STATE-LADEZUSTAND` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 759 | offen | `LOG-FREMDBIBLIOTHEK-DEBUG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 762 | offen | `PROJEKTSEITE-NACHZIEHEN` | [PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisie](novaberg-backlog-bauart.md) |
-| BAU | 788 | abgeschlossen | `TELEGRAM-GRENZE-STRUKTURELL` | [Epic: Matrix-Kanal + WireGuard-Zugang (Chat 68)](novaberg-backlog-bauart.md) |
-| BAU | 885 | abgeschlossen | `EPIC-MS-MODELL-QUEUE` | [EPIC-MS-MODELL-QUEUE — die Modellaufrufe bekommen ei](novaberg-backlog-bauart.md) |
-| BAU | 995 | offen | `LOGGER-NAMESPACE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-bauart.md) |
-| BAU | 1006 | offen | `INIT-SQL-VERALTET` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-bauart.md) |
-| BAU | 1023 | offen | `LZG-DOKU-DRIFT` | [Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` refl](novaberg-backlog-bauart.md) |
-| BAU | 1046 | offen | `EPIC-EVA-DISZIPLIN` | [EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand](novaberg-backlog-bauart.md) |
-| BAU | 1095 | offen | `REDUCER-LOGGER-NAME-KONVENTION` | [Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Na](novaberg-backlog-bauart.md) |
-| BAU | 1125 | offen | `REDUCER-CONFIG-DEAD-KONSTANTEN` | [Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Kons](novaberg-backlog-bauart.md) |
-| BAU | 1156 | offen | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | [Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx](novaberg-backlog-bauart.md) |
-| BAU | 1178 | offen | `DOKU-DRIFT-WELLE-PROMOTION` | [Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Dri](novaberg-backlog-bauart.md) |
-| BAU | 1201 | offen | `CHRONIK-BACKFILL` | [Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- u](novaberg-backlog-bauart.md) |
-| BAU | 1227 | offen | `AUDIT-DOKU-DRIFT-MS` | [Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microse](novaberg-backlog-bauart.md) |
-| BAU | 1283 | offen | `LIB-VECTORS-MIGRATION` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-bauart.md) |
-| BAU | 1284 | offen | `B3-API-KEY-SEMANTIK` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-bauart.md) |
-| BAU | 1301 | offen | `PATH1-LATENZ` | [8. Offene Bugs](novaberg-backlog-bauart.md) |
-| BAU | 1302 | abgeschlossen | `TEST-RUNNER-FEHLT-CONTAINER` | [8. Offene Bugs](novaberg-backlog-bauart.md) |
-| BAU | 1343 | offen | `BEZEICHNER-WAR-AKTIV` | [Refactor: BEZEICHNER-WAR-AKTIV — was_active statt wa](novaberg-backlog-bauart.md) |
-| BAU | 1357 | offen | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | [Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Ko](novaberg-backlog-bauart.md) |
-| BAU | 1373 | offen | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | [Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche ](novaberg-backlog-bauart.md) |
-| BAU | 1388 | offen | `CHARHASH-DOKU-DRIFT` | [Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG](novaberg-backlog-bauart.md) |
-| BAU | 1397 | offen | `PIPELINE-LOG-BACKFILL-PAAR` | [Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensi](novaberg-backlog-bauart.md) |
-| BAU | 1406 | offen | `PIPELINE-LOG-ART-DOKU-DRIFT` | [Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries](novaberg-backlog-bauart.md) |
-| BAU | 1430 | offen | `LESSON-INDEX-LUECKE` | [Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Da](novaberg-backlog-bauart.md) |
-| BAU | 1444 | offen | `DOKU-DUPLIKATE-CHAT80` | [Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in](novaberg-backlog-bauart.md) |
-| BAU | 1465 | offen | `EMBED-DIMENSIONSCHECK-FEHLT` | [Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimen](novaberg-backlog-bauart.md) |
-| BAU | 1474 | offen | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | [Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabel](novaberg-backlog-bauart.md) |
-| BAU | 1483 | offen | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | [Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index oh](novaberg-backlog-bauart.md) |
-| BAU | 1497 | offen | `REDUCER-DOKU-DRIFT` | [Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reduc](novaberg-backlog-bauart.md) |
-| BAU | 1506 | offen | `DOKU-NOTIZEN-INIT-SQL` | [Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht exis](novaberg-backlog-bauart.md) |
-| BAU | 1515 | offen | `PERMISSION-OHNE-BODEN` | [Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only](novaberg-backlog-bauart.md) |
-| BAU | 1532 | offen | `ALLOWLIST-DRIFT` | [Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowli](novaberg-backlog-bauart.md) |
-| BAU | 1547 | offen | `ROADMAP-GLIEDERUNGSBRUCH` | [Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt](novaberg-backlog-bauart.md) |
-| BAU | 1566 | offen | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | [Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()](novaberg-backlog-bauart.md) |
-| BAU | 1585 | offen | `PUB-ROLLENNAMEN-IM-BESTAND` | [Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt d](novaberg-backlog-bauart.md) |
-| BAU | 1624 | offen | `REGISTER-SPIEGEL-DURCHGANG` | [Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sons](novaberg-backlog-bauart.md) |
+| BAU | 194 | abgeschlossen | `BUGREGISTER-ZUSTAND-NICHT-LESBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 213 | offen | `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 239 | offen | `AUFSTELLUNG-NICHT-VERSIONIERT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 252 | offen | `REPEAT-PENALTY-OHNE-HERKUNFT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 265 | offen | `ANBIETERDAUERN-UNGELESEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 278 | offen | `DATEIEN-VERBUND-OHNE-MODULDOKUMENT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 291 | offen | `AGENT-MD-MIT-STELLWERTEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 304 | offen | `ENDPUNKTE-OHNE-BEDINGUNGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 317 | offen | `PRIVATE-MEMBER-OHNE-ZUSICHERUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 330 | offen | `FUNKTIONEN-ZU-TIEF-VERSCHACHTELT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 343 | offen | `KLASSEN-OHNE-GEMEINSAMES-FELD` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 356 | offen | `KANALZWANG-NUR-22-PROZENT-PRUEFBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 369 | offen | `NODE-LLM-CONFIG-RECHERCHE-OHNE-RUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 382 | offen | `ERLEDIGT-MARKE-STATT-STICHWORTLISTE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 395 | offen | `SCHWELLEN-OHNE-VERGLEICHSGEGENSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 408 | offen | `BEISPIELE-OHNE-HERKUNFTSMARKE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 428 | offen | `KANAELE-OHNE-VERTRAG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 443 | offen | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 465 | offen | `DOKU-MEHRDEUTIGE-ANKER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 478 | offen | `AGENT-MD-NIE-GEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 491 | offen | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 504 | offen | `FUENF-STELLEN-FORM-MEHRFACH` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 517 | offen | `LOGGING-PROZENT-STATT-FSTRING` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 537 | offen | `GRAPH-TABELLE-OHNE-VERFASSER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 550 | offen | `BILD-VERWAIST` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 568 | offen | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 620 | offen | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 633 | offen | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 646 | offen | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 664 | offen | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-bauart.md) |
+| BAU | 707 | abgeschlossen | `ERK-DOKU-NACHZUG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 711 | offen | `HERMES-SUBSTRAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 753 | offen | `REFAC-ENRICHER-EVA` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 754 | offen | `REFAC-LOGGER-HIERARCHIE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 755 | offen | `REFAC-SHUTDOWN-DISZIPLIN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 756 | offen | `REFAC-SCHEMA-MIGRIEREN-FAILMODE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 757 | offen | `SHUTDOWN-EVENT-ASYNC` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 758 | offen | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 759 | offen | `REFAC-UMLAUTE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 760 | offen | `REFAC-DB-INDEX-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 761 | offen | `REFAC-SEEDS-AUSLAGERN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 762 | offen | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 763 | offen | `REFAC-EVENT-PAYLOAD-SEEDING` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 765 | abgeschlossen | `TEST-WORKER-SHUTDOWN-COROUTINE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 766 | offen | `WORKER-SHUTDOWN-QUEUE-DRAIN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 767 | offen | `NODE-TOKEN-AUSLASTUNG-FALLBACK` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 768 | offen | `DIRECTIVE-DATACLASS` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 769 | offen | `STATE-LADEZUSTAND` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 770 | offen | `LOG-FREMDBIBLIOTHEK-DEBUG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 773 | offen | `PROJEKTSEITE-NACHZIEHEN` | [PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisie](novaberg-backlog-bauart.md) |
+| BAU | 799 | abgeschlossen | `TELEGRAM-GRENZE-STRUKTURELL` | [Epic: Matrix-Kanal + WireGuard-Zugang (Chat 68)](novaberg-backlog-bauart.md) |
+| BAU | 896 | abgeschlossen | `EPIC-MS-MODELL-QUEUE` | [EPIC-MS-MODELL-QUEUE — die Modellaufrufe bekommen ei](novaberg-backlog-bauart.md) |
+| BAU | 1006 | offen | `LOGGER-NAMESPACE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-bauart.md) |
+| BAU | 1017 | offen | `INIT-SQL-VERALTET` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-bauart.md) |
+| BAU | 1034 | offen | `LZG-DOKU-DRIFT` | [Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` refl](novaberg-backlog-bauart.md) |
+| BAU | 1057 | offen | `EPIC-EVA-DISZIPLIN` | [EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand](novaberg-backlog-bauart.md) |
+| BAU | 1106 | offen | `REDUCER-LOGGER-NAME-KONVENTION` | [Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Na](novaberg-backlog-bauart.md) |
+| BAU | 1136 | offen | `REDUCER-CONFIG-DEAD-KONSTANTEN` | [Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Kons](novaberg-backlog-bauart.md) |
+| BAU | 1167 | offen | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | [Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx](novaberg-backlog-bauart.md) |
+| BAU | 1189 | offen | `DOKU-DRIFT-WELLE-PROMOTION` | [Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Dri](novaberg-backlog-bauart.md) |
+| BAU | 1212 | offen | `CHRONIK-BACKFILL` | [Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- u](novaberg-backlog-bauart.md) |
+| BAU | 1238 | offen | `AUDIT-DOKU-DRIFT-MS` | [Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microse](novaberg-backlog-bauart.md) |
+| BAU | 1294 | offen | `LIB-VECTORS-MIGRATION` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-bauart.md) |
+| BAU | 1295 | offen | `B3-API-KEY-SEMANTIK` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-bauart.md) |
+| BAU | 1312 | offen | `PATH1-LATENZ` | [8. Offene Bugs](novaberg-backlog-bauart.md) |
+| BAU | 1313 | abgeschlossen | `TEST-RUNNER-FEHLT-CONTAINER` | [8. Offene Bugs](novaberg-backlog-bauart.md) |
+| BAU | 1354 | offen | `BEZEICHNER-WAR-AKTIV` | [Refactor: BEZEICHNER-WAR-AKTIV — was_active statt wa](novaberg-backlog-bauart.md) |
+| BAU | 1368 | offen | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | [Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Ko](novaberg-backlog-bauart.md) |
+| BAU | 1384 | offen | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | [Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche ](novaberg-backlog-bauart.md) |
+| BAU | 1399 | offen | `CHARHASH-DOKU-DRIFT` | [Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG](novaberg-backlog-bauart.md) |
+| BAU | 1408 | offen | `PIPELINE-LOG-BACKFILL-PAAR` | [Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensi](novaberg-backlog-bauart.md) |
+| BAU | 1417 | offen | `PIPELINE-LOG-ART-DOKU-DRIFT` | [Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries](novaberg-backlog-bauart.md) |
+| BAU | 1441 | offen | `LESSON-INDEX-LUECKE` | [Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Da](novaberg-backlog-bauart.md) |
+| BAU | 1455 | offen | `DOKU-DUPLIKATE-CHAT80` | [Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in](novaberg-backlog-bauart.md) |
+| BAU | 1476 | offen | `EMBED-DIMENSIONSCHECK-FEHLT` | [Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimen](novaberg-backlog-bauart.md) |
+| BAU | 1485 | offen | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | [Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabel](novaberg-backlog-bauart.md) |
+| BAU | 1494 | offen | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | [Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index oh](novaberg-backlog-bauart.md) |
+| BAU | 1508 | offen | `REDUCER-DOKU-DRIFT` | [Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reduc](novaberg-backlog-bauart.md) |
+| BAU | 1517 | offen | `DOKU-NOTIZEN-INIT-SQL` | [Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht exis](novaberg-backlog-bauart.md) |
+| BAU | 1526 | offen | `PERMISSION-OHNE-BODEN` | [Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only](novaberg-backlog-bauart.md) |
+| BAU | 1543 | offen | `ALLOWLIST-DRIFT` | [Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowli](novaberg-backlog-bauart.md) |
+| BAU | 1558 | offen | `ROADMAP-GLIEDERUNGSBRUCH` | [Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt](novaberg-backlog-bauart.md) |
+| BAU | 1577 | offen | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | [Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()](novaberg-backlog-bauart.md) |
+| BAU | 1596 | offen | `PUB-ROLLENNAMEN-IM-BESTAND` | [Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt d](novaberg-backlog-bauart.md) |
+| BAU | 1635 | offen | `REGISTER-SPIEGEL-DURCHGANG` | [Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sons](novaberg-backlog-bauart.md) |

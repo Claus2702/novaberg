@@ -3809,3 +3809,78 @@ weil Verweise darauf zeigen.
 **Die Gegenprobe traf vorhergesagt:** Zeile zurückgedreht, 4 von 20 Zeugen rot — vorhergesagt 4. Suite **3463 grün, 0 übersprungen** (davor 3454).
 
 > **Ein bestehender Zeuge fiel, und er war der aufschlussreichste Teil des Baus.** `test_die_gerechnete_null_traegt_eine_landschaft` prüfte, dass eine *gerechnete* Null eine Landschaft trägt — und hatte als Vorlage die **häufigste** Nulllage des Bestandes gewählt: `berichtend | neutral | distanz | fachlich`, Summe genau 0,5. Das war keine gerechnete Null, sondern eine gerundete, und sie war häufig **wegen** dieses Defekts. Der Zeuge bezeugte also die Ursache seiner eigenen Vorlage. Er trägt jetzt eine echte negative Summe (−0,5), und daneben steht ein zweiter, der den Wechsel der alten Kante festhält.
+
+---
+
+### Umgezogen am 12.09.2026 — aus dem offenen Register
+
+Am selben Tag behoben; die Kennung bleibt, weil Verweise darauf zeigen.
+
+### `MODUS-KREATIV-WIRD-NIE-VERGEBEN` — der einzige hebende Modus ist im Perzeptionsmodell tot ✅ behoben am 12.09.2026
+
+**Zustand:** ✅ **behoben am 12.09.2026.** Beide Perzeptions-Prompts tragen eine Wertelegende fuer `modus` — zehn Werte mit Auswahlkriterium statt einer Aufzaehlung —, und der Kanon-Zug loest seit demselben Tag Uebersetzungen auf (`MODUS_SYNONYM_MAP`).
+
+`[gemessen 12.09.2026]` Ueber dieselben drei Kreativ-Reize wie die Nulllinie, je zehnmal, durch `perceive` und damit durch die Produktion:
+
+| Arm | `kreativ` als Modus |
+|---|---:|
+| Betriebs-Prompt 10.09.2026 | 1 von 30 |
+| Versuchsarm mit Legende 10.09.2026 | 11 von 30 |
+| **Betrieb seit 12.09.2026** | **30 von 30** |
+
+**Die Gegenfrage ist mitgemessen, und ohne sie waere die Zahl wertlos:** Eine Legende, die zu allem `kreativ` sagt, erreichte dieselben 100 %. Ueber das Spektrum aller zehn Modi (30 Reize, drei je Modus) trifft der Betrieb **23 von 30** — **genau die Nulllinie** des 10.09.2026 — und vergibt **0 mal** `kreativ` falsch. Die Legende hebt den Wert, ohne ihn auszuweiten.
+
+> **Was den Unterschied zum Versuchsarm macht, ist unbelegt.** Die heutige Legende traegt einen Satz, den der Versuchsarm vermutlich nicht hatte: die Frage, die `kreativ` von `philosophischer_austausch` scheidet — *soll am Ende etwas Neues dastehen oder etwas Bestehendes verstanden sein?* Dass dieser Satz die 11 auf 30 hebt, ist plausibel und **nicht gemessen**; der Wortlaut des damaligen Arms liegt nicht vor.
+
+**Und die zweite Haelfte der Abhilfe hat keinen Eingang:** Die Uebersetzungsstufe griff in **0 von 30** Laeufen — das Modell antwortete durchgehend deutsch. Sie ist gebaut, bezeugt und im Betrieb ohne Eingabe. Der Anlass (9 von 30 `creative` im Versuchsarm) ist mit der anderen Legende entfallen; als Riegel bleibt sie, als Notwendigkeit ist sie unbelegt.
+
+**Die Absichtsfrage ist entschieden** (Eigentuemer, 12.09.2026): *„kreativ darf vergeben werden."*
+
+**Nicht behoben ist die andere Haelfte des Befundes:** `sprach_stil` hat weiterhin keine Wertelegende. Gemessen ist nur `modus`; die Luecke bleibt in diesem Eintrag benannt.
+
+~~**Zustand:** offen — gemessen am 10.09.2026 ueber eine entworfene Reihe und den Bestand.~~
+
+**Befund.** `GV_LAENGE_MODUS_DELTA` traegt zehn Modi, und **einer** hebt die Vektorlaenge: `kreativ` mit **+0,3**. Drei ziehen mit −0,3 (`fachgespraech`, `lernmodus`, `philosophischer_austausch`), zwei mit −0,2, vier tragen nichts. **`kreativ` wurde noch nie vergeben.**
+
+| Quelle | `kreativ` |
+|---|---:|
+| Bestand, gewachsen | 0 von 1293 |
+| Spektrum-Reihe, entworfen | 0 von 54 |
+| **zusammen** | **0 von 1347** |
+
+**Die Reihe hat gezielt darauf gezielt.** Fuenf Reize waren als Kreativ-Auftraege gebaut — *„Erfinde mir ein Wort fuer den Moment, in dem ein Gedanke kippt"*, *„Stell dir vor, Gedaechtnis waere ein Fluss statt eines Archivs"*, *„Was waere, wenn Zeit rueckwaerts floesse"*. **Alle fuenf wurden `philosophischer_austausch`**, also der Modus mit **−0,3** statt dem mit +0,3.
+
+> **Der naheliegende Verdacht ist ausgeschlossen, und zwar zweifach.** Die Option **steht im Prompt**: `perzeption.task.txt` und `perzeption.assistant_task.txt` fuehren `kreativ` an neunter von zehn Stellen, und `MODUS_KANON` kennt ihn. Und das Modell **kann** einen leichten Modus waehlen: In derselben Reihe vergab es `spielerisch` **sechsmal**. Es waehlt `kreativ` nicht.
+
+**Warum das mehr ist als ein fehlender Wert.** Die Laengenrechnung startet bei 1,0 und braucht netto **+0,5** fuer eine 2. Faellt der einzige hebende Modus aus, kann die Modus-Dimension nur noch bremsen oder schweigen — **neun von zehn Werten wirken einseitig**. Was die Laenge dann noch hebt, sind Emotion, Dynamik und Stil; der Raum selbst kann es nicht mehr.
+
+**Was der Befund nicht ist.** Er sagt nichts darueber, ob `kreativ` *haeufig* sein sollte. Er sagt, dass eine Dimension mit zehn Werten faktisch mit neun arbeitet, und dass der fehlende der einzige mit positivem Vorzeichen ist.
+
+**Nicht Teil dieses Befundes:** `fachgespraech` erschien in der Reihe ebenfalls nicht, obwohl zwei Reize darauf zielten — im **Bestand** kommt er aber mit 148 von 1293 (11,4 %) vor. Er ist nicht tot, nur in dieser Reihe nicht getroffen.
+
+**Belege:** `labor/messreihen/2026-09-10_spektrum_ergebnis.md`, `..._erwartung.md` (vor dem Lauf abgelegt), `labor/werkzeug/gv_laenge_zerlegen.py`.
+
+**Die Ursache ist am 10.09.2026 gemessen: die fehlende Wertelegende.** Der Prompt erklaert `intent`, `arousal`, `emotion` und `beziehungs_dynamik` **Wert fuer Wert**; `modus` und `sprach_stil` bekommen je einen Satz und keine einzige Werterklaerung. Zwei Arme gegen dasselbe Modell, dieselben drei Kreativ-Reize je zehnmal:
+
+| Arm | `kreativ` als Modus |
+|---|---:|
+| Prompt des Betriebs | **1 von 30** (3,3 %) |
+| mit Wertelegende | **11 von 30** (36,7 %) |
+
+**Faktor 11.** Die Gesamtqualitaet aendert die Legende dabei **nicht** — ueber 30 Reize aller zehn Modi trifft der Betriebs-Prompt in **23 von 30** Faellen (76,7 %), der ergaenzte in 24. Das Modell verteilt gut; der Ausfall betrifft gezielt diesen einen Wert.
+
+> **Und die Legende allein genuegt nicht.** Der ergaenzte Arm vergab zusaetzlich **9-mal `creative`** — den englischen `intent`-Wert in der Modus-Spalte. Der Kanon-Zug faengt ihn nicht (`'creative' → None`, `'kreativ' → 'kreativ'`): Er zieht Schreibvarianten, keine Uebersetzungen. **Das Wort steht in drei Dimensionen** (`intent: creative`, `tone: kreativ`, `modus: kreativ`), und das Modell verteilt es auf die beiden, die eine Legende haben.
+
+**Geschlossen, wenn** entweder `kreativ` im Betrieb vergeben wird — oder entschieden ist, dass er es nicht soll, und die Tabelle einen anderen hebenden Wert traegt. **Beides ist vertretbar; der heutige Zustand ist keins von beidem.** Die Legende ist gemessen und **nicht gebaut**: Sie hebt den Wert, erzeugt aber `creative` als neuen Ausreisser, und ob der Modus haeufiger vergeben werden *soll*, ist eine Absichtsfrage.
+
+**Nachtrag 12.09.2026 — der Ausfall kostet mehr als Spielraum: er kostet den dritten Schritt, und zwar fuer die Haelfte des Bestandes.** Der Befund oben sagt, dass die Modus-Dimension ohne `kreativ` nur noch bremsen oder schweigen kann. **Gemessen ist jetzt die Folge daraus**: In `fachgespraech`, `lernmodus` und `philosophischer_austausch` (Zuschlag −0,3) ist Laenge 3 bei **jeder** Faktorstellung ausgeschlossen — die beste Summe ist exakt 2,5, und `round` rundet zur geraden Zahl (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`). Dort liegen **794 von 1434 Rohturns**.
+
+> ~~**`kreativ` ist damit nicht ein hebender Wert unter mehreren, sondern der einzige, der diese drei Modi ueberhaupt ueber die Kante bringt.**~~ → **Am 12.09.2026 ist die Kante gefallen** (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`, behoben): Die drei fachlichen Modi erreichen die 3 jetzt auch ohne `kreativ`, bei bester Stellung. **Der Befund dieses Eintrags bleibt unveraendert** — eine Dimension mit zehn Werten arbeitet faktisch mit neun, und der fehlende ist der einzige mit positivem Vorzeichen. **Was wegfaellt, ist nur seine Dringlichkeit aus dem fremden Grund:** Er war kurzzeitig der einzige Weg zum dritten Schritt in der Haelfte des Bestandes; das ist er nicht mehr.
+>
+> **Und die Absichtsfrage dieses Eintrags ist entschieden** (Eigentuemer, 12.09.2026): **`kreativ` darf vergeben werden.** Damit ist der zweite Ausgang des Abschnitts *Geschlossen, wenn* hinfaellig — die Tabelle bekommt keinen anderen hebenden Wert, sondern der Modus wird vergeben. Zu bauen ist die Wertelegende (gemessen 3,3 % → 36,7 %) **samt** dem Zug fuer das englische `creative`, das derselbe Lauf in 9 von 30 Faellen erzeugte und der Kanon-Zug nicht faengt.
+
+`[gemessen]` Ueber eine 20-Turn-Reihe in genau diesen beiden Modi: In **8 von 20** Turns haette allein `modus = kreativ` die 3 erzeugt; `arousal = 1.0`, `dynamik = vertrauen` und `stil = locker` erzeugten sie in **keinem einzigen**. Die Reihe erreichte 3 nie.
+
+**Was das fuer die Behebung heisst:** Die beiden Kennungen sind **zusammen** zu lesen und **getrennt** behebbar — wer nur die Legende baut, hebt die drei fachlichen Modi trotzdem nicht (2,5 bleibt 2); wer nur die Rundung behebt, gibt ihnen die 3 auch ohne `kreativ`. Welche der beiden zuerst, ist eine Absichtsfrage und keine Ableitung.
+
+---
