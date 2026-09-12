@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 15:45 UTC** (gemessen via `date -u`). Davor 12.09.2026, 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 16:20 UTC** (gemessen via `date -u`). Davor 12.09.2026, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,92 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 16:20 UTC — Tor 3 misst den Kandidaten, nicht den Turn 🔧
+
+**ZIEL:** Jede Wissensluecke wird einzeln daran gemessen, ob sie zu Nova passt —
+und kein Paar ist von der Pruefung ausgeschlossen.
+**TEST:** `tests/test_gv4_kern_verdrahtung.py` (13 Zeugen) fuer die Verdrahtung,
+dazu in `test_gv4_qualifikation.py` sieben neue — darunter der, den es unter der
+alten Bauart **nicht geben konnte**: zwei Kandidaten im selben Turn, einer
+passiert, einer nicht.
+**MESSUNG:** Beide Suchen gegen sieben echte Paare mit echtem Kern-Embedding.
+
+### Die Naehe entsteht in der Suche und kostet keinen Aufruf
+
+Der Filter hiess Charakter-Filter und war keiner: Der Aufrufer setzte fuer alle
+zwanzig Kandidaten denselben Wert — `cosine(turn, kern)` —, ein globaler
+Schalter. Gemessen liess er bei **zwei von sieben** Paaren keinen einzigen Turn
+durch.
+
+Jetzt traegt jeder Kandidat seinen eigenen Wert. Im LZG als **zweiter
+Abstandsausdruck derselben Abfrage**, im KZG aus dem mitgelieferten Vektor —
+beide liegen gespeichert, ein zweiter Modellaufruf waere Verschwendung. Dafuer
+wanderte das Kern-Embedding **vor** die Suchen; bis heute entstand es danach und
+konnte deshalb nur mit dem Turn verglichen werden. **Die Reihenfolge war der
+Bauteil.**
+
+`[gemessen]` Beide Suchen gegen sieben Paare, Reiz *„Entropie, Information und
+die Ordnung eines Systems"*:
+
+| Paar | LZG | KZG | verschiedene Werte | median | ueber 0,30 |
+|---|---:|---:|---:|---:|---:|
+| 4720 Z. | 10 | 10 | 19/20 | 0,488 | 20/20 |
+| 3218 Z. | 10 | 10 | 20/20 | 0,451 | 17/20 |
+| 684 Z. | 10 | 10 | 20/20 | 0,454 | 16/20 |
+| 807 Z. | 8 | 0 | 8/8 | 0,446 | **6/8** |
+
+**Die Spalte *verschiedene Werte* ist der Beleg:** Unter der alten Bauart stuende
+dort ueberall 1. Und das Paar mit 807 Zeichen Kern ist dasselbe, bei dem vorher
+**kein** Turn passierte — jetzt passieren 6 von 8 Kandidaten. Das ist die
+Entscheidung des Eigentuemers umgesetzt.
+
+**Der Grenzwert bleibt vorerst auf 0,30, und das ist Absicht.** Die
+Vorausrechnung lief ueber **alle** 4232 aktiven Knoten, nicht ueber die zwanzig,
+die ein Turn hochholt — eine Schwelle an einem Stellvertreter zu setzen ist der
+Fehler, den `stellvertreter-eicht-nicht` beschreibt. Die neue Zeile
+`gv4_kern_resonanz` im Pipeline-Log erhebt die echte Verteilung; danach wird
+gesetzt.
+
+### Der Eingriff hat eine Haelfte des Pfades getoetet, und die Suite sah es nicht
+
+`[gemessen]` Die KZG-Suche gab nach dem Umbau **null** Kandidaten zurueck — bei
+**3544 Schluesseln** im Speicher. Der Grund stand im Docstring derselben
+Funktion: *„Da wir nur Text-/Numeric-Felder zurueckliefern (kein
+Embedding-Blob), spielt `decode_responses=True` hier keine Rolle."* Mit dem Blob
+in der Antwort spielte es eine — der Client liest alles als UTF-8, bricht ab, die
+Ausnahme wird gefangen, und die Suche liefert eine leere Liste.
+
+> **Ein gebrochener Zugriff und ein leeres Kurzzeitgedaechtnis sehen gleich aus.**
+> Suite 3491 gruen, alle Zeugen gruen. Gefunden hat es ein Lauf gegen den echten
+> Bestand — 10 Kandidaten ohne den Eingriff, 0 mit ihm.
+
+Abhilfe: ein zweiter Redis-Client ohne Dekodierung, nur fuer diese Abfrage, samt
+zwei Zeugen, die den Rueckbau auf den dekodierenden Client rot machen.
+
+**Und die erste eigene Kontrolle war wertlos:** Der Vergleich *mit Kern gegen
+ohne Kern* lief zweimal durch den gebrochenen Code und meldete *„gleiche Zahl,
+die Null kommt nicht vom Eingriff"*. Ein Vorher-Nachher braucht den Zustand
+**vor** der Aenderung.
+
+### Gegenprobe und Suite
+
+Die schaerfste Gegenprobe ist der stille Rueckbau: die Verdrahtung entfernen und
+alles andere lassen. **Vorhergesagt 1 rot, gezaehlt 1** von 31 — 30 bleiben
+gruen, waehrend der Filter zum globalen Schalter zurueckfaellt. Genau dafuer
+steht die Verdrahtungsdatei.
+
+Die Pruefbarkeits-Regel (*Kern vorhanden **und** Wert an jedem Kandidaten*) ist
+aus dem Ablauf in `_resonanz_pruefbar` geloest — inline war sie nur behauptet
+(`20_TESTS/entscheidung-inline-ist-nicht-bezeugbar.md`). Fehlt der Wert bei einem
+Kandidaten, faellt die Schwelle fuer den **ganzen Turn** aus und eine
+`error`-Zeile sagt es; ihn durchzulassen oder zu verwerfen haette beides etwas
+anderes entschieden, als die Schwelle behauptet.
+
+Suite **3491 gruen, 0 uebersprungen** (davor 3471). Harte Wand:
+`All checks passed`.
 
 ---
 

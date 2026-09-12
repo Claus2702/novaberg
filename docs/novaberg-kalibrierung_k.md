@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 12. September 2026, 13:30 UTC (§3.3a: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — Mediane 0,097 bis 0,282, die Schwelle ist global, bei zwei von sieben Paaren lässt sie **nichts** durch. **Dazu die Gegenprobe gegen den vermuteten Grund, und sie widerlegt ihn:** Die Zerlegung des Kerns in Facetten hebt jeden Median um 0,03 bis 0,10, lässt die Spreizung zwischen den Paaren aber unverändert bei 0,19 — Maß und Paar sind zwei Fragen). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
+**Stand:** 12. September 2026, 16:20 UTC (§3.3c neu: **die Schwelle misst seit heute den Kandidaten** — die Naehe entsteht in beiden Suchen ohne weiteren Modellaufruf, und das Paar, bei dem vorher kein Turn passierte, laesst 6 von 8 Kandidaten durch. Der Grenzwert bleibt vorerst, weil die Vorausrechnung ein Stellvertreter war. Davor 13:30 UTC (§3.3a: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — Mediane 0,097 bis 0,282, die Schwelle ist global, bei zwei von sieben Paaren lässt sie **nichts** durch. **Dazu die Gegenprobe gegen den vermuteten Grund, und sie widerlegt ihn:** Die Zerlegung des Kerns in Facetten hebt jeden Median um 0,03 bis 0,10, lässt die Spreizung zwischen den Paaren aber unverändert bei 0,19 — Maß und Paar sind zwei Fragen). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -155,6 +155,23 @@ Die Setzung nennt einen Grund: *„Nova adaptiert einen Teil der Art des Gegenü
 - **Die Ausnahme ist dieselbe wie bei der Resonanz, und das ist der aufschlussreichste Befund.** Das Paar mit dem niedrigsten Resonanz-Median (0,097, kein Turn über der Schwelle) ist auch das **einzige**, in dem Novas Kern nicht am nächsten am eigenen Menschen liegt — Rang 3 von 7. Dort ist also nicht die Schwelle zu hoch, sondern die Anpassung noch nicht geschehen: 29 Turns aus einem Tag.
 
 > **Damit hat die offene Frage einen Gegenstand, den sie vorher nicht hatte.** Der Filter ruht genau dort, wo noch keine gemeinsame Geschichte ist. Das ist entweder richtig — ohne Anpassung keine Resonanz — oder es ist der Moment, in dem Neugier am meisten trüge. Das ist eine Setzung und keine Ableitung.
+
+### 3.3c Seit dem 12.09.2026 misst die Schwelle den Kandidaten (gebaut)
+
+Der Filter vergleicht nicht mehr den **Turn** mit dem Kern, sondern **jede Lücke** — die Nähe entsteht in den beiden Suchen, im LZG als zweiter Abstandsausdruck derselben Abfrage, im KZG aus dem mitgelieferten Vektor. Kein zusätzlicher Modellaufruf; beide Vektoren liegen gespeichert.
+
+`[gemessen 12.09.2026]` Beide Suchen gegen sieben echte Paare, ein Reiz:
+
+| Kern | LZG + KZG | verschiedene Werte | median | über 0,30 |
+|---:|---:|---:|---:|---:|
+| 4720 Z. | 10 + 10 | 19/20 | 0,488 | 20/20 |
+| 3218 Z. | 10 + 10 | 20/20 | 0,451 | 17/20 |
+| 684 Z. | 10 + 10 | 20/20 | 0,454 | 16/20 |
+| 807 Z. | 8 + 0 | 8/8 | 0,446 | **6/8** |
+
+- **Die Spalte *verschiedene Werte* ist der Beleg.** Unter der alten Bauart stünde dort überall 1.
+- **Das Paar, bei dem vorher kein Turn passierte, lässt jetzt 6 von 8 Kandidaten durch.** Damit ist die engere Hälfte des Befundes aus §3.3a erledigt: Der Mechanismus ruht bei keinem Paar mehr.
+- **Der Grenzwert bleibt vorerst auf 0,30.** Die Vorausrechnung lief über **alle** 4232 aktiven Knoten, nicht über die zwanzig, die ein Turn hochholt — eine Schwelle an einem Stellvertreter zu setzen ist der Fehler, den `21_MESSUNG` als solchen führt. Die Zeile `gv4_kern_resonanz` im Pipeline-Log erhebt die echte Verteilung je Turn; danach wird gesetzt.
 
 **Offen bleibt eine engere Frage, und die Setzung entscheidet sie nicht:** ob die Schwelle ein absoluter Wert bleibt oder ein Perzentil der Verteilung des jeweiligen Paares wird. **Beides ist mit der Setzung vereinbar** — ein Perzentil je Paar *erhält* den Unterschied und macht den Filter dennoch überall wirksam; ein absoluter Wert behandelt unterschiedlich angepasste Kerne gleich und schaltet den Filter bei zwei Paaren ab. Die Frage ist damit nicht mehr *„ist die Spreizung ein Defekt"*, sondern *„darf ein Mechanismus für ein Paar ruhen"*.
 

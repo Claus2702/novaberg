@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 825 Abschnitte in 5 Dateien — 346 mit eigenem Datum, 478 geerbt, 1 ohne.
+**Umfang:** 829 Abschnitte in 5 Dateien — 347 mit eigenem Datum, 481 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 562 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 566 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 825 Marken, 825 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 829 Marken, 829 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 16:20 UTC — Tor 3 misst den Kandidaten, nicht den Turn 🔧](novaberg-roadmap.md#12092026-1620-utc--tor-3-misst-den-kandidaten-nicht-den-turn) |
+| (2026-09-12) | laufend | ### | · [Die Naehe entsteht in der Suche und kostet keinen Aufruf](novaberg-roadmap.md#die-naehe-entsteht-in-der-suche-und-kostet-keinen-aufruf) |
+| (2026-09-12) | laufend | ### | · [Der Eingriff hat eine Haelfte des Pfades getoetet, und die Suite sah es nicht](novaberg-roadmap.md#der-eingriff-hat-eine-haelfte-des-pfades-getoetet-und-die-suite-sah-es-nicht) |
+| (2026-09-12) | laufend | ### | · [Gegenprobe und Suite](novaberg-roadmap.md#gegenprobe-und-suite) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 15:45 UTC — `kreativ` wird vergeben, und die Gegenfrage ist mitgemessen 🔧](novaberg-roadmap.md#12092026-1545-utc--kreativ-wird-vergeben-und-die-gegenfrage-ist-mitgemessen) |
 | (2026-09-12) | laufend | ### | · [Zwei Teile, und nur einer hat einen Eingang](novaberg-roadmap.md#zwei-teile-und-nur-einer-hat-einen-eingang) |
 | (2026-09-12) | laufend | ### | · [Was die Gegenfrage nebenbei fand](novaberg-roadmap.md#was-die-gegenfrage-nebenbei-fand) |
