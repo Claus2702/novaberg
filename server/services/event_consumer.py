@@ -959,6 +959,10 @@ async def _event_verarbeiten(
                     + "Der Fehler steht im Serverprotokoll."
                 ),
                 "turn_id":   turn_id,
+                # Wessen Ausfall: Der Client haelt die Kennung jeder
+                # bestaetigten Aeusserung offen, bis eine Meldung sie nennt.
+                # Ohne dieses Feld blieb sie bis zu seinem Neustart offen.
+                "nachrichten_ids": payload.get("nachrichten_ids", []),
                 "grund":     grund,
                 "unvollstaendig": bool(result.get("lauf_unvollstaendig")),
             }, ensure_ascii=False), character_id=character_id)

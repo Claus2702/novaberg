@@ -188,6 +188,20 @@ class FehlendeZuordnungWirdLautTest(_EventVerarbeitenLauf):
         )
         self.assertTrue(nutzlasten[0]["nachricht"], "die Meldung ist leer")
 
+    async def test_der_ausfall_nennt_die_nachrichten_des_turns(self) -> None:
+        """Der Client haelt die Kennung offen, bis eine Meldung sie nennt.
+
+        Ohne die Kennungen blieb die Frage eines gescheiterten Turns im Client
+        bis zum Neustart offen (12.09.2026) — gemeldet war der Ausfall, aber
+        nicht, **wessen** Ausfall.
+        """
+        nutzlasten: list[dict] = await self._zustellen(
+            _event(nachrichten_ids=[NACHRICHT_ID]), _graph_ergebnis(response=""),
+        )
+
+        self.assertEqual(nutzlasten[0]["typ"], "turn_gescheitert")
+        self.assertEqual(nutzlasten[0]["nachrichten_ids"], [NACHRICHT_ID])
+
 
 class BestaetigungNenntDieNachrichtTest(unittest.TestCase):
     """Der Endpunkt sagt dem Client, welche Kennung seine Aeusserung bekam.

@@ -460,12 +460,61 @@ class StreamHandler:
             logger.error(
                 f"WebSocket: Turn ohne Antwort — {data.get('grund') or 'ohne Grundangabe'}"
             )
+            self._release_failed(data.get("nachrichten_ids", []))
             GLib.idle_add(self._invoke_stage, "Ausfall", nachricht)
             return
 
         # Alles andere (Pixie-Impulse, Shadow-Delivery, ...) an die UI reichen.
         text: str = nachricht or json.dumps(data, ensure_ascii=False)
         GLib.idle_add(self._invoke_impulse, text, data)
+
+    def _release_failed(self, gescheiterte: list) -> set[str]:
+        """Nimmt die Kennungen eines gescheiterten Turns aus der offenen Menge.
+
+        Ein gescheiterter Turn beantwortet nichts, und es kommt auch nichts
+        mehr. Blieb seine Kennung offen, hing jede spaetere Antwort ohne
+        Kennung den Vermerk *„Sie blieb unbeantwortet"* an eine Frage, deren
+        Ausfall laengst gemeldet war — bis zum Neustart des Clients.
+
+        Vorbedingung: Keine. Eine leere Liste heisst, der Server hat keine
+            Kennung mitgeschickt (aeltere Fassung, oder ein Turn ohne
+            Nutzeraeusserung); dann bleibt die Menge unberuehrt und das wird
+            gemeldet.
+        Nachbedingung: Keine der genannten Kennungen ist mehr offen; andere
+            offene Kennungen sind unveraendert.
+        Fehlerfaelle: Keine.
+
+        Args:
+            gescheiterte: Die Kennungen der Aeusserungen des gescheiterten Turns.
+
+        Returns:
+            Die Kennungen, die tatsaechlich offen waren und abgeraeumt wurden.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        genannte: set[str] = {k for k in (gescheiterte or []) if isinstance(k, str) and k}
+        if not genannte:
+            logger.warning(
+                "WebSocket: Ausfallmeldung ohne nachrichten_ids — offene Fragen "
+                "bleiben stehen"
+            )
+            return set()
+
+        # ── Verarbeitung ────────────────────────────
+        with self._turn_schloss:
+            abgeraeumt: set[str] = genannte & self._offene_nachrichten
+            self._offene_nachrichten -= genannte
+            rest: set[str] = set(self._offene_nachrichten)
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if genannte & rest:
+            logger.error(
+                f"WebSocket: Kennungen {sorted(genannte & rest)} nach dem Abraeumen noch offen"
+            )
+        logger.info(
+            f"WebSocket: gescheiterter Turn — nicht mehr offen "
+            f"{sorted(abgeraeumt) or '(keine eigene)'}, offen bleiben {sorted(rest)}"
+        )
+        return abgeraeumt
 
     def _zuordnung_pruefen(self, beantwortete: list) -> str:
         """Entscheidet, ob eine ankommende Antwort zu einer offenen Frage gehoert.

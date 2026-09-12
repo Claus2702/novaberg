@@ -160,6 +160,28 @@ class UnansweredQuestionTest(unittest.TestCase):
         self._antwort(["erste"])
         self.assertEqual(self.zuordnungen, [ZUORDNUNG_PASST, ZUORDNUNG_FREMD])
 
+    def _ausfall(self, kennungen: list[str]) -> None:
+        nachricht = {"typ": "turn_gescheitert", "nachricht": "…", "nachrichten_ids": kennungen}
+        with patch("ui.stream_handler.GLib.idle_add"):
+            self.handler._ws_on_message(None, json.dumps(nachricht))
+
+    def test_failed_turn_releases_its_question(self) -> None:
+        """Ein gescheiterter Turn beantwortet nichts — aber seine Frage ist nicht mehr offen."""
+        with patch("ui.stream_handler.GLib.idle_add"):
+            self._bestaetigen("gescheitert")
+        self._ausfall(["gescheitert"])
+        self.assertEqual(self.handler._offene_nachrichten, set())
+        self._antwort([])
+        self.assertEqual(self.zuordnungen, [ZUORDNUNG_UNBEOBACHTET])
+
+    def test_failed_turn_of_another_sender_leaves_own_question_open(self) -> None:
+        with patch("ui.stream_handler.GLib.idle_add"):
+            self._bestaetigen("eigene")
+        self._ausfall(["andere"])
+        self.assertEqual(self.handler._offene_nachrichten, {"eigene"})
+        self._antwort(["eigene"])
+        self.assertEqual(self.zuordnungen, [ZUORDNUNG_PASST])
+
     def test_answer_without_id_is_still_flagged(self) -> None:
         """Die Warnung bleibt, wo sie hingehoert: nicht nachweisbar bei offener Frage."""
         with patch("ui.stream_handler.GLib.idle_add"):
