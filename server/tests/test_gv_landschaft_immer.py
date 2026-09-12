@@ -94,18 +94,48 @@ class JederAusgangTraegtEineLandschaftTest(unittest.TestCase):
         self.assertIn(detail["cluster"], BEKANNTE_LANDSCHAFTEN)
 
     def test_die_gerechnete_null_traegt_eine_landschaft(self) -> None:
-        """Der haeufigste Ausfall des Bestands: `distanz`, sonst nichts.
+        """Eine Summe unter 0,5 — negative Emotion, Distanz, formell, fachlich.
 
-        1,0 minus 0,5 fuer die Distanz ergibt genau 0,5 — und `round(0.5)`
-        ist in Python 0. Diese eine Lage stand 18 mal im Bestand.
+        1,0 − 0,5 (arousal 1,0 auf `frustration`) − 0,5 (`distanz`) − 0,2
+        (`formell`) − 0,3 (`fachgespraech`) = **−0,5**, also eine Null, die
+        gerechnet ist und nicht gerundet.
+
+        **Die Lage hier stand bis zum 12.09.2026 auf der anderen Seite der
+        Kante, und das war ein Befund im Zeugen selbst.** Sie lautete
+        `berichtend | neutral | distanz | fachlich` — Summe genau **0,5**, und
+        `round(0.5)` war in Python 0. Das ist der haeufigste Nullfall des
+        Bestandes gewesen (18 Vorkommen), aber er war keine gerechnete Null: Er
+        entstand aus der Rundung zur geraden Zahl. Seit diese Regel zur
+        naechsten Zahl rundet (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`), ergibt dieselbe
+        Lage 1 — und der Zeuge prueft jetzt, was er immer prueffen wollte.
+
+        **Der Fixpunkt des Zeugen war also der Defekt.** Wer einen Randfall als
+        Vertreter des Regelfalls waehlt, weil er im Bestand am haeufigsten ist,
+        bezeugt beim naechsten Mal die Ursache seiner Haeufigkeit.
+        """
+        detail: dict = _detail(_turn(
+            intent="knowledge", mode="fachgespraech", emotion="frustration",
+            arousal=1.0, relationship_dynamic="distanz", language_style="formell",
+        ))
+
+        self.assertEqual(gv_modul.VORAUSDENKEN_LAENGE_NULL, detail["vorausdenken"])
+        self.assertEqual(0, detail["laenge"])
+        self.assertIn(detail["cluster"], BEKANNTE_LANDSCHAFTEN)
+
+    def test_die_alte_kante_traegt_jetzt_einen_schritt(self) -> None:
+        """Dieselbe Lage, die bis zum 12.09.2026 die Null war, rechnet jetzt 1.
+
+        Der Zeuge steht neben dem darueber, damit der Wechsel belegt ist und
+        nicht nur der neue Zustand: `berichtend | neutral | distanz | fachlich`
+        ergibt 0,5 und damit einen Schritt.
         """
         detail: dict = _detail(_turn(
             intent="knowledge", mode="berichtend", emotion="neutral",
             relationship_dynamic="distanz", language_style="fachlich",
         ))
 
-        self.assertEqual(gv_modul.VORAUSDENKEN_LAENGE_NULL, detail["vorausdenken"])
-        self.assertEqual(0, detail["laenge"])
+        self.assertEqual(1, detail["laenge"])
+        self.assertNotEqual(gv_modul.VORAUSDENKEN_LAENGE_NULL, detail["vorausdenken"])
         self.assertIn(detail["cluster"], BEKANNTE_LANDSCHAFTEN)
 
     def test_die_krise_traegt_eine_landschaft(self) -> None:

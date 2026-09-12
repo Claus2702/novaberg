@@ -16,6 +16,7 @@ Konzept: novaberg-gv-strategie_k.md
 
 import json
 import logging
+import math
 from dataclasses import dataclass
 
 import psycopg2
@@ -138,6 +139,10 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
     Deterministisch (Python). Das LLM darf kuerzer, aber nicht laenger.
     Hartes Limit: 3 Schritte (Cognitive Load Theory).
 
+    **Eine Summe genau auf der halben Stufe bekommt den hoeheren Schritt**
+    (`math.floor(laenge + 0.5)`, seit 12.09.2026). Der Grund steht an der
+    Zeile selbst.
+
     Faktoren:
       - Emotion (positiv/negativ) + Arousal → Grundlaenge
       - Beziehungsdynamik (Vertrautheit) → Erhoehung
@@ -191,7 +196,32 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
     elif stil == "formell":
         laenge -= 0.2
 
-    ergebnis: int = max(0, min(3, round(laenge)))
+    # **Zur naechsten Zahl, nicht zur geraden** (12.09.2026). `round` rundet in
+    # Python halbe Werte zur geraden Zahl, und das hat an beiden Kanten je einen
+    # Schritt gekostet, ohne dass es jemand entschieden haette:
+    #
+    #   unten  `round(0.5) -> 0`  kein Vorausdenken, obwohl 0,5 gerechnet war
+    #   oben   `round(2.5) -> 2`  und damit **nie** ein dritter Schritt in den
+    #                            drei Modi mit Zuschlag -0.3 — dort ist 2,5 die
+    #                            beste erreichbare Summe, und dort liegen
+    #                            794 von 1434 Rohturns
+    #
+    # Die obere Kante machte aus einem Zuschlag von einem Zehntel die Grenze
+    # zwischen erreichbar und unerreichbar: -0.2 ergibt 2,6 und damit 3, -0.3
+    # ergibt 2,5 und damit 2. Welche Decke die fachlichen Modi haben sollen, ist
+    # eine Entscheidung; eine Rundungsregel darf sie nicht treffen.
+    #
+    # `[vorher gerechnet ueber 1434 Rohturns]` Die Umstellung bewegt 68 Turns
+    # (4,7 %) — 43 von 0 auf 1, 25 von 2 auf 3 — und kippt ausschliesslich an
+    # den Summen 0,50 und 2,50. **Die Quote des Strategie-Tors bleibt
+    # unveraendert bei 36,6 %**, weil keiner der Wechsel die Schwelle 2
+    # ueberschreitet.
+    #
+    # `floor(x + 0.5)` und nicht `int(x + 0.5)`: Die Summe kann negativ werden
+    # (negative Emotion, `distanz`, `formell`), und dort schneidet `int` zur Null
+    # hin statt abzurunden. Das Ergebnis waere hier dasselbe, weil `max(0, ...)`
+    # folgt — aber dann haengt die Richtigkeit an der Klammer danach.
+    ergebnis: int = max(0, min(3, math.floor(laenge + 0.5)))
     logger.info(
         f"GV-Laenge: {ergebnis} "
         f"(emotion={emotion}, a={arousal:.2f}, modus={modus}, "
