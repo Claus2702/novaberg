@@ -28,6 +28,7 @@ from config import (
     EMOTION_KANON,
     EMOTION_SYNONYM_MAP,
     MODUS_KANON,
+    MODUS_SYNONYM_MAP,
     PERZEPTION_INTENT_KANON,
     PERZEPTION_TONE_KANON,
     PROMPTS,
@@ -118,6 +119,14 @@ _FELDER_KANON: dict[str, frozenset[str] | set[str]] = {
 }
 
 
+#: Uebersetzungen und Wortgleiche je Feld. Getrennt von `_FELDER_KANON`, weil
+#: ein Synonym **nicht** in den Kanon gehoert: Es wuerde sonst in die Tabellen
+#: des Feldes laufen und dort einen Vorgabewert bekommen.
+_FELDER_SYNONYME: dict[str, dict[str, str]] = {
+    "modus": MODUS_SYNONYM_MAP,
+}
+
+
 def _kanonisch(wert: object, kanon: frozenset[str] | set[str], feld: str) -> str:
     """Zieht einen Modellwert auf seine kanonische Form, sonst laesst er ihn.
 
@@ -135,7 +144,9 @@ def _kanonisch(wert: object, kanon: frozenset[str] | set[str], feld: str) -> str
     einen Vorgabewert zuruecksetzte, verloere die Meldung stromabwaerts und
     machte aus einem sichtbaren Fehler einen unsichtbaren.
     """
-    return to_canonical(wert, kanon, feld, "perzeption", _FELDER_KANON) or (
+    return to_canonical(wert, kanon, feld, "perzeption",
+                        fremde=_FELDER_KANON,
+                        synonyme=_FELDER_SYNONYME.get(feld)) or (
         wert if isinstance(wert, str) else ""
     )
 

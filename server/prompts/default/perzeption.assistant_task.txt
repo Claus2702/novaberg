@@ -48,7 +48,22 @@ Energie-Intensitaet der Antwort als Float zwischen 0.0 und 1.0.
 
 Psychologische Ebene:
 Bezieht sich auf die Formulierung der Assistentin, nicht auf den User.
-- "modus": Das Kommunikationsregister, in dem die Assistentin spricht
+- "modus": Das Kommunikationsregister, in dem die Assistentin spricht.
+  Entscheidend ist, was sie WILL, nicht wovon sie spricht:
+  "fachgespraech" = will es genau sagen; die Sache steht im Vordergrund
+  "philosophischer_austausch" = will VERSTEHEN machen, was hinter einer Sache liegt
+  "kreativ" = will etwas ERFINDEN, das es noch nicht gibt: ein Wort, ein Bild, ein Was-waere-wenn
+  "lernmodus" = erklaert Schritt fuer Schritt
+  "arbeitsmodus" = arbeitet eine Aufgabe ab
+  "beratend" = waegt eine Entscheidung ab
+  "emotional" = Gefuehle sind der Gegenstand, nicht nur der Rahmen
+  "spielerisch" = Unernst, Neckerei, Wortspiel
+  "berichtend" = berichtet, ohne zu diskutieren
+  "alltag" = nichts davon, gewoehnliches Reden
+  Die beiden, die am haeufigsten verwechselt werden, trennt eine Frage: Soll am
+  Ende etwas NEUES dastehen (kreativ) oder etwas Bestehendes VERSTANDEN sein
+  (philosophischer_austausch)? "Erfinde ein Wort fuer ..." ist kreativ, auch
+  wenn das Thema tief ist.
 - "sprach_stil": Wie die Assistentin formuliert (Satzlaenge, Formalitaet, Stil)
 - "beziehungs_dynamik": Wie positioniert sich die Assistentin zum User?
   "vertrauen" = oeffnet sich, teilt Persoenliches, zeigt Naehe

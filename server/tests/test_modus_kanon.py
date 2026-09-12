@@ -86,6 +86,31 @@ class TestKanonGegenPrompt(unittest.TestCase):
                 self.assertEqual(_modi_aus_prompt(pfad), MODUS_KANON)
 
 
+class TestLegendeGegenKanon(unittest.TestCase):
+    """Jeder Modus des Kanons wird im Prompt erklaert, nicht nur aufgezaehlt.
+
+    **Der Anlass ist gemessen** (10.09.2026): `modus` trug ein Enum und einen
+    Satz, aber keine Werterklaerung — und `kreativ` wurde in **0 von 1347**
+    Turns vergeben, obwohl fuenf Reize ausdruecklich darauf zielten. Mit
+    Wertelegende stieg der Anteil in einem Vergleichslauf von 3,3 % auf 36,7 %.
+
+    **Ein Enum ohne Legende ist eine Liste, aus der das Modell waehlt, ohne zu
+    wissen, wonach.** Dieser Zeuge haelt fest, dass kein Modus dabei ohne
+    Erklaerung bleibt — die Luecke, die der Befund hinterliess, kann nicht
+    lautlos zurueckkommen.
+    """
+
+    def test_jeder_modus_wird_im_prompt_erklaert(self) -> None:
+        for pfad in _prompt_dateien():
+            text = pfad.read_text(encoding="utf-8")
+            # Die Legende steht als `"wert" =` — dieselbe Form wie bei
+            # `beziehungs_dynamik`, das sie seit jeher hat.
+            erklaert = {m for m in MODUS_KANON if f'"{m}" =' in text}
+            with self.subTest(prompt=pfad.name):
+                self.assertEqual(erklaert, MODUS_KANON,
+                                 f"ohne Erklaerung: {sorted(MODUS_KANON - erklaert)}")
+
+
 class TestKanonInDenTabellen(unittest.TestCase):
     """Jeder Modus des Kanons hat in jeder Verzweigungsstelle einen Wert."""
 

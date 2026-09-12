@@ -45,7 +45,22 @@ Energie-Intensitaet als Float zwischen 0.0 und 1.0.
 0.0 = voellig energielos
 
 Psychologische Ebene:
-- "modus": Das Kommunikationsregister, in dem der User spricht
+- "modus": Das Kommunikationsregister, in dem der User spricht.
+  Entscheidend ist, was der User WILL, nicht wovon er spricht:
+  "fachgespraech" = will es genau wissen; die Sache steht im Vordergrund
+  "philosophischer_austausch" = will VERSTEHEN, was hinter einer Sache liegt
+  "kreativ" = will etwas ERFINDEN, das es noch nicht gibt: ein Wort, ein Bild, ein Was-waere-wenn
+  "lernmodus" = will es erklaert bekommen, Schritt fuer Schritt, fragt nach
+  "arbeitsmodus" = will eine Aufgabe erledigt haben
+  "beratend" = steht vor einer Entscheidung und waegt ab
+  "emotional" = Gefuehle sind der Gegenstand, nicht nur der Rahmen
+  "spielerisch" = Unernst, Neckerei, Wortspiel
+  "berichtend" = erzaehlt, ohne eine Antwort zu verlangen
+  "alltag" = nichts davon, gewoehnliches Reden
+  Die beiden, die am haeufigsten verwechselt werden, trennt eine Frage: Soll am
+  Ende etwas NEUES dastehen (kreativ) oder etwas Bestehendes VERSTANDEN sein
+  (philosophischer_austausch)? "Erfinde ein Wort fuer ..." ist kreativ, auch
+  wenn das Thema tief ist.
 - "sprach_stil": Wie der User formuliert (Satzlaenge, Formalitaet, Slang)
 - "beziehungs_dynamik": Wie positioniert sich der User zum Assistenten?
   "vertrauen" = oeffnet sich, teilt Persoenliches, sucht Naehe

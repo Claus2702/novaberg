@@ -159,7 +159,7 @@ class ZugMeldetDieVerwechslungTest(unittest.TestCase):
         with self.assertLogs(CANON_LOGGER, level="WARNING") as protokoll:
             ergebnis = to_canonical(
                 "philosophischer_austausch", PERZEPTION_INTENT_KANON,
-                "intent", "probe", _FELDER_KANON,
+                "intent", "probe", fremde=_FELDER_KANON,
             )
         self.assertIsNone(ergebnis, "Ein Fremdwert bleibt im eigenen Feld ungueltig")
         self.assertIn("'modus'", protokoll.output[0])
@@ -167,7 +167,7 @@ class ZugMeldetDieVerwechslungTest(unittest.TestCase):
     def test_muell_meldet_die_zahl_der_erlaubten(self) -> None:
         with self.assertLogs(CANON_LOGGER, level="WARNING") as protokoll:
             to_canonical("bildhaft", SPRACH_STIL_KANON, "sprach_stil",
-                         "probe", _FELDER_KANON)
+                         "probe", fremde=_FELDER_KANON)
         self.assertIn("keinem anderen bekannten Feld", protokoll.output[0])
 
     def test_ohne_wortverzeichnis_bleibt_die_alte_meldung(self) -> None:
@@ -181,7 +181,7 @@ class ZugMeldetDieVerwechslungTest(unittest.TestCase):
         with self.assertNoLogs(CANON_LOGGER, level="WARNING"):
             self.assertEqual(
                 to_canonical("knowledge", PERZEPTION_INTENT_KANON,
-                             "intent", "probe", _FELDER_KANON),
+                             "intent", "probe", fremde=_FELDER_KANON),
                 "knowledge",
             )
 
@@ -190,7 +190,7 @@ class ZugMeldetDieVerwechslungTest(unittest.TestCase):
         with self.assertLogs(CANON_LOGGER, level="INFO"):
             self.assertEqual(
                 to_canonical("Formell", SPRACH_STIL_KANON, "sprach_stil",
-                             "probe", _FELDER_KANON),
+                             "probe", fremde=_FELDER_KANON),
                 "formell",
             )
 
@@ -221,9 +221,17 @@ class VerdrahtungTest(unittest.TestCase):
         self.assertEqual(self._quelltext().count("= _kanonisch("), 6)
 
     def test_der_zug_bekommt_das_wortverzeichnis(self) -> None:
-        """Ohne es kann er die Verwechslung nicht benennen."""
-        self.assertIn('to_canonical(wert, kanon, feld, "perzeption", _FELDER_KANON)',
-                      self._quelltext())
+        """Ohne es kann er die Verwechslung nicht benennen.
+
+        Seit dem 12.09.2026 stehen beide Tabellen als Schluesselwort — der Zug
+        bekommt dazu die Uebersetzungen. Der Zeuge prueft deshalb die
+        **Zuweisung** und nicht mehr die Zeichenfolge des ganzen Aufrufs: Die
+        war an der Stellung gebunden und haette bei jeder Umstellung gerissen,
+        ohne dass etwas fehlte.
+        """
+        quelle = self._quelltext()
+        self.assertIn("fremde=_FELDER_KANON", quelle)
+        self.assertIn("synonyme=_FELDER_SYNONYME.get(feld)", quelle)
 
     def test_der_knoten_ruft_das_ausreisser_protokoll(self) -> None:
         """Die Funktion allein hinterlaesst keine Zeile."""

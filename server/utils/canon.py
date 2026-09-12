@@ -56,7 +56,9 @@ def to_canonical(
     canon:  Collection[str],
     field:  str,
     caller: str = "",
-    fremde: Optional[dict[str, Collection[str]]] = None,
+    *,
+    fremde:   Optional[dict[str, Collection[str]]] = None,
+    synonyme: Optional[dict[str, str]] = None,
 ) -> Optional[str]:
     """Gibt den Wert in kanonischer Form, oder `None`, wenn er nicht dazu passt.
 
@@ -75,7 +77,20 @@ def to_canonical(
     1. **Der Wert steht im Kanon** — unveraendert zurueck, kein Protokoll.
     2. **Kleinschreibung und aufgeloeste Umlaute stehen im Kanon** — die
        kanonische Form zurueck, mit einer Zeile auf `info`.
-    3. **Sonst** `None`. Der Aufrufer entscheidet, was das bedeutet.
+    3. **Ein Synonym aus `synonyme` loest sich auf** — die kanonische Form
+       zurueck, mit einer Zeile auf `info`. Hier stehen **Uebersetzungen und
+       Wortgleiche**, nicht Schreibvarianten: Stufe 2 faengt `Kreativ` und
+       `kreativ`, nicht `creative`. Eine Uebersetzung in den Kanon
+       aufzunehmen waere falsch — sie liefe in die Tabellen des Feldes und
+       bekaeme dort einen Wert, den niemand gesetzt hat.
+    4. **Sonst** `None`. Der Aufrufer entscheidet, was das bedeutet.
+
+    **Die beiden Tabellen sind schluesselwort-gebunden** (12.09.2026, als die
+    zweite dazukam). Vier Stellen bestimmen, *was* gezogen wird; `fremde` und
+    `synonyme` sind Wissen **ueber die Felder** und am Aufrufer leicht zu
+    verwechseln, weil beide dict sind. Der Stern macht die Verwechslung
+    unmoeglich — und haelt die Zahl der positionellen Argumente unter dem
+    Grenzwert, statt ihn zu heben.
 
     **`fremde` benennt die Verwechslung, statt sie als Muell zu melden.**
     `[gemessen 10.09.2026 ueber 2694 Perzeptionen]` Die Hauptmenge der
@@ -106,6 +121,18 @@ def to_canonical(
             caller or "ohne Aufrufer", field, value, normalisiert,
         )
         return normalisiert
+
+    # Stufe 3: Uebersetzung oder Wortgleiches. Steht **vor** der Fremdfeld-
+    # Meldung, weil ein aufloesbarer Wert kein Ausreisser ist.
+    if synonyme:
+        kanonisch: Optional[str] = synonyme.get(normalisiert)
+        if kanonisch and kanonisch in canon:
+            logger.info(
+                "Kanon [%s]: Feld %r kam als %r und wurde auf %r gezogen "
+                "(Synonym oder Uebersetzung)",
+                caller or "ohne Aufrufer", field, value, kanonisch,
+            )
+            return kanonisch
 
     # Keine Ausgabe-Verifikation, und das ist Absicht: Der Nichttreffer **ist**
     # das Ergebnis. Eine Marke ueber einer Meldung sieht beim Lesen aus wie

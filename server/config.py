@@ -1588,6 +1588,20 @@ MODUS_KANON: set[str] = {
     "emotional", "spielerisch", "lernmodus", "kreativ", "beratend", "berichtend",
 }
 
+# Uebersetzung → kanonischer Modus. **Der Kanon-Zug zieht Schreibvarianten
+# (Grossschreibung, Umlaute); eine Uebersetzung ist keine davon**, und deshalb
+# braucht sie eine eigene Tabelle statt einer Erweiterung des Kanons: Ein
+# englischer Wert IM Kanon liefe in die Modus-Tabellen und bekaeme dort einen
+# Zuschlag, den niemand gesetzt hat.
+#
+# `[gemessen 10.09.2026]` Eine Wertelegende im Perzeptions-Prompt hebt `kreativ`
+# von 3,3 % auf 36,7 % — und erzeugte in **9 von 30** Laeufen das englische
+# `creative`. Der Zug fing es nicht, `modus_pruefen` meldete es, und die
+# Rechnung nahm ihren Default. Die Legende allein genuegte deshalb nicht.
+MODUS_SYNONYM_MAP: dict[str, str] = {
+    "creative": "kreativ",
+}
+
 # Single Source of Truth für die Intentionen, die die Salienz liefern darf.
 # Wortgleich mit der Aufzählung unter "6. INTENTIONEN" in
 # prompts/default/salienz.dimensionen.txt — tests/test_intent_kanon.py hält
