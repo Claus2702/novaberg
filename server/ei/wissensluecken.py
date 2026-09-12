@@ -23,9 +23,11 @@ from config import (
     redis_client,
     redis_client_bytes,
 )
+from ei.gap_topics import embed_topics, load_user_topics, split_topics, touched_by_user
 from ei.neugier import register_kompatibilitaet
 from ei.source_weights import SOURCES, load_weight_distributions, weight_rank
 from ei.utils import cosine_similarity
+from graph.reiz import reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.pipeline_log import log_berechnung
 from services.model_services import EmbedRequest, model_service
@@ -61,12 +63,20 @@ def lzg_kandidaten_suchen(
     turn_embedding: list[float],
     user_id:        str,
     character_id:   str,
-    kern_embedding: list[float] | None = None,
 ) -> list[dict]:
-    """Sucht semantisch nahe Eintraege im LZG via pgvector.
+    """Sucht die LZG-Knoten **aus Novas Sicht**, die dem Turn am naechsten liegen.
+
+    **Seit dem 12.09.2026 liefert die Suche Knoten, nicht Kandidaten** (`F-GV-2`).
+    Kandidat ist ein Thema eines dieser Knoten; die Zerlegung, die Naehe zum Turn
+    und die Resonanz zum Kern entstehen danach, auf dem Thema. Bis dahin rechnete
+    diese Abfrage die Kern-Naehe des **Satzes** mit — und der Satz trug den
+    Sprecher (+0,302 zwischen Nova- und Nutzer-Saetzen).
+
+    **Nur `beobachter = 'assistant'`**: Die Luecke beim Nutzer ist ein Thema, das
+    Nova kennt. Themen aus Nutzer-Knoten waeren nach Definition beruehrt.
 
     Returns:
-        Liste von Dicts mit konzept, similarity, gewicht, gap_arousal, quelle.
+        Liste von Dicts mit konzept, similarity, gewicht, gap_arousal, themen, quelle.
     """
     kandidaten: list[dict] = []
 
@@ -76,59 +86,41 @@ def lzg_kandidaten_suchen(
 
         embedding_str: str = "[" + ",".join(str(v) for v in turn_embedding) + "]"
 
-        # **Die Kern-Naehe kommt aus derselben Abfrage** (12.09.2026). Der
-        # Charakter-Filter verglich bis heute den **Turn** mit dem Kern und
-        # setzte denselben Wert fuer alle zwanzig Kandidaten — ein globaler
-        # Schalter unter dem Namen eines Kandidatenfilters. Je Kandidat ein
-        # eigener Wert kostet hier **keinen** weiteren Aufruf: Der Vektor liegt
-        # in der Zeile, und ein zweiter Abstandsausdruck rechnet ihn mit.
-        #
-        # Ohne Kern-Embedding (Cold-Start) bleibt die Spalte NULL, und der
-        # Aufrufer sieht es am fehlenden Feld — kein Vorgabewert, derselbe Grund
-        # wie bei `resonanz_pruefbar` (Chat 107, GV-RESONANZ-FALLBACK-LUEGT).
-        kern_str: str | None = (
-            "[" + ",".join(str(v) for v in kern_embedding) + "]"
-            if kern_embedding else None
-        )
-
         cursor.execute(
             """
             SELECT inhalt,
                    1 - (embedding <=> %s::vector) AS similarity,
                    gewicht_decay,
                    COALESCE(arousal, 0.3) AS gap_arousal,
-                   CASE WHEN %s::vector IS NULL THEN NULL
-                        ELSE 1 - (embedding <=> %s::vector) END AS kern_naehe
+                   themen
             FROM lzg_knoten
             WHERE user_id = %s
               AND character_id = %s
               AND aktiv = TRUE
+              AND beobachter = 'assistant'
             ORDER BY embedding <=> %s::vector
             LIMIT 10
             """,
-            (embedding_str, kern_str, kern_str,
-             user_id, character_id, embedding_str),
+            (embedding_str, user_id, character_id, embedding_str),
         )
 
         for row in cursor.fetchall():
-            inhalt, similarity, gewicht, gap_arousal, kern_naehe = row
+            inhalt, similarity, gewicht, gap_arousal, themen = row
             # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.1 —
             # liess im alten Raum 93 % durch, filterte nichts. 0.20 liegt
             # knapp ueber dem neuen Grundrauschen (0.16).
             if similarity and similarity > 0.20:
-                eintrag: dict = {
+                kandidaten.append({
                     "konzept":    inhalt,
                     "similarity": float(similarity),
                     "gewicht":    float(gewicht) if gewicht else 0.5,
                     "gap_arousal": float(gap_arousal),
+                    "themen":     list(themen or []),
                     "quelle":     "lzg",
-                }
-                if kern_naehe is not None:
-                    eintrag["charakter_resonanz"] = float(kern_naehe)
-                kandidaten.append(eintrag)
+                })
 
         conn.close()
-        logger.info(f"GV4-LZG: {len(kandidaten)} Kandidaten gefunden")
+        logger.info(f"GV4-LZG: {len(kandidaten)} Knoten gefunden")
 
     except Exception as fehler:
         logger.warning(f"GV4-LZG-Suche fehlgeschlagen: {fehler}")
@@ -140,24 +132,20 @@ def kzg_kandidaten_suchen(
     turn_embedding: list[float],
     user_id:        str,
     character_id:   str,
-    kern_embedding: list[float] | None = None,
 ) -> list[dict]:
-    """Sucht semantisch nahe Eintraege im KZG via RediSearch KNN.
+    """Sucht die KZG-Eintraege **aus Novas Sicht**, die dem Turn am naechsten liegen.
 
-    **Nutzt `redis_client_bytes`, nicht `redis_client`** — seit dem 12.09.2026
-    holt die Abfrage das `embedding` mit, und ein float32-Blob ueberlebt
-    `decode_responses=True` nicht: redis-py liest die ganze Antwort als UTF-8,
-    und die Suche bricht mit `'utf-8' codec can't decode byte 0xd0` ab. Der
-    Abbruch wird gefangen und als Warnung protokolliert — also **null
-    Kandidaten, die aussehen wie ein leerer Speicher**. Deshalb dekodiert dieser
-    Pfad selbst, Feld fuer Feld, und laesst `embedding` als Bytes stehen.
+    **Seit dem 12.09.2026 liefert die Suche Eintraege, nicht Kandidaten** — wie
+    `lzg_kandidaten_suchen`, und aus demselben Grund. Das `embedding` kommt nicht
+    mehr mit: Die Resonanz entsteht auf dem Thema, nicht auf dem Satz.
 
-    Der frueher hier stehende Satz — *„da wir nur Text-/Numeric-Felder
-    zurueckliefern (kein Embedding-Blob), spielt decode_responses=True hier
-    keine Rolle"* — nannte die Bedingung, unter der er galt. Sie gilt nicht mehr.
+    **Nutzt weiter `redis_client_bytes` und dekodiert selbst.** Ohne Blob in der
+    Rueckgabe waere auch der dekodierende Client moeglich; der Weg bleibt, damit
+    ein spaeter wieder mitgeholtes Byte-Feld die Suche nicht lautlos leert
+    (12.09.2026: 0 Kandidaten bei 3544 Schluesseln, weil ein Blob durch UTF-8 lief).
 
     Returns:
-        Liste von Dicts mit konzept, similarity, gewicht (=salienz), gap_arousal, quelle.
+        Liste von Dicts mit konzept, similarity, gewicht (=salienz), gap_arousal, themen, quelle.
     """
     kandidaten: list[dict] = []
 
@@ -166,34 +154,24 @@ def kzg_kandidaten_suchen(
 
         ergebnis = redis_client_bytes.execute_command(
             "FT.SEARCH", "idx:kzg",
-            f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}})"
+            f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}} @beobachter:{{assistant}})"
             f"=>[KNN 10 @embedding $vec AS score]",
             "PARAMS", "2", "vec", query_blob,
             "SORTBY", "score",
             "LIMIT", "0", "10",
-            # `embedding` kommt mit, damit die Kern-Naehe je Kandidat
-            # gerechnet werden kann — der Vektor liegt gespeichert, ein
-            # zweiter Modellaufruf waere Verschwendung.
-            "RETURN", "5", "inhalt", "salienz", "arousal", "score", "embedding",
+            "RETURN", "5", "inhalt", "salienz", "arousal", "score", "themen",
             "DIALECT", "2",
         )
 
         if ergebnis and isinstance(ergebnis, list) and len(ergebnis) > 1:
             idx: int = 1
             while idx < len(ergebnis) - 1:
-                _key = ergebnis[idx]
                 felder = ergebnis[idx + 1]
                 idx += 2
 
                 feld_dict: dict = {}
                 for i in range(0, len(felder), 2):
                     k = felder[i].decode("utf-8") if isinstance(felder[i], bytes) else felder[i]
-                    # **`embedding` bleibt rohes Byte-Feld.** Es ist ein
-                    # float32-Blob und kein Text; ein `decode("utf-8")` darauf
-                    # wirft oder liefert Muell.
-                    if k == "embedding":
-                        feld_dict[k] = felder[i + 1]
-                        continue
                     v = (
                         felder[i + 1].decode("utf-8")
                         if isinstance(felder[i + 1], bytes)
@@ -210,22 +188,16 @@ def kzg_kandidaten_suchen(
                 # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher
                 # 0.1 — filterte nichts. 0.20 knapp ueber Grundrauschen 0.16.
                 if inhalt and similarity > 0.20:
-                    eintrag: dict = {
+                    kandidaten.append({
                         "konzept":     inhalt,
                         "similarity":  similarity,
                         "gewicht":     salienz,
                         "gap_arousal": arousal,
+                        "themen":      feld_dict.get("themen", ""),
                         "quelle":      "kzg",
-                    }
-                    roh = feld_dict.get("embedding")
-                    if kern_embedding and isinstance(roh, bytes):
-                        eintrag["charakter_resonanz"] = cosine_similarity(
-                            np.frombuffer(roh, dtype=np.float32).tolist(),
-                            kern_embedding,
-                        )
-                    kandidaten.append(eintrag)
+                    })
 
-        logger.info(f"GV4-KZG: {len(kandidaten)} Kandidaten gefunden")
+        logger.info(f"GV4-KZG: {len(kandidaten)} Eintraege gefunden")
 
     except Exception as fehler:
         logger.warning(f"GV4-KZG-Suche fehlgeschlagen: {fehler}")
@@ -401,6 +373,106 @@ def _rank_weights(
     return ergebnis
 
 
+def _topic_candidates(nodes: list[dict], state: ConversationState) -> list[dict]:
+    """Macht aus Knoten Themen-Kandidaten und behaelt nur, was der Nutzer nicht beruehrt hat.
+
+    **Die Luecke beim Nutzer** (`F-GV-2`): ein Thema aus Novas Bestand nahe am
+    Turn, das (a) in keinem Nutzer-Eintrag des Paares als Thema steht und (b) im
+    laufenden Gespraech nicht gefallen ist. Beides ist eine Annaeherung — das
+    Fehlen eines Belegs, kein Nachweis.
+
+    Vorbedingung: jeder Knoten traegt `themen`, `quelle`, `gewicht`,
+        `gewicht_rang`, `similarity` und `gap_arousal`; `state` traegt Paar und
+        Sitzungsturns.
+    Nachbedingung: je Thema (ohne Gross-/Kleinschreibung) hoechstens ein
+        Kandidat — der aus dem Knoten mit dem hoechsten `similarity × gewicht_rang`.
+        Jeder Kandidat traegt `konzept` (das Thema), `knoten` (Anfang des Satzes),
+        `knoten_similarity` und die Felder des Knotens. Die Zaehlung steht je
+        Turn im Pipeline-Log, auch wenn nichts bleibt.
+    Fehlerfaelle: Ist der Themenbestand des Nutzers nicht ladbar, kommt eine
+        leere Liste zurueck und ein Fehler steht im Log — ohne ihn laesst sich
+        nicht sagen, was eine Luecke **beim Nutzer** ist.
+
+    Args:
+        nodes: Knoten beider Quellen mit gesetztem Rang.
+        state: der Zustand des Turns.
+
+    Returns:
+        Die Themen-Kandidaten.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    user_id: str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    try:
+        nutzer = load_user_topics(user_id, character_id)
+    except Exception as fehler:
+        logger.error(
+            "GV4: Themenbestand des Nutzers %s/%s nicht ladbar (%s: %s) — ohne ihn "
+            "keine Luecke beim Nutzer in diesem Turn",
+            user_id, character_id, type(fehler).__name__, fehler, exc_info=True,
+        )
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    # **Der laufende Reiz gehoert zum Gespraech.** `session_turns` traegt nur die
+    # vorigen Turns; ohne den Reiz selbst kam das Echo der eigenen Frage als
+    # Luecke zurueck — `[gemessen 12.09.2026]` *„Staerke des Magnetfelds im
+    # Vergleich zur Erde"* (Naehe 0,798) auf genau diese Frage.
+    session_turns: list[dict] = [
+        *(state.get("session_turns", []) or []),
+        {"inhalt": reiz_text(state)},
+    ]
+    besten: dict[str, dict] = {}
+    zaehlung: dict[str, int] = {"knoten": len(nodes), "ohne_themen": 0, "themen": 0,
+                                "beruehrt": 0, "erwaehnt": 0}
+    for knoten in nodes:
+        themen: list[str] = split_topics(knoten.get("themen"))
+        if not themen:
+            zaehlung["ohne_themen"] += 1
+            continue
+        for thema in themen:
+            zaehlung["themen"] += 1
+            if touched_by_user(thema, nutzer):
+                zaehlung["beruehrt"] += 1
+                continue
+            if ist_bereits_erwaehnt(thema, session_turns):
+                zaehlung["erwaehnt"] += 1
+                continue
+            gewicht: float = knoten["similarity"] * knoten["gewicht_rang"]
+            alt = besten.get(thema.lower())
+            if alt is None or gewicht > alt["knoten_similarity"] * alt["gewicht_rang"]:
+                besten[thema.lower()] = {
+                    "konzept":           thema,
+                    "knoten":            str(knoten.get("konzept", ""))[:80],
+                    "knoten_similarity": knoten["similarity"],
+                    "quelle":            knoten["quelle"],
+                    "gewicht":           knoten["gewicht"],
+                    "gewicht_rang":      knoten["gewicht_rang"],
+                    "gap_arousal":       knoten["gap_arousal"],
+                }
+    kandidaten: list[dict] = list(besten.values())
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len({k["konzept"].lower() for k in kandidaten}) != len(kandidaten):
+        raise RuntimeError("GV4: doppeltes Thema unter den Kandidaten")
+    zaehlung["kandidaten"] = len(kandidaten)
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "wissensluecken",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {"schritt": "gv4_themen", **zaehlung},
+        user_id      = user_id,
+        character_id = character_id,
+    )
+    logger.info(
+        "GV4: %d Knoten → %d Themen, %d vom Nutzer beruehrt, "
+        "%d im Gespraech erwaehnt → %d Kandidaten",
+        zaehlung["knoten"], zaehlung["themen"], zaehlung["beruehrt"],
+        zaehlung["erwaehnt"], len(kandidaten),
+    )
+    return kandidaten
+
+
 def wissensluecken_finden(
     state:             ConversationState,
     aufnahmebereitschaft: float,
@@ -461,11 +533,11 @@ def wissensluecken_finden(
             logger.warning(f"GV4: Embedding fehlgeschlagen: {fehler}")
             return []
 
-    # ── 1b. Kern-Embedding, VOR den Suchen ──
-    # **Die Reihenfolge ist der Bauteil.** Bis zum 12.09.2026 entstand der Kern
-    # erst in Schritt 5, nach der Suche — und konnte deshalb nur mit dem Turn
-    # verglichen werden, nicht mit den Kandidaten. Er gehoert vor die Suche,
-    # weil beide ihn brauchen; ein Aufruf bleibt ein Aufruf.
+    # ── 1b. Kern-Embedding ──
+    # Gebraucht in Schritt 3c, wo jedes Thema gegen den Kern gemessen wird. Bis
+    # zum 12.09.2026 (abends) brauchten ihn die beiden Suchen, um die Naehe des
+    # **Satzes** zum Kern mitzurechnen; seit die Kandidaten Themen sind, messen
+    # sie ihn nicht mehr.
     kern_embedding: list[float] | None = None
     nova_kern: str = internal.character.core if internal else ""
     if nova_kern:
@@ -488,43 +560,55 @@ def wissensluecken_finden(
             "Resonanz-Pruefung entfaellt", user_id,
         )
 
-    # ── 2. Kandidaten aus LZG + KZG ──
-    lzg_kandidaten: list[dict] = lzg_kandidaten_suchen(
-        turn_embedding, user_id, character_id, kern_embedding=kern_embedding
+    # ── 2. Knoten aus Novas Bestand, nahe am Turn ──
+    alle_knoten: list[dict] = (
+        lzg_kandidaten_suchen(turn_embedding, user_id, character_id)
+        + kzg_kandidaten_suchen(turn_embedding, user_id, character_id)
     )
-    kzg_kandidaten: list[dict] = kzg_kandidaten_suchen(
-        turn_embedding, user_id, character_id, kern_embedding=kern_embedding
-    )
-    alle_kandidaten: list[dict] = lzg_kandidaten + kzg_kandidaten
-
-    if not alle_kandidaten:
-        logger.info("GV4: Keine Kandidaten gefunden")
+    if not alle_knoten:
+        logger.info("GV4: Keine Knoten gefunden")
         return []
 
-    # ── 3. Filter: bereits erwaehnt ──
-    session_turns: list[dict] = state.get("session_turns", [])
-    gefiltert: list[dict] = [
-        k for k in alle_kandidaten
-        if not ist_bereits_erwaehnt(k["konzept"], session_turns)
-    ]
-
-    gefiltert = [
-        k for k in gefiltert
-        if k["similarity"] <= GV_LUECKEN_SIM_OBERGRENZE
-    ]
-
-    if not gefiltert:
-        logger.info("GV4: Alle Kandidaten bereits erwaehnt oder zu aehnlich")
-        return []
-
-    # ── 3b. Das Gewicht auf die gemeinsame Skala ──
+    # ── 3. Das Gewicht auf die gemeinsame Skala ──
     # **Die Naht zwischen LZG und KZG.** Roh traegt das LZG `gewicht_decay`
     # (3–10), das KZG `salienz` (0–1); im Produkt gewann das LZG allein durch
     # seine Skala — 77 von 83 Luecken im Prompt, 12.09.2026. Das Gewicht geht
     # deshalb als **Rang in der eigenen Quelle** ein. Das rohe Gewicht bleibt am
     # Kandidaten stehen, damit die Rechnung nachvollziehbar bleibt.
-    gefiltert = _rank_weights(gefiltert, user_id, character_id)
+    alle_knoten = _rank_weights(alle_knoten, user_id, character_id)
+    if not alle_knoten:
+        return []
+
+    # ── 3b. Themen statt Saetze — und nur, was der Nutzer nicht beruehrt hat ──
+    gefiltert: list[dict] = _topic_candidates(alle_knoten, state)
     if not gefiltert:
+        logger.info("GV4: Keine Themen-Kandidaten nach den Filtern")
+        return []
+
+    # ── 3c. Naehe zum Turn und Resonanz zum Kern — auf dem Thema ──
+    # Ein Stapelaufruf fuer alle neuen Themen; bekannte kommen aus dem
+    # Zwischenspeicher. Faellt die Einbettung aus, gibt es in diesem Turn keine
+    # Luecken — laut, nicht als leerer Bestand.
+    try:
+        vektoren: dict[str, list[float]] = embed_topics([k["konzept"] for k in gefiltert])
+    except Exception as fehler:
+        logger.error(
+            "GV4: Themen nicht einbettbar (%s: %s) — keine Luecken in diesem Turn",
+            type(fehler).__name__, fehler, exc_info=True,
+        )
+        return []
+    for k in gefiltert:
+        vektor: list[float] = vektoren[k["konzept"]]
+        k["similarity"] = cosine_similarity(vektor, turn_embedding)
+        if kern_embedding:
+            k["charakter_resonanz"] = cosine_similarity(vektor, kern_embedding)
+
+    gefiltert = [
+        k for k in gefiltert
+        if k["similarity"] <= GV_LUECKEN_SIM_OBERGRENZE
+    ]
+    if not gefiltert:
+        logger.info("GV4: Alle Themen zu nah am Turn — bereits gesagt")
         return []
 
     # ── 4. Relevanz berechnen ──
@@ -575,26 +659,27 @@ def wissensluecken_finden(
     # Neugier plausibel ist.
     #
     # **Seit dem 12.09.2026 steht hier keine Rechnung mehr, sondern eine
-    # Feststellung.** Die Naehe zum Kern ist in Schritt 2 je Kandidat mit der
-    # Suche entstanden; hier wird nur noch gezaehlt, ob sie vorliegt. Der
-    # frueher hier gerechnete Wert war fuer alle Kandidaten derselbe — die
-    # Naehe des **Turns** — und machte aus dem Filter einen globalen Schalter.
+    # Feststellung.** Die Naehe zum Kern ist in Schritt 3c je Thema entstanden;
+    # hier wird nur noch gezaehlt, ob sie vorliegt. Der frueher hier gerechnete
+    # Wert war fuer alle Kandidaten derselbe — die Naehe des **Turns** — und
+    # machte aus dem Filter einen globalen Schalter; der danach auf dem Satz
+    # gerechnete trennte nach Sprecher.
     resonanz_pruefbar: bool = _resonanz_pruefbar(gefiltert, kern_embedding)
     if kern_embedding and not resonanz_pruefbar:
         # Ein Kern lag vor, und trotzdem fehlt der Wert bei mindestens einem
-        # Kandidaten: Das ist ein Defekt einer der beiden Suchen und **kein**
+        # Kandidaten: Das ist ein Defekt der Themen-Messung in 3c und **kein**
         # Cold-Start. Er darf nicht als derselbe Fall durchlaufen.
         ohne: int = sum(1 for k in gefiltert if "charakter_resonanz" not in k)
         logger.error(
             "GV4: Kern vorhanden, aber %d von %d Kandidaten ohne "
-            "`charakter_resonanz` — eine der beiden Suchen hat den Vektor "
-            "nicht geliefert. Die Resonanz-Pruefung entfaellt fuer diesen Turn.",
+            "`charakter_resonanz` — die Themen-Messung hat den Wert nicht "
+            "gesetzt. Die Resonanz-Pruefung entfaellt fuer diesen Turn.",
             ohne, len(gefiltert),
         )
 
     # **Die Verteilung wird protokolliert, nicht nur die Entscheidung.**
-    # Der Grenzwert steht noch auf dem Wert, der fuer die Turn-Naehe gesetzt
-    # war; was er auf der Kandidaten-Naehe tut, sagt erst der Betrieb. Ohne
+    # Seit dem 12.09.2026 ist es die Verteilung ueber **Themen** gegen den Kern
+    # — eine andere Paarung als zuvor, mit eigenem Grenzwert. Ohne
     # diese Zeile waere die naechste Kalibrierung wieder auf einen
     # Stellvertreter angewiesen (`21_MESSUNG/stellvertreter-eicht-nicht.md`).
     if resonanz_pruefbar and gefiltert:

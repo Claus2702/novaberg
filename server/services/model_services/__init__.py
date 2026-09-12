@@ -22,6 +22,8 @@ from services.model_services.types import (
     BackgroundResponse,
     ChatRequest,
     ChatResponse,
+    EmbedBatchRequest,
+    EmbedBatchResponse,
     EmbedRequest,
     EmbedResponse,
 )
@@ -29,6 +31,7 @@ from services.model_services.types import (
 __all__ = [
     "model_service",
     "EmbedRequest", "EmbedResponse",
+    "EmbedBatchRequest", "EmbedBatchResponse",
     "ChatRequest", "ChatResponse",
     "BackgroundRequest", "BackgroundResponse",
 ]

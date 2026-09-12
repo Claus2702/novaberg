@@ -679,12 +679,18 @@ def _hypothese_destillieren(
                 f" (Quelle: {luecke['quelle']}, Relevanz: {luecke['relevanz']:.2f})"
             )
             luecken_zeilen.append(zeile)
+        # **Seit dem 12.09.2026 stehen hier Themen, und die Absicht ist benannt**
+        # (`F-GV-2`): die Luecke **beim Nutzer** — was Nova kennt und er im
+        # Bestand des Paares nie beruehrt hat. Dazu gehoeren Lenken und Saeen,
+        # nicht Nachfragen; das Nachfragen hat seinen eigenen Block darunter.
         user_parts.append(
             "[WISSENSLUECKEN]\n"
-            "Semantisch nahe, aber noch nicht besprochen:\n"
+            "Themen aus deinem Wissen, nah an diesem Gespraech, die der Nutzer "
+            "bisher nicht angesprochen hat:\n"
             + "\n".join(luecken_zeilen)
-            + "\n\nDu kannst diese Konzepte als naechsten Gedankenschritt "
-            "einbringen — aber nur wenn sie zum Gespraechsfluss passen."
+            + "\n\nDu kannst eines davon als naechsten Gedankenschritt "
+            "einbringen — ihn dorthin lenken oder es beilaeufig saeen —, aber "
+            "nur wenn es zum Gespraechsfluss passt."
         )
         logger.info(f"GV4: {len(wissensluecken)} Luecken in Prompt eingefuegt")
 

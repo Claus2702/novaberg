@@ -3211,12 +3211,14 @@ LUECKEN_SAAT_THEMEN:         int   = int(os.getenv("LUECKEN_SAAT_THEMEN", "8"))
 # Embedding-Dublettenpruefung. Die Liste darf unvollstaendig sein.
 LUECKEN_HINWEIS_THEMEN:      int   = int(os.getenv("LUECKEN_HINWEIS_THEMEN", "30"))
 GV_LUECKEN_MAX:                  int   = 8      # Erweitert Chat 71 (vorher 3)
-# ⚠ Seit dem 12.09.2026 auf einer anderen Skala als der, auf der sie gesetzt
-# wurde: Das Gewicht im Relevanzprodukt ist nicht mehr roh (LZG 3–10, KZG 0–1),
-# sondern der Rang in der eigenen Quelle [0, 1] (`ei/source_weights.py`). Die
-# Zahl blieb stehen und laesst dadurch weniger durch — vorher gerechnet ueber
-# elf echte Turns 43 statt 136 Kandidaten. Ungemessen auf der neuen Skala;
-# kalibriert wird nach dem Umbau der Kandidaten auf Themen.
+# Seit dem 12.09.2026 zweimal auf einer neuen Skala: Das Gewicht ist der Rang in
+# der eigenen Quelle (`ei/source_weights.py`), und die Naehe ist die eines
+# **Themas** zum Turn statt eines Satzes (`ei/gap_topics.py`). **Die Zahl ist
+# auf der Themen-Skala nachgelesen und bleibt** — an 31 Turns durch den gebauten
+# Pfad, mit Resonanz-Schwelle 0,15: In Flirt- und Filmturns kommen 0 bis 1
+# Themen darueber, in Sachturns 2 bis 6 passende (*baryonische Rueckkopplung* auf
+# das Cusp-Core-Problem, *Flusserhaltung beim Sternkollaps* auf die Frage nach
+# dem Magnetfeld eines Neutronensterns). Gelesen, nicht abgeleitet.
 GV_LUECKEN_MIN_RELEVANZ:         float = 0.15   # Mindest-Gesamtrelevanz
 # Mindest-Gravitation fuer Ziel-Boost. Chat 107 geprueft und BEWUSST nicht
 # geaendert (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
@@ -3239,12 +3241,26 @@ GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
 # eine Setzung auf gemessener Grundlage, kein abgeleiteter Wert: Wie oft eine
 # Luecke angeboten werden **soll**, sagt keine Messung.
 #
-# **Achtung, sie filtert nicht, was ihr Name sagt.** `ei/wissensluecken.py`
+# ~~**Achtung, sie filtert nicht, was ihr Name sagt.** `ei/wissensluecken.py`
 # setzt fuer **jeden** Kandidaten denselben Wert — `cosine(turn, kern)` —,
-# der Kandidat geht nicht ein. Die Schwelle ist damit ein **globaler
-# Schalter**: alle zwanzig passieren oder keiner. Das ist ein eigener Fund
-# und steht in der Fundliste.
-GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.30
+# der Kandidat geht nicht ein.~~ → am 12.09.2026 behoben (Naehe je Kandidat).
+#
+# **Seit dem 12.09.2026, abends, eine dritte Paarung und damit eine dritte
+# Zahl: Thema gegen Kern** (`F-GV-2`, Kandidaten sind Themen). Die 0,30 galt
+# fuer Gedaechtnissaetze gegen den Kern — und trennte dort nach Sprecher
+# (Nova-Saetze 0,44–0,53, Nutzer-Saetze 0,13–0,24). Auf Themen verschwindet
+# das: `[gemessen]` Median 0,209 aus Nova-Knoten gegen 0,200 aus Nutzer-Knoten.
+# Die 0,30 liesse dort nur rund ein Zehntel durch.
+#
+# **0,15 ist gelesen, nicht abgeleitet** — an 31 Turns durch den gebauten Pfad:
+# Alltagsetiketten liegen darunter (*Bier* 0,074, *Humor und Witze* 0,084,
+# *Tagesplanung* 0,126, *Zukuenftige Planung* 0,129, *Filmtitel* 0,139), Novas
+# Themen und die meisten Sachthemen darueber. **Der Preis ist benannt:** Rund
+# ein Dutzend konkreter Sachbegriffe faellt mit heraus (*Mindestmasse (M sin(i))*
+# 0,117, *Messproblem* 0,103) — der Kern beschreibt Nova abstrakt. Und
+# Gespraechs-Etiketten ueber Nova selbst passieren (*spielerische Provokation*
+# 0,211); die Resonanz trennt Wissen nicht von Beziehung.
+GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.15
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
 # Wie lange die Gewichtsverteilung eines Paares zwischengehalten wird, bevor sie
 # neu geladen wird. Sie ist die Skala der Naht zwischen LZG und KZG und soll mit

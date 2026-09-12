@@ -178,21 +178,20 @@ class DiePruefbarkeitBrauchtJedenWert(unittest.TestCase):
 class DieSchwelleIstGemessen(unittest.TestCase):
     """Der Wert selbst — sein Band steht im Kommentar der Konstante.
 
-    **Beide Grenzen stammen aus der Verteilung der Turn-Naehe** (150 Turns,
-    11.09.2026) und damit aus einer Groesse, die die Schwelle seit dem
-    12.09.2026 nicht mehr misst. Sie bleiben stehen, solange der Wert
-    unveraendert ist, und sind **beim naechsten Setzen neu zu bilden** — aus der
-    Verteilung der Kandidaten-Naehe, die die `gv4_kern_resonanz`-Zeile des
-    Pipeline-Logs erhebt (`20_TESTS/beispiel-gerechnet.md`).
+    **Seit dem 12.09.2026, abends, eine dritte Paarung: Thema gegen Kern.** Die
+    Grenzen unten stammen aus der Lesung an 31 Turns durch den gebauten Pfad
+    (`20_TESTS/beispiel-gerechnet.md`). Die frueheren Grenzen (0,228 und 0,40)
+    gehoerten zur Turn-Naehe und zur Satz-Naehe und sind mit dem Wert ersetzt.
     """
 
-    def test_sie_liegt_unter_dem_alten_startwert(self) -> None:
-        """0,40 lag zwischen p99 (0,413) und Maximum (0,421) der Verteilung."""
-        self.assertLess(GV_CHARAKTER_RESONANZ_SCHWELLE, 0.40)
+    def test_sie_liegt_ueber_dem_hoechsten_alltagsetikett_mit_relevanz(self) -> None:
+        """*Zukuenftige Planung* 0,129 und *Tagesplanung* 0,126 — beide ueber der
+        Relevanz-Untergrenze, beide keine Luecke."""
+        self.assertGreater(GV_CHARAKTER_RESONANZ_SCHWELLE, 0.129)
 
-    def test_sie_liegt_ueber_dem_median(self) -> None:
-        """Median 0,228 — eine Schwelle darunter liesse fast alles durch."""
-        self.assertGreater(GV_CHARAKTER_RESONANZ_SCHWELLE, 0.228)
+    def test_sie_laesst_das_niedrigste_gewollte_sachthema_durch(self) -> None:
+        """*metrische Dehnung* 0,157 auf die Frage, wie man eine Dehnung misst."""
+        self.assertLessEqual(GV_CHARAKTER_RESONANZ_SCHWELLE, 0.157)
 
 
 if __name__ == "__main__":

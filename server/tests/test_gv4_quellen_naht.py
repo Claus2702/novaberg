@@ -20,10 +20,12 @@ Relevanz — roh stuende das LZG achtfach vorn.
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
+import math
 import unittest
 from unittest.mock import patch
 
 import ei.source_weights as source_weights
+from ei.gap_topics import UserTopics
 from ei.source_weights import load_weight_distributions, weight_rank
 from ei.wissensluecken import wissensluecken_finden
 
@@ -81,21 +83,37 @@ def zustand() -> dict:
         "user_prompt":      "Ein Reiz ueber Neutronensterne",
         "user_id":          "mensch",
         "character_id":     "figur",
-        "prompt_embedding": [0.1] * 8,
+        "prompt_embedding": TURN,
         "internal":         None,
         "session_turns":    [],
         "turn_id":          "t-naht",
     }
 
 
+#: Der Turn als Einheitsvektor. Seit dem Umbau auf Themen (12.09.2026, abends)
+#: ist die Naehe die des **Themas** zum Turn; die Zeugen legen sie ueber den
+#: Themenvektor fest, nicht ueber die Suche.
+TURN: list[float] = [1.0] + [0.0] * 7
+
+LZG_THEMA = "Rotation eines Pulsars"
+KZG_THEMA = "Gezeitenverformung dichter Materie"
+
+
+def vektor_mit_naehe(naehe: float) -> list[float]:
+    """Ein Vektor, dessen Cosinus zum Turn genau `naehe` ist."""
+    return [naehe, math.sqrt(1.0 - naehe * naehe)] + [0.0] * 6
+
+
 def lzg_kandidat(gewicht: float, similarity: float) -> dict:
-    return {"konzept": "Rotation eines Pulsars im Doppelsystem", "similarity": similarity,
-            "gewicht": gewicht, "gap_arousal": 0.3, "quelle": "lzg"}
+    """Ein LZG-Knoten mit einem Thema; `similarity` wird die Naehe dieses Themas."""
+    return {"konzept": "Nova hat die Rotation eines Pulsars erklaert", "similarity": similarity,
+            "gewicht": gewicht, "gap_arousal": 0.3, "quelle": "lzg", "themen": [LZG_THEMA]}
 
 
 def kzg_kandidat(salienz: float, similarity: float) -> dict:
-    return {"konzept": "Gezeitenverformung dichter Materie", "similarity": similarity,
-            "gewicht": salienz, "gap_arousal": 0.3, "quelle": "kzg"}
+    """Ein KZG-Eintrag mit einem Thema; `similarity` wird die Naehe dieses Themas."""
+    return {"konzept": "Nova hat Gezeitenkraefte beschrieben", "similarity": similarity,
+            "gewicht": salienz, "gap_arousal": 0.3, "quelle": "kzg", "themen": KZG_THEMA}
 
 
 class DieNahtIstVerdrahtet(unittest.TestCase):
@@ -103,9 +121,14 @@ class DieNahtIstVerdrahtet(unittest.TestCase):
 
     def finden(self, lzg: list[dict], kzg: list[dict], verteilungen=None) -> tuple[list[dict], object, object]:
         verteilungen = verteilungen if verteilungen is not None else {"lzg": LZG, "kzg": KZG}
+        vektoren = {LZG_THEMA: vektor_mit_naehe(lzg[0]["similarity"]) if lzg else [],
+                    KZG_THEMA: vektor_mit_naehe(kzg[0]["similarity"]) if kzg else []}
         with patch("ei.wissensluecken.lzg_kandidaten_suchen", return_value=lzg), \
              patch("ei.wissensluecken.kzg_kandidaten_suchen", return_value=kzg), \
              patch("ei.wissensluecken.load_weight_distributions", return_value=verteilungen), \
+             patch("ei.wissensluecken.load_user_topics", return_value=UserTopics(set(), set())), \
+             patch("ei.wissensluecken.embed_topics",
+                   side_effect=lambda themen: {t: vektoren[t] for t in themen}), \
              patch("ei.wissensluecken.log_berechnung") as spur, \
              patch("ei.wissensluecken.logger") as log:
             ergebnis = wissensluecken_finden(zustand(), aufnahmebereitschaft=1.0)

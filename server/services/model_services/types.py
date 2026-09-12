@@ -68,6 +68,37 @@ class EmbedResponse:
     request_id: str
 
 
+@dataclass
+class EmbedBatchRequest:
+    """
+    Mehrere Texte in **einem** Modellaufruf.
+
+    **Warum es das gibt** (12.09.2026): Die Lueckensuche bettet je Turn rund
+    dreissig Themen ein. Einzeln kostet ein Aufruf 150 ms, 32 Themen also rund
+    4,8 s; als Stapel sind es 280 ms — bei zeichengleichen Vektoren
+    (cos 1,000000 gegen den Einzelaufruf, gemessen).
+
+    Attribute:
+        texts: die einzubettenden Texte, nicht leer, keiner leer.
+        request_id, submitted_at, future: wie bei `EmbedRequest`.
+    """
+
+    texts: list[str]
+    request_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    submitted_at: float = field(default_factory=time.time)
+    future: asyncio.Future["EmbedBatchResponse"] | None = None
+
+
+@dataclass
+class EmbedBatchResponse:
+    """Antwort auf `EmbedBatchRequest` — ein Vektor je Text, in derselben Reihenfolge."""
+
+    embeddings: list[list[float]]
+    model_name: str
+    duration_seconds: float
+    request_id: str
+
+
 # ─────────────────────────────────────────────────────
 # ChatWorker (Rolle "chat")
 # ─────────────────────────────────────────────────────
