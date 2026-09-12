@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 844 Abschnitte in 5 Dateien — 351 mit eigenem Datum, 492 geerbt, 1 ohne.
+**Umfang:** 847 Abschnitte in 5 Dateien — 352 mit eigenem Datum, 494 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 581 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 584 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 844 Marken, 844 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 847 Marken, 847 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,9 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 21:26 UTC — die Bitte zuerst, und eine Nulllinie, die nichts zu verbessern ließ 🔧](novaberg-roadmap.md#12092026-2126-utc--die-bitte-zuerst-und-eine-nulllinie-die-nichts-zu-verbessern-ließ) |
+| (2026-09-12) | laufend | ### | · [Der Bauteil](novaberg-roadmap.md#der-bauteil) |
+| (2026-09-12) | laufend | ### | · [Was die Messung zeigt — und was nicht](novaberg-roadmap.md#was-die-messung-zeigt--und-was-nicht) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 20:53 UTC — die Lücke beim Nutzer ist ein Thema, kein Satz 🔧](novaberg-roadmap.md#12092026-2053-utc--die-lücke-beim-nutzer-ist-ein-thema-kein-satz) |
 | (2026-09-12) | laufend | ### | · [Vorher gemessen](novaberg-roadmap.md#vorher-gemessen) |
 | (2026-09-12) | laufend | ### | · [Zwei Grenzen neu gelesen](novaberg-roadmap.md#zwei-grenzen-neu-gelesen) |

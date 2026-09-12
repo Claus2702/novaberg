@@ -473,6 +473,7 @@ User-Nachricht; ein neunter kommt fertig aus `ei/dreischicht.py` und trägt selb
 | `[EMOTIONALER ZUSTAND]` | User | Emotion, Arousal, Vektor, Modus |
 | `[VERWANDTE ERINNERUNGEN]` | User | Erlebtes, **nicht** gesichertes Wissen — der Name ist die Aussage (§10, dort begründet) |
 | `[WISSENSLUECKEN]` | User | ~~Semantisch nahe, noch nicht besprochene Konzepte~~ → seit 12.09.2026 **Themen** aus Novas Bestand nah am Gespräch, die der Nutzer nicht berührt hat — die Lücke beim Nutzer, mit Quelle und Relevanz (GV4, `novaberg-gv-strategie_k.md` A.0) |
+| `[BITTE]` | User | seit 12.09.2026, nur wenn der Nutzer um etwas Konkretes bittet (`intent = task`, nie auf einem Impuls): SPRUNG 1 erfuellt die Bitte, Luecken und offene Fragen duerfen danach anschliessen (`graph/reiz.py::is_request`, `novaberg-gv-strategie_k.md` A.0) |
 | `[GESPRAECHSLANDSCHAFT]` · `[WERKZEUGE]` · `[ABSICHTEN]` | System | Der Dreischicht-Block — **drei Marken, nicht eine**, und gebaut in `ei/dreischicht.py::dreischicht_prompt_bauen`, nicht im Knoten. Steht nur, wenn die Dreischicht gerechnet wurde |
 
 **Diese Aufzählung ist maschinell bewacht** (`C18`): Jeder Block, den der Knoten setzt, muss hier

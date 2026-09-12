@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 20:53 UTC** (gemessen via `date -u`). Davor 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 21:26 UTC** (gemessen via `date -u`). Davor 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 84 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 85 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -21,6 +21,46 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 12.09.2026, 21:26 UTC — die Bitte zuerst, und eine Nulllinie, die nichts zu verbessern ließ 🔧
+
+**ZIEL:** Bittet der Nutzer um etwas Konkretes (`intent = task`), liefert die Antwort es
+zuerst; Lücken und offene Fragen dürfen danach anschließen, nicht an seiner Stelle
+(`F-GV-2`, Bauteil 4 von 4).
+**TEST:** `test_bitte_zuerst.py`, 11 Zeugen. Suite **3572 grün, 0 übersprungen**.
+Gegenproben: `is_request` stillgelegt **4/4**, Verfasser-Vorgabe stillgelegt **1/1**,
+alter Wortlaut im Verfasser **2/2**.
+**MESSUNG:** 14 Messturns mit sachlichen Bitten (`F-MESS-1`), Pixie pausiert,
+Wärmewächter; Seiteneffekte in Tabellen und Wissensdateien: keine.
+
+### Der Bauteil
+
+`graph/reiz.py::is_request` — eine Auskunft für GV-Knoten und Verfasser, nie auf einem
+Impuls. Der GV-Prompt bekommt den Block `[BITTE]` nach Lücken und offenen Fragen; der
+Verfasser eine Vorgabe in seinem Gesprächsvektor-Block. **Die erste Fassung schrieb dort
+*der Nutzer*** — der Verfasser nennt die beiden aber Person A und Person B; die Suite
+schwieg, weil der Namenszeuge nur drei andere Blöcke prüft. Berichtigt und bezeugt.
+
+### Was die Messung zeigt — und was nicht
+
+| Reihe | Bitten | davon `task` | zuerst geliefert |
+|---|---|---|---|
+| Nulllinie, klare Bitten | 4 | 1 | 4 |
+| Nulllinie, vage Bitten | 4 | 1 | 4 |
+| nachher, vage Bitten | 4 | 2 | 4 |
+| Endfassung | 2 | 2 | 2 |
+
+**Das Ausweichen des Abends ließ sich nicht nachstellen**, auch nicht mit vagen,
+spielerischen Bitten — ein Gewinn des Bauteils war deshalb nicht messbar. Gemessen ist,
+dass die Vorgabe bei `task` ankommt (GV und Verfasser in 2 von 2) und nichts
+verschlechtert. **Offen ist eine Absichtsfrage:** Die Perzeption vergibt für die meisten
+Bitten `knowledge` oder `creative`; ob auch sie *erst erfüllt* werden, sagt die
+Entscheidung nicht.
+
+**Zwei Befunde am eigenen Messgerät:** Die Reihe zählte Wissensdateien im falschen
+Repositorium (immer null), und sie ordnete Antworten über die Zeilenzahl zu — ein
+Impuls, zugestellt in der Lücke zwischen zwei Läufen, galt als Antwort auf den ersten
+Reiz. Beides behoben, die Endfassung ist über den Wortlaut zugeordnet.
 
 ## 12.09.2026, 20:53 UTC — die Lücke beim Nutzer ist ein Thema, kein Satz 🔧
 

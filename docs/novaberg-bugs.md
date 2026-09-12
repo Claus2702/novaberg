@@ -2420,6 +2420,8 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 **Lösungsansatz:** Offen. Möglich: (a) GV-Tracker für "bereits verwendete Wendungen", (b) Responder-Anweisung, das exakte Phrasen-Muster nicht zweimal in Folge zu nutzen, (c) Verlaufs-Trimming im Reducer-Umbau (jüngste Turns voll, mittlere kondensiert).
 **Prio:** Niedrig — kosmetisch im flirty Register, beeinträchtigt die Lebendigkeit aber spürbar. Bei Reducer-Umbau mit-evaluieren.
 
+**Nachtrag 12.09.2026, spät — in Messturns bestätigt:** *„sag mal"* in **10 von 12** Antworten auf sachliche Bitten. Die Bitte wurde in allen 12 zuerst erfüllt; die Wendung hängt sich danach an.
+
 **Nachtrag 12.09.2026 — im Betrieb weiter da und schärfer als beschrieben.** `[gemessen über 15 Betriebsturns, 18:15–18:52 UTC]` **15 von 15** Antworten enthalten *„sag mal"* und enden mit einer Gegenfrage, 14 mit `:-P`. Das ist nicht mehr kosmetisch: In vier aufeinanderfolgenden Turns verlangte der Mensch ausdrücklich einen Vorschlag und bekam jedesmal eine Gegenfrage statt des Vorschlags (`novaberg-fundliste.md`, 12.09.2026). Ob die Wendung dort die Ursache ist oder nur die Form, ist nicht geprüft.
 
 ---
