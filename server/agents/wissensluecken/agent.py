@@ -16,6 +16,7 @@ import random
 
 from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.wissensluecken.berechnung import (
+    STATUS_GESCHLOSSEN,
     STATUS_OFFEN,
     ist_dublette,
     neugier_vektor_berechnen,
@@ -122,6 +123,9 @@ class WissensluecketAgent(BaseAgent):
         if feld_embedding is None:
             return self._abbruch(state, feld_grund)
 
+        # ── Wiedervorlage: schliessen, was sie kennt ──
+        geschlossen: int = self._bekannte_schliessen(user_id, character_id)
+
         # ── Saat ziehen ─────────────────────────────
         saat: list[str] = self._saat_ziehen(user_id, character_id)
         if not saat:
@@ -212,6 +216,7 @@ class WissensluecketAgent(BaseAgent):
         # ── Ausgabe-Verifikation ────────────────────
         logger.info(
             f"Wissensluecken: {angelegt} angelegt, {aufgefrischt} aufgefrischt, "
+            f"{geschlossen} geschlossen, "
             f"{verworfen} ohne Embedding verworfen "
             f"(Paar={user_id}:{character_id}, Saat={len(saat)}, "
             f"Kandidaten={len(kandidaten)})"
@@ -220,6 +225,7 @@ class WissensluecketAgent(BaseAgent):
         state["ergebnis"] = {
             "angelegt":     angelegt,
             "aufgefrischt": aufgefrischt,
+            "geschlossen":  geschlossen,
             "verworfen":    verworfen,
             "kandidaten":   len(kandidaten),
         }
@@ -318,6 +324,86 @@ class WissensluecketAgent(BaseAgent):
         if norm_a == 0.0 or norm_b == 0.0:
             return 0.0
         return punkt / (norm_a * norm_b)
+
+    @staticmethod
+    def _bekannte_schliessen(user_id: str, character_id: str) -> int:
+        """Schliesst offene Luecken, deren Thema sie nachweislich kennt.
+
+        **Die Wiedervorlage.** Das Konzept schliesst eine Luecke dadurch, dass
+        sie beim naechsten Lauf den Neuheitsfilter nicht mehr passiert
+        (`novaberg-wissensluecken_k.md` §5). Dieser naechste Lauf findet fuer
+        eine alte Zeile nie statt: Der Agent bewertet die **zwanzig neuen
+        Kandidaten** eines Laufs, eine bestehende Zeile nur, wenn ein Kandidat
+        ihr zufaellig gleicht. `[gemessen 12.09.2026]` **114 von 1888** Zeilen
+        (6,0 %) sind je ein zweites Mal angefasst worden; die aelteste stammt
+        vom 27.07.2026, geschlossen ist keine.
+
+        **Warum das Kriterium Identitaet ist und nicht Aehnlichkeit.** Die
+        naheliegende Form — Neuheit neu rechnen, unter eine Schwelle
+        schliessen — ist gemessen nicht baubar. `[gemessen 12.09.2026, je 120
+        Stichproben]` Ein Thema, das Nova **nachweislich kennt**, erreicht als
+        hoechste Aehnlichkeit zum Bestand im Median **0,490**, ein offenes
+        Lueckenthema **0,441**; Thema gegen Thema sind es 0,500 gegen 0,473.
+        **Die Verteilungen ueberlappen fast vollstaendig**, und das ist kein
+        Messfehler, sondern die Bauart: Die Luecken sind **Nachbarthemen**
+        bekannter Themen, sie sollen aehnlich sein. Eine Schwelle darauf
+        schloesse entweder alles oder nichts.
+
+        **Was bleibt, ist der Nachweis statt des Masses.** Steht das Thema
+        woertlich unter den Themen ihrer Langzeit-Knoten, kennt sie es — ohne
+        Schwelle, ohne Embedding, ohne Modellaufruf. `[gemessen 12.09.2026]`
+        **125 von 1908** offenen Luecken erfuellen das heute.
+
+        **Die Reichweite ist damit klein und das steht hier, damit niemand sie
+        groesser liest:** Diese Pruefung raeumt ab, was nachweislich dasselbe
+        ist. Alles andere bleibt offen, und wonach es zu schliessen waere, ist
+        eine Absichtsfrage und keine Rechnung.
+
+        Vorbedingung: keine.
+        Nachbedingung: Zahl der geschlossenen Zeilen; `geschlossen_am` und
+            `status` stehen bei jeder von ihnen.
+        Fehlerfaelle: keine — findet sich nichts, ist das Ergebnis 0.
+        """
+        # ── Verarbeitung ────────────────────────────
+        # Der Vergleich normalisiert beide Seiten gleich (klein, getrimmt).
+        # Ohne das faellt "Dunkle Materie" gegen "dunkle materie " durch,
+        # und die Pruefung meldete null, wo etwas war.
+        # `execute` gibt die betroffenen Zeilen zurueck — kein RETURNING und
+        # keine zweite Abfrage. Eine gezaehlte Vorabfrage waere eine zweite
+        # Wahrheit neben der Schreibung.
+        anzahl: int = db_manager.execute(
+            """
+            WITH bekannt AS (
+                SELECT DISTINCT lower(trim(unnest(themen))) AS thema
+                  FROM lzg_knoten
+                 WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
+            )
+            UPDATE wissensluecken w
+               SET status = %s, geschlossen_am = NOW(), aktualisiert_am = NOW()
+             WHERE w.user_id = %s AND w.character_id = %s
+               AND w.status = %s
+               AND lower(trim(w.thema)) IN (SELECT thema FROM bekannt)
+            """,
+            (user_id, character_id, STATUS_GESCHLOSSEN,
+             user_id, character_id, STATUS_OFFEN),
+        )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if anzahl:
+            logger.info(
+                f"Wissensluecken: {anzahl} Luecke(n) geschlossen — das Thema "
+                f"steht woertlich unter den bekannten Themen von "
+                f"{user_id}:{character_id}"
+            )
+        else:
+            # **Null ist eine Auskunft, kein Schweigen.** Ohne diese Zeile
+            # waere ein Durchgang, der nichts fand, von einem, der nicht lief,
+            # nicht zu unterscheiden.
+            logger.info(
+                f"Wissensluecken: keine Luecke zu schliessen "
+                f"({user_id}:{character_id})"
+            )
+        return anzahl
 
     @staticmethod
     def _saat_ziehen(user_id: str, character_id: str) -> list[str]:
