@@ -37,7 +37,7 @@ from graph.einwand import kopf_anweisung, urteil_lesen
 # Wert — und der Fall, in dem sie gebraucht wird, ist
 # genau der, in dem niemand hinsieht.
 from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
-from graph.reiz import is_request, reiz_ist_eigener_gedanke, reiz_text
+from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 from memory.pipeline_log import log_berechnung
@@ -162,7 +162,10 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
     # und nicht nur im GV-Prompt, weil der Verfasser die Strategie als Material
     # liest und eine Rueckfrage als Vehikel sonst befolgt. **In den Namen dieses
     # Lesers** — Person A und Person B, nicht Nova und der Nutzer (`F-PROMPT-2`).
-    if is_request(state):
+    # Seit dem Nachtrag zu `F-GV-2` entscheidet der GV-Knoten und traegt die
+    # Entscheidung in `gv_detail`; hier wird nur gelesen — eine Stelle, eine
+    # Antwort, auch fuer Wissensfragen, bei denen das Rad mitentscheidet.
+    if (detail.get("bitte_zuerst") or {}).get("zuerst") is True:
         zeilen.append("")
         zeilen.append(
             "Person B hat um etwas Konkretes gebeten. Person A liefert es "

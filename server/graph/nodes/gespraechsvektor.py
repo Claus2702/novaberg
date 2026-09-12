@@ -47,9 +47,9 @@ from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.utils import NEGATIVE_EMOTIONEN, POSITIVE_EMOTIONEN, modus_pruefen
 from ei.wissensluecken import wissensluecken_finden
 from graph.format.memory_context import speaker_label
-from graph.reiz import is_request, reiz_ist_eigener_gedanke, reiz_text
+from graph.reiz import DUTY_INTENTS, reiz_ist_eigener_gedanke, reiz_text, request_first
 from graph.state import ConversationState, pipeline_quelle
-from memory.charakter import initiative_versatz_laden
+from memory.charakter import initiative_versatz_laden, nutzer_gewichtung_rad_laden
 from memory.pipeline_log import log_berechnung, log_fehler
 from memory.repositories.wissensluecken_repository import staerkste_luecken
 from memory.session import format_session_turns_numbered
@@ -522,6 +522,7 @@ def _hypothese_destillieren(
     offene_fragen:     list[dict] | None = None,
     strategie_aktiv:   bool = False,
     dreischicht_block: str = "",
+    bitte_zuerst:      bool = False,
 ) -> tuple[str, dict]:
     """Destilliert die Gespraechsvektor-Hypothese via LLM.
 
@@ -729,7 +730,7 @@ def _hypothese_destillieren(
     # die Absicht nicht und sagte daneben *„Wenn die Wissensluecken einen
     # spannenden naechsten Schritt zeigen, bring ihn ein."* Der Block steht
     # zuletzt, damit er nach Luecken und offenen Fragen gelesen wird.
-    if is_request(state):
+    if bitte_zuerst:
         user_parts.append(
             "[BITTE]\n"
             "Der Nutzer bittet um etwas Konkretes. SPRUNG 1 erfuellt diese Bitte "
@@ -1149,6 +1150,7 @@ def _gv_detail_bauen(
     vorausdenken: str,
     max_laenge:   int,
     antizipation: dict | None = None,
+    bitte:        dict | None = None,
 ) -> dict:
     """Baut `gv_detail` — **die einzige Stelle, an der die Felder stehen**.
 
@@ -1197,6 +1199,9 @@ def _gv_detail_bauen(
         # Das Begleitfeld. Es traegt den Unterschied, den die Landschaft allein
         # nicht mehr tragen kann, seit sie in jedem Turn dasteht.
         "vorausdenken": vorausdenken,
+        # Die Entscheidung *Bitte zuerst* samt Eingangswerten — auf jedem Weg,
+        # weil der Verfasser sie auch liest, wenn nicht vorausgedacht wurde.
+        "bitte_zuerst": bitte if bitte is not None else {"zuerst": False, "grund": "nicht_entschieden"},
         # Initiative: die drei Masse einzeln, damit am Panel ablesbar bleibt,
         # woraus das Achsen-Bit entstanden ist und was gefehlt hat.
         "initiative": {
@@ -1212,6 +1217,55 @@ def _gv_detail_bauen(
             "versatz_quelle": lage.versatz_quelle,
         },
     }
+
+
+def _bitte_entscheiden(state: ConversationState) -> dict:
+    """Entscheidet *Bitte zuerst* fuer diesen Turn und protokolliert die Eingangswerte.
+
+    Das Zuwendungsrad wird **nur bei einer Wissensfrage** geladen — dort und
+    nur dort haengt die Entscheidung an ihm (`graph/reiz.py::request_first`).
+    Ein nicht lesbares Rad ist ein Fehler im Log; entschieden wird dann nach
+    der Pflicht, weil die Neugier einen Anlass braucht und keinen hat.
+
+    Vorbedingung: `state` stammt aus dem CharacterGraph.
+    Nachbedingung: die Entscheidung als Dict mit `zuerst` und `grund`; eine
+        Zeile `bitte_zuerst` im Pipeline-Log traegt sie mit ihren Eingangswerten.
+    Fehlerfaelle: keine, die den Turn beenden.
+
+    Args:
+        state: der Zustand des Turns.
+
+    Returns:
+        Die Entscheidung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    rad: dict[str, float] | None = None
+    emotion = getattr(state.get("external"), "emotion", None)
+    if not reiz_ist_eigener_gedanke(state) and getattr(emotion, "intent", "") in DUTY_INTENTS:
+        rad, quelle = nutzer_gewichtung_rad_laden(POSTGRES_URL, state.get("user_id", ""))
+        if rad is None:
+            logger.error(
+                "GV: Zuwendungsrad fuer %r nicht lesbar (%s) — Wissensfrage wird "
+                "nach der Pflicht entschieden", state.get("user_id", ""), quelle,
+            )
+
+    # ── Verarbeitung ────────────────────────────
+    entscheidung: dict = request_first(state, rad)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(entscheidung.get("zuerst"), bool) or not entscheidung.get("grund"):
+        raise ValueError(f"GV: Entscheidung Bitte zuerst unvollstaendig: {entscheidung!r}")
+    log_berechnung(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "gespraechsvektor",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {"schritt": "bitte_zuerst", **entscheidung},
+        user_id      = state.get("user_id"),
+        character_id = state.get("character_id"),
+    )
+    if entscheidung["zuerst"]:
+        logger.info("GV: Bitte zuerst — %s", entscheidung["grund"])
+    return entscheidung
 
 
 def gespraechsvektor(state: ConversationState) -> ConversationState:
@@ -1257,6 +1311,10 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     # sondern `gv_detail` vollstaendig.
     lage: Lage = _lage_vermessen(state)
 
+    # 1b. Die Bitte zuerst — vor den Toren, weil der Verfasser sie auch liest,
+    #     wenn nicht vorausgedacht wird (`F-GV-2`).
+    bitte: dict = _bitte_entscheiden(state)
+
     # 2. Die beiden Tore des Vorausdenkens.
     if _ist_skip(state):
         logger.info(
@@ -1264,7 +1322,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             f"Landschaft '{lage.cluster}' steht trotzdem"
         )
         state["gespraechsvektor"] = ""
-        state["gv_detail"] = _gv_detail_bauen(lage, VORAUSDENKEN_SKIP, 0)
+        state["gv_detail"] = _gv_detail_bauen(lage, VORAUSDENKEN_SKIP, 0, bitte=bitte)
         return state
 
     max_laenge: int = _vektor_laenge_berechnen(state)
@@ -1279,7 +1337,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             f"Landschaft '{lage.cluster}' steht trotzdem"
         )
         state["gespraechsvektor"] = ""
-        state["gv_detail"] = _gv_detail_bauen(lage, grund, 0)
+        state["gv_detail"] = _gv_detail_bauen(lage, grund, 0, bitte=bitte)
         return state
 
     # 3. Zweite Wissensquelle: die Spreading-Erinnerungen des Enrichers.
@@ -1368,6 +1426,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         offene_fragen=offene_fragen,
         strategie_aktiv=strategie_aktiv,
         dreischicht_block=dreischicht_block,
+        bitte_zuerst=bitte["zuerst"],
     )
 
     # 4b. Korridor pruefen
@@ -1390,7 +1449,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     state["gespraechsvektor"] = hypothese
 
     state["gv_detail"] = _gv_detail_bauen(
-        lage, VORAUSDENKEN_GELAUFEN, max_laenge,
+        lage, VORAUSDENKEN_GELAUFEN, max_laenge, bitte=bitte,
         antizipation = {
             # Spruenge (LLM-Output geparst)
             "sprung_1":  gv_parsed.get("sprung_1", ""),

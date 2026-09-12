@@ -3262,6 +3262,14 @@ GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
 # 0,211); die Resonanz trennt Wissen nicht von Beziehung.
 GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.15
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
+# Um wie viel `wissbegier` im Zuwendungsrad des Paares ueber `pflicht` liegen
+# muss, damit eine Wissensfrage **nicht** zuerst beantwortet wird, sondern die
+# Neugier den Vorzug hat (`F-GV-2`, Nachtrag 12.09.2026). **Die Messunsicherheit
+# des Rades, nicht eine Setzung ueber Vorlieben:** der Median der Spanne, die
+# `pflicht` oder `wissbegier` zwischen den Laeufen derselben Erhebung zeigen,
+# ueber 97 Erhebungen 0,05 (p90 0,26). Ein kleinerer Abstand ist kein Anlass —
+# dann bleibt die Pflicht.
+GV_BITTE_RAD_ABSTAND:            float = 0.05
 # Wie lange die Gewichtsverteilung eines Paares zwischengehalten wird, bevor sie
 # neu geladen wird. Sie ist die Skala der Naht zwischen LZG und KZG und soll mit
 # dem Bestand wandern, aber nicht mit jedem Turn: Ein Laden liest alle aktiven

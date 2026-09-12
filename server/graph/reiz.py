@@ -27,6 +27,8 @@ auseinander (`novaberg-bugs.md` → `VERFASSER-KENNT-DIE-QUELLE-NICHT`).
 
 import logging
 
+from config import GV_BITTE_RAD_ABSTAND
+
 logger = logging.getLogger("ki_server.graph.reiz")
 
 # Der Platz, an dem der Level eines Gedankens durch das Ereignis reist. Als
@@ -153,43 +155,77 @@ def reiz_level(state: dict) -> float | None:
     return level
 
 
-#: Die Absicht, bei der eine Bitte vor jeder Neugier steht (`F-GV-2`).
-#:
-#: **Nur `task`, und das ist eine Setzung am Wortlaut der Entscheidung.** Die
-#: Perzeption vergibt daneben `knowledge` fuer Wissensfragen — im Bestand des
-#: produktiven Paares 423 von 670 Nutzerturns gegen 81 mit `task`
-#: (12.09.2026). Ob auch eine Wissensfrage *erst beantwortet, dann erweitert*
-#: werden soll, ist nicht entschieden.
+#: Die Absicht, bei der eine Bitte **immer** vor jeder Neugier steht (`F-GV-2`).
 REQUEST_INTENTS: frozenset[str] = frozenset({"task"})
 
+#: Die Absicht, bei der die Bitte **Pflicht** ist — zuerst beantwortet, ausser das
+#: Rad des Paares gibt der Neugier Anlass (`F-GV-2`, Nachtrag 12.09.2026:
+#: *„Die Wissensfragen sind eher Pflicht, Neugier dann im Gegensatz dazu eher
+#: privater Natur."*).
+DUTY_INTENTS: frozenset[str] = frozenset({"knowledge"})
 
-def is_request(state: dict) -> bool:
-    """Sagt, ob dieser Turn eine Bitte des Gegenuebers traegt, die vor jeder Neugier steht.
 
-    **Warum hier.** GV-Knoten und Verfasser brauchen dieselbe Auskunft; stuende
-    sie zweimal, liefe die Kopie auseinander — der Grund, aus dem diese Datei
-    existiert.
+def request_first(state: dict, rad: dict[str, float] | None) -> dict:
+    """Entscheidet, ob die Bitte dieses Turns vor jeder Neugier bedient wird.
 
-    **Ein Impuls ist nie eine Bitte.** Auf einem Impuls-Turn hat niemand
-    gesprochen; `external` ist dort eine Kopie von `internal` und beschreibt
-    Novas vorige Antwort.
+    **Drei Faelle, und nur einer braucht das Rad.**
 
-    Vorbedingung: keine — ein fehlender Zustand heisst „keine Bitte".
-    Nachbedingung: True genau dann, wenn der Turn kein eigener Impuls ist und
-        die Perzeption des Gegenuebers eine Absicht aus `REQUEST_INTENTS`
-        vergeben hat.
+    | Absicht | Entscheidung |
+    |---|---|
+    | `task` | immer zuerst |
+    | `knowledge` | zuerst (Pflicht) — ausser `wissbegier − pflicht` im Rad des Paares liegt ueber `GV_BITTE_RAD_ABSTAND`; dann hat die Neugier Anlass |
+    | alles andere, und jeder Impuls | keine Bitte |
+
+    **Gleichstand, Nullrad und ein nicht lesbares Rad bleiben bei der Pflicht** —
+    die Pflicht ist der Normalfall, die Neugier braucht einen Anlass.
+
+    **Warum hier und rein.** GV-Knoten und Verfasser brauchen dieselbe Auskunft;
+    der GV-Knoten laedt das Rad und traegt das Ergebnis in `gv_detail`, der
+    Verfasser liest nur noch dort. Die Entscheidung selbst liest keinen Speicher.
+
+    Vorbedingung: keine — ein fehlender Zustand heisst „keine Bitte". `rad` ist
+        das flache Zuwendungsrad des Paares oder None, wenn es nicht gelesen
+        wurde oder nicht lesbar war.
+    Nachbedingung: ein Dict mit `zuerst` (bool), `grund` (Marke), `intent`,
+        und bei einer Wissensfrage `pflicht`, `wissbegier`, `abstand` —
+        die Eingangswerte der Entscheidung, damit sie nachrechenbar ist.
 
     Args:
         state: der Zustand des Durchlaufs.
+        rad: die Speichen des Zuwendungsrads, flach, oder None.
 
     Returns:
-        Ob die Bitte zuerst bedient werden muss.
+        Die Entscheidung mit ihren Eingangswerten.
     """
     # ── Eingabe-Validierung ─────────────────────
     if reiz_ist_eigener_gedanke(state):
-        return False
-    external = state.get("external")
-    emotion = getattr(external, "emotion", None)
+        return {"zuerst": False, "grund": "impuls", "intent": ""}
+    emotion = getattr(state.get("external"), "emotion", None)
+    intent: str = getattr(emotion, "intent", "") or ""
 
-    # ── Verarbeitung / Ausgabe ──────────────────
-    return getattr(emotion, "intent", "") in REQUEST_INTENTS
+    # ── Verarbeitung ────────────────────────────
+    if intent in REQUEST_INTENTS:
+        return {"zuerst": True, "grund": "aufgabe", "intent": intent}
+    if intent not in DUTY_INTENTS:
+        return {"zuerst": False, "grund": "keine_bitte", "intent": intent}
+    pflicht = rad.get("pflicht") if rad else None
+    wissbegier = rad.get("wissbegier") if rad else None
+    if not isinstance(pflicht, (int, float)) or not isinstance(wissbegier, (int, float)) \
+            or isinstance(pflicht, bool) or isinstance(wissbegier, bool):
+        return {"zuerst": True, "grund": "pflicht_ohne_rad", "intent": intent,
+                "pflicht": None, "wissbegier": None, "abstand": None}
+    # Gerundet, bevor verglichen wird: Die Entscheidung faellt auf demselben
+    # Wert, der protokolliert wird — ungerundet lag 0,80 + 0,05 − 0,80 bei
+    # 0,05000000000000004 und damit ueber der Grenze.
+    abstand: float = round(float(wissbegier) - float(pflicht), 4)
+    neugier: bool = abstand > GV_BITTE_RAD_ABSTAND
+
+    # ── Ausgabe ─────────────────────────────────
+    return {
+        "zuerst":     not neugier,
+        "grund":      "neugier_hat_anlass" if neugier else "pflicht",
+        "intent":     intent,
+        "pflicht":    round(float(pflicht), 4),
+        "wissbegier": round(float(wissbegier), 4),
+        "abstand":    abstand,
+    }
