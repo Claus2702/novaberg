@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 13:05 UTC** (gemessen via `date -u`). Davor 12.09.2026, 10:45 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 13:05 UTC** samt Nachtrag 13:30 UTC (gemessen via `date -u`). Davor 12.09.2026, 10:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -87,6 +87,45 @@ Turn, sondern eine neue Kern-Destillation (5198 → 4720 Zeichen). Eine Schwelle
 auf einem destillierten Text ist gegen einen Bezug kalibriert, den ein
 Hintergrundlauf jederzeit neu schreibt. Verteilung in
 `novaberg-kalibrierung_k.md` §3.3a.
+
+### Nachtrag 13:30 UTC — die eigene Vermutung gemessen und halbiert
+
+Der Abschnitt oben nennt als Kandidaten fuer die Spreizung, dass ein Kern
+**viele Gegenstaende in einem Vektor** ist — ein Verstoss gegen Konvention 4 der
+Embedding-Regeln. Er stand als *ungemessen* da, und das war die einzige Stelle
+des Tages, an der eine Erklaerung ohne Zahl in einem Dokument stand.
+
+**Gemessen, indem der Kern je Paar in Saetze zerlegt wurde** (Mindestlaenge 40
+Zeichen, 3 bis 37 Facetten) und `max(cosine(turn, facette))` gegen
+`cosine(turn, kern)` auf **denselben** Turns stand — sechs Paare, 373 Turns:
+
+| | ganzer Kern | Facetten-Maximum |
+|---|---:|---:|
+| Median je Paar | 0,097 – 0,282 | 0,139 – 0,334 |
+| **Spreizung zwischen den Paaren** | **0,186** | **0,195** |
+| p10–p90 innerhalb eines Paares | 0,128 – 0,173 | 0,100 – 0,200 |
+
+**Die Vermutung traegt fuer das Niveau und nicht fuer die Spreizung.** Jeder
+Median steigt um +0,031 bis +0,097, die Maxima von 0,428 auf 0,555 — der ganze
+Kern verliert also wirklich Signal, und zwar in der Groessenordnung, in der die
+Schwelle liegt. **Die Spreizung zwischen den Paaren wird nicht kleiner, sondern
+minimal groesser.** Und die Trennschaerfe innerhalb eines Paares gewinnt nichts
+Systematisches: einmal 0,145 → 0,200, einmal 0,141 → 0,100.
+
+> **Damit sind es zwei Fragen und nicht eine.** Das **Mass** gehoert zur
+> Embedding-Konvention und ist dort mit Zahl nachgetragen; die **Spreizung**
+> bleibt eine Eigenschaft der Paare und offen. Wer das Mass repariert, hat die
+> Paare nicht angeglichen — die Schwelle muesste danach nur hoeher liegen.
+
+**Die Gegenprobe sagt, dass es keine reine Verschiebung ist:** Spearman zwischen
+beiden Groessen liegt bei 0,68 bis 0,91 — die Zerlegung aendert die Rangfolge der
+Turns merklich. Und ein Paar passiert auch auf dem Facetten-Maximum **nichts**
+(Maximum 0,294 gegen Schwelle 0,30).
+
+**Der Lauf lief unter dem Temperatur-Waechter**, auf ausdruecklichen Auftrag bei
+81,8 °C Nulllinie: 95 Messpunkte, Mittel 75,5 °C, Maximum 85,5 °C, Grenze 90 nie
+gerissen, zwei Punkte ueber 85. Seiteneffekte gezaehlt und null — der Lauf liest
+nur (Notizen 1, Rohturns 1434, Wissensluecken 1908, alle unveraendert).
 
 ### Zwei Absichtsfragen, die aus den Messungen folgen
 

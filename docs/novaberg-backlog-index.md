@@ -317,82 +317,82 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
-| GED | 27 | offen | `EMBED-LISTE-DELEGATIONSAKTEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-gedaechtnis.md) |
-| GED | 51 | abgeschlossen | `SALIENZKURVE-UNTEN-ZU-STEIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-gedaechtnis.md) |
-| GED | 67 | offen | `QUERY-REWRITING-QUELLE-STEHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
-| GED | 80 | abgeschlossen | `SUCHSCHLUESSEL-OHNE-VERLAUF` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
-| GED | 109 | offen | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 161 | offen | `EBBINGHAUS-KONSTANTEN-TOT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 174 | offen | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 187 | offen | `ENTITAET-IDS-LEER-82-PROZENT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 418 | offen | `REFAC-KZG-CODE-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 419 | abgeschlossen | `ZIEL-DECAY-FORMEL-KUMULATIV` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 420 | abgeschlossen | `ZIEL-DECAY-TYP-FILTER` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 421 | abgeschlossen | `ZIEL-DECAY-DOKU-LUEGT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 422 | offen | `ENRICHER-REDIS-UNGESCHUETZT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 425 | offen | `EPIC-EMOTIONALE-GRAVITATION` | [EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen na](novaberg-backlog-gedaechtnis.md) |
-| GED | 464 | abgeschlossen | `KZG-DEDUP` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
-| GED | 473 | abgeschlossen | `KZG-KERN-BLIND` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
-| GED | 482 | offen | `KZG-L` | [Epic: KZG-Liberalisierung + LZG-Destillation (Chat 6](novaberg-backlog-gedaechtnis.md) |
-| GED | 702 | offen | `EPIC-PROMOTION-KORREKTUR` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 784 | offen | `PROMO-CLUSTER-EI-UPDATE` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 809 | offen | `PROMO-CLUSTER-TIE-DETERMINISM` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 821 | offen | `PROMO-DESTILL-DEAD` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 832 | offen | `PROMO-INTENTIONEN-FORMAT-DRIFT` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 845 | abgeschlossen | `EPIC-MEMORY-KERN-UMBAU` | [EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell](novaberg-backlog-gedaechtnis.md) |
-| GED | 982 | offen | `SESSION-SUMMARY-INACTIVE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
-| GED | 994 | offen | `LZG-HAEUFIGKEIT-AMBIVALENT` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1017 | offen | `MEMORY-SALIENZ-VERERBUNG` | [Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf sema](novaberg-backlog-gedaechtnis.md) |
-| GED | 1050 | offen | `ENRICHER-AKTE` | [Konzept: ENRICHER-AKTE — Strukturierte Memory-Contex](novaberg-backlog-gedaechtnis.md) |
-| GED | 1086 | offen | `KONZEPT-TURNLOG-CHRONIK` | [KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log al](novaberg-backlog-gedaechtnis.md) |
-| GED | 1140 | abgeschlossen | `KZG-CLEANUP` | [Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-E](novaberg-backlog-gedaechtnis.md) |
-| GED | 1170 | abgeschlossen | `SPRINT-PIXIE-EVA-HAERTUNG` | [SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekomm](novaberg-backlog-gedaechtnis.md) |
-| GED | 1202 | offen | `DOPPEL-SESSION-LOAD` | [Performance: DOPPEL-SESSION-LOAD — Session-Turns wer](novaberg-backlog-gedaechtnis.md) |
-| GED | 1238 | offen | `SESSION-SUMMARY-PFAD-INAKTIV` | [Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1275 | offen | `KZG-VERDICHTER-KONTEXT-VERLUST` | [Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter pro](novaberg-backlog-gedaechtnis.md) |
-| GED | 1306 | offen | `SALIENZ-VERDICHTUNG-MEHRFACH` | [Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 1332 | offen | `AUDIT-1-BEIFANG-PROMOTION` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1346 | offen | `EMOTIONS-VEKTOR-LEER` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1347 | offen | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1348 | abgeschlossen | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1349 | offen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1350 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1357 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
-| GED | 1378 | offen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timelin](novaberg-backlog-gedaechtnis.md) |
-| GED | 1393 | offen | `SYNAPSEN-DUAL-LZG` | [Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten](novaberg-backlog-gedaechtnis.md) |
-| GED | 1408 | offen | `KZG-GEWICHT-ABSOLUT-CEILING` | [Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfu](novaberg-backlog-gedaechtnis.md) |
-| GED | 1472 | abgeschlossen | `P5-LIVE-ABNAHME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1473 | offen | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1474 | offen | `SPREADING-RELEVANZ-BEOBACHTEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1475 | offen | `LZG-RESONANZ-DATETIME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1476 | abgeschlossen | `LZG-RESONANZ-STATE-DEKL` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1477 | offen | `LZG-RESONANZ-ENTITAET-NAMEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1494 | offen | `ENRICHER-DUP` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
-| GED | 1495 | offen | `TOK-DRIFT-SALIENCE` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
-| GED | 1536 | abgeschlossen | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | [Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1553 | offen | `HALBREAKTIVIERUNG-LIVE` | [Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Mat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1569 | offen | `SYNAPSEN-REAKTIV-SCHWELLE` | [Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schw](novaberg-backlog-gedaechtnis.md) |
-| GED | 1582 | offen | `HAEUFIGKEIT-AUF-KNOTEN` | [Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_](novaberg-backlog-gedaechtnis.md) |
-| GED | 1591 | offen | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | [Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorisch](novaberg-backlog-gedaechtnis.md) |
-| GED | 1600 | offen | `GESPRAECH-ARCHIV-VERWAIST` | [Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1611 | offen | `KZG-QUELLE-IST-USER-ID` | [Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `u](novaberg-backlog-gedaechtnis.md) |
-| GED | 1620 | offen | `ENTITAET-EMBED-DREIFACH` | [Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad emb](novaberg-backlog-gedaechtnis.md) |
-| GED | 1637 | offen | `GESPRAECH-ARCHIV-LEER` | [Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohges](novaberg-backlog-gedaechtnis.md) |
-| GED | 1648 | offen | `PIPELINE-LOG-MERGE-BLIND` | [Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement](novaberg-backlog-gedaechtnis.md) |
-| GED | 1657 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
-| GED | 1666 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
-| GED | 1675 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
-| GED | 1686 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1701 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
-| GED | 1718 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
-| GED | 1733 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1750 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
-| GED | 1781 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1831 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
-| GED | 1856 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1897 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
-| GED | 1932 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1959 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
+| GED | 29 | offen | `EMBED-LISTE-DELEGATIONSAKTEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-gedaechtnis.md) |
+| GED | 53 | abgeschlossen | `SALIENZKURVE-UNTEN-ZU-STEIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-gedaechtnis.md) |
+| GED | 69 | offen | `QUERY-REWRITING-QUELLE-STEHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
+| GED | 82 | abgeschlossen | `SUCHSCHLUESSEL-OHNE-VERLAUF` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
+| GED | 111 | offen | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 163 | offen | `EBBINGHAUS-KONSTANTEN-TOT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 176 | offen | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 189 | offen | `ENTITAET-IDS-LEER-82-PROZENT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 420 | offen | `REFAC-KZG-CODE-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 421 | abgeschlossen | `ZIEL-DECAY-FORMEL-KUMULATIV` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 422 | abgeschlossen | `ZIEL-DECAY-TYP-FILTER` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 423 | abgeschlossen | `ZIEL-DECAY-DOKU-LUEGT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 424 | offen | `ENRICHER-REDIS-UNGESCHUETZT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 427 | offen | `EPIC-EMOTIONALE-GRAVITATION` | [EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen na](novaberg-backlog-gedaechtnis.md) |
+| GED | 466 | abgeschlossen | `KZG-DEDUP` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
+| GED | 475 | abgeschlossen | `KZG-KERN-BLIND` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
+| GED | 484 | offen | `KZG-L` | [Epic: KZG-Liberalisierung + LZG-Destillation (Chat 6](novaberg-backlog-gedaechtnis.md) |
+| GED | 704 | offen | `EPIC-PROMOTION-KORREKTUR` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 786 | offen | `PROMO-CLUSTER-EI-UPDATE` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 811 | offen | `PROMO-CLUSTER-TIE-DETERMINISM` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 823 | offen | `PROMO-DESTILL-DEAD` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 834 | offen | `PROMO-INTENTIONEN-FORMAT-DRIFT` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 847 | abgeschlossen | `EPIC-MEMORY-KERN-UMBAU` | [EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell](novaberg-backlog-gedaechtnis.md) |
+| GED | 984 | offen | `SESSION-SUMMARY-INACTIVE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
+| GED | 996 | offen | `LZG-HAEUFIGKEIT-AMBIVALENT` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1019 | offen | `MEMORY-SALIENZ-VERERBUNG` | [Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf sema](novaberg-backlog-gedaechtnis.md) |
+| GED | 1052 | offen | `ENRICHER-AKTE` | [Konzept: ENRICHER-AKTE — Strukturierte Memory-Contex](novaberg-backlog-gedaechtnis.md) |
+| GED | 1088 | offen | `KONZEPT-TURNLOG-CHRONIK` | [KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log al](novaberg-backlog-gedaechtnis.md) |
+| GED | 1142 | abgeschlossen | `KZG-CLEANUP` | [Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-E](novaberg-backlog-gedaechtnis.md) |
+| GED | 1172 | abgeschlossen | `SPRINT-PIXIE-EVA-HAERTUNG` | [SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekomm](novaberg-backlog-gedaechtnis.md) |
+| GED | 1204 | offen | `DOPPEL-SESSION-LOAD` | [Performance: DOPPEL-SESSION-LOAD — Session-Turns wer](novaberg-backlog-gedaechtnis.md) |
+| GED | 1240 | offen | `SESSION-SUMMARY-PFAD-INAKTIV` | [Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1277 | offen | `KZG-VERDICHTER-KONTEXT-VERLUST` | [Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter pro](novaberg-backlog-gedaechtnis.md) |
+| GED | 1308 | offen | `SALIENZ-VERDICHTUNG-MEHRFACH` | [Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 1334 | offen | `AUDIT-1-BEIFANG-PROMOTION` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1348 | offen | `EMOTIONS-VEKTOR-LEER` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1349 | offen | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1350 | abgeschlossen | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1351 | offen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1352 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1359 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
+| GED | 1380 | offen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timelin](novaberg-backlog-gedaechtnis.md) |
+| GED | 1395 | offen | `SYNAPSEN-DUAL-LZG` | [Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten](novaberg-backlog-gedaechtnis.md) |
+| GED | 1410 | offen | `KZG-GEWICHT-ABSOLUT-CEILING` | [Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfu](novaberg-backlog-gedaechtnis.md) |
+| GED | 1474 | abgeschlossen | `P5-LIVE-ABNAHME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1475 | offen | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1476 | offen | `SPREADING-RELEVANZ-BEOBACHTEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1477 | offen | `LZG-RESONANZ-DATETIME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1478 | abgeschlossen | `LZG-RESONANZ-STATE-DEKL` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1479 | offen | `LZG-RESONANZ-ENTITAET-NAMEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1496 | offen | `ENRICHER-DUP` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
+| GED | 1497 | offen | `TOK-DRIFT-SALIENCE` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
+| GED | 1538 | abgeschlossen | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | [Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1555 | offen | `HALBREAKTIVIERUNG-LIVE` | [Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Mat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1571 | offen | `SYNAPSEN-REAKTIV-SCHWELLE` | [Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schw](novaberg-backlog-gedaechtnis.md) |
+| GED | 1584 | offen | `HAEUFIGKEIT-AUF-KNOTEN` | [Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1593 | offen | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | [Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorisch](novaberg-backlog-gedaechtnis.md) |
+| GED | 1602 | offen | `GESPRAECH-ARCHIV-VERWAIST` | [Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1613 | offen | `KZG-QUELLE-IST-USER-ID` | [Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `u](novaberg-backlog-gedaechtnis.md) |
+| GED | 1622 | offen | `ENTITAET-EMBED-DREIFACH` | [Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad emb](novaberg-backlog-gedaechtnis.md) |
+| GED | 1639 | offen | `GESPRAECH-ARCHIV-LEER` | [Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohges](novaberg-backlog-gedaechtnis.md) |
+| GED | 1650 | offen | `PIPELINE-LOG-MERGE-BLIND` | [Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement](novaberg-backlog-gedaechtnis.md) |
+| GED | 1659 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
+| GED | 1668 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
+| GED | 1677 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
+| GED | 1688 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1703 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1720 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1735 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1752 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
+| GED | 1783 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1833 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
+| GED | 1858 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1899 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1934 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1961 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
 | HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
 | HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
 | HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
@@ -591,74 +591,74 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |
-| WIS | 77 | offen | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
-| WIS | 78 | offen | `EMBED-LISTE-AUTONOMES-WISSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
-| WIS | 79 | abgeschlossen | `EMBED-LISTE-DATEIENINDEX` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
-| WIS | 80 | offen | `EMBED-RUECKWEG-UNGEMESSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
-| WIS | 104 | offen | `SELBSTAUSKUNFT-OHNE-LESER` | [Block 16.08.2026 — die Gegenrichtung der Doku-Pruefu](novaberg-backlog-wissen.md) |
-| WIS | 136 | offen | `FACHSPEICHER-AGENTEN` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
-| WIS | 137 | offen | `FAKTEN-BINDUNG-OHNE-VERFALL` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
-| WIS | 138 | offen | `REEMBED-WISSENSSPEICHER` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
-| WIS | 149 | offen | `AUFZEICHNUNGEN-QUANTIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
-| WIS | 150 | offen | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
-| WIS | 166 | offen | `ZUSAMMENFASSUNG-ALS-ZWEITER-ARM` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 179 | offen | `SCHREIBPFAD-BIBLIOTHEK-UNGEMESSEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 192 | offen | `RUECKWEG-VORAUSWAHL-OHNE-TRENNSCHAERFE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 205 | offen | `BEZUG-ID-NIE-AUSGELOEST` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 218 | offen | `FUNDSTELLE-ERREICHT-DEN-MENSCHEN-NICHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 231 | offen | `SILO-OHNE-ZUSTAND-IN-DER-MATRIX` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 244 | offen | `BESTAND-ANTWORTET-ANDERS-NACH-90-MIN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 257 | offen | `KANDIDATENABFRAGE-OHNE-DB-ZEUGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 270 | offen | `VERSTAERKUNGSPFAD-IM-BETRIEB-UNGETROFFEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 283 | offen | `DREI-WEGE-EINE-SCHWELLE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 296 | offen | `EINREIHPUNKT-HINTER-DEM-SCHREIBEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 309 | offen | `RUECKFRAGE-DEKLARIERT-UND-UNGENUTZT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 322 | offen | `ZEILEN-LESEN-OHNE-AUFRUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 335 | abgeschlossen | `WERKZEUGSCHICHT-DATEIEN-OHNE-RUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 348 | offen | `RETRIEVAL-SCHWELLE-OHNE-WIRKUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 361 | offen | `GRENZE-OHNE-LESER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 374 | offen | `WISSEN-UND-WEBSUCHE-NICHT-ANSPRECHBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 387 | offen | `ZUSTELLART-EINWERTIG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
-| WIS | 410 | offen | `NOTIZEN-ENRICH-16-ZWEIGE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-wissen.md) |
-| WIS | 428 | offen | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
-| WIS | 443 | offen | `ZEIT-TAGESZEIT-VOR-ZIFFER` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
-| WIS | 502 | offen | `AGENT-RUECKFRAGE-LOOP` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
-| WIS | 515 | offen | `NOTIZEN-VOR-TURN-BEZUG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
-| WIS | 534 | offen | `TIMELINE-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
-| WIS | 535 | abgeschlossen | `FAKTEN-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
-| WIS | 536 | offen | `NOTIZEN-INDIZES-NACHTRAG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
-| WIS | 538 | offen | `PLANNER-TIMELINE-INTENT-MISS` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
-| WIS | 541 | offen | `EPIC-WISSENSSPEICHER` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 552 | abgeschlossen | `WIS-1-MOUNT` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 553 | abgeschlossen | `WIS-2-TABELLE` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 554 | abgeschlossen | `WIS-3-DATEIEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 555 | offen | `WIS-4-STAPEL-SALIENZ` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 556 | offen | `WIS-5-VERFALL` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 557 | offen | `WIS-6-FORTSETZEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 558 | abgeschlossen | `WIS-PRUEFUNG-F-WISSEN-1` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 559 | abgeschlossen | `WIS-7-ENRICHER` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 560 | offen | `WIS-8-STUFE-2` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 561 | offen | `WIS-SCHWELLE-MESSEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 581 | offen | `WIS-GATE-MESSUNG` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 582 | offen | `WIS-KONTEXT-NEU-DIMENSIONIEREN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
-| WIS | 587 | offen | `EPIC-KLAERUNG` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
-| WIS | 602 | offen | `KLA-K5-FAKTENPFAD` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
-| WIS | 603 | offen | `KLA-K1-ERWARTUNGSSCHEMA` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
-| WIS | 604 | offen | `KLA-K2-KLAERUNGSTOR` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
-| WIS | 605 | offen | `KLA-K3-SALIENZ` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
-| WIS | 606 | offen | `KLA-K4-ZWISCHENSCHRITT` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
-| WIS | 801 | abgeschlossen | `SPRINT-NOTIZEN-BEZUGSAUFLOESUNG` | [SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung](novaberg-backlog-wissen.md) |
-| WIS | 836 | abgeschlossen | `SPRINT-M25A-TIMELINE-CLEANUP` | [SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent ver](novaberg-backlog-wissen.md) |
-| WIS | 879 | offen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
-| WIS | 910 | offen | `NOTIZEN-PAIR-MISSING` | [Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `ch](novaberg-backlog-wissen.md) |
-| WIS | 929 | offen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
-| WIS | 948 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
-| WIS | 967 | offen | `NOTIZEN-KONTEXT-REKONSTRUKTION` | [Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Re](novaberg-backlog-wissen.md) |
-| WIS | 995 | offen | `NOTIZEN-CONTAINER-WECHSEL` | [Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel](novaberg-backlog-wissen.md) |
-| WIS | 1020 | offen | `NOTIZEN-SKILL-MANIFEST` | [Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähi](novaberg-backlog-wissen.md) |
-| GED | 1041 | offen | `NOTIZEN-UPDATE-TARGET-LEER` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
-| WIS | 1079 | offen | `FAKTEN-TABELLE-ENTITY-MERGE` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
-| WIS | 1080 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 79 | offen | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 80 | offen | `EMBED-LISTE-AUTONOMES-WISSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 81 | abgeschlossen | `EMBED-LISTE-DATEIENINDEX` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 82 | offen | `EMBED-RUECKWEG-UNGEMESSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 106 | offen | `SELBSTAUSKUNFT-OHNE-LESER` | [Block 16.08.2026 — die Gegenrichtung der Doku-Pruefu](novaberg-backlog-wissen.md) |
+| WIS | 138 | offen | `FACHSPEICHER-AGENTEN` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 139 | offen | `FAKTEN-BINDUNG-OHNE-VERFALL` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 140 | offen | `REEMBED-WISSENSSPEICHER` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 151 | offen | `AUFZEICHNUNGEN-QUANTIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
+| WIS | 152 | offen | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
+| WIS | 168 | offen | `ZUSAMMENFASSUNG-ALS-ZWEITER-ARM` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 181 | offen | `SCHREIBPFAD-BIBLIOTHEK-UNGEMESSEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 194 | offen | `RUECKWEG-VORAUSWAHL-OHNE-TRENNSCHAERFE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 207 | offen | `BEZUG-ID-NIE-AUSGELOEST` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 220 | offen | `FUNDSTELLE-ERREICHT-DEN-MENSCHEN-NICHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 233 | offen | `SILO-OHNE-ZUSTAND-IN-DER-MATRIX` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 246 | offen | `BESTAND-ANTWORTET-ANDERS-NACH-90-MIN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 259 | offen | `KANDIDATENABFRAGE-OHNE-DB-ZEUGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 272 | offen | `VERSTAERKUNGSPFAD-IM-BETRIEB-UNGETROFFEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 285 | offen | `DREI-WEGE-EINE-SCHWELLE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 298 | offen | `EINREIHPUNKT-HINTER-DEM-SCHREIBEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 311 | offen | `RUECKFRAGE-DEKLARIERT-UND-UNGENUTZT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 324 | offen | `ZEILEN-LESEN-OHNE-AUFRUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 337 | abgeschlossen | `WERKZEUGSCHICHT-DATEIEN-OHNE-RUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 350 | offen | `RETRIEVAL-SCHWELLE-OHNE-WIRKUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 363 | offen | `GRENZE-OHNE-LESER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 376 | offen | `WISSEN-UND-WEBSUCHE-NICHT-ANSPRECHBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 389 | offen | `ZUSTELLART-EINWERTIG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 412 | offen | `NOTIZEN-ENRICH-16-ZWEIGE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-wissen.md) |
+| WIS | 430 | offen | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
+| WIS | 445 | offen | `ZEIT-TAGESZEIT-VOR-ZIFFER` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
+| WIS | 504 | offen | `AGENT-RUECKFRAGE-LOOP` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 517 | offen | `NOTIZEN-VOR-TURN-BEZUG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 536 | offen | `TIMELINE-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 537 | abgeschlossen | `FAKTEN-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 538 | offen | `NOTIZEN-INDIZES-NACHTRAG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 540 | offen | `PLANNER-TIMELINE-INTENT-MISS` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 543 | offen | `EPIC-WISSENSSPEICHER` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 554 | abgeschlossen | `WIS-1-MOUNT` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 555 | abgeschlossen | `WIS-2-TABELLE` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 556 | abgeschlossen | `WIS-3-DATEIEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 557 | offen | `WIS-4-STAPEL-SALIENZ` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 558 | offen | `WIS-5-VERFALL` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 559 | offen | `WIS-6-FORTSETZEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 560 | abgeschlossen | `WIS-PRUEFUNG-F-WISSEN-1` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 561 | abgeschlossen | `WIS-7-ENRICHER` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 562 | offen | `WIS-8-STUFE-2` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 563 | offen | `WIS-SCHWELLE-MESSEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 583 | offen | `WIS-GATE-MESSUNG` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 584 | offen | `WIS-KONTEXT-NEU-DIMENSIONIEREN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 589 | offen | `EPIC-KLAERUNG` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 604 | offen | `KLA-K5-FAKTENPFAD` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 605 | offen | `KLA-K1-ERWARTUNGSSCHEMA` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 606 | offen | `KLA-K2-KLAERUNGSTOR` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 607 | offen | `KLA-K3-SALIENZ` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 608 | offen | `KLA-K4-ZWISCHENSCHRITT` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 803 | abgeschlossen | `SPRINT-NOTIZEN-BEZUGSAUFLOESUNG` | [SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung](novaberg-backlog-wissen.md) |
+| WIS | 838 | abgeschlossen | `SPRINT-M25A-TIMELINE-CLEANUP` | [SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent ver](novaberg-backlog-wissen.md) |
+| WIS | 881 | offen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
+| WIS | 912 | offen | `NOTIZEN-PAIR-MISSING` | [Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `ch](novaberg-backlog-wissen.md) |
+| WIS | 931 | offen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
+| WIS | 950 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
+| WIS | 969 | offen | `NOTIZEN-KONTEXT-REKONSTRUKTION` | [Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Re](novaberg-backlog-wissen.md) |
+| WIS | 997 | offen | `NOTIZEN-CONTAINER-WECHSEL` | [Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel](novaberg-backlog-wissen.md) |
+| WIS | 1022 | offen | `NOTIZEN-SKILL-MANIFEST` | [Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähi](novaberg-backlog-wissen.md) |
+| GED | 1043 | offen | `NOTIZEN-UPDATE-TARGET-LEER` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 1081 | offen | `FAKTEN-TABELLE-ENTITY-MERGE` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 1082 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
 | BAU | 25 | unlesbar | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
 | BAU | 38 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |
 | BAU | 49 | abgeschlossen | `OLLAMA-VERSION-VIER-MONATE-ALT` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-bauart.md) |

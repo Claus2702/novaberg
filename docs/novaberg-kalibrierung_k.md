@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 12. September 2026 (§3.3a neu: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — die Mediane liegen zwischen 0,097 und 0,282, die Schwelle ist global, und bei zwei von sieben Paaren lässt sie **nichts** durch). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
+**Stand:** 12. September 2026, 13:30 UTC (§3.3a: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — Mediane 0,097 bis 0,282, die Schwelle ist global, bei zwei von sieben Paaren lässt sie **nichts** durch. **Dazu die Gegenprobe gegen den vermuteten Grund, und sie widerlegt ihn:** Die Zerlegung des Kerns in Facetten hebt jeden Median um 0,03 bis 0,10, lässt die Spreizung zwischen den Paaren aber unverändert bei 0,19 — Maß und Paar sind zwei Fragen). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -114,7 +114,22 @@ Ein siebtes Paar (635 Z.) trägt nur **5** Turns und steht nicht in der Tabelle 
 
 > **Und die Bezugsgröße bewegt sich.** Dieselbe Messung am Paar mit dem längsten Kern ergab am 11.09.2026 **17,3 %** über 0,30 und am 12.09.2026 **23 %** — dazwischen liegt kein geänderter Turn, sondern eine neue Kern-Destillation (5198 → 4720 Zeichen). Eine Schwelle auf einem destillierten Text ist gegen einen Bezug kalibriert, den der Hintergrundlauf jederzeit neu schreibt.
 
-**Die Konventionsprüfung nennt einen Kandidaten für die Ursache — ungemessen.** `novaberg-convention-embedding.md` Konvention 4 verlangt *einen* Gegenstand je Vektor, und §5 sagt: *„Wer mit einem langen Text sucht, braucht ein Ziel in seiner Größenordnung."* Hier sucht ein Turn von rund hundert Zeichen gegen einen Charakterkern von Tausenden, und der Kern ist vielgestaltig — genau die umgekehrte Asymmetrie, vor der die Konvention warnt. Das erklärt, **warum** die Werte insgesamt niedrig liegen (Median 0,214 über alle Paare, Maximum 0,491), und es ist ein besserer Kandidat für die Spreizung als die Kernlänge. **Gemessen ist er nicht**, und er ist ein Befund am Gegenstand, nicht an dieser Messung: Geprüft gehört er gegen einen Kern, der in Facetten zerlegt ist.
+**Die Konventionsprüfung nannte einen Kandidaten für die Ursache.** `novaberg-convention-embedding.md` Konvention 4 verlangt *einen* Gegenstand je Vektor, und §5 sagt: *„Wer mit einem langen Text sucht, braucht ein Ziel in seiner Größenordnung."* Hier sucht ein Turn von rund hundert Zeichen gegen einen vielgestaltigen Charakterkern von Tausenden — genau die umgekehrte Asymmetrie, vor der die Konvention warnt.
+
+**Noch am 12.09.2026 gemessen, und das Ergebnis trennt zwei Dinge, die zusammen vermutet waren.** Je Paar wurde der Kern in Sätze zerlegt (Mindestlänge 40 Zeichen, 3 bis 37 Facetten) und `max(cosine(turn, facette))` gegen `cosine(turn, kern)` auf **denselben** Turns gehalten:
+
+| | ganzer Kern | Facetten-Maximum |
+|---|---:|---:|
+| Median je Paar | 0,097 – 0,282 | 0,139 – 0,334 |
+| **Spreizung zwischen den Paaren** | **0,186** | **0,195** |
+| p10–p90 innerhalb eines Paares | 0,128 – 0,173 | 0,100 – 0,200 |
+
+- **Das Niveau bestätigt die Konvention.** Die Zerlegung hebt **jeden** Median, um +0,031 bis +0,097; die Maxima steigen von 0,428 auf 0,555. Der ganze Kern verliert also wirklich Signal, und zwar in der Größenordnung, um die hier gestritten wird — die Schwelle 0,30 liegt mitten in diesem Abstand.
+- ~~**Der Kandidat für die Spreizung ist damit geprüft**~~ → **und widerlegt.** Die Spreizung zwischen den Paaren wird nicht kleiner, sondern minimal **größer** (0,186 → 0,195). Die Vielgestaltigkeit des Kerns erklärt das Niveau, **nicht** den Unterschied zwischen den Paaren. Und die Trennschärfe innerhalb eines Paares gewinnt nichts Systematisches: Bei einem Paar steigt p10–p90 von 0,145 auf 0,200, bei einem anderen fällt sie von 0,141 auf 0,100.
+- **Die Gegenprobe sagt, dass es keine reine Verschiebung ist:** Spearman zwischen beiden Größen liegt bei 0,68 bis 0,91 — die Zerlegung ändert die Rangfolge der Turns merklich, sie addiert nicht bloß einen Abstand.
+- **Ein Paar bleibt unter jeder Bauart bei null.** Beim niedrigsten passiert auch auf dem Facetten-Maximum **kein** Turn die 0,30 (Maximum 0,294).
+
+> **Damit sind es zwei Fragen und nicht eine.** Die Vielgestaltigkeit ist ein Befund über das **Maß** und gehört zur Embedding-Konvention; die Spreizung ist ein Befund über die **Paare** und bleibt offen. Wer das Maß repariert, hat die Paare nicht angeglichen — die Schwelle müsste danach nur höher liegen.
 
 **Offen und eine Absichtsfrage, keine Ableitung:** ob die Schwelle ein absoluter Wert bleiben soll oder ein Perzentil der Verteilung des jeweiligen Paares wird.
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Verbindliche Konventionen für Embedding-Texte, Embedding-Modelle und die Grenze zwischen Vektor und strukturierten Feldern
-**Stand:** 21. August 2026 (**Konvention 4 kennt einen dritten Fall** — die Beschreibung *eines* Gegenstands aus mehreren Blickwinkeln, für den der eine Vektor die richtige Form ist; am Dateienindex gemessen, der Umbau dorthin ist zurückgebaut. Das Register führte den Fall seit dem 20.08.2026, dieses Dokument nicht — gefunden von der Konventionsprüfung am Sitzungsende). Davor: 16. August 2026 (gegen den Code geprüft: Konvention 1 und 3 eingelöst, Konvention 2 zur Hälfte; ein siebter Speicher in den Geltungsbereich aufgenommen). Davor: 12. Juli 2026
+**Stand:** 12. September 2026 (§5 um die **Gegenrichtung** erweitert und erstmals mit Zahl: Eine kurze Anfrage gegen ein vielgestaltiges Ziel kostet **0,03 bis 0,10 Cosinus**, gemessen an sechs Charakterkernen und 373 Turns — und es ist keine reine Verschiebung, Spearman 0,68 bis 0,91. Das Niveau ist damit belegt, die Streuung zwischen Gegenstaenden nicht). Davor 21. August 2026 (**Konvention 4 kennt einen dritten Fall** — die Beschreibung *eines* Gegenstands aus mehreren Blickwinkeln, für den der eine Vektor die richtige Form ist; am Dateienindex gemessen, der Umbau dorthin ist zurückgebaut. Das Register führte den Fall seit dem 20.08.2026, dieses Dokument nicht — gefunden von der Konventionsprüfung am Sitzungsende). Davor: 16. August 2026 (gegen den Code geprüft: Konvention 1 und 3 eingelöst, Konvention 2 zur Hälfte; ein siebter Speicher in den Geltungsbereich aufgenommen). Davor: 12. Juli 2026
 **Pfad:** novaberg/docs/novaberg-convention-embedding.md
 **Typ:** Convention
 **Anlass:** EMBEDDING-CASING-BLIND (Befund und Beweiskette: `novaberg-embedding-casing-blind_k.md`), Migration 12.07.2026
@@ -121,6 +121,27 @@ Beide tragen Kommas. Eine Kommazählung über sieben Vektorspalten meldete am 19
 ### Und sie hebt die Frage nach dem langen Text nicht auf
 
 Wer mit einem **langen** Text sucht, braucht ein Ziel in seiner Größenordnung. Der Rückweg der Bibliothek fragt mit Ø 713 Zeichen (n=924); ein Themenvektor von Ø 23 Zeichen ist für ihn die umgekehrte Asymmetrie. **Ein Vektor je Thema ersetzt keinen Inhaltsvektor** — er ersetzt den gemittelten Themenvektor.
+
+### Die Gegenrichtung ist gemessen: was ein vielgestaltiges Ziel kostet (12.09.2026)
+
+Der Absatz oben nennt den Fall *lange Anfrage, kurzes Ziel*. Der umgekehrte stand bis heute ohne Zahl: Der Charakter-Filter des Lückenpfades vergleicht einen **Turn von rund hundert Zeichen** mit einem **Charakterkern von 684 bis 4720 Zeichen**, und der Kern ist ein vielgestaltiger Text — also ein Verstoß gegen Konvention 4 und gegen den Absatz oben in einem.
+
+`[gemessen]` — 12.09.2026 über sechs Paare und 373 echte Turns. Der Kern wurde in Sätze zerlegt (Mindestlänge 40 Zeichen, 3 bis 37 Facetten je Paar) und `max(cosine(turn, facette))` gegen `cosine(turn, kern)` auf **denselben** Turns gehalten:
+
+| Kernlänge | Facetten | Median ganz | Median max | Δ | max ganz | max max |
+|---:|---:|---:|---:|---:|---:|---:|
+| 4720 | 37 | 0,241 | 0,334 | **+0,093** | 0,428 | 0,555 |
+| 3218 | 23 | 0,218 | 0,315 | +0,097 | 0,389 | 0,440 |
+| 2658 | 18 | 0,282 | 0,313 | +0,031 | 0,388 | 0,414 |
+| 839 | 3 | 0,167 | 0,260 | +0,093 | 0,267 | 0,374 |
+| 807 | 4 | 0,097 | 0,139 | +0,042 | 0,182 | 0,294 |
+| 684 | 3 | 0,190 | 0,253 | +0,063 | 0,332 | 0,414 |
+
+> **Der Verstoß kostet zwischen 0,03 und 0,10 Cosinus — und das ist die Größenordnung, in der die Schwelle dieses Filters liegt** (0,30 bei Medianen von 0,097 bis 0,282). Ein einziger Vektor über ein vielgestaltiges Ziel drückt jeden Wert nach unten, weil jede Facette die übrigen verdünnt.
+
+**Und es ist keine reine Verschiebung.** Spearman zwischen beiden Größen liegt bei **0,68 bis 0,91**: Die Zerlegung ändert die Rangfolge der Turns merklich. Wer den ganzen Kern als Maß benutzt, misst also nicht dasselbe um einen Betrag versetzt, sondern etwas anderes.
+
+**Was die Messung nicht trägt:** Sie erklärt das **Niveau**, nicht den Unterschied **zwischen** den Paaren — dessen Spreizung bleibt bei 0,186 gegen 0,195 unverändert. Die Konvention ist damit für das Maß belegt und für die Streuung zwischen Gegenständen nicht einschlägig (`novaberg-kalibrierung_k.md` §3.3a).
 
 ---
 
