@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 11. September 2026 — juengster Eintrag **11.09.2026, 16:00 UTC** (gemessen via `date -u`). Davor 10.09.2026, 20:26 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 10:45 UTC** (gemessen via `date -u`). Davor 12.09.2026, 09:20 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 48 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 52 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,389 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 10:45 UTC — drei Tore hintereinander, und keines sagte etwas 🔧
+
+**ZIEL:** Der Luecken-Pfad sagt, wo er aussteigt — und die Schwelle, die ihn
+schliesst, steht auf einer Messung.
+**TEST:** `tests/test_gv4_qualifikation.py` (13 Zeugen) — beide Schwellen
+getrennt, der Grenzwert auf der durchgelassenen Seite, der Cold-Start, die
+Reihenfolge, und die Log-Zeile **auch bei null**.
+**MESSUNG:** 150 echte Turns gegen den Charakterkern; dazu der erste Lauf mit
+sprechenden Toren.
+
+### Der Auftrag war der vierte Salienz-Antrieb — er ist nicht baubar
+
+`novaberg-salienz-berechnung_k.md` fuehrt den Neugier-Bezug als letzten
+offenen Antrieb. Die Vorab-Rechnung, die beim Anschluss der emotionalen
+Gravitation Pflicht war (*„waere er im `max()` ueberhaupt sichtbar"*), ergab
+hier etwas anderes: **Die Eingangsgroesse ist immer leer.** `[gemessen]` 40
+Turns mit offenem Strategie-Tor, **0** GV4-Luecken — bei 10 + 10 gefundenen
+Kandidaten je Lauf.
+
+### Drei Tore, und nur eines meldete seine Zahl
+
+| Tor | Bedingung | im Bestand |
+|---|---|---|
+| **1. Strategie** | Vektorlaenge ≥ 2 — aus Novas **Zustand**, nicht aus dem Turn | 40 von 106 offen; Laenge 1 in **66** |
+| **2. Suche** | LZG + KZG | findet zuverlaessig 10 + 10 |
+| **3. Qualifikation** | Relevanz ≥ 0,15 **und** Turn-Resonanz ≥ Schwelle | **0 von 40** |
+
+Tor 3 war eine Listen-Komprehension ohne Ausgabe; davor lag ein ganz stummer
+Rueckkehrpfad. **Der Ausfall war deshalb nicht als Ausfall zu sehen** — nur
+als eine Null in einer Zeile, die auch *„lief und fand nichts"* bedeuten
+konnte (`22_STILLE_FEHLER`).
+
+### Die Schwelle trug ihren eigenen Wachposten
+
+`GV_CHARAKTER_RESONANZ_SCHWELLE` stand auf **0,40** und trug daneben von Anfang an:
+*„begruendeter Startwert, kein Messergebnis. Nach Live-Betrieb pruefen."*
+`[gemessen ueber 150 echte Nutzer-Turns]` `cosine(turn, kern)`: median
+**0,228**, p90 0,324, p99 0,413, **max 0,421**.
+
+| Schwelle | laesst durch |
+|---|---|
+| 0,40 (alt) | **1,3 %** |
+| 0,35 | 4,7 % |
+| **0,30 (neu)** | **17,3 %** |
+| 0,25 | 41,3 % |
+
+**Die Schwelle lag zwischen p99 und Maximum.** Sie sah aus wie eine Regel und
+war eine Sperre.
+
+### Und sie filtert nicht, was ihr Name sagt
+
+`ei/wissensluecken.py` setzt fuer **jeden** Kandidaten denselben Wert —
+`cosine(turn, kern)`, die Naehe des **Turns** zum Charakterkern. Der Kandidat
+geht nicht ein. Damit ist sie ein **globaler Schalter**: alle zwanzig passieren
+oder keiner. Der Fund steht in der Fundliste; geaendert wurde er nicht.
+
+`[Betriebsbeleg 12.09.2026, 10:52 UTC]` Die erste sprechende Zeile:
+**`GV4: 0 von 11 qualifiziert (Relevanz unter 0.15: 0 · Turn-Resonanz unter
+0.30: 11)`** — alle elf fielen an der Resonanz, keiner an der Relevanz. Vorher
+war genau das nicht zu sehen.
+
+### Der Betriebsbeleg: zwanzig Turns, und der Pfad traegt
+
+Eine Reihe mit **20 Turns an einem anderen Paar** (`mehmet`, 59 Langzeit-Knoten,
+Kern 3218 Zeichen — das produktive Paar bleibt unberuehrt), Agenten pausiert und
+still, Waechter mitlaufend. Die Themen wandern in Schritten, der Ton wechselt:
+Sterne → Elemente → Leben → Nerven → Wahrnehmung → Zeit → Information.
+
+| | vorher | in der Reihe |
+|---|---|---|
+| Tor 1 offen (Vektorlaenge ≥ 2) | 38 % | **13 von 20 (65 %)** |
+| Turns mit GV4-Luecken | **0 von 40** | **7** — je 8, also am Deckel `GV_LUECKEN_MAX` |
+| ausgefallene Turns | — | 0 |
+| Waerme | — | max **70,5 °C**, 21 Messpunkte, 0 unlesbar |
+
+**Die Logzeilen zeigen den Schalter-Charakter der Schwelle unmittelbar.** Liegt
+der Turn nah am Kern, weist die Resonanz **niemanden** ab — `9 von 9`,
+`17 von 18`, `14 von 16`, `13 von 15` qualifiziert, und nur die Relevanz siebt
+einzelne aus. Liegt er fern, faellt alles: `0 von 17 (Turn-Resonanz unter 0,30:
+14)`. Genau das sagt der Fund voraus: kein Filter je Kandidat, sondern ein
+Schalter fuer den ganzen Turn.
+
+**Zwei Ziele der Reihe wurden nicht erreicht, und das gehoert hierher.** Die
+Vektorlaenge kam nie auf **3** — die Folge lautet
+`[2,2,1,2,1,1,1,2,1,2,2,1,2,2,2,2,1,2,2,2]`. Eine ruhige thematische Drift hebt
+sie auf 2, der dritte Sprung braucht mehr. Und **Novas eigene offene Fragen
+blieben durchgehend 0**: Sie kommen aus der Tabelle `wissensluecken`, und die
+traegt fuer dieses Paar keine Zeile — die 1908 gehoeren dem produktiven Paar.
+
+> **Die Kalibrierung galt einem anderen Kern als die Reihe.** `cosine(turn,
+> kern)` ist **paarabhaengig**; gemessen wurden 150 Turns gegen den Kern des
+> produktiven Paares (5198 Zeichen), gefahren wurde gegen `mehmet` (3218). Dass
+> die Schwelle hier trotzdem traegt, ist ein Glueck und kein Beleg — die
+> Verteilung fuer dieses Paar steht aus.
+
+Suite **3454 gruen, 0 uebersprungen** (davor 3441).
+
+---
+
+## 12.09.2026, 09:20 UTC — die Wiedervorlage, und eine Schwelle, die es nicht gibt 🔧
+
+**ZIEL:** Eine offene Wissensluecke, deren Thema Nova nachweislich kennt, wird
+geschlossen.
+**TEST:** `tests/test_wissensluecken_wiedervorlage.py` (13 Zeugen) — Statusfilter,
+Normierung auf **beiden** Seiten, Paarbindung auf **beiden** Tabellen,
+`geschlossen_am`, die Zahl aus der Schreibung, und die Logzeile bei null.
+**MESSUNG:** erster Lauf am Bestand — **125 von 1908** geschlossen, zweiter Lauf 0.
+
+### Der Befund war groesser als der Eintrag
+
+`LUECKEN-WERDEN-NIE-GESCHLOSSEN` (A3) nennt fehlende Schreiber der Statuswerte.
+`[gemessen 12.09.2026]` Der Grund liegt davor: **114 von 1888** Zeilen (6,0 %)
+sind je ein zweites Mal angefasst worden. Der Agent bewertet die zwanzig neuen
+Kandidaten eines Laufs; eine alte Zeile nur, wenn ein Kandidat ihr zufaellig
+gleicht. **Der „naechste Lauf", an dem das Konzept das Schliessen aufhaengt,
+findet fuer sie nie statt.**
+
+### Die Schwelle, die nicht gebaut wurde, und warum das die Ausbeute ist
+
+Die naheliegende Form — Neuheit neu rechnen, unter eine Schwelle schliessen —
+ist **vor** dem Bau gemessen worden und traegt nicht:
+
+| Menge | min | median | p90 | max |
+|---|---|---|---|---|
+| Themen, die sie **nachweislich kennt** | 0,266 | **0,490** | 0,609 | 0,777 |
+| **offene Luecken** | 0,265 | **0,441** | 0,557 | 0,717 |
+
+Thema gegen Thema statt Thema gegen Knotentext aendert daran nichts (0,500
+gegen 0,473). **Die Verteilungen ueberlappen fast vollstaendig**, und das ist
+kein Messfehler, sondern die Bauart: Die Luecken sind **Nachbarthemen**
+bekannter Themen — sie sollen aehnlich sein. Eine Schwelle darauf schloesse
+alles oder nichts.
+
+> **Die Kalibriermessung hat einen Bau verhindert, nicht einen begleitet.**
+> Ohne sie waere eine Schwelle gesetzt worden, die aussieht wie eine Regel und
+> keine ist: `GV_LUECKEN_SIM_OBERGRENZE` (0,92) traegt genau diese Bedeutung —
+> und **keine einzige** der 1888 Luecken erreicht sie, die hoechste liegt bei
+> 0,766.
+
+### Was stattdessen schliesst
+
+Der **Nachweis** statt des Masses: Steht das Thema woertlich unter den Themen
+ihrer aktiven Langzeit-Knoten, kennt sie es. Kein Embedding, kein
+Modellaufruf, Millisekunden. Beide Seiten werden gleich normalisiert — ohne
+das faellt *„Dunkle Materie"* gegen *„dunkle materie "* durch und die Pruefung
+meldete null, wo etwas war.
+
+`[Betriebsbeleg 12.09.2026, 09:18 UTC]` **125 geschlossen**, alle mit
+`geschlossen_am`; darunter *Hubble-Spannung*, *Informationsentropie*,
+*Kolmogorov-Komplexitaet*. **Die zweite Kontrolle** (wiederholte Messung):
+zweiter Lauf **0**, und der GV-Leser zieht acht offene Fragen, davon **0**
+geschlossene — sie erreichen den Prompt nicht mehr.
+
+**Die Reichweite ist klein und steht so im Code:** Das raeumt ab, was
+nachweislich dasselbe ist — 6,6 % des Bestandes.
+
+**Und im Prompt wirkt davon wenig.** Von den 125 geschlossenen haetten **2 in
+den Top-8** gestanden, also in der Auswahl, die der GV-Leser tatsaechlich
+uebergibt; 4 in den Top-50, 9 in den Top-200. Der Rest lag zu weit unten, um je
+gelesen zu werden. Der Mechanismus wirkt bei jedem Lauf weiter — die Behauptung
+*„das raeumt den Prompt auf"* waere mit 2 von 8 zu gross. Wonach der Rest zu schliessen
+waere, ist eine Absichtsfrage. Aehnlichkeit ist es nicht.
+
+Suite **3441 gruen, 0 uebersprungen** (davor 3428), Gegenprobe **1 von 1**
+vorhergesagt.
+
+---
+
+## 11.09.2026, 17:30 UTC — ein Wort im Profil, das jede Antwort eroeffnete 🔧
+
+**ZIEL:** Ein Charakterprofil beschreibt die Art des Umgangs und der Beziehung —
+keine Anredeform.
+**TEST:** `tests/test_profil_anrede.py` (11 Zeugen) — die Pruefung schlaegt an, wo
+eine Form genannt ist, und schweigt, wo der Umgang beschrieben ist; dazu beide
+Haelften am Prompt (die Frage nach der Art steht da, die Aufforderung zur Form
+nicht mehr).
+**MESSUNG:** der Bestand — 70 gespeicherte Profiltexte gegen das Muster, und die
+Eroeffnungsquote von drei Tagen.
+
+### Der Befund kam aus einer Beobachtung des Eigentuemers
+
+*„Das staendige ‚Wissen Sie …' wirkt so unnatuerlich."* — Daraus wurden drei
+getrennte Fragen, und sie haben verschiedene Ursachen.
+
+| Was | Seit | Wo es entsteht |
+|---|---|---|
+| **die Sie-Form** | 09.09.2026 | im **Responder**: `response` traegt sie, das Verfasser-Material `antwort_inhalt` in 1 von 308 Turns |
+| **die Anrede** | 05.09.2026 | im **Beziehungsprofil**, das in den Responder-Prompt jedes Turns geht |
+| **die Wiederholung** | mit der Anrede | dieselbe Quelle — die Form steht im Profil und wird zur Formel |
+
+`[gemessen, nur das produktive Paar]` Die Sie-Form: **0 in 150 Turns** vom
+25.08. bis 31.08., dann 3/189 (09.09.), 3/26 (10.09.) und **12/39** (11.09.).
+Fuenf Mechanismen sind ausgeschlossen — Herkunft des Turns, Sprachstil-Wert
+(`locker` 6,3 % gegen `formell` 7,7 %), destillierter Kern, aktive Direktiven
+(beide ausgesprochen informell) und ein Vorbild in der Session (der **erste**
+Turn einer frisch leeren Session siezt bereits).
+
+~~Was bleibt, ist der Modellwechsel vom 09.09.~~ → **am selben Tag widerlegt,
+und zwar von einer Uhrzeit.** Der Wechsel auf das lokale Modell lag am **Abend**
+des 09.09.; die ersten drei Siez-Turns fielen um **09:59, 10:02 und 11:22 UTC**.
+
+**Die Ursache ist die Anrede, und der Auftraggeber hat sie benannt** (*„Das
+Siezen kam mit der Anrede"*). Die Zahlen halten die Reihenfolge fest: Solange die
+Anrede bei 0 stand (150 Turns), siezte die Figur **nie**; die Anrede beginnt am
+01.09., erreicht am 08.09. 7 von 7 — und **erst danach** setzt die Sie-Form ein.
+Beide stehen im selben Satz. **Damit ist die Abhilfe von heute auch die Abhilfe
+hierfuer**, und die Vorhersage ist pruefbar: Faellt die Anrede aus dem Profil,
+faellt das foermliche Register mit.
+
+> **Die Kandidatenliste war ueber Mechanismen gebildet und enthielt den zweiten
+> Befund derselben Stunde nicht** — die Trennung in zwei Defekte war die
+> Vorentscheidung, die die Ursache verdeckte. Als Lesson uebernommen
+> (`21_MESSUNG`).
+>
+> **Und zwei Tageszahlen waren ueber alle 14 Paare gezaehlt statt ueber eines.**
+> Der *„Ausreisser 10.09., 25 %"* existiert nicht: Auf das produktive Paar
+> gerechnet steht die Anrede an allen drei letzten Tagen bei **100 %**.
+
+### Die Anrede hatte eine Quelle, und sie war ein Wort
+
+**35 von 38** Antworten des Tages (92 %) und **183 von 189** am 09.09. (97 %)
+beginnen mit der Anrede des Menschen; die 14 haeufigsten Eroeffnungen dreier
+Tage beginnen **alle** damit. Die Form steht im `beziehungsprofil` **eines**
+Paares — bei 16 anderen nicht, im Kern nicht, in den Emotions- und
+Intentions-Profilen nicht, in den Direktiven nicht (0 Treffer). Von dort geht
+sie ueber `internal.character.relationship` in den Responder-Prompt **jedes**
+Turns.
+
+> **Ein Vorkommen in 854 Zeichen Profil erzeugt eine Formel in neun von zehn
+> Antworten.** Eine Beschreibung des Umgangs hat diese Wirkung nicht — sie
+> laesst sich in vielen Saetzen ausdruecken, eine Anredeform nur in einem Wort.
+
+**Der Prompt hat sie ausdruecklich verlangt:** *„NÄHE (wie das Gegenueber
+angesprochen wird — welche Anrede, welche Kosenamen)"*. Das war kein Versehen,
+sondern der Auftrag.
+
+### Die Entscheidung und was sie nicht umwirft
+
+Der Eigentuemer hat entschieden: **nirgends eine Anredeform.** Das Profil
+beschreibt die Art des Umgangs. Die Grenze verlaeuft zwischen **Art** und
+**Form**, nicht zwischen Naehe und Distanz — *vertraulich, auf Abstand,
+zugewandt* bleibt, *welche Anrede, welcher Titel* faellt.
+
+**Der Wortlaut-Weg bleibt.** Dass das Beziehungsprofil aus dem Wortlaut der
+Turns destilliert wird und nicht aus dem KZG-Inhalt, war am 09.08.2026 damit
+begruendet, dass die Anrede die Umwandlung in die dritte Person nicht
+ueberlebt. Das gilt weiter: **Die Anrede ist Material, nicht Ergebnis.** Das
+Modell darf aus ihr schliessen, es soll sie nicht wiedergeben.
+
+### Gebaut: die Fuehrung und die Wand
+
+Der Prompt fragt nach der **Art** der Naehe, *„so wie ein Dritter sie am Umgang
+ablesen wuerde"* — eine positive Fuehrung, kein Verbot. Und weil eine Fuehrung
+allein nicht traegt, haelt `anrede_beanstanden` jeden destillierten Profiltext
+gegen ein Muster: ein Anrede-Wort dicht vor einer in Anfuehrungszeichen
+gesetzten Wortform. **Beide Teile zusammen** — *„spricht ihn respektvoll an"*
+bleibt, *„adressiert ihn mit dem Titel X"* schlaegt an.
+
+`[Nulllinie 11.09.2026]` **2 von 70** gespeicherten Profiltexten schlagen an,
+beide Male dasselbe Beziehungsprofil, **kein Fehltreffer**. Die Wortgrenze
+traegt diesen Befund: ohne sie fing `nennt` auch `benennt`.
+
+**Gemeldet, nicht verworfen** — dieselbe Wahl wie bei `deckung_beanstanden`.
+Sie ist zugleich das Messinstrument fuer die Prompt-Aenderung: Bleibt die Zahl
+ueber null, ist der naechste Schritt ein Eingriff am gespeicherten Text und
+eine eigene Entscheidung.
+
+Suite **3428 gruen, 0 uebersprungen** (davor 3417), Gegenprobe **3 von 3**
+vorhergesagt.
+
+### Gemessen: der Prompt traegt
+
+Beide Beziehungsprofile des Paares neu destilliert, ueber denselben
+Hintergrund-Worker wie im Betrieb, **ohne zu speichern**: **0 Anredeformen in
+2 von 2 Profilen** — vorher trugen sie **2 von 2**. Und sie beschreiben, was
+gemeint war: *„gestaltet die Beziehung durch eine intensive, fast symbiotische
+Naehe"*, *„navigiert zwischen sachlicher Distanz und emotionaler
+Verletzlichkeit"*. Laenge 726 und 595 Zeichen aus je 20 Begegnungen.
+
+> **Der Bestand traegt die Form weiter**, bis eine echte Destillation die
+> gespeicherten Profile ersetzt — und genau die laeuft nicht.
+
+### ~~Der Wartungslauf wird ausgehungert~~ — der Verhungerungsschutz traegt
+
+`hash_dirty` stand um 17:25 UTC. Nach **31 Minuten** stand `charakter_hash` bei
+Prioritaet **0,72** (Basis 0,30 plus Aging) und hatte jeden der rund 60 Zyklen
+gegen Shadow-Auftraege bei 0,99 verloren. **Daraus wurde hier ein Aushungern
+geschlossen, und das war falsch.**
+
+`[gemessen]` Um **20:05 UTC** lief die Destillation — nach **1,36 h** Wartezeit
+und bei Prioritaet **0,98**. Genau so ist der Verhungerungsschutz ausgelegt:
+0,5 je Stunde, nach rund 1,4 h ueberholt der Wartungslauf den hoechsten
+Queue-Wert.
+
+> **Die Messung war zu kurz fuer ihren Gegenstand.** Ein Mechanismus mit einer
+> Zeitkonstante von 1,4 Stunden ist in 31 Minuten nicht zu widerlegen — die
+> Zahl *0,72* war sogar der Beleg, dass er arbeitet. Als Lesson uebernommen.
+
+---
+
+
+
+---
+
+## 11.09.2026, 16:35 UTC — die Bruecke steht im Betrieb, und die Schwelle steht am Rand 📐
+
+**ZIEL:** Ein zugestellter Impuls, dessen Fund fern vom Gespraech liegt, nennt den
+Wechsel und sucht die Verbindung — im Betrieb, nicht nur im Zeugen.
+**TEST:** `tests/test_impuls_anschluss.py` (15 Zeugen, unveraendert gruen).
+**MESSUNG:** zwei Reihen mit pausierten Agenten, je eine ausgeloeste Zustellung;
+dazu 706 Stapel-Eintraege gegen fuenf Gespraechskontexte gerechnet.
+
+### Was der Betrieb zeigt
+
+| Naehe | Der Fund | Was die Antwort tat |
+|---|---|---|
+| **0,36** | Halo-Scheiben-Struktur, Gespraech bei Enzymkinetik | nennt den Wechsel und **baut die Kante ausdruecklich**: *„ob nun ein Enzym an sein Substrat oder Akkretion in einem Galaxien-Halo"* |
+| **0,47** | HLS-Stream-Architekturen, Gespraech beim Informationsparadox | *„mir geht da gerade etwas anderes durch den Kopf, das mich gar nicht mehr loslaesst"* |
+
+Damit ist der offene Punkt aus dem Vorlauf eingeloest: Der Uebergangsblock war
+gebaut, bezeugt und **im Betrieb unbelegt** — die dafuer vorbereitete Probe war
+am Vormittag in den Systemausfall gelaufen.
+
+### Das Thema wurde gerechnet, nicht geraten
+
+Die Auswahl haengt an einem Kosinus zwischen dem Embedding der letzten fuenf
+Nutzer-Aeusserungen und dem des Stapel-Eintrags. **Beides ist vorher rechenbar**
+— das Messwerkzeug ruft `_besten_eintrag_finden` selbst auf, statt die Rechnung
+nachzubauen. Ein Probelauf kostet Turns, Wartezeit und
+Waerme; die Vorausrechnung kostet vier Embeddings.
+
+**Sie sagt das Band voraus, nicht den Sieger.** Vorhergesagt war Eintrag 573
+(Naehe 0,4019), zugestellt wurde 647 (0,36) — beide im Band. Der Grund steht
+unten.
+
+### Zwei Befunde, die die Messung nebenbei hergab
+
+**Die Schwelle 0,55 liegt am oberen Rand der erreichbaren Naehen.**
+`[gerechnet ueber 706 × 5 = 3530 Paare]` **3 liegen darueber (0,08 %)**; das p99
+je Kontext liegt zwischen **0,37 und 0,47**. Der Wert war ausdruecklich gesetzt
+und nicht abgeleitet — die Spanne, die dafuer fehlte, liegt jetzt vor.
+
+> **Die zweite Kontrolle hat diese Aussage abgeschwaecht, und das ist ihr
+> Ertrag.** Die Paar-Zahl beantwortet nicht die Frage, die zaehlt: Zugestellt
+> wird das **Maximum** ueber den Stapel, nicht ein zufaelliges Paar. Dieses
+> Maximum ueberschreitet die Schwelle in **2 von 5** gerechneten Kontexten
+> (0,5683 und 0,6773), und im Bestand setzten **2 von 3** Zustellungen nach dem
+> Bau den Block. *„Der Block ist der Normalfall"* haelt; *„die Menge darueber
+> gibt es praktisch nicht"* haelt nicht.
+>
+> Gefunden hat es ein Zugriff, den die Messung nicht benutzt hatte — das Log
+> des laufenden Betriebs statt der gerechneten Paare. Dabei lief eine Fehlspur
+> mit: Drei Zeilen der Form *„beste Naehe 0,5686 < 0,62"* stammen aus der
+> Praegung, nicht aus dem Verfasser. **Dieselbe Wortwahl, andere Schwelle,
+> anderes Modul** — und die Praegung schreibt dabei genau die Zeile, die dem
+> Verfasser im Nicht-Setzen-Fall fehlt.
+
+**Der Modus-Score entscheidet die Auswahl gegen die Naehe.** Der Gesamtscore ist
+`0,7 × Thema + 0,3 × Modus`. Ein Unterschied von **0,19** in der Naehe wiegt
+damit 0,13 — weniger als der Modus-Anteil. `[gemessen 11.09.2026]` Der
+thematisch klar naehere Eintrag (**0,6582**, de-Sitter-Raum, bei einem Gespraech
+ueber das Informationsparadox) verlor gegen einen mit **0,47** (HLS-Streams).
+Die zweite Reihe war als Gegenprobe gedacht — *ein naher Fund braucht keinen
+Block* — und liess sich aus genau diesem Grund nicht herstellen.
+
+### Was die Gegenrichtung offenlaesst
+
+`_uebergangsblock` protokolliert **nur das Setzen**. Der Fall *nah genug, kein
+Block* schreibt keine Zeile und ist dadurch nicht von *Naehe fehlt* zu
+unterscheiden — beide sehen aus wie ein Turn ohne Impuls. Der Betriebsbeleg fuer
+die Gegenrichtung fehlt deshalb weiterhin, und er fehlt nicht aus Mangel an
+Turns, sondern aus Mangel an einer Zeile.
+
+### Die Waerme ist zum ersten Mal mitgeschrieben
+
+Der Temperaturwaechter lief in beiden Reihen: **11 Messpunkte, 0
+unlesbar, Hoechstwert 73,1 °C** bei einer Warngrenze von 82 und einer
+Abbruchgrenze von 88. Nulllinie vor der ersten Reihe 60,5 °C. Damit hat die
+erste Messreihe nach dem Ausfall vom Vormittag eine Temperaturaufzeichnung —
+der Ausfall selbst bleibt unbelegt, weil es fuer ihn keine gab.
 
 ---
 
