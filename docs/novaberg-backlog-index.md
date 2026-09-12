@@ -131,6 +131,16 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 > **Kein stiller Deckel:** Von 41 offenen Eintraegen sind **5** von Hand gegen den Code gehalten worden, ausgewaehlt danach, ob ihr Wortlaut laufenden Verlust behauptet. **Die uebrigen 36 sind ungeprueft** und koennen denselben Zustand tragen wie die beiden oben — erledigt und unmarkiert. Der Durchgang ist damit begonnen und nicht abgeschlossen.
 
+### Band A — ergaenzt am 12.09.2026: ein Blocker, der Turns kostet
+
+| Kennung | Was er anhält |
+|---|---|
+| `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` | **Ein Betriebsturn erreicht keine Antwort**, weil `gedeckt` als Liste kam und eine von sechs Lesestellen `.items()` darauf ruft. Drei weitere iterieren die Liste und laufen lautlos falsch weiter. Ursache: `_validate_artifact` normalisiert die drei Felder der Scheiben 7–9 und **nicht** `gedeckt` und `offen`, die seit Scheibe 1 im Artefakt stehen und von allen zehn Scheiben gelesen werden. **Band A, weil er die laufende Messreihe der Neugier anhält** — die Turns des Eigentümers sind der Gegenstand, und ein abgebrochener Turn liefert keine Zeile. **Davor steht eine Absichtsfrage beim Eigentümer**, nicht Arbeit: Ist eine Liste gedeckter Eigenschaften ohne Begründung eine zulässige Lesart (dann Umformung) oder nicht (dann Verwerfen wie bei den drei anderen)? — ⛔ **offen, aufgenommen am 12.09.2026** |
+
+> **Er ist der erste Eintrag dieses Bandes, der nicht aus einer Messung kommt, sondern aus einem
+> gescheiterten Gespräch.** Die Regel des Bandes trifft trotzdem genau: *Verfällt Maschinenzeit
+> oder Material, wenn er liegen bleibt?* — Ja, jeder Turn, der ihn trifft.
+
 ### Band A — neu gefuellt am 07.09.2026, drei Eintraege
 
 **Vorgabe des Eigentuemers:** Haltungsraum, Neugier und Profilabdeckung werden angegangen. Die

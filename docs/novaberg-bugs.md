@@ -133,6 +133,34 @@ was da ist, und nicht mehr behaupten, als sie gesehen hat.
 
 ---
 
+### `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` — die Formprüfung deckt die jüngeren Felder der Lage und nicht die zwei ältesten ⛔ Blocker
+
+**Zustand:** offen — **Blocker**, gefunden am 12.09.2026 durch einen abgebrochenen Betriebsturn.
+
+**Symptom.** Ein Turn erreicht keine Antwort: `AttributeError: 'list' object has no attribute 'items'` in `sachlage_plausibility.py:87`. Das Modell lieferte `gedeckt` als **Liste**, die Lesestelle ruft `.items()`. Erster Fall im Serverlog, `[gemessen 12.09.2026, 18:55 UTC]`.
+
+**Ursache.** `novaberg-thinking-lage_k.md` §3 Festlegung 1 verlangt einen Call mit erzwungenem JSON, der *„laut ausfällt statt still leer"*, und definiert im Artefakt `gedeckt` als **Zuordnung** (`{"anlass": "erwähnt im Turn"}`) und `offen` als **Liste**. `_validate_artifact` (`graph/nodes/sachlage.py`) prüft den Parse auf dict, fünf Pflichtfelder, `objekte` als Liste, jedes Objekt als dict mit `name`, hält die Smalltalk-Schranke — und normalisiert `traeger`, `kritikalitaet`, `sprecher`. **Für `gedeckt` und `offen` gibt es keinen Normalisierer.**
+
+> **Die drei Felder mit Normalisierer stammen aus den Scheiben 7 bis 9** (am 29.08.2026 nachgebaut). Die zwei ohne stehen seit **Scheibe 1** im Artefakt und werden von allen zehn Scheiben gelesen. Die Prüfung ist mit den jüngeren Feldern gewachsen und nie zu den ältesten zurückgekehrt — die Signatur schnellen Scheibenbaus: Jede Scheibe prüft, was sie selbst mitbringt; was schon da war, gilt als geprüft, weil es funktioniert hat.
+
+**Wirkung — der Absturz ist der glückliche Fall.** Von sechs Lesern von `gedeckt` tragen **zwei** einen lokalen `isinstance(…, dict)`-Riegel (`sachlage.py:583`, `:635`), **vier** keinen: `sachlage_plausibility.py:86`, `sachlage_resolver.py:412`, `sachlage.py:1048`, `:1113`. Alle vier annotieren `gedeckt: dict` — eine Behauptung, keine Prüfung. Nur die erste ruft `.items()` und reißt den Turn ab; **die drei anderen iterieren die Liste und laufen weiter**, vergleichen stringifizierte Dicts gegen Eigenschaftsnamen und erzeugen stillschweigend Unsinn.
+
+`offen` wird durchgängig mit `or []` verteidigt, was eine Dict-Form **nicht** abfängt: `{"a": 1} or []` ist das Dict, die Iteration liefert Schlüssel. Betroffen ist auch `_normalize_holders` selbst, das `offen` so liest.
+
+**Und Festlegung 3 verschärft es:** Das volle Artefakt geht je Turn ins `pipeline_log`. Eine falsche Form steht dort als gültige und trägt jede spätere Auswertung.
+
+**Die Abhilfe folgt aus dem Hausmuster, nicht aus der Absturzstelle.** Die drei bestehenden Normalisierer haben dieselbe Form: `isinstance`-Prüfung, `logger.warning` mit dem gefundenen Typ, Feld verworfen, Objekt und Turn überleben — genau, was Festlegung 1 verlangt. Zwei weitere nach diesem Muster; danach können die sechs Lesestellen der Form trauen, die ihre Annotation schon behauptet, und die zwei lokalen Riegel werden überflüssig.
+
+**Eine Absichtsfrage steht davor und liegt beim Eigentümer.** Was bedeutet `gedeckt` als Liste? Eine Liste gedeckter Eigenschaften **ohne** Begründung ist eine plausible Lesart des Feldnamens — das Modell hat nicht zufällig Unsinn geliefert. Soll sie zugelassen werden, ist der Normalisierer eine **Umformung** (Namen → `{name: ""}`); soll sie nicht, verwirft er wie die drei anderen.
+
+**Was fertig wäre:** Beide Felder haben einen Normalisierer in `_validate_artifact`, je mit Zeugen für die richtige Form, die falsche Form und den Leerfall; die sechs Lesestellen sind gegen den Rückbau bezeugt; ein Betriebsturn mit akutem Objekt läuft durch.
+
+**Priorität.** Hoch — er kostet Turns vollständig, und drei weitere Stellen erzeugen lautlos falsche Eingaben für Verfasser und Rückfrage.
+
+**Klasse.** Dieselbe wie `EI-KANON-FEHLT`: Modellwerte ungeprüft in den State und in eine dauerhafte Quelle.
+
+---
+
 ### `PROFIL-VERALLGEMEINERT-EINZELBELEG` — ein einzelner Beleg wird zum durchgehenden Zug
 
 **Zustand:** offen — am Bestand gemessen am 06.09.2026.

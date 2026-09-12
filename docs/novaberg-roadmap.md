@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 16:20 UTC** (gemessen via `date -u`). Davor 12.09.2026, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 19:30 UTC** (gemessen via `date -u`). Davor 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,76 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 19:30 UTC — ein Betriebsturn bricht ab, und die Absicht stand vollständig da 🔧
+
+**ZIEL:** Der Blocker ist benannt, mit Kennung, Ursache und Abhilfe — und die
+Absicht dahinter ist aus dem Konzept belegt statt aus der Absturzstelle geraten.
+**TEST:** keiner — es wurde nichts gebaut. Suite unverändert **3491 grün,
+0 übersprungen**.
+**MESSUNG:** ein Betriebsturn des Eigentümers, 18:55 UTC; dazu die Zählung der
+Lesestellen und der Normalisierer über drei Module.
+
+### Der Turn erreichte keine Antwort
+
+`AttributeError: 'list' object has no attribute 'items'` in
+`sachlage_plausibility.py:87`. Das Modell lieferte `gedeckt` als **Liste**, die
+Lesestelle ruft `.items()`.
+
+**Die naheliegende Diagnose war ein fehlender Riegel, und sie war falsch.** Die
+Frage des Eigentümers — *was soll das hier sein, bevor wir einen Fehler
+vermuten* — führte ins Konzept, und dort steht die Absicht vollständig:
+`novaberg-thinking-lage_k.md` §3 Festlegung 1 verlangt einen Call mit erzwungenem
+JSON, der *„laut ausfällt statt still leer"*, und die Artefakt-Definition nennt
+`gedeckt` als **Zuordnung** und `offen` als **Liste**.
+
+### Die Prüfung ist gebaut, richtig platziert und nicht abgeschlossen
+
+`_validate_artifact` prüft den Parse auf dict, fünf Pflichtfelder, `objekte` als
+Liste, jedes Objekt als dict mit Namen, hält die Smalltalk-Schranke — und
+normalisiert `traeger`, `kritikalitaet`, `sprecher`.
+
+| Feld | aus Scheibe | Normalisierer |
+|---|---|---|
+| `traeger` | 8 (29.08.2026) | ✅ |
+| `kritikalitaet` | 10 (30.08.2026) | ✅ |
+| `sprecher` | 9 (29.08.2026) | ✅ |
+| **`gedeckt`** | **1 (28.08.2026)** | **fehlt** |
+| **`offen`** | **1 (28.08.2026)** | **fehlt** |
+
+> **Das ist keine Schlamperei, sondern die Signatur schnellen Scheibenbaus:**
+> Jede neue Scheibe prüft, was sie selbst mitbringt. Was schon da war, gilt als
+> geprüft, weil es funktioniert hat. Die zwei ältesten Felder sind die einzigen
+> ungeprüften — und sie sind die, die alle zehn Scheiben lesen.
+
+### Der Absturz ist der glückliche Fall
+
+Von sechs Lesern von `gedeckt` tragen **zwei** einen `isinstance`-Riegel und
+**vier** keinen; alle vier annotieren `gedeckt: dict`, was eine Behauptung ist
+und keine Prüfung. Nur einer ruft `.items()` und fliegt. **Die drei anderen
+iterieren die Liste und laufen weiter** — sie vergleichen stringifizierte Dicts
+gegen Eigenschaftsnamen. Bei `offen` steht überall `or []`, und das fängt eine
+Dict-Form nicht ab: `{"a": 1} or []` ist das Dict, die Iteration liefert
+Schlüssel; betroffen ist auch `_normalize_holders` selbst.
+
+**Festlegung 3 verschärft es:** Das volle Artefakt geht je Turn ins
+`pipeline_log`. Eine falsche Form steht dort als gültige.
+
+### Die Abhilfe folgt dem Hausmuster, und davor steht eine Absichtsfrage
+
+Die drei bestehenden Normalisierer haben dieselbe Form — `isinstance`-Prüfung,
+`warning` mit dem gefundenen Typ, Feld verworfen, Objekt und Turn überleben. Das
+ist genau, was Festlegung 1 verlangt.
+
+**Offen und beim Eigentümer:** Was bedeutet `gedeckt` als Liste? Eine Liste
+gedeckter Eigenschaften **ohne** Begründung ist eine plausible Lesart des
+Feldnamens — das Modell hat nicht zufällig Unsinn geliefert. Soll sie zugelassen
+werden, ist der Normalisierer eine **Umformung**; soll sie nicht, verwirft er wie
+die drei anderen. **Der Bau wartet auf diese Entscheidung**, nicht auf Arbeit.
+
+Geführt als `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`, Band A.
 
 ---
 
