@@ -569,6 +569,8 @@ Die Normierung ist **asymmetrisch** — nach unten gegen den Abstand zum Minimum
 **Beitrag:** Landschaft, Strategie, Vehikel und Leitgedanke gehen an den **Verfasser**, nicht an den Responder. Stünden sie zusätzlich beim Responder, sähe er denselben Leitgedanken ein zweites Mal und gäbe ihn wörtlich weiter, statt ihm eine Form zu geben.
 **Reinheit:** der Modellaufruf unrein; `gv_output_parsen`, `korridor_pruefen`, `_normalisieren`, `_strategie_extrahieren`, `_begriff_extrahieren`, `_doppelbuchstaben_kollabieren` rein.
 **Prüfstand:** `test_gv_korridor.py`.
+
+**Vor dem Modellaufruf, seit dem 12.09.2026 — die Bitte zuerst.** `graph/reiz.py::request_first` entscheidet einmal je Turn aus Absicht und Zuwendungsrad: Impuls nie, `task` immer, `knowledge` als Pflicht, außer `wissbegier` liegt um mehr als `GV_BITTE_RAD_ABSTAND` über `pflicht`; jede andere Absicht nicht. Das Rad wird nur bei `knowledge` gelesen (`memory/charakter.py::nutzer_gewichtung_rad_laden`, ein Lesezugriff). Die Entscheidung steht mit Grund und Eingangswerten in `gv_detail['bitte_zuerst']` und im Pipeline-Log; sie setzt den `[BITTE]`-Block im GV-Prompt, und der Verfasser liest sie nur dort. **Reinheit:** `request_first` rein, das Laden des Rades unrein. **Prüfstand:** `test_bitte_zuerst.py`.
 **Absicht:** `novaberg-node-gv_k.md`, `novaberg-gv-strategie_k.md` §10.1.
 
 ---

@@ -52,7 +52,8 @@ Pflicht bleibt in einem Paar, bei Gleichstand und in den Paaren mit Nullrad.
 Im Betrieb: *Nenne mir drei bekannte Pulsare* → `neugier_hat_anlass`, Abstand 0,1266 —
 die Antwort lieferte die Liste trotzdem zuerst und hängte eine eigene Frage an; eine
 Aufgabe → `aufgabe`, geliefert. Die Entscheidung trifft der GV-Knoten einmal und legt
-sie in `gv_detail`; der Verfasser liest nur dort.
+sie in `gv_detail`; der Verfasser liest nur dort. `is_request` aus dem Eintrag davor ist dabei
+in `graph/reiz.py::request_first` aufgegangen.
 
 ## 12.09.2026, 21:26 UTC — die Bitte zuerst, und eine Nulllinie, die nichts zu verbessern ließ 🔧
 
