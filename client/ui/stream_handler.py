@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────
 ZUORDNUNG_PASST:        str = "passt"          # Antwort auf die offene Frage
 ZUORDNUNG_FREMD:        str = "fremd"          # gehört zu einem anderen Reiz
-ZUORDNUNG_UNBEOBACHTET: str = "unbeobachtet"   # keine offene Frage dieses Clients
+ZUORDNUNG_UNBEOBACHTET: str = "unbeobachtet"   # keine offene Frage hier, oder anderer Absender
 
 ZUORDNUNG_KANON: frozenset[str] = frozenset({
     ZUORDNUNG_PASST, ZUORDNUNG_FREMD, ZUORDNUNG_UNBEOBACHTET,
@@ -143,6 +143,15 @@ class StreamHandler:
         # Schloss.
         self._offene_nachrichten: set[str]      = set()
         self._turn_schloss:       threading.Lock = threading.Lock()
+
+        # Jede Kennung, die dieser Client je bestaetigt bekam — offen oder
+        # beantwortet. **Sie trennt zwei Faelle, die die offene Menge allein
+        # nicht trennen kann:** eine Antwort auf die Nachricht eines anderen
+        # Absenders (Skript, Matrix, Telegram — der Server stellt jede Antwort
+        # allen Clients des Nutzers zu) und eine Antwort, die hier zur falschen
+        # Frage kommt. Ohne sie galt nach einer einzigen nie beantworteten
+        # Frage jede fremde Antwort als falsch zugeordnet, bis zum Neustart.
+        self._gesendete_nachrichten: set[str]   = set()
 
     # ═════════════════════════════════════════════════════════════
     # SSE — pro Nachricht ein Thread
@@ -277,6 +286,7 @@ class StreamHandler:
             else:
                 with self._turn_schloss:
                     self._offene_nachrichten.add(nachrichten_id)
+                    self._gesendete_nachrichten.add(nachrichten_id)
 
             logger.info(
                 f"SSE: Nachricht angenommen — warte auf Antwort zu "
@@ -469,6 +479,12 @@ class StreamHandler:
         stehen: Die Fragen sind weiterhin offen, und auch die naechste Antwort
         wird geprueft.
 
+        **Nennt sie nur Kennungen, die dieser Client nie bestaetigt bekam,**
+        beantwortet sie die Nachricht eines anderen Absenders und ist
+        `unbeobachtet` — auch bei offener Frage. Sie kann hier nichts
+        verdraengen: Die eigene Frage behaelt ihre Kennung, und ihre Antwort
+        wird an ihr erkannt, wann immer sie kommt.
+
         Vorbedingung: Keine. Eine leere Liste ist ein gueltiger Fall und
             bedeutet, dass die Gegenseite keine Kennung mitgeschickt hat.
         Nachbedingung: Ein Wert aus `ZUORDNUNG_KANON`.
@@ -497,6 +513,13 @@ class StreamHandler:
             elif genannte & offen:
                 zuordnung = ZUORDNUNG_PASST
                 self._offene_nachrichten -= genannte
+
+            elif genannte and not genannte & self._gesendete_nachrichten:
+                zuordnung = ZUORDNUNG_UNBEOBACHTET
+                logger.info(
+                    f"WebSocket: Antwort auf die Nachricht eines anderen Absenders "
+                    f"(genannt {sorted(genannte)}) — offen bleiben {sorted(offen)}"
+                )
 
             else:
                 # Auch der leere Fall landet hier, und das ist Absicht: Eine
