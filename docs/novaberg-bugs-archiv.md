@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
+**Stand:** 12. September 2026, 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
 **Inhalt:** **56 abgeschlossene Eintraege mit eigenem Abschnitt** plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
@@ -24,6 +24,29 @@
 **Die Abschnittsueberschriften stammen aus der Quelldatei** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Zustand er hat. Jeder Eintrag hier ist abgeschlossen; ein Abschnitt namens `## Offene Bugs` beschreibt in dieser Datei nur die Herkunft seiner Eintraege.
 
 **Hier wird nicht gearbeitet.** Wer einen dieser Befunde wieder aufmachen muss, verschiebt den Eintrag zurueck nach `novaberg-bugs.md` — mit neuem Zustand und neuem Datum. Eine Kennung wird nie wiederverwendet und steht nie in beiden Dateien.
+
+---
+
+## 12.09.2026, spaet — eine offene Frage, die jede fremde Antwort verdaechtig machte
+
+Ein Eintrag, **am Tag seines Befundes behoben**. Gefunden hat ihn keine Pruefung, sondern der
+Eigentuemer: 16 Warnungen an Antworten, die inhaltlich stimmten.
+
+### `ZUORDNUNG-ANDERER-ABSENDER-FREMD` — eine Antwort an einen anderen Absender gilt bei offener Frage als falsch zugeordnet
+
+**Zustand:** ✅ **behoben am 12.09.2026**, am Tag seines Befundes. `client/ui/stream_handler.py`: Der Handler fuehrt neben der offenen Menge die Menge aller Kennungen, die er je bestaetigt bekam (`_gesendete_nachrichten`, gefuellt in der SSE-Bestaetigung). Nennt eine Antwort nur Kennungen, die nicht darin stehen, ist sie `unbeobachtet` — auch bei offener Frage — und laesst die offene Frage stehen.
+
+**Symptom.** Der Desktop-Client zeigte **16-mal** *„Diese Antwort gehoert nicht zu deiner letzten Nachricht. Sie blieb unbeantwortet."* an Antworten, die jede zu ihrem Reiz passten.
+
+**Ursache, am Server-Log gemessen.** Um 18:55:04 UTC nahm der Server eine Desktop-Nachricht an; ihr Turn brach um 18:55:29 ab (`AttributeError`, der Blocker `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`) und stellte nichts zu. Ihre Kennung blieb im Client offen. Zwischen 20:58 und 21:44 UTC liefen **16 Turns ueber `POST /chat`** von einem anderen Absender; der Server stellt jede Antwort allen Clients des Nutzers zu, mit den Kennungen **ihres** Absenders. `_zuordnung_pruefen` kannte nur zwei Faelle bei offener Frage — *genannte Kennung ist offen* oder *alles andere* — und *alles andere* hiess `fremd`. **Die Absicht stand im Kanon seit dem 01.08.2026** (`unbeobachtet` = *Antwort auf einen anderen Client*, siehe `ANTWORT-OHNE-ZUORDNUNG`), der Code hielt sie nur ohne offene Frage.
+
+**Was `fremd` bleibt.** Eine Antwort **ohne** Kennung bei offener Frage, und ein Nachzuegler zu einer **eigenen**, schon beantworteten Frage — beides ist hier nicht als passend nachweisbar.
+
+**Zeugen.** `client/tests/test_stream_assignment.py`, 5 neue, davon 4 durch die beiden Eingaenge des Clients (SSE-Bestaetigung, WebSocket-Nachricht) statt durch gesetzte Mengen; einer faehrt den gemessenen Ablauf nach (eine offene Frage, 16 Antworten an einen anderen Absender). Client-Lauf **28 grün** (vorher 23), Server-Suite **3586 grün, 0 übersprungen**. **Gegenprobe zweifach:** neuer Zweig abgeschaltet — 3 vorhergesagt, 3 rot; Vermerk in der Bestaetigung entfernt — 1 vorhergesagt, 1 rot.
+
+**Gemessen am 12.09.2026, 22:50–22:53 UTC** mit dem echten `StreamHandler` gegen den laufenden Server: Reiz A ueber `POST /chat`, Reiz B ueber den Handler. Die Antwort auf A traf ein, **waehrend B offen war** (aufgezeichnet) → `unbeobachtet`; die Antwort auf B → `passt`. **Dieselben aufgezeichneten Eingaenge durch den Handler aus HEAD:** A → `fremd`, B → `passt`. Pixie pausiert, keine Seiteneffekte (timeline, notizen, fakten, ziele, wissensluecken unveraendert).
+
+**Nicht mit behoben:** Die Meldung `turn_gescheitert` traegt keine `nachrichten_ids`, und der Client raeumt bei ihr nichts ab — die Kennung einer gescheiterten Nachricht bleibt bis zum Neustart offen. Seit der Behebung kostet das keine falsche Warnung mehr; es steht in der Fundliste.
 
 ---
 
@@ -1804,6 +1827,8 @@ soll:  similarity × gewicht_absolut × e^(−rt)  × zeit_decay × faktor
 **Die Kennung stammt aus dem Reiz, nicht aus dem Ergebnis-Zustand.** Beide liegen im selben Griffbereich, und der Zustand trägt dieselbe Kennung nur, solange sie unterwegs niemand überschreibt. Was der Client braucht, ist die Kennung **seiner Frage** — nicht die des Laufs, der geantwortet hat. Die Tests halten beide auf verschiedenen Werten, damit die falsche Quelle rot wird.
 
 **Drei Ausgänge als deklarierter Kanon:** `passt` (die offene Frage ist beantwortet, die Kennung wird gelöscht), `fremd` (gehört zu einem anderen Reiz — die Antwort wird mit Vermerk angezeigt, die Frage bleibt offen), `unbeobachtet` (dieser Client hat keine offene Frage: Antwort auf einen anderen Client oder ein Nachzügler). **Eine Antwort ohne Kennung fällt bei offener Frage auf `fremd`** — „nicht nachweisbar" darf nicht aussehen wie „stimmt".
+
+**Nachtrag 12.09.2026 — *Antwort auf einen anderen Client* galt nur ohne offene Frage.** War hier eine Frage offen, wurde jede Antwort an einen anderen Absender `fremd`. Behoben als `ZUORDNUNG-ANDERER-ABSENDER-FREMD` (oben in dieser Datei).
 
 **Was ausdrücklich nicht geschieht:** Die Antwort wird nicht unterdrückt und die Eingabe nicht gesperrt. Der Inhalt ist echt, nur seine Stelle im Gespräch ist es nicht; ihn zu verschweigen wäre ein zweiter Verlust. Und ein **eigener Impuls** lässt die offene Frage stehen — er beantwortet sie nicht.
 

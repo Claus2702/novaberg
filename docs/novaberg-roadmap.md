@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 21:47 UTC** (gemessen via `date -u`). Davor 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 22:54 UTC** (gemessen via `date -u`). Davor 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,24 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 22:54 UTC — eine offene Frage machte jede fremde Antwort verdächtig 🔧
+
+**Anlass.** Der Desktop-Client zeigte 16-mal *„Diese Antwort gehört nicht zu deiner letzten Nachricht"* an Antworten, die jede zu ihrem Reiz passten.
+
+**Befund, am Server-Log gemessen.** Eine Desktop-Nachricht um 18:55 UTC erreichte keine Antwort (Abbruch am Blocker `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`), ihre Kennung blieb im Client offen. Danach liefen 16 Turns über `POST /chat` von einem anderen Absender; jede Antwort ging an alle Clients und nannte die Kennungen ihres Absenders. Bei offener Frage kannte `_zuordnung_pruefen` für alles, was nicht die offene Kennung nannte, nur `fremd`.
+
+**Gebaut.** `client/ui/stream_handler.py`: Der Handler merkt sich jede bestätigte Kennung (`_gesendete_nachrichten`). Eine Antwort, die nur fremde Kennungen nennt, ist `unbeobachtet` und lässt die offene Frage stehen. `fremd` bleiben die Antwort ohne Kennung und der Nachzügler zu einer eigenen, schon beantworteten Frage.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Eine offene, nie beantwortete Frage verfälscht die Zuordnung späterer Antworten an andere Absender nicht. |
+| **TEST** | `client/tests/test_stream_assignment.py`, 5 neue Zeugen, 4 davon durch SSE-Bestätigung und WebSocket-Nachricht. Client **28 grün** (vorher 23), Server **3586 grün, 0 übersprungen**. Gegenprobe: Zweig abgeschaltet 3/3 rot, Vermerk in der Bestätigung entfernt 1/1 rot. |
+| **MESSUNG** | Echter `StreamHandler` gegen den laufenden Server, 22:50–22:53 UTC: Antwort auf A (anderer Absender) traf bei offener Frage B ein → `unbeobachtet`, Antwort auf B → `passt`. Dieselben Eingänge durch den Handler aus HEAD: A → `fremd`. Pixie pausiert, keine Seiteneffekte. |
+
+**Offen.** `turn_gescheitert` trägt keine `nachrichten_ids`; die Kennung einer gescheiterten Nachricht bleibt bis zum Neustart offen (Fundliste). Kennung: `ZUORDNUNG-ANDERER-ABSENDER-FREMD`, im Archiv.
 
 ---
 
