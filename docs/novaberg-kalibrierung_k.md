@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
+**Stand:** 12. September 2026 (§3.3a neu: `GV_CHARAKTER_RESONANZ_SCHWELLE` ist je Paar gemessen — die Mediane liegen zwischen 0,097 und 0,282, die Schwelle ist global, und bei zwei von sieben Paaren lässt sie **nichts** durch). Davor 1. September 2026, 18:30 UTC (§3.3: zwei veraltete Schwellenwerte berichtigt und zwei davon gemessen; §3.5: die zwei Konstanten des Zielsog-Zugs aufgenommen). Davor 7. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -90,6 +90,33 @@ Die dichteste und am schlechtesten belegte Klasse. Der bekannte Befund: **10 von
 **Bei einer Schwelle ist der Abstand die Messung, nicht das Auslösen.** Eine Schwelle, die nie überschritten wird, und eine, die immer überschritten wird, sind derselbe Defekt: Sie trennt nichts. Zu erheben ist die Verteilung der Kandidaten je Schwelle, nicht die Auslösequote.
 
 Belegt: Die Wahrnehmungs-Gravitation erreicht ihre Schwelle in **9,9 % der Turns** (314 Turns, 02.08.2026); bei Schwelle 0.30 wären es 35,4 %, bei 0.20 60,8 %.
+
+### 3.3a Eine globale Schwelle auf einer paarweisen Größe (12.09.2026)
+
+`GV_CHARAKTER_RESONANZ_SCHWELLE` vergleicht den Turn mit **Novas Kern in diesem Paar**. Der Wert ist damit keine Eigenschaft des Turns, sondern eines Paares — und die Schwelle gilt für alle Paare gleich. Kalibriert wurde sie an **einem** Kern.
+
+`[gemessen 12.09.2026]` Alle sieben Paare mit Nova-Kern, je bis zu 150 Rohturns, dieselbe Rechnung wie im Lückenpfad (`cosine(turn_embedding, kern_embedding)`), 378 Werte:
+
+| Paar (Kernlänge) | n | median | p90 | max | über 0,30 |
+|---|---:|---:|---:|---:|---:|
+| 2658 Z. | 30 | **0,282** | 0,357 | 0,388 | 27 % |
+| 4720 Z. | 150 | 0,241 | 0,334 | 0,428 | 23 % |
+| 3218 Z. | 49 | 0,218 | 0,325 | 0,389 | 14 % |
+| 684 Z. | 85 | 0,190 | 0,258 | 0,332 | **2 %** |
+| 839 Z. | 30 | 0,167 | 0,261 | 0,267 | **0 %** |
+| 807 Z. | 29 | **0,097** | 0,167 | 0,182 | **0 %** |
+
+Ein siebtes Paar (635 Z.) trägt nur **5** Turns und steht nicht in der Tabelle — bei dieser Zahl ist ein Median keine Verteilung. Seine Werte: 0,136 bis 0,491, also einer über der Schwelle.
+
+**Die Spannweite der Mediane ist 0,186 — bei einer Schwelle von 0,30.** Für zwei der Paare überschreitet **kein einziger** Turn sie, für ein drittes 2 %; für die beiden oberen 23 und 27 %. Nach dem Absatz über diesem Abschnitt ist das der beschriebene Defekt: Dieselbe Zahl trennt bei einem Paar und trennt beim anderen nichts.
+
+**Die naheliegende Erklärung ist gemessen und trägt nicht.** Ein Backlog-Eintrag vermutete, ein fünfmal längerer Kern ziehe die Cosinus-Werte zur Mitte. Die Mediane ordnen sich **nicht** nach der Kernlänge: der höchste steht beim 2658-Zeichen-Kern, der niedrigste beim 807er, und die p10–p90-Spanne ist bei den langen Kernen *weiter*, nicht enger. **Die Messung kann die Ursache nicht isolieren**, denn die Turn-Korpora unterscheiden sich mit: Das oberste Paar trägt 150 gewachsene Turns über Wochen, die unteren je eine Messreihe eines Tages zu einem Thema. Was belegt ist, ist der **Befund**, nicht seine Ursache.
+
+> **Und die Bezugsgröße bewegt sich.** Dieselbe Messung am Paar mit dem längsten Kern ergab am 11.09.2026 **17,3 %** über 0,30 und am 12.09.2026 **23 %** — dazwischen liegt kein geänderter Turn, sondern eine neue Kern-Destillation (5198 → 4720 Zeichen). Eine Schwelle auf einem destillierten Text ist gegen einen Bezug kalibriert, den der Hintergrundlauf jederzeit neu schreibt.
+
+**Die Konventionsprüfung nennt einen Kandidaten für die Ursache — ungemessen.** `novaberg-convention-embedding.md` Konvention 4 verlangt *einen* Gegenstand je Vektor, und §5 sagt: *„Wer mit einem langen Text sucht, braucht ein Ziel in seiner Größenordnung."* Hier sucht ein Turn von rund hundert Zeichen gegen einen Charakterkern von Tausenden, und der Kern ist vielgestaltig — genau die umgekehrte Asymmetrie, vor der die Konvention warnt. Das erklärt, **warum** die Werte insgesamt niedrig liegen (Median 0,214 über alle Paare, Maximum 0,491), und es ist ein besserer Kandidat für die Spreizung als die Kernlänge. **Gemessen ist er nicht**, und er ist ein Befund am Gegenstand, nicht an dieser Messung: Geprüft gehört er gegen einen Kern, der in Facetten zerlegt ist.
+
+**Offen und eine Absichtsfrage, keine Ableitung:** ob die Schwelle ein absoluter Wert bleiben soll oder ein Perzentil der Verteilung des jeweiligen Paares wird.
 
 ### 3.4 Verfall — wie schnell etwas verblasst
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gesprächslandschaft — 64 Zustände, 6 Achsen, 13 Cluster, 7 Strategien, 4 Absichten, 3 Vehikel (Konzept)
-**Stand:** 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
+**Stand:** 12. September 2026 (Anhang A.1: `GV_CHARAKTER_RESONANZ_SCHWELLE` steht als **eine** Zahl vor sieben Verteilungen — Mediane 0,097 bis 0,282, bei zwei Paaren laesst 0,30 nichts durch). Davor 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
 **Pfad:** novaberg/docs/novaberg-gv-strategie_k.md
 **Quellen:** Chat 71 (GV3+4, Strategie-Analyse, 64-Sektoren-Validierung, Dreischicht-Architektur), Chat 39 (GV-Grundkonzept), Chat 53 (Drive/Neugier), Chat 7 (6-Säulen-Wahrnehmung)
 
@@ -679,6 +679,10 @@ aufnahmebereitschaft:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]
 register:           sachlich↑neutral↓emotional / offen↑emotional
 charakter_filter:   kern_hash-Resonanz ≥ 0.30   (GV_CHARAKTER_RESONANZ_SCHWELLE, seit 12.09.2026)
 ```
+
+**Wo der Filter sitzt:** `_qualifizieren(kandidaten, resonanz_pruefbar)` in `ei/wissensluecken.py` — Tor 3 des Lückenpfades. Es prüft `relevanz ≥ GV_LUECKEN_MIN_RELEVANZ` **und** die Resonanz, zählt beide Abweisungsgründe getrennt und schreibt seine Zahl **auch bei null** (seit dem 12.09.2026; davor war es eine Listen-Komprehension ohne Ausgabe, und ein geschlossenes Tor war von *„offen, nichts gefunden"* nicht zu unterscheiden).
+
+> **Diese eine Zahl steht vor sieben verschiedenen Verteilungen** (`[gemessen 12.09.2026]`, 378 Turns über alle Paare mit Nova-Kern). Die Resonanz ist `cosine(turn, kern)` und damit paarweise; die Mediane liegen zwischen **0,097 und 0,282**. Bei zwei Paaren lässt 0,30 **keinen einzigen** Turn durch, bei den beiden oberen 23 und 27 %. Der Filter ist damit je Paar ein anderer — und der Bezug wandert mit jeder Kern-Destillation. Verteilung, Vorbehalt und die offene Absichtsfrage (absolut gegen Perzentil je Paar) in `novaberg-kalibrierung_k.md` §3.3a.
 
 **Ehrlicher Charakter-Filter (Chat 107, GV-RESONANZ-FALLBACK-LUEGT):** Der Filter greift nur, wenn die Resonanz überhaupt prüfbar ist (`resonanz_pruefbar`-Flag in `ei/wissensluecken.py`). Vorher setzte der Code bei fehlendem Charakter-Kern (Cold-Start) oder fehlgeschlagenem Kern-Embedding lautlos `charakter_resonanz = 0.5` — ein erfundener Wert über der Schwelle, der „nicht anwendbar" als „passt hervorragend" verkleidete. Jetzt: ohne prüfbare Resonanz qualifizieren sich Kandidaten allein über die Relevanz, Cold-Start loggt `warning`, Embedding-Defekt loggt `error`. Kein Verhaltenswechsel, ehrliche Verbuchung (behoben in Commit `1e5ae70`, Details in bugs.md).
 

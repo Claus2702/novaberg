@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 10. September 2026, 20:26 UTC (**das Laengen-Tor hinterlaesst eine Spur** — beide Bedingungen standen nur im `gv_detail`-Schnappschuss, den jeder Turn ueberschreibt; die `strategie_tor`-Zeile im `pipeline_log` traegt seither `max_laenge`, `aufnahmebereitschaft` **und** beide Ergebnisse. `[gemessen 10.09.2026]` Ueber ein entworfenes Spektrum oeffnet das Tor in **51,2 %** der Turns, ueber eine rein wissenschaftliche Reihe in **0,6 %** — die Messvorschrift hatte den Befund erzeugt). Davor §8.0a neu — **die neun Bloecke, die der Knoten wirklich baut**; vier davon nannte das Dokument nie. Es beschrieb die Absicht vollstaendig und die Prompt-Struktur gar nicht). Davor 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
+**Stand:** 12. September 2026 (**die Decke der Vektorlänge ist modusabhängig** — in `fachgespraech`, `lernmodus` und `philosophischer_austausch` ist Länge 3 bei **jeder** Faktorstellung ausgeschlossen, weil die beste Summe exakt 2.5 ergibt und `round` zur geraden Zahl rundet. Über 1434 Rohturns tragen 116 die Länge 3, alle mit `vertrauen` **und** `locker`, keiner in einem dieser drei Modi; Abschnitt *Längenberechnung*). Davor 10. September 2026, 20:26 UTC (**das Laengen-Tor hinterlaesst eine Spur** — beide Bedingungen standen nur im `gv_detail`-Schnappschuss, den jeder Turn ueberschreibt; die `strategie_tor`-Zeile im `pipeline_log` traegt seither `max_laenge`, `aufnahmebereitschaft` **und** beide Ergebnisse. `[gemessen 10.09.2026]` Ueber ein entworfenes Spektrum oeffnet das Tor in **51,2 %** der Turns, ueber eine rein wissenschaftliche Reihe in **0,6 %** — die Messvorschrift hatte den Befund erzeugt). Davor §8.0a neu — **die neun Bloecke, die der Knoten wirklich baut**; vier davon nannte das Dokument nie. Es beschrieb die Absicht vollstaendig und die Prompt-Struktur gar nicht). Davor 30. August 2026 (§10.1: die Zeilen des Erinnerungsblocks tragen ihren Sprecher — nachgezogen aus der Schlussfrage, nicht vom Nachzug gefunden). Davor 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
 **Nachtrag 28.08.2026:** Der System-Prompt des GV-Calls traegt zusaetzlich den `[SACHLAGE]`-Block — das sachliche Verstehen des Turns aus `graph/nodes/sachlage.py`, vor dem Farbton. Konzept: `novaberg-thinking-lage_k.md`. **Nachtrag 29.08.2026:** Derselbe Block trägt seit den Scheiben 6–8 des Lage-Konzepts auch die Deckung aus dem Gedächtnis, die Zweifel der Plausibilitätsprüfung und den Antwortstoff samt Suchtreffern (`sachlage_block`) — der GV sieht damit, was Nova zur Sache weiß, bevor er das Vehikel wählt. **Nachtrag 29.08.2026, spaet:** Der Block spricht in den Namen seines Lesers (`sachlage_block(…, leser=LESER_GV)`): hier *Nova* und *der Nutzer* in dritter Person — der GV analysiert, er spielt nicht; der Verfasser bekommt denselben Block mit *Person A* und *Person B* (F-PROMPT-2: das Modell wird nie als der Charakter angesprochen). Der GV-Prompt traegt selbst noch einmal *»dein«* (Fundliste 29.08.).
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
@@ -754,6 +754,35 @@ Der Unterschied in der letzten Zeile ist kein Detail: Der Prompt-Block heißt de
 | `_farbe_tone` | Antwort-Ton (mit Stil-Redundanz-Check) | "Wärme ist gefragt." — schweigt bei Dopplung (z.B. sachlich + formell) |
 
 **Längenberechnung — deterministisch:** Positive Emotion + hoher Arousal → länger. Negative Emotion + hoher Arousal → kürzer. Krise (spirale/absturz + Arousal ≥ 0.7) → Länge 0 (nur Empathie). Hartes Limit: max 3.
+
+### Die Decke ist nicht 3, sie ist modusabhängig — und in drei Modi liegt sie bei 2 (12.09.2026)
+
+`[gemessen 12.09.2026]` Über **1434 Rohturns** (alle Paare, `pipeline_log`, `art='turn_roh'`), gerechnet durch `_vektor_laenge_berechnen` selbst statt durch eine nachgebaute Formel:
+
+| Länge | 0 | 1 | 2 | 3 |
+|---|---:|---:|---:|---:|
+| Turns | 123 | 786 | 409 | **116** |
+
+Tor 1 (`max_laenge ≥ GV_STRATEGIE_MIN_LAENGE`) öffnet damit in **36,6 %** — deckungsgleich mit den 36,5 % über 1293 Turns vom 10.09.2026, also eine Wiederholung und kein neuer Wert.
+
+**Länge 3 existiert im Bestand, und sie hat eine einzige Gestalt.** Alle 116 Turns tragen `dynamik = vertrauen` **und** `stil = locker` — ausnahmslos, beide. Dazu ein Modus mit Zuschlag null oder besser (`spielerisch` 62, `alltag` 44, `arbeitsmodus` 2) oder `emotional` (8) bei hohem Arousal. Sie liegen bei zwei Paaren: 112 beim gewachsenen Bogen, 4 bei einem zweiten.
+
+**Und in drei Modi ist sie unerreichbar — nicht selten, sondern arithmetisch ausgeschlossen.** Je Modus die günstigste Stellung (`freude`, `vertrauen`, `locker`, arousal 1.0) durch dieselbe Funktion geschickt:
+
+| Modus | Delta | Decke |
+|---|---:|---:|
+| `kreativ` | +0.3 | 3 |
+| `spielerisch` · `alltag` · `berichtend` · `arbeitsmodus` | 0.0 | 3 |
+| `emotional` · `beratend` | −0.2 | 3 (nur bei arousal 1.0) |
+| `fachgespraech` · `lernmodus` · `philosophischer_austausch` | −0.3 | **2** |
+
+> **Der Grund ist eine Rundungsregel, keine Entscheidung.** Bei Delta −0.3 lautet die beste Summe `1.0 + 1.0 + 0.5 + 0.3 − 0.3 = 2.5`, und `round(2.5)` ist in Python **2** (Rundung zur geraden Zahl). Bei −0.2 steht 2.6 und damit 3. Der Unterschied zwischen den beiden Modus-Zuschlägen ist deshalb nicht ein Zehntel Wahrscheinlichkeit, sondern die Grenze zwischen *möglich* und *unmöglich*.
+
+**Für jede Messreihe nach `F-MESS-1` heißt das: Länge 3 kann dort nicht auftreten.** Ein wissenschaftliches Thema erzeugt genau diese drei Modi; **794 der 1434 Turns** (55,4 %) liegen in ihnen. Die 20-Turn-Reihe vom 12.09.2026 ist dadurch vollständig erklärt — sie ist aus `lernmodus` und `philosophischer_austausch` gebaut, und in **8 ihrer 20 Turns** hätte allein `modus = kreativ` die 3 erzeugt, während arousal, Dynamik und Stil in **keinem einzigen** Turn dafür reichten.
+
+> **Der Zugriff ist nachrechenbar und benutzt keine zweite Formel.** Jeder Rohturn trägt `inhalt->user_emotion` mit genau den fünf Eingangsgrößen; die Zerlegung hebt je Turn **einen** Faktor und fragt `_vektor_laenge_berechnen` erneut. Die Kontrolle ist die Reihe selbst: Die so gerechneten Längen sind zeichengleich mit der im Betrieb protokollierten Folge.
+
+**Was hier nicht entschieden ist:** ob die Decke 2 in den drei fachlichen Modi gewollt ist. Das Konzept sagt *„ein Schritt nach dem anderen"* zum Zuschlag und *„Hartes Limit: max 3"* zur Deckelung; dass beides zusammen die 3 in der Hälfte aller Turns ausschließt, stand nirgends.
 
 **Architektur-Entscheidung:** Der Vektor beschreibt Landschaft, nicht Route. Er sagt was IST und was kommt — Nova's Charakter bestimmt WIE sie darauf reagiert.
 

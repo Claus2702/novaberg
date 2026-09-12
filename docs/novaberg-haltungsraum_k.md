@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — eine Fläche aus Gesprächslandschaft und Zuwendung, aus der Grenzen folgen
-**Stand:** 7. September 2026 (**`wissbegier` ist themengebunden** — die Faszination moduliert ihren Beitrag; der Kasten bei der Speichentabelle in §2.0). Davor 15. August 2026 (v0.11)
+**Stand:** 12. September 2026 (§2.1: das additive Vorbild hat eine gemessene Schwachstelle — eine Summe endet an einer Rundung, und die setzt eine Wand, die in keiner Tabelle steht). Davor 7. September 2026 (**`wissbegier` ist themengebunden** — die Faszination moduliert ihren Beitrag; der Kasten bei der Speichentabelle in §2.0). Davor 15. August 2026 (v0.11)
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten**, **Protokoll** und seit dem 15.08.2026 der **Stand** stehen und laufen im Produktivsystem. ~~**Nova verhält sich noch unverändert**~~ → **überholt:** Seit dem 12.08.2026 lesen Responder und Verfasser die Haltung (`HALTUNG-OHNE-LESER` behoben), und seit dem 07.09.2026 ist der Beitrag von `wissbegier` **themengebunden** — er wird mit der Faszination der gelesenen Erinnerungen moduliert (§2.0, der Kasten bei der Speichentabelle).
@@ -317,11 +317,13 @@ Ein Turn ohne Rechnung trägt **keine** Zeile statt einer leeren — „nicht ge
 
 ### 2.1 Warum eine Fläche und keine Summe
 
-Der erste Entwurf war additiv: Grundwert aus dem Cluster, Versatz aus der Zuwendung, Summe ergibt den Umfang. Diese Bauart existiert im System bereits und funktioniert — `_vektor_laenge_berechnen` rechnet so, mit Zuschlägen aus Beziehungsdynamik, Modus und Sprachstil und einer Notbremse bei Krise.
+Der erste Entwurf war additiv: Grundwert aus dem Cluster, Versatz aus der Zuwendung, Summe ergibt den Umfang. Diese Bauart existiert im System bereits und ~~funktioniert~~ **läuft** — `_vektor_laenge_berechnen` rechnet so, mit Zuschlägen aus Beziehungsdynamik, Modus und Sprachstil und einer Notbremse bei Krise.
 
 **Sie ist hier trotzdem zu grob.** Eine Summe unterstellt, dass jede Kombination auf der Geraden zwischen den Polen liegt. Tatsächlich sind `Paradox × mittlere Zuwendung` und `Wartezimmer × Treue` **eigene Zustände**, keine Zwischenwerte. Eine gleichmäßig gefüllte Matrix wäre eine Formel in so vielen Schreibweisen, wie sie Zellen hat; eine gute Matrix ist eine Landkarte.
 
 **Das Vorbild steht im Bestand:** Die 64 Sektoren des Gesprächsvektors sind benannt und verteilt, nicht berechnet. Dieselbe Sorte Arbeit, eine Ebene höher.
+
+> **Und das Vorbild hat eine gemessene Schwachstelle, die gegen die Summe spricht** (12.09.2026): Eine Summe aus kleinen Zuschlägen endet an einer **Rundung**, und die sitzt nicht dort, wo der Entwerfer hinsieht. Bei `_vektor_laenge_berechnen` ergibt die beste erreichbare Summe in drei der zehn Modi exakt 2,5 — `round` rundet zur geraden Zahl, und der dritte Schritt ist dort bei **jeder** Faktorstellung ausgeschlossen. 794 von 1434 Rohturns liegen in diesen Modi, und keiner der 116 Turns mit Länge 3 (`novaberg-bugs.md` → `GV-LAENGE-RUNDUNG-ZUR-GERADEN`). **Wer additiv rechnet und dann auf ganze Stufen rundet, setzt eine Wand, die in keiner Tabelle steht** — die Fläche hat diese Eigenschaft nicht, weil sie ihre Felder benennt.
 
 > **Nachtrag 31.07.2026 — die Entscheidung ist umgekehrt, und der Einwand bleibt trotzdem stehen.** Gebaut wird das Beitragsmodell aus §2, und das rechnet in Teilen additiv. Der Unterschied zum hier verworfenen Entwurf ist dreifach: **fünf** Größen statt einer, **gesetzte** Sets je Cluster und je Speiche statt einer Formel, und **drei** Rechenarten statt nur der Summe — eine Grenze multipliziert, eine Übersteuerung ersetzt.
 >

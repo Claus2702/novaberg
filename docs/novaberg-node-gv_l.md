@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Plateau bei Vertrauen ist maximale Öffnung
-**Stand:** 18. April 2026, Chat 52
+**Stand:** 12. September 2026 (§3 berichtigt: `beziehungs_dynamik` geht in die Laengenrechnung ein, und zwar als staerkster Beitrag neben der Emotion — alle 116 Turns mit Laenge 3 tragen `vertrauen`. Nicht ein geht dagegen `nova_beziehung`). Davor 18. April 2026, Chat 52
 **Pfad:** novaberg/docs/novaberg-node-gv_l.md
 **Quellen:** Chat 52 (Session-Daten-Analyse Telegram-Gespräch 17.04.2026)
 
@@ -85,9 +85,11 @@ Assoziativ, persönlich, wandernd. Der Modus ist nicht Wissens-Exploration, sond
 
 ### Der GV-Längenalgorithmus braucht Beziehungskontext
 
-Aktuell berechnet `_vektor_laenge_berechnen(state)` die kognitive Tiefe aus Arousal und Modus. Der Beziehungskontext (`beziehungs_dynamik`, `nova_beziehung`) fließt nicht ein.
+~~Aktuell berechnet `_vektor_laenge_berechnen(state)` die kognitive Tiefe aus Arousal und Modus. Der Beziehungskontext (`beziehungs_dynamik`, `nova_beziehung`) fließt nicht ein.~~ → **Am 12.09.2026 widerlegt, und zwar für die Hälfte der Aussage.** `beziehungs_dynamik` geht ein, und zwar als stärkster Einzelbeitrag neben der Emotion: `vertrauen` +0,5, `distanz` −0,5. `[gemessen über 1434 Rohturns]` `distanz` ist der häufigste Wert im Bestand (511), und **alle 116 Turns mit Vektorlänge 3 tragen `vertrauen`** — ausnahmslos, zusammen mit `stil = locker`. Was **nicht** eingeht, ist `nova_beziehung`: Die Rechnung liest ausschließlich `external.emotion`, also die Schätzung über den Nutzer, nie Novas eigene Seite. Der Satz war also nicht falsch, sondern zu weit — und die Hälfte, die er zu viel behauptete, ist die wirksamere.
 
 **Vorschlag:** Wenn `emotions_vektor == "plateau"` UND `beziehungs_dynamik == "vertrauen"` UND `modus == "emotional"`, dann Tiefe hochsetzen statt runterzusetzen.
+
+> **Der Zielfall des Vorschlags ist teilweise schon erreichbar** (12.09.2026): `emotional` trägt −0,2 und erreicht mit `vertrauen` + `locker` bei hohem Arousal die Länge 3 — **8 der 116 Dreien im Bestand liegen dort.** Was der Vorschlag dagegen **nicht** löst, ist die Kante bei den drei fachlichen Modi (−0,3): Dort ist 3 bei jeder Stellung ausgeschlossen, weil die beste Summe exakt 2,5 ergibt und `round` zur geraden Zahl rundet (`novaberg-bugs.md` → `GV-LAENGE-RUNDUNG-ZUR-GERADEN`).
 
 ### `_farbe_charakter` (TR6) als natürlicher Ort
 

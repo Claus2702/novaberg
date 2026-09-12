@@ -216,7 +216,7 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 **Zustand:** offen — nachgesehen am 25.08.2026. Das Feld heisst unveraendert wie eine Antwortlaenge.
 
-**Befund (2026-07-31).** `gv_detail["laenge"]` heißt wie eine Antwortlänge und ist die **Vektorlänge**: die Zahl der Antizipationsschritte aus `_vektor_laenge_berechnen`, hart auf 3 gedeckelt (Cognitive Load Theory). Wer beim Bauen einer Umfangsregel darauf aufsetzt, rechnet auf einem Wert, der für etwas anderes erhoben wurde — dieselbe Fehlerklasse wie eine Schwelle aus einer anderen Größe.
+**Befund (2026-07-31).** `gv_detail["laenge"]` heißt wie eine Antwortlänge und ist die **Vektorlänge**: die Zahl der Antizipationsschritte aus `_vektor_laenge_berechnen`, hart auf 3 gedeckelt (Cognitive Load Theory). Wer beim Bauen einer Umfangsregel darauf aufsetzt, rechnet auf einem Wert, der für etwas anderes erhoben wurde — dieselbe Fehlerklasse wie eine Schwelle aus einer anderen Größe. **Und der Deckel ist nicht 3** (12.09.2026): In den drei Modi mit Zuschlag −0,3 liegt er bei **2**, weil die beste Summe exakt 2,5 ergibt und `round` zur geraden Zahl rundet; dort liegen 794 von 1434 Rohturns. Eine Umfangsregel auf dieser Zahl hätte in `fachgespraech` und `lernmodus` einen Wertebereich von drei Stufen statt vier — ohne dass es irgendwo stünde (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`).
 
 **Was fertig waere.** Der Schluessel heisst, was er traegt.
 

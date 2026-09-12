@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 10:45 UTC** (gemessen via `date -u`). Davor 12.09.2026, 09:20 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 13:05 UTC** (gemessen via `date -u`). Davor 12.09.2026, 10:45 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 52 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 77 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,85 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 13:05 UTC — zwei Messungen ohne Bau: eine Decke und eine Spreizung 📊
+
+**ZIEL:** Beide Zahlen, die das Vortages-Ergebnis offenliess, stehen gemessen —
+woran der dritte Antizipationsschritt haengt, und ob eine globale
+Resonanzschwelle fuer alle Paare dasselbe tut.
+**TEST:** keiner — es wurde nichts gebaut. Kein Produktionscode beruehrt, Suite
+unveraendert **3454 gruen, 0 uebersprungen**.
+**MESSUNG:** 1434 Rohturns durch `_vektor_laenge_berechnen` selbst; 378 Turns
+gegen sieben Charakterkerne. Die Kontrolle ist die Reproduktion der
+protokollierten 20er-Folge, zeichengleich.
+
+### Die Decke der Vektorlaenge ist modusabhaengig, und in drei Modi liegt sie bei 2
+
+Die 20-Turn-Reihe des Vortags erreichte Laenge 3 nie. Der Grund ist kein
+Zufall der Reihe und keine Seltenheit, sondern **arithmetisch ausgeschlossen**:
+Bei Modus-Zuschlag −0.3 (`fachgespraech`, `lernmodus`,
+`philosophischer_austausch`) lautet die beste erreichbare Summe
+`1.0 + 1.0 + 0.5 + 0.3 − 0.3 = 2.5`, und `round(2.5)` ist **2** — Rundung zur
+geraden Zahl. Bei −0.2 steht 2.6 und damit 3.
+
+**Der Unterschied zwischen den Modus-Zuschlaegen −0.2 und −0.3 ist deshalb
+nicht ein Zehntel Wahrscheinlichkeit, sondern die Grenze zwischen moeglich und
+unmoeglich.** Je Modus gemessen durch dieselbe Funktion, bei guenstigster
+Stellung: fuenf Modi erreichen 3, zwei erreichen sie nur bei arousal 1.0, drei
+erreichen sie nie.
+
+`[gemessen]` Ueber **1434 Rohturns** aller Paare: 123 mal Laenge 0, 786 mal 1,
+409 mal 2, **116 mal 3**. Tor 1 oeffnet in **36,6 %** — die Wiederholung der
+36,5 % ueber 1293 Turns vom 10.09.2026, also derselbe Wert auf mehr Material.
+**Alle 116 Dreien tragen `dynamik = vertrauen` und `stil = locker`**, beide,
+ausnahmslos; keine einzige liegt in einem der drei fachlichen Modi. **794 der
+1434 Turns (55,4 %) liegen dort.**
+
+**Fuer Messreihen nach der Themenvorschrift heisst das: Laenge 3 kann nicht
+auftreten.** In 8 der 20 Turns haette allein `modus = kreativ` sie erzeugt;
+arousal, Dynamik und Stil reichten in **keinem** Turn. Das schaerft den
+Nachtrag vom 10.09.2026 — dort war erklaert, warum die Laenge auf 1 steht, hier
+steht, warum die 3 unter dieser Vorschrift **gar nicht vorkommen kann**.
+Einzelheiten in `novaberg-node-gv_k.md`, Abschnitt *Laengenberechnung*.
+
+### Die Resonanzschwelle ist global und die Groesse ist paarweise
+
+`GV_CHARAKTER_RESONANZ_SCHWELLE` (seit 12.09.2026 **0.30**) vergleicht den Turn
+mit Novas Kern **in diesem Paar**. Kalibriert wurde an einem Kern.
+
+`[gemessen]` Sieben Paare mit Nova-Kern, je bis zu 150 Rohturns, 378 Werte:
+die Mediane liegen zwischen **0,097 und 0,282** — Spannweite 0,186 bei einer
+Schwelle von 0,30. **Bei zwei Paaren passiert kein einziger Turn**, bei einem
+dritten 2 %, bei den beiden oberen 23 und 27 %. Nach der eigenen Regel der
+Kalibrierung (*eine Schwelle, die nie oder immer ueberschritten wird, trennt
+nichts*) ist das derselbe Defekt — nur paarweise verteilt.
+
+**Die Vermutung des Backlog-Eintrags traegt nicht.** Er erwartete, dass ein
+fuenfmal laengerer Kern die Cosinus-Werte zur Mitte zieht. Die Mediane ordnen
+sich nicht nach Kernlaenge, und die Spanne p10–p90 ist bei den langen Kernen
+*weiter* statt enger. **Die Ursache bleibt offen**, denn die Turn-Korpora
+unterscheiden sich mit: oben 150 gewachsene Turns ueber Wochen, unten je eine
+Tagesreihe zu einem Thema. Belegt ist der Befund, nicht seine Ursache.
+
+**Und der Bezug bewegt sich.** Dasselbe Paar ergab am 11.09.2026 **17,3 %**
+ueber der Schwelle und am 12.09.2026 **23 %** — dazwischen kein geaenderter
+Turn, sondern eine neue Kern-Destillation (5198 → 4720 Zeichen). Eine Schwelle
+auf einem destillierten Text ist gegen einen Bezug kalibriert, den ein
+Hintergrundlauf jederzeit neu schreibt. Verteilung in
+`novaberg-kalibrierung_k.md` §3.3a.
+
+### Zwei Absichtsfragen, die aus den Messungen folgen
+
+Beide sind Setzungen und keine Ableitungen, beide liegen beim Eigentuemer:
+
+1. Ist die Decke 2 in den drei fachlichen Modi gewollt? Das Konzept sagt *„ein
+   Schritt nach dem anderen"* zum Zuschlag und *„hartes Limit: max 3"* zur
+   Deckelung; dass beides zusammen die 3 in der Haelfte aller Turns
+   ausschliesst, stand nirgends.
+2. Bleibt die Resonanzschwelle ein absoluter Wert, oder wird sie ein Perzentil
+   der Verteilung des jeweiligen Paares?
 
 ---
 
