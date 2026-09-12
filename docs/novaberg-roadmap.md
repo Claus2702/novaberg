@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 22:54 UTC** (gemessen via `date -u`). Davor 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 23:22 UTC** (gemessen via `date -u`). Davor 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,22 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 12.09.2026, 23:22 UTC — ein gemeldeter Ausfall gibt seine Frage frei 🔧
+
+**Anlass.** Der Rest aus dem Eintrag davor: `turn_gescheitert` meldete den Ausfall, aber nicht, **wessen** Ausfall. Die Kennung der gescheiterten Nachricht blieb im Client bis zu seinem Neustart offen.
+
+**Gebaut.** `server/services/event_consumer.py` legt `nachrichten_ids` in die Ausfallmeldung. `client/ui/stream_handler.py::_release_failed` nimmt sie aus der offenen Menge; nennt die Meldung nur fremde Kennungen, bleibt die eigene Frage offen, und eine Meldung ohne Kennungen wird als Warnung geloggt.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Endet der Turn einer Nachricht mit einer Ausfallmeldung, ist ihre Kennung im Client nicht mehr offen. |
+| **TEST** | Server `test_der_ausfall_nennt_die_nachrichten_des_turns` (vorher rot, 1/1), Client 2 neue Zeugen durch die Eingaenge (vorhergesagt 2 rot, gezählt 1 — der zweite ist ein Riegel gegen zu breites Abräumen und am alten Code richtig grün). Server **3587 grün, 0 übersprungen**, Client **30 grün**, harte Wand grün. Gegenprobe am Client: Aufruf entfernt, 1/1 rot. |
+| **MESSUNG** | **Keine.** Ein echter Ausfall lässt sich nicht gezielt herstellen. Belegt ist nur, dass der Server mit dem Eingriff läuft (`/health` 200); der Beweis im Betrieb ist die nächste Client-Zeile *„gescheiterter Turn — nicht mehr offen"*. |
+
+**Offen.** Fünf Wege, auf denen eine bestätigte Nachricht ohne jede Meldung verloren geht — im Serverlog des Abends je 0 Treffer (Fundliste).
 
 ---
 
