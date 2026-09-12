@@ -183,6 +183,56 @@ def kzg_kandidaten_suchen(
     return kandidaten
 
 
+def _qualifizieren(kandidaten: list[dict], resonanz_pruefbar: bool) -> list[dict]:
+    """Behaelt, was beide Schwellen nimmt — und sagt, woran der Rest fiel.
+
+    **Die Zeile ist der Grund, warum diese Funktion eine ist.** Bis zum
+    12.09.2026 stand die Auswahl als Listen-Komprehension ohne Ausgabe: Zwanzig
+    Kandidaten gingen hinein, null kamen heraus, und aus dem Log war nicht zu
+    sehen, an welcher der beiden Bedingungen — nur aus einer Nachrechnung
+    gegen den Bestand (`22_STILLE_FEHLER`). Die naechste Kalibrierung haette
+    dasselbe Problem gehabt.
+
+    **Die beiden Schwellen messen Verschiedenes, und nur eine je Kandidat.**
+    `relevanz` ist kandidateneigen. `charakter_resonanz` ist es **nicht**: Der
+    Aufrufer setzt fuer jeden Kandidaten `cosine(turn, kern)` — die Naehe des
+    **Turns** zum Charakterkern. Diese Schwelle wirkt deshalb als globaler
+    Schalter, alle oder keiner; der Fund dazu steht in der Fundliste.
+
+    Vorbedingung: jeder Kandidat traegt `relevanz`; bei `resonanz_pruefbar`
+        zusaetzlich `charakter_resonanz`.
+    Nachbedingung: die qualifizierten Kandidaten, Reihenfolge unveraendert.
+        Die Log-Zeile nennt beide Ausfallgruende mit Zahl — auch bei null.
+    Fehlerfaelle: keine.
+    """
+    # ── Verarbeitung ────────────────────────────
+    zu_schwach: int = 0
+    zu_fern:    int = 0
+    behalten:   list[dict] = []
+
+    for k in kandidaten:
+        if k["relevanz"] < GV_LUECKEN_MIN_RELEVANZ:
+            zu_schwach += 1
+            continue
+        if resonanz_pruefbar and k["charakter_resonanz"] < GV_CHARAKTER_RESONANZ_SCHWELLE:
+            zu_fern += 1
+            continue
+        behalten.append(k)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # **Auch null wird gemeldet.** Ein Durchgang ohne Treffer und einer, der
+    # nicht lief, sehen sonst gleich aus — und genau so blieb der Ausfall
+    # dieses Filters wochenlang unsichtbar.
+    logger.info(
+        "GV4: %d von %d qualifiziert (Relevanz unter %.2f: %d · "
+        "Turn-Resonanz unter %.2f: %d%s)",
+        len(behalten), len(kandidaten), GV_LUECKEN_MIN_RELEVANZ, zu_schwach,
+        GV_CHARAKTER_RESONANZ_SCHWELLE, zu_fern,
+        "" if resonanz_pruefbar else ", Resonanz nicht pruefbar",
+    )
+    return behalten
+
+
 def wissensluecken_finden(
     state:             ConversationState,
     aufnahmebereitschaft: float,
@@ -213,6 +263,17 @@ def wissensluecken_finden(
     dynamik:      str = internal.emotion.relationship_dynamic if internal else "neutral"
 
     if not user_prompt or not user_id:
+        # **Der stumme Rueckkehrpfad war der Ausfall selbst** (12.09.2026).
+        # Bis heute kehrte GV4 hier ohne ein Wort zurueck; im Log war das von
+        # *„lief und fand nichts"* nicht zu unterscheiden, und die Tor-Zeile
+        # meldete beide Faelle als `wissensluecken: 0`. `[gemessen]` 40 Turns
+        # mit offenem Tor, 0 Luecken, und **keine einzige** GV4-Zeile im Log
+        # (`22_STILLE_FEHLER` §5).
+        logger.info(
+            "GV4: uebersprungen — user_prompt %s, user_id %s",
+            "leer" if not user_prompt else f"{len(user_prompt)} Zeichen",
+            "leer" if not user_id else f"'{user_id}'",
+        )
         return []
 
     # ── 1. Turn-Embedding ──
@@ -344,11 +405,7 @@ def wissensluecken_finden(
             user_id,
         )
 
-    qualifiziert: list[dict] = [
-        k for k in gefiltert
-        if k["relevanz"] >= GV_LUECKEN_MIN_RELEVANZ
-        and (not resonanz_pruefbar or k["charakter_resonanz"] >= GV_CHARAKTER_RESONANZ_SCHWELLE)
-    ]
+    qualifiziert: list[dict] = _qualifizieren(gefiltert, resonanz_pruefbar)
 
     qualifiziert.sort(key=lambda k: k["relevanz"], reverse=True)
 

@@ -575,9 +575,26 @@ PIXIE_PAUSE_SCHLUESSEL: str = "pixie:paused"
 # frueheren Auftrag nicht fuer immer liegen bleibt. `[Betriebsbeleg
 # 11.09.2026]` Ein Eintrag mit **0,37** wurde zugestellt, waehrend das
 # Gespraech bei einem anderen Gegenstand stand, und sprang ohne ein Wort des
-# Uebergangs. Der Wert ist gesetzt und nicht abgeleitet: Eine Spanne
+# Uebergangs. ~~Der Wert ist gesetzt und nicht abgeleitet: Eine Spanne
 # gemessener Naehen mit dem Urteil *„brauchte eine Bruecke"* daneben gibt es
-# noch nicht.
+# noch nicht.~~
+#
+# **Die Spanne liegt seit dem 11.09.2026 vor, und sie stellt den Wert in
+# Frage.** `[gerechnet ueber 706 Stapel-Eintraege x 5 Gespraechskontexte]`
+# **3 von 3530 Paaren (0,08 %)** erreichen 0,55; das p99 der Naehe liegt je
+# Kontext zwischen **0,37 und 0,47**. Selbst Reize, die aus dem Thema eines
+# Stapel-Eintrags formuliert sind, kommen nur auf 0,5468 bis 0,6582.
+#
+# **Die Paar-Zahl ist nicht die Entscheidungszahl.** Zugestellt wird das
+# **Maximum** ueber den Stapel, nicht ein zufaelliges Paar — und das liegt in
+# 2 von 5 gerechneten Kontexten ueber der Schwelle (0,5683 und 0,6773). Im
+# Bestand setzten 2 von 3 Zustellungen nach dem Bau den Block. Die Schwelle
+# liegt also **am oberen Rand** der erreichbaren Spanne, nicht jenseits davon:
+# Der Block ist der haeufigere Fall, nicht der ausnahmslose.
+#
+# Was daraus folgt, ist eine Absicht und keine Ableitung: Der Wert bleibt, bis
+# jemand entscheidet, ob der Block der Normalfall sein soll
+# (`novaberg-node-verfasser_k.md` §2.2a-3).
 VERFASSER_IMPULS_NAHE: float = 0.55
 
 PIXIE_AGENTEN_PAUSE_SCHLUESSEL:  str = "pixie:agenten_paused"
@@ -3174,9 +3191,27 @@ GV_LUECKEN_MIN_RELEVANZ:         float = 0.15   # Mindest-Gesamtrelevanz
 GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
 # Mindest-Cosine zum kern_hash. Chat 107 geprueft und BEWUSST nicht geaendert
 # (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
-# ⚠ Wachposten: Kandidat↔nova_kern-Wert, nova_kern wurde nicht gemessen —
-# begruendeter Startwert, kein Messergebnis. Nach Live-Betrieb pruefen.
-GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.40
+# ~~⚠ Wachposten: Kandidat↔nova_kern-Wert, nova_kern wurde nicht gemessen —
+# begruendeter Startwert, kein Messergebnis. Nach Live-Betrieb pruefen.~~
+# → **Am 12.09.2026 nachgeholt, und der Startwert war zu hoch.**
+#
+# `[gemessen ueber 150 echte Nutzer-Turns gegen den Charakterkern]`
+# median **0,228**, p90 0,324, p99 0,413, **max 0,421**. Die alte 0,40 lag
+# damit zwischen p99 und Maximum und liess **1,3 %** der Turns durch; im
+# Betrieb kam nichts an: 40 Turns mit offenem Strategie-Tor, **0** Luecken
+# (gemessen mit einem Werkzeug ausserhalb des Repositoriums).
+#
+# 0,30 liegt knapp unter p90 und laesst **17,3 %** durch — zusammen mit dem
+# Strategie-Tor (38 % der Turns) also rund jeder fuenfzehnte Turn. Das ist
+# eine Setzung auf gemessener Grundlage, kein abgeleiteter Wert: Wie oft eine
+# Luecke angeboten werden **soll**, sagt keine Messung.
+#
+# **Achtung, sie filtert nicht, was ihr Name sagt.** `ei/wissensluecken.py`
+# setzt fuer **jeden** Kandidaten denselben Wert — `cosine(turn, kern)` —,
+# der Kandidat geht nicht ein. Die Schwelle ist damit ein **globaler
+# Schalter**: alle zwanzig passieren oder keiner. Das ist ein eigener Fund
+# und steht in der Fundliste.
+GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.30
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
 GV_SESSION_AKT_CAP:              int   = 25     # Session-Decay: nach 25 Turns = 0
 GV_AUFNAHMEBEREITSCHAFT_CAP: float = 2.5  # sin^0.5 Normalisierung: Rohwert-Obergrenze
