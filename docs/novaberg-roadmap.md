@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 20:20 UTC** (gemessen via `date -u`). Davor 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 20:31 UTC** (gemessen via `date -u`). Davor 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 82 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 83 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -21,6 +21,40 @@
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
 
 ---
+
+## 12.09.2026, 20:31 UTC — Novas offene Fragen kommen nur noch, wenn sie zum Turn passen 🔧
+
+**ZIEL:** In einen Turn gehen nur offene Fragen Novas, deren Thema dem Reiz nah ist
+— beim Nutzerturn seiner Äußerung, beim Impuls ihrem Gedanken —, unter den nahen
+die mit dem stärksten Zug, oder keine (`F-GV-2`, Bauteil 2 von 4).
+**TEST:** `test_wissensluecken_leser.py`, 12 neue Zeugen, 9 bestehende auf die neue
+Signatur gezogen. Suite **3527 grün, 0 übersprungen**. Gegenprobe zweifach: die
+Nähe-Bedingung aus der Abfrage genommen **1/1**, die Nachprüfung der Nähe genommen
+**1/1**.
+**MESSUNG:** der gebaute Leser über die 15 Abendturns und über zwei Stichproben von
+je 60 Nutzerturns des Bestands.
+
+### Was nah heißt, war zweimal zu messen
+
+**Erste Eichung, am Maximum je Turn:** Der höchste Nutzerturn des Abends ohne
+Sachthema lag bei 0,401, in einer Stichprobe der niedrigste mit Themenbezug bei
+0,426 — Grenze 0,41. **Durch den gebauten Leser gefahren passten 5 bis 6 von 10
+gewählten Themen.** Das Maximum entscheidet nur, *ob* etwas kommt; gewählt wird
+unter allen nahen nach Zug, und knapp über der Grenze liegen Wortanklänge.
+
+**Zweite Eichung, je Nähe-Band** (Lesung, zwölf Paare je Band): 0,40–0,43 6/12 ·
+0,43–0,46 6/12 · 0,46–0,49 8/12 · 0,49–0,52 10/12 · ab 0,52 ~12/12. **Grenze 0,49.**
+
+| | vorher | nachher |
+|---|---|---|
+| 11 Nutzerturns des Abends (Neckerei, Filmbitte) | dieselben 3 in jedem | **0** |
+| 4 Impulse | dieselben 3 in jedem | **4 passende** |
+| Stichprobe der Eichung, 60 Turns | — | 21 Turns mit Fragen, 42 von 48 passend |
+| **unabhängige Stichprobe**, 60 Turns, 6 überlappend | — | **17 Turns mit Fragen, 33 von 38 passend** |
+
+**Offen:** die Skala von `neugier_vektor` (`NEUGIER-VEKTOR-OHNE-LESER`) — sie ordnet
+jetzt nur unter nahen Themen. Die Beurteilung *passend* ist eine Lesung und als
+solche im Beleg ausgewiesen.
 
 ## 12.09.2026, 20:20 UTC — die Neugier hat zwei Lücken, und die erste Naht ist geschlossen 🔧
 

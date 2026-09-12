@@ -780,6 +780,8 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 **Geschlossen, wenn** `neugier_vektor` einen Leser hat, **der regelmaessig greift**, und seine Skala an gemessenen Werten geeicht ist — nicht an der Beispieltabelle des Konzepts.
 
+**Nachtrag 12.09.2026 — der Leser waehlt jetzt nach Naehe zum Reiz, und die Bedingungsfrage ist zur Haelfte beantwortet.** Entscheidung des Eigentuemers (`F-GV-2`): offene Fragen nur, wenn sie dem Turn nah sind, unter den nahen der staerkste Zug, oder keine. Vorher standen in 15 Betriebsturns dieselben drei in jedem Turn, und keine wurde aufgegriffen. `[gemessen]` Mit der Grenze 0,49 (`OFFENE_FRAGEN_MIN_NAEHE`): **0 Fragen in 11 Nutzerturns** eines Abends aus Neckerei und Filmbitte, **4 passende** in den Impulsen; auf einer unabhaengigen Stichprobe von 60 Nutzerturns **17 Turns mit Fragen, 33 von 38 passend** nach Lesung. **Offen bleibt:** Die Skala von `neugier_vektor` ist weiter ungeeicht — sie ordnet nur noch unter den nahen Themen, und dort ist ihr Beitrag gering. Die Frage *nur bei weitem Denken oder immer bei Bereitschaft* ist unberuehrt; der Leser haengt weiter an `strategie_aktiv`.
+
 ---
 
 ### `TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT` — die Antwort existiert, ihre Spur nicht

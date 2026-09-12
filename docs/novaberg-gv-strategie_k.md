@@ -688,7 +688,7 @@ Die Festlegung dazu ist `F-GV-2`.
 | Liste | Absicht | Kandidat | Bedingung | Prompt-Block |
 |---|---|---|---|---|
 | **Lücke beim Nutzer** | Lenken, Säen | ein Thema aus Knoten nahe am Turn | im laufenden Gespräch nicht gefallen **und** in keinem Knoten mit `beobachter = user` des Paares als Thema geführt | `[WISSENSLUECKEN]` |
-| **Lücke bei Nova** | Nachfragen | eine offene Zeile aus `wissensluecken` | ihr Embedding liegt dem Turn nah — auf Impuls-Turns dem eigenen Gedanken; unter den nahen der höchste `neugier_vektor`; **leer ist zulässig** | `[OFFENE FRAGEN]` |
+| **Lücke bei Nova** | Nachfragen | eine offene Zeile aus `wissensluecken` | ihr Embedding liegt dem Turn nah — auf Impuls-Turns dem eigenen Gedanken; unter den nahen der höchste `neugier_vektor`; **leer ist zulässig** — **✅ gebaut am 12.09.2026**, Nähe ≥ `OFFENE_FRAGEN_MIN_NAEHE = 0.49` (Eichung in `novaberg-kalibrierung_k.md` §3.3) | `[OFFENE FRAGEN]` |
 
 - **Was *„der Nutzer kennt es nicht"* hier heißt, ist eine Annäherung und wird so benannt:** Er hat das Thema im Bestand des Paares nie berührt. Das ist kein Nachweis von Unkenntnis, nur das Fehlen eines Belegs dafür.
 - **Die Charakter-Resonanz wird auf dem Thema gemessen, nicht auf dem Satz,** aus dem es stammt. Der Satz trägt den Sprecher (+0,302 zwischen `assistant` und `user`), das Stichwort nicht.
@@ -697,7 +697,7 @@ Die Festlegung dazu ist `F-GV-2`.
 
 **Reihenfolge der Bauteile, und warum:** Naht → Novas Lücken nach Nähe → Themen und Nutzer-Lücke → Bitte zuerst. Jedes ändert eine andere Zahl des Betriebsbelegs (Quellenmischung · Fragenwechsel · Sprecheranteil · Antwortform); zusammen gebaut wäre eine Verschlechterung keinem zuzuordnen.
 
-**Offen und vor dem Bau zu messen:** die Schwelle der Turn-Nähe für Novas Lücken; die Kosten, Themen je Turn einzubetten (heute ein Aufruf je Text), und ob ein Zwischenspeicher dafür nötig ist.
+**Offen und vor dem Bau zu messen:** ~~die Schwelle der Turn-Nähe für Novas Lücken~~ (gemessen: 0,49); die Kosten, Themen je Turn einzubetten (heute ein Aufruf je Text), und ob ein Zwischenspeicher dafür nötig ist.
 
 ### A.1 Formel
 
