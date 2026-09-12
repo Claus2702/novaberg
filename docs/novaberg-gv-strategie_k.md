@@ -677,7 +677,7 @@ QF:                 0.6 einheitlich
 neugier_boost:      max(ziel_sim × motivation)       Schwelle 0.30
 aufnahmebereitschaft:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]
 register:           sachlich↑neutral↓emotional / offen↑emotional
-charakter_filter:   kern_hash-Resonanz ≥ 0.40   (GV_CHARAKTER_RESONANZ_SCHWELLE)
+charakter_filter:   kern_hash-Resonanz ≥ 0.30   (GV_CHARAKTER_RESONANZ_SCHWELLE, seit 12.09.2026)
 ```
 
 **Ehrlicher Charakter-Filter (Chat 107, GV-RESONANZ-FALLBACK-LUEGT):** Der Filter greift nur, wenn die Resonanz überhaupt prüfbar ist (`resonanz_pruefbar`-Flag in `ei/wissensluecken.py`). Vorher setzte der Code bei fehlendem Charakter-Kern (Cold-Start) oder fehlgeschlagenem Kern-Embedding lautlos `charakter_resonanz = 0.5` — ein erfundener Wert über der Schwelle, der „nicht anwendbar" als „passt hervorragend" verkleidete. Jetzt: ohne prüfbare Resonanz qualifizieren sich Kandidaten allein über die Relevanz, Cold-Start loggt `warning`, Embedding-Defekt loggt `error`. Kein Verhaltenswechsel, ehrliche Verbuchung (behoben in Commit `1e5ae70`, Details in bugs.md).

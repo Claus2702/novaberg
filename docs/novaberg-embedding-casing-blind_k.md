@@ -201,7 +201,7 @@ Wachposten-Kommentare.
 | `kzg_entries_retrieve` | `memory/kzg.py` | 0.50 (hartkodiert) | ~~**0.40**~~ → **0.72** am 21.08.2026, als `KZG_RETRIEVAL_SCHWELLE` in `config.py`. **Der Wachposten hat sich bestätigt, und zwar schärfer als vermutet:** Die 0.40 war nicht zu niedrig, sondern **wirkungslos** — der schlechteste Eintrag des gesamten Bestandes erreicht gegen eine beliebige Frage 0.48 bis 0.54, die Schwelle lag unter dem Boden des Raums. Gemessen an 40 Fragen mit bekannter richtiger Erinnerung; die Reihe steht an der Konstante. **Am 21.08.2026 zusätzlich im echten Turn belegt**, mit Gegenprobe gegen die alte Zahl: 0 / 0 / 10 gegen 10 / 10 / 10 |
 | `GRAVITATIONS_SCHWELLE` | `config.py` | 0.60 | **0.40** |
 | `EMOTIONALE_GRAVITATIONS_SCHWELLE` | `config.py` | 0.50 | **0.40** |
-| `GV_CHARAKTER_RESONANZ_SCHWELLE` | `config.py` | 0.40 (Fallback 0.5) | **0.40** (geprüft, bewusst unverändert) |
+| `GV_CHARAKTER_RESONANZ_SCHWELLE` | `config.py` | 0.40 (Fallback 0.5) | ~~**0.40** (geprüft, bewusst unverändert)~~ → **0.30 seit dem 12.09.2026**. Die Prüfung von damals hielt den Wert gegen die Embedding-Kalibrierung, nicht gegen die **Verteilung, die er filtert**: `cosine(turn, kern)` liegt über 150 echte Turns bei median 0,228 und max 0,421 |
 | `GV_NEUGIER_BOOST_SCHWELLE` | `config.py` | 0.30 | **0.30** (geprüft, bewusst unverändert) |
 | ~~`shadow_delivery` `SIMILARITY_THRESHOLD`~~ | `shadow_delivery.py` | 0.40 | ~~**0.40** (geprüft, bewusst unverändert)~~ → **überholt am 14.08.2026**, siehe unten |
 

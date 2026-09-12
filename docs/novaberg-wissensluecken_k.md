@@ -176,7 +176,17 @@ Der `UNIQUE`-Schlüssel macht den Lauf idempotent: Dasselbe Thema erzeugt keine 
 | Recherche abgeschlossen | später der Recherche-Pfad — neues Wissen, neue Lücken |
 | periodisch | eigener Takt des Agenten |
 
-Weil der Anstoß nicht am Charakter hängt, kann **jeder** Wissenszuwachs eine Neuberechnung auslösen. Eine Lücke schließt sich dann nicht, weil jemand sie für geschlossen erklärt, sondern weil sie beim nächsten Lauf den Filter nicht mehr passiert.
+Weil der Anstoß nicht am Charakter hängt, kann **jeder** Wissenszuwachs eine Neuberechnung auslösen. ~~Eine Lücke schließt sich dann nicht, weil jemand sie für geschlossen erklärt, sondern weil sie beim nächsten Lauf den Filter nicht mehr passiert.~~
+
+> **Am 12.09.2026 gemessen und widerlegt — in zwei Schritten.**
+>
+> **Erstens findet der „nächste Lauf" für eine alte Zeile nicht statt.** Der Agent bewertet die zwanzig neuen Kandidaten eines Laufs; eine bestehende Zeile nur, wenn ein Kandidat ihr zufällig gleicht. `[gemessen]` **114 von 1888** Zeilen (6,0 %) sind je ein zweites Mal angefasst worden, die älteste stammt vom 27.07.2026, geschlossen war keine.
+>
+> **Zweitens trägt der Filter die Unterscheidung nicht.** `[gemessen, je 120 Stichproben]` Ein Thema, das Nova **nachweislich kennt**, erreicht als höchste Ähnlichkeit zum Bestand im Median **0,490**, ein offenes Lückenthema **0,441**; Thema gegen Thema 0,500 gegen 0,473. **Die Verteilungen überlappen fast vollständig** — und das ist kein Messfehler, sondern die Bauart: Die Lücken sind *Nachbarthemen* bekannter Themen, sie **sollen** ähnlich sein. Eine Schwelle darauf schlösse alles oder nichts.
+>
+> **Was seither schließt, ist der Nachweis statt des Maßes.** Steht das Thema wörtlich unter den Themen ihrer aktiven Langzeit-Knoten, kennt sie es — ohne Schwelle, ohne Embedding, ohne Modellaufruf (`_bekannte_schliessen`). Erster Lauf am 12.09.2026: **125 von 1908** geschlossen, zweiter Lauf 0.
+>
+> **Die Reichweite ist damit klein, und der Rest ist eine Absichtsfrage:** Wonach eine Lücke zu schließen wäre, die Nova kennt, ohne dass ihr Thema wörtlich in einem Knoten steht, ist offen. Ähnlichkeit ist es nicht.
 
 **Eigener Agent, nicht Anhang am CharakterAgent.** Getrennte Zuständigkeit, eigener Registry-Eintrag.
 

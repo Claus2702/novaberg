@@ -76,7 +76,7 @@ Die dichteste und am schlechtesten belegte Klasse. Der bekannte Befund: **10 von
 
 ### 3.3 Schwellen — unterhalb derer nichts geschieht
 
-`GRAVITATIONS_SCHWELLE = 0.40` · ~~`EMOTIONALE_GRAVITATIONS_SCHWELLE = 0.40`~~ → **0.18 seit dem 30.08.2026** · `GV_CHARAKTER_RESONANZ_SCHWELLE = 0.40` · ~~`DELEGATION_SALIENZ_SCHWELLE = 0.6`~~ → **0.4615 seit dem 24.08.2026** · `GV_LUECKEN_MIN_RELEVANZ = 0.15` · `GV_LUECKEN_SIM_OBERGRENZE = 0.92`
+`GRAVITATIONS_SCHWELLE = 0.40` · ~~`EMOTIONALE_GRAVITATIONS_SCHWELLE = 0.40`~~ → **0.18 seit dem 30.08.2026** · ~~`GV_CHARAKTER_RESONANZ_SCHWELLE = 0.40`~~ → **0.30 seit dem 12.09.2026** (gemessen: `cosine(turn, kern)` über 150 echte Turns, median 0,228, p99 0,413, max 0,421 — die alte Schwelle lag **zwischen p99 und Maximum** und ließ 1,3 % durch; im Betrieb kam nichts an, 40 Turns mit offenem Tor und 0 Lücken. **Achtung: paarabhängig** — der Kern ist je Paar verschieden lang, die Schwelle gilt global) · ~~`DELEGATION_SALIENZ_SCHWELLE = 0.6`~~ → **0.4615 seit dem 24.08.2026** · `GV_LUECKEN_MIN_RELEVANZ = 0.15` · `GV_LUECKEN_SIM_OBERGRENZE = 0.92`
 
 **Zwei dieser Zahlen waren hier veraltet und sind am 01.09.2026 berichtigt worden** — ein Register, das Zahlen aufzählt und keine Datei nennt, wird vom Doku-Nachzug nicht gefunden.
 

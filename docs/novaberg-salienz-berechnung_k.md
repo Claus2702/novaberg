@@ -241,7 +241,7 @@ Mit dem Teiler ist der Ausdruck auf [0, 1] **geschlossen**, und die Kappung ist 
 | **Sprachlich** | LLM-Lesung des Segmenttexts | **angeschlossen** |
 | **Ziel-Gravitation** | `cosine(segment, ziel) × motivation` | **angeschlossen**, `ei/gravitation.py` |
 | **Emotionale Gravitation** | `max` über die aktivierten Punkte, je `similarity × gewicht_norm × zeit_decay × faktor` | **angeschlossen seit 11.09.2026**, `graph/nodes/salience.py::_staerkste_emotionale_gravitation` |
-| **Neugier-Bezug** | Wissenslücken-Detektor (GV4) | **nicht angeschlossen** — Rückkopplung Lücken → Neugier fehlt |
+| **Neugier-Bezug** | Wissenslücken-Detektor (GV4) | **nicht angeschlossen — und seit dem 12.09.2026 ist der Grund gemessen:** Die Eingangsgröße ist im Betrieb **immer leer**. 40 Turns mit offenem Strategie-Tor, **0** GV4-Lücken. Ein Antrieb, dessen Eingang nie ungleich null ist, wäre kein Antrieb |
 
 ~~**Alle drei sind bereits gerechnet und stehen im State. Keiner beeinflusst heute die Salienz.**~~ — **überholt seit Chat 112:** Ziel-Gravitation und die sprachliche Lesung sind angeschlossen.
 
@@ -266,7 +266,19 @@ Mit dem Teiler ist der Ausdruck auf [0, 1] **geschlossen**, und die Kappung ist 
 
 **Ein Punkt ohne brauchbaren Wert wird gemeldet, nicht still zu 0.0 gemacht** — sonst wäre ein fehlender Wert von einem gemessenen Nullzug nicht mehr zu unterscheiden.
 
-**Damit bleibt ein Antrieb offen:** der Neugier-Bezug. Ihm fehlt die Rückkopplung Wissenslücken → Neugier, und das ist eine Konzeptfrage, keine Normierung. Der Nachsatz *„Nur die Ziel-Gravitation kommt an, und die als bloßer Zuschlag auf die LLM-Bewertung"* gilt weiterhin für den **HumanGraph**; für Novas eigene Äußerung ist der Zuschlag durch die Formel ersetzt.
+**Damit bleibt ein Antrieb offen:** der Neugier-Bezug. Ihm fehlt die Rückkopplung Wissenslücken → Neugier, und das ist eine Konzeptfrage, keine Normierung.
+
+> **Am 12.09.2026 gemessen: Vor der Konzeptfrage liegt ein Befund.** Die Größe, die der vierte Antrieb werden soll, ist im Betrieb **nie ungleich null** — `[gemessen]` 40 Turns mit offenem Strategie-Tor, **0** GV4-Lücken, bei 10 + 10 gefundenen Kandidaten je Lauf. Der Pfad hat **drei Tore**, und bis zu diesem Tag meldete keines seine Zahl:
+>
+> | Tor | Bedingung | im Bestand |
+> |---|---|---|
+> | **1. Strategie** | Vektorlänge ≥ 2 — eine Größe aus Novas **Zustand**, nicht aus dem Turn | 40 von 106 offen; Länge 1 in 66 Turns |
+> | **2. Suche** | LZG + KZG | findet zuverlässig 10 + 10 |
+> | **3. Qualifikation** | Relevanz ≥ 0,15 **und** Turn-Resonanz ≥ Schwelle | **0 von 40** |
+>
+> **Tor 3 stand auf einem ungemessenen Startwert.** `GV_CHARAKTER_RESONANZ_SCHWELLE` trug im Code von Anfang an den Vermerk *„begründeter Startwert, kein Messergebnis. Nach Live-Betrieb prüfen"*. `[gemessen über 150 echte Turns]` `cosine(turn, kern)` liegt bei median **0,228**, p99 0,413, **max 0,421** — die Schwelle 0,40 lag zwischen p99 und Maximum und ließ 1,3 % durch. Seit dem 12.09.2026 steht sie auf **0,30** (17,3 %).
+>
+> **Der Anschluss an die Salienz bleibt damit zurückgestellt**, aber aus einem anderen Grund als bisher: nicht die fehlende Rückkopplung hält ihn auf, sondern eine Eingangsgröße, die den Knoten nie erreicht. Der Nachsatz *„Nur die Ziel-Gravitation kommt an, und die als bloßer Zuschlag auf die LLM-Bewertung"* gilt weiterhin für den **HumanGraph**; für Novas eigene Äußerung ist der Zuschlag durch die Formel ersetzt.
 
 ### Der vierte Antrieb — warum die sprachliche Lesung dazukam
 
