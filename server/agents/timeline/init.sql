@@ -119,3 +119,19 @@ DO $$ BEGIN
             FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
     END IF;
 END $$;
+
+-- ── sachlage_eigenschaft ↔ timeline FK (Lage-Konzept, Scheibe 11) ──────
+-- Dasselbe Uebergangs-Konstrukt wie fuer lzg_knoten: Die Spalte steht nackt
+-- im Kern (db/init.sql), der Fremdschluessel gehoert dem Timeline-Plugin.
+-- Ein Zeitanker verschwindet mit seinem Termin, die Eigenschaft bleibt.
+
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE  conname = 'sachlage_eigenschaft_timeline_id_fkey'
+    ) THEN
+        ALTER TABLE sachlage_eigenschaft
+            ADD CONSTRAINT sachlage_eigenschaft_timeline_id_fkey
+            FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
+    END IF;
+END $$;

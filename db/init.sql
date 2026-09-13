@@ -1490,3 +1490,85 @@ ALTER TABLE praegung_faden
 
 CREATE INDEX IF NOT EXISTS idx_praegung_faden_strang
     ON praegung_faden (strang_id);
+
+-- ══════════════════════════════════════════════════════════════════════
+-- Eigenschaftsgedaechtnis der Sachlage (Scheibe 11, 13.09.2026)
+--
+-- Konzept: novaberg-thinking-lage_k.md §4, Scheibe 11. Die gedeckten
+-- Eigenschaften eines Objekts lebten nur in der Blase und als JSON je Turn.
+-- Hier bekommt jedes Objekt des Paares eine Zeile, jeder Turn seine Objekte,
+-- jede Eigenschaft ihren Wert mit Historie.
+--
+-- **Ein neuer Wert ueberschreibt nicht** (Entscheidung des Eigentuemers): Der
+-- alte wird inaktiv (aktiv = FALSE, t_invalid, abgeloest_durch), der neue
+-- steht daneben — dieselbe Bauart wie fakten.invalidate. Kein Verfall
+-- (F-VERFALL-1: protokolliertes Faktum).
+--
+-- Loeschverhalten: Entitaet und Zeitanker SET NULL (F-MAGNET-1, wie
+-- lzg_knoten.timeline_id); Objekt und Verlauf RESTRICT — eine Historie
+-- verschwindet nicht mit einem Loeschbefehl an anderer Stelle.
+-- Magneten: entitaeten ist global je Mensch, das Objekt gehoert dem Paar.
+-- ══════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS sachlage_objekt (
+    id               SERIAL       PRIMARY KEY,
+    user_id          TEXT         NOT NULL,
+    character_id     VARCHAR(50)  NOT NULL,
+    name             TEXT         NOT NULL,
+    name_schluessel  TEXT         NOT NULL,
+    klasse           TEXT,
+    -- NULL heisst: noch keine Referenz gefunden. Gesetzt wird spaeter, wenn
+    -- die Magnete eines Turns das Objekt nennen (entitaet_bindung sagt, wie).
+    entitaet_id      INTEGER      REFERENCES entitaeten(id) ON DELETE SET NULL,
+    entitaet_bindung TEXT,
+    erstellt_am      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    last_touched     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_sachlage_objekt_paar_name UNIQUE (user_id, character_id, name_schluessel)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sachlage_objekt_entitaet
+    ON sachlage_objekt (entitaet_id) WHERE entitaet_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS sachlage_objekt_turn (
+    id          SERIAL       PRIMARY KEY,
+    verlauf_id  INTEGER      NOT NULL REFERENCES sachlage_verlauf(id) ON DELETE RESTRICT,
+    objekt_id   INTEGER      NOT NULL REFERENCES sachlage_objekt(id) ON DELETE RESTRICT,
+    turn_id     TEXT         NOT NULL,
+    akut        BOOLEAN      NOT NULL,
+    erstellt_am TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_sachlage_objekt_turn UNIQUE (verlauf_id, objekt_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sachlage_objekt_turn_objekt
+    ON sachlage_objekt_turn (objekt_id, erstellt_am DESC);
+CREATE INDEX IF NOT EXISTS idx_sachlage_objekt_turn_turn
+    ON sachlage_objekt_turn (turn_id);
+
+CREATE TABLE IF NOT EXISTS sachlage_eigenschaft (
+    id                     SERIAL       PRIMARY KEY,
+    objekt_id              INTEGER      NOT NULL REFERENCES sachlage_objekt(id) ON DELETE RESTRICT,
+    eigenschaft            TEXT         NOT NULL,
+    eigenschaft_schluessel TEXT         NOT NULL,
+    wert                   TEXT         NOT NULL,
+    -- nutzer | nova | NULL (nicht gesehen, oder aus dem Gedaechtnis gedeckt)
+    sprecher               TEXT,
+    -- Die Gedaechtnis-Quelle einer Deckung (Scheibe 6), sonst NULL.
+    quelle                 JSONB,
+    turn_id                TEXT         NOT NULL,
+    bestaetigt_turn_id     TEXT         NOT NULL,
+    -- Nackte Spalte: Die timeline-Tabelle entsteht mit dem Timeline-Agenten; der
+    -- Fremdschluessel (SET NULL) steht in server/agents/timeline/init.sql.
+    timeline_id            INTEGER,
+    aktiv                  BOOLEAN      NOT NULL DEFAULT TRUE,
+    t_valid                TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    t_invalid              TIMESTAMPTZ,
+    abgeloest_durch        INTEGER      REFERENCES sachlage_eigenschaft(id) ON DELETE SET NULL,
+    last_touched           TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- Hoechstens ein aktiver Wert je Objekt und Eigenschaft — erzwungen hier,
+-- nicht nur im Code.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sachlage_eigenschaft_aktiv
+    ON sachlage_eigenschaft (objekt_id, eigenschaft_schluessel) WHERE aktiv;
+CREATE INDEX IF NOT EXISTS idx_sachlage_eigenschaft_objekt
+    ON sachlage_eigenschaft (objekt_id, eigenschaft_schluessel, t_valid);

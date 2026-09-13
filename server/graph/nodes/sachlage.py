@@ -93,6 +93,7 @@ from config import (
     redis_client,
 )
 from graph.nodes.sachlage_form import SERVER_OWNED_OBJECT_FIELDS, normalize_object_form
+from graph.nodes.sachlage_memory import remember_objects
 from graph.nodes.sachlage_plausibility import (
     apply_plausibility,
     assess_plausibility,
@@ -841,29 +842,33 @@ def _persist_history(
     character_id: str,
     turn_id:      str,
     sachlage:     dict,
-) -> None:
+) -> int | None:
     """Legt die gerechnete Sachlage als Faktum in `sachlage_verlauf` ab.
 
     Vorbedingung: `sachlage` ist validiert und traegt `herkunft`.
     Nachbedingung: Eine Zeile, mit Vektor ueber den Gegenstand-Satz — oder
-        ohne Vektor, wenn der Embed-Worker ausfaellt; das Faktum steht
-        trotzdem.
+        ohne Vektor, wenn der Gegenstand leer ist oder der Embed-Worker
+        ausfaellt; das Faktum steht trotzdem. Ihre id, oder None.
     Fehlerfaelle: Nichts hier wirft. Ein Ausfall ist laut (Repository) und
         kostet den Turn nicht.
     """
-    embedding: list[float] | None
+    embedding: list[float] | None = None
     try:
-        antwort = model_service.embed.submit_sync(
-            EmbedRequest(text=build_embed_text(str(sachlage.get("gegenstand", ""))))
-        )
-        embedding = antwort.embedding
-    except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
-        logger.warning(
-            f"Sachlage-Verlauf: Embedding ausgefallen ({type(fehler).__name__}: "
-            f"{fehler}) — Zeile ohne Vektor"
-        )
-        embedding = None
-    history_write(
+        embed_text: str = build_embed_text(str(sachlage.get("gegenstand", "")))
+    except ValueError as fehler:
+        # Kein Ausfall des Embed-Workers, sondern ein leerer Gegenstand — die
+        # Meldung sagte bis zum 13.09.2026 das Falsche.
+        logger.warning(f"Sachlage-Verlauf: {fehler} — Zeile ohne Vektor")
+        embed_text = ""
+    if embed_text:
+        try:
+            embedding = model_service.embed.submit_sync(EmbedRequest(text=embed_text)).embedding
+        except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+            logger.warning(
+                f"Sachlage-Verlauf: Embedding ausgefallen ({type(fehler).__name__}: "
+                f"{fehler}) — Zeile ohne Vektor"
+            )
+    return history_write(
         POSTGRES_URL, turn_id=turn_id, user_id=user_id,
         character_id=character_id, sachlage=sachlage, embedding=embedding,
     )
@@ -1338,9 +1343,21 @@ def sachlage_assess(state: dict) -> dict:
             sachlage = erhoben
             _sachlage_store(user_id, character_id, sachlage)
             # Das Faktum: nur gerechnete Artefakte, keine uebernommenen.
-            _persist_history(
+            verlauf_id: int | None = _persist_history(
                 user_id, character_id, state.get("turn_id", ""), sachlage,
             )
+            # Scheibe 11: die Objekte des Turns mit ihren Werten, dauerhaft und
+            # an die Magnete des Turns gebunden. Ohne Verlaufszeile kein Anker.
+            if isinstance(verlauf_id, int):
+                try:
+                    remember_objects(
+                        user_id, character_id, state.get("turn_id", ""), verlauf_id, sachlage,
+                    )
+                except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
+                    logger.exception(
+                        f"{type(fehler).__name__}: Sachlage-Gedaechtnis ausgefallen — "
+                        f"die Objekte dieses Turns fehlen im Eigenschaftsgedaechtnis"
+                    )
             # Scheibe 2: Zeigt die Blase zum zweiten Mal auf dasselbe
             # Nutzerziel, entsteht das kurzfristige Ziel (memory/kurzziel.py).
             _track_short_goal(user_id, character_id, state.get("turn_id", ""), sachlage)

@@ -3402,6 +3402,18 @@ SACHLAGE_BESTAND_KALENDER_LIMIT: int = int(
 # Verfasser. Die Suche ist dieselbe wie im Thinker (`tools/web/search.py`).
 SACHLAGE_RECHERCHE_MAX_TREFFER: int = int(
     os.getenv("SACHLAGE_RECHERCHE_MAX_TREFFER", "3"))
+# Scheibe 11 (13.09.2026), das Eigenschaftsgedaechtnis: Ein Objekt ohne
+# Entitaet wird bei jedem Auftreten gegen die Magnete seiner juengsten Turns
+# gehalten — so viele Turns je Objekt. Die Magnete eines Turns entstehen in
+# zwei Haelften (Nutzer vor der Sachlage, Nova danach); das Fenster holt die
+# zweite Haelfte beim naechsten Auftreten nach. ⚠ Startwert, nicht gemessen.
+SACHLAGE_BINDUNG_TURN_FENSTER: int = int(
+    os.getenv("SACHLAGE_BINDUNG_TURN_FENSTER", "10"))
+# Wie viele gespeicherte Eigenschaften der akuten Objekte der Aufloeser
+# zusaetzlich zum Pool angeboten bekommt — vor dem Pool, weil sie die Sache
+# selbst betreffen. ⚠ Startwert, nicht gemessen.
+SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX: int = int(
+    os.getenv("SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX", "4"))
 
 # --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
 # Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein
