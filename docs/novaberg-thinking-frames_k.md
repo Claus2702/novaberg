@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Frames — Universales kognitives Substrat (Konzept)
-**Stand:** 29. August 2026, mittags (§6 Plausibilität gebaut, offene Slots tragen ihren Wissensträger, gedeckte ihren Sprecher — Stand-Block vor §5). Davor 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
+**Stand:** 13. September 2026, 15:11 UTC (Nachtrag in §9.1: ein Teil des Frame-Lagers steht als Eigenschaftsgedächtnis der Sachlage, Scheibe 11). Davor 29. August 2026, mittags (§6 Plausibilität gebaut, offene Slots tragen ihren Wissensträger, gedeckte ihren Sprecher — Stand-Block vor §5). Davor 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-frames_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** Chat 80 (erste Konzeption als Slot-Erhebung pro Vorhaben), Chat 81 (universale Erweiterung — Frame als kognitives Substrat, Akutheit als Trigger, iterative Validierung, Plausibilitätsprüfung, Trennung zu Skills)
@@ -392,6 +392,8 @@ CREATE INDEX idx_frames_slots_gin   ON frames USING GIN (slots);
 Paar-skopiert über `(user_id, character_id)` analog zu LZG/Notizen/Timeline (Magneten-Convention §6). Querverweise zu Timeline/Notizen für Re-Identifikation, weil viele Anliegen-Frames dort materialisiert sind. Querverweise zu Knowledge-Graph-Entitäten ergänzbar (zukünftige Erweiterung).
 
 **Hinweis zur Klassen-Konvention:** `frame_klasse` ist ein Präfix-strukturierter String. *anliegen_termin*, *objekt_auto*, *person_anna*, *ort_treuchtlingen* — das Präfix gibt die Frame-Kategorie, der Rest die spezifische Klasse. Das vereinfacht spätere Analysen: alle Anliegen-Frames per `WHERE frame_klasse LIKE 'anliegen_%'`.
+
+> **Nachtrag 13.09.2026 — ein Teil des Lagers steht, in Konversationsfassung.** Scheibe 11 des Lage-Konzepts (`novaberg-thinking-lage_k.md` §4) legt je gerechnetem Turn die Objekte der Sachlage ab: `sachlage_objekt` (eine Zeile je Paar und Objektname, mit später gebundener `entitaet_id`), `sachlage_objekt_turn` (die Objekte je Turn) und `sachlage_eigenschaft` (je Slot sein Wert mit Quelle, Sprecher, `timeline_id` und Historie — ein neuer Wert löst ab, `aktiv = FALSE` und `t_invalid`, statt zu überschreiben). **Anders als das Schema oben:** Verankert ist das Objekt an `entitaeten` statt an einem Präfix-String `frame_klasse`, die Slots stehen als Zeilen statt als JSONB, es gibt keinen Decay (protokolliertes Faktum) und keine `haeufigkeit`. Der Rückweg läuft über den Frame-Auflöser: gespeicherte Werte der akuten Objekte werden ihm angeboten. **Konzept bleiben** die Lernmechanik aus §7.3 und die Operationen aus §9.2 — Konsens, Schema-Aggregat, Korrektur-Gewichtung, Decay.
 
 ### 9.2 Operationen
 

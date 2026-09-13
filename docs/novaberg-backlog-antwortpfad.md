@@ -668,6 +668,8 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 **Status:** Konzept fertig in vier Dokumenten, Implementation steht aus.
 
+> **Nachtrag 13.09.2026 — ein Teil des Frame-Lagers ist gebaut, in Konversationsfassung.** Scheibe 11 des Lage-Konzepts (`novaberg-thinking-lage_k.md` §4) legt je gerechnetem Turn die Objekte der Sachlage dauerhaft am Paar ab — je Eigenschaft ihr Wert mit Historie, ein neuer Wert loest ab statt zu ueberschreiben (`sachlage_objekt`, `sachlage_objekt_turn`, `sachlage_eigenschaft`) —, bindet das Objekt ueber die Magnete des Turns an `entitaeten` statt an einen Klassennamen und bietet die gespeicherten Werte dem Frame-Aufloeser (Pipeline-Schritt 3) als eigene Quelle an. **Konzept bleiben** die Lernmechanik des Lagers (Konsens, Schema-Aggregat, Recency- und Korrektur-Gewichtung, Decay), die Cache-Hierarchie und der Loop hinter dem Router. Vorher gebaut, ebenfalls als Konversationsfassung vor dem Gespraechsvektor statt als Sub-Graph: die Pipeline-Schritte 1, 2, 3, 5 und 6 (Scheiben 1–10, Stand-Block in `novaberg-thinking-cognitive-pipeline_k.md` §11). Die Formpruefung des Artefakts ist seit demselben Tag vollstaendig (`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`, behoben). Skills und Task-Orchestration sind weiter ohne Code.
+
 **Quartett:**
 
 - `novaberg-thinking-frames_k.md` — **Substrat.** Frames als universale kognitive Schablonen (Objekt, Person, Ort, Vorgang, Werkzeug, Anweisung, Anliegen). Akutheit als Trigger, iterative und rekursive Validierung, Plausibilitätsprüfung gegen Weltwissen. Frame-Lager als lernender Konsens-Speicher mit Recency- und Korrektur-Gewichtung.

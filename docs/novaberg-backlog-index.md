@@ -135,7 +135,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 | Kennung | Was er anhält |
 |---|---|
-| `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` | **Ein Betriebsturn erreicht keine Antwort**, weil `gedeckt` als Liste kam und eine von sechs Lesestellen `.items()` darauf ruft. Drei weitere iterieren die Liste und laufen lautlos falsch weiter. Ursache: `_validate_artifact` normalisiert die drei Felder der Scheiben 7–9 und **nicht** `gedeckt` und `offen`, die seit Scheibe 1 im Artefakt stehen und von allen zehn Scheiben gelesen werden. **Band A, weil er die laufende Messreihe der Neugier anhält** — die Turns des Eigentümers sind der Gegenstand, und ein abgebrochener Turn liefert keine Zeile. **Davor steht eine Absichtsfrage beim Eigentümer**, nicht Arbeit: Ist eine Liste gedeckter Eigenschaften ohne Begründung eine zulässige Lesart (dann Umformung) oder nicht (dann Verwerfen wie bei den drei anderen)? — ⛔ **offen, aufgenommen am 12.09.2026** |
+| ~~`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`~~ | **✅ Behoben am 13.09.2026 — nach `novaberg-bugs-archiv.md` umgezogen.** Der Eigentuemer hat die Absichtsfrage entschieden: ohne Wert ist eine Eigenschaft offen, die Abhilfe formt um, statt zu verwerfen. `graph/nodes/sachlage_form.py` haelt jedes Objektfeld beim Parse, beim Laden der vorigen Blase und im Kontext-Tab; ~~29~~ 31 Zeugen (zwei nach der zweiten Kontrolle, die den Schluessel der Form auf `casefold` wie die Datenbank brachte und die Ansprueche des Aufloesers durch dieselbe Wertpruefung schickt), Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen (`novaberg-thinking-lage_k.md` §3). Die laufende Messreihe der Neugier ist nicht mehr angehalten. *Der Befund vom 12.09.2026:* **Ein Betriebsturn erreicht keine Antwort**, weil `gedeckt` als Liste kam und eine von sechs Lesestellen `.items()` darauf ruft. Drei weitere iterieren die Liste und laufen lautlos falsch weiter. Ursache: `_validate_artifact` normalisiert die drei Felder der Scheiben ~~7–9~~ 8–10 und **nicht** `gedeckt` und `offen`, die seit Scheibe 1 im Artefakt stehen und von allen zehn Scheiben gelesen werden. **Band A, weil er die laufende Messreihe der Neugier anhält** — die Turns des Eigentümers sind der Gegenstand, und ein abgebrochener Turn liefert keine Zeile. **Davor steht eine Absichtsfrage beim Eigentümer**, nicht Arbeit: Ist eine Liste gedeckter Eigenschaften ohne Begründung eine zulässige Lesart (dann Umformung) oder nicht (dann Verwerfen wie bei den drei anderen)? — aufgenommen am 12.09.2026, ✅ **behoben am 13.09.2026** |
 
 > **Er ist der erste Eintrag dieses Bandes, der nicht aus einer Messung kommt, sondern aus einem
 > gescheiterten Gespräch.** Die Regel des Bandes trifft trotzdem genau: *Verfällt Maschinenzeit
@@ -576,28 +576,28 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 620 | offen | `THINKER-TOOL-FORMAT` | [Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)](novaberg-backlog-antwortpfad.md) |
 | ANT | 638 | offen | `THINK-TRANSITION-INFO` | [Sprint: THINK-TRANSITION-INFO — Thinker bekommt Vera](novaberg-backlog-antwortpfad.md) |
 | ANT | 665 | offen | `KONZEPT-COGNITIVE-PIPELINE` | [KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schl](novaberg-backlog-antwortpfad.md) |
-| ANT | 745 | offen | `TRIB-PERSON-DRIFT` | [Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Nov](novaberg-backlog-antwortpfad.md) |
-| ANT | 803 | offen | `ROUTE-MISS1` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 805 | offen | `EMOTE-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 806 | offen | `TOPOS-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 807 | offen | `ABER-SAG-MAL` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 808 | offen | `REDUCER-MULTILINE` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 809 | offen | `ROUTE-CHAR-NOTIZ` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 810 | offen | `RESP-DEAD` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
-| ANT | 851 | offen | `DELEGATION-STATE-UNDEKLARIERT` | [Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrverme](novaberg-backlog-antwortpfad.md) |
-| ANT | 868 | offen | `PLANNER-AKTIV-RELIKT` | [Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige lies](novaberg-backlog-antwortpfad.md) |
-| ANT | 885 | offen | `WEB-CONTEXT-ALTPFAD` | [Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, ](novaberg-backlog-antwortpfad.md) |
-| ANT | 902 | offen | `BUILDER-CREATE-INITIAL-STATE-TOT` | [Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruf](novaberg-backlog-antwortpfad.md) |
-| ANT | 919 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
-| ANT | 959 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
-| ANT | 980 | abgeschlossen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
-| ANT | 993 | abgeschlossen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
-| ANT | 1006 | abgeschlossen | `SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME` | [Feature: SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME — die Rue](novaberg-backlog-antwortpfad.md) |
-| ANT | 1017 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
-| ANT | 1030 | abgeschlossen | `SACHLAGE-SCHEIBE-6-AUFLOESER` | [Feature: SACHLAGE-SCHEIBE-6-AUFLOESER — der Frame-Au](novaberg-backlog-antwortpfad.md) |
-| ANT | 1041 | abgeschlossen | `SACHLAGE-SCHEIBE-7-PLAUSIBILITAET` | [Feature: SACHLAGE-SCHEIBE-7-PLAUSIBILITAET — Behaupt](novaberg-backlog-antwortpfad.md) |
-| ANT | 1052 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
-| ANT | 1063 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
+| ANT | 747 | offen | `TRIB-PERSON-DRIFT` | [Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Nov](novaberg-backlog-antwortpfad.md) |
+| ANT | 805 | offen | `ROUTE-MISS1` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 807 | offen | `EMOTE-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 808 | offen | `TOPOS-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 809 | offen | `ABER-SAG-MAL` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 810 | offen | `REDUCER-MULTILINE` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 811 | offen | `ROUTE-CHAR-NOTIZ` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 812 | offen | `RESP-DEAD` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 853 | offen | `DELEGATION-STATE-UNDEKLARIERT` | [Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrverme](novaberg-backlog-antwortpfad.md) |
+| ANT | 870 | offen | `PLANNER-AKTIV-RELIKT` | [Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige lies](novaberg-backlog-antwortpfad.md) |
+| ANT | 887 | offen | `WEB-CONTEXT-ALTPFAD` | [Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, ](novaberg-backlog-antwortpfad.md) |
+| ANT | 904 | offen | `BUILDER-CREATE-INITIAL-STATE-TOT` | [Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruf](novaberg-backlog-antwortpfad.md) |
+| ANT | 921 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
+| ANT | 961 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
+| ANT | 982 | abgeschlossen | `SACHLAGE-SCHEIBE-2-KURZZIEL` | [Feature: SACHLAGE-SCHEIBE-2-KURZZIEL — der kurzfrist](novaberg-backlog-antwortpfad.md) |
+| ANT | 995 | abgeschlossen | `SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND` | [Feature: SACHLAGE-SCHEIBE-3-FRAGE-GEGENSTAND — die R](novaberg-backlog-antwortpfad.md) |
+| ANT | 1008 | abgeschlossen | `SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME` | [Feature: SACHLAGE-SCHEIBE-5-WIEDERAUFNAHME — die Rue](novaberg-backlog-antwortpfad.md) |
+| ANT | 1019 | abgeschlossen | `SACHLAGE-SCHEIBE-4-GEDAECHTNIS` | [Feature: SACHLAGE-SCHEIBE-4-GEDAECHTNIS — Sachlage j](novaberg-backlog-antwortpfad.md) |
+| ANT | 1032 | abgeschlossen | `SACHLAGE-SCHEIBE-6-AUFLOESER` | [Feature: SACHLAGE-SCHEIBE-6-AUFLOESER — der Frame-Au](novaberg-backlog-antwortpfad.md) |
+| ANT | 1043 | abgeschlossen | `SACHLAGE-SCHEIBE-7-PLAUSIBILITAET` | [Feature: SACHLAGE-SCHEIBE-7-PLAUSIBILITAET — Behaupt](novaberg-backlog-antwortpfad.md) |
+| ANT | 1054 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
+| ANT | 1065 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |

@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 12. September 2026 — juengster Eintrag **12.09.2026, 23:22 UTC** (gemessen via `date -u`). Davor 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 13. September 2026 — juengster Eintrag **13.09.2026, 15:20 UTC** samt Nachtrag 15:55 UTC (gemessen via `date -u`). Davor 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 86 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 87 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,60 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 13.09.2026, 15:20 UTC — die Form der Lage für jedes Feld, und ein Gedächtnis für die Eigenschaften einer Sache 🔧
+
+**Anlass.** Der Blocker aus Band A: Am 12.09. brach ein Betriebsturn ab, weil das Modell `gedeckt` als Liste lieferte (`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`). Vor der Abhilfe stand eine Absichtsfrage, und der Eigentümer hat sie entschieden: **Eine Eigenschaft ist gedeckt, wenn sie einen Wert hat; ohne Wert ist sie offen.** Dazu eine zweite Absicht: Was die Sachlage über eine Sache weiß, lebte nur in der Blase und als JSON je Turn — je gerechnetem Turn sollen die Objekte dauerhaft abgelegt werden, die Entität später gebunden, und ein neuer Wert soll den alten ablösen statt ihn zu überschreiben. Konzept: `novaberg-thinking-lage_k.md` §3 (Festlegung 1, Nachtrag) und §4, Scheibe 11.
+
+### Teil 1 — die Formprüfung
+
+**Gebaut.** `server/graph/nodes/sachlage_form.py`: `normalize_object_form` hält jedes Objektfeld — `name`, `akut` als Wahrheitswert, `klasse` im Kanon, `gedeckt` als Zuordnung mit Wert, `offen` als Liste ohne Gedecktes; ein Name ohne Wert wandert nach `offen`, ein Wert unter `offen` nach `gedeckt`. Die Felder des Servers (`quellen`, `plausibilitaet`, `recherche`) fallen aus dem frischen Parse. `sachlage.py`: Kopffelder müssen Text sein; `sachlage_load` prüft die vorige Blase und beginnt ohne lesbare Objektliste laut frisch; die Prompt-Ansicht der vorigen Blase trägt keine Felder des Servers. `api/drive.py::sachlage_lesen` liest über dieselbe Form. **Aus der Messung dazu:** Kanonwörter und die Vorlage `nutzer|nova` sind kein Wert, eine Angabe im Namen wird geborgen, gleichnamige Objekte werden zusammengeführt, die Smalltalk-Schranke sitzt dahinter.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Kein Turn stirbt an der Form des Sachlage-Artefakts, und kein Leser bekommt eine Form, die seine Annotation nicht einhält — beim Parse, beim Laden der vorigen Blase und im Kontext-Tab; was eine Aussage trägt, wird eingeordnet, nicht verworfen. |
+| **TEST** | `tests/test_sachlage_form.py`, **29 Zeugen** (nach der zweiten Kontrolle 31, Teil 4) (24 beim Bau, rote Phase 20 vorhergesagt / 20 rot; 5 aus der Messung), darunter der Fall vom 12.09. durch Plausibilität, Auflöser samt `carry_sources` und Block. Gegenprobe: Formaufruf entfernt 18 vorhergesagt / 18 rot; Prüfung beim Laden entfernt 1/1; Zusammenführen entfernt 1 vorhergesagt / 3 rot (die Schranke lag im Zusammenführen); Schranke im Zusammenführen 2/2; Bergung und Vorlage je 1/1. |
+| **MESSUNG** | Labor gegen den echten Knoten mit echtem Modell: 0 Abstürze über alle Läufe; *ohne Wert → offen* griff an echten Parses; zwei neue Formen gefunden und zu Regeln gemacht. Betrieb 14:47–14:52 UTC: zwei Wissenschaftsturns mit akutem Objekt liefen durch. |
+
+### Teil 2 — Scheibe 11, das Eigenschaftsgedächtnis
+
+**Gebaut.** DDL angekündigt und freigegeben: drei Tabellen am Ende von `db/init.sql` — `sachlage_objekt` (je Paar und Objektname, `entitaet_id` SET NULL), `sachlage_objekt_turn` (je Turn seine Objekte, Verlauf und Objekt RESTRICT), `sachlage_eigenschaft` (Wert mit `aktiv`, `t_valid`, `t_invalid`, `abgeloest_durch`; ein aktiver Wert je Eigenschaft als eindeutiger Teilindex); der Fremdschlüssel von `timeline_id` steht in `server/agents/timeline/init.sql`. Aufbau von null in einer Wegwerf-Datenbank ohne Fehler, Migration beim Neustart belegt. `server/memory/sachlage_properties.py` schreibt in einer Transaktion neu / bestätigt / abgelöst; `server/graph/nodes/sachlage_memory.py::remember_objects` ruft es nach der Verlaufszeile und bindet ungebundene Objekte über die Magnete ihrer jüngsten Turns an `entitaeten` (gleich oder Enthaltensein ab vier Zeichen, nie bei zwei Kandidaten), den Zeitanker nur bei genau einem im Turn. `sachlage_resolver.py::property_hits` und `combine_offer` bieten dem Auflöser die gespeicherten Werte der akuten Objekte vor dem Pool an (Quelle `eigenschaft`), eine Deckung übernimmt den Wert wörtlich. Prompt: gedeckte Werte bleiben wörtlich, nur ein anderer Wert ersetzt. `config.py`: `SACHLAGE_BINDUNG_TURN_FENSTER` = 10, `SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX` = 4 (Startwerte). Nebenbei: `_persist_history` meldete einen leeren Gegenstand als Embed-Ausfall.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Eine gedeckte Eigenschaft überlebt Blase und Turn: dauerhaft am Objekt des Paares, ein neuer Wert löst den alten ab, ohne ihn zu löschen; das Objekt findet seine Entität über die Magnete seiner Turns; kehrt das Gespräch ohne Blase zur Sache zurück, bekommt der Auflöser den gespeicherten Wert angeboten. |
+| **TEST** | `test_sachlage_properties_schema.py` **11** live, nach Teil 4 **12** — hier stehen auch neu / bestätigt / abgelöst und die verschwundene Eigenschaft (rote Phase 10 vorhergesagt / 10 rot), `test_sachlage_memory.py` **18** — Namensregel, Magnete, Ablage und Bindung, Knoten-Verdrahtung, Rundlauf gegen Datenbank und Redis (gegen die Hülle 8 vorhergesagt / 12 rot — vier Ersetzungsziele fehlten der Hülle), `test_sachlage_recall.py` **10**, nach Teil 4 **14** (rote Phase ohne vorherige Vorhersage, 5 rot). Gegenprobe: Aufruf im Knoten 1/1, Inaktivsetzen 1/1 (die Datenbank verweigert den zweiten aktiven Wert), Enthaltensein 3/3, Verdrahtung in `_derive` 1/1, Ausschluss gedeckter 1/1, wörtlicher Wert 1/1. |
+| **MESSUNG** | **Labor Arm A** (3 Läufe, Rückkehr mit Wiederaufnahme): Korrektur 30 → 33 ms 3/3 mit inaktivem Vorgänger, Schein-Ablösungen 0 von 6; Rückweg über `eigenschaft` 0/3, weil die Wiederaufnahme den Wert 3/3 selbst brachte — Erwartung verfehlt, Grund belegt. **Arm B** (ohne Wiederaufnahme): ein Lauf ohne lesbares JSON; Rückweg wirkt, legte aber die Umschreibung des Auflösers als Ablösung ab → wörtlicher Wert; zwei gleichnamige Objekte → Zusammenführen. **Nachlauf** (4 Läufe): ein JSON-Ausfall, 2 von 3 gültigen wörtlich über `eigenschaft`, als Bestätigung. **Betrieb 14:47–14:52 UTC**, zwei Turns zum Crab-Pulsar über `/chat`: das Objekt ist an die Entität *Crab-Pulsar* gebunden (`turn_magnet`), Seiteneffekte unverändert. |
+
+### Teil 3 — die Qualität der Werte
+
+**Befund.** Der Betrieb legte Werte ab, die Notizen sind (*»Nova hat … erwähnt, aber keine konkrete Frequenz genannt.«*). Ausgezählt über `sachlage_verlauf` ohne Test- und Laborpaare: **1771 gedeckte Werte, 579 ein Kanonwort (33 %), 86 die Vorlage `nutzer|nova` (5 %)**, 106 kein Text, 18 leer, 68 ein Satz über den Sprecher. Im rohen Parse stand die Angabe im Namen: `"Temperatur: 2,725 Kelvin": "nutzer"`.
+
+**Gebaut.** Prompt: der Wert ist die Angabe selbst, nie `nutzer`/`nova`, nie ein Satz über das Gespräch, nur Angesprochenes bleibt offen; das JSON-Muster zeigt *»die Angabe selbst, etwa 33 Millisekunden«*. Form: Vorlage aus Kanonwörtern ist kein Wert, eine Angabe im Namen wird samt Sprecher geborgen.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Ein gedeckter Wert ist eine Angabe über die Sache, kein Sprecherwort und kein Vermerk über das Gespräch. |
+| **TEST** | Vorlage und Prompt-Regel 2/2 rot vor dem Fix (`test_sachlage_form.py`, `test_sachlage.py::DerWertIstDieAngabeTest`), Bergung 1/1; Gegenprobe Bergung, Vorlage, Prompt-Regel je 1/1. |
+| **MESSUNG** | Wechselmessung am rohen Parse, sechs Zweierfolgen synthetischer Wissenschaftsreize (Vela-Pulsar, Mond, 40-Hz-Gamma, Abell 1689, Beteigeuze, Hintergrundstrahlung), ~~vier~~ **fünf** Durchgänge je Fassung: **Werte ohne Angabe 31/70 (44 %) → 6/61 (10 %)**, kein Kanonwort mehr, die sechs leeren ordnet die Form als offen ein. **JSON-Ausfall 0/60 → 3/57** — nicht unterscheidbar (~~alte Fassung in Arm B 2/35~~ → mit der alten Fassung in den übrigen Laboren 2/50: Arm A 0/15, Arm B 1/15, Arm B nach den Nachbesserungen 1/20), Wachposten. |
+
+### Teil 4 — Nachtrag 15:55 UTC: die zweite Kontrolle fand drei Fehler, die kein Zeuge sah
+
+**Befund.** Geprüft nach dem Bau, mit einem Zugriff, den der Bau nicht benutzt hatte — alle drei bei grüner Suite. (1) **Ein gespeicherter Wert deckte eine fremde Eigenschaft wörtlich:** Beanspruchte der Auflöser *»Alter: 970 Jahre«* für die offene Masse, stand *970 Jahre* als Masse in `gedeckt` und im Gedächtnis — entstanden erst durch die Nachbesserung *wörtlicher Wert* aus Teil 2. (2) **Die Ansprüche des Auflösers liefen ohne Wertprüfung** — `nutzer` konnte über ihn nach `gedeckt`, obwohl die Form es verwirft. (3) **Form, Zusammenführen und Rückweg verglichen mit `lower`, die Datenbank mit `casefold`** — der Rückweg fand ein Objekt mit ß nicht, und zwei Schreibweisen derselben Eigenschaft lösten einander im selben Turn ab. Dazu in der Doku: Zeugen der falschen Datei zugeordnet, vier statt fünf Durchgänge, eine falsche JSON-Ausfallzahl, Kappung und Mehrfachtreffer als bezeugt geführt ohne Zeugen (hier berichtigt, markiert).
+
+**Gebaut.** `property_key` schreibt mit `casefold` wie die Datenbank; `gedeckt`-Schlüssel und Zusammenführen entdoppeln darüber. `MemoryHit.subject`: ein gespeicherter Wert gilt wörtlich nur an seiner eigenen Eigenschaft. `covered_value` ist öffentlich, und jeder Anspruch des Auflösers läuft hindurch — ohne Wert verworfen, die Eigenschaft bleibt offen. `property_hits` vergleicht Namen mit dem Datenbankschlüssel; `record_turn_objects` entdoppelt je Objekt.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Ein gespeicherter Wert deckt nur seine eigene Eigenschaft, kein Anspruch ohne Wert deckt, und Form, Rückweg und Datenbank halten dieselben Namen für gleich. |
+| **TEST** | Sechs neue Zeugen: Kappung, ß im Rückweg, fremde Eigenschaft, Anspruch ohne Wert, zweimal ß in der Form, zwei Schreibweisen in einem Turn. Vor dem Fix 5 rot vorhergesagt, 6 gezählt (zwei Form-Zeugen als einer gezählt); der Kappungszeuge war grün, weil die Kappung existierte und nur unbezeugt war. Gegenproben: 1 vorhergesagt / 2 rot (wörtlich nur an der eigenen Eigenschaft — auch der Zeuge *Anspruch ohne Wert* nutzt einen fremden Treffer), 1/1, **1 vorhergesagt / 0 rot** am `casefold`-Schlüssel — der ß-Zeuge prüfte die falsche Richtung, umgedreht 1/1 —, 2/2, 1/1, 1/1. Stand der Zeugen: `test_sachlage_form.py` **31**, `test_sachlage_properties_schema.py` **12**, `test_sachlage_memory.py` **18**, `test_sachlage_recall.py` **14**, dazu einer in `test_sachlage.py`. Suite **3663 grün, 0 übersprungen**. |
+| **MESSUNG** | **Keine eigene.** Die drei Fehler sind am Code gefunden und mit Zeugen belegt; ob der Betrieb einen der Fälle getroffen hat, ist nicht ausgezählt. |
+
+**Suite.** 3611 → 3639 → 3650 → 3653 → 3656 → nach Teil 4 **3663 grün, 0 übersprungen**; harte Wand grün nach jedem Teil, zuletzt mit der Suite 3663.
+
+**Offen.** Namensdrift eines Objekts über Turns erzeugt Dubletten im Gedächtnis; die drei Objekte und zehn Eigenschaften der Betriebsturns stehen mit Notiz-Werten im Bestand des Paares (nicht gelöscht, Entscheidung beim Eigentümer); die Magnet-Auflösung legte *»Crab-Pulsar«* neu an, obwohl *»Crab Pulsar (B0531+21)«* existiert; der Rückfrage-Gegenstand im Kontext-Tab weicht vom Verfasser ab; die zwei Konstanten sind ungemessen; der Rückweg ist im Betrieb nicht belegt (alles Fundliste). Kennung `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`, im Archiv.
 
 ---
 
@@ -325,6 +379,8 @@ werden, ist der Normalisierer eine **Umformung**; soll sie nicht, verwirft er wi
 die drei anderen. **Der Bau wartet auf diese Entscheidung**, nicht auf Arbeit.
 
 Geführt als `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG`, Band A.
+
+> **Nachtrag 13.09.2026:** Entschieden — ohne Wert ist eine Eigenschaft offen; die Abhilfe formt um, statt zu verwerfen. Behoben und ins Archiv umgezogen (Eintrag 13.09.2026, 15:20 UTC).
 
 ---
 
