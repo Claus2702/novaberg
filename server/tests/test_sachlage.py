@@ -291,6 +291,15 @@ class DerVerlaufTraegtNovasAntwortTest(unittest.TestCase):
         self.assertIn("deckt", gesehen["prompt"].split("Regeln:")[1])
 
 
+class DerWertIstDieAngabeTest(unittest.TestCase):
+    """`[gemessen 13.09.2026]` 44 % der gedeckten Werte im Bestand trugen keinen Wert."""
+
+    def test_the_prompt_names_a_real_value_and_forbids_speaker_words(self) -> None:
+        from graph.nodes.sachlage import SACHLAGE_PROMPT
+        self.assertIn("die Angabe selbst", SACHLAGE_PROMPT)
+        self.assertIn("gehoert in \"sprecher\"", SACHLAGE_PROMPT)
+
+
 class DasThemaBenenntDieSacheTest(unittest.TestCase):
     """Der Prompt sagt, dass `thema` und `gegenstand` die Sache nennen, nie den Wechsel.
 

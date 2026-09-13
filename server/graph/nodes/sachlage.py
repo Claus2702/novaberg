@@ -232,7 +232,7 @@ Erstelle die aktualisierte Sachlage als JSON mit genau diesen Feldern:
     {{"name": "das referenzierte Ding, Vorhaben oder Ereignis",
       "klasse": "objekt|person|ort|vorgang|anliegen",
       "akut": true,
-      "gedeckt": {{"eigenschaft": "was dazu schon gesagt wurde"}},
+      "gedeckt": {{"Name der Eigenschaft": "die Angabe selbst, etwa 33 Millisekunden"}},
       "offen": ["typische Eigenschaften dieser Sache, die noch niemand
                  genannt hat"],
       "traeger": {{"erste Eigenschaft aus offen": "nutzer|welt|nachschlagen",
@@ -267,6 +267,11 @@ Regeln:
   Wert — auch eine fortgefuehrte.
 - Fuehre die vorige Sachlage FORT: Was der neue Turn deckt, wandert von
   "offen" nach "gedeckt". Was nicht mehr Gegenstand ist, faellt weg.
+- Der Wert in "gedeckt" ist die Angabe selbst ("33 Millisekunden", "im
+  Krebsnebel", "die Tochter wird zehn") — im Wert, nicht im Namen der
+  Eigenschaft. Nie "nutzer" oder "nova": wer es gesagt hat, gehoert in "sprecher".
+  Nie ein Satz ueber das Gespraech ("Nova hat ... erwaehnt"). Wurde etwas nur
+  angesprochen, aber nicht beantwortet, bleibt die Eigenschaft in "offen".
 - Eine Eigenschaft, die in der bisherigen Sachlage gedeckt ist, behaelt ihren Wert WOERTLICH
   — auch wenn du ihn anders sagen wuerdest. Nur wenn der neue Turn einen
   ANDEREN Wert nennt (eine Korrektur, eine Aenderung), steht der neue.

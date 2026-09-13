@@ -25,6 +25,7 @@ in `sachlage.py` und laufen **nach** dieser Pruefung, weil sie gegen `offen` und
 """
 
 import logging
+import re
 
 logger = logging.getLogger("ki_server.sachlage")
 
@@ -43,6 +44,9 @@ SERVER_OWNED_OBJECT_FIELDS: tuple[str, ...] = ("quellen", "plausibilitaet", "rec
 NO_VALUE_WORDS: frozenset[str] = frozenset({
     "nutzer", "welt", "nachschlagen", "kritisch", "unkritisch", "nova",
 })
+
+# Die Woerter, die als Sprecher taugen (SPRECHER_KANON in sachlage.py).
+SPEAKER_WORDS: frozenset[str] = frozenset({"nutzer", "nova"})
 
 _TRUE_TEXT: frozenset[str] = frozenset({"true", "ja", "1"})
 _FALSE_TEXT: frozenset[str] = frozenset({"false", "nein", "0", ""})
@@ -65,9 +69,16 @@ def _as_value(roh: object) -> str | None:
 
 
 def _as_covered_value(roh: object) -> str | None:
-    """Ein Wert fuer `gedeckt`: ein Wert, der nicht nur ein Kanonwort ist."""
+    """Ein Wert fuer `gedeckt`: ein Wert, der nicht nur aus Kanonwoertern besteht.
+
+    `[gemessen 13.09.2026]` Im Bestand von 1771 gedeckten Werten waren 579 ein
+    Kanonwort (»nutzer«, »nova«) und 86 die Vorlage des Prompts (»nutzer|nova«).
+    """
     wert: str | None = _as_value(roh)
-    if wert is not None and wert.casefold() in NO_VALUE_WORDS:
+    if wert is None:
+        return None
+    teile: list[str] = [t for t in re.split(r"[\s|/,;]+", wert.casefold()) if t]
+    if teile and all(t in NO_VALUE_WORDS for t in teile):
         return None
     return wert
 
@@ -77,16 +88,52 @@ def _as_name(roh: object) -> str | None:
     return _as_value(roh)
 
 
-def _split_covered(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
-    """Zerlegt `gedeckt` in Eigenschaften mit Wert und Namen ohne Wert."""
+def _value_from_name(name: str, wert: object) -> tuple[str, str, str | None] | None:
+    """Holt eine Angabe aus dem Namen, wenn der Wert nur ein Sprecherwort ist.
+
+    `[gemessen 13.09.2026]` Im rohen Parse stand `"Temperatur: 2,725 Kelvin":
+    "nutzer"` — die Angabe im Namen, der Sprecher im Wert. Nach der Regel
+    »nichts verwerfen, was eine Aussage traegt« wird daraus Eigenschaft →
+    Angabe, und das Sprecherwort wird zum Sprecher.
+
+    Returns:
+        (Eigenschaft, Angabe, Sprecher oder None), oder None ohne Angabe im Namen.
+    """
+    if not isinstance(wert, str) or ":" not in name:
+        return None
+    teile: list[str] = [t for t in re.split(r"[\s|/,;]+", wert.casefold()) if t]
+    if not teile or not all(t in NO_VALUE_WORDS for t in teile):
+        return None
+    links, _, rechts = name.partition(":")
+    if not links.strip() or not rechts.strip():
+        return None
+    sprecher: str | None = teile[0] if len(teile) == 1 and teile[0] in SPEAKER_WORDS else None
+    return links.strip(), rechts.strip(), sprecher
+
+
+def _split_covered(
+    roh: object, name: str,
+) -> tuple[dict[str, str], list[str], dict[str, str]]:
+    """Zerlegt `gedeckt` in Eigenschaften mit Wert, Namen ohne Wert und Sprecherhinweise."""
     mit_wert: dict[str, str] = {}
     ohne_wert: list[str] = []
+    sprecher: dict[str, str] = {}
     if roh is None:
-        return mit_wert, ohne_wert
+        return mit_wert, ohne_wert, sprecher
     if isinstance(roh, dict):
         for eigenschaft, wert in roh.items():
             name_norm: str | None = _as_name(eigenschaft)
             if name_norm is None:
+                continue
+            geborgen = _value_from_name(name_norm, wert)
+            if geborgen is not None:
+                mit_wert[geborgen[0]] = geborgen[1]
+                if geborgen[2]:
+                    sprecher[geborgen[0]] = geborgen[2]
+                logger.warning(
+                    f"Sachlage-Form: Angabe an '{name}' stand im Namen "
+                    f"{name_norm!r} — als {geborgen[0]!r} → {geborgen[1]!r} geborgen"
+                )
                 continue
             wert_norm: str | None = _as_covered_value(wert)
             if wert_norm is None:
@@ -98,7 +145,7 @@ def _split_covered(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
                 f"Sachlage-Form: {len(ohne_wert)} Eigenschaft(en) an '{name}' in "
                 f"'gedeckt' ohne Wert — nach offen: {ohne_wert}"
             )
-        return mit_wert, ohne_wert
+        return mit_wert, ohne_wert, sprecher
     eintraege: list = roh if isinstance(roh, list) else [roh]
     for eintrag in eintraege:
         name_norm = _as_name(eintrag)
@@ -108,7 +155,7 @@ def _split_covered(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
         f"Sachlage-Form: 'gedeckt' an '{name}' ist {type(roh).__name__} statt "
         f"dict — {len(ohne_wert)} Name(n) ohne Wert nach offen: {ohne_wert}"
     )
-    return mit_wert, ohne_wert
+    return mit_wert, ohne_wert, sprecher
 
 
 def _split_open(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
@@ -274,7 +321,13 @@ def normalize_object_form(objekt: dict, from_model: bool, gate: bool = True) -> 
             )
             del objekt["klasse"]
 
-    gedeckt, ohne_wert = _split_covered(objekt.get("gedeckt"), name)
+    gedeckt, ohne_wert, sprecher_hinweise = _split_covered(objekt.get("gedeckt"), name)
+    if sprecher_hinweise:
+        vorhanden: object = objekt.get("sprecher")
+        sprecher_neu: dict = dict(vorhanden) if isinstance(vorhanden, dict) else {}
+        for eigenschaft, wer in sprecher_hinweise.items():
+            sprecher_neu.setdefault(eigenschaft, wer)
+        objekt["sprecher"] = sprecher_neu
     werte_aus_offen, offen_namen = _split_open(objekt.get("offen"), name)
     for eigenschaft, wert in werte_aus_offen.items():
         gedeckt.setdefault(eigenschaft, wert)

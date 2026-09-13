@@ -83,6 +83,24 @@ class CoveredNeedsAValueTest(unittest.TestCase):
         self.assertEqual(objekt["gedeckt"], {"Periode": "33 ms"})
         self.assertEqual(objekt["offen"], ["Entfernung zur Erde", "Wer"])
 
+    def test_a_canon_template_is_no_value(self) -> None:
+        """`[gemessen 13.09.2026]` 86 von 1771 gedeckten Werten im Bestand lauteten »nutzer|nova«."""
+        objekt = _object(_validate_artifact(_artifact(
+            gedeckt={"Anlass": "nutzer|nova", "Ort": "Nutzer / Nova"}, offen=[],
+        )))
+        self.assertEqual(objekt["gedeckt"], {})
+        self.assertEqual(objekt["offen"], ["Anlass", "Ort"])
+
+    def test_a_value_in_the_name_is_recovered(self) -> None:
+        """`[gemessen 13.09.2026]` Roher Parse: `"Temperatur: 2,725 Kelvin": "nutzer"` —
+        die Angabe im Namen, der Sprecher im Wert. Nichts davon geht verloren."""
+        objekt = _object(_validate_artifact(_artifact(
+            gedeckt={"Temperatur: 2,725 Kelvin": "nutzer", "Ursache: ": "nova"}, offen=[],
+        )))
+        self.assertEqual(objekt["gedeckt"], {"Temperatur": "2,725 Kelvin"})
+        self.assertEqual(objekt["sprecher"], {"Temperatur": "nutzer"})
+        self.assertEqual(objekt["offen"], ["Ursache:"])
+
     def test_a_number_is_a_value(self) -> None:
         objekt = _object(_validate_artifact(_artifact(gedeckt={"alter": 10}, offen=[])))
         self.assertEqual(objekt["gedeckt"], {"alter": "10"})
