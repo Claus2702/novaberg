@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Drei-Achsen-Modell für die Bündelung von Erinnerungen
-**Stand:** 16. August 2026 (gegen den Code und den Bestand geprüft: die Regeln in §2, §3, §5–§8 halten; die **Befüllungstabelle in §4 war überholt** — P4 ist gelaufen). Davor: 06. Mai 2026 (Chat 78), aktualisiert 16. Mai 2026 (Chat 88, Synapsen P3)
+**Stand:** 13. September 2026 (§4: `sachlage_objekt` und `sachlage_eigenschaft` als neue Magnet-Träger; das Objekt bindet 1:1, begründet). Davor: 16. August 2026 (gegen den Code und den Bestand geprüft: die Regeln in §2, §3, §5–§8 halten; die **Befüllungstabelle in §4 war überholt** — P4 ist gelaufen). Davor: 06. Mai 2026 (Chat 78), aktualisiert 16. Mai 2026 (Chat 88, Synapsen P3)
 **Pfad:** novaberg/docs/novaberg-convention-magneten.md
 **Typ:** Convention
 **Voraussetzung:** M1 (Promotion-Doppelpipeline aufgelöst) ✅, M2 (Schema-Magneten ausgerollt) ✅
@@ -135,6 +135,10 @@ Status nach M2-Schema-Migration und M2.5a-Implementierung:
 | KZG (Redis) | TAG-Feld ✓ | NUMERIC-Feld ✓ | TAG-Feld ✓ (vorhanden) |
 | `timeline` | INTEGER[] (vorhanden, leer) | (selbst) | TEXT[] + GIN ✓ |
 | `fakten` | über `subjekt_id`/`objekt_id` (vorhanden) | — | — |
+| `sachlage_objekt` (seit 13.09.2026) | **`entitaet_id` INTEGER FK, 1:1** — SET NULL | — | — |
+| `sachlage_eigenschaft` (seit 13.09.2026) | über das Objekt | INTEGER, FK im Timeline-Plugin — SET NULL | — |
+
+**Nachtrag 13.09.2026 — das Eigenschaftsgedächtnis der Sachlage (Lage-Konzept, Scheibe 11) ist ein neuer Magnet-Träger, und an einer Stelle bewusst anders als §2.** Ein Objekt des Gesprächskontexts bindet an **genau eine** Entität, nicht n:m: Es *ist* eine Sache (»Crab-Pulsar«), keine Erinnerung, die mehrere Sachen berührt — die Mehrfachbindung bleibt Sache der Erinnerungsspeicher, an denen das Objekt über `turn_id` → `verbindung` hängt. Gebunden wird **nachträglich** über die Magnete der Turns, in denen das Objekt vorkam, und nie, wenn zwei Entitäten zum Namen passen. Der Zeitanker hängt an der einzelnen Eigenschaft (»Beobachtung: am Freitag«), nicht am Objekt; gesetzt nur bei genau einem Anker im Turn. Die Regel *eine Achse, eine Quelle* gilt unverändert: Die Tabellen verweisen auf `entitaeten` und `timeline`, sie kopieren nichts.
 
 **Befüllungs-Status.**
 
