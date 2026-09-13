@@ -175,6 +175,24 @@ class ObjectsOfTheSameNameAreOneTest(unittest.TestCase):
         self.assertEqual(objekt["traeger"], {"Ort": "nutzer"})
 
 
+class OneKeyForSharpSTest(unittest.TestCase):
+    """Zweite Kontrolle 13.09.2026: Form schluesselte mit lower, die Datenbank mit casefold."""
+
+    def test_objects_differing_in_sharp_s_are_one(self) -> None:
+        artefakt = _artifact(name="Weißer Zwerg", gedeckt={"Größe": "wie die Erde"}, offen=[])
+        artefakt["objekte"].append({"name": "WEISSER ZWERG", "akut": True,
+                                    "gedeckt": {"GRÖSSE": "etwa 12000 km"}, "offen": []})
+        geprueft = _validate_artifact(artefakt)
+        self.assertEqual(len(geprueft["objekte"]), 1)
+        self.assertEqual(geprueft["objekte"][0]["gedeckt"], {"Größe": "wie die Erde"})
+
+    def test_covered_and_open_with_sharp_s_are_one_property(self) -> None:
+        objekt = _object(_validate_artifact(_artifact(
+            gedeckt={"Größe": "wie die Erde"}, offen=["GRÖSSE", "Masse"],
+        )))
+        self.assertEqual(objekt["offen"], ["Masse"])
+
+
 class ObjectFieldsTest(unittest.TestCase):
     """Die uebrigen Felder eines Objekts und die Felder, die dem Server gehoeren."""
 
@@ -224,7 +242,7 @@ class ObjectFieldsTest(unittest.TestCase):
 
 
 class ThePredecessorIsCheckedOnLoadTest(unittest.TestCase):
-    """Die vorige Blase aus Redis ist eine externe Quelle (16_PERSISTENZ §6)."""
+    """Die vorige Blase aus Redis ist eine externe Quelle, auch wenn der Knoten sie schrieb."""
 
     def test_a_list_in_the_stored_bubble_is_repaired_on_load(self) -> None:
         gespeichert = _artifact(gedeckt=["anlass"], offen=["wann"])

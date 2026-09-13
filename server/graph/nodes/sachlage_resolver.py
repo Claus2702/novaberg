@@ -48,8 +48,9 @@ from config import (
     SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX,
     get_node_config,
 )
+from graph.nodes.sachlage_form import covered_value
 from memory.repositories.timeline_repository import TimelineRepository
-from memory.sachlage_properties import active_properties
+from memory.sachlage_properties import active_properties, text_key
 from services.model_services import model_service
 from services.model_services.types import ChatRequest
 
@@ -110,6 +111,10 @@ class MemoryHit:
     # eine Eigenschaft, steht dieser Wert in `gedeckt` — nicht die Umschreibung
     # des Aufloesers, die das Gedaechtnis sonst als Abloesung ablegt.
     value:   str = ""
+    # Die Eigenschaft, zu der `value` gespeichert ist. Nur an ihr gilt der
+    # Wert woertlich (zweite Kontrolle 13.09.2026: »Alter: 970 Jahre« deckte
+    # sonst die Masse).
+    subject: str = ""
 
 
 def _field(record: object, name: str) -> object:
@@ -235,7 +240,9 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     return hits
 
 
-def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple[str, str, str, str]]:
+def property_hits(
+    artifact: dict, user_id: str, character_id: str,
+) -> list[tuple[str, str, str, str, str]]:
     """Scheibe 11: die gespeicherten Werte der akuten Objekte, die noch Luecken haben.
 
     Ablegen allein aendert kein Gespraech. Der Rueckweg ist dieser Aufloeser:
@@ -244,7 +251,7 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
     Reiz. Geurteilt wird wie bei jeder anderen Quelle im Aufloeser-Call.
 
     Vorbedingung: `artifact` ist gegen die Form gehalten.
-    Nachbedingung: Quadrupel (Quelle, Herkunft, Text, Wert), hoechstens
+    Nachbedingung: (Quelle, Herkunft, Text, Wert, Eigenschaft), hoechstens
         `SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX`; nur fuer akute Objekte mit offener
         Eigenschaft, und nie ein Wert, dessen Eigenschaft schon gedeckt ist.
         Ohne Paar leer.
@@ -252,8 +259,10 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
     """
     if not user_id or not character_id:
         return []
+    # Die Schluessel sind die der Datenbank (`text_key`, casefold) — mit dem
+    # lower-Schluessel dieses Moduls fand der Rueckweg kein Objekt mit ß.
     objekte: dict[str, dict] = {
-        _normalized(o.get("name", "")): o
+        text_key(o.get("name", "")): o
         for o in artifact.get("objekte") or []
         if isinstance(o, dict) and o.get("akut") and o.get("offen")
     }
@@ -262,19 +271,20 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
     gespeichert: list[dict] = active_properties(
         POSTGRES_URL, user_id, character_id, sorted(objekte), SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX * 3,
     )
-    hits: list[tuple[str, str, str, str]] = []
+    hits: list[tuple[str, str, str, str, str]] = []
     for zeile in gespeichert:
-        objekt: dict | None = objekte.get(_normalized(zeile.get("name", "")))
+        objekt: dict | None = objekte.get(text_key(zeile.get("name", "")))
         if objekt is None:
             continue
-        gedeckt: set[str] = {_normalized(k) for k in objekt.get("gedeckt") or {}}
-        if _normalized(zeile.get("eigenschaft", "")) in gedeckt:
+        gedeckt: set[str] = {text_key(k) for k in objekt.get("gedeckt") or {}}
+        if text_key(zeile.get("eigenschaft", "")) in gedeckt:
             continue
         hits.append((
             SOURCE_PROPERTIES,
             f"sachlage_eigenschaft#{zeile.get('id')}",
             f"{objekt.get('name')} — {zeile.get('eigenschaft')}: {zeile.get('wert')}",
             str(zeile.get("wert") or ""),
+            str(zeile.get("eigenschaft") or ""),
         ))
         if len(hits) >= SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX:
             break
@@ -294,12 +304,13 @@ def combine_offer(extra: list[tuple[str, ...]], hits: list[MemoryHit]) -> list[M
     if not extra:
         return hits
     folge: list[tuple[str, ...]] = list(extra) + [
-        (h.source, h.origin, h.content, h.value) for h in hits
+        (h.source, h.origin, h.content, h.value, h.subject) for h in hits
     ]
     neu: list[MemoryHit] = [
         MemoryHit(
             key=f"G{nummer}", source=eintrag[0], origin=eintrag[1],
             content=eintrag[2][:ENTRY_MAX_CHARS], value=eintrag[3] if len(eintrag) > 3 else "",
+            subject=eintrag[4] if len(eintrag) > 4 else "",
         )
         for nummer, eintrag in enumerate(folge, start=1)
     ]
@@ -490,8 +501,19 @@ def _apply_claim(
         )
         return CLAIM_NOT_OPEN
     hit: MemoryHit = offered[key]
+    # Der gespeicherte Wert gilt woertlich nur an der Eigenschaft, zu der er
+    # gespeichert ist; sonst ist die Aussage des Aufloesers der Wert — und
+    # beide laufen durch denselben Wertpruefer wie die Form.
+    woertlich: bool = bool(hit.value and hit.subject and _match_open(hit.subject, [offene]))
+    wert: str | None = covered_value(hit.value if woertlich else inhalt)
+    if wert is None:
+        logger.warning(
+            f"Sachlage-Aufloeser: Deckung von '{offene}' an '{objekt.get('name')}' aus "
+            f"{key} traegt keinen Wert ({inhalt!r}) — verworfen, bleibt offen"
+        )
+        return CLAIM_REJECTED
     gedeckt: dict = objekt.get("gedeckt") or {}
-    gedeckt[offene] = hit.value or inhalt
+    gedeckt[offene] = wert
     objekt["gedeckt"] = gedeckt
     objekt["quellen"][offene] = {
         "quelle": hit.source, "herkunft": hit.origin, "eintrag": key,

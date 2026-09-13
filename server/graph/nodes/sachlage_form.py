@@ -53,8 +53,15 @@ _FALSE_TEXT: frozenset[str] = frozenset({"false", "nein", "0", ""})
 
 
 def property_key(text: object) -> str:
-    """Der Vergleichsschluessel einer Eigenschaft: Kleinschreibung, ein Leerzeichen."""
-    return " ".join(str(text).lower().split())
+    """Der Vergleichsschluessel fuer Eigenschaften und Objektnamen.
+
+    casefold statt lower, und damit dieselbe Formel wie der Schluessel in der
+    Datenbank (`memory.sachlage_properties.text_key`). `[gemessen]` zweite
+    Kontrolle 13.09.2026: Mit lower blieben »Weißer Zwerg« und »WEISSER ZWERG«
+    zwei Objekte, und die Datenbank loeste den einen Wert im selben Turn durch
+    den anderen ab.
+    """
+    return " ".join(str(text or "").casefold().split())
 
 
 def _as_value(roh: object) -> str | None:
@@ -66,6 +73,11 @@ def _as_value(roh: object) -> str | None:
     if isinstance(roh, str) and roh.strip():
         return roh.strip()
     return None
+
+
+def covered_value(roh: object) -> str | None:
+    """Oeffentlich: derselbe Wertpruefer fuer jeden, der nach der Form nach `gedeckt` schreibt."""
+    return _as_covered_value(roh)
 
 
 def _as_covered_value(roh: object) -> str | None:
@@ -138,6 +150,11 @@ def _split_covered(
             wert_norm: str | None = _as_covered_value(wert)
             if wert_norm is None:
                 ohne_wert.append(name_norm)
+            elif any(property_key(k) == property_key(name_norm) for k in mit_wert):
+                logger.warning(
+                    f"Sachlage-Form: '{name_norm}' an '{name}' steht in anderer "
+                    f"Schreibweise schon in 'gedeckt' — der erste Wert bleibt"
+                )
             else:
                 mit_wert[name_norm] = wert_norm
         if ohne_wert:
@@ -257,8 +274,11 @@ def merge_same_name_objects(objekte: list[dict]) -> list[dict]:
             f"Sachlage-Form: Objekt '{objekt['name']}' steht zweimal im Artefakt — zusammengefuehrt"
         )
         erstes["akut"] = bool(erstes.get("akut") or objekt.get("akut"))
+        vorhandene: set[str] = {property_key(k) for k in erstes["gedeckt"]}
         for eigenschaft, wert in (objekt.get("gedeckt") or {}).items():
-            erstes["gedeckt"].setdefault(eigenschaft, wert)
+            if property_key(eigenschaft) not in vorhandene:
+                erstes["gedeckt"][eigenschaft] = wert
+                vorhandene.add(property_key(eigenschaft))
         for feld in ("traeger", "kritikalitaet", "sprecher", "quellen"):
             if isinstance(objekt.get(feld), dict):
                 ziel: object = erstes.setdefault(feld, {})

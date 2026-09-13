@@ -8,7 +8,7 @@ jeder Turn seine Objekte, und jede Eigenschaft ihren Wert mit Historie.
 Zeugen dieser Datei:
   * **Die Spaltenlisten sind Literale**, aus dem Konzept abgeleitet — nicht aus
     `db/init.sql` gelesen, sonst pruefte der Test die Schemadatei gegen sich.
-  * **Das Loeschverhalten ist eine Festlegung** (16_PERSISTENZ §3): Entitaet
+  * **Das Loeschverhalten ist eine Festlegung**, keine Implementierungsfrage: Entitaet
     und Zeitanker SET NULL (F-MAGNET-1), Objekt und Verlauf RESTRICT.
   * **Ein neuer Wert loest ab, statt zu ueberschreiben** (Entscheidung des
     Eigentuemers, 13.09.2026): der alte inaktiv mit `t_invalid` und Verweis
@@ -201,6 +201,11 @@ class AValueIsReplacedNotOverwrittenTest(_PairFixture):
         historie = property_history(POSTGRES_URL, zweites.object_ids["geburtstag"], "wann")
         self.assertEqual(len(historie), 1)
         self.assertEqual(historie[0]["bestaetigt_turn_id"], f"{self.user}-t1")
+
+    def test_two_spellings_in_one_turn_are_one_value(self) -> None:
+        """Zweite Kontrolle 13.09.2026: »Größe« und »Grösse« im selben Turn loesten einander ab."""
+        ergebnis = self._record(0, {"Größe": "wie die Erde", "GRÖSSE": "etwa 12000 km"})
+        self.assertEqual((ergebnis.new, ergebnis.replaced), (1, 0))
 
     def test_a_vanished_value_stays_active(self) -> None:
         erst = self._record(0, {"wann": "1. Juli"})

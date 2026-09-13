@@ -205,7 +205,17 @@ def record_turn_objects(
                     gedeckt: dict = objekt.get("gedeckt") or {}
                     sprecher_je: dict = objekt.get("sprecher") or {}
                     quellen_je: dict = objekt.get("quellen") or {}
+                    gesehen: set[str] = set()
                     for eigenschaft, wert in gedeckt.items():
+                        # Zwei Schreibweisen derselben Eigenschaft im selben
+                        # Turn waeren sonst eine Abloesung durch sich selbst.
+                        if text_key(eigenschaft) in gesehen:
+                            logger.warning(
+                                "Eigenschaftsgedaechtnis: '%s' an '%s' doppelt im Turn — "
+                                "der erste Wert bleibt", eigenschaft, objekt["name"],
+                            )
+                            continue
+                        gesehen.add(text_key(eigenschaft))
                         sprecher: object = sprecher_je.get(eigenschaft)
                         quelle: object = quellen_je.get(eigenschaft)
                         ausgang, zeilen_id = _property_write(

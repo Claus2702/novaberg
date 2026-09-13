@@ -359,7 +359,7 @@ def sachlage_load(user_id: str, character_id: str) -> tuple[dict | None, bool]:
         )
         return None, True
 
-    # Die vorige Blase ist eine externe Quelle (16_PERSISTENZ §6): Sie kann
+    # Die vorige Blase ist eine externe Quelle, auch wenn dieser Knoten sie schrieb: Sie kann
     # vor der Formpruefung geschrieben sein. Ihre Felder des Servers bleiben.
     if not isinstance(vorige, dict) or not isinstance(vorige.get("objekte"), list):
         logger.error("sachlage_load: Bestand ohne Objektliste — beginne frisch")
