@@ -65,7 +65,12 @@ def property_key(text: object) -> str:
 
 
 def _as_value(roh: object) -> str | None:
-    """Ein Wert ist Text oder eine Zahl mit Inhalt; alles andere ist kein Wert."""
+    """Ein Wert ist Text oder eine Zahl mit Inhalt; alles andere ist kein Wert.
+
+    Vorbedingung: keine — jede Eingabe ist zulaessig.
+    Nachbedingung: Nicht leerer, getrimmter Text, oder None (bool, None, leer,
+        Liste, dict).
+    """
     if isinstance(roh, bool) or roh is None:
         return None
     if isinstance(roh, (int, float)):
@@ -85,6 +90,10 @@ def _as_covered_value(roh: object) -> str | None:
 
     `[gemessen 13.09.2026]` Im Bestand von 1771 gedeckten Werten waren 579 ein
     Kanonwort (»nutzer«, »nova«) und 86 die Vorlage des Prompts (»nutzer|nova«).
+
+    Vorbedingung: keine.
+    Nachbedingung: Wie `_as_value`, und None, wenn der Text nur aus Woertern
+        von `NO_VALUE_WORDS` besteht.
     """
     wert: str | None = _as_value(roh)
     if wert is None:
@@ -96,7 +105,11 @@ def _as_covered_value(roh: object) -> str | None:
 
 
 def _as_name(roh: object) -> str | None:
-    """Ein Eigenschaftsname ist Text oder eine Zahl mit Inhalt."""
+    """Ein Eigenschaftsname ist Text oder eine Zahl mit Inhalt.
+
+    Vorbedingung: keine.
+    Nachbedingung: Nicht leerer, getrimmter Text, oder None.
+    """
     return _as_value(roh)
 
 
@@ -107,6 +120,10 @@ def _value_from_name(name: str, wert: object) -> tuple[str, str, str | None] | N
     "nutzer"` — die Angabe im Namen, der Sprecher im Wert. Nach der Regel
     »nichts verwerfen, was eine Aussage traegt« wird daraus Eigenschaft →
     Angabe, und das Sprecherwort wird zum Sprecher.
+
+    Vorbedingung: `name` ist ein getrimmter Eigenschaftsname.
+    Nachbedingung: Ein Tripel mit nicht leerer Eigenschaft und Angabe, der
+        Sprecher nur aus `SPEAKER_WORDS` — oder None.
 
     Returns:
         (Eigenschaft, Angabe, Sprecher oder None), oder None ohne Angabe im Namen.
@@ -126,7 +143,13 @@ def _value_from_name(name: str, wert: object) -> tuple[str, str, str | None] | N
 def _split_covered(
     roh: object, name: str,
 ) -> tuple[dict[str, str], list[str], dict[str, str]]:
-    """Zerlegt `gedeckt` in Eigenschaften mit Wert, Namen ohne Wert und Sprecherhinweise."""
+    """Zerlegt `gedeckt` in Eigenschaften mit Wert, Namen ohne Wert und Sprecherhinweise.
+
+    Vorbedingung: `name` ist der Objektname fuer die Meldungen.
+    Nachbedingung: Werte bestehen `_as_covered_value`; je `property_key` hoechstens
+        ein Wert (der erste); jeder Name ohne Wert steht in der Liste; jede
+        Abweichung ist gemeldet.
+    """
     mit_wert: dict[str, str] = {}
     ohne_wert: list[str] = []
     sprecher: dict[str, str] = {}
@@ -176,7 +199,12 @@ def _split_covered(
 
 
 def _split_open(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
-    """Zerlegt `offen` in Namen ohne Wert — und Werte, die dort nicht hingehoeren."""
+    """Zerlegt `offen` in Namen ohne Wert — und Werte, die dort nicht hingehoeren.
+
+    Vorbedingung: `name` ist der Objektname fuer die Meldungen.
+    Nachbedingung: Die Liste traegt nur Namen; ein Wert unter `offen` steht im
+        dict und wird vom Aufrufer nach `gedeckt` gelegt; Verworfenes ist gemeldet.
+    """
     mit_wert: dict[str, str] = {}
     namen: list[str] = []
     if roh is None:
@@ -213,7 +241,11 @@ def _split_open(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
 
 
 def _as_bool(roh: object, name: str) -> bool:
-    """`akut` als Wahrheitswert; eine unlesbare Form gilt als latent."""
+    """`akut` als Wahrheitswert; eine unlesbare Form gilt als latent.
+
+    Vorbedingung: `name` ist der Objektname fuer die Meldung.
+    Nachbedingung: Ein bool; eine unlesbare Form ist gemeldet und False.
+    """
     if isinstance(roh, bool):
         return roh
     if isinstance(roh, (int, float)) and roh in (0, 1):
@@ -228,7 +260,12 @@ def _as_bool(roh: object, name: str) -> bool:
 
 
 def _checked_sources(roh: object, gedeckt: dict[str, str], name: str) -> dict[str, dict]:
-    """`quellen` der vorigen Blase: nur Zuordnungen an gedeckten Eigenschaften."""
+    """`quellen` der vorigen Blase: nur Zuordnungen an gedeckten Eigenschaften.
+
+    Vorbedingung: `gedeckt` ist bereits normalisiert.
+    Nachbedingung: Ein dict, dessen Schluessel gedeckte Eigenschaften und dessen
+        Werte dicts sind; Verworfenes ist gemeldet.
+    """
     if not isinstance(roh, dict):
         if roh is not None:
             logger.warning(
@@ -246,6 +283,28 @@ def _checked_sources(roh: object, gedeckt: dict[str, str], name: str) -> dict[st
             f"dict oder ohne gedeckte Eigenschaft — verworfen"
         )
     return quellen
+
+
+def _merge_into(erstes: dict, objekt: dict) -> None:
+    """Legt ein zweites Objekt gleichen Namens in das erste.
+
+    Vorbedingung: Beide Objekte sind durch `normalize_object_form` gelaufen.
+    Nachbedingung: `erstes` ist akut, wenn eines akut war; `gedeckt` und die
+        dict-Felder sind vereinigt (das erste gewinnt je Schluessel); `offen` ist
+        aneinandergehaengt — entdoppelt wird beim Aufrufer.
+    """
+    erstes["akut"] = bool(erstes.get("akut") or objekt.get("akut"))
+    vorhandene: set[str] = {property_key(k) for k in erstes["gedeckt"]}
+    for eigenschaft, wert in (objekt.get("gedeckt") or {}).items():
+        if property_key(eigenschaft) not in vorhandene:
+            erstes["gedeckt"][eigenschaft] = wert
+            vorhandene.add(property_key(eigenschaft))
+    for feld in ("traeger", "kritikalitaet", "sprecher", "quellen"):
+        ziel: object = erstes.setdefault(feld, {})
+        if isinstance(objekt.get(feld), dict) and isinstance(ziel, dict):
+            for k, v in objekt[feld].items():
+                ziel.setdefault(k, v)
+    erstes["offen"] = list(erstes.get("offen") or []) + list(objekt.get("offen") or [])
 
 
 def merge_same_name_objects(objekte: list[dict]) -> list[dict]:
@@ -273,19 +332,7 @@ def merge_same_name_objects(objekte: list[dict]) -> list[dict]:
         logger.warning(
             f"Sachlage-Form: Objekt '{objekt['name']}' steht zweimal im Artefakt — zusammengefuehrt"
         )
-        erstes["akut"] = bool(erstes.get("akut") or objekt.get("akut"))
-        vorhandene: set[str] = {property_key(k) for k in erstes["gedeckt"]}
-        for eigenschaft, wert in (objekt.get("gedeckt") or {}).items():
-            if property_key(eigenschaft) not in vorhandene:
-                erstes["gedeckt"][eigenschaft] = wert
-                vorhandene.add(property_key(eigenschaft))
-        for feld in ("traeger", "kritikalitaet", "sprecher", "quellen"):
-            if isinstance(objekt.get(feld), dict):
-                ziel: object = erstes.setdefault(feld, {})
-                if isinstance(ziel, dict):
-                    for k, v in objekt[feld].items():
-                        ziel.setdefault(k, v)
-        erstes["offen"] = list(erstes.get("offen") or []) + list(objekt.get("offen") or [])
+        _merge_into(erstes, objekt)
     for objekt in zusammen.values():
         gedeckt_keys: set[str] = {property_key(k) for k in objekt["gedeckt"]}
         offen: list[str] = []

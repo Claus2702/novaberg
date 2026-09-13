@@ -72,7 +72,12 @@ class RecordResult:
 
 
 def _object_upsert(cur: object, user_id: str, character_id: str, objekt: dict) -> int:
-    """Legt das Objekt des Paares an oder frischt Name, Klasse und Beruehrung auf."""
+    """Legt das Objekt des Paares an oder frischt Name, Klasse und Beruehrung auf.
+
+    Vorbedingung: `cur` gehoert zu einer offenen Transaktion; `objekt["name"]`
+        ist nicht leer.
+    Nachbedingung: Genau eine Zeile je Paar und `text_key(name)`; ihre id.
+    """
     name: str = str(objekt["name"]).strip()
     cur.execute(
         f"""
@@ -98,7 +103,14 @@ def _property_write(
     quelle: dict | None,
     turn_id: str,
 ) -> tuple[str, int]:
-    """Schreibt einen Wert nach der Abloese-Regel; liefert (Ausgang, Zeilen-id)."""
+    """Schreibt einen Wert nach der Abloese-Regel; liefert (Ausgang, Zeilen-id).
+
+    Vorbedingung: `cur` gehoert zu einer offenen Transaktion; `wert` hat die
+        gepruefte Wertform (nicht leer).
+    Nachbedingung: Danach steht genau ein aktiver Wert je Objekt und
+        Eigenschaft: bestaetigt (gleicher Wert), neu, oder abgeloest (der alte
+        inaktiv mit `t_invalid` und Verweis auf den neuen).
+    """
     schluessel: str = text_key(eigenschaft)
     cur.execute(
         f"""
@@ -147,6 +159,59 @@ def _property_write(
     return "abgeloest", neue_id
 
 
+def _record_object(
+    cur: object,
+    user_id: str,
+    character_id: str,
+    turn_id: str,
+    verlauf_id: int,
+    objekt: dict,
+    zaehlung: dict[str, int],
+    property_ids: dict[tuple[str, str], int],
+) -> int:
+    """Legt ein Objekt, seinen Turn-Eintrag und seine gedeckten Werte in der offenen Transaktion ab.
+
+    Vorbedingung: `cur` gehoert zu einer offenen Transaktion; `objekt` traegt
+        einen nicht leeren Namen und ist gegen die Form gehalten.
+    Nachbedingung: Objektzeile und Turn-Zeile existieren; je `text_key` einer
+        Eigenschaft hoechstens ein Schreibvorgang; `zaehlung` und
+        `property_ids` sind fortgeschrieben. Liefert die Objekt-id.
+    """
+    objekt_id: int = _object_upsert(cur, user_id, character_id, objekt)
+    cur.execute(
+        f"""
+        INSERT INTO {TURN_TABLE} (verlauf_id, objekt_id, turn_id, akut)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (verlauf_id, objekt_id) DO NOTHING
+        """,  # noqa: S608
+        (verlauf_id, objekt_id, turn_id, bool(objekt.get("akut"))),
+    )
+    sprecher_je: dict = objekt.get("sprecher") or {}
+    quellen_je: dict = objekt.get("quellen") or {}
+    gesehen: set[str] = set()
+    for eigenschaft, wert in (objekt.get("gedeckt") or {}).items():
+        # Zwei Schreibweisen derselben Eigenschaft im selben Turn waeren sonst
+        # eine Abloesung durch sich selbst.
+        if text_key(eigenschaft) in gesehen:
+            logger.warning(
+                "Eigenschaftsgedaechtnis: '%s' an '%s' doppelt im Turn — der erste Wert bleibt",
+                eigenschaft, objekt["name"],
+            )
+            continue
+        gesehen.add(text_key(eigenschaft))
+        sprecher: object = sprecher_je.get(eigenschaft)
+        quelle: object = quellen_je.get(eigenschaft)
+        ausgang, zeilen_id = _property_write(
+            cur, objekt_id, str(eigenschaft), str(wert),
+            sprecher if sprecher in SPEAKERS else None,
+            quelle if isinstance(quelle, dict) else None,
+            turn_id,
+        )
+        zaehlung[ausgang] += 1
+        property_ids[(text_key(objekt["name"]), text_key(eigenschaft))] = zeilen_id
+    return objekt_id
+
+
 def record_turn_objects(
     postgres_url: str,
     *,
@@ -192,40 +257,10 @@ def record_turn_objects(
         try:
             with conn.cursor() as cur:
                 for objekt in objekte:
-                    objekt_id: int = _object_upsert(cur, user_id, character_id, objekt)
-                    object_ids[text_key(objekt["name"])] = objekt_id
-                    cur.execute(
-                        f"""
-                        INSERT INTO {TURN_TABLE} (verlauf_id, objekt_id, turn_id, akut)
-                        VALUES (%s, %s, %s, %s)
-                        ON CONFLICT (verlauf_id, objekt_id) DO NOTHING
-                        """,  # noqa: S608
-                        (verlauf_id, objekt_id, turn_id, bool(objekt.get("akut"))),
+                    object_ids[text_key(objekt["name"])] = _record_object(
+                        cur, user_id, character_id, turn_id, verlauf_id,
+                        objekt, zaehlung, property_ids,
                     )
-                    gedeckt: dict = objekt.get("gedeckt") or {}
-                    sprecher_je: dict = objekt.get("sprecher") or {}
-                    quellen_je: dict = objekt.get("quellen") or {}
-                    gesehen: set[str] = set()
-                    for eigenschaft, wert in gedeckt.items():
-                        # Zwei Schreibweisen derselben Eigenschaft im selben
-                        # Turn waeren sonst eine Abloesung durch sich selbst.
-                        if text_key(eigenschaft) in gesehen:
-                            logger.warning(
-                                "Eigenschaftsgedaechtnis: '%s' an '%s' doppelt im Turn — "
-                                "der erste Wert bleibt", eigenschaft, objekt["name"],
-                            )
-                            continue
-                        gesehen.add(text_key(eigenschaft))
-                        sprecher: object = sprecher_je.get(eigenschaft)
-                        quelle: object = quellen_je.get(eigenschaft)
-                        ausgang, zeilen_id = _property_write(
-                            cur, objekt_id, str(eigenschaft), str(wert),
-                            sprecher if sprecher in SPEAKERS else None,
-                            quelle if isinstance(quelle, dict) else None,
-                            turn_id,
-                        )
-                        zaehlung[ausgang] += 1
-                        property_ids[(text_key(objekt["name"]), text_key(eigenschaft))] = zeilen_id
             conn.commit()
         except Exception:
             conn.rollback()
@@ -301,6 +336,8 @@ def active_properties(
 def property_history(postgres_url: str, objekt_id: int, eigenschaft: str) -> list[dict]:
     """Alle Werte einer Eigenschaft, aktiv und abgeloest, in zeitlicher Folge.
 
+    Vorbedingung: `objekt_id` ist die id einer Zeile in `sachlage_objekt`.
+    Nachbedingung: dicts in der Reihenfolge ihrer Gueltigkeit; leer ohne Werte.
     Fehlerfaelle: DB-Fehler — `logger.exception`, leere Liste.
     """
     try:
@@ -395,6 +432,8 @@ def bind_entity(postgres_url: str, objekt_id: int, entitaet_id: int, binding: st
 def bind_timeline(postgres_url: str, property_id: int, timeline_id: int) -> bool:
     """Setzt den Zeitanker einer Eigenschaft — nur, wenn sie noch keinen hat.
 
+    Vorbedingung: `property_id` und `timeline_id` bezeichnen bestehende Zeilen.
+    Nachbedingung: True, wenn genau eine Zeile den Anker bekam.
     Fehlerfaelle: DB-Fehler — `logger.exception`, False.
     """
     try:
@@ -461,6 +500,8 @@ def entity_names(postgres_url: str, entitaet_ids: list[int]) -> dict[int, str]:
     `EntitaetenRepository.find_by_id` beruehrt jede gelesene Entitaet; eine
     Bindungspruefung ist kein Gebrauch und soll den Verfall nicht verschieben.
 
+    Vorbedingung: `entitaet_ids` sind ganze Zahlen.
+    Nachbedingung: id → Name nur fuer aktive Entitaeten; leer ohne ids.
     Fehlerfaelle: DB-Fehler — `logger.exception`, leeres dict.
     """
     if not entitaet_ids:

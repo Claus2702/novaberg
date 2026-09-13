@@ -59,7 +59,11 @@ class TurnMagnet:
 
 
 def _ids(roh: object) -> tuple[int, ...]:
-    """Entitaets-ids aus dem KZG-Feld (»3,4«) oder der LZG-Spalte (Liste)."""
+    """Entitaets-ids aus dem KZG-Feld (»3,4«) oder der LZG-Spalte (Liste).
+
+    Vorbedingung: keine.
+    Nachbedingung: Nur ganze Zahlen; Unlesbares faellt weg.
+    """
     teile: list = roh if isinstance(roh, list) else str(roh or "").split(",")
     ids: list[int] = []
     for teil in teile:
@@ -71,6 +75,11 @@ def _ids(roh: object) -> tuple[int, ...]:
 
 
 def _timeline(roh: object) -> int | None:
+    """Die Timeline-id aus KZG-Feld oder LZG-Spalte.
+
+    Vorbedingung: keine.
+    Nachbedingung: Eine ganze Zahl, oder None bei leer, »None« oder Unlesbarem.
+    """
     try:
         return int(str(roh).strip()) if roh not in (None, "", "None") else None
     except ValueError:
@@ -108,6 +117,9 @@ def _match_key(text: object) -> str:
 
     »Crab-Pulsar« und »Crab Pulsar (B0531+21)« sollen einander finden; ein
     Bindestrich ist keine Namensgrenze.
+
+    Vorbedingung: keine.
+    Nachbedingung: casefold, Satzzeichen als Leerraum, Leerraum zusammengezogen.
     """
     return " ".join(re.sub(r"[^\w]+", " ", text_key(text)).split())
 
@@ -141,7 +153,12 @@ def match_entity(object_name: str, names: dict[int, str]) -> int | None:
 
 
 def _has_time_expression(wert: str) -> bool:
-    """Traegt der Wert einen Tag oder eine Uhrzeit?"""
+    """Traegt der Wert einen Tag oder eine Uhrzeit?
+
+    Vorbedingung: `wert` ist Text.
+    Nachbedingung: True nur, wenn der Zeitparser Tag oder Uhrzeit erkennt; ein
+        Parserfehler ist gemeldet und False.
+    """
     try:
         vektor = zeit_parsen_vektor(wert)
     except Exception as fehler:  # noqa: BLE001 — ein Parserfehler bindet nichts
