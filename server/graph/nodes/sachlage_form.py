@@ -35,6 +35,15 @@ OBJECT_CLASSES: frozenset[str] = frozenset({"objekt", "person", "ort", "vorgang"
 # abgeschrieben oder erfunden.
 SERVER_OWNED_OBJECT_FIELDS: tuple[str, ...] = ("quellen", "plausibilitaet", "recherche")
 
+# Die Woerter der drei Kanons (Traeger, Kritikalitaet, Sprecher in sachlage.py).
+# Als Wert einer gedeckten Eigenschaft sind sie keine Aussage ueber die Sache,
+# sondern ein Feld, das an die falsche Stelle geraten ist. `[gemessen]`
+# 13.09.2026, Labor: `"Entfernung zur Erde": "nachschlagen"` stand in `gedeckt`.
+# Ein Zeuge haelt diese Menge gegen die Kanons, damit sie nicht auseinanderlaufen.
+NO_VALUE_WORDS: frozenset[str] = frozenset({
+    "nutzer", "welt", "nachschlagen", "kritisch", "unkritisch", "nova",
+})
+
 _TRUE_TEXT: frozenset[str] = frozenset({"true", "ja", "1"})
 _FALSE_TEXT: frozenset[str] = frozenset({"false", "nein", "0", ""})
 
@@ -55,6 +64,14 @@ def _as_value(roh: object) -> str | None:
     return None
 
 
+def _as_covered_value(roh: object) -> str | None:
+    """Ein Wert fuer `gedeckt`: ein Wert, der nicht nur ein Kanonwort ist."""
+    wert: str | None = _as_value(roh)
+    if wert is not None and wert.casefold() in NO_VALUE_WORDS:
+        return None
+    return wert
+
+
 def _as_name(roh: object) -> str | None:
     """Ein Eigenschaftsname ist Text oder eine Zahl mit Inhalt."""
     return _as_value(roh)
@@ -71,7 +88,7 @@ def _split_covered(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
             name_norm: str | None = _as_name(eigenschaft)
             if name_norm is None:
                 continue
-            wert_norm: str | None = _as_value(wert)
+            wert_norm: str | None = _as_covered_value(wert)
             if wert_norm is None:
                 ohne_wert.append(name_norm)
             else:
@@ -105,7 +122,7 @@ def _split_open(roh: object, name: str) -> tuple[dict[str, str], list[str]]:
             name_norm: str | None = _as_name(eigenschaft)
             if name_norm is None:
                 continue
-            wert_norm: str | None = _as_value(wert)
+            wert_norm: str | None = _as_covered_value(wert)
             if wert_norm is None:
                 namen.append(name_norm)
             else:
@@ -167,7 +184,55 @@ def _checked_sources(roh: object, gedeckt: dict[str, str], name: str) -> dict[st
     return quellen
 
 
-def normalize_object_form(objekt: dict, from_model: bool) -> dict:
+def merge_same_name_objects(objekte: list[dict]) -> list[dict]:
+    """Fuehrt Objekte gleichen Namens zu einem zusammen.
+
+    `[gemessen 13.09.2026]` Das Modell fuehrte »Crab-Pulsar« zweimal, je mit
+    einer offenen Eigenschaft. Das Gedaechtnis kennt je Paar und Name genau
+    ein Objekt; zwei Eintraege gleichen Namens sind zwei Haelften derselben
+    Sache.
+
+    Vorbedingung: Jedes Objekt ist durch `normalize_object_form` gelaufen.
+    Nachbedingung: Je Namensschluessel ein Objekt, in der Reihenfolge des
+        ersten Auftretens: akut, wenn eines akut war; `gedeckt` vereinigt
+        (das erste gewinnt); `offen` vereinigt ohne Gedecktes und Dubletten
+        (bei latentem Ergebnis leer); die dict-Felder `traeger`,
+        `kritikalitaet`, `sprecher`, `quellen` vereinigt (das erste gewinnt).
+    """
+    zusammen: dict[str, dict] = {}
+    for objekt in objekte:
+        schluessel: str = property_key(objekt["name"])
+        erstes: dict | None = zusammen.get(schluessel)
+        if erstes is None:
+            zusammen[schluessel] = objekt
+            continue
+        logger.warning(
+            f"Sachlage-Form: Objekt '{objekt['name']}' steht zweimal im Artefakt — zusammengefuehrt"
+        )
+        erstes["akut"] = bool(erstes.get("akut") or objekt.get("akut"))
+        for eigenschaft, wert in (objekt.get("gedeckt") or {}).items():
+            erstes["gedeckt"].setdefault(eigenschaft, wert)
+        for feld in ("traeger", "kritikalitaet", "sprecher", "quellen"):
+            if isinstance(objekt.get(feld), dict):
+                ziel: object = erstes.setdefault(feld, {})
+                if isinstance(ziel, dict):
+                    for k, v in objekt[feld].items():
+                        ziel.setdefault(k, v)
+        erstes["offen"] = list(erstes.get("offen") or []) + list(objekt.get("offen") or [])
+    for objekt in zusammen.values():
+        gedeckt_keys: set[str] = {property_key(k) for k in objekt["gedeckt"]}
+        offen: list[str] = []
+        gesehen: set[str] = set()
+        for eigenschaft in objekt.get("offen") or []:
+            k: str = property_key(eigenschaft)
+            if k not in gedeckt_keys and k not in gesehen:
+                gesehen.add(k)
+                offen.append(eigenschaft)
+        objekt["offen"] = offen if objekt["akut"] else []
+    return list(zusammen.values())
+
+
+def normalize_object_form(objekt: dict, from_model: bool, gate: bool = True) -> dict:
     """Stellt die Form eines Objekts her: `gedeckt` mit Werten, `offen` ohne.
 
     Vorbedingung: `objekt` ist ein dict mit nicht leerem `name` (der Aufrufer
@@ -183,6 +248,9 @@ def normalize_object_form(objekt: dict, from_model: bool) -> dict:
     Args:
         objekt: Das Objekt, wird an Ort und Stelle normalisiert.
         from_model: True fuer den frischen Parse, False fuer die vorige Blase.
+        gate: Die Smalltalk-Schranke hier anwenden. False, wenn der Aufrufer
+            danach Objekte gleichen Namens zusammenfuehrt — dann erst weiss
+            er, ob das Objekt akut ist (`merge_same_name_objects` schraenkt ein).
 
     Returns:
         Dasselbe Objekt.
@@ -221,7 +289,7 @@ def normalize_object_form(objekt: dict, from_model: bool) -> dict:
         gesehen.add(schluessel)
         offen.append(eigenschaft)
 
-    if not objekt["akut"] and offen:
+    if gate and not objekt["akut"] and offen:
         logger.info(
             f"Sachlage-Form: latentes Objekt '{name}' trug {len(offen)} offene "
             f"Eigenschaft(en) — geleert (Smalltalk-Schranke)"

@@ -74,6 +74,15 @@ class CoveredNeedsAValueTest(unittest.TestCase):
         self.assertEqual(objekt["gedeckt"], {})
         self.assertEqual(objekt["offen"], ["wer", "wann"])
 
+    def test_a_canon_word_is_no_value(self) -> None:
+        """`[gemessen 13.09.2026]` Das Modell schrieb den Traeger in den Wert."""
+        objekt = _object(_validate_artifact(_artifact(
+            gedeckt={"Entfernung zur Erde": "nachschlagen", "Periode": "33 ms", "Wer": "Nutzer"},
+            offen=[],
+        )))
+        self.assertEqual(objekt["gedeckt"], {"Periode": "33 ms"})
+        self.assertEqual(objekt["offen"], ["Entfernung zur Erde", "Wer"])
+
     def test_a_number_is_a_value(self) -> None:
         objekt = _object(_validate_artifact(_artifact(gedeckt={"alter": 10}, offen=[])))
         self.assertEqual(objekt["gedeckt"], {"alter": "10"})
@@ -95,6 +104,13 @@ class CoveredNeedsAValueTest(unittest.TestCase):
     def test_missing_covered_is_an_empty_dict(self) -> None:
         objekt = _object(_validate_artifact(_artifact(offen=["wann"])))
         self.assertEqual(objekt["gedeckt"], {})
+
+
+class TheNoValueWordsAreTheCanonsTest(unittest.TestCase):
+    def test_the_set_matches_the_three_canons(self) -> None:
+        from graph.nodes.sachlage import KRITIKALITAET_KANON, SPRECHER_KANON, TRAEGER_KANON
+        from graph.nodes.sachlage_form import NO_VALUE_WORDS
+        self.assertEqual(NO_VALUE_WORDS, TRAEGER_KANON | KRITIKALITAET_KANON | SPRECHER_KANON)
 
 
 class OpenIsAListOfNamesTest(unittest.TestCase):
@@ -122,6 +138,23 @@ class OpenIsAListOfNamesTest(unittest.TestCase):
             gedeckt={"wann": "Samstag"}, offen=["wann", "wer"],
         )))
         self.assertEqual(objekt["offen"], ["wer"])
+
+
+class ObjectsOfTheSameNameAreOneTest(unittest.TestCase):
+    """`[gemessen 13.09.2026]` Das Modell fuehrte »Crab-Pulsar« zweimal, je mit einer offenen Eigenschaft."""
+
+    def test_they_are_merged(self) -> None:
+        artefakt = _artifact(gedeckt={"Periode": "33 ms"}, offen=["Entfernung"])
+        artefakt["objekte"].append({"name": "geburtstag", "akut": False,
+                                    "gedeckt": {"Anlass": "zehnter"}, "offen": ["Periode", "Ort"],
+                                    "traeger": {"Ort": "nutzer"}})
+        geprueft = _validate_artifact(artefakt)
+        self.assertEqual(len(geprueft["objekte"]), 1)
+        objekt = geprueft["objekte"][0]
+        self.assertTrue(objekt["akut"])
+        self.assertEqual(objekt["gedeckt"], {"Periode": "33 ms", "Anlass": "zehnter"})
+        self.assertEqual(objekt["offen"], ["Entfernung", "Ort"])
+        self.assertEqual(objekt["traeger"], {"Ort": "nutzer"})
 
 
 class ObjectFieldsTest(unittest.TestCase):

@@ -92,7 +92,11 @@ from config import (
     get_node_config,
     redis_client,
 )
-from graph.nodes.sachlage_form import SERVER_OWNED_OBJECT_FIELDS, normalize_object_form
+from graph.nodes.sachlage_form import (
+    SERVER_OWNED_OBJECT_FIELDS,
+    merge_same_name_objects,
+    normalize_object_form,
+)
 from graph.nodes.sachlage_memory import remember_objects
 from graph.nodes.sachlage_plausibility import (
     apply_plausibility,
@@ -430,7 +434,11 @@ def _validate_objects(parsed: dict, from_model: bool) -> dict | None:
         if not isinstance(objekt, dict) or not str(objekt.get("name") or "").strip():
             logger.error(f"Sachlage: Objekt ohne Namen: {objekt!r} — verworfen")
             return None
-        normalize_object_form(objekt, from_model=from_model)
+        normalize_object_form(objekt, from_model=from_model, gate=False)
+    # Erst zusammenfuehren, dann die Smalltalk-Schranke: Ob ein Objekt akut
+    # ist, steht erst fest, wenn alle Eintraege gleichen Namens vereint sind.
+    parsed["objekte"] = merge_same_name_objects(parsed["objekte"])
+    for objekt in parsed["objekte"]:
         objekt["traeger"] = _normalize_holders(objekt)
         objekt["kritikalitaet"] = _normalize_criticality(objekt)
         objekt["sprecher"] = _normalize_speakers(objekt)

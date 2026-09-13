@@ -106,6 +106,10 @@ class MemoryHit:
     source:  str
     origin:  str
     content: str
+    # Scheibe 11: der gespeicherte Wert selbst, woertlich. Deckt der Eintrag
+    # eine Eigenschaft, steht dieser Wert in `gedeckt` — nicht die Umschreibung
+    # des Aufloesers, die das Gedaechtnis sonst als Abloesung ablegt.
+    value:   str = ""
 
 
 def _field(record: object, name: str) -> object:
@@ -231,7 +235,7 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     return hits
 
 
-def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple[str, str, str]]:
+def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple[str, str, str, str]]:
     """Scheibe 11: die gespeicherten Werte der akuten Objekte, die noch Luecken haben.
 
     Ablegen allein aendert kein Gespraech. Der Rueckweg ist dieser Aufloeser:
@@ -240,7 +244,7 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
     Reiz. Geurteilt wird wie bei jeder anderen Quelle im Aufloeser-Call.
 
     Vorbedingung: `artifact` ist gegen die Form gehalten.
-    Nachbedingung: Tripel (Quelle, Herkunft, Text), hoechstens
+    Nachbedingung: Quadrupel (Quelle, Herkunft, Text, Wert), hoechstens
         `SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX`; nur fuer akute Objekte mit offener
         Eigenschaft, und nie ein Wert, dessen Eigenschaft schon gedeckt ist.
         Ohne Paar leer.
@@ -258,7 +262,7 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
     gespeichert: list[dict] = active_properties(
         POSTGRES_URL, user_id, character_id, sorted(objekte), SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX * 3,
     )
-    hits: list[tuple[str, str, str]] = []
+    hits: list[tuple[str, str, str, str]] = []
     for zeile in gespeichert:
         objekt: dict | None = objekte.get(_normalized(zeile.get("name", "")))
         if objekt is None:
@@ -270,6 +274,7 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
             SOURCE_PROPERTIES,
             f"sachlage_eigenschaft#{zeile.get('id')}",
             f"{objekt.get('name')} — {zeile.get('eigenschaft')}: {zeile.get('wert')}",
+            str(zeile.get("wert") or ""),
         ))
         if len(hits) >= SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX:
             break
@@ -280,7 +285,7 @@ def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple
     return hits
 
 
-def combine_offer(extra: list[tuple[str, str, str]], hits: list[MemoryHit]) -> list[MemoryHit]:
+def combine_offer(extra: list[tuple[str, ...]], hits: list[MemoryHit]) -> list[MemoryHit]:
     """Stellt Eintraege vor das Angebot und nummeriert neu.
 
     Nachbedingung: `extra` zuerst, dann `hits` in ihrer Reihenfolge, G1 … Gn
@@ -288,10 +293,15 @@ def combine_offer(extra: list[tuple[str, str, str]], hits: list[MemoryHit]) -> l
     """
     if not extra:
         return hits
-    folge: list[tuple[str, str, str]] = list(extra) + [(h.source, h.origin, h.content) for h in hits]
+    folge: list[tuple[str, ...]] = list(extra) + [
+        (h.source, h.origin, h.content, h.value) for h in hits
+    ]
     neu: list[MemoryHit] = [
-        MemoryHit(key=f"G{nummer}", source=quelle, origin=herkunft, content=text[:ENTRY_MAX_CHARS])
-        for nummer, (quelle, herkunft, text) in enumerate(folge, start=1)
+        MemoryHit(
+            key=f"G{nummer}", source=eintrag[0], origin=eintrag[1],
+            content=eintrag[2][:ENTRY_MAX_CHARS], value=eintrag[3] if len(eintrag) > 3 else "",
+        )
+        for nummer, eintrag in enumerate(folge, start=1)
     ]
     if len({h.key for h in neu}) != len(neu):
         raise ValueError("Sachlage-Aufloeser: Angebot mit doppelter Nummer")
@@ -481,7 +491,7 @@ def _apply_claim(
         return CLAIM_NOT_OPEN
     hit: MemoryHit = offered[key]
     gedeckt: dict = objekt.get("gedeckt") or {}
-    gedeckt[offene] = inhalt
+    gedeckt[offene] = hit.value or inhalt
     objekt["gedeckt"] = gedeckt
     objekt["quellen"][offene] = {
         "quelle": hit.source, "herkunft": hit.origin, "eintrag": key,

@@ -55,7 +55,8 @@ class PropertyHitsTest(unittest.TestCase):
             hits = property_hits(_artifact(), "u", "c")
         self.assertEqual(lesen.call_args.args[1:4], ("u", "c", ["vela pulsar"]))
         self.assertEqual(hits, [(SOURCE_PROPERTIES, "sachlage_eigenschaft#12",
-                                 "Vela Pulsar — Rotationsperiode: 89 Millisekunden")])
+                                 "Vela Pulsar — Rotationsperiode: 89 Millisekunden",
+                                 "89 Millisekunden")])
 
     def test_a_latent_object_gets_nothing(self) -> None:
         with patch.object(resolver_mod, "active_properties", return_value=STORED) as lesen:
@@ -95,8 +96,11 @@ class DeriveOffersStoredValuesTest(unittest.TestCase):
         class _Antwort:
             parsed = artefakt
 
+        # Der Aufloeser umschreibt — `[gemessen 13.09.2026]` »Die
+        # Rotationsperiode betraegt 33 Millisekunden.« wurde als Abloesung des
+        # gespeicherten »33 Millisekunden« abgelegt. Der Wert bleibt woertlich.
         claims = {"Vela Pulsar": {"Rotationsperiode": {
-            "eintrag": "G1", "inhalt": "89 Millisekunden"}}}
+            "eintrag": "G1", "inhalt": "Die Periode betraegt 89 Millisekunden."}}}
         with patch.object(sachlage_mod.model_service.chat, "submit_sync", return_value=_Antwort()), \
              patch.object(resolver_mod, "active_properties", return_value=STORED), \
              patch.object(sachlage_mod, "resolve_open_properties", return_value=claims) as aufloeser, \
