@@ -105,8 +105,10 @@ from graph.nodes.sachlage_resolver import (
     MemoryHit,
     apply_memory_coverage,
     carry_sources,
+    combine_offer,
     memory_offer,
     open_properties,
+    property_hits,
     resolve_open_properties,
 )
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
@@ -261,6 +263,9 @@ Regeln:
   Wert — auch eine fortgefuehrte.
 - Fuehre die vorige Sachlage FORT: Was der neue Turn deckt, wandert von
   "offen" nach "gedeckt". Was nicht mehr Gegenstand ist, faellt weg.
+- Eine Eigenschaft, die in der bisherigen Sachlage gedeckt ist, behaelt ihren Wert WOERTLICH
+  — auch wenn du ihn anders sagen wuerdest. Nur wenn der neue Turn einen
+  ANDEREN Wert nennt (eine Korrektur, eine Aenderung), steht der neue.
 - Deckung kommt von beiden Seiten: Auch was Nova in den juengsten Beitraegen
   bereits beantwortet hat, deckt die Eigenschaft. Offen bleibt nur, was
   weder der Nutzer noch Nova genannt hat.
@@ -720,6 +725,7 @@ def _derive(
     aeusserung:    str,
     wiederaufnahme: dict | None = None,
     bestand:        list[MemoryHit] | None = None,
+    pair:           tuple[str, str] | None = None,
 ) -> dict | None:
     """Der LLM-Call — erzwungenes JSON, validiert gegen die Pflichtstruktur.
 
@@ -785,6 +791,11 @@ def _derive(
     # faellt ein eigener, kleiner Call — nur offene Eigenschaften gegen das
     # Angebot. `[gemessen]` 28.08.2026: im Sachlage-Call selbst traf es 1/5.
     offen: list[tuple[str, list[str]]] = open_properties(artefakt)
+    # Scheibe 11: was das Eigenschaftsgedaechtnis zu den akuten Objekten
+    # haelt, tritt vor den Pool — der Aufloeser urteilt darueber wie ueber
+    # jede andere Quelle.
+    if pair and offen:
+        angebot = combine_offer(property_hits(artefakt, pair[0], pair[1]), angebot)
     claims: dict = (
         resolve_open_properties(offen, angebot) if angebot and offen else {}
     )
@@ -1329,6 +1340,7 @@ def sachlage_assess(state: dict) -> dict:
             vorige, state.get("session_turns") or [], reiz_text(state),
             wiederaufnahme=fruehere,
             bestand=memory_offer(state, vorige),
+            pair=(user_id, character_id),
         )
         if erhoben is not None:
             erhoben["herkunft"] = (

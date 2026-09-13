@@ -27,6 +27,7 @@ Zeitausdruck traegt (`utils/zeitparser`), bekommt diese Eigenschaft ihn.
 """
 
 import logging
+import re
 from dataclasses import dataclass
 
 from config import POSTGRES_URL, SACHLAGE_BINDUNG_TURN_FENSTER, redis_client
@@ -102,18 +103,27 @@ def collect_magnets(turn_ids: list[str]) -> list[TurnMagnet]:
     return magnete
 
 
+def _match_key(text: object) -> str:
+    """Der Vergleichsschluessel fuer Namen: wie `text_key`, Satzzeichen als Leerraum.
+
+    »Crab-Pulsar« und »Crab Pulsar (B0531+21)« sollen einander finden; ein
+    Bindestrich ist keine Namensgrenze.
+    """
+    return " ".join(re.sub(r"[^\w]+", " ", text_key(text)).split())
+
+
 def match_entity(object_name: str, names: dict[int, str]) -> int | None:
     """Die eine Entitaet, deren Name zum Objekt passt — sonst keine.
 
     Nachbedingung: Eine id, wenn genau eine Entitaet gleich heisst oder (ab
         `MIN_CONTAINED_CHARS`) den Objektnamen enthaelt bzw. in ihm steht.
     """
-    schluessel: str = text_key(object_name)
+    schluessel: str = _match_key(object_name)
     if not schluessel:
         return None
     treffer: list[int] = []
     for entitaet_id, name in names.items():
-        anderer: str = text_key(name)
+        anderer: str = _match_key(name)
         if not anderer:
             continue
         kuerzer: int = min(len(schluessel), len(anderer))

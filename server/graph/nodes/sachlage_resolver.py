@@ -45,9 +45,11 @@ from config import (
     POSTGRES_URL,
     SACHLAGE_BESTAND_KALENDER_LIMIT,
     SACHLAGE_BESTAND_MAX_EINTRAEGE,
+    SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX,
     get_node_config,
 )
 from memory.repositories.timeline_repository import TimelineRepository
+from memory.sachlage_properties import active_properties
 from services.model_services import model_service
 from services.model_services.types import ChatRequest
 
@@ -61,6 +63,7 @@ SOURCE_LZG:      str = "lzg"
 SOURCE_LIBRARY:  str = "plugin_wissen"
 SOURCE_RECORDS:  str = "aufzeichnung"
 SOURCE_CALENDAR: str = "timeline"
+SOURCE_PROPERTIES: str = "eigenschaft"
 
 # Welche Pool-Quellen ins Angebot duerfen. Charakter-Hash und
 # Gespraechs-Zusammenfassung sagen nichts ueber eine Sache.
@@ -74,6 +77,7 @@ SOURCE_LABELS: dict[str, str] = {
     SOURCE_LIBRARY:  "aus ihrer Recherche",
     SOURCE_RECORDS:  "aus Unterlagen",
     SOURCE_CALENDAR: "aus dem Kalender",
+    SOURCE_PROPERTIES: "aus frueheren Gespraechen ueber diese Sache",
 }
 
 # Wie viel von einem Eintrag das Angebot zeigt. Bibliothekszeilen sind im
@@ -225,6 +229,73 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     if len({h.key for h in hits}) != len(hits):
         raise ValueError("Sachlage-Aufloeser: Angebot mit doppelter Nummer")
     return hits
+
+
+def property_hits(artifact: dict, user_id: str, character_id: str) -> list[tuple[str, str, str]]:
+    """Scheibe 11: die gespeicherten Werte der akuten Objekte, die noch Luecken haben.
+
+    Ablegen allein aendert kein Gespraech. Der Rueckweg ist dieser Aufloeser:
+    Was das Eigenschaftsgedaechtnis zu einer Sache haelt, tritt als eigene
+    Quelle **vor** den Pool — es betrifft die Sache selbst, der Pool nur den
+    Reiz. Geurteilt wird wie bei jeder anderen Quelle im Aufloeser-Call.
+
+    Vorbedingung: `artifact` ist gegen die Form gehalten.
+    Nachbedingung: Tripel (Quelle, Herkunft, Text), hoechstens
+        `SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX`; nur fuer akute Objekte mit offener
+        Eigenschaft, und nie ein Wert, dessen Eigenschaft schon gedeckt ist.
+        Ohne Paar leer.
+    Fehlerfaelle: keine — das Repository meldet DB-Fehler und liefert leer.
+    """
+    if not user_id or not character_id:
+        return []
+    objekte: dict[str, dict] = {
+        _normalized(o.get("name", "")): o
+        for o in artifact.get("objekte") or []
+        if isinstance(o, dict) and o.get("akut") and o.get("offen")
+    }
+    if not objekte:
+        return []
+    gespeichert: list[dict] = active_properties(
+        POSTGRES_URL, user_id, character_id, sorted(objekte), SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX * 3,
+    )
+    hits: list[tuple[str, str, str]] = []
+    for zeile in gespeichert:
+        objekt: dict | None = objekte.get(_normalized(zeile.get("name", "")))
+        if objekt is None:
+            continue
+        gedeckt: set[str] = {_normalized(k) for k in objekt.get("gedeckt") or {}}
+        if _normalized(zeile.get("eigenschaft", "")) in gedeckt:
+            continue
+        hits.append((
+            SOURCE_PROPERTIES,
+            f"sachlage_eigenschaft#{zeile.get('id')}",
+            f"{objekt.get('name')} — {zeile.get('eigenschaft')}: {zeile.get('wert')}",
+        ))
+        if len(hits) >= SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX:
+            break
+    logger.info(
+        f"Sachlage-Aufloeser: {len(gespeichert)} gespeicherte Werte zu {len(objekte)} "
+        f"akuten Objekten gelesen, {len(hits)} ins Angebot"
+    )
+    return hits
+
+
+def combine_offer(extra: list[tuple[str, str, str]], hits: list[MemoryHit]) -> list[MemoryHit]:
+    """Stellt Eintraege vor das Angebot und nummeriert neu.
+
+    Nachbedingung: `extra` zuerst, dann `hits` in ihrer Reihenfolge, G1 … Gn
+        ohne Dublette; ohne `extra` ist das Ergebnis `hits` selbst.
+    """
+    if not extra:
+        return hits
+    folge: list[tuple[str, str, str]] = list(extra) + [(h.source, h.origin, h.content) for h in hits]
+    neu: list[MemoryHit] = [
+        MemoryHit(key=f"G{nummer}", source=quelle, origin=herkunft, content=text[:ENTRY_MAX_CHARS])
+        for nummer, (quelle, herkunft, text) in enumerate(folge, start=1)
+    ]
+    if len({h.key for h in neu}) != len(neu):
+        raise ValueError("Sachlage-Aufloeser: Angebot mit doppelter Nummer")
+    return neu
 
 
 def render_memory_section(hits: list[MemoryHit]) -> str:

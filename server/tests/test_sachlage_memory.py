@@ -43,6 +43,9 @@ class MatchEntityTest(unittest.TestCase):
     def test_containment_from_four_characters_binds(self) -> None:
         self.assertEqual(match_entity("Vela Pulsar", {7: "Vela Pulsar (B0833−45)"}), 7)
 
+    def test_punctuation_does_not_separate_names(self) -> None:
+        self.assertEqual(match_entity("Crab-Pulsar", {7: "Crab Pulsar (B0531+21)"}), 7)
+
     def test_short_containment_does_not_bind(self) -> None:
         self.assertIsNone(match_entity("Ben", {7: "Benjamin Franklin"}))
 
