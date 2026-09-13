@@ -92,6 +92,7 @@ from config import (
     get_node_config,
     redis_client,
 )
+from graph.nodes.sachlage_form import SERVER_OWNED_OBJECT_FIELDS, normalize_object_form
 from graph.nodes.sachlage_plausibility import (
     apply_plausibility,
     assess_plausibility,
@@ -343,6 +344,15 @@ def sachlage_load(user_id: str, character_id: str) -> tuple[dict | None, bool]:
         )
         return None, True
 
+    # Die vorige Blase ist eine externe Quelle (16_PERSISTENZ §6): Sie kann
+    # vor der Formpruefung geschrieben sein. Ihre Felder des Servers bleiben.
+    if not isinstance(vorige, dict) or not isinstance(vorige.get("objekte"), list):
+        logger.error("sachlage_load: Bestand ohne Objektliste — beginne frisch")
+        return None, False
+    if _validate_objects(vorige, from_model=False) is None:
+        logger.error("sachlage_load: Bestand mit unlesbarem Objekt — beginne frisch")
+        return None, False
+
     # ── Ausgabe ─────────────────────────────────
     return vorige, False
 
@@ -381,19 +391,40 @@ def _validate_artifact(parsed: object) -> dict | None:
     if not isinstance(parsed["objekte"], list):
         logger.error("Sachlage: 'objekte' ist keine Liste — verworfen")
         return None
+    # Die Kopffelder sind Saetze: Eine Liste oder ein dict an ihrer Stelle ist
+    # keine Lesart, sondern ein anderes Artefakt. Eine Zahl wird Text.
+    for feld in _PFLICHTFELDER[:-1]:
+        wert: object = parsed[feld]
+        if isinstance(wert, (int, float)) and not isinstance(wert, bool):
+            parsed[feld] = str(wert)
+        elif not isinstance(wert, str):
+            logger.error(
+                f"Sachlage: Pflichtfeld '{feld}' ist {type(wert).__name__} statt Text — verworfen"
+            )
+            return None
+    return _validate_objects(parsed, from_model=True)
+
+
+def _validate_objects(parsed: dict, from_model: bool) -> dict | None:
+    """Haelt jedes Objekt gegen seine Form und normalisiert die abgeleiteten Felder.
+
+    Die Form (`gedeckt` mit Wert, `offen` ohne, `akut`, `klasse`, die Felder
+    des Servers) stellt `sachlage_form.normalize_object_form` her — nach der
+    Regel des Eigentuemers vom 13.09.2026: ohne Wert ist eine Eigenschaft
+    offen. Traeger, Kritikalitaet und Sprecher laufen danach, weil sie gegen
+    `offen` und `gedeckt` gehalten werden. Die Smalltalk-Schranke (Konzept §3,
+    Festlegung 2) sitzt in der Form: ein latentes Objekt hat leeres `offen`.
+
+    Vorbedingung: `parsed["objekte"]` ist eine Liste.
+    Nachbedingung: Das Artefakt mit normalisierten Objekten oder None, wenn
+        ein Objekt kein dict ist oder keinen Namen traegt.
+    Fehlerfaelle: Jede Abweichung wird laut benannt.
+    """
     for objekt in parsed["objekte"]:
-        if not isinstance(objekt, dict) or "name" not in objekt:
+        if not isinstance(objekt, dict) or not str(objekt.get("name") or "").strip():
             logger.error(f"Sachlage: Objekt ohne Namen: {objekt!r} — verworfen")
             return None
-        # Die Smalltalk-Schranke (Konzept §3, Festlegung 2): Ein latentes
-        # Objekt traegt keine offenen Eigenschaften — sonst erzeugt jede
-        # Beilaeufigkeit Fragestoff.
-        if not objekt.get("akut") and objekt.get("offen"):
-            logger.info(
-                f"Sachlage: latentes Objekt '{objekt.get('name')}' trug "
-                f"offene Eigenschaften — geleert (Smalltalk-Schranke)"
-            )
-            objekt["offen"] = []
+        normalize_object_form(objekt, from_model=from_model)
         objekt["traeger"] = _normalize_holders(objekt)
         objekt["kritikalitaet"] = _normalize_criticality(objekt)
         objekt["sprecher"] = _normalize_speakers(objekt)
@@ -706,7 +737,8 @@ def _derive(
     # (die erbt das neue Artefakt in `carry_sources`).
     vorige_rein: dict | None = (
         {k: (
-            [{ok: ov for ok, ov in o.items() if ok != "quellen"} for o in v]
+            [{ok: ov for ok, ov in o.items() if ok not in SERVER_OWNED_OBJECT_FIELDS}
+             for o in v]
             if k == "objekte" else v
         ) for k, v in vorige.items()
          if k not in ("wiederaufnahme", "herkunft", "alter_sekunden")}

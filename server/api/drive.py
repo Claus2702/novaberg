@@ -38,6 +38,7 @@ from config import (
 )
 from ei.gravitation import _cosine_similarity
 from graph.nodes.sachlage import question_target
+from graph.nodes.sachlage_form import normalize_object_form
 from memory.kurzziel import short_goal_key
 from memory.pipeline_log import kosten_summen
 from memory.sachlage_history import history_recent
@@ -170,6 +171,15 @@ def sachlage_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT
     except (json.JSONDecodeError, ValueError, TypeError) as fehler:
         logger.warning(f"Drive/Sachlage: '{key}' nicht lesbar — {fehler}")
         return {}
+    # Der Tab liest `gedeckt` mit `.items()`: Eine Blase, die vor der
+    # Formpruefung (13.09.2026) geschrieben wurde, wird hier auf dieselbe Form
+    # gebracht wie beim Laden im Knoten.
+    objekte: object = sachlage.get("objekte")
+    if isinstance(objekte, list):
+        sachlage["objekte"] = [
+            normalize_object_form(o, from_model=False)
+            for o in objekte if isinstance(o, dict) and str(o.get("name") or "").strip()
+        ]
     return sachlage
 
 
