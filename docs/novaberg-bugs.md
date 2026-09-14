@@ -804,6 +804,8 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 **Geschlossen, wenn** ein Auftrag mit Wochentagsnamen schreibt und eine Erwaehnung ohne Auftragscharakter nicht.
 
+**Stand 14.09.2026 — die erste Haelfte ist erfuellt, die zweite ungemessen.** Entscheidung des Eigentuemers am 13.09.2026: *„Nur ein ausdruecklicher Auftrag"*. Aushang, Negativfall und Vorpruefung der Klassifikation verlangen seither einen Auftrag (`novaberg-agent-timeline.md` §3a). `[gemessen 14.09.2026, gemma4-a4b-gpu]` **Aussagen mit Zeitpunkt schreiben 0 von 21**, Auftraege 12 von 12 bis zur Klassifikation — darunter *„Erinnere mich am Donnerstag um 15 Uhr …"* als `create`. **Ob der Wochentagsname danach auch geparst und geschrieben wird, lief nicht** (die Messung endete vor der Ausfuehrung). Bleibt offen, bis ein Auftrag mit Wochentagsnamen im Betrieb einen Eintrag erzeugt.
+
 ---
 
 ### `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` — dreizehn Tage alt, als morgig ausgegeben
@@ -2261,6 +2263,7 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 **Update Chat 59:** Strukturell adressiert durch Enricher-vor-Router (Graph-Umbau Chat 59). Der Router sieht beim Routing jetzt Session, KZG, LZG, Charakter-Hash und die vollen EI-Ergebnisse (EI-Calc liegt zwischen Enricher und Router). Die Prompt-Anpassung, die den Router auf Session-Kontext hinweist, steht noch aus. Offen für Validierung mit den beiden Originalsymptomen.
 **Update Chat 60:** Graph-Split. Der CharacterGraph beginnt beim Enricher und hat die volle Session, KZG, LZG, Charakter-Hash und EI-Ergebnisse. Der Router sieht alles. Strukturelle Voraussetzung weiter verbessert.
 **Prio:** Hoch — HALL2-Update ist durch den REGELN-Guard entschärft, aber die Aktion geht trotzdem verloren. Router-Prompt braucht Session-Kontext-Awareness. Strukturelle Voraussetzung seit Chat 59 vorhanden.
+**Update 14.09.2026 — die Ursache war nie untersucht, und die Updates von Chat 59/60 sind widerlegt.** ~~„Der Router sieht die Session-Turns mit Novas Vorschlag"~~, ~~„Der Router sieht alles"~~: Der Router bekommt fünf Wortwechsel, **jeden Beitrag gekappt nach 100 Zeichen** (`memory/session.py::format_session_turns_numbered`), dazu Perzeption und Aushänge — weder KZG noch LZG noch die Sachlage. `[gemessen 14.09.2026]` Novas Antworten begannen in 4 von 4 Fällen mit einer Regieanweisung von 157 bis 208 Zeichen; der Router sah von ihnen nur deren Anfang, ein Vorschlag am Ende erreicht ihn nicht. **Symptom 2 ist damit strukturell unlösbar im heutigen Prompt.** Die Absicht ist seit dem 14.09.2026 entschieden — die Zustimmung zu Novas Angebot ist ein Auftrag — und entworfen als Scheibe 12 des Lage-Konzepts (`novaberg-thinking-lage_k.md` §4: der ganze Verlauf, die Objekte der Lage im Router, der Objektbezug in der Zustellung). Bleibt offen.
 
 ---
 

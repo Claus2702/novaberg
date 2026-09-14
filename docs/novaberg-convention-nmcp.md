@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Anmeldung, Zustellung, Zustandsübergabe und Rückgabe eines Fachdienstes
-**Stand:** 17. August 2026 (v0.1, Erstfassung)
+**Stand:** 14. September 2026 (§3.4: die absehbare Erweiterung um das Objekt-Merkmal der Anmeldung, entschieden, nicht gebaut). Davor 17. August 2026 (v0.1, Erstfassung)
 **Pfad:** novaberg/docs/novaberg-convention-nmcp.md
 **Typ:** Convention
 **Voraussetzung:** `novaberg-convention-planner-needs.md` §3 (das Clipboard-Prinzip) · §3.7a (die Sprachrichtung der Selbstauskunft)
@@ -108,6 +108,8 @@ Der Aushang ist die einzige Pflichtangabe für die **Auswahl**. Für den Betrieb
 | **Wiederholverhalten** | Was tut der zweite Aufruf mit demselben Auftrag? | Pflicht |
 
 **Die Fähigkeitenliste bleibt zulässig und wird nie zur Auswahl gelesen.** Sie ist eine Auskunft für Menschen und für die Anzeige. Wer sie zum Auswahlkriterium macht, baut den Kanal, der im eigenen Bestand vier Monate lang keinen Leser gefunden hat.
+
+> **Absehbare Erweiterung, entschieden am 14.09.2026, nicht gebaut.** Der Eigentümer: *„Die Anmeldung des Agenten und die Klassifizierung des Objekts müssen eine übereinstimmende Nähe aufweisen, damit der Router die Informationen weiterleitet."* Die Anmeldung bekommt damit neben dem Aushang (Merkmale der Äußerung) eine zweite Angabe: **das Objekt, das der Dienst bedient**, in der Sprache, in der die Sachlage Objekte klassifiziert — und die Nähe wird gerechnet, nicht vom Empfang erraten. **Die Fähigkeitenliste bleibt davon unberührt**, und das Urteil je Zettel für sich ebenfalls: Ein Objekt steht am Zettel des Dienstes, zu dessen Merkmal es nahe ist, ohne Verhältnis zu anderen Zetteln. Entwurf: `novaberg-thinking-lage_k.md` §4, Scheibe 12, Teil C. Diese Konvention wird geändert, wenn der Teil gebaut ist.
 
 ### 3.5 Warum die Kostenangabe erzwungen gehört
 

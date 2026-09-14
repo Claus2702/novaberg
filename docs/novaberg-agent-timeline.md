@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
+**Stand:** 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -75,6 +75,29 @@ Zusaetzlich kann der Classify den Output `rejected` liefern (kein echter Termin-
 
 **Kontextschutz:** "Analysiere NUR den aktuellen Prompt. Verlauf dient AUSSCHLIESSLICH fuer Rueckbezuege."
 
+### 3a. Eingetragen wird nur auf Auftrag (14.09.2026)
+
+**Entscheidung des Eigentümers am 13.09.2026**, auf die Frage, ob eine Aussage mit Zeitpunkt einen Termin anlegen soll oder nur ein ausdrücklicher Auftrag: *„Nur ein ausdrücklicher Auftrag"*. Bis dahin sagten Aushang und Klassifikation das Gegenteil — der Aushang nannte *Aussagen* und *beiläufige Erwähnungen* als Auslöser, die Vorprüfung führte *„Morgen muss ich Getraenke kaufen"* und *„Am Donnerstag habe ich Zahnarzt"* als `create` —, und der offene Defekt `TIMELINE-SCHREIBT-OHNE-AUFTRAG` verlangte, dass eine Erwähnung nicht schreibt.
+
+**Zwei Sperren, jede für sich:**
+
+| Sperre | Wo | Was sie sagt |
+|---|---|---|
+| **Empfang** | Aushang in `plugins/timeline_manager/manager.py::router_prompt` (vom Dienst geerbt) und `negativfaelle` in `agents/timeline/agent.py` | Zustellung bei Auftrag oder Frage an die Zeitachse; *„Eine Zeitangabe allein ist kein Auftrag — auch nicht mit Uhrzeit und Ereignis."* Negativfall: die Aussage oder beiläufige Erwähnung mit Zeitpunkt |
+| **Fachabteilung** | Vorprüfung in `prompts/default/classify_timeline.task.txt` | Eine Aussage mit Zeitpunkt ist `rejected`, *„auch dann nicht, wenn sie Ereignis, Tag und Uhrzeit nennt"*; `create` nur bei Bitte (*trag ein, merk dir, erinnere mich, notier*) |
+
+Die zweite Sperre ist nötig, weil der Empfang im Zweifel zustellt (`novaberg-convention-nmcp.md` §4).
+
+**Die Beweiskette** (14.09.2026, 06:20–06:40 UTC, Modell `gemma4-a4b-gpu`, Pixie pausiert): 16 Reize — sechs Aufträge, eine Frage nach Terminen, sieben Aussagen mit Zeitpunkt (vier davon echte Turns mit ihrem Verlauf), drei Zeitbezüge ohne Auftrag — je dreimal durch Router **und** Klassifikation, beide Prompts aus dem Code gebaut. **Aufträge schreiben 12 von 12, die Frage liest 3 von 3, Aussagen schreiben 0 von 21, Zeitbezüge 0 von 9.** Die Klassifikation allein lehnt 15 von 21 Aussagen ab: *„muss morgen mal schauen, wann er ist"* wird `read`, eine Wir-Form mit Dauer wird `update` — beide hält der Router. **Nicht gemessen ist die Ausführung**: Ob ein Auftrag mit Wochentagsnamen tatsächlich schreibt, ist der zweite Teil von `TIMELINE-SCHREIBT-OHNE-AUFTRAG` und bleibt offen.
+
+**Betrieb (14.09.2026):** Vier Aussagen mit Termin zwischen 18:37 und 18:57 UTC — 0 Zustellungen, kein Termin. Um 19:16 UTC ein ausdrücklicher Auftrag mit *„morgen um 10"* — zugestellt, `create`, der Titel aus dem Verlauf aufgelöst, Eintrag angelegt. **Aber mit falscher Zeit:** *„morgen um 10"* ohne „Uhr" erkennt der Zeitparser nicht als Uhrzeit; gespeichert sind Anlagezeitpunkt plus 24 Stunden mit Genauigkeit Tag (`novaberg-tool-timeparser.md` §8, Fundliste 14.09.2026).
+
+**Der verworfene Entwurf** (13.09.2026): eine Ausnahme im Aushang, die die Zeitangabe selbst zum Kommando-Signal erklärte — gemessen 13 von 15 Zustellungen bei 0 von 21 Fehlalarmen, gebaut, im Betrieb bestätigt (ein Termin entstand aus einer Aussage) und nach der Entscheidung oben zurückgenommen. Das Messprotokoll steht in `novaberg-node-router.md`, letzter Abschnitt.
+
+Zeugen: `tests/test_timeline_aushang.py` (6, nach der zweiten Kontrolle 8) — der Zettel nennt keine Aussage als Auslöser, trägt den Satz über die Zeitangabe und die Erwähnung als Negativfall; die Vorprüfung führt die Erwähnung unter `rejected` und nicht mehr unter `create`. Gegenprobe gegen den vorigen Stand der drei Dateien: **5 von 16 rot, wie vorhergesagt.** Suite **3669 grün, 0 übersprungen**. **Nach der zweiten Kontrolle (14.09.2026):** Zwei Stellen standen noch auf der alten Absicht, und kein Zeuge sah sie — die **Fachsprache** im selben System-Prompt führte *„Annas Geburtstag ist am 15. Mai"* als `create`-Beispiel (seither *„Merk dir Annas Geburtstag am 15. Mai"*), und das **Gegenangebot einer Ablehnung** riet zu *„Zahnarzt am Donnerstag um 10"* — genau der Form, die abgelehnt wird (seither `dispatch.py::REJECTION_SUGGESTION`: eine ausdrückliche Bitte). Die Identitätszeile der Klassifikation setzte voraus, der Router habe zeitgebundene Information erkannt; sie sagt jetzt, dass zuerst geprüft wird, ob ein Auftrag vorliegt. Zwei Zeugen dazu — einer liest den **zusammengesetzten** Prompt statt des Vorprüfungs-Blocks —, Gegenproben 1/1 und 1/1 wie vorhergesagt; zusammen **8 Zeugen**, Suite **3671 grün, 0 übersprungen**.
+
+**Was folgt:** Eine Erwähnung soll nicht schweigend untergehen — Nova bietet an, und die Zustimmung ist ein Auftrag. Entworfen als Scheibe 12 des Lage-Konzepts (`novaberg-thinking-lage_k.md` §4); heute erkennt der Router die Zustimmung nicht.
+
 ### [FACHSPRACHE]-Block
 
 | User sagt | Normalisiert |
@@ -127,6 +150,8 @@ Validierung prueft vor dem Anlegen, ob ein aktiver Eintrag mit aehnlichem Inhalt
 **Update = Invalidieren + Neu Anlegen.** Kein in-place UPDATE. Konsistent mit dem Fakten-System. Historie bleibt erhalten.
 
 `reschedule` ist seit Chat 42 eine eigene Aktion (statt update+zeitausdruck). Bei reschedule wird der ZeitVektor fuer die Kombination von altem und neuem Zeitpunkt verwendet.
+
+> ⚠ **`update` ändert keine Details — es verschiebt.** `crud.py::ausfuehren` führt `update` und `reschedule` auf dieselbe Funktion `_update`, und die verlangt ein neues Datum. `[gemessen 13.09.2026]` Zweimal richtig zugestellt, klassifiziert (*„Dauer auf 1,5 Stunden setzen"*) und gefunden (Einzeltreffer) — dann *„Konnte das neue Datum nicht erkennen"*, `status=fehler`. **`event_ende` hat im ganzen Server keinen Schreiber**; eine Dauer oder ein Zeitraum lässt sich nicht speichern. Fundliste 13.09.2026.
 
 ### 5.3 Delete (Invalidieren)
 
@@ -193,11 +218,11 @@ Seit Chat 42 (Epic 14) gelten gehaertete Transaktionen fuer den TimelineAgent.
 
 | Aktion | Bedeutung | Beispiele |
 |--------|-----------|-----------|
-| `create` | Neuen Termin anlegen | "Morgen um 10 Zahnarzt" |
+| `create` | Neuen Termin anlegen | ~~"Morgen um 10 Zahnarzt"~~ → seit 14.09.2026 eine Aussage und damit `rejected` (§3a); `create` z.B. *"Trag mir morgen um 10 den Zahnarzt ein"* |
 | `delete` | Termin loeschen | "Loesch den Zahnarzt" |
 | `read` | Termine anzeigen | "Was steht morgen an?" |
 | `reschedule` | Termin verschieben | "Verschieb den Zahnarzt auf Freitag" |
-| `update` | Details aendern (nicht Zeit) | "Der Zahnarzt ist jetzt Dr. Mueller" |
+| `update` | Details aendern (nicht Zeit) — **so klassifiziert, nicht so ausgeführt** (§5.2) | "Der Zahnarzt ist jetzt Dr. Mueller" |
 
 ### 7.2 Dreistufige Erkennung
 
@@ -277,7 +302,7 @@ CREATE TABLE IF NOT EXISTS timeline (
 - Schreibpfade leben ausschließlich im TimelineAgent (`agents/timeline/`, siehe §5.4).
 - `execute()` existiert nur als Loud-Failure-Stub für die `BaseManager.execute()`-Abstraktheit. Falls jemals ein `ziel="timeline"`-Write den Dispatcher erreicht, wirft er `NotImplementedError` mit voller Diagnose.
 
-**Router-Prompt:** `management_action = "agent"` bei Termin-Erkennung. Keine spezifische CRUD-Aktion.
+**Router-Prompt:** `management_action = "agent"` bei Termin-Erkennung. Keine spezifische CRUD-Aktion. **Seit dem 14.09.2026 nur bei Auftrag oder Frage an die Zeitachse**, nicht bei einer Zeitangabe allein (§3a).
 
 **Resume-TTL:** 300s (Redis `pending_agent:{user_id}`). **Rueckfrage-Pflicht:** Nur bei niedriger Konfidenz oder Konflikt.
 

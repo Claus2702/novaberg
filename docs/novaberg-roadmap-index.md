@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 850 Abschnitte in 5 Dateien — 353 mit eigenem Datum, 496 geerbt, 1 ohne.
+**Umfang:** 861 Abschnitte in 5 Dateien — 359 mit eigenem Datum, 501 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 587 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 598 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 850 Marken, 850 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 861 Marken, 861 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,17 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-14 | laufend | ## | [14.09.2026, 19:52 UTC — ein Termin nur auf Auftrag, und der Entwurf, wie ein Angebot zum Auftrag wird 🔧](novaberg-roadmap.md#14092026-1952-utc--ein-termin-nur-auf-auftrag-und-der-entwurf-wie-ein-angebot-zum-auftrag-wird) |
+| 2026-09-13 | laufend | ### | · [Teil 1 — die Ursache: das Modell, nicht der Prompt (13.09.2026)](novaberg-roadmap.md#teil-1--die-ursache-das-modell-nicht-der-prompt-13092026) |
+| 2026-09-14 | laufend | ### | · [Teil 2 — eingetragen wird nur auf Auftrag (14.09.2026)](novaberg-roadmap.md#teil-2--eingetragen-wird-nur-auf-auftrag-14092026) |
+| (2026-09-14) | laufend | ### | · [Teil 3 — Scheibe 12 entworfen: der Empfang liest die Lage](novaberg-roadmap.md#teil-3--scheibe-12-entworfen-der-empfang-liest-die-lage) |
+| 2026-09-13 | laufend | ## | [13.09.2026, 15:20 UTC — die Form der Lage für jedes Feld, und ein Gedächtnis für die Eigenschaften einer Sache 🔧](novaberg-roadmap.md#13092026-1520-utc--die-form-der-lage-für-jedes-feld-und-ein-gedächtnis-für-die-eigenschaften-einer-sache) |
+| (2026-09-13) | laufend | ### | · [Teil 1 — die Formprüfung](novaberg-roadmap.md#teil-1--die-formprüfung) |
+| (2026-09-13) | laufend | ### | · [Teil 2 — Scheibe 11, das Eigenschaftsgedächtnis](novaberg-roadmap.md#teil-2--scheibe-11-das-eigenschaftsgedächtnis) |
+| (2026-09-13) | laufend | ### | · [Teil 3 — die Qualität der Werte](novaberg-roadmap.md#teil-3--die-qualität-der-werte) |
+| (2026-09-13) | laufend | ### | · [Teil 4 — Nachtrag 15:55 UTC: die zweite Kontrolle fand drei Fehler, die kein Zeuge sah](novaberg-roadmap.md#teil-4--nachtrag-1555-utc-die-zweite-kontrolle-fand-drei-fehler-die-kein-zeuge-sah) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 23:22 UTC — ein gemeldeter Ausfall gibt seine Frage frei 🔧](novaberg-roadmap.md#12092026-2322-utc--ein-gemeldeter-ausfall-gibt-seine-frage-frei) |
+| 2026-09-12 | laufend | ## | [12.09.2026, 22:54 UTC — eine offene Frage machte jede fremde Antwort verdächtig 🔧](novaberg-roadmap.md#12092026-2254-utc--eine-offene-frage-machte-jede-fremde-antwort-verdächtig) |
 | 2026-09-12 | laufend | ## | [12.09.2026, 21:47 UTC — Wissensfragen sind Pflicht, außer das Rad gibt der Neugier Anlass 🔧](novaberg-roadmap.md#12092026-2147-utc--wissensfragen-sind-pflicht-außer-das-rad-gibt-der-neugier-anlass) |
 | (2026-09-12) | laufend | ### | · [Die Entscheidung](novaberg-roadmap.md#die-entscheidung) |
 | (2026-09-12) | laufend | ### | · [Vorher gerechnet und gemessen](novaberg-roadmap.md#vorher-gerechnet-und-gemessen) |

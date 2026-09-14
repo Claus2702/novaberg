@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 24. August 2026 (der Sprecher kommt aus dem Feld `herkunft`, nicht aus der Position — §3.8; die Filterzeile des Enrichers war tot und ist entfernt — §5); davor 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 14. September 2026, 19:52 UTC (Befund an §3.7: jeder Beitrag wird für neun Leser nach 100 Zeichen gekappt). Davor 24. August 2026 (der Sprecher kommt aus dem Feld `herkunft`, nicht aus der Position — §3.8; die Filterzeile des Enrichers war tot und ist entfernt — §5); davor 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`
@@ -180,6 +180,8 @@ Zwei Flags:
 Nicht aufgerufen bei Rückfragen (`status=rueckfrage`) — der Turn ist noch offen.
 
 ### 3.7 Turn-Marker in format_session_turns_numbered (Chat 43)
+
+> ⚠ **Befund 14.09.2026 — die Kappung je Beitrag.** `format_session_turns_numbered` schneidet jeden Beitrag nach `max_chars = 100` Zeichen ab, und **keiner der neun Aufrufer** übergibt einen anderen Wert: Router, Perzeption, Gesprächsvektor und die Klassifikation von sechs Agenten. `[gemessen 14.09.2026]` Vier Antworten Novas begannen mit Regieanweisungen von 157 bis 208 Zeichen — diese Leser sahen von ihnen nur den Anfang der Regieanweisung. Ein Angebot am Ende einer Antwort erreicht sie nicht. Fundliste 14.09.2026; die Abhilfe ist Teil B von Scheibe 12 (`novaberg-thinking-lage_k.md` §4).
 
 Turns mit `aktion_erledigt=true` bekommen einen Marker im Header:
 - `aktion_erfolgreich=true`: `[ERLEDIGT]`

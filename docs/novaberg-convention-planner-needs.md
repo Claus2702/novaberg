@@ -206,6 +206,8 @@ NICHT triggern bei:
   - Emotionalen Ausdruecken ("Du bist toll!") — das ist Feedback
 ```
 
+> **Nachtrag 14.09.2026:** Der zitierte Satz des Timeline-Zettels steht so nicht mehr im Code. Seit dem 14.09.2026 verlangt der Zettel einen Auftrag oder eine Frage an die Zeitachse — *„Eine Zeitangabe allein ist kein Auftrag"* (`novaberg-agent-timeline.md` §3a). Die Aussage dieses Abschnitts über die **Gestalt** der Deklarationen bleibt davon unberührt.
+
 Das sind **Anweisungen an den Aufrufer**, samt Negativfällen. Danach bildet der
 Planner das Ergebnis über `router_intents` und `manager.ziel` auf einen Manager
 ab — ebenfalls eine Deklaration. **Beide Stufen lesen Selbstauskunft.**

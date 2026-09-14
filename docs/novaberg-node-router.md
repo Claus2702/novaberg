@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
+**Stand:** 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -24,6 +24,8 @@ CharacterGraph (Pfad 2): Enricher → EI-Calc → ▶ Router ◀ → [Planner �
 ```
 
 Nur im CharacterGraph. Im HumanGraph (Pfad 1) gibt es keinen Router — der User-Pfad routet nicht.
+
+> **Berichtigt am 14.09.2026 — die Zeile oben ist veraltet.** Im Code steht `reducer → sachlage_node → router` (`graph/character_graph.py`): Die Sachlage läuft **unmittelbar vor** dem Router, damit beide Pfade dasselbe Verstehen sehen. **Der Router liest sie nicht** — weder `state["sachlage"]` noch ein Objekt daraus. Dass der Empfang die Objekte des Gesprächskontexts liest, ist entworfen, nicht gebaut (`novaberg-thinking-lage_k.md` §4, Scheibe 12).
 
 ---
 
@@ -146,6 +148,8 @@ Hoehere Nummern sind aktueller — loese Bezuege bevorzugt ueber die hoechsten N
 
 Die nummerierte Formatierung unterstützt Recency-basierte Auflösung: Bei Mehrdeutigkeit gewinnt der aktuellere Turn.
 
+> ⚠ **Jeder Beitrag erreicht den Router nur in seinen ersten 100 Zeichen** (`format_session_turns_numbered`, Vorgabe `max_chars = 100`, vom Router nicht überschrieben — ebenso bei acht weiteren Lesern). **Das ist kein Ausschnitt, sondern eine Gefahr:** Novas Antworten beginnen häufig mit einer Regieanweisung, `[gemessen 14.09.2026]` 157 bis 208 Zeichen lang in 4 von 4 Antworten — der Router sah von diesen Antworten nur den Anfang der Regieanweisung. Ein Angebot am Ende einer Antwort erreicht ihn nie, und ein *„Gerne"* darauf ist nicht zuordenbar. Der Befund steht in der Fundliste (14.09.2026); die Abhilfe ist Teil B von Scheibe 12 (`novaberg-thinking-lage_k.md` §4).
+
 ### 4.3 Plugin-Erweiterungen ([AGENTEN]-Block)
 
 Jeder registrierte Manager kann über `router_prompt` dem Router Erkennungsregeln hinzufügen. `get_combined_router_prompt()` sammelt die Prompts aller Plugins und hängt sie als eigenen `[AGENTEN]`-Block an:
@@ -244,6 +248,26 @@ Der Grund: Beide Flächen tragen denselben Text — der Dienst erbt ihn vom glei
 
 **Was der Block nicht enthält:** eine Rangfolge, einen Vorrang, einen Hinweis auf Überlappungen. Ein Verhältniswissen zwischen zwei Zetteln wäre die zentrale Zuordnungstabelle, gegen die die Bauart gerichtet ist — ein Zeuge prüft auf Rangworte.
 
-> **Der Dispatch-Guard in `router.task.txt` spricht dem Zweifelssatz entgegen** (*„Im Zweifel: kein Dispatch"*) und steht im Prompt davor. Beide Sätze sind für sich begründet; die Auflösung ist eine offene Entscheidung und steht in der Fundliste.
+> **Der Dispatch-Guard in `router.task.txt` spricht dem Zweifelssatz entgegen** (*„Im Zweifel: kein Dispatch"*) und steht im Prompt davor. Beide Sätze sind für sich begründet; die Auflösung ist eine offene Entscheidung ~~und steht in der Fundliste~~ → **stand dort nicht; nachgetragen am 13.09.2026** am Eintrag zum nicht angelegten Termin.
 
 Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung je Graph, getrennt, weil die Impulsrate des Hintergrunds keinem Fachdienst gehört.
+
+---
+
+## Timeline nur auf Auftrag — was der Empfang unter `gemma4-a4b-gpu` zustellt (13./14.09.2026)
+
+**Der Anlass.** Über vier Turns entstand im Gesprächskontext ein Termin mit Tag, Uhrzeit und Dauer — in Aussagen, ohne Kommando-Verb. Der Router setzte in 4 von 4 Turns `needs_timeline: true` und ließ `management_action` in 4 von 4 leer, obwohl der Timeline-Aushang damals Aussagen und beiläufige Erwähnungen ausdrücklich als Auslöser nannte; der TimelineAgent lief nie.
+
+**Die Beweiskette.** Werkzeug: die geloggten System-Prompts der vier Turns, wörtlich wiederholt über den Provider des Betriebs (temperature 0.05, `num_predict` 512), je Fassung und Reiz mehrere Durchgänge; Pixie beim zweiten und dritten Lauf vollständig pausiert.
+
+| Lauf | Frage | Ergebnis |
+|---|---|---|
+| 1 (13.09., 60 + 9 Aufrufe) | Sperrt der Dispatch-Guard? Liegt es am Modell? | `gemma4-a4b-gpu`: **0 von 40** Zustellungen, mit **und** ohne Guard. `gemma4-gpu`: **9 von 9**, an allen vier Turns. **Die Guard-Hypothese ist widerlegt; das Modell entschied.** Der Lauf mit `gemma4-gpu` endete nach neun Aufrufen durch einen Ausfall der Maschine. |
+| 2 (13.09., 91 Aufrufe) | Welche Prompt-Fassung stellt unter `gemma4-a4b-gpu` Zeitangaben ohne Verb zu? | Ausnahme im Timeline-Aushang **13 von 15**, 0 von 21 Fehlalarmen; Ausnahme im Guard 6/10; allgemeine Ausnahme 1/5; unverändert 2/10. **Gebaut und am selben Abend zurückgenommen** — siehe unten. |
+| 3 (14.09., 48 Reize × Router + Klassifikation) | Schreibt die Kette nur auf ausdrücklichen Auftrag? | Aufträge (*eintragen, erinnern, verschieben, merken*) **schreiben 12 von 12**, eine Frage nach Terminen **liest 3 von 3**, **Aussagen mit Zeitpunkt schreiben 0 von 21**, Zeitbezug ohne Auftrag 0 von 9; keine Zustellung an einen anderen Dienst. Die Klassifikation allein lehnt 15 von 21 Aussagen ab — die übrigen sechs hält der Router. |
+
+**Der verworfene Entwurf.** Lauf 2 ergab eine Fassung, die Aussagen mit Zeitpunkt zustellt, und sie war gebaut und im Betrieb bestätigt: Ein Termin entstand aus einer Aussage. **Die Absicht war eine andere** — Entscheidung des Eigentümers am 13.09.2026: *„Nur ein ausdrücklicher Auftrag"* (`novaberg-thinking-lage_k.md` §4, Scheibe 12). Das Nicht-Zustellen der vier Turns war unter dieser Absicht richtig; der Defekt war die Antwort, die *„notiert"* sagte.
+
+**Gebaut (14.09.2026).** Der Timeline-Aushang nennt Aufträge und Fragen statt Satzformen — *eintragen, erinnern, ändern, löschen, abfragen* — und sagt: *„Eine Zeitangabe allein ist kein Auftrag — auch nicht mit Uhrzeit und Ereignis."* Die Zeile *„ODER der Gesprächsverlauf ein aktives Zeitereignis enthält"* ist entfallen. Der TimelineAgent führt die Erwähnung als Negativfall, und seine Klassifikation weist sie als `rejected` aus (`novaberg-agent-timeline.md` §3). Damit widerspricht der Timeline-Aushang dem Dispatch-Guard **für Aufträge** nicht mehr; ob eine **Frage** an die Zeitachse (*„Was steht morgen an?"*) das Kommando-Signal des Guards erfüllt, sagen die beiden Texte nicht — gemessen wurde sie 3 von 3 zugestellt. Zeugen: `tests/test_timeline_aushang.py` (6, nach der zweiten Kontrolle 8), Gegenprobe gegen den vorigen Stand 5 von 16 rot wie vorhergesagt; Suite **3669 grün, 0 übersprungen**, nach der zweiten Kontrolle **3671** (`novaberg-agent-timeline.md` §3a).
+
+**Offen:** Die Zustimmung zu einem Angebot Novas ist nach der Entscheidung vom 14.09.2026 ein Auftrag — der Router erkennt sie heute nicht (Verlauf in 100 Zeichen, keine Objekte der Lage). Das ist Scheibe 12.

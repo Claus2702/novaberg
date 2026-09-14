@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 13. September 2026 — juengster Eintrag **13.09.2026, 15:20 UTC** samt Nachtrag 15:55 UTC (gemessen via `date -u`). Davor 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 14. September 2026 — juengster Eintrag **14.09.2026, 19:52 UTC** (gemessen via `date -u`). Davor 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,40 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 14.09.2026, 19:52 UTC — ein Termin nur auf Auftrag, und der Entwurf, wie ein Angebot zum Auftrag wird 🔧
+
+**Anlass.** Über vier Turns des produktiven Paares entstand im Gesprächskontext ein Termin mit Tag, Uhrzeit und Dauer — in Aussagen, ohne Kommando-Verb. Angelegt wurde nichts, und die Antworten sagten, er sei *„notiert"*. Der Router setzte in 4 von 4 Turns `needs_timeline` und nie `management_action`, obwohl der Timeline-Aushang Aussagen und beiläufige Erwähnungen als Auslöser nannte.
+
+### Teil 1 — die Ursache: das Modell, nicht der Prompt (13.09.2026)
+
+**Gemessen.** Die geloggten Router-Prompts der vier Turns, wörtlich wiederholt über den Provider des Betriebs: unter `gemma4-a4b-gpu` (Gesprächsmodell seit dem 07.09.2026) **0 von 40** Zustellungen, mit und ohne Dispatch-Guard; unter `gemma4-gpu` **9 von 9**. Die Hypothese *Dispatch-Guard* ist widerlegt (Vorhersage 5/5 an einem Turn, gezählt 0/5). Der Lauf mit `gemma4-gpu` endete nach neun Aufrufen durch einen Ausfall der Maschine.
+
+**Ein Entwurf, gebaut und am selben Abend zurückgenommen.** Vier Prompt-Fassungen im Vergleich, die Ausnahme im Timeline-Aushang gewann (**13 von 15** Zustellungen, 0 von 21 Fehlalarmen) und ließ im Betrieb einen Termin aus einer Aussage entstehen. Dann die Entscheidung des Eigentümers auf die Frage, ob eine Aussage mit Zeitpunkt einen Termin anlegen soll oder nur ein ausdrücklicher Auftrag: *„Nur ein ausdrücklicher Auftrag"*. Das Nicht-Zustellen der vier Turns war damit richtig; der Defekt war die Antwort.
+
+### Teil 2 — eingetragen wird nur auf Auftrag (14.09.2026)
+
+**Gebaut.** `server/plugins/timeline_manager/manager.py::router_prompt`: Aufträge und Fragen an die Zeitachse statt Satzformen, *„Eine Zeitangabe allein ist kein Auftrag — auch nicht mit Uhrzeit und Ereignis."*; die Zeile zum aktiven Zeitereignis im Verlauf entfällt. `server/agents/timeline/agent.py::negativfaelle`: die Aussage oder beiläufige Erwähnung mit Zeitpunkt. `server/prompts/default/classify_timeline.task.txt`: die Vorprüfung weist Erwähnungen als `rejected` aus; *„AUCH beilaeufige Erwaehnung"* unter `create` entfällt. Damit widerspricht der Timeline-Aushang dem Dispatch-Guard für Aufträge nicht mehr (ob eine Frage das Kommando-Signal erfüllt, sagen die Texte nicht).
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Ein Termin entsteht nur, worum der Nutzer ausdrücklich bittet; eine Aussage mit Zeitpunkt legt nichts an; eine Frage nach Terminen erreicht den Dienst weiter. |
+| **TEST** | `tests/test_timeline_aushang.py`, **6 Zeugen**, nach der zweiten Kontrolle **8** — der Zettel nennt keine Aussage als Auslöser und trägt den Satz über die Zeitangabe, die Erwähnung ist Negativfall, die Vorprüfung führt sie unter `rejected` und nicht unter `create`. Gegenprobe gegen den vorigen Stand der drei Dateien: **5 von 16 rot, wie vorhergesagt**. |
+| **MESSUNG** | Labor, `gemma4-a4b-gpu`, Pixie pausiert, 16 Reize × 3 durch Router **und** Klassifikation, beide Prompts aus dem Code: **Aufträge schreiben 12 von 12**, eine Frage liest 3 von 3, **Aussagen mit Zeitpunkt schreiben 0 von 21**, Zeitbezug ohne Auftrag 0 von 9. Vorhersage *Klassifikation allein ≥ 18/21 abgelehnt* verfehlt (15/21) — die übrigen sechs hält der Router. **Betrieb 18:37–18:57 UTC:** vier Aussagen mit Termin, 0 Zustellungen, **kein Termin** — `timeline` bekam nur zwei Erinnerungs-Anker der Magnet-Auflösung (509, 510). **19:16 UTC ein ausdrücklicher Auftrag:** zugestellt, `create`, angelegt — **mit falscher Zeit**, weil der Zeitparser *„morgen um 10"* ohne „Uhr" nicht als Uhrzeit erkennt (Anlagezeit plus 24 h, Genauigkeit Tag; Fundliste). |
+
+### Teil 3 — Scheibe 12 entworfen: der Empfang liest die Lage
+
+**Entschieden vom Eigentümer, im Wortlaut im Konzept:** Die Zustimmung zu Novas Angebot ist ein Auftrag; das Angebot kommt aus dem Pflichtbewusstsein; nach einem Nein trägt das Objekt die Eigenschaft, dass sein Speichern abgelehnt ist; der Empfang leitet weiter, wenn Anmeldung des Dienstes und Klassifizierung des Objekts eine übereinstimmende Nähe haben; ob schon gespeichert ist, beurteilt die Fachabteilung; timeline-speicherbar ist jedes Objekt mit Bezug zu einem Zeitpunkt; und *„Was sie unter keinen Umständen tun darf, ist, zu sagen, sie hätte ‚den Termin verankert', aber hat ihn nicht gespeichert."* Entwurf in sechs Teilen, nicht gebaut: `novaberg-thinking-lage_k.md` §4, Scheibe 12.
+
+**Die zweite Kontrolle** (Zugriffe, die der Bau nicht benutzt hatte: alle Stellen mit Beispielsätzen und Auslösern über `server/`, die Tests der Nachbarn und die Ladeebenen der Prompts, 18 Behauptungen des Doku-Diffs gegen Code und Datenbank) fand **zwei Stellen auf der alten Absicht**, die kein Zeuge sah: die Fachsprache im selben Klassifikations-Prompt mit einer Aussage als `create`-Beispiel und das Gegenangebot einer Ablehnung, das zu genau der abgelehnten Form riet. Beide berichtigt, dazu die Identitätszeile der Klassifikation; zwei Zeugen, einer über den **zusammengesetzten** Prompt, Gegenproben 1/1 und 1/1. **16 von 18 Doku-Behauptungen stimmten**; falsch war *„kein Timeline-Eintrag"* (zwei Erinnerungs-Anker entstanden), unentscheidbar *„widerspricht dem Dispatch-Guard nicht mehr"* für Fragen — beide berichtigt. Drei weiche Befunde in die Fundliste: *„Merk dir"* mit Zeitpunkt steht auf zwei Zetteln, die Quote von 25 % stammt vom breiten Aushang, und Erinnerungs-Anker werden als Termine gelesen.
+
+**Suite.** 3663 → 3669 → nach der zweiten Kontrolle **3671 grün, 0 übersprungen**; harte Wand grün.
+
+**Befunde des Abends (Fundliste).** Neun Leser sehen jeden Beitrag des Verlaufs nur in 100 Zeichen — Novas Regieanweisungen sind 157 bis 208 Zeichen lang, ein Angebot am Ende einer Antwort erreicht den Router nie (`ROUTE-MISS1`, Updates von Chat 59/60 widerlegt). Die Antwort behauptet eine Speicherung in 4 von 4 Termin-Turns ohne Schreibung. Eine Dauer lässt sich nicht speichern: `update` verschiebt nur, `event_ende` hat keinen Schreiber. Der Doppel-Fehlschlag des Thinkers feuerte zum ersten Mal live, und die Wiederholung wiederholt die erste Antwort wörtlich (`THINKER-DOPPELFEHLSCHLAG-LIVE-VERIFIKATION`). Sachlage-Objekte heißen mit Markdown-Sternchen, der Auflöser verwirft deshalb seine Ansprüche; die Sachlage-Recherche sucht im Netz nach Eigenschaften, die nur der Nutzer kennt; relative Zeitangaben in KZG-Kernen werden Wochen später als *morgen* gelesen.
+
+**Offen.** Scheibe 12, Teil A zuerst. Der zweite Teil von `TIMELINE-SCHREIBT-OHNE-AUFTRAG` (ein Auftrag mit Wochentagsnamen im Betrieb) ist ungemessen.
 
 ---
 

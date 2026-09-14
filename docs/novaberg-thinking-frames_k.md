@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Frames — Universales kognitives Substrat (Konzept)
-**Stand:** 13. September 2026, 15:11 UTC (Nachtrag in §9.1: ein Teil des Frame-Lagers steht als Eigenschaftsgedächtnis der Sachlage, Scheibe 11). Davor 29. August 2026, mittags (§6 Plausibilität gebaut, offene Slots tragen ihren Wissensträger, gedeckte ihren Sprecher — Stand-Block vor §5). Davor 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
+**Stand:** 14. September 2026, 19:52 UTC (Nachtrag in §3.1: das Werkzeug-Frame als Objekt-Merkmal der Anmeldung, entworfen in Scheibe 12). Davor 13. September 2026, 15:11 UTC (Nachtrag in §9.1: ein Teil des Frame-Lagers steht als Eigenschaftsgedächtnis der Sachlage, Scheibe 11). Davor 29. August 2026, mittags (§6 Plausibilität gebaut, offene Slots tragen ihren Wissensträger, gedeckte ihren Sprecher — Stand-Block vor §5). Davor 28. August 2026 (Konversationsfassung gebaut — Stand-Block vor §5). Davor 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-frames_k.md
 **Typ:** Konzept (`_k`)
 **Quellen:** Chat 80 (erste Konzeption als Slot-Erhebung pro Vorhaben), Chat 81 (universale Erweiterung — Frame als kognitives Substrat, Akutheit als Trigger, iterative Validierung, Plausibilitätsprüfung, Trennung zu Skills)
@@ -78,6 +78,8 @@ Eine erste, nicht abschließende Aufzählung der Frame-Klassen, die in Novabergs
 **Vorgang-Frames** (im Schank-Sinn: Scripts) beschreiben typische Abläufe: Reifenwechseln, Einkaufen, Reisen, Arzt-Besuch. Slots: Voraussetzungen, beteiligte Akteure, Ressourcen, Reihenfolge der Schritte, typisches Ergebnis.
 
 **Werkzeug-Frames** beschreiben die Fähigkeiten der Plugins/Agents: NotizenAgent, TimelineAgent, FaktenAgent, web_search. Slots: Eingaben, Ausgaben, Vorbedingungen, typische Anwendungsfälle, Grenzen.
+
+> **Nachtrag 14.09.2026:** Die erste Form eines Werkzeug-Frames ist entworfen — als **Objekt-Merkmal in der Anmeldung eines Dienstes** (Scheibe 12 des Lage-Konzepts, Teil C): Der Dienst beschreibt das Objekt, das er bedient, und eine gerechnete Nähe zu den akuten Objekten der Sachlage entscheidet, ob der Empfang ihm ein Objekt zuordnet. Der TimelineAgent bedient jedes Objekt mit Bezug zu einem Zeitpunkt. Nicht gebaut.
 
 **Anweisung-Frames** sind eine Sonderkategorie, die in Skills materialisiert wird (siehe Dokument `novaberg-thinking-skills_k.md`): Für eine bestimmte Aufgaben-Klasse beschreibt das Frame, wie der Vorgang sinnvoll abzulaufen hat — welche Werkzeuge zu nutzen sind, welche Defaults zu setzen, welche Rückfragen wann angebracht sind. Das Anweisung-Frame ist aktiv pflegbar (Nova editiert es selbst), die anderen Frame-Klassen sind Beobachtungs-Erträge.
 

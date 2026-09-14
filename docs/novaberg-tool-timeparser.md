@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Zeitparser (Natürlichsprachliche Zeitauflösung)
-**Stand:** 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
+**Stand:** 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
 **Pfad:** novaberg/docs/novaberg-tool-timeparser.md
 **Quellen:** nova-02-t-c.md
 **Datei:** `utils/zeitparser.py`
@@ -321,7 +321,7 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 | Limitation | Beschreibung | Status |
 |-----------|-------------|--------|
 | Tageszeit VOR Uhrzeit | „nachmittags um 3 Uhr" → Offset geht verloren | Spätere Iteration |
-| Einzelne Ziffer ohne „Uhr" | „nachmittags um 3" → als Tag interpretiert | Spätere Iteration |
+| Einzelne Ziffer ohne „Uhr" | „nachmittags um 3" → als Tag interpretiert | Spätere Iteration — **im Betrieb getroffen am 14.09.2026:** *„morgen um 10"* → Uhrzeit nicht erkannt, Termin um die aktuelle Uhrzeit mit Genauigkeit Tag; *„um 10"* → ein vergangener Tag; *„morgen früh um 10"* → kein Datum (Fundliste 14.09.2026) |
 | „zwanzig vor vier" | `_ZAHLWOERTER` enthält nur 1–12, nicht „zwanzig" | Spätere Iteration |
 | „in 2 Stunden" | Funktioniert nur über dateparser (keine Normalisierung) | Spätere Iteration |
 | **Zwoelf-Stunden-Deutung** | „halb drei", um 14 Uhr gesagt, ergibt 2:30 des naechsten Tages statt 14:30 desselben. Die Normalisierung bildet das Zahlwort auf die Stunde ab, ohne die Tageshaelfte zu waehlen | offen, Korpus `REG-006`/`REG-008` |
