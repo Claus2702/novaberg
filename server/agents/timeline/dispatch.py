@@ -17,6 +17,15 @@ logger = logging.getLogger("ki_server.agents.timeline.dispatch")
 
 PENDING_TTL_SECONDS = 300  # 5 Minuten
 
+# Das Gegenangebot einer Ablehnung nennt die Form, die angenommen wird: eine
+# ausdrueckliche Bitte. Eine blosse Aussage mit Zeitpunkt wird seit dem
+# 14.09.2026 abgelehnt — ein Vorschlag in dieser Form schickte den Nutzer
+# genau in die naechste Ablehnung.
+REJECTION_SUGGESTION: str = (
+    "Sag mir ausdruecklich, dass ich es eintragen soll, etwa "
+    "'Trag mir Donnerstag um 10 den Zahnarzt ein' — dann trage ich es ein."
+)
+
 
 def dispatch_timeline(state: dict) -> dict:
     """ConversationState -> TimelineAgent -> ConversationState."""
@@ -98,11 +107,7 @@ def dispatch_timeline(state: dict) -> dict:
             korrektur=Korrektur(
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
                 beleg=f"Klassifikation: {grund}",
-                vorschlag=(
-                    "Nenne einen Zeitpunkt und das Ereignis, etwa 'Zahnarzt am Donnerstag um 10' — "
-                    "dann trage ich es "
-                    "ein."
-                ),
+                vorschlag=REJECTION_SUGGESTION,
             ),
         )
         return {"agent_results": bisherige + [result], "agent_name": None}

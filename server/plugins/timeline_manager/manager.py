@@ -48,18 +48,17 @@ class TimelineManager(BaseManager):
     def router_prompt(self) -> str:
         return """
 TIMELINE-ERKENNUNG:
-Setze management_action = "agent" wenn der Prompt zeitgebundene Information
-enthaelt — egal in welcher Satzform:
+Setze management_action = "agent" wenn der User die Zeitachse AUSDRUECKLICH
+beauftragt oder befragt:
 
-- Imperative: "Trag ein: Zahnarzt am Donnerstag"
-- Fragen: "Wann hat Anna Geburtstag?"
-- Aussagen: "Annas Geburtstag ist am 15. Mai"
-- Beilaeufig: "Morgen muss ich Getraenke kaufen"
-- Erinnerungen: "Erinnere mich morgen um 8 Uhr"
-- Mit Uhrzeit: "Termin am Freitag um 10 Uhr in Frankfurt"
+- Eintragen: "Trag ein: Zahnarzt am Donnerstag", "Merk dir Annas Geburtstag am 15. Mai"
+- Erinnern: "Erinnere mich morgen um 8 Uhr"
+- Aendern: "Verschieb den Zahnarzt auf Freitag", "Leg fuer das Meeting 90 Minuten fest"
+- Loeschen: "Sag den Termin am Freitag ab"
+- Abfragen: "Was steht morgen an?", "Wann hat Anna Geburtstag?"
 
-Entscheidend ist NICHT die Satzform, sondern ob der Prompt ein Datum,
-eine Uhrzeit, einen Zeitraum oder ein zeitgebundenes Ereignis enthaelt.
+Entscheidend ist der Auftrag oder die Frage an die Zeitachse. Eine
+Zeitangabe allein ist kein Auftrag — auch nicht mit Uhrzeit und Ereignis.
 
 Bei Erkennung:
   management_action = "agent"
@@ -68,13 +67,10 @@ Bei Erkennung:
 
 BEISPIELE (alle → management_action = "agent"):
 - "Erinnere mich morgen frueh um 8 Uhr ans Meeting"
-- "IT-Termin in Frankfurt um 10 Uhr"
+- "Trag mir den IT-Termin in Frankfurt um 10 Uhr ein"
 - "Was steht morgen an?"
-- "Zahnarzt am Donnerstag um 14:30"
-- "Naechste Woche Montag habe ich frei"
-
-ODER der Gespraechsverlauf ein aktives Zeitereignis enthaelt
-und der aktuelle Prompt sich darauf bezieht.
+- "Merk dir: Zahnarzt am Donnerstag um 14:30"
+- "Verschieb das Meeting auf 11 Uhr"
 """
 
     # ─────────────────────────────────────────

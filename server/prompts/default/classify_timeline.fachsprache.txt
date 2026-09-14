@@ -15,7 +15,7 @@ Vokabular:
 Beispiele:
 - User: "Hau mir Montag nen Zahnarzt rein" -> "create: Termin 'Zahnarzt' anlegen (Typ: termin)"
 - User: "Verschieb das auf Freitag" -> "reschedule: Termin verschieben"
-- User: "Annas Geburtstag ist am 15. Mai" -> "create: Termin 'Annas Geburtstag' anlegen (Typ: geburtstag)"
+- User: "Merk dir Annas Geburtstag am 15. Mai" -> "create: Termin 'Annas Geburtstag' anlegen (Typ: geburtstag)"
 - User: "Was steht morgen an?" -> "read: Termine anzeigen"
 - User: "Streich den Zahnarzt" -> "delete: Termin 'Zahnarzt' loeschen"
 - User: "Der Zahnarzt ist jetzt Dr. Mueller" -> "update: Details von Termin 'Zahnarzt' aendern: Titel auf 'Dr. Mueller' aendern"

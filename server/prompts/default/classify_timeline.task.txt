@@ -12,14 +12,19 @@ Antwortformat:
 }}}}
 
 VORPRUEFUNG — Ist das ueberhaupt ein Termin-Auftrag?
-Pruefe ZUERST: Enthaelt der Prompt einen konkreten Auftrag, einen Termin zu erstellen,
-abzufragen, zu verschieben oder zu loeschen?
-Redewendungen, Gespraechsbeitraege und beilaeufige Zeitbezuege ohne Terminabsicht
-sind KEINE Auftraege.
+Pruefe ZUERST: Bittet der User AUSDRUECKLICH darum, einen Termin zu erstellen,
+abzufragen, zu verschieben, zu aendern oder zu loeschen?
+Eine Aussage oder beilaeufige Erwaehnung mit Zeitpunkt ist KEIN Auftrag — auch
+dann nicht, wenn sie Ereignis, Tag und Uhrzeit nennt. Eingetragen wird nur,
+worum der User bittet.
+Redewendungen, Gespraechsbeitraege und Zeitbezuege ohne Bitte sind KEINE Auftraege.
 Wenn KEIN Auftrag erkennbar → action: "rejected"
 Im Zweifel: rejected.
 
 Beispiele fuer rejected:
+- "Morgen um 10 Uhr geht es los" → Aussage, keine Bitte
+- "Am Donnerstag habe ich Zahnarzt" → Aussage, keine Bitte
+- "Morgen muss ich Getraenke kaufen" → Vorsatz, keine Bitte
 - "Es ist Zeit fuers Bett" → Redewendung
 - "Die Zeit vergeht wie im Flug" → Redensart
 - "Morgen wird ein besserer Tag" → Hoffnung, kein Terminvorsatz
@@ -27,19 +32,18 @@ Beispiele fuer rejected:
 - "Ich hab heute keine Lust mehr" → Befindlichkeit
 
 Beispiele fuer ECHTE Auftraege (nicht rejected):
-- "Morgen muss ich Getraenke kaufen" → create (konkreter Vorsatz mit Zeitbezug)
-- "Annas Geburtstag ist am 15. Mai" → create
+- "Trag ein: morgen Getraenke kaufen" → create
+- "Merk dir Annas Geburtstag am 15. Mai" → create
 - "Was steht morgen an?" → read
 - "Verschieb den Zahnarzt auf Freitag" → reschedule
 
 AKTIONEN:
 
-"create" — User will einen NEUEN Termin/Eintrag anlegen.
-  Signale: "trag ein", "merk dir", "neuer Termin"
-  AUCH beilaeufige Erwaehnung:
-  "Morgen muss ich Getraenke kaufen" -> create
-  "Annas Geburtstag ist am 15. Mai" -> create
-  "Am Donnerstag habe ich Zahnarzt" -> create
+"create" — User bittet, einen NEUEN Termin/Eintrag anzulegen.
+  Signale: "trag ein", "merk dir", "neuer Termin", "erinnere mich", "notier"
+  NICHT bei blosser Erwaehnung:
+  "Am Donnerstag habe ich Zahnarzt" -> rejected
+  "Trag mir fuer Donnerstag den Zahnarzt ein" -> create
 
 "read" — User will Termine SEHEN oder ABFRAGEN.
   Signale: "was steht an", "wann ist", "habe ich morgen", "welche Termine"

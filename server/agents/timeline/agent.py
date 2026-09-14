@@ -58,6 +58,9 @@ class TimelineAgent(BaseAgent):
             "('wie lange braucht Licht von der Sonne') — das ist Wissen, kein Termin",
             "Zeitangaben in einer Absichtserklaerung ohne Datum "
             "('irgendwann will ich mal') — ohne Zeitpunkt kein Eintrag",
+            "eine Aussage oder beilaeufige Erwaehnung mit Zeitpunkt, ohne Auftrag "
+            "('morgen um 10 geht es los', 'am Donnerstag habe ich Zahnarzt') — "
+            "eingetragen wird nur, worum der Nutzer ausdruecklich bittet",
         ]
 
     @property
@@ -80,7 +83,8 @@ class TimelineAgent(BaseAgent):
         """Bedient alle vier Ausgaenge, einschliesslich der Ablehnung.
 
         Der vierte Ausgang traegt einen Korrekturvorschlag: Erkennt die
-        Klassifikation Zeitangaben ohne Ereignis oder Ereignisse ohne Zeitpunkt,
+        Klassifikation Zeitangaben ohne Ereignis, Ereignisse ohne Zeitpunkt oder
+        eine Aussage mit Zeitpunkt ohne Bitte,
         lehnt der Dienst mit Befund, Beleg und Gegenangebot ab statt mit
         einem blanken Nein. Damit darf er Zweifelsfaelle bekommen — die
         Zustellung im Zweifel setzt voraus, dass die Fachabteilung
