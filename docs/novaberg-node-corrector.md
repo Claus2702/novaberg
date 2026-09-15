@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Corrector
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 15. September 2026 (§7: die zwei gerechneten Aufträge der Auswertung — Zeitangabe und Speicherbehauptung). Davor 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-corrector.md
 **Quellen:** nova-01-m-j.md
 **Datei:** `graph/nodes/corrector.py`
@@ -138,6 +138,10 @@ Regeln:
 | Psychologe: „Ton zu sachlich bei emotionalem Prompt" | Empathische Einleitung einfügen |
 | Ethiker: „Pauschalisierung vermeiden" | Differenziertere Formulierung |
 | 2× ablehnen: „Antwort unangemessen" | Substanzielle Überarbeitung bei Beibehaltung des Kerns |
+| `ZEITANGABE FALSCH` (gerechnet, seit 17.08.2026) | Die Zeitangabe richtig nennen, sonst nichts ändern |
+| `SPEICHERUNG NICHT BELEGT` (gerechnet, seit 15.09.2026) | Die beanstandeten Sätze bestätigen das Verstehen statt einer Speicherung; über frühere Turns nichts behaupten |
+
+**Die beiden letzten Zeilen stammen nicht aus einem der drei Voten.** Die Auswertung des Tribunals rechnet sie in Python und schreibt den Auftrag an den **Anfang** der Zusammenfassung, weil der Corrector ausschließlich sie liest (`novaberg-node-tribunal.md`, die Datumsprüfung und die Speicherbehauptung).
 
 ---
 

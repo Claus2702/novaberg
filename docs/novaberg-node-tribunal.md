@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Tribunal
-**Stand:** 23. August 2026 (die drei System-Prompts haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 22. August 2026 — die Zeitangabe wird gerechnet, nicht beurteilt, und seit heute in zwei Formen: Wochentag gegen Datum, Bestätigung gegen das Gemeldete
+**Stand:** 15. September 2026 (**die Speicherbehauptung** — eine dritte gerechnete Prüfung in der Auswertung: Meldet die Antwort eine Speicherung, ohne dass ein Dienst dieses Turns `abgeschlossen` zurückgab, geht sie in die Korrekturrunde; `evaluate` schreibt dazu je Durchlauf einen dauerhaften Eintrag). Davor 23. August 2026 (die drei System-Prompts haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 22. August 2026 — die Zeitangabe wird gerechnet, nicht beurteilt, und seit heute in zwei Formen: Wochentag gegen Datum, Bestätigung gegen das Gemeldete
 **Pfad:** novaberg/docs/novaberg-node-tribunal.md
 **Quellen:** nova-01-m-i.md
 **Datei:** `graph/nodes/tribunal.py`
@@ -13,7 +13,7 @@
 
 Das Tribunal ist Novas Qualitätskontrolle — das architektonische Analogon zur menschlichen Executive Function. Drei spezialisierte Agenten bewerten jede Antwort aus juristischer, psychologischer und ethischer Perspektive. Seit Chat 40 (T1) arbeitet das Tribunal mit einem Score-System: Jeder Agent gibt einen Score von 0.0–1.0 zurück, Python leitet daraus das Vote ab. Konfigurierbare Schwellwerte pro Rolle ermöglichen differenziertes Tuning.
 
-Das Tribunal enthält zwei Funktionen: `judge()` (die drei Agenten laufen lassen, Scores → Votes ableiten) und `evaluate()` (Mehrheitsentscheid). `evaluate()` ist eine reine Python-Funktion ohne LLM-Call.
+Das Tribunal enthält zwei Funktionen: `judge()` (die drei Agenten laufen lassen, Scores → Votes ableiten) und `evaluate()` (Mehrheitsentscheid). `evaluate()` ist eine Python-Funktion ohne LLM-Call. ~~reine~~ → **Seit dem 15.09.2026 nicht mehr rein:** Sie schreibt je Durchlauf einen dauerhaften Eintrag der Speicherprüfung (unten, *Die Speicherbehauptung*).
 
 ---
 
@@ -136,6 +136,8 @@ Geladen über `PROMPTS["tribunal_{rolle}.system"]`. Neue Agenten werden durch ei
 
 **Korrektur-Grenze (extern):** Die Max-2-Iterationen-Grenze lebt nicht im Tribunal selbst, sondern in der Graph-Edge-Logik: [human_graph.py:218](novaberg/server/graph/human_graph.py#L218) prüft `correction_round >= max_corrections`, wobei `max_corrections` aus [graph/base.py:36](novaberg/server/graph/base.py#L36) (`MAX_CORRECTIONS = 2`) initialisiert wird. Danach fällt der Graph auf die aktuelle `response` zurück — das Tribunal wird nicht erneut aufgerufen.
 
+> **Nachgesehen am 15.09.2026: Der Ort ist ein anderer, und der Rückfall hat zwei Ausgänge.** `graph/human_graph.py` trägt seit dem Graph-Split keine Korrekturgrenze mehr; sie steht in `graph/character_graph.py::_after_evaluate`, `MAX_CORRECTIONS = 2` in `graph/base.py`. **Ist die letzte Runde verbraucht, geht eine `warnung` mit der aktuellen Antwort hinaus**, ein `ablehnen` wird durch einen festen Rückfalltext ersetzt. Für die gerechneten Prüfungen heißt das: Überlebt ein Befund zwei Korrekturrunden, erreicht er den Menschen — die Speicherprüfung meldet diesen Fall deshalb eigens als Fehler (unten).
+
 ---
 
 ## 5. Score-System (T1, Chat 40)
@@ -196,7 +198,7 @@ Bei `warnung` oder `ablehnen` werden die kritischen Begründungen als `tribunal_
 [jurist] Kosename "Schätzchen" semantisch nah an verbotenem "Schatz"
 ```
 
-Die Score-Werte sind nicht Teil der Summary; sie werden nur im Log geführt ([tribunal.py:203-206](novaberg/server/graph/nodes/tribunal.py#L203-L206)).
+Die Score-Werte sind nicht Teil der Summary; sie werden nur im Log geführt ([tribunal.py:232-238](novaberg/server/graph/nodes/tribunal.py#L232-L238), Stand 15.09.2026).
 
 Der Corrector sieht diese Zusammenfassung und korrigiert gezielt.
 
@@ -234,6 +236,16 @@ Der Corrector sieht diese Zusammenfassung und korrigiert gezielt.
 | Feld | Beschreibung |
 |------|-------------|
 | `tribunal_votes` | Liste der 3 Voten (agent, vote, reasoning) |
+
+### Gelesen (evaluate)
+
+| Feld | Quelle | Beschreibung |
+|------|--------|-------------|
+| `tribunal_votes` | judge | die drei Voten |
+| `response` | Responder/Corrector | Gegenstand der gerechneten Prüfungen |
+| `agent_results` | Agent-Dispatch | Ausgänge der Dienste dieses Turns — Beleg für Datum und Speicherung |
+| `correction_round`, `max_corrections` | State | ob die letzte Korrekturrunde verbraucht ist |
+| `turn_id`, `user_id`, `character_id` | API | Bezug des dauerhaften Eintrags |
 
 ### Geschrieben (evaluate)
 
@@ -291,3 +303,56 @@ Ein Befund kann ein `ablehnen` nicht abschwächen — ein falsches Datum ist ein
 **Am Bestand belegt, nicht am Zeugen:** 5 Turns, in denen ein Dienst ein Datum meldete — **1 Anschlag, und das ist der Fall vom 17.08.2026**; die vier anderen echten Terminbestätigungen bleiben still (`labor/2026-08-22_bestaetigung_bestand*`). Ein Zeuge zeigt, dass die Prüfung den Fall erkennt; erst der Bestand zeigt, dass sie die richtigen Antworten in Ruhe lässt.
 
 Beide Prüfungen schreiben denselben Kopf `ZEITANGABE FALSCH` in die Zusammenfassung, und die Ausgabe-Verifikation des Knotens deckt seit dem 22.08.2026 beide — ein Befund, der die Zusammenfassung nicht erreicht, wäre folgenlos.
+
+## Die Speicherbehauptung in der Auswertung (15.09.2026)
+
+**Behauptet die Antwort, etwas sei notiert, eingetragen, angelegt, geändert oder gelöscht, muss in diesem Turn ein Dienst `abgeschlossen` zurückgemeldet haben.** Sonst hebt die Auswertung das Urteil auf mindestens `warnung`, und der Korrekturauftrag `SPEICHERUNG NICHT BELEGT` steht mit dem Wortlaut der Sätze am Anfang der Zusammenfassung. Wie die Datumsprüfung ist das in Python entscheidbar und kein vierter Modellaufruf. Konzept: `novaberg-thinking-lage_k.md` §4, Scheibe 12, Teil A.
+
+**Der Anlass ist gemessen.** Am 14.09.2026 stellte der Empfang in vier Termin-Turns nichts zu, und alle vier Antworten meldeten den Termin als notiert oder verankert. Im Bestand ab dem 14.08.2026, 19:51 UTC — seitdem stehen die Ausgänge der Dienste je Turn im `pipeline_log` — trifft das auf **24 von 928** Antworten zu.
+
+**Ort im Code:** `server/utils/storage_claims.py` (`find_storage_claims`, `uncovered_claims`, `correction_order`), gerufen in `graph/nodes/tribunal.py::_storage_claim_step` als letzte Prüfung der Auswertung.
+
+### Was als Behauptung zählt
+
+Vier Satzformen, je Satz höchstens ein Befund:
+
+| Form | Beispiel | Bedingung |
+|---|---|---|
+| `kurz` | *„Notiert."* · *„Alles klar, ist erledigt."* | der Satzteil besteht aus nichts anderem |
+| `erste_person` | *„Ich habe den Termin eingetragen."* · *„das habe ich mir notiert"* | Perfekt mit *ich/wir*, auch umgestellt |
+| `zustand` | *„Morgen um 10 Uhr ist notiert."* · *„steht jetzt fest in der Timeline"* · *„bleibt auf der Liste"* · *„…, dass der Termin in deiner Timeline eingeplant ist"* | Zustand oder Passiv in drei Stellungen; eine Person als Satzgegenstand schließt aus; im Nebensatz zählt nur ein Speicherort als Bezug, und ein Wunsch oder eine Vermutung davor schließt aus |
+| `vollzug` | *„dann reserviere ich zwei Stunden"* · *„ich werde das einzeichnen"* | Gegenwart oder Zukunft der ersten Person |
+
+**Die Kopplung ist eng, und der Preis eines Fehlalarms ist der Grund.** Er schickt eine richtige Antwort in die Korrekturrunde. Deshalb gilt ein **mehrdeutiges** Partizip (*verankert, fixiert, gesetzt, kalibriert, registriert*) nur mit einem **Bezug** im selben Satzteil — einem Speicherort oder Gegenstand eines Dienstes (Timeline, Kalender, Liste, Notiz, Termin, *bei mir*, *für mich*) oder einer Zeitangabe mit Ziffer. Verneinung, Frage, Bedingung, Angebot und Gedankenspiel schließen aus; Regieanweisungen in Sternen werden vorher entfernt, und ein kurzes Zitat im Satz beendet den Satzteil nicht.
+
+**Geeicht am Bestand, nicht an Zeugen.** Unter 1493 Rohturns (27.07.–14.09.2026) wurden die Antworten mit Speichervokabular von Hand beurteilt, **bevor** der Detektor gebaut wurde (`labor/2026-09-15_speicherbehauptung/`). Ergebnis nach zwei Durchgängen: **53 von 53** Behauptungen erkannt; von 8 Grenzfällen schlagen 3 an; im Betriebsausschnitt ab 14.08.2026 (928 Turns) **27 Anschläge — 24 Behauptungen, 3 Grenzfälle, 0 Fehlalarme**. **Die Quote ist eine Anpassungsgüte, keine Vorhersage** — Eichmenge und Prüfmenge sind dieselbe; die Vorhersage liefert der Betrieb über den dauerhaften Eintrag. Ein unabhängiger Grammatik-Scan über denselben Ausschnitt fand kein Speicherverb außerhalb der Wortlisten.
+
+### Was die Prüfung nicht kann — benannt
+
+- **Die Deckung ist grob.** Jeder abgeschlossene Dienst deckt jede Behauptung, auch ein abgeschlossener *Lesevorgang* eine behauptete Schreibung.
+- **Sie sieht nur diesen Turn.** Die Wiederholung einer früheren, echten Schreibung (*„10 Uhr ist fixiert"* einen Turn nach dem Anlegen) meldet sie als nicht belegt — 3 der 27 Anschläge im Bestand. Der Korrekturauftrag ist darauf zugeschnitten: Er verlangt eine **Wiedergabe dessen, was der Nutzer gesagt oder gewünscht hat** — wahr bei einer erfundenen Behauptung und bei der Wiederholung einer Schreibung, die der Nutzer beauftragt hatte. Ein Auftrag *„sag, dass nichts gespeichert ist"* machte aus der Wiederholung die nächste falsche Aussage, in der Gegenrichtung.
+- **Bestand, den der Turn ohne Dienst gelesen hat, deckt nichts.** Die Timeline im Enricher, die Notizen, Wissen, Anweisungen und die Werkzeuge des Thinkers bringen Gespeichertes in den Turn, ohne `agent_results` zu füllen. Beschreibt die Antwort diesen Bestand wahrheitsgemäß im Zustandssatz (Form: *„Für Freitag ist ein Termin eingetragen"*), schlägt die Prüfung an — und die Wiedergabe-Form legt dem Nutzer dann etwas in den Mund. Gefunden von der zweiten Kontrolle am 15.09.2026; im Bestand ab 14.08.2026 **0 von 928** Turns, davor drei solche Sätze ohne bekannte Dienst-Ausgänge. Nicht gemessen, ohne Zeugen.
+- **Sie bietet nichts an.** Ob Nova anbietet einzutragen, hängt an ihrem Pflichtbewusstsein (Scheibe 12, Teil E) und ist nicht Sache dieser Prüfung.
+- **Sie kennt nur den Wortlaut des Bestands und der Messläufe.** Eine Behauptung in neuer Form bleibt still — und die Korrekturrunde erzeugt neue Formen (unten).
+
+### Die Korrekturrunde, gemessen
+
+**Ob der Riegel wirkt, entscheidet nicht der Anschlag, sondern die Fassung, die danach hinausgeht.** Gemessen in der echten Korrekturrunde (`corrector.correct` und diese Auswertung, `gemma4-a4b-gpu`) über die 27 Anschläge des Bestands, je mit schriftlicher Vorhersage, die Endfassungen von Hand gelesen (`labor/2026-09-15_speicherbehauptung/`):
+
+| Lauf | Auftrag | Riegel: sauber nach Runde 1 / 2 | von Hand: sauber von 24 Behauptungen | vom Riegel nicht gesehen |
+|---|---|---|---|---|
+| 1 | *„Bestätige, was du verstanden hast … Melde es nicht als notiert, eingetragen oder gespeichert"* | 21 / 24 | **12** | **6** |
+| 2 | *„Schreibe jeden dieser Sätze als Wiedergabe dessen, was der Nutzer gesagt oder sich gewünscht hat — in der Form „Du möchtest …" oder „Du hast … genannt""* | 22 / 26 | **19** | **2** |
+| 3 | derselbe; Riegel um die zwei unsichtbaren Formen aus Lauf 2 nachgezogen — **die committete Fassung** | 21 / 25 | **20** | **0** |
+
+**Lauf 1 hat die naheliegende Fassung widerlegt.** Der Riegel meldete 24 von 27 sauber; gelesen war es die Hälfte. Der Auftrag nannte die Wörter, die nicht vorkommen sollten, und das Modell schrieb dieselbe Aussage mit anderen — *gelistet*, *angesetzt*, *erfasst*, *geöffnet* statt *notiert* und *eingetragen*. **Ein Verbot im Auftrag erzeugt Synonyme, und eine Prüfung über Wörter sieht sie nicht** — beides zusammen misst eine Sauberkeit, die es nicht gibt. Die sauberen Fassungen hatten fast alle dieselbe Form, die Wiedergabe des Wunsches; die gibt der Auftrag seit Lauf 2 vor, ohne ein zu vermeidendes Wort zu nennen.
+
+**Aus beiden Läufen nachgezogen, jeweils am Bestand ohne neuen Anschlag geprüft:** die Ausweichwörter *gelistet, angesetzt, erfasst, geöffnet*; *„bleibt … auf der Liste"*; der Nebensatz mit dem Hilfsverb am Ende — in Lauf 2 kam eine Behauptung als Wiedergabe verpackt zurück (Form: *„Du hast genannt, dass der Termin in deiner Timeline eingetragen ist"*) —; *für mich* neben *bei mir*; und ein Defekt: Kommata **innerhalb** eines Zitats beendeten den Satzteil, das Partizip dahinter wurde nie erreicht.
+
+**Was nach drei Läufen offen bleibt:** Zwei der 24 Behauptungen überstanden in Lauf 3 beide Runden — das Modell hielt den beanstandeten Satz fest — und gingen mit der Antwort hinaus, gemeldet, nicht verhindert. Eine Wirkung, die nicht vom Modell abhängt, ist nicht gebaut. Die Läufe korrigieren einzelne Antworten mit schmalem Lagebild und neutralen Voten; der Betrieb ist damit nicht gemessen.
+
+### Der dauerhafte Eintrag und die letzte Runde
+
+**Jeder Durchlauf der Auswertung schreibt einen Eintrag** — Art `berechnung`, Knoten `evaluate`, Quelle `speicherbehauptung` —, auch im stillen Fall: `ergebnis` (`keine_behauptung` · `gedeckt` · `nicht_belegt`), Runde und Grenze, Form und Wort je Befund, die abgeschlossenen Dienste, alle Ausgänge, die Regelfassung. **Der Satz selbst steht nicht darin** — er steht im Rohturn, der von der Vorhaltefrist ausgenommen ist. **Der Eintrag selbst verfällt mit ihr** (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`, 365 Tage), wie jede Forensik-Zeile des `pipeline_log` (`novaberg-convention-verfall.md`).
+
+**Ist die letzte Korrekturrunde verbraucht und die Behauptung noch da, geht die Antwort mit ihr hinaus** (siehe *Korrektur-Grenze* oben). Das geschieht nicht still: Die Auswertung schreibt dann eine eigene Fehlerzeile *„Speicherbehauptung nach N Korrekturrunde(n) nicht beseitigt"*.

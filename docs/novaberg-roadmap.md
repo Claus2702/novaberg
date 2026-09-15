@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 14. September 2026 — juengster Eintrag **14.09.2026, 19:52 UTC** (gemessen via `date -u`). Davor 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 15. September 2026 — juengster Eintrag **15.09.2026, 11:43 UTC** (gemessen via `date -u`). Davor 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 87 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 91 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,38 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 15.09.2026, 11:43 UTC — gesagt ist nicht gespeichert: eine Speicherbehauptung ohne Dienst geht in die Korrektur 🔧
+
+**Anlass.** Am 14.09.2026 stellte der Empfang in vier Termin-Turns nichts zu, und alle vier Antworten meldeten den Termin als *„notiert"* oder *„fest verankert"*. Der Eigentümer hatte die Absicht dazu im Wortlaut entschieden: *„Was sie unter keinen Umständen tun darf, ist, zu sagen, sie hätte ‚den Termin verankert', aber hat ihn nicht gespeichert."* Scheibe 12, Teil A des Lage-Konzepts.
+
+**Am Bestand gemessen, bevor gebaut wurde.** Ab dem 14.08.2026, 19:51 UTC stehen die Ausgänge der Dienste je Turn im `pipeline_log`; in diesem Ausschnitt tragen **24 von 928** Antworten eine Speicherbehauptung ohne abgeschlossenen Dienst, darunter 3 Wiederholungen einer früheren, echten Schreibung. Die Handurteile über alle Antworten mit Speichervokabular unter 1493 Rohturns — 53 Behauptungen, 8 Grenzfälle — standen fest, bevor eine Zeile Detektor geschrieben war.
+
+### Der Bau
+
+`server/utils/storage_claims.py` erkennt vier Satzformen — die kurze Bestätigung, die erste Person im Perfekt, den Zustandssatz in drei Stellungen, den Vollzug in Gegenwart oder Zukunft —; ein mehrdeutiges Partizip (*verankert, fixiert, kalibriert*) gilt nur mit einem Speicherort oder einer Zeitangabe im Satzteil, Verneinung, Frage, Bedingung und Gedankenspiel schließen aus. `graph/nodes/tribunal.py::_storage_claim_step` hält die Befunde gegen die Dienste des Turns — **nur `abgeschlossen` deckt** —, hebt das Urteil auf mindestens `warnung` und setzt den Auftrag `SPEICHERUNG NICHT BELEGT` an den Anfang der Zusammenfassung. **Jeder Durchlauf schreibt einen dauerhaften Eintrag**, auch im stillen Fall; eine Behauptung, die beide Korrekturrunden übersteht, meldet eine eigene Fehlerzeile.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Eine Antwort, die eine Speicherung, Änderung oder Freigabe behauptet, ohne dass ein Dienst dieses Turns `abgeschlossen` meldete, geht in die Korrekturrunde und kommt ohne die Behauptung zurück. |
+| **TEST** | `tests/test_storage_claims.py`, **43 Zeugen** — die gemessenen Formen, je Fehlalarm-Zeuge ein anschlagender Zwilling, die Deckung, der Auftrag, die Verdrahtung in `evaluate` samt dauerhaftem Eintrag. Eine Zusicherung in `tests/test_datum_bestaetigung.py` prüfte `verdict == "ok"` und meinte die Datumsprüfung; sie prüft jetzt deren Marke. **Gegenproben:** Prüfaufruf entfernt **5 von 5** vorhergesagt rot; Wortgrenze und Verneinung entfernt **3 von 3**; Zitatschutz, Nebensatzform und alter Auftragstext **4 von 4**; die Kürzung des Satzes im Befund **1 von 1**. |
+| **MESSUNG** | **Eichung am Bestand:** 53 von 53 Behauptungen erkannt, 3 von 8 Grenzfällen schlagen an, im Ausschnitt ab 14.08. **27 Anschläge — 24 Behauptungen, 3 Grenzfälle, 0 Fehlalarme** (Anpassungsgüte, keine Vorhersage). **Die echte Korrekturrunde** unter `gemma4-a4b-gpu` über die 27 Anschläge, drei Läufe mit schriftlicher Vorhersage, Endfassungen von Hand gelesen: sauber von 24 Behauptungen **12 → 19 → 20**, vom Riegel nicht gesehen **6 → 2 → 0**, Gegenbehauptungen 0, 0, 0. **Betrieb:** ein wissenschaftlicher Messturn nach dem Neustart schrieb den Eintrag (`keine_behauptung`, Runde 0 von 2), ohne Seiteneffekt. |
+
+### Was der erste Lauf widerlegte
+
+**Der Riegel meldete nach der Korrektur 24 von 27 sauber; gelesen war es die Hälfte.** Der erste Auftrag verbot, etwas *„als notiert, eingetragen oder gespeichert"* zu melden — und das Modell schrieb dieselbe Aussage mit anderen Wörtern — *gelistet*, *angesetzt*, *erfasst*, *geöffnet*. Eine Prüfung über Wörter sieht das nicht. **Die sauberen Fassungen hatten fast alle eine Form, die Wiedergabe des Wunsches** (*„Du möchtest …"*); die gibt der Auftrag seither vor, ohne ein zu vermeidendes Wort zu nennen. In Lauf 2 kam eine Behauptung als Wiedergabe verpackt zurück (Form: *„Du hast genannt, dass der Termin in deiner Timeline eingetragen ist"*) — der Riegel kennt seither den Nebensatz mit dem Hilfsverb am Ende. Dazu ein Defekt des eigenen Baus: Kommata **innerhalb** eines Zitats beendeten den Satzteil.
+
+**Ein Laborlauf brach am Wächter ab** (GPU-Junction 95 °C): Er startete vier Minuten nach dem vorigen auf die noch warme GPU, weil der Rahmen keine Startgrenze hatte. Mit Startgrenze wiederholt, Spitze 90 °C.
+
+**Die zweite Kontrolle** fragte quer zum Bau, wer Text an der Prüfung vorbei zum Menschen bringt und wer den Ausgang `abgeschlossen` erzeugt — als Suche über `server/`: **120 Kandidaten, 85 behandelt, 35 mit Grund verworfen.** Alle Empfangsdienste stehen vor der Auswertung in `agent_results`, kein regulärer Weg liefert Antworttext an ihr vorbei. **Ein Befund am Bau:** Gespeicherter Bestand kommt auch über Lesewege ohne Dienst in den Turn (Enricher, Werkzeuge des Thinkers); ein wahrer Satz über ihn schlägt an, und die Wiedergabe-Form legt dem Nutzer dann etwas in den Mund. Die Begründung *„in beiden Lagen wahr"* in Code und Doku war dafür falsch — berichtigt und als Grenze benannt, nicht gemessen (im Bestand ab 14.08. kein solcher Anschlag). **Zwei Befunde am Bestand** in die Fundliste: Ein Dienst meldet `abgeschlossen` auch bei gescheiterter Verifikation seiner Schreibung, und ein Abbruch zwischen Responder und Freigabe liefert die Antwort ungeprüft aus.
+
+**Suite.** 3671 → **3714 grün, 0 übersprungen**; harte Wand grün; die neuen Dateien ohne Befund der weichen Prüfung.
+
+**Offen.** Zwei von 24 Behauptungen überstanden in Lauf 3 beide Korrekturrunden und gingen mit der Antwort hinaus — gemeldet, nicht verhindert. Die Deckung ist grob (ein abgeschlossener Lesevorgang deckt jede Behauptung), und die Wiederholung einer echten Schreibung ist im Turn nicht erkennbar. Der Betrieb mit einer echten Speicherbehauptung ist ungemessen.
+
+**Befunde.** Das Verbot falscher Erfolgsmeldungen im Responder-Prompt ist seit dem 31.07.2026 zur Probe ausgesetzt und nie ausgewertet — die Messung steht beim Backlog-Eintrag `SYK-B3-VORZEICHENREGEL`, der die Regel zurückholen will. In die Fundliste: Die Marken `[ERLEDIGT]`/`[FEHLGESCHLAGEN]` im Gesprächsverlauf haben seit dem Graph-Split vom 23.04.2026 keinen Schreiber. Die `Stand:`-Kopfzeilen dreier Register sind wieder Ketten von 14.000 bis 37.000 Zeichen, entgegen der Entscheidung vom 20.08.2026.
 
 ---
 

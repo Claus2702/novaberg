@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 861 Abschnitte in 5 Dateien — 359 mit eigenem Datum, 501 geerbt, 1 ohne.
+**Umfang:** 864 Abschnitte in 5 Dateien — 360 mit eigenem Datum, 503 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 598 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 601 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 861 Marken, 861 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 864 Marken, 864 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,9 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-15 | laufend | ## | [15.09.2026, 11:43 UTC — gesagt ist nicht gespeichert: eine Speicherbehauptung ohne Dienst geht in die Korrektur 🔧](novaberg-roadmap.md#15092026-1143-utc--gesagt-ist-nicht-gespeichert-eine-speicherbehauptung-ohne-dienst-geht-in-die-korrektur) |
+| (2026-09-15) | laufend | ### | · [Der Bau](novaberg-roadmap.md#der-bau) |
+| (2026-09-15) | laufend | ### | · [Was der erste Lauf widerlegte](novaberg-roadmap.md#was-der-erste-lauf-widerlegte) |
 | 2026-09-14 | laufend | ## | [14.09.2026, 19:52 UTC — ein Termin nur auf Auftrag, und der Entwurf, wie ein Angebot zum Auftrag wird 🔧](novaberg-roadmap.md#14092026-1952-utc--ein-termin-nur-auf-auftrag-und-der-entwurf-wie-ein-angebot-zum-auftrag-wird) |
 | 2026-09-13 | laufend | ### | · [Teil 1 — die Ursache: das Modell, nicht der Prompt (13.09.2026)](novaberg-roadmap.md#teil-1--die-ursache-das-modell-nicht-der-prompt-13092026) |
 | 2026-09-14 | laufend | ### | · [Teil 2 — eingetragen wird nur auf Auftrag (14.09.2026)](novaberg-roadmap.md#teil-2--eingetragen-wird-nur-auf-auftrag-14092026) |

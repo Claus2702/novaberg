@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Meta-Kognition — Pipeline-Log, Selbstbeobachtung, Vorsätze (Konzept)
-**Stand:** 4. September 2026, Chat 186 (v0.2 — Audit gegen den Code und Überarbeitung; Erstfassung 08.05.2026, Chat 79)
+**Stand:** 15. September 2026 (die Tabelle der beantwortbaren Beispiele nachgesehen: die Auswertung des Tribunals schreibt seither einen Eintrag der Speicherprüfung, das Urteil selbst bleibt unpersistiert). Davor 4. September 2026, Chat 186 (v0.2 — Audit gegen den Code und Überarbeitung; Erstfassung 08.05.2026, Chat 79)
 **Pfad:** novaberg/docs/novaberg-metakognition_k.md
 **Typ:** Konzept (`_k`)
 **Status:** **Schicht 1 teilweise gebaut** — Tabelle live seit Chat 104, **4 der 11 Nodes aus §2.1 schreiben** *(auditiert Chat 186)* · **Schicht 2 ⬜ im Gesprächspfad**; im Hintergrundpfad existieren zwei Leser *(auditiert Chat 186)* · **Schicht 3 ⬜** — weder Tabelle noch Agent noch Wirkort *(auditiert Chat 186)* · von den drei Regulationskräften ist eine gemessen **halb blind** (§5.2), eine **gesperrt** (§5.3), eine **wirkt ohne Mechanismus** (§4.5).
@@ -209,7 +209,7 @@ Analog zu `timeline_search` und `memory_search`. Verfügbar im Thinker und Respo
 
 | Beispiel | Beantwortbar? |
 |---|---|
-| Tribunal-Beanstandung | **Nein.** Das Tribunal schreibt nicht ins Log, und sein Urteil wird **nirgends persistiert**: `tribunal_verdict`/`tribunal_summary` leben allein im State (`graph/state.py:188-189`), gelesen von Corrector, Graph-Weiche und Client-Anzeige. Auch der dauerhafte Rohturn trägt sie nicht |
+| Tribunal-Beanstandung | **Nein.** Das Tribunal schreibt nicht ins Log, und sein Urteil wird **nirgends persistiert**: `tribunal_verdict`/`tribunal_summary` leben allein im State (`graph/state.py:188-189`), gelesen von Corrector, Graph-Weiche und Client-Anzeige. Auch der dauerhafte Rohturn trägt sie nicht. **Nachgesehen am 15.09.2026:** Seit diesem Tag schreibt die Auswertung je Durchlauf einen `berechnung`-Eintrag der Speicherprüfung (Quelle `speicherbehauptung`: Befunde, Dienst-Ausgänge, ob das Urteil deshalb gehoben wurde) — die drei Voten, das Gesamturteil und die Zusammenfassung bleiben unpersistiert, die Antwort auf das Beispiel bleibt Nein |
 | Zurückhaltung | **Ja.** Der GV-Node schreibt `berechnung` mit `cluster`, `sektor_name` und `achsen` (`gespraechsvektor.py:901`) — allerdings mit der Vorhaltefrist, nach 365 Tagen ist die Zeile fort |
 | Emotionaler Verlauf | **Ja, und dauerhaft.** `turn_roh` trägt `nova_emotion` und `user_emotion` als vollständiges `to_dict()` und ist von der Retention ausgenommen (`dispatcher.py`, §2.5). Zusätzlich schreibt `ei_calc_persist` `arousal_roh`, `arousal_ei`, `dynamik`, `intent` und `tone` — diese Zeilen verfallen |
 
