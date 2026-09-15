@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 15. September 2026 — juengster Eintrag **15.09.2026, 15:56 UTC** (gemessen via `date -u`). Davor 15.09.2026, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 15. September 2026 — juengster Eintrag **15.09.2026, 19:13 UTC** (gemessen via `date -u`). Davor 15.09.2026, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 92 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 93 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,42 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 15.09.2026, 19:13 UTC — die genannte Uhrzeit, wie sie dasteht, oder gar keine 🔧
+
+**Anlass.** Die zwei offenen Befunde des ersten Zugs, auf Auftrag des Eigentümers noch am selben Abend: der Punkt als Trenner — die erste der drei Formulierungen vom 14.09. — und der Abbruch an einem ungültigen Kalendertag. **Die Nulllinie zeigte mehr als die Befunde:** *„9.30 Uhr"* stürzte ab, weil Block 2 `30 Uhr` als Stunde 30 las; 18 von 25 Formen mit unmöglichen Werten ebenso; und hinter der Sprechzeit vom 14.09. stand ein Mechanismus, der jede unbekannte Form trifft — der letzte Rückfall gibt dateparser den Originaltext, und der verwirft eine Uhrzeit, die er nicht lesen kann, still.
+
+### Fünf Teile, fünf Commits
+
+- **A — der Punkt als Trenner.** `_read_dotted_clock_time` schreibt `H.MM` vor „Uhr" immer als `H:MM`, nach „um" nur, wenn es eine Uhrzeit sein kann — *„um 31.12"* bleibt der 31. Dezember, *„um 1.10."* der 1. Oktober, *„um 2.50 Euro"* ein Betrag.
+- **B — Werte, die es nicht gibt.** `_impossible_values` prüft vor den Pfaden Datum und Uhrzeit; ein unmöglicher Wert ergibt kein Datum und eine Warnzeile statt einer `ValueError`, die der Termindienst nicht fängt.
+- **C — die genannte Uhrzeit.** `_stated_time_missing` verwirft nach den Pfaden jedes Ergebnis, das keine der erkannten Uhrzeiten trägt — das Netz unter der nächsten Form, die die Normalisierung nicht kennt.
+- **D — das Datum aus dem Tageswort, richtig herum.** `_iso_dates_as_dmy` gibt ein ISO-Datum als Tag.Monat.Jahr an dateparser; unter `DATE_ORDER: DMY` war `2026-08-01` der **8. Januar**. Mit ihm `_weekday_contradiction`: Nennt ein Ausdruck ein Tageswort und einen Wochentag, die nicht derselbe Tag sind, gibt es kein Datum.
+- **E — mehr Mengenwörter hinter „um"**: Währungen, Maße, *teurer*, *billiger*.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Eine Uhrzeit mit Punkt als Trenner wird gelesen wie mit Doppelpunkt; ein unmöglicher Kalendertag oder eine unmögliche Uhrzeit bricht den Parser nicht ab, sondern ergibt kein Datum und eine Warnzeile; ein Ergebnis trägt nie eine andere Uhrzeit als die erkannte; ein Tageswort ergibt seinen Tag, und widerspricht ihm ein Wochentag, gibt es kein Datum. |
+| **TEST** | `tests/test_zeitparser_stated_time.py`, **32 Zeugen**, jeder Verbotszeuge mit Zwilling. **Gegenprobe je Teil gegen den Stand davor, mit schriftlicher Vorhersage:** A gegen HEAD 5/5/2, B gegen A 12/0/7, C gegen B 19/2/1, D gegen C 23/2/1 und nach der Nachbesserung 28/2/2, E gegen D 26/1/0 (bestehen/scheitern/Fehler); **Sabotagen am Endstand**, zwei davon mit einer Abweichung von der Vorhersage (unten). |
+| **MESSUNG** | **Punkt gegen Doppelpunkt:** 6984 Paare mit Tagesangabe vor und hinter der Uhrzeit, alle gleich (HEAD: 6316 ungleich). **Unmögliche Werte:** 12 000 erzeugte Eingaben der Kontrolle des ersten Zugs, Ausnahmen gegenüber der Fassung vor dem 15.09.2026 **315 → 0**; 63 Kalendersonden 0. **Gültige Eingaben, gegen eine Erwartung ohne Parser** (zweite Kontrolle): 8042 Kalenderdaten, 0 verworfen; 25 608 Uhrzeitformen, keine durch B oder C verworfen, und alle 17 928 Ergebnisse mit richtiger Uhrzeit tragen den richtigen Tag (HEAD: 13 615 von 14 038); Tageswort gegen Wochentag 735 von 735 wie erwartet (HEAD: 450). **Bestand** (152 Parser-Eingaben des Serverlogs, 124 Kantenformen): die Punkt-Formulierung aus dem Betrieb von der Sprechzeit auf die genannte Stunde; die fünf widersprüchlichen Betriebseingaben weiter ohne Datum, jetzt aus Grund; zwei Formen Datenmüll der Fuzzy-Korrektur in beiden Fassungen. |
+
+### Was die Messung am eigenen Bau fand
+
+**Die eigene Nachzählung fing den ersten Fehler.** *„um 9.30 Uhr"* passte auf beide Punkt-Muster, wurde doppelt gezählt, und die Zusicherung warf — noch bevor der erste Zeuge stand. **Die Prüfung auf unmögliche Werte las anders als der Pfad, den sie schützt:** mit Grenzen, Pfad 2 ohne; *„9838:99"* warf weiter, gefunden von 17 der 12 000 erzeugten Eingaben. **Und dieselbe Nachzählung sah in Teil D ein umgeschriebenes Datum hinter einem Punkt nicht** (`43.2026-07-31`) — 19 Eingaben warfen, bis ein ISO-Datum hinter einem Punkt keines mehr war.
+
+**Zwei Vorhersagen trafen nicht, beide Male das Messgerät oder der Eingriff.** C gegen B zählte 18/3/1 statt 19/2/1: Das Werkzeug der Gegenprobe schaltete das Logging ab, und ein Zeuge auf eine Warnzeile konnte nichts sehen. Die Sabotage D1 nahm eine von drei Umschreibstellen heraus und traf deshalb einen von zwei Zeugen — ein halber Rückbau; mit allen drei Stellen 2 von 2. Ein Unterfall des Zeugen für E prüfte mit `1.75` einen Wert, den der Punkt-Leser gar nicht liest, und biss deshalb nicht. **Zwei Sätze der eigenen Kommentare hielten der Messung nicht stand** und sind berichtigt: dateparser *„rät"* bei einem unmöglichen Datum nichts, er lehnt es ab — aber *„morgen 14:75"* ergibt dort die Sprechzeit; und eine Uhrzeit in der Lücke der Umstellung auf Sommerzeit steht sehr wohl im Ergebnis.
+
+### Die zweite Kontrolle am zweiten Zug
+
+**Sie fragte, was der Bau nicht systematisch gefragt hatte: Verwerfen die neuen Prüfungen Gültiges?** Für B und C nein — 0 über 8042 Kalenderdaten und 25 608 Uhrzeitformen. **Sie widerlegte eine Aussage des Baus:** *„1440 Kombinationen, alle gleich"* setzte die Tagesangabe nur vor die Uhrzeit; dahinter lasen 71 Punktformen anders als ihr Zwilling, und 144 bekamen statt der falschen Uhrzeit einen falschen Tag. Die Ursache war älter als der Umbau und traf auch den Doppelpunkt: Pfad 2 las das ISO-Datum als Jahr-Tag-Monat, *„9 Uhr morgen"* war der 8. Januar — daraus Teil D. **Teil D selbst hätte fünf Betriebseingaben vom 14.09. von *kein Datum* auf ein falsches kippen lassen**, weil erst die richtige Lesart den Widerspruch zwischen Tageswort und Wochentag zu einer Wahl machte; die Widerspruchsprüfung gehört deshalb in denselben Commit. **Offen, benannt:** 1 584 von 48 280 erzeugten Nicht-Zeit-Eingaben mit „um" setzen weiter `uhrzeit_erkannt` (*„Version um 2.10"*) — das Datum bleibt, gelesen wird es nur von der Sachlage-Bindung.
+
+**Suite.** 3749 → **3781 grün, 0 übersprungen**; harte Wand grün; die weiche Prüfung ohne neuen Befund, `_aufloesen` trägt drei Schutzklauseln mehr.
+
+**Offen.** Die Uhrzeit mit nachgestellter Tageszeit (*„um 7:45 Uhr morgens"*) ergibt kein Datum; Bereiche, die nackte Punkt-Uhrzeit ohne „um" und „Uhr", *„24 Uhr"* als Mitternacht und die Uhrzeit in der Lücke der Umstellung sind benannt. Erkennt die Normalisierung keine Uhrzeit, kann der Rückfall weiter eine mitbringen, die mit `precision = day` gespeichert wird.
+
+**Befunde.** In die Fundliste: die Uhrzeit mit nachgestellter Tageszeit, die Uhrzeit vor *„am TT.MM."* (*„9 Uhr am 24.08."* → 08.07. um 09:24), die Zahl nach „um" ohne Einheit. Nach *Erledigt*: der Punkt als Trenner, der ungültige Kalendertag, das ISO-Datum in Pfad 2. In den Harness: die Vorprüfung, die anders liest als ihr Verbraucher, und die Gegenprobe, deren Werkzeug die geprüfte Beobachtung abschaltet.
 
 ---
 

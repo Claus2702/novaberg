@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 868 Abschnitte in 5 Dateien — 361 mit eigenem Datum, 506 geerbt, 1 ohne.
+**Umfang:** 872 Abschnitte in 5 Dateien — 362 mit eigenem Datum, 509 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 605 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 609 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 868 Marken, 868 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 872 Marken, 872 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-15 | laufend | ## | [15.09.2026, 19:13 UTC — die genannte Uhrzeit, wie sie dasteht, oder gar keine 🔧](novaberg-roadmap.md#15092026-1913-utc--die-genannte-uhrzeit-wie-sie-dasteht-oder-gar-keine) |
+| (2026-09-15) | laufend | ### | · [Fünf Teile, fünf Commits](novaberg-roadmap.md#fünf-teile-fünf-commits) |
+| (2026-09-15) | laufend | ### | · [Was die Messung am eigenen Bau fand](novaberg-roadmap.md#was-die-messung-am-eigenen-bau-fand) |
+| (2026-09-15) | laufend | ### | · [Die zweite Kontrolle am zweiten Zug](novaberg-roadmap.md#die-zweite-kontrolle-am-zweiten-zug) |
 | 2026-09-15 | laufend | ## | [15.09.2026, 15:56 UTC — die Stunde ohne „Uhr" ist eine Uhrzeit 🔧](novaberg-roadmap.md#15092026-1556-utc--die-stunde-ohne-uhr-ist-eine-uhrzeit) |
 | (2026-09-15) | laufend | ### | · [Der Bau am Parser](novaberg-roadmap.md#der-bau-am-parser) |
 | (2026-09-15) | laufend | ### | · [Was der erste Patch am Parser falsch machte](novaberg-roadmap.md#was-der-erste-patch-am-parser-falsch-machte) |

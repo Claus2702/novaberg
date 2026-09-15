@@ -2,11 +2,11 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Zeitparser (Natürlichsprachliche Zeitauflösung)
-**Stand:** 15. September 2026 (die Stunde ohne „Uhr" ist eine Uhrzeit: §4 *Vor Block 0*, Block 0, Block 9b; drei Zeilen in §8 geschlossen, sieben benannt). Davor 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
+**Stand:** 15. September 2026, 19:13 UTC (die genannte Uhrzeit: der Punkt als Trenner in §4 *Vor Block 0*; unmögliche Werte, Tageswort gegen Wochentag und die fehlende Uhrzeit in §5 *Vor den Pfaden* und *Nach den Pfaden*; das ISO-Datum an dateparser in §5 *Pfad 2*; §6, §8). Davor 15. September 2026 (die Stunde ohne „Uhr" ist eine Uhrzeit: §4 *Vor Block 0*, Block 0, Block 9b; drei Zeilen in §8 geschlossen, sieben benannt). Davor 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
 **Pfad:** novaberg/docs/novaberg-tool-timeparser.md
 **Quellen:** nova-02-t-c.md
 **Datei:** `utils/zeitparser.py`
-**Tests:** 105 — `tests/test_zeitparser_bare_hour.py` (35), `tests/test_zeit_richtung.py` (20), `tests/test_zeit_nackte_uhrzeit.py` (15), `tests/test_zeit_dateparser_riegel.py` (12), `tests/test_zeit_umlaute.py` (11), `tests/test_zeit_dauer_einzahl.py` (7), `tests/test_zeit_bezugsmoment.py` (5). Die Kopfzeile nannte bis zum 15.09.2026 nur vier Dateien mit 58; die beiden letzten fehlten darin
+**Tests:** 137 — `tests/test_zeitparser_bare_hour.py` (35), `tests/test_zeitparser_stated_time.py` (32), `tests/test_zeit_richtung.py` (20), `tests/test_zeit_nackte_uhrzeit.py` (15), `tests/test_zeit_dateparser_riegel.py` (12), `tests/test_zeit_umlaute.py` (11), `tests/test_zeit_dauer_einzahl.py` (7), `tests/test_zeit_bezugsmoment.py` (5). Die Kopfzeile nannte bis zum 15.09.2026 nur vier Dateien mit 58; die beiden letzten fehlten darin
 **Korpus:** `tests/korpus/zeitausdruecke.yaml`, 92 Faelle, gefahren ueber `tests/korpus_laeufer.py`
 
 ---
@@ -130,6 +130,18 @@ Levenshtein-Distanz gegen Wochentage, Monate und relative Zeitbegriffe. Maximale
 ## 4. Stufe 2: Normalisierung (12 Blöcke)
 
 Die Normalisierung transformiert deutsche Zeitausdrücke in ein Format, das `dateparser` verarbeiten kann. Konzeptionell 12 Blöcke in fester Reihenfolge. Im Code (`_text_normalisieren()` in `utils/zeitparser.py`) sind die Blöcke 0–9 nummeriert (mit Sub-Blöcken 0b, 0c, 1b); „Halb" ist im Code als Sub-Regex innerhalb des Viertel-Blocks implementiert, nicht als eigener Block 5:
+
+### Vor Block 0: Uhrzeit mit Punkt
+
+„9.30 Uhr" → „9:30 Uhr", „um 9.30" → „9:30" (`_read_dotted_clock_time`, seit 15.09.2026, vor allem anderen). **Der Punkt als Trenner liest wie der Doppelpunkt** — gemessen über 6984 Paare aus Stunde, Minute, Tagesangabe vor oder hinter der Uhrzeit, Tageszeit und Form, alle gleich. ~~1440 Kombinationen, alle gleich~~: Diese erste Messung setzte die Tagesangabe nur vorn; mit der Tagesangabe dahinter wichen 71 Paare ab, bis Pfad 2 das ISO-Datum richtig las (§5). Bis dahin las Block 2 in „9.00 Uhr" die `00 Uhr` als Stunde (`9.0:00`, der Rückfall lieferte die Sprechzeit) und in „9.30 Uhr" die `30 Uhr` — Stunde 30, Absturz.
+
+| Form | gelesen |
+|---|---|
+| `H.MM` vor „Uhr" | immer; eine unmögliche Uhrzeit („25.00 Uhr") verwirft danach die Prüfung vor den Pfaden (§5) |
+| `H.MM` nach „um", ohne „Uhr" | nur mit Stunde 0..23 und Minute 0..59 — „um 31.12" bleibt der 31. Dezember |
+| nicht | vor einem Punkt („um 1.10." ist der 1. Oktober), vor einem der Mengen- oder Vergleichswörter oder einem Monat („um 2.50 Euro", „um 2.50 teurer"), ohne „um" und „Uhr" („10.30", §8). **Die Wörter sind eine Liste** — steht hinter der Zahl nichts oder ein anderes Wort („Version um 2.10"), wird sie als Uhrzeit gelesen (§8) |
+
+Wie die Stundenleser zählt der Leser sein Ergebnis mit einem zweiten Muster nach.
 
 ### Vor Block 0: Stunde vor Tageszeit
 
@@ -262,6 +274,16 @@ Vor den Pfaden wird die Referenz gesetzt. `dateparser` bekommt sie als `RELATIVE
 
 Nach der Normalisierung versucht der Parser vier Pfade:
 
+### Vor den Pfaden: Tageswort gegen Wochentag
+
+**Nennt ein Ausdruck ein Tageswort und einen Wochentag, die nicht derselbe Tag sind, gibt es kein Datum und eine Warnzeile** (`_weekday_contradiction`, seit 15.09.2026). Im Betrieb kam am 14.09.2026, einem Montag, ein Termin mit Tageswort und einem anderen Wochentag an — morgen war Dienstag, gemeint nach dem Verlauf der Wochentag. Solange Pfad 2 das ISO-Datum falsch herum las, ergab das zufällig nichts; richtig gelesen hätte es den Dienstag gewählt. Geprüft werden nur ISO-Daten, also die aus einem Tageswort: Ein Datum ohne Jahr bekommt in Block 0c das laufende Jahr, und der Wochentag kann ein späteres meinen. `[gemessen]` Über 7 Bezugstage × 5 Tagesworte × 7 Wochentage × 3 Formen: 735 von 735 wie erwartet — kein Datum genau dort, wo beides auseinanderfällt.
+
+### Vor den Pfaden: Werte, die es nicht gibt
+
+**Ein unmöglicher Kalendertag oder eine unmögliche Uhrzeit ergibt kein Datum und eine Warnzeile** (`_impossible_values`, seit 15.09.2026). Die Pfade bauen ihr `datetime` ohne Prüfung; bis dahin riss „am 31.09. um 10", „29.02.2027", „morgen um 24 Uhr" oder „morgen 14:75" eine `ValueError` bis zum Aufrufer — der Termindienst fängt sie nicht, und statt der Rückfrage nach dem Datum kam ein Fehler des Dispatch. Geprüft wird ein Datum als `T.M.JJJJ` und als ISO, eine Uhrzeit **ohne Grenzen, so wie Pfad 2 sie sucht**: Die erste Fassung las mit Grenzen und übersah `38:99` in „9838:99" — 17 von 12 000 erzeugten Eingaben warfen weiter, mit dem Muster des Pfades keine.
+
+**Kein Rückfall auf dateparser:** Ein unmögliches Datum lehnt er selbst ab, eine unmögliche Uhrzeit nicht — „morgen 14:75" ergibt dort morgen zur Sprechzeit (dateparser 1.4.2, gemessen 15.09.2026).
+
 ### Pfad 1 — Direkt-Parse
 
 Regex-Match auf bekannte Formate:
@@ -293,6 +315,8 @@ Besteht der normalisierte Ausdruck nur noch aus `HH:MM` — „halb drei", „um
 
 Uhrzeit per Regex extrahieren (`\d{1,2}:\d{2}`), Rest als Datum-Teil an dateparser übergeben. Ergebnis kombinieren.
 
+**Ein ISO-Datum geht als Tag.Monat.Jahr an dateparser** (`_iso_dates_as_dmy`, seit 15.09.2026, ebenso in Pfad 3 und im letzten Fallback). Unter `DATE_ORDER: DMY` las dateparser das ISO-Datum aus Block 0b als Jahr-Tag-Monat: `2026-08-01` wurde der **8. Januar**, `2026-07-31` nichts (dateparser 1.4.2, gemessen). Getroffen hat es jeden Ausdruck mit der Uhrzeit vor dem Tageswort — „9 Uhr morgen" am 31.07. ergab den 08.01.2026 um 09:00. Gefunden von der zweiten Kontrolle über 25 608 erzeugte Uhrzeitformen: danach tragen alle 17 928 Ergebnisse mit richtiger Uhrzeit auch den richtigen Tag.
+
 **Warum?** dateparser hat Schwierigkeiten mit kombinierten Ausdrücken wie „Donnerstag 14:00". Getrennt funktioniert beides zuverlässig.
 
 ### Pfad 3 — Fallback
@@ -304,6 +328,10 @@ Gesamter normalisierter String an `dateparser.parse()` mit deutschen Spracheinst
 
 **Letzter Fallback:** Wenn der normalisierte Text scheitert, wird der original korrigierte (aber nicht normalisierte) Text versucht — für den Fall, dass die Normalisierung dateparser verwirrt hat.
 
+### Nach den Pfaden: die genannte Uhrzeit
+
+**Trägt der normalisierte Text eine Uhrzeit, muss eine davon im Ergebnis stehen — sonst kein Datum und eine Warnzeile** (`_stated_time_missing`, seit 15.09.2026). `zeit_parsen_vektor` meldet eine Uhrzeit als erkannt, sobald der Text `H:MM` trägt, und der Termindienst legt den Eintrag dann mit Genauigkeit Minute an. Scheitern die Pfade und bekommt dateparser im letzten Fallback den Originaltext, verwirft er eine Uhrzeit, die er nicht lesen kann, still — **so entstand der Fall vom 14.09.2026**: der Tag zur Sprechzeit, als Uhrzeit gemeldet. Über 276 Bestandseingaben verwirft die Regel heute keine; sie ist das Netz für die nächste Form, die die Normalisierung nicht kennt.
+
 ---
 
 ## 6. Stufe 5: Plausibilitäts-Check
@@ -312,6 +340,9 @@ Gesamter normalisierter String an `dateparser.parse()` mit deutschen Spracheinst
 |---------|-------------|--------|
 | Vergangenheit | > 2 Jahre | Verwerfen + Warning-Log |
 | Zukunft | > 5 Jahre | Verwerfen + Warning-Log |
+| Unmöglicher Wert im normalisierten Text | Tag, Monat, Stunde oder Minute außerhalb | Verwerfen + Warning-Log, **vor** den Pfaden (§5) |
+| Genannte Uhrzeit fehlt im Ergebnis | keine der `H:MM` des Textes | Verwerfen + Warning-Log (§5) |
+| Tageswort und Wochentag widersprechen sich | ISO-Datum fällt nicht auf den genannten Wochentag | Verwerfen + Warning-Log, **vor** den Pfaden (§5) |
 
 Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gelangen.
 
@@ -356,11 +387,19 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 | **Zwoelf-Stunden-Deutung** | „halb drei", um 14 Uhr gesagt, ergibt 2:30 des naechsten Tages statt 14:30 desselben. Die Normalisierung bildet das Zahlwort auf die Stunde ab, ohne die Tageshaelfte zu waehlen. **Gilt seit dem 15.09.2026 auch für „um 3"** — so gelesen wie „um 3 Uhr" | offen, Korpus `REG-006`/`REG-008` |
 | ~~**„3 nachmittags"**~~ | ~~Die Tageszeit-Extraktion nimmt „nachmittags" heraus und merkt sich 15:00; die „3" bleibt stehen und wird als **Tag** gelesen. Ergebnis `3 15:00` → 03. des Monats~~ | ✅ Behoben 15.09.2026 — §4 *Vor Block 0*, Korpus `REG-011` |
 | **Die Nacht verschiebt nicht** | „nachts um 11" und „11 Uhr nachts" ergeben 11:00 — `nachts` trägt den Versatz 0, richtig nur für die frühen Stunden. **Und die Mitternacht steht nur in zwei von drei Lesern:** „12 Uhr nachts" und „nachts um 12" → 00:00, „zwölf Uhr nachts" (Block 1) → 12:00 | offen, Fundliste 15.09.2026 |
-| **Punkt als Trenner** | „übermorgen um 9.00 Uhr" → Block 2 liest „00 Uhr" als Stunde, der Text wird `9.0:00`, Pfad 3 liefert den Tag zur Sprechzeit. **Im Betrieb am 14.09.2026** die erste von drei Formulierungen desselben Termins | offen, Fundliste 15.09.2026 |
+| ~~**Punkt als Trenner**~~ | ~~„übermorgen um 9.00 Uhr" → Block 2 liest „00 Uhr" als Stunde, der Text wird `9.0:00`, Pfad 3 liefert den Tag zur Sprechzeit.~~ **Im Betrieb am 14.09.2026** die erste von drei Formulierungen desselben Termins | ✅ Behoben 15.09.2026, abends — §4 *Vor Block 0: Uhrzeit mit Punkt* |
 | **Stunde über 23, nackte Zahl** | „um 24", „um 25" und „Donnerstag 10" (ohne „um") werden weiter zum Tag des Monats | offen |
 | **Tag des Monats ohne Zukunft** | „am 24." am 31.07. gesagt ergibt den 24.07.; ebenso „am 24. um 10" → 24.07. 10:00 | offen, Fundliste 15.09.2026 |
-| **„und" wird „juni"** | Die Fuzzy-Korrektur (§3.1) zieht „und" auf Distanz 2 zum Monat: „um 10 und um 11" ergibt den 10. Juni, „morgen um 7 Uhr und um 9 Uhr" den 01.06. Ebenso „min" → „mai" | offen, Fundliste 25.08.2026 (Nachtrag) |
-| **Ungültiger Kalendertag mit Uhrzeit** | „am 31.09. um 10", „30.02. um 9" → `ValueError` aus Pfad 1b, das Datum wird ungeprüft gebaut; mit „Uhr" schon vor dem 15.09.2026, seither auch ohne. Pfad 2 ebenso bei einer Minute über 59 | offen, Fundliste 15.09.2026 |
+| **„und" wird „juni"** | Die Fuzzy-Korrektur (§3.1) zieht „und" auf Distanz 2 zum Monat: „um 10 und um 11" ergibt den 10. Juni, „morgen um 7 Uhr und um 9 Uhr" den 01.06., seit dem 15.09.2026 abends den 08.06. — Datenmüll in beiden Fassungen. Ebenso „min" → „mai" | offen, Fundliste 25.08.2026 (Nachtrag) |
+| ~~**Ungültiger Kalendertag mit Uhrzeit**~~ | ~~„am 31.09. um 10", „30.02. um 9" → `ValueError` aus Pfad 1b, das Datum wird ungeprüft gebaut; mit „Uhr" schon vor dem 15.09.2026, seither auch ohne. Pfad 2 ebenso bei einer Minute über 59~~ | ✅ Behoben 15.09.2026, abends — §5 *Vor den Pfaden* |
+| **Uhrzeit mit nachgestellter Tageszeit** | „um 7:45 Uhr morgens", „um 12.00 Uhr mittags" → kein Datum: Die Tageszeit hinter „Uhr" nimmt Block 0 nicht heraus, und Block 1b streicht das „Uhr" davor | offen, Fundliste 15.09.2026 |
+| **Bereiche** | „10.00-12.00 Uhr" → der 1. des Monats um 12:00; eine Spanne kennt der Parser nicht | offen |
+| **Nackte Uhrzeit mit Punkt** | „10.30" ohne „um" und „Uhr" liest dateparser selbst — am Monatsletzten mit Defekt A aus §5: am 31.07. der 01.07. um 10:30 | offen |
+| **24 Uhr** | „morgen um 24 Uhr" als Mitternacht kennt der Parser nicht; seit dem 15.09.2026 kein Datum statt eines Absturzes | offen |
+| **Uhrzeit in der Lücke der Umstellung** | „um 2:30" am 28.03.2027 kommt als 02:30 mit dem Versatz der Winterzeit zurück — eine Uhrzeit, die es nicht gibt | offen |
+| ~~**ISO-Datum mit Wochentag in Pfad 2**~~ | ~~„morgen, Montag um 8 Uhr" am 31.07. → **08.01.2026**: dateparser liest den Datumsteil `2026-08-01 Montag` mit `DATE_ORDER: DMY` als Jahr-Tag-Monat~~ | ✅ Behoben 15.09.2026 — das ISO-Datum geht als Tag.Monat.Jahr an dateparser, und der Widerspruch ergibt kein Datum (§5) |
+| **Eine Zahl nach „um" ohne Einheit** | „Version um 2.10", „kostet um 3.20" → `uhrzeit_erkannt` wahr; das Datum bleibt, wie es war. In 48 280 erzeugten Nicht-Zeit-Eingaben 1 584 solche; der einzige Leser ohne Datum ist die Sachlage-Bindung (`_has_time_expression`) | benannt |
+| **Uhrzeit vor „am TT.MM."** | „9 Uhr am 24.08." → der 08.07. um 09:24: Block 2 nimmt die `24` des Datums als Minute | offen, Fundliste 15.09.2026 |
 | **Leerzeichen hinter „Uhr"** | Block 2 nimmt es mit: „morgen um 1 Uhr Termin" → `1:00Termin` → kein Datum | offen, Fundliste 15.09.2026 |
 | **Einzahl als Nomen** | „einen Vormittag", „jeden Vormittag" setzen `uhrzeit_erkannt` — wie „Abend" seit jeher. Das Datum bleibt leer; im Bestand 2 von 1494 Nutzereingaben | benannt |
 | ~~Vektor-Modus~~ | ~~„Verschiebe auf Freitag" → Uhrzeit geht verloren~~ | ✅ Behoben (Chat 14, P8) |
@@ -387,6 +426,7 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 | v10 | 46 | **Marker-Stufe** (§2a): Die Richtung wird in einem Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert. `zeit_parsen()` wertet die Richtung jetzt selbst aus — das tat bis dahin nur `zeit_parsen_vektor()` |
 | v11 | 58 | **Pfad 1c** fuer nackte Uhrzeiten, als Riegel gegen zwei `dateparser`-Defekte (§5). Pfad 1 setzt das ISO-Datum zusammen, statt es ueber `fromisoformat` zu bauen — eine einstellige Stunde stuerzte bis dahin ab |
 | v12 | 105 | **Die Stunde ohne „Uhr" ist eine Uhrzeit** (15.09.2026): nach „um" (Block 9b), vor einer Tageszeit (*Vor Block 0*, ersetzt Block 3), und die vorangestellte Tageszeit verschiebt wie die nachgestellte. Anlass war der erste ausdrückliche Terminauftrag im Betrieb. Korpus 50 → 56 erfüllt |
+| v13 | 137 | **Die genannte Uhrzeit, wie sie dasteht — oder gar nicht** (15.09.2026, abends): der Punkt als Trenner liest wie der Doppelpunkt, ein unmöglicher Wert ergibt kein Datum statt eines Absturzes, ein Ergebnis ohne die genannte Uhrzeit wird verworfen, das ISO-Datum geht richtig herum an dateparser, und ein Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum. Über 12 000 erzeugte Eingaben gegenüber der Fassung vor dem 15.09.2026: 315 Ausnahmen → 0 |
 
 **Die Tests sind mit v8 neu gezählt.** Die 47 der frühen Versionen stammen aus einer Suite, die es in dieser Form nicht mehr gibt.
 
