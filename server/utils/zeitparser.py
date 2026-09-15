@@ -556,9 +556,28 @@ _HOUR_BEFORE_DAYPART = re.compile(
     re.IGNORECASE,
 )
 
-#: Eine geschriebene Uhrzeit. Die beiden Stundenleser zaehlen damit nach, ob
-#: jeder Kandidat als Uhrzeit ankam — mit einem anderen Muster als dem, das
-#: die Kandidaten fand.
+#: Eine Uhrzeit mit Punkt als Trenner vor "Uhr": "9.30 Uhr", "15.09.2026 10.00
+#: Uhr". Vor "Uhr" ist sie immer eine Uhrzeit, auch "25.00 Uhr" — die loest
+#: danach kein Pfad auf. Nicht hinter einer Ziffer, einem
+#: Punkt oder Doppelpunkt: Das waere der Rest eines Datums oder einer Uhrzeit.
+_DOTTED_BEFORE_UHR = re.compile(r"(?<![\d.:])(\d{1,2})\.(\d{2})(?=\s*uhr\b)", re.IGNORECASE)
+
+#: Dieselbe Form nach "um", ohne "Uhr": "um 9.30". Hier nur, wenn sie eine
+#: Uhrzeit sein kann — die Spanne prueft `_read_dotted_clock_time` —, denn
+#: "um 31.12" kann ein Datum meinen. Nicht vor einem Punkt ("um 1.10." ist der
+#: 1. Oktober), nicht vor einer Menge oder einem Monat ("um 2.50 Euro"), und
+#: nicht vor "Uhr" — die Form gehoert `_DOTTED_BEFORE_UHR`, sonst zaehlte
+#: dieselbe Stelle zweimal.
+_DOTTED_AFTER_UM = re.compile(
+    r"(?<=\bum\s)(\d{1,2})\.(\d{2})(?!\s*uhr\b)"
+    r"(?=\s*$|\s*[,;!?)]|\s+(?!(?:" + _QUANTITIES_AFTER_UM + "|" + _MONTHS_AFTER_UM
+    + r")\b)(?![%€°]))",
+    re.IGNORECASE,
+)
+
+#: Eine geschriebene Uhrzeit. Die Leser zaehlen damit nach, ob jeder Kandidat
+#: als Uhrzeit ankam — mit einem anderen Muster als dem, das die Kandidaten
+#: fand.
 _WRITTEN_CLOCK_TIME = re.compile(r"\d{1,2}:\d{2}")
 
 
@@ -676,6 +695,47 @@ def _replace_hours(text: str, pattern: re.Pattern, daypart: Optional[str]) -> st
     return result
 
 
+def _read_dotted_clock_time(text: str) -> str:
+    """Liest eine Uhrzeit mit Punkt als Trenner so wie eine mit Doppelpunkt.
+
+    **Der Fall, gemessen am 14.09.2026 im Betrieb:** Eine Zeitangabe mit Punkt
+    als Trenner kam beim Parser an, und Block 2 las in *„9.00 Uhr"* die `00 Uhr`
+    als Stunde. Der Text wurde `9.0:00`, und der Rueckfall auf den Originaltext
+    lieferte den Tag **zur aktuellen Uhrzeit**. Mit anderen Minuten stuerzte der
+    Parser ab: In *„9.30 Uhr"* wurde `30 Uhr` die Stunde 30.
+
+    Vorbedingung: `text` ist der fuzzy-korrigierte Ausdruck, vor jeder
+        Normalisierung.
+    Nachbedingung: Jede Form `H.MM` vor "Uhr" steht als `H:MM`; nach "um" ohne
+        "Uhr" nur, wenn Stunde 0..23 und Minute 0..59. Nachgezaehlt mit
+        `_WRITTEN_CLOCK_TIME` — sonst `_HourReadingError`.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    before_uhr: int = len(_DOTTED_BEFORE_UHR.findall(text))
+    after_um: int = sum(
+        1 for m in _DOTTED_AFTER_UM.finditer(text)
+        if int(m.group(1)) <= 23 and int(m.group(2)) <= 59
+    )
+    if before_uhr == 0 and after_um == 0:
+        return text
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    def replace_after_um(match: re.Match) -> str:
+        if int(match.group(1)) > 23 or int(match.group(2)) > 59:
+            return match.group(0)
+        return f"{match.group(1)}:{match.group(2)}"
+
+    result: str = _DOTTED_BEFORE_UHR.sub(r"\1:\2", text)
+    result = _DOTTED_AFTER_UM.sub(replace_after_um, result)
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    added: int = len(_WRITTEN_CLOCK_TIME.findall(result)) - len(_WRITTEN_CLOCK_TIME.findall(text))
+    if added != before_uhr + after_um:
+        raise _HourReadingError("count_mismatch", (before_uhr + after_um, added, text, result))
+    logger.debug(f"Zeitparser: Uhrzeit mit Punkt gelesen '{text}' -> '{result}'")
+    return result
+
+
 def _read_hour_before_daypart(text: str) -> str:
     """Liest "3 nachmittags" als Uhrzeit, bevor die Tageszeit herausgenommen wird.
 
@@ -784,7 +844,7 @@ def _text_normalisieren(
     if heute is None:
         heute = _heute_lokal()
 
-    ergebnis: str = _read_hour_before_daypart(text)
+    ergebnis: str = _read_hour_before_daypart(_read_dotted_clock_time(text))
     tageszeit_woerter: str = "|".join(_TAGESZEITEN.keys())
 
     # ── Tageszeit extrahieren (Fallback fuer spaeter) ──
