@@ -743,6 +743,39 @@ def _impossible_values(normalized: str) -> list[str]:
     return found
 
 
+def _stated_time_missing(normalized: str, result: datetime) -> str:
+    """Die im Ausdruck erkannten Uhrzeiten, wenn keine davon im Ergebnis steht.
+
+    `zeit_parsen_vektor` meldet eine Uhrzeit als erkannt, sobald der
+    normalisierte Text `H:MM` traegt, und der Termindienst legt den Eintrag
+    dann mit Genauigkeit Minute an. Ein Ergebnis mit einer anderen Uhrzeit ist
+    ein Termin zur falschen Zeit, der wie ein richtiger aussieht. **So entstand
+    der Fall vom 14.09.2026:** Die Pfade scheiterten am normalisierten Text,
+    der Rueckfall gab dateparser den Originaltext, und der verwarf die Uhrzeit,
+    die er nicht lesen konnte, still — es blieb die Sprechzeit.
+
+    Verglichen wird die Wanduhr in der Ortszone. Eine Uhrzeit in der Luecke
+    der Umstellung auf Sommerzeit prueft das nicht: *„um 2:30"* am 28.03.2027
+    kommt als 02:30 mit dem Versatz der Winterzeit zurueck (gemessen
+    15.09.2026) — sie steht im Ergebnis, das es so nicht gibt.
+
+    Vorbedingung: `normalized` ist der Text, aus dem `result` aufgeloest wurde;
+        `result` ist zeitzonenbewusst.
+    Nachbedingung: leer, wenn der Text keine Uhrzeit traegt oder eine davon die
+        Wanduhr des Ergebnisses ist; sonst die erkannten Uhrzeiten, kommagetrennt.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    stated: list[str] = _WRITTEN_CLOCK_TIME.findall(normalized)
+    local: datetime = result.astimezone(ZoneInfo(TIMEZONE))
+    if not stated or any(
+        (int(t.split(":")[0]), int(t.split(":")[1])) == (local.hour, local.minute) for t in stated
+    ):
+        return ""
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    return ", ".join(stated)
+
+
 def _read_dotted_clock_time(text: str) -> str:
     """Liest eine Uhrzeit mit Punkt als Trenner so wie eine mit Doppelpunkt.
 
@@ -1390,6 +1423,17 @@ def _aufloesen(
         ergebnis = dateparser.parse(korrigiert, languages=["de"], settings=settings)
         if ergebnis:
             pfad = 3
+
+    # Schritt 4c: Eine erkannte Uhrzeit muss im Ergebnis stehen — sonst kein
+    # Datum statt eines Termins zur falschen Zeit (`_stated_time_missing`).
+    if ergebnis is not None:
+        missing: str = _stated_time_missing(normalisiert, ergebnis)
+        if missing:
+            logger.warning(
+                f"Zeitparser: '{text}' -> {ergebnis.isoformat()} (Pfad {pfad}) traegt "
+                f"keine der genannten Uhrzeiten ({missing}) — kein Datum"
+            )
+            return None, befund, korrigiert, normalisiert
 
     if ergebnis is None:
         logger.warning(f"Zeitparser: '{text}' konnte nicht aufgeloest werden")

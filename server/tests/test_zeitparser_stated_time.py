@@ -161,5 +161,35 @@ class TestImpossibleValues(unittest.TestCase):
         self.assertEqual(["38:99"], zeitparser._impossible_values("Donnerstag 9838:99"))
 
 
+class TestStatedTimeMustBeInTheResult(unittest.TestCase):
+    """Teil C: Ein Ergebnis traegt eine erkannte Uhrzeit — oder es gibt keins.
+
+    Scheitern die Pfade am normalisierten Text, bekommt dateparser den
+    Originaltext, und der verwirft eine Uhrzeit, die er nicht lesen kann, still.
+    Bis zum 15.09.2026 kam dann der Tag zur Sprechzeit zurueck, mit
+    `uhrzeit_erkannt` — ein Termin zur falschen Zeit mit Genauigkeit Minute.
+    """
+
+    def test_fallback_that_drops_the_time_gives_no_date(self) -> None:
+        """Ein doppeltes Tageswort laesst die Pfade scheitern; der Rueckfall lieferte 14:00."""
+        self.assertIsNone(_parse("morgen um 3 morgen").datum)
+        self.assertEqual("2026-08-01 03:00", _local("morgen um 3"))
+
+    def test_dropped_time_is_logged(self) -> None:
+        """Die Warnzeile nennt die Uhrzeit, die im Ergebnis fehlte."""
+        with self.assertLogs("ki_server.zeitparser", level="WARNING") as log:
+            _parse("morgen um 3 morgen")
+
+        self.assertTrue(any("3:00" in zeile for zeile in log.output), log.output)
+
+    def test_stated_time_missing_compares_the_local_wall_clock(self) -> None:
+        """Leer, wenn eine genannte Uhrzeit im Ergebnis steht oder keine genannt ist."""
+        result = datetime(2026, 8, 1, 14, 0, tzinfo=_ZONE)
+
+        self.assertEqual("10:00", zeitparser._stated_time_missing("2026-08-01 10:00", result))
+        self.assertEqual("", zeitparser._stated_time_missing("10:00 bis 14:00", result))
+        self.assertEqual("", zeitparser._stated_time_missing("2026-08-01", result))
+
+
 if __name__ == "__main__":
     unittest.main()
