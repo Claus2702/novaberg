@@ -492,6 +492,8 @@ Dazu in der Doku: die Zeugen der falschen Datei zugeordnet, vier statt fünf Dur
 - **Die Pflicht-Schwelle** für das Angebot, am Speichenwert `pflicht` des Paares zu eichen.
 - **Die Form der Ablehnung** im Gesprächskontext: eine Eigenschaft wie jede andere (sie wandert dann mit Scheibe 11 ins Gedächtnis) oder ein eigenes Feld am Objekt.
 - ~~**Die Riegel-Wortliste von Teil A** gegen die Fehlalarme halten: *„ich merke mir"* in einem Gespräch über Erinnern ist keine Speicherbehauptung.~~ → **Gehalten am 15.09.2026**, am Bestand statt an Beispielen (unten, *Teil A — gebaut*). *„merke mir"* steht nicht in der Liste; ein Satz über Erinnern mit *verankert* und *im System* schlägt als Grenzfall an.
+- **Die Behauptung gegen den Bestand halten, bevor korrigiert wird.** Eine Speicherbehauptung kann wahr sein, weil sie eine frühere, echte Schreibung wiederholt; heute schlägt der Riegel trotzdem an, und die Korrektur schreibt eine wahre Aussage um — in Lauf 3 ging eine solche Wiederholung, dem Nutzer in den Mund gelegt, nach zwei Runden als Fehler hinaus (unten, *Teil A — gebaut*). Vor der Korrektur ließe sie sich gegen den Bestand halten, beim Termin gegen die Timeline. **Offen ist, wer das prüft:** der Thinker, dessen Werkzeuge den Bestand schon lesen (`timeline_check`), oder der Dienst, der ihn führt (Teil F).
+- **Eine Behauptung, die beide Korrekturrunden übersteht:** aus der Antwort entfernen — eine Wirkung, die nicht vom Modell abhängt — oder weiter nur melden. Heute gemeldet, nicht verhindert (Lauf 3: 2 von 24).
 
 #### Teil A — gebaut (15.09.2026)
 

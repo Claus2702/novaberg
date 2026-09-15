@@ -349,7 +349,7 @@ Vier Satzformen, je Satz höchstens ein Befund:
 
 **Aus beiden Läufen nachgezogen, jeweils am Bestand ohne neuen Anschlag geprüft:** die Ausweichwörter *gelistet, angesetzt, erfasst, geöffnet*; *„bleibt … auf der Liste"*; der Nebensatz mit dem Hilfsverb am Ende — in Lauf 2 kam eine Behauptung als Wiedergabe verpackt zurück (Form: *„Du hast genannt, dass der Termin in deiner Timeline eingetragen ist"*) —; *für mich* neben *bei mir*; und ein Defekt: Kommata **innerhalb** eines Zitats beendeten den Satzteil, das Partizip dahinter wurde nie erreicht.
 
-**Was nach drei Läufen offen bleibt:** Zwei der 24 Behauptungen überstanden in Lauf 3 beide Runden — das Modell hielt den beanstandeten Satz fest — und gingen mit der Antwort hinaus, gemeldet, nicht verhindert. Eine Wirkung, die nicht vom Modell abhängt, ist nicht gebaut. Die Läufe korrigieren einzelne Antworten mit schmalem Lagebild und neutralen Voten; der Betrieb ist damit nicht gemessen.
+**Was nach drei Läufen offen bleibt:** Zwei der 24 Behauptungen überstanden in Lauf 3 beide Runden — das Modell hielt den beanstandeten Satz fest — und gingen mit der Antwort hinaus, gemeldet, nicht verhindert. Eine Wirkung, die nicht vom Modell abhängt, ist nicht gebaut. Offen sind zwei Entscheidungen: eine solche Behauptung aus der Antwort zu entfernen, und eine wahre — die Wiederholung einer früheren Schreibung — vor der Korrektur gegen den Bestand zu halten (`novaberg-thinking-lage_k.md`, Scheibe 12, *Offen für den Bau*). Die Läufe korrigieren einzelne Antworten mit schmalem Lagebild und neutralen Voten; der Betrieb ist damit nicht gemessen.
 
 ### Der dauerhafte Eintrag und die letzte Runde
 

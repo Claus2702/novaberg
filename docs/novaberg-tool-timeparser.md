@@ -163,7 +163,7 @@ Tageszeit-Wörter werden extrahiert und als Fallback-Uhrzeit gemerkt — nur ein
 | `abends`, `Abend` | 18:00 |
 | `nachts` | 22:00 |
 
-**Die Einzahl steht neben der Mehrzahl, weil sie nach einem Tageswort die gesprochene Form ist** — „heute abend", „morgen nachmittag". `vormittag` und `nachmittag` kamen am 15.09.2026 dazu; bis dahin löste „morgen nachmittag um 3" zu nichts auf. **„nacht" fehlt mit Absicht:** „heute Nacht um 2" meint den Morgen des Folgetags, und diese Rechnung kann der Parser nicht; ohne Eintrag bleibt der Ausdruck unaufgelöst, statt still auf heute 02:00 zu fallen.
+**Die Einzahl steht neben der Mehrzahl, weil sie nach einem Tageswort die gesprochene Form ist** — „heute abend", „morgen nachmittag". `vormittag` und `nachmittag` kamen am 15.09.2026 in beide Tabellen, `abend` in die Verschiebung (für die Rückfall-Uhrzeit stand `Abend` schon da); bis dahin löste „morgen nachmittag um 3" zu nichts auf, „heute abend um 8" ebenso (Korpus `REG-028`, seither 20:00). **„nacht" fehlt mit Absicht:** „heute Nacht um 2" meint den Morgen des Folgetags, und diese Rechnung kann der Parser nicht; ohne Eintrag bleibt der Ausdruck unaufgelöst, statt still auf heute 02:00 zu fallen.
 
 **Gemerkt wird seit dem 15.09.2026 auch das Wort, nicht nur seine Fallback-Uhrzeit.** Eine vorangestellte Tageszeit verschiebt die Stunde, die ihr folgt, wie eine nachgestellte — in Block 1, Block 2 und Block 9b. Bis dahin ging die Verschiebung mit dem herausgeschnittenen Wort verloren: „nachmittags um 3 Uhr" ergab 03:00, „heute abend um 8 Uhr" 08:00. Die Verschiebung selbst steht für die neuen Formen an einer Stelle, `_shift_hour_by_daypart`: **+12 bei einer Stunde unter 12 und einer Tageszeit ab Mittag, „12 nachts" → 0** — die Regel von Block 2.
 
