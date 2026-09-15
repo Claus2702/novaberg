@@ -32,12 +32,20 @@ from config import (
 )
 from graph.reiz import reiz_text
 from graph.state import ConversationState, TribunalVote
+from memory.pipeline_log import log_berechnung
 from services.model_services import ChatRequest, model_service
 from utils.datum_pruefung import (
     bestaetigung_pruefen,
     bestaetigungsauftrag,
     korrekturauftrag,
     widersprueche_finden,
+)
+from utils.storage_claims import (
+    ORDER_HEADER,
+    RULE_VERSION,
+    ClaimCheck,
+    correction_order,
+    uncovered_claims,
 )
 
 logger = logging.getLogger("ki_server.tribunal")
@@ -256,6 +264,154 @@ def judge(state: ConversationState) -> ConversationState:
 
 
 # ─────────────────────────────────────────────
+# Die Speicherpruefung in der Auswertung
+# ─────────────────────────────────────────────
+def _storage_claim_step(
+    state: ConversationState,
+    critical_feedback: list[str],
+) -> ClaimCheck:
+    """Haelt die Speicherbehauptungen der Antwort gegen die Dienste des Turns.
+
+    Behauptet die Antwort, etwas sei notiert, eingetragen oder geaendert, muss
+    in diesem Turn ein Dienst `abgeschlossen` gemeldet haben. Gemessen am
+    14.09.2026: vier Termin-Turns ohne Zustellung, und alle vier Antworten
+    sagten *„notiert"* oder *„fest verankert"*. Wie die Datumspruefung ist das
+    in Python entscheidbar und kein vierter Modellaufruf.
+
+    Vorbedingung: `state["tribunal_verdict"]` ist gesetzt; `critical_feedback`
+    ist die Liste, aus der die Zusammenfassung entsteht.
+    Nachbedingung: Bei einer nicht belegten Behauptung steht das Urteil auf
+    mindestens `warnung` — ein `ablehnen` bleibt — und der Korrekturauftrag an
+    erster Stelle von `critical_feedback`, weil der Corrector ausschliesslich
+    die Zusammenfassung liest. In jedem Fall ist genau ein dauerhafter Eintrag
+    geschrieben.
+    Fehlerfaelle: keine eigenen; eine defekte Eingabe meldet `uncovered_claims`.
+    """
+    # ── Verarbeitung ────────────────────────────
+    check: ClaimCheck = uncovered_claims(
+        state.get("response") or "", state.get("agent_results")
+    )
+    if check.uncovered:
+        if state["tribunal_verdict"] == "ok":
+            state["tribunal_verdict"] = "warnung"
+        critical_feedback.insert(0, correction_order(check.claims))
+        logger.error(
+            "Tribunal: %d Speicherbehauptung(en) ohne abgeschlossenen Dienst "
+            "(Ausgaenge: %s) — Urteil auf '%s' gehoben. %s",
+            len(check.claims), ", ".join(check.outcomes) or "keine",
+            state["tribunal_verdict"],
+            "; ".join(c.line() for c in check.claims),
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Die Korrekturrunden sind begrenzt. Ist die letzte verbraucht, geht eine
+    # `warnung` mit der Antwort hinaus (`_after_evaluate`, mit denselben
+    # Vorgaben gelesen) — und mit ihr die Behauptung. Das darf nicht still
+    # geschehen.
+    runde: int = state.get("correction_round", 0)
+    if (check.uncovered and state["tribunal_verdict"] == "warnung"
+            and runde >= state.get("max_corrections", 0)):
+        logger.error(
+            "Tribunal: Speicherbehauptung nach %s Korrekturrunde(n) nicht "
+            "beseitigt — die Antwort geht mit ihr hinaus: %s",
+            runde, "; ".join(c.line() for c in check.claims),
+        )
+    _storage_check_record(state, check)
+    return check
+
+
+def _summary_verify(
+    state: ConversationState,
+    time_findings: int,
+    storage_uncovered: bool,
+) -> None:
+    """Prueft, ob jeder Befund der Auswertung die Zusammenfassung erreicht hat.
+
+    Ein Befund ohne Eintrag in der Zusammenfassung erreicht die Korrekturrunde
+    nicht — der Corrector liest ausschliesslich sie.
+
+    Vorbedingung: `state["tribunal_summary"]` ist gesetzt.
+    Nachbedingung: Fehlt ein Korrekturauftrag, steht eine Fehlerzeile im Log.
+    """
+    # ── Ausgabe-Verifikation ────────────────────
+    summary: str = state.get("tribunal_summary") or ""
+    if time_findings and "ZEITANGABE FALSCH" not in summary:
+        logger.error(
+            "Tribunal: %d Zeitbefund(e) gefunden, aber der Korrekturauftrag "
+            "steht nicht in der Zusammenfassung — die Korrekturrunde bekommt "
+            "ihn nicht", time_findings,
+        )
+    if storage_uncovered and ORDER_HEADER not in summary:
+        logger.error(
+            "Tribunal: Speicherbehauptung gefunden, aber der Korrekturauftrag "
+            "steht nicht in der Zusammenfassung — die Korrekturrunde bekommt "
+            "ihn nicht",
+        )
+
+
+# ─────────────────────────────────────────────
+# Dauerhafter Eintrag der Speicherpruefung
+# ─────────────────────────────────────────────
+def _storage_check_record(state: ConversationState, check: ClaimCheck) -> None:
+    """Schreibt den Ausgang der Speicherpruefung in die dauerhafte Ablage.
+
+    **Jeder Durchlauf schreibt, auch der ohne Behauptung.** Die Pruefung ist
+    eine Weiche, die die Ausgabe aendert; ohne Eintrag im stillen Fall ist
+    *„nicht gerechnet"* von *„gerechnet, nichts gefunden"* nicht zu trennen,
+    und die Frage, wie oft sie im Betrieb anschlaegt und ob die Korrektur
+    greift, waere nur aus dem rotierenden Log zu beantworten.
+
+    Der Eintrag traegt Form und Wort der Befunde, nicht den Satz: Der Wortlaut
+    der Antwort steht im Rohturn, und die Ablage soll durch ihre Zahlen
+    nachvollziehbar sein, nicht durch Gespraechsinhalt.
+
+    Vorbedingung: `check` ist das Ergebnis dieses Durchlaufs.
+    Nachbedingung: genau ein Eintrag der Art `berechnung`, Knoten `evaluate`,
+    Quelle `speicherbehauptung`.
+    Fehlerfaelle: Ein gescheiterter Eintrag darf den Turn nicht reissen — er
+    wird mit Spur gemeldet.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id") or ""
+    if not turn_id:
+        logger.error(
+            "Tribunal: Speicherpruefung ohne turn_id im Zustand — der Eintrag "
+            "ist keinem Turn zuzuordnen und wird trotzdem geschrieben",
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    inhalt: dict = {
+        "ergebnis":         check.result,
+        "urteil_gehoben":   check.uncovered,
+        "runde":            state.get("correction_round", 0),
+        "grenze":           state.get("max_corrections", 0),
+        "befunde":          [{"form": c.form, "wort": c.word} for c in check.claims],
+        "abgeschlossen":    list(check.completed),
+        "ausgaenge":        list(check.outcomes),
+        "regelfassung":     RULE_VERSION,
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    try:
+        log_berechnung(
+            turn_id      = turn_id,
+            node         = "evaluate",
+            quelle       = "speicherbehauptung",
+            inhalt       = inhalt,
+            user_id      = state.get("user_id"),
+            character_id = state.get("character_id"),
+        )
+    except Exception:
+        # Breit gefangen mit Absicht: Der Turn ist wichtiger als sein
+        # Protokoll, und was den Schreibvorgang reissen kann, ist von hier aus
+        # nicht aufzaehlbar. Gemeldet wird mit Spur.
+        logger.exception(
+            "Tribunal: Speicherpruefung nicht dauerhaft protokolliert "
+            "(turn_id=%s, ergebnis=%s)", turn_id, check.result,
+        )
+
+
+# ─────────────────────────────────────────────
 # Tribunal-Auswertung (Mehrheitsentscheid)
 # ─────────────────────────────────────────────
 def evaluate(state: ConversationState) -> ConversationState:
@@ -329,23 +485,24 @@ def evaluate(state: ConversationState) -> ConversationState:
             "; ".join(a.satz() for a in datum_abweichungen),
         )
 
+    # Die Speicherbehauptung — gesagt ist nicht gespeichert (siehe
+    # `_storage_claim_step`). Sie laeuft als letzte Pruefung, weil sie am Ende
+    # meldet, ob eine Behauptung mit der letzten Runde hinausgeht — dazu muss
+    # das Urteil feststehen.
+    speicher: ClaimCheck = _storage_claim_step(state, critical_feedback)
+
     state["tribunal_summary"] = "\n".join(critical_feedback) if critical_feedback else ""
 
     # ── Ausgabe-Verifikation ────────────────────────────────────────
-    # Ein Zeitbefund ohne Eintrag in der Zusammenfassung erreicht die
-    # Korrekturrunde nicht — der Corrector liest ausschliesslich sie.
-    befunde_gesamt: int = len(zeit_befunde) + len(datum_abweichungen)
-    if befunde_gesamt and "ZEITANGABE FALSCH" not in state["tribunal_summary"]:
-        logger.error(
-            "Tribunal: %d Zeitbefund(e) gefunden, aber der Korrekturauftrag "
-            "steht nicht in der Zusammenfassung — die Korrekturrunde bekommt "
-            "ihn nicht", befunde_gesamt,
-        )
+    _summary_verify(
+        state, len(zeit_befunde) + len(datum_abweichungen), speicher.uncovered
+    )
 
     logger.info(f"Tribunal-Auswertung: verdict={state['tribunal_verdict']} "
                 f"(ablehnungen={len(rejections)}, warnungen={len(warnings)}, "
                 f"zeitbefunde={len(zeit_befunde)}, "
-                f"datumsabweichungen={len(datum_abweichungen)})")
+                f"datumsabweichungen={len(datum_abweichungen)}, "
+                f"speicherbehauptungen={len(speicher.claims)}/{speicher.result})")
 
     for vote in votes:
         logger.info(f"  [{vote['agent']}] {vote['vote']}: {vote['reasoning'][:80]}")

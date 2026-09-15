@@ -170,12 +170,18 @@ class VerdrahtungImTribunalTest(unittest.TestCase):
         Zaehlte es als Quelle, waere ein abgelehnter Termin ein Beleg fuer
         genau das Datum, das nicht eingetragen wurde — die Pruefung stuende
         dann auf dem Kopf.
+
+        **Seit dem 15.09.2026 prueft dieser Zeuge den Zeitbefund, nicht das
+        Urteil.** Er fragte bis dahin nach `verdict == "ok"` — und meinte damit
+        nur die Datumspruefung, weil sie die einzige Pruefung in der Auswertung
+        war. Die Antwort *„Ich habe ihn eingetragen"* bei abgelehntem Dienst
+        hebt das Urteil seither ueber die Speicherpruefung, und das ist richtig.
         """
         state = self._auswerten(
             "Ich habe ihn am 20.08. eingetragen.",
             [self._ergebnis("abgelehnt", QUELLE)],
         )
-        self.assertEqual(state["tribunal_verdict"], "ok")
+        self.assertNotIn("ZEITANGABE FALSCH", state["tribunal_summary"])
 
 
 if __name__ == "__main__":
