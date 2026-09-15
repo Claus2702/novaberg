@@ -93,6 +93,17 @@ class TestDottedClockTime(unittest.TestCase):
         self.assertIsNone(vector.datum)
         self.assertFalse(vector.uhrzeit_erkannt)
 
+    def test_more_amounts_after_um_are_no_time(self) -> None:
+        """Waehrungen, Masse und Vergleiche hinter "um" — gemessen von der zweiten Kontrolle.
+
+        Die Liste bleibt eine Liste: *„Version um 2.10"* ist syntaktisch nicht
+        von *„Treffen um 9.30"* zu trennen und wird weiter als Uhrzeit erkannt.
+        """
+        for text in ("um 2.50 Dollar", "um 1.45 Kilogramm", "um 1.25 Prozentpunkt",
+                     "um 2.50 teurer", "um 3 Liter"):
+            with self.subTest(text=text):
+                self.assertFalse(_parse(text).uhrzeit_erkannt)
+
     def test_decimal_duration_is_untouched(self) -> None:
         """*„um 1.5 Stunden"* hat eine Nachkommastelle, keine Minuten — unveraendert."""
         self.assertEqual("2026-07-31 15:30", _local("um 1.5 Stunden"))

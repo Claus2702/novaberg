@@ -521,13 +521,19 @@ _TAGESZEIT_UHRZEITEN: dict[str, str] = {
     "nachts": "22:00",
 }
 
-#: Mengen, hinter denen eine Zahl nach "um" keine Uhrzeit ist: "um 10 Minuten
-#: verschieben", "um 10 Prozent", "um 3 Grad".
+#: Mengen und Vergleiche, hinter denen eine Zahl nach "um" keine Uhrzeit ist:
+#: "um 10 Minuten verschieben", "um 10 Prozent", "um 3 Grad", "um 2.50 teurer".
+#: Waehrungen, Masse und Vergleiche der zweiten Zeile kamen am 15.09.2026 aus
+#: erzeugten Eingaben dazu. **Die Liste bleibt eine Liste:** Steht hinter der
+#: Zahl nichts oder ein anderes Wort ("Version um 2.10"), ist sie nicht von
+#: "Treffen um 9.30" zu trennen und wird als Uhrzeit gelesen.
 _QUANTITIES_AFTER_UM: str = _wortgruppe(
     "sekunde", "sekunden", "minute", "minuten", "min", "stunde", "stunden", "std",
     "tag", "tage", "tagen", "woche", "wochen", "monat", "monate", "monaten",
     "jahr", "jahre", "jahren", "prozent", "prozentpunkte", "euro", "cent", "grad",
     "mal", "punkte", "stück", "kilo", "kilometer", "km", "meter", "cm",
+    "dollar", "eur", "franken", "teurer", "billiger", "liter", "kilogramm", "kg",
+    "zentimeter", "promille", "prozentpunkt",
 )
 
 #: Monate und ihre Kurzformen: Vor ihnen ist eine Zahl ein Tag, keine Stunde
