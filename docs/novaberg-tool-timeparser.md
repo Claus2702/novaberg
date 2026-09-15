@@ -2,12 +2,12 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Zeitparser (Natürlichsprachliche Zeitauflösung)
-**Stand:** 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
+**Stand:** 15. September 2026 (die Stunde ohne „Uhr" ist eine Uhrzeit: §4 *Vor Block 0*, Block 0, Block 9b; drei Zeilen in §8 geschlossen, sieben benannt). Davor 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
 **Pfad:** novaberg/docs/novaberg-tool-timeparser.md
 **Quellen:** nova-02-t-c.md
 **Datei:** `utils/zeitparser.py`
-**Tests:** 58 — `tests/test_zeit_richtung.py` (20), `tests/test_zeit_umlaute.py` (11), `tests/test_zeit_nackte_uhrzeit.py` (15), `tests/test_zeit_dateparser_riegel.py` (12)
-**Korpus:** `tests/korpus/zeitausdruecke.yaml`, 89 Faelle, gefahren ueber `tests/korpus_laeufer.py`
+**Tests:** 105 — `tests/test_zeitparser_bare_hour.py` (35), `tests/test_zeit_richtung.py` (20), `tests/test_zeit_nackte_uhrzeit.py` (15), `tests/test_zeit_dateparser_riegel.py` (12), `tests/test_zeit_umlaute.py` (11), `tests/test_zeit_dauer_einzahl.py` (7), `tests/test_zeit_bezugsmoment.py` (5). Die Kopfzeile nannte bis zum 15.09.2026 nur vier Dateien mit 58; die beiden letzten fehlten darin
+**Korpus:** `tests/korpus/zeitausdruecke.yaml`, 92 Faelle, gefahren ueber `tests/korpus_laeufer.py`
 
 ---
 
@@ -131,6 +131,12 @@ Levenshtein-Distanz gegen Wochentage, Monate und relative Zeitbegriffe. Maximale
 
 Die Normalisierung transformiert deutsche Zeitausdrücke in ein Format, das `dateparser` verarbeiten kann. Konzeptionell 12 Blöcke in fester Reihenfolge. Im Code (`_text_normalisieren()` in `utils/zeitparser.py`) sind die Blöcke 0–9 nummeriert (mit Sub-Blöcken 0b, 0c, 1b); „Halb" ist im Code als Sub-Regex innerhalb des Viertel-Blocks implementiert, nicht als eigener Block 5:
 
+### Vor Block 0: Stunde vor Tageszeit
+
+„3 nachmittags" → „15:00", **bevor** Block 0 die Tageszeit herausnimmt (`_read_hour_before_daypart`, seit 15.09.2026). Bis dahin tat das Block 3 — hinter der Extraktion, wo das Paar nicht mehr stand: Die „3" blieb allein zurück und wurde zum Tag des Monats (`3 15:00` → der 03.).
+
+Nicht gelesen wird die Zahl hinter einem Doppelpunkt, einer Ziffer, einem Punkt oder „Uhr " — „15:00 nachmittags", „01.07. nachmittags", „3 Uhr **15** nachmittags" — und keine Zahl über 23.
+
 ### Block 0: Tageszeit extrahieren
 
 Tageszeit-Wörter werden extrahiert und als Fallback-Uhrzeit gemerkt — nur eingefügt wenn am Ende keine Uhrzeit im String steht.
@@ -139,11 +145,15 @@ Tageszeit-Wörter werden extrahiert und als Fallback-Uhrzeit gemerkt — nur ein
 |-----------|-----------------|
 | `früh` | 06:00 |
 | `morgens` | 08:00 |
-| `vormittags` | 10:00 |
+| `vormittags`, `vormittag` | 10:00 |
 | `mittags` | 12:00 |
-| `nachmittags` | 15:00 |
-| `abends` | 18:00 |
+| `nachmittags`, `nachmittag` | 15:00 |
+| `abends`, `Abend` | 18:00 |
 | `nachts` | 22:00 |
+
+**Die Einzahl steht neben der Mehrzahl, weil sie nach einem Tageswort die gesprochene Form ist** — „heute abend", „morgen nachmittag". `vormittag` und `nachmittag` kamen am 15.09.2026 dazu; bis dahin löste „morgen nachmittag um 3" zu nichts auf. **„nacht" fehlt mit Absicht:** „heute Nacht um 2" meint den Morgen des Folgetags, und diese Rechnung kann der Parser nicht; ohne Eintrag bleibt der Ausdruck unaufgelöst, statt still auf heute 02:00 zu fallen.
+
+**Gemerkt wird seit dem 15.09.2026 auch das Wort, nicht nur seine Fallback-Uhrzeit.** Eine vorangestellte Tageszeit verschiebt die Stunde, die ihr folgt, wie eine nachgestellte — in Block 1, Block 2 und Block 9b. Bis dahin ging die Verschiebung mit dem herausgeschnittenen Wort verloren: „nachmittags um 3 Uhr" ergab 03:00, „heute abend um 8 Uhr" 08:00. Die Verschiebung selbst steht für die neuen Formen an einer Stelle, `_shift_hour_by_daypart`: **+12 bei einer Stunde unter 12 und einer Tageszeit ab Mittag, „12 nachts" → 0** — die Regel von Block 2.
 
 ### Block 0a: „am" entfernen
 
@@ -179,9 +189,11 @@ Python berechnet das Datum — nicht das LLM. Deterministisch.
 
 „14 Uhr 30" → „14:30". „3 Uhr nachmittags" → „15:00".
 
-### Block 3: Standalone Tageszeit
+### ~~Block 3: Standalone Tageszeit~~
 
-„3 nachmittags" → „15:00" (Zahl + Tageszeit ohne „Uhr").
+~~„3 nachmittags" → „15:00" (Zahl + Tageszeit ohne „Uhr").~~
+
+→ **Entfernt am 15.09.2026, ersetzt durch *Vor Block 0*.** Der Block stand hinter der Extraktion und bekam das Paar nur noch zu sehen, wenn der Ausdruck eine zweite Tageszeit trug.
 
 ### Block 4: Fränkisch/Süddeutsch
 
@@ -212,6 +224,23 @@ Python berechnet das Datum — nicht das LLM. Deterministisch.
 → **Ueberholt, 31.07.2026.** Die Praefixe stehen hier nicht mehr. Sie hat die **Marker-Stufe** (§2a) gelesen und — soweit noetig — entfernt, bevor dieser Text entstand; der +7-Versatz steht im Befund statt in einem Flag.
 
 Der Block traegt jetzt nur noch eine Regel: **„Woche" faellt, wenn ein Wochentag folgt.** In „naechste Woche Dienstag" ist es nach der Markerentfernung redundant, sonst nicht. Die Regel loeschte bis zum 31.07.2026 **jedes** „Woche " mit Folgetext und war damit fuer einen Kontext gebaut, aber kontextfrei wirksam — gemessen: „in einer Woche um 14 Uhr" wurde zu „in einer 14:00".
+
+### Block 9b: Stunde nach „um" ohne „Uhr"
+
+„übermorgen um 9" → „2026-03-27 9:00", „Donnerstag um 14" → „Donnerstag 14:00", „abends um 8" → „20:00" (`_read_hour_after_um`, im Code Block 8b, seit 15.09.2026). **Die Stunde wird gelesen wie mit „Uhr"** — „um 3" ist 03:00 wie „um 3 Uhr"; welche Tageshälfte ohne Tageszeit gemeint ist, entscheidet der Block nicht (§8, Zwölf-Stunden-Deutung).
+
+**Der Fall im Betrieb, 14.09.2026:** Ein Terminauftrag aus Tageswort, „um" und nackter Stunde kam wörtlich an. Die Normalisierung ließ „um H" stehen, Pfad 3 bekam den Text und lieferte den Folgetag **zur aktuellen Uhrzeit**; ohne Tagesangabe wurde die Zahl zum Tag des Monats, auch neben einem Wochentag — „Donnerstag um 14" ergab den 14., in der Vergangenheit.
+
+| Bleibt stehen | Warum |
+|---|---|
+| „um 10 Minuten", „um 10 Prozent", „um 3 Grad" | Hinter der Zahl steht eine Menge (`_QUANTITIES_AFTER_UM`) |
+| „um 15. Mai", „um 15 Aug" | Hinter der Zahl steht ein Monat (`_MONTHS_AFTER_UM`) — die Zahl ist ein Tag |
+| „um 10.30", „um 10:30" | Andere Form; Punkt oder Doppelpunkt mit Ziffer dahinter |
+| „um 24", „um 25" | Keine Stunde der Spanne 0..23 |
+
+Ein Satzpunkt direkt hinter der Stunde („um 10.") und ein „rum"/„herum" gehören zum Treffer. **Die Ersetzung zählt sich selbst nach**, mit einem anderen Muster als dem, das die Treffer fand: Das Ergebnis muss genau so viele `H:MM` mehr tragen, wie es Treffer gab — sonst `_HourReadingError`. Dieselbe Nachzählung gilt für *Vor Block 0*.
+
+**Die Tageszeit eines Treffers wird über den Tabellenschlüssel aufgelöst, mit derselben Faltung, mit der das Muster traf** (`_daypart_key`). `re.IGNORECASE` lässt `ı` (U+0131) und `İ` (U+0130) ein `i` treffen, `ſ` (U+017F) ein `s`; `str.lower()` führt von dort nicht zum Schlüssel zurück. Bis zur zweiten Kontrolle am 15.09.2026 warf *„morgen um 3 nachmıttags"* deshalb `_HourReadingError` — die Ausnahme, die nur einen Programmfehler anzeigen soll.
 
 ### Block 10: Orphaned „um"
 
@@ -320,15 +349,23 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 
 | Limitation | Beschreibung | Status |
 |-----------|-------------|--------|
-| Tageszeit VOR Uhrzeit | „nachmittags um 3 Uhr" → Offset geht verloren | Spätere Iteration |
-| Einzelne Ziffer ohne „Uhr" | „nachmittags um 3" → als Tag interpretiert | Spätere Iteration — **im Betrieb getroffen am 14.09.2026:** *„morgen um 10"* → Uhrzeit nicht erkannt, Termin um die aktuelle Uhrzeit mit Genauigkeit Tag; *„um 10"* → ein vergangener Tag; *„morgen früh um 10"* → kein Datum (Fundliste 14.09.2026) |
+| ~~Tageszeit VOR Uhrzeit~~ | ~~„nachmittags um 3 Uhr" → Offset geht verloren~~ | ✅ Behoben 15.09.2026 — die Tageszeit wird als Wort gemerkt (§4 Block 0), Korpus `REG-023` |
+| ~~Einzelne Ziffer ohne „Uhr"~~ | ~~„nachmittags um 3" → als Tag interpretiert~~ — im Betrieb getroffen am 14.09.2026: Tageswort, „um" und nackte Stunde → Uhrzeit nicht erkannt, Termin um die aktuelle Uhrzeit mit Genauigkeit Tag; die Stunde ohne Tageswort → ein vergangener Tag; mit „früh" dazwischen → kein Datum | ✅ Behoben 15.09.2026 — §4 Block 9b, Korpus `REG-024`, `REG-026`, `REG-027` |
 | „zwanzig vor vier" | `_ZAHLWOERTER` enthält nur 1–12, nicht „zwanzig" | Spätere Iteration |
 | „in 2 Stunden" | Funktioniert nur über dateparser (keine Normalisierung) | Spätere Iteration |
-| **Zwoelf-Stunden-Deutung** | „halb drei", um 14 Uhr gesagt, ergibt 2:30 des naechsten Tages statt 14:30 desselben. Die Normalisierung bildet das Zahlwort auf die Stunde ab, ohne die Tageshaelfte zu waehlen | offen, Korpus `REG-006`/`REG-008` |
-| **„3 nachmittags"** | Die Tageszeit-Extraktion nimmt „nachmittags" heraus und merkt sich 15:00; die „3" bleibt stehen und wird als **Tag** gelesen. Ergebnis `3 15:00` → 03. des Monats | offen, Korpus `REG-011` |
+| **Zwoelf-Stunden-Deutung** | „halb drei", um 14 Uhr gesagt, ergibt 2:30 des naechsten Tages statt 14:30 desselben. Die Normalisierung bildet das Zahlwort auf die Stunde ab, ohne die Tageshaelfte zu waehlen. **Gilt seit dem 15.09.2026 auch für „um 3"** — so gelesen wie „um 3 Uhr" | offen, Korpus `REG-006`/`REG-008` |
+| ~~**„3 nachmittags"**~~ | ~~Die Tageszeit-Extraktion nimmt „nachmittags" heraus und merkt sich 15:00; die „3" bleibt stehen und wird als **Tag** gelesen. Ergebnis `3 15:00` → 03. des Monats~~ | ✅ Behoben 15.09.2026 — §4 *Vor Block 0*, Korpus `REG-011` |
+| **Die Nacht verschiebt nicht** | „nachts um 11" und „11 Uhr nachts" ergeben 11:00 — `nachts` trägt den Versatz 0, richtig nur für die frühen Stunden. **Und die Mitternacht steht nur in zwei von drei Lesern:** „12 Uhr nachts" und „nachts um 12" → 00:00, „zwölf Uhr nachts" (Block 1) → 12:00 | offen, Fundliste 15.09.2026 |
+| **Punkt als Trenner** | „übermorgen um 9.00 Uhr" → Block 2 liest „00 Uhr" als Stunde, der Text wird `9.0:00`, Pfad 3 liefert den Tag zur Sprechzeit. **Im Betrieb am 14.09.2026** die erste von drei Formulierungen desselben Termins | offen, Fundliste 15.09.2026 |
+| **Stunde über 23, nackte Zahl** | „um 24", „um 25" und „Donnerstag 10" (ohne „um") werden weiter zum Tag des Monats | offen |
+| **Tag des Monats ohne Zukunft** | „am 24." am 31.07. gesagt ergibt den 24.07.; ebenso „am 24. um 10" → 24.07. 10:00 | offen, Fundliste 15.09.2026 |
+| **„und" wird „juni"** | Die Fuzzy-Korrektur (§3.1) zieht „und" auf Distanz 2 zum Monat: „um 10 und um 11" ergibt den 10. Juni, „morgen um 7 Uhr und um 9 Uhr" den 01.06. Ebenso „min" → „mai" | offen, Fundliste 25.08.2026 (Nachtrag) |
+| **Ungültiger Kalendertag mit Uhrzeit** | „am 31.09. um 10", „30.02. um 9" → `ValueError` aus Pfad 1b, das Datum wird ungeprüft gebaut; mit „Uhr" schon vor dem 15.09.2026, seither auch ohne. Pfad 2 ebenso bei einer Minute über 59 | offen, Fundliste 15.09.2026 |
+| **Leerzeichen hinter „Uhr"** | Block 2 nimmt es mit: „morgen um 1 Uhr Termin" → `1:00Termin` → kein Datum | offen, Fundliste 15.09.2026 |
+| **Einzahl als Nomen** | „einen Vormittag", „jeden Vormittag" setzen `uhrzeit_erkannt` — wie „Abend" seit jeher. Das Datum bleibt leer; im Bestand 2 von 1494 Nutzereingaben | benannt |
 | ~~Vektor-Modus~~ | ~~„Verschiebe auf Freitag" → Uhrzeit geht verloren~~ | ✅ Behoben (Chat 14, P8) |
 
-**Die ersten drei Zeilen und die beiden neuen sind im Korpus als Faelle hinterlegt** — die einen als dokumentierte Luecke (`ab_phase: null`), die anderen als offene Regression. Eine bekannte Luecke, die niemand aufschreibt, wird irgendwann als neuer Bug wiederentdeckt.
+**Die Zeilen mit Korpuskennung sind im Korpus als Faelle hinterlegt.** Eine bekannte Luecke, die niemand aufschreibt, wird irgendwann als neuer Bug wiederentdeckt. **Der Umkehrfall ist ungesichert:** Eine geschlossene Lücke (`ab_phase: null`) meldet der Läufer nicht — `ZON-009` besteht seit mindestens dem 15.09.2026 und steht weiter als unlösbar im Korpus (Fundliste 15.09.2026).
 
 > **Die Zwoelf-Stunden-Deutung lag unter einem anderen Defekt.** Bis zum 31.07.2026 ergab „halb drei" den 1. des Monats (§5, Defekt A); dass zusaetzlich die **Stunde** falsch ist, wurde erst sichtbar, nachdem der Tag stimmte.
 
@@ -349,6 +386,7 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 | v9 | 31 | `_heute_lokal()` statt `date.today()` — Block 0b las die **System**zone, nicht `TIMEZONE`. Praefixe aus Staemmen erzeugt statt als Literale in den Regexen. „Woche" faellt nur noch vor einem Wochentag |
 | v10 | 46 | **Marker-Stufe** (§2a): Die Richtung wird in einem Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert. `zeit_parsen()` wertet die Richtung jetzt selbst aus — das tat bis dahin nur `zeit_parsen_vektor()` |
 | v11 | 58 | **Pfad 1c** fuer nackte Uhrzeiten, als Riegel gegen zwei `dateparser`-Defekte (§5). Pfad 1 setzt das ISO-Datum zusammen, statt es ueber `fromisoformat` zu bauen — eine einstellige Stunde stuerzte bis dahin ab |
+| v12 | 105 | **Die Stunde ohne „Uhr" ist eine Uhrzeit** (15.09.2026): nach „um" (Block 9b), vor einer Tageszeit (*Vor Block 0*, ersetzt Block 3), und die vorangestellte Tageszeit verschiebt wie die nachgestellte. Anlass war der erste ausdrückliche Terminauftrag im Betrieb. Korpus 50 → 56 erfüllt |
 
 **Die Tests sind mit v8 neu gezählt.** Die 47 der frühen Versionen stammen aus einer Suite, die es in dieser Form nicht mehr gibt.
 

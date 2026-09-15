@@ -431,7 +431,7 @@ Vier Einträge aus einem Tag. Die ersten drei kommen aus dem ersten Lauf des Hä
 
 **Kategorie:** [WIS] WISSEN
 
-**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Eine Deutungsfrage, die eine Festlegung braucht und keine Messung.
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Eine Deutungsfrage, die eine Festlegung braucht und keine Messung. **Seit dem 15.09.2026 betrifft sie auch die nackte Stunde nach „um"**: *„um 3"* wird gelesen wie *„um 3 Uhr"*, also 03:00 — mit einer Tageszeit im Ausdruck verschoben, ohne sie nicht.
 
 Die Normalisierung bildet „halb drei" auf `2:30` ab, ohne zu entscheiden, welche Tageshälfte gemeint ist. Um 14 Uhr gesagt, ergibt der Ausdruck damit 2:30 des **nächsten** Tages statt 14:30 desselben. Betrifft ebenso „fünf nach drei".
 
@@ -446,7 +446,7 @@ Die Normalisierung bildet „halb drei" auf `2:30` ab, ohne zu entscheiden, welc
 
 **Kategorie:** [WIS] WISSEN
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Unveraendert; verwandt mit `ZEIT-EINZAHL-GREIFT-DANEBEN`, das heute im Betrieb reproduziert wurde.
+**Zustand:** abgeschlossen am 15.09.2026 — `_read_hour_before_daypart` liest das Paar **vor** der Extraktion, der alte Block 3 ist entfernt; Korpus `REG-011` erfuellt, bezeugt in `tests/test_zeitparser_bare_hour.py`. Bis dahin offen, zuletzt nachgesehen am 25.08.2026.
 
 Die Tageszeit-Extraktion (Block 0) nimmt „nachmittags" aus dem Text und merkt sich 15:00 als Fallback. Die „3" bleibt stehen, der Fallback wird angehängt, und `dateparser` liest das Ergebnis `3 15:00` als **Tag 3 um 15:00**.
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Vom LLM-Halluzinator zum 47/47-Parser in 5 Iterationen
-**Stand:** 12. April 2026, Chat 44 (migriert, Inhalt unverändert)
+**Stand:** 15. September 2026 (§5: zwei Grenzen als behoben markiert). Davor 12. April 2026, Chat 44 (migriert, Inhalt unverändert)
 **Pfad:** novaberg/docs/novaberg-tool-timeparser_l_evolution.md
 **Ursprung:** nova-02-l-b.md
 **Typ:** Lesson (L)
@@ -81,8 +81,8 @@ Für eine spätere Iteration dokumentiert:
 
 | Limitation | Beschreibung |
 |-----------|-------------|
-| Tageszeit VOR Uhrzeit | „nachmittags um 3 Uhr" → Offset geht verloren |
-| Einzelne Ziffer ohne „Uhr" | „nachmittags um 3" → als Tag interpretiert |
+| ~~Tageszeit VOR Uhrzeit~~ | ~~„nachmittags um 3 Uhr" → Offset geht verloren~~ ✅ Behoben am 15.09.2026 — die Tageszeit wird als Wort gemerkt. → `novaberg-tool-timeparser.md` §4 Block 0 |
+| ~~Einzelne Ziffer ohne „Uhr"~~ | ~~„nachmittags um 3" → als Tag interpretiert~~ ✅ Behoben am 15.09.2026 — nachdem sie im Betrieb den ersten ausdrücklichen Terminauftrag getroffen hatte. → `novaberg-tool-timeparser.md` §4 Block 9b |
 | „zwanzig vor vier" | `_ZAHLWOERTER` enthält nur 1–12, nicht „zwanzig" |
 | „in 2 Stunden" | Funktioniert nur über dateparser (keine Normalisierung) |
 | ~~Vektor-Modus (P8)~~ | ~~„Verschiebe auf Freitag" → Uhrzeit geht verloren.~~ ✅ Behoben in Chat 14: `ZeitVektor` Dataclass + Referenz-Modus. → `02_T_c` Abschnitt 10, `02_L_e` |

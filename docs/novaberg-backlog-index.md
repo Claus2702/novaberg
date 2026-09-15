@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 439 Eintraege mit Kennung — 365 offen, 71 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 439 Eintraege mit Kennung — 364 offen, 72 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 438 von 439 Eintraegen zugeordnet.
 
@@ -631,7 +631,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 389 | offen | `ZUSTELLART-EINWERTIG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
 | WIS | 412 | offen | `NOTIZEN-ENRICH-16-ZWEIGE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-wissen.md) |
 | WIS | 430 | offen | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
-| WIS | 445 | offen | `ZEIT-TAGESZEIT-VOR-ZIFFER` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
+| WIS | 445 | abgeschlossen | `ZEIT-TAGESZEIT-VOR-ZIFFER` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
 | WIS | 504 | offen | `AGENT-RUECKFRAGE-LOOP` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
 | WIS | 517 | offen | `NOTIZEN-VOR-TURN-BEZUG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
 | WIS | 536 | offen | `TIMELINE-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |

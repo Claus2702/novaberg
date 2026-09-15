@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 15. September 2026 — juengster Eintrag **15.09.2026, 11:43 UTC** (gemessen via `date -u`). Davor 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 15. September 2026 — juengster Eintrag **15.09.2026, 15:56 UTC** (gemessen via `date -u`). Davor 15.09.2026, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 91 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 92 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,42 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 15.09.2026, 15:56 UTC — die Stunde ohne „Uhr" ist eine Uhrzeit 🔧
+
+**Anlass.** Der erste ausdrückliche Terminauftrag im Betrieb, 14.09.2026: Derselbe Termin kam binnen einer Minute in drei Formulierungen beim Parser an — mit Punkt als Trenner, als nackte Stunde nach „um", mit „Uhr" —, und nur die dritte löste richtig auf. Die zweite, Tageswort plus „um" plus nackte Stunde, ergab den Folgetag **zur Sprechzeit**; ohne Tageswort wurde die Zahl zum Tag des Monats, auch neben einem Wochentag. Die Grenze stand seit Juli als *„Spätere Iteration"* im Moduldokument.
+
+### Der Bau am Parser
+
+`server/utils/zeitparser.py`: `_read_hour_after_um` liest die Stunde nach „um" so wie mit „Uhr" — nicht vor einer Menge oder einem Monat, nur 0 bis 23. `_read_hour_before_daypart` liest *„3 nachmittags"* **vor** der Tageszeit-Extraktion; der alte Block dahinter bekam das Paar nur noch bei einer zweiten Tageszeit zu sehen und ist entfernt. **Die Extraktion merkt sich die Tageszeit jetzt als Wort**, und eine vorangestellte verschiebt wie eine nachgestellte — auch mit „Uhr": *„heute abend um 8 Uhr"* war bis dahin 08:00. Die Verschiebung der neuen Formen steht an einer Stelle (`_shift_hour_by_daypart`: +12 ab Mittag, „12 nachts" → 0), die Einzahl *vormittag*/*nachmittag* kam dazu. Beide Leser zählen sich mit einem zweiten Muster nach und werfen `_HourReadingError`, wenn ein Treffer nicht als Uhrzeit ankommt.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Eine Stunde ohne „Uhr" wird als Uhrzeit gelesen — nach „um", mit Tagesangabe und ohne, neben einer Tageszeit davor oder dahinter — und nie als Tag des Monats; Mengen wie „um 10 Minuten" bleiben unberührt. |
+| **TEST** | `tests/test_zeitparser_bare_hour.py`, **35 Zeugen** — die Formen, je Verbotszeuge ein Zwilling, die Regel, die Übereinstimmung der beiden Tageszeit-Tabellen, die Nachzählung, die Faltung der Tageszeit. Korpus: `REG-011` von Regression zu erfüllt, `REG-023`/`REG-024` von dokumentierter Lücke zu erfüllt, `REG-026`–`028` neu; **50 → 56 erfüllt**, 3 → 2 Regressionen (`REG-006`/`008`, Zwölf-Stunden-Deutung, nicht Gegenstand). **Gegenprobe mit schriftlicher Vorhersage:** gegen die alte Fassung 4 bestehen / 18 scheitern / 9 Fehler, dazu fünf Sabotagen der neuen Fassung — **6 von 6** wie vorhergesagt; nach der zweiten Kontrolle eine zweite Runde, **4 von 4**. |
+| **MESSUNG** | Alt gegen neu im selben Prozess, **nach Erzeuger getrennt.** Die Parser-Eingaben des Serverlogs vom 13. bis 15.09.: **33 aus 22 Betriebsturns — 1 Datum geändert, von der Sprechzeit auf die genannte Stunde**, keines verschlechtert, 0 Abstürze; 119 aus Suite- und Laborläufen — 5, ebenso. Alle Nutzereingaben aus `pipeline_log` als Volltext: im Paar des Eigentümers **1197, kein Datum geändert**, 2 Uhrzeit-Flags (die Termin-Turns, richtig); bei den Mess-Personen 297, 3 Flags aus der Einzahl *Vormittag*, zweimal als Nomen. |
+
+### Was der erste Patch am Parser falsch machte
+
+**124 Kantenformen alt gegen neu fanden vier Fehlbilder vor dem Commit:** *„3 Uhr 15 nachmittags"* ergab den 01.07. (die Minuten als Stunde vor der Tageszeit), *„um 15. Mai"* den 01.05. um 15:00, *„nachts um 12"* Mittag statt Mitternacht. **Ein Schutz gegen zwei Uhrzeiten im Ausdruck wurde gebaut und wieder entfernt** — über 13 Formen änderte er kein einziges Datum. Der Datenmüll, gegen den er gedacht war, kam aus der Fuzzy-Korrektur: *„und"* wird *„juni"*.
+
+**Die Bestandszahl stand zuerst ungetrennt im Bericht:** 6 von 152 Parser-Eingaben geändert. Fünf davon stammten aus Suite- und Laborläufen; der Betrieb trägt eine.
+
+### Die zweite Kontrolle am Parser
+
+**Sie fragte mit zwei Zugriffen, die der Bau nicht benutzt hatte:** dem vollen Kreuzprodukt statt der Kantenlisten und erzeugten Eingaben statt des Bestands. **Die Behauptung *„so gelesen wie mit Uhr"* hält** — 3864 von 3864 Kombinationen aus Stunde, Tagesangabe und Tageszeit vor oder hinter der Stunde lesen ohne „Uhr" wie mit (die Fassung davor: 198).
+
+**Eine Zusicherung des Baus war falsch.** `_HourReadingError` sollte nur einen Programmfehler anzeigen, und 15 Eingaben lösten ihn aus: `ı`, `İ` und `ſ` treffen unter `re.IGNORECASE` ein `i` oder `s`, `str.lower()` führt von dort nicht zum Tabellenschlüssel zurück. Behoben über die Faltung des Musters (`_daypart_key`); vorhergesagt und gezählt: 4 Fehler der neuen Zeugen vorher, 35 grün nachher, 2 Fehler unter Sabotage. Die Sonde der Kontrolle wirft danach 0 von 32, das Kreuzprodukt steht weiter bei 3864.
+
+**Ein Befund bleibt offen, und der Umbau vergrößert ihn.** Pfad 1b baut ein Datum ungeprüft; ein ungültiger Kalendertag mit Uhrzeit bricht mit `ValueError` ab. Mit „Uhr" war das schon so — ohne führt die Stunde jetzt mehr Formen dorthin: über 63 Sonden **14 Abstürze vorher, 63 nachher** (*„am 31.09. um 10"* ergab vorher `None`). Die Ausnahme landet im Agenten-Dispatch statt in der Rückfrage nach dem Datum. Eigener Defekt, in der Fundliste.
+
+**Suite.** 3714 → **3749 grün, 0 übersprungen**; harte Wand grün; die Testdatei ohne Befund der weichen Prüfung, am Parser dieselben Bestandsbefunde wie davor, zwei davon kleiner.
+
+**Offen.** Der Punkt als Trenner — die erste der drei Formulierungen vom 14.09. — liefert weiter den Tag zur Sprechzeit, mit Genauigkeit Minute. Ein ungültiger Kalendertag bricht ab, jetzt in mehr Formen. Die Zwölf-Stunden-Deutung gilt nun auch für *„um 3"*.
+
+**Befunde.** In die Fundliste: der Punkt als Trenner; der Abbruch an einem ungültigen Kalendertag (Pfad 1b, Pfad 2); Block 2 schluckt das Leerzeichen hinter „Uhr"; der Korpusläufer meldet eine geschlossene Lücke nicht (`ZON-009` besteht seit mindestens heute und steht als unlösbar im Korpus); die Nacht verschiebt keine Stunde, und die Mitternacht steht in zwei von drei Lesern; ein Tag des Monats ohne Monat wird nicht in die Zukunft gelegt. Nachtrag zur Fuzzy-Korrektur vom 25.08.: *„und"* → *„juni"*, *„min"* → *„mai"*. Im Backlog ist `ZEIT-TAGESZEIT-VOR-ZIFFER` abgeschlossen, `ZEIT-ZWOELF-STUNDEN-DEUTUNG` um die nackte Stunde erweitert.
 
 ---
 
