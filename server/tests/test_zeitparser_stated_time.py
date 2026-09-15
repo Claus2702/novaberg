@@ -107,5 +107,59 @@ class TestDottedClockTime(unittest.TestCase):
         self.assertEqual("um 9:30 Uhr", zeitparser._read_dotted_clock_time("um 9.30 Uhr"))
 
 
+class TestImpossibleValues(unittest.TestCase):
+    """Teil B: Was es nicht gibt, ergibt kein Datum — und keinen Absturz.
+
+    Bis zum 15.09.2026 bauten die Pfade ihr `datetime` ungeprueft, und die
+    `ValueError` erreichte den Termindienst, der sie nicht faengt. Jeder Zeuge
+    hat einen gueltigen Zwilling auf demselben Pfad.
+    """
+
+    def test_invalid_day_with_bare_hour_gives_no_date(self) -> None:
+        """Der 31. September, Pfad 1b. Zwilling: der 30."""
+        self.assertIsNone(_parse("am 31.09. um 10").datum)
+        self.assertEqual("2026-09-30 10:00", _local("am 30.09. um 10"))
+
+    def test_invalid_day_alone_gives_no_date(self) -> None:
+        """Ohne Uhrzeit derselbe Pfad, dieselbe Ausnahme bis zum 15.09.2026."""
+        self.assertIsNone(_parse("31.09.").datum)
+
+    def test_february_29_only_in_a_leap_year(self) -> None:
+        """2027 ist kein Schaltjahr, 2028 schon."""
+        self.assertIsNone(_parse("29.02.2027").datum)
+        self.assertEqual("2028-02-29 10:00", _local("29.02.2028 10:00"))
+
+    def test_hour_24_gives_no_date(self) -> None:
+        """*„24 Uhr"* als Mitternacht kann der Parser nicht; bis zum 15.09.2026 Absturz."""
+        self.assertIsNone(_parse("morgen um 24 Uhr").datum)
+
+    def test_impossible_minute_gives_no_date(self) -> None:
+        """Pfad 1 mit Minute 75. Zwilling: 23:59, die letzte gueltige Minute."""
+        self.assertIsNone(_parse("morgen 14:75").datum)
+        self.assertEqual("2026-08-01 23:59", _local("morgen um 23:59"))
+
+    def test_impossible_value_is_logged_with_its_wording(self) -> None:
+        """Kein stilles Leer: Die Warnzeile nennt den Wert, den es nicht gibt."""
+        with self.assertLogs("ki_server.zeitparser", level="WARNING") as log:
+            _parse("am 31.09. um 10")
+
+        self.assertTrue(any("31.09.2026" in zeile for zeile in log.output), log.output)
+
+    def test_impossible_values_names_each_kind(self) -> None:
+        """Datum in beiden Schreibungen und Uhrzeit — und nichts bei gueltigen Werten."""
+        self.assertEqual(["31.09.2026"], zeitparser._impossible_values("31.09.2026 10:00"))
+        self.assertEqual(["2026-02-30", "24:00"], zeitparser._impossible_values("2026-02-30 24:00"))
+        self.assertEqual([], zeitparser._impossible_values("29.02.2028 23:59"))
+
+    def test_glued_digits_are_checked_as_path_2_reads_them(self) -> None:
+        """Pfad 2 sucht eine Uhrzeit ohne Grenzen; die Pruefung muss dasselbe lesen.
+
+        Die erste Fassung las mit Grenzen und uebersah `38:99` in *„9838:99"* —
+        gefunden ueber 12 000 erzeugte Eingaben, von denen 17 weiter warfen.
+        """
+        self.assertIsNone(_parse("Donnerstag 9838:99").datum)
+        self.assertEqual(["38:99"], zeitparser._impossible_values("Donnerstag 9838:99"))
+
+
 if __name__ == "__main__":
     unittest.main()

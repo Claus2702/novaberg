@@ -10,6 +10,7 @@ Prinzip: LLM extrahiert den Zeitausdruck als String,
 Python loest ihn deterministisch auf.
 """
 
+import calendar
 import logging
 import re
 from dataclasses import dataclass
@@ -557,8 +558,8 @@ _HOUR_BEFORE_DAYPART = re.compile(
 )
 
 #: Eine Uhrzeit mit Punkt als Trenner vor "Uhr": "9.30 Uhr", "15.09.2026 10.00
-#: Uhr". Vor "Uhr" ist sie immer eine Uhrzeit, auch "25.00 Uhr" — die loest
-#: danach kein Pfad auf. Nicht hinter einer Ziffer, einem
+#: Uhr". Vor "Uhr" ist sie immer eine Uhrzeit, auch "25.00 Uhr" — die verwirft
+#: danach die Pruefung auf unmoegliche Werte. Nicht hinter einer Ziffer, einem
 #: Punkt oder Doppelpunkt: Das waere der Rest eines Datums oder einer Uhrzeit.
 _DOTTED_BEFORE_UHR = re.compile(r"(?<![\d.:])(\d{1,2})\.(\d{2})(?=\s*uhr\b)", re.IGNORECASE)
 
@@ -579,6 +580,16 @@ _DOTTED_AFTER_UM = re.compile(
 #: als Uhrzeit ankam — mit einem anderen Muster als dem, das die Kandidaten
 #: fand.
 _WRITTEN_CLOCK_TIME = re.compile(r"\d{1,2}:\d{2}")
+
+#: Datum und Uhrzeit im normalisierten Text, so wie die Pfade in `_aufloesen`
+#: sie lesen. Ein Datum lesen sie nur verankert, als ganzen Text — dafuer
+#: genuegen Grenzen. **Eine Uhrzeit sucht Pfad 2 ohne Grenzen**, und die
+#: Pruefung muss dasselbe lesen: Mit Grenzen uebersah sie `38:99` in "9838:99",
+#: der Pfad fand es und stuerzte ab (15.09.2026, 17 von 12 000 erzeugten
+#: Eingaben).
+_DATE_DMY = re.compile(r"(?<![\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)")
+_DATE_ISO = re.compile(r"(?<![\d-])(\d{4})-(\d{2})-(\d{2})(?![\d-])")
+_CLOCK_TIME = re.compile(r"(\d{1,2}):(\d{2})")
 
 
 class _HourReadingError(ValueError):
@@ -693,6 +704,43 @@ def _replace_hours(text: str, pattern: re.Pattern, daypart: Optional[str]) -> st
     if added != candidates:
         raise _HourReadingError("count_mismatch", (candidates, added, text, result))
     return result
+
+
+def _impossible_values(normalized: str) -> list[str]:
+    """Die Datums- und Uhrzeitangaben im normalisierten Text, die es nicht gibt.
+
+    Die Pfade in `_aufloesen` bauen ihr `datetime` aus dem normalisierten Text,
+    ohne die Werte zu pruefen. Bis zum 15.09.2026 riss deshalb ein unmoeglicher
+    Tag oder eine unmoegliche Uhrzeit eine `ValueError` bis zum Aufrufer:
+    *„am 31.09. um 10"*, *„29.02.2027"*, *„morgen um 24 Uhr"*, *„morgen 14:75"*.
+    Der Termindienst faengt sie nicht; statt der Rueckfrage nach dem Datum kam
+    ein Fehler des Dispatch.
+
+    Vorbedingung: `normalized` ist das Ergebnis von `_text_normalisieren`.
+    Nachbedingung: je unmoeglicher Angabe ihr Wortlaut, in der Reihenfolge
+        Datum (Tag.Monat.Jahr), Datum (ISO), Uhrzeit; sonst leer.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    def is_calendar_day(year: int, month: int, day: int) -> bool:
+        if not (1 <= year <= 9999 and 1 <= month <= 12):
+            return False
+        return 1 <= day <= calendar.monthrange(year, month)[1]
+
+    found: list[str] = [
+        f"{d}.{m}.{y}" for d, m, y in _DATE_DMY.findall(normalized)
+        if not is_calendar_day(int(y), int(m), int(d))
+    ]
+    found += [
+        f"{y}-{m}-{d}" for y, m, d in _DATE_ISO.findall(normalized)
+        if not is_calendar_day(int(y), int(m), int(d))
+    ]
+    found += [
+        f"{h}:{mi}" for h, mi in _CLOCK_TIME.findall(normalized)
+        if int(h) > 23 or int(mi) > 59
+    ]
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    return found
 
 
 def _read_dotted_clock_time(text: str) -> str:
@@ -1181,6 +1229,19 @@ def _aufloesen(
     # Schritt 3: Normalisierung fuer dateparser (kennt keine Richtung mehr)
     normalisiert: str = _text_normalisieren(rumpf, heute=heute_lokal)
 
+    # Schritt 3b: Was es nicht gibt, bekommt kein Datum — und keinen Absturz.
+    # Die Pfade unten bauen ihr datetime ungeprueft; ein unmoeglicher Wert riss
+    # bis zum 15.09.2026 eine ValueError bis zum Aufrufer. Kein Rueckfall auf
+    # dateparser: Ein unmoegliches Datum lehnt er ab, eine unmoegliche Uhrzeit
+    # nicht — "morgen 14:75" ergibt dort morgen zur aktuellen Uhrzeit (gemessen
+    # an dateparser 1.4.2, 15.09.2026).
+    impossible: list[str] = _impossible_values(normalisiert)
+    if impossible:
+        logger.warning(
+            f"Zeitparser: '{text}' nennt, was es nicht gibt ({', '.join(impossible)}) — kein Datum"
+        )
+        return None, befund, korrigiert, normalisiert
+
     # DIE RICHTUNG WIRD UEBERGEBEN, nicht nur berechnet.
     #
     # Bis zum 30.07.2026 wurde sie in `zeit_parsen_vektor` ermittelt,
@@ -1284,23 +1345,18 @@ def _aufloesen(
     if ergebnis is None:
         m = re.match(r'^(\d{1,2}):(\d{2})$', norm_stripped)
         if m:
+            # Stunde und Minute sind in Schritt 3b geprueft. Bis zum 15.09.2026
+            # stand hier die Pruefung selbst, mit Rueckfall auf dateparser.
             stunde, minute = int(m.group(1)), int(m.group(2))
-            if stunde < 24 and minute < 60:
-                kandidat: datetime = referenz_lokal.replace(
-                    hour=stunde, minute=minute, second=0, microsecond=0,
-                )
-                if zukunft and kandidat <= referenz_lokal:
-                    kandidat += timedelta(days=1)
-                elif not zukunft and kandidat > referenz_lokal:
-                    kandidat -= timedelta(days=1)
-                ergebnis = kandidat
-                pfad = 1
-            else:
-                logger.error(
-                    f"Zeitparser: '{norm_stripped}' sieht aus wie eine Uhrzeit, "
-                    f"ist aber keine ({stunde}:{minute:02d}) — an dateparser "
-                    f"weitergereicht"
-                )
+            kandidat: datetime = referenz_lokal.replace(
+                hour=stunde, minute=minute, second=0, microsecond=0,
+            )
+            if zukunft and kandidat <= referenz_lokal:
+                kandidat += timedelta(days=1)
+            elif not zukunft and kandidat > referenz_lokal:
+                kandidat -= timedelta(days=1)
+            ergebnis = kandidat
+            pfad = 1
 
     # Pfad 2 — Split-Parse (Uhrzeit raus, dateparser nur Datum)
     if ergebnis is None:
