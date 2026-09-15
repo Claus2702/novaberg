@@ -14,7 +14,7 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
-from typing import Optional
+from typing import ClassVar, Optional
 from zoneinfo import ZoneInfo
 
 import dateparser
@@ -206,7 +206,7 @@ _ZEITEINHEITEN: set[str] = {
 }
 
 _GESCHUETZTE_WOERTER: set[str] = {
-    "morgens", "vormittags", "mittags", "nachmittags",
+    "morgens", "vormittags", "vormittag", "mittags", "nachmittags", "nachmittag",
     "abends", "abend", "nachts", "früh",
     "eins", "zwei", "drei", "vier", "fünf",
     "sechs", "sieben", "acht", "neun", "zehn",
@@ -486,13 +486,24 @@ def _marker_extrahieren(text: str) -> tuple[str, MarkerBefund]:
         regel_ids=tuple(kennungen),
     )
 
+# Die Einzahl ohne -s steht neben der Mehrzahl, weil sie nach einem Tageswort
+# die gesprochene Form ist: "heute abend", "morgen nachmittag". Bis zum
+# 15.09.2026 kannte die Tabelle nur "Abend" (fuer die Rueckfall-Uhrzeit), und
+# "morgen nachmittag um 3" loeste zu nichts auf.
+#
+# "nacht" fehlt mit Absicht: "heute Nacht um 2" meint den Morgen des Folgetags,
+# und diese Rechnung kann der Parser nicht. Ohne Eintrag bleibt der Ausdruck
+# unaufgeloest, statt still auf heute 02:00 zu fallen.
 _TAGESZEITEN: dict[str, int] = {
     "morgens": 0,
     "früh": 0,
     "vormittags": 0,
+    "vormittag": 0,
     "mittags": 12,
     "nachmittags": 12,
+    "nachmittag": 12,
     "abends": 12,
+    "abend": 12,
     "nachts": 0,
 }
 
@@ -500,12 +511,221 @@ _TAGESZEIT_UHRZEITEN: dict[str, str] = {
     "früh": "06:00",
     "morgens": "08:00",
     "vormittags": "10:00",
+    "vormittag": "10:00",
     "mittags": "12:00",
     "nachmittags": "15:00",
+    "nachmittag": "15:00",
     "abends": "18:00",
     "Abend": "18:00",
     "nachts": "22:00",
 }
+
+#: Mengen, hinter denen eine Zahl nach "um" keine Uhrzeit ist: "um 10 Minuten
+#: verschieben", "um 10 Prozent", "um 3 Grad".
+_QUANTITIES_AFTER_UM: str = _wortgruppe(
+    "sekunde", "sekunden", "minute", "minuten", "min", "stunde", "stunden", "std",
+    "tag", "tage", "tagen", "woche", "wochen", "monat", "monate", "monaten",
+    "jahr", "jahre", "jahren", "prozent", "prozentpunkte", "euro", "cent", "grad",
+    "mal", "punkte", "stück", "kilo", "kilometer", "km", "meter", "cm",
+)
+
+#: Monate und ihre Kurzformen: Vor ihnen ist eine Zahl ein Tag, keine Stunde
+#: ("um 15. Mai").
+_MONTHS_AFTER_UM: str = _wortgruppe(
+    *_MONATE, "jan", "feb", "mär", "apr", "jun", "jul", "aug", "sep", "sept",
+    "okt", "nov", "dez",
+)
+
+#: "um" und eine Stunde ohne "Uhr": "übermorgen um 9", "Donnerstag um 14",
+#: "abends um 8", "um 10 rum". Das Wort danach darf keine Menge und kein Monat
+#: sein, und ein Punkt danach nur, wenn keine Ziffer folgt ("um 10.30" ist eine
+#: andere Form). Ein Satzpunkt direkt hinter der Stunde gehoert zum Treffer und
+#: faellt mit weg.
+_HOUR_AFTER_UM = re.compile(
+    r"\bum\s+(\d{1,2})(?:\s+(?:herum|rum))?(?:\.(?!\d))?"
+    r"(?=\s*$|\s*[,;!?)]|\s+(?!(?:" + _QUANTITIES_AFTER_UM + "|" + _MONTHS_AFTER_UM
+    + r")\b)(?![%€°]))",
+    re.IGNORECASE,
+)
+
+#: Eine nackte Stunde direkt vor einer Tageszeit: "3 nachmittags". Nicht der
+#: Minutenteil einer Uhrzeit ("15:00 nachmittags", "3 Uhr 15 nachmittags") und
+#: nicht der Tag eines Datums ("01.07. nachmittags").
+_HOUR_BEFORE_DAYPART = re.compile(
+    r"(?<![:\d.])(?<!uhr\s)\b(\d{1,2})\s+(" + "|".join(_TAGESZEITEN.keys()) + r")\b",
+    re.IGNORECASE,
+)
+
+#: Eine geschriebene Uhrzeit. Die beiden Stundenleser zaehlen damit nach, ob
+#: jeder Kandidat als Uhrzeit ankam — mit einem anderen Muster als dem, das
+#: die Kandidaten fand.
+_WRITTEN_CLOCK_TIME = re.compile(r"\d{1,2}:\d{2}")
+
+
+class _HourReadingError(ValueError):
+    """Ein Stundenleser hat seine eigene Zusicherung verletzt.
+
+    Kein Eingabefehler: `_replace_hours` prueft die Stunde vorher, loest die
+    Tageszeit ueber `_daypart_key` auf, und die Zaehlung geht per Bauart auf.
+    Wer das hier sieht, hat eine Tabelle oder ein Muster geaendert, ohne die
+    andere Seite mitzuziehen.
+    """
+
+    _MESSAGES: ClassVar[dict[str, str]] = {
+        "hour_range": "Stunde {value!r} liegt ausserhalb 0..23",
+        "daypart_unknown": "Tageszeit {value!r} steht nicht in _TAGESZEITEN",
+        "count_mismatch": "Treffer und hinzugekommene Uhrzeiten weichen ab: {value!r}",
+    }
+
+    def __init__(self, kind: str, value: object) -> None:
+        """Baut die Meldung aus der Art des Verstosses und dem Wert, der ihn zeigt."""
+        super().__init__(self._MESSAGES[kind].format(value=value))
+
+
+def _shift_hour_by_daypart(hour: int, daypart: str) -> int:
+    """Verschiebt eine Stunde in die Tageshaelfte, die ihre Tageszeit nennt.
+
+    Die Regel von Block 2 fuer *„3 Uhr nachmittags"*: Eine Stunde unter 12 mit
+    einer Tageszeit ab Mittag bekommt 12 dazu, und *„12 nachts"* ist 0 Uhr. Die
+    neuen Formen ohne "Uhr" rechnen hier, damit sie genau so lesen wie ihr
+    Zwilling mit "Uhr".
+
+    Vorbedingung: `hour` liegt in 0..23; `daypart` ist leer oder ein
+    Schluessel aus `_TAGESZEITEN`. Der Aufrufer `_replace_hours` prueft beides
+    vorher — ein Verstoss ist ein Programmfehler und wirft `_HourReadingError`.
+    Nachbedingung: die Stunde in 0..23.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    if not 0 <= hour <= 23:
+        raise _HourReadingError("hour_range", hour)
+    if daypart and daypart not in _TAGESZEITEN:
+        raise _HourReadingError("daypart_unknown", daypart)
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    offset: int = _TAGESZEITEN[daypart] if daypart else 0
+    if hour < 12 and offset >= 12:
+        hour += offset
+    elif hour == 12 and daypart == "nachts":
+        hour = 0
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    if not 0 <= hour <= 23:
+        raise _HourReadingError("hour_range", (hour, daypart))
+    return hour
+
+
+def _daypart_key(word: str) -> str:
+    """Der Schluessel aus `_TAGESZEITEN`, den ein Tageszeit-Treffer meint.
+
+    Die Muster vergleichen mit `re.IGNORECASE`, und `re` faltet dabei weiter
+    als `str.lower()`: `ı` (U+0131) und `İ` (U+0130) treffen ein `i`, `ſ`
+    (U+017F) ein `s`, aber `lower()` fuehrt von dort nicht zum Schluessel
+    zurueck. Bis zum 15.09.2026 warf *„morgen um 3 nachmıttags"* deshalb
+    `_HourReadingError` — gefunden von der zweiten Kontrolle. Aufgeloest wird
+    mit derselben Faltung, mit der das Muster traf.
+
+    Vorbedingung: `word` hat unter `re.IGNORECASE` einen Schluessel aus
+        `_TAGESZEITEN` getroffen.
+    Nachbedingung: der Schluessel, den `word` unter derselben Faltung
+        vollstaendig trifft — sonst `_HourReadingError`.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    for key in _TAGESZEITEN:
+        if re.fullmatch(re.escape(key), word, re.IGNORECASE):
+            return key
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    raise _HourReadingError("daypart_unknown", word)
+
+
+def _replace_hours(text: str, pattern: re.Pattern, daypart: Optional[str]) -> str:
+    """Schreibt jeden Stundentreffer eines Musters als `H:00`.
+
+    Der gemeinsame Rumpf von `_read_hour_before_daypart` und `_read_hour_after_um`.
+    Das Muster liefert die Stunde in Gruppe 1; die Tageszeit kommt entweder
+    aus Gruppe 2 des Treffers (`daypart` ist dann None) oder aus dem
+    Ausdruck als Ganzem.
+
+    Vorbedingung: `pattern` hat die Stunde in Gruppe 1, bei `daypart=None`
+        die Tageszeit in Gruppe 2; sonst ist `daypart` leer oder ein
+        Schluessel aus `_TAGESZEITEN`.
+    Nachbedingung: Jeder Treffer mit Stunde 0..23 steht als `H:00`, jeder mit
+        einer groesseren Zahl unberuehrt. Nachgezaehlt mit
+        `_WRITTEN_CLOCK_TIME`: Das Ergebnis traegt genau so viele Uhrzeiten
+        mehr, wie es Treffer gab — sonst `_HourReadingError`.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    candidates: int = sum(1 for m in pattern.finditer(text) if int(m.group(1)) <= 23)
+    if candidates == 0:
+        return text
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    def replace(match: re.Match) -> str:
+        hour: int = int(match.group(1))
+        if hour > 23:
+            return match.group(0)
+        word: str = _daypart_key(match.group(2)) if daypart is None else daypart
+        return f"{_shift_hour_by_daypart(hour, word)}:00"
+
+    result: str = pattern.sub(replace, text)
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    added: int = len(_WRITTEN_CLOCK_TIME.findall(result)) - len(_WRITTEN_CLOCK_TIME.findall(text))
+    if added != candidates:
+        raise _HourReadingError("count_mismatch", (candidates, added, text, result))
+    return result
+
+
+def _read_hour_before_daypart(text: str) -> str:
+    """Liest "3 nachmittags" als Uhrzeit, bevor die Tageszeit herausgenommen wird.
+
+    Die Tageszeit-Extraktion am Anfang der Normalisierung schneidet das Wort
+    heraus und merkt sich nur seine Rueckfall-Uhrzeit. Stand die Stunde davor,
+    blieb sie allein zurueck und wurde zum Monatstag — *„3 nachmittags"* ergab
+    den 03. des Monats um 15:00. Deshalb wird dieses Paar zuerst gelesen. Bis
+    zum 15.09.2026 stand dafuer ein Block hinter der Extraktion; er bekam das
+    Paar nur noch zu sehen, wenn der Ausdruck eine zweite Tageszeit trug.
+
+    Vorbedingung: `text` ist der fuzzy-korrigierte Ausdruck.
+    Nachbedingung: Jedes Paar aus nackter Stunde (0..23) und Tageszeit steht
+    als `H:00`; eine Stunde ueber 23 bleibt unberuehrt.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    result: str = _replace_hours(text, _HOUR_BEFORE_DAYPART, None)
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    if result != text:
+        logger.debug(f"Zeitparser: Stunde vor Tageszeit gelesen '{text}' -> '{result}'")
+    return result
+
+
+def _read_hour_after_um(text: str, daypart: str) -> str:
+    """Liest eine Stunde nach "um" ohne "Uhr" als Uhrzeit.
+
+    **Der Fall, gemessen am 14.09.2026 im Betrieb:** Ein Terminauftrag mit
+    Tageswort, "um" und nackter Stunde erreichte den Parser woertlich; die
+    Normalisierung liess *„um H"* stehen, und der Rueckfall auf den
+    Originaltext lieferte den Folgetag **zur aktuellen Uhrzeit**. Ohne
+    Tagesangabe wurde die Zahl zum Monatstag, auch mit Wochentag: *„Donnerstag
+    um 14"* ergab den 14. des Monats, in der Vergangenheit.
+
+    **Die Stunde wird so gelesen wie mit "Uhr"** — *„um 3"* ist 03:00 wie
+    *„um 3 Uhr"*. Eine Tageszeit im Ausdruck verschiebt sie wie dort
+    (*„abends um 8"* -> 20:00). Welche Tageshaelfte ohne Tageszeit gemeint ist,
+    entscheidet diese Funktion nicht.
+
+    Vorbedingung: `text` ist normalisiert bis vor die Entfernung des verwaisten
+    "um"; `daypart` ist die gemerkte Tageszeit des Ausdrucks oder leer.
+    Nachbedingung: Jedes "um" mit Stunde 0..23 ohne Menge oder Monat danach
+    steht als `H:00`; eine Stunde ueber 23 bleibt unberuehrt.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    result: str = _replace_hours(text, _HOUR_AFTER_UM, daypart)
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    if result != text:
+        logger.debug(f"Zeitparser: Stunde nach 'um' gelesen '{text}' -> '{result}'")
+    return result
 
 
 def _heute_lokal(jetzt: Optional[datetime] = None) -> date:
@@ -564,15 +784,22 @@ def _text_normalisieren(
     if heute is None:
         heute = _heute_lokal()
 
-    ergebnis: str = text
+    ergebnis: str = _read_hour_before_daypart(text)
     tageszeit_woerter: str = "|".join(_TAGESZEITEN.keys())
 
     # ── Tageszeit extrahieren (Fallback fuer spaeter) ──
-    # NUR wenn das Wort NICHT direkt nach "Uhr" steht
+    # NUR wenn das Wort NICHT direkt nach "Uhr" steht.
+    #
+    # Gemerkt wird seit dem 15.09.2026 auch das Wort selbst, nicht nur seine
+    # Rueckfall-Uhrzeit: Eine vorangestellte Tageszeit verschiebt die Stunde,
+    # die ihr folgt ("abends um 8", "nachmittags um 3 Uhr") — bis dahin ging
+    # die Verschiebung mit dem herausgeschnittenen Wort verloren.
     gemerkte_uhrzeit: str = ""
+    gemerkte_tageszeit: str = ""
     for wort, uhrzeit in _TAGESZEIT_UHRZEITEN.items():
         if re.search(r'(?<![Uu]hr\s)\b' + wort + r'\b', ergebnis, flags=re.IGNORECASE):
             gemerkte_uhrzeit = uhrzeit
+            gemerkte_tageszeit = wort.lower()
             ergebnis = re.sub(
                 r'(?<![Uu]hr\s)\s*\b' + wort + r'\b\s*', ' ',
                 ergebnis, flags=re.IGNORECASE,
@@ -615,7 +842,7 @@ def _text_normalisieren(
     # ── 1. Zahlwort-Uhrzeiten MIT optionalem Tageszeit-Suffix ──
     def _zahlwort_uhr_ersetzen(match: re.Match) -> str:
         zahlwort: str = match.group(1).lower()
-        tageszeit: str = (match.group(2) or "").lower().strip()
+        tageszeit: str = (match.group(2) or "").lower().strip() or gemerkte_tageszeit
 
         if zahlwort not in _ZAHLWOERTER:
             return match.group(0)
@@ -643,7 +870,7 @@ def _text_normalisieren(
     def _numerisch_uhr_ersetzen(match: re.Match) -> str:
         stunde: int = int(match.group(1))
         minuten: str = match.group(2) or "00"
-        tageszeit: str = (match.group(3) or "").lower().strip()
+        tageszeit: str = (match.group(3) or "").lower().strip() or gemerkte_tageszeit
 
         if tageszeit and tageszeit in _TAGESZEITEN:
             offset: int = _TAGESZEITEN[tageszeit]
@@ -661,21 +888,10 @@ def _text_normalisieren(
         flags=re.IGNORECASE,
     )
 
-    # ── 3. Standalone Tageszeit ohne "Uhr": "3 nachmittags" -> "15:00" ──
-    def _standalone_tageszeit(match: re.Match) -> str:
-        stunde: int = int(match.group(1))
-        tageszeit: str = match.group(2).lower()
-        offset: int = _TAGESZEITEN.get(tageszeit, 0)
-        if stunde < 12 and offset >= 12:
-            stunde += offset
-        return f"{stunde}:00"
-
-    ergebnis = re.sub(
-        r'\b(\d{1,2})\s+(' + tageszeit_woerter + r')\b',
-        _standalone_tageszeit,
-        ergebnis,
-        flags=re.IGNORECASE,
-    )
+    # ── 3. Stunde vor Tageszeit ohne "Uhr" ──
+    # Seit dem 15.09.2026 in `_read_hour_before_daypart`, VOR der Extraktion oben.
+    # Hier war die Tageszeit schon herausgeschnitten; der Block traf nur noch,
+    # wenn der Ausdruck eine zweite Tageszeit trug.
 
     # ── 4. Fraenkisch/Sueddeutsch ──
     def _dreiviertel(match: re.Match) -> str:
@@ -781,6 +997,9 @@ def _text_normalisieren(
         r"\b[Ww]oche\s+(?=(" + "|".join(_WOCHENTAGE) + r")\b)",
         "", ergebnis, flags=re.IGNORECASE,
     )
+
+    # ── 8b. Stunde nach "um" ohne "Uhr" ──
+    ergebnis = _read_hour_after_um(ergebnis, gemerkte_tageszeit)
 
     # ── 9. Orphaned "um" vor Uhrzeiten entfernen ──
     ergebnis = re.sub(r'\bum\s+(\d{1,2}:\d{2})', r'\1', ergebnis)

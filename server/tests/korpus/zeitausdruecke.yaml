@@ -541,21 +541,46 @@ faelle:
 
 - id: REG-023
   text: "nachmittags um 3 Uhr"
-  ab_phase: null
+  ab_phase: 2
   erwartet: { art: punkt, beginn: "2026-07-31T15:00:00+02:00" }
-  notiz: "DOKUMENTIERTE LUECKE: Tageszeit VOR Uhrzeit, Offset geht verloren."
+  notiz: >
+    Bis 15.09.2026 dokumentierte Luecke: Tageszeit VOR Uhrzeit, der Offset
+    ging mit dem herausgeschnittenen Wort verloren. Seither gemerkt.
 
 - id: REG-024
   text: "nachmittags um 3"
-  ab_phase: null
+  ab_phase: 2
   erwartet: { art: punkt, beginn: "2026-07-31T15:00:00+02:00" }
-  notiz: "DOKUMENTIERTE LUECKE: einzelne Ziffer ohne 'Uhr' wird Tag."
+  notiz: >
+    Bis 15.09.2026 dokumentierte Luecke: die einzelne Ziffer ohne 'Uhr' wurde
+    Tag des Monats. Seither ist die Stunde nach 'um' eine Uhrzeit.
 
 - id: REG-025
   text: "zwanzig vor vier"
   ab_phase: null
   erwartet: { art: punkt, beginn: "2026-08-01T03:40:00+02:00" }
   notiz: "DOKUMENTIERTE LUECKE: _ZAHLWOERTER kennt nur 1-12."
+
+- id: REG-026
+  text: "morgen um 9"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-08-01T09:00:00+02:00" }
+  notiz: >
+    Die Form des Betriebsfalls vom 14.09.2026 (Tageswort, 'um', nackte Stunde):
+    Die Normalisierung liess 'um H' stehen, der Rueckfall auf den Originaltext
+    lieferte den Folgetag zur aktuellen Uhrzeit.
+
+- id: REG-027
+  text: "Donnerstag um 14"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-08-06T14:00:00+02:00" }
+  notiz: "Bis 15.09.2026 der 14. des Monats, in der Vergangenheit."
+
+- id: REG-028
+  text: "heute abend um 8"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-07-31T20:00:00+02:00" }
+  notiz: "Einzahl 'abend' nach dem Tageswort; mit 'Uhr' war es bis 15.09.2026 08:00."
 
 # ═══════════════════════════════════════════════════════════════════════════
 # VAG — Vage Ausdruecke: duerfen NICHT zu einem Datum werden
