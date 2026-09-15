@@ -191,5 +191,69 @@ class TestStatedTimeMustBeInTheResult(unittest.TestCase):
         self.assertEqual("", zeitparser._stated_time_missing("2026-08-01", result))
 
 
+
+class TestIsoDateGoesToDateparserAsDmy(unittest.TestCase):
+    """Teil D: Ein Datum, das die Normalisierung schreibt, liest dateparser richtig herum.
+
+    Block 0b schreibt ein Tageswort als ISO-Datum. Bekommt dateparser es in
+    Pfad 2 oder 3, liest er es unter `DATE_ORDER: DMY` als Jahr-Tag-Monat:
+    `2026-08-01` wurde der 8. Januar, `2026-07-31` gar nichts. Getroffen hat es
+    jeden Ausdruck mit der Uhrzeit vor dem Tageswort — gefunden von der zweiten
+    Kontrolle ueber erzeugte Eingaben.
+    """
+
+    def test_hour_before_day_word_keeps_the_day(self) -> None:
+        """*„9 Uhr morgen"* — bis zum 15.09.2026 der 08.01.2026 um 09:00."""
+        self.assertEqual("2026-08-01 09:00", _local("9 Uhr morgen"))
+
+    def test_dotted_time_before_day_word_reads_like_colon(self) -> None:
+        """*„9.15 Uhr heute"* liest wie *„9:15 Uhr heute"* — vorher nur der Zwilling."""
+        self.assertEqual("2026-07-31 09:15", _local("9.15 Uhr heute"))
+        self.assertEqual(_local("9:15 Uhr heute"), _local("9.15 Uhr heute"))
+
+    def test_iso_dates_as_dmy_rewrites_each_iso_date(self) -> None:
+        """Jedes ISO-Datum wird Tag.Monat.Jahr; der Rest des Textes bleibt."""
+        self.assertEqual(
+            "01.08.2026 Freitag bis 02.08.2026",
+            zeitparser._iso_dates_as_dmy("2026-08-01 Freitag bis 2026-08-02"),
+        )
+
+    def test_contradicting_weekday_gives_no_date(self) -> None:
+        """Am Freitag gesagt ist morgen Samstag — mit *„Montag"* daneben gibt es kein Datum.
+
+        Im Betrieb kam am 14.09.2026, einem Montag, ein Termin mit Tageswort und
+        einem anderen Wochentag beim Parser an. Solange das ISO-Datum falsch
+        herum gelesen wurde, ergab er zufaellig nichts; richtig gelesen haette
+        er den Dienstag gewaehlt. Der Ausdruck unten ist gewaehlt.
+        """
+        self.assertIsNone(_parse("morgen, Montag um 8 Uhr").datum)
+
+    def test_contradiction_is_logged(self) -> None:
+        """Die Warnzeile nennt den Tag, den das Tageswort ergibt."""
+        with self.assertLogs("ki_server.zeitparser", level="WARNING") as log:
+            _parse("morgen, Montag um 8 Uhr")
+
+        self.assertTrue(any("Samstag" in zeile for zeile in log.output), log.output)
+
+    def test_weekday_contradiction_names_the_day(self) -> None:
+        """Leer, wenn der Wochentag zum Datum passt oder keiner genannt ist."""
+        self.assertIn("Samstag", zeitparser._weekday_contradiction("2026-08-01 Montag 8:00"))
+        self.assertEqual("", zeitparser._weekday_contradiction("2026-08-01 Samstag 8:00"))
+        self.assertEqual("", zeitparser._weekday_contradiction("2026-08-01 9:00"))
+
+    def test_consistent_day_word_and_weekday_keeps_the_date(self) -> None:
+        """Zwilling: Stimmen Tageswort und Wochentag ueberein, bleibt das Datum."""
+        self.assertEqual("2026-08-01 08:00", _local("morgen, Samstag um 8 Uhr"))
+        self.assertEqual("2026-07-31 00:00", _local("heute Freitag"))
+
+    def test_iso_date_glued_to_a_number_stays_untouched(self) -> None:
+        """Hinter einem Punkt ist `2026-07-31` Teil eines Wortsalats, kein Datum.
+
+        Die erste Fassung schrieb es um, und die Nachzaehlung warf — gefunden
+        ueber 12 000 erzeugte Eingaben, von denen 19 so endeten.
+        """
+        self.assertEqual("43.2026-07-31", zeitparser._iso_dates_as_dmy("43.2026-07-31"))
+        _parse("um 43.heute")
+
 if __name__ == "__main__":
     unittest.main()

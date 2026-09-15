@@ -583,13 +583,17 @@ _WRITTEN_CLOCK_TIME = re.compile(r"\d{1,2}:\d{2}")
 
 #: Datum und Uhrzeit im normalisierten Text, so wie die Pfade in `_aufloesen`
 #: sie lesen. Ein Datum lesen sie nur verankert, als ganzen Text — dafuer
-#: genuegen Grenzen. **Eine Uhrzeit sucht Pfad 2 ohne Grenzen**, und die
-#: Pruefung muss dasselbe lesen: Mit Grenzen uebersah sie `38:99` in "9838:99",
-#: der Pfad fand es und stuerzte ab (15.09.2026, 17 von 12 000 erzeugten
-#: Eingaben).
+#: genuegen Grenzen. Ein ISO-Datum direkt hinter einem Punkt ("43.2026-07-31",
+#: aus einem Tageswort in einem Wortsalat) ist keines. **Eine Uhrzeit sucht
+#: Pfad 2 ohne Grenzen**, und die Pruefung muss dasselbe lesen: Mit Grenzen
+#: uebersah sie `38:99` in "9838:99", der Pfad fand es und stuerzte ab
+#: (15.09.2026, 17 von 12 000 erzeugten Eingaben).
 _DATE_DMY = re.compile(r"(?<![\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)")
-_DATE_ISO = re.compile(r"(?<![\d-])(\d{4})-(\d{2})-(\d{2})(?![\d-])")
+_DATE_ISO = re.compile(r"(?<![\d.-])(\d{4})-(\d{2})-(\d{2})(?![\d-])")
 _CLOCK_TIME = re.compile(r"(\d{1,2}):(\d{2})")
+
+#: Ein Wochentag als Wort, fuer die Pruefung gegen ein Datum aus einem Tageswort.
+_WEEKDAY_WORD = re.compile(r"\b(" + "|".join(_WOCHENTAGE) + r")\b", re.IGNORECASE)
 
 
 class _HourReadingError(ValueError):
@@ -741,6 +745,67 @@ def _impossible_values(normalized: str) -> list[str]:
 
     # ── Ausgabe ──────────────────────────────────────────────────────
     return found
+
+
+def _iso_dates_as_dmy(text: str) -> str:
+    """Schreibt jedes ISO-Datum als Tag.Monat.Jahr, bevor der Text an dateparser geht.
+
+    Block 0b schreibt ein Tageswort als ISO-Datum, und Pfad 1 liest das
+    selbst. Die Pfade 2 und 3 geben es an dateparser — und der liest es unter
+    `DATE_ORDER: DMY` als Jahr-Tag-Monat: `2026-08-01` ergab den 08.01.2026,
+    `2026-07-31` nichts (dateparser 1.4.2, gemessen 15.09.2026). Getroffen hat
+    es jeden Ausdruck mit der Uhrzeit vor dem Tageswort, *„9 Uhr morgen"*.
+
+    Vorbedingung: `text` geht als Naechstes an dateparser.
+    Nachbedingung: kein ISO-Datum mehr im Text; je ersetztem eines mehr in
+        der Form Tag.Monat.Jahr — sonst `_HourReadingError`.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    iso: int = len(_DATE_ISO.findall(text))
+    if iso == 0:
+        return text
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    result: str = _DATE_ISO.sub(lambda m: f"{m.group(3)}.{m.group(2)}.{m.group(1)}", text)
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    added: int = len(_DATE_DMY.findall(result)) - len(_DATE_DMY.findall(text))
+    if _DATE_ISO.search(result) or added != iso:
+        raise _HourReadingError("count_mismatch", (iso, added, text, result))
+    return result
+
+
+def _weekday_contradiction(normalized: str) -> str:
+    """Ein ISO-Datum, dem ein genannter Wochentag widerspricht — sonst leer.
+
+    Block 0b schreibt ein Tageswort als ISO-Datum, ein Wochentag bleibt als Wort
+    stehen. **Nennt der Ausdruck beides und ist es nicht derselbe Tag, gibt es
+    keine richtige Wahl** — und dateparser traf eine: Am 14.09.2026, einem
+    Montag, kam im Betrieb ein Termin mit Tageswort und einem anderen
+    Wochentag an; richtig gelesen haette das Datum den Dienstag gewaehlt,
+    gemeint war nach dem Verlauf der Wochentag. Nur ISO-Daten werden
+    geprueft: Ein Datum ohne Jahr bekommt in Block 0c das laufende Jahr, und
+    der Wochentag kann ein spaeteres meinen.
+
+    Vorbedingung: `normalized` traegt nur gueltige Daten (Schritt 3b lief).
+    Nachbedingung: leer, wenn kein Wochentag genannt ist oder jedes ISO-Datum
+        auf einen genannten Wochentag faellt; sonst Datum, sein Wochentag und
+        die genannten.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    named: set[str] = {w.lower() for w in _WEEKDAY_WORD.findall(normalized)}
+    if not named:
+        return ""
+    for year, month, day in _DATE_ISO.findall(normalized):
+        weekday: str = _WOCHENTAGE[date(int(year), int(month), int(day)).weekday()]
+        if weekday not in named:
+            return (
+                f"{day}.{month}.{year} ist ein {weekday.capitalize()}, "
+                f"genannt: {', '.join(sorted(w.capitalize() for w in named))}"
+            )
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    return ""
 
 
 def _stated_time_missing(normalized: str, result: datetime) -> str:
@@ -1275,6 +1340,13 @@ def _aufloesen(
         )
         return None, befund, korrigiert, normalisiert
 
+    # Schritt 3c: Widersprechen sich Tageswort und Wochentag, gibt es keine
+    # richtige Wahl — kein Datum statt einer (`_weekday_contradiction`).
+    contradiction: str = _weekday_contradiction(normalisiert)
+    if contradiction:
+        logger.warning(f"Zeitparser: '{text}' widerspricht sich ({contradiction}) — kein Datum")
+        return None, befund, korrigiert, normalisiert
+
     # DIE RICHTUNG WIRD UEBERGEBEN, nicht nur berechnet.
     #
     # Bis zum 30.07.2026 wurde sie in `zeit_parsen_vektor` ermittelt,
@@ -1403,7 +1475,7 @@ def _aufloesen(
 
             if datum_teil:
                 datum_ergebnis: Optional[datetime] = dateparser.parse(
-                    datum_teil, languages=["de"], settings=settings,
+                    _iso_dates_as_dmy(datum_teil), languages=["de"], settings=settings,
                 )
                 if datum_ergebnis:
                     ergebnis = datum_ergebnis.replace(
@@ -1413,14 +1485,18 @@ def _aufloesen(
 
     # Pfad 3 — Fallback (alles an dateparser)
     if ergebnis is None:
-        ergebnis = dateparser.parse(normalisiert, languages=["de"], settings=settings)
+        ergebnis = dateparser.parse(
+            _iso_dates_as_dmy(normalisiert), languages=["de"], settings=settings,
+        )
         if ergebnis:
             pfad = 3
 
     # Letzter Fallback: Originaler Text, falls Normalisierung dateparser verwirrt hat
     if ergebnis is None and normalisiert != korrigiert:
         logger.info("Zeitparser: Normalisierter Text fehlgeschlagen, versuche Original...")
-        ergebnis = dateparser.parse(korrigiert, languages=["de"], settings=settings)
+        ergebnis = dateparser.parse(
+            _iso_dates_as_dmy(korrigiert), languages=["de"], settings=settings,
+        )
         if ergebnis:
             pfad = 3
 
