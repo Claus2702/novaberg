@@ -32,6 +32,28 @@ SESSION_SUMMARIZE_AT: int = 25      # Ab 25 Turns: älteste 10 zusammenfassen
 # SESSION_MAX_TURNS, nicht sie.
 SESSION_TTL:          int = 14400   # 4 Stunden Inaktivitaet
 
+# Das Budget des nummerierten Verlaufs, in Zeichen ueber das ganze Fenster.
+#
+# **Es ersetzt eine Grenze je Beitrag, und das ist der Punkt.** Bis zum
+# 16.09.2026 schnitt `format_session_turns_numbered` jeden Beitrag nach 100
+# Zeichen ab, und keiner der neun Aufrufer uebergab einen anderen Wert. Am
+# Bestand gemessen (1494 Rohturns): **94,2 % der Antworten Novas** und 36,8 %
+# der Nutzer-Aeusserungen liegen darueber; im Median sah ein Leser 100 von 440
+# Zeichen einer Antwort. Wer zuordnen soll, bekam den Anfang einer
+# Regieanweisung und nie das Angebot am Schluss.
+#
+# **Der Wert ist gemessen, nicht gesetzt.** Ueber 1439 Fenster aus fuenf
+# Gruppen: gekappt 893 Zeichen im Mittel, ungekappt 5572 (Median 4229, p95
+# 15.534, Max 28.087). Bei 8000 gehen **81,7 %** der Fenster vollstaendig
+# durch; 12.000 brachten 90,0 %, kosten aber die Haelfte mehr Prompt fuer die
+# letzten 8 Prozentpunkte.
+#
+# **Reisst das Budget, fallen die aeltesten Gruppen ganz weg** — nie ein
+# Beitrag in der Mitte. Die juengste Gruppe bleibt immer, auch wenn sie allein
+# darueber liegt: Ein Fenster ohne den aktuellen Wortwechsel beantwortet keine
+# Frage, die ein Leser stellt.
+SESSION_HISTORY_BUDGET_CHARS: int = 8000
+
 
 def _session_key(user_id: str, character_id: str, suffix: str) -> str:
     """Baut den Redis-Key für eine Session-Partition.
@@ -478,26 +500,103 @@ def sprecher_bezeichnen(
 # ─────────────────────────────────────────────
 # Nummerierte Turn-Formatierung (Chat 24)
 # ─────────────────────────────────────────────
+def budget_wahren(
+    gruppen:      list[list[Verlaufsbeitrag]],
+    budget_chars: int,
+) -> tuple[list[list[Verlaufsbeitrag]], int]:
+    """Wirft die aeltesten Gruppen weg, bis das Fenster ins Budget passt.
+
+    **Die Alternative waere, jeden Beitrag zu kuerzen — und genau die ist der
+    Defekt, den diese Funktion abloest.** Ein halber Beitrag sieht aus wie ein
+    ganzer: Der Leser sieht eine Regieanweisung und haelt sie fuer die Antwort.
+    Eine fehlende Gruppe ist sichtbar, weil die Nummerierung bei 1 beginnt und
+    der Verlauf kuerzer ist.
+
+    Vorbedingung: `gruppen` aeltester zuerst; `budget_chars` positiv.
+    Nachbedingung: Die **juengste** Gruppe steht immer im Ergebnis, auch wenn
+        sie allein ueber dem Budget liegt — ein Fenster ohne den aktuellen
+        Wortwechsel beantwortet keine Frage, die ein Leser stellt. Sonst gilt:
+        Summe der **ungekuerzten** Beitragslaengen <= `budget_chars`.
+
+    **Gerechnet wird auf der ungekuerzten Laenge, auch wenn der Aufrufer
+    zusaetzlich `max_chars` setzt** — dann wirft das Budget Gruppen weg, die
+    nach der Kuerzung gepasst haetten. Das ist gewollt und nicht uebersehen:
+    Die beiden Grenzen sonst zu verrechnen hiesse, die Kuerzung zur Regel zu
+    machen, deren Abschaffung diese Funktion ist. Gefunden von der Gegenprobe
+    am 16.09.2026 — die Vorhersage lautete auf fuenf rote Zeugen, gezaehlt
+    wurden vier, und der fuenfte blieb aus genau diesem Grund gruen.
+    Fehlerfaelle: `budget_chars` <= 0 ist ein Aufruffehler und wirft.
+
+    Args:
+        gruppen: Die Gruppen des Fensters, aeltester zuerst
+        budget_chars: Zeichenbudget ueber das ganze Fenster
+
+    Returns:
+        (behaltene Gruppen, Anzahl der weggefallenen) — die Zahl gehoert ins
+        Protokoll des Aufrufers, sonst ist *nichts weggefallen* von *nicht
+        gerechnet* nicht zu unterscheiden.
+
+    Raises:
+        ValueError: `budget_chars` ist nicht positiv
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if budget_chars <= 0:
+        raise ValueError(f"budget_chars muss positiv sein, ist {budget_chars}")
+    if not gruppen:
+        return [], 0
+
+    # ── Verarbeitung ────────────────────────────
+    # Von hinten, weil die juengste Gruppe die ist, die bleiben muss.
+    behalten: list[list[Verlaufsbeitrag]] = []
+    verbraucht: int = 0
+
+    for gruppe in reversed(gruppen):
+        laenge: int = sum(len(b.inhalt) for b in gruppe)
+        if behalten and verbraucht + laenge > budget_chars:
+            break
+        behalten.insert(0, gruppe)
+        verbraucht += laenge
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not behalten:
+        raise AssertionError("budget_wahren: leeres Ergebnis bei nicht-leerer Eingabe")
+
+    return behalten, len(gruppen) - len(behalten)
+
+
 def format_session_turns_numbered(
     turns: list[dict],
     max_turns: int = 5,
-    max_chars: int = 100,
+    max_chars: int | None = None,
+    budget_chars: int = SESSION_HISTORY_BUDGET_CHARS,
 ) -> str:
     """Formatiert Session-Turns mit Naehenummerierung.
 
     Hoehere Nummer = naeher am aktuellen Prompt.
 
+    **Die Beitraege stehen ungekuerzt.** Bis zum 16.09.2026 schnitt diese
+    Funktion jeden Beitrag nach 100 Zeichen ab, und keiner der neun Aufrufer
+    uebergab einen anderen Wert — die Leser, die Zuordnung und Rueckbezug
+    leisten, sahen von 94,2 % der Antworten Novas nur den Anfang. Wo eine
+    Grenze noetig ist, greift sie ueber das **ganze Fenster** und wirft die
+    aeltesten Gruppen weg (`budget_wahren`), statt jeden Beitrag in der Mitte
+    abzuschneiden.
+
     Vorbedingung: `turns` aus `session_turns_retrieve`, aeltester zuerst.
     Nachbedingung: Jede Zeile nennt ihren Sprecher. Ein Eigen-Impuls steht als
         eigene Gruppe mit `(von sich aus)` — **er faellt nicht aus und er steht
-        nicht auf dem Platz der fremden Rede.**
+        nicht auf dem Platz der fremden Rede.** Ohne `max_chars` steht jeder
+        Beitrag des Ergebnisses vollstaendig.
     Fehlerfaelle: keine; eine leere Eingabe liefert einen leeren Text.
 
     Args:
         turns: Liste von Turn-Dicts aus Redis
         max_turns: Maximale Anzahl **Gruppen** (bis 24.08.2026: Turn-Paare —
             ein Impuls zaehlte gar nicht, weil er uebersprungen wurde)
-        max_chars: Maximale Zeichen pro Beitrag
+        max_chars: Grenze je Beitrag. **Vorgabe ist keine** — wer sie setzt,
+            nimmt in Kauf, dass ein halber Beitrag wie ein ganzer aussieht.
+        budget_chars: Zeichenbudget ueber das ganze Fenster; reisst es, fallen
+            die aeltesten Gruppen ganz weg.
 
     Returns:
         Formatierter String mit nummerierten Gruppen, leer wenn keine Turns
@@ -507,15 +606,22 @@ def format_session_turns_numbered(
         return ""
 
     # ── Verarbeitung ────────────────────────────
-    gruppen: list[list[Verlaufsbeitrag]] = fenster_waehlen(
+    gefenstert: list[list[Verlaufsbeitrag]] = fenster_waehlen(
         verlauf_gruppieren(turns), max_turns,
     )
+    gruppen, weggefallen = budget_wahren(gefenstert, budget_chars)
+
+    if weggefallen:
+        logger.info(
+            f"Verlauf: {weggefallen} von {len(gefenstert)} Gruppen wegen "
+            f"Budget {budget_chars} weggelassen, {len(gruppen)} bleiben"
+        )
 
     zeilen: list[str] = []
     for nr, gruppe in enumerate(gruppen, start=1):
         for beitrag in gruppe:
             text: str = beitrag.inhalt
-            if len(text) > max_chars:
+            if max_chars is not None and len(text) > max_chars:
                 text = text[:max_chars] + "..."
 
             anmerkung: str = beitrag.emotion
