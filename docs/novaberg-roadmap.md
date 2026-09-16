@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 20:50 UTC** (gemessen via `date -u`): je Zettel für sich gerechnet — nie nur der falsche Dienst, aber 16 von 60 an beiden; das Notizen-Merkmal trennt kaum. Davor 16.09.2026, 20:19 UTC: die Nähe im Schatten — der Router urteilt je akutem Objekt und protokolliert, ohne zuzustellen. Davor 16.09.2026, 19:43 UTC: die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 20:58 UTC** (gemessen via `date -u`): entschieden und im Schatten umgebaut — je Zettel für sich, ohne Abstand. Davor 16.09.2026, 20:50 UTC: je Zettel für sich gerechnet — nie nur der falsche Dienst, aber 16 von 60 an beiden; das Notizen-Merkmal trennt kaum. Davor 16.09.2026, 20:19 UTC: die Nähe im Schatten — der Router urteilt je akutem Objekt und protokolliert, ohne zuzustellen. Davor 16.09.2026, 19:43 UTC: die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 96 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 97 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 20:58 UTC — je Zettel für sich, entschieden und umgebaut 🔧
+
+**Die Entscheidung des Eigentümers nach der Rechnung:**
+
+> **„Ohne Abstand, wenn der richtige Dienst nie außen vor bleibt. Und wir können für die Grenzfälle beide ansprechen, wenn der eine nicht will, soll der andere auch gefragt werden."**
+
+**Umgebaut ist der Schatten:** `agents/object_nearness.py::judge` nimmt jeden Dienst mit Nähe ≥ 0,40 als Empfänger — `zugeordnet`, `mehrere` oder `still_untergrenze`; der Abstand steht nur noch als Diagnose im Eintrag, `OBJEKT_NAEHE_ABSTAND` ist entfernt. Der Betriebscode rechnet über die Reihe **21 nur richtig, 16 beide, 0 nur falsch, 23 still** und über den Bestand **44 an einem, 22 an beiden von 313** — Zahl für Zahl die Messung.
+
+**TEST:** 22 Zeugen, darunter *ein weiteres, nahes Merkmal nimmt der Timeline das Objekt nicht*; Suite **3832 grün, 0 übersprungen**. Gegenproben: nur der nächste Dienst als Empfänger 2 vorhergesagt, 2 rot; Grenze exklusiv 1 vorhergesagt, **zuerst 0 gezählt** — der Grenzzeuge lag mit dem Literal 0,5 knapp über der Grenze; auf den exakt gerechneten Kosinus gesetzt, dann 1/1.
+
+**Für Teil D, nicht gebaut:** Stehen beide Dienste am Objekt, werden beide gefragt, und die Ablehnung des einen beendet die Zustellung an den anderen nicht.
 
 ---
 
