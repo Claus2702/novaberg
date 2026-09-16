@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 19:14 UTC** (gemessen via `date -u`): zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 19:43 UTC** (gemessen via `date -u`): die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 93 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 94 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 19:43 UTC — die Anmeldung trägt das Objekt-Merkmal 🔧
+
+**Scheibe 12 C1: die eine Seite der Nähe-Rechnung, ohne Verhalten.** `BaseAgent.objekt_merkmal` ist eine neue Angabe der Anmeldung, Vorgabe leer. `TimelineAgent` und `NotizenAgent` deklarieren den am selben Tag geeichten Wortlaut — Verben für die Timeline, Sachen für die Notizen —, **zeichengleich mit der gemessenen Fassung, Umlaute umschrieben**, weil der Vektor am Zeichen hängt. `agents/object_feature.py` bettet beim Start jedes deklarierte Merkmal über den Embed-Worker ein, mit eigener Frist, und verwirft einen leeren, Null-, NaN- oder fremddimensionalen Vektor laut.
+
+**Der Empfang liest nichts davon:** Das Brett ist vor und nach dem Bau zeichengleich (11 395 Zeichen, dieselbe SHA-256).
+
+**TEST:** `tests/test_object_feature.py`, 16 Zeugen; Suite **3810 grün, 0 übersprungen**; Gegenproben 2 vorhergesagt / 2 rot und 1 / 1. **MESSUNG:** zwei Starts am letzten Codestand, 19:49 UTC, je *2 von 7 Diensten am Empfang mit Vektor (Dimension 768)*.
+
+**Die zweite Kontrolle fand einen Fehler im eigenen Bau:** Die Deklaration eines Dienstes wurde außerhalb der Absicherung gelesen — ein werfender Getter hätte den ganzen Start abgebrochen, während die Anmeldung denselben Fall je Dienst abfängt. Behoben, bezeugt, Gegenprobe 1/1. Und sie berichtigte die erste Messzeile: *drei Starts* standen im Log als sechs, einer ohne Vektor aus einem Zwischenstand des Reloads.
+
+**Als Nächstes C2, der Schattenlauf:** Objekttext, Untergrenze 0,40 und Abstand 0,04 rechnen und protokollieren, ohne zuzustellen.
 
 ---
 

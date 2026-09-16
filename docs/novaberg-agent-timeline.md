@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 15. September 2026, 19:13 UTC (§3a: auch der Punkt als Trenner ist behoben, und der Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum). Davor 15. September 2026, 15:56 UTC (§3a: die falsche Zeit des Betriebsfalls ist behoben, der Punkt als Trenner nicht). Davor 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
+**Stand:** 16. September 2026, 19:43 UTC (§3a: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 15. September 2026, 19:13 UTC (§3a: auch der Punkt als Trenner ist behoben, und der Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum). Davor 15. September 2026, 15:56 UTC (§3a: die falsche Zeit des Betriebsfalls ist behoben, der Punkt als Trenner nicht). Davor 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -89,6 +89,8 @@ Zusaetzlich kann der Classify den Output `rejected` liefern (kein echter Termin-
 | **Fachabteilung** | Vorprüfung in `prompts/default/classify_timeline.task.txt` | Eine Aussage mit Zeitpunkt ist `rejected`, *„auch dann nicht, wenn sie Ereignis, Tag und Uhrzeit nennt"*; `create` nur bei Bitte (*trag ein, merk dir, erinnere mich, notier*) |
 
 Die zweite Sperre ist nötig, weil der Empfang im Zweifel zustellt (`novaberg-convention-nmcp.md` §4).
+
+**Das Objekt-Merkmal (16.09.2026) ist keine dritte Sperre.** `objekt_merkmal` in `agents/timeline/agent.py` beschreibt das Objekt, das der Dienst bedient — *eine Handlung oder ein Ereignis mit Zeitpunkt*, mit Verben geeicht —, und wird beim Start eingebettet (`agents/object_feature.py`). Es steht nicht am Brett und entscheidet heute keine Zustellung; der Leser kommt mit Scheibe 12 C2 (`novaberg-thinking-lage_k.md` §4).
 
 **Die Beweiskette** (14.09.2026, 06:20–06:40 UTC, Modell `gemma4-a4b-gpu`, Pixie pausiert): 16 Reize — sechs Aufträge, eine Frage nach Terminen, sieben Aussagen mit Zeitpunkt (vier davon echte Turns mit ihrem Verlauf), drei Zeitbezüge ohne Auftrag — je dreimal durch Router **und** Klassifikation, beide Prompts aus dem Code gebaut. **Aufträge schreiben 12 von 12, die Frage liest 3 von 3, Aussagen schreiben 0 von 21, Zeitbezüge 0 von 9.** Die Klassifikation allein lehnt 15 von 21 Aussagen ab: *„muss morgen mal schauen, wann er ist"* wird `read`, eine Wir-Form mit Dauer wird `update` — beide hält der Router. **Nicht gemessen ist die Ausführung**: Ob ein Auftrag mit Wochentagsnamen tatsächlich schreibt, ist der zweite Teil von `TIMELINE-SCHREIBT-OHNE-AUFTRAG` und bleibt offen.
 
