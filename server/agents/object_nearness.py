@@ -2,10 +2,12 @@
 
 **Konzept:** `docs/novaberg-thinking-lage_k.md` §4, Scheibe 12, Teil C2. Je
 akutem Objekt der Sachlage wird die Naehe zum Objekt-Merkmal jedes Dienstes
-gerechnet (`agents/object_feature.py`) und mit zwei Schwellen beurteilt:
-
-- **Untergrenze** auf die groesste Naehe — ist ueberhaupt ein Dienst gemeint?
-- **Abstand** zwischen groesster und zweitgroesster — welcher?
+gerechnet (`agents/object_feature.py`) und **je Zettel fuer sich** beurteilt:
+Das Objekt steht an jedem Dienst, dessen Naehe die Untergrenze erreicht — an
+keinem, an einem oder an mehreren. **Kein Vergleich zwischen Merkmalen
+entscheidet** (entschieden am 16.09.2026): Er machte das Urteil ueber einen
+Dienst davon abhaengig, wer sonst angemeldet ist. Der Abstand zwischen groesster
+und zweitgroesster Naehe wird weiter protokolliert, als Mass der Mehrdeutigkeit.
 
 **Das Ergebnis geht ins Protokoll und nirgends sonst hin.** Kein Feld des
 Zustands wird geschrieben; die Zustellung entscheidet weiter der Router allein.
@@ -25,11 +27,11 @@ from agents.object_feature import FeatureVector, feature_vectors, vector_defect
 
 logger = logging.getLogger("ki_server.agents.object_nearness")
 
-RULE_VERSION: str = "c2-2026-09-16"
+RULE_VERSION: str = "c2-je-zettel-2026-09-16"
 
 OUTCOME_ASSIGNED: str = "zugeordnet"
+OUTCOME_SEVERAL: str = "mehrere"
 OUTCOME_BELOW_FLOOR: str = "still_untergrenze"
-OUTCOME_BELOW_MARGIN: str = "still_abstand"
 
 
 @dataclass(frozen=True)
@@ -40,6 +42,7 @@ class ObjectJudgement:
     klasse: str
     text: str
     nearness: dict[str, float]
+    receivers: tuple[str, ...]
     best: str
     top: float
     margin: float | None
@@ -88,15 +91,14 @@ def judge(
     vector: list[float],
     features: dict[str, FeatureVector],
     floor: float,
-    margin: float,
 ) -> ObjectJudgement:
-    """Beurteilt ein Objekt gegen alle Merkmale, jedes fuer sich gerechnet.
+    """Beurteilt ein Objekt gegen jedes Merkmal fuer sich.
 
     Vorbedingung: `features` ist nicht leer; `vector` ist gueltig.
-    Nachbedingung: `outcome` ist `zugeordnet` genau dann, wenn die groesste
-        Naehe >= `floor` und der Abstand zur zweitgroessten >= `margin` ist.
-        Mit nur einem Merkmal gibt es keinen Abstand (`margin` None), und es
-        entscheidet die Untergrenze allein.
+    Nachbedingung: `receivers` sind alle Dienste mit Naehe >= `floor`, nach Name;
+        `outcome` ist `still_untergrenze` bei keinem, `zugeordnet` bei einem,
+        `mehrere` bei mehreren. `margin` (groesste minus zweitgroesste Naehe,
+        None bei nur einem Merkmal) ist Diagnose und entscheidet nichts.
     Fehlerfaelle: Leere Merkmale sind ein `ValueError`.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -108,21 +110,25 @@ def judge(
     rangfolge = sorted(naehe.items(), key=lambda kv: kv[1], reverse=True)
     best, top = rangfolge[0]
     abstand: float | None = top - rangfolge[1][1] if len(rangfolge) > 1 else None
-    if top < floor:
+    empfaenger = tuple(name for name, wert in naehe.items() if wert >= floor)
+    if not empfaenger:
         ausgang = OUTCOME_BELOW_FLOOR
-    elif abstand is not None and abstand < margin:
-        ausgang = OUTCOME_BELOW_MARGIN
-    else:
+    elif len(empfaenger) == 1:
         ausgang = OUTCOME_ASSIGNED
+    else:
+        ausgang = OUTCOME_SEVERAL
 
     # ── Ausgabe-Verifikation ────────────────────
     if not all(-1.0 - 1e-9 <= w <= 1.0 + 1e-9 for w in naehe.values()):
         raise ValueError(f"judge: Kosinus ausserhalb [-1, 1]: {naehe}")
+    if (ausgang == OUTCOME_BELOW_FLOOR) != (top < floor):
+        raise ValueError(f"judge: Ausgang {ausgang} widerspricht groesster Naehe {top}")
     return ObjectJudgement(
         name=str(obj.get("name") or ""),
         klasse=str(obj.get("klasse") or ""),
         text=build_object_text(obj),
         nearness=naehe,
+        receivers=empfaenger,
         best=best,
         top=top,
         margin=abstand,
@@ -140,12 +146,11 @@ def _embed_batch_via_worker(texts: list[str], deadline_s: float) -> list[list[fl
 
 def _record(ergebnis: str, judgements: list[ObjectJudgement], **extra: object) -> dict:
     """Der Protokolleintrag — dieselbe Form auf jedem Rueckkehrpfad."""
-    from config import OBJEKT_NAEHE_ABSTAND, OBJEKT_NAEHE_UNTERGRENZE
+    from config import OBJEKT_NAEHE_UNTERGRENZE
 
     return {
         "ergebnis":    ergebnis,
         "untergrenze": OBJEKT_NAEHE_UNTERGRENZE,
-        "abstand":     OBJEKT_NAEHE_ABSTAND,
         "regelfassung": RULE_VERSION,
         "objekte": [
             {
@@ -153,6 +158,7 @@ def _record(ergebnis: str, judgements: list[ObjectJudgement], **extra: object) -
                 "klasse":  j.klasse,
                 "text":    j.text,
                 "naehe":   {k: round(v, 4) for k, v in j.nearness.items()},
+                "empfaenger": list(j.receivers),
                 "bester":  j.best,
                 "oben":    round(j.top, 4),
                 "abstand": None if j.margin is None else round(j.margin, 4),
@@ -182,7 +188,7 @@ def shadow_nearness(
         reissen. Ein Ausfall steht als `ausfall` mit Fehlerart im Eintrag und
         als `logger.error` im Log.
     """
-    from config import OBJEKT_NAEHE_ABSTAND, OBJEKT_NAEHE_FRIST_S, OBJEKT_NAEHE_UNTERGRENZE
+    from config import OBJEKT_NAEHE_FRIST_S, OBJEKT_NAEHE_UNTERGRENZE
 
     try:
         # ── Eingabe-Validierung ─────────────────────
@@ -217,7 +223,7 @@ def shadow_nearness(
             if mangel is not None:
                 raise ValueError(f"Objektvektor unbrauchbar ({mangel})")
             urteile.append(
-                judge(obj, vektor, merkmale, OBJEKT_NAEHE_UNTERGRENZE, OBJEKT_NAEHE_ABSTAND),
+                judge(obj, vektor, merkmale, OBJEKT_NAEHE_UNTERGRENZE),
             )
 
         # ── Ausgabe-Verifikation ────────────────────
@@ -226,8 +232,8 @@ def shadow_nearness(
         logger.info(
             "Objekt-Naehe (Schatten, nicht benutzt): %s",
             "; ".join(
-                f"'{u.name}' → {u.best} {u.top:.4f}/"
-                f"{'—' if u.margin is None else f'{u.margin:.4f}'} {u.outcome}"
+                f"'{u.name}' → {'+'.join(u.receivers) or '—'} "
+                f"(naechster {u.best} {u.top:.4f}) {u.outcome}"
                 for u in urteile
             ),
         )

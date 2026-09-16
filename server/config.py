@@ -3388,14 +3388,16 @@ SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS: float = float(
 # Die UNTERGRENZE auf die groesste Naehe beantwortet, ob ueberhaupt ein Dienst
 # gemeint ist: Termine lagen bei 0,4534 bis 0,5591, Gespraechsthemen bei
 # 0,2834 bis 0,4800; mit 0,40 kamen 8 von 8 Terminen und 1 von 14 Themen durch.
-# Der ABSTAND zwischen groesster und zweitgroesster Naehe beantwortet, welcher:
-# mit beiden ueber 60 Faelle 33 zugestellt, 32 richtig, 27 still. Geeicht fuer
-# genau den Wortlaut der Merkmale und das Embedding-Modell dieses Tages —
-# ⚠ Wachposten: Ausgangswerte fuer den Schattenlauf, keine Endwerte.
+# Die Untergrenze gilt JE ZETTEL fuer sich (entschieden 16.09.2026): Ein Objekt
+# steht an jedem Dienst, dessen Merkmal es erreicht, auch an mehreren. Ein
+# Abstand zwischen zwei Merkmalen entscheidet nicht — er machte das Urteil ueber
+# einen Dienst davon abhaengig, wer sonst angemeldet ist. Ueber die Reihe: 0 von
+# 60 nur beim falschen Dienst, 16 von 60 an beiden. Eine eigene Untergrenze je
+# Dienst brachte nichts Messbares (0,40/0,39). Geeicht fuer genau den Wortlaut
+# der Merkmale und das Embedding-Modell dieses Tages —
+# ⚠ Wachposten: Ausgangswert fuer den Schattenlauf, kein Endwert.
 OBJEKT_NAEHE_UNTERGRENZE: float = float(
     os.getenv("OBJEKT_NAEHE_UNTERGRENZE", "0.40"))
-OBJEKT_NAEHE_ABSTAND: float = float(
-    os.getenv("OBJEKT_NAEHE_ABSTAND", "0.04"))
 # Frist der Einbettung im Turn (F-FRIST-1). Gemessen am 16.09.2026 ueber 260
 # Einbettungen eines Tages: Median 0,151 s, p95 0,202 s, Maximum 1,48 s. Der
 # Schattenlauf steht im Gespraechspfad; laenger als das Siebenfache des

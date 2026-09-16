@@ -1,15 +1,17 @@
 """Tests: Der Empfang rechnet die Objekt-Naehe im Schatten und stellt danach nichts anders zu.
 
 Ziel (Scheibe 12, Teil C2): Jeder Durchlauf des Routers hinterlaesst genau einen
-Protokolleintrag mit dem Urteil ueber jedes akute Objekt der Lage — Untergrenze
-auf die groesste Naehe, Abstand zur zweitgroessten —, und kein Feld des
-Zustands aendert sich dadurch.
+Protokolleintrag mit dem Urteil ueber jedes akute Objekt der Lage — je Zettel fuer
+sich: an jedem Dienst, dessen Merkmal die Untergrenze erreicht —, und kein Feld
+des Zustands aendert sich dadurch.
 
 Zeugen dieser Datei:
   * **Der Objekttext ist die Formel der Eichung.** Die Schwellen gelten fuer
     genau diese Zeichen; der Zeuge haelt die Formel gegen feste Erwartungen.
-  * **Die Grenzen beider Schwellen sind eingeschlossen**, wie in der Eichung
-    (`>=`).
+  * **Je Zettel fuer sich.** Ein Objekt ueber beiden Untergrenzen steht an
+    beiden Zetteln, wie nah die zwei Naehen auch beieinander liegen; das Urteil
+    ueber einen Dienst haengt nicht davon ab, welches andere Merkmal angemeldet
+    ist. Die Grenze ist eingeschlossen, wie in der Eichung (`>=`).
   * **Der Zustand nach `route()` ist mit und ohne Schatten gleich** — gefahren
     durch den echten Knoten, nicht nur durch die Funktion. Der Aufruf im
     Router ist die Verdrahtung, und die Verdrahtung ist der Defekt, den ein
@@ -31,7 +33,7 @@ from agents.object_feature import FeatureVector
 from agents.object_nearness import (
     OUTCOME_ASSIGNED,
     OUTCOME_BELOW_FLOOR,
-    OUTCOME_BELOW_MARGIN,
+    OUTCOME_SEVERAL,
     build_object_text,
     cosine,
     judge,
@@ -76,39 +78,59 @@ class ObjekttextTest(unittest.TestCase):
 
 
 class UrteilTest(unittest.TestCase):
-    """Zwei Schwellen, jede mit eingeschlossener Grenze."""
+    """Je Zettel fuer sich, die Grenze eingeschlossen."""
 
-    def test_zugeordnet(self) -> None:
-        u = judge(_objekt("A"), [1.0, 0.0, 0.0], _merkmale(), 0.40, 0.04)
-        self.assertEqual((u.best, u.outcome), ("timeline", OUTCOME_ASSIGNED))
+    def test_ein_empfaenger(self) -> None:
+        u = judge(_objekt("A"), [1.0, 0.0, 0.0], _merkmale(), 0.40)
+        self.assertEqual((u.receivers, u.outcome), (("timeline",), OUTCOME_ASSIGNED))
         self.assertAlmostEqual(u.top, 1.0)
         self.assertAlmostEqual(u.margin, 1.0)
 
     def test_unter_der_untergrenze_still(self) -> None:
-        # cos zu timeline 0.3, zu notizen 0.0 — Abstand gross, Naehe zu klein.
         v = [0.3, 0.0, (1 - 0.09) ** 0.5]
-        u = judge(_objekt("A"), v, _merkmale(), 0.40, 0.04)
-        self.assertEqual(u.outcome, OUTCOME_BELOW_FLOOR)
+        u = judge(_objekt("A"), v, _merkmale(), 0.40)
+        self.assertEqual((u.receivers, u.outcome), ((), OUTCOME_BELOW_FLOOR))
 
-    def test_zu_kleiner_abstand_still(self) -> None:
+    def test_knapp_beieinander_steht_an_beiden_zetteln(self) -> None:
+        """Der Fall, den der Abstand still machte: 0,60 gegen 0,58."""
         v = [0.6, 0.58, (1 - 0.36 - 0.3364) ** 0.5]
-        u = judge(_objekt("A"), v, _merkmale(), 0.40, 0.04)
-        self.assertEqual(u.outcome, OUTCOME_BELOW_MARGIN)
+        u = judge(_objekt("A"), v, _merkmale(), 0.40)
+        self.assertEqual((u.receivers, u.outcome), (("notizen", "timeline"), OUTCOME_SEVERAL))
 
-    def test_grenzen_sind_eingeschlossen(self) -> None:
-        v = [0.5, 0.25, (1 - 0.25 - 0.0625) ** 0.5]
-        u = judge(_objekt("A"), v, _merkmale(), 0.5, 0.25)
-        self.assertEqual(u.outcome, OUTCOME_ASSIGNED, (u.top, u.margin))
+    def test_nur_ein_merkmal_ueber_der_grenze_bei_kleinem_abstand(self) -> None:
+        """0,41 gegen 0,39: ein Empfaenger, obwohl der Abstand klein ist."""
+        v = [0.41, 0.39, (1 - 0.1681 - 0.1521) ** 0.5]
+        u = judge(_objekt("A"), v, _merkmale(), 0.40)
+        self.assertEqual((u.receivers, u.outcome), (("timeline",), OUTCOME_ASSIGNED))
+
+    def test_das_urteil_ueber_einen_zettel_haengt_nicht_am_nachbarn(self) -> None:
+        """Ein weiteres, nahes Merkmal nimmt der Timeline das Objekt nicht."""
+        v = [0.6, 0.0, 0.8]
+        allein = judge(_objekt("A"), v, {"timeline": _merkmale()["timeline"]}, 0.40)
+        mit_nachbar = judge(
+            _objekt("A"), v,
+            {**_merkmale(), "nachbar": FeatureVector("nachbar", "X", (0.6, 0.0, 0.8))}, 0.40,
+        )
+        self.assertIn("timeline", allein.receivers)
+        self.assertIn("timeline", mit_nachbar.receivers)
+
+    def test_grenze_ist_eingeschlossen(self) -> None:
+        """Die Grenze ist der exakt gerechnete Kosinus — 0,5 als Literal lag
+        im ersten Lauf knapp darunter, und die Gegenprobe blieb gruen."""
+        v = [0.5, 0.0, (1 - 0.25) ** 0.5]
+        grenze = cosine(v, _merkmale()["timeline"].vector)
+        u = judge(_objekt("A"), v, _merkmale(), grenze)
+        self.assertEqual(u.receivers, ("timeline",), u.top)
 
     def test_ein_merkmal_hat_keinen_abstand(self) -> None:
         nur = {"timeline": _merkmale()["timeline"]}
-        u = judge(_objekt("A"), [1.0, 0.0, 0.0], nur, 0.40, 0.04)
+        u = judge(_objekt("A"), [1.0, 0.0, 0.0], nur, 0.40)
         self.assertIsNone(u.margin)
         self.assertEqual(u.outcome, OUTCOME_ASSIGNED)
 
     def test_ohne_merkmale_ist_ein_fehler(self) -> None:
         with self.assertRaises(ValueError):
-            judge(_objekt("A"), [1.0, 0.0, 0.0], {}, 0.40, 0.04)
+            judge(_objekt("A"), [1.0, 0.0, 0.0], {}, 0.40)
 
     def test_kosinus_verweigert_null_und_fremde_dimension(self) -> None:
         with self.assertRaises(ValueError):
@@ -168,7 +190,9 @@ class SchattenTest(unittest.TestCase):
         self.assertEqual([o["name"] for o in e["objekte"]], ["A", "C"])
         self.assertEqual(len(gesehen[0]), 2)
         self.assertEqual(e["objekte"][0]["ausgang"], OUTCOME_ASSIGNED)
-        self.assertEqual((e["untergrenze"], e["abstand"]), (0.40, 0.04))
+        self.assertEqual(e["objekte"][0]["empfaenger"], ["timeline"])
+        self.assertEqual(e["untergrenze"], 0.40)
+        self.assertNotIn("abstand", e)
 
     def test_ausfall_des_embed_ist_ein_eintrag_und_wirft_nicht(self) -> None:
         def kaputt(texte: list[str], frist: float) -> list[list[float]]:
