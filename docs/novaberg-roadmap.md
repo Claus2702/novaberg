@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 15. September 2026 — juengster Eintrag **15.09.2026, 19:13 UTC** (gemessen via `date -u`). Davor 15.09.2026, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 10:05 UTC** (gemessen via `date -u`): wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut. Davor 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,29 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 10:05 UTC — wer eine Speicherbehauptung gegen den Bestand hält 📝
+
+**Kein Code.** Eine offene Absichtsfrage ist entschieden und nachgezogen; der Bau steht aus.
+
+**Die Frage, seit dem 15.09.2026 offen:** Eine Speicherbehauptung in Novas Antwort kann **wahr** sein, weil sie eine frühere, echte Schreibung wiederholt. Der Riegel aus Scheibe 12 A schlägt trotzdem an, und die Korrekturrunde schreibt dann eine zutreffende Aussage um — in Lauf 3 ging genau so eine Wiederholung nach zwei Runden als Fehler hinaus. Offen war, **wer** die Behauptung gegen den Bestand hält: das Thinker-Modell, dessen Werkzeuge ihn ohnehin lesen, oder der Dienst, der ihn führt.
+
+**Entschieden:** der **Riegel selbst**, hinter dem Verfasser. Dort existiert die Behauptung, und dort muss sie auch geprüft werden, wenn der Empfang gar keinen Dienst gerufen hat. Findet der Riegel eine Behauptung ohne abgeschlossenen Dienst, fragt er vor der Korrektur den Bestand — beim Termin die Timeline mit Tag und Uhrzeit des akuten Objekts der Lage. Gefunden: eine Wiederholung, keine Korrektur. Nicht gefunden oder kein akutes Objekt mit Zeitangabe: Korrektur wie bisher.
+
+**Nicht das Thinker-Modell**, aus zwei Gründen: Es entscheidet in seiner Schleife selbst, ob es `timeline_check` ruft — eine Bitte, keine Zusicherung, derselbe Grund, aus dem Teil A in Python gerechnet wird. Und es läuft **vor** dem Riegel; es sieht die Antwort zwar, aber nicht den Befund, welcher Satz als Speicherbehauptung gilt. **Teil F bleibt unberührt** — die Prüfung des Dienstes vor dem Anlegen.
+
+**Dazu die zweite Hälfte, die derselbe Tag ergab:** Ein Dienst meldet als Ausgang, was **seine eigene** Verifikation ergab. Die Konvention verlangt das seit langem; der Code tut es an 20 von 22 schreibenden Stellen nicht. Seit heute mit Kennung: `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION`, Priorität hoch — der Riegel liest genau diesen Status als Deckung, eine gescheiterte Schreibung deckt also die Behauptung, sie sei erfolgt.
+
+**Was die zweite Kontrolle dabei fand.** Sie ging über das Vokabular der **Dienstseite** statt über das der Entscheidung — 37 Dateien als Kandidatenmenge, 32 nach Abzug von Archiv und bereits Angefasstem, 7 behandelt, 25 mit Grund verworfen. Zwei Befunde:
+
+- **Fünf Dokumente behaupten das Entschiedene als gebaut.** `novaberg-pattern-crud-hardening.md`, `novaberg-agent-timeline.md`, `-directives`, `-character`, `-notes` sagen wörtlich, bei fehlgeschlagener Verifikation werde `CrudErgebnis.erfolg` auf `False` korrigiert und der Bestätigungs-Knoten bekomme *„den echten Zustand statt eine Halluzination"*. **`CrudErgebnis` hat im ganzen `server/` keinen Importeur.** Wer die Frage stellt, findet fünfmal die widerlegte Antwort und einmal die zutreffende — und die Konvention verweist für die Phasenform ausgerechnet auf die erste der fünf Stellen.
+- **Die Begründung der Entscheidung war in einem Halbsatz falsch.** *„Dass die Antwort etwas behauptet, erfährt es nicht"* stand gegen `graph/nodes/thinker.py` (liest `state["response"]`) und gegen vier Dokumente, darunter eine Quelle des Konzepts selbst. Berichtigt am 16.09.2026; die tragende Hälfte des Grundes — *eine Bitte, keine Zusicherung* — bleibt.
+
+**Vor dem Bau zu messen:** wie oft das akute Objekt eines Termin-Turns Tag und Uhrzeit gedeckt trägt.
+
+Nachgezogen: `novaberg-thinking-lage_k.md` (Scheibe 12, *Offen für den Bau*), `novaberg-node-tribunal.md`, `novaberg-featureliste.md` (Rest-Spalte Scheibe 12 A, Ampel unverändert 🟠), `novaberg-bugs.md`. Suite unberührt bei **3781 grün, 0 übersprungen**.
 
 ---
 
