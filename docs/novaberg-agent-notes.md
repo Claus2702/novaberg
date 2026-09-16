@@ -12,6 +12,8 @@
 
 Der NotizenAgent verwaltet Freiform-Inhalte: Einkaufslisten, ToDos, Merkzettel, Entwuerfe, Ideensammlungen. Alles, was der Nutzer explizit ablegen will und was nicht in das Fakten- oder Timeline-Schema passt. Das LLM versteht den Inhalt — die DB speichert nur Text. "Streich die Milch von der Einkaufsliste" wird vom LLM als neue Version der Liste generiert.
 
+**Die Grenze zur Timeline ist seit dem 16.09.2026 entschieden und noch nicht gebaut:** Hierher gehoert eine **Sache oder ein Zustand mit Zeitbezug** — *„Merk dir, dass ich morgen Mehl brauche"*, mit `faellig_am` als Traeger der Zeit und, wenn erinnert werden soll, einem Anker ueber `timeline_id`. Eine **Handlung oder ein Ereignis mit Zeitpunkt** gehoert in die Timeline. **Heute erreicht keine Merk-Bitte mit Zeitbezug diesen Dienst** — der Planner waehlt bei jeder Zeitangabe die Timeline (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`), obwohl der eigene Aushang genau dieses Beispiel nennt.
+
 Der NotizenAgent war der erste migrierte Agent unter Epic 11 (Phase 2, Chat 22–23). Er ersetzte den frueheren NotizenManager (Plugin-System) und demonstrierte das volle Agent-Pattern: LangGraph-Subgraph, 5-Node-Architektur, pg_trgm-Suche, Resume-Flow fuer Rueckfragen.
 
 ---

@@ -16,6 +16,8 @@ Alle Zeitoperationen nutzen den Zeitparser fuer natuerlichsprachliche deutsche E
 
 > **"Die Sekretaerin diagnostiziert nicht."** -- Der Router erkennt nur die Domaene, der Agent klassifiziert die Aktion. Der Router kennt weiterhin nur `management_action = "agent"`.
 
+**Die Grenze zu den Notizen ist seit dem 16.09.2026 entschieden und noch nicht gebaut:** Hierher gehoert eine **Handlung oder ein Ereignis, das zu einer Zeit stattfindet** — Buch abgeben, Zahnarzt, Geburtstag, Frist. Eine **Sache oder ein Zustand mit Zeitbezug** (*morgen Mehl brauchen*) gehoert in die Notizen. Damit entscheidet das Verb und nicht das Zeitwort; der heutige Weg waehlt bei **jeder** Zeitangabe diesen Dienst (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`).
+
 ---
 
 ## 2. Architektur -- Subgraph

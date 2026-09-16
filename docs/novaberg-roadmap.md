@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 17:19 UTC** (gemessen via `date -u`): zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 17:33 UTC** (gemessen via `date -u`): das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,21 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 17:33 UTC — das Verb entscheidet, nicht das Zeitwort 📝
+
+**Kein Code.** Die vierte offene Absichtsfrage ist entschieden: **Welcher Dienst eine Merk-Bitte mit Zeitbezug bekommt, hängt am Gegenstand.**
+
+- Eine **Handlung oder ein Ereignis, das zu einer Zeit stattfindet** — Buch abgeben, Zahnarzt, Geburtstag, Frist — gehört in die **Timeline**.
+- Eine **Sache oder ein Zustand mit Zeitbezug** — *morgen Mehl brauchen* — ist eine **Notiz**, mit `faellig_am` als Träger der Zeit und einem Anker über `timeline_id`, wenn erinnert werden soll.
+
+**Damit entscheidet das Verb und nicht das Zeitwort:** *„morgen Mehl brauchen"* ist eine Notiz, *„morgen Mehl kaufen"* eine Erledigung und damit Timeline. Dieselbe Sache landet je nach Formulierung woanders — beabsichtigt, weil der Empfang die Äußerung nicht umdeutet.
+
+**Der Befund dazu kehrt sich um.** Bisher galt das Beispiel *„Merk dir, dass ich morgen Mehl brauche"* im Notizen-Aushang als das Fragwürdige; nach der Entscheidung ist es richtig, und die Wahl des Planners ist falsch — er nimmt bei jeder Zeitangabe die Timeline und liest `management_target` nicht (`planner.py:399`). Das ist seit heute ein Defekt mit Kennung: `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`.
+
+**Der Weg dahin ist der größere, und das ist die Entscheidung des Eigentümers:** nicht der kleine Eingriff in die Priorität, sondern Scheibe 12 C und D — jeder Dienst beschreibt sein Objekt-Merkmal, die Nähe zum akuten Objekt wird gerechnet, und der Empfang stellt mit Objektbezug zu. *„Lass uns den Timeline-Agenten und den Notizen-Agenten hier gründlich und gut bauen, sonst hat der Assistent keine Qualität."*
 
 ---
 
