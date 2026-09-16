@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 14. September 2026, 19:52 UTC (Befund an §3.7: jeder Beitrag wird für neun Leser nach 100 Zeichen gekappt). Davor 24. August 2026 (der Sprecher kommt aus dem Feld `herkunft`, nicht aus der Position — §3.8; die Filterzeile des Enrichers war tot und ist entfernt — §5); davor 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 16. September 2026, 15:10 UTC (`date -u`; **der Befund an §3.7 ist behoben** — kein Beitrag wird mehr gekürzt, die Grenze greift über das ganze Fenster und wirft älteste Gruppen weg; gemessen 7213 → 0 abgeschnittene Beiträge über 1439 Fenster. Dazu ein **achter Renderer** in der Tabelle, `sachlage.py::_render_history`, der als einziger weiter je Beitrag schneidet — sein Docstring sagt das Gegenteil). Davor 14. September 2026, 19:52 UTC (Befund an §3.7: jeder Beitrag wird für neun Leser nach 100 Zeichen gekappt). Davor 24. August 2026 (der Sprecher kommt aus dem Feld `herkunft`, nicht aus der Position — §3.8; die Filterzeile des Enrichers war tot und ist entfernt — §5); davor 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`
@@ -181,7 +181,17 @@ Nicht aufgerufen bei Rückfragen (`status=rueckfrage`) — der Turn ist noch off
 
 ### 3.7 Turn-Marker in format_session_turns_numbered (Chat 43)
 
-> ⚠ **Befund 14.09.2026 — die Kappung je Beitrag.** `format_session_turns_numbered` schneidet jeden Beitrag nach `max_chars = 100` Zeichen ab, und **keiner der neun Aufrufer** übergibt einen anderen Wert: Router, Perzeption, Gesprächsvektor und die Klassifikation von sechs Agenten. `[gemessen 14.09.2026]` Vier Antworten Novas begannen mit Regieanweisungen von 157 bis 208 Zeichen — diese Leser sahen von ihnen nur den Anfang der Regieanweisung. Ein Angebot am Ende einer Antwort erreicht sie nicht. Fundliste 14.09.2026; die Abhilfe ist Teil B von Scheibe 12 (`novaberg-thinking-lage_k.md` §4).
+> ~~⚠ **Befund 14.09.2026 — die Kappung je Beitrag.** `format_session_turns_numbered` schneidet jeden Beitrag nach `max_chars = 100` Zeichen ab, und **keiner der neun Aufrufer** übergibt einen anderen Wert: Router, Perzeption, Gesprächsvektor und die Klassifikation von sechs Agenten. `[gemessen 14.09.2026]` Vier Antworten Novas begannen mit Regieanweisungen von 157 bis 208 Zeichen — diese Leser sahen von ihnen nur den Anfang der Regieanweisung. Ein Angebot am Ende einer Antwort erreicht sie nicht.~~ → **Behoben am 16.09.2026** (Scheibe 12 B, `novaberg-thinking-lage_k.md` §4).
+
+**Seit dem 16.09.2026 steht kein Beitrag mehr gekürzt im Verlauf.** `max_chars` ist von 100 auf **keine Vorgabe** (`None`) gesetzt; wo eine Grenze nötig ist, greift sie über das **ganze Fenster** und wirft die ältesten Gruppen ganz weg — `budget_wahren`, `SESSION_HISTORY_BUDGET_CHARS = 8000`. Die jüngste Gruppe bleibt immer, auch allein über dem Budget: Ein Fenster ohne den aktuellen Wortwechsel beantwortet keine Frage, die ein Leser stellt.
+
+**Warum die Grenze das Fenster trifft und nicht den Beitrag:** Ein halber Beitrag sieht aus wie ein ganzer — der Leser bekam eine Regieanweisung und hielt sie für die Antwort. Eine fehlende Gruppe ist dagegen sichtbar, weil die Nummerierung bei 1 beginnt und der Verlauf kürzer ist.
+
+`[gemessen 16.09.2026]` Vor dem Bau, über 1494 Rohturns: **94,2 % der Antworten Novas** liegen über 100 Zeichen (Median 440, Max 5012), 36,8 % der Nutzer-Äußerungen (Median 83, Max 3005). Nach dem Bau, derselbe Code über 1439 Fenster aus fünf Turns, alte Fassung gegen neue: **mitten abgeschnittene Beiträge 7213 → 0**; **1249 Fenster (86,8 %)** gehen vollständig durch, 190 (13,2 %) verlieren Gruppen; die Verlaufslänge steigt von 904 auf 3970 Zeichen im Mittel, das Maximum von 1234 auf 8160.
+
+**Das Budget rechnet auf der ungekürzten Länge**, auch wenn ein Aufrufer zusätzlich `max_chars` setzt — dann wirft es Gruppen weg, die nach der Kürzung gepasst hätten. Gewollt: Die beiden Grenzen zu verrechnen hieße, die Kürzung zur Regel zu machen, deren Abschaffung die Änderung ist.
+
+> **Der Verlauf sprengt dabei kein Kontextfenster.** `[gemessen 16.09.2026, zweite Kontrolle, Betriebs-Log]` Der Router-System-Prompt misst real im Mittel 14.804 Zeichen (Max 15.869, n = 97 echte Aufrufe); der Verlaufsblock machte davon **1,5 %** aus (Mittel 221). Schlimmstenfalls kommt er neu auf 15.768 + 8.160 Zeichen — bei 32.768 Token Kontextfenster und einer Warnschwelle bei 80 % rund 22 bis 29 % der Kapazität. Kein Aufrufer setzt ein eigenes `num_ctx`, und eine Plausibilitätsprüfung auf Promptlänge gibt es im Pfad des Verlaufs nicht.
 
 Turns mit `aktion_erledigt=true` bekommen einen Marker im Header:
 - `aktion_erfolgreich=true`: `[ERLEDIGT]`
@@ -245,8 +255,13 @@ Die Daten waren vollständig: **alle 24 Turns trugen `herkunft`**, acht davon `e
 | `memory/kontext.py::_turns_formatieren` | 24/24 | 8/8 |
 | `enricher.py::_suchtext_bauen` (Query-Rewrite) | 24/24 | 8/8 |
 | `verfasser.py`, Verlaufsblock | 24/24 | 8/8 |
+| `sachlage.py::_render_history` | — | — |
 
 **Beim Zusammenfasser wiegt es am schwersten** — seine Ausgabe überdauert den Verlauf und wird später als Tatsache gelesen.
+
+> **Es sind acht, nicht sieben — die achte Zeile kam am 16.09.2026 dazu und ist die einzige, die noch je Beitrag kürzt.** `graph/nodes/sachlage.py::_render_history` schneidet bei `_BEITRAG_MAX_ZEICHEN = 1600`. Gefunden hat sie kein Durchgang durch diese Tabelle, sondern ein **Kriterium**: ein Lauf über den Syntaxbaum aller Produktivdateien nach jedem `x[:N]` — 351 Kappstellen in 292 Dateien, davon 3 auf einem Beitragstext.
+>
+> **Ihr Docstring behauptet das Gegenteil dessen, was der Bestand hergibt:** *„Novas Antworten kommen damit ganz an"* (dort Zeile 704), der Konstantenkommentar *„Die Grenze liegt jetzt über der längsten gemessenen Antwort"*. `[gemessen 16.09.2026]` Mit demselben Code nachgerechnet: **155 von 1494** Antworten liegen darüber (10,4 %, Max 3970); und auch nur für die Zeit seit dem 28.08.2026, an dem der Wert von 400 auf 1600 gesetzt wurde, sind es **33 von 651** (5,1 %, Max 2040). Verloren gehen je Treffer im Mittel 691 Zeichen. Fundliste 16.09.2026 — Bestand, nicht im Zug von Scheibe 12 B behoben.
 
 **Der Verfasser hat dafür seine Prompt-Form gewechselt, und das ist eine Entscheidung.** Er reichte den Verlauf bis zum 24.08.2026 als **Nachrichtenfolge** durch: je Turn eine Chat-Nachricht mit `role: user` oder `role: assistant`. Darin ist die **Person** eindeutig und der **Anlass** nicht — ein Eigen-Impuls und eine Antwort sind beide `assistant`.
 

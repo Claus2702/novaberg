@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 10:05 UTC** (gemessen via `date -u`): wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut. Davor 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 15:10 UTC** (gemessen via `date -u`): der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,42 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 15:10 UTC — kein Arzt schaut sich nur die Hände an 🔧
+
+**Anlass.** Der nummerierte Verlauf, den neun Leser bekommen — Router, Perzeption, Gesprächsvektor und die Klassifikation von sechs Diensten —, schnitt jeden Beitrag nach 100 Zeichen ab, und keiner der neun übergab je einen anderen Wert. Der Eigentümer zur Kappung: *„Das ergibt keinen Sinn! Im Gegenteil, das ist gefährlich! Kein Arzt schaut sich bei der Untersuchung nur die Hände an."*
+
+**Die Nulllinie ging dem Bau voraus** `[gemessen, 1494 Rohturns]`: **94,2 %** der Antworten Novas liegen über 100 Zeichen (Median 440, Max 5012), 36,8 % der Nutzer-Äußerungen (Median 83). Im Median sah ein Leser 100 von 440 Zeichen. Wer zuordnen soll, bekam den Anfang einer Regieanweisung — und nie das Angebot am Schluss.
+
+### Die Grenze trifft jetzt die Gruppe, nicht den Beitrag
+
+`memory/session.py`: `max_chars` fällt von 100 auf **keine Vorgabe**. An seine Stelle tritt `budget_wahren` — reißt das Fenster `SESSION_HISTORY_BUDGET_CHARS` (8000), fallen die **ältesten Gruppen ganz** weg, und die Zahl steht im Protokoll. Die jüngste Gruppe bleibt immer, auch allein über dem Budget.
+
+**Warum so:** Ein halber Beitrag sieht aus wie ein ganzer. Eine fehlende Gruppe nicht — die Nummerierung beginnt bei 1, der Verlauf ist kürzer.
+
+**Das Budget ist gewählt, nicht gesetzt.** Über 1439 Fenster aus fünf Turns: gekappt 904 Zeichen im Mittel gegen 3970 ungekappt (Median 3558, Max 8160). Bei 8000 gehen 86,8 % der Fenster vollständig durch; 12.000 brächten 90,0 % zum Preis eines halb so großen Prompts mehr.
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Jeder Beitrag des Fensters steht vollständig; reißt das Budget, fallen älteste Gruppen ganz weg |
+| **TEST** | `tests/test_verlauf_budget.py`, 13 Zeugen · Suite **3794 grün, 0 übersprungen** · harte Wand grün |
+| **MESSUNG** | Derselbe Code über 1439 Fenster, alt gegen neu: **7213 → 0** mitten abgeschnittene Beiträge |
+
+**Zwei Gegenproben mit Vorhersage.** Kappung zurücksetzen: 5 vorhergesagt, **4 gezählt** — der fünfte blieb grün, weil das Budget **vor** der Kürzung rechnet; im Docstring festgehalten. Budget ausschalten: 5 vorhergesagt, 5 gezählt.
+
+**Zwei Defekte der eigenen Messung, bevor sie stimmte.** Erst zählte sie `...` im Text und meldete 1260 abgeschnittene Beiträge, wo es keine gibt — Novas Gedankenpausen. Dann filterte sie über die ersten 40 Zeichen und meldete 44 — eine weggefallene Gruppe mit wiederkehrender Floskel sah aus wie ein abgeschnittener Beitrag.
+
+### Was die zweite Kontrolle fand, und zwar gegen die eigene Zahl
+
+**Der Messaufbau schrieb jeder Turn-Hälfte die Herkunft `nutzer_turn`.** Der Bestand kennt **170 `eigener_impuls`** (11,4 %), und ein Impuls öffnet eine eigene Gruppe — betroffen waren 379 von 1439 Fenstern. Die zuerst berichtete Quote **81,7 %** war dadurch um fünf Punkte zu pessimistisch. Am Code geklärt (je Durchlauf **ein** Turn; auf einem Impuls-Turn steht nur die Antwort im Verlauf, nie eine Nutzer-Äußerung) und neu gemessen: **86,8 %**.
+
+**Kein Kontextfenster reißt** `[gemessen am Betriebs-Log, n = 97 echte Router-Aufrufe]`: Der Router-System-Prompt misst im Mittel 14.804 Zeichen (Max 15.869), der Verlaufsblock machte davon 1,5 % aus. Schlimmstenfalls kommt er neu auf rund 23.900 Zeichen — bei 32.768 Token Kontextfenster und Warnschwelle bei 80 % sind das 22 bis 29 % der Kapazität. Kein Aufrufer setzt ein eigenes `num_ctx`.
+
+**Ein achter Verlaufs-Renderer, den die Doku nicht führte.** Ein Lauf über den Syntaxbaum aller Produktivdateien — 351 Kappstellen in 292 Dateien, davon 3 auf einem Beitragstext — fand `sachlage.py::_render_history`. Er schneidet bei 1600 Zeichen, während sein Docstring sagt *„Novas Antworten kommen damit ganz an"*: **155 von 1494** liegen darüber (10,4 %), und selbst seit dem Setzen des Wertes am 28.08.2026 noch **33 von 651** (5,1 %). Dazu ein Schnitt auf 200 Zeichen in `delegation/akte.py`, dessen Zielspalte im ganzen Server **keinen Leser** hat. Beides Bestand, in die Fundliste.
+
+Nachgezogen: `novaberg-mem-session.md` §3.7 und die Renderer-Tabelle, `novaberg-thinking-lage_k.md` §4 (*Teil B — gebaut*), `novaberg-featureliste.md` (⚫ → 🟠), `novaberg-fundliste.md`.
 
 ---
 
