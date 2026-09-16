@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 17:33 UTC** (gemessen via `date -u`): das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 19:00 UTC** (gemessen via `date -u`): die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 19:00 UTC — die Nähe trägt, aber nur mit einer Schwelle 📐
+
+**Kein Code, eine Messung vor dem Bau.** Teil C von Scheibe 12 will die Zuordnung eines Objekts zu einem Empfangsdienst **rechnen**. Ob das Objekt sie überhaupt trägt, war offen — und ist zweimal gemessen.
+
+**Am Bestand** (521 Lage-Zeilen, 1067 Objekt-Vorkommen): Nur **91 (8,5 %)** tragen einen Zeitbezug. Von 32 verschiedenen Namen sind von Hand 10 ein Ereignis mit Zeitpunkt, 1 ein Zustand, **14 bloße Gesprächsthemen**, 7 unklar. **Die Klasse trennt nicht** — `vorgang` steht bei 9 Terminen und 9 Nicht-Terminen — und fehlt bei 316 von 1067 Vorkommen.
+
+**An einer Reihe von 60 erfundenen Äußerungen**, 30 mit Ereignis-Bezug und 30 mit Sach-Bezug, Sollurteil vor dem Lauf, gefahren durch den Lage-Knoten ohne Router und ohne Agenten: **48 von 60 richtig zugeordnet (80,0 %)**. Entscheidend ist der **Abstand** der beiden Nähen — Median 0,0896 bei richtiger, 0,0152 bei falscher Zuordnung. Mit einer Schwelle von **0,04** entscheidet die Rechnung 39 von 60 Fällen und trifft **36 davon (92,3 %)**; beim Rest schweigt sie. Eine Wortregel über dieselben Fälle kommt auf 73,3 % und hält **15 von 30 Notizen für Termine**, weil Notizen Fristen tragen.
+
+**Was der Lauf nicht angefasst hat:** Timeline 100 → 100, Notizen 1 → 1. Es wurde kein Termin und keine Notiz geschrieben; entstanden sind 62 Lage-Zeilen auf Probe-Nutzern. GPU-Spitze 91 °C bei einer Abbruchgrenze von 95 °C.
+
+**Zwei Befunde neben dem Ergebnis:** Die Lage benennt als Objekt mehrfach den **Anlass statt des Gegenstands** (*Ausflug* statt *Regenjacke*) — daher zwei der drei Fehler mit deutlichem Abstand. Und der Messaufbau selbst hielt zuerst nicht: Ein Skript neben dem Serverprozess bekommt den Modelldienst nicht, und sein Stellvertreter muss das JSON-Parsen mitbringen, das im Betrieb der Worker leistet — sonst verwirft der Knoten seinen eigenen, gültigen Call und es sieht aus wie ein Modellausfall.
 
 ---
 

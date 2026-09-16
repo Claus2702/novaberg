@@ -503,7 +503,18 @@ Dazu in der Doku: die Zeugen der falschen Datei zugeordnet, vier statt fünf Dur
 
 **Offen für den Bau:**
 
-- **Die Nähe:** worüber gerechnet wird (Klasse + Name + Eigenschaftsnamen gegen das Objekt-Merkmal) und ab welcher Schwelle — eine Messung am Bestand der `sachlage_verlauf`-Objekte vor der Festlegung.
+- ~~**Die Nähe:** worüber gerechnet wird (Klasse + Name + Eigenschaftsnamen gegen das Objekt-Merkmal) und ab welcher Schwelle — eine Messung am Bestand der `sachlage_verlauf`-Objekte vor der Festlegung.~~ → **Gemessen am 16.09.2026, zweimal.**
+
+  **Erstens am Bestand** (521 Lage-Zeilen, 1067 Objekt-Vorkommen): Nur **91 (8,5 %)** tragen überhaupt einen Zeitbezug, 32 verschiedene Namen. Von Hand geurteilt sind davon **10 ein Ereignis mit Zeitpunkt, 1 ein Zustand mit Zeitbezug, 14 bloße Gesprächsthemen, 7 unklar**. **Die Klasse trägt die Entscheidung nicht** — `vorgang` steht bei 9 der 10 Termine und ebenso bei 9 Nicht-Terminen —, und sie fehlt bei **316 von 1067** Vorkommen. Das Signal sitzt in den **Eigenschaftsnamen**.
+
+  **Zweitens an einer Reihe von 60 erfundenen Äußerungen** — 30 Ereignisse mit Zeitpunkt, 30 Sachen mit Zeitbezug, Sollurteil vor dem Lauf —, gefahren durch den Lage-Knoten selbst, ohne Router und ohne Agenten: Die Nähe zwischen Objekttext (Klasse, Name, Eigenschaftsnamen) und je einem Merkmalstext ordnet **48 von 60 richtig zu (80,0 %)**. **Der Abstand der beiden Nähen trennt richtig von falsch:** Median 0,0896 gegen 0,0152. **Mit einer Schwelle von 0,04 auf den Abstand entscheidet sie 39 von 60 Fällen und trifft 36 davon (92,3 %)**, beim Rest schweigt sie. Eine Wortregel über dieselben Fälle kommt auf 73,3 % und hält **15 von 30 Notizen für Termine**, weil Notizen Fristen tragen.
+
+  **Daraus drei Festlegungen für den Bau:**
+  1. **Die Nähe ist Vorauswahl, kein Zustellgrund.** Ohne Schwelle ginge jede fünfte Zustellung an den falschen Dienst. Der Auslöser bleibt die Bitte oder die Zustimmung (Teil D).
+  2. **Die Schwelle auf den Abstand, Ausgangswert 0,04** — gemessen, nicht gesetzt; sie ist gegen den echten Bestand nachzueichen, in dem die meisten Objekte zu **keinem** Dienst gehören.
+  3. **Der Wortlaut des Merkmals ist selbst zu eichen** — er ist die einzige Stellschraube der Rechnung und kostet je Fassung nur Embeddings, keinen Modelllauf.
+
+  **Der zweite Engpass liegt vor Teil C:** Zwei der drei Fehler mit deutlichem Abstand entstanden aus der **Objektwahl der Lage** (Fundliste 16.09.2026). Beleg: `labor/2026-09-16_objektkriterium/ergebnis_reihe.md`.
 - **Die Pflicht-Schwelle** für das Angebot, am Speichenwert `pflicht` des Paares zu eichen.
 - **Die Form der Ablehnung** im Gesprächskontext: eine Eigenschaft wie jede andere (sie wandert dann mit Scheibe 11 ins Gedächtnis) oder ein eigenes Feld am Objekt.
 - ~~**Die Riegel-Wortliste von Teil A** gegen die Fehlalarme halten: *„ich merke mir"* in einem Gespräch über Erinnern ist keine Speicherbehauptung.~~ → **Gehalten am 15.09.2026**, am Bestand statt an Beispielen (unten, *Teil A — gebaut*). *„merke mir"* steht nicht in der Liste; ein Satz über Erinnern mit *verankert* und *im System* schlägt als Grenzfall an.
