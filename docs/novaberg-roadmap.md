@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 19:43 UTC** (gemessen via `date -u`): die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 20:19 UTC** (gemessen via `date -u`): die Nähe im Schatten — der Router urteilt je akutem Objekt und protokolliert, ohne zuzustellen. Davor 16.09.2026, 19:43 UTC: die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 94 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 95 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,20 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 20:19 UTC — der Empfang rechnet die Nähe, und benutzt sie nicht 🔧
+
+**Scheibe 12 C2, der Schattenlauf.** Vor jeder Entscheidung ruft der Router `agents/object_nearness.py::shadow_nearness`: je akutem Objekt der Sachlage der Objekttext (Klasse, Name, Eigenschaftsnamen — die Formel der Eichung), ein Stapel über den Embed-Worker, der Kosinus zu jedem Objekt-Merkmal und das Urteil mit Untergrenze 0,40 und Abstand 0,04 (`config.py`, `OBJEKT_NAEHE_*`). Das Urteil geht ins Pipeline-Log, Quelle `objekt_naehe`, auf jedem Rückkehrpfad mit eigenem Ausgang — **und in kein Feld des Zustands.**
+
+**Der Betriebscode rechnet, was geeicht wurde:** über die 60 Fälle der Reihe **33 zugestellt, 32 richtig, 27 still**, Zahl für Zahl die Eichung. **Er ist verdrahtet:** ein echter Turn über Gravitationslinsen schrieb den Eintrag (größte Nähe 0,2805, still an der Untergrenze); der Router entschied danach unabhängig, die Bestände blieben gleich.
+
+**TEST:** `tests/test_object_nearness.py`, 20 Zeugen, darunter der echte Router mit und ohne Schatten mit gleichem Zustand; Suite **3830 grün, 0 übersprungen**; Gegenproben 2/2, 7/7, 1/1, 1/1.
+
+**Die zweite Kontrolle** hielt das Pipeline-Log gegen das Server-Log (1 Eintrag auf 1 Router-Lauf, 146 ms) und den Bestand gegen die Eichung: **112 von 144 akuten Betriebsobjekten tragen Markdown-Sternchen am Namen, die Eichreihe keines — das Urteil ändert es in 112 von 112 Fällen nicht.** Und übernommene Sachlagen werden erneut beurteilt (49 von 207 Läufen in sieben Tagen); Betriebszahlen filtern nach `herkunft`. Ein eigener Ausgang war falsch benannt und ist berichtigt.
+
+**Beim Nachzug aufgefallen, und nicht entschieden:** Die Anmeldung soll ein Objekt am Zettel eines Dienstes führen *ohne Verhältnis zu anderen Zetteln* — der Abstand vergleicht zwei Merkmale. Ohne ihn stellt die Reihe 37 zu, 34 richtig; mit ihm 33, 32 richtig. Das ist vor Teil D zu entscheiden, nicht mit dieser Zahl.
 
 ---
 

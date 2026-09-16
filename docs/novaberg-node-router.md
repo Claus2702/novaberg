@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
+**Stand:** 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -179,6 +179,8 @@ Neue Fähigkeiten werden automatisch erkannt — ohne Änderung am Router. Die e
 | `current_arousal` | Perzeption | Energie-Intensität |
 | `gespraechs_modus` | Perzeption | Kommunikationsregister |
 | `beziehungs_dynamik` | Perzeption | Beziehungspositionierung |
+| `sachlage` | Sachlage-Knoten | **nur im Schatten** (seit 16.09.2026): die akuten Objekte für die Objekt-Nähe; kein geschriebenes Feld hängt davon ab |
+| `turn_id`, `character_id` | API | Zuordnung des Schatteneintrags im Pipeline-Log |
 
 ### Geschrieben
 
@@ -217,6 +219,7 @@ Neue Fähigkeiten werden automatisch erkannt — ohne Änderung am Router. Die e
 | `format_session_turns_numbered` | `memory/session` | Nummerierte Turn-Formatierung (zentrale Funktion, seit Chat 24) |
 | `model_service`, `ChatRequest` | `services/model_services` | Der Modelldienst, an den der Knoten eine typisierte Anfrage übergibt |
 | `redis_manager` | `tools/redis_manager` | Pending-Agent-Check (Resume-Flow) |
+| `shadow_nearness` | `agents/object_nearness` | Objekt-Nähe im Schatten — rechnet und protokolliert, schreibt kein Feld (seit 16.09.2026) |
 
 > **Am 16.08.2026 berichtigt.** Hier stand ~~`get_chat_provider` aus `services/llm_provider`~~ als LLM-Abstraktionsschicht. **Das ist keine Umbenennung, sondern eine eingezogene Schicht:** Der Knoten spricht die Provider-Abstraktion nicht mehr an, sondern reicht eine `ChatRequest` an `model_service`; dieser besitzt die Spurwahl (LLM- gegen CPU-Last) und die Provider-Registry. `services/llm_provider` existiert unverändert weiter mit `LLMProvider`, `OllamaProvider` und `AnthropicProvider` — es wird nur nicht mehr von Knoten importiert, sondern ausschließlich von `model_services` selbst.
 
@@ -271,3 +274,24 @@ Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung
 **Gebaut (14.09.2026).** Der Timeline-Aushang nennt Aufträge und Fragen statt Satzformen — *eintragen, erinnern, ändern, löschen, abfragen* — und sagt: *„Eine Zeitangabe allein ist kein Auftrag — auch nicht mit Uhrzeit und Ereignis."* Die Zeile *„ODER der Gesprächsverlauf ein aktives Zeitereignis enthält"* ist entfallen. Der TimelineAgent führt die Erwähnung als Negativfall, und seine Klassifikation weist sie als `rejected` aus (`novaberg-agent-timeline.md` §3). Damit widerspricht der Timeline-Aushang dem Dispatch-Guard **für Aufträge** nicht mehr; ob eine **Frage** an die Zeitachse (*„Was steht morgen an?"*) das Kommando-Signal des Guards erfüllt, sagen die beiden Texte nicht — gemessen wurde sie 3 von 3 zugestellt. Zeugen: `tests/test_timeline_aushang.py` (6, nach der zweiten Kontrolle 8), Gegenprobe gegen den vorigen Stand 5 von 16 rot wie vorhergesagt; Suite **3669 grün, 0 übersprungen**, nach der zweiten Kontrolle **3671** (`novaberg-agent-timeline.md` §3a).
 
 **Offen:** Die Zustimmung zu einem Angebot Novas ist nach der Entscheidung vom 14.09.2026 ein Auftrag — der Router erkennt sie heute nicht (Verlauf in 100 Zeichen, keine Objekte der Lage). Das ist Scheibe 12.
+
+---
+
+## Die Objekt-Nähe im Schatten (16.09.2026)
+
+**Seit Scheibe 12 C2 rechnet der Empfang, wem ein akutes Objekt der Lage gehört — und benutzt es nicht.** `route()` ruft als Erstes nach dem Quotenzähler `agents/object_nearness.py::shadow_nearness(state)`, **vor** dem Resume-Pfad, damit jeder Durchlauf einen Eintrag hat.
+
+| Schritt | Was geschieht |
+|---|---|
+| Objekte | nur die akuten (`akut is True`) aus `state["sachlage"]`; die latenten werden gezählt |
+| Objekttext | `build_object_text`: `Klasse: … . Name: … . Eigenschaften: …` — Namen der gedeckten und offenen Eigenschaften, keine Werte; zeichengleich mit der Formel der Eichung |
+| Vektor | ein Stapel über den Embed-Worker, Frist `OBJEKT_NAEHE_FRIST_S` = 10 s |
+| Urteil | Kosinus zu jedem Objekt-Merkmal (`agents/object_feature.py`); **`zugeordnet`** bei größter Nähe ≥ `OBJEKT_NAEHE_UNTERGRENZE` (0,40) **und** Abstand zur zweitgrößten ≥ `OBJEKT_NAEHE_ABSTAND` (0,04), sonst `still_untergrenze` oder `still_abstand` |
+| Protokoll | ein Eintrag im Pipeline-Log, Art `berechnung`, Knoten `router`, Quelle `objekt_naehe`, auf **jedem** Rückkehrpfad: `gerechnet`, `ohne_sachlage`, `ohne_objektliste`, `ohne_akute_objekte`, `ohne_merkmale`, `ausfall`; dazu `herkunft` der Sachlage |
+
+**Kein Feld des Zustands wird geschrieben**, und der Schatten wirft nie heraus — ein Ausfall ist ein Eintrag mit Fehlerart und ein `logger.error`. Die Zustellung entscheidet weiter der Modellaufruf allein; erst Teil D liest das Urteil.
+
+**Eine übernommene Sachlage wird erneut beurteilt** — auf Impuls- und Ausfall-Turns trägt der Zustand die Objekte des Vorgängers, und der Eintrag heißt trotzdem `gerechnet`. Betriebszahlen filtern deshalb nach `herkunft` (`impuls_uebernommen`, `ausfall_uebernommen`). Gemessene Kosten im echten Turn: 146 ms.
+
+**Gemessen am 16.09.2026:** Die Produktionsfunktionen über die 60 Fälle der Eichreihe reproduzieren die Eichung exakt — **33 zugestellt, 32 richtig, 27 still**. Ein echter Turn (Thema Gravitationslinsen, 20:15 UTC) schrieb den Eintrag `gerechnet`, ein akutes Objekt, größte Nähe 0,2805 → `still_untergrenze`; der Router entschied danach unabhängig, die Bestände blieben gleich. Konzept: `novaberg-thinking-lage_k.md` §4, *Teil C2 — gebaut*.
+
