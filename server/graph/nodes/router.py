@@ -17,6 +17,7 @@ from datetime import datetime
 
 from agents.nmcp import aushaenge_sammeln
 from agents.nmcp_quote import REGISTER
+from agents.object_nearness import shadow_nearness
 from config import PROMPTS, get_node_config, redis_client
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
@@ -111,6 +112,13 @@ def route(
 
     reiz: str = reiz_text(state)
     logger.info(f"Router: Route Prompt ({len(reiz)} Zeichen)")
+
+    # Scheibe 12 C2: die Naehe der akuten Objekte zu den Objekt-Merkmalen der
+    # Dienste — im Schatten. Gerechnet und protokolliert, NICHT benutzt: kein
+    # Feld des Zustands wird geschrieben, und die Zustellung entscheidet weiter
+    # der Aufruf unten allein. Vor dem Resume-Pfad, damit jeder Durchlauf einen
+    # Eintrag hat.
+    shadow_nearness(state)
 
     # ── Pending Agent Check (Resume-Flow) ──────────
     # Wenn ein Agent auf Antwort wartet, ueberspringen wir den LLM-Call.

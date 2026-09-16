@@ -56,7 +56,7 @@ def build_embed_text(feature: str) -> str:
     return feature.strip()
 
 
-def _vector_defect(vector: list[float]) -> str | None:
+def vector_defect(vector: list[float]) -> str | None:
     """Warum ein Vektor unbrauchbar ist, oder None.
 
     Ein Nullvektor und ein nicht endlicher Wert machen jede Kosinus-Naehe
@@ -148,7 +148,7 @@ async def feature_vectors_ensure(
             )
             _VECTORS.pop(name, None)
             continue
-        mangel = _vector_defect(vektor)
+        mangel = vector_defect(vektor)
         if mangel is None and dimension is not None and len(vektor) != dimension:
             mangel = f"Dimension {len(vektor)} statt {dimension}"
         if mangel is not None:

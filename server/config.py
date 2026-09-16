@@ -3383,6 +3383,25 @@ SACHLAGE_BRUECKE_MIN_KOSINUS: float = float(
 # Startwert wie die Bruecke; die Messreihe der Scheibe setzt ihn.
 SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS: float = float(
     os.getenv("SACHLAGE_WIEDERAUFNAHME_MIN_KOSINUS", "0.35"))
+# Scheibe 12 C2 (16.09.2026), die Naehe zwischen akutem Objekt und dem
+# Objekt-Merkmal eines Dienstes — zwei Schwellen, beide gemessen, nicht gesetzt.
+# Die UNTERGRENZE auf die groesste Naehe beantwortet, ob ueberhaupt ein Dienst
+# gemeint ist: Termine lagen bei 0,4534 bis 0,5591, Gespraechsthemen bei
+# 0,2834 bis 0,4800; mit 0,40 kamen 8 von 8 Terminen und 1 von 14 Themen durch.
+# Der ABSTAND zwischen groesster und zweitgroesster Naehe beantwortet, welcher:
+# mit beiden ueber 60 Faelle 33 zugestellt, 32 richtig, 27 still. Geeicht fuer
+# genau den Wortlaut der Merkmale und das Embedding-Modell dieses Tages —
+# ⚠ Wachposten: Ausgangswerte fuer den Schattenlauf, keine Endwerte.
+OBJEKT_NAEHE_UNTERGRENZE: float = float(
+    os.getenv("OBJEKT_NAEHE_UNTERGRENZE", "0.40"))
+OBJEKT_NAEHE_ABSTAND: float = float(
+    os.getenv("OBJEKT_NAEHE_ABSTAND", "0.04"))
+# Frist der Einbettung im Turn (F-FRIST-1). Gemessen am 16.09.2026 ueber 260
+# Einbettungen eines Tages: Median 0,151 s, p95 0,202 s, Maximum 1,48 s. Der
+# Schattenlauf steht im Gespraechspfad; laenger als das Siebenfache des
+# Maximums darf er den Turn nicht halten.
+OBJEKT_NAEHE_FRIST_S: float = float(
+    os.getenv("OBJEKT_NAEHE_FRIST_S", "10.0"))
 # Scheibe 6 (28.08.2026), der Frame-Aufloeser: Wie viele Eintraege des
 # Gedaechtnis-Pools dieses Turns (KZG, LZG, Bibliothek, Aufzeichnungen,
 # Kalender) der Sachlage-Call als nummeriertes Angebot sieht. Der Pool traegt

@@ -1,0 +1,264 @@
+"""Objekt-Naehe im Schatten — der Empfang rechnet, wem ein Objekt gehoert, und benutzt es nicht.
+
+**Konzept:** `docs/novaberg-thinking-lage_k.md` §4, Scheibe 12, Teil C2. Je
+akutem Objekt der Sachlage wird die Naehe zum Objekt-Merkmal jedes Dienstes
+gerechnet (`agents/object_feature.py`) und mit zwei Schwellen beurteilt:
+
+- **Untergrenze** auf die groesste Naehe — ist ueberhaupt ein Dienst gemeint?
+- **Abstand** zwischen groesster und zweitgroesster — welcher?
+
+**Das Ergebnis geht ins Protokoll und nirgends sonst hin.** Kein Feld des
+Zustands wird geschrieben; die Zustellung entscheidet weiter der Router allein.
+Erst wenn die Betriebszahlen tragen, liest Teil D das Urteil.
+
+**Der Objekttext ist die Formel der Eichung**, Zeichen fuer Zeichen: Klasse,
+Name und die Namen der gedeckten und offenen Eigenschaften, keine Werte. Eine
+andere Formel wuerde die Schwellen ungueltig machen, ohne dass etwas scheitert.
+"""
+
+import logging
+import math
+from collections.abc import Callable
+from dataclasses import dataclass
+
+from agents.object_feature import FeatureVector, feature_vectors, vector_defect
+
+logger = logging.getLogger("ki_server.agents.object_nearness")
+
+RULE_VERSION: str = "c2-2026-09-16"
+
+OUTCOME_ASSIGNED: str = "zugeordnet"
+OUTCOME_BELOW_FLOOR: str = "still_untergrenze"
+OUTCOME_BELOW_MARGIN: str = "still_abstand"
+
+
+@dataclass(frozen=True)
+class ObjectJudgement:
+    """Das Urteil ueber ein akutes Objekt — gerechnet, nicht benutzt."""
+
+    name: str
+    klasse: str
+    text: str
+    nearness: dict[str, float]
+    best: str
+    top: float
+    margin: float | None
+    outcome: str
+
+
+def build_object_text(obj: dict) -> str:
+    """Der Embed-Text eines Lage-Objekts — die EINZIGE Formel dafuer.
+
+    Vorbedingung: `obj` ist ein dict.
+    Nachbedingung: `Klasse: <klasse oder 'ohne'>. Name: <name>` und, wenn es
+        Eigenschaften gibt, `. Eigenschaften: <gedeckt-Namen>, <offen>` —
+        zeichengleich mit der Formel, mit der die Schwellen am 16.09.2026
+        geeicht wurden. Die Klasse ist kein Pflichtfeld: Sie fehlte bei 316 von
+        1067 Objekten im Bestand.
+    Fehlerfaelle: Kein dict ist ein `TypeError`.
+    """
+    if not isinstance(obj, dict):
+        raise TypeError(f"build_object_text: Objekt ist {type(obj).__name__}, erwartet dict")
+    eigenschaften = list(obj.get("gedeckt") or {}) + list(obj.get("offen") or [])
+    teile = [f"Klasse: {obj.get('klasse') or 'ohne'}", f"Name: {obj.get('name') or ''}"]
+    if eigenschaften:
+        teile.append("Eigenschaften: " + ", ".join(str(e) for e in eigenschaften))
+    return ". ".join(teile)
+
+
+def cosine(a: tuple[float, ...] | list[float], b: tuple[float, ...] | list[float]) -> float:
+    """Kosinus zweier Vektoren gleicher Dimension.
+
+    Fehlerfaelle: Ungleiche Dimension ist ein `ValueError`; ein Nullvektor
+        ebenfalls — er haette keine Richtung und lieferte ein "nicht nahe",
+        das keine Messung ist.
+    """
+    if len(a) != len(b):
+        raise ValueError(f"cosine: Dimension {len(a)} gegen {len(b)}")
+    punkt = sum(x * y for x, y in zip(a, b, strict=True))
+    la = math.sqrt(sum(x * x for x in a))
+    lb = math.sqrt(sum(y * y for y in b))
+    if not la or not lb:
+        raise ValueError("cosine: Nullvektor hat keine Richtung")
+    return punkt / (la * lb)
+
+
+def judge(
+    obj: dict,
+    vector: list[float],
+    features: dict[str, FeatureVector],
+    floor: float,
+    margin: float,
+) -> ObjectJudgement:
+    """Beurteilt ein Objekt gegen alle Merkmale, jedes fuer sich gerechnet.
+
+    Vorbedingung: `features` ist nicht leer; `vector` ist gueltig.
+    Nachbedingung: `outcome` ist `zugeordnet` genau dann, wenn die groesste
+        Naehe >= `floor` und der Abstand zur zweitgroessten >= `margin` ist.
+        Mit nur einem Merkmal gibt es keinen Abstand (`margin` None), und es
+        entscheidet die Untergrenze allein.
+    Fehlerfaelle: Leere Merkmale sind ein `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not features:
+        raise ValueError("judge: keine Merkmale — nichts zu beurteilen")
+
+    # ── Verarbeitung ────────────────────────────
+    naehe = {name: cosine(vector, f.vector) for name, f in sorted(features.items())}
+    rangfolge = sorted(naehe.items(), key=lambda kv: kv[1], reverse=True)
+    best, top = rangfolge[0]
+    abstand: float | None = top - rangfolge[1][1] if len(rangfolge) > 1 else None
+    if top < floor:
+        ausgang = OUTCOME_BELOW_FLOOR
+    elif abstand is not None and abstand < margin:
+        ausgang = OUTCOME_BELOW_MARGIN
+    else:
+        ausgang = OUTCOME_ASSIGNED
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not all(-1.0 - 1e-9 <= w <= 1.0 + 1e-9 for w in naehe.values()):
+        raise ValueError(f"judge: Kosinus ausserhalb [-1, 1]: {naehe}")
+    return ObjectJudgement(
+        name=str(obj.get("name") or ""),
+        klasse=str(obj.get("klasse") or ""),
+        text=build_object_text(obj),
+        nearness=naehe,
+        best=best,
+        top=top,
+        margin=abstand,
+        outcome=ausgang,
+    )
+
+
+def _embed_batch_via_worker(texts: list[str], deadline_s: float) -> list[list[float]]:
+    """Die Vektoren ueber den Embed-Worker, ein Stapel — eigene Funktion fuer Zeugen."""
+    from services.model_services import EmbedBatchRequest, model_service  # lokal: Startreihenfolge
+
+    antwort = model_service.embed.submit_sync(EmbedBatchRequest(texts=texts), timeout=deadline_s)
+    return [list(v) for v in antwort.embeddings]
+
+
+def _record(ergebnis: str, judgements: list[ObjectJudgement], **extra: object) -> dict:
+    """Der Protokolleintrag — dieselbe Form auf jedem Rueckkehrpfad."""
+    from config import OBJEKT_NAEHE_ABSTAND, OBJEKT_NAEHE_UNTERGRENZE
+
+    return {
+        "ergebnis":    ergebnis,
+        "untergrenze": OBJEKT_NAEHE_UNTERGRENZE,
+        "abstand":     OBJEKT_NAEHE_ABSTAND,
+        "regelfassung": RULE_VERSION,
+        "objekte": [
+            {
+                "name":    j.name,
+                "klasse":  j.klasse,
+                "text":    j.text,
+                "naehe":   {k: round(v, 4) for k, v in j.nearness.items()},
+                "bester":  j.best,
+                "oben":    round(j.top, 4),
+                "abstand": None if j.margin is None else round(j.margin, 4),
+                "ausgang": j.outcome,
+            }
+            for j in judgements
+        ],
+        **extra,
+    }
+
+
+def shadow_nearness(
+    state: dict,
+    embed_batch: Callable[[list[str], float], list[list[float]]] | None = None,
+    features: dict[str, FeatureVector] | None = None,
+) -> dict:
+    """Rechnet die Naehe der akuten Objekte und protokolliert sie — ohne den Zustand zu beruehren.
+
+    Vorbedingung: keine; jede fehlende Eingabe ist ein eigener, protokollierter Ausgang.
+    Nachbedingung: genau ein Eintrag im Pipeline-Log (Knoten `router`, Quelle
+        `objekt_naehe`) mit `ergebnis` aus `gerechnet`, `ohne_sachlage`,
+        `ohne_objektliste`, `ohne_akute_objekte`, `ohne_merkmale`, `ausfall`;
+        der Zustand ist unveraendert. Zurueck kommt der Eintrag. Eine
+        uebernommene Sachlage (Impuls, Ausfall) wird erneut beurteilt — `herkunft`
+        steht im Eintrag, und wer Betriebszahlen zieht, filtert danach.
+    Fehlerfaelle: Nichts wirft heraus — ein Schattenlauf darf den Turn nicht
+        reissen. Ein Ausfall steht als `ausfall` mit Fehlerart im Eintrag und
+        als `logger.error` im Log.
+    """
+    from config import OBJEKT_NAEHE_ABSTAND, OBJEKT_NAEHE_FRIST_S, OBJEKT_NAEHE_UNTERGRENZE
+
+    try:
+        # ── Eingabe-Validierung ─────────────────────
+        sachlage = state.get("sachlage")
+        if not isinstance(sachlage, dict):
+            return _write(state, _record("ohne_sachlage", []))
+        # Ein Impuls oder Ausfall ohne Vorgaenger traegt nur `herkunft` — eine
+        # Sachlage ist da, eine Objektliste nicht. Das ist ein anderer Befund als
+        # eine fehlende Sachlage und soll in der Reihe unterscheidbar sein.
+        if not isinstance(sachlage.get("objekte"), list):
+            return _write(
+                state, _record("ohne_objektliste", [], herkunft=sachlage.get("herkunft")),
+            )
+        objekte = [o for o in sachlage["objekte"] if isinstance(o, dict)]
+        akute = [o for o in objekte if o.get("akut") is True]
+        herkunft = {"herkunft": sachlage.get("herkunft"), "latente": len(objekte) - len(akute)}
+        if not akute:
+            return _write(state, _record("ohne_akute_objekte", [], **herkunft))
+        merkmale = feature_vectors() if features is None else features
+        if not merkmale:
+            return _write(state, _record("ohne_merkmale", [], **herkunft))
+
+        # ── Verarbeitung ────────────────────────────
+        texte = [build_object_text(o) for o in akute]
+        einbetten = embed_batch or _embed_batch_via_worker
+        vektoren = einbetten(texte, OBJEKT_NAEHE_FRIST_S)
+        if len(vektoren) != len(texte):
+            raise ValueError(f"{len(vektoren)} Vektoren fuer {len(texte)} Objekte")
+        urteile: list[ObjectJudgement] = []
+        for obj, vektor in zip(akute, vektoren, strict=True):
+            mangel = vector_defect(vektor)
+            if mangel is not None:
+                raise ValueError(f"Objektvektor unbrauchbar ({mangel})")
+            urteile.append(
+                judge(obj, vektor, merkmale, OBJEKT_NAEHE_UNTERGRENZE, OBJEKT_NAEHE_ABSTAND),
+            )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if len(urteile) != len(akute):
+            raise ValueError(f"{len(urteile)} Urteile fuer {len(akute)} akute Objekte")
+        logger.info(
+            "Objekt-Naehe (Schatten, nicht benutzt): %s",
+            "; ".join(
+                f"'{u.name}' → {u.best} {u.top:.4f}/"
+                f"{'—' if u.margin is None else f'{u.margin:.4f}'} {u.outcome}"
+                for u in urteile
+            ),
+        )
+        return _write(state, _record("gerechnet", urteile, **herkunft))
+    except Exception as fehler:  # noqa: BLE001 — der Schatten darf den Turn nicht reissen
+        logger.exception("Objekt-Naehe (Schatten): Ausfall — nichts gerechnet")
+        return _write(
+            state,
+            _record("ausfall", [], fehlerart=type(fehler).__name__, fehler=str(fehler)[:200]),
+        )
+
+
+def _write(state: dict, eintrag: dict) -> dict:
+    """Schreibt den Eintrag dauerhaft; ein gescheitertes Schreiben wird gemeldet, nicht geworfen."""
+    from memory.pipeline_log import log_berechnung
+
+    turn_id = state.get("turn_id") or ""
+    if not turn_id:
+        logger.error("Objekt-Naehe (Schatten): ohne turn_id — Eintrag ist keinem Turn zuzuordnen")
+    try:
+        log_berechnung(
+            turn_id      = turn_id,
+            node         = "router",
+            quelle       = "objekt_naehe",
+            inhalt       = eintrag,
+            user_id      = state.get("user_id"),
+            character_id = state.get("character_id"),
+        )
+    except Exception:  # noqa: BLE001 — der Turn ist wichtiger als sein Protokoll
+        logger.exception(
+            "Objekt-Naehe (Schatten): nicht dauerhaft protokolliert (turn_id=%s, ergebnis=%s)",
+            turn_id, eintrag.get("ergebnis"),
+        )
+    return eintrag
