@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 15:10 UTC** (gemessen via `date -u`): der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 17:19 UTC** (gemessen via `date -u`): zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,33 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 17:19 UTC — zwei Termine aus der Zeit vor der Regel sind deaktiviert 📝
+
+**Kein Code, eine Bestandspflege.** Zwei Timeline-Zeilen des produktiven Paares stehen auf `aktiv = false`. Entschieden hat der Eigentümer, mit dem Grund, dass Verlinkungen darauf bestehen könnten: *„Deaktivieren ist nicht verkehrt."*
+
+- **507**, angelegt am 13.09.2026 **aus einer Aussage statt aus einem Auftrag** — die Klasse von `TIMELINE-SCHREIBT-OHNE-AUFTRAG`, entstanden vor der Setzung *„nur ein ausdrücklicher Auftrag"*.
+- **511**, angelegt am 14.09.2026 aus einem richtigen Auftrag **mit falscher Zeit**: `event_time` war der Anlagezeitpunkt plus 24 Stunden statt der genannten Stunde, `precision = day`. Der Defekt im Zeitparser dahinter ist am 15.09.2026 behoben; die Zeile blieb.
+
+**Vor dem Eingriff gemessen:** Beide aktiv, beide Zeitpunkte in der Vergangenheit, beide mit einer Wiedervorlage in der kommenden Woche. **Kein Fremdschlüssel zeigte auf sie** — `lzg_knoten`, `notizen` und `sachlage_eigenschaft` je 0 Zeilen. **Danach:** beide `aktiv = false`, aktive Termine **100 → 98**.
+
+**Gelöscht wurde nichts, und das ist die ganze Wirkung:** Jeder Leser der Tabelle filtert auf `aktiv = TRUE` (`memory/repositories/timeline_repository.py`, alle Abfragen), der Rückweg ist ein `UPDATE`. Die Wiedervorlagen bleiben stehen und laufen ins Leere, weil sie denselben Filter passieren müssen.
+
+---
+
+## 16.09.2026, 16:51 UTC — eine Behauptung wird kommentiert, nicht herausgeschnitten 📝
+
+**Kein Code.** Die zweite offene Absichtsfrage zu Scheibe 12 A ist entschieden; der Bau steht aus.
+
+**Die Frage:** Eine Speicherbehauptung, die beide Korrekturrunden übersteht, geht heute mit der Antwort hinaus — gemeldet, nicht verhindert (Lauf 3: 2 von 24). Offen war, ob sie hart aus der Antwort entfernt wird.
+
+**Entschieden: nicht entfernen.** Entfernen setzt voraus, dass die Behauptung als **falsch belegt** ist, und das leistet erst der Bestandsabgleich aus der Entscheidung von 10:05 — seit `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION` beweist auch ein `abgeschlossen` keine Schreibung. Ein stiller Schnitt nähme dem Nutzer zudem den einzigen Hinweis, dass nichts gespeichert wurde.
+
+**Drei Zeitpunkte, drei Mittel:** im Turn ein **angehängter Korrektursatz**, gerechnet statt erbeten; am Ende des Turns der **Ausgang am Turn vermerkt** — `session_turn_mark_action` schreibt die zwei Flags und der nummerierte Verlauf rendert sie, **aber seit dem 23.04.2026 ruft sie niemand**; und ein Tage später gefundener Fall **am Gedächtnisknoten** nachgetragen, nicht am Verlauf: Der liegt in Redis und verfällt nach vier Stunden Inaktivität. Die Kandidaten für ein solches Audit liefert der dauerhafte Eintrag, den die Prüfung je Durchlauf schreibt.
+
+**Offen für den Bau:** der Wortlaut des angehängten Satzes, und ob der Nachtrag den Text des Gedächtnisknotens ändert oder ein eigenes Feld bekommt.
 
 ---
 
