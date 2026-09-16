@@ -65,6 +65,21 @@ class NotizenAgent(BaseAgent):
         ]
 
     @property
+    def objekt_merkmal(self) -> str:
+        """Eine Sache, ein Bedarf oder eine Eigenschaft — nichts, das stattfindet.
+
+        Geeicht am 16.09.2026 wie das Merkmal der Timeline: Sachen trennen
+        die Notizen, eine Aufzaehlung von Notizformen nicht. Wortgleich mit
+        der gemessenen Fassung, Umlaute umschrieben — der Vektor haengt am
+        Zeichen.
+        """
+        return (
+            "Ein Gegenstand, ein Bedarf oder eine Eigenschaft, die festgehalten wird und "
+            "nicht stattfindet: Mehl brauchen, Passwort, Reifengroesse, Unvertraeglichkeit, "
+            "Vorrat, Rezept, Zaehlerstand."
+        )
+
+    @property
     def grenze(self) -> list[str]:
         """Was dieser Dienst nicht tut."""
         return [

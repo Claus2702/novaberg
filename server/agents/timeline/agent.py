@@ -64,6 +64,22 @@ class TimelineAgent(BaseAgent):
         ]
 
     @property
+    def objekt_merkmal(self) -> str:
+        """Eine Handlung oder ein Ereignis mit Zeitpunkt — das Verb entscheidet.
+
+        Geeicht am 16.09.2026 gegen vier andere Fassungen, gewaehlt auf der
+        einen Haelfte einer Reihe von 60 Aeusserungen und berichtet auf der
+        anderen: Verben trennen die Timeline von den Notizen, Substantive
+        nicht. Wortgleich mit der gemessenen Fassung, Umlaute umschrieben —
+        der Vektor haengt am Zeichen.
+        """
+        return (
+            "Eine Handlung, die zu einer Zeit ausgefuehrt wird, oder ein Ereignis, das zu "
+            "einer Zeit eintritt: hingehen, abgeben, treffen, anrufen, abholen, stattfinden, "
+            "beginnen, enden, ablaufen."
+        )
+
+    @property
     def grenze(self) -> list[str]:
         """Was dieser Dienst nicht tut."""
         return [

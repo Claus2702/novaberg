@@ -373,6 +373,26 @@ class BaseAgent(ABC):
         return []
 
     @property
+    def objekt_merkmal(self) -> str:
+        """Welches Objekt der Lage dieser Dienst bedient.
+
+        Unterschieden vom Aushang: Der Aushang beschreibt Merkmale der
+        **Aeusserung** und wird vom Empfang gelesen; das Objekt-Merkmal
+        beschreibt das **Objekt**, in der Sprache, in der die Sachlage
+        Objekte klassifiziert, und wird nicht gelesen, sondern
+        **eingebettet** — die Naehe zu einem akuten Objekt wird gerechnet,
+        nicht erraten (Scheibe 12, Teil C).
+
+        **Der Wortlaut ist geeicht, nicht formuliert.** Die Schwellen, die
+        auf der Naehe rechnen, gelten fuer genau diesen Text und dieses
+        Embedding-Modell; wer ihn aendert, eicht neu.
+
+        Nachbedingung: leerer Text heisst "bedient kein Objekt der Lage" und
+        ist zulaessig — nicht jeder Dienst am Empfang hat ein Objekt.
+        """
+        return ""
+
+    @property
     def grenze(self) -> list[str]:
         """Was dieser Dienst ausdruecklich nicht tut.
 

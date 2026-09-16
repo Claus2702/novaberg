@@ -214,6 +214,14 @@ async def lifespan(app: FastAPI):
     for _meldung in gesamtbild_pruefen(AgentRegistry.alle()):
         logger.warning(f"NMCP-Gesamtbild [{_meldung.regel}]: {_meldung.text}")
 
+    # Objekt-Merkmale einbetten (Scheibe 12, Teil C). Nur die eine Seite der
+    # Naehe-Rechnung; der Empfang liest die Vektoren noch nicht.
+    if ollama_ok:
+        from agents.object_feature import feature_vectors_ensure
+        await feature_vectors_ensure(AgentRegistry.alle())
+    else:
+        logger.error("Objekt-Merkmal: Ollama nicht bereit — keine Merkmalsvektoren in diesem Lauf")
+
     # Periodische Pixie-Aufgaben registrieren (aus Agent periodic_task())
     if PIXIE_AKTIV:
         import time as _time
