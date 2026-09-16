@@ -37,7 +37,7 @@ Nur im CharacterGraph. Im HumanGraph (Pfad 1) gibt es keinen Router — der User
 |------|-----|-------------|
 | `needs_memory` | `bool` | Intent `personal`, emotionale Signale, Emotion ≠ `neutral`, wiederkehrende Themen |
 | `needs_web` | `bool` | Aktuelle Fakten nötig (Intent `knowledge` + aktuelle Themen). SearXNG-Integration über den Thinker (seit Chat 12/15). |
-| `needs_timeline` | `bool` | Frage nach Terminen/Daten ODER neuer Termin wird genannt |
+| `needs_timeline` | `bool` | Frage nach Terminen/Daten ODER neuer Termin wird genannt. **Das Flag sagt, dass eine Zeitangabe vorkommt — nicht, welcher Dienst gemeint ist.** Der Planner behandelt es seit jeher als Dienstwahl; das ist seit dem 16.09.2026 ein Defekt (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`), weil der Gegenstand entscheidet und nicht das Zeitwort |
 
 ### 3.2 Timeline-Query
 
@@ -148,7 +148,7 @@ Hoehere Nummern sind aktueller — loese Bezuege bevorzugt ueber die hoechsten N
 
 Die nummerierte Formatierung unterstützt Recency-basierte Auflösung: Bei Mehrdeutigkeit gewinnt der aktuellere Turn.
 
-> ⚠ **Jeder Beitrag erreicht den Router nur in seinen ersten 100 Zeichen** (`format_session_turns_numbered`, Vorgabe `max_chars = 100`, vom Router nicht überschrieben — ebenso bei acht weiteren Lesern). **Das ist kein Ausschnitt, sondern eine Gefahr:** Novas Antworten beginnen häufig mit einer Regieanweisung, `[gemessen 14.09.2026]` 157 bis 208 Zeichen lang in 4 von 4 Antworten — der Router sah von diesen Antworten nur den Anfang der Regieanweisung. Ein Angebot am Ende einer Antwort erreicht ihn nie, und ein *„Gerne"* darauf ist nicht zuordenbar. Der Befund steht in der Fundliste (14.09.2026); die Abhilfe ist Teil B von Scheibe 12 (`novaberg-thinking-lage_k.md` §4).
+> ⚠ **Jeder Beitrag erreicht den Router nur in seinen ersten 100 Zeichen** (`format_session_turns_numbered`, Vorgabe `max_chars = 100`, vom Router nicht überschrieben — ebenso bei acht weiteren Lesern). **Das ist kein Ausschnitt, sondern eine Gefahr:** Novas Antworten beginnen häufig mit einer Regieanweisung, `[gemessen 14.09.2026]` 157 bis 208 Zeichen lang in 4 von 4 Antworten — der Router sah von diesen Antworten nur den Anfang der Regieanweisung. Ein Angebot am Ende einer Antwort erreicht ihn nie, und ein *„Gerne"* darauf ist nicht zuordenbar. Der Befund steht in der Fundliste (14.09.2026); die Abhilfe ist Teil B von Scheibe 12 (`novaberg-thinking-lage_k.md` §4). → **Behoben am 16.09.2026:** Der Router sieht jeden Beitrag des Fensters vollständig — ein Angebot am Ende einer Antwort erreicht ihn jetzt. Die Grenze greift nur noch über das ganze Fenster und wirft älteste Gruppen ganz weg (`novaberg-mem-session.md` §3.7). `[gemessen]` Über 1439 Fenster: mitten abgeschnittene Beiträge 7213 → **0**; der Verlaufsblock im Router-Prompt wächst dabei von 1,5 % auf höchstens rund ein Drittel seiner realen Länge — kein Kontextfenster reißt. **Dass ein *„Gerne"* damit zuordenbar wird, ist nicht gemessen:** Der Verlauf trägt die Angabe jetzt, ob der Router sie nutzt, zeigt erst der Betrieb.
 
 ### 4.3 Plugin-Erweiterungen ([AGENTEN]-Block)
 

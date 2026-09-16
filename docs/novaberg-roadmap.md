@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 19:00 UTC** (gemessen via `date -u`): die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 16. September 2026 — juengster Eintrag **16.09.2026, 19:14 UTC** (gemessen via `date -u`): zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -19,6 +19,22 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 16.09.2026, 19:14 UTC — zwei Schwellen, und der geeichte Wortlaut 📐
+
+**Kein Code, die zweite Messung des Tages — und sie widerlegt die Empfehlung der ersten.** Kosten: nur Embeddings, kein Modelllauf.
+
+**Der Abstand allein stellt Gesprächsthemen zu.** Gegen den echten Bestand gehalten, in dem die meisten Objekte zu keinem Dienst gehören: Bei Abstand ≥ 0,04 kommen **199 von 313** Objektnamen durch, darunter **8 der 14** von Hand als Gesprächsthema geurteilten. Der Abstand beantwortet *welcher der beiden Dienste*, nicht *ob überhaupt einer*.
+
+**Die absolute Nähe beantwortet die erste Frage und trennt:** Termine liegen im Median bei **0,5075**, Gesprächsthemen bei **0,3468**. Mit einer Untergrenze von 0,40 kommen alle 8 Termine durch, aber nur 1 von 14 Gesprächsthemen — und vom ganzen Bestand 66 von 313.
+
+**Beide Schwellen zusammen über die 60 Fälle der Reihe:** ohne Schwellen 51 von 60 richtig (85,0 %), nur mit Abstand 40 von 44 zugestellten (90,9 %), **mit Untergrenze 0,40 und Abstand 0,04 32 von 33 zugestellten (97,0 %)** bei 27 stillen Fällen.
+
+**Der Merkmalstext ist geeicht**, fünf Fassungen je Dienst, gewählt auf der einen Hälfte und berichtet auf der anderen: **28 von 30** gegen 26 von 30 der geratenen Fassung. Das Timeline-Merkmal gewinnt mit **Verben**, das Notizen-Merkmal mit **Sachen**.
+
+**Offen bleibt eine Untergrenze je Dienst:** Notizen-Objekte liegen tiefer als Termine (0,3929 gegen 0,4575), eine gemeinsame Grenze kostet deshalb Notizen-Fälle.
 
 ---
 

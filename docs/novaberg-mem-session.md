@@ -171,7 +171,7 @@ Löscht alle Session-Daten eines Users: Turns, Summary, Stack, Pending.
 
 Signatur: `session_turn_mark_action(redis_client, user_id, character_id, ...)`.
 
-Markiert den letzten User-Turn mit dem Ergebnis einer Agent-Aktion. Wird nach dem Agent-Dispatch aufgerufen. (Der Vergleich mit `session_turn_annotate` stand hier bis zum 16.08.2026 — die Funktion gibt es nicht mehr, siehe §3.2.)
+Markiert den letzten User-Turn mit dem Ergebnis einer Agent-Aktion. ~~Wird nach dem Agent-Dispatch aufgerufen.~~ → **Widerlegt am 16.09.2026: Die Funktion hat im ganzen `server/` keinen Aufrufer** — nur `memory/__init__.py` exportiert sie weiter. Der Leser steht (`format_session_turns_numbered` rendert `[ERLEDIGT]`/`[FEHLGESCHLAGEN]`), die Marke wird seit dem 23.04.2026 nie gesetzt. **Der Aufrufer ist Teil der Entscheidung vom 16.09.2026** — eine Speicherbehauptung wird kommentiert statt entfernt, und der Ausgang des Turns gehört an den Turn (`novaberg-thinking-lage_k.md`, Scheibe 12). (Der Vergleich mit `session_turn_annotate` stand hier bis zum 16.08.2026 — die Funktion gibt es nicht mehr, siehe §3.2.)
 
 Zwei Flags:
 - `aktion_erledigt`: Agent hat Verarbeitung abgeschlossen (true bei `abgeschlossen` und `fehler`)
@@ -292,7 +292,7 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 | **db_zugriff** | Liest `nova_state:{user_id}:{character_id}` am CG-Eingang, befüllt `state["internal"].emotion` (Chat 89) und `.raum` (Chat 114; fehlen die Achsen, werden sie aus den Register-Labels abgeleitet) |
 | **ei_calc_persist** | Schreibt `nova_state:{user_id}:{character_id}` am CG-Ausgang (Chat 89) |
 | **Salienz** | ~~Legacy-Annotation via `session_turn_annotate`~~ → **entfallen** (16.08.2026 geprüft). Die Salienz schreibt nicht mehr in die Session; der Dispatcher speichert den Turn vollständig |
-| **API-Layer** (`api/chat.py`) | Markiert User-Turns nach Agent-Dispatch via `session_turn_mark_action` |
+| **API-Layer** (`api/chat.py`) | ~~Markiert User-Turns nach Agent-Dispatch via `session_turn_mark_action`~~ → **widerlegt am 16.09.2026: Die Funktion hat im ganzen `server/` keinen Aufrufer** (Fundliste). Der Leser steht, die Marke wird nie gesetzt |
 | **Responder** | Sieht die destillierten Turns (über den Enricher, nicht direkt) |
 
 ---

@@ -59,7 +59,7 @@ Wenn kein Resume: Der Planner findet den zuständigen Manager über die Plugin-R
 
 | Priorität | Mechanismus | Beispiel |
 |-----------|------------|---------|
-| 1 | `needs_timeline` Flag | Router setzt Flag → TimelineManager |
+| 1 | `needs_timeline` Flag | Router setzt Flag → TimelineManager. **Seit 16.09.2026 ein Defekt** (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`): `management_target` wird hier nicht gelesen, damit erreicht **keine** Merk-Bitte mit Zeitbezug die Notizen — und entscheiden soll der Gegenstand, nicht das Zeitwort |
 | 2 | Intent-Match (`router_intents`) | `timeline_management` → TimelineManager |
 | 3 | Target-Match — **exakt vor unscharf** | Ziel gleich Manager-Ziel; sonst genau **ein** unscharfer Treffer |
 | 4 | Fallback | NotizenManager als Auffangbecken |
