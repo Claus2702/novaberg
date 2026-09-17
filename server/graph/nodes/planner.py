@@ -16,6 +16,7 @@ import json
 import logging
 
 from agents import AgentRegistry
+from agents.object_nearness import service_order
 from config import PROMPTS
 from graph.format.agent_results import format_success_lines
 from graph.state import ConversationState
@@ -104,7 +105,14 @@ def _build_task_block(
     # NICHT (Nova beantwortete nur die Sachfrage), waehrend eine
     # Erfolgsmeldung mit Schnitt am selben Tag Tag, Uhrzeit und Eintrag
     # nannte. Der ungeschnittene Kontext liess den Block untergehen.
-    if refusals:
+    #
+    # **Hat ein anderer Dienst den Auftrag danach erledigt, gilt der Erfolg**
+    # (17.09.2026, Scheibe 12 D1): Seit der Planner nach einer Ablehnung den
+    # naechsten Dienst fragt, koennen beide im selben Turn stehen — und die
+    # Ablehnung des ersten ist dann eine Weitergabe, keine Auskunft an den
+    # Nutzer. Dasselbe gilt, wenn der zweite scheiterte oder verworfen wurde:
+    # Dann gehoert sein Ausgang in den Block, nicht die Weitergabe davor.
+    if refusals and not (successes or errors or dismissed):
         return (_build_task_ablehnung(refusals), True)
 
     # Prioritaet 3: Fehler
@@ -328,6 +336,68 @@ def _manager_zu_target(registry: dict, target_lower: str) -> BaseManager | None:
     return None
 
 
+# Ausgaenge, nach denen der naechste Dienst gefragt wird: begruendete
+# Ablehnung und die Vorform ohne Begruendung ("rejected" der Klassifikation).
+DECLINED: frozenset[str] = frozenset({"abgelehnt", "rejected"})
+
+
+def service_order_for(state: ConversationState, registry: dict, fallback) -> list[str]:  # noqa: ANN001
+    """Die Reihenfolge der Dienste fuer diesen Auftrag.
+
+    Vorbedingung: `registry` ist die Manager-Registry; `fallback` ist der
+        Treffer der Prioritaeten 2 bis 4 oder None.
+    Nachbedingung: zuerst die Dienste, deren Merkmal ein akutes Objekt erreicht
+        (nach Naehe), dann der Fallback — ausser der Fallback traegt selbst kein
+        Merkmal, dann steht er vorn. Jeder hoechstens einmal; nur Namen, fuer
+        die es einen Manager oder Agenten gibt.
+    Fehlerfaelle: keine Ausnahme; ein Name ohne Dienst wird laut verworfen.
+
+    Protokolliert die Groessen der Weiche, bevor sie entscheidet (F-LOG-3).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    urteil = state.get("objekt_urteil")
+    aus_naehe: list[str] = service_order(urteil)
+    # Nach einem Ausfall der Sachlage traegt der Zustand die Objekte des
+    # Vorturns — die Naehe wuerde nach dem Gegenstand von gestern ordnen. Auf
+    # einem Impuls-Turn dagegen baut der Gedanke bewusst auf dieser Lage auf
+    # (Bruecke, Scheibe 4); dort ordnet sie weiter. `[gemessen 17.09.2026]`
+    # 114 von 542 Sachlagen in 14 Tagen waren `ausfall_uebernommen`.
+    if isinstance(urteil, dict) and urteil.get("herkunft") == "ausfall_uebernommen" and aus_naehe:
+        logger.info(f"Planner-Weiche: Naehe {aus_naehe} verworfen — Sachlage vom Vorturn uebernommen (Ausfall)")
+        aus_naehe = []
+
+    # ── Verarbeitung ────────────────────────────
+    # Die Naehe ordnet nur unter Diensten, die ein Objekt-Merkmal tragen. Ein
+    # Dienst ohne Merkmal kann an ihr nicht teilnehmen — zeigt der Router auf
+    # ihn (`dateien`, `wissen`, ...), steht er vorn, und die nahen Dienste
+    # folgen nur nach einer Ablehnung. Sonst naehme die Notiz einen Auftrag an
+    # den Dateien an, weil das Objekt zufaellig einer Sache aehnelt.
+    fallback_name: str | None = getattr(fallback, "ziel", None)
+    fallback_agent = AgentRegistry.finden(fallback_name) if fallback_name else None
+    ohne_merkmal: bool = bool(fallback_name) and not (getattr(fallback_agent, "objekt_merkmal", "") or "").strip()
+    kandidaten: list[str] = (
+        [fallback_name, *aus_naehe] if ohne_merkmal else [*aus_naehe, *([fallback_name] if fallback_name else [])]
+    )
+
+    reihenfolge: list[str] = []
+    for name in kandidaten:
+        if name in reihenfolge:
+            continue
+        bekannt = AgentRegistry.finden(name) is not None or any(m.ziel == name for m in registry.values())
+        if not bekannt:
+            logger.error(f"Planner: Dienst '{name}' aus dem Urteil ist nicht angemeldet — verworfen")
+            continue
+        reihenfolge.append(name)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        f"Planner-Weiche: naehe={aus_naehe} (urteil={getattr(urteil, 'get', lambda _k: None)('ergebnis')}), "
+        f"fallback={getattr(fallback, 'ziel', None)}, target='{state.get('management_target', '')}', "
+        f"needs_timeline={state.get('needs_timeline')}, fallback_ohne_merkmal={ohne_merkmal} → {reihenfolge}"
+    )
+    return reihenfolge
+
+
 def plan(
     state:        ConversationState,
     postgres_url: str
@@ -395,23 +465,21 @@ def plan(
     registry: dict = get_registry()
     zustaendiger = None
 
-    # Priorität 1: Timeline-Flag aus Router
-    if state.get("needs_timeline") and state.get("management_action"):
-        for manager in registry.values():
-            if manager.ziel == "timeline":
-                zustaendiger = manager
-                logger.info(f"Planner: Match via needs_timeline → {manager.ziel}")
-                break
+    # ~~Prioritaet 1: Timeline-Flag aus Router~~ — entfernt am 17.09.2026
+    # (Scheibe 12 D1, `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`). Jede
+    # Zeitangabe schickte die Bitte an die Timeline, auch "Merk dir, dass ich
+    # morgen Mehl brauche". Die Wahl folgt jetzt dem Objekt: zuerst die Dienste,
+    # deren Merkmal das akute Objekt erreicht (`objekt_urteil`), dann der Treffer
+    # der Prioritaeten unten.
 
-    # Priorität 2: Intent-Match
-    if not zustaendiger:
-        intent: str = user_intent
-        if intent:
-            for manager in registry.values():
-                if intent in manager.router_intents:
-                    zustaendiger = manager
-                    logger.info(f"Planner: Match via intent '{intent}' → {manager.ziel}")
-                    break
+    # Prioritaet 2: Intent-Match
+    intent: str = user_intent
+    if intent:
+        for manager in registry.values():
+            if intent in manager.router_intents:
+                zustaendiger = manager
+                logger.info(f"Planner: Match via intent '{intent}' → {manager.ziel}")
+                break
 
     # Priorität 3: management_target gegen die Manager-Ziele
     #
@@ -448,7 +516,8 @@ def plan(
                     logger.info(f"Planner: Fallback → {manager.ziel}")
                     break
 
-    if not zustaendiger:
+    reihenfolge: list[str] = service_order_for(state, registry, zustaendiger)
+    if not reihenfolge:
         logger.warning(
             f"Planner: Kein Manager gefunden "
             f"(intent='{user_intent}', target='{state.get('management_target')}', "
@@ -457,30 +526,44 @@ def plan(
         state["node_annotations"].append("Planner: Kein Manager gefunden")
         return state
 
-    logger.info(f"Planner: Delegiere an '{zustaendiger.ziel}'")
-
-    # Epic 11: Prüfe ob ein Agent den Manager ersetzt
-    agent = AgentRegistry.finden(zustaendiger.ziel)
-    if agent:
+    # Die Dienste der Reihe nach: Wer noch nicht lief, wird gefragt. Wer
+    # ablehnte, gibt an den naechsten weiter — entschieden am 16.09.2026: "fuer
+    # die Grenzfaelle beide ansprechen, wenn der eine nicht will, soll der andere
+    # auch gefragt werden". Jeder andere Ausgang beendet die Reihe.
+    for name in reihenfolge:
+        agent = AgentRegistry.finden(name)
+        if agent is None:
+            zustaendiger = registry.get(name) or next(
+                (m for m in registry.values() if m.ziel == name), None)
+            if zustaendiger is None:
+                logger.error(f"Planner: '{name}' in der Reihenfolge ist weder Agent noch Manager — uebergangen")
+                continue
+            break
         vorheriges = _agent_bereits_gelaufen(state, agent.name)
-        if vorheriges:
-            # Agent ist schon gelaufen — nicht nochmal aufrufen
-            # Ergebnis liegt bereits in agent_results, management_result ist gesetzt
-            # → Kein Manager-Aufruf, kein Agent-Aufruf, weiter zum Responder
-            logger.info(
-                f"Planner: Agent '{agent.name}' bereits gelaufen (status={vorheriges.status}) — "
-                "weiter zum "
-                "Responder"
-            )
-            _write_task_block(state)
-            return state
-        else:
-            # Agent noch nicht gelaufen — Agent-Pfad
-            logger.info(f"Planner: Agent-Pfad — {agent.name} ersetzt Manager '{zustaendiger.ziel}'")
+        if vorheriges is None:
+            logger.info(f"Planner: Agent-Pfad — frage '{agent.name}' (Reihenfolge {reihenfolge})")
             state["agent_name"] = agent.name
             state["management_result"] = ""
             state["management_detail"] = ""
             return state
+        if vorheriges.status in DECLINED:
+            logger.info(
+                f"Planner: '{agent.name}' lehnte ab (status={vorheriges.status}) — "
+                f"naechster in {reihenfolge}"
+            )
+            continue
+        logger.info(
+            f"Planner: Agent '{agent.name}' bereits gelaufen (status={vorheriges.status}) — "
+            "weiter zum Responder"
+        )
+        _write_task_block(state)
+        return state
+    else:
+        logger.info(f"Planner: alle Dienste der Reihenfolge {reihenfolge} gefragt — weiter zum Responder")
+        _write_task_block(state)
+        return state
+
+    logger.info(f"Planner: Delegiere an '{zustaendiger.ziel}' (Manager ohne Agent)")
 
     # Manager plant die Operation
     try:

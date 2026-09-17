@@ -1,4 +1,4 @@
-"""Objekt-Naehe im Schatten — der Empfang rechnet, wem ein Objekt gehoert, und benutzt es nicht.
+"""Objekt-Naehe — der Empfang rechnet, welchen Diensten ein akutes Objekt gehoert.
 
 **Konzept:** `docs/novaberg-thinking-lage_k.md` §4, Scheibe 12, Teil C2. Je
 akutem Objekt der Sachlage wird die Naehe zum Objekt-Merkmal jedes Dienstes
@@ -9,9 +9,10 @@ entscheidet** (entschieden am 16.09.2026): Er machte das Urteil ueber einen
 Dienst davon abhaengig, wer sonst angemeldet ist. Der Abstand zwischen groesster
 und zweitgroesster Naehe wird weiter protokolliert, als Mass der Mehrdeutigkeit.
 
-**Das Ergebnis geht ins Protokoll und nirgends sonst hin.** Kein Feld des
-Zustands wird geschrieben; die Zustellung entscheidet weiter der Router allein.
-Erst wenn die Betriebszahlen tragen, liest Teil D das Urteil.
+**Das Ergebnis geht ins Protokoll und als Rueckgabe an den Router**, der es als
+`objekt_urteil` weiterreicht. Seit Teil D1 (17.09.2026) liest der Planner es:
+`service_order` bildet daraus die Reihenfolge, in der die Dienste gefragt werden.
+Ob ueberhaupt zugestellt wird, entscheidet weiter die Bitte — der Router.
 
 **Der Objekttext ist die Formel der Eichung**, Zeichen fuer Zeichen: Klasse,
 Name und die Namen der gedeckten und offenen Eigenschaften, keine Werte. Eine
@@ -230,7 +231,7 @@ def shadow_nearness(
         if len(urteile) != len(akute):
             raise ValueError(f"{len(urteile)} Urteile fuer {len(akute)} akute Objekte")
         logger.info(
-            "Objekt-Naehe (Schatten, nicht benutzt): %s",
+            "Objekt-Naehe: %s",
             "; ".join(
                 f"'{u.name}' → {'+'.join(u.receivers) or '—'} "
                 f"(naechster {u.best} {u.top:.4f}) {u.outcome}"
@@ -268,3 +269,34 @@ def _write(state: dict, eintrag: dict) -> dict:
             turn_id, eintrag.get("ergebnis"),
         )
     return eintrag
+
+
+def service_order(verdict: dict | None) -> list[str]:
+    """Die Dienste, die ein akutes Objekt erreicht, nach ihrer Naehe geordnet.
+
+    Vorbedingung: keine — ein fehlendes oder nicht gerechnetes Urteil ergibt
+        eine leere Liste.
+    Nachbedingung: jeder Dienst hoechstens einmal; geordnet nach der groessten
+        Naehe, mit der ihn irgendein akutes Objekt erreicht, absteigend, bei
+        Gleichstand nach Name. Nur Empfaenger (Naehe >= Untergrenze) — ein
+        Dienst unter der Untergrenze steht nicht darin, auch wenn er der
+        naechste war.
+    Fehlerfaelle: keine Ausnahme; ein unlesbarer Eintrag wird laut uebergangen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(verdict, dict) or verdict.get("ergebnis") != "gerechnet":
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    beste: dict[str, float] = {}
+    for objekt in verdict.get("objekte") or []:
+        try:
+            for dienst in objekt["empfaenger"]:
+                wert = float(objekt["naehe"][dienst])
+                beste[dienst] = max(beste.get(dienst, wert), wert)
+        except (KeyError, TypeError, ValueError):
+            logger.error("Objekt-Naehe: unlesbarer Objekteintrag im Urteil uebergangen: %r", objekt)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return sorted(beste, key=lambda d: (-beste[d], d))
+

@@ -251,9 +251,12 @@ class VerdrahtungTest(unittest.TestCase):
         self.assertEqual([e["quelle"] for e in eintraege], ["objekt_naehe"])
         self.assertEqual(eintraege[0]["inhalt"]["ergebnis"], "gerechnet")
 
-    def test_der_zustand_ist_mit_und_ohne_schatten_gleich(self) -> None:
+    def test_die_routing_entscheidung_ist_mit_und_ohne_naehe_gleich(self) -> None:
+        """Seit D1 reist das Urteil als `objekt_urteil` mit — alles andere bleibt gleich."""
         mit, _ = self._route(mit_schatten=True)
         ohne, _ = self._route(mit_schatten=False)
+        self.assertEqual(mit.pop("objekt_urteil")["ergebnis"], "gerechnet")
+        ohne.pop("objekt_urteil")
         self.assertEqual(mit, ohne)
         for schluessel, wert in self.ROUTING.items():
             self.assertEqual(mit[schluessel], wert)

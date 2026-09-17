@@ -113,12 +113,12 @@ def route(
     reiz: str = reiz_text(state)
     logger.info(f"Router: Route Prompt ({len(reiz)} Zeichen)")
 
-    # Scheibe 12 C2: die Naehe der akuten Objekte zu den Objekt-Merkmalen der
-    # Dienste — im Schatten. Gerechnet und protokolliert, NICHT benutzt: kein
-    # Feld des Zustands wird geschrieben, und die Zustellung entscheidet weiter
-    # der Aufruf unten allein. Vor dem Resume-Pfad, damit jeder Durchlauf einen
+    # Scheibe 12 C2/D1: die Naehe der akuten Objekte zu den Objekt-Merkmalen der
+    # Dienste. Das Urteil reist als `objekt_urteil` zum Planner, der daraus die
+    # Reihenfolge der Dienste bildet; OB zugestellt wird, entscheidet weiter der
+    # Aufruf unten (die Bitte). Vor dem Resume-Pfad, damit jeder Durchlauf einen
     # Eintrag hat.
-    shadow_nearness(state)
+    state["objekt_urteil"] = shadow_nearness(state)
 
     # ── Pending Agent Check (Resume-Flow) ──────────
     # Wenn ein Agent auf Antwort wartet, ueberspringen wir den LLM-Call.

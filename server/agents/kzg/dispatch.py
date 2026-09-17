@@ -32,6 +32,14 @@ def abgelehnte_ausgaenge(state: dict) -> list[dict]:
     Auftrag und gehoert in den Gedaechtnisinhalt; eine Stoerung geht den
     Betreiber an und haette dort nichts zu suchen (`agents/base.py:158`).
 
+    **Eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe**
+    (17.09.2026, Scheibe 12 D1): Seit der Planner nach einer Ablehnung den
+    naechsten Dienst fragt, koennen beide im selben Turn stehen. Der Block der
+    Verdichtung sagt "behauptet die Antwort eine Handlung, die hier als
+    abgelehnt steht, hat sie nicht stattgefunden" — fuer eine Notiz, die der
+    zweite Dienst wirklich anlegte, waere das eine falsche Tatsache im
+    Gedaechtnis, das Spiegelbild des Defekts, gegen den der Block gebaut ist.
+
     Vorbedingung: `state` traegt `agent_results` als Liste von `AgentResult`.
     Fehlt der Schluessel, ist die Antwort die leere Liste — kein Turn muss
     Agenten gerufen haben.
@@ -43,8 +51,14 @@ def abgelehnte_ausgaenge(state: dict) -> list[dict]:
 
     # ── Verarbeitung ────────────────────────────
     ausgaenge: list[dict] = []
-    for r in ergebnisse:
+    for index, r in enumerate(ergebnisse):
         if getattr(r, "status", "") != "abgelehnt":
+            continue
+        if any(getattr(spaeter, "status", "") == "abgeschlossen" for spaeter in ergebnisse[index + 1:]):
+            logger.info(
+                "KZG-Ausgaenge: '%s' lehnte ab, ein spaeterer Dienst schloss ab — "
+                "Weitergabe, kein Ausgang", getattr(r, "agent_name", "?"),
+            )
             continue
         korrektur = getattr(r, "korrektur", None)
         if korrektur is None:

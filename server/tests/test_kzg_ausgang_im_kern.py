@@ -133,7 +133,10 @@ class AusgaengeSammelnTest(unittest.TestCase):
             _ergebnis("notizen", "abgeschlossen"),
             _ergebnis("dateien", "abgelehnt"),
         ]})
-        self.assertEqual([a["agent"] for a in ausgaenge], ["timeline", "dateien"])
+        # Seit Scheibe 12 D1 (17.09.2026) ist die erste Ablehnung eine Weitergabe:
+        # Der Planner fragte nach ihr den naechsten Dienst, und der schloss ab.
+        # Vorher war diese Kette nicht erreichbar, und der Zeuge zaehlte beide.
+        self.assertEqual([a["agent"] for a in ausgaenge], ["dateien"])
 
 
 class AusgangImPromptTest(unittest.TestCase):
@@ -183,6 +186,22 @@ class AusgangImPromptTest(unittest.TestCase):
         self.assertIn("notizen", nachricht)
         self.assertIn("Kein Text zum Ablegen.", nachricht)
 
+
+
+class WeitergabeIstKeinAusgangTest(unittest.TestCase):
+    """Scheibe 12 D1: Ablehnung des ersten, Abschluss des zweiten — die Handlung ist geschehen."""
+
+    def test_ablehnung_vor_einem_abschluss_steht_nicht_im_block(self) -> None:
+        state = {"agent_results": [_ergebnis("timeline", "abgelehnt"), _ergebnis("notizen", "abgeschlossen")]}
+        self.assertEqual(abgelehnte_ausgaenge(state), [])
+
+    def test_ablehnung_nach_einem_abschluss_bleibt(self) -> None:
+        state = {"agent_results": [_ergebnis("notizen", "abgeschlossen"), _ergebnis("timeline", "abgelehnt")]}
+        self.assertEqual([a["agent"] for a in abgelehnte_ausgaenge(state)], ["timeline"])
+
+    def test_zwei_ablehnungen_bleiben_beide(self) -> None:
+        state = {"agent_results": [_ergebnis("timeline", "abgelehnt"), _ergebnis("notizen", "abgelehnt")]}
+        self.assertEqual([a["agent"] for a in abgelehnte_ausgaenge(state)], ["timeline", "notizen"])
 
 if __name__ == "__main__":
     unittest.main()
