@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
+**Stand:** 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -12,7 +12,7 @@
 
 Der NotizenAgent verwaltet Freiform-Inhalte: Einkaufslisten, ToDos, Merkzettel, Entwuerfe, Ideensammlungen. Alles, was der Nutzer explizit ablegen will und was nicht in das Fakten- oder Timeline-Schema passt. Das LLM versteht den Inhalt — die DB speichert nur Text. "Streich die Milch von der Einkaufsliste" wird vom LLM als neue Version der Liste generiert.
 
-**Die Grenze zur Timeline ist seit dem 16.09.2026 entschieden und noch nicht gebaut:** Hierher gehoert eine **Sache oder ein Zustand mit Zeitbezug** — *„Merk dir, dass ich morgen Mehl brauche"*, mit `faellig_am` als Traeger der Zeit und, wenn erinnert werden soll, einem Anker ueber `timeline_id`. Eine **Handlung oder ein Ereignis mit Zeitpunkt** gehoert in die Timeline. **Heute erreicht keine Merk-Bitte mit Zeitbezug diesen Dienst** — der Planner waehlt bei jeder Zeitangabe die Timeline (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`), obwohl der eigene Aushang genau dieses Beispiel nennt.
+**Die Grenze zur Timeline ist seit dem 16.09.2026 entschieden** ~~und noch nicht gebaut~~ → **gebaut am 17.09.2026** (Scheibe 12 D1: Reihenfolge nach der Objekt-Nähe; gemessen erreichen 13 von 13 Merk-Bitten die Notizen zuerst, vorher 7): Hierher gehoert eine **Sache oder ein Zustand mit Zeitbezug** — *„Merk dir, dass ich morgen Mehl brauche"*, mit `faellig_am` als Traeger der Zeit und, wenn erinnert werden soll, einem Anker ueber `timeline_id`. Eine **Handlung oder ein Ereignis mit Zeitpunkt** gehoert in die Timeline. ~~**Heute erreicht keine Merk-Bitte mit Zeitbezug diesen Dienst**~~ (bis 17.09.2026) — der Planner waehlt bei jeder Zeitangabe die Timeline (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`), obwohl der eigene Aushang genau dieses Beispiel nennt.
 
 **Seit dem 16.09.2026 trägt die Anmeldung die Grenze als Objekt-Merkmal** — `objekt_merkmal` in `agents/notizen/agent.py`, *ein Gegenstand, ein Bedarf oder eine Eigenschaft, die nicht stattfindet*, mit Sachen geeicht, beim Start eingebettet (`agents/object_feature.py`). Es entscheidet heute keine Zustellung; der Leser kommt mit Scheibe 12 C2, und erst mit D fällt der Defekt oben (`novaberg-thinking-lage_k.md` §4).
 

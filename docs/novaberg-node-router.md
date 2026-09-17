@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 16. September 2026, 20:58 UTC (die Objekt-Nähe urteilt **je Zettel für sich** — jeder Dienst über der Untergrenze ist Empfänger, der Abstand entscheidet nichts mehr). Davor 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
+**Stand:** 17. September 2026, 10:58 UTC (das Urteil der Objekt-Nähe wird als `objekt_urteil` geschrieben und vom Planner gelesen — Scheibe 12 D1). Davor 16. September 2026, 20:58 UTC (die Objekt-Nähe urteilt **je Zettel für sich** — jeder Dienst über der Untergrenze ist Empfänger, der Abstand entscheidet nichts mehr). Davor 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -37,7 +37,7 @@ Nur im CharacterGraph. Im HumanGraph (Pfad 1) gibt es keinen Router — der User
 |------|-----|-------------|
 | `needs_memory` | `bool` | Intent `personal`, emotionale Signale, Emotion ≠ `neutral`, wiederkehrende Themen |
 | `needs_web` | `bool` | Aktuelle Fakten nötig (Intent `knowledge` + aktuelle Themen). SearXNG-Integration über den Thinker (seit Chat 12/15). |
-| `needs_timeline` | `bool` | Frage nach Terminen/Daten ODER neuer Termin wird genannt. **Das Flag sagt, dass eine Zeitangabe vorkommt — nicht, welcher Dienst gemeint ist.** Der Planner behandelt es seit jeher als Dienstwahl; das ist seit dem 16.09.2026 ein Defekt (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`), weil der Gegenstand entscheidet und nicht das Zeitwort |
+| `needs_timeline` | `bool` | Frage nach Terminen/Daten ODER neuer Termin wird genannt. **Das Flag sagt, dass eine Zeitangabe vorkommt — nicht, welcher Dienst gemeint ist.** Der Planner behandelt es seit jeher als Dienstwahl; das ist seit dem 16.09.2026 ein Defekt (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`), weil der Gegenstand entscheidet und nicht das Zeitwort ~~(Defekt)~~ → **seit dem 17.09.2026 nicht mehr**: Der Planner liest es nur noch im Auffang (Scheibe 12 D1). |
 
 ### 3.2 Timeline-Query
 
@@ -194,6 +194,7 @@ Neue Fähigkeiten werden automatisch erkannt — ohne Änderung am Router. Die e
 | `management_action` | `str` | `"agent"` (Plugin-gesteuert), `"resume"` (Pending-Agent), oder `""` |
 | `management_target` | `str` | Agent-Name — von Plugin-Prompt gesetzt (seit Chat 40) |
 | `management_target_typ` | `str` | Leer — wird vom Agent-Classify-Node bestimmt |
+| `objekt_urteil` | `dict` | Urteil der Objekt-Nähe (`shadow_nearness`), seit 17.09.2026 — der Planner ordnet damit die Dienste |
 
 ---
 
@@ -289,7 +290,7 @@ Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung
 | Urteil | Kosinus zu jedem Objekt-Merkmal (`agents/object_feature.py`); **Empfänger ist jeder Dienst mit Nähe ≥ `OBJEKT_NAEHE_UNTERGRENZE` (0,40)** — `zugeordnet` bei einem, `mehrere` bei mehreren, `still_untergrenze` bei keinem. Der Abstand zur zweitgrößten Nähe steht als Diagnose im Eintrag. ~~Zugeordnet nur mit Abstand ≥ 0,04~~ — abgelöst am selben Abend, entschieden: je Zettel für sich |
 | Protokoll | ein Eintrag im Pipeline-Log, Art `berechnung`, Knoten `router`, Quelle `objekt_naehe`, auf **jedem** Rückkehrpfad: `gerechnet`, `ohne_sachlage`, `ohne_objektliste`, `ohne_akute_objekte`, `ohne_merkmale`, `ausfall`; dazu `herkunft` der Sachlage |
 
-**Kein Feld des Zustands wird geschrieben**, und der Schatten wirft nie heraus — ein Ausfall ist ein Eintrag mit Fehlerart und ein `logger.error`. Die Zustellung entscheidet weiter der Modellaufruf allein; erst Teil D liest das Urteil.
+~~**Kein Feld des Zustands wird geschrieben**~~ → **seit dem 17.09.2026 (D1) genau eines: `objekt_urteil`**, das der Planner liest; die Entscheidung *ob* bleibt beim Modellaufruf. Der Schatten wirft nie heraus — ein Ausfall ist ein Eintrag mit Fehlerart und ein `logger.error`. Die Zustellung entscheidet weiter der Modellaufruf allein; erst Teil D liest das Urteil.
 
 **Eine übernommene Sachlage wird erneut beurteilt** — auf Impuls- und Ausfall-Turns trägt der Zustand die Objekte des Vorgängers, und der Eintrag heißt trotzdem `gerechnet`. Betriebszahlen filtern deshalb nach `herkunft` (`impuls_uebernommen`, `ausfall_uebernommen`). Gemessene Kosten im echten Turn: 146 ms.
 

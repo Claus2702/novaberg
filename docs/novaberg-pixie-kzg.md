@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
+**Stand:** 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -52,7 +52,7 @@ Behauptung verdichtet und ist beim nächsten Abruf eine Tatsache ohne ihren Wide
 
 `dispatch_kzg` sammelt die abgelehnten Dienste **einmal je Batch** — der Ausgang gehört dem Turn,
 nicht dem Segment — und reicht sie als `agent_ausgaenge` an jedes Segment. `verdichten` baut daraus
-den Block `[TATSAECHLICHER AUSGANG]` und setzt ihn **vor** das Bewertungsobjekt.
+den Block `[TATSAECHLICHER AUSGANG]` und setzt ihn **vor** das Bewertungsobjekt. **Seit dem 17.09.2026** zählt eine Ablehnung nicht, nach der im selben Turn ein anderer Dienst abschloss — seit der Planner nach einer Ablehnung den nächsten fragt, wäre sie sonst eine falsche Tatsache (*»hat nicht stattgefunden«*) über eine Handlung, die geschah.
 
 | Was hineingeht | Was nicht |
 |---|---|

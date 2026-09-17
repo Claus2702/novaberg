@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
+**Stand:** 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -59,7 +59,7 @@ Wenn kein Resume: Der Planner findet den zuständigen Manager über die Plugin-R
 
 | Priorität | Mechanismus | Beispiel |
 |-----------|------------|---------|
-| 1 | `needs_timeline` Flag | Router setzt Flag → TimelineManager. **Seit 16.09.2026 ein Defekt** (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`): `management_target` wird hier nicht gelesen, damit erreicht **keine** Merk-Bitte mit Zeitbezug die Notizen — und entscheiden soll der Gegenstand, nicht das Zeitwort |
+| ~~1~~ | ~~`needs_timeline` Flag~~ | **Entfernt am 17.09.2026** (Scheibe 12 D1, `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` behoben): Vor den Stufen 2–4 steht jetzt die **Reihenfolge nach der Objekt-Nähe** — letzter Abschnitt. `needs_timeline` wirkt nur noch im Auffang (Stufe 4). |
 | 2 | Intent-Match (`router_intents`) | `timeline_management` → TimelineManager |
 | 3 | Target-Match — **exakt vor unscharf** | Ziel gleich Manager-Ziel; sonst genau **ein** unscharfer Treffer |
 | 4 | Fallback | NotizenManager als Auffangbecken |
@@ -176,7 +176,8 @@ Bezeugt in `tests/test_task_block_fehler.py` — acht Zeugen, davon einer die Ge
 |------|--------|-------------|
 | `management_action` | Router | `"agent"` (Plugin-gesteuert), `"resume"`, oder `""` |
 | `management_target` | Router | Leer bei Agent-Domänen (Agent bestimmt Target) |
-| `needs_timeline` | Router | Timeline-Flag (für Manager-Auflösung Priorität 1 + Fallback) |
+| `needs_timeline` | Router | Timeline-Flag — seit 17.09.2026 nur noch im Auffang (Stufe 4) |
+| `objekt_urteil` | Router | Urteil der Objekt-Nähe; ordnet die Dienste (seit 17.09.2026) |
 | `intent` | Perzeption | Für Intent-Match (Priorität 2) |
 | `agent_results` | Agent-Dispatch | Bereits gelaufene Agenten (Schleifen-Schutz) |
 | `user_id` | API | Für Redis-Pending (Resume-Flow) |
@@ -228,3 +229,24 @@ Der Planner schreibt nichts in die Datenbank.
 > **Der Kontext wird geschnitten, wie bei Erfolg und Fehler.** Hier stand zuerst `False` mit der Begründung, der Vorschlag sei nur im Zusammenhang der Äußerung verständlich. Die Begründung war falsch: Der Schnitt entfernt Gedächtnis und Web, nicht die Äußerung. Gemessen am 17.08.2026 — zwei Ablehnungen mit ungeschnittenem Kontext erreichten die Antwort **nicht**, während eine Erfolgsmeldung mit Schnitt am selben Tag Tag, Uhrzeit und Eintrag nannte.
 
 Regelwerk: `novaberg-convention-nmcp.md` §6.7, §6.8.
+
+---
+
+## Die Reihenfolge der Dienste (17.09.2026, Scheibe 12 D1)
+
+**Der Planner wählt nicht mehr einen Dienst, er bildet eine Reihenfolge** (`service_order_for`) und fragt sie ab:
+
+| Schritt | Was geschieht |
+|---|---|
+| Reihenfolge | Dienste, deren Objekt-Merkmal ein akutes Objekt erreicht (`objekt_urteil`, nach Nähe absteigend), dann der Treffer der Stufen 2–4 — **steht dort ein Dienst ohne eigenes Merkmal** (`dateien`, `wissen`, `fakten` …), kommt er zuerst |
+| nach einem Ausfall der Sachlage | die Nähe ordnet nicht (`herkunft = ausfall_uebernommen`: die Objekte sind die des Vorturns); nach einem Impuls ordnet sie weiter |
+| Abfrage | der erste Dienst, der in diesem Turn noch nicht lief, wird gefragt (`agent_name`); die Schleife `agent_dispatch → planner` bringt den Planner zurück |
+| nach `abgelehnt` oder `rejected` | der nächste — entschieden am 16.09.2026: *„für die Grenzfälle beide ansprechen, wenn der eine nicht will, soll der andere auch gefragt werden"* |
+| nach jedem anderen Ausgang | Schluss, Aufgabenblock |
+
+**Der Aufgabenblock** (§4.3): Hat ein späterer Dienst abgeschlossen, ist gescheitert oder wurde verworfen, steht dessen Ausgang im Block, nicht die Ablehnung davor — sie war eine Weitergabe. Aus demselben Grund zählt die Verdichtung ins Kurzzeitgedächtnis eine Ablehnung, nach der ein anderer Dienst abschloss, nicht als Ausgang (`agents/kzg/dispatch.py::abgelehnte_ausgaenge`).
+
+**Gemessen** (`labor/2026-09-17_planner_d1/`): 60 Äußerungen, echter Router und Planner, keine Agenten — Notizen-Fälle zuerst richtig 7 → 13 von 13, Termine 4 → 4. **Nicht gemessen:** die Kette *Ablehnung → nächster Dienst* mit echten Agenten; bezeugt in `tests/test_planner_objektwahl.py`.
+
+**Bekannt, nicht geändert:** Ein Treffer der Stufe 2 (Intent) verdrängt das Router-Ziel aus der Reihenfolge — älteres Verhalten, im Betrieb 0 Treffer (Fundliste 17.09.2026).
+

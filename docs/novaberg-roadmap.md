@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 17. September 2026 — juengster Eintrag **17.09.2026, 06:01 UTC** (gemessen via `date -u`): die Objektnamen im Eigenschaftsgedächtnis ohne Sternchen, 14 von 14 Eigenschaften wieder auffindbar. Davor 16.09.2026, 22:31 UTC: die Objektwahl der Lage — die Sache statt ihres Rahmens; eine JSON-Reparatur, die gültige Antworten zerschnitt, behoben. Davor 16.09.2026, 21:10 UTC: das Notizen-Merkmal nachgeeicht — keine von zehn Fassungen gewinnt, die Grenze liegt im Objekttext. Davor 16.09.2026, 20:58 UTC: entschieden und im Schatten umgebaut — je Zettel für sich, ohne Abstand. Davor 16.09.2026, 20:50 UTC: je Zettel für sich gerechnet — nie nur der falsche Dienst, aber 16 von 60 an beiden; das Notizen-Merkmal trennt kaum. Davor 16.09.2026, 20:19 UTC: die Nähe im Schatten — der Router urteilt je akutem Objekt und protokolliert, ohne zuzustellen. Davor 16.09.2026, 19:43 UTC: die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
+**Stand:** 17. September 2026 — juengster Eintrag **17.09.2026, 10:58 UTC** (gemessen via `date -u`): der Planner fragt die Dienste nach dem Objekt — Notizen zuerst richtig 7 → 13 von 13. Davor 17.09.2026, 06:01 UTC: die Objektnamen im Eigenschaftsgedächtnis ohne Sternchen, 14 von 14 Eigenschaften wieder auffindbar. Davor 16.09.2026, 22:31 UTC: die Objektwahl der Lage — die Sache statt ihres Rahmens; eine JSON-Reparatur, die gültige Antworten zerschnitt, behoben. Davor 16.09.2026, 21:10 UTC: das Notizen-Merkmal nachgeeicht — keine von zehn Fassungen gewinnt, die Grenze liegt im Objekttext. Davor 16.09.2026, 20:58 UTC: entschieden und im Schatten umgebaut — je Zettel für sich, ohne Abstand. Davor 16.09.2026, 20:50 UTC: je Zettel für sich gerechnet — nie nur der falsche Dienst, aber 16 von 60 an beiden; das Notizen-Merkmal trennt kaum. Davor 16.09.2026, 20:19 UTC: die Nähe im Schatten — der Router urteilt je akutem Objekt und protokolliert, ohne zuzustellen. Davor 16.09.2026, 19:43 UTC: die Anmeldung trägt das Objekt-Merkmal, Timeline und Notizen mit geeichtem Wortlaut und Vektor beim Start. Davor 16.09.2026, 19:14 UTC: zwei Schwellen und der geeichte Wortlaut des Merkmals, 32 von 33 zugestellten Fällen richtig. Davor 16.09.2026, 19:00 UTC: die gerechnete Nähe zwischen Objekt und Dienst trägt mit Schwelle, 36 von 39 entschiedenen Fällen. Davor 16.09.2026, 17:33 UTC: das Verb entscheidet über den Dienst, nicht das Zeitwort. Davor 16.09.2026, 17:19 UTC: zwei Termine aus der Zeit vor der Regel sind deaktiviert, aktive Termine 100 → 98. Davor 16.09.2026, 16:51 UTC (eine Behauptung, die beide Korrekturrunden übersteht, wird kommentiert statt herausgeschnitten). Davor 16.09.2026, 15:10 UTC: der Verlauf kürzt keinen Beitrag mehr, Scheibe 12 B. Davor 16.09.2026, 10:05 UTC (wer eine Speicherbehauptung gegen den Bestand hält, entschieden und nicht gebaut), 15.09.2026, 19:13 UTC, 15:56 UTC, 11:43 UTC, 14.09.2026, 19:52 UTC, 13.09.2026, 15:20 UTC samt Nachtrag 15:55 UTC, 12.09.2026, 23:22 UTC, 22:54 UTC, 21:47 UTC, 21:26 UTC, 20:53 UTC, 20:31 UTC, 20:20 UTC, 19:30 UTC, 12.09.2026, 16:20, 15:45 und 15:05 UTC und 13:05 UTC samt Nachtraegen 13:30 und 14:10 UTC.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 100 |
+| 2026-09 | **novaberg-roadmap.md** ← diese Datei | 101 |
 | 2026-08 | **novaberg-roadmap.md** ← diese Datei, noch nicht ausgelagert | 155 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
@@ -19,6 +19,18 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 17.09.2026, 10:58 UTC — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe 🔧
+
+**Scheibe 12 D1.** Jede Zeitangabe schickte eine Bitte an die Timeline, auch *„Merk dir, dass ich morgen Mehl brauche"* — der Planner überstimmte damit den Router (`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL`). Jetzt reicht der Router das Urteil der Objekt-Nähe weiter, und der Planner fragt die Dienste in einer Reihenfolge: die nahen nach ihrer Nähe, dann den Router-Treffer — ein Dienst ohne Merkmal zuerst. **Lehnt einer ab, wird der nächste gefragt**, wie am Vorabend entschieden.
+
+**Die zweite Kontrolle fand zwei Leser, die nur einen Dienst je Turn kannten:** Der Aufgabenblock hätte die Ablehnung des ersten vor den Erfolg des zweiten gestellt, und die Verdichtung ins Kurzzeitgedächtnis hätte eine wirklich angelegte Notiz als »nicht stattgefunden« abgelegt. Beide folgen jetzt der Weitergabe. Dazu: Nach einem Ausfall der Sachlage ordnet die Nähe nicht.
+
+**TEST:** 22 neue Zeugen, Suite **3869 grün, 0 übersprungen**, neun Gegenproben wie vorhergesagt. **MESSUNG:** echter Router und Planner über 60 Äußerungen, keine Agenten — 17 Aufträge, **Notizen zuerst richtig 7 → 13 von 13**, Termine 4 → 4. Den Gewinn trägt das Entfernen der Zeitwort-Priorität; der Router lag schon richtig. Im Betrieb der 14 Tage davor: 0 von 11 Aufrufen anders.
+
+**Offen, D2:** der `[LAGE]`-Block im Router und der Objektbezug zum Dienst.
 
 ---
 
