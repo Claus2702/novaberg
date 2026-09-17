@@ -1,0 +1,5 @@
+[LAGE]
+Die Sachen, um die es im Gespraech gerade geht — mit dem, was ueber sie bekannt ist, und den Diensten, an deren Aushang sie stehen:
+{objekte}
+
+Eine Zustimmung ("ja", "gerne", "mach das", "bitte") auf ein Angebot aus dem Verlauf ist ein ausdruecklicher Auftrag. Bot der Verlauf an, eine dieser Sachen einzutragen oder festzuhalten, und stimmt der Nutzer zu, dann setze management_action auf "agent" und management_target auf den Dienst, an dessen Aushang die Sache steht. Lehnt der Nutzer ab, oder stimmt er etwas anderem zu als dem Eintragen oder Festhalten, bleibt es beim Gespraech.

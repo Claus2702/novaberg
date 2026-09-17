@@ -1,0 +1,4 @@
+[OBJEKT]
+Die Aeusserung bezieht sich auf eine Sache aus dem Gespraech, die an deinem Aushang steht:
+{objekte}
+Nennt die Aeusserung selbst die Sache nicht — etwa bei einer Zustimmung ("gerne", "ja, bitte", "mach das") auf ein Angebot aus dem Verlauf, diese Sache festzuhalten —, dann ist das ein Auftrag: Nimm Ziel und Inhalt aus diesen Angaben.

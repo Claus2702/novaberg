@@ -300,3 +300,52 @@ def service_order(verdict: dict | None) -> list[str]:
     # ── Ausgabe-Verifikation ────────────────────
     return sorted(beste, key=lambda d: (-beste[d], d))
 
+
+def objects_for_service(sachlage: object, verdict: object, service: str) -> list[dict]:
+    """Die akuten Objekte, die das Urteil an den Zettel eines Dienstes stellt — der Objektbezug.
+
+    Vorbedingung: keine.
+    Nachbedingung: je Objekt ein dict mit `name`, `klasse` (oder None) und
+        `gedeckt` (Name → Wert), in der Reihenfolge der Sachlage. Leer, wenn das
+        Urteil fehlt, nicht gerechnet ist, von einer uebernommenen Sachlage nach
+        einem Ausfall stammt oder den Dienst bei keinem akuten Objekt nennt —
+        ein geratener Bezug waere schlimmer als keiner.
+    Fehlerfaelle: keine Ausnahme.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not service or not isinstance(sachlage, dict) or not isinstance(verdict, dict):
+        return []
+    if verdict.get("ergebnis") != "gerechnet" or verdict.get("herkunft") == "ausfall_uebernommen":
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    namen: set[str] = {
+        str(o.get("name") or "") for o in verdict.get("objekte") or []
+        if isinstance(o, dict) and service in (o.get("empfaenger") or [])
+    }
+    bezug: list[dict] = []
+    for objekt in sachlage.get("objekte") or []:
+        if not isinstance(objekt, dict) or objekt.get("akut") is not True:
+            continue
+        name = str(objekt.get("name") or "")
+        if name in namen:
+            gedeckt = objekt.get("gedeckt") if isinstance(objekt.get("gedeckt"), dict) else {}
+            bezug.append({"name": name, "klasse": objekt.get("klasse"), "gedeckt": dict(gedeckt)})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return bezug
+
+
+def render_object_reference(bezug: list[dict]) -> str:
+    """Die Objektzeilen eines Objektbezugs, wie Router und Klassifikation sie lesen.
+
+    Nachbedingung: je Objekt eine Zeile `- Name (klasse) — Eigenschaft: Wert; …`;
+        leer bei leerem Bezug.
+    """
+    zeilen: list[str] = []
+    for objekt in bezug or []:
+        kopf = f"- {objekt.get('name')}" + (f" ({objekt['klasse']})" if objekt.get("klasse") else "")
+        gedeckt = objekt.get("gedeckt") or {}
+        zeilen.append(kopf + (" — " + "; ".join(f"{k}: {v}" for k, v in gedeckt.items()) if gedeckt else ""))
+    return "\n".join(zeilen)
+

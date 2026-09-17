@@ -16,7 +16,7 @@ import json
 import logging
 
 from agents import AgentRegistry
-from agents.object_nearness import service_order
+from agents.object_nearness import objects_for_service, service_order
 from config import PROMPTS
 from graph.format.agent_results import format_success_lines
 from graph.state import ConversationState
@@ -541,7 +541,13 @@ def plan(
             break
         vorheriges = _agent_bereits_gelaufen(state, agent.name)
         if vorheriges is None:
-            logger.info(f"Planner: Agent-Pfad — frage '{agent.name}' (Reihenfolge {reihenfolge})")
+            # Der Objektbezug reist mit (D2b): Ein "Gerne" nennt weder Sache noch
+            # Zeitpunkt — die Lage kennt beides.
+            state["objekt_bezug"] = objects_for_service(state.get("sachlage"), state.get("objekt_urteil"), agent.name)
+            logger.info(
+                f"Planner: Agent-Pfad — frage '{agent.name}' (Reihenfolge {reihenfolge}, "
+                f"Objektbezug {[o['name'] for o in state['objekt_bezug']]})"
+            )
             state["agent_name"] = agent.name
             state["management_result"] = ""
             state["management_detail"] = ""

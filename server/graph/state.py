@@ -231,6 +231,9 @@ class ConversationState(TypedDict):
     # je akutem Objekt die Dienste, deren Merkmal es erreicht. Geschrieben vom
     # Router, gelesen vom Planner fuer die Reihenfolge der Dienste.
     objekt_urteil: dict
+    # Der Objektbezug (Scheibe 12 D2b): die akuten Objekte am Zettel des Dienstes,
+    # den der Planner gerade fragt — reist zum Dienst als Eingabe mit.
+    objekt_bezug: list
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele: list[

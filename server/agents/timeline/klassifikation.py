@@ -21,6 +21,7 @@ from agents.crud_validation import (
     verb_mapping_pruefen,
     verb_mappings_laden,
 )
+from agents.object_nearness import render_object_reference
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
@@ -36,6 +37,7 @@ GUELTIGE_TYPEN: set[str] = {"termin", "geburtstag", "deadline", "jahrestag", "er
 def _build_classify_prompt(
     erkennungshilfe: str | None = None,
     session_turns: str | None = None,
+    objekt_bezug: list[dict] | None = None,
 ) -> str:
     """Baut den Klassifikation-System-Prompt aus [BLOCKNAME]-Bloecken zusammen."""
     aktionen_text = " | ".join(f'"{a}"' for a in sorted(GUELTIGE_AKTIONEN))
@@ -47,6 +49,9 @@ def _build_classify_prompt(
 
     if erkennungshilfe:
         bloecke.append(erkennungshilfe)
+
+    if objekt_bezug:
+        bloecke.append(PROMPTS["classify_timeline.objekt"].format(objekte=render_object_reference(objekt_bezug)))
 
     if session_turns:
         bloecke.append(
@@ -92,7 +97,8 @@ def klassifizieren(state: AgentState) -> dict:
             logger.warning(f"klassifizieren: Session-Kontext fehlt: {e}")
 
     # --- Stufe C: LLM-Klassifikation ---
-    system_prompt: str = _build_classify_prompt(hilfe_block, session_turns)
+    objekt_bezug: list[dict] = list(state["kontext"].get("objekt_bezug") or [])
+    system_prompt: str = _build_classify_prompt(hilfe_block, session_turns, objekt_bezug)
     logger.info(f"klassifizieren: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")

@@ -61,6 +61,19 @@ def _build_router_prompt(
             f"\n{session_turns}"
         )
 
+    # Die Lage (Scheibe 12 D2a): die akuten Objekte mit dem, was ueber sie
+    # bekannt ist, und den Diensten, an deren Zettel die gerechnete Naehe sie
+    # stellt. Damit liest der Empfang ein "Gerne" als Zustimmung zu einem Objekt
+    # — der Verlauf allein trug das Angebot, nicht aber, worauf es sich bezog.
+    # Auf einem Impuls-Turn kein Block: Zustimmen kann nur der Mensch. Der Reiz
+    # ist dort Novas eigener Gedanke, und der Block lehrt das Modell, eine
+    # Zustimmung als Auftrag zu lesen (zweite Kontrolle, 17.09.2026).
+    lage: str = "" if reiz_ist_eigener_gedanke(state) else build_situation_block(
+        state.get("sachlage"), state.get("objekt_urteil"),
+    )
+    if lage:
+        bloecke.append(lage)
+
     # Das schwarze Brett: die Aushaenge aller Dienste am Empfang, gesammelt
     # von der Dienst-Flaeche und nicht mehr nur von der Manager-Flaeche.
     #
@@ -91,6 +104,59 @@ def _build_router_prompt(
     bloecke.append(PROMPTS["router.rules"])
 
     return "\n\n".join(bloecke)
+
+
+def build_situation_block(sachlage: object, verdict: object, max_objects: int = 5) -> str:
+    """Der [LAGE]-Block des Routers: akute Objekte, ihr Bekanntes, ihre Dienste.
+
+    Vorbedingung: keine — eine fehlende Sachlage oder ein fehlendes Urteil ist
+        ein gueltiger Fall.
+    Nachbedingung: leer, wenn es kein akutes Objekt gibt; sonst der Block aus
+        `router.lage` mit je einer Zeile: Name, Klasse, gedeckte Eigenschaften
+        mit Wert, und — wo das Urteil sie nennt — die Dienste, an deren Zettel
+        das Objekt steht. Ein Objekt ohne Dienst steht ohne Dienst da, nicht mit
+        einer Verneinung: Die Naehe schweigt oft, und Schweigen ist kein Nein.
+        Hoechstens `max_objects` Objekte, in der Reihenfolge der Sachlage.
+    Fehlerfaelle: keine Ausnahme; ein unlesbares Objekt wird laut uebergangen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(sachlage, dict) or not isinstance(sachlage.get("objekte"), list):
+        return ""
+    herkuenfte = {sachlage.get("herkunft"), verdict.get("herkunft") if isinstance(verdict, dict) else None}
+    if "ausfall_uebernommen" in herkuenfte:
+        # Dieselbe Regel wie im Planner: nach einem Ausfall sind es die Objekte
+        # des Vorturns, und ein "Gerne" bezoege sich auf die falsche Sache.
+        # Gelesen an BEIDEN Stellen — faellt auch die Naehe aus, traegt ihr
+        # Eintrag keine Herkunft (zweite Kontrolle, 17.09.2026).
+        return ""
+    akute: list[dict] = [o for o in sachlage["objekte"] if isinstance(o, dict) and o.get("akut") is True]
+    if not akute:
+        return ""
+    empfaenger: dict[str, list[str]] = {}
+    if isinstance(verdict, dict) and verdict.get("ergebnis") == "gerechnet":
+        for eintrag in verdict.get("objekte") or []:
+            if isinstance(eintrag, dict) and eintrag.get("empfaenger"):
+                empfaenger[str(eintrag.get("name") or "")] = list(eintrag["empfaenger"])
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen: list[str] = []
+    for objekt in akute[:max_objects]:
+        name: str = str(objekt.get("name") or "").strip()
+        if not name:
+            logger.warning("Router: akutes Objekt ohne Namen im [LAGE]-Block uebergangen")
+            continue
+        teile: list[str] = [f"- {name}" + (f" ({objekt['klasse']})" if objekt.get("klasse") else "")]
+        gedeckt = objekt.get("gedeckt") if isinstance(objekt.get("gedeckt"), dict) else {}
+        if gedeckt:
+            teile.append("bekannt: " + "; ".join(f"{k}: {v}" for k, v in gedeckt.items()))
+        if empfaenger.get(name):
+            teile.append("am Aushang: " + ", ".join(empfaenger[name]))
+        zeilen.append(" — ".join(teile))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not zeilen:
+        return ""
+    return PROMPTS["router.lage"].format(objekte="\n".join(zeilen))
 
 
 def route(
