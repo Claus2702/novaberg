@@ -17,7 +17,10 @@ EVA-Prinzip (Developer-Handbook §1, §3):
 from __future__ import annotations
 
 import json
+import logging
 import re
+
+logger = logging.getLogger("ki_server.postprocess")
 
 # ─────────────────────────────────────────────────────
 # JSON-Bereinigung
@@ -133,10 +136,18 @@ def strip_cjk(text: str) -> str:
 # ─────────────────────────────────────────────────────
 
 def parse_json_strict(text: str) -> dict:
-    """Saeubert (clean → dedupe → repair) und parst JSON.
+    """Saeubert und parst JSON — repariert wird nur, was nicht schon gueltig ist.
 
     Wirft JSONDecodeError, wenn auch nach allen Bereinigungs-Schritten kein
     valides JSON entsteht — KEIN stiller Leerwert, KEIN `{}`-Fallback.
+
+    **Gueltiges JSON wird nicht repariert.** Die Wiederholungskappung haelt jedes
+    Muster von 8 bis 50 Zeichen, das dreimal folgt, fuer eine Endlosschleife —
+    auch eine Einrueckung von 24 Leerzeichen. `[gemessen 16.09.2026]` Eine
+    vollstaendige, gueltige Sachlage mit ausgerichteten Zuordnungen wurde dort
+    abgeschnitten und verworfen; `json.loads` las den Rohtext fehlerfrei. Die
+    Reparatur ist deshalb der Rueckweg fuer kaputten Text, nicht der Normalweg,
+    und wo sie greift, steht es im Log.
     Vorbedingung: `text` ist ein String, der ein JSON-Objekt enthalten soll.
     Nachbedingung: Rueckgabe ist das geparste Dict (oder die Liste — der Typ
     haengt vom Aufrufer ab; gemeint sind hier JSON-Objekte gemaess Worker-
@@ -146,8 +157,16 @@ def parse_json_strict(text: str) -> dict:
     """
     # ── Verarbeitung ────────────────────────────
     cleaned: str = clean_json_response(text)
-    cleaned = deduplicate_repetition(cleaned)
-    cleaned = repair_truncated_json(cleaned)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as fehler:
+        erster_fehler: json.JSONDecodeError = fehler
+    repariert: str = repair_truncated_json(deduplicate_repetition(cleaned))
 
     # ── Ausgabe (mit propagierender Validierung) ─
-    return json.loads(cleaned)
+    ergebnis = json.loads(repariert)
+    logger.warning(
+        "JSON repariert: %s — %d → %d Zeichen, danach gueltig",
+        erster_fehler.msg, len(cleaned), len(repariert),
+    )
+    return ergebnis
