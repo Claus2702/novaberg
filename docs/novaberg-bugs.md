@@ -95,6 +95,22 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
+## 17.09.2026 — der laufende Dienst kannte den gebauten Code nicht
+
+### `RELOAD-GREIFT-NICHT-AM-EINGEHAENGTEN-CODE` — 24 Stunden Betrieb auf altem Stand
+
+**Zustand:** offen — gemessen am 17.09.2026 im Betrieb.
+
+**Symptom.** Der Serverprozess lief mit `uvicorn --reload` und lud in 24 Stunden **kein einziges Mal** neu (0 Reload-Zeilen im Log), obwohl die eingehängten Dateien geändert waren. Drei Messturns am 17.09., 18:48 UTC ergaben 0 Nähe-Einträge und 0 `[LAGE]`-Blöcke, während `router.py:187` im Container die Nähe aufrief. Der Prozess stammte vom 16.09., 18:36 UTC.
+
+**Wirkung.** Alles, was zwischen dem 16.09. abends und dem 17.09. gebaut wurde — Objekt-Merkmal, Nähe, Planner-Reihenfolge, `[LAGE]`, Objektbezug, die Notizen-Regel —, war im Betrieb unwirksam, ohne dass etwas fehlschlug. Eine Betriebsmessung hätte den alten Stand gemessen und für den neuen gehalten.
+
+**Was fertig wäre.** Entweder greift der Reload (Dateiereignisse über den Bind-Mount), oder er wird abgeschaltet und der Neustart gehört zum Bauablauf. Beides ist eine Entscheidung über den Betrieb; solange sie nicht getroffen ist, gilt: **vor jeder Betriebsmessung Prozessalter gegen den jüngsten Commit prüfen.**
+
+**Priorität:** hoch — er macht jede Betriebsmessung zweideutig.
+
+---
+
 ## 16.09.2026 — ein Dienst meldet Erfolg, den er selbst widerlegt hat
 
 Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdienstes soll melden, was seine eigene Verifikation ergab.** Der Fund dazu stand seit dem 15.09.2026 in der Fundliste; er bekommt hier eine ID, weil er ohne sie in keinem Register liegt, das abgearbeitet wird.
