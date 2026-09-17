@@ -246,6 +246,48 @@ def _write_task_block(state: ConversationState) -> None:
         logger.info(f"Planner: task_block erstellt (context_cut={cut}, {len(block)} Zeichen)")
 
 
+def _bezug_zuschneiden(bezug: list[dict], angebot_objekte: list,
+                       angebot_bezug: list | None = None) -> list[dict]:
+    """Schneidet den Objektbezug auf die Sachen des angenommenen Angebots (E1c).
+
+    Vorbedingung: `bezug` sind die Objekte am Zettel dieses Dienstes;
+        `angebot_objekte` sind die Namen aus dem Angebot, dem der Mensch gerade
+        zugestimmt hat — leer, wenn dieser Turn keine Zustimmung ist.
+    Nachbedingung: Ohne Angebot der Bezug unveraendert. Mit Angebot nur die
+        Objekte, die es nennt — **und der volle Bezug, wenn keines davon an
+        diesem Zettel steht**: Ein leerer Bezug waere schlechter als ein
+        breiter, und der Fall wird laut gemeldet.
+    Fehlerfaelle: keine Ausnahme.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not angebot_objekte:
+        return bezug
+    if not bezug:
+        # Die Lage ist weitergezogen, der Dienst steht ohne Sache da — dann
+        # traegt das Angebot sie (gemessen 17.09.2026: zwei Turns spaeter war
+        # die angebotene Abholung nicht mehr akut).
+        return [dict(d) for d in (angebot_bezug or [])]
+
+    # ── Verarbeitung ────────────────────────────
+    gewollt = {str(n).strip().casefold() for n in angebot_objekte if n}
+    geschnitten = [o for o in bezug if str(o.get("name", "")).strip().casefold() in gewollt]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not geschnitten:
+        if angebot_bezug:
+            logger.info(
+                "Planner: Angebot nannte %s, am Zettel steht davon nichts — "
+                "der Bezug kommt aus dem Angebot", list(angebot_objekte),
+            )
+            return [dict(d) for d in angebot_bezug]
+        logger.warning(
+            "Planner: Angebot nannte %s, am Zettel steht davon nichts — voller Bezug bleibt",
+            list(angebot_objekte),
+        )
+        return bezug
+    return geschnitten
+
+
 def _agent_bereits_gelaufen(state: ConversationState, agent_name: str):
     """Prüft, ob ein Agent in diesem Turn bereits gelaufen ist.
 
@@ -543,7 +585,11 @@ def plan(
         if vorheriges is None:
             # Der Objektbezug reist mit (D2b): Ein "Gerne" nennt weder Sache noch
             # Zeitpunkt — die Lage kennt beides.
-            state["objekt_bezug"] = objects_for_service(state.get("sachlage"), state.get("objekt_urteil"), agent.name)
+            state["objekt_bezug"] = _bezug_zuschneiden(
+                objects_for_service(state.get("sachlage"), state.get("objekt_urteil"), agent.name),
+                state.get("angebot_objekte") or [],
+                state.get("angebot_bezug") or [],
+            )
             logger.info(
                 f"Planner: Agent-Pfad — frage '{agent.name}' (Reihenfolge {reihenfolge}, "
                 f"Objektbezug {[o['name'] for o in state['objekt_bezug']]})"

@@ -23,6 +23,7 @@ from unittest.mock import patch
 
 from graph.nodes import router
 from graph.nodes.router import build_situation_block
+from utils.offers import Offer
 
 
 def _sachlage(*objekte: dict) -> dict:
@@ -41,7 +42,16 @@ class BlockTest(unittest.TestCase):
         block = build_situation_block(_sachlage(ZAHNARZT), URTEIL)
         self.assertTrue(block.startswith("[LAGE]"))
         self.assertIn("- Zahnarzttermin (vorgang) — bekannt: Tag: Donnerstag; Uhrzeit: 15 Uhr — am Aushang: timeline", block)
-        self.assertIn("Zustimmung", block)
+
+    def test_der_zustimmungssatz_haengt_am_angebot(self) -> None:
+        """Seit E1 (17.09.2026): ohne offenes Angebot kein Satz ueber Zustimmung."""
+        ohne = build_situation_block(_sachlage(ZAHNARZT), URTEIL)
+        self.assertNotIn("Zustimmung", ohne)
+        mit = build_situation_block(_sachlage(ZAHNARZT), URTEIL, offer=Offer(
+            sentence="Soll ich dir den Termin eintragen?", objects=("Zahnarzttermin",),
+            services=("timeline",), turn_id="t1", time=0.0))
+        self.assertIn("Zustimmung", mit)
+        self.assertIn("Soll ich dir den Termin eintragen?", mit)
 
     def test_ohne_empfaenger_keine_verneinung(self) -> None:
         block = build_situation_block(_sachlage(ZAHNARZT), {"ergebnis": "gerechnet", "objekte": []})

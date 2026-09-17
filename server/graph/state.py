@@ -234,6 +234,14 @@ class ConversationState(TypedDict):
     # Der Objektbezug (Scheibe 12 D2b): die akuten Objekte am Zettel des Dienstes,
     # den der Planner gerade fragt — reist zum Dienst als Eingabe mit.
     objekt_bezug: list
+    # Scheibe 12 E1c — die Sachen des Angebots, dem der Mensch gerade zugestimmt
+    # hat. Der Planner schneidet den Objektbezug darauf zu: Ein "Gerne" meint
+    # das Angebotene, auch wenn drei Sachen akut sind.
+    angebot_objekte: list
+    # Dieselben Sachen mit Klasse und gedeckten Eigenschaften — sie kommen aus
+    # dem Angebot, damit ein "Gerne" auch dann traegt, wenn die Lage
+    # weitergezogen ist (E1c, gemessen 17.09.2026).
+    angebot_bezug: list
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele: list[

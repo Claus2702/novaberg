@@ -19,6 +19,7 @@ DelegationsAgent (Chat 32, VENT1):
 
 import json
 import logging
+import time
 from datetime import datetime, timezone
 from typing import Any
 
@@ -27,6 +28,7 @@ import redis
 from agents.delegation.dispatch import dispatch_delegation
 from agents.kzg.dispatch import dispatch_kzg
 from config import (
+    ANGEBOT_VERFALL_SEKUNDEN,
     ASSISTANT_USER_ID,
     DELEGATION_EFFEKTIVWERT_SCHWELLE,
     DELEGATION_SALIENZ_SCHWELLE,
@@ -42,6 +44,7 @@ from memory.pipeline_log import log_berechnung, log_db_write, log_fehler, log_tu
 from memory.repositories.verbindung_repository import VerbindungRepository
 from memory.session import session_summarize_if_needed, session_turn_store
 from plugins import get_registry
+from utils.offers import Offer, find_offers, offer_clear, offer_store
 
 logger = logging.getLogger("ki_server.dispatcher")
 
@@ -552,6 +555,11 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
         antwort_inhalt: str = state.get("antwort_inhalt", "")
         if antwort_inhalt:
             inhalt["antwort_inhalt"] = antwort_inhalt
+
+        # Scheibe 12 E1: Bot Nova an, etwas einzutragen? Dann liegt das
+        # Angebot mit seinen Sachen als offener Punkt bereit — der Empfang
+        # liest im naechsten Turn, worauf sich ein "Gerne" beziehen kann.
+        _angebot_merken(state, user_id, character_id)
         log_turn_roh(
             turn_id      = state.get("turn_id", ""),
             node         = "dispatcher",
@@ -859,3 +867,57 @@ def dispatch(
     logger.info(f"Dispatcher: {gesamt} Operationen total, {len(nach_ziel)} Ziele angesprochen")
 
     return state
+
+
+def _angebot_merken(state: ConversationState, user_id: str, character_id: str) -> None:
+    """Haelt ein Angebot der fertigen Antwort als offenen Punkt fest.
+
+    Vorbedingung: keine — ohne Antwort, ohne Angebot oder ohne Paar passiert
+    nichts, und das ist der haeufige Fall.
+    Nachbedingung: Genau dann liegt ein offener Punkt vor, wenn die Antwort
+    anbot, etwas einzutragen oder festzuhalten. Ein frueheres Angebot wird
+    dabei ueberschrieben; bleibt die Antwort ohne Angebot, wird der alte Punkt
+    entfernt — ein Angebot gilt fuer den naechsten Turn, nicht auf Dauer.
+    Fehlerfaelle: keine Ausnahme nach aussen; der Antwortpfad haelt nicht an.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    antwort: str = state.get("response", "") or state.get("antwort_inhalt", "")
+    if not antwort or not user_id or not character_id:
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    saetze: list[str] = find_offers(antwort)
+    if not saetze:
+        offer_clear(cfg_redis_client, user_id, character_id, "Antwort ohne Angebot")
+        return
+
+    sachlage = state.get("sachlage") if isinstance(state.get("sachlage"), dict) else {}
+    akute: list[dict] = [
+        o for o in (sachlage.get("objekte") or [])
+        if isinstance(o, dict) and o.get("akut") is True
+    ]
+    namen: tuple[str, ...] = tuple(str(o.get("name") or "").strip() for o in akute if o.get("name"))
+    sachen: tuple[dict, ...] = tuple(
+        {"name": str(o.get("name") or "").strip(), "klasse": o.get("klasse"),
+         "gedeckt": dict(o.get("gedeckt") or {})}
+        for o in akute if o.get("name")
+    )
+    urteil = state.get("objekt_urteil") if isinstance(state.get("objekt_urteil"), dict) else {}
+    dienste: set[str] = set()
+    for eintrag in urteil.get("objekte") or []:
+        if isinstance(eintrag, dict) and str(eintrag.get("name") or "") in namen:
+            dienste.update(str(d) for d in (eintrag.get("empfaenger") or []))
+
+    # ── Ausgabe ─────────────────────────────────
+    offer_store(
+        cfg_redis_client, user_id, character_id,
+        Offer(
+            sentence = saetze[0],
+            objects  = namen,
+            services = tuple(sorted(dienste)),
+            turn_id  = state.get("turn_id", ""),
+            time     = time.time(),
+            details  = sachen,
+        ),
+        ANGEBOT_VERFALL_SEKUNDEN,
+    )

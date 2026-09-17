@@ -3364,6 +3364,13 @@ GV_RAUM_NEUTRAL_SEKUNDEN:     float = float(
 # kalibrierbar bleiben (F-INTENS-1: eine Groesse an ihrer eigenen Skala).
 SACHLAGE_VERFALL_SEKUNDEN:    float = float(
     os.getenv("SACHLAGE_VERFALL_SEKUNDEN", "14400"))  # 4 Stunden
+
+# Wie lange ein Angebot Novas offen steht (Scheibe 12 E1). Kuerzer als die
+# Sachlage: Eine Zustimmung kommt im naechsten Turn oder gar nicht, und ein
+# altes Angebot wuerde ein spaeteres "Gerne" zu einem Auftrag machen, der
+# niemandem gehoert.
+ANGEBOT_VERFALL_SEKUNDEN:     float = float(
+    os.getenv("ANGEBOT_VERFALL_SEKUNDEN", "900"))     # 15 Minuten
 # Die Sachlage-Bruecke ohne harte turn_id sucht die aehnlichste Verlaufszeile
 # des Paares per Kosinus. Unter dieser Schwelle gibt es keine Bruecke: Ein
 # Uebergang zu einem Turn ohne Bezug waere schlimmer als keiner.

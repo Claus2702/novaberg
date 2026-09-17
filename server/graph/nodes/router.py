@@ -23,6 +23,13 @@ from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
+from utils.offers import (
+    Offer,
+    carries_own_request,
+    is_bare_consent,
+    offer_load,
+    offer_matches,
+)
 
 logger = logging.getLogger("ki_server.router")
 
@@ -30,6 +37,7 @@ logger = logging.getLogger("ki_server.router")
 def _build_router_prompt(
     state: ConversationState,
     session_turns: str | None = None,
+    offer: Offer | None = None,
 ) -> str:
     """Baut den Router-System-Prompt aus [BLOCKNAME]-Bloecken zusammen.
 
@@ -68,8 +76,11 @@ def _build_router_prompt(
     # Auf einem Impuls-Turn kein Block: Zustimmen kann nur der Mensch. Der Reiz
     # ist dort Novas eigener Gedanke, und der Block lehrt das Modell, eine
     # Zustimmung als Auftrag zu lesen (zweite Kontrolle, 17.09.2026).
+    # Das offene Angebot des Vorturns (Teil E1) traegt den Bezug, auf den sich
+    # ein "Gerne" beziehen kann. Fehlt es, bleibt der Zustimmungssatz aus dem
+    # Block — dann ist eine Zustimmung Gespraech, kein Auftrag.
     lage: str = "" if reiz_ist_eigener_gedanke(state) else build_situation_block(
-        state.get("sachlage"), state.get("objekt_urteil"),
+        state.get("sachlage"), state.get("objekt_urteil"), offer=offer,
     )
     if lage:
         bloecke.append(lage)
@@ -106,8 +117,15 @@ def _build_router_prompt(
     return "\n\n".join(bloecke)
 
 
-def build_situation_block(sachlage: object, verdict: object, max_objects: int = 5) -> str:
+def build_situation_block(sachlage: object, verdict: object, max_objects: int = 5,
+                          offer: Offer | None = None) -> str:
     """Der [LAGE]-Block des Routers: akute Objekte, ihr Bekanntes, ihre Dienste.
+
+    **Der Satz, der eine Zustimmung zum Auftrag macht, steht nur bei offenem
+    Angebot** (`offer`). Ohne Angebot fehlt der Bezug: Ein *"Gerne"* antwortet
+    dann auf irgendetwas, und die Kette schriebe auf ein Wort hin. `[gemessen
+    17.09.2026, Betrieb]` Zwei Dialoge, in denen Nova nach einer Nebensache
+    fragte und das folgende *"Gerne"* den Termin anlegte — 2 von 2.
 
     Vorbedingung: keine — eine fehlende Sachlage oder ein fehlendes Urteil ist
         ein gueltiger Fall.
@@ -156,7 +174,11 @@ def build_situation_block(sachlage: object, verdict: object, max_objects: int = 
     # ── Ausgabe-Verifikation ────────────────────
     if not zeilen:
         return ""
-    return PROMPTS["router.lage"].format(objekte="\n".join(zeilen))
+    block: str = PROMPTS["router.lage"].format(objekte="\n".join(zeilen))
+    namen: list[str] = [str(o.get("name") or "").strip() for o in akute[:max_objects]]
+    if offer_matches(offer, namen):
+        block += "\n\n" + PROMPTS["router.lage.angebot"].format(angebot=offer.sentence[:200])
+    return block
 
 
 def route(
@@ -186,6 +208,20 @@ def route(
     # Eintrag hat.
     state["objekt_urteil"] = shadow_nearness(state)
 
+    # Scheibe 12 E1: das offene Angebot des Vorturns. Es entscheidet, ob der
+    # Zustimmungssatz im [LAGE]-Block steht — und der Riegel am Ende dieses
+    # Knotens haengt an derselben Zahl.
+    angebot: Offer | None = offer_load(
+        redis_client, state.get("user_id", ""), state.get("character_id", ""),
+    )
+    angebot_offen: bool = angebot is not None
+    # Nimmt der Mensch dieses Angebot gerade an, reisen SEINE Sachen zum Dienst
+    # (E1c) — nicht alle akuten. Sonst waehlt die Fachabteilung bei mehreren
+    # Objekten selbst, und im Betrieb fand sie dann kein Datum (17.09.2026).
+    nimmt_an: bool = angebot_offen and is_bare_consent(reiz)
+    state["angebot_objekte"] = list(angebot.objects) if nimmt_an else []
+    state["angebot_bezug"] = [dict(d) for d in angebot.details] if nimmt_an else []
+
     # ── Pending Agent Check (Resume-Flow) ──────────
     # Wenn ein Agent auf Antwort wartet, ueberspringen wir den LLM-Call.
     # Die User-Antwort geht direkt als Resume an den wartenden Agent.
@@ -194,6 +230,20 @@ def route(
     user_id = state.get("user_id", "")
     pending_key = f"pending_agent:{user_id}"
     pending = redis_manager.get_json(pending_key)
+
+    if pending and carries_own_request(reiz):
+        # **Eine Rueckfrage ordnet heute rein ueber die Zeit zu** — jede
+        # Aeusserung binnen 300 s galt als Antwort. `[gemessen 17.09.2026,
+        # Betrieb]` Die Rueckfrage der Notizen verschluckte so einen eigenen
+        # Auftrag an die Timeline und meldete `abgeschlossen`, ohne zu
+        # schreiben. Traegt der Turn seinen eigenen Auftrag, ist er keine
+        # Antwort: Der Wartezustand faellt, der Turn wird normal geroutet.
+        logger.info(
+            "Router: Turn traegt einen eigenen Auftrag — die offene Rueckfrage "
+            f"von '{pending.get('agent_name', '?')}' wird verworfen"
+        )
+        redis_manager.delete(pending_key)
+        pending = None
 
     if pending and reiz_ist_eigener_gedanke(state):
         # **Ein eigener Gedanke beantwortet keine Frage, die dem Menschen
@@ -235,7 +285,7 @@ def route(
         except Exception as e:
             logger.warning(f"Router: Session-Kontext konnte nicht geladen werden: {e}")
 
-    system_prompt: str = _build_router_prompt(state, session_turns)
+    system_prompt: str = _build_router_prompt(state, session_turns, offer=angebot)
 
     logger.info(f"Router: System-Prompt:\n{system_prompt}")
 
@@ -278,6 +328,21 @@ def route(
         state["needs_timeline"]        = False
         state["timeline_query"]        = {}
         state["momentum"]              = "mid"
+        state["management_action"]     = ""
+        state["management_target"]     = ""
+        state["management_target_typ"] = "titel"
+
+    # Riegel (Scheibe 12 E1): Eine blanke Zustimmung ohne offenes Angebot
+    # stellt nicht zu. Der Block oben nennt den Zustimmungssatz nur bei
+    # offenem Angebot; dieser Riegel ist der deterministische Teil derselben
+    # Regel — er haengt nicht daran, dass das Modell dem Prompt folgt.
+    # Er greift NUR bei einer Aeusserung, die nichts weiter sagt als "ja":
+    # Ein eigener Auftrag traegt seine Sache selbst und geht durch.
+    if state["management_action"] and is_bare_consent(reiz) and not angebot_offen:
+        logger.info(
+            "Router: blanke Zustimmung ohne offenes Angebot — keine Zustellung "
+            f"(war: {state['management_action']}/{state['management_target']})"
+        )
         state["management_action"]     = ""
         state["management_target"]     = ""
         state["management_target_typ"] = "titel"

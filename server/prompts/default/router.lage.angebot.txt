@@ -1,0 +1,3 @@
+Du hast im letzten Turn angeboten: "{angebot}"
+Stimmt der Nutzer diesem Angebot zu ("ja", "gerne", "mach das", "bitte"), dann ist das ein ausdruecklicher Auftrag: setze management_action auf "agent" und management_target auf den Dienst, an dessen Aushang die Sache steht. Lehnt der Nutzer ab, oder stimmt er etwas anderem zu als dem Eintragen oder Festhalten, bleibt es beim Gespraech.
+Ohne dieses Angebot waere eine Zustimmung kein Auftrag — sie gehoerte zum Gespraech.
