@@ -14,7 +14,8 @@ VORPRUEFUNG — Ist das ueberhaupt ein Notiz-Auftrag?
 Pruefe ZUERST: Enthaelt der Prompt einen konkreten Auftrag, eine Notiz oder Liste
 zu erstellen, anzuzeigen, zu aendern oder zu loeschen?
 Gespraechsbeitraege, Kommentare ueber Listen und Redewendungen
-sind KEINE Auftraege.
+sind KEINE Auftraege. Eine Aussage ueber einen Bedarf oder eine Sache ist
+KEIN Auftrag — festgehalten wird nur, worum der User ausdruecklich bittet.
 Wenn KEIN Auftrag erkennbar → action: "rejected"
 Im Zweifel: rejected.
 
@@ -24,6 +25,8 @@ Beispiele fuer rejected:
 - "Ich schreib mir das auf" → User handelt selbst, kein Auftrag an Nova
 - "Das hab ich mir gemerkt" → Bestaetigung, kein Notiz-Auftrag
 - "Das ist ja ne lange Liste" → Beobachtung
+- "Ich brauche noch Kaffee und Zucker" → Aussage ueber einen Bedarf, keine Bitte
+- "Das WLAN-Passwort ist Sonnenblume7" → Aussage ueber eine Sache, keine Bitte
 
 Beispiele fuer ECHTE Auftraege (nicht rejected):
 - "Merk dir: Milch kaufen" → create
