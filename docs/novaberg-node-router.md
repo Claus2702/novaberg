@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 17. September 2026, 10:58 UTC (das Urteil der Objekt-Nähe wird als `objekt_urteil` geschrieben und vom Planner gelesen — Scheibe 12 D1). Davor 16. September 2026, 20:58 UTC (die Objekt-Nähe urteilt **je Zettel für sich** — jeder Dienst über der Untergrenze ist Empfänger, der Abstand entscheidet nichts mehr). Davor 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
+**Stand:** 17. September 2026, 14:27 UTC (**der `[LAGE]`-Block** — akute Objekte mit Bekanntem und Diensten vor den Aushängen; eine Zustimmung auf ein Angebot ist ein Auftrag; nicht auf Impuls-Turns, nicht nach einem Sachlage-Ausfall — Scheibe 12 D2a). Davor 17. September 2026, 10:58 UTC (das Urteil der Objekt-Nähe wird als `objekt_urteil` geschrieben und vom Planner gelesen — Scheibe 12 D1). Davor 16. September 2026, 20:58 UTC (die Objekt-Nähe urteilt **je Zettel für sich** — jeder Dienst über der Untergrenze ist Empfänger, der Abstand entscheidet nichts mehr). Davor 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -116,6 +116,7 @@ Zusammengebaut in `_build_router_prompt()` aus `[BLOCKNAME]`-Bausteinen (Prompt-
 |-------|-------|-------|
 | `[IDENTITAET]` | `prompts/default/router.identity.txt` | Rollendefinition + injizierte Perzeptionsfelder (`{today}`, `{intent}`, `{emotion}`, `{arousal}`, `{modus}`, `{beziehungs_dynamik}`) |
 | `[AUFGABE]` | `prompts/default/router.task.txt` | JSON-Format-Vorgabe (needs_memory, needs_web, needs_timeline, timeline_query, momentum, management_*) |
+| `[LAGE]` | `prompts/default/router.lage.txt` + `build_situation_block` | Seit 17.09.2026: akute Objekte der Sachlage mit Klasse, bekannten Eigenschaften und den Diensten, an deren Zettel sie stehen; eine Zustimmung auf ein Angebot ist ein Auftrag. Zwischen `[KONTEXT]` und `[AGENTEN]`; nicht auf Impuls-Turns, nicht nach einem Sachlage-Ausfall, höchstens 5 Objekte. Rund 670 Zeichen |
 | `[REGELN]` | `prompts/default/router.rules.txt` | Verbindliche Regeln, direkt vor der User-Message |
 
 Das gibt dem Router den vollständigen Kontext der Perzeption als Primacy-Position, ohne den Prompt selbst erneut analysieren zu müssen. Datum und Uhrzeit werden ebenfalls injiziert (`{today}`, Format `dd.mm.YYYY, HH:MM Uhr`).
@@ -295,4 +296,16 @@ Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung
 **Eine übernommene Sachlage wird erneut beurteilt** — auf Impuls- und Ausfall-Turns trägt der Zustand die Objekte des Vorgängers, und der Eintrag heißt trotzdem `gerechnet`. Betriebszahlen filtern deshalb nach `herkunft` (`impuls_uebernommen`, `ausfall_uebernommen`). Gemessene Kosten im echten Turn: 146 ms.
 
 **Gemessen am 16.09.2026:** Die Produktionsfunktionen über die 60 Fälle der Eichreihe reproduzieren die Eichung exakt — ~~**33 zugestellt, 32 richtig, 27 still**~~ (Regel mit Abstand) → **je Zettel: 21 nur beim richtigen Dienst, 16 an beiden, 0 nur beim falschen, 23 still**; Bestand 44 an einem, 22 an beiden von 313. Ein echter Turn (Thema Gravitationslinsen, 20:15 UTC) schrieb den Eintrag `gerechnet`, ein akutes Objekt, größte Nähe 0,2805 → `still_untergrenze`; der Router entschied danach unabhängig, die Bestände blieben gleich. Konzept: `novaberg-thinking-lage_k.md` §4, *Teil C2 — gebaut*.
+
+---
+
+## Die Lage im Router (17.09.2026, Scheibe 12 D2a)
+
+**Der Anlass, gemessen:** Ohne Lage erkannte der Router **0 von 24** Zustimmungen auf ein Angebot (*»Soll ich dir den Termin eintragen?« — »Gerne«*) — `ROUTE-MISS1`. Der Verlauf trug das Angebot, aber nicht, worauf es sich bezog.
+
+**Mit dem `[LAGE]`-Block** 13 und 14 von 24 in zwei Läufen, bei 0 Fehlalarmen auf Ablehnungen und Zustimmungen zu etwas anderem und unveränderten Bitten. Die falschen Ziele darunter fängt der Planner ab (Reihenfolge nach Nähe, 13 von 13 richtig zuerst). **Ein zusätzlicher Satz im Dispatch-Guard** hob die Zustimmungen um eine und brachte drei Fehlalarme — verworfen. Belege: `labor/2026-09-17_router_lage/`.
+
+**Wo der Block nicht steht:** auf einem Impuls-Turn (der Reiz ist Novas eigener Gedanke, zustimmen kann nur der Mensch) und nach einem Ausfall der Sachlage (die Objekte sind die des Vorturns) — geprüft an der Herkunft der Sachlage **und** des Urteils.
+
+**Wärme:** Router-Aufrufe erzeugen kurze Spitzen der GPU-Junction bis 97 °C.
 

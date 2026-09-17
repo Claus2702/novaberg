@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
+**Stand:** 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -395,3 +395,12 @@ pg_trgm Extension: `CREATE EXTENSION IF NOT EXISTS pg_trgm` in `db/init.sql`.
 - NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen im UPDATE-Pfad
 
 Details siehe `novaberg-bugs.md` und `novaberg-backlog.md`. Lösungsraum: `novaberg-thinking-frames_k.md` §16.2 (Phase 1b).
+
+---
+
+## Der Objektbezug in der Klassifikation (17.09.2026, Scheibe 12 D2b)
+
+Wie bei der Timeline: `objekt_bezug` im Kontext, `[OBJEKT]`-Block (`prompts/default/classify_notizen.objekt.txt`). **Gemessen:** erfundene Zustimmungen ohne Bezug 6 von 12 als Auftrag, mit Bezug **12 von 12** (`labor/2026-09-17_objektbezug/`).
+
+**Befund derselben Reihe, mit und ohne Bezug gleich:** *»Ich brauche noch Mehl und Hefe«* — eine Aussage ohne Bitte — wird in 6 von 6 Klassifikationen `add_content`, und der Router stellt sie in 6 von 6 zu. Für die Timeline ist entschieden, dass nur ein ausdrücklicher Auftrag schreibt; für die Notizen nicht (Fundliste 17.09.2026).
+

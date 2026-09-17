@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 17. September 2026, 10:58 UTC (die Zeitangabe wählt die Timeline nicht mehr allein — der Planner fragt nach dem Objekt, nach einer Ablehnung den nächsten Dienst, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (§3a: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 15. September 2026, 19:13 UTC (§3a: auch der Punkt als Trenner ist behoben, und der Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum). Davor 15. September 2026, 15:56 UTC (§3a: die falsche Zeit des Betriebsfalls ist behoben, der Punkt als Trenner nicht). Davor 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
+**Stand:** 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block: aus einem »Gerne« wird ein Auftrag mit dem Tag aus der Lage — Scheibe 12 D2b). Davor 17. September 2026, 10:58 UTC (die Zeitangabe wählt die Timeline nicht mehr allein — der Planner fragt nach dem Objekt, nach einer Ablehnung den nächsten Dienst, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (§3a: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 15. September 2026, 19:13 UTC (§3a: auch der Punkt als Trenner ist behoben, und der Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum). Davor 15. September 2026, 15:56 UTC (§3a: die falsche Zeit des Betriebsfalls ist behoben, der Punkt als Trenner nicht). Davor 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -311,3 +311,12 @@ CREATE TABLE IF NOT EXISTS timeline (
 **Resume-TTL:** 300s (Redis `pending_agent:{user_id}`). **Rueckfrage-Pflicht:** Nur bei niedriger Konfidenz oder Konflikt.
 
 **Clipboard-Schreibvorgang (Synapsen P3)** — die Regel dazu steht seit dem 16.08.2026 in `novaberg-convention-planner-needs.md` §3: Bei `result.status == "abgeschlossen"` und einer im letzten Schritt vorhandenen ID (`termin_id`, `neuer_id` oder `id`) schreibt `_build_return` (`dispatch.py`) die ID als `state["timeline_id"]` in den `ConversationState`. Der spätere KzgAgent übernimmt diesen Wert im `magnete_aufloesen`-Node, statt einen eigenen `erinnerungs_anker` für denselben Tag anzulegen. Verhindert Anker-Duplikate, wenn der User-Turn sowohl einen TimelineAgent-Auftrag als auch eine implizite Salience-Erkennung des gleichen Datums enthält.
+
+---
+
+## Der Objektbezug in der Klassifikation (17.09.2026, Scheibe 12 D2b)
+
+`dispatch_timeline` legt `objekt_bezug` in `kontext`; `klassifikation._build_classify_prompt` hängt dann `[OBJEKT]` an (`prompts/default/classify_timeline.objekt.txt`): die Sache aus der Lage mit ihren bekannten Eigenschaften, und der Satz, dass eine Zustimmung auf ein Angebot, sie einzutragen, ein Auftrag ist — Ziel und Zeitausdruck kommen dann aus dem Objekt. **Gemessen** über erfundene Zustimmungen: ohne Bezug 6 von 12 `create`, mit Bezug **12 von 12, davon 11 mit dem Tag aus dem Objekt**; Aussagen und Bitten unverändert (`labor/2026-09-17_objektbezug/`). Der Resume-Pfad trägt keinen Bezug.
+
+**Grenze:** Relative Zeitangaben der Lage (*»morgen um 10«*) werden wörtlich übernommen; stammt die Lage vom Vortag, würde »morgen« falsch aufgelöst (Fundliste 17.09.2026).
+
