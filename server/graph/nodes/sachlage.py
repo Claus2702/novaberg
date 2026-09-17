@@ -249,6 +249,15 @@ Regeln:
   bestimmte Bezuege, Verben des Vorhabens. Eine beilaeufige Bemerkung ist
   latent: "akut": false, und dann bleibt "offen" LEER. Wer auf jede
   Bemerkung mit Eigenschaftsfragen reagiert, wird unertraeglich.
+- Das Objekt ist die Sache, um die es in der Aeusserung geht — nicht der
+  Rahmen, in dem sie steht. Geht es um etwas, das getan wird oder stattfindet,
+  ist die Handlung oder das Ereignis das Objekt, samt dem, woran sie getan
+  wird ("Mantel zur Reinigung bringen"). Geht es um etwas, das gebraucht
+  wird, fehlt, gilt oder festgehalten werden soll, ist diese Sache das Objekt
+  ("Manschettenknoepfe" — nicht die Hochzeit, fuer die sie gebraucht werden).
+  Ein Anlass, eine Person oder ein Ort, der nur den Rahmen bildet, steht als
+  eigenes Objekt daneben oder als Eigenschaft. Ist die Aeusserung ein
+  Vorhaben oder Sachverhalt, ist das Objekt, um das es geht, akut.
 - "offen" nennt nur Eigenschaften, die fuer das Vorhaben wirklich fehlen —
   nach Wichtigkeit geordnet, hoechstens fuenf.
 - "traeger" sagt je offener Eigenschaft, wer sie kennen kann: "nutzer" —

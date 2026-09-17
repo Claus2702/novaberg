@@ -20,8 +20,13 @@ import unittest
 from unittest.mock import patch
 
 from graph.nodes import sachlage as sachlage_mod
-from graph.nodes.sachlage import _validate_artifact, sachlage_block, sachlage_load
-from graph.nodes.sachlage_form import normalize_object_form
+from graph.nodes.sachlage import (
+    SACHLAGE_PROMPT,
+    _validate_artifact,
+    sachlage_block,
+    sachlage_load,
+)
+from graph.nodes.sachlage_form import normalize_object_form, plain_object_name
 from graph.nodes.sachlage_plausibility import _render_objects
 from graph.nodes.sachlage_resolver import apply_memory_coverage, carry_sources
 
@@ -254,6 +259,70 @@ class ThePredecessorIsCheckedOnLoadTest(unittest.TestCase):
         self.assertFalse(verfallen)
         self.assertEqual(vorige["objekte"][0]["gedeckt"], {})
         self.assertEqual(vorige["objekte"][0]["offen"], ["wann", "anlass"])
+
+
+class TheNameIsPlainTextTest(unittest.TestCase):
+    """Der Name ohne Auszeichnung — er ist Schluessel und Embed-Text.
+
+    Anlass (16.09.2026): 112 von 144 akuten Objekten eines Paares trugen
+    Sternchen am Namen. Geprueft wird ueber beide Wege, die ein Objekt in den
+    Zustand bringen: den frischen Parse und die geladene Blase.
+    """
+
+    def test_formatting_is_removed(self) -> None:
+        faelle = {
+            "**Gravitationslinseneffekt**": "Gravitationslinseneffekt",
+            "*Kollaps*": "Kollaps",
+            "`Zaehlerstand`": "Zaehlerstand",
+            "__Mietvertrag__": "Mietvertrag",
+            "  **Termin**  beim  Arzt ": "Termin beim Arzt",
+        }
+        for roh, schlicht in faelle.items():
+            with self.subTest(roh=roh):
+                self.assertEqual(plain_object_name(roh), schlicht)
+
+    def test_a_plain_name_stays_character_for_character(self) -> None:
+        for name in ("Passwort_alt", "Straße 12", "C++ Kurs", "Lena"):
+            with self.subTest(name=name):
+                self.assertEqual(plain_object_name(name), name)
+
+    def test_a_name_of_only_formatting_is_not_emptied(self) -> None:
+        self.assertEqual(plain_object_name("**"), "**")
+
+    def test_the_fresh_parse_carries_the_plain_name(self) -> None:
+        self.assertEqual(_object(_validate_artifact(_artifact(name="**Geburtstag**")))["name"], "Geburtstag")
+
+    def test_the_stored_bubble_is_plain_after_load(self) -> None:
+        gespeichert = _artifact(name="**Geburtstag**", gedeckt={"anlass": "Feier"})
+        roh = {"json": json.dumps(gespeichert), "turn_zeit": str(9e12)}
+        with patch.object(sachlage_mod, "redis_client") as redis, \
+             patch.object(sachlage_mod.time, "time", return_value=9e12):
+            redis.hgetall.return_value = roh
+            vorige, _ = sachlage_load("u", "c")
+        self.assertEqual(vorige["objekte"][0]["name"], "Geburtstag")
+
+
+class TheObjectIsTheMatterNotItsFrameTest(unittest.TestCase):
+    """Die Regel der Objektwahl steht im Prompt, mit Beispielen ausserhalb jeder Messreihe.
+
+    Gemessen als Fassung C am 16.09.2026 (A/C ueber 60 Aeusserungen, gewaehlt auf
+    der ungeraden Haelfte). Eine erste Fassung B ("das, was gebraucht, getan …
+    wird") machte Handlungen zu Dingen und wurde verworfen — deshalb nennt die
+    Regel die Handlung ausdruecklich als Objekt.
+    """
+
+    def test_the_rule_names_matter_and_frame(self) -> None:
+        self.assertIn("die Sache, um die es in der Aeusserung geht", SACHLAGE_PROMPT)
+        self.assertIn("nicht der\n  Rahmen, in dem sie steht", SACHLAGE_PROMPT)
+
+    def test_an_action_stays_the_object(self) -> None:
+        """Der Befund gegen Fassung B: *Buch abgeben*, nicht *das Buch*."""
+        self.assertIn("ist die Handlung oder das Ereignis das Objekt", SACHLAGE_PROMPT)
+
+    def test_the_prompt_still_formats(self) -> None:
+        text = SACHLAGE_PROMPT.format(vorige_sektion="", wiederaufnahme_sektion="",
+                                      verlauf="", aeusserung="x")
+        self.assertIn("Manschettenknoepfe", text)
 
 
 class TheReadersSurviveTheCaseOfTheTwelfthTest(unittest.TestCase):

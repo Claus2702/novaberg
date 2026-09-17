@@ -346,6 +346,32 @@ def merge_same_name_objects(objekte: list[dict]) -> list[dict]:
     return list(zusammen.values())
 
 
+# Auszeichnung, die das Modell um Namen setzt: Fettdruck, Kursiv, Code.
+# `[gemessen 16.09.2026]` 112 von 144 akuten Objekten eines Paares trugen
+# Sternchen am Namen, und der Name ist Schluessel im Eigenschaftsgedaechtnis und
+# Text der Objekt-Naehe — dieselbe Sache hiesse sonst je nach Laune zweimal.
+_AUSZEICHNUNG: re.Pattern = re.compile(r"[*`]+|(?<!\w)__|__(?!\w)")
+
+
+def plain_object_name(name: object) -> str:
+    """Der Name eines Objekts als schlichter Text.
+
+    Vorbedingung: keine.
+    Nachbedingung: ohne Sternchen, Backticks und rahmende Unterstriche, Leerraum
+        zusammengezogen. Bliebe nichts uebrig, bleibt der getrimmte
+        Ausgangstext — ein leerer Name wuerde das Objekt verwerfen, und das
+        entscheidet der Aufrufer, nicht die Bereinigung.
+    Fehlerfaelle: keine Ausnahme; eine Bereinigung wird protokolliert.
+    """
+    roh: str = str(name or "").strip()
+    schlicht: str = " ".join(_AUSZEICHNUNG.sub("", roh).split())
+    if not schlicht:
+        return roh
+    if schlicht != roh:
+        logger.info(f"Sachlage-Form: Name {roh!r} ohne Auszeichnung → {schlicht!r}")
+    return schlicht
+
+
 def normalize_object_form(objekt: dict, from_model: bool, gate: bool = True) -> dict:
     """Stellt die Form eines Objekts her: `gedeckt` mit Werten, `offen` ohne.
 
@@ -370,7 +396,7 @@ def normalize_object_form(objekt: dict, from_model: bool, gate: bool = True) -> 
         Dasselbe Objekt.
     """
     # ── Eingabe-Validierung ─────────────────────
-    name: str = str(objekt.get("name", "")).strip()
+    name: str = plain_object_name(objekt.get("name", ""))
     objekt["name"] = name
 
     # ── Verarbeitung ────────────────────────────
