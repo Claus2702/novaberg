@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
+**Stand:** 17. September 2026, 17:52 UTC (Notizen nur auf ausdrücklichen Auftrag: die Vorprüfung der Klassifikation lehnt Aussagen ab — Aussagen geschrieben 12 → 8 von 12; die Sperre am Empfang gemessen und zurückgenommen). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -402,5 +402,19 @@ Details siehe `novaberg-bugs.md` und `novaberg-backlog.md`. Lösungsraum: `novab
 
 Wie bei der Timeline: `objekt_bezug` im Kontext, `[OBJEKT]`-Block (`prompts/default/classify_notizen.objekt.txt`). **Gemessen:** erfundene Zustimmungen ohne Bezug 6 von 12 als Auftrag, mit Bezug **12 von 12** (`labor/2026-09-17_objektbezug/`).
 
-**Befund derselben Reihe, mit und ohne Bezug gleich:** *»Ich brauche noch Mehl und Hefe«* — eine Aussage ohne Bitte — wird in 6 von 6 Klassifikationen `add_content`, und der Router stellt sie in 6 von 6 zu. Für die Timeline ist entschieden, dass nur ein ausdrücklicher Auftrag schreibt; für die Notizen nicht (Fundliste 17.09.2026).
+**Befund derselben Reihe, mit und ohne Bezug gleich:** *»Ich brauche noch Mehl und Hefe«* — eine Aussage ohne Bitte — wird in 6 von 6 Klassifikationen `add_content`, und der Router stellt sie in 6 von 6 zu. ~~Für die Timeline ist entschieden, dass nur ein ausdrücklicher Auftrag schreibt; für die Notizen nicht (Fundliste 17.09.2026).~~ → seit dem 17.09.2026 auch für die Notizen entschieden (nächster Abschnitt).
+
+## Nur auf ausdrücklichen Auftrag (17.09.2026)
+
+**Die Absicht:** Eine Aussage über einen Bedarf oder eine Sache (*»ich brauche noch …«*, *»die Nummer ist …«*) legt keine Notiz an; festgehalten wird nur, worum der Nutzer ausdrücklich bittet — wie bei der Timeline seit dem 13.09.2026.
+
+**Gebaut:** die Vorprüfung der Klassifikation (`prompts/default/classify_notizen.task.txt`) sagt es und führt zwei Aussagen unter `rejected`. Zeuge: `tests/test_notizen_auftrag.py`.
+
+**Gemessen und nicht übernommen:** derselbe Satz im Aushang (`plugins/notizen_manager/manager.py`) samt Negativfall. Er hielt am Empfang 4 von 4 zugestellten Aussagen zurück, nahm aber einer Zustimmung in 3 von 3 Durchgängen das Ziel.
+
+**Wirkung, gemessen** (`labor/2026-09-17_notizen_auftrag/`, 12 Aufrufe je Gruppe): Aussagen geschrieben 12 → **8**, Bitten und Zustimmungen 24 → 24. **Nicht erreicht:** *»Ich brauche noch Mehl und Hefe«* bleibt `add_content`, eine Telefonnummer als Aussage bleibt `create` — beide 3 von 3. Der Befund der Fundliste ist damit nicht erledigt.
+
+**Warum der Anlass bleibt, wahrscheinlich:** Dieselbe Vorprüfung trägt ältere Regeln, die Bedarfsaussagen als Auftrag lesen — *»Wir brauchen auch Erdbeeren«* und *»Ach, und Butter!«* als `add_content`, *»X brauchen wir nicht«* und *»brauch ich nicht mehr«* als Entfernen (`classify_notizen.task.txt`, 3 Stellen). Nicht gemessen, welche davon S2 trägt.
+
+**Die Ergänzung einer laufenden Liste bleibt ein Auftrag — Entscheidung des Eigentümers am 17.09.2026:** Läuft eine Liste und folgt *»Wir brauchen auch Mülltüten«*, gehört das auf die Liste. Klausel 2 des Aushangs und die Regel in der Vorprüfung bleiben also stehen; in der Messung schrieb die Klassifikation diese Form in beiden Fassungen 3 von 3. **Damit ist auch die Rücknahme der Sperre am Empfang inhaltlich richtig:** Sie hielt genau diese Ergänzung in 3 von 3 zurück.
 
