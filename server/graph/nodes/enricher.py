@@ -48,6 +48,7 @@ from config import (
 )
 from ei.dreischicht import CLUSTER_ENRICHER_SPRUENGE, INTENTION_ANWEISUNG
 from ei.gravitation import (
+    Gravitationsterm,
     Verschiebung,
     emotionale_gravitation_scannen,
     gravitationsterm_berechnen,
@@ -331,7 +332,7 @@ def _compute_ziele_und_gravitation(
     postgres_url: str,
     user_id:      str,
     character_id: str,
-) -> tuple[list, float, float]:
+) -> tuple[list, Gravitationsterm, float]:
     """Laedt die aktiven Ziele DIESES Paares, berechnet Aktivierung, Term und Sog.
 
     Das Turn-Paar wird uebergeben, nicht das Ziel-Paar: Die Ableitung steht in
@@ -359,7 +360,10 @@ def _compute_ziele_und_gravitation(
     ziele: list[dict] = ziele_aktive_laden(postgres_url, ziel_subjekt, ziel_gegenueber)
 
     if not ziele:
-        return [], 0.0, 0.0
+        # Der Nullwert kommt aus derselben Rechnung wie jeder andere Term.
+        # Eine blanke 0.0 an dieser Stelle brach jeden Turn eines Paares ohne
+        # aktive Ziele ab: Beide Aufrufer lesen `.normiert` (ENRICH-NULLTERM).
+        return [], gravitationsterm_berechnen([]), 0.0
 
     # ── Verarbeitung ────────────────────────────
     aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
