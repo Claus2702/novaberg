@@ -99,7 +99,7 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ### `RELOAD-GREIFT-NICHT-AM-EINGEHAENGTEN-CODE` — 24 Stunden Betrieb auf altem Stand
 
-**Zustand:** offen — gemessen am 17.09.2026 im Betrieb.
+**Zustand:** offen — gemessen am 17.09.2026 im Betrieb. **Nachtrag 18.09.2026:** Im Prozess, der seit dem Neustart vom 17.09.2026 läuft, **greift der Reload** — das Serverlog meldet um 07:45 UTC *„WatchFiles detected changes in 'config.py', 'utils/offers.py'. Reloading…"*. Der Defekt ist also nicht der Mount an sich; warum der Prozess vom 16.09. einen Tag lang nicht neu lud, ist ungeklärt. **Und die Kehrseite ist jetzt belegt:** Jede gespeicherte Datei unter `server/` startet den Dienst neu und **bricht einen laufenden Turn ab** — ein Messturn der zweiten Sitzung endete so mitten in der Sachlage. Wer baut, während im Betrieb gesprochen wird, beendet das Gespräch.
 
 **Symptom.** Der Serverprozess lief mit `uvicorn --reload` und lud in 24 Stunden **kein einziges Mal** neu (0 Reload-Zeilen im Log), obwohl die eingehängten Dateien geändert waren. Drei Messturns am 17.09., 18:48 UTC ergaben 0 Nähe-Einträge und 0 `[LAGE]`-Blöcke, während `router.py:187` im Container die Nähe aufrief. Der Prozess stammte vom 16.09., 18:36 UTC.
 

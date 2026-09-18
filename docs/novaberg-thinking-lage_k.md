@@ -632,6 +632,8 @@ Dazu in der Doku: die Zeugen der falschen Datei zugeordnet, vier statt fünf Dur
 
 Lehnt der Mensch ein offenes Angebot ab und sagt dabei nichts anderes (*»Nein danke«*, *»Lass mal«*, *»Lieber nicht«*), trägt jede Sache des Angebots die aktive Eigenschaft **`Speichern = abgelehnt`** im Eigenschaftsgedächtnis, gesprochen vom Nutzer, Quelle *Angebot abgelehnt* — eine gewöhnliche Eigenschaft, kein neues Feld. Ein zweites Nein ist eine Bestätigung. `declined_objects` liest sie für E2. Ein Satz, der ablehnt und etwas anderes sagt (*»Nein, trag lieber den Zahnarzt ein«*), ist keine blanke Ablehnung. Gebaut ohne Modell; gemessen ist er nicht im Betrieb — dort bot Nova bisher nie an.
 
+**Scheibe 12 D, nachgezogen am selben Morgen — relative Zeitangaben:** Eine Angabe wie *»morgen um 10«* bekommt in dem Turn, in dem sie fällt, eine Schwester *»Tag (aufgeloest)« = 19.09.2026*; die Fortschreibung übernimmt sie, solange der Wortlaut gleich bleibt, statt neu zu rechnen. Der Wert selbst bleibt die Angabe des Nutzers (Festlegung, Scheibe 11). Die Zustimmung (`consent_fields`) nimmt das Datum.
+
 **Scheibe 12 B, nachgezogen am selben Morgen:** `sachlage.py::_render_history` kürzte als achter Leser noch jeden Beitrag auf 1600 Zeichen. Seither kommt der Verlauf ungekürzt, und über dem Budget fallen die ältesten Beiträge (`budget_wahren`).
 
 #### Teil E1 — gebaut (17.09.2026): die Zustimmung braucht ein Angebot
