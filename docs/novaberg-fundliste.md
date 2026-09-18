@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 18. September 2026, 19:46 UTC (`date -u`; **ein neuer Fund** — `with psycopg2.connect` schließt die Verbindung nicht)
+**Stand:** 18. September 2026, 21:47 UTC (`date -u`; **ein neuer Fund** — ein offenes Angebot sperrt keinen neuen Wurf). Davor 18. September 2026, 19:46 UTC (`date -u`; **ein neuer Fund** — `with psycopg2.connect` schließt die Verbindung nicht)
 **Offen:** **345 Funde — gezaehlt am 16.09.2026** (Fundzeilen der Form `- **JJJJ-MM-TT**` im Abschnitt *Offen* ohne `~~`; 15 tragen dort inzwischen wieder ein `~~`, sind also erledigt und nicht umgezogen). **Die Differenz zu den 231 vom 07.09.2026 ist nicht aufgeschlüsselt** — sie ist gezählt, nicht hergeleitet, und wer sie braucht, zählt je Stichtag. ~~231 Funde — gezaehlt am 07.09.2026~~. ~~132, gezaehlt am 30.08.2026~~ — die Zahl war sieben Tage alt und zaehlte 19 bereits erledigte mit. **Am 07.09.2026 sind 22 als erledigt markierte Eintraege nach *Erledigt* verschoben**; der Offen-Block traegt seither nur noch Offenes.
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 85 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
@@ -312,6 +312,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-09-18** — **Solange ein Angebot offen ist, würfelt Nova für dieselbe Sache in jedem Turn neu.** `[gelesen 18.09.2026, zweite Kontrolle]` `offer_candidate` (`utils/offers.py`) sperrt keinen neuen Wurf, solange ein Angebot zur selben Sache offen ist (15 Minuten). Bei p ≈ 0,5 steht nach drei Turns mit 87 % mindestens ein Angebot, auch ein zweites zur selben Sache ist möglich. Mit der Schwelle 0,9 bot sie oberhalb in *jedem* Turn an — der Zustand ist älter als die Wahrscheinlichkeit, sie macht ihn nur seltener. Absichtsfrage: je Turn oder je Sache?
 - **2026-09-18** — **Ein Angebot kann einen anderen Gegenstand tragen als den abgelegten.** `[gemessen 18.09.2026, zweite Kontrolle]` Von 4 echten Angeboten, die `find_offers` in sieben Tagen erkannte, galten 2 einer Nebensache oder einem *weiteren* Termin, abgelegt wurden sie mit den akuten Objekten des Turns — ein *»Gerne«* hätte die falsche Sache zugestellt. Dazu nimmt die Weiche im Router den ersten Dienst aus der Vereinigung **aller** akuten Objekte (0 von 233 Ablagen betroffen, möglich in 55 von 467 Lagen mit zwei und mehr akuten Objekten). Und 7 von 7 konstruierte Nicht-Angebote (*»Soll ich den Schwerpunkt auf die Gravitation setzen?«*) gelten als Angebot — im Bestand 0. Beleg: Bericht der zweiten Kontrolle, Exporte in `labor/2026-09-18_zweite_kontrolle_block_a/`.
 
 - **2026-09-18** — **`with psycopg2.connect(...) as conn` schließt die Verbindung nicht, nur die Transaktion.** `[gemessen 18.09.2026]` psycopg2 2.9.9 im Server-Behälter: nach dem Block `conn.closed == 0`. Die Form steht an **13 Stellen in 3 Dateien** unter `server/` (`memory/praegung.py`, `api/drive.py`, `graph/nodes/emotionale_gravitation.py`). Ob Verbindungen offen bleiben, ist nicht gemessen — CPython schließt eine Verbindung, wenn ihr Objekt abgeräumt wird.
