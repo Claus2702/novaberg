@@ -39,7 +39,7 @@ from config import (
 from graph.personality import InternalPersonality, Personality
 from graph.reiz import reiz_text
 from graph.state import ConversationState, pipeline_quelle
-from memory.pipeline_log import log_berechnung
+from memory.pipeline_log import log_berechnung, log_decision
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
 from utils.canon import fremdes_feld, strip_umlauts, to_canonical
@@ -231,17 +231,25 @@ def _ziel_personality(state: ConversationState, rolle: str) -> Personality:
     return ziel
 
 
-def _session_kontext_laden(user_id: str, character_id: str) -> str | None:
+def _session_kontext_laden(
+    user_id: str, character_id: str,
+) -> tuple[str | None, str]:
     """Holt die letzten Turns als nummerierten Kontextblock.
 
+    **Der Grund steht neben dem Ergebnis.** Ein fehlender Kontext hat drei
+    Ursachen — kein Nutzer, kein Verlauf, ein Lesefehler —, und fuer den
+    Prompt sehen alle drei gleich aus. Der Entscheidungs-Eintrag braucht sie
+    getrennt.
+
     Vorbedingung: keine — ohne `user_id` wird nicht gelesen.
-    Nachbedingung: Der formatierte Verlauf oder None.
+    Nachbedingung: Der formatierte Verlauf oder None, dazu der Zustand:
+        `geladen`, `leer`, `ohne_nutzer` oder `ausgefallen`.
     Fehlerfaelle: Scheitert das Lesen, wird gewarnt und None zurueckgegeben;
     die Perzeption laeuft ohne Kontext weiter statt abzubrechen.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
-        return None
+        return None, "ohne_nutzer"
 
     # ── Verarbeitung ────────────────────────────
     try:
@@ -254,20 +262,27 @@ def _session_kontext_laden(user_id: str, character_id: str) -> str | None:
             f"{type(fehler).__name__}: Perzeption: Session-Kontext konnte nicht "
             f"geladen werden"
         )
-        return None
+        return None, "ausgefallen"
 
     # ── Ausgabe-Verifikation ────────────────────
     if verlauf:
         logger.info("Perzeption: Session-Kontext geladen (nummeriert)")
-    return verlauf
+        return verlauf, "geladen"
+    return None, "leer"
 
 
-def _wahrnehmung_erheben(eingabe_text: str, system_prompt: str) -> Wahrnehmung:
+def _wahrnehmung_erheben(
+    eingabe_text: str, system_prompt: str,
+) -> tuple[Wahrnehmung, str]:
     """Fragt das Sprachmodell und liest sein Ergebnis.
+
+    **Die Herkunft steht neben den Werten.** Die Defaults der Datenklasse
+    liegen in der Spanne echter Wahrnehmungen; ohne Marke ist ein Parse-
+    Fehler von einem ruhigen, neutralen Turn nicht zu unterscheiden.
 
     Vorbedingung: `system_prompt` ist gebaut.
     Nachbedingung: Wahrnehmung — aus dem Ergebnis oder, bei einem Parse-Fehler,
-    die Defaults der Datenklasse.
+    die Defaults der Datenklasse —, dazu `gelesen` oder `standardwerte`.
     Fehlerfaelle: Ein unlesbares Ergebnis wird gewarnt und faellt auf die
     Defaults. Das ist derselbe Zustand wie ein Ergebnis mit leeren Abschnitten,
     und genau deshalb gibt es dafuer nur eine Liste von Werten.
@@ -285,13 +300,13 @@ def _wahrnehmung_erheben(eingabe_text: str, system_prompt: str) -> Wahrnehmung:
 
     try:
         antwort = model_service.chat.submit_sync(auftrag)
-        return _wahrnehmung_lesen(antwort.parsed)
+        return _wahrnehmung_lesen(antwort.parsed), "gelesen"
     except (json.JSONDecodeError, KeyError) as fehler:
         logger.warning(
             f"{type(fehler).__name__}: Perzeption: JSON-Parsing fehlgeschlagen, "
             f"Fallback auf die Standardwerte"
         )
-        return Wahrnehmung()
+        return Wahrnehmung(), "standardwerte"
 
 
 def _wahrnehmung_schreiben(ziel: Personality, wahr: Wahrnehmung) -> None:
@@ -342,9 +357,64 @@ def _build_system_prompt(today: str, session_turns: str | None = None, rolle: st
     return "\n\n".join(bloecke)
 
 
+def _record_decision(
+    state:    ConversationState,
+    decision: str,
+    outcome:  str,
+    inputs:   dict,
+    scale:    dict | None = None,
+) -> None:
+    """Schreibt eine Weiche der Perzeption dauerhaft ins `pipeline_log`.
+
+    **Warum es diesen Eintrag braucht.** Ob eine Wahrnehmung gelesen oder aus
+    den Standardwerten kam und ob der Verlauf im Prompt stand, stand bis zum
+    18.09.2026 nur im Container-Log. Die Standardwerte liegen in der Spanne
+    echter Werte — ohne diesen Eintrag ist ein Ausfall ein ruhiger Turn.
+
+    Vorbedingung: `decision` beginnt mit `perzeption.`.
+    Nachbedingung: ein `switch`-Eintrag mit Ausgang und Eingangsgroessen.
+    Fehlerfaelle: Ein Schreibfehler der Forensik darf den Turn nicht toeten —
+        gekapselt und als `warning` gemeldet.
+
+    Args:
+        state: Zustand des Turns (Bezug, Paar, Graph-Rolle).
+        decision: Name der Weiche, `perzeption.<weiche>`.
+        outcome: Der genommene Zweig.
+        inputs: Die Groessen, auf denen entschieden wurde.
+        scale: Die geltenden Grenzen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Perzeption-Protokoll: kein turn_id im State — die Weiche %s (%s) "
+            "waere keinem Turn zuzuordnen", decision, outcome,
+        )
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        log_decision(
+            turn_id      = turn_id,
+            node         = "perzeption",
+            quelle       = pipeline_quelle(state),
+            decision     = decision,
+            outcome      = outcome,
+            inputs       = inputs,
+            scale        = scale,
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            "Perzeption-Protokoll (%s) nicht geschrieben (%s: %s) — der Turn "
+            "laeuft weiter, die Reihe hat eine Luecke",
+            decision, type(fehler).__name__, fehler,
+        )
+
+
 def _ausreisser_protokollieren(
     state: ConversationState, wahr: Wahrnehmung, rolle: str,
-) -> None:
+) -> int:
     """Schreibt jeden Wert, der seinen Kanon verfehlt hat, ins Protokoll.
 
     **Warum nicht die Logzeile genuegt, die `to_canonical` schon schreibt.**
@@ -366,7 +436,7 @@ def _ausreisser_protokollieren(
 
     Vorbedingung: `wahr` ist gelesen und gezogen.
     Nachbedingung: eine Protokollzeile, wenn mindestens ein Feld seinen Kanon
-        verfehlt — sonst keine.
+        verfehlt — sonst keine. Zurueck kommt die Zahl der Ausreisser.
     Fehlerfaelle: keine eigenen.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -393,7 +463,7 @@ def _ausreisser_protokollieren(
         })
 
     if not ausreisser:
-        return
+        return 0
 
     # ── Ausgabe ─────────────────────────────────
     log_berechnung(
@@ -410,6 +480,7 @@ def _ausreisser_protokollieren(
         user_id      = state.get("user_id", ""),
         character_id = state.get("character_id", ""),
     )
+    return len(ausreisser)
 
 
 def perceive(
@@ -432,19 +503,33 @@ def perceive(
     ziel: Personality = _ziel_personality(state, rolle)
 
     # ── Verarbeitung ────────────────────────────
+    kontext, kontext_zustand = _session_kontext_laden(
+        state.get("user_id", ""), state.get("character_id", ""),
+    )
+    _record_decision(
+        state, "perzeption.kontext", kontext_zustand,
+        {"rolle": rolle, "kontext_zeichen": len(kontext or "")},
+    )
     system_prompt: str = _build_system_prompt(
         datetime.now().strftime("%d.%m.%Y, %H:%M Uhr"),
-        _session_kontext_laden(
-            state.get("user_id", ""), state.get("character_id", ""),
-        ),
+        kontext,
         rolle = rolle,
     )
     logger.info(f"Perzeption: System-Prompt:\n{system_prompt}")
 
-    wahr: Wahrnehmung = _wahrnehmung_erheben(eingabe_text, system_prompt)
+    wahr, herkunft = _wahrnehmung_erheben(eingabe_text, system_prompt)
 
     # ── Ausgabe-Verifikation ────────────────────
-    _ausreisser_protokollieren(state, wahr, rolle)
+    ausreisser: int = _ausreisser_protokollieren(state, wahr, rolle)
+    _record_decision(
+        state, "perzeption.wahrnehmung", herkunft,
+        {
+            "rolle":           rolle,
+            "ziel":            "internal" if rolle == _ROLLE_NOVA else "external",
+            "eingabe_zeichen": len(eingabe_text),
+            "ausreisser":      ausreisser,
+        },
+    )
     _wahrnehmung_schreiben(ziel, wahr)
     logger.info(
         f"Perzeption: rolle={rolle}, "

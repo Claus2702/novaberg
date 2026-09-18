@@ -34,7 +34,7 @@ from config import (
 from graph.antwort_spur import antwort_setzen
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState, pipeline_quelle
-from memory.pipeline_log import log_berechnung
+from memory.pipeline_log import log_berechnung, log_decision
 from memory.session import (
     Verlaufsbeitrag,
     sprecher_bezeichnen,
@@ -953,6 +953,62 @@ def _ergebnislaenge_belegen(state: ConversationState) -> None:
         )
 
 
+def _record_decision(
+    state:    ConversationState,
+    decision: str,
+    outcome:  str,
+    inputs:   dict,
+    scale:    dict | None = None,
+) -> None:
+    """Schreibt eine Weiche des Responders dauerhaft ins `pipeline_log`.
+
+    **Warum es diesen Eintrag braucht.** Welche Form die Nachricht an das
+    Modell hatte — mit Verlauf oder ohne, mit fremder Rede oder mit dem
+    Auftrag eines eigenen Gedankens — stand bis zum 18.09.2026 nur im
+    Container-Log, und der rotiert. Ob eine leere Antwort entstand, ebenso:
+    die Ist-Laenge wurde nur auf dem Erfolgspfad geschrieben.
+
+    Vorbedingung: `decision` beginnt mit `responder.`.
+    Nachbedingung: ein `switch`-Eintrag mit Ausgang und Eingangsgroessen.
+    Fehlerfaelle: Ein Schreibfehler der Forensik darf den Turn nicht toeten —
+        gekapselt und als `warning` gemeldet.
+
+    Args:
+        state: Zustand des Turns (Bezug, Paar, Graph-Rolle).
+        decision: Name der Weiche, `responder.<weiche>`.
+        outcome: Der genommene Zweig.
+        inputs: Die Groessen, auf denen entschieden wurde.
+        scale: Die geltenden Grenzen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Responder-Protokoll: kein turn_id im State — die Weiche %s (%s) "
+            "waere keinem Turn zuzuordnen", decision, outcome,
+        )
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        log_decision(
+            turn_id      = turn_id,
+            node         = "responder",
+            quelle       = pipeline_quelle(state),
+            decision     = decision,
+            outcome      = outcome,
+            inputs       = inputs,
+            scale        = scale,
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            "Responder-Protokoll (%s) nicht geschrieben (%s: %s) — der Turn "
+            "laeuft weiter, die Reihe hat eine Luecke",
+            decision, type(fehler).__name__, fehler,
+        )
+
+
 def _sprachstil_block(state: ConversationState) -> str:
     """Baut den Sprachstil-Block, der hinter den Verlauf gehaengt wird.
 
@@ -1185,6 +1241,9 @@ def respond(
     # nicht auf den Platz der fremden Rede.
     user_prompt: str = reiz_text(state)
     eigener_gedanke: bool = reiz_ist_eigener_gedanke(state)
+    turns_gelesen: int = len(session_turns)
+    reiz_entfernt: bool = False
+    gruppen_anzahl: int = 0
     if session_turns:
         # Der letzte User-Turn ist der aktuelle Prompt (in chat.py VOR dem
         # Graph-Invoke gespeichert). Entfernen wenn inhaltlich identisch.
@@ -1193,6 +1252,7 @@ def respond(
                 and bereinigte_turns[-1].get("rolle") == "user"
                 and user_prompt in bereinigte_turns[-1].get("inhalt", "")):
             bereinigte_turns = bereinigte_turns[:-1]
+            reiz_entfernt = True
         session_turns = bereinigte_turns
 
     if session_turns:
@@ -1203,6 +1263,7 @@ def respond(
         # Zweig `else: continue` und fiel aus dem Verlauf. Genau das ist ein
         # Eigen-Impuls, und beide Konsumenten verloren ihn.
         gruppen: list[list[Verlaufsbeitrag]] = verlauf_gruppieren(session_turns)
+        gruppen_anzahl = len(gruppen)
 
         # Verlauf als zusammenhaengenden Textblock aufbauen
         total: int = len(gruppen)
@@ -1228,6 +1289,7 @@ def respond(
         # den Auftrag, aber **nicht** den Gedanken: Der steht als Block im
         # System-Prompt. Ein [AKTUELLER PROMPT] mit Novas eigenem Text waere
         # die Behauptung, Person B habe ihn gesagt.
+        form: str = "verlauf_mit_auftrag" if eigener_gedanke else "verlauf_mit_reiz"
         if not eigener_gedanke:
             letzter_teil: str = (
                 "[AKTUELLER PROMPT]\n"
@@ -1244,12 +1306,27 @@ def respond(
             f"{letzter_teil}"
         )})
     elif eigener_gedanke:
+        form = "auftrag_ohne_verlauf"
         messages.append({
             "role": "user",
             "content": PROMPTS["responder.auftrag_ohne_reiz"] + sprachstil,
         })
     else:
+        form = "reiz_ohne_verlauf"
         messages.append({"role": "user", "content": user_prompt + sprachstil})
+
+    _record_decision(
+        state, "responder.nachricht", form,
+        {
+            "eigener_gedanke":   eigener_gedanke,
+            "turns_gelesen":     turns_gelesen,
+            "reiz_aus_verlauf":  reiz_entfernt,
+            "gruppen":           gruppen_anzahl,
+            "sprachstil":        bool(sprachstil_block),
+            "reiz_zeichen":      len(user_prompt),
+            "system_zeichen":    len(system_prompt),
+        },
+    )
 
     # Log: Inhalt direkt ausgeben, ohne JSON-Wrapping
     messages_text: str = "\n\n".join(
@@ -1300,7 +1377,16 @@ def respond(
     # Der Turn laeuft weiter: Abzubrechen hiesse, die Nutzeraeusserung zu
     # verlieren, und die ist der teurere Verlust (PFAD1-TIMEOUT-TURNVERLUST).
     # Die Stufen dahinter sehen die leere Antwort und koennen sie behandeln.
-    if not state["response"].strip():
+    antwort_leer: bool = not state["response"].strip()
+    _record_decision(
+        state, "responder.ergebnis", "leer" if antwort_leer else "antwort",
+        {
+            "ist_zeichen":     len(state["response"]),
+            "tokens":          state["token_total"],
+            "inhalt_zeichen":  len(state.get("antwort_inhalt", "")),
+        },
+    )
+    if antwort_leer:
         logger.error(
             f"Responder: LEERE Antwort trotz {state['token_total']} Token — "
             f"der Verfasser hatte {len(state.get('antwort_inhalt', ''))} Zeichen "

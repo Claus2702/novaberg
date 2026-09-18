@@ -584,6 +584,66 @@ def log_switch(
     _log_eintrag("switch", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
+def log_decision(
+    turn_id:  str,
+    node:     str,
+    quelle:   str,
+    decision: str,
+    outcome:  str,
+    inputs:   dict[str, Any],
+    scale:    dict[str, Any] | None = None,
+    span_id:      uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
+) -> None:
+    """Entscheidungs-Eintrag einer Weiche: Ausgang samt Eingangsgroessen.
+
+    **Eine Form fuer alle Knoten.** Der Eintrag ist ein `switch` mit den
+    Feldern `entscheidung`, `ausgang`, `eingang` und `massstab` — so ist die
+    Frage *„welche Knoten belegen ihre Weichen?"* eine Abfrage auf ein Feld
+    und keine Kenntnis jedes einzelnen Knotens. Die Felder folgen dem, was
+    ein Entscheidungs-Eintrag tragen muss: Name, Ergebnis, die Groessen
+    einzeln und der geltende Massstab.
+
+    Vorbedingung: `decision` hat die Form `<knoten>.<weiche>`, `outcome`
+        ist nicht leer.
+    Nachbedingung: ein `switch`-Eintrag im Puffer (oder die Warnung des
+        Puffers, wenn er nicht laeuft).
+    Fehlerfaelle: Ein Name ohne Knotenpraefix oder ein leerer Ausgang ist
+        ein Fehler des Aufrufers und wirft `ValueError` — beide stehen im
+        Code als Literal und fallen im ersten Zeugen auf.
+
+    Args:
+        turn_id: Bezug des Durchlaufs.
+        node: Knotenname wie in den uebrigen Eintraegen.
+        quelle: Graph-Rolle (`pipeline_quelle`).
+        decision: Stabiler, greppbarer Name der Weiche.
+        outcome: Der genommene Zweig.
+        inputs: Die Eingangsgroessen, einzeln.
+        scale: Schwellen oder Fassung, gegen die entschieden wurde.
+        span_id: Optionaler Span des Knotenlaufs.
+        user_id: Der Mensch des Paares.
+        character_id: Die Figur des Paares.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if "." not in decision or not decision.split(".", 1)[1]:
+        raise ValueError(
+            f"Entscheidungs-Eintrag: Name '{decision}' hat nicht die Form "
+            "<knoten>.<weiche>"
+        )
+    if not outcome:
+        raise ValueError(f"Entscheidungs-Eintrag '{decision}': leerer Ausgang")
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    inhalt: dict[str, Any] = {
+        "entscheidung": decision,
+        "ausgang":      outcome,
+        "eingang":      inputs,
+        "massstab":     scale or {},
+    }
+    _log_eintrag("switch", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
+
+
 def log_db_write(
     turn_id: str,
     node:    str,

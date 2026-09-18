@@ -31,8 +31,9 @@ from config import PROMPTS, get_node_config
 from graph.antwort_spur import antwort_setzen
 from graph.nodes.thinker_cache import ThinkerToolCache
 from graph.reiz import LEVEL_FELD, reiz_ist_eigener_gedanke, reiz_level, reiz_text
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
 from memory.lzg_knoten import anker_retrieval
+from memory.pipeline_log import log_decision
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.utils import embedding_zu_pgvector_str
 from services.model_services import ChatRequest, EmbedRequest, model_service
@@ -47,6 +48,74 @@ logger = logging.getLogger("ki_server.thinker")
 # viel, dann Schluss. Wortlaut + Limit dokumentiert in
 # tools/thinking_normalizer.py.
 NACHFASS_MAX: int = 2
+
+# Obergrenze der Reasoning-Runden je Turn.
+MAX_ITERATIONEN: int = 5
+
+# Woran der Schnell-Check prueft, ob eine Antwort Fakten traegt.
+FAKTEN_INDIKATOREN: tuple[str, ...] = (
+    "am ", "um ", "20", "19", "Uhr", "Termin", "Datum",
+    "März", "April", "Mai", "Juni", "Juli", "August",
+    "September", "Oktober", "November", "Dezember", "Januar", "Februar",
+    "morgen", "übermorgen", "nächste", "Montag", "Dienstag", "Mittwoch",
+    "Donnerstag", "Freitag", "Samstag", "Sonntag",
+    "Milliard", "Million", "Prozent", "%", "km", "kg",
+)
+
+
+def _record_decision(
+    state:    ConversationState,
+    decision: str,
+    outcome:  str,
+    inputs:   dict,
+    scale:    dict | None = None,
+) -> None:
+    """Schreibt eine Weiche des Thinkers dauerhaft ins `pipeline_log`.
+
+    **Warum es diesen Eintrag braucht.** Der Thinker schrieb seine Ausgaenge
+    bis zum 18.09.2026 nur als `node_annotations`, und die werden nirgends
+    persistiert — wie oft er ueberhaupt anlaeuft, wie oft er korrigiert und wie
+    oft er am Nachfass scheitert, war nicht erhebbar (`SYK-B-1-THINKER-WEICHE`).
+
+    Vorbedingung: `decision` beginnt mit `thinker.`.
+    Nachbedingung: ein `switch`-Eintrag mit Ausgang und Eingangsgroessen.
+    Fehlerfaelle: Ein Schreibfehler der Forensik darf den Turn nicht toeten —
+        gekapselt und als `warning` gemeldet.
+
+    Args:
+        state: Zustand des Turns (Bezug, Paar, Graph-Rolle).
+        decision: Name der Weiche, `thinker.<weiche>`.
+        outcome: Der genommene Zweig.
+        inputs: Die Groessen, auf denen entschieden wurde.
+        scale: Die geltenden Grenzen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Thinker-Protokoll: kein turn_id im State — die Weiche %s (%s) "
+            "waere keinem Turn zuzuordnen", decision, outcome,
+        )
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        log_decision(
+            turn_id      = turn_id,
+            node         = "thinker",
+            quelle       = pipeline_quelle(state),
+            decision     = decision,
+            outcome      = outcome,
+            inputs       = inputs,
+            scale        = scale,
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            "Thinker-Protokoll (%s) nicht geschrieben (%s: %s) — der Turn "
+            "laeuft weiter, die Reihe hat eine Luecke",
+            decision, type(fehler).__name__, fehler,
+        )
 
 
 # ─────────────────────────────────────────────
@@ -576,25 +645,28 @@ def think(
             "— ein weiterer Self-Trigger wird bei Doppel-Fehlschlag NICHT gesetzt"
         )
 
-    fact_indicators: list[str] = [
-        "am ", "um ", "20", "19", "Uhr", "Termin", "Datum",
-        "März", "April", "Mai", "Juni", "Juli", "August",
-        "September", "Oktober", "November", "Dezember", "Januar", "Februar",
-        "morgen", "übermorgen", "nächste", "Montag", "Dienstag", "Mittwoch",
-        "Donnerstag", "Freitag", "Samstag", "Sonntag",
-        "Milliard", "Million", "Prozent", "%", "km", "kg",
-    ]
-
-    needs_thinking: bool = any(
-        indicator in response or indicator in prompt
-        for indicator in fact_indicators
-    )
+    treffer_antwort: list[str] = [i for i in FAKTEN_INDIKATOREN if i in response]
+    treffer_reiz:    list[str] = [i for i in FAKTEN_INDIKATOREN if i in prompt]
+    needs_web:       bool      = bool(state.get("needs_web"))
+    needs_thinking:  bool      = bool(treffer_antwort or treffer_reiz)
 
      # Router hat Web-Bedarf erkannt → immer denken
-    if state.get("needs_web"):
+    if needs_web:
         needs_thinking = True
         logger.info("Thinker: Router hat needs_web=true gesetzt — Reasoning erzwungen")
 
+    _record_decision(
+        state, "thinker.schnellcheck",
+        "reasoning" if needs_thinking else "durchlauf",
+        {
+            "treffer_antwort": treffer_antwort,
+            "treffer_reiz":    treffer_reiz,
+            "needs_web":       needs_web,
+            "unsicher_retry":  ist_unsicher_retry,
+            "antwort_zeichen": len(response),
+        },
+        {"indikatoren": len(FAKTEN_INDIKATOREN)},
+    )
 
     if not needs_thinking:
         logger.info("Thinker: Keine prüfbaren Fakten erkannt — Durchlauf")
@@ -686,8 +758,9 @@ def think(
         {"role": "user", "content": reasoning_input},
     ]
 
-    max_iterations: int = 5
+    max_iterations: int = MAX_ITERATIONEN
     tool_map:       dict = {t.name: t for t in tools}
+    tool_aufrufe:   int  = 0
     node_cfg = get_node_config("thinker")
 
     # Block 3 Teil B: Normalizer einmal holen (per-Connector, siehe
@@ -696,6 +769,22 @@ def think(
     # Calls in diesem think()-Aufruf.
     normalizer = get_thinking_normalizer()
     nachfass_versuche: int = 0
+
+    def _ergebnis_belegen(ausgang: str, iteration: int, probleme: int = 0) -> None:
+        """Belegt den Ausgang der Reasoning-Schleife samt ihren Zaehlern."""
+        _record_decision(
+            state, "thinker.ergebnis", ausgang,
+            {
+                "iterationen":       iteration,
+                "tool_aufrufe":      tool_aufrufe,
+                "nachfass_versuche": nachfass_versuche,
+                "vorrecherche":      prior_hits is not None,
+                "needs_web":         needs_web,
+                "unsicher_retry":    ist_unsicher_retry,
+                "probleme":          probleme,
+            },
+            {"max_iterationen": max_iterations, "nachfass_max": NACHFASS_MAX},
+        )
 
     # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
     # think() laeuft im CharacterGraph (services/event_consumer.py ruft den
@@ -788,6 +877,7 @@ def think(
                     "[Thinker] Nachfass erschoepft im Retry — gebe beste Antwort "
                     "ohne weiteren Trigger"
                 )
+                _ergebnis_belegen("nachfass_erschoepft_im_retry", i + 1)
                 return state
 
             # Erster Durchlauf, Doppel-Fehlschlag — Original-Antwort erhalten,
@@ -815,11 +905,13 @@ def think(
                 "[Thinker] Doppel-Fehlschlag — Self-Trigger im State gesetzt "
                 "(self_trigger=True) — Auslieferung haengt am Event-Consumer"
             )
+            _ergebnis_belegen("self_trigger", i + 1)
             return state
 
         # Tool-Aufruf erkennen
         if "TOOL:" in content:
             tool_result: str = _execute_tool_call(content, tool_map, tool_cache)
+            tool_aufrufe += 1
             messages.append({"role": "user", "content": f"Tool-Ergebnis:\n{tool_result}"})
             logger.info(f"Thinker: Tool ausgeführt → {tool_result[:80]}...")
             continue
@@ -827,6 +919,7 @@ def think(
         # Ergebnis erkennen
         if "ERGEBNIS: OK" in content:
             logger.info("Thinker: Analyse abgeschlossen — Antwort ist korrekt")
+            _ergebnis_belegen("ok", i + 1)
             return state
 
         if "ERGEBNIS: KORREKTUR" in content:
@@ -842,10 +935,20 @@ def think(
                 for issue in issues:
                     logger.info(f"Thinker: Problem → {issue}")
                     state["node_annotations"].append(f"[Thinker/Issue] {issue}")
+                _ergebnis_belegen("korrektur", i + 1, len(issues))
+            else:
+                # Das Urteil lautete Korrektur, aber kein Text kam mit — die
+                # Antwort bleibt, und das ist ein eigener Ausgang, kein OK.
+                logger.warning(
+                    "Thinker: ERGEBNIS: KORREKTUR ohne korrigierte Antwort — "
+                    "Antwort bleibt unveraendert"
+                )
+                _ergebnis_belegen("korrektur_ohne_text", i + 1, len(issues))
 
             return state
 
     logger.info("Thinker: Max Iterationen erreicht — Antwort bleibt unverändert")
+    _ergebnis_belegen("max_iterationen", max_iterations)
     return state
 
 
