@@ -611,6 +611,63 @@ def carry_holders(artifact: dict, previous: dict | None) -> dict:
     return artifact
 
 
+# Scheibe 12 D, nachgezogen am 18.09.2026: relative Zeitangaben ueberleben den
+# Tag, an dem sie galten. `[gelesen und gezaehlt 17.09.2026]` 17 von 29
+# Zeitwerten akuter Objekte waren relativ ("morgen um 10"); die Fortschreibung
+# behaelt sie woertlich, die Lage verfaellt erst nach 4 Stunden. Wer den Wert
+# nach Mitternacht aufloest, landet einen Tag zu spaet.
+RESOLVED_SUFFIX: str = " (aufgeloest)"
+_RELATIVE_TIME: re.Pattern = re.compile(
+    r"\b(heute|morgen|uebermorgen|übermorgen|gestern|montag|dienstag|mittwoch|donnerstag|"
+    r"freitag|samstag|sonntag|naechste[nrms]?|nächste[nrms]?|kommende[nrms]?|wochenende|in \d+ tag)",
+    re.IGNORECASE,
+)
+
+
+def carry_resolved_dates(artifact: dict, previous: dict | None) -> dict:
+    """Haelt fuer jede relative Zeitangabe fest, auf welchen Tag sie zeigte, als sie fiel.
+
+    Vorbedingung: `artifact` validiert; `previous` ein Artefakt oder None.
+    Nachbedingung: Jede gedeckte Eigenschaft eines akuten Objekts, deren
+        Schluessel nach Zeit klingt und deren Wert relativ ist (*morgen*,
+        *Samstag*, *naechste Woche*), hat eine Schwester `<Schluessel>
+        (aufgeloest)` mit dem Datum als `TT.MM.JJJJ`. **Der Wortlaut bleibt**
+        — der Wert in `gedeckt` ist die Angabe selbst (Festlegung, Scheibe 11).
+        War derselbe Wert schon in der vorigen Blase aufgeloest, wird die
+        damalige Aufloesung uebernommen und nicht neu gerechnet: Sie gilt dem
+        Tag, an dem der Satz fiel. Ein neuer oder geaenderter Wert wird jetzt
+        aufgeloest.
+    Fehlerfaelle: Ein Wert, den der Zeitparser nicht aufloest, bleibt ohne
+        Schwester — geraten wird nichts.
+    """
+    from agents.object_nearness import _TIME_KEYS
+    from memory.sachlage_properties import text_key
+    from utils.zeitparser import zeit_parsen_vektor
+
+    vorige: dict[str, dict] = {
+        text_key(o.get("name", "")): dict(o.get("gedeckt") or {})
+        for o in (previous or {}).get("objekte") or [] if isinstance(o, dict)
+    }
+    for objekt in artifact.get("objekte") or []:
+        if not isinstance(objekt, dict) or objekt.get("akut") is not True:
+            continue
+        gedeckt: dict = objekt.get("gedeckt") if isinstance(objekt.get("gedeckt"), dict) else {}
+        vorher: dict = vorige.get(text_key(objekt.get("name", "")), {})
+        for schluessel, wert in list(gedeckt.items()):
+            if str(schluessel).endswith(RESOLVED_SUFFIX):
+                continue
+            if not any(w in str(schluessel).casefold() for w in _TIME_KEYS) or not _RELATIVE_TIME.search(str(wert)):
+                continue
+            schwester: str = f"{schluessel}{RESOLVED_SUFFIX}"
+            if text_key(vorher.get(schluessel, "")) == text_key(wert) and vorher.get(schwester):
+                gedeckt[schwester] = vorher[schwester]
+                continue
+            vektor = zeit_parsen_vektor(str(wert))
+            if vektor.datum is not None and vektor.tag_erkannt:
+                gedeckt[schwester] = vektor.datum.strftime("%d.%m.%Y")
+    return artifact
+
+
 def _normalize_speakers(objekt: dict) -> dict[str, str]:
     """Scheibe 9: die Sprecher der gedeckten Eigenschaften, gegen den Kanon gehalten.
 
@@ -837,6 +894,7 @@ def _derive(
     artefakt = carry_holders(artefakt, vorige)
     artefakt = carry_criticality(artefakt, vorige)
     artefakt = carry_speakers(artefakt, vorige)
+    artefakt = carry_resolved_dates(artefakt, vorige)
     # Scheibe 7: Behauptet der Nutzer ueber die akute Sache etwas, das die
     # Welt nicht hergibt? Ein eigener Call, nur bei akutem Objekt — die Lage
     # sagt dass und warum, die Form bleibt Sache von Haltung und Vehikel.

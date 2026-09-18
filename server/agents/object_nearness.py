@@ -382,9 +382,18 @@ def consent_fields(objekt_bezug: list[dict]) -> tuple[str, str]:
     objekt = objekt_bezug[0]
     ziel: str = str(objekt.get("name") or "").strip()
     gedeckt = objekt.get("gedeckt") if isinstance(objekt.get("gedeckt"), dict) else {}
-    teile: list[str] = [
-        str(wert).strip() for schluessel, wert in gedeckt.items()
+    zeitwerte: dict[str, str] = {
+        str(schluessel): str(wert).strip() for schluessel, wert in gedeckt.items()
         if any(w in str(schluessel).casefold() for w in _TIME_KEYS) and str(wert).strip()
+    }
+    # Eine relative Angabe, zu der die Lage das Datum festgehalten hat, wird
+    # durch dieses ersetzt (Scheibe 12 D, 18.09.2026): "morgen" gilt dem Tag,
+    # an dem es gesagt wurde, nicht dem, an dem jemand zustimmt.
+    aufgeloest: dict[str, str] = {
+        k[: -len(" (aufgeloest)")]: v for k, v in zeitwerte.items() if k.endswith(" (aufgeloest)")
+    }
+    teile: list[str] = [
+        aufgeloest.get(k, v) for k, v in zeitwerte.items() if not k.endswith(" (aufgeloest)")
     ]
 
     # ── Ausgabe-Verifikation ────────────────────
