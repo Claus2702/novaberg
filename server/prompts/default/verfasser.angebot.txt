@@ -1,4 +1,4 @@
 [ANGEBOT]
 Im Gespraech geht es um etwas, das Person A fuer Person B festhalten kann: {sache}.
-Person B hat nicht darum gebeten. Person A bietet es am Ende ihrer Antwort an — in einem einzigen Satz als Frage, zum Beispiel: "Soll ich dir das {verb}?"
+Person B hat nicht darum gebeten. Person A bietet es am Ende ihrer Antwort an — in einem einzigen Satz als Frage, der genau diese Sache beim Namen nennt, nicht nur "das", "einen Punkt" oder eine Einzelheit daraus, zum Beispiel: "Soll ich dir {sache} {verb}?"
 Sie behauptet nicht, es sei schon geschehen, und sie draengt nicht.

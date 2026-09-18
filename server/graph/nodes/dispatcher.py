@@ -46,7 +46,16 @@ from memory.repositories.verbindung_repository import VerbindungRepository
 from memory.sachlage_properties import record_declined
 from memory.session import session_summarize_if_needed, session_turn_mark_action, session_turn_store
 from plugins import get_registry
-from utils.offers import Offer, find_offers, is_bare_refusal, offer_clear, offer_load, offer_store
+from utils.offers import (
+    Offer,
+    OfferBinding,
+    find_offers,
+    is_bare_refusal,
+    offer_binding,
+    offer_clear,
+    offer_load,
+    offer_store,
+)
 
 logger = logging.getLogger("ki_server.dispatcher")
 
@@ -942,33 +951,29 @@ def _angebot_merken(state: ConversationState, user_id: str, character_id: str) -
         offer_clear(cfg_redis_client, user_id, character_id, "Antwort ohne Angebot")
         return
 
-    sachlage = state.get("sachlage") if isinstance(state.get("sachlage"), dict) else {}
-    akute: list[dict] = [
-        o for o in (sachlage.get("objekte") or [])
-        if isinstance(o, dict) and o.get("akut") is True
-    ]
-    namen: tuple[str, ...] = tuple(str(o.get("name") or "").strip() for o in akute if o.get("name"))
-    sachen: tuple[dict, ...] = tuple(
-        {"name": str(o.get("name") or "").strip(), "klasse": o.get("klasse"),
-         "gedeckt": dict(o.get("gedeckt") or {})}
-        for o in akute if o.get("name")
+    # Scheibe 12 E2: Das Angebot gilt der Sache, die angeboten wurde — nicht
+    # allen akuten Objekten des Turns.
+    bindung: OfferBinding = offer_binding(
+        state.get("sachlage"), state.get("objekt_urteil"), state.get("angebot_kandidat"),
     )
-    urteil = state.get("objekt_urteil") if isinstance(state.get("objekt_urteil"), dict) else {}
-    dienste: set[str] = set()
-    for eintrag in urteil.get("objekte") or []:
-        if isinstance(eintrag, dict) and str(eintrag.get("name") or "") in namen:
-            dienste.update(str(d) for d in (eintrag.get("empfaenger") or []))
+    if bindung.reason == "mehrdeutig":
+        logger.warning(
+            "Dispatcher: Angebot ohne eindeutige Sache — offen ohne Gegenstand, "
+            "ein 'Gerne' wird nicht von selbst zum Auftrag: %r", saetze[0],
+        )
+    else:
+        logger.info(f"Dispatcher: Angebot gilt {list(bindung.objects)} ({bindung.reason})")
 
     # ── Ausgabe ─────────────────────────────────
     offer_store(
         cfg_redis_client, user_id, character_id,
         Offer(
             sentence = saetze[0],
-            objects  = namen,
-            services = tuple(sorted(dienste)),
+            objects  = bindung.objects,
+            services = bindung.services,
             turn_id  = state.get("turn_id", ""),
             time     = time.time(),
-            details  = sachen,
+            details  = bindung.details,
         ),
         ANGEBOT_VERFALL_SEKUNDEN,
     )

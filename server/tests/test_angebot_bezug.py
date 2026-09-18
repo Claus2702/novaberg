@@ -31,6 +31,7 @@ from utils.offers import (
     Offer,
     find_offers,
     is_bare_consent,
+    offer_binding,
     offer_clear,
     offer_key,
     offer_load,
@@ -162,6 +163,54 @@ class OffenerPunktTest(unittest.TestCase):
         self.assertNotIn("Zustimmung", build_situation_block(lage, {}, offer=None))
         self.assertTrue(offer_matches(ohne_gegenstand, ["Irgendwas"]))
         self.assertTrue(offer_matches(ohne_gegenstand, []))
+
+
+class BindungTest(unittest.TestCase):
+    """Das Angebot gilt der angebotenen Sache, nicht allen akuten (18.09.2026).
+
+    Anlass `[gemessen 18.09.2026, zweite Kontrolle]`: 2 von 4 echten Angeboten
+    galten einer Nebensache, abgelegt wurden sie mit allen akuten Objekten.
+    """
+
+    LAGE = {"objekte": [
+        {"name": "Zahnarzttermin", "klasse": "vorgang", "akut": True, "gedeckt": {"Tag": "Donnerstag"}},
+        {"name": "Einkaufsliste", "klasse": "sache", "akut": True, "gedeckt": {}},
+        {"name": "Gravitation", "klasse": "thema", "akut": True, "gedeckt": {}},
+    ]}
+    URTEIL = {"ergebnis": "gerechnet", "objekte": [
+        {"name": "Zahnarzttermin", "empfaenger": ["timeline"]},
+        {"name": "Einkaufsliste", "empfaenger": ["notizen"]},
+        {"name": "Gravitation", "empfaenger": ["wissen"]},
+    ]}
+
+    def test_die_angebotene_sache_allein_auch_wenn_sie_nicht_die_erste_ist(self) -> None:
+        b = offer_binding(self.LAGE, self.URTEIL, {"name": "Einkaufsliste", "dienst": "notizen"})
+        self.assertEqual((b.objects, b.services, b.reason), (("Einkaufsliste",), ("notizen",), "angeboten"))
+        self.assertEqual([d["name"] for d in b.details], ["Einkaufsliste"])
+
+    def test_von_sich_aus_und_eindeutig_die_einzige_sache_am_zettel(self) -> None:
+        lage = {"objekte": [o for o in self.LAGE["objekte"] if o["name"] != "Einkaufsliste"]}
+        b = offer_binding(lage, self.URTEIL, {})
+        self.assertEqual((b.objects, b.services, b.reason), (("Zahnarzttermin",), ("timeline",), "einzige_sache"))
+
+    def test_zwei_dienste_in_der_reihenfolge_des_urteils(self) -> None:
+        urteil = {"ergebnis": "gerechnet", "objekte": [{"name": "Zahnarzttermin", "empfaenger": ["timeline", "notizen"]}]}
+        lage = {"objekte": [self.LAGE["objekte"][0]]}
+        self.assertEqual(offer_binding(lage, urteil, {}).services, ("timeline", "notizen"))
+
+    def test_von_sich_aus_und_mehrdeutig_ohne_gegenstand(self) -> None:
+        b = offer_binding(self.LAGE, self.URTEIL, None)
+        self.assertEqual((b.objects, b.services, b.details, b.reason), ((), (), (), "mehrdeutig"))
+
+    def test_der_dispatcher_bindet_an_den_kandidaten_des_verfassers(self) -> None:
+        speicher = FakeRedis()
+        state = {"response": "Klingt gut. Soll ich dir die Einkaufsliste notieren?", "sachlage": self.LAGE,
+                 "objekt_urteil": self.URTEIL, "turn_id": "t1",
+                 "angebot_kandidat": {"name": "Einkaufsliste", "dienst": "notizen"}}
+        with patch.object(dispatcher, "cfg_redis_client", speicher):
+            dispatcher._angebot_merken(state, "meister", "nova")
+        angebot = offer_load(speicher, "meister", "nova")
+        self.assertEqual((angebot.objects, angebot.services), (("Einkaufsliste",), ("notizen",)))
 
 
 class VerdrahtungImDispatcherTest(unittest.TestCase):

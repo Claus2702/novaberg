@@ -243,6 +243,10 @@ class ConversationState(TypedDict):
     # weitergezogen ist (E1c, gemessen 17.09.2026).
     angebot_bezug: list
     angebot_satz: str
+    # Scheibe 12 E2 — die Sache, die der Verfasser in diesem Turn anbieten
+    # liess ({"name", "dienst"}), sonst leer. Der Dispatcher bindet das
+    # erkannte Angebot daran und nicht an alle akuten Objekte.
+    angebot_kandidat: dict
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele: list[

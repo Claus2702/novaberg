@@ -403,3 +403,68 @@ def offer_candidate(
             if dienst in _OFFER_VERBS:
                 return OfferCandidate(name, dienst, _OFFER_VERBS[dienst], "anbieten")
     return OfferCandidate("", "", "", "keine_sache_am_zettel")
+
+
+@dataclass(frozen=True)
+class OfferBinding:
+    """Woran ein erkanntes Angebot gebunden wird — und warum.
+
+    Attributes:
+        objects: Die Namen der angebotenen Sachen; leer, wenn keine eindeutig ist.
+        services: Die schreibenden Dienste dieser Sachen.
+        details: Dieselben Sachen mit `name`, `klasse` und `gedeckt`.
+        reason: `angeboten` (der Verfasser bot genau diese Sache an),
+            `einzige_sache` (Nova bot von sich aus an, und nur eine akute Sache
+            steht am Zettel eines schreibenden Dienstes) oder `mehrdeutig`.
+    """
+
+    objects: tuple[str, ...]
+    services: tuple[str, ...]
+    details: tuple[dict, ...]
+    reason: str
+
+
+def offer_binding(sachlage: object, verdict: object, offered: object) -> OfferBinding:
+    """Bindet ein Angebot in Novas Antwort an die Sache, der es gilt.
+
+    Vorbedingung: keine.
+    Nachbedingung: Hat der Verfasser in diesem Turn eine Sache angeboten
+        (`offered` = {"name", "dienst"}), gilt das Angebot genau ihr. Sonst
+        gilt es der einzigen akuten Sache am Zettel eines schreibenden
+        Dienstes. **Gibt es keine oder mehrere, traegt es keinen Gegenstand**
+        — ein "Gerne" wird dann nicht von selbst zum Auftrag.
+        `[gemessen 18.09.2026, zweite Kontrolle]` 2 von 4 echten Angeboten
+        galten einer Nebensache, abgelegt wurden sie mit **allen** akuten
+        Objekten; der Router nahm deren ersten Dienst.
+    Fehlerfaelle: keine; unlesbare Eingaben zaehlen als leer.
+    """
+    objekte: list[dict] = [
+        o for o in ((sachlage or {}).get("objekte") or [] if isinstance(sachlage, dict) else [])
+        if isinstance(o, dict) and o.get("akut") is True and str(o.get("name") or "").strip()
+    ]
+    empfaenger: dict[str, list[str]] = {
+        str(o.get("name") or ""):
+            [str(d) for d in (o.get("empfaenger") or []) if str(d) in _OFFER_VERBS]
+        for o in ((verdict or {}).get("objekte") or [] if isinstance(verdict, dict) else [])
+        if isinstance(o, dict)
+    }
+    name: str = str(offered.get("name") or "").strip() if isinstance(offered, dict) else ""
+    if name:
+        dienste: list[str] = [str(offered.get("dienst") or "")]
+        gewaehlt: list[dict] = [o for o in objekte if str(o.get("name")).strip() == name]
+        grund: str = "angeboten"
+    else:
+        gewaehlt = [o for o in objekte if empfaenger.get(str(o.get("name")).strip())]
+        if len(gewaehlt) != 1:
+            return OfferBinding((), (), (), "mehrdeutig")
+        dienste = empfaenger[str(gewaehlt[0].get("name")).strip()]
+        grund = "einzige_sache"
+    details: tuple[dict, ...] = tuple(
+        {"name": str(o.get("name")).strip(), "klasse": o.get("klasse"),
+         "gedeckt": dict(o.get("gedeckt") or {})}
+        for o in gewaehlt
+    )
+    namen: tuple[str, ...] = (name,) if name else tuple(d["name"] for d in details)
+    # Reihenfolge des Urteils, nicht alphabetisch: Der Router stellt dem
+    # ersten Dienst zu, und das Urteil nennt den naechsten zuerst.
+    return OfferBinding(namen, tuple(dict.fromkeys(dienste)), details, grund)

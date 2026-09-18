@@ -109,6 +109,19 @@ class WeicheTest(unittest.TestCase):
         block, eintraege = self._block({"pflicht": 1.0}, zug=0.999)
         self.assertEqual(eintraege[0]["outcome"], "angeboten")
 
+    def test_die_angebotene_sache_steht_fuer_den_dispatcher_im_zustand(self) -> None:
+        for pflicht, erwartet in ((1.0, {"name": "Abholung der Schwester", "dienst": "timeline"}), (0.1, {})):
+            with self.subTest(pflicht=pflicht):
+                state = {"user_id": "pruefer", "character_id": "nova", "turn_id": "t1",
+                         "objekt_urteil": URTEIL, "agent_results": [], "management_action": "",
+                         "angebot_kandidat": {"name": "alt", "dienst": "notizen"}}
+                with patch.object(verfasser, "nutzer_gewichtung_rad_laden", return_value=({"pflicht": pflicht}, "x")), \
+                     patch.object(verfasser, "declined_objects", return_value=set()), \
+                     patch.object(verfasser, "log_decision", lambda **kw: None), \
+                     patch.object(verfasser.random, "random", return_value=0.0):
+                    verfasser._offer_block(state, SACHLAGE)
+                self.assertEqual(state["angebot_kandidat"], erwartet)
+
     def test_eine_abgelehnte_sache_wird_nicht_wieder_angeboten(self) -> None:
         block, eintraege = self._block({"pflicht": 1.0}, {"Abholung der Schwester"})
         self.assertEqual(block, "")
@@ -149,6 +162,7 @@ class KreisTest(unittest.TestCase):
                 block = PROMPTS["verfasser.angebot"].format(sache="X", verb=verb)
                 beispiel = block.split('zum Beispiel: "', 1)[1].split('"', 1)[0]
                 self.assertEqual(find_offers(beispiel), [beispiel])
+                self.assertIn("X", beispiel)   # das Beispiel nennt die Sache selbst
 
 
 if __name__ == "__main__":

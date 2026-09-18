@@ -370,14 +370,14 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
     Vorbedingung: keine; ohne Paar, Naehe oder Rad bleibt der Block leer.
     Nachbedingung: Der Block steht genau dann, wenn eine Sache am Zettel von
         Timeline oder Notizen steht, in diesem Turn kein Dienst lief und kein
-        Auftrag laeuft, Novas Pflichtbewusstsein zum Menschen
-        nicht unter dem Boden liegt, die Sache nicht abgelehnt ist (E3) und der Zug
-        dieses Turns unter der Wahrscheinlichkeit aus `_offer_probability`
-        bleibt (Entscheidung 18.09.2026). **Jeder Ausgang steht als
+        Auftrag laeuft, Novas Pflichtbewusstsein zum Menschen nicht unter dem
+        Boden liegt, die Sache nicht abgelehnt ist (E3) und der Zug dieses
+        Turns unter der Wahrscheinlichkeit aus `_offer_probability` bleibt
+        (Entscheidung 18.09.2026). Steht er, traegt `state["angebot_kandidat"]`
+        die angebotene Sache, sonst ist es leer. **Jeder Ausgang steht als
         `verfasser.angebot` im Pipeline-Log**, mit Wahrscheinlichkeit und Zug,
-        auch "unter Boden" und "nicht gezogen" — sonst
-        waere ein Nova, die nie anbietet, von einer, die nie gefragt wurde,
-        nicht zu unterscheiden.
+        auch "unter Boden" und "nicht gezogen" — sonst waere ein Nova, die nie
+        anbietet, von einer, die nie gefragt wurde, nicht zu unterscheiden.
     Fehlerfaelle: keine Ausnahme; ein nicht lesbares Rad heisst kein Angebot
         (laut), die vorsichtige Seite.
     """
@@ -390,6 +390,7 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
     eingang: dict = {"sache": kandidat.name, "dienst": kandidat.service}
     ausgang: str = kandidat.reason
     block: str = ""
+    state["angebot_kandidat"] = {}
     if ausgang == "anbieten":
         rad, herkunft = nutzer_gewichtung_rad_laden(POSTGRES_URL, user_id)
         pflicht = (rad or {}).get("pflicht")
@@ -410,6 +411,7 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
             else:
                 block = PROMPTS["verfasser.angebot"].format(sache=kandidat.name, verb=kandidat.verb)
                 ausgang = "angeboten"
+                state["angebot_kandidat"] = {"name": kandidat.name, "dienst": kandidat.service}
                 logger.info(f"Verfasser: Angebot — {kandidat.name} ({kandidat.service}), "
                             f"Pflicht {pflicht:.3f}, Wahrscheinlichkeit {chance:.2f}")
     log_decision(
