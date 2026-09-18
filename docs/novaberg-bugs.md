@@ -117,7 +117,9 @@ Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdi
 
 ### `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION` — die Schreibung schlug fehl, der Status sagt `abgeschlossen`
 
-**Zustand:** offen — gegen den Code nachgesehen am 16.09.2026.
+**Zustand:** **im Code behoben am 18.09.2026** — `agents/write_outcome.py::verified_outcome`, an allen 18 verifizierenden Rückgaben von Timeline, Notizen, Direktiven und Charakter-Identität; ein Strukturzeuge zählt sie am Syntaxbaum, ein Durchlauf des Timeline-Anlegens mit gescheiterter Verifikation meldet `fehler`. Die fünf Dokumente mit der widerlegten Aussage über `CrudErgebnis` sind berichtigt. **Offen bis zum Archiv:** der Betriebslauf, in dem eine echte Schreibung scheitert und die Antwort sie nicht bestätigt. **Und ein Fall, den der Umbau nicht erklärt:** Am 17.09.2026 meldete die Timeline bei leerem Ziel `abgeschlossen` ohne Zeile — der Anlegepfad gibt bei leerem Titel aber `fehler` zurück; der Ausgang kam also von woanders (Suche?). Nicht untersucht.
+
+~~**Zustand:** offen — gegen den Code nachgesehen am 16.09.2026.~~
 
 **Symptom.** `agents/timeline/crud.py` rechnet `_verifizieren_termin`, legt das Ergebnis in `schritte` und ins INFO-Log — und setzt den Status unbedingt auf `"abgeschlossen"` (`:147` → `:160`). Dasselbe Muster in `notizen/crud.py:197`, `direktiven/crud.py:261`, `charakter_identitaet/crud.py:259`. `[gemessen 15.09.2026, zweite Kontrolle]` **20 von 22** schreibenden Stellen der Empfangsdienste melden so. Die Konvention verlangt seit langem das Gegenteil (`novaberg-convention-nmcp.md` §6.6/§6.7).
 

@@ -178,7 +178,7 @@ Nach jedem Write liest die CRUD-Funktion den DB-Zustand und vergleicht mit dem e
 - Nach update: Text wirklich geaendert? Neuer Wert == erwarteter Wert?
 - Nach reactivate: Eintrag wieder `aktiv=TRUE`?
 
-Bei Fehler: `CrudErgebnis.erfolg` wird auf `False` korrigiert. Der Bestaetigungs-Node bekommt den echten Zustand statt eine Halluzination. Die Datenstruktur `CrudErgebnis` (aus `agents/crud_validation.py`) erfasst Vorher/Nachher-Snapshot und Verifikationsstatus.
+~~Bei Fehler: `CrudErgebnis.erfolg` wird auf `False` korrigiert.~~ → **widerlegt am 16.09.2026, behoben am 18.09.2026:** `CrudErgebnis` hatte keinen einzigen Importeur, und der Dienst meldete trotz gescheiterter Verifikation `abgeschlossen` (`DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION`). Seither laeuft jede verifizierende Rueckgabe durch `agents/write_outcome.py::verified_outcome`: nicht bestaetigt heisst Status `fehler` mit Begruendung und ohne Zusage. Die Datenstruktur `CrudErgebnis` (aus `agents/crud_validation.py`) erfasst Vorher/Nachher-Snapshot und Verifikationsstatus.
 
 ---
 

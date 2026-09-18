@@ -245,7 +245,7 @@ Seit Chat 42 (Epic 14) gelten gehaertete Transaktionen fuer den TimelineAgent.
 
 ### 7.4 Verifikation nach Write
 
-Nach jedem Write ein DB-Read. Ergebnis gegen Erwartung pruefen. Bei Fehler: `CrudErgebnis.erfolg` wird auf `False` korrigiert. Rueckfrage nur bei niedriger Konfidenz oder Konflikt.
+Nach jedem Write ein DB-Read. Ergebnis gegen Erwartung pruefen. ~~Bei Fehler: `CrudErgebnis.erfolg` wird auf `False` korrigiert.~~ → **widerlegt am 16.09.2026, behoben am 18.09.2026:** `CrudErgebnis` hatte keinen einzigen Importeur, und der Dienst meldete trotz gescheiterter Verifikation `abgeschlossen` (`DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION`). Seither laeuft jede verifizierende Rueckgabe durch `agents/write_outcome.py::verified_outcome`: nicht bestaetigt heisst Status `fehler` mit Begruendung und ohne Zusage. Rueckfrage nur bei niedriger Konfidenz oder Konflikt.
 
 ---
 

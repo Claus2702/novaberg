@@ -122,7 +122,7 @@ Liest den DB-Zustand und vergleicht mit dem erwarteten Ergebnis:
 - Nach create: Neuer Eintrag existiert mit erwarteten Feldern?
 - Nach reactivate: Eintrag wieder `aktiv=TRUE`?
 
-Bei Fehler: `CrudErgebnis.erfolg` wird auf `False` korrigiert. Der Bestaetigungs-Node bekommt den echten Zustand statt eine Halluzination.
+~~Bei Fehler: `CrudErgebnis.erfolg` wird auf `False` korrigiert.~~ → **widerlegt am 16.09.2026, behoben am 18.09.2026:** `CrudErgebnis` hatte keinen einzigen Importeur, und der Dienst meldete trotz gescheiterter Verifikation `abgeschlossen` (`DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION`). Seither laeuft jede verifizierende Rueckgabe durch `agents/write_outcome.py::verified_outcome`: nicht bestaetigt heisst Status `fehler` mit Begruendung und ohne Zusage.
 
 ---
 
