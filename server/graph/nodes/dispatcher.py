@@ -44,7 +44,7 @@ from memory import usage_reinforcement
 from memory.pipeline_log import log_berechnung, log_db_write, log_fehler, log_turn_roh
 from memory.repositories.verbindung_repository import VerbindungRepository
 from memory.sachlage_properties import record_declined
-from memory.session import session_summarize_if_needed, session_turn_store
+from memory.session import session_summarize_if_needed, session_turn_mark_action, session_turn_store
 from plugins import get_registry
 from utils.offers import Offer, find_offers, is_bare_refusal, offer_clear, offer_load, offer_store
 
@@ -259,6 +259,42 @@ def _persist_vorturn(state: ConversationState) -> None:
         "Dispatcher: Vorturn abgelegt (%s, %d Zeichen, Modus '%s')",
         key, len(nutzlast["antwort"]), nutzlast["modus"],
     )
+
+
+def _ausgang_vermerken(state: ConversationState) -> None:
+    """Vermerkt am Turn des Menschen, ob ein Dienst seinen Auftrag umgesetzt hat.
+
+    Scheibe 12 A, Punkt 2 (entschieden am 16.09.2026): Der Ausgang steht am
+    Turn, damit Verlauf und Verdichtung ihn tragen. `session_turn_mark_action`
+    schreibt die beiden Flags, `format_session_turns_numbered` rendert daraus
+    `[ERLEDIGT]` / `[FEHLGESCHLAGEN]` — **der Aufrufer fehlte seit dem
+    23.04.2026**. Ohne ihn ist die Wiederholung einer echten Schreibung im
+    naechsten Turn nicht als solche erkennbar (Fundliste 15.09.2026).
+
+    Vorbedingung: keine.
+    Nachbedingung: Lief in diesem Turn ein Dienst mit `abgeschlossen`, traegt
+        der letzte Turn des Menschen `erledigt` und `erfolgreich`; lief einer
+        mit `fehler` und keiner mit `abgeschlossen`, `erledigt` ohne
+        `erfolgreich`. Rueckfrage, Ablehnung oder kein Dienst: kein Vermerk —
+        dann wurde nichts versucht, das man als erledigt lesen koennte.
+    Fehlerfaelle: keine Ausnahme nach aussen; ein Speicherfehler steht im Log.
+    """
+    user_id: str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    stati: list[str] = [
+        str(getattr(r, "status", None) or (r.get("status") if isinstance(r, dict) else ""))
+        for r in state.get("agent_results") or []
+    ]
+    if not user_id or not character_id or not ({"abgeschlossen", "fehler"} & set(stati)):
+        return
+    erfolgreich: bool = "abgeschlossen" in stati
+    try:
+        session_turn_mark_action(cfg_redis_client, user_id, character_id,
+                                 erledigt=True, erfolgreich=erfolgreich)
+    except redis.RedisError as fehler:
+        logger.error(f"Dispatcher: Ausgang nicht am Turn vermerkt ({fehler})")
+        return
+    logger.info(f"Dispatcher: Ausgang am Turn vermerkt — {'ERLEDIGT' if erfolgreich else 'FEHLGESCHLAGEN'} {stati}")
 
 
 def _session_turn_schreiben(state: ConversationState) -> None:
@@ -723,6 +759,7 @@ def dispatch(
         # Verstaerkung** — sie setzt voraus, dass Nova etwas hergenommen hat,
         # und ohne Writes ist das nicht feststellbar.
         _session_turn_schreiben(state)
+        _ausgang_vermerken(state)
         _turn_roh_schreiben(state)
         return state
 
@@ -833,6 +870,7 @@ def dispatch(
 
     # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
     _session_turn_schreiben(state)
+    _ausgang_vermerken(state)
     _turn_roh_schreiben(state)
 
     # ── Verstärkung der hergenommenen Erinnerungen (§7.1a) ──
