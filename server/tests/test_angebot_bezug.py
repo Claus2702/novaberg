@@ -231,6 +231,27 @@ class RiegelImEmpfangTest(unittest.TestCase):
         self.assertEqual(ergebnis["management_action"], "agent")
         self.assertEqual(ergebnis["management_target"], "timeline")
 
+    def test_zustimmung_auf_offenes_angebot_wird_zugestellt_auch_wenn_das_modell_schweigt(self) -> None:
+        """ROUTE-MISS1 fuer den Zustimmungsfall: 4 von 6 kamen im Betrieb durch."""
+        angebot = Offer(sentence="Soll ich dir den Termin eintragen?", objects=("Zahnarzttermin",),
+                        services=("timeline",), turn_id="t1", time=1.0)
+        stumm = {**self.ANTWORT, "management_action": "", "management_target": ""}
+        alt, self.ANTWORT = self.ANTWORT, stumm
+        try:
+            ergebnis = self._route("Gerne", angebot)
+        finally:
+            self.ANTWORT = alt
+        self.assertEqual((ergebnis["management_action"], ergebnis["management_target"]), ("agent", "timeline"))
+
+    def test_ohne_angebot_stellt_die_weiche_nichts_zu(self) -> None:
+        stumm = {**self.ANTWORT, "management_action": "", "management_target": ""}
+        alt, self.ANTWORT = self.ANTWORT, stumm
+        try:
+            ergebnis = self._route("Gerne", None)
+        finally:
+            self.ANTWORT = alt
+        self.assertEqual(ergebnis["management_action"], "")
+
     def test_ein_eigener_auftrag_geht_auch_ohne_angebot_durch(self) -> None:
         ergebnis = self._route("Trag mir den Zahnarzt am Donnerstag um 15 Uhr ein.", None)
         self.assertEqual(ergebnis["management_action"], "agent")

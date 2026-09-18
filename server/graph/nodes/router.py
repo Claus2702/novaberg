@@ -380,6 +380,25 @@ def route(
         state["management_target"]     = ""
         state["management_target_typ"] = "titel"
 
+    # Weiche (Scheibe 12 E1, das Gegenstueck zum Riegel oben): Eine blanke
+    # Zustimmung auf ein offenes Angebot IST der Auftrag — Entscheidung des
+    # Eigentuemers vom 14.09.2026. Ob das Modell sie erkennt, hing am Prompt:
+    # `[gemessen 17./18.09.2026, Betrieb]` 4 von 6 Zustimmungen mit offenem
+    # Angebot kamen durch (`ROUTE-MISS1`). Was feststeht, wird gesetzt: der
+    # Dienst des Angebots. Nur wenn das Modell NICHTS zugestellt hat — eine
+    # eigene Entscheidung des Modells fuer einen Dienst bleibt stehen.
+    zugestellt_durch_angebot: bool = False
+    if (not state["management_action"] and angebot_offen and is_bare_consent(reiz)
+            and angebot is not None and angebot.services):
+        state["management_action"]     = "agent"
+        state["management_target"]     = angebot.services[0]
+        state["management_target_typ"] = "titel"
+        zugestellt_durch_angebot = True
+        logger.info(
+            f"Router: Zustimmung auf das offene Angebot — zugestellt an '{angebot.services[0]}' "
+            f"(das Modell hatte nicht zugestellt)"
+        )
+
     # Guard: Management-Intent ueberschreibt Low-Momentum
     if state["management_action"] and state["momentum"] == "low":
         state["momentum"] = "mid"
@@ -390,6 +409,7 @@ def route(
         f"{state['management_action']}/{state['management_target']}" if state["management_action"] else "keine",
         {"vom_modell": vom_modell, "angebot_offen": angebot_offen,
          "blanke_zustimmung": is_bare_consent(reiz), "riegel_gegriffen": riegel,
+         "zugestellt_durch_angebot": zugestellt_durch_angebot,
          "momentum": state["momentum"]},
         {"regel": "zustimmung_nur_bei_offenem_angebot"},
     )
