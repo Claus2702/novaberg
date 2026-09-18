@@ -838,3 +838,29 @@ def correction_order(claims: list[StorageClaim] | tuple[StorageClaim, ...]) -> s
         "von dem, was daraus geworden ist. Aendere sonst nichts.",
     ]
     return "\n".join(lines)
+
+
+# Scheibe 12 A, Punkt 1 (entschieden am 16.09.2026): Uebersteht eine
+# Speicherbehauptung beide Korrekturrunden, wird sie nicht entfernt, sondern
+# ein Korrektursatz angehaengt — gerechnet, nicht erbeten. Der Wortlaut folgt
+# dem Vorschlag des Eigentuemers (*"Korrektur: Agent hat keinen Eintrag
+# erstellt" oder aehnlich*): sachlich, ohne Entschuldigung, und er nennt, was
+# stimmt — gespeichert ist nichts.
+CORRECTION_NOTE: str = "(Korrektur: Dafuer wurde kein Eintrag angelegt — gespeichert ist davon nichts.)"
+
+
+def append_correction(response: str) -> str:
+    """Haengt den Korrektursatz an eine Antwort, die eine Speicherbehauptung behielt.
+
+    Vorbedingung: `response` ist die Antwort nach der letzten Korrekturrunde.
+    Nachbedingung: die Antwort mit dem Korrektursatz am Ende, durch eine
+        Leerzeile getrennt — **genau einmal**: Steht er schon da, bleibt die
+        Antwort unveraendert. Der behauptende Satz bleibt stehen; entfernt
+        wird nichts, denn ohne Bestandsabgleich ist er nicht als falsch belegt.
+    """
+    if not isinstance(response, str):
+        logger.error("Korrektursatz: Antwort ist %s statt str — unveraendert", type(response).__name__)
+        return response
+    if CORRECTION_NOTE in response:
+        return response
+    return f"{response.rstrip()}\n\n{CORRECTION_NOTE}"

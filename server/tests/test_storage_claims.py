@@ -418,6 +418,27 @@ class WiringInTribunalTest(unittest.TestCase):
             self._evaluate("Morgen um 10 Uhr ist notiert.", [], correction_round=2)
         self.assertTrue(any("nicht beseitigt" in line for line in logs.output))
 
+    def test_after_the_last_round_the_correction_is_appended(self) -> None:
+        """Scheibe 12 A, Punkt 1 (entschieden 16.09.2026): angehaengt statt entfernt."""
+        from utils.storage_claims import CORRECTION_NOTE
+        with self.assertLogs("ki_server.tribunal", level="ERROR"):
+            state, _ = self._evaluate("Morgen um 10 Uhr ist notiert.", [], correction_round=2)
+        self.assertTrue(state["response"].startswith("Morgen um 10 Uhr ist notiert."))
+        self.assertTrue(state["response"].endswith(CORRECTION_NOTE))
+
+    def test_before_the_last_round_nothing_is_appended(self) -> None:
+        """Vorher korrigiert die Runde selbst — ein Anhang waere verfrueht."""
+        from utils.storage_claims import CORRECTION_NOTE
+        with self.assertLogs("ki_server.tribunal", level="ERROR"):
+            state, _ = self._evaluate("Morgen um 10 Uhr ist notiert.", [], correction_round=0)
+        self.assertNotIn(CORRECTION_NOTE, state["response"])
+
+    def test_the_correction_is_appended_once_and_is_no_claim_itself(self) -> None:
+        from utils.storage_claims import CORRECTION_NOTE, append_correction, find_storage_claims
+        einmal = append_correction("Ist notiert.")
+        self.assertEqual(append_correction(einmal), einmal)
+        self.assertEqual(find_storage_claims(CORRECTION_NOTE), [])
+
 
 if __name__ == "__main__":
     unittest.main()

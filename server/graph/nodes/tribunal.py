@@ -30,6 +30,7 @@ from config import (
     TRIBUNAL_PSYCHOLOGE_WARNUNG,
     get_node_config,
 )
+from graph.antwort_spur import antwort_setzen
 from graph.reiz import reiz_text
 from graph.state import ConversationState, TribunalVote
 from memory.pipeline_log import log_berechnung
@@ -44,6 +45,7 @@ from utils.storage_claims import (
     ORDER_HEADER,
     RULE_VERSION,
     ClaimCheck,
+    append_correction,
     correction_order,
     uncovered_claims,
 )
@@ -313,9 +315,11 @@ def _storage_claim_step(
             and runde >= state.get("max_corrections", 0)):
         logger.error(
             "Tribunal: Speicherbehauptung nach %s Korrekturrunde(n) nicht "
-            "beseitigt — die Antwort geht mit ihr hinaus: %s",
+            "beseitigt — die Antwort geht mit ihr hinaus, mit Korrektursatz: %s",
             runde, "; ".join(c.line() for c in check.claims),
         )
+        # Scheibe 12 A, Punkt 1: angehaengt statt entfernt (16.09.2026).
+        antwort_setzen(state, append_correction(state.get("response") or ""), "tribunal_korrektursatz")
     _storage_check_record(state, check)
     return check
 
