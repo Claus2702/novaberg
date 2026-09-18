@@ -1071,3 +1071,17 @@ Turn 07:04 UTC: *„Das muss ganz schoen knallen bei einem Kollaps"* — die Sac
 Die Beobachtung vom Morgen in ihrer zweiten Haelfte: Auf *»Das muss ganz schoen knallen bei einem Kollaps«* eroeffnete Nova mit *»Das muss ja eine gewaltige energetische Entladung sein«* — der Satz des Nutzers als eigene Feststellung. Der Verfasser kannte den Sprecher (Kopfblock *»PERSON B sagt …«*) und schrieb *»Person A stellt fest …«*: Es fehlte die Fuehrung, was Person A mit einem fremden Gedanken tut, und in der Lage die Auskunft, wer eine gedeckte Eigenschaft gesagt hat — Deckung kommt seit Scheibe 8 von beiden Seiten. Jetzt traegt jede gedeckte Eigenschaft ihren Sprecher (`nutzer` / `nova`, gegen den Kanon gehalten, fehlend bleibt fehlend, aus der vorigen Blase geerbt), der Block nennt ihn dem Verfasser, und der Herkunftsblock des Nutzer-Turns fuehrt (*ES IST SEIN GEDANKE — Person A greift ihn als seinen auf; IHRE EIGENE FESTSTELLUNG BEGINNT DORT, WO SIE ETWAS HINZUFUEGT*). Die alte Fassung verwies auf `[AKTUELLER PROMPT]`, einen Block, den der Verfasser nie setzt. Fundliste-Zeile vom 29.08. (»Der Verfasser-Stoff traegt nicht, wer den Satz gesagt hat«) damit umgesetzt.
 
 **Zusammenhang:** SACHLAGE-SCHEIBE-8-TRAEGER (die Gegenseite: dort *wer kann es wissen*, hier *wer hat es gesagt*) · SACHLAGE-SCHEIBE-6-AUFLOESER (eine Deckung aus dem Gedaechtnis traegt ihre Quelle statt eines Sprechers) · VERFASSER-KENNT-DIE-QUELLE-NICHT (die Impuls-Fassung des Herkunftsblocks, 14.08.) · F-PROMPT-1 · der Fortfuehrungsfall aus Scheibe 8 (`carry_holders`).
+
+---
+
+## Feature: ANGEBOT-ALS-ALLGEMEINER-ABLAUF — Nova bietet an, nicht nur zum Festhalten (18.09.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Idee des Eigentümers, bewusst nicht vertieft (*„Aber wir müssen das jetzt noch nicht vertiefen"*, 18.09.2026).
+
+Der Eigentümer: *„Ich denke, dass das gleiche bei Terminen, bei Notizen, später bei Dateien und anderen Aufgaben kommen könnte."* Heute ist der Ablauf des Angebots (Scheibe 12 E) auf Timeline und Notizen verdrahtet: die Weiche des Verfassers (`_offer_probability` liest nur die Speiche `pflicht`, Boden `ANGEBOT_PFLICHT_BODEN`), die Erkennung im Satz (`utils/offers.py::_WRITE_VERB`, `_OFFER_FORMS`), die Verben (`_OFFER_VERBS`) und die Zustellung im Router. Allgemein nutzbar sind schon: offener Punkt je Paar (`offer_store`/`offer_load`), blanke Zustimmung und Ablehnung (`is_bare_consent`, `is_bare_refusal`), das Nein am Objekt (E3).
+
+**Skizze, nicht entschieden:** Jeder Dienst beschreibt selbst, wie er angeboten wird — Verb, entscheidende Speiche, Boden (in der Art von `F-PLANNER-2`). Eine Recherche hinge dann eher an der Neugier als am Pflichtbewusstsein. **Offen bleibt die Absicht:** welche Speiche je Dienst.
+
+**Zusammenhang:** Scheibe 12 E (`novaberg-thinking-lage_k.md`) · `F-PLANNER-2`
