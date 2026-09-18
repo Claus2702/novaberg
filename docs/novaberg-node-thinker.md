@@ -27,11 +27,11 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 ## 2a. Was der Thinker nicht hinterlässt (Chat 126)
 
-> **Überholt am 18.09.2026.** Der Thinker schreibt seither je Turn zwei Entscheidungs-Einträge (`art = switch`, Feld `entscheidung`) über `memory/pipeline_log.log_decision`:
+> **Überholt am 18.09.2026.** Der Thinker schreibt seither je Turn zwei Entscheidungs-Einträge (`art = switch`, Feld `entscheidung`) über `memory/pipeline_log.log_decision`, gekapselt in `_record_decision` (für den Ausgang der Schleife: `_ergebnis_belegen`); Zeugen in `tests/test_decision_entries.py`:
 >
 > | Entscheidung | Ausgänge | Eingangsgrößen |
 > |---|---|---|
-> | `thinker.schnellcheck` | `reasoning`, `durchlauf` | die Indikatoren, die **in der Antwort** und **im Reiz** trafen (einzeln, als Liste), `needs_web`, `unsicher_retry`, Antwortlänge; Maßstab: Zahl der Indikatoren |
+> | `thinker.schnellcheck` | `reasoning`, `durchlauf` | die Indikatoren aus `FAKTEN_INDIKATOREN`, die **in der Antwort** und **im Reiz** trafen (einzeln, als Liste), `needs_web`, `unsicher_retry`, Antwortlänge; Maßstab: Zahl der Indikatoren |
 > | `thinker.ergebnis` | `ok`, `korrektur`, `korrektur_ohne_text`, `max_iterationen`, `self_trigger`, `nachfass_erschoepft_im_retry` | Iterationen, Werkzeugaufrufe, Nachfass-Versuche, Vorrecherche, Zahl der Probleme; Maßstab: `MAX_ITERATIONEN`, `NACHFASS_MAX` |
 >
 > `korrektur_ohne_text` ist ein eigener Ausgang: Das Urteil lautete Korrektur, aber kein Text kam mit — bis dahin lief dieser Fall still als unveränderte Antwort durch. **Im Betrieb belegt** am 18.09.2026, Turn `729033c8…`: `schnellcheck = reasoning`, `ergebnis = korrektur`. Die Anlaufquote ist damit erhebbar; der Absatz unten beschreibt den Stand davor.

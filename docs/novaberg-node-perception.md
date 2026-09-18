@@ -298,7 +298,7 @@ Output-Switch nach Rolle: `ziel_personality` ist `state["external"]` bei `perzep
 
 ## 5a. Entscheidungs-Einträge (18.09.2026)
 
-Die Perzeption schreibt je Lauf zwei Einträge ins `pipeline_log` (`art = switch`, Feld `entscheidung`, über `memory/pipeline_log.log_decision`) — im CharacterGraph also zweimal je Turn, je Rolle:
+Die Perzeption schreibt je Lauf zwei Einträge ins `pipeline_log` (`art = switch`, Feld `entscheidung`, über `memory/pipeline_log.log_decision`, gekapselt in `_record_decision`; Zeugen in `tests/test_decision_entries.py`) — im CharacterGraph also zweimal je Turn, je Rolle:
 
 | Entscheidung | Ausgänge | Eingangsgrößen |
 |---|---|---|

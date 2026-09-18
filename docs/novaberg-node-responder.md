@@ -459,7 +459,7 @@ Ich bin so hyped gerade, das ist nicht real!
 
 ## 4a. Entscheidungs-Einträge (18.09.2026)
 
-Der Responder schreibt je Turn zwei Einträge ins `pipeline_log` (`art = switch`, Feld `entscheidung`, über `memory/pipeline_log.log_decision`):
+Der Responder schreibt je Turn zwei Einträge ins `pipeline_log` (`art = switch`, Feld `entscheidung`, über `memory/pipeline_log.log_decision`, gekapselt in `_record_decision`; Zeugen in `tests/test_decision_entries.py`):
 
 | Entscheidung | Ausgänge | Eingangsgrößen |
 |---|---|---|

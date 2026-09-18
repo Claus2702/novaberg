@@ -464,7 +464,7 @@ project/
 │   │   ├── lzg_knoten.py                #   Langzeitgedaechtnis: Knoten (PostgreSQL, Ebbinghaus)
 │   │   ├── lzg_kanten.py                #   Langzeitgedaechtnis: Kanten
 │   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task); `log_decision` = Entscheidungs-Eintrag einer Weiche (seit 18.09.2026)
-│   │   ├── background_audit.py          #   Die eine Senke des `hintergrund_log` (`write_audit`, seit 18.09.2026); Dienste schreiben ueber `BaseAgent._audit`
+│   │   ├── background_audit.py          #   Die eine Senke des `hintergrund_log` (`write_audit`, Status aus `AUDIT_STATUSES`, seit 18.09.2026); Dienste schreiben ueber `BaseAgent._audit`
 │   │   ├── sachlage_verlauf.py          #   Sachlage-Gedaechtnis je Turn, ohne Verfall (→ novaberg-thinking-lage_k.md §4)
 │   │   ├── sachlage_properties.py       #   Eigenschaftsgedaechtnis der Sachlage: Objekte je Paar, ihre Turns, Werte mit Historie (→ novaberg-thinking-lage_k.md §4, Scheibe 11)
 │   │   ├── charakter.py                 #   Charakter-Hash (Read)
