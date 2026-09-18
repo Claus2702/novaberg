@@ -69,6 +69,23 @@ class TimelineDurchlaufTest(unittest.TestCase):
         self.assertEqual(self._anlegen(True)["status"], "abgeschlossen")
 
 
+class NotizUmbenennenTest(unittest.TestCase):
+    """Zweite Kontrolle 18.09.2026: der einzige Schreibpfad ohne Pruefung."""
+
+    def _umbenennen(self, gelesen: str) -> dict:
+        from agents.notizen import crud as notizen_crud
+        state = {"parameter": {"notiz": {"id": 7, "name": "Alt"}, "target": "Neu"}, "schritte": []}
+        with patch("tools.db_manager.db_manager.execute", return_value=1), \
+             patch("tools.db_manager.db_manager.select_one", return_value={"name": gelesen}):
+            return notizen_crud._rename(state)
+
+    def test_bestaetigt(self) -> None:
+        self.assertEqual(self._umbenennen("Neu")["status"], "abgeschlossen")
+
+    def test_nicht_bestaetigt_meldet_fehler(self) -> None:
+        self.assertEqual(self._umbenennen("Alt")["status"], "fehler")
+
+
 class StrukturTest(unittest.TestCase):
     """Jede Rueckgabe mit `abgeschlossen` und `verifiziert` laeuft durch den Baustein."""
 
@@ -97,7 +114,7 @@ class StrukturTest(unittest.TestCase):
                           and isinstance(wert.args[0], ast.Dict)):
                         geschuetzt += 1
         self.assertEqual(ungeschuetzt, 0)
-        self.assertEqual(geschuetzt, 18)   # gezaehlt am 18.09.2026: 3 + 5 + 4 + 6
+        self.assertEqual(geschuetzt, 19)   # 18.09.2026: 3 + 5 + 4 + 6, dazu _rename der Notizen
 
 
 if __name__ == "__main__":

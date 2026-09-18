@@ -71,6 +71,12 @@ class VerdrahtungTest(unittest.TestCase):
 
 class ZustimmungTest(unittest.TestCase):
 
+    def test_die_uhrzeit_im_selben_feld_bleibt_erhalten(self) -> None:
+        """Zweite Kontrolle 18.09.2026: aus 10:00 wurde ein ganztaegiger Termin (7 von 29 Objekten)."""
+        bezug = [{"name": "Abholung", "klasse": "vorgang",
+                  "gedeckt": {"Tag und Uhrzeit": "Samstag um 10", "Tag und Uhrzeit" + RESOLVED_SUFFIX: "19.09.2026"}}]
+        self.assertEqual(consent_fields(bezug), ("Abholung", "19.09.2026 10:00"))
+
     def test_die_zustimmung_nimmt_das_aufgeloeste_datum(self) -> None:
         bezug = [{"name": "Abholung", "klasse": "vorgang",
                   "gedeckt": {"Tag": "morgen", "Tag" + RESOLVED_SUFFIX: "19.09.2026", "Uhrzeit": "10 Uhr"}}]

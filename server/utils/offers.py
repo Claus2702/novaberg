@@ -278,6 +278,11 @@ def is_bare_consent(text: str) -> bool:
     woerter = [w.casefold() for w in _WORD.findall(text)]
     if not woerter or len(woerter) > 4:
         return False
+    # Ein "Danke" allein ist nach einem Angebot im Deutschen oft die hoefliche
+    # Ablehnung (zweite Kontrolle, 18.09.2026) — es zaehlt nur, wenn ein
+    # anderes Zustimmungswort daneben steht ("Ja, danke").
+    if all(w == "danke" for w in woerter):
+        return False
     return all(w in _CONSENT_WORDS for w in woerter)
 
 

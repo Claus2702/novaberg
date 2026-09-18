@@ -93,6 +93,11 @@ class BlankeZustimmungTest(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertTrue(is_bare_consent(text))
 
+    def test_ein_danke_allein_ist_keine_zustimmung(self) -> None:
+        """Nach einem Angebot oft die hoefliche Ablehnung (zweite Kontrolle 18.09.2026)."""
+        self.assertFalse(is_bare_consent("Danke"))
+        self.assertTrue(is_bare_consent("Ja, danke"))
+
     def test_ein_auftrag_mit_eigener_sache_ist_keine_blanke_zustimmung(self) -> None:
         for text in (
             "Ja, trag den Zahnarzt ein",

@@ -33,6 +33,24 @@ class SpanneTest(unittest.TestCase):
         self.assertEqual(span_end("drei Stunden lang", SA_10), SA_10.replace(hour=13))
         self.assertEqual(span_end("für 90 Minuten", SA_10), SA_10.replace(hour=11, minute=30))
 
+    def test_anderthalb_stunden(self) -> None:
+        """Zweite Kontrolle: "1 1/2 Stunden" las sich als 2 Stunden (4 von 4 echten Prompts)."""
+        self.assertEqual(span_end("für 1 1/2 Stunden", SA_10), SA_10.replace(hour=11, minute=30))
+        self.assertEqual(span_end("anderthalb Stunden lang", SA_10), SA_10.replace(hour=11, minute=30))
+
+    def test_eine_dauer_ohne_bindung_ist_kein_ende(self) -> None:
+        for satz in ("erinnere mich eine Stunde vorher", "die Anfahrt dauert zwei Stunden",
+                     "seit drei Stunden Zahnweh", "Wartezeit ca. 20 Minuten", "1 1/2 Stunden"):
+            with self.subTest(satz=satz):
+                self.assertIsNone(span_end(satz, SA_10))
+
+    def test_aus_der_ganzen_aeusserung_nur_ausdrueckliche_spannen(self) -> None:
+        for satz in ("Die Praxis hat bis 19 Uhr offen", "bis 18 Uhr hab ich dann frei"):
+            with self.subTest(satz=satz):
+                self.assertIsNone(span_end(satz, SA_10, strict=True))
+        self.assertEqual(span_end("Flohmarkt von 10 bis 12 Uhr", SA_10, strict=True).hour, 12)
+        self.assertEqual(span_end("bis 16 Uhr", SA_10).hour, 16)   # im Zeitausdruck bleibt es erlaubt
+
     def test_mehrtaegig(self) -> None:
         start = datetime(2026, 10, 3, 0, 0, tzinfo=TZ)
         ende = span_end("vom 3. bis 5. Oktober", start)

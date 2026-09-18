@@ -141,7 +141,7 @@ def _create(state: AgentState) -> dict:
 
     # Scheibe 12 D: Nennt der Auftrag eine Spanne, bekommt der Termin sein Ende.
     from utils.time_span import span_end
-    event_ende = span_end(zeitausdruck, event_time) or span_end(prompt, event_time)
+    event_ende = span_end(zeitausdruck, event_time) or span_end(prompt, event_time, strict=True)
 
     termin_id: int = TimelineRepository.insert(
         postgres_url=POSTGRES_URL,

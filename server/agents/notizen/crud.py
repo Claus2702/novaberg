@@ -452,10 +452,15 @@ def _rename(state: AgentState) -> dict:
         (neuer_name, notiz_id),
     )
 
-    logger.info(f"NotizenAgent: Notiz '{alter_name}' → '{neuer_name}' (ID {notiz_id})")
+    # Dieselbe Pflicht wie jede andere Schreibung (zweite Kontrolle 18.09.2026:
+    # der einzige Schreibpfad, der ohne Pruefung `abgeschlossen` meldete).
+    zeile: dict | None = db_manager.select_one("SELECT name FROM notizen WHERE id = %s", (notiz_id,))
+    verifiziert: bool = bool(zeile) and zeile.get("name") == neuer_name
 
-    return {
+    logger.info(f"NotizenAgent: Notiz '{alter_name}' → '{neuer_name}' (ID {notiz_id}), verifiziert={verifiziert}")
+
+    return verified_outcome({
         "ergebnis": f"Notiz umbenannt: '{alter_name}' → '{neuer_name}'",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "umbenannt"}],
-    }
+        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "umbenannt", "verifiziert": verifiziert}],
+    }, verifiziert)

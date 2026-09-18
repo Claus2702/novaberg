@@ -21,6 +21,7 @@ andere Formel wuerde die Schwellen ungueltig machen, ohne dass etwas scheitert.
 
 import logging
 import math
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -356,6 +357,28 @@ def render_object_reference(bezug: list[dict]) -> str:
 _TIME_KEYS: tuple[str, ...] = ("tag", "datum", "uhrzeit", "zeit", "frist", "termin", "wochentag")
 
 
+_CLOCK: re.Pattern = re.compile(
+    r"\bum\s+(\d{1,2})(?:[:.](\d{2}))?\b|\b(\d{1,2})(?:[:.](\d{2}))?\s*uhr\b", re.IGNORECASE,
+)
+
+
+def _with_clock(resolved_date: str, original: str) -> str:
+    """Das aufgeloeste Datum mit der Uhrzeit aus dem urspruenglichen Wert, falls er eine traegt.
+
+    Nachbedingung: *"19.09.2026"* + *"Samstag um 10"* → *"19.09.2026 10:00"*;
+        ohne Uhrzeit im Wert bleibt das Datum allein. Eine unmoegliche Uhrzeit
+        wird nicht uebernommen.
+    """
+    m = _CLOCK.search(str(original))
+    if m is None:
+        return resolved_date
+    stunde = int(m.group(1) or m.group(3))
+    minute = int(m.group(2) or m.group(4) or 0)
+    if not (0 <= stunde <= 23 and 0 <= minute <= 59):
+        return resolved_date
+    return f"{resolved_date} {stunde:02d}:{minute:02d}"
+
+
 def consent_fields(objekt_bezug: list[dict]) -> tuple[str, str]:
     """Ziel und Zeitangabe aus der Sache, der der Mensch zugestimmt hat.
 
@@ -392,8 +415,13 @@ def consent_fields(objekt_bezug: list[dict]) -> tuple[str, str]:
     aufgeloest: dict[str, str] = {
         k[: -len(" (aufgeloest)")]: v for k, v in zeitwerte.items() if k.endswith(" (aufgeloest)")
     }
+    # Die Aufloesung ersetzt nur den Tag. Steht die Uhrzeit im selben Feld
+    # ("Samstag um 10"), bleibt sie erhalten — `[zweite Kontrolle 18.09.2026]`
+    # vorher ging sie bei 7 von 29 echten Objekten verloren, und aus 10:00
+    # wurde ein ganztaegiger Termin.
     teile: list[str] = [
-        aufgeloest.get(k, v) for k, v in zeitwerte.items() if not k.endswith(" (aufgeloest)")
+        _with_clock(aufgeloest[k], v) if k in aufgeloest else v
+        for k, v in zeitwerte.items() if not k.endswith(" (aufgeloest)")
     ]
 
     # ── Ausgabe-Verifikation ────────────────────

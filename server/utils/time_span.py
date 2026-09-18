@@ -30,15 +30,27 @@ _UHRZEIT_BIS: re.Pattern = re.compile(
     r"(?:\b(?:von\s+)?(\d{1,2})(?::(\d{2}))?\s*(?:uhr\s*)?)?(?:bis|–|-)\s*(\d{1,2})(?::(\d{2}))?\s*uhr",
     re.IGNORECASE,
 )
+# Eine Dauer ist nur dann die Laenge des Termins, wenn sie so gesagt ist:
+# "fuer zwei Stunden", "drei Stunden lang". `[zweite Kontrolle 18.09.2026]`
+# Ohne diese Bindung wurde "erinnere mich eine Stunde vorher" oder "die Anfahrt
+# dauert zwei Stunden" zum Ende, und "1 1/2 Stunden" las sich als 2 Stunden.
 _DAUER: re.Pattern = re.compile(
-    r"\b(?:fuer|für)?\s*(\d+(?:[.,]\d+)?|" + "|".join(_ZAHLWORTE) + r")\s+(stunden?|minuten?)\b",
+    r"\b(?P<fuer>fuer\s+|für\s+)?(?P<zahl>\d+\s+1/2|\d+(?:[.,]\d+)?|" + "|".join(_ZAHLWORTE)
+    + r")\s+(?P<einheit>stunden?|minuten?)(?P<lang>\s+lang)?\b",
     re.IGNORECASE,
 )
+_VOM_BIS_MONAT: re.Pattern = re.compile(r"\bvom\s+(\d{1,2})\.?\s+bis\s+\d{1,2}\.?\s+([a-zäöü]+)", re.IGNORECASE)
 _BIS_TAG: re.Pattern = re.compile(r"\bbis\s+(?:zum\s+|zur\s+)?(.+)$", re.IGNORECASE)
 
 
-def span_end(expression: str, start: datetime) -> datetime | None:
+def span_end(expression: str, start: datetime, strict: bool = False) -> datetime | None:
     """Das Ende der Spanne, die `expression` nennt, oder None.
+
+    `strict` gilt fuer die ganze Aeusserung statt fuer den Zeitausdruck: Dann
+    zaehlen nur ausdrueckliche Spannen mit beiden Enden (*"von 10 bis 12 Uhr"*,
+    *"10–12 Uhr"*, *"vom 3. bis 5. Oktober"*) und die gebundene Dauer — nicht
+    *"bis 19 Uhr"*, denn *"die Praxis hat bis 19 Uhr offen"* ist kein Ende des
+    Termins (zweite Kontrolle, 18.09.2026).
 
     Vorbedingung: `start` ist der aufgeloeste Anfang (mit Zeitzone).
     Nachbedingung: ein Zeitpunkt **nach** `start` in dessen Zeitzone, oder
@@ -53,15 +65,20 @@ def span_end(expression: str, start: datetime) -> datetime | None:
 
     # ── Verarbeitung ────────────────────────────
     ende: datetime | None = None
-    if (m := _UHRZEIT_BIS.search(text)) is not None:
+    if (m := _UHRZEIT_BIS.search(text)) is not None and (not strict or m.group(1)):
         stunde, minute = int(m.group(3)), int(m.group(4) or 0)
         if 0 <= stunde <= 23 and 0 <= minute <= 59:
             ende = start.replace(hour=stunde, minute=minute, second=0, microsecond=0)
-    elif (m := _DAUER.search(text)) is not None:
-        roh: str = m.group(1).casefold().replace(",", ".")
-        menge: float = _ZAHLWORTE.get(roh) or float(roh)
-        einheit = timedelta(hours=menge) if m.group(2).casefold().startswith("stunde") else timedelta(minutes=menge)
+    elif (m := _DAUER.search(text)) is not None and (m.group("fuer") or m.group("lang")):
+        roh: str = m.group("zahl").casefold().replace(",", ".")
+        if "1/2" in roh:
+            menge: float = float(roh.split()[0]) + 0.5
+        else:
+            menge = _ZAHLWORTE.get(roh) or float(roh)
+        einheit = timedelta(hours=menge) if m.group("einheit").casefold().startswith("stunde") else timedelta(minutes=menge)
         ende = start + einheit
+    elif strict and not _VOM_BIS_MONAT.search(text):
+        return None
     elif (m := _BIS_TAG.search(text)) is not None:
         from utils.zeitparser import zeit_parsen_vektor
         vektor = zeit_parsen_vektor(m.group(1))
@@ -82,7 +99,6 @@ def span_end(expression: str, start: datetime) -> datetime | None:
 
 _ENDE_UHRZEIT: re.Pattern = re.compile(r"\s*(?:bis|–|-)\s*\d{1,2}(?::\d{2})?\s*uhr\b", re.IGNORECASE)
 _VON_VOR_ZAHL: re.Pattern = re.compile(r"\bvon\s+(?=\d)", re.IGNORECASE)
-_VOM_BIS_MONAT: re.Pattern = re.compile(r"\bvom\s+(\d{1,2})\.?\s+bis\s+\d{1,2}\.?\s+([a-zäöü]+)", re.IGNORECASE)
 
 
 def span_start_text(expression: str) -> str:
