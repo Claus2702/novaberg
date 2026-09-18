@@ -124,6 +124,7 @@ from memory.sachlage_history import (
     history_read_turn,
     history_write,
 )
+from memory.session import SESSION_HISTORY_BUDGET_CHARS, Verlaufsbeitrag, budget_wahren
 from services.model_services import EmbedRequest, model_service
 from services.model_services.types import ChatRequest
 from services.pixie.stack import build_impulse_embed_text
@@ -197,13 +198,14 @@ BRIDGE_VIA_EMBEDDING: str = "embedding_rueckfall"  # aehnlichste Zeile des Paare
 # traegt die aeltere Historie — mehr Turns doppeln nur, was die Fortschreibung
 # schon haelt.
 _TURN_FENSTER: int = 6
-# Wie viel von einem Beitrag der Prompt sieht. `[gemessen]` 28.08.2026: Der
-# Schnitt stand auf 400; Novas Antworten des Paares waren 183 bis 1557 Zeichen
-# lang (6 von 11 ueber 400), und eine Regieanweisung frisst die ersten 100 bis
-# 400 davon. Eine offene Eigenschaft blieb drei Turns offen, weil die Antwort,
-# die sie deckte, bei Zeichen 384 begann und bei 400 endete. Die Grenze liegt
-# jetzt ueber der laengsten gemessenen Antwort; Regieanweisungen fallen vorher.
-_BEITRAG_MAX_ZEICHEN: int = 1600
+# ~~Wie viel von einem Beitrag der Prompt sieht~~ → **kein Beitrag wird mehr
+# gekuerzt** (Scheibe 12 B, nachgezogen am 18.09.2026 — dieser Leser war der
+# achte, der noch je Beitrag schnitt). Die Geschichte: Der Schnitt stand auf
+# 400, eine Eigenschaft blieb drei Turns offen, weil die Antwort, die sie
+# deckte, bei Zeichen 384 begann (`[gemessen]` 28.08.2026); dann auf 1600. Die
+# Grenze greift jetzt ueber das ganze Fenster und wirft die aeltesten Beitraege
+# weg (`memory.session.budget_wahren`) — ein halber Beitrag sieht aus wie ein
+# ganzer, ein fehlender ist sichtbar.
 # Regieanweisungen (*…*) tragen Gestik, keine Sache — fuer das Verstehen des
 # Gegenstands sind sie Rauschen und kosten die Zeichen, die die Antwort braucht.
 _REGIEANWEISUNG: re.Pattern = re.compile(r"\*[^*\n]{1,400}\*")
@@ -709,20 +711,30 @@ def _render_history(session_turns: list[dict]) -> str:
     Vorbedingung: Turns mit `rolle` und `inhalt`, wie `session_turns_retrieve`
         sie liefert.
     Nachbedingung: Eine Zeile je Beitrag (`Nutzer:` / `Nova:`), ohne
-        Regieanweisungen, Zeilenumbrueche zu Leerzeichen gefaltet, hoechstens
-        `_BEITRAG_MAX_ZEICHEN` lang — Novas Antworten kommen damit ganz an,
-        und die Deckungsregel des Prompts hat etwas zu lesen.
+        Regieanweisungen, Zeilenumbrueche zu Leerzeichen gefaltet, **ungekuerzt**
+        — Novas Antworten kommen ganz an, und die Deckungsregel des Prompts hat
+        etwas zu lesen. Passt das Fenster nicht ins Budget
+        (`SESSION_HISTORY_BUDGET_CHARS`), fallen die **aeltesten** Beitraege
+        weg; der juengste steht immer da.
     Fehlerfaelle: Ein Beitrag, der nach dem Entfernen der Regieanweisung leer
         ist, erzeugt keine Zeile; ohne Zeilen steht der Platzhalter.
     """
-    zeilen: list[str] = []
+    beitraege: list[list[Verlaufsbeitrag]] = []
     for turn in session_turns[-_TURN_FENSTER:]:
-        sprecher: str = "Nutzer" if turn.get("rolle") == "user" else "Nova"
         inhalt: str = _REGIEANWEISUNG.sub(" ", turn.get("inhalt") or "")
         inhalt = " ".join(inhalt.split())
         if inhalt:
-            zeilen.append(f"{sprecher}: {inhalt[:_BEITRAG_MAX_ZEICHEN]}")
-    return "\n".join(zeilen) if zeilen else "(noch keine Beitraege)"
+            beitraege.append([Verlaufsbeitrag(
+                sprecher="user" if turn.get("rolle") == "user" else "nova", inhalt=inhalt)])
+    if not beitraege:
+        return "(noch keine Beitraege)"
+    behalten, weggefallen = budget_wahren(beitraege, SESSION_HISTORY_BUDGET_CHARS)
+    if weggefallen:
+        logger.info(f"Sachlage: {weggefallen} aeltere Beitraege aus dem Verlaufsfenster — Budget")
+    return "\n".join(
+        f"{'Nutzer' if b.sprecher == 'user' else 'Nova'}: {b.inhalt}"
+        for gruppe in behalten for b in gruppe
+    )
 
 
 def _age_label(erstellt_am: str) -> str:

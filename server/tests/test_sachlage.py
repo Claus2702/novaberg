@@ -250,6 +250,28 @@ class DerVerlaufTraegtNovasAntwortTest(unittest.TestCase):
 
         self.assertIn("ENTSCHEIDEND: Wasser treibt", gerendert)
 
+    def test_eine_lange_antwort_kommt_ganz_an(self) -> None:
+        """Scheibe 12 B, nachgezogen am 18.09.2026: kein Schnitt je Beitrag mehr.
+
+        Vorher schnitt dieser Leser bei 1600 Zeichen — als achter, gegen seinen
+        eigenen Docstring und gegen die Entscheidung der Scheibe.
+        """
+        antwort = "Der Rettich braucht Wasser. " * 100 + "ENDE DER ANTWORT"
+        self.assertGreater(len(antwort), 2500)
+        gerendert = _render_history([{"rolle": "assistant", "inhalt": antwort}])
+        self.assertTrue(gerendert.endswith("ENDE DER ANTWORT"))
+
+    def test_das_budget_wirft_die_aeltesten_weg_nicht_die_mitte(self) -> None:
+        from memory.session import SESSION_HISTORY_BUDGET_CHARS
+        lang = "x" * (SESSION_HISTORY_BUDGET_CHARS // 2)
+        gerendert = _render_history([
+            {"rolle": "user", "inhalt": "ALT " + lang},
+            {"rolle": "assistant", "inhalt": "MITTE " + lang},
+            {"rolle": "user", "inhalt": "NEU " + lang},
+        ])
+        self.assertNotIn("ALT ", gerendert)
+        self.assertIn("NEU " + lang, gerendert)
+
     def test_regieanweisungen_stehen_nicht_im_verlauf(self) -> None:
         gerendert = _render_history([
             {"rolle": "assistant",
