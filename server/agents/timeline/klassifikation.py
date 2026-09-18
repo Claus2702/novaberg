@@ -21,7 +21,7 @@ from agents.crud_validation import (
     verb_mapping_pruefen,
     verb_mappings_laden,
 )
-from agents.object_nearness import render_object_reference
+from agents.object_nearness import consent_fields, render_object_reference
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
@@ -38,6 +38,7 @@ def _build_classify_prompt(
     erkennungshilfe: str | None = None,
     session_turns: str | None = None,
     objekt_bezug: list[dict] | None = None,
+    angebot_satz: str = "",
 ) -> str:
     """Baut den Klassifikation-System-Prompt aus [BLOCKNAME]-Bloecken zusammen."""
     aktionen_text = " | ".join(f'"{a}"' for a in sorted(GUELTIGE_AKTIONEN))
@@ -52,6 +53,13 @@ def _build_classify_prompt(
 
     if objekt_bezug:
         bloecke.append(PROMPTS["classify_timeline.objekt"].format(objekte=render_object_reference(objekt_bezug)))
+        if angebot_satz:
+            # Die Zustimmung bindet an die angebotene Sache (E1c, gemessen
+            # 17.09.2026): Ohne diesen Block nahm die Klassifikation Ziel und
+            # Zeit aus dem Verlauf, wo eine ANDERE Sache stand.
+            bloecke.append(PROMPTS["classify_timeline.zustimmung"].format(
+                angebot=angebot_satz[:200], objekte=render_object_reference(objekt_bezug),
+            ))
 
     if session_turns:
         bloecke.append(
@@ -98,7 +106,10 @@ def klassifizieren(state: AgentState) -> dict:
 
     # --- Stufe C: LLM-Klassifikation ---
     objekt_bezug: list[dict] = list(state["kontext"].get("objekt_bezug") or [])
-    system_prompt: str = _build_classify_prompt(hilfe_block, session_turns, objekt_bezug)
+    system_prompt: str = _build_classify_prompt(
+        hilfe_block, session_turns, objekt_bezug,
+        angebot_satz = str(state["kontext"].get("angebot_satz") or ""),
+    )
     logger.info(f"klassifizieren: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")
@@ -140,6 +151,18 @@ def klassifizieren(state: AgentState) -> dict:
         zeitausdruck = ergebnis.get("zeitausdruck", "")
         event_type = ergebnis.get("event_type", "termin")
         normalisiert = ergebnis.get("normalisiert", "")
+
+        # Die Zustimmung bindet — deterministisch (E1c, gemessen 17.09.2026):
+        # Was der Mensch angenommen hat, steht fest; leere Felder werden daraus
+        # gesetzt, nicht erraten. Nur bei einer Zustimmung, nur wo leer.
+        if state["kontext"].get("angebot_satz") and objekt_bezug:
+            aus_der_sache, zeit_der_sache = consent_fields(objekt_bezug)
+            if not target and aus_der_sache:
+                logger.info(f"klassifizieren: Ziel aus der zugestimmten Sache — '{aus_der_sache}'")
+                target = aus_der_sache
+            if not zeitausdruck and zeit_der_sache:
+                logger.info(f"klassifizieren: Zeitangabe aus der zugestimmten Sache — '{zeit_der_sache}'")
+                zeitausdruck = zeit_der_sache
 
         if action not in GUELTIGE_AKTIONEN:
             logger.warning(f"klassifizieren: Ungueltige Aktion '{action}' — Fallback 'read'")

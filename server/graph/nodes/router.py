@@ -221,6 +221,9 @@ def route(
     nimmt_an: bool = angebot_offen and is_bare_consent(reiz)
     state["angebot_objekte"] = list(angebot.objects) if nimmt_an else []
     state["angebot_bezug"] = [dict(d) for d in angebot.details] if nimmt_an else []
+    # Der Satz selbst reist mit: Die Fachabteilung soll lesen, WORAUF der
+    # Mensch zugestimmt hat — der Verlauf kann inzwischen anderes fuehren.
+    state["angebot_satz"] = angebot.sentence if nimmt_an else ""
 
     # ── Pending Agent Check (Resume-Flow) ──────────
     # Wenn ein Agent auf Antwort wartet, ueberspringen wir den LLM-Call.

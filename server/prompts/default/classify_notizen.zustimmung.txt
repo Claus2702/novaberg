@@ -1,0 +1,4 @@
+[ZUSTIMMUNG]
+Der Nutzer stimmt einem Angebot zu, das du ihm im letzten Turn gemacht hast: "{angebot}"
+Die Zustimmung gilt GENAU DIESER Sache: {objekte}
+Nimm Ziel und Zeitangabe AUS DIESER SACHE — nicht aus dem Verlauf. Der Verlauf kann inzwischen von etwas anderem handeln; das Angebot galt dieser Sache, und der Nutzer hat ihr zugestimmt.

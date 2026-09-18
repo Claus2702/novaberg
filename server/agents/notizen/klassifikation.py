@@ -19,7 +19,7 @@ from agents.crud_validation import (
     verb_mapping_pruefen,
     verb_mappings_laden,
 )
-from agents.object_nearness import render_object_reference
+from agents.object_nearness import consent_fields, render_object_reference
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
@@ -38,6 +38,7 @@ def _build_classify_prompt(
     erkennungshilfe: str | None = None,
     session_turns: str | None = None,
     objekt_bezug: list[dict] | None = None,
+    angebot_satz: str = "",
 ) -> str:
     """Baut den Klassifikation-System-Prompt aus [BLOCKNAME]-Bloecken zusammen."""
     aktionen_text = " | ".join(f'"{a}"' for a in sorted(GUELTIGE_AKTIONEN))
@@ -52,6 +53,13 @@ def _build_classify_prompt(
 
     if objekt_bezug:
         bloecke.append(PROMPTS["classify_notizen.objekt"].format(objekte=render_object_reference(objekt_bezug)))
+        if angebot_satz:
+            # Die Zustimmung bindet an die angebotene Sache (E1c, gemessen
+            # 17.09.2026): Ohne diesen Block nahm die Klassifikation Ziel und
+            # Zeit aus dem Verlauf, wo eine ANDERE Sache stand.
+            bloecke.append(PROMPTS["classify_notizen.zustimmung"].format(
+                angebot=angebot_satz[:200], objekte=render_object_reference(objekt_bezug),
+            ))
 
     if session_turns:
         bloecke.append(
@@ -107,7 +115,10 @@ def klassifizieren(state: AgentState) -> dict:
 
     # --- Stufe C: LLM-Klassifikation ---
     objekt_bezug: list[dict] = list(state["kontext"].get("objekt_bezug") or [])
-    system_prompt: str = _build_classify_prompt(hilfe_block, session_turns, objekt_bezug)
+    system_prompt: str = _build_classify_prompt(
+        hilfe_block, session_turns, objekt_bezug,
+        angebot_satz = str(state["kontext"].get("angebot_satz") or ""),
+    )
     logger.info(f"klassifizieren: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")
@@ -151,6 +162,14 @@ def klassifizieren(state: AgentState) -> dict:
         target = ergebnis.get("target", "")
         target_typ = ergebnis.get("target_typ", "titel")
         normalisiert = ergebnis.get("normalisiert", "")
+
+        # Die Zustimmung bindet — deterministisch (E1c, gemessen 17.09.2026):
+        # Bleibt das Ziel leer, kommt es aus der Sache, der zugestimmt wurde.
+        if not target and state["kontext"].get("angebot_satz") and objekt_bezug:
+            aus_der_sache, _ = consent_fields(objekt_bezug)
+            if aus_der_sache:
+                logger.info(f"klassifizieren: Ziel aus der zugestimmten Sache — '{aus_der_sache}'")
+                target = aus_der_sache
 
         # Inhalts-Aufloesung-Heuristik: normalisiert deutlich laenger als aufgabe
         # = LLM hat Inhalt aus Vor-Turn ins normalisiert-Feld kopiert.

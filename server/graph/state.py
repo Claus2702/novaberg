@@ -242,6 +242,7 @@ class ConversationState(TypedDict):
     # dem Angebot, damit ein "Gerne" auch dann traegt, wenn die Lage
     # weitergezogen ist (E1c, gemessen 17.09.2026).
     angebot_bezug: list
+    angebot_satz: str
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele: list[

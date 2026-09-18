@@ -135,12 +135,16 @@ class ZustimmungSetztDieSachenTest(unittest.TestCase):
         self.assertEqual(ergebnis["angebot_objekte"], ["Abholung der Schwester"])
         self.assertEqual(ergebnis["angebot_bezug"], [{"name": "Abholung der Schwester", "klasse": "vorgang",
                                                       "gedeckt": {"Tag": "Samstag"}}])
+        # Der Satz selbst reist mit: Die Fachabteilung liest, worauf zugestimmt wurde.
+        self.assertEqual(ergebnis["angebot_satz"], "Soll ich dir den Termin eintragen?")
 
     def test_ohne_angebot_und_ohne_zustimmung_bleibt_es_leer(self) -> None:
         angebot = Offer(sentence="Soll ich dir den Termin eintragen?", objects=("Abholung der Schwester",),
                         services=("timeline",), turn_id="t3", time=1.0)
         self.assertEqual(self._route("Gerne", None)["angebot_objekte"], [])
+        self.assertEqual(self._route("Gerne", None)["angebot_satz"], "")
         self.assertEqual(self._route("Und wie lange dauert das?", angebot)["angebot_objekte"], [])
+        self.assertEqual(self._route("Und wie lange dauert das?", angebot)["angebot_satz"], "")
 
 
 if __name__ == "__main__":

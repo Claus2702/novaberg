@@ -51,6 +51,7 @@ def dispatch_notizen(state: dict) -> dict:
             "memory_context": state.get("memory_context", ""),
             # Scheibe 12 D2b: die Sache aus der Lage, auf die sich die Bitte bezieht.
             "objekt_bezug": list(state.get("objekt_bezug") or []),
+            "angebot_satz": state.get("angebot_satz") or "",
         },
         "parameter": {
             "action": state.get("management_action", ""),

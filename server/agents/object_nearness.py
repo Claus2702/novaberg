@@ -349,3 +349,43 @@ def render_object_reference(bezug: list[dict]) -> str:
         zeilen.append(kopf + (" — " + "; ".join(f"{k}: {v}" for k, v in gedeckt.items()) if gedeckt else ""))
     return "\n".join(zeilen)
 
+
+
+# Die Schluessel, unter denen die Lage eine Zeitangabe fuehrt — frei benannt,
+# deshalb als Wortstamm geprueft (Bestand: "Tag/Datum", "Uhrzeit", "Frist").
+_TIME_KEYS: tuple[str, ...] = ("tag", "datum", "uhrzeit", "zeit", "frist", "termin", "wochentag")
+
+
+def consent_fields(objekt_bezug: list[dict]) -> tuple[str, str]:
+    """Ziel und Zeitangabe aus der Sache, der der Mensch zugestimmt hat.
+
+    Vorbedingung: `objekt_bezug` sind die Objekte, die der Planner dem Dienst
+        mitgegeben hat — bei einer Zustimmung genau die angebotenen.
+    Nachbedingung: `(ziel, zeitausdruck)` aus dem **ersten** Objekt: sein Name,
+        und aus seinen gedeckten Eigenschaften die Werte, deren Schluessel nach
+        Zeit klingen (Tag, Datum, Uhrzeit, Zeit, Frist, Termin), in der
+        Reihenfolge des Objekts zu einem Ausdruck verbunden. Leere Zeichenkette,
+        wo nichts dasteht — **geraten wird nichts.**
+    Fehlerfaelle: keine Ausnahme.
+
+    **Warum im Code und nicht im Prompt:** `[gemessen 17.09.2026, Betrieb]` Mit
+    dem `[ZUSTIMMUNG]`-Block im Prompt liess die Klassifikation Ziel und Zeit
+    trotzdem leer — die Angaben standen im Block, das Modell nahm sie nicht.
+    Eine Zustimmung nennt nichts; was sie meint, steht fest, und Festes wird
+    gesetzt, nicht erbeten.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not objekt_bezug or not isinstance(objekt_bezug[0], dict):
+        return "", ""
+
+    # ── Verarbeitung ────────────────────────────
+    objekt = objekt_bezug[0]
+    ziel: str = str(objekt.get("name") or "").strip()
+    gedeckt = objekt.get("gedeckt") if isinstance(objekt.get("gedeckt"), dict) else {}
+    teile: list[str] = [
+        str(wert).strip() for schluessel, wert in gedeckt.items()
+        if any(w in str(schluessel).casefold() for w in _TIME_KEYS) and str(wert).strip()
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return ziel, " ".join(teile)
