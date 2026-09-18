@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 439 Eintraege mit Kennung — 364 offen, 72 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 439 Eintraege mit Kennung — 363 offen, 73 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 438 von 439 Eintraegen zugeordnet.
 
@@ -503,7 +503,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | CHA | 537 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
 | CHA | 538 | offen | `EI-VEKTOR-LOG-GATE` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
 | CHA | 541 | offen | `EPIC-SYKOPHANZ` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
-| CHA | 555 | offen | `SYK-B-1-THINKER-WEICHE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 555 | abgeschlossen | `SYK-B-1-THINKER-WEICHE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
 | CHA | 556 | abgeschlossen | `SYK-B0-ABSTAND` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
 | CHA | 557 | abgeschlossen | `SYK-B0-BEZIEHUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
 | CHA | 558 | offen | `SYK-B0-FALLENBATTERIE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 14. September 2026, 19:52 UTC (Befund: der Verlauf erreicht die Perzeption in 100 Zeichen je Beitrag). Davor 12. September 2026, 15:45 UTC (**der Kanon-Zug hat eine dritte Stufe** — Uebersetzungen und Wortgleiche je Feld, vor der Fremdfeld-Meldung; dazu erklaert der Prompt jeden der zehn Modi, statt sie nur aufzuzaehlen. `kreativ` stand in 0 von 1347 Turns und steht danach 30 von 30 auf Kreativ-Reizen, bei unveraenderter Gesamtquote). Davor 10. September 2026, 20:26 UTC (**alle sechs Wertefelder laufen durch den Kanon-Zug** — bis heute taten es zwei, und genau die vier ohne trugen die Ausreisser: von 16.164 Feldwerten stehen **327 ausserhalb** (2,0 %), `tone` mit 5,7 % an der Spitze. Die vier fehlenden Wertemengen sind als Konstanten deklariert, der Zug benennt das **fremde Feld**, wenn ein unbekannter Wert einem anderen gehoert, und jeder Ausreisser bekommt eine `kanon_ausreisser`-Zeile im `pipeline_log`. `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE`). Davor der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
+**Stand:** 18. September 2026 (**zwei Entscheidungs-Einträge** — Kontext und Herkunft der Wahrnehmung, §5a). Davor 14. September 2026, 19:52 UTC (Befund: der Verlauf erreicht die Perzeption in 100 Zeichen je Beitrag). Davor 12. September 2026, 15:45 UTC (**der Kanon-Zug hat eine dritte Stufe** — Uebersetzungen und Wortgleiche je Feld, vor der Fremdfeld-Meldung; dazu erklaert der Prompt jeden der zehn Modi, statt sie nur aufzuzaehlen. `kreativ` stand in 0 von 1347 Turns und steht danach 30 von 30 auf Kreativ-Reizen, bei unveraenderter Gesamtquote). Davor 10. September 2026, 20:26 UTC (**alle sechs Wertefelder laufen durch den Kanon-Zug** — bis heute taten es zwei, und genau die vier ohne trugen die Ausreisser: von 16.164 Feldwerten stehen **327 ausserhalb** (2,0 %), `tone` mit 5,7 % an der Spitze. Die vier fehlenden Wertemengen sind als Konstanten deklariert, der Zug benennt das **fremde Feld**, wenn ein unbekannter Wert einem anderen gehoert, und jeder Ausreisser bekommt eine `kanon_ausreisser`-Zeile im `pipeline_log`. `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE`). Davor der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -295,6 +295,17 @@ Output-Switch nach Rolle: `ziel_personality` ist `state["external"]` bei `perzep
 | `ziel_personality.emotion.prompt_topic` | str | Nein (Klassen-Feld) | Thematischer Kern |
 
 ---
+
+## 5a. Entscheidungs-Einträge (18.09.2026)
+
+Die Perzeption schreibt je Lauf zwei Einträge ins `pipeline_log` (`art = switch`, Feld `entscheidung`, über `memory/pipeline_log.log_decision`) — im CharacterGraph also zweimal je Turn, je Rolle:
+
+| Entscheidung | Ausgänge | Eingangsgrößen |
+|---|---|---|
+| `perzeption.kontext` | `geladen`, `leer`, `ohne_nutzer`, `ausgefallen` | Rolle, Zeichen des Kontexts |
+| `perzeption.wahrnehmung` | `gelesen`, `standardwerte` | Rolle, Ziel (`external`/`internal`), Zeichen der Eingabe, Zahl der Kanon-Ausreißer |
+
+**`standardwerte` ist die Herkunftsmarke, die fehlte.** Die Defaults der Datenklasse liegen in der Spanne echter Wahrnehmungen; ein Parse-Fehler sah im Bestand aus wie ein ruhiger, neutraler Turn. Ebenso trennt `ausgefallen` einen Lesefehler des Verlaufs von einem leeren Verlauf — für den Prompt sehen beide gleich aus. Dafür tragen `_session_kontext_laden` und `_wahrnehmung_erheben` ihren Zustand seither als zweiten Rückgabewert. Im Betrieb belegt am 18.09.2026, Turn `729033c8…`: `kontext = geladen`, `wahrnehmung = gelesen` in beiden Rollen.
 
 ## 6. Abhängigkeiten
 

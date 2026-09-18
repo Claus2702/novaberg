@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 872 Abschnitte in 5 Dateien — 362 mit eigenem Datum, 509 geerbt, 1 ohne.
+**Umfang:** 895 Abschnitte in 5 Dateien — 383 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 609 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 632 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 872 Marken, 872 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 895 Marken, 895 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,29 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 08:12 UTC — die Knoten belegen ihre Weichen, jeder Hintergrundlauf ist auditiert, und der Hänger von heute früh hat eine Ursache 🔧](novaberg-roadmap.md#18092026-0812-utc--die-knoten-belegen-ihre-weichen-jeder-hintergrundlauf-ist-auditiert-und-der-hänger-von-heute-früh-hat-eine-ursache) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 07:43 UTC — das Nein am Objekt, und ein Dienst meldet, was er geprüft hat 🔧](novaberg-roadmap.md#18092026-0743-utc--das-nein-am-objekt-und-ein-dienst-meldet-was-er-geprüft-hat) |
+| 2026-09-17 | laufend | ## | [17.09.2026, 20:38 UTC — die Zustimmung braucht ein Angebot 🔧](novaberg-roadmap.md#17092026-2038-utc--die-zustimmung-braucht-ein-angebot) |
+| 2026-09-17 | laufend | ## | [17.09.2026, 19:40 UTC — D arbeitet im Betrieb, und der Betrieb lief einen Tag lang auf altem Code 🔧](novaberg-roadmap.md#17092026-1940-utc--d-arbeitet-im-betrieb-und-der-betrieb-lief-einen-tag-lang-auf-altem-code) |
+| 2026-09-17 | laufend | ## | [17.09.2026, 17:52 UTC — Notizen nur auf ausdrücklichen Auftrag, zur Hälfte 🔧](novaberg-roadmap.md#17092026-1752-utc--notizen-nur-auf-ausdrücklichen-auftrag-zur-hälfte) |
+| 2026-09-17 | laufend | ## | [17.09.2026, 14:27 UTC — ein »Gerne« wird zum Auftrag 🔧](novaberg-roadmap.md#17092026-1427-utc--ein-gerne-wird-zum-auftrag) |
+| 2026-09-17 | laufend | ## | [17.09.2026, 10:58 UTC — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe 🔧](novaberg-roadmap.md#17092026-1058-utc--der-planner-fragt-nach-dem-objekt-nicht-nach-der-zeitangabe) |
+| 2026-09-17 | laufend | ## | [17.09.2026, 06:01 UTC — die Sternchen aus dem Gedächtnis 🧹](novaberg-roadmap.md#17092026-0601-utc--die-sternchen-aus-dem-gedächtnis) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 22:31 UTC — die Lage wählt die Sache, nicht ihren Rahmen 🔧](novaberg-roadmap.md#16092026-2231-utc--die-lage-wählt-die-sache-nicht-ihren-rahmen) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 21:10 UTC — das Notizen-Merkmal bleibt, weil der Wortlaut nicht der Hebel ist 📐](novaberg-roadmap.md#16092026-2110-utc--das-notizen-merkmal-bleibt-weil-der-wortlaut-nicht-der-hebel-ist) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 20:58 UTC — je Zettel für sich, entschieden und umgebaut 🔧](novaberg-roadmap.md#16092026-2058-utc--je-zettel-für-sich-entschieden-und-umgebaut) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 20:50 UTC — je Zettel für sich, gerechnet statt geschätzt 📐](novaberg-roadmap.md#16092026-2050-utc--je-zettel-für-sich-gerechnet-statt-geschätzt) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 20:19 UTC — der Empfang rechnet die Nähe, und benutzt sie nicht 🔧](novaberg-roadmap.md#16092026-2019-utc--der-empfang-rechnet-die-nähe-und-benutzt-sie-nicht) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 19:43 UTC — die Anmeldung trägt das Objekt-Merkmal 🔧](novaberg-roadmap.md#16092026-1943-utc--die-anmeldung-trägt-das-objekt-merkmal) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 19:14 UTC — zwei Schwellen, und der geeichte Wortlaut 📐](novaberg-roadmap.md#16092026-1914-utc--zwei-schwellen-und-der-geeichte-wortlaut) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 19:00 UTC — die Nähe trägt, aber nur mit einer Schwelle 📐](novaberg-roadmap.md#16092026-1900-utc--die-nähe-trägt-aber-nur-mit-einer-schwelle) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 17:33 UTC — das Verb entscheidet, nicht das Zeitwort 📝](novaberg-roadmap.md#16092026-1733-utc--das-verb-entscheidet-nicht-das-zeitwort) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 17:19 UTC — zwei Termine aus der Zeit vor der Regel sind deaktiviert 📝](novaberg-roadmap.md#16092026-1719-utc--zwei-termine-aus-der-zeit-vor-der-regel-sind-deaktiviert) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 16:51 UTC — eine Behauptung wird kommentiert, nicht herausgeschnitten 📝](novaberg-roadmap.md#16092026-1651-utc--eine-behauptung-wird-kommentiert-nicht-herausgeschnitten) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 15:10 UTC — kein Arzt schaut sich nur die Hände an 🔧](novaberg-roadmap.md#16092026-1510-utc--kein-arzt-schaut-sich-nur-die-hände-an) |
+| (2026-09-16) | laufend | ### | · [Die Grenze trifft jetzt die Gruppe, nicht den Beitrag](novaberg-roadmap.md#die-grenze-trifft-jetzt-die-gruppe-nicht-den-beitrag) |
+| (2026-09-16) | laufend | ### | · [Was die zweite Kontrolle fand, und zwar gegen die eigene Zahl](novaberg-roadmap.md#was-die-zweite-kontrolle-fand-und-zwar-gegen-die-eigene-zahl) |
+| 2026-09-16 | laufend | ## | [16.09.2026, 10:05 UTC — wer eine Speicherbehauptung gegen den Bestand hält 📝](novaberg-roadmap.md#16092026-1005-utc--wer-eine-speicherbehauptung-gegen-den-bestand-hält) |
 | 2026-09-15 | laufend | ## | [15.09.2026, 19:13 UTC — die genannte Uhrzeit, wie sie dasteht, oder gar keine 🔧](novaberg-roadmap.md#15092026-1913-utc--die-genannte-uhrzeit-wie-sie-dasteht-oder-gar-keine) |
 | (2026-09-15) | laufend | ### | · [Fünf Teile, fünf Commits](novaberg-roadmap.md#fünf-teile-fünf-commits) |
 | (2026-09-15) | laufend | ### | · [Was die Messung am eigenen Bau fand](novaberg-roadmap.md#was-die-messung-am-eigenen-bau-fand) |

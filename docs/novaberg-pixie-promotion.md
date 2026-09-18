@@ -294,7 +294,7 @@ Beim Schreiben eines neuen LZG-Eintrags (Single- oder Cluster-Promotion) wird da
 
 ### Hilfs-Methoden
 
-- `_audit_log(user_id, aufgabe, status, ergebnis)` — Statische Helper-Methode, schreibt einen Audit-Eintrag ins `hintergrund_log` (Postgres). Wird bei Vorbedingungs-Verletzungen (Audit `fehler`) und nach erfolgreichem LZG-INSERT (Audit `erledigt`) aufgerufen. Failsafe: bei Exception im DB-Execute wird nur `logger.critical` gerufen, kein erneuter DB-Call (Endlos-Rekursion vermeiden). Seit Chat 85.
+- `_audit_log(user_id, aufgabe, status, ergebnis)` — Statische Helper-Methode, schreibt einen Audit-Eintrag ins `hintergrund_log` (Postgres). Wird bei Vorbedingungs-Verletzungen (Audit `fehler`) und nach erfolgreichem LZG-INSERT (Audit `erledigt`) aufgerufen. Failsafe: bei Exception im DB-Execute wird nur `logger.critical` gerufen, kein erneuter DB-Call (Endlos-Rekursion vermeiden). Seit Chat 85. **Seit dem 18.09.2026 reicht die Methode nur noch durch** an `memory/background_audit.write_audit` — die eine Senke fuer neun vormals eigene Kopien. Aufgefangen werden dort nur Datenbank- und Netzfehler; ein anderer Fehler geht durch. Der Agent meldet `writes_own_audit = True`, der Pixie-Dispatch schreibt deshalb keinen Rahmen um seinen Lauf.
 
 ### Einzelpromotion (Modus 1 — bestehend)
 

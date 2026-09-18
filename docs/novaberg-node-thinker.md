@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 14. September 2026, 19:52 UTC (der Doppel-Fehlschlag hat live gefeuert, die Wiederholung wiederholt die erste Antwort, §3.5). Davor 5. September 2026, 17:06 UTC (die Wahl des Split-Aufraeumers schluesselt auf das **antwortende** Modell statt auf `OLLAMA_MODEL` — §5.2 nachgezogen und die Bezeichnung *Connector-Factory* an zwei Stellen berichtigt); davor 30. August 2026 (der Suchanbieter: Serper zuerst, SearXNG als Rueckfall — §4.4); davor 29. August 2026 (die Suchdisziplin: eine Suche je Turn, die Sachlage-Treffer bedienen die erste — §4.4); davor 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
+**Stand:** 18. September 2026 (**§2a überholt: der Thinker belegt seine Weichen im `pipeline_log`** — `thinker.schnellcheck` und `thinker.ergebnis`, im Betrieb am selben Tag gesehen). Davor 14. September 2026, 19:52 UTC (der Doppel-Fehlschlag hat live gefeuert, die Wiederholung wiederholt die erste Antwort, §3.5). Davor 5. September 2026, 17:06 UTC (die Wahl des Split-Aufraeumers schluesselt auf das **antwortende** Modell statt auf `OLLAMA_MODEL` — §5.2 nachgezogen und die Bezeichnung *Connector-Factory* an zwei Stellen berichtigt); davor 30. August 2026 (der Suchanbieter: Serper zuerst, SearXNG als Rueckfall — §4.4); davor 29. August 2026 (die Suchdisziplin: eine Suche je Turn, die Sachlage-Treffer bedienen die erste — §4.4); davor 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
@@ -26,6 +26,15 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 ---
 
 ## 2a. Was der Thinker nicht hinterlässt (Chat 126)
+
+> **Überholt am 18.09.2026.** Der Thinker schreibt seither je Turn zwei Entscheidungs-Einträge (`art = switch`, Feld `entscheidung`) über `memory/pipeline_log.log_decision`:
+>
+> | Entscheidung | Ausgänge | Eingangsgrößen |
+> |---|---|---|
+> | `thinker.schnellcheck` | `reasoning`, `durchlauf` | die Indikatoren, die **in der Antwort** und **im Reiz** trafen (einzeln, als Liste), `needs_web`, `unsicher_retry`, Antwortlänge; Maßstab: Zahl der Indikatoren |
+> | `thinker.ergebnis` | `ok`, `korrektur`, `korrektur_ohne_text`, `max_iterationen`, `self_trigger`, `nachfass_erschoepft_im_retry` | Iterationen, Werkzeugaufrufe, Nachfass-Versuche, Vorrecherche, Zahl der Probleme; Maßstab: `MAX_ITERATIONEN`, `NACHFASS_MAX` |
+>
+> `korrektur_ohne_text` ist ein eigener Ausgang: Das Urteil lautete Korrektur, aber kein Text kam mit — bis dahin lief dieser Fall still als unveränderte Antwort durch. **Im Betrieb belegt** am 18.09.2026, Turn `729033c8…`: `schnellcheck = reasoning`, `ergebnis = korrektur`. Die Anlaufquote ist damit erhebbar; der Absatz unten beschreibt den Stand davor.
 
 **Er ist im Nachhinein nicht beobachtbar.** Der Knoten schreibt an vier Stellen in `state["node_annotations"]` — dieser Schlüssel wird **nirgends persistiert**. Gelesen wird er turn-intern vom Verfasser und vom Tribunal; danach ist er weg.
 

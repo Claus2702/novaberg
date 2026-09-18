@@ -463,7 +463,8 @@ project/
 │   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index, Magnet-Felder P3)
 │   │   ├── lzg_knoten.py                #   Langzeitgedaechtnis: Knoten (PostgreSQL, Ebbinghaus)
 │   │   ├── lzg_kanten.py                #   Langzeitgedaechtnis: Kanten
-│   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task)
+│   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task); `log_decision` = Entscheidungs-Eintrag einer Weiche (seit 18.09.2026)
+│   │   ├── background_audit.py          #   Die eine Senke des `hintergrund_log` (`write_audit`, seit 18.09.2026)
 │   │   ├── sachlage_verlauf.py          #   Sachlage-Gedaechtnis je Turn, ohne Verfall (→ novaberg-thinking-lage_k.md §4)
 │   │   ├── sachlage_properties.py       #   Eigenschaftsgedaechtnis der Sachlage: Objekte je Paar, ihre Turns, Werte mit Historie (→ novaberg-thinking-lage_k.md §4, Scheibe 11)
 │   │   ├── charakter.py                 #   Charakter-Hash (Read)
@@ -527,7 +528,7 @@ project/
 │           ├── scheduler.py             #     APScheduler-Heartbeat
 │           ├── kandidaten.py            #     Queue-Peek + periodische Aufgaben
 │           ├── router.py                #     Aufgabe -> Agent-Name
-│           ├── dispatch.py              #     Agent-Ausfuehrung
+│           ├── dispatch.py              #     Agent-Ausfuehrung; Rahmen-Audit fuer jeden Agenten ohne eigenes (`writes_own_audit`, seit 18.09.2026)
 │           ├── riegel.py                #     Riegelkette der Zustellung (Riegel 1 gebaut)
 │           └── stack.py                 #     Shadow-Stack Push
 │

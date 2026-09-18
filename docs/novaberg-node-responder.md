@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 5. September 2026, 20:28 UTC (die **Zeichenspanne** der Regie wird nicht von jedem Modell befolgt — 996 statt 175 Zeichen beim Fernmodell; ein Override auf der Prompt-Modellebene formuliert sie in Saetzen und ist als Provisorium vermerkt). Davor 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
+**Stand:** 18. September 2026 (**§4a: zwei Entscheidungs-Einträge** — die Form der Nachricht und das Ergebnis, auch das leere). Davor 5. September 2026, 20:28 UTC (die **Zeichenspanne** der Regie wird nicht von jedem Modell befolgt — 996 statt 175 Zeichen beim Fernmodell; ein Override auf der Prompt-Modellebene formuliert sie in Saetzen und ist als Provisorium vermerkt). Davor 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -456,6 +456,17 @@ Ich bin so hyped gerade, das ist nicht real!
 **Butler-Härtung (seit Chat 24):** Explizites Verbot von Pseudo-Rückfragen im [REGELN]-Block. Echte Rückfragen kommen ausschließlich über den [AUFGABE]-Block (Pflicht-Rückfrage).
 
 ---
+
+## 4a. Entscheidungs-Einträge (18.09.2026)
+
+Der Responder schreibt je Turn zwei Einträge ins `pipeline_log` (`art = switch`, Feld `entscheidung`, über `memory/pipeline_log.log_decision`):
+
+| Entscheidung | Ausgänge | Eingangsgrößen |
+|---|---|---|
+| `responder.nachricht` | `verlauf_mit_reiz`, `verlauf_mit_auftrag`, `reiz_ohne_verlauf`, `auftrag_ohne_verlauf` | eigener Gedanke, gelesene Verlaufsbeiträge, ob der Reiz aus dem Verlauf genommen wurde, Gruppen, Sprachstil-Block ja/nein, Länge von Reiz und System-Prompt |
+| `responder.ergebnis` | `antwort`, `leer` | Zeichen der Antwort, Token, Zeichen des bereitgestellten Inhalts |
+
+**`responder.ergebnis` steht auch auf dem leeren Pfad.** Die Ist-Länge (`schritt = ergebnis`) wird weiterhin nur bei einer Antwort geschrieben; ohne den Entscheidungs-Eintrag war eine leere Antwort im dauerhaften Protokoll von einem Turn ohne Responder nicht zu unterscheiden. Ein Schreibfehler der Forensik wird gewarnt und beendet den Turn nicht. Im Betrieb belegt am 18.09.2026, Turn `729033c8…`.
 
 ## 5. State-Felder
 
