@@ -136,6 +136,14 @@ class DispatchFrameTest(unittest.TestCase):
 class DeclarationMatchesCodeTest(unittest.TestCase):
     """`writes_own_audit` sagt, was der Code tut."""
 
+    # Agenten, deren Audit-Methode nur einen Schritt belegt und nicht den
+    # Lauf — sie brauchen den Rahmen trotz eigener Methode. Jeder Eintrag
+    # traegt seinen Grund; ein neuer braucht einen.
+    NUR_EIN_SCHRITT: dict[str, str] = {
+        "recherche": "_audit_log schreibt recherche_bibliothek, nicht den Lauf "
+                     "(RECHERCHE-OHNE-AUDIT)",
+    }
+
     def test_every_registered_agent_declares_truthfully(self) -> None:
         if not AgentRegistry.alle():
             discover_agents()
@@ -143,9 +151,16 @@ class DeclarationMatchesCodeTest(unittest.TestCase):
         self.assertGreaterEqual(len(agenten), 15, sorted(agenten))
         for name, agent in agenten.items():
             quelle = inspect.getsource(type(agent))
-            eigene = "def _audit_log(" in quelle or "def _audit(" in quelle
+            eigene = ("def _audit_log(" in quelle or "def _audit(" in quelle) \
+                and name not in self.NUR_EIN_SCHRITT
             with self.subTest(agent=name):
                 self.assertEqual(agent.writes_own_audit, eigene)
+
+    def test_research_run_gets_the_frame(self) -> None:
+        """Der Lauf des Recherche-Agenten steht im Audit, nicht nur sein Schritt."""
+        if not AgentRegistry.alle():
+            discover_agents()
+        self.assertFalse(AgentRegistry.finden("recherche").writes_own_audit)
 
     def test_no_copy_of_the_insert_outside_the_sink(self) -> None:
         treffer = [

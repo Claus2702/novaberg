@@ -500,8 +500,16 @@ class RechercheAgent(BaseAgent):
 
     @property
     def writes_own_audit(self) -> bool:
-        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
-        return True
+        """Nein: `_audit_log` belegt nur den Bibliotheks-Schritt, nicht den Lauf.
+
+        Die Methode schreibt `recherche_bibliothek` — gestartet, erledigt oder
+        fehler der Ablage in die Bibliothek. Der Lauf davor (Websuche, Lesen,
+        Zusammenfassen, zehn Minuten auf dem einzigen seriellen Platz) blieb
+        ohne Eintrag (`RECHERCHE-OHNE-AUDIT`). Den schreibt der Rahmen im
+        Pixie-Dispatch unter der Aufgabe `recherche`; der Schritt bleibt eine
+        eigene Aufgabe, und kein Lauf zaehlt doppelt.
+        """
+        return False
 
     def invoke(self, state: AgentState) -> AgentState:
         """Orchestriert den Recherche-Ablauf.
