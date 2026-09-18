@@ -12,6 +12,7 @@ import logging
 
 from agents.base import AgentState
 from agents.crud_validation import ValidationResult
+from agents.write_outcome import verified_outcome
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.charakter_identitaet.crud")
@@ -262,7 +263,7 @@ def _create(state: AgentState) -> dict:
         f"'{anweisung[:80]}'"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Charakter-Anweisung gespeichert: {anweisung}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -274,7 +275,7 @@ def _create(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)
 
 
 def _read(state: AgentState) -> dict:
@@ -342,7 +343,7 @@ def _update(state: AgentState) -> dict:
         f"verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Charakter-Anweisung aktualisiert: {neue_anweisung}",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -353,7 +354,7 @@ def _update(state: AgentState) -> dict:
             "verifiziert": verifiziert,
             "vorher": _previous_state_trace(vorher),
         }],
-    }
+    }, verifiziert)
 
 
 def _delete(state: AgentState) -> dict:
@@ -373,7 +374,7 @@ def _delete(state: AgentState) -> dict:
     verifiziert = _verifizieren("delete", target_id, {"aktiv": False})
     logger.info(f"CharakterAgent: Anweisung {target_id} deaktiviert, verifiziert={verifiziert}")
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Charakter-Anweisung (ID {target_id}) entfernt.",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -383,7 +384,7 @@ def _delete(state: AgentState) -> dict:
             "verifiziert": verifiziert,
             "vorher": _previous_state_trace(vorher),
         }],
-    }
+    }, verifiziert)
 
 
 def _delete_alle(state: AgentState) -> dict:
@@ -404,7 +405,7 @@ def _delete_alle(state: AgentState) -> dict:
         f"verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": "Alle Charakter-Anweisungen entfernt. Standardverhalten wiederhergestellt.",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -416,7 +417,7 @@ def _delete_alle(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)
 
 
 def _reactivate(state: AgentState) -> dict:
@@ -469,7 +470,7 @@ def _reactivate(state: AgentState) -> dict:
 
     logger.info(f"CharakterAgent: Anweisung {target_id} reaktiviert, verifiziert={verifiziert}")
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Charakter-Anweisung wiederhergestellt: {nachher['anweisung'] if nachher else '?'}",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -479,7 +480,7 @@ def _reactivate(state: AgentState) -> dict:
             "verifiziert": verifiziert,
             "vorher": _previous_state_trace(vorher),
         }],
-    }
+    }, verifiziert)
 
 
 def _replace(state: AgentState) -> dict:
@@ -513,7 +514,7 @@ def _replace(state: AgentState) -> dict:
         f"verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Charakter komplett ersetzt durch: {neue_anweisung}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -526,7 +527,7 @@ def _replace(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)
 
 
 def _konsolidieren(state: AgentState) -> dict:

@@ -12,6 +12,7 @@ import logging
 
 from agents.base import AgentState
 from agents.crud_validation import ValidationResult
+from agents.write_outcome import verified_outcome
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.direktiven.crud")
@@ -266,7 +267,7 @@ def _create(state: AgentState) -> dict:
     )
 
     kontext_info = f" (Kontext: {kontext})" if kontext else ""
-    return {
+    return verified_outcome({
         "ergebnis": f"Direktive gespeichert: {anweisung}{kontext_info}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -278,7 +279,7 @@ def _create(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)
 
 
 def _read(state: AgentState) -> dict:
@@ -353,7 +354,7 @@ def _update(state: AgentState) -> dict:
         f"verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Direktive aktualisiert: {neue_anweisung}",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -364,7 +365,7 @@ def _update(state: AgentState) -> dict:
             "verifiziert": verifiziert,
             "vorher": _previous_state_trace(vorher),
         }],
-    }
+    }, verifiziert)
 
 
 def _delete(state: AgentState) -> dict:
@@ -413,7 +414,7 @@ def _delete(state: AgentState) -> dict:
 
     logger.info(f"DirektivenAgent: Direktive {target_id} deaktiviert, verifiziert={verifiziert}")
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Direktive (ID {target_id}) entfernt.",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -423,7 +424,7 @@ def _delete(state: AgentState) -> dict:
             "verifiziert": verifiziert,
             "vorher": _previous_state_trace(vorher),
         }],
-    }
+    }, verifiziert)
 
 
 def _reactivate(state: AgentState) -> dict:
@@ -473,7 +474,7 @@ def _reactivate(state: AgentState) -> dict:
     nachher = _read_by_id(target_id)
     logger.info(f"DirektivenAgent: Direktive {target_id} reaktiviert, verifiziert={verifiziert}")
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Direktive wiederhergestellt: {nachher['anweisung'] if nachher else '?'}",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -483,4 +484,4 @@ def _reactivate(state: AgentState) -> dict:
             "verifiziert": verifiziert,
             "vorher": _previous_state_trace(vorher),
         }],
-    }
+    }, verifiziert)

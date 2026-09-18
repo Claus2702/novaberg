@@ -15,6 +15,7 @@ from zoneinfo import ZoneInfo
 
 from agents.base import AgentState
 from agents.timeline.event_time import precision_has_time
+from agents.write_outcome import verified_outcome
 from config import TIMEZONE
 
 logger = logging.getLogger("ki_server.agents.timeline.crud")
@@ -155,7 +156,7 @@ def _create(state: AgentState) -> dict:
         f"verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Termin '{title}' eingetragen fuer {lokale_zeit}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -167,7 +168,7 @@ def _create(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)
 
 
 def _update(state: AgentState) -> dict:
@@ -299,7 +300,7 @@ def _update(state: AgentState) -> dict:
     logger.info(f"TimelineAgent: Termin '{termin.get('title')}' verschoben auf {lokale_zeit} "
                 f"(alt={termin_id}, neu={neuer_id}), verifiziert={verifiziert}")
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Termin '{termin.get('title')}' verschoben auf {lokale_zeit}",
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
@@ -309,7 +310,7 @@ def _update(state: AgentState) -> dict:
             "neuer_id": neuer_id,
             "verifiziert": verifiziert,
         }],
-    }
+    }, verifiziert)
 
 
 def _delete(state: AgentState) -> dict:
@@ -338,7 +339,7 @@ def _delete(state: AgentState) -> dict:
         f"TimelineAgent: Termin '{title}' (ID {termin_id}) invalidiert, verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Termin '{title}' geloescht",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -350,4 +351,4 @@ def _delete(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)

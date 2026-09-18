@@ -11,6 +11,7 @@ import json
 import logging
 
 from agents.base import AgentState
+from agents.write_outcome import verified_outcome
 from config import NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER
 
 logger = logging.getLogger("ki_server.agents.notizen.crud")
@@ -202,7 +203,7 @@ def _create(state: AgentState) -> dict:
 
     logger.info(f"NotizenAgent: Notiz '{name}' angelegt (ID {notiz_id}), verifiziert={verifiziert}")
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Notiz '{name}' erstellt:\n{text}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
@@ -214,7 +215,7 @@ def _create(state: AgentState) -> dict:
                 "verifiziert": verifiziert,
             }
         ],
-    }
+    }, verifiziert)
 
 
 def _update(state: AgentState) -> dict:
@@ -299,12 +300,12 @@ def _update(state: AgentState) -> dict:
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) {action}, verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Notiz '{notiz_name}' aktualisiert:\n{neuer_text}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
         + [{"node": "ausfuehren", "ergebnis": action, "verifiziert": verifiziert}],
-    }
+    }, verifiziert)
 
 
 def _delete(state: AgentState) -> dict:
@@ -333,12 +334,12 @@ def _delete(state: AgentState) -> dict:
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) archiviert, verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Notiz '{notiz_name}' geloescht",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
         + [{"node": "ausfuehren", "ergebnis": "archiviert", "verifiziert": verifiziert}],
-    }
+    }, verifiziert)
 
 
 def _append(state: AgentState) -> dict:
@@ -375,12 +376,12 @@ def _append(state: AgentState) -> dict:
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) ergaenzt, verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Text an '{notiz_name}' angehaengt:\n{kombiniert}",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
         + [{"node": "ausfuehren", "ergebnis": "angehaengt", "verifiziert": verifiziert}],
-    }
+    }, verifiziert)
 
 
 def _clear_content(state: AgentState) -> dict:
@@ -415,12 +416,12 @@ def _clear_content(state: AgentState) -> dict:
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) geleert, verifiziert={verifiziert}"
     )
 
-    return {
+    return verified_outcome({
         "ergebnis": f"Notiz '{notiz_name}' geleert.",
         "status": "abgeschlossen",
         "schritte": state["schritte"]
         + [{"node": "ausfuehren", "ergebnis": "geleert", "verifiziert": verifiziert}],
-    }
+    }, verifiziert)
 
 
 def _rename(state: AgentState) -> dict:
