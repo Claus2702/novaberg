@@ -2321,6 +2321,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 **Update 17.09.2026 — gemessen und zur Hälfte behoben (Scheibe 12 D2a).** Über 24 erfundene Zustimmungen auf ein Angebot (*»Soll ich dir den Termin eintragen?« — »Gerne«*) erkannte der Router **ohne** die Lage **0**, **mit** dem `[LAGE]`-Block 13 und 14 in zwei Läufen — ohne Fehlalarme auf Ablehnungen und Zustimmungen zu etwas anderem. Die Klassifikation des Dienstes macht mit Objektbezug aus allen 24 einen Auftrag. **Offen bleibt die andere Hälfte** (drei Fälle in beiden Läufen still); ein Satz im Dispatch-Guard half nicht und brachte Fehlalarme. `labor/2026-09-17_router_lage/`.
 
+**Update 18.09.2026 — Symptom 2 ist behoben, deterministisch.** Eine blanke Zustimmung auf ein **offenes Angebot** (E1: das Angebot liegt als offener Punkt vor) stellt der Router jetzt selbst an den Dienst des Angebots zu, wenn das Modell nichts zugestellt hat (`router.py`, Commit 15f3bff); die Klassifikation nimmt Ziel und Zeit aus der angebotenen Sache (103e8d9). **Gemessen im Betrieb:** 3 von 3 richtige Termine, die Zustellung jedes Mal von der Weiche — das Modell allein hätte 0 von 3 geschafft (`labor/2026-09-18_zustellung_angebot/`). **Offen bleibt Symptom 1** — ein Rückbezug auf einen bestehenden Termin (*»Kannst du das mit in den Termin schreiben?«*) — und die Zustimmung auf ein Angebot, das `find_offers` nicht erkennt.
+
 ---
 
 #### TIMELINE-SEARCH1 — Timeline-Agent findet irrelevanten alten Termin ⬜
