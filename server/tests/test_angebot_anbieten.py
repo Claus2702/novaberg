@@ -39,6 +39,13 @@ class KandidatTest(unittest.TestCase):
         self.assertEqual((k.name, k.service, k.verb, k.reason),
                          ("Abholung der Schwester", "timeline", "eintragen", "anbieten"))
 
+    def test_bei_zwei_diensten_der_naechste_nicht_der_erste_nach_name(self) -> None:
+        """Lauf vom 18.09.2026, 22:49 UTC: 4 von 4 Terminen wurden zum Notieren angeboten."""
+        urteil = {"ergebnis": "gerechnet", "objekte": [{"name": "Abholung der Schwester", "empfaenger": ["notizen", "timeline"],
+                                                       "naehe": {"notizen": 0.4094, "timeline": 0.554}}]}
+        k = offer_candidate(SACHLAGE, urteil, [], "")
+        self.assertEqual((k.service, k.verb), ("timeline", "eintragen"))
+
     def test_kein_angebot_wenn_gebeten_oder_gehandelt_wurde(self) -> None:
         self.assertEqual(offer_candidate(SACHLAGE, URTEIL, [], "agent").reason, "auftrag_laeuft")
         self.assertEqual(offer_candidate(SACHLAGE, URTEIL, [{"status": "abgeschlossen"}], "").reason, "dienst_lief")

@@ -193,8 +193,10 @@ class BindungTest(unittest.TestCase):
         b = offer_binding(lage, self.URTEIL, {})
         self.assertEqual((b.objects, b.services, b.reason), (("Zahnarzttermin",), ("timeline",), "einzige_sache"))
 
-    def test_zwei_dienste_in_der_reihenfolge_des_urteils(self) -> None:
-        urteil = {"ergebnis": "gerechnet", "objekte": [{"name": "Zahnarzttermin", "empfaenger": ["timeline", "notizen"]}]}
+    def test_zwei_dienste_der_naechste_zuerst_nicht_nach_name(self) -> None:
+        """Das Urteil nennt die Empfaenger nach Name — wie im Lauf vom 18.09.2026, 22:49 UTC."""
+        urteil = {"ergebnis": "gerechnet", "objekte": [{"name": "Zahnarzttermin", "empfaenger": ["notizen", "timeline"],
+                                                       "naehe": {"notizen": 0.424, "timeline": 0.5116}}]}
         lage = {"objekte": [self.LAGE["objekte"][0]]}
         self.assertEqual(offer_binding(lage, urteil, {}).services, ("timeline", "notizen"))
 

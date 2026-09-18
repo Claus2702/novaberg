@@ -353,6 +353,29 @@ def is_bare_refusal(text: str) -> bool:
 _OFFER_VERBS: dict[str, str] = {"timeline": "eintragen", "notizen": "notieren"}
 
 
+def _writing_services(entry: dict) -> list[str]:
+    """Die schreibenden Dienste eines Urteilseintrags, der naechste zuerst.
+
+    Vorbedingung: keine; ein unlesbarer Naehewert zaehlt als 0.
+    Nachbedingung: nur Dienste aus `_OFFER_VERBS`, absteigend nach Naehe, bei
+        Gleichstand nach Name. **Nicht die Reihenfolge von `empfaenger`** —
+        die ist nach Name (`object_nearness.judge`). `[gemessen 18.09.2026,
+        Betrieb]` 4 von 4 Terminen standen an Notizen und Timeline, die
+        Timeline naeher — angeboten wurde 4 von 4 Mal "notieren".
+    Fehlerfaelle: keine.
+    """
+    naehe: dict = entry.get("naehe") if isinstance(entry.get("naehe"), dict) else {}
+
+    def wert(dienst: str) -> float:
+        try:
+            return float(naehe.get(dienst, 0.0))
+        except (TypeError, ValueError):
+            return 0.0
+
+    dienste: list[str] = [str(d) for d in (entry.get("empfaenger") or []) if str(d) in _OFFER_VERBS]
+    return sorted(dict.fromkeys(dienste), key=lambda d: (-wert(d), d))
+
+
 @dataclass(frozen=True)
 class OfferCandidate:
     """Eine Sache, die Nova anbieten koennte — und warum oder warum nicht.
@@ -392,7 +415,7 @@ def offer_candidate(
     if not isinstance(sachlage, dict) or not isinstance(verdict, dict) or verdict.get("ergebnis") != "gerechnet":
         return OfferCandidate("", "", "", "keine_naehe")
     empfaenger: dict[str, list[str]] = {
-        str(o.get("name") or ""): list(o.get("empfaenger") or [])
+        str(o.get("name") or ""): _writing_services(o)
         for o in verdict.get("objekte") or [] if isinstance(o, dict)
     }
     for objekt in sachlage.get("objekte") or []:
@@ -400,8 +423,7 @@ def offer_candidate(
             continue
         name = str(objekt.get("name") or "").strip()
         for dienst in empfaenger.get(name, []):
-            if dienst in _OFFER_VERBS:
-                return OfferCandidate(name, dienst, _OFFER_VERBS[dienst], "anbieten")
+            return OfferCandidate(name, dienst, _OFFER_VERBS[dienst], "anbieten")
     return OfferCandidate("", "", "", "keine_sache_am_zettel")
 
 
@@ -443,8 +465,7 @@ def offer_binding(sachlage: object, verdict: object, offered: object) -> OfferBi
         if isinstance(o, dict) and o.get("akut") is True and str(o.get("name") or "").strip()
     ]
     empfaenger: dict[str, list[str]] = {
-        str(o.get("name") or ""):
-            [str(d) for d in (o.get("empfaenger") or []) if str(d) in _OFFER_VERBS]
+        str(o.get("name") or ""): _writing_services(o)
         for o in ((verdict or {}).get("objekte") or [] if isinstance(verdict, dict) else [])
         if isinstance(o, dict)
     }
@@ -465,6 +486,6 @@ def offer_binding(sachlage: object, verdict: object, offered: object) -> OfferBi
         for o in gewaehlt
     )
     namen: tuple[str, ...] = (name,) if name else tuple(d["name"] for d in details)
-    # Reihenfolge des Urteils, nicht alphabetisch: Der Router stellt dem
-    # ersten Dienst zu, und das Urteil nennt den naechsten zuerst.
+    # Der naechste Dienst zuerst (`_writing_services`): Der Router stellt dem
+    # ersten zu.
     return OfferBinding(namen, tuple(dict.fromkeys(dienste)), details, grund)
