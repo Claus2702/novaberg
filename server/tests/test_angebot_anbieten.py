@@ -1,15 +1,17 @@
 """Tests: Nova bietet von sich aus an — Scheibe 12 E2.
 
-Entscheidung des Eigentuemers (17.09.2026): Nova bietet nur bei sehr hohem
-Pflichtbewusstsein an, *"bei 0,9 und darueber"*, fuer Notizen wie fuer die
-Timeline — sonst wird es aufdringlich. Erst ein Angebot macht ein spaeteres
+Entscheidung des Eigentuemers (18.09.2026, loest die feste Schwelle 0,9 vom
+17.09. ab): Unter Pflichtbewusstsein 0,33 bietet Nova nie an; darueber steigt
+die Wahrscheinlichkeit je Turn linear von 0 % auf 100 % bei 1,0 — 0,67 ergibt
+50 %. Fuer Notizen wie fuer die Timeline. Erst ein Angebot macht ein spaeteres
 *"Gerne"* zum Auftrag (E1).
 
 Zeugen dieser Datei:
   * **Der Kandidat** — eine Sache am Zettel eines schreibenden Dienstes; kein
     Kandidat, wenn ein Auftrag laeuft oder ein Dienst schon lief.
-  * **Die Weiche** — Schwelle, Ablehnung (E3), nicht lesbares Rad; jeder Ausgang
-    steht als Entscheidung im Log.
+  * **Die Kurve** — 0 am Boden, 50 % bei 0,67, 100 % bei 1,0.
+  * **Die Weiche** — Boden, Zug, Ablehnung (E3), nicht lesbares Rad; jeder
+    Ausgang steht als Entscheidung im Log, mit Wahrscheinlichkeit und Zug.
   * **Der Kreis** — der Beispielsatz des Prompts ist einer, den `find_offers`
     als Angebot erkennt; sonst boete Nova an, und niemand merkte es.
 
@@ -47,29 +49,65 @@ class KandidatTest(unittest.TestCase):
         self.assertEqual(offer_candidate(SACHLAGE, fremd, [], "").reason, "keine_sache_am_zettel")
 
 
+class KurveTest(unittest.TestCase):
+    """Die Wahrscheinlichkeit aus dem Pflichtbewusstsein."""
+
+    def test_die_eckpunkte_der_entscheidung(self) -> None:
+        """Die drei Eckpunkte der Entscheidung vom 18.09.2026.
+
+        Die Gerade durch 0,33 und 1,0 trifft 0,67 bei 50,7 % — die Vorgabe
+        "0,67 ist 50 %" ist gerundet, deshalb ein Prozentpunkt Spiel.
+        """
+        for pflicht, erwartet in ((0.0, 0.0), (0.33, 0.0), (0.67, 0.5), (1.0, 1.0)):
+            with self.subTest(pflicht=pflicht):
+                self.assertAlmostEqual(verfasser._offer_probability(pflicht), erwartet, delta=0.01)
+
+    def test_ausserhalb_des_rads_begrenzt(self) -> None:
+        self.assertEqual(verfasser._offer_probability(-0.2), 0.0)
+        self.assertEqual(verfasser._offer_probability(1.3), 1.0)
+
+
 class WeicheTest(unittest.TestCase):
 
-    def _block(self, rad: dict | None, abgelehnt: set[str] | None = None) -> tuple[str, list[dict]]:
+    def _block(self, rad: dict | None, abgelehnt: set[str] | None = None,
+               zug: float = 0.0) -> tuple[str, list[dict]]:
         eintraege: list[dict] = []
         state = {"user_id": "pruefer", "character_id": "nova", "turn_id": "t1",
                  "objekt_urteil": URTEIL, "agent_results": [], "management_action": ""}
         with patch.object(verfasser, "nutzer_gewichtung_rad_laden", return_value=(rad, "destilliert")), \
              patch.object(verfasser, "declined_objects", return_value=abgelehnt or set()), \
-             patch.object(verfasser, "log_decision", lambda **kw: eintraege.append(kw)):
+             patch.object(verfasser, "log_decision", lambda **kw: eintraege.append(kw)), \
+             patch.object(verfasser.random, "random", return_value=zug):
             return verfasser._offer_block(state, SACHLAGE), eintraege
 
-    def test_ueber_der_schwelle_bietet_sie_an(self) -> None:
-        block, eintraege = self._block({"pflicht": 0.95})
+    def test_zug_unter_der_wahrscheinlichkeit_bietet_sie_an(self) -> None:
+        """Ein Zug unter der Wahrscheinlichkeit ergibt das Angebot.
+
+        0,773 ist der Wert des Paares meister × nova am 18.09.2026 — unter
+        der alten Schwelle 0,9 bot sie hier nie an.
+        """
+        block, eintraege = self._block({"pflicht": 0.773}, zug=0.60)
         self.assertIn("Abholung der Schwester", block)
         self.assertIn("eintragen", block)
         self.assertEqual(eintraege[0]["outcome"], "angeboten")
+        self.assertEqual(eintraege[0]["inputs"]["wahrscheinlichkeit"], 0.661)
+        self.assertEqual(eintraege[0]["inputs"]["zug"], 0.6)
 
-    def test_unter_der_schwelle_nicht_und_das_steht_im_log(self) -> None:
-        """0,773 ist der Wert des Paares meister × nova am 18.09.2026."""
-        block, eintraege = self._block({"pflicht": 0.773})
+    def test_zug_ueber_der_wahrscheinlichkeit_nicht_und_das_steht_im_log(self) -> None:
+        block, eintraege = self._block({"pflicht": 0.773}, zug=0.70)
         self.assertEqual(block, "")
-        self.assertEqual(eintraege[0]["outcome"], "unter_schwelle")
-        self.assertEqual(eintraege[0]["inputs"]["pflicht"], 0.773)
+        self.assertEqual(eintraege[0]["outcome"], "nicht_gezogen")
+        self.assertEqual(eintraege[0]["inputs"]["zug"], 0.7)
+
+    def test_unter_dem_boden_nie_auch_bei_zug_null(self) -> None:
+        block, eintraege = self._block({"pflicht": 0.32}, zug=0.0)
+        self.assertEqual(block, "")
+        self.assertEqual(eintraege[0]["outcome"], "unter_boden")
+        self.assertEqual(eintraege[0]["inputs"]["pflicht"], 0.32)
+
+    def test_bei_voller_pflicht_immer(self) -> None:
+        block, eintraege = self._block({"pflicht": 1.0}, zug=0.999)
+        self.assertEqual(eintraege[0]["outcome"], "angeboten")
 
     def test_eine_abgelehnte_sache_wird_nicht_wieder_angeboten(self) -> None:
         block, eintraege = self._block({"pflicht": 1.0}, {"Abholung der Schwester"})

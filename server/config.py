@@ -3372,13 +3372,16 @@ SACHLAGE_VERFALL_SEKUNDEN:    float = float(
 ANGEBOT_VERFALL_SEKUNDEN:     float = float(
     os.getenv("ANGEBOT_VERFALL_SEKUNDEN", "900"))     # 15 Minuten
 
-# Ab welchem Pflichtbewusstsein Nova von sich aus anbietet, eine Sache
-# einzutragen oder zu notieren (Scheibe 12 E2). Entscheidung des Eigentuemers,
-# 17.09.2026: nur bei sehr hohem Pflichtbewusstsein, "bei 0,9 und darueber" —
-# sonst wird es schnell aufdringlich; gilt fuer Notizen und Timeline. Gelesen
-# wird die Speiche `pflicht` aus Novas Zuwendungsrad zum Menschen.
-ANGEBOT_PFLICHT_SCHWELLE:     float = float(
-    os.getenv("ANGEBOT_PFLICHT_SCHWELLE", "0.9"))
+# Wie wahrscheinlich Nova von sich aus anbietet, eine Sache einzutragen oder
+# zu notieren (Scheibe 12 E2), gilt fuer Notizen und Timeline. Gelesen wird
+# die Speiche `pflicht` aus Novas Zuwendungsrad zum Menschen. Entscheidung des
+# Eigentuemers, 18.09.2026: unter dem Boden nie; darueber steigt die
+# Wahrscheinlichkeit je Turn linear von 0 % am Boden auf 100 % bei 1,0 —
+# 0,67 ergibt 50 %. Nova bekommt damit Spielraum statt einer harten Kante.
+# Abgeloest: 17.09.2026 eine feste Schwelle 0,9 ("sonst wird es schnell
+# aufdringlich") — dem Eigentuemer gegenueber bot sie damit nie an.
+ANGEBOT_PFLICHT_BODEN:        float = float(
+    os.getenv("ANGEBOT_PFLICHT_BODEN", "0.33"))
 # Die Sachlage-Bruecke ohne harte turn_id sucht die aehnlichste Verlaufszeile
 # des Paares per Kosinus. Unter dieser Schwelle gibt es keine Bruecke: Ein
 # Uebergang zu einem Turn ohne Bezug waere schlimmer als keiner.

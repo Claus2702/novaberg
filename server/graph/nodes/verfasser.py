@@ -26,10 +26,11 @@ Konzept: novaberg-node-verfasser_k.md
 """
 
 import logging
+import random
 from datetime import datetime
 
 from config import (
-    ANGEBOT_PFLICHT_SCHWELLE,
+    ANGEBOT_PFLICHT_BODEN,
     POSTGRES_URL,
     PROMPTS,
     VERFASSER_IMPULS_NAHE,
@@ -350,16 +351,31 @@ def _uebergangsblock(state: ConversationState) -> str:
     return PROMPTS["verfasser.impuls_ferne"]
 
 
+def _offer_probability(pflicht: float) -> float:
+    """Die Wahrscheinlichkeit, dass Nova in diesem Turn anbietet.
+
+    Vorbedingung: `pflicht` ist eine Zahl.
+    Nachbedingung: 0 bis zum Boden (`ANGEBOT_PFLICHT_BODEN`), darueber linear
+        bis 1 bei Pflichtbewusstsein 1,0 (Entscheidung 18.09.2026); ein Wert
+        ausserhalb [0, 1] wird auf diesen Bereich begrenzt.
+    Fehlerfaelle: keine.
+    """
+    anteil: float = (pflicht - ANGEBOT_PFLICHT_BODEN) / (1.0 - ANGEBOT_PFLICHT_BODEN)
+    return min(1.0, max(0.0, anteil))
+
+
 def _offer_block(state: ConversationState, sachlage: object) -> str:
     """Der [ANGEBOT]-Block des Verfassers, oder leer — mit einem Eintrag je Turn.
 
     Vorbedingung: keine; ohne Paar, Naehe oder Rad bleibt der Block leer.
     Nachbedingung: Der Block steht genau dann, wenn eine Sache am Zettel von
         Timeline oder Notizen steht, in diesem Turn kein Dienst lief und kein
-        Auftrag laeuft, Novas Pflichtbewusstsein zum Menschen die Schwelle
-        erreicht (`ANGEBOT_PFLICHT_SCHWELLE`, Entscheidung 17.09.2026: 0,9)
-        und die Sache nicht abgelehnt ist (E3). **Jeder Ausgang steht als
-        `verfasser.angebot` im Pipeline-Log**, auch "unter Schwelle" — sonst
+        Auftrag laeuft, Novas Pflichtbewusstsein zum Menschen
+        nicht unter dem Boden liegt, die Sache nicht abgelehnt ist (E3) und der Zug
+        dieses Turns unter der Wahrscheinlichkeit aus `_offer_probability`
+        bleibt (Entscheidung 18.09.2026). **Jeder Ausgang steht als
+        `verfasser.angebot` im Pipeline-Log**, mit Wahrscheinlichkeit und Zug,
+        auch "unter Boden" und "nicht gezogen" — sonst
         waere ein Nova, die nie anbietet, von einer, die nie gefragt wurde,
         nicht zu unterscheiden.
     Fehlerfaelle: keine Ausnahme; ein nicht lesbares Rad heisst kein Angebot
@@ -381,14 +397,21 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
         if not isinstance(pflicht, (int, float)):
             logger.error("Verfasser: Pflichtbewusstsein nicht lesbar (Herkunft %s) — kein Angebot", herkunft)
             ausgang = "pflicht_unbekannt"
-        elif pflicht < ANGEBOT_PFLICHT_SCHWELLE:
-            ausgang = "unter_schwelle"
+        elif pflicht < ANGEBOT_PFLICHT_BODEN:
+            ausgang = "unter_boden"
         elif kandidat.name in declined_objects(POSTGRES_URL, user_id, character_id, [kandidat.name]):
             ausgang = "abgelehnt"
         else:
-            block = PROMPTS["verfasser.angebot"].format(sache=kandidat.name, verb=kandidat.verb)
-            ausgang = "angeboten"
-            logger.info(f"Verfasser: Angebot — {kandidat.name} ({kandidat.service}), Pflicht {pflicht:.3f}")
+            chance: float = _offer_probability(pflicht)
+            zug: float = random.random()  # noqa: S311 — ein Wurf, kein Geheimnis
+            eingang.update({"wahrscheinlichkeit": round(chance, 3), "zug": round(zug, 3)})
+            if zug >= chance:
+                ausgang = "nicht_gezogen"
+            else:
+                block = PROMPTS["verfasser.angebot"].format(sache=kandidat.name, verb=kandidat.verb)
+                ausgang = "angeboten"
+                logger.info(f"Verfasser: Angebot — {kandidat.name} ({kandidat.service}), "
+                            f"Pflicht {pflicht:.3f}, Wahrscheinlichkeit {chance:.2f}")
     log_decision(
         turn_id      = state.get("turn_id", "unbekannt"),
         node         = "verfasser",
@@ -396,7 +419,7 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
         decision     = "verfasser.angebot",
         outcome      = ausgang,
         inputs       = eingang,
-        scale        = {"pflicht_schwelle": ANGEBOT_PFLICHT_SCHWELLE},
+        scale        = {"pflicht_boden": ANGEBOT_PFLICHT_BODEN},
         user_id      = user_id,
         character_id = character_id,
     )
