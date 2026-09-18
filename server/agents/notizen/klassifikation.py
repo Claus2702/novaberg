@@ -163,12 +163,14 @@ def klassifizieren(state: AgentState) -> dict:
         target_typ = ergebnis.get("target_typ", "titel")
         normalisiert = ergebnis.get("normalisiert", "")
 
-        # Die Zustimmung bindet — deterministisch (E1c, gemessen 17.09.2026):
-        # Bleibt das Ziel leer, kommt es aus der Sache, der zugestimmt wurde.
-        if not target and state["kontext"].get("angebot_satz") and objekt_bezug:
+        # Die Zustimmung bindet — deterministisch (E1c): Bei einer blanken
+        # Zustimmung nennt die Aeusserung nichts; das Ziel ist die angebotene
+        # Sache, nicht was das Modell aus dem Verlauf nimmt (18.09.2026, wie
+        # in der Timeline).
+        if state["kontext"].get("angebot_satz") and objekt_bezug:
             aus_der_sache, _ = consent_fields(objekt_bezug)
-            if aus_der_sache:
-                logger.info(f"klassifizieren: Ziel aus der zugestimmten Sache — '{aus_der_sache}'")
+            if aus_der_sache and target != aus_der_sache:
+                logger.info(f"klassifizieren: Ziel aus der zugestimmten Sache — '{aus_der_sache}' (Modell: '{target}')")
                 target = aus_der_sache
 
         # Inhalts-Aufloesung-Heuristik: normalisiert deutlich laenger als aufgabe

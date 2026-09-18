@@ -152,16 +152,21 @@ def klassifizieren(state: AgentState) -> dict:
         event_type = ergebnis.get("event_type", "termin")
         normalisiert = ergebnis.get("normalisiert", "")
 
-        # Die Zustimmung bindet — deterministisch (E1c, gemessen 17.09.2026):
-        # Was der Mensch angenommen hat, steht fest; leere Felder werden daraus
-        # gesetzt, nicht erraten. Nur bei einer Zustimmung, nur wo leer.
+        # Die Zustimmung bindet — deterministisch (E1c): Was der Mensch
+        # angenommen hat, steht fest. `angebot_satz` steht nur bei einer
+        # BLANKEN Zustimmung ("Gerne") — die Aeusserung nennt dann nichts
+        # selbst, und was das Modell als Ziel oder Zeit einsetzt, stammt aus
+        # dem Verlauf. ~~Gefuellt wurde nur, was leer war~~ → seit dem
+        # 18.09.2026 gewinnt die Sache: `[gemessen, Betrieb]` Das Modell nahm
+        # den Titel aus dem Verlauf ("Zahnarzttermin"), die Zeit kam aus der
+        # angebotenen Abholung — ein Mischtermin, der keinem Wunsch entsprach.
         if state["kontext"].get("angebot_satz") and objekt_bezug:
             aus_der_sache, zeit_der_sache = consent_fields(objekt_bezug)
-            if not target and aus_der_sache:
-                logger.info(f"klassifizieren: Ziel aus der zugestimmten Sache — '{aus_der_sache}'")
+            if aus_der_sache and target != aus_der_sache:
+                logger.info(f"klassifizieren: Ziel aus der zugestimmten Sache — '{aus_der_sache}' (Modell: '{target}')")
                 target = aus_der_sache
-            if not zeitausdruck and zeit_der_sache:
-                logger.info(f"klassifizieren: Zeitangabe aus der zugestimmten Sache — '{zeit_der_sache}'")
+            if zeit_der_sache and zeitausdruck != zeit_der_sache:
+                logger.info(f"klassifizieren: Zeitangabe aus der zugestimmten Sache — '{zeit_der_sache}' (Modell: '{zeitausdruck}')")
                 zeitausdruck = zeit_der_sache
 
         if action not in GUELTIGE_AKTIONEN:

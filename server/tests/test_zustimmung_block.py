@@ -95,13 +95,19 @@ class BindungImCodeTest(unittest.TestCase):
         self.assertEqual(ohne["target"], "")
         self.assertEqual(ohne["zeitausdruck"], "")
 
-    def test_was_das_modell_nennt_bleibt_stehen(self) -> None:
-        """Gefuellt wird nur, was leer ist — die Aeusserung schlaegt die Sache."""
+    def test_bei_blanker_zustimmung_gewinnt_die_sache_nicht_der_verlauf(self) -> None:
+        """Gemessen 18.09.2026: Titel aus dem Verlauf, Zeit aus der Sache — ein Mischtermin."""
+        aus_dem_verlauf = {"action": "create", "target": "Zahnarzttermin am Donnerstag um 15 Uhr",
+                           "zeitausdruck": "", "event_type": "termin", "normalisiert": ""}
+        ergebnis = self._klassifizieren(timeline_klassifikation, aus_dem_verlauf, SATZ)
+        self.assertEqual(ergebnis["target"], "Abholung der Schwester am Bahnhof")
+        self.assertEqual(ergebnis["zeitausdruck"], "Samstag 10 Uhr")
+
+    def test_ohne_zustimmung_bleibt_was_das_modell_nennt(self) -> None:
         eigen = {"action": "create", "target": "Zahnarzt", "zeitausdruck": "Donnerstag 15 Uhr",
                  "event_type": "termin", "normalisiert": ""}
-        ergebnis = self._klassifizieren(timeline_klassifikation, eigen, SATZ)
-        self.assertEqual(ergebnis["target"], "Zahnarzt")
-        self.assertEqual(ergebnis["zeitausdruck"], "Donnerstag 15 Uhr")
+        ergebnis = self._klassifizieren(timeline_klassifikation, eigen, "")
+        self.assertEqual((ergebnis["target"], ergebnis["zeitausdruck"]), ("Zahnarzt", "Donnerstag 15 Uhr"))
 
     def test_die_notizen_fuellen_das_ziel_aus_der_sache(self) -> None:
         leer = {"action": "add_content", "target": "", "target_typ": "titel", "normalisiert": ""}
