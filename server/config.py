@@ -3371,6 +3371,14 @@ SACHLAGE_VERFALL_SEKUNDEN:    float = float(
 # niemandem gehoert.
 ANGEBOT_VERFALL_SEKUNDEN:     float = float(
     os.getenv("ANGEBOT_VERFALL_SEKUNDEN", "900"))     # 15 Minuten
+
+# Ab welchem Pflichtbewusstsein Nova von sich aus anbietet, eine Sache
+# einzutragen oder zu notieren (Scheibe 12 E2). Entscheidung des Eigentuemers,
+# 17.09.2026: nur bei sehr hohem Pflichtbewusstsein, "bei 0,9 und darueber" —
+# sonst wird es schnell aufdringlich; gilt fuer Notizen und Timeline. Gelesen
+# wird die Speiche `pflicht` aus Novas Zuwendungsrad zum Menschen.
+ANGEBOT_PFLICHT_SCHWELLE:     float = float(
+    os.getenv("ANGEBOT_PFLICHT_SCHWELLE", "0.9"))
 # Die Sachlage-Bruecke ohne harte turn_id sucht die aehnlichste Verlaufszeile
 # des Paares per Kosinus. Unter dieser Schwelle gibt es keine Bruecke: Ein
 # Uebergang zu einem Turn ohne Bezug waere schlimmer als keiner.

@@ -342,3 +342,59 @@ def is_bare_refusal(text: str) -> bool:
     if not woerter or len(woerter) > 5 or woerter[0] not in _REFUSAL_OPENERS:
         return False
     return all(w in _REFUSAL_WORDS for w in woerter)
+
+
+# Wie Nova die Handlung je Dienst nennt — im Wortlaut, den `find_offers` erkennt.
+_OFFER_VERBS: dict[str, str] = {"timeline": "eintragen", "notizen": "notieren"}
+
+
+@dataclass(frozen=True)
+class OfferCandidate:
+    """Eine Sache, die Nova anbieten koennte — und warum oder warum nicht.
+
+    Attributes:
+        name: Name des akuten Objekts; leer, wenn es keinen Kandidaten gibt.
+        service: Der Dienst, an dessen Zettel es steht.
+        verb: Wie die Handlung heisst ("eintragen", "notieren").
+        reason: Der Ausgang der Weiche — `anbieten`, oder warum nicht.
+    """
+
+    name: str
+    service: str
+    verb: str
+    reason: str
+
+
+def offer_candidate(
+    sachlage:          object,
+    verdict:           object,
+    agent_results:     list,
+    management_action: str,
+) -> OfferCandidate:
+    """Welche Sache kaeme fuer ein Angebot in Frage — vor Pflicht und Ablehnung?
+
+    Vorbedingung: keine.
+    Nachbedingung: der erste akute Gegenstand, den die gerechnete Naehe an den
+        Zettel eines schreibenden Dienstes (Timeline, Notizen) stellt — sonst
+        ein Kandidat ohne Namen mit dem Grund. **Kein Angebot**, wenn in diesem
+        Turn schon ein Dienst lief (dann ist gehandelt oder gefragt worden) oder
+        ein Auftrag laeuft: Anbieten ist fuer das, worum niemand gebeten hat.
+    """
+    if management_action:
+        return OfferCandidate("", "", "", "auftrag_laeuft")
+    if any(getattr(r, "status", None) or (isinstance(r, dict) and r.get("status")) for r in agent_results or []):
+        return OfferCandidate("", "", "", "dienst_lief")
+    if not isinstance(sachlage, dict) or not isinstance(verdict, dict) or verdict.get("ergebnis") != "gerechnet":
+        return OfferCandidate("", "", "", "keine_naehe")
+    empfaenger: dict[str, list[str]] = {
+        str(o.get("name") or ""): list(o.get("empfaenger") or [])
+        for o in verdict.get("objekte") or [] if isinstance(o, dict)
+    }
+    for objekt in sachlage.get("objekte") or []:
+        if not isinstance(objekt, dict) or objekt.get("akut") is not True:
+            continue
+        name = str(objekt.get("name") or "").strip()
+        for dienst in empfaenger.get(name, []):
+            if dienst in _OFFER_VERBS:
+                return OfferCandidate(name, dienst, _OFFER_VERBS[dienst], "anbieten")
+    return OfferCandidate("", "", "", "keine_sache_am_zettel")

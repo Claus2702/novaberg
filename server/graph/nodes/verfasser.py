@@ -28,7 +28,13 @@ Konzept: novaberg-node-verfasser_k.md
 import logging
 from datetime import datetime
 
-from config import PROMPTS, VERFASSER_IMPULS_NAHE, get_node_config
+from config import (
+    ANGEBOT_PFLICHT_SCHWELLE,
+    POSTGRES_URL,
+    PROMPTS,
+    VERFASSER_IMPULS_NAHE,
+    get_node_config,
+)
 from ei.haltungssprache import stoffzeilen
 from graph.einwand import kopf_anweisung, urteil_lesen
 
@@ -38,9 +44,11 @@ from graph.einwand import kopf_anweisung, urteil_lesen
 # genau der, in dem niemand hinsieht.
 from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
-from memory.pipeline_log import log_berechnung
+from memory.charakter import nutzer_gewichtung_rad_laden
+from memory.pipeline_log import log_berechnung, log_decision
+from memory.sachlage_properties import declined_objects
 from memory.session import (
     Verlaufsbeitrag,
     fenster_waehlen,
@@ -48,6 +56,7 @@ from memory.session import (
     verlauf_gruppieren,
 )
 from services.model_services import ChatRequest, model_service
+from utils.offers import OfferCandidate, offer_candidate
 
 #: Wieviele Wortwechsel der Verfasser im Verlauf sieht. Vorher sah er den
 #: ganzen `session_turns`-Bestand; die Zahl ist die Obergrenze, die es bis
@@ -341,6 +350,59 @@ def _uebergangsblock(state: ConversationState) -> str:
     return PROMPTS["verfasser.impuls_ferne"]
 
 
+def _offer_block(state: ConversationState, sachlage: object) -> str:
+    """Der [ANGEBOT]-Block des Verfassers, oder leer — mit einem Eintrag je Turn.
+
+    Vorbedingung: keine; ohne Paar, Naehe oder Rad bleibt der Block leer.
+    Nachbedingung: Der Block steht genau dann, wenn eine Sache am Zettel von
+        Timeline oder Notizen steht, in diesem Turn kein Dienst lief und kein
+        Auftrag laeuft, Novas Pflichtbewusstsein zum Menschen die Schwelle
+        erreicht (`ANGEBOT_PFLICHT_SCHWELLE`, Entscheidung 17.09.2026: 0,9)
+        und die Sache nicht abgelehnt ist (E3). **Jeder Ausgang steht als
+        `verfasser.angebot` im Pipeline-Log**, auch "unter Schwelle" — sonst
+        waere ein Nova, die nie anbietet, von einer, die nie gefragt wurde,
+        nicht zu unterscheiden.
+    Fehlerfaelle: keine Ausnahme; ein nicht lesbares Rad heisst kein Angebot
+        (laut), die vorsichtige Seite.
+    """
+    user_id: str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    kandidat: OfferCandidate = offer_candidate(
+        sachlage, state.get("objekt_urteil"), state.get("agent_results") or [],
+        state.get("management_action") or "",
+    )
+    eingang: dict = {"sache": kandidat.name, "dienst": kandidat.service}
+    ausgang: str = kandidat.reason
+    block: str = ""
+    if ausgang == "anbieten":
+        rad, herkunft = nutzer_gewichtung_rad_laden(POSTGRES_URL, user_id)
+        pflicht = (rad or {}).get("pflicht")
+        eingang.update({"pflicht": pflicht, "rad_herkunft": herkunft})
+        if not isinstance(pflicht, (int, float)):
+            logger.error("Verfasser: Pflichtbewusstsein nicht lesbar (Herkunft %s) — kein Angebot", herkunft)
+            ausgang = "pflicht_unbekannt"
+        elif pflicht < ANGEBOT_PFLICHT_SCHWELLE:
+            ausgang = "unter_schwelle"
+        elif kandidat.name in declined_objects(POSTGRES_URL, user_id, character_id, [kandidat.name]):
+            ausgang = "abgelehnt"
+        else:
+            block = PROMPTS["verfasser.angebot"].format(sache=kandidat.name, verb=kandidat.verb)
+            ausgang = "angeboten"
+            logger.info(f"Verfasser: Angebot — {kandidat.name} ({kandidat.service}), Pflicht {pflicht:.3f}")
+    log_decision(
+        turn_id      = state.get("turn_id", "unbekannt"),
+        node         = "verfasser",
+        quelle       = pipeline_quelle(state),
+        decision     = "verfasser.angebot",
+        outcome      = ausgang,
+        inputs       = eingang,
+        scale        = {"pflicht_schwelle": ANGEBOT_PFLICHT_SCHWELLE},
+        user_id      = user_id,
+        character_id = character_id,
+    )
+    return block
+
+
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt des Verfassers: Auftrag plus Wissen.
 
@@ -500,6 +562,14 @@ def _build_system_prompt(state: ConversationState) -> str:
                 stoffzeilen(haltung, reiz_zeichen, intentionen, gegenstand, eigener_zug),
             ),
         )
+
+    # Scheibe 12 E2: das Angebot. Steht eine Sache am Zettel eines Dienstes,
+    # hat niemand darum gebeten und reicht Novas Pflichtbewusstsein, bietet sie
+    # an — und erst damit wird ein spaeteres "Gerne" zum Auftrag (E1).
+    if not reiz_ist_eigener_gedanke(state):
+        angebot_block: str = _offer_block(state, sachlage)
+        if angebot_block:
+            teile.append(angebot_block)
 
     # Der Gedaechtnisblock in den Namen dieses Lesers (Person A / Person B) —
     # `memory_context` nennt Nova und den Nutzer und gilt den Analyse-Knoten
