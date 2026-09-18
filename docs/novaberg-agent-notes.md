@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 17. September 2026, 17:52 UTC (Notizen nur auf ausdrücklichen Auftrag: die Vorprüfung der Klassifikation lehnt Aussagen ab — Aussagen geschrieben 12 → 8 von 12; die Sperre am Empfang gemessen und zurückgenommen). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
+**Stand:** 18. September 2026, 21:14 UTC (eine blanke Zustimmung bindet an die angebotene Sache, ein Nein bleibt am Objekt, und jede Schreibung meldet ihre Verifikation — auch das Umbenennen). Davor 17. September 2026, 17:52 UTC (Notizen nur auf ausdrücklichen Auftrag: die Vorprüfung der Klassifikation lehnt Aussagen ab — Aussagen geschrieben 12 → 8 von 12; die Sperre am Empfang gemessen und zurückgenommen). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -418,3 +418,8 @@ Wie bei der Timeline: `objekt_bezug` im Kontext, `[OBJEKT]`-Block (`prompts/defa
 
 **Die Ergänzung einer laufenden Liste bleibt ein Auftrag — Entscheidung des Eigentümers am 17.09.2026:** Läuft eine Liste und folgt *»Wir brauchen auch Mülltüten«*, gehört das auf die Liste. Klausel 2 des Aushangs und die Regel in der Vorprüfung bleiben also stehen; in der Messung schrieb die Klassifikation diese Form in beiden Fassungen 3 von 3. **Damit ist auch die Rücknahme der Sperre am Empfang inhaltlich richtig:** Sie hielt genau diese Ergänzung in 3 von 3 zurück.
 
+## Seit dem 18.09.2026 — Zustimmung, Ablehnung, Verifikation
+
+- **Zustimmung:** Stimmt der Mensch einem Angebot blank zu, trägt die Klassifikation einen `[ZUSTIMMUNG]`-Block (`prompts/default/classify_notizen.zustimmung.txt`), und das Ziel kommt aus der angebotenen Sache, nicht aus dem Verlauf (`consent_fields`).
+- **Ablehnung (E3):** Ein blankes Nein auf ein Angebot hält am Objekt `Speichern = abgelehnt` fest; eine so markierte Sache bietet Nova nicht wieder an.
+- **Verifikation:** Alle schreibenden Rückgaben laufen durch `agents/write_outcome.py::verified_outcome` — bestätigt `abgeschlossen`, sonst `fehler` ohne Zusage. Das Umbenennen war der einzige Schreibpfad ohne Prüfung; es prüft jetzt den neuen Namen.

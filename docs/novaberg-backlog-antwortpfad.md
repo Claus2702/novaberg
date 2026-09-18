@@ -368,7 +368,7 @@ Bauteile mit Vorbedingungen stehen seit v0.2 in `novaberg-metakognition_k.md` §
 | Überakkommodation | CAT empirisch testen | ⬜ |
 | PENDING-RELEVANZ | Router prüft nicht ob Prompt Antwort auf Rückfrage | [ANT] ⬜ Chat 43 |
 | KORR1 | Korrektur-Erkennung bei fehlgeschlagenen Aktionen | ⬜ Chat 43 (niedrig) |
-| ROUTE-MISS1 | Router erkennt kontextabhängige Aufträge nicht | [ANT] [ANT] ⬜ Chat 48, strukturell adressiert durch Enricher-vor-Router (Chat 59, implementiert). Offen für Validierung. |
+| ROUTE-MISS1 | Router erkennt kontextabhängige Aufträge nicht | [ANT] [ANT] ⬜ Chat 48, strukturell adressiert durch Enricher-vor-Router (Chat 59, implementiert). Offen für Validierung. · **18.09.2026: für die Zustimmung auf ein Angebot gelöst (Weiche im Router); offen: Rückbezug auf bestehende Termine** |
 | 5i | Zeitparser: Fränkisch + Norddeutsch | ⬜ |
 
 
@@ -463,7 +463,7 @@ Perzeption → Enricher(laden) → EI-Calc → Router → [Planner → Agent] �
 GV-Node → Responder → Thinker → Tribunal → [Corrector]
 ```
 
-**Löst:** ROUTE-MISS1 (strukturell — Router erkennt "Ja, bitte!" nach "Soll ich einen Termin anlegen?"). Offen für Validierung.
+**Löst:** ROUTE-MISS1 (strukturell — Router erkennt "Ja, bitte!" nach "Soll ich einen Termin anlegen?"). Offen für Validierung. → **Validiert und widerlegt am 17.09.2026** (0 von 24 Zustimmungen ohne Lage); **gelöst für die Zustimmung am 18.09.2026** — das Angebot als offener Punkt und eine Weiche im Router (3 von 3 im Betrieb). Offen bleibt der Rückbezug auf einen bestehenden Termin.
 
 **Status:** ✅ Implementiert in Chat 59 zusammen mit Dual-Emotion AP2. Conditional Edge `_after_enricher` → `_after_router`. Salienz und Dispatcher zugleich aus dem sync-Graph entfernt (siehe Dual-Emotion AP7).
 
@@ -802,7 +802,7 @@ Kurzübersicht aktiver Bugs:
 | Bug | Prio | Kurzbeschreibung |
 |-----|------|-----------------|
 | HALL2 | ⚠️ | KZG-Klebrigkeit — wiederholte Mitteilung bereits kommunizierter Inhalte |
-| ROUTE-MISS1 | ⬜ | [ANT] Router erkennt kontextabhängige Aufträge nicht (strukturell adressiert durch Enricher-vor-Router, Chat 59, offen für Validierung) |
+| ROUTE-MISS1 | ⬜ | [ANT] Router erkennt kontextabhängige Aufträge nicht (strukturell adressiert durch Enricher-vor-Router, Chat 59, offen für Validierung) · **18.09.2026: für die Zustimmung auf ein Angebot gelöst (Weiche im Router); offen: Rückbezug auf bestehende Termine** |
 | THER1 | ⚠️ | RLHF-Therapeut-Muster |
 | EMOTE-LOCK | ⚠️ | [ANT] Emote-Inflation bei langem Charakter-Register (Chat 81: register-übergreifend bestätigt) |
 | TOPOS-LOCK | ⬜ | [ANT] Bildervorrat wird mechanisch zykeliert |

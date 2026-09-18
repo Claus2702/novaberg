@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 17. September 2026, 14:27 UTC (**Scheibe 12 D2b** — der Objektbezug: der gefragte Dienst bekommt die akuten Objekte an seinem Zettel als `objekt_bezug`). Davor 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
+**Stand:** 18. September 2026, 21:14 UTC (die Dienstwahl steht im Pipeline-Log, und bei einer Zustimmung reisen die Sachen des Angebots). Davor 17. September 2026, 14:27 UTC (**Scheibe 12 D2b** — der Objektbezug: der gefragte Dienst bekommt die akuten Objekte an seinem Zettel als `objekt_bezug`). Davor 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -251,3 +251,7 @@ Regelwerk: `novaberg-convention-nmcp.md` §6.7, §6.8.
 
 **Bekannt, nicht geändert:** Ein Treffer der Stufe 2 (Intent) verdrängt das Router-Ziel aus der Reihenfolge — älteres Verhalten, im Betrieb 0 Treffer (Fundliste 17.09.2026).
 
+## Seit dem 18.09.2026
+
+- **Entscheidungs-Einträge** (`log_decision`): `planner.resume` und `planner.dienstwahl` — je Ausgang einer (`frage:<dienst>`, `fertig:<dienst>:<status>`, `alle_gefragt`, `kein_dienst`, `manager:<ziel>`) mit Reihenfolge, Intent, Ziel, Urteil der Nähe, Objektbezug und den Diensten, die ablehnten. Im Betrieb läuft der Planner nur, wenn der Router zustellt.
+- **`_bezug_zuschneiden`** (Scheibe 12 E1c): Bei einer Zustimmung bekommt der Dienst die Sachen des Angebots, nicht alle akuten; ist die Lage weitergezogen, kommen sie aus dem Angebot selbst (`angebot_bezug`).
