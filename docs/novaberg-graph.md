@@ -287,6 +287,11 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 | `user_id` | `str` | API-Layer | Alle Nodes |
 | `character_id` | `str` | API-Layer / `create_state` | Alle Nodes (Paar-Partitionierung, seit Chat 60) |
 | `sachlage` | `dict` | Sachlage-Knoten (CG) | Verfasser, GV, Event-Consumer (Stage-Detail). Traegt immer `herkunft`. Seit 28.08.2026. |
+| `objekt_urteil` | `dict` | Router (`shadow_nearness`, Scheibe 12 C2) | Router (`[LAGE]`-Block), Planner (Reihenfolge der Dienste, Objektbezug), Verfasser (Angebot, E2). Je akutem Objekt die Nähe zu den Objekt-Merkmalen und die Dienste, an deren Zettel es steht. Ein Turn. Seit 16.09.2026. |
+| `objekt_bezug` | `list` | Planner (`objects_for_service`, Scheibe 12 D2b) | Dispatch von Timeline und Notizen → Klassifikation (`[OBJEKT]`). Die akuten Objekte am Zettel des gefragten Dienstes; bei einer Zustimmung auf die Sachen des Angebots zugeschnitten. Ein Turn. Seit 17.09.2026. |
+| `angebot_objekte` | `list` | Router (Scheibe 12 E1c) | Planner (`_bezug_zuschneiden`). Die Namen der Sachen des Angebots, dem der Mensch mit einer blanken Zustimmung zugestimmt hat; sonst leer. Seit 18.09.2026. |
+| `angebot_bezug` | `list` | Router (Scheibe 12 E1c) | Planner — trägt den Bezug, wenn die Lage weitergezogen ist. Dieselben Sachen mit Klasse und gedeckten Eigenschaften, aus dem Angebot. Seit 18.09.2026. |
+| `angebot_satz` | `str` | Router (Scheibe 12 E1c) | Dispatch von Timeline und Notizen → Klassifikation (`[ZUSTIMMUNG]`-Block, `consent_fields`). Der Satz des angenommenen Angebots; leer ohne blanke Zustimmung. Seit 18.09.2026. |
 | `sachlage_bruecke` | `dict` | Sachlage-Knoten (CG), nur auf Impuls-Turns | Verfasser (`[SACHLAGE-BRUECKE]`). Leer auf Nutzer-Turns. Seit 28.08.2026. |
 | `user_prompt` | `str` | API-Layer | Perzeption (HG), Router, Salienz (HG). **Traegt nur, was das Gegenueber gesagt hat.** Auf einem Impuls-Turn leer — dort steht der Gedanke in `eigener_gedanke` |
 | `eigener_gedanke` | `str` | Event-Consumer (Impuls-Payload) | Verfasser, Responder, Router, Thinker, Salienz, Gespraechsvektor — durchweg ueber `graph/reiz.py`, nicht direkt. **Neu seit 15.08.2026.** Leer auf jedem Nutzer-Turn |
