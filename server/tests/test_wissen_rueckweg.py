@@ -43,6 +43,22 @@ from agents.wissen_rueckweg import (
 from agents.wissen_rueckweg.agent import WissenRueckwegAgent
 from services.pixie.router import _QUEUE_ROUTING
 
+# Die Dienste schreiben ihr Audit selbst (NMCP §7). Ohne diese Attrappe
+# schriebe jeder Zeuge, der `invoke` ruft, echte Zeilen ins produktive
+# `hintergrund_log` — gemessen am 18.09.2026: 38 Zeilen aus einem Suite-Lauf.
+_AUDIT_ATTRAPPE = patch("agents.base.write_audit")
+
+
+def setUpModule() -> None:
+    """Haelt das Audit der Dienste fuer die ganze Datei aus der Produktivtabelle."""
+    _AUDIT_ATTRAPPE.start()
+
+
+def tearDownModule() -> None:
+    """Gibt die Attrappe wieder frei."""
+    _AUDIT_ATTRAPPE.stop()
+
+
 PAAR_USER: str = "meister"
 PAAR_FIGUR: str = "nova"
 
