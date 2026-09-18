@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — persistente Wissenslücken, `neugier_vektor`, eigener Agent
-**Stand:** 27. Juli 2026, Chat 111
+**Stand:** 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 27. Juli 2026, Chat 111
 **Pfad:** novaberg/docs/novaberg-wissensluecken_k.md
 **Typ:** Konzept
 **Herkunft:** `novaberg-thinking-curiosity_k.md` (Vision, TR1/TR2) — dieses Dokument ist die konkrete Bauform
@@ -218,3 +218,7 @@ Seine Priorität ist **bewusst zu setzen, nicht per Default**. Gemessen am 27.07
 **Feld-Divergenz.** Wächst ihr Feld über Monate, interessiert sie sich am Ende für alles. `thinking-curiosity_k.md` §11 nennt das und schlägt ein Budget vor — hier nicht entschieden.
 
 **Zusammenhang:** `novaberg-thinking-curiosity_k.md` (Vision) · `novaberg-salienz-berechnung_k.md` §4 (Abnehmer) · `novaberg-convention-abgeleitete-werte.md` (Bauart) · `novaberg-gv-strategie_k.md` (GV4, die turn-gebundene Schwester)
+
+## Audit (seit 18.09.2026)
+
+**Der Dienst belegt jeden Lauf selbst** im `hintergrund_log`, unter der Aufgabe `wissensluecken` (`BaseAgent._audit`, `80d4b37`): `gestartet` mit dem Paar, dann `erledigt` mit angelegten, aufgefrischten und verworfenen Lücken oder `fehler` mit dem Abbruchgrund. Eine Ausnahme aus dem Lauf wird dort als `fehler` belegt, nicht weitergeworfen. Der Pixie-Dispatch schreibt nur noch, wenn der Dienst schweigt — eine entkommene Ausnahme oder ein fehlender Agent (`novaberg-convention-nmcp.md` §8.4, Entscheidung vom 18.09.2026).

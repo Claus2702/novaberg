@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** RechercheAgent — Web-Recherche für Pixie
-**Stand:** 16. August 2026 (die Zwischen-Destillation traegt eine eigene Frist — §7; drei Angaben in §5 sind gemessen widerlegt und durchgestrichen statt entfernt. Zuvor: 19. April 2026, Chat 57 — Modell-Alignment auf aktiven Connector)
+**Stand:** 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 16. August 2026 (die Zwischen-Destillation traegt eine eigene Frist — §7; drei Angaben in §5 sind gemessen widerlegt und durchgestrichen statt entfernt. Zuvor: 19. April 2026, Chat 57 — Modell-Alignment auf aktiven Connector)
 **Pfad:** novaberg/docs/novaberg-pixie-research.md
 **Quellen:** nova-05-m-b.md, nova-05-k-b.md
 
@@ -199,3 +199,7 @@ Verwandte Dokumente:
 Aus `novaberg-fundliste.md` hierher gezogen: Aussagen ueber den **Zustand** dieses Gegenstands, die dort als rohe Funde standen und in kein Defekt- oder Vorhabenregister gehoeren. Der Wortlaut ist unveraendert, das Datum steht an jedem Befund — geprueft ist keiner von ihnen gegen den heutigen Code.
 
 - **16.08.2026** — **`server/agents/recherche/AGENT.md` ist seit dem 18.04.2026 unverändert und widerspricht dem Code an zwei Stellen.** Es führt `PIXIE_RECHERCHE_MAX_ITERATIONEN` mit Vorgabewert **2** und schreibt im Ablauf *„max 2 Iterationen"*; `server/config.py:425` und `novaberg-pixie-research.md` §7 sagen **3**. Und `## LLM-Calls` zählt *„Gesamt: 4-6 Calls"* **ohne die Zwischen-Destillation**, während das Konzeptdokument *„4-10 + 1"* zählt. **Gefunden von der zweiten Kontrolle**, nicht vom Nachzug — und der Grund ist mechanisch: Die Kandidatenmenge des Nachzugs durchsucht ausschließlich `docs/`, im Baum liegen aber **12 `AGENT.md` unter `server/`** und **null** in `docs/`. Das Moduldokument des geänderten Verzeichnisses ist damit der naheliegendste Kandidat und zugleich der einzige, den das Kriterium prinzipiell nicht erreicht.
+
+## Audit (seit 18.09.2026)
+
+**Der Dienst belegt jeden Lauf selbst** im `hintergrund_log`, unter der Aufgabe `recherche` (`BaseAgent._audit`, `80d4b37`): `gestartet` mit dem Thema, dann `erledigt` mit der Länge des Destillats oder `fehler`. Der Bibliotheks-Schritt belegt sich zusätzlich als `recherche_bibliothek`; bis dahin war nur er belegt (`RECHERCHE-OHNE-AUDIT`, offen bis zum ersten Betriebsbeleg). Eine Ausnahme aus dem Lauf wird dort als `fehler` belegt, nicht weitergeworfen. Der Pixie-Dispatch schreibt nur noch, wenn der Dienst schweigt — eine entkommene Ausnahme oder ein fehlender Agent (`novaberg-convention-nmcp.md` §8.4, Entscheidung vom 18.09.2026).

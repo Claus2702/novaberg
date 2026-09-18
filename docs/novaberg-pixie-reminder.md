@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** WiedervorlageAgent — Fällige Erinnerungen formulieren
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-pixie-reminder.md
 **Quellen:** nova-05-m-a.md
 
@@ -85,3 +85,7 @@ Verwandte Dokumente:
 - Pixie-Agenten-Übersicht: `novaberg-pixie.md`
 - PromotionAgent (füllt die Tabellen): `novaberg-pixie-promotion.md`
 - DecayAgent (deaktiviert alte Einträge): `novaberg-pixie-decay.md`
+
+## Audit (seit 18.09.2026)
+
+**Der Dienst belegt jeden Lauf selbst** im `hintergrund_log`, unter der Aufgabe `wiedervorlage` (`BaseAgent._audit`, `80d4b37`): `gestartet`, dann `erledigt` mit der Zahl verarbeiteter Wiedervorlagen **und der gescheiterten Stack-Pushes** — die wurden bis dahin nur geloggt und verschluckt — oder `fehler`. Eine Ausnahme aus dem Lauf wird dort als `fehler` belegt, nicht weitergeworfen. Der Pixie-Dispatch schreibt nur noch, wenn der Dienst schweigt — eine entkommene Ausnahme oder ein fehlender Agent (`novaberg-convention-nmcp.md` §8.4, Entscheidung vom 18.09.2026).

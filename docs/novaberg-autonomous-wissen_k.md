@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Klaerfrage, Traeumen
-**Stand:** 22. August 2026 (v0.7 — **`autonomous/{charakter}/{context_user}/`**: der Speicher bekommt eine Ebene und wird als Wurzel adressierbar, §2.2 und §2.3). Davor: 15. August 2026 (v0.6); davor 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
+**Stand:** 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 22. August 2026 (v0.7 — **`autonomous/{charakter}/{context_user}/`**: der Speicher bekommt eine Ebene und wird als Wurzel adressierbar, §2.2 und §2.3). Davor: 15. August 2026 (v0.6); davor 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
 **Pfad:** novaberg/docs/novaberg-autonomous-wissen_k.md
 **Status:** ⬜ **nicht gebaut.** Die Erstfassung ist drei Monate alt und wurde nie umgesetzt; §11 traegt die Ueberarbeitung auf den heutigen Stand.
 **Quellen:** Chat 70 (autoresearch, Claude Code autoDream, SWE-agent, Letta, Sleep-time Compute Paper)
@@ -803,6 +803,10 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 
 
 ---
+
+## Audit (seit 18.09.2026)
+
+**Der Dienst belegt jeden Lauf selbst** im `hintergrund_log`, unter der Aufgabe `wissen_rueckweg` (`BaseAgent._audit`, `80d4b37`): `gestartet` mit Auftragsart und Thema, dann `erledigt` mit dem Ausgang (geschrieben oder nicht, und warum) oder `fehler`. Bis zum 18.09.2026 hatte der Rückweg keine einzige Zeile im `hintergrund_log`. Eine Ausnahme aus dem Lauf wird dort als `fehler` belegt, nicht weitergeworfen. Der Pixie-Dispatch schreibt nur noch, wenn der Dienst schweigt — eine entkommene Ausnahme oder ein fehlender Agent (`novaberg-convention-nmcp.md` §8.4, Entscheidung vom 18.09.2026).
 
 ## Versionshistorie
 
