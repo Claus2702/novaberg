@@ -117,6 +117,16 @@ def _create(state: AgentState) -> dict:
     if vektor.datum is None:
         vektor = zeit_parsen_vektor(prompt)
 
+    # Scheibe 12 D: Eine Spanne ("von 10 bis 12 Uhr") loest der Zeitparser
+    # nicht auf — der Anfang wird ohne ihren Endteil gelesen.
+    if vektor.datum is None:
+        from utils.time_span import span_start_text
+        for ausdruck in (zeitausdruck, prompt):
+            if ausdruck and span_start_text(ausdruck) != ausdruck:
+                vektor = zeit_parsen_vektor(span_start_text(ausdruck))
+                if vektor.datum is not None:
+                    break
+
     if vektor.datum is None:
         return {
             "status": "fehler",
@@ -128,6 +138,10 @@ def _create(state: AgentState) -> dict:
     precision = "minute" if vektor.uhrzeit_erkannt else "day"
 
     entitaet_ids: list[int] = []
+
+    # Scheibe 12 D: Nennt der Auftrag eine Spanne, bekommt der Termin sein Ende.
+    from utils.time_span import span_end
+    event_ende = span_end(zeitausdruck, event_time) or span_end(prompt, event_time)
 
     termin_id: int = TimelineRepository.insert(
         postgres_url=POSTGRES_URL,
@@ -143,6 +157,7 @@ def _create(state: AgentState) -> dict:
         binding=binding,
         remind=remind,
         conflict_check=conflict_check,
+        event_ende=event_ende,
     )
 
     verifiziert = _verifizieren_termin(termin_id, {"aktiv": True})

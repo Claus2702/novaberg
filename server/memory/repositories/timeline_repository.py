@@ -71,6 +71,7 @@ class TimelineRepository:
         binding:          bool = False,
         remind:           bool = False,
         conflict_check:   bool = False,
+        event_ende:       datetime | None = None,
     ) -> int:
         """
         Neuen Termin anlegen. Gibt die neue ID zurück.
@@ -92,6 +93,8 @@ class TimelineRepository:
         # Lokale Zeit → UTC für DB
         event_time_utc = _to_utc(event_time)
         wiedervorlage_utc = _to_utc(wiedervorlage_am) if wiedervorlage_am else None
+        # Scheibe 12 D (18.09.2026): das Ende einer Spanne, wo eine genannt ist.
+        ende_utc = _to_utc(event_ende) if event_ende else None
 
         conn = psycopg2.connect(postgres_url)
         try:
@@ -100,13 +103,13 @@ class TimelineRepository:
                 INSERT INTO timeline
                     (user_id, event_time, event_type, title, details,
                      recurring, precision, entitaet_ids, wiedervorlage_am,
-                     themen, binding, remind, conflict_check,
+                     themen, binding, remind, conflict_check, event_ende,
                      last_touched)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 RETURNING id
             """, (user_id, event_time_utc, event_type, title, details,
                   recurring, precision, entitaet_ids, wiedervorlage_utc,
-                  themen, binding, remind, conflict_check))
+                  themen, binding, remind, conflict_check, ende_utc))
             termin_id: int = cursor.fetchone()[0]
             conn.commit()
             logger.info(
