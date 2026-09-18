@@ -142,6 +142,7 @@ class DeclarationMatchesCodeTest(unittest.TestCase):
     NUR_EIN_SCHRITT: dict[str, str] = {
         "recherche": "_audit_log schreibt recherche_bibliothek, nicht den Lauf "
                      "(RECHERCHE-OHNE-AUDIT)",
+        "synapsen_promotion": "_audit_log schreibt je KZG-Eintrag, nicht den Lauf",
     }
 
     def test_every_registered_agent_declares_truthfully(self) -> None:
@@ -161,6 +162,12 @@ class DeclarationMatchesCodeTest(unittest.TestCase):
         if not AgentRegistry.alle():
             discover_agents()
         self.assertFalse(AgentRegistry.finden("recherche").writes_own_audit)
+
+    def test_promotion_run_gets_the_frame(self) -> None:
+        """Der Lauf der Promotion steht im Audit, nicht nur ihre Einzeleintraege."""
+        if not AgentRegistry.alle():
+            discover_agents()
+        self.assertFalse(AgentRegistry.finden("synapsen_promotion").writes_own_audit)
 
     def test_no_copy_of_the_insert_outside_the_sink(self) -> None:
         treffer = [

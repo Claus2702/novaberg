@@ -74,8 +74,16 @@ class SynapsenPromotionAgent(BaseAgent):
 
     @property
     def writes_own_audit(self) -> bool:
-        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
-        return True
+        """Nein: `_audit_log` belegt je KZG-Eintrag, nicht den Lauf.
+
+        Die Methode schreibt unter `synapsen_promotion:<kzg_key>` — einen
+        Eintrag je verarbeitetem Auftrag. Der Lauf selbst (leer, zurueckgelegt,
+        verworfen, eine Ausnahme ausserhalb der Schleife) hinterliess keine
+        Zeile. Den schreibt der Rahmen im Pixie-Dispatch unter
+        `synapsen_promotion`; die Einzeleintraege bleiben, und kein Lauf zaehlt
+        doppelt (Befund der zweiten Kontrolle, 18.09.2026).
+        """
+        return False
 
     @property
     def lastart(self) -> str:
