@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Zeitparser (Natürlichsprachliche Zeitauflösung)
-**Stand:** 15. September 2026, 19:13 UTC (die genannte Uhrzeit: der Punkt als Trenner in §4 *Vor Block 0*; unmögliche Werte, Tageswort gegen Wochentag und die fehlende Uhrzeit in §5 *Vor den Pfaden* und *Nach den Pfaden*; das ISO-Datum an dateparser in §5 *Pfad 2*; §6, §8). Davor 15. September 2026 (die Stunde ohne „Uhr" ist eine Uhrzeit: §4 *Vor Block 0*, Block 0, Block 9b; drei Zeilen in §8 geschlossen, sieben benannt). Davor 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
+**Stand:** 18. September 2026, 21:18 UTC (zwei Limitationen gemessen: eine Spanne liefert kein Datum, und ein Datum ohne Wochentag meldet den Tag als nicht erkannt). Davor 15. September 2026, 19:13 UTC (die genannte Uhrzeit: der Punkt als Trenner in §4 *Vor Block 0*; unmögliche Werte, Tageswort gegen Wochentag und die fehlende Uhrzeit in §5 *Vor den Pfaden* und *Nach den Pfaden*; das ISO-Datum an dateparser in §5 *Pfad 2*; §6, §8). Davor 15. September 2026 (die Stunde ohne „Uhr" ist eine Uhrzeit: §4 *Vor Block 0*, Block 0, Block 9b; drei Zeilen in §8 geschlossen, sieben benannt). Davor 14. September 2026 (§8: die Grenze *Einzelne Ziffer ohne Uhr* im Betrieb gemessen). Davor 31. Juli 2026 (Marker-Stufe: die Richtung wird in EINEM Durchlauf gelesen statt aus zwei Textzustaenden rekonstruiert; Pfad 1c fuer nackte Uhrzeiten; `_heute_lokal()` statt `date.today()`. Zuvor: Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
 **Pfad:** novaberg/docs/novaberg-tool-timeparser.md
 **Quellen:** nova-02-t-c.md
 **Datei:** `utils/zeitparser.py`
@@ -377,6 +377,11 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 ---
 
 ## 8. Bekannte Limitationen
+
+**Gemessen am 18.09.2026 — zwei Limitationen, außerhalb des Parsers umgangen:**
+
+- **Eine Spanne liefert kein Datum.** `zeit_parsen_vektor("19.09.2026 von 10 bis 12 Uhr")` und `"Samstag von 10 bis 12 Uhr"` ergeben `datum=None` (bei `tag_erkannt=True`, `uhrzeit_erkannt=True`). Ein Termin mit Spanne scheiterte damit ganz. Umgangen in `utils/time_span.py::span_start_text` (der Anfang wird ohne den Endteil geparst) und `span_end` (das Ende liest ein eigener Baustein); der Parser selbst ist unverändert.
+- **`tag_erkannt` fehlt bei einem Datum mit Monatsnamen.** `"5. Oktober"` ergibt das richtige Datum, aber `tag_erkannt=False`. Wer die Erkennung am Flag abliest statt am Datum, verwirft einen gültigen Tag (so zuerst in `span_end`, behoben).
 
 | Limitation | Beschreibung | Status |
 |-----------|-------------|--------|

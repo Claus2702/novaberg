@@ -320,3 +320,9 @@ CREATE TABLE IF NOT EXISTS timeline (
 
 **Grenze:** Relative Zeitangaben der Lage (*»morgen um 10«*) werden wörtlich übernommen; stammt die Lage vom Vortag, würde »morgen« falsch aufgelöst (Fundliste 17.09.2026).
 
+## Seit dem 18.09.2026 — Zustimmung, Spannen, Duplikate
+
+- **Zustimmung:** Stimmt der Mensch einem Angebot blank zu, trägt die Klassifikation den `[ZUSTIMMUNG]`-Block (`prompts/default/classify_timeline.zustimmung.txt`), und Ziel und Zeitangabe kommen aus der angebotenen Sache (`consent_fields`) — ein relativer Tag als das Datum, an dem er fiel (`carry_resolved_dates`, Schwester `<Schlüssel> (aufgeloest)`), mit der Uhrzeit aus dem Wortlaut.
+- **Spannen:** `event_ende` wird geschrieben (`utils/time_span.py::span_end`); der Anfang einer Spanne wird ohne den Endteil geparst (`span_start_text`), weil der Zeitparser Spannen nicht auflöst (`novaberg-tool-timeparser.md` §8).
+- **Duplikate:** nur ein aktiver Termin am selben Tag mit gemeinsamem Titelwort, nie ein Erinnerungs-Anker (`suche.py::find_duplicates`).
+- **Verifikation:** Jede schreibende Rückgabe läuft durch `verified_outcome`.

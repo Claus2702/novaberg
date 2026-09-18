@@ -317,3 +317,19 @@ Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung
 - **Die Sachen des Angebots** legt der Router für den Planner in den Zustand: `angebot_objekte`, `angebot_bezug`, `angebot_satz` (`novaberg-graph.md`).
 - **Die Rückfrage-Wache:** Trägt der Turn einen eigenen Auftrag (`carries_own_request` — *»Trag … ein«*, *»Schreib …«*), gilt er nicht als Antwort auf eine offene Rückfrage; der Wartezustand fällt, der Turn wird normal geroutet.
 - **Entscheidungs-Einträge** (`log_decision`): `router.rueckfrage` (resume / bleibt stehen für einen Impuls / verworfen für einen eigenen Auftrag) und `router.zustellung` mit dem, was das Modell wollte, offenem Angebot, blanker Zustimmung, Riegel und Weiche.
+
+### Angebot und Zustimmung — die Bausteine
+
+| Baustein | Ort | Aufgabe |
+|---|---|---|
+| `find_offers` | `utils/offers.py` | Sätze einer fertigen Antwort, in denen Nova anbietet zu schreiben (Formen *»Soll ich … eintragen?«*, *»Möchtest du, dass ich …«*, *»Ich kann dir das …«*). Liest Wortlaut: 7 von 7 konstruierte Nicht-Angebote gelten als Angebot (Fundliste 18.09.2026) |
+| `Offer`, `offer_store` / `offer_load` / `offer_clear` | `utils/offers.py` | der offene Punkt je Paar in Redis (`angebot:{user}:{figur}`), mit Satz, Sachen (Name, Klasse, gedeckt) und Diensten; ein unlesbarer Eintrag gilt als keiner |
+| `ANGEBOT_VERFALL_SEKUNDEN` | `config.py` | 900 s — ein Angebot gilt für den nächsten Turn, nicht auf Dauer |
+| `offer_matches` | `utils/offers.py` | steht ein Angebot offen, auf das sich eine Zustimmung beziehen kann (die Lage entscheidet nicht mit) |
+| `is_bare_consent` / `is_bare_refusal` | `utils/offers.py` | sagt die Äußerung nichts als *»ja«* bzw. *»nein«*; ein *»Danke«* allein ist keine Zustimmung, ein Satz mit eigener Sache keins von beiden |
+| `carries_own_request` | `utils/offers.py` | trägt der Turn einen eigenen Schreibauftrag — dann ist er keine Antwort auf eine offene Rückfrage |
+| `OfferCandidate`, `offer_candidate` | `utils/offers.py` | welche Sache für ein Angebot in Frage kommt (E2) — vor Pflicht und Ablehnung |
+| `ANGEBOT_PFLICHT_SCHWELLE` | `config.py` | 0,9 — ab diesem Pflichtbewusstsein bietet Nova an (Notizen und Timeline) |
+| `record_declined` / `declined_objects` | `memory/sachlage_properties.py` | das Nein als Eigenschaft `Speichern = abgelehnt` am Objekt (E3) |
+| `consent_fields` | `agents/object_nearness.py` | Ziel und Zeitangabe aus der zugestimmten Sache; aufgelöste Tage mit der Uhrzeit aus dem Wortlaut |
+| Prompts | `router.lage.angebot.txt`, `verfasser.angebot.txt`, `classify_timeline.zustimmung.txt`, `classify_notizen.zustimmung.txt` | der Zustimmungssatz im Empfang, das Angebot im Verfasser, die Bindung in den Klassifikationen |
