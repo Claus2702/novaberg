@@ -7,7 +7,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypedDict
 
-from config import ASSISTANT_USER_ID
+from config import ASSISTANT_USER_ID, DEFAULT_USER_ID
+from memory.background_audit import write_audit
 
 logger = logging.getLogger(__name__)
 
@@ -275,22 +276,24 @@ class BaseAgent(ABC):
         """
         return "llm"
 
-    @property
-    def writes_own_audit(self) -> bool:
-        """Schreibt dieser Agent sein `hintergrund_log` selbst?
+    def _audit(self, user_id: str, status: str, result: str) -> None:
+        """Belegt einen Lauf dieses Dienstes im `hintergrund_log`.
 
-        **Die Vorgabe ist `False`, und das ist eine Entscheidung.** Dann
-        schreibt der Pixie-Dispatch `gestartet`, `erledigt` und `fehler` um den
-        Lauf herum (`services/pixie/dispatch.py`). Bis zum 18.09.2026 gab es
-        diesen Rahmen nicht, und jeder Agent, der seine eigene Kopie des
-        Audits nicht mitbrachte, lief spurlos — acht von fuenfzehn.
+        **Der Dienst schreibt sein Audit selbst** (NMCP §7, Entscheidung des
+        Eigentuemers vom 18.09.2026): Nur er weiss, was er getan hat — welche
+        Eintraege, welche Zahlen, warum er leer lief. Der Aufrufer weiss nur,
+        dass er lief. Die Aufgabe ist der Name des Dienstes; die Senke ist die
+        eine (`memory/background_audit.write_audit`), keine Kopie.
 
-        Ein Agent, der `True` meldet, schreibt feiner als der Rahmen: mit
-        eigener Aufgabe je Schritt oder bewusst nur, wenn er arbeitet. Er
-        uebernimmt damit die Pflicht; der Rahmen schweigt, damit kein Lauf
-        doppelt zaehlt.
+        Vorbedingung: `status` ist `gestartet`, `erledigt` oder `fehler`.
+        Nachbedingung: eine Zeile im Audit oder eine kritische Logmeldung.
+
+        Args:
+            user_id: Der Mensch des Laufs; leer heisst Wartungslauf.
+            status: `gestartet`, `erledigt` oder `fehler`.
+            result: Was der Lauf ergab, in den Zahlen des Dienstes.
         """
-        return False
+        write_audit(user_id or DEFAULT_USER_ID, self.name, status, result[:500])
 
     def periodic_task(self) -> PeriodicTask | None:
         """Periodische Aufgabe dieses Agenten fuer Pixie-Scheduling.

@@ -88,10 +88,6 @@ class SynapsenDecayAgent(BaseAgent):
     def faehigkeiten(self) -> list[str]:
         return ["synapsen_decay"]
 
-    @property
-    def writes_own_audit(self) -> bool:
-        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
-        return True
 
     @property
     def lastart(self) -> str:

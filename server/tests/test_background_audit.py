@@ -8,11 +8,13 @@ Zeugen dieser Datei:
   * **`write_audit` ist die eine Senke**: sie schreibt die vier Felder,
     prueft Status, Aufgabe und Nutzer, meldet einen Datenbankfehler kritisch
     und verschluckt ihn — einen anderen Fehler nicht.
-  * **Der Pixie-Dispatch schreibt den Rahmen** — `gestartet`, dann `erledigt`
-    oder `fehler` —, fuer jeden Agenten ohne eigenes Audit, und fuer keinen mit.
-  * **Die Deklaration stimmt mit dem Code ueberein**: Wer eine eigene
-    Audit-Methode traegt, meldet `writes_own_audit`, und umgekehrt. Sonst
-    zaehlt ein Lauf doppelt oder gar nicht.
+  * **Der Dienst schreibt sein Audit selbst** (NMCP §7, Entscheidung des
+    Eigentuemers vom 18.09.2026): Jeder Agent, den Pixie routet, belegt
+    `gestartet` im eigenen Code; die fuenf nachgeruesteten belegen
+    `gestartet` und genau einen Abschluss, auch bei einer Ausnahme.
+  * **Der Pixie-Dispatch schreibt nur, wenn der Dienst schweigt**
+    (NMCP §8.4): eine Ausnahme, die aus dem Dienst entkommt, und ein
+    Auftrag fuer einen Agenten, den es nicht gibt.
   * **Keine Kopie des INSERTs mehr ausserhalb der Senke.**
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
@@ -78,8 +80,7 @@ class WriteAuditTest(unittest.TestCase):
 class _Agent:
     """Attrappe eines Agenten mit steuerbarem Ausgang."""
 
-    def __init__(self, own: bool, ergebnis: dict | Exception) -> None:
-        self.writes_own_audit = own
+    def __init__(self, ergebnis: dict | Exception) -> None:
         self._ergebnis = ergebnis
 
     def invoke(self, _state: dict) -> dict:
@@ -88,8 +89,8 @@ class _Agent:
         return self._ergebnis
 
 
-class DispatchFrameTest(unittest.TestCase):
-    """Der Rahmen-Audit im Pixie-Dispatch."""
+class DispatchWritesOnlyWhenTheServiceIsSilentTest(unittest.TestCase):
+    """NMCP §8.4 — der Aufrufer schreibt nur, wenn der Dienst es nicht konnte."""
 
     KANDIDAT: dict = {"quelle": "periodisch", "daten": {}}
 
@@ -101,30 +102,23 @@ class DispatchFrameTest(unittest.TestCase):
             )
         return erfolg, [c.args for c in audit.call_args_list]
 
-    def test_success_writes_started_and_done(self) -> None:
-        erfolg, rufe = self._run(_Agent(False, {"status": "erledigt", "ergebnis": {"n": 2}}))
-        self.assertTrue(erfolg)
-        self.assertEqual([r[2] for r in rufe], ["gestartet", "erledigt"])
-        self.assertTrue(all(r[1] == "wiedervorlage" for r in rufe))
-        self.assertIn("'n': 2", rufe[1][3])
-
-    def test_reported_failure_writes_error(self) -> None:
-        erfolg, rufe = self._run(_Agent(False, {"status": "fehler", "fehler": "Quelle leer"}))
-        self.assertFalse(erfolg)
-        self.assertEqual([r[2] for r in rufe], ["gestartet", "fehler"])
-        self.assertEqual(rufe[1][3], "Quelle leer")
-
-    def test_exception_writes_error(self) -> None:
-        with self.assertLogs("ki_server.pixie", level="ERROR"):
-            erfolg, rufe = self._run(_Agent(False, RuntimeError("weg")))
-        self.assertFalse(erfolg)
-        self.assertEqual([r[2] for r in rufe], ["gestartet", "fehler"])
-        self.assertIn("RuntimeError: weg", rufe[1][3])
-
-    def test_agent_with_own_audit_gets_no_frame(self) -> None:
-        erfolg, rufe = self._run(_Agent(True, {"status": "erledigt"}))
+    def test_success_writes_nothing(self) -> None:
+        erfolg, rufe = self._run(_Agent({"status": "abgeschlossen", "ergebnis": {"n": 2}}))
         self.assertTrue(erfolg)
         self.assertEqual(rufe, [])
+
+    def test_reported_failure_writes_nothing(self) -> None:
+        """Den gemeldeten Fehler hat der Dienst selbst belegt."""
+        erfolg, rufe = self._run(_Agent({"status": "fehler", "fehler": "Quelle leer"}))
+        self.assertFalse(erfolg)
+        self.assertEqual(rufe, [])
+
+    def test_escaped_exception_is_written_by_the_caller(self) -> None:
+        with self.assertLogs("ki_server.pixie", level="ERROR"):
+            erfolg, rufe = self._run(_Agent(RuntimeError("weg")))
+        self.assertFalse(erfolg)
+        self.assertEqual([r[2] for r in rufe], ["fehler"])
+        self.assertIn("entkommen: RuntimeError: weg", rufe[0][3])
 
     def test_missing_agent_is_audited(self) -> None:
         with self.assertLogs("ki_server.pixie", level="ERROR"):
@@ -133,41 +127,102 @@ class DispatchFrameTest(unittest.TestCase):
         self.assertEqual([r[2] for r in rufe], ["fehler"])
 
 
-class DeclarationMatchesCodeTest(unittest.TestCase):
-    """`writes_own_audit` sagt, was der Code tut."""
+# Die fuenf Dienste, die ihr Audit am 18.09.2026 nachgeruestet bekamen, mit
+# der Methode, in die ihr bisheriger Lauf gewandert ist.
+NACHGERUESTET: tuple[str, ...] = (
+    "wiedervorlage", "wissensluecken", "wissen_rueckweg", "recherche",
+    "synapsen_promotion",
+)
 
-    # Agenten, deren Audit-Methode nur einen Schritt belegt und nicht den
-    # Lauf — sie brauchen den Rahmen trotz eigener Methode. Jeder Eintrag
-    # traegt seinen Grund; ein neuer braucht einen.
-    NUR_EIN_SCHRITT: dict[str, str] = {
-        "recherche": "_audit_log schreibt recherche_bibliothek, nicht den Lauf "
-                     "(RECHERCHE-OHNE-AUDIT)",
-        "synapsen_promotion": "_audit_log schreibt je KZG-Eintrag, nicht den Lauf",
-    }
 
-    def test_every_registered_agent_declares_truthfully(self) -> None:
-        if not AgentRegistry.alle():
-            discover_agents()
-        agenten = AgentRegistry.alle()
-        self.assertGreaterEqual(len(agenten), 15, sorted(agenten))
-        for name, agent in agenten.items():
-            quelle = inspect.getsource(type(agent))
-            eigene = ("def _audit_log(" in quelle or "def _audit(" in quelle) \
-                and name not in self.NUR_EIN_SCHRITT
+def _registry() -> dict:
+    if not AgentRegistry.alle():
+        discover_agents()
+    return AgentRegistry.alle()
+
+
+class EveryServiceAuditsItselfTest(unittest.TestCase):
+    """Jeder Agent, den Pixie routet, belegt seinen Lauf im eigenen Code."""
+
+    def test_every_routed_agent_writes_started_itself(self) -> None:
+        from services.pixie import router
+        agenten = _registry()
+        # Periodische Agenten routet Pixie auch ueber Namensgleichheit, ohne
+        # Tabelleneintrag (`router.route`) — deshalb zaehlt der Zeitplan mit.
+        geroutet = {
+            name for name in set(router._QUEUE_ROUTING.values())
+            | set(router._PERIODISCH_ROUTING.values())
+            if name in agenten
+        } | {name for name, a in agenten.items() if a.periodic_task() is not None}
+        self.assertGreaterEqual(len(geroutet), 10, sorted(geroutet))
+        for name in sorted(geroutet):
+            quelle = inspect.getsource(type(agenten[name]))
             with self.subTest(agent=name):
-                self.assertEqual(agent.writes_own_audit, eigene)
+                self.assertIn('"gestartet"', quelle)
 
-    def test_research_run_gets_the_frame(self) -> None:
-        """Der Lauf des Recherche-Agenten steht im Audit, nicht nur sein Schritt."""
-        if not AgentRegistry.alle():
-            discover_agents()
-        self.assertFalse(AgentRegistry.finden("recherche").writes_own_audit)
+    def test_no_declaration_flag_is_left(self) -> None:
+        """Das Flag, das zweimal falsch gesetzt war, gibt es nicht mehr."""
+        treffer = [
+            str(pfad.relative_to(SERVER))
+            for pfad in SERVER.rglob("*.py")
+            if "tests" not in pfad.parts
+            and "writes_own_audit" in pfad.read_text(encoding="utf-8")
+        ]
+        self.assertEqual(treffer, [])
 
-    def test_promotion_run_gets_the_frame(self) -> None:
-        """Der Lauf der Promotion steht im Audit, nicht nur ihre Einzeleintraege."""
-        if not AgentRegistry.alle():
-            discover_agents()
-        self.assertFalse(AgentRegistry.finden("synapsen_promotion").writes_own_audit)
+    def _fahren(
+        self, name: str, lauf: object, wirft: bool = False,
+    ) -> tuple[dict, list[tuple]]:
+        agent = _registry()[name]
+        zustand: dict = {"kontext": {"user_id": "meister"}, "parameter": {}}
+        with patch.object(type(agent), "_run_once", lauf), \
+                patch("agents.base.write_audit") as audit:
+            if wirft:
+                with self.assertLogs(level="ERROR"):
+                    ergebnis = agent.invoke(zustand)
+            else:
+                ergebnis = agent.invoke(zustand)
+        return ergebnis, [c.args for c in audit.call_args_list]
+
+    def test_retrofitted_services_write_start_and_done(self) -> None:
+        for name in NACHGERUESTET:
+            def lauf(_self: object, state: dict) -> dict:
+                return {**state, "status": "abgeschlossen",
+                        "ergebnis": {"verarbeitet": 3, "stack_push_gescheitert": 1}}
+            with self.subTest(agent=name):
+                _, rufe = self._fahren(name, lauf)
+                self.assertEqual([(r[1], r[2]) for r in rufe],
+                                 [(name, "gestartet"), (name, "erledigt")])
+
+    def test_retrofitted_services_record_an_exception_once(self) -> None:
+        for name in NACHGERUESTET:
+            def lauf(_self: object, state: dict) -> dict:
+                raise RuntimeError("Senke weg")
+            with self.subTest(agent=name):
+                ergebnis, rufe = self._fahren(name, lauf, wirft=True)
+                self.assertEqual([r[2] for r in rufe], ["gestartet", "fehler"])
+                self.assertIn("RuntimeError: Senke weg", rufe[1][3])
+                self.assertEqual(ergebnis["status"], "fehler")
+
+    def test_retrofitted_services_record_a_reported_failure(self) -> None:
+        for name in NACHGERUESTET:
+            def lauf(_self: object, state: dict) -> dict:
+                return {**state, "status": "fehler", "fehler": "kein Kontext"}
+            with self.subTest(agent=name):
+                _, rufe = self._fahren(name, lauf)
+                self.assertEqual([r[2] for r in rufe], ["gestartet", "fehler"])
+                self.assertEqual(rufe[1][3], "kein Kontext")
+
+    def test_wiedervorlage_names_its_numbers(self) -> None:
+        def lauf(_self: object, state: dict) -> dict:
+            return {**state, "status": "abgeschlossen",
+                    "ergebnis": {"verarbeitet": 3, "stack_push_gescheitert": 1}}
+        _, rufe = self._fahren("wiedervorlage", lauf)
+        self.assertEqual(rufe[1][3], "3 verarbeitet, 1 Stack-Push gescheitert")
+
+
+class DeclarationMatchesCodeTest(unittest.TestCase):
+    """Die eine Senke bleibt die eine."""
 
     def test_no_copy_of_the_insert_outside_the_sink(self) -> None:
         treffer = [

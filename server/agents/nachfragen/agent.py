@@ -77,10 +77,6 @@ class NachfragenAgent(BaseAgent):
         """Handelnde ist Nova."""
         return ASSISTANT_USER_ID
 
-    @property
-    def writes_own_audit(self) -> bool:
-        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
-        return True
 
     def periodic_task(self) -> None:
         """Kein periodischer Lauf — der Agent haengt an der Shadow-Queue."""

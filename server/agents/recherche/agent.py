@@ -498,20 +498,39 @@ class RechercheAgent(BaseAgent):
 
         return "[" + ",".join(str(w) for w in antwort.embedding) + "]"
 
-    @property
-    def writes_own_audit(self) -> bool:
-        """Nein: `_audit_log` belegt nur den Bibliotheks-Schritt, nicht den Lauf.
-
-        Die Methode schreibt `recherche_bibliothek` — gestartet, erledigt oder
-        fehler der Ablage in die Bibliothek. Der Lauf davor (Websuche, Lesen,
-        Zusammenfassen, zehn Minuten auf dem einzigen seriellen Platz) blieb
-        ohne Eintrag (`RECHERCHE-OHNE-AUDIT`). Den schreibt der Rahmen im
-        Pixie-Dispatch unter der Aufgabe `recherche`; der Schritt bleibt eine
-        eigene Aufgabe, und kein Lauf zaehlt doppelt.
-        """
-        return False
 
     def invoke(self, state: AgentState) -> AgentState:
+        """Fuehrt einen Lauf aus und belegt ihn selbst im `hintergrund_log`.
+
+        **Der Dienst schreibt sein Audit selbst** (NMCP §7): `gestartet` vor
+        dem Lauf, danach `erledigt` mit der Laenge des Destillats (der Bibliotheks-Schritt belegt sich zusaetzlich als `recherche_bibliothek`) oder `fehler` mit dem Grund.
+        Eine Ausnahme aus dem Lauf wird hier belegt und als `status="fehler"`
+        zurueckgegeben, nicht weitergeworfen — sonst schriebe der Aufrufer
+        eine zweite Zeile.
+
+        Vorbedingung: `state["kontext"]` ist ein Dict.
+        Nachbedingung: genau eine `gestartet`- und genau eine Abschlusszeile.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        user_id: str = state["kontext"].get("user_id", "")
+        self._audit(user_id, "gestartet", f"Thema '{(state.get('parameter') or {}).get('thema', '')}'")
+
+        # ── Verarbeitung ────────────────────────────
+        try:
+            state = self._run_once(state)
+        except Exception as fehler:  # noqa: BLE001 — belegt und zurueckgegeben
+            logger.exception("%s: Lauf abgebrochen", type(fehler).__name__)
+            state["status"] = "fehler"
+            state["fehler"] = f"{type(fehler).__name__}: {fehler}"
+
+        # ── Ausgabe ─────────────────────────────────
+        if state.get("status") == "fehler":
+            self._audit(user_id, "fehler", str(state.get("fehler")))
+        else:
+            self._audit(user_id, "erledigt", f"Destillat {len(str(state.get('ergebnis') or ''))} Zeichen")
+        return state
+
+    def _run_once(self, state: AgentState) -> AgentState:
         """Orchestriert den Recherche-Ablauf.
 
         1. Session-Kontext destillieren

@@ -148,6 +148,37 @@ class WissenRueckwegAgent(BaseAgent):
         return None
 
     def invoke(self, state: AgentState) -> AgentState:
+        """Fuehrt einen Lauf aus und belegt ihn selbst im `hintergrund_log`.
+
+        **Der Dienst schreibt sein Audit selbst** (NMCP §7): `gestartet` vor
+        dem Lauf, danach `erledigt` mit dem Ausgang (geschrieben oder nicht, und warum) oder `fehler` mit dem Grund.
+        Eine Ausnahme aus dem Lauf wird hier belegt und als `status="fehler"`
+        zurueckgegeben, nicht weitergeworfen — sonst schriebe der Aufrufer
+        eine zweite Zeile.
+
+        Vorbedingung: `state["kontext"]` ist ein Dict.
+        Nachbedingung: genau eine `gestartet`- und genau eine Abschlusszeile.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        user_id: str = state["kontext"].get("user_id", "")
+        self._audit(user_id, "gestartet", f"{state.get('aufgabe', '')}: '{(state.get('parameter') or {}).get('thema', '')}'")
+
+        # ── Verarbeitung ────────────────────────────
+        try:
+            state = self._run_once(state)
+        except Exception as fehler:  # noqa: BLE001 — belegt und zurueckgegeben
+            logger.exception("%s: Lauf abgebrochen", type(fehler).__name__)
+            state["status"] = "fehler"
+            state["fehler"] = f"{type(fehler).__name__}: {fehler}"
+
+        # ── Ausgabe ─────────────────────────────────
+        if state.get("status") == "fehler":
+            self._audit(user_id, "fehler", str(state.get("fehler")))
+        else:
+            self._audit(user_id, "erledigt", ", ".join(f"{k}={v}" for k, v in (state.get("ergebnis") or {}).items()))
+        return state
+
+    def _run_once(self, state: AgentState) -> AgentState:
         """Arbeitet einen Auftrag ab: zuordnen, dann schneiden oder verweisen.
 
         **Die Auftragsart entscheidet den Ausgang, nicht der Inhalt.**

@@ -72,18 +72,6 @@ class SynapsenPromotionAgent(BaseAgent):
     def faehigkeiten(self) -> list[str]:
         return ["synapsen_promotion"]
 
-    @property
-    def writes_own_audit(self) -> bool:
-        """Nein: `_audit_log` belegt je KZG-Eintrag, nicht den Lauf.
-
-        Die Methode schreibt unter `synapsen_promotion:<kzg_key>` — einen
-        Eintrag je verarbeitetem Auftrag. Der Lauf selbst (leer, zurueckgelegt,
-        verworfen, eine Ausnahme ausserhalb der Schleife) hinterliess keine
-        Zeile. Den schreibt der Rahmen im Pixie-Dispatch unter
-        `synapsen_promotion`; die Einzeleintraege bleiben, und kein Lauf zaehlt
-        doppelt (Befund der zweiten Kontrolle, 18.09.2026).
-        """
-        return False
 
     @property
     def lastart(self) -> str:
@@ -136,6 +124,37 @@ class SynapsenPromotionAgent(BaseAgent):
         write_audit(user_id, aufgabe, status, ergebnis)
 
     def invoke(self, state: AgentState) -> AgentState:
+        """Fuehrt einen Lauf aus und belegt ihn selbst im `hintergrund_log`.
+
+        **Der Dienst schreibt sein Audit selbst** (NMCP §7): `gestartet` vor
+        dem Lauf, danach `erledigt` mit den Zaehlern ueber alle Paare (die Einzeleintraege belegen sich zusaetzlich je KZG-Schluessel) oder `fehler` mit dem Grund.
+        Eine Ausnahme aus dem Lauf wird hier belegt und als `status="fehler"`
+        zurueckgegeben, nicht weitergeworfen — sonst schriebe der Aufrufer
+        eine zweite Zeile.
+
+        Vorbedingung: `state["kontext"]` ist ein Dict.
+        Nachbedingung: genau eine `gestartet`- und genau eine Abschlusszeile.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        user_id: str = state["kontext"].get("user_id", "")
+        self._audit(user_id, "gestartet", "Promotion-Queue abarbeiten")
+
+        # ── Verarbeitung ────────────────────────────
+        try:
+            state = self._run_once(state)
+        except Exception as fehler:  # noqa: BLE001 — belegt und zurueckgegeben
+            logger.exception("%s: Lauf abgebrochen", type(fehler).__name__)
+            state["status"] = "fehler"
+            state["fehler"] = f"{type(fehler).__name__}: {fehler}"
+
+        # ── Ausgabe ─────────────────────────────────
+        if state.get("status") == "fehler":
+            self._audit(user_id, "fehler", str(state.get("fehler")))
+        else:
+            self._audit(user_id, "erledigt", ", ".join(f"{k}={v}" for k, v in (state.get("ergebnis") or {}).items()))
+        return state
+
+    def _run_once(self, state: AgentState) -> AgentState:
         """Arbeitet die Promotion-Queue vollstaendig ab (KZG hat TTL).
 
         **Der Auftrag wird nicht entnommen, sondern verschoben.** `lpop` nahm

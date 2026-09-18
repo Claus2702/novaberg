@@ -60,10 +60,6 @@ class QualitaetProfilAgent(BaseAgent):
         # Reiner Pixie-Hintergrund-Agent, keine User-Graph-Eignung.
         return ["pixie"]
 
-    @property
-    def writes_own_audit(self) -> bool:
-        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
-        return True
 
     def periodic_task(self) -> PeriodicTask | None:
         """Registriert den taeglichen Lauf.
