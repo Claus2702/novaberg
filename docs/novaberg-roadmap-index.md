@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 895 Abschnitte in 5 Dateien — 383 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 904 Abschnitte in 5 Dateien — 392 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 632 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 641 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 895 Marken, 895 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 904 Marken, 904 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,15 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 23:29 UTC — jeder Dienst schreibt sein Audit selbst 🔧](novaberg-roadmap.md#18092026-2329-utc--jeder-dienst-schreibt-sein-audit-selbst) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 23:24 UTC — Nova bietet Termine zum Eintragen an und nennt sie beim Namen 🔧](novaberg-roadmap.md#18092026-2324-utc--nova-bietet-termine-zum-eintragen-an-und-nennt-sie-beim-namen) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 22:13 UTC — das Angebot gilt der Sache, die angeboten wurde 🔧](novaberg-roadmap.md#18092026-2213-utc--das-angebot-gilt-der-sache-die-angeboten-wurde) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 21:41 UTC — Nova bekommt Spielraum: das Angebot folgt einer Wahrscheinlichkeit 🔧](novaberg-roadmap.md#18092026-2141-utc--nova-bekommt-spielraum-das-angebot-folgt-einer-wahrscheinlichkeit) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 21:04 UTC — die zweite Kontrolle fand, was die eigene Messung nicht sehen konnte 🔧](novaberg-roadmap.md#18092026-2104-utc--die-zweite-kontrolle-fand-was-die-eigene-messung-nicht-sehen-konnte) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 09:01 UTC — ein »Gerne« kommt an, auch wenn das Modell es übersieht 🔧](novaberg-roadmap.md#18092026-0901-utc--ein-gerne-kommt-an-auch-wenn-das-modell-es-übersieht) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 08:31 UTC — ein Termin hat jetzt auch ein Ende 🔧](novaberg-roadmap.md#18092026-0831-utc--ein-termin-hat-jetzt-auch-ein-ende) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 08:27 UTC — »bereits eingetragen« war ein Anker, und die Korrektur steht jetzt in der Antwort 🔧](novaberg-roadmap.md#18092026-0827-utc--bereits-eingetragen-war-ein-anker-und-die-korrektur-steht-jetzt-in-der-antwort) |
+| 2026-09-18 | laufend | ## | [18.09.2026, 08:21 UTC — Nova bietet an, und aus »Gerne« wird der Termin 🔧](novaberg-roadmap.md#18092026-0821-utc--nova-bietet-an-und-aus-gerne-wird-der-termin) |
 | 2026-09-18 | laufend | ## | [18.09.2026, 08:12 UTC — die Knoten belegen ihre Weichen, jeder Hintergrundlauf ist auditiert, und der Hänger von heute früh hat eine Ursache 🔧](novaberg-roadmap.md#18092026-0812-utc--die-knoten-belegen-ihre-weichen-jeder-hintergrundlauf-ist-auditiert-und-der-hänger-von-heute-früh-hat-eine-ursache) |
 | 2026-09-18 | laufend | ## | [18.09.2026, 07:43 UTC — das Nein am Objekt, und ein Dienst meldet, was er geprüft hat 🔧](novaberg-roadmap.md#18092026-0743-utc--das-nein-am-objekt-und-ein-dienst-meldet-was-er-geprüft-hat) |
 | 2026-09-17 | laufend | ## | [17.09.2026, 20:38 UTC — die Zustimmung braucht ein Angebot 🔧](novaberg-roadmap.md#17092026-2038-utc--die-zustimmung-braucht-ein-angebot) |
