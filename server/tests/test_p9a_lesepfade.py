@@ -53,6 +53,10 @@ class VorwissenLiestDieNeueTabelleTest(unittest.TestCase):
     def setUp(self) -> None:
         """Legt einen Knoten mit Embedding im eigenen Paar an."""
         self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: Ein Lesen ueber diese Verbindung haelt sonst eine
+        # Transaktion offen, und die Migration beim Serverstart wartet
+        # darauf (ZEUGE-FLACKERT-OHNE-REPRODUKTION, 18.09.2026).
+        self.conn.autocommit = True
         self._aufraeumen()
         # Ein Embedding, das zu jeder Anfrage denselben Abstand hat: Der Test
         # prueft, DASS gefunden wird, nicht wie gut. Die Reihenfolge ist hier
@@ -192,6 +196,10 @@ class GravitationVerfaelltEinmalTest(unittest.TestCase):
         self.assertLess(self.erwartet_alt, EMOTIONALE_GRAVITATIONS_SCHWELLE)
 
         self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: Ein Lesen ueber diese Verbindung haelt sonst eine
+        # Transaktion offen, und die Migration beim Serverstart wartet
+        # darauf (ZEUGE-FLACKERT-OHNE-REPRODUKTION, 18.09.2026).
+        self.conn.autocommit = True
         self._aufraeumen()
         vektor: str = "[" + ",".join(["0.01"] * 768) + "]"
         with self.conn.cursor() as cur:

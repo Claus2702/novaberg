@@ -109,6 +109,10 @@ class ZieleLesenPaarTest(unittest.TestCase):
     def setUp(self) -> None:
         """Legt das Fixture beider Paare an."""
         self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: Ein Lesen ueber diese Verbindung haelt sonst eine
+        # Transaktion offen, und die Migration beim Serverstart wartet
+        # darauf (ZEUGE-FLACKERT-OHNE-REPRODUKTION, 18.09.2026).
+        self.conn.autocommit = True
         self._aufraeumen()
         with self.conn.cursor() as cur:
             cur.execute(
@@ -170,6 +174,10 @@ class ZielSchreibenPaarTest(unittest.TestCase):
     def setUp(self) -> None:
         """Legt das Fixture beider Paare an."""
         self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: Ein Lesen ueber diese Verbindung haelt sonst eine
+        # Transaktion offen, und die Migration beim Serverstart wartet
+        # darauf (ZEUGE-FLACKERT-OHNE-REPRODUKTION, 18.09.2026).
+        self.conn.autocommit = True
         self._aufraeumen()
 
     def tearDown(self) -> None:

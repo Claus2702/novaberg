@@ -257,6 +257,10 @@ class DerLaufGegenEchteZeilenTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: Ein Lesen ueber diese Verbindung haelt sonst eine
+        # Transaktion offen, und die Migration beim Serverstart wartet
+        # darauf (ZEUGE-FLACKERT-OHNE-REPRODUKTION, 18.09.2026).
+        self.conn.autocommit = True
         self._aufraeumen()
         with self.conn.cursor() as cur:
             cur.execute(
@@ -372,6 +376,10 @@ class DerLaderLaesstVerfallenesLiegenTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: Ein Lesen ueber diese Verbindung haelt sonst eine
+        # Transaktion offen, und die Migration beim Serverstart wartet
+        # darauf (ZEUGE-FLACKERT-OHNE-REPRODUKTION, 18.09.2026).
+        self.conn.autocommit = True
         self._aufraeumen()
         with self.conn.cursor() as cur:
             cur.execute(

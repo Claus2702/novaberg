@@ -64,6 +64,18 @@ def _sql_init_pfad_finden() -> Path:
 
 SQL_INIT_PFAD: Path = _sql_init_pfad_finden()
 
+# Wie lange die Migration auf eine Tabellensperre wartet, bevor sie aufgibt.
+# **Ohne Frist wartete sie unbegrenzt**, und ein `ALTER TABLE` stellt sich in
+# die Sperrschlange vor jeden spaeteren Leser und Schreiber derselben Tabelle.
+# `[gemessen]` 18.09.2026: Ein Reload waehrend eines Suite-Laufs startete die
+# Migration, waehrend ein Zeuge eine Lesetransaktion auf `ziele` offen hielt;
+# die Migration wartete auf den Zeugen, der naechste Schreibzugriff des Zeugen
+# auf die Migration. Der Serverstart hing **89 Minuten** (06:04 bis 07:33 UTC),
+# bis Postgres den Deadlock sah, nachdem die Transaktion von Hand beendet war.
+# Zehn Sekunden sind weit ueber der Dauer eines Laufs ohne Wettbewerb
+# (gemessen 20 bis 50 ms) und kurz genug, dass ein Neustart nicht haengt.
+MIGRATION_SPERRFRIST_MS: int = 10_000
+
 
 def schema_migrieren(postgres_url: str) -> None:
     """Migration: führt db/init.sql gegen die bestehende Live-Datenbank aus.
@@ -78,10 +90,12 @@ def schema_migrieren(postgres_url: str) -> None:
        (server/../db/init.sql) liegen.
     V: SQL-Inhalt einmalig laden und gegen Postgres mit autocommit=True
        ausführen, damit DO-Blöcke und unabhängige Statements korrekt
-       transaktioniert werden.
+       transaktioniert werden — mit `lock_timeout` (`MIGRATION_SPERRFRIST_MS`),
+       damit eine fremde Sperre den Start nicht unbegrenzt anhält.
     A: info-Log mit Pfad und einer groben Statement-Zahl (Semikolon-Zählung).
        Bei Fehler warning-Log und Rückkehr ohne Re-Raise — Fail-Mode wie
-       bisher in P0.
+       bisher in P0. Eine abgelaufene Sperrfrist ist ein `error`: Das Schema
+       ist dann nicht migriert, und die Zeile nennt den Grund.
     """
     if not SQL_INIT_PFAD.exists():
         logger.warning(f"Migration: db/init.sql nicht gefunden unter {SQL_INIT_PFAD}")
@@ -93,7 +107,9 @@ def schema_migrieren(postgres_url: str) -> None:
     import psycopg2
 
     try:
-        conn = psycopg2.connect(postgres_url)
+        conn = psycopg2.connect(
+            postgres_url, options=f"-c lock_timeout={MIGRATION_SPERRFRIST_MS}",
+        )
         conn.autocommit = True
         cursor = conn.cursor()
         cursor.execute(sql_inhalt)
@@ -101,6 +117,13 @@ def schema_migrieren(postgres_url: str) -> None:
         logger.info(
             f"Migration: db/init.sql ausgeführt "
             f"({anzahl_stmts} Statements geparst, Pfad {SQL_INIT_PFAD})."
+        )
+    except psycopg2.errors.LockNotAvailable as fehler:
+        logger.error(
+            f"Migration: db/init.sql NICHT ausgeführt — nach "
+            f"{MIGRATION_SPERRFRIST_MS} ms keine Tabellensperre ({fehler}). "
+            f"Eine andere Verbindung haelt eine Transaktion offen; das Schema "
+            f"bleibt auf dem vorigen Stand bis zum naechsten Start."
         )
     except Exception as fehler:
         logger.warning(f"Migration: db/init.sql fehlgeschlagen — {fehler}")
