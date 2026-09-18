@@ -8,6 +8,7 @@ Drei Such-Modi:
 
 import json
 import logging
+import re
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -90,10 +91,16 @@ def suchen(state: AgentState) -> dict:
         )
         logger.debug(f"suchen: Uebersicht (±14 Tage) — {len(treffer)} Treffer")
 
-    # ── Create: Duplikat-Pruefung ──
+    # ── Create: Duplikat-Pruefung (Scheibe 12 F) ──
+    # ~~Jeder Treffer der Suche oben galt als Duplikat~~ → seit dem 18.09.2026
+    # nur ein aktiver Termin am selben Tag mit aehnlichem Titel. `[gemessen
+    # 17.09.2026, Betrieb]` Ohne Ziel und Zeit fiel die Suche in die Uebersicht
+    # (±14 Tage), und ein Erinnerungs-Anker der KZG galt als Duplikat: Der
+    # Dienst meldete "bereits eingetragen" fuer etwas anderes und legte nichts an.
     if action == "create":
+        treffer = find_duplicates(target, zeitausdruck, state["aufgabe"], user_id)
         if treffer:
-            # Aehnlicher Eintrag existiert bereits → kein Duplikat anlegen
+            # Derselbe Termin steht schon da → melden, nicht doppelt anlegen
             existierend = treffer[0]
             datum = existierend["event_time"].astimezone(tz).strftime("%d.%m.%Y")
             if precision_has_time(existierend.get("precision", "day")):
@@ -197,3 +204,67 @@ def suchen(state: AgentState) -> dict:
         "schritte": state["schritte"]
         + [{"node": "suchen", "ergebnis": f"gefunden: {termin['title']}"}],
     }
+
+
+# Worte, die fuer die Aehnlichkeit zweier Titel nichts tragen.
+_FUELLWORTE: frozenset[str] = frozenset({
+    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "am", "an", "im", "in",
+    "zum", "zur", "mit", "und", "von", "bei", "termin", "fuer", "für",
+})
+
+
+def _title_words(title: str) -> set[str]:
+    """Die tragenden Worte eines Titels, kleingeschrieben, ohne Fuellworte und Kuerzel."""
+    return {w for w in re.findall(r"[a-zäöüß]+", str(title).casefold()) if len(w) > 2 and w not in _FUELLWORTE}
+
+
+def find_duplicates(target: str, zeitausdruck: str, aufgabe: str, user_id: str) -> list[dict]:
+    """Die Termine, die ein neuer Eintrag doppeln wuerde — Scheibe 12 F.
+
+    Die Absicht (14.09.2026): *"Ob das Objekt schon gespeichert ist, kann die
+    Fachabteilung besser einschaetzen als der Empfang."* Sie prueft den Bestand
+    und meldet es mit ihrem Ausgang.
+
+    Vorbedingung: `target` ist der Titel des neuen Termins; `zeitausdruck` oder
+        die Aufgabe tragen seinen Tag.
+    Nachbedingung: aktive Termine **am selben Tag**, deren Titel mindestens ein
+        tragendes Wort mit dem neuen teilt — ohne Erinnerungs-Anker (die legt
+        die KZG an, sie sind kein Termin des Menschen). **Ohne Titel oder ohne
+        erkennbaren Tag: keine Duplikate** — dann entscheidet das Anlegen
+        selbst (es meldet den fehlenden Titel oder Tag), statt dass ein
+        beliebiger Eintrag als Duplikat gilt.
+    Fehlerfaelle: keine Ausnahme; ein Lesefehler des Bestands steht im Log und
+        ergibt keine Duplikate — dann wird eher doppelt angelegt als gar nicht.
+    """
+    from config import POSTGRES_URL
+    from memory.repositories.timeline_repository import TimelineRepository
+    from utils.zeitparser import zeit_parsen_vektor
+
+    # ── Eingabe-Validierung ─────────────────────
+    worte: set[str] = _title_words(target)
+    if not worte:
+        return []
+    vektor = zeit_parsen_vektor(zeitausdruck) if zeitausdruck else None
+    if vektor is None or vektor.datum is None:
+        vektor = zeit_parsen_vektor(aufgabe)
+    if vektor.datum is None:
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    tz = ZoneInfo(TIMEZONE)
+    tag = vektor.datum.astimezone(tz)
+    von = tag.replace(hour=0, minute=0, second=0, microsecond=0)
+    bis = von + timedelta(days=1) - timedelta(seconds=1)
+    try:
+        am_tag: list[dict] = TimelineRepository.find_by_date_range(POSTGRES_URL, user_id, von, bis)
+    except Exception as fehler:  # noqa: BLE001 — der Anlegepfad haelt nicht an
+        logger.error(f"suchen: Duplikat-Pruefung nicht moeglich ({type(fehler).__name__}: {fehler}) — keine")
+        return []
+
+    # ── Ausgabe ─────────────────────────────────
+    return [
+        t for t in am_tag
+        if t.get("aktiv", True)
+        and t.get("event_type") != "erinnerungs_anker"
+        and worte & _title_words(t.get("title", ""))
+    ]
