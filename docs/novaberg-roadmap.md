@@ -32,9 +32,11 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 **Zwei Nachträge am selben Abend, beide gemessen:** **E1c** — die Zustimmung nimmt die Sachen des Angebots mit (Name, Klasse, gedeckte Eigenschaften), weil die Lage weiterzieht; der erste Entwurf band sie an die aktuelle Lage und ließ die Zustimmung ins Leere laufen. **E1d** — trägt ein Turn eine eigene Auftragsform, gilt er nicht mehr als Antwort auf eine offene Rückfrage: Der Zahnarzt-Auftrag, der am Abend zuvor verschluckt wurde, legte den Termin an, zweimal.
 
-**Offen bleibt E2:** Nova bot in vier Turns kein einziges Mal von sich aus an. Bis das steht, schreibt die Kette auf eine Zustimmung hin nichts. **Und ein neuer Fund:** Der Dienst bekommt die angebotene Sache, seine Klassifikation folgt ihr aber nicht, wenn im Verlauf eine andere steht.
+**Dann die Bindung an die Sache.** Ein `[ZUSTIMMUNG]`-Block in beiden Klassifikationen beseitigte den falschen Gegenstand, ließ Ziel und Zeit aber leer — der Dienst meldete `abgeschlossen`, ohne zu schreiben (erste Betriebsbeobachtung von `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION`). Nach der Regel vor dem Lauf wanderte die Bindung **in den Code**: Ziel und Zeitangabe kommen aus der zugestimmten Sache, gefüllt wird nur, was leer ist. Danach entstand der Termin *„Abholung der Schwester am Bahnhof"* mit Samstag 10:00 — **1 von 2 Läufen**; der zweite kam nicht durch den Empfang (`ROUTE-MISS1`).
 
-**TEST:** Suite **3917 grün, 0 übersprungen**. Sieben Gegenproben; drei davon deckten erst Lücken auf — die Sperre war überbezeugt, die Verdrahtung im Dispatcher gar nicht bezeugt, und eine Vorhersage von 2 roten Tests traf nur einen, weil der zweite den Fall nicht unterscheiden kann.
+**Offen bleibt E2:** Nova bot in vier Turns kein einziges Mal von sich aus an.
+
+**TEST:** Suite **3929 grün, 0 übersprungen**. Zwölf Gegenproben; drei davon deckten erst Lücken auf — die Sperre war überbezeugt, die Verdrahtung im Dispatcher gar nicht bezeugt, und eine Vorhersage von 2 roten Tests traf nur einen, weil der zweite den Fall nicht unterscheiden kann.
 
 ---
 
