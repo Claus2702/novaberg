@@ -20,7 +20,8 @@ from agents.nmcp_quote import REGISTER
 from agents.object_nearness import shadow_nearness
 from config import PROMPTS, get_node_config, redis_client
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
+from memory.pipeline_log import log_decision
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
 from utils.offers import (
@@ -115,6 +116,28 @@ def _build_router_prompt(
     bloecke.append(PROMPTS["router.rules"])
 
     return "\n\n".join(bloecke)
+
+
+def _decision(state: ConversationState, decision: str, outcome: str, inputs: dict, scale: dict | None = None) -> None:
+    """Der Entscheidungs-Eintrag des Empfangs — je Weiche einer, auch beim Uebersprung.
+
+    Nachbedingung: ein `switch` mit `entscheidung`, `ausgang`, `eingang` und
+        `massstab` im Pipeline-Log (`memory.pipeline_log.log_decision`). Bis
+        zum 18.09.2026 schrieb der Router keinen Eintrag: ob ein Wartezustand
+        griff, ob ein Angebot offen war, ob der Riegel eine Zustimmung
+        aufhielt, stand nur im Textlog.
+    """
+    log_decision(
+        turn_id      = state.get("turn_id", "unbekannt"),
+        node         = "router",
+        quelle       = pipeline_quelle(state),
+        decision     = decision,
+        outcome      = outcome,
+        inputs       = inputs,
+        scale        = scale,
+        user_id      = state.get("user_id", ""),
+        character_id = state.get("character_id", ""),
+    )
 
 
 def build_situation_block(sachlage: object, verdict: object, max_objects: int = 5,
@@ -246,6 +269,8 @@ def route(
             f"von '{pending.get('agent_name', '?')}' wird verworfen"
         )
         redis_manager.delete(pending_key)
+        _decision(state, "router.rueckfrage", "verworfen_eigener_auftrag",
+                  {"wartender_dienst": pending.get("agent_name", "")})
         pending = None
 
     if pending and reiz_ist_eigener_gedanke(state):
@@ -264,6 +289,8 @@ def route(
             "eigener Gedanke und beantwortet keine Rueckfrage",
             pending.get("agent_name", ""),
         )
+        _decision(state, "router.rueckfrage", "bleibt_stehen_impuls",
+                  {"wartender_dienst": pending.get("agent_name", "")})
     elif pending:
         agent_name = pending.get("agent_name", "")
         logger.info(f"Router: Pending Agent erkannt — '{agent_name}', Resume-Flow aktiviert")
@@ -274,6 +301,7 @@ def route(
         state["needs_timeline"]    = False
         state["timeline_query"]    = {}
         state["momentum"]          = "mid"
+        _decision(state, "router.rueckfrage", f"resume:{agent_name}", {"wartender_dienst": agent_name})
         return state
 
     # ── Session-Kontext laden (leichtgewichtig, Redis-Read) ──
@@ -341,7 +369,9 @@ def route(
     # Regel — er haengt nicht daran, dass das Modell dem Prompt folgt.
     # Er greift NUR bei einer Aeusserung, die nichts weiter sagt als "ja":
     # Ein eigener Auftrag traegt seine Sache selbst und geht durch.
-    if state["management_action"] and is_bare_consent(reiz) and not angebot_offen:
+    vom_modell: str = f"{state['management_action']}/{state['management_target']}"
+    riegel: bool = bool(state["management_action"]) and is_bare_consent(reiz) and not angebot_offen
+    if riegel:
         logger.info(
             "Router: blanke Zustimmung ohne offenes Angebot — keine Zustellung "
             f"(war: {state['management_action']}/{state['management_target']})"
@@ -354,6 +384,15 @@ def route(
     if state["management_action"] and state["momentum"] == "low":
         state["momentum"] = "mid"
         logger.info("Router: Momentum low->mid korrigiert (Management-Intent aktiv)")
+
+    _decision(
+        state, "router.zustellung",
+        f"{state['management_action']}/{state['management_target']}" if state["management_action"] else "keine",
+        {"vom_modell": vom_modell, "angebot_offen": angebot_offen,
+         "blanke_zustimmung": is_bare_consent(reiz), "riegel_gegriffen": riegel,
+         "momentum": state["momentum"]},
+        {"regel": "zustimmung_nur_bei_offenem_angebot"},
+    )
 
     logger.info(
         f"Router: memory={state['needs_memory']}, web={state['needs_web']}, "

@@ -19,7 +19,8 @@ from agents import AgentRegistry
 from agents.object_nearness import objects_for_service, service_order
 from config import PROMPTS
 from graph.format.agent_results import format_success_lines
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
+from memory.pipeline_log import log_decision
 from plugins import get_registry
 from plugins.base import BaseManager
 
@@ -440,6 +441,29 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
     return reihenfolge
 
 
+def _decision(state: ConversationState, outcome: str, inputs: dict, decision: str = "planner.dienstwahl") -> None:
+    """Der Entscheidungs-Eintrag des Planners — je Ausgang einer, auch beim Durchlauf.
+
+    Vorbedingung: keine; ein fehlender Turn wird als "unbekannt" geschrieben.
+    Nachbedingung: ein `switch` mit `entscheidung`, `ausgang`, `eingang` und
+        `massstab` im Pipeline-Log (Form: `memory.pipeline_log.log_decision`).
+        Ohne ihn war der Planner nicht beobachtbar — welcher Dienst gefragt,
+        wer uebergangen, warum der Turn zum Responder ging, stand nur im
+        Textlog.
+    """
+    log_decision(
+        turn_id      = state.get("turn_id", "unbekannt"),
+        node         = "planner",
+        quelle       = pipeline_quelle(state),
+        decision     = decision,
+        outcome      = outcome,
+        inputs       = inputs,
+        scale        = {"weitergabe_bei": sorted(DECLINED)},
+        user_id      = state.get("user_id", ""),
+        character_id = state.get("character_id", ""),
+    )
+
+
 def plan(
     state:        ConversationState,
     postgres_url: str
@@ -452,6 +476,7 @@ def plan(
 
     if not action:
         logger.info("Planner: Kein Management-Intent — Durchlauf")
+        _decision(state, "durchlauf", {"management_action": ""})
         return state
 
     # ── Resume-Flow: Agent wartet auf Antwort ──────
@@ -479,9 +504,12 @@ def plan(
                         agent_name, vorheriges.status,
                     )
                     _write_task_block(state)
+                    _decision(state, "resume_bereits_gelaufen",
+                              {"agent": agent_name, "status": vorheriges.status}, "planner.resume")
                     return state
 
                 logger.info(f"Planner: Resume-Flow — Agent '{agent_name}'")
+                _decision(state, f"resume:{agent_name}", {"agent": agent_name}, "planner.resume")
                 state["agent_name"] = agent_name
                 state["management_result"] = ""
                 state["management_detail"] = ""
@@ -494,6 +522,7 @@ def plan(
         # Fallback: Kein Resume möglich — normalen Durchlauf machen
         _write_task_block(state)
         state["management_action"] = ""
+        _decision(state, "resume_nicht_moeglich", {"pending": bool(pending)}, "planner.resume")
         return state
 
     external = state.get("external")
@@ -566,12 +595,21 @@ def plan(
             f"action='{state.get('management_action')}')"
         )
         state["node_annotations"].append("Planner: Kein Manager gefunden")
+        _decision(state, "kein_dienst", {"intent": user_intent, "target": state.get("management_target", "")})
         return state
 
     # Die Dienste der Reihe nach: Wer noch nicht lief, wird gefragt. Wer
     # ablehnte, gibt an den naechsten weiter — entschieden am 16.09.2026: "fuer
     # die Grenzfaelle beide ansprechen, wenn der eine nicht will, soll der andere
     # auch gefragt werden". Jeder andere Ausgang beendet die Reihe.
+    eingang: dict = {
+        "reihenfolge":    list(reihenfolge),
+        "intent":         user_intent,
+        "target":         state.get("management_target", ""),
+        "naehe_urteil":   (state.get("objekt_urteil") or {}).get("ergebnis"),
+        "angebot_objekte": list(state.get("angebot_objekte") or []),
+        "abgelehnt":      [],
+    }
     for name in reihenfolge:
         agent = AgentRegistry.finden(name)
         if agent is None:
@@ -597,8 +635,11 @@ def plan(
             state["agent_name"] = agent.name
             state["management_result"] = ""
             state["management_detail"] = ""
+            _decision(state, f"frage:{agent.name}",
+                      {**eingang, "objekt_bezug": [o["name"] for o in state["objekt_bezug"]]})
             return state
         if vorheriges.status in DECLINED:
+            eingang["abgelehnt"].append(agent.name)
             logger.info(
                 f"Planner: '{agent.name}' lehnte ab (status={vorheriges.status}) — "
                 f"naechster in {reihenfolge}"
@@ -609,13 +650,16 @@ def plan(
             "weiter zum Responder"
         )
         _write_task_block(state)
+        _decision(state, f"fertig:{agent.name}:{vorheriges.status}", eingang)
         return state
     else:
         logger.info(f"Planner: alle Dienste der Reihenfolge {reihenfolge} gefragt — weiter zum Responder")
         _write_task_block(state)
+        _decision(state, "alle_gefragt", eingang)
         return state
 
     logger.info(f"Planner: Delegiere an '{zustaendiger.ziel}' (Manager ohne Agent)")
+    _decision(state, f"manager:{zustaendiger.ziel}", eingang)
 
     # Manager plant die Operation
     try:
