@@ -26,8 +26,8 @@ from config import (
     ZIEL_DECAY_AKTIV,
 )
 from memory import pipeline_log
+from memory.background_audit import write_audit
 from memory.ziele import halbwertszeit_tage_fuer_typ, ziel_decay_lauf
-from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.ziel_decay")
 
@@ -40,6 +40,11 @@ class ZielDecayAgent(BaseAgent):
     @property
     def faehigkeiten(self) -> list[str]:
         return ["ziel_decay"]
+
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
 
     @property
     def lastart(self) -> str:
@@ -82,20 +87,7 @@ class ZielDecayAgent(BaseAgent):
         Failsafe: Bei DB-Fehler nur logger.critical, kein Retry — sonst droht
         Endlos-Rekursion bei kaputter Audit-Senke. Muster wie synapsen_decay.
         """
-        try:
-            db_manager.execute(
-                """
-                INSERT INTO hintergrund_log
-                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                (user_id, "ziel_decay", status, ergebnis),
-            )
-        except Exception as ex:
-            logger.critical(
-                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
-                f"(verlorener Audit-Eintrag: ziel_decay/{status}/{ergebnis[:100]})"
-            )
+        write_audit(user_id, "ziel_decay", status, ergebnis)
 
     @staticmethod
     def _log_forensik(run_id: str, inhalt: dict) -> None:

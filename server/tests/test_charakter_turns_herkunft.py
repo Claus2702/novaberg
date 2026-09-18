@@ -73,7 +73,7 @@ class TestHerkunftsFilter(unittest.TestCase):
     """
 
     def _laden(self, bank: _Bank, level: str = "INFO"):
-        with patch("agents.charakter.agent.db_manager", bank):
+        with patch("agents.charakter.agent.db_manager", bank), patch("agents.charakter.agent.write_audit"):
             with self.assertLogs(AGENT_LOGGER, level=level) as protokoll:
                 treffer = CharakterAgent._turns_laden(None, "meister")
         return treffer, protokoll.output

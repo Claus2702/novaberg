@@ -24,6 +24,7 @@ import uuid
 
 from api.websocket import broadcast_threadsafe
 from config import ASSISTANT_USER_ID, graph_run_lock, redis_client, shutdown_event
+from memory.background_audit import write_audit
 from services.events import event_erzeugen, event_wartet
 from services.model_costs import BACKGROUND_TURN, CURRENT_TURN
 from services.prompt_eingang import (
@@ -33,7 +34,6 @@ from services.prompt_eingang import (
     turn_beginnen,
 )
 from services.shadow_delivery import shadow_burst_reset
-from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.prompt_consumer")
 
@@ -59,21 +59,7 @@ def _audit_log(user_id: str, status: str, ergebnis: str) -> None:
     Wiederholungsversuch — sonst droht Endlos-Rekursion bei kaputter
     Audit-Senke. Muster wie `ziel_decay`.
     """
-    try:
-        db_manager.execute(
-            """
-            INSERT INTO hintergrund_log
-                (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-            VALUES (%s, %s, %s, %s, NOW())
-            """,
-            (user_id, "prompt_block", status, ergebnis),
-        )
-    except Exception as fehler:
-        logger.critical(
-            f"hintergrund_log-INSERT fehlgeschlagen: {fehler} "
-            f"(verlorener Audit-Eintrag: prompt_block/{status}/{ergebnis[:100]})",
-            exc_info=True,
-        )
+    write_audit(user_id, "prompt_block", status, ergebnis)
 
 
 def _stufe_senden(

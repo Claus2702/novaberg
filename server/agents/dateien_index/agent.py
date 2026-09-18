@@ -41,7 +41,7 @@ from agents.dateien_index.wandern import (
 )
 from agents.dateien_wurzeln.aussenrand import wurzel_pruefen
 from config import DATEIEN_INDEX_MAX_PRO_LAUF, DEFAULT_USER_ID
-from tools.db_manager import db_manager
+from memory.background_audit import write_audit
 
 logger = logging.getLogger("ki_server.agents.dateien_index")
 
@@ -65,6 +65,11 @@ class DateienIndexAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         """Reiner Hintergrunddienst — er wird nie im Gespraech gewaehlt."""
         return ["pixie"]
+
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
 
     @property
     def lastart(self) -> str:
@@ -116,19 +121,7 @@ class DateienIndexAgent(BaseAgent):
         Kein Wiederholversuch — eine kaputte Audit-Senke darf keine Schleife
         erzeugen.
         """
-        try:
-            db_manager.execute(
-                "INSERT INTO hintergrund_log "
-                "(user_id, aufgabe, status, ergebnis, verarbeitet_am) "
-                "VALUES (%s, %s, %s, %s, NOW())",
-                (DEFAULT_USER_ID, AUFGABE, status, ergebnis),
-            )
-        except Exception as fehler:  # noqa: BLE001 — die Audit-Senke darf nichts reissen
-            logger.critical(
-                "hintergrund_log-INSERT fehlgeschlagen (%s: %s) — verlorener "
-                "Eintrag: %s/%s/%s",
-                type(fehler).__name__, fehler, AUFGABE, status, ergebnis[:100],
-            )
+        write_audit(DEFAULT_USER_ID, AUFGABE, status, ergebnis)
 
     def invoke(self, state: AgentState) -> AgentState:
         """Faehrt einen Lauf ueber alle aktiven Wurzeln.

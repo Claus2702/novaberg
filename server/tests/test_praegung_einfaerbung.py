@@ -221,7 +221,7 @@ class DerTageslaufRuftDieReiheTest(unittest.TestCase):
              patch(f"{AGENT_MODUL}.lzg_knoten.run_node_decay", return_value=leer), \
              patch(f"{AGENT_MODUL}.pipeline_log.delete_expired_entries", return_value=leer), \
              patch(f"{AGENT_MODUL}.ShadowAuftragRepository.verfall_lauf", return_value=leer), \
-             patch(f"{AGENT_MODUL}.db_manager"), \
+             patch(f"{AGENT_MODUL}.db_manager"), patch(f"{AGENT_MODUL}.write_audit"), \
              patch(f"{AGENT_MODUL}.praegung.alle_faeden_nachfuehren",
                    return_value={"gefaltet": 0, "gesamt": 0, "error": None}), \
              patch(f"{AGENT_MODUL}.praegung.faeden_ohne_strang_zuordnen",

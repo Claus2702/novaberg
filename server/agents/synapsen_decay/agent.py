@@ -60,6 +60,7 @@ from memory import (
     praegung,
     quality_profile,
 )
+from memory.background_audit import write_audit
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from services import price_watch
 from tools.db_manager import db_manager
@@ -86,6 +87,11 @@ class SynapsenDecayAgent(BaseAgent):
     @property
     def faehigkeiten(self) -> list[str]:
         return ["synapsen_decay"]
+
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
 
     @property
     def lastart(self) -> str:
@@ -133,20 +139,7 @@ class SynapsenDecayAgent(BaseAgent):
         Failsafe: Bei DB-Fehler nur logger.critical, kein Retry — verhindert
         Endlos-Rekursion bei kaputter Audit-Senke. Muster wie synapsen_promotion.
         """
-        try:
-            db_manager.execute(
-                """
-                INSERT INTO hintergrund_log
-                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                (user_id, aufgabe, status, ergebnis),
-            )
-        except Exception as ex:
-            logger.critical(
-                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
-                f"(verlorener Audit-Eintrag: {aufgabe}/{status}/{ergebnis[:100]})"
-            )
+        write_audit(user_id, aufgabe, status, ergebnis)
 
     @staticmethod
     def _log_forensik(run_id: str, inhalt: dict) -> None:

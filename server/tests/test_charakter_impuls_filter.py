@@ -68,7 +68,7 @@ class TestWoGefiltertWird(unittest.TestCase):
 
     def test_intentionen_nehmen_impulse_aus(self) -> None:
         bank = _Bank()
-        with patch("agents.charakter.agent.db_manager", bank):
+        with patch("agents.charakter.agent.db_manager", bank), patch("agents.charakter.agent.write_audit"):
             CharakterAgent._lzg_intentionen_laden(None, "meister", "nova", "assistant")
 
         self.assertIn(IMPULS, bank.abfragen[0])
@@ -79,7 +79,7 @@ class TestWoGefiltertWird(unittest.TestCase):
         Verbindung heraus, obwohl er kein Impuls sein muss.
         """
         bank = _Bank()
-        with patch("agents.charakter.agent.db_manager", bank):
+        with patch("agents.charakter.agent.db_manager", bank), patch("agents.charakter.agent.write_audit"):
             CharakterAgent._lzg_intentionen_laden(None, "meister", "nova", "assistant")
 
         self.assertIn("LEFT JOIN", bank.abfragen[0])
@@ -119,7 +119,8 @@ class TestBegegnungsAuswahl(unittest.TestCase):
 
         with patch("agents.charakter.agent.redis_client", _Redis()), \
              patch("agents.charakter.agent._begegnungs_schluessel", return_value=set()), \
-             patch("agents.charakter.agent.db_manager", _Bank()):
+             patch("agents.charakter.agent.db_manager", _Bank()), \
+             patch("agents.charakter.agent.write_audit"):
             treffer = CharakterAgent._kzg_laden(
                 None, "meister", "nova", "user", nur_begegnungen=True,
             )
@@ -163,7 +164,7 @@ class TestWoBewusstNichtGefiltertWird(unittest.TestCase):
 
     def test_emotionen_filtern_nicht(self) -> None:
         bank = _Bank()
-        with patch("agents.charakter.agent.db_manager", bank):
+        with patch("agents.charakter.agent.db_manager", bank), patch("agents.charakter.agent.write_audit"):
             CharakterAgent._lzg_emotionen_laden(None, "meister", "nova", "assistant")
 
         self.assertNotIn(

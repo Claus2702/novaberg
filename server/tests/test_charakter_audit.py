@@ -26,6 +26,8 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
+import psycopg2
+
 from agents.charakter.agent import CharakterAgent
 
 #: Der Importpfad — Ziel jedes `patch`.
@@ -78,17 +80,22 @@ class TestDerFehlerpfad(unittest.TestCase):
 
 
 class TestDieSenkeFaelltNichtDurch(unittest.TestCase):
-    """Ein defektes Audit darf den Lauf nicht mitreissen."""
+    """Ein defektes Audit darf den Lauf nicht mitreissen.
+
+    Die Senke liegt seit dem 18.09.2026 in `memory/background_audit.py`; der
+    Agent reicht Aufgabe und Status nur noch durch.
+    """
 
     def test_db_fehler_wird_kritisch_gemeldet_und_verschluckt(self) -> None:
-        with patch(f"{_MODUL}.db_manager") as db, \
-             self.assertLogs(_LOGGER, level="CRITICAL") as log:
-            db.execute.side_effect = RuntimeError("Senke tot")
+        with patch("memory.background_audit.db_manager") as db, \
+             self.assertLogs("ki_server.memory.background_audit", level="CRITICAL") as log:
+            db.execute.side_effect = psycopg2.OperationalError("Senke tot")
             CharakterAgent._audit_log("meister", "erledigt", "1 Profile")
         self.assertIn("verlorener Audit-Eintrag", "\n".join(log.output))
 
     def test_die_zeile_traegt_aufgabe_und_status(self) -> None:
-        with patch(f"{_MODUL}.db_manager") as db:
+        with patch("memory.background_audit.db_manager") as db:
+            db.execute.return_value = 1
             CharakterAgent._audit_log("meister", "gestartet", "hash_dirty gesetzt")
         werte = db.execute.call_args[0][1]
         self.assertEqual(werte[0], "meister")

@@ -27,6 +27,7 @@ from config import (
     ZIEL_MAX_MITTELFRISTIG,
     redis_client,
 )
+from memory.background_audit import write_audit
 from memory.kontext import session_kontext_extrahieren
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from memory.ziele import ziel_speichern, ziele_aktive_laden
@@ -34,7 +35,6 @@ from services.model_services import BackgroundRequest, EmbedRequest, model_servi
 from services.pixie.stack import stack_push
 from services.shadow_agent.utils import shadow_queue_push
 from services.wissensspeicher import Arbeitsergebnis, embed_text_bauen, ergebnis_ablegen
-from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -312,20 +312,7 @@ class RechercheAgent(BaseAgent):
         ausserhalb dieser Menge soll sichtbar werden, statt als verlorener
         Audit-Eintrag zu erscheinen.
         """
-        try:
-            db_manager.execute(
-                """
-                INSERT INTO hintergrund_log
-                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                (user_id, "recherche_bibliothek", status, ergebnis),
-            )
-        except (psycopg2.Error, OSError) as ex:
-            logger.critical(
-                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
-                f"(verlorener Audit-Eintrag: recherche_bibliothek/{status}/{ergebnis[:100]})"
-            )
+        write_audit(user_id, "recherche_bibliothek", status, ergebnis)
 
     def _bibliothek_schritt(self, durchlauf: Durchlauf, *, status: str = "") -> None:
         """Ordnet das Ergebnis ein und legt es in der Bibliothek ab.
@@ -510,6 +497,11 @@ class RechercheAgent(BaseAgent):
             return None
 
         return "[" + ",".join(str(w) for w in antwort.embedding) + "]"
+
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
 
     def invoke(self, state: AgentState) -> AgentState:
         """Orchestriert den Recherche-Ablauf.

@@ -275,6 +275,23 @@ class BaseAgent(ABC):
         """
         return "llm"
 
+    @property
+    def writes_own_audit(self) -> bool:
+        """Schreibt dieser Agent sein `hintergrund_log` selbst?
+
+        **Die Vorgabe ist `False`, und das ist eine Entscheidung.** Dann
+        schreibt der Pixie-Dispatch `gestartet`, `erledigt` und `fehler` um den
+        Lauf herum (`services/pixie/dispatch.py`). Bis zum 18.09.2026 gab es
+        diesen Rahmen nicht, und jeder Agent, der seine eigene Kopie des
+        Audits nicht mitbrachte, lief spurlos — acht von fuenfzehn.
+
+        Ein Agent, der `True` meldet, schreibt feiner als der Rahmen: mit
+        eigener Aufgabe je Schritt oder bewusst nur, wenn er arbeitet. Er
+        uebernimmt damit die Pflicht; der Rahmen schweigt, damit kein Lauf
+        doppelt zaehlt.
+        """
+        return False
+
     def periodic_task(self) -> PeriodicTask | None:
         """Periodische Aufgabe dieses Agenten fuer Pixie-Scheduling.
         None = Agent arbeitet nur Queue-basiert.

@@ -221,7 +221,7 @@ class DieVerdrahtungDerLadungTest(unittest.TestCase):
         ladung = {"staerke": 0.42, "salienz_mittel": 0.75, "valenz_mittel": 1.0,
                   "anzahl_term": 0.5, "praesenz": 1.0, "faden_zahl": 4,
                   "ohne_salienz": 0, "tage_still": 0.0}
-        with patch(f"{AGENT_MODUL}.db_manager") as datenbank, \
+        with patch(f"{AGENT_MODUL}.db_manager") as datenbank, patch(f"{AGENT_MODUL}.write_audit"), \
              patch(f"{AGENT_MODUL}.rad_messreihe.reihe_laden", return_value=[]), \
              patch(f"{AGENT_MODUL}.rad_messreihe.rad_zusammenfassen",
                    return_value=None), \

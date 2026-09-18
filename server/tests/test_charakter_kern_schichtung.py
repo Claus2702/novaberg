@@ -226,7 +226,7 @@ class TestVerdrahtung(unittest.TestCase):
         turns = [{"aeusserung": f"a{i}", "antwort": "x" * 96} for i in range(200)]
         bank = _Bank(turns)
 
-        with patch("agents.charakter.agent.db_manager", bank):
+        with patch("agents.charakter.agent.db_manager", bank), patch("agents.charakter.agent.write_audit"):
             with self.assertLogs(AGENT_LOGGER, level="INFO"):
                 treffer = CharakterAgent._turns_laden(None, "meister", budget=2_500)
 
@@ -247,7 +247,7 @@ class TestVerdrahtung(unittest.TestCase):
         turns = [{"aeusserung": f"a{i}", "antwort": "x" * 96} for i in range(200)]
         bank = _Bank(turns)
 
-        with patch("agents.charakter.agent.db_manager", bank):
+        with patch("agents.charakter.agent.db_manager", bank), patch("agents.charakter.agent.write_audit"):
             with self.assertLogs(AGENT_LOGGER, level="INFO") as protokoll:
                 CharakterAgent._turns_laden(None, "meister", budget=2_500)
 

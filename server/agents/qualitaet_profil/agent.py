@@ -39,7 +39,7 @@ from config import (
     POSTGRES_URL,
 )
 from memory import pipeline_log, quality_profile
-from tools.db_manager import db_manager
+from memory.background_audit import write_audit
 
 logger = logging.getLogger("ki_server.agents.qualitaet_profil")
 
@@ -59,6 +59,11 @@ class QualitaetProfilAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         # Reiner Pixie-Hintergrund-Agent, keine User-Graph-Eignung.
         return ["pixie"]
+
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
 
     def periodic_task(self) -> PeriodicTask | None:
         """Registriert den taeglichen Lauf.
@@ -88,20 +93,7 @@ class QualitaetProfilAgent(BaseAgent):
         droht Endlos-Rekursion bei kaputter Audit-Senke. Muster wie
         `ziel_decay`.
         """
-        try:
-            db_manager.execute(
-                """
-                INSERT INTO hintergrund_log
-                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                (user_id, "qualitaet_profil", status, ergebnis),
-            )
-        except Exception as ex:  # noqa: BLE001 — siehe Docstring
-            logger.critical(
-                f"hintergrund_log-INSERT fehlgeschlagen: {ex} (verlorener "
-                f"Audit-Eintrag: qualitaet_profil/{status}/{ergebnis[:100]})"
-            )
+        write_audit(user_id, "qualitaet_profil", status, ergebnis)
 
     @staticmethod
     def _log_forensik(run_id: str, inhalt: dict) -> None:

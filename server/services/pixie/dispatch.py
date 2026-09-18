@@ -10,6 +10,7 @@ import time
 
 from agents.base import AgentState
 from config import DEFAULT_USER_ID, PIXIE_AKTIV, POSTGRES_URL, redis_client
+from memory.background_audit import write_audit
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from services.llm_provider import set_aktiver_pixie_user
 
@@ -34,6 +35,10 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
     agent = AgentRegistry.finden(agent_name)
     if not agent:
         logger.error(f"Pixie-Dispatch: Agent '{agent_name}' nicht in Registry")
+        write_audit(
+            DEFAULT_USER_ID, agent_name or "unbenannt", "fehler",
+            "Agent nicht in der Registry",
+        )
         return False
 
     # AgentState aufbauen
@@ -88,6 +93,15 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
     )
     set_aktiver_pixie_user(user_id_pixie)
 
+    # Der Rahmen-Audit: fuer jeden Agenten, der sein `hintergrund_log` nicht
+    # selbst schreibt (`BaseAgent.writes_own_audit`). Bis zum 18.09.2026 liefen
+    # diese Agenten spurlos — ob ein Wiedervorlage- oder Luecken-Lauf
+    # ueberhaupt stattfand, war nur aus dem Container-Log zu erfahren.
+    rahmen: bool = not agent.writes_own_audit
+    quelle: str = kandidat.get("quelle", "")
+    if rahmen:
+        write_audit(user_id_pixie, agent_name, "gestartet", f"quelle={quelle}")
+
     try:
         result_state = await asyncio.to_thread(agent.invoke, agent_state)
 
@@ -96,13 +110,29 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
                 f"Pixie-Dispatch: Agent '{agent_name}' meldet Fehler: "
                 f"{result_state.get('fehler')}"
             )
+            if rahmen:
+                write_audit(
+                    user_id_pixie, agent_name, "fehler",
+                    str(result_state.get("fehler"))[:500],
+                )
             return False
 
         logger.info(f"Pixie-Dispatch: Agent '{agent_name}' abgeschlossen")
+        if rahmen:
+            write_audit(
+                user_id_pixie, agent_name, "erledigt",
+                f"status={result_state.get('status')}, "
+                f"ergebnis={str(result_state.get('ergebnis'))[:400]}",
+            )
         return True
 
     except Exception as ex:
         logger.error(f"Pixie-Dispatch: Exception bei Agent '{agent_name}': {ex}", exc_info=True)
+        if rahmen:
+            write_audit(
+                user_id_pixie, agent_name, "fehler",
+                f"{type(ex).__name__}: {str(ex)[:400]}",
+            )
         return False
 
     finally:

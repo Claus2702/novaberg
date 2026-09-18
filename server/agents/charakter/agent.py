@@ -55,6 +55,7 @@ from config import (
     get_node_config,
     redis_client,
 )
+from memory.background_audit import write_audit
 from memory.pipeline_log import log_berechnung
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from memory.ziele import ziel_deaktivieren, ziel_speichern, ziele_aktive_laden
@@ -120,6 +121,11 @@ class CharakterAgent(BaseAgent):
     def identity_user(self) -> str:
         return ASSISTANT_USER_ID
 
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
+
     def periodic_task(self) -> PeriodicTask | None:
         return PeriodicTask(
             name="charakter_hash",
@@ -156,23 +162,7 @@ class CharakterAgent(BaseAgent):
             status:   `gestartet`, `erledigt` oder `fehler`.
             ergebnis: die Zahlen des Laufs im Klartext.
         """
-        try:
-            db_manager.execute(
-                """
-                INSERT INTO hintergrund_log
-                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                (user_id, "charakter_hash", status, ergebnis),
-            )
-        # Breit gefangen und **nicht** weitergereicht: Eine kaputte Audit-Senke
-        # darf den Lauf nicht mitreissen, und ein Retry darauf waere die
-        # Rekursion, vor der das Muster in `ziel_decay` warnt.
-        except Exception as ex:  # noqa: BLE001
-            logger.critical(
-                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
-                f"(verlorener Audit-Eintrag: charakter_hash/{status}/{ergebnis[:100]})"
-            )
+        write_audit(user_id, "charakter_hash", status, ergebnis)
 
     def invoke(self, state: AgentState) -> AgentState:
         """Faehrt den Lauf und sorgt dafuer, dass er eine Spur hinterlaesst.

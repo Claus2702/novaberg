@@ -538,7 +538,7 @@ class DerProfilAgentRuftDenErzeugerTest(unittest.TestCase):
         from agents.base import AgentState
         from agents.qualitaet_profil.agent import QualitaetProfilAgent
 
-        with patch(f"{PROFIL_AGENT_MODUL}.db_manager"), \
+        with patch(f"{PROFIL_AGENT_MODUL}.write_audit"), \
              patch(f"{PROFIL_AGENT_MODUL}.quality_profile.profil_lauf",
                    return_value={"versucht": 2, "profiliert": 2,
                                  "gescheitert": 0, "traeger_gesamt": 2,
@@ -555,7 +555,7 @@ class DerProfilAgentRuftDenErzeugerTest(unittest.TestCase):
         from agents.base import AgentState
         from agents.qualitaet_profil.agent import QualitaetProfilAgent
 
-        with patch(f"{PROFIL_AGENT_MODUL}.db_manager"), \
+        with patch(f"{PROFIL_AGENT_MODUL}.write_audit"), \
              patch(f"{PROFIL_AGENT_MODUL}.quality_profile.profil_lauf",
                    return_value={"versucht": 0, "profiliert": 0,
                                  "gescheitert": 0, "traeger_gesamt": 0,

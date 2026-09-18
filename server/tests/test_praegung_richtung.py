@@ -204,7 +204,7 @@ class DieVerdrahtungDerRichtungTest(unittest.TestCase):
             {"id": 5, "user_id": "u", "character_id": "c",
              "sektor_histogramm": _histogramm(s1=3, s8=1)},
         ]
-        with patch(f"{AGENT_MODUL}.db_manager") as datenbank, \
+        with patch(f"{AGENT_MODUL}.db_manager") as datenbank, patch(f"{AGENT_MODUL}.write_audit"), \
              patch(f"{AGENT_MODUL}.rad_messreihe.reihe_laden", return_value=[]), \
              patch(f"{AGENT_MODUL}.rad_messreihe.rad_zusammenfassen",
                    return_value=WILDES_RAD), \
@@ -231,7 +231,7 @@ class DieVerdrahtungDerRichtungTest(unittest.TestCase):
             {"id": i, "user_id": "u", "character_id": "c",
              "sektor_histogramm": _histogramm(s1=2)} for i in (1, 2, 3)
         ]
-        with patch(f"{AGENT_MODUL}.db_manager") as datenbank, \
+        with patch(f"{AGENT_MODUL}.db_manager") as datenbank, patch(f"{AGENT_MODUL}.write_audit"), \
              patch(f"{AGENT_MODUL}.rad_messreihe.reihe_laden",
                    return_value=[]) as laden, \
              patch(f"{AGENT_MODUL}.rad_messreihe.rad_zusammenfassen",

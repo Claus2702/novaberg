@@ -12,7 +12,6 @@ Konzept: novaberg-pixie-nachfragen_k.md, insbesondere §7 und §8.
 import json
 import logging
 
-import psycopg2
 import redis
 
 from agents.base import AgentState, BaseAgent
@@ -25,9 +24,9 @@ from config import (
     redis_client,
 )
 from ei.farbton import lage_beschreiben
+from memory.background_audit import write_audit
 from memory.session import _session_key
 from services.pixie.stack import stack_push
-from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.nachfragen")
 
@@ -78,6 +77,11 @@ class NachfragenAgent(BaseAgent):
         """Handelnde ist Nova."""
         return ASSISTANT_USER_ID
 
+    @property
+    def writes_own_audit(self) -> bool:
+        """Dieser Agent schreibt sein `hintergrund_log` selbst (`_audit_log`)."""
+        return True
+
     def periodic_task(self) -> None:
         """Kein periodischer Lauf — der Agent haengt an der Shadow-Queue."""
         return None
@@ -106,20 +110,7 @@ class NachfragenAgent(BaseAgent):
             Datei und setzen ein Literal.
         Nachbedingung: Eintrag geschrieben oder `logger.critical` abgesetzt.
         """
-        try:
-            db_manager.execute(
-                """
-                INSERT INTO hintergrund_log
-                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
-                VALUES (%s, %s, %s, %s, NOW())
-                """,
-                (user_id, AUFGABE, status, ergebnis),
-            )
-        except (psycopg2.Error, OSError) as ex:
-            logger.critical(
-                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
-                f"(verlorener Audit-Eintrag: {AUFGABE}/{status}/{ergebnis[:100]})"
-            )
+        write_audit(user_id, AUFGABE, status, ergebnis)
 
     # ─────────────────────────────────────────
     # Der aktuelle Druck
