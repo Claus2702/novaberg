@@ -33,6 +33,7 @@ from config import (
     DELEGATION_EFFEKTIVWERT_SCHWELLE,
     DELEGATION_SALIENZ_SCHWELLE,
     EI_AROUSAL_DOMINANZ,
+    POSTGRES_URL,
 )
 from config import (
     redis_client as cfg_redis_client,
@@ -42,9 +43,10 @@ from graph.state import ConversationState, pipeline_quelle, reiz_herkunft
 from memory import usage_reinforcement
 from memory.pipeline_log import log_berechnung, log_db_write, log_fehler, log_turn_roh
 from memory.repositories.verbindung_repository import VerbindungRepository
+from memory.sachlage_properties import record_declined
 from memory.session import session_summarize_if_needed, session_turn_store
 from plugins import get_registry
-from utils.offers import Offer, find_offers, offer_clear, offer_store
+from utils.offers import Offer, find_offers, is_bare_refusal, offer_clear, offer_load, offer_store
 
 logger = logging.getLogger("ki_server.dispatcher")
 
@@ -886,6 +888,17 @@ def _angebot_merken(state: ConversationState, user_id: str, character_id: str) -
         return
 
     # ── Verarbeitung ────────────────────────────
+    # Scheibe 12 E3: Lehnt der Mensch ein offenes Angebot ab, traegt die Sache
+    # das Nein im Gedaechtnis — damit Nova sie nicht wieder anbietet. Vor dem
+    # Aufraeumen unten, das den offenen Punkt sonst still verwirft.
+    offen: Offer | None = offer_load(cfg_redis_client, user_id, character_id)
+    if offen is not None and is_bare_refusal(reiz_text(state)):
+        record_declined(
+            POSTGRES_URL, user_id=user_id, character_id=character_id,
+            turn_id=state.get("turn_id", ""), object_names=list(offen.objects),
+        )
+        offer_clear(cfg_redis_client, user_id, character_id, "abgelehnt")
+
     saetze: list[str] = find_offers(antwort)
     if not saetze:
         offer_clear(cfg_redis_client, user_id, character_id, "Antwort ohne Angebot")

@@ -311,3 +311,34 @@ def carries_own_request(text: str) -> bool:
     if not isinstance(text, str) or not text.strip():
         return False
     return any(form.search(text) for form in _REQUEST_FORMS)
+
+
+# Die Woerter, mit denen ein Mensch ein Angebot ablehnt, ohne etwas anderes zu
+# sagen. Geeicht an den Ablehnungen der Messreihen vom 17.09.2026.
+_REFUSAL_WORDS: frozenset[str] = frozenset({
+    "nein", "ne", "nee", "noe", "nö", "danke", "lass", "mal", "nicht", "noetig", "nötig",
+    "lieber", "brauchst", "du", "schon", "gut", "passt", "kein", "bedarf", "nope",
+})
+_REFUSAL_OPENERS: frozenset[str] = frozenset({"nein", "ne", "nee", "noe", "nö", "nope", "lass", "lieber", "nicht", "kein"})
+
+
+def is_bare_refusal(text: str) -> bool:
+    """Sagt die Aeusserung nichts weiter als "nein"?
+
+    Vorbedingung: `text` ist der Reiz dieses Turns.
+    Nachbedingung: `True` nur, wenn hoechstens fuenf Woerter dastehen, **jedes**
+    ein Ablehnungswort ist und das erste die Ablehnung traegt — *"Nein"*,
+    *"Nein danke"*, *"Lass mal"*, *"Nicht noetig"*, *"Lieber nicht"*. Ein
+    Satz, der zugleich etwas anderes sagt (*"Nein, trag lieber den Zahnarzt
+    ein"*), ist keine blanke Ablehnung.
+
+    **Was diese Pruefung nicht kann:** eine Ablehnung in anderen Worten
+    erkennen (*"Das merke ich mir selbst"*). Dann bleibt das Objekt ohne
+    Vermerk — Nova koennte wieder anbieten, das ist die aufdringliche Seite.
+    """
+    if not isinstance(text, str) or not text.strip():
+        return False
+    woerter = [w.casefold() for w in _WORD.findall(text)]
+    if not woerter or len(woerter) > 5 or woerter[0] not in _REFUSAL_OPENERS:
+        return False
+    return all(w in _REFUSAL_WORDS for w in woerter)

@@ -520,3 +520,120 @@ def entity_names(postgres_url: str, entitaet_ids: list[int]) -> dict[int, str]:
     except psycopg2.Error:
         logger.exception("Eigenschaftsgedaechtnis: Entitaetsnamen nicht lesbar")
         return {}
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Scheibe 12 E3 — das Nein am Objekt
+# ─────────────────────────────────────────────────────────────────────────
+
+# Die Eigenschaft, die ein abgelehntes Angebot am Objekt hinterlaesst. Sie ist
+# eine gewoehnliche Eigenschaft des Gedaechtnisses — kein neues Feld, kein
+# neues Schema: Ein Objekt "weiss", dass sein Speichern abgelehnt ist, so wie
+# es seinen Tag oder seine Uhrzeit weiss.
+DECLINED_PROPERTY: str = "Speichern"
+DECLINED_VALUE:    str = "abgelehnt"
+
+
+def record_declined(
+    postgres_url: str,
+    *,
+    user_id:      str,
+    character_id: str,
+    turn_id:      str,
+    object_names: list[str],
+) -> int:
+    """Haelt am Objekt fest, dass der Mensch das Speichern abgelehnt hat.
+
+    Die Absicht des Eigentuemers (14.09.2026): *"nach einem Nein sollte sie
+    nicht aufdringlich sein, das wuerde das Objekt im Gespraechskontext um die
+    Eigenschaft erweitern, dass es abgelehnt ist zum Speichern."*
+
+    Vorbedingung: Paar und `turn_id` gesetzt; `object_names` sind die Sachen
+        des abgelehnten Angebots.
+    Nachbedingung: Jedes genannte Objekt traegt die aktive Eigenschaft
+        `Speichern = abgelehnt`, gesprochen vom Nutzer, mit Quelle *Angebot
+        abgelehnt* — nach der Abloese-Regel, in einer Transaktion. Rueckgabe:
+        wie viele Objekte sie jetzt tragen. Ein Objekt, das es am Paar noch
+        nicht gibt, wird angelegt: Das Nein gilt der Sache, auch wenn die
+        Sachlage sie nie abgelegt hat.
+    Fehlerfaelle: Unvollstaendige Kennung — `logger.error`, 0, nichts
+        geschrieben. DB-Fehler — `logger.exception`, Rollback, 0.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    namen: list[str] = [str(n).strip() for n in object_names or [] if str(n).strip()]
+    if not user_id or not character_id or not turn_id:
+        logger.error(
+            "Ablehnung: Kennung unvollstaendig (user=%r, character=%r, turn=%r) — nichts geschrieben",
+            user_id, character_id, turn_id,
+        )
+        return 0
+    if not namen:
+        return 0
+
+    # ── Verarbeitung ────────────────────────────
+    geschrieben: int = 0
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn, conn.cursor() as cur:
+                for name in namen:
+                    objekt_id: int = _object_upsert(cur, user_id, character_id, {"name": name})
+                    _property_write(cur, objekt_id, DECLINED_PROPERTY, DECLINED_VALUE,
+                                    "nutzer", {"art": "angebot_abgelehnt"}, turn_id)
+                    geschrieben += 1
+        finally:
+            conn.close()
+    except psycopg2.Error:
+        logger.exception("Ablehnung: Schreiben fehlgeschlagen — Rollback, nichts festgehalten")
+        return 0
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info("Ablehnung festgehalten: %s — %d Objekt(e), turn=%s", namen, geschrieben, turn_id)
+    return geschrieben
+
+
+def declined_objects(
+    postgres_url: str,
+    user_id:      str,
+    character_id: str,
+    object_names: list[str],
+) -> set[str]:
+    """Welche der genannten Sachen tragen ein aktives *Speichern abgelehnt*?
+
+    Vorbedingung: keine — leere Namen ergeben eine leere Menge.
+    Nachbedingung: Die Namen (so, wie sie uebergeben wurden), deren Objekt am
+        Paar die aktive Eigenschaft traegt. **Ein DB-Fehler ergibt die leere
+        Menge und eine Fehlerzeile** — der Leser (das Angebot) faellt damit auf
+        *nicht abgelehnt* zurueck; das ist die aufdringliche Seite, und sie
+        steht deshalb laut im Log.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    namen: dict[str, str] = {text_key(n): n for n in object_names or [] if str(n).strip()}
+    if not user_id or not character_id or not namen:
+        return set()
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"""
+                    SELECT o.name_schluessel FROM {OBJECT_TABLE} o
+                    JOIN {PROPERTY_TABLE} e ON e.objekt_id = o.id
+                    WHERE o.user_id = %s AND o.character_id = %s
+                      AND o.name_schluessel = ANY(%s)
+                      AND e.eigenschaft_schluessel = %s AND e.aktiv
+                      AND e.wert = %s
+                    """,  # noqa: S608 — Tabellennamen sind Konstanten
+                    (user_id, character_id, list(namen), text_key(DECLINED_PROPERTY), DECLINED_VALUE),
+                )
+                treffer: list[tuple] = cur.fetchall()
+        finally:
+            conn.close()
+    except psycopg2.Error:
+        logger.exception("Ablehnung: nicht lesbar — gilt als nicht abgelehnt")
+        return set()
+
+    # ── Ausgabe ─────────────────────────────────
+    return {namen[t[0]] for t in treffer if t[0] in namen}
