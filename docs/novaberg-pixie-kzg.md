@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
+**Stand:** 19. September 2026, 13:12 UTC (eine Ablehnung als Nicht-Auftrag geht nicht in `[TATSAECHLICHER AUSGANG]`, `968c56b`). Davor 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -59,6 +59,7 @@ den Block `[TATSAECHLICHER AUSGANG]` und setzt ihn **vor** das Bewertungsobjekt.
 | `status == "abgelehnt"` mit `korrektur.befund` | `fehler` — eine Störung geht den Betreiber an, nicht das Gedächtnis eines Menschen |
 | | `rejected` — eine Ablehnung ohne Begründung trüge einen Block ohne Inhalt |
 | | `abgeschlossen` — der häufige Fall bleibt unberührt |
+| | **seit 19.09.2026** eine Ablehnung als Nicht-Auftrag (`korrektur.kein_auftrag`, die Klassifikation lehnte ab) — niemand hat etwas verlangt, also hat niemand etwas abgelehnt; als *„hat den Auftrag ABGELEHNT"* wäre sie eine falsche Tatsache |
 
 > **Der Block trägt eine Tatsache, keine Regel.** Ein Satz der Form *„behaupte keine Handlung"* wäre
 > wieder eine Bitte an ein Modell. Ein Ausgang, der neben dem Text steht, widerspricht der falschen
