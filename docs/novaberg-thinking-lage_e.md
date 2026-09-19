@@ -43,6 +43,7 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 |---|---|---|
 | 1 | Werden die Werte der zwei Betriebsturns vom 13.09.2026 — geschrieben vor der Wert-Regel, teils Notizen statt Angaben — im Bestand des Paares bereinigt? Der Text: *„ob sie bereinigt werden, entscheidet der Eigentümer“*. | `_t` §4 Scheibe 11, *Preis und Offenes* |
 | 2 | Soll der Verfasser die kritische Lücke vor den unkritischen Antwortstoff ziehen? Der Text: *„ist nicht entschieden“* — einen Adressaten nennt er nicht; hier geführt, weil die Frage das Soll betrifft. | `_t` §4 Scheibe 10, *Nebenbefund* |
+| 3 | Entsteht der Erinnerungs-Anker vor dem Termin: soll der Termin den Anker übernehmen (dieselbe ID)? Vorgelegt 19.09.2026. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 
 ---
 
@@ -152,7 +153,9 @@ Vorgelegt mit je einer Empfehlung; der Eigentümer im Chat, 19.09.2026:
 
 > **„Erinnerungs-Anker“ in der Timeline:** *„Du hast recht, wenn schon ein Eintrag _zur selben Sache_ in der Timeline steht, dann diese verknüpfen. Ansonsten soll natürlich ein neuer Eintrag mit ID angelegt werden, um einen Anker zu setzen.“* — Anlass: `[gemessen 18.09.2026]` Zu 7 von 7 Terminen der Prüf-Nutzer legte `agents/kzg/magnete.py::magnete_aufloesen` einen zweiten Timeline-Eintrag *„Erinnerungs-Anker <Datum>“* zum selben Zeitpunkt an (Fundliste).
 
-Nicht gebaut, Stand 19.09.2026, 11:40 UTC.
+Stand 19.09.2026, 12:14 UTC: **pro Sache gebaut** (`_t` §4 Scheibe 12, Teil E2, Nachtrag). Nachtrag am Gedächtnisknoten und Erinnerungs-Anker nicht gebaut.
+
+**Offene Frage aus dem Bau (19.09.2026):** Der Anker entsteht bei der Aussage, der echte Termin erst auf die Zustimmung — zum Zeitpunkt des Ankers gibt es nichts zu verknüpfen. Vorgelegt mit der Empfehlung: Legt die Timeline später einen Termin zum selben Zeitpunkt an, wird der vorhandene Anker zu diesem Termin (dieselbe ID, kein zweiter Eintrag).
 
 ---
 

@@ -4,7 +4,7 @@
 **Stand:** 19.09.2026
 **Umsetzung:** `novaberg-featureliste.md` §6 — ⏫ *Frames · Skills · Task-Orchestration · Cognitive Pipeline — im Bau als Lage-Konzept* 🟠, dazu ↳ *Scheibe 12 A* bis *F* je 🟠 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-thinking-lage_t.md`](novaberg-thinking-lage_t.md) · [`novaberg-thinking-lage_e.md`](novaberg-thinking-lage_e.md)
-**Entschieden:** 24 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-lage_e.md`](novaberg-thinking-lage_e.md))
+**Entschieden:** 24 · **Offen beim Meister:** 3 (Liste in [`novaberg-thinking-lage_e.md`](novaberg-thinking-lage_e.md))
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lage-Analyse — die erste gebaute Scheibe der Verstehens-Schicht

@@ -333,7 +333,11 @@ Der Verfasser bekommt einen `[ANGEBOT]`-Block (`prompts/default/verfasser.angebo
 
 **Gebaut:** `Korrektur.kein_auftrag` (`agents/base.py`) trennt die Ablehnung *„das war kein Auftrag an mich"* von der Ablehnung in der Sache. Gesetzt an allen sechs Klassifikations-Ablehnungen (Notizen, Timeline, Direktiven, Charakter-Identität, Dateien, Dateien-Wurzeln — Merkmal: Beleg `Klassifikation: …`). Eine solche Ablehnung bildet im Planner keinen Block und keinen Schnitt, zählt für `offer_candidate` nicht als *„Dienst lief"* und sperrt über `management_action` nicht, wenn jeder gefragte Dienst so ablehnte (`utils/offers.py::_service_acted`). Die KZG-Verdichtung führt sie nicht als *„hat den Auftrag ABGELEHNT"* (sonst eine falsche Tatsache im Kern). Das Pipeline-Log des Agent-Dispatch trägt das Kennzeichen.
 
-**TEST:** `test_angebot_nach_kein_auftrag.py`, 10 Zeugen, gegen den alten Code rot. **MESSUNG:** im Betrieb nicht gelaufen. Im Bestand der letzten 7 Tage steht **0** echter Turn mit einer solchen Ablehnung (zweite Kontrolle, 19.09.2026).
+**TEST:** `test_angebot_nach_kein_auftrag.py`, 10 Zeugen, gegen den alten Code rot. **MESSUNG** 19.09.2026, 11:49–12:04 UTC (`labor/2026-09-19_angebot_bedarf/`): drei Bedarfsaussagen, keine Notiz auf die Aussage (3 von 3); wo zugestellt, 2 von 2 als Nicht-Auftrag abgelehnt, der Verfasser lief, 3 von 3 Angebote, die Sache genannt 1 von 3.
+
+#### Teil E2, Nachtrag (19.09.2026): das Angebot gilt pro Sache
+
+Entscheidung des Eigentümers (`novaberg-thinking-lage_e.md`, Nr. 22). Vor dem Zufallszug prüft `_offer_block`, ob für diese Sache und dieses Paar schon gewürfelt wurde (`utils/offers.py::draw_recorded`, Schlüssel `angebot_wurf:<user>:<figur>:<sache>` ohne Groß-/Kleinschreibung und Auszeichnung — die zweite Kontrolle fand dieselbe Sache als `Termin` und `**Termin**` —, Frist `ANGEBOT_VERFALL_SEKUNDEN` = 900 s); nach jedem Zug hält `draw_record` ihn fest, gleich ob angeboten oder nicht gezogen. Ausgänge `schon_gewuerfelt` und `wurf_unbekannt` (Speicher gestört — kein Angebot, die vorsichtige Seite). **TEST:** 4 Zeugen in `test_angebot_anbieten.py`. **MESSUNG:** nicht im Betrieb gelaufen.
 
 #### Teil E3 — gebaut (18.09.2026): das Nein am Objekt
 
