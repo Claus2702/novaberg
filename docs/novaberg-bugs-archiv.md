@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 19. September 2026, 16:09 UTC — **`GV-FARBTON-SUBJEKTWECHSEL` aus dem Register übernommen** (behoben am 10.09.2026, Rest in der Fundliste). Davor 19. September 2026, 15:59 UTC — **`THEMENZEILEN-NUR-IM-INSERT-ZWEIG` aus dem Register übernommen** (behoben am 19.08.2026, stand dort ohne Überschrift). Davor 17. September 2026, 19:40 UTC — **`ENRICH-NULLTERM-IST-EINE-ZAHL` aufgenommen und behoben** (ein Paar ohne aktive Ziele verlor jeden Turn). Davor 17. September 2026, 10:58 UTC — **`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` aus dem Register übernommen, behoben mit Scheibe 12 D1.** Davor 13. September 2026, 15:55 UTC — **Nachtrag an `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` nach der zweiten Kontrolle**: Der Vergleichsschluessel der Form schrieb mit `lower`, die Datenbank mit `casefold`, und die Ansprueche des Frame-Aufloesers liefen an der Wertpruefung vorbei; beides behoben, 31 Zeugen, Suite 3663 gruen. Davor 15:11 UTC — **`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` umgezogen**, am Tag nach seinem Befund: Die Formpruefung der Sachlage haelt jedes Objektfeld, auch die vorige Blase beim Laden; nach der Entscheidung des Eigentuemers ist eine Eigenschaft ohne Wert offen, nichts mit Aussage wird verworfen. 29 Zeugen, Suite 3656 gruen, im Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen. Davor 12. September 2026, 23:22 UTC — **Nachtrag an `ZUORDNUNG-ANDERER-ABSENDER-FREMD`**: die Ausfallmeldung nennt ihre Kennungen, der Client gibt die Frage frei. Davor 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
-**Inhalt:** **60 abgeschlossene Eintraege mit eigenem Abschnitt** (56 + `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` und `ENRICH-NULLTERM-IST-EINE-ZAHL` am 17.09.2026 + `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` und `GV-FARBTON-SUBJEKTWECHSEL` am 19.09.2026) plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 19. September 2026, 19:06 UTC — **jeder Eintrag mit eigenem Abschnitt trägt eine `**Kategorie:**`-Angabe** (die sechs Gegenstände des Backlogs), als Vorbereitung der Teilung nach Gegenstand. Davor 19. September 2026, 16:09 UTC — **`GV-FARBTON-SUBJEKTWECHSEL` aus dem Register übernommen** (behoben am 10.09.2026, Rest in der Fundliste). Davor 19. September 2026, 15:59 UTC — **`THEMENZEILEN-NUR-IM-INSERT-ZWEIG` aus dem Register übernommen** (behoben am 19.08.2026, stand dort ohne Überschrift). Davor 17. September 2026, 19:40 UTC — **`ENRICH-NULLTERM-IST-EINE-ZAHL` aufgenommen und behoben** (ein Paar ohne aktive Ziele verlor jeden Turn). Davor 17. September 2026, 10:58 UTC — **`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` aus dem Register übernommen, behoben mit Scheibe 12 D1.** Davor 13. September 2026, 15:55 UTC — **Nachtrag an `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` nach der zweiten Kontrolle**: Der Vergleichsschluessel der Form schrieb mit `lower`, die Datenbank mit `casefold`, und die Ansprueche des Frame-Aufloesers liefen an der Wertpruefung vorbei; beides behoben, 31 Zeugen, Suite 3663 gruen. Davor 15:11 UTC — **`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` umgezogen**, am Tag nach seinem Befund: Die Formpruefung der Sachlage haelt jedes Objektfeld, auch die vorige Blase beim Laden; nach der Entscheidung des Eigentuemers ist eine Eigenschaft ohne Wert offen, nichts mit Aussage wird verworfen. 29 Zeugen, Suite 3656 gruen, im Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen. Davor 12. September 2026, 23:22 UTC — **Nachtrag an `ZUORDNUNG-ANDERER-ABSENDER-FREMD`**: die Ausfallmeldung nennt ihre Kennungen, der Client gibt die Frage frei. Davor 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
+**Inhalt:** **148 abgeschlossene Eintraege mit eigenem Abschnitt**, `[gemessen]` 19.09.2026 mit `grep -cE '^#{3,4} (`|[A-Za-z0-9-]*[A-Z0-9][A-Z0-9][A-Za-z0-9-]* )'` (die Zählvorschrift erfasst auch die Einträge unter den alten Herkunftsabschnitten und zwei Kennungen mit Kleinbuchstaben); davor **60** (30.08.2026, ohne angegebene Zählweise — woher der Unterschied kommt, ist nicht untersucht) (56 + `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` und `ENRICH-NULLTERM-IST-EINE-ZAHL` am 17.09.2026 + `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` und `GV-FARBTON-SUBJEKTWECHSEL` am 19.09.2026) plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -77,6 +77,7 @@ Nutzer. Der Node liest beides und hat beide Quellen zur Hand.~~ → **Am 10.09.2
 ## 17.09.2026 — ein Paar ohne Ziele verlor jeden Turn
 
 ### `ENRICH-NULLTERM-IST-EINE-ZAHL` — der Nullwert hatte den falschen Typ ✅
+**Kategorie:** ANT
 
 **Zustand:** behoben am 17.09.2026, gefunden in der Betriebsmessung zu Scheibe 12 D.
 
@@ -110,6 +111,7 @@ Nutzer. Der Node liest beides und hat beide Quellen zur Hand.~~ → **Am 10.09.2
 Eine Kennung aus der Entscheidung vom selben Tag: **Welcher Dienst eine Merk-Bitte mit Zeitbezug bekommt, hängt am Gegenstand und nicht am Zeitwort.** Bis dahin war die Abweichung keine Verletzung, sondern eine offene Absichtsfrage (Fundliste 14.09.2026).
 
 ### `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` — jede Zeitangabe schickt die Merk-Bitte an die Timeline
+**Kategorie:** ANT
 
 **Zustand:** ✅ behoben am 17.09.2026 (Scheibe 12 D1, `graph/nodes/planner.py::service_order_for`). ~~offen — gegen den Code nachgesehen am 16.09.2026.~~
 
@@ -136,6 +138,7 @@ Entscheidung des Eigentuemers ueber die Bedeutung eines Feldes, nicht an der Abs
 die sie bestaetigen sollte, fand zwei weitere Formen, die keine Pruefung vorher kannte.
 
 ### `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` — die Formprüfung deckt die jüngeren Felder der Lage und nicht die zwei ältesten ⛔ Blocker
+**Kategorie:** ANT
 
 **Zustand:** ✅ **behoben am 13.09.2026** — gefunden am 12.09.2026 durch einen abgebrochenen Betriebsturn. `graph/nodes/sachlage_form.py::normalize_object_form` hält jedes Objektfeld, beim frischen Parse, beim Laden der vorigen Blase und im Lesepfad des Gesprächskontext-Tabs; Konzept nachgezogen in `novaberg-thinking-lage_k.md` §3 (Festlegung 1, Nachtrag).
 
@@ -195,6 +198,7 @@ Ein Eintrag, **am Tag seines Befundes behoben**. Gefunden hat ihn keine Pruefung
 Eigentuemer: 16 Warnungen an Antworten, die inhaltlich stimmten.
 
 ### `ZUORDNUNG-ANDERER-ABSENDER-FREMD` — eine Antwort an einen anderen Absender gilt bei offener Frage als falsch zugeordnet
+**Kategorie:** ANT
 
 **Zustand:** ✅ **behoben am 12.09.2026**, am Tag seines Befundes. `client/ui/stream_handler.py`: Der Handler fuehrt neben der offenen Menge die Menge aller Kennungen, die er je bestaetigt bekam (`_gesendete_nachrichten`, gefuellt in der SSE-Bestaetigung). Nennt eine Antwort nur Kennungen, die nicht darin stehen, ist sie `unbeobachtet` — auch bei offener Frage — und laesst die offene Frage stehen.
 
@@ -222,6 +226,7 @@ haengen sollte, war gegen die falsche Schwelle, die falsche Zaehlebene und den f
 gerechnet — und **jeder der drei Fehler allein** haette die Zahl gehalten.
 
 ### `GRAVITATIONSTERM-OHNE-OBERGRENZE` — eine Summe ohne Deckel loescht die Bewertung
+**Kategorie:** GED
 
 **Zustand:** ✅ **behoben am 09.09.2026**, am Tag seines Befundes. Die Normierung sitzt im **Erzeuger** (`ei/gravitation.py::gravitationsterm_berechnen` liefert `sin^0.5(summe × faktor, GRAVITATIONSTERM_CAP)` in [0, 1]), der HumanGraph-Boost **fuellt auf statt zu addieren** (`ei/utils.py::fill_gap_upward`), und der Gravitationsterm steht seither als eigene Naht in der Tafel (`memory/naht_spannen.py`). `tests/test_gravitationsterm_normierung.py` — 25 Zeugen, Gegenprobe **7 vorhergesagt / 7 gezaehlt**. Suite **3311 gruen, 0 uebersprungen**.
 
@@ -299,6 +304,7 @@ Zwei Eintraege aus derselben Messung, **beide am 30.08.2026 behoben**. Der erste
 ist der Grund, warum der erste so lange unbemerkt blieb — **es gab nichts zu zaehlen**.
 
 ### `VERSTAERKUNG-OHNE-VERWENDUNG` — sie sitzt im Hintergrundlauf statt im Dispatcher
+**Kategorie:** GED
 
 **Zustand:** ✅ **behoben am 04.09.2026**, am Tag seines Befundes. `memory/usage_reinforcement.py` rechnet die Naehe zwischen Antwort und gelesenen Erinnerungen; `graph/nodes/dispatcher.py::_verwendung_verstaerken` ruft sie nach `_turn_roh_schreiben`. Schwelle **0,55**, Deckel 3. `tests/test_usage_reinforcement.py` (16 Zeugen, Gegenprobe 0/0 dann 2/2 — die erste fand, dass kein Zeuge den **Aufruf** prueft). `[gemessen]` 04.09.2026 gegen den echten Bestand, 15 Antworten mit je 2 nahen und 3 zufälligen Kandidaten: **13 von 15 Turns** tragen eine Verstärkung, **24 von 30** nahen Kandidaten werden genommen — und **0 von 45 fremden**. Kein falscher Positiver. **Der Betriebsbeleg steht aus**: gemessen wurde gegen den Bestand, nicht in einem echten Turn.
 
@@ -329,6 +335,7 @@ Gegen den Code gehalten:
 ---
 
 ### `PROFIL-SCHLUESSEL-MIT-LEERRAUM` — ein Leerzeichen kostet den Traeger dauerhaft
+**Kategorie:** CHA
 
 **Zustand:** behoben am 03.09.2026 ✅
 **Symptom.** `[gemessen]` 03.09.2026, 21:21 UTC: Der Erstlauf der Qualitaetsprofile ueber 20
@@ -355,6 +362,7 @@ durch, und ein Zeuge haelt genau das fest (`neu heit` → verworfen).
 ---
 
 ### `FALTUNG-OHNE-AUFRUFER` — die Beruehrung wird geschrieben und nie gelesen
+**Kategorie:** CHA
 
 **Zustand:** behoben am 01.09.2026 ✅
 **Symptom.** `[gemessen]` 01.09.2026, 14:00 UTC: Die vierte Messreihe hat **4 Beruehrungen** in
@@ -405,6 +413,7 @@ Beruehrungen erreichte die Spalte nicht — `FALTUNG-OHNE-PERIODISCHEN-LAUF`, se
 erledigt durch `alle_faeden_nachfuehren` als vierten Schritt im Tageslauf.
 
 ### `PROMOTION-NUR-EIN-PAAR` — der periodische Lauf erreichte genau eine Queue
+**Kategorie:** GED
 
 **Zustand:** behoben am 01.09.2026, am selben Tag gefunden. Zeugen: `tests/test_promotion_alle_paare.py`.
 
@@ -435,6 +444,7 @@ Zwei der Auftraege waren zwei Minuten alt, elf standen laenger.
 **Die Klasse:** Ein Vorgabewert an der Stelle, an der die Eingabe fehlt, macht aus *„nichts angegeben"* ein *„dieses eine"*. Verwandt mit `novaberg-lesson_l_default-wie-fehlschlag.md` — dort sieht ein Default wie ein Fehlschlag aus, hier sieht ein **fehlender Parameter** wie eine getroffene Wahl aus.
 
 ### `FADEN-EMBEDDING-VERDUENNT` — der Faden trug den Turn, nicht sein Segment
+**Kategorie:** CHA
 
 **Zustand:** behoben am 01.09.2026, am selben Tag gefunden. Zeugen: `tests/test_praegung_faden_schema.py`.
 
@@ -469,6 +479,7 @@ Zwei der Auftraege waren zwei Minuten alt, elf standen laenger.
 > der falsche Wert kam (`prompt_embedding`), haette sie in Sekunden gezeigt.
 
 ### `EMGRAV-SCHWELLE-TOT` — die Gravitationsschwelle kann nicht mehr ablehnen
+**Kategorie:** GED
 
 **Zustand:** ✅ **behoben am 30.08.2026.** `gravitation_lzg_berechnen()` normiert `gewicht_decay`
 durch `LZG_KNOTEN_GEWICHT_CAP`, die Schwelle steht auf **0,18** und traegt ihre Herkunft im
@@ -525,6 +536,7 @@ gefahren.
 > staerksten tatsaechlich beobachteten Fall, nicht den theoretischen.
 
 ### `EMGRAV-KANDIDAT-OHNE-KENNUNG` — der Kandidat traegt keinen Schluessel
+**Kategorie:** GED
 
 **Zustand:** ✅ **behoben am 30.08.2026.** Beide `SELECT`s geben die Kennung zurueck, der Kandidat
 traegt `knoten_id`, und der Node schreibt eine `pipeline_log`-Zeile (`schritt: emgrav_aktivierung`)
@@ -556,6 +568,7 @@ der normierte steht als `gewicht_norm` daneben. Gefunden hat es die Suite, nicht
 ## 11.09.2026, morgens — ein Schalter, der die Haelfte anhielt, die man nicht braucht
 
 #### `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` — die Pause stoppte den Erzeuger und nicht die Auslieferung ✅
+**Kategorie:** HGR
 
 **Zustand:** behoben am 11.09.2026, am Tag seines Befundes, mit drei Zeugen und einer
 Gegenprobe (2 vorhergesagt, 2 gezaehlt) sowie einem Betriebsbeleg ueber 20 Turns.
@@ -602,6 +615,7 @@ davor.
 ## 25.08.2026, abends — eine Log-Zeile, die ihre eigene Aussage nicht halten konnte
 
 #### `BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT` — `8 von 8` bei einem leeren Feld ✅
+**Kategorie:** BAU
 
 **Zustand:** behoben am 25.08.2026, mit fuenf Zeugen und zwei Gegenproben.
 
@@ -665,6 +679,7 @@ Ihr Symptom ist die **Abwesenheit** einer Wirkung, und die sieht aus wie ein ruh
 Sichtbar wurden sie ueber `F841` — eine Variable, die zugewiesen und nie gelesen wird.
 
 #### `PROMPT-CONSUMER-OHNE-ABRAEUMEN` — die Aufgabe hinter der Eingangs-Queue ueberlebt das Herunterfahren ✅
+**Kategorie:** BAU
 
 **Zustand:** behoben am 25.08.2026, mit Strukturzeuge.
 
@@ -692,6 +707,7 @@ Redis und Modelldienst nicht zu fahren ist — genau deshalb hat hier noch nie j
 hingesehen.
 
 #### `VORHER-ZUSTAND-OHNE-SPUR` — sechsmal geladen, nie protokolliert ✅
+**Kategorie:** CHA
 
 **Zustand:** behoben am 25.08.2026, mit acht Zeugen.
 
@@ -719,6 +735,7 @@ leere Anweisung und waere ein Default, der wie ein Messwert aussieht.
 ## 25.08.2026 — eine fertige Antwort wartete auf Felder, die niemand liest
 
 #### `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` — jeder Fehler nach dem Responder kostet die fertige Antwort ✅
+**Kategorie:** ANT
 
 **Zustand:** **behoben am 25.08.2026**, am Tag des Befundes. Suite **2312 gruen / 0 uebersprungen**, elf neue Zeugen in `tests/test_antwort_ueberlebt_nachlauf.py` und `tests/test_ausgabe_bei_freigabe.py`.
 
@@ -795,6 +812,7 @@ finally:
 ## 25.08.2026 — der Riegel vor der GPU kannte vier von fuenf Wegen nicht
 
 #### `GPU-LOCK-SCHUETZT-EINEN-VON-FUENF` — das Lock fuer den GPU-Zugriff nimmt nur ein Zugreifer ✅
+**Kategorie:** BAU
 
 **Zustand:** **behoben am 25.08.2026**, am Tag des Befundes. Suite **2301 gruen / 0 uebersprungen**, acht neue Zeugen in `tests/test_llm_riegel.py`. Festgelegt als `F-RIEGEL-1`.
 
@@ -854,6 +872,7 @@ finally:
 ## 25.08.2026 — ein Buchhaltungswert riss einen Graphen, dessen Antwort fertig war
 
 #### `TOKENZAEHLUNG-REISST-DEN-GRAPHEN` — ein Buchhaltungswert kostet eine fertige Antwort ✅
+**Kategorie:** BAU
 
 **Zustand:** **behoben am 25.08.2026**, am Tag des Befundes. Suite **2293 gruen / 0 uebersprungen**, fuenf neue Zeugen in `tests/test_ollama_chat.py`. Gegenprobe: zwei davon waren vorher rot, mit exakt dem `TypeError` aus dem Betriebslog.
 
@@ -882,6 +901,7 @@ finally:
 ## 25.08.2026 — eine Dauer in der Einzahl war ein Monatsname
 
 #### ZEIT-EINZAHL-GREIFT-DANEBEN ✅ behoben
+**Kategorie:** WIS
 
 **Zustand:** **behoben am 25.08.2026.** Suite 2288 gruen / 0 uebersprungen, sieben neue Zeugen in `tests/test_zeit_dauer_einzahl.py`. Gegen Referenz 30.07.2026 nachgemessen: `in einem Tag` = `in 1 Tag` = **31.07.2026**, `in zwei Tagen` = 01.08.2026, `in einem Monat` = **30.08.2026** (vorwaerts). Alle dreizehn Faelle der Reihe rechnen richtig.
 
@@ -904,6 +924,7 @@ finally:
 ## 25.08.2026 — der Versionsstempel frass die Leerzeile unter sich
 
 #### TELEGRAM-SHADOW-TYP-TOT — der Bot behandelt einen Nachrichtentyp, den der Server nie erzeugt ⚠️
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 110, beim Rückbau der Shadow-Delivery.
 
@@ -920,6 +941,7 @@ finally:
 ---
 
 ### `VERSIONSSTEMPEL-FRISST-LEERZEILE` — jeder Eingriff des Rueckwegs nahm dem Kopf eine Zeile
+**Kategorie:** WIS
 
 **Zustand:** behoben am 25.08.2026 — `agents/wissen_rueckweg/einarbeitung.py:36` traegt ein waagerecht begrenztes Suchmuster, zwei Zeugen bewachen es, 136 Dateien im Bestand sind nachgezogen.
 
@@ -938,6 +960,7 @@ finally:
 ## 23.08.2026 — die Naht zwischen GV-Knoten und Haltungsstand
 
 ### `FUEHRUNGSMASS-AUF-FALSCHER-EBENE` — behoben am 23.08.2026
+**Kategorie:** CHA
 
 **Zustand:** behoben. `_initiative_aus_state` liest das Fuehrungsmass aus `state["gv_detail"]["initiative"]`, wo der Erzeuger es ablegt. Bis dahin las es `state["initiative"]` — einen Schluessel, den **niemand setzt**.
 
@@ -958,6 +981,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py` (8) — der Naht-Zeuge ruft den **ech
 ---
 
 ### `GRUND-NENNT-FALSCHE-URSACHE` — behoben am 23.08.2026
+**Kategorie:** CHA
 
 **Zustand:** behoben. Drei Sachverhalte tragen drei Namen: `gv_ohne_lauf` (kein `gv_detail` — der Knoten lief wirklich nicht), `fuehrung_fehlt_im_detail` (er lief und liess das Mass aus), `masse_fehlen` / `ohne_wert` (er rechnete und kam nicht durch).
 
@@ -974,6 +998,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ## 20.08.2026 — aus der Klassifikation der Fundliste
 
 ### `VERSCHWUNDEN-DURCH-FILTERWECHSEL` — behoben am 23.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben — gegen HEAD `ecb2517` gehalten am 23.08.2026. Der Waechter fragt nicht mehr seine Buchfuehrung, sondern die Platte: `_liegt_noch_da()` in `agents/dateien_index/wandern.py` entscheidet je unbewerteter Bestandszeile, ob sie nach `verschwunden` oder nach `ausserhalb` geht.
 
@@ -996,6 +1021,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` — behoben am 23.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben — gefunden und behoben am 23.08.2026, im selben Zug wie `VERSCHWUNDEN-DURCH-FILTERWECHSEL`. Der Eintrag steht, weil er erklaert, warum der UPSERT drei `CASE`-Zweige traegt.
 
@@ -1010,6 +1036,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `ARCHIVDATEI-OHNE-ETIKETT` — behoben am 23.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben. Die Fundstelle traegt das Etikett `(archiviert)`, und zwar in **allen drei** Ausgabewegen — Enricher, lesender Dienst und Bibliothek. Die Regel steht an einer Stelle (`utils/etikett.py`), nicht in den beiden Bauern der Herkunftsangabe.
 
@@ -1036,6 +1063,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` — behoben am 23.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben — durch die **Statusmarke**, nicht durch einen Schreiber. Die Geschlossen-wenn-Zeile laesst beides zu, und die Messung entschied gegen den Schreiber.
 
@@ -1064,6 +1092,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `BIBLIOTHEK-FILTERT-ZWEISPALTIG` — behoben am 23.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben. Jede Abfrage auf `autonomous_wissen`, die auf das Paar filtert, filtert dreispaltig. `Bibliotheksfrage` traegt `beobachter` als Pflichtfeld ohne Default, geprueft gegen den neuen `BEOBACHTER_KANON` (`config.py`); die Lesestellen nehmen `BIBLIOTHEK_BEOBACHTER` aus dem Repository statt eines Literals. Zeugen: `tests/test_bibliothek_partition.py` (5), Gegenprobe 1 vorhergesagt / 1 gezaehlt, Suite `Ran 2180 tests — OK`.
 
@@ -1078,6 +1107,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `BIBLIOTHEKSSCHWELLE-SORTIERT-FALSCH` — 0,40 sortiert gegen echte Fragen falsch herum
+**Kategorie:** WIS
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. 19.08.2026 an 40 Fragen mit bekannter richtiger Antwort gegen 249 Ausarbeitungen kalibriert; `WISSEN_RETRIEVAL_SCHWELLE` steht auf 0.50, die Reihe steht in `server/config.py:478-499`.
 
@@ -1088,6 +1118,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `PROFILPROMPT-OHNE-GESCHLECHT` — das Modell raet, im selben Lauf verschieden
+**Kategorie:** CHA
 
 **Zustand:** behoben — gegen HEAD `12a7c6a` gebaut am 22.08.2026. Das Genus der Figur steht in `ASSISTANT_GENUS` (`config.py`, Vorgabe `w`), `_perspektive_aufloesen` liefert daraus `pronomen`, `pronomen_dat`, `pronomen_akk` und `possessiv`, und **jeder der fuenf Prompts gibt die Pronomen ausdruecklich vor**. Zeuge: `tests/test_traegerformen.py::test_jeder_prompt_gibt_das_genus_vor`.
 
@@ -1102,6 +1133,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `VERWEISWEG-LEHNT-BESTEN-FALL-AB` — die falsche Frage am falschen Weg
+**Kategorie:** WIS
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. der Verweis-Weg hat eine eigene Frage — `prompts/default/verweis_zuordnung.task.txt` (*STEHT DER FUND DORT SCHON, IST DAS DIE BESTAETIGUNG*), gewaehlt in `agents/wissen_rueckweg/zuordnung.py:178`.
 
@@ -1112,6 +1144,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `SPEICHENWERT-NICHT-MEDIAN` — behoben am 23.08.2026
+**Kategorie:** CHA
 
 **Zustand:** behoben. Entschieden: **der Speichenmedian laeuft als zweites, nicht rechnendes Feld mit.** `F-RAD-2` bleibt unangetastet — das gespeicherte Rad ist weiter das des Median-Laufs, und Faktor wie Versatz werden allein daraus gerechnet. Daneben tragen beide Raeder `speichen_median` (der Median je Speiche ueber alle gelungenen Laeufe) und `speichen_ohne_mehrheit` (die Namen der Abweichungen); eine Logzeile nennt sie. Eine Quelle fuer beide Raeder: `speichenweise_mediane` und `speichen_ohne_mehrheit` in `agents/charakter/destillation.py`. Zeugen: `tests/test_speichen_median.py` (8), Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2196 tests — OK`.
 
@@ -1126,6 +1159,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `NEUER-NUTZER-OHNE-UMFANGSVORGABE` — gar keine Vorgabe beim ersten Turn
+**Kategorie:** CHA
 
 **Zustand:** behoben — gegen HEAD `880be4f` gehalten am 22.08.2026. Ein Paar ohne `charakter_hash`-Zeile bekommt das **neutrale Rad** statt `(None, 'fehlt')`: zwoelf Speichen auf 0.0, Herkunft `'neutral'` (`memory/charakter.py::_neutrales_rad`). Der Haltungsraum rechnet damit normal, und die Landschaft traegt den Turn allein.
 
@@ -1146,6 +1180,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `RESPONDER-ERFINDET-DATUM` — ein erfundenes Datum in der Bestaetigung
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `635dbfd` gehalten am 22.08.2026. Die Abhilfe sitzt in der **Ausgabe-Verifikation**, nicht im Prompt: Der Widerspruch Wochentag↔Datum lief seit dem 20.08.2026 (`utils/datum_pruefung.py::widersprueche_finden`, gerufen in `graph/nodes/tribunal.py`), **die zweite Haelfte ist am 22.08.2026 dazugekommen** — `bestaetigung_pruefen` haelt die Datumsangaben der Antwort gegen die der erfolgreichen Dienstergebnisse. Beide heben das Urteil auf `warnung` und damit in die Korrekturrunde.
 
@@ -1162,6 +1197,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `ROUTERPROMPT-ZWEIFEL-WIDERSPRUCH` — zwei Regeln, entgegengesetzt
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. der zweite Satz ist fort: *als passend* kommt im ganzen Serverbaum nicht mehr vor; ueber den Zweifel steht nur noch `prompts/default/router.task.txt:62`.
 
@@ -1172,6 +1208,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `KERNHASH-LIEST-TURNWORTLAUT` — Wortlaut statt Langzeitgedaechtnis
+**Kategorie:** CHA
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. `novaberg-pixie-character-hash.md:45` ist am 16.08.2026 nachgezogen — die alte Quellenangabe steht durchgestrichen daneben. Offen bleibt eine andere Frage: 40 von 444 Zeilen decken 2 von 20 Bestandstagen.
 
@@ -1182,6 +1219,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 ---
 
 ### `KZG-SALIENZ-GESAETTIGT` — behoben am 24.08.2026
+**Kategorie:** GED
 
 **Zustand:** behoben. **Die Ursache war nicht eine, sondern drei gestapelte Stauchungen, und die groesste war ein Defekt.**
 
@@ -1229,6 +1267,7 @@ Messwerkzeuge: `labor/2026-08-24_salienz_spektrum.sql` (wo die Skala ihre Spreiz
 ---
 
 ### `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` — behoben am 24.08.2026
+**Kategorie:** GED
 
 **Zustand:** behoben. Der Salienz-Knoten las seine Eingabe aus `salienz_obj["salienz"]` — und schrieb sein Ergebnis in denselben Schluessel (`salience.py`, `salienz_obj["salienz"] = ergebnis.effektiv`). Der Knoten laeuft **je Segment**; ab dem zweiten rechnete er auf seinem eigenen Ausgang weiter.
 
@@ -1247,6 +1286,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 ---
 
 ### `AGENTINPUT-NIE-EXISTIERT` — seit Mai in einer Konvention, nie gebaut
+**Kategorie:** BAU
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. die Konvention nennt ihn als nie gebaut — `novaberg-convention-planner-needs.md` (§9.3 berichtigt, Bestand in §9) und `novaberg-convention-nmcp.md:25` fuehren ihn als Beispiel fuer genau diesen Fehler.
 
@@ -1257,6 +1297,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 ---
 
 ### `NEGATIVE-EMOTIONEN-DOPPELT` — behoben am 23.08.2026
+**Kategorie:** BAU
 
 **Zustand:** behoben. `NEGATIVE_EMOTIONEN` ist einmal definiert — abgeleitet in `ei/utils.py` aus `EMOTION_SEKTOR_MAP` und `SEKTOR_GRUPPE`, acht Emotionen; `services/shadow_delivery.py` importiert sie. Entschieden wurde **fuer die groessere Menge**: Der Riegel haelt jetzt auch bei `wut`, `verzweiflung` und `enttaeuschung`. `stress` bleibt vor der Kanon-Pruefung stehen, weil dort auch die Nachfrage zu viel ist — die Reihenfolge traegt diese Unterscheidung. Zeugen: `tests/test_emotionsriegel_kanon.py` (6), Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2175 tests — OK`.
 
@@ -1269,6 +1310,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 ---
 
 ### `RIEGEL1-NACHZUG-UNVOLLSTAENDIG` — eine Zeile nicht erwischt
+**Kategorie:** BAU
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. `novaberg-haltungsraum_k.md:275` traegt den Satz durchgestrichen und beide Leser benannt.
 
@@ -1279,6 +1321,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 ---
 
 ### `AGENTGRAPH-REIZPLATZ-FALSCH` — behoben am 23.08.2026
+**Kategorie:** HGR
 
 **Zustand:** behoben. Entschieden ist, dass `F-REIZ-1` **auch fuer den direkt gerufenen Graphen gilt**: `create_state` bekommt `user_prompt=""`, `eigener_gedanke=<Wissensstueck>` und `event_payload={"reiz_herkunft": "eigener_impuls"}`. Alle drei Knoten des AgentGraph lesen den Reiz bereits ueber `reiz_text` — geprueft als Kriterium, nicht als Aufzaehlung: Die einzige verbliebene direkte Lesung von `user_prompt` ist die Ablage des Session-Turns, und die ist in `F-REIZ-1` ausdruecklich ausgenommen. Zeugen: `tests/test_reiz_platz.py::DerAgentGraphBekommtDieHerkunftTest` (3), Gegenprobe 2 vorhergesagt / 2 gezaehlt.
 
@@ -1297,6 +1340,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 ---
 
 ### `HALTUNGSSTAND-OHNE-LOGZEILE` — als entschieden geschlossen am 23.08.2026
+**Kategorie:** CHA
 
 **Zustand:** geschlossen, **nicht behoben** — und der Unterschied ist die Sache selbst. Der Befund verlangte nicht die Zeile, sondern dass die Entscheidung *benannt* wird statt stillschweigend zu gelten. Sie ist benannt, seit `7c64fe9` (15.08.2026) und damit **vor** der Aufnahme des Eintrags: Der Docstring von `_stand_schreiben` traegt sie unter der Ueberschrift *Zwei Speicher, zwei Gegenstaende* — die Zeile im `pipeline_log` traegt den **Verlauf** und ist die Grundlage der Nachkalibrierung, dieser Stand traegt den **Zustand** und beantwortet die Frage eines Dienstes ausserhalb des Graphen.
 
@@ -1309,6 +1353,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `EMOTIONS-VEKTOREN-DOPPELT` — behoben am 23.08.2026
+**Kategorie:** BAU
 
 **Zustand:** behoben. Das tote `frozenset` ist fort; `EMOTIONS_VEKTOREN` ist einmal definiert, als `dict[str, str]`. Die Begruendung des Kanons stand an der toten Haelfte und steht jetzt an der lebenden.
 
@@ -1345,6 +1390,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `LAGEBILD-IMPULS-ALS-NUTZEREINGABE` — der eigene Gedanke unter fremder Beschriftung
+**Kategorie:** GED
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. beide Stellen haben einen eigenen Zweig fuer die Rolle `agent` mit dem Etikett *Eigener Gedanke der Assistentin* — `graph/nodes/salience.py:370` und `agents/kzg/verdichtung.py:114`; die Rolle setzt `graph/agent_graph.py:59`.
 
@@ -1355,6 +1401,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `VERFASSER-ORDNET-IMPULS-PERSON-B-ZU` — der eigene Gedanke wird dem Gegenueber zugeschrieben
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `383d7e1` gehalten am 22.08.2026. **Und zwar seit dem 14.08.2026, dem Tag des Befunds selbst** (`b8abd82`, `e755b84`): `graph/nodes/verfasser.py` haengt bei `reiz_ist_eigener_gedanke(state)` den Auftrag `verfasser.auftrag_ohne_reiz` an statt des Reizes; der Gedanke steht als Material im System-Prompt. Erkannt wird an `event_payload["reiz_herkunft"] == "eigener_impuls"` — **an der Herkunft, nicht an der Rolle**, also genau die Schlussbedingung. Zeugen: `tests/test_verfasser_herkunft.py`. Im Betrieb belegt: Der Auftragstext steht **33-mal** im Log.
 
@@ -1369,6 +1416,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `GRAVITATION-FAERBT-EIGENE-GEDANKEN` — behoben am 23.08.2026
+**Kategorie:** GED
 
 **Zustand:** behoben. `emotionale_gravitation_anwenden` fragt `reiz_ist_eigener_gedanke(state)` vor den Leerpruefungen und laesst den Verlauf auf einem Impuls-Turn unberuehrt. Der Ausfall ist **laut und mit Zahl**: Die Meldung nennt den Grund und die Menge der uebergangenen Punkte — eine Zeile, die nur *keine Faerbung* sagte, waere von einem echten leeren Punkte-Satz nicht zu unterscheiden. Zeugen: `tests/test_emotionale_gravitation_node.py::TestHerkunftstor` (3), Gegenprobe 2 vorhergesagt / 2 gezaehlt.
 
@@ -1389,6 +1437,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `FRAGEN-ZEILE-OHNE-BEDINGUNG` — eine Zeile, auf die nichts zeigt
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `387915f` gehalten am 22.08.2026. Die Zeile ist entfallen, und zwar aus demselben Grund wie im Responder am 13.08.2026: **Dieselbe Aussage kommt aus der Haltungsgroesse `fragen`, charakterabhaengig statt fuer jede Nova gleich.** Sie erreicht den Verfasser als Rueckfrage-Zeile des `[MASS]`-Blocks, seit dieser am 20.08.2026 dazukam. Die Tabelle `CLUSTER_FRAGEN` bleibt — der GV-Knoten braucht sie fuer die Strategiewahl, und die Haltungsgroesse ist aus ihr uebersetzt (`ei/haltung.py`). Drei Zeugen auf die **Abwesenheit** (`tests/test_verfasser_gv_block.py`), Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2090 tests — OK`.
 
@@ -1405,6 +1454,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `NUTZERKERN-ERREICHT-RESPONDER-NICHT` — gerechnet und nicht zugestellt
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/responder.py:316-334` setzt den Block `[PERSON B — WER ER IST]` aus `external.character.core`, dazu das Adaptive; sein Fehlen wird gemeldet.
 
@@ -1415,6 +1465,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `BEZIEHUNGSPROFILE-UNBESCHRIFTET` — zwei Profile ohne Perspektivangabe
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/responder.py:412-415` beschriftet beide nach dem Paar-Schema — *So sieht Person A ihr Gegenueber* / *So sieht Person B sie*.
 
@@ -1425,6 +1476,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `RESPONDER-ANWEISUNG-DOPPELT` — dieselbe Anweisung aus zwei Quellen
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. die zweite Quelle beschreibt statt anzuweisen (`graph/nodes/responder.py:532-547`); ein Zeuge haelt es (`tests/test_responder_drehbuch.py:203`).
 
@@ -1435,6 +1487,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `FARBTON-ERREICHT-RESPONDER-NICHT` — jeden Turn gerechnet, nie zugestellt
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/responder.py:207,219` nimmt den Farbton aus `gv_detail` in die Szene.
 
@@ -1445,6 +1498,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 ---
 
 ### `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` — behoben am 23.08.2026
+**Kategorie:** BAU
 
 **Zustand:** behoben. `prompt_laden` kennt **drei Ebenen** — `default` → `{modell}` → `{connector}` —, und `config.py` reicht `OLLAMA_MODEL` mit.
 
@@ -1482,6 +1536,7 @@ nachher:  Prompts: 7 Override(s) ueber Modell 'gemma4-gpu':
 ---
 
 ### `UEBERSTEUERUNG-AB-FUER-DREIERSKALA` — auf die alte Skala geeicht
+**Kategorie:** CHA
 
 **Zustand:** behoben — gegen HEAD `00c16b6` gehalten am 20.08.2026. `ei/haltung.py:284` steht auf 0.9 statt 1.0; `tests/test_rad_skala.py:52` haelt die Eichung.
 
@@ -1492,6 +1547,7 @@ nachher:  Prompts: 7 Override(s) ueber Modell 'gemma4-gpu':
 ---
 
 ### `PERSPEKTIVE-OHNE-DATIV` — kein Dativ fuer den generischen Nutzer
+**Kategorie:** CHA
 
 **Zustand:** behoben — gegen HEAD `12a7c6a` gebaut am 22.08.2026. `_perspektive_aufloesen` liefert alle vier Kasus (`traeger`, `traeger_gen`, `traeger_dat`, `traeger_akk`); kein Prompt setzt den Traeger mehr im falschen Kasus ein. Zeuge: `tests/test_traegerformen.py::test_kein_prompt_traegt_eine_falsche_form` — er haelt **beide** Perspektiven gegen neun gemessene Fehlformen und wird rot, sobald eine zurueckkehrt.
 
@@ -1505,6 +1561,7 @@ nachher:  Prompts: 7 Override(s) ueber Modell 'gemma4-gpu':
 ## 20.08.2026 — die Blockkarte war halbiert und meldete es als gültiges Ergebnis
 
 ### `BLOCKKARTE-STILL-HALBIERT` — behoben am 20.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Zaunbilanz steht vor dem Parser (`server/tools/dateien/operationen.py:177`), und der Lauf ueber den echten Bestand liegt vor: 174 Dateien, **173 erhoben, 0 leer, 1 nicht erhoben** am 20.08.2026.
 
@@ -1548,6 +1605,7 @@ nicht im Dokument.
 ## 20.08.2026 — das JSON-Format wird erbeten und nirgends erzwungen
 
 ### `JSON-FORMAT-NUR-ERBETEN` — behoben am 20.08.2026
+**Kategorie:** BAU
 
 **Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. `expect_json` reist bis zum Anbieter — `server/services/model_services/background_worker.py:175` reicht das Feld unbedingt durch, der JSON-Pfad laeuft ueber den Worker (`server/services/postprocess.py:8`).
 
@@ -1578,6 +1636,7 @@ nicht im Dokument.
 ## 20.08.2026 — vier Dateien fielen aus dem Indexlauf, und die Bilanz meldete keinen Fehler
 
 ### `INDEXLAUF-VERSCHWEIGT-DATEIFEHLER` — behoben am 20.08.2026
+**Kategorie:** WIS
 
 **Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Bilanz traegt `gescheitert_gruende` je Wurzel mit Pfad und Grund (`server/agents/dateien_index/agent.py:340`), getrennt von `fehler`.
 
@@ -1610,6 +1669,7 @@ nicht im Dokument.
 ## 19.08.2026 — der Riegel, der den korrekten Dienst ausgesperrt hätte
 
 ### `AUSSCHLUSSRIEGEL-TRIFFT-SACHWORT`
+**Kategorie:** HGR
 
 **Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Der Grad haengt an der Form des Namens: `server/agents/nmcp.py:74` verweigert nur bei mehrteiligen Namen, `:78` fuehrt die einteiligen als `gemeldet`. Ausloesefall als Zeuge: `server/tests/test_nmcp_anmeldung.py:184`.
 
@@ -1648,6 +1708,7 @@ Beide benennen eine **Eigenschaft der Äußerung**, genau wie §3.2 es verlangt;
 ## 19.08.2026 — der Verweis auf ein Ergebnis, das keines war
 
 ### `VERWEIS-OHNE-WISSEN`
+**Kategorie:** HGR
 
 **Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Der Einreihpunkt haengt an der geschriebenen Wissensdatei — `server/agents/recherche/agent.py:400` uebergibt `pfade["wissen_pfad"]`. Zeuge: `server/tests/test_wissen_rueckweg.py:446`. Der benannte Rest (drei Altauftraege in der Queue) ist unveraendert.
 
@@ -1682,6 +1743,7 @@ neuen sachlichen Wissenszuwachs.
 ## Chat 151 (18.08.2026) — der wacklige Zeuge, gefangen in einer Gegenprobe
 
 ### `ZEUGE-ERWARTUNG-AUS-DER-UHR`
+**Kategorie:** BAU
 
 **Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Uhr sitzt nicht mehr im Helfer: `SCHLUESSEL_BASIS` wird einmal beim Laden gelesen (`server/tests/test_charakter_kzg_auswahl.py:47`) und in `:102` verwendet; der deterministische Zeuge steht in `:119`.
 
@@ -1824,6 +1886,7 @@ def _schluessel(alter_tage: float) -> str:
 ### Chat 135 — beim Bau der Phasensteuerung (11.08.2026)
 
 #### RAD-AELTER-ALS-PROFIL — das gespeicherte Rad gehörte zu einem Text, den es nicht mehr gab ✅ behoben
+**Kategorie:** CHA
 
 **Symptom.** Nach einem Bogen stand in `charakter_hash` ein Rad von 09:23 neben einem Beziehungsprofil von 10:00. Die Messzeile trug `quelle_zeichen = 373`, das Profil daneben hatte 1456.
 
@@ -1836,6 +1899,7 @@ def _schluessel(alter_tage: float) -> str:
 ---
 
 #### HASH-DIRTY-DRITTER-SETZER — die Stilllegung war unvollständig ✅ behoben
+**Kategorie:** CHA
 
 **Symptom.** Nach einer Phase mit stillgelegter Automatik stand `hash_dirty:sarah:nova` wieder gesetzt da. Die Vorbedingung des nächsten Laufs schlug an.
 
@@ -1852,6 +1916,7 @@ def _schluessel(alter_tage: float) -> str:
 ### Chat 138 — aus einem Tag Betrieb nach dem Umbau (14.08.2026)
 
 #### RESUME-VERBRAUCHT-DEN-IMPULS — ein eigener Gedanke löscht die Rückfrage eines wartenden Agenten ✅ behoben (14.08.2026)
+**Kategorie:** ANT
 
 **Symptom.** Ein Agent stellt eine Rückfrage („Welche Notiz meinst du?"). Trifft innerhalb der fünf Minuten Wartezeit ein eigener Impuls ein, ist die Rückfrage danach weg — der Mensch bekommt keine Gelegenheit mehr zu antworten, und der Agent hat mit etwas gearbeitet, das niemand gesagt hat.
 
@@ -1878,6 +1943,7 @@ Zeugen in `tests/test_impuls_und_rueckfrage.py`, beide Herkünfte je Riegel. Geg
 ---
 
 #### WEBSOCKET-OHNE-KEEPALIVE — die Verbindung stirbt im Leerlauf, und der Client merkt es nie ✅ behoben (15.08.2026)
+**Kategorie:** ANT
 
 **Symptom.** Der Client zeigt „denkt nach" und bekommt nie eine Antwort. Nachrichten des Nutzers gehen weiter ein und werden vollständig verarbeitet; die Antworten entstehen und werden gespeichert. Zugestellt wird nichts. Der Zustand hält an, bis der Client neu gestartet wird.
 
@@ -1912,6 +1978,7 @@ Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den le
 ### Chat 137 — aus dem Umbau des Responder-Prompts (13.08.2026)
 
 #### VERFASSER-KENNT-DIE-QUELLE-NICHT — Novas eigener Impuls wird ihr als Nutzeräußerung zugeschrieben ✅ behoben (Chat 137)
+**Kategorie:** ANT
 
 **Symptom.** Nach einem eigenen Impuls antwortet Nova, als hätte der Nutzer gesagt, was sie selbst gedacht hat. Am 13.08.2026 im Betrieb beobachtet: *„Du hast das gerade nicht nur zitiert, du hast es als strukturellen Anker in den Raum geworfen."* — der zitierte Text stammte von ihr.
 
@@ -1936,6 +2003,7 @@ Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den le
 ### Chat 134 — beim Bau der zwei Pixie-Spuren (09.08.2026)
 
 #### SUITE-HAENGT-AM-AKTIVEN-PAAR — zwei Tests werden rot, sobald eine Messreihe läuft ✅ behoben (15.08.2026)
+**Kategorie:** BAU
 
 **Symptom.** `TestWahlGegenDieQueue` in `tests/test_pixie_aging.py` ist grün, solange `AKTIVES_PAAR_USER_ID` auf `meister` steht, und **rot, sobald das aktive Paar auf eine Testpersona umgestellt ist** — also während jeder Messreihe. Am Code ändert sich dabei nichts.
 
@@ -1952,6 +2020,7 @@ Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den le
 ### Leere Modellantwort (01.08.2026)
 
 #### VORWISSEN-LIEST-LEERE-TABELLE — die Recherche fragt seit dem Umbau eine abgelöste Tabelle ✅ **behoben am 02.08.2026 (Chat 125, P9a)**
+**Kategorie:** HGR
 
 **Symptom.** Der RechercheAgent recherchierte Themen, zu denen Nova bereits Wissen hatte. Nichts fiel dabei aus.
 
@@ -1966,6 +2035,7 @@ Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den le
 ---
 
 #### GRAVITATION-DOPPELTER-VERFALL — der Zeitverfall wird zweimal angewandt ✅ **behoben am 02.08.2026 (Chat 125, P9a)**
+**Kategorie:** GED
 
 **Symptom.** Die emotionale Gravitation gewichtete jede Erinnerung, als wäre sie doppelt so alt.
 
@@ -1985,6 +2055,7 @@ soll:  similarity × gewicht_absolut × e^(−rt)  × zeit_decay × faktor
 ---
 
 #### ANTWORT-OHNE-ZUORDNUNG — die nächste Antwort wird als Antwort auf die letzte Frage angezeigt ✅ **behoben am 01.08.2026 (Chat 124)**
+**Kategorie:** ANT
 
 **Behoben — die Zuordnung reist mit und wird geprüft.** Drei Stellen bilden die Kette: `api/chat.py → _bestaetigungs_nutzlast` gibt dem Client die `turn_id` seiner eigenen Nachricht, `services/event_consumer.py` legt die `turn_id` des Reizes in das `character_response`-Payload, und `client/ui/stream_handler.py → _zuordnung_pruefen` vergleicht beide.
 
@@ -2026,6 +2097,7 @@ Der Nutzer sah eine flüssige, inhaltlich geschlossene Antwort — zu einem **Ei
 ### Chat 133 — aus der Fundliste klassifiziert, Block 05.–02.08. (08.08.2026)
 
 #### KANDIDATEN-PRIORITAET-STILLE-NULL ✅ behoben (15.08.2026)
+**Kategorie:** HGR
 
 **Befund (2026-08-04).** **Die Kandidatenauswahl fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht** (`services/pixie/kandidaten.py`). Ein unbeschriebener Auftrag wird damit zur niedrigsten Priorität und gewinnt nie, statt laut zu scheitern. Gemessen: 49 von 650 Einträgen der Shadow-Queue stehen auf 0.0.
 
@@ -2057,6 +2129,7 @@ memory/kzg.py          shadow_queue_push(… kein prioritaet-Argument …)  ❌
 ### Chat 133 — aus der Fundliste klassifiziert (08.08.2026)
 
 #### PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER — das Langzeitgedächtnis einer Messreihe ist ausgewürfelt ✅ behoben
+**Kategorie:** HGR
 
 **Symptom.** Zwei Personas mit gleich langen Bögen tragen danach völlig verschiedene Mengen an Langzeitwissen, ohne dass ihre Gespräche sich entsprechend unterscheiden.
 
@@ -2132,6 +2205,7 @@ Die Promotion konkurrierte um denselben Platz wie die Recherche, obwohl sie eine
 ### Zeitauflösung (Chat 119)
 
 #### ZEIT-RUECKWAERTS-WIRD-ZUKUNFT — ein rückwärts gerichteter Zeitausdruck erzeugt einen Anker in der Zukunft ✅ Gelöst Chat 120
+**Kategorie:** WIS
 
 **(b) gelöst am 30.07.2026.** `zeit_parsen_vektor` reicht `referenz_modus` jetzt in die Auflösung durch; er wurde bis dahin berechnet, zurückgegeben und nicht übergeben. `seit` steht in der Richtungsprüfung und wird — wie `vergangene` — in der Normalisierung entfernt, weil es die Richtung trägt und nicht die Dauer; blieb es stehen, kannte `dateparser` den Ausdruck nicht und lieferte gar nichts.
 
@@ -2191,6 +2265,7 @@ Die vierte Zeile trägt den Kern: Die Richtung ist erkannt und wirkt nicht. Nur 
 ### Zeitparser und Fremdbibliothek (31.07.2026)
 
 #### PARSER-EINSTELLIGE-STUNDE-STUERZT-AB — „morgen um 9 Uhr" wirft eine unbehandelte ValueError ✅ Gelöst 31.07.2026
+**Kategorie:** WIS
 
 **Gelöst am 31.07.2026.** Pfad 1 setzt das Datum aus seinen Teilen zusammen, so wie Pfad 1b es fuer `DD.MM.YYYY` immer schon tat.
 
@@ -2215,6 +2290,7 @@ morgen um 14 Uhr  ->  2026-08-01 14:00:00+02:00
 ### Zeitparser und Chat-Endpunkt (Chat 120)
 
 #### PARSER-MAERZ-FAELLT-DURCH — die Tippfehler-Korrektur zerstört den korrekt geschriebenen Monat ✅ Gelöst Chat 120
+**Kategorie:** WIS
 
 **Gelöst am 31.07.2026.** Die Monatsliste führt jetzt die Umlautform, und die ASCII-Umschreibungen werden vor der Fuzzy-Korrektur zurückübersetzt. Die Zuordnung wird aus den Wortlisten abgeleitet, nicht daneben geführt.
 
@@ -2242,6 +2318,7 @@ Die dritte Zeile folgt aus der vierten: Was die Bibliothek versteht, machte unse
 ---
 
 #### PARSER-ZWEI-UHREN — deiktische Tagesworte und relative Dauern rechnen in verschiedenen Zonen ✅ Gelöst Chat 120
+**Kategorie:** WIS
 
 **Gelöst am 31.07.2026.** Die Referenz wird in die Ortszone gedreht, statt ihres Zonenvermerks beraubt zu werden.
 
@@ -2267,6 +2344,7 @@ Die dritte Zeile folgt aus der vierten: Was die Bibliothek versteht, machte unse
 ---
 
 #### CHAT-NAME-OHNE-ERZEUGER — beide Pfade des Chat-Endpunkts lesen eine Variable, die es nicht mehr gibt ✅ Gelöst Chat 120
+**Kategorie:** ANT
 
 **Gelöst am 31.07.2026.** Beide Pfade leiten den Wert wieder lokal aus dem State ab, den sie ohnehin halten.
 
@@ -2287,6 +2365,7 @@ Dass die Antwort trotzdem ankam, liegt an der Reihenfolge: Das Ereignis für den
 ### Initiative-Achse (Chat 119)
 
 #### INITIATIVE-M1-OHNE-QUELLE — der State-Key, den M1 liest, hat keinen Erzeuger ✅ Gelöst Chat 119
+**Kategorie:** ANT
 
 **Gelöst am 30.07.2026.** Der erste Pfad erhebt die Intentionen im Salienz-Node und legt ihre Vereinigung über die Segmente in den State; sie reisen mit demselben Ereignis in den zweiten Pfad wie `salienz_human`. Der Enricher des CharacterGraph gibt dem Wert aus dem Ereignis Vorrang vor seiner Ableitung aus der Historie — ohne diesen Vorrang überschriebe er die Quelle sechs Nodes vor der Achse. **Live gemessen an zehn Turns: M1 kam in allen acht Achsenläufen an, kein `fehlend=['wollen']`.**
 
@@ -2316,6 +2395,7 @@ Der Enricher liest aus den Session-Turns, der Dispatcher schreibt in die Session
 **Nicht entschieden:** ob `user_intentionen` aus dem Salienz-Objekt gespeist werden soll — derselben Quelle wie das KZG — oder ob die Achse direkt dorthin greift. Das ist eine Frage der Absicht und gehört in die Konzeption.
 
 #### KALIBRIERUNG-STICHPROBE-IST-PRAEFIX — die Positions-Kontrolle maß die älteste Ecke des Korpus ✅ Gelöst 31.07.2026
+**Kategorie:** BAU
 
 **Gelöst am 31.07.2026.** `ei/kalibrierung.stichprobe_indizes()` zieht eine systematische Stichprobe: Der Korpus wird in so viele Bloecke geteilt, wie die Probe gross ist, aus jedem die Mitte genommen. Deterministisch, damit ein Wiederanlauf dieselbe Menge trifft; die Mitte statt des Anfangs, damit die aelteste Zeile nicht in jeder Probe steht.
 
@@ -2350,6 +2430,7 @@ Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. G
 ### RechercheAgent (Chat 35)
 
 #### RECH2 — Bewertung findet immer Lücken ✅ Gelöst
+**Kategorie:** HGR
 **Entdeckt:** Chat 35, erster Ende-zu-Ende-Test
 **Symptom:** Das CPU-LLM bewertet Ergebnisse als unvollständig (Status "luecken" in allen 3 Iterationen). Iteration 3 wiederholt dieselben Queries wie Iteration 2.
 **Gelöst Chat 37:** Durch RECH1-Fix (2000 Tokens + komprimierte Zusammenfassung) mitgelöst. Bewertung sagt "fertig" nach Iteration 1.
@@ -2359,6 +2440,7 @@ Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. G
 ### Prompt & Antwortqualität
 
 #### ZEIT1 — Monat/Tag vertauscht bei Uhrzeit ✅ Gefixt Chat 41
+**Kategorie:** WIS
 **Entdeckt:** Chat 39, Claude API-Test (war als 5i bekannt, jetzt bestätigt)
 **Symptom:** "morgen um 08:00 Uhr" → `2026-10-04T08:00:00` statt `2026-04-10T08:00:00`.
 **Ursache:** Block 2 in `_text_normalisieren()` matchte "00" aus "08:00 Uhr" als Stunde.
@@ -2367,6 +2449,7 @@ Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. G
 ---
 
 #### STREAM1 — 'list' object has no attribute 'items' ✅ Gefixt Chat 39
+**Kategorie:** ANT
 **Entdeckt:** Chat 37, SSE-Stream
 **Doppel-Bug:**
 1. `event_generator()` crashte bei `chunk.items()` — LangGraph liefert nach Agent-Subgraph-Return manchmal Listen statt Dicts. Fix: `isinstance(chunk, dict)`-Guard.
@@ -2376,6 +2459,7 @@ Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. G
 ---
 
 #### REDIS-PERSIST — Redis ohne Persistenz ✅ Gefixt Chat 41
+**Kategorie:** BAU
 **Entdeckt:** Chat 37, Systemabsturz
 **Symptom:** Bei Rechner-Absturz (~alle 5 Tage) gingen KZG, Queues, Stack und Charakter-Hashes verloren.
 **Ursache:** Redis schrieb nach `/var/lib/redis-stack` (Default), Volume war auf `/data` gemountet.
@@ -2386,6 +2470,7 @@ Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. G
 ### Agent-System (Epic 11, Chat 22–29)
 
 #### RESUME-REJECT — Pflicht-Rückfrage führt Aktion trotz "Nein" aus ✅ Gefixt Chat 50
+**Kategorie:** ANT
 **Entdeckt:** Chat 49, Telegram-Konversation (16.04.2026 20:06–20:07)
 **Reproduziert:** Chat 49 dreimal — 20:07 ("Nein, ich muss das korrigieren"), 20:34 ("nein"), 20:46 ("Nein" nach "Vergiss den ganzen Charakter"). Jedes Mal mit Datenveränderung in der DB.
 **Symptom:** Nach einer Pflicht-Rückfrage ("Soll ich das ausführen? Charakter-Anweisung ändern (ID X): ...") antwortet der User mit einer Ablehnung. Nova antwortet: "Die Aktualisierung ist erfolgt" oder "Die Anweisung wurde ausgeführt". DB-Beweis: Alte Anweisung wird deaktiviert, neue angelegt (oder bei Delete: alle deaktiviert).
@@ -2409,6 +2494,7 @@ Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. G
 ---
 
 #### AGENT-RUECKFRAGE-LOOP — Resume-Rückfrage rekursiert bis Recursion-Limit ✅ Behoben Chat 106
+**Kategorie:** WIS
 
 Bei einer Notiz-Disambiguierungs-Rückfrage (`_resume_duplikat`) führt eine
 Antwort, die die Rückfrage nicht auflöst, zur Endlos-Rekursion: `resume`
@@ -2452,6 +2538,7 @@ nichts — alle neun nahmen den Agent-Pfad; der Loop braucht zwingend eine Rück
 ### Datenqualität
 
 #### CHAR-BEZ-STALE — Veraltetes Beziehungsprofil im Prompt (Chat 71) ✅ Behoben Chat 83
+**Kategorie:** CHA
 **Status:** ✅ Behoben Chat 83
 **Symptom:** Der GV-Node und der Responder erhalten als `nova_beziehung`:
   "Nova sieht ihren Nutzer als eine rein sachliche und effizienzorientierte Instanz,
@@ -2475,6 +2562,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 ---
 
 #### PROMO-CLUSTER-EI — Cluster-Promotion setzt EI-Felder auf Hardcoded-Defaults ✅ Behoben Chat 83
+**Kategorie:** GED
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Bei der Cluster-Promotion (mehrere KZG-Einträge → ein LZG-Eintrag) werden die EI-Metadaten-Felder (`intentionen`, `emotion`, `modus`, `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone`) nicht aus den Quell-Einträgen aggregiert, sondern hartcodiert auf Defaults gesetzt: `"neutral"`, `0.5`, `"[]"`, Leerstring. Bei der Einzel-Promotion werden die Felder korrekt durchgereicht — die Inkonsistenz zwischen den Pfaden ist nirgends dokumentiert.
 **Ursache:** `agents/promotion/agent.py:1207-1246` (Cluster-Pfad). Die Mehrheits-Aggregation gibt es nur für `beobachter` und `dimension`. Für die EI-Felder existiert kein Aggregations-Code.
@@ -2488,6 +2576,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 ---
 
 #### PROMO-INHALT-FALLBACK-UNSICHER — Single-Promotion fällt bei TTL-abgelaufenem KZG auf Themen-Tags zurück ✅ Behoben Chat 85
+**Kategorie:** GED
 **Entdeckt:** Chat 84 (M3-B-Side-Finding bei Promotion-Code-Audit)
 
 **Symptom:** In `agents/promotion/agent.py:_eintrag_verarbeiten` wird der LZG-INSERT-Inhalt aus dem KZG-Hash gelesen:
@@ -2512,6 +2601,7 @@ Wenn der KZG-Hash zur Promotion-Zeit nicht mehr existiert (TTL abgelaufen, manue
 ---
 
 #### PROMO-DUAL-IMPL — Zwei parallele Promotion-Implementierungen mit identischem Verhalten ✅ Behoben Chat 77
+**Kategorie:** GED
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Promotion existiert in zwei Codepfaden:
 - Aktiv: `agents/promotion/agent.py` (`PromotionAgent._eintrag_verarbeiten`, `_lzg_eintrag_schreiben`)
@@ -2527,6 +2617,7 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 **Behoben Chat 77:** Audit hat `LzgPromotionTask` als Karteileiche bestätigt (keine aktiven Aufrufer seit Chat 62). Datei `services/shadow_agent/tasks/lzg_promotion.py` (555 Zeilen, 23 KB) entfernt. Siehe Chat-77-Protokoll Abschnitt 1.
 
 #### THINK-MEM-LOOP — Thinker zykelt im memory_search-Tool ohne Konvergenz ✅ Behoben Chat 82
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 75, Reducer-Umbau Smoke-Test (Faktencheck-Turn)
 **Behoben:** Chat 82 (Per-Turn-Tool-Cache `ThinkerToolCache`, Stufe 1 + Stufe 2)
@@ -2547,6 +2638,7 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 ### Classify & Router (Chat 48)
 
 #### HALL2-Update — ~~Halluzinierte Bestätigung mit Datenverlust~~ ✅
+**Kategorie:** ANT
 **Gefixt:** Chat 54 — Architektur-Fix: Business-Logik aus dem Responder in den Planner verschoben. `_build_task_block()` erzeugt fertigen [AUFGABE]-Block im State (`task_block`). Responder konsumiert nur noch. REGELN-Guard: "Bestätige keine Aktion ohne Auftrag." Getestet: Router-Miss → Nova sagt ehrlich "kann ich nicht durchführen" statt zu halluzinieren.
 **Entdeckt:** Chat 48, Live-Konversation
 **Symptom:** "Ich hab den Ort direkt in den Termin eingetragen" — aber DB `details`-Feld leer, kein Agent-Dispatch im Log.
@@ -2564,6 +2656,7 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 ### Responder & Stilqualität (Chat 49)
 
 #### urllib3-RETRY — Automatischer HTTP-Retry erzeugt Doppel-Turns ✅
+**Kategorie:** ANT
 **Entdeckt:** Chat 61, 23. April 2026
 **Symptom:** Wenn der Server lange auf die LLM-Antwort wartet (in Chat 61: 55 Sekunden Pfad 1 durch GPU-Druck), wird der gleiche User-Prompt zweimal in die Session geschrieben. Zwei User-Turns mit identischem Inhalt, Zeitstempel-Differenz exakt 55 Sekunden. Kein Fehler im Log.
 **Ursache (Hypothese):** Die `requests`-Library (über urllib3) macht automatische Retries bei Connection-Reset oder ähnlichen Netzwerk-Events. Bei langen Verbindungen zum Docker-Server kann ein Connection-Wackler den Retry triggern — der Server sieht ihn als neuen Prompt.
@@ -2584,6 +2677,7 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 ### Chat 62 — Paar-Schema-Folgebugs
 
 #### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent ✅
+**Kategorie:** ANT
 **Entdeckt:** Chat 62
 **Symptom:** Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task ("Lumi Geschlecht" → `management_action=agent`, `management_target=notizen` → Dispatch → Fehler). Der Classify im NotizenAgent rejected korrekt ("kein Notiz-Auftrag"), aber der Umweg kostet einen LLM-Call und erzeugt eine Fehlermeldung im Gespraechsvektor.
 **Verwandt:** ROUTE-MISS1 — dort False Negative (Router uebersieht Auftrag), hier False Positive (Router halluziniert Auftrag). Beide zeigen, dass der Router kurze kontextabhaengige Prompts nicht sauber klassifiziert.
@@ -2595,6 +2689,7 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 ---
 
 #### PIXIE-GHOST — Pixie-Delivery fließt nicht durch Novas Verarbeitung ✅ (behoben Chat 110)
+**Kategorie:** HGR
 
 **Entdeckt:** Chat 65, 26. April 2026
 
@@ -2629,6 +2724,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ### Chat 72 — Dreischicht-Integration + GV-Refactoring (Folgebugs)
 
 #### ECHO-BUG — Nova wiederholt User-Nachricht wörtlich bei langen Sessions ✅ Behoben Chat 81
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 72, 01. Mai 2026
 **Behoben:** Chat 81, 09. Mai 2026 (durch Reducer-Umbau Chat 75, STRUCT-1 bis STRUCT-6)
@@ -2644,6 +2740,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ---
 
 #### CHAR-HASH-FILTER — `beobachter=assistant`-Einträge fließen in Charakter-Hash ✅
+**Kategorie:** CHA
 
 **Entdeckt:** Chat 72
 
@@ -2664,6 +2761,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ### Chat 92 — Block 1 Phase 3 Vorbereitung
 
 #### SHADOW-DELIVERY-BLOCKING-INVOKE — `compiled_agent_graph.invoke()` blockiert den Haupt-Event-Loop ✅ Behoben Chat 92
+**Kategorie:** HGR
 
 **Entdeckt:** Chat 92, Block 1 Phase 3 Vorbereitung — tangentialer Fund bei der Inventur der Embedding-Aufrufer.
 
@@ -2686,6 +2784,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ### Chat 92 — Block 1 Embedding-Konsolidierung (Folgebugs nebenbei behoben)
 
 #### STACK-PUSH-SILENT-EMBED — `stack_push` schrieb bei Embedding-Fehler einen leeren Vektor in Redis ✅ Behoben Chat 92
+**Kategorie:** HGR
 
 **Entdeckt:** Chat 92, Block 1 Phase 7 (Cleanup-Sprint G7)
 
@@ -2698,6 +2797,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ---
 
 #### SHADOW-DELIVERY-SILENT-EMBED — `_gespraechs_embedding` hatte dasselbe Silent-Skip-Pattern ✅ Behoben Chat 92
+**Kategorie:** HGR
 
 **Entdeckt:** Chat 92, Block 1 Phase 8 (G8)
 
@@ -2710,6 +2810,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ---
 
 #### LIFESPAN-EMBED-BLOCK — Lifespan-Embedding-Repair blockierte den Main-Event-Loop ✅ Behoben Chat 92
+**Kategorie:** BAU
 
 **Entdeckt:** Chat 92, Block 1 Phase 1/2 (G1/G2)
 
@@ -2728,6 +2829,7 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 ### Chat 106 — Doku-Code-Abgleich (Code-Funde)
 
 #### RESPONDER-VEKTOR-TOT — Novas Emotions-Vektor erreicht den Responder-Prompt nie ✅ Behoben Chat 106
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 106, systematischer Doku-Code-Abgleich (Fund über `novaberg-node-responder.md` §3/§5)
 
@@ -2769,6 +2871,7 @@ unsichtbar, weil der Block wie „Vektor absichtlich leer" aussah
 ### Chat 106 — Audit tote State-Keys
 
 #### THINKER-SELFTRIGGER-KANALLOS — Self-Trigger-Wert am Node-Übergang still verworfen ✅ Behoben Chat 106
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 106, Audit der flachen State-Keys nach dem Personality-Umbau
 (Gegenprobe über alle Schreibstellen).
@@ -2815,6 +2918,7 @@ den Erfolgsfall; der `MAX_SELF_TRIGGERS`-Deckel greift nicht mehr heimlich. **Ab
 ### Chat 106 — Tagesgeschäft (Befunde)
 
 #### GV-STRATEGIE-VEHIKEL-LEER — leere Strategie/Vehikel ohne Log ✅ Behoben Chat 114
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 106, Tagesgeschäft. **Prio mittel.**
 
@@ -2855,6 +2959,7 @@ dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
 ### Chat 107 — init.sql-Audit (Code-Fund)
 
 #### GV-ENTITY-HOP-TOT — Entity-Kontext im Gesprächsvektor seit Einführung tot ✅ Behoben Chat 107
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 107, init.sql-Audit (systematischer Abgleich aller SQL-Literale im Code gegen das in `db/init.sql` + `agents/*/init.sql` definierte Schema, Gegenprobe gegen die Live-DB).
 
@@ -2877,6 +2982,7 @@ dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
 ### Chat 107 — Embed-Text-Vereinheitlichung (Code-Fund)
 
 #### RECHERCHE-KZG-INHALT-LEER — Recherche-KZG-Einträge tragen Vektor ohne Text ✅ Behoben Chat 107
+**Kategorie:** HGR
 
 **Entdeckt:** Chat 107, Sichtung aller Embed-Text-Kompositionsstellen für die `embed_text_bauen`-Vereinheitlichung (Commit `eb53103`).
 
@@ -2898,6 +3004,7 @@ dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
 ### Chat 107 — Recherche-KZG-Folgeaudit
 
 #### RECHERCHE-WISSEN-ERREICHT-LZG-NIE — Recherche-Wissen erreichte das Langzeitgedächtnis nie ✅ Behoben Chat 107
+**Kategorie:** GED
 
 **Entdeckt:** Chat 107, Folge-Audit zu RECHERCHE-KZG-INHALT-LEER (Frage: „Was passiert mit diesen Einträgen?").
 
@@ -2914,6 +3021,7 @@ dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
 ### Chat 107 — Randbefund der Schwellwert-Kalibrierung (A3)
 
 #### GV-RESONANZ-FALLBACK-LUEGT — erfundener Resonanz-Wert verkleidet „nicht anwendbar" als „passt hervorragend" ✅ Behoben Chat 107
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 107, Randbefund bei A3 (Schwellwert-Kalibrierung) — aufgefallen, weil 0.5 im neuen Vektorraum ein HOHER Wert ist (p99 = 0.57). Ab dem Modellwechsel hätte der Fallback jeden Kandidaten durchgewinkt — **angelastet worden wäre es dem neuen Embedding.**
 
@@ -2928,6 +3036,7 @@ dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
 ### Chat 107 — Phase-B-Abnahme
 
 #### IVFFLAT-RECALL-KOLLAPS — der Vektor-Index hat das LZG-Retrieval seit Tag eins verhungern lassen ✅ Behoben Chat 107
+**Kategorie:** GED
 
 **Entdeckt:** Chat 107, Phase-B-Abnahme: nach der Migration `anker=0/3` bei jedem Turn, `top_cosine=nan`. Der NaN-Verdacht (Nullvektor) war eine Fährte des eigenen Logs — siehe unten.
 
@@ -2946,6 +3055,7 @@ dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
 ### Chat 110 (26.07.2026) — Impuls-Pfad, Gedächtnis-Duplikate und blinde Stellen
 
 #### SALIENZ-OHNE-PIPELINE-LOG — der Wert, der über Erinnern entscheidet, ist forensisch unsichtbar ✅
+**Kategorie:** GED
 
 **Zustand:** behoben — gegen HEAD `9bcd214` gemessen am 24.08.2026. `graph/nodes/salience.py` schreibt fünf Arten von Einträgen ins `pipeline_log` und hängt in einem Span; der Docstring von `salienz_bewerten` nennt diese Kennung als Anlass (Chat 111). **Am Bestand gezählt statt am Code geschlossen:** 13.326 Zeilen des Salienz-Knotens über alle drei Graphen — `character` 4887/804/804/800/9, `user` 1933/619/619/617/1, `agent` 1387/219/219/208 (berechnung · span_start · switch · span_end · fehler), erste am 27.07.2026, letzte am 24.08.2026.
 
@@ -2976,6 +3086,7 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 ---
 
 #### `RUECKWEG-SETZT-KOPIE-NEBEN-ORIGINAL` — der Fund stand schon da ✅
+**Kategorie:** WIS
 
 **Zustand:** behoben — gebaut und gemessen am 24.08.2026. `absatz_bestimmen` verlangt jetzt, dass ein Absatz mindestens **einen Satz** mitbringt, der noch nicht im Text steht (`_bringt_neues`); bringt er keinen, wird er als *steht schon da* behandelt. Zeugen `tests/test_rueckweg_dublette.py` (24), zwei Gegenproben (**6 vorhergesagt / 6 gezählt** am Riegel, **5 vorhergesagt / 2 gezählt** an der Schwelle), Suite `Ran 2272 tests — OK`, 0 übersprungen.
 
@@ -3031,6 +3142,7 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 ---
 
 #### `IMPULS-FAELLT-AUS-DEM-VERLAUF` — Nova schreibt ihren eigenen Vorschlag dem Nutzer zu ✅
+**Kategorie:** ANT
 
 **Zustand:** behoben — gebaut und gemessen am 24.08.2026. Der Sprecher kommt jetzt aus dem Feld `herkunft`, nicht aus der Position in der Liste. Zeugen `tests/test_verlauf_sprecher.py` (24), zwei Gegenproben (**9 vorhergesagt / 8 gezählt** an der Paarbildung, **4 vorhergesagt / 8 gezählt** an der Sprecherbezeichnung), Suite `Ran 2248 tests — OK`, 0 übersprungen.
 
@@ -3091,6 +3203,7 @@ Beim **Zusammenfasser** wiegt es am schwersten — seine Ausgabe überdauert den
 ---
 
 #### KONTAMINATIONSFILTER-TOT — der Filter prüft auf einen Marker, den niemand setzt ✅
+**Kategorie:** ANT
 
 **Zustand:** behoben — am 24.08.2026 **entfernt statt repariert**, und die ausstehende Entscheidung ist damit getroffen. Von den drei Möglichkeiten des Befundes (streichen · auf `reiz_herkunft` umhängen · als bewusste Nicht-Filterung dokumentieren) ist die **erste** gewählt, aus einem Grund, den der Befund noch nicht kannte: **Der Impuls gehört in den Verlauf.**
 
@@ -3123,6 +3236,7 @@ Der Marker `[Nova-Impuls]` wird im gesamten Server **nirgends gesetzt** — die 
 ---
 
 #### HASH-DIRTY-SETZER-DRIFT — fünf Setzer, drei verschiedene Bauarten ✅
+**Kategorie:** CHA
 
 **Zustand:** behoben — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Der beschriebene Zustand existiert nicht mehr.** Von fünf Setzern sind drei übrig (`memory/kzg.py:546`, `agents/kzg/queues.py:135`, `agents/synapsen_promotion/agent.py:472`); `agents/promotion/agent.py` setzt das Flag an keiner Stelle mehr. **Alle drei stehen hinter einem `PIXIE_AKTIV`-Gate** — auch `queues.py`, dessen fehlendes Gate der Befund war: `queues_befuellen` kehrt bei `not PIXIE_AKTIV` schon in Zeile 43 zurück, und der Setzer steht in derselben Funktion.
 
@@ -3153,6 +3267,7 @@ Der Marker `[Nova-Impuls]` wird im gesamten Server **nirgends gesetzt** — die 
 ### Chat 111 (27.07.2026) — Salienz-Sprint
 
 #### SALIENZ-PROMPT-NUTZER-SCHABLONE — der Prompt weist an, den Hintergrund zu bewerten ✅
+**Kategorie:** GED
 
 **Entdeckt:** Chat 111, beim Nachgehen dreier identischer Salienzwerte für drei verschiedene Absätze.
 
@@ -3203,6 +3318,7 @@ FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
 ### Chat 112 (27.07.2026) — Salienz-Formel
 
 #### SALIENZ-WERT-UNGEPRUEFT-FORMATIERT — eine Zeichenkette im Salienzfeld reißt den Turn ab ✅
+**Kategorie:** GED
 
 **Entdeckt:** Chat 112, beim Schreiben eines Tests für den Fall „das Modell liefert etwas Unlesbares". Der Test ist nicht rot geworden — der ganze Turn ist abgestürzt.
 
@@ -3237,6 +3353,7 @@ ValueError: Unknown format code 'f' for object of type 'str'
 ### Chat 114 (28.07.2026) — GV-Vollaudit
 
 #### GV-TIEFE-DEFAULT-BLIND — die Tiefe-Achse maß überwiegend ihren eigenen Default ✅ Behoben Chat 114
+**Kategorie:** ANT
 
 **Klasse:** Default, der wie ein echter Wert aussieht. Severity **Hoch** — die Achse
 entscheidet über Sektor und Cluster und damit über das gesamte Strategie-Repertoire.
@@ -3266,6 +3383,7 @@ Zeuge ist die Prompt-Datei, nicht der Code, der sie erfüllen soll. Live belegt
 statt aus dem Default.
 
 #### GV-ACHSEN-ZWEI-ZEITSTAENDE — die beiden Beine des Nodes standen wieder auf verschiedenen Ständen ✅ Behoben Chat 114
+**Kategorie:** ANT
 
 **Klasse:** Ein Wert, dessen Uhr in einem Feld liegt, das jemand anders berührt — dieselbe
 Fehlerklasse, die Chat 113 eine Node-Position früher geschlossen hat. Severity **Hoch**.
@@ -3297,6 +3415,7 @@ beobachtbar ist. Tests: `tests/test_gv_zeitstand.py` (6). Live belegt 28.07.2026
 `GV-Achsen: E=1(1.00) … V=1(begeisterung)`.
 
 #### GV-ENTITY-HOP-FINDET-NICHTS — 45 von 45 Läufen ohne einen einzigen Fakt ✅ Behoben Chat 115 (umgehängt, nicht repariert)
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio hoch.** **Untersucht und geschlossen Chat 115.**
 
@@ -3400,6 +3519,7 @@ ERINNERUNGEN]` im GV-Prompt vorhanden, `[VERWANDTE FAKTEN]` nicht mehr. Seitenef
 Messfenster: 0 `timeline`, 0 `notizen`, 0 `fakten`.
 
 #### GV-REGISTER-OHNE-ZUG — Novas Register wurde konserviert, aber nie zum Nutzer gezogen ✅ Behoben Chat 114
+**Kategorie:** ANT
 
 **Klasse:** Halb gebauter Mechanismus. Die konservierende Hälfte stand seit jeher, die
 zweite Kraft fehlte. Severity **Hoch** — betrifft zwei der sechs Achsen und damit Cluster
@@ -3468,6 +3588,7 @@ Chat 106 geschlossen und in seiner Ursache korrigiert (GV-STRATEGIE-VEHIKEL-LEER
 Suite 296 → 349 Tests, grün, 0 übersprungen.*
 
 #### GV-METADATEN-ERREICHEN-DIE-SPRACHE-NICHT — der Korridor stand richtig und wurde überschrieben ✅ Behoben Chat 114
+**Kategorie:** ANT
 
 **Klasse:** Prompt-Architektur. Eine korrekte Anweisung an der falschen Stelle. Severity
 **Hoch** — sie entwertete die gesamte Registermechanik des Nodes.
@@ -3531,6 +3652,7 @@ belegt, weiterhin nicht gebaut.
 ### Chat 116 (29.07.2026) — GV-Panel
 
 #### GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE — der Neugier-Balken meldete eine Krise, wenn nur der Vektor kurz war ✅ Behoben Chat 116
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 116, am laufenden Client beobachtet: Der Neugier-Balken des GV-Panels
 stand über viele Turns hinweg auf 0. **Prio mittel.**
@@ -3586,6 +3708,7 @@ ohne Kennzeichnung. Am 29.07.2026 um 06:20:41 live vorgeführt: Ein Turn mit `GV
 ließ den 45 Minuten alten Blob stehen.
 
 #### GV-INITIATIVE-KIPPT-NIE — eine Achse, die über 15 Läufe denselben Wert trug ✅ Behoben Chat 116
+**Kategorie:** ANT
 
 **Entdeckt:** Chat 116, bei der Frage, ob die Repertoire-Verteilung etwas ausschließt. **Prio hoch** — die Achse ist ein Drittel des Sektor-Index.
 
@@ -3622,6 +3745,7 @@ ließ den 45 Minuten alten Blob stehen.
 
 ---
 #### VERTIEFEN-AUFTRAEGE-OHNE-THEMA — ein Drittel aller `vertiefen`-Auftraege traegt keinen Gegenstand ✅ offen
+**Kategorie:** HGR
 
 **Zustand:** geschlossen am 25.08.2026 — **der Befund gilt fuer die genannte Auftragsart nicht mehr, und er ist dabei gewandert.** Ueber `shadow_auftrag` nach Auftragsart gruppiert: `vertiefen` **0 von 75** ohne Thema statt 96 von 269. Die 80 themenlosen Zeilen des heutigen Bestands stehen bei `recherche` — und stammen saemtlich von der Testkennung, nicht aus dem Betrieb (Fundliste, 25.08.2026). **Eine Zaehlung ohne Gruppierung haette 82 gefunden und den Eintrag bestaetigt.**
 
@@ -3641,6 +3765,7 @@ ließ den 45 Minuten alten Blob stehen.
 **Nachtrag vom 15.08.2026, aus der Fundliste uebernommen.** **141 `vertiefen`-Aufträge tragen ein leeres `thema`, der Gegenstand steht als Fließtext in `kontext`.** Gemessen um 13:52 UTC: 145 von 1036 Aufträgen ohne Thema (141 `vertiefen`, 4 `nachfragen`). Beide Schreibpfade setzen `thema=themen_str` aus dem KZG-Eintrag — ist die Themenliste dort leer, entsteht ein Auftrag ohne Gegenstand, während `kontext` einen mehrere tausend Zeichen langen Fließtext trägt. **Die Folge zeigt sich erst bei der geplanten Dublettenerkennung:** Über `aufgabe` + `thema` bilden die 141 **eine einzige** Gruppe; alle übrigen Gruppen im Bestand haben höchstens zwei Einträge. `novaberg-queue-verfall_k.md` §6.2 nimmt leere Themen deshalb von der Erkennung aus — eine Notmaßnahme, die den Schreibpfad nicht behebt.
 
 #### QUEUE-PUSH-OHNE-PRIORITAET ✅ offen
+**Kategorie:** HGR
 
 **Zustand:** behoben am 15.08.2026 — gegen HEAD `b8e9543` nachgemessen am 25.08.2026. `prioritaet` ist Pflichtparameter **ohne Vorgabewert** (`services/shadow_agent/utils.py`), und `memory/kzg.py` uebergibt die Ausloese-Salienz mit einem Kommentar, der genau diesen Befund nennt. Zeuge: `tests/test_queue_salienz_pflicht.py`. **Am Bestand belegt:** Von den 144 Auftraegen seit dem 17.08.2026 traegt **keiner** mehr die 0; die 233 im Bestand stammen saemtlich aus der Zeit davor und sind Rueckstand, nicht Zufluss.
 
@@ -3651,6 +3776,7 @@ ließ den 45 Minuten alten Blob stehen.
 **Prioritaet:** mittel.
 
 #### DISPATCH-SALIENZ-DEFAULT ✅ offen
+**Kategorie:** HGR
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. `services/pixie/dispatch.py` liest den Wert ueber **drei** Namen mit Vorrang: `salienz_decay` → `salienz` → `prioritaet`. Der beschriebene Zweig, der nur `salienz` kannte und deshalb fuer jeden Shadow-Auftrag 0.0 ergab, existiert nicht mehr.
 
@@ -3661,6 +3787,7 @@ ließ den 45 Minuten alten Blob stehen.
 **Prioritaet:** mittel.
 
 #### CHARAKTERAGENT-AUSGEHUNGERT ✅ offen — Symptom am 16.08.2026 nicht mehr auffindbar
+**Kategorie:** HGR
 
 **Zustand:** geschlossen am 25.08.2026 — **das Symptom war seit dem 16.08.2026 nicht mehr auffindbar, und die Marke wurde neun Tage lang nicht gezogen.** Der Eintrag traegt die Nachmessung seit damals im eigenen Koerper: 22 Gewinne ueber 39 h, zuletzt 0,37 h Wartezeit. Von *vier Heartbeats in Folge leer* ist nichts geblieben. **Die Ursache bleibt unbelegt** — vermutlich die Zwei-Spuren-Trennung vom 09.08.2026; wer sie zurueckbaut, prueft diesen Eintrag erneut.
 
@@ -3673,6 +3800,7 @@ ließ den 45 Minuten alten Blob stehen.
 **Prioritaet:** hoch.
 
 #### EIGENER-GEDANKE-BEHAUPTET-SCHWEIGEN ✅ offen
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Der Block haengt an einem Tor: `graph/nodes/responder.py` haengt `[EIGENER GEDANKE]` nur an, wenn `reiz_ist_eigener_gedanke(state)` gilt. Ein Nutzer-Turn bekommt ihn nicht mehr, und der Thinker-Retry ebenfalls nicht — beide Faelle sind eigens bezeugt (`tests/test_responder_eigener_gedanke.py`).
 
@@ -3683,6 +3811,7 @@ ließ den 45 Minuten alten Blob stehen.
 **Prioritaet:** mittel.
 
 #### CLIENT-OFFENE-FRAGE-UNSICHTBAR ✅ offen
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die fehlende Anzeige ist gebaut: Trifft eine Antwort mit fremder Zuordnung ein, setzt `client/ui/main_window.py` sie als *unzugeordnete Antwort* ab, mit dem Vermerk, dass die letzte Nachricht unbeantwortet blieb. Der Riegel verhinderte die falsche Zuordnung schon vorher; **sichtbar** ist die fehlende Antwort seitdem.
 
@@ -3695,6 +3824,7 @@ ließ den 45 Minuten alten Blob stehen.
 **Prioritaet:** mittel.
 
 #### CRUD-REACTIVATE-STAMP — Reactivate setzt deaktiviert_am nicht auf NULL zurück
+**Kategorie:** CHA
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — nicht behoben, sondern ohne Gegenstand. `charakter_anweisungen` traegt heute `id`, `user_id`, `anweisung`, `erstellt_am`, `aktiv` und `geaendert_am`; die Spalte `deaktiviert_am`, um die es geht, gibt es nicht. Die Invariante `aktiv=TRUE ⇒ deaktiviert_am IS NULL` hat damit keinen Traeger mehr. **Der Schwesterbefund `CRUD-REACTIVATE-COEXIST` steht dagegen weiter und ist am 25.08.2026 im Bestand belegt.**
 **Entdeckt:** Chat 49, Test "Reactivate ID 8"
@@ -3707,6 +3837,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### FAK1 — Temporalität in Fakten
+**Kategorie:** WIS
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — `fakten` traegt 0 Zeilen. Siehe `FAKTEN-RAUSCH`. Die Frage nach `permanent` gegen `situativ` bleibt offen, sobald der Speicher wieder befuellt wird.
 **Lösung:** Klassifikation: `permanent` → Fakten-Tabelle, `situativ` → nur KZG.
@@ -3714,6 +3845,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### D9 — Fakten-Deduplizierung
+**Kategorie:** WIS
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — `fakten` traegt 0 Zeilen. Siehe `FAKTEN-RAUSCH`. Eine Deduplizierung ohne Bestand hat keinen Gegenstand.
 **Lösung:** Embedding-basierter Ähnlichkeitscheck vor dem Schreiben.
@@ -3721,6 +3853,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### FAK-LECK — Charakter-Anweisungen als User-Fakten extrahiert
+**Kategorie:** WIS
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — `fakten` traegt 0 Zeilen, die Extraktion laeuft nicht. Siehe `FAKTEN-RAUSCH`. Der Befund ist nicht widerlegt: Eine Extraktion, die Anweisung an die Figur und Aussage ueber den Menschen nicht unterscheidet, wuerde dasselbe wieder tun.
 **Entdeckt:** Chat 40
@@ -3732,6 +3865,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### FAKTEN-RAUSCH — Fakten-Enrichment produziert massenhaft Rauschen Deaktiviert
+**Kategorie:** WIS
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — nicht behoben, sondern ohne Gegenstand. Die Tabelle `fakten` traegt **0 Zeilen**, und der Anreicherungspfad, der das Rauschen erzeugte, ist stillgelegt. **Wer die Fakten-Anreicherung wieder einschaltet, holt diesen Befund mit** — der Eintrag bleibt deshalb stehen, zusammen mit `FAK-LECK`, `FAK1`, `D9` und `ENRICHER-DUP`, die alle denselben Gegenstand hatten.
 **Entdeckt:** Chat 71
@@ -3743,6 +3877,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### CHAR-ID4-ORPHAN — Charakter-Eintrag mit gebrochener bi-temporaler Invariante
+**Kategorie:** CHA
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — nicht behoben, sondern ohne Gegenstand. Die Tabelle `charakter_identitaet`, in der die verletzte Invariante gemessen wurde, existiert nicht mehr; der Agent schreibt heute nach `charakter_anweisungen`, und die kennt weder `deaktiviert_am` noch die bi-temporale Bauart. **Wer die Invariante zurueckholt, holt diesen Befund mit** — der Eintrag bleibt deshalb stehen.
 **Entdeckt:** Chat 49, DB-Inspektion
@@ -3761,6 +3896,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ✅ Teilweise behoben Chat 84
+**Kategorie:** GED
 
 **Zustand:** behoben — gegen HEAD `b8e9543` und den Bestand nachgemessen am 25.08.2026. Die beiden namentlich genannten Felder kommen im Langzeitgedaechtnis an, und zwar als **abfragbare Spalten**: `lzg_knoten.themen` ist in **2594 von 3027** Knoten gefuellt, `lzg_knoten.gedaechtnistyp` in **3027 von 3027**. Der Pfad, der sie verwarf, existiert nicht mehr — `agents/promotion/` ist von `agents/synapsen_promotion/` abgeloest.
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
@@ -3781,6 +3917,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### ENRICHER-DUP — Fakten werden mehrfach in den Enricher-Kontext injiziert
+**Kategorie:** WIS
 
 **Zustand:** **gegenstandslos seit dem 25.08.2026** — die mehrfach eingespeisten Fakten kommen aus einer Tabelle, die heute 0 Zeilen traegt; der Weg ist stillgelegt. Siehe `FAKTEN-RAUSCH`.
 **Entdeckt:** Chat 62, Beobachtung im memory_context-Log
@@ -3793,6 +3930,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id` ✅
+**Kategorie:** CHA
 
 **Zustand:** behoben — am Schema nachgesehen am 25.08.2026. `ziele` traegt die Spalte `character_id`.
 
@@ -3811,6 +3949,7 @@ ließ den 45 Minuten alten Blob stehen.
 ---
 
 #### SHADOW-DELIVERY-DATENVERLUST — Stack-Löschung auf unverifiziertem Send ✅
+**Kategorie:** HGR
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die Reihenfolge ist umgedreht: `services/shadow_delivery.py` entfernt den Stack-Eintrag **erst, nachdem** der Impuls seinen Weg genommen hat, und kehrt bei Misserfolg ohne Loeschung zurueck — der Eintrag wird beim naechsten Zyklus erneut versucht. Der Kommentar an der Stelle sagt den Grund: *„Nichts halb Gedachtes verlaesst das System."*
 
@@ -3836,6 +3975,7 @@ Verbindungen gelesen wird — das Log widerlegt sich selbst in derselben Zeile.
 **Auswirkung:** Stiller Verlust von Shadow-Impulsen bei WebSocket-Störung.
 
 #### PIXIE-DISPATCH-STILLER-VERWURF — Retry-Pfad mit `except: pass` und falschem Kommentar ✅
+**Kategorie:** HGR
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Der Zweig traegt heute eine Fehlerzeile und einen Kommentar, der den alten Zustand ausdruecklich benennt: *„Frueher schwieg dieser Zweig (`except Exception: pass`)"*. Ein gescheiterter Auftrag bleibt in der Arbeitsliste und ist danach auffindbar.
 
@@ -3853,6 +3993,7 @@ das Log klingt nach No-op, real ist es ein Löschvorgang.
 **Auswirkung:** Möglicher stiller Verlust von Queue-Einträgen (lzg_promotion, recherche, …).
 
 #### KZG-SEGMENT-DUPLIKAT — n Salienz-Segmente erzeugen n identische Gedächtnis-Einträge ✅
+**Kategorie:** GED
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Jedes Segment traegt seinen eigenen Text durch die ganze Kette; der Zeuge `tests/test_segment_durchstich.py` prueft alle drei Stationen einzeln — wer ablegt, wer weiterreicht, wer liest — und sichert die Idempotenz ueber die Segmente ausdruecklich zu.
 
@@ -3892,6 +4033,7 @@ Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zog nicht d
 ---
 
 #### PROMO-QUEUE-DUBLETTEN — derselbe KZG-Key wird mehrfach eingereiht ✅
+**Kategorie:** GED
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. `promotion_queue_push` prueft die Queue vor dem Einreihen auf denselben Schluessel und gibt `False` zurueck, statt ein zweites Mal zu schreiben. Ein unlesbarer Fremdeintrag bricht die Pruefung dabei nicht ab, sondern wird benannt und uebergangen — die Dublettenpruefung kann nicht durch einen fremden Datensatz blockiert werden.
 
@@ -3918,6 +4060,7 @@ Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zog nicht d
 ---
 
 #### GV-DREISCHICHT-BLOCK-OHNE-AUFTRAG — Werkzeuge im Prompt, aber kein Auftrag, sie zu benutzen ✅
+**Kategorie:** ANT
 
 **Zustand:** behoben — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Der Block wird nicht mehr unbedingt gebaut: `graph/nodes/gespraechsvektor.py` haengt ihn nur an, wenn die Strategie aktiv **und** die Aufnahmebereitschaft groesser null ist. Werkzeuge ohne Auftrag stehen damit nicht mehr im Prompt.
 
@@ -3936,6 +4079,7 @@ in diesem Zweig nicht.
 Bedingung wie der Strategie-Auftrag, oder der Auftrag gehört zum Block.
 
 ### `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` — zeitweise kein Name
+**Kategorie:** ANT
 
 **Zustand:** **gegenstandslos seit dem 24.08.2026** — der Telegram-Kanal ist abgeschaltet, der Behaelter `ki_telegram` gestoppt und entfernt. Der Befund ist damit **nicht behoben, sondern ohne Gegenstand**: `_nachricht_senden` faengt weiter jede Ausnahme und kehrt zurueck, aber der Pfad laeuft nicht mehr. **Wer den Kanal zurueckholt, holt diesen Defekt mit** — der Eintrag bleibt deshalb stehen statt geschlossen zu werden. Davor: offen, gegen HEAD `00c16b6` gehalten am 20.08.2026.
 
@@ -3953,6 +4097,7 @@ Der Eintrag ist an diesem Tag behoben worden; die Kennung bleibt unveraendert,
 weil Verweise darauf zeigen.
 
 #### GV-LAENGE-RUNDUNG-ZUR-GERADEN — ein Viertel der Nullen entsteht aus Pythons Rundungsregel ✅ behoben am 12.09.2026
+**Kategorie:** ANT
 
 **Symptom.** Turns bekommen Vektorlänge 0 und damit kein Vorausdenken, obwohl die Rechnung 0,5 ergeben hat.
 
@@ -4006,6 +4151,7 @@ weil Verweise darauf zeigen.
 Am selben Tag behoben; die Kennung bleibt, weil Verweise darauf zeigen.
 
 ### `MODUS-KREATIV-WIRD-NIE-VERGEBEN` — der einzige hebende Modus ist im Perzeptionsmodell tot ✅ behoben am 12.09.2026
+**Kategorie:** CHA
 
 **Zustand:** ✅ **behoben am 12.09.2026.** Beide Perzeptions-Prompts tragen eine Wertelegende fuer `modus` — zehn Werte mit Auswahlkriterium statt einer Aufzaehlung —, und der Kanon-Zug loest seit demselben Tag Uebersetzungen auf (`MODUS_SYNONYM_MAP`).
 
