@@ -1388,11 +1388,20 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 ---
 
 
-## Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kantenschicht unter Live-Last bestätigen (Chat 98)
+## Sprint: ~~SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kantenschicht unter Live-Last bestätigen (Chat 98)~~ — abgenommen am 19.09.2026
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. Seit dem 19.09.2026 eine der zwei Bedingungen für den Abschluss von Synapsen P4 (`novaberg-memory-synapsen_e.md`, Abschnitt G). Seit Mai läuft der Agent im Betrieb, der Bestand für die Abnahme ist also da: Gemessen wird aus der Datenbank, nur lesend, ohne Messturns.
+**Zustand:** abgeschlossen am 19.09.2026 — beide Schichten tragen, gemessen aus der Datenbank, nur lesend, ohne Messturns. Damit ist die erste der zwei Bedingungen für den Abschluss von Synapsen P4 erfüllt (`novaberg-memory-synapsen_e.md`, Abschnitt G); offen bleibt `KZG-ERSTELLT-AM-PARSE-HÄRTE`. ~~offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.~~
+
+**Messung (19.09.2026, 20:37 UTC, `[gemessen]`, laufende DB; Abfragen, Auswertung und zweite Kontrolle in `labor/2026-09-19_synapsen-live-verify/`).** Soll ist jedes Knotenpaar derselben Paar-Partition mit beiden Knoten aktiv, das die Regel in `server/memory/lzg_kanten.py` (`schichten_ermitteln`) zu einer Kante verpflichtet: für die Entität mindestens eine gemeinsame `entitaet_ids`, für die Timeline beide mit `timeline_id`, gleiche `precision` und eine Tagesdistanz innerhalb der Toleranz (7 bei `minute`, 21 bei `day`). Ist heißt, dass beide Richtungen die Schicht in `verbindungs_gruende` tragen.
+
+| Schicht | Kanten (gerichtet) | Soll (Paare) | Ist | fehlt |
+|---|---|---|---|---|
+| Entität | 3.662 | 1.831 | 1.831 | 0 |
+| Timeline | 8.276 | 4.137 | 4.137 | 0 |
+
+Alle Kanten beider Schichten entstanden binnen zehn Minuten nach der Anlage des jüngeren Knotens, also im Betrieb durch Trigger 1 (`kanten_fuer_neuen_knoten_bilden`) und nicht durch einen Rebuild. Die Entitätskanten reichen vom 27.07., die Timeline-Kanten vom 29.07., beide bis zum 18.09.2026. Bestand: 4.555 Knoten (alle aktiv), 638.326 Kanten (Embedding 586.590, Themen 61.370, nur gezählt). **Gegenprobe:** An einer Kopie der Zahlen ist je Schicht ein verpflichtetes Paar auf *ohne Kante* gesetzt; die Auswertung meldet genau dieses Paar als fehlend. **Nachgerechnet** mit der Funktion `schichten_ermitteln` selbst statt mit der SQL-Fassung der Regel: dasselbe Soll, 0 fehlend. **In der Gegenrichtung** trägt ein Paar eine Timeline-Kante, dessen Knoten heute keine `timeline_id` mehr haben, weil die Timeline-Zeilen nach der Kantenbildung gelöscht wurden (Fundliste, 19.09.2026).
 
 Entitäts- und Timeline-Kantenschicht des Synapsen-Netzes sind unter Live-Last noch nicht verifiziert. Embedding- und Themen-Schicht sind bestätigt (Migration: 110 Kanten; Live: 55+ Kanten an den ersten Live-Knoten 91–101).
 
