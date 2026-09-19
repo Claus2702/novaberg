@@ -7,11 +7,14 @@
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 115 |
+| 2026-09 | [`novaberg-roadmap.md`](novaberg-roadmap.md) | laufend, dort gezählt |
+| 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 187 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | **novaberg-roadmap-2026-05.md** ← diese Datei | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
 | 2026-03 | [`novaberg-roadmap-2026-03.md`](novaberg-roadmap-2026-03.md) | 1 |
+
+Kapitelzahlen gezählt am 19.09.2026, 15:12 UTC: laufende Datei mit `grep -cE '^## [0-9]{2}\.09\.2026'`, alle anderen Dateien mit `grep -c '^## '`.
 
 ---
 

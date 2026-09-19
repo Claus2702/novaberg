@@ -1,11 +1,12 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 908 Abschnitte in 5 Dateien — 396 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 909 Abschnitte in 6 Dateien — 397 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 645 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 284 |
+| 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +20,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 908 Marken, 908 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 909 Marken, 909 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -29,13 +30,14 @@
 
 **Gerechnet, nicht beurteilt:** Das Kapitel nennt einen Monat, und keiner seiner datierten Abschnitte liegt darin.
 
-- **26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen** (`novaberg-roadmap.md`) traegt `2026-08`, seine 1 datierten Abschnitte reichen von `2026-07` bis `2026-07`.
+- **26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen** (`novaberg-roadmap-2026-08.md`) traegt `2026-08`, seine 1 datierten Abschnitte reichen von `2026-07` bis `2026-07`.
 
 ---
 
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 15:14 UTC — der August ist aus der laufenden Chronik ausgelagert](novaberg-roadmap.md#19092026-1514-utc--der-august-ist-aus-der-laufenden-chronik-ausgelagert) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 14:30 UTC — vier Konzepte in drei Teilen, die Herkunft geprüfter Beispiele vermerkt](novaberg-roadmap.md#19092026-1430-utc--vier-konzepte-in-drei-teilen-die-herkunft-geprüfter-beispiele-vermerkt) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 12:14 UTC — das Angebot gilt pro Sache, und die Bedarfsaussage im Betrieb 🔧](novaberg-roadmap.md#19092026-1214-utc--das-angebot-gilt-pro-sache-und-die-bedarfsaussage-im-betrieb) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 11:36 UTC — eine Ablehnung als Nicht-Auftrag sperrt weder Gespräch noch Angebot 🔧](novaberg-roadmap.md#19092026-1136-utc--eine-ablehnung-als-nicht-auftrag-sperrt-weder-gespräch-noch-angebot) |
@@ -318,368 +320,368 @@
 | (2026-09-01) | laufend | ### | · [Die Auffrischung erreichte den haeufigsten Fall nicht](novaberg-roadmap.md#die-auffrischung-erreichte-den-haeufigsten-fall-nicht) |
 | (2026-09-01) | laufend | ### | · [Was zehn Turns gezeigt haben](novaberg-roadmap.md#was-zehn-turns-gezeigt-haben) |
 | (2026-09-01) | laufend | ### | · [Und ein bekannter Defekt zeigte sich im Betrieb](novaberg-roadmap.md#und-ein-bekannter-defekt-zeigte-sich-im-betrieb) |
-| 2026-08-31 | laufend | ## | [31.08.2026, 22:25 UTC — Die Praegungsschicht bekommt ihre Verstaerkung ✅](novaberg-roadmap.md#31082026-2225-utc--die-praegungsschicht-bekommt-ihre-verstaerkung) |
-| (2026-08-31) | laufend | ### | · [Der Faden trug das falsche Embedding](novaberg-roadmap.md#der-faden-trug-das-falsche-embedding) |
-| (2026-08-31) | laufend | ### | · [Die Naehe-Schwelle, und was die Nulllinie sagt](novaberg-roadmap.md#die-naehe-schwelle-und-was-die-nulllinie-sagt) |
-| (2026-08-31) | laufend | ### | · [Die Faltung stand als Tabelle da, nicht als Formel](novaberg-roadmap.md#die-faltung-stand-als-tabelle-da-nicht-als-formel) |
-| (2026-08-31) | laufend | ### | · [Zwei Grenzen, beide benannt](novaberg-roadmap.md#zwei-grenzen-beide-benannt) |
-| (2026-08-31) | laufend | ### | · [Und der Abschluss war zuerst behauptet, nicht ausgefuehrt](novaberg-roadmap.md#und-der-abschluss-war-zuerst-behauptet-nicht-ausgefuehrt) |
-| 2026-08-31 | laufend | ## | [31.08.2026, 21:35 UTC — Drei Schwellen, die eine Lage beschrieben und eine Zahl trugen ✅](novaberg-roadmap.md#31082026-2135-utc--drei-schwellen-die-eine-lage-beschrieben-und-eine-zahl-trugen) |
-| (2026-08-31) | laufend | ### | · [Zwei Grundgesamtheiten, und beide waren zuerst falsch](novaberg-roadmap.md#zwei-grundgesamtheiten-und-beide-waren-zuerst-falsch) |
-| (2026-08-31) | laufend | ### | · [Die Injektion war nie das Problem](novaberg-roadmap.md#die-injektion-war-nie-das-problem) |
-| (2026-08-31) | laufend | ### | · [Was die Zeugen gekostet haben](novaberg-roadmap.md#was-die-zeugen-gekostet-haben) |
-| 2026-08-31 | laufend | ## | [31.08.2026, 20:24 UTC — Ein Todesfall wog wie eine Mondumlaufzeit ✅](novaberg-roadmap.md#31082026-2024-utc--ein-todesfall-wog-wie-eine-mondumlaufzeit) |
-| (2026-08-31) | laufend | ### | · [Die Perzeption allein, ohne Graph und ohne Nova](novaberg-roadmap.md#die-perzeption-allein-ohne-graph-und-ohne-nova) |
-| (2026-08-31) | laufend | ### | · [Die Erregungsspanne: 0.10 bis 0.90, nicht 0.40 bis 0.60](novaberg-roadmap.md#die-erregungsspanne-010-bis-090-nicht-040-bis-060) |
-| (2026-08-31) | laufend | ### | · [Die Kalibrierung, und der Entwurf, den die Messung verwarf](novaberg-roadmap.md#die-kalibrierung-und-der-entwurf-den-die-messung-verwarf) |
-| (2026-08-31) | laufend | ### | · [Zeugen und Bilanz](novaberg-roadmap.md#zeugen-und-bilanz) |
-| 2026-08-31 | laufend | ## | [31.08.2026, 20:30 UTC — Die Praegungsschicht bekommt ihre erste Scheibe, und drei Baufehler dasselbe Muster](novaberg-roadmap.md#31082026-2030-utc--die-praegungsschicht-bekommt-ihre-erste-scheibe-und-drei-baufehler-dasselbe-muster) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 22:38 UTC — Die Gravitationsschwelle konnte nicht mehr ablehnen](novaberg-roadmap.md#30082026-2238-utc--die-gravitationsschwelle-konnte-nicht-mehr-ablehnen) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 17:25 UTC — Die Faszination bekommt ein Konzept, und drei Ernteversuche sterben](novaberg-roadmap.md#30082026-1725-utc--die-faszination-bekommt-ein-konzept-und-drei-ernteversuche-sterben) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 13:01 UTC — Die Haltungsschicht: der Speicher steht](novaberg-roadmap.md#30082026-1301-utc--die-haltungsschicht-der-speicher-steht) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 11:46 UTC — Scheibe 10: das Gewicht einer Luecke](novaberg-roadmap.md#30082026-1146-utc--scheibe-10-das-gewicht-einer-luecke) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 10:45 UTC — Scheibe 8: die Treffer stehen im Block, der Wert steht in der Antwort](novaberg-roadmap.md#30082026-1045-utc--scheibe-8-die-treffer-stehen-im-block-der-wert-steht-in-der-antwort) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 09:20 UTC — Der Client hat einen Testlauf](novaberg-roadmap.md#30082026-0920-utc--der-client-hat-einen-testlauf) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 08:59 UTC — Der Suchanbieter: Serper zuerst, SearXNG als Rueckfall](novaberg-roadmap.md#30082026-0859-utc--der-suchanbieter-serper-zuerst-searxng-als-rueckfall) |
-| 2026-08-30 | laufend | ## | [30.08.2026, 07:35 UTC — Das »du« gehoert dem Schauspieler: die Wissensbloecke des Verfassers sprechen ueber Person A](novaberg-roadmap.md#30082026-0735-utc--das-du-gehoert-dem-schauspieler-die-wissensbloecke-des-verfassers-sprechen-ueber-person-a) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 23:20 UTC — Die eine Suche auf Deutsch: eine Fuehrung, deren Wirkung das Labor nicht zeigt](novaberg-roadmap.md#29082026-2320-utc--die-eine-suche-auf-deutsch-eine-fuehrung-deren-wirkung-das-labor-nicht-zeigt) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 22:58 UTC — Der Sprecher im [GEDAECHTNIS]-Block: wer eine Erinnerung gesagt hat](novaberg-roadmap.md#29082026-2258-utc--der-sprecher-im-gedaechtnis-block-wer-eine-erinnerung-gesagt-hat) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 22:44 UTC — Die Suchdisziplin des Thinkers: eine Suche je Turn, die Sachlage-Treffer zuerst](novaberg-roadmap.md#29082026-2244-utc--die-suchdisziplin-des-thinkers-eine-suche-je-turn-die-sachlage-treffer-zuerst) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 21:40 UTC — Der eigene Zug: die Rueckfrage sagt, wessen Ziel sie nennt](novaberg-roadmap.md#29082026-2140-utc--der-eigene-zug-die-rueckfrage-sagt-wessen-ziel-sie-nennt) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 19:48 UTC — Die Betriebsmessung der Lage-Kette: 20 Turns](novaberg-roadmap.md#29082026-1948-utc--die-betriebsmessung-der-lage-kette-20-turns) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 08:54 UTC — Scheibe 9 der Lage: der Sprecher — der Gedanke des Nutzers bleibt seiner](novaberg-roadmap.md#29082026-0854-utc--scheibe-9-der-lage-der-sprecher--der-gedanke-des-nutzers-bleibt-seiner) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 08:32 UTC — Die Websuche antwortet wieder: Wikipedia-Volltext statt Bing](novaberg-roadmap.md#29082026-0832-utc--die-websuche-antwortet-wieder-wikipedia-volltext-statt-bing) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 07:55 UTC — Der Drive-Tab rechnet die Motivation live, wie die Gravitation](novaberg-roadmap.md#29082026-0755-utc--der-drive-tab-rechnet-die-motivation-live-wie-die-gravitation) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 07:30 UTC — Scheibe 8 der Lage: der Wissenstraeger — Antwortstoff statt Rueckfrage, mit Websuche](novaberg-roadmap.md#29082026-0730-utc--scheibe-8-der-lage-der-wissenstraeger--antwortstoff-statt-rueckfrage-mit-websuche) |
-| 2026-08-29 | laufend | ## | [29.08.2026, 06:55 UTC — Scheibe 7 der Lage: Behauptungen des Nutzers gegen Weltwissen](novaberg-roadmap.md#29082026-0655-utc--scheibe-7-der-lage-behauptungen-des-nutzers-gegen-weltwissen) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 23:04 UTC — Scheibe 6 der Lage: der Frame-Aufloeser gegen den Gedaechtnis-Pool des Turns](novaberg-roadmap.md#28082026-2304-utc--scheibe-6-der-lage-der-frame-aufloeser-gegen-den-gedaechtnis-pool-des-turns) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 22:09 UTC — Das Ziele-Panel zeigt nur noch lebende Ziele](novaberg-roadmap.md#28082026-2209-utc--das-ziele-panel-zeigt-nur-noch-lebende-ziele) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 21:35 UTC — Der Gespraechskontext im Client: die fuenf Scheiben in einem Tab](novaberg-roadmap.md#28082026-2135-utc--der-gespraechskontext-im-client-die-fuenf-scheiben-in-einem-tab) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 21:06 UTC — Scheibe 3: die Rueckfrage bekommt ihren Gegenstand](novaberg-roadmap.md#28082026-2106-utc--scheibe-3-die-rueckfrage-bekommt-ihren-gegenstand) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 20:40 UTC — Scheibe 5: die Rueckkehr zu einer frueheren Blase](novaberg-roadmap.md#28082026-2040-utc--scheibe-5-die-rueckkehr-zu-einer-frueheren-blase) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 20:29 UTC — `thema` benennt die Sache, nie den Wechsel](novaberg-roadmap.md#28082026-2029-utc--thema-benennt-die-sache-nie-den-wechsel) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 20:15 UTC — Der Sachlage-Prompt sieht Novas Antworten ganz — und der Fund vom Nachmittag war halb falsch](novaberg-roadmap.md#28082026-2015-utc--der-sachlage-prompt-sieht-novas-antworten-ganz--und-der-fund-vom-nachmittag-war-halb-falsch) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 19:56 UTC — Der Verfall der Ziele wird beim Lesen gerechnet: ein Tageslauf traegt keine Halbwertszeit von drei Stunden](novaberg-roadmap.md#28082026-1956-utc--der-verfall-der-ziele-wird-beim-lesen-gerechnet-ein-tageslauf-traegt-keine-halbwertszeit-von-drei-stunden) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 18:55 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte](novaberg-roadmap.md#28082026-1855-utc--scheibe-2-gebaut-das-kurzfristige-ziel--und-zwei-praemissen-die-die-messung-korrigierte) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 17:40 UTC — Scheibe 4 gebaut: das Sachlage-Gedaechtnis und die Bruecke](novaberg-roadmap.md#28082026-1740-utc--scheibe-4-gebaut-das-sachlage-gedaechtnis-und-die-bruecke) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 16:10 UTC — Der erste Zeuge: die Sachlage laeuft im Betrieb](novaberg-roadmap.md#28082026-1610-utc--der-erste-zeuge-die-sachlage-laeuft-im-betrieb) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 14:30 UTC — Scheibe 4 entworfen: das Sachlage-Gedaechtnis](novaberg-roadmap.md#28082026-1430-utc--scheibe-4-entworfen-das-sachlage-gedaechtnis) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 13:30 UTC — Scheibe 1 gebaut: der Sachlage-Knoten laeuft](novaberg-roadmap.md#28082026-1330-utc--scheibe-1-gebaut-der-sachlage-knoten-laeuft) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 14:35 UTC (nachgetragen; gebaut 27.08. 20:00 – 28.08. 07:00 UTC) — Rueckfragen halbiert mit Art, Raum-Neutralisierung](novaberg-roadmap.md#28082026-1435-utc-nachgetragen-gebaut-2708-2000--2808-0700-utc--rueckfragen-halbiert-mit-art-raum-neutralisierung) |
-| 2026-08-28 | laufend | ## | [28.08.2026, 10:15 UTC — Lage-Analyse: die erste Scheibe der Verstehens-Schicht ist zugeschnitten](novaberg-roadmap.md#28082026-1015-utc--lage-analyse-die-erste-scheibe-der-verstehens-schicht-ist-zugeschnitten) |
-| 2026-08-27 | laufend | ## | [27.08.2026, 11:50 UTC — Addendum 2: der Abgleich des Verlaufs gegen die Speicher](novaberg-roadmap.md#27082026-1150-utc--addendum-2-der-abgleich-des-verlaufs-gegen-die-speicher) |
-| (2026-08-27) | laufend | ### | · [Der Determinismus-Befund nannte das Modell nicht](novaberg-roadmap.md#der-determinismus-befund-nannte-das-modell-nicht) |
-| (2026-08-27) | laufend | ### | · [Der Beleg des Rueckwegs stand nur in der Chronik](novaberg-roadmap.md#der-beleg-des-rueckwegs-stand-nur-in-der-chronik) |
-| 2026-08-27 | laufend | ## | [27.08.2026, 11:35 UTC — Addendum: die Frage nach dem Ganzen fand eine Zustandsangabe](novaberg-roadmap.md#27082026-1135-utc--addendum-die-frage-nach-dem-ganzen-fand-eine-zustandsangabe) |
-| 2026-08-27 | laufend | ## | [27.08.2026, 10:54 UTC — die Rechnung, und ein Beleg fuer eine Korrektur](novaberg-roadmap.md#27082026-1054-utc--die-rechnung-und-ein-beleg-fuer-eine-korrektur) |
-| (2026-08-27) | laufend | ### | · [Die Rechnung: entscheidbar geworden, und negativ ausgefallen](novaberg-roadmap.md#die-rechnung-entscheidbar-geworden-und-negativ-ausgefallen) |
-| (2026-08-27) | laufend | ### | · [Der Beleg: die Blockaktualisierung traegt](novaberg-roadmap.md#der-beleg-die-blockaktualisierung-traegt) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 23:01 UTC — die Ursache war eine Konstante ohne Herleitung](novaberg-roadmap.md#26082026-2301-utc--die-ursache-war-eine-konstante-ohne-herleitung) |
-| (2026-08-26) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung-1) |
-| (2026-08-26) | laufend | ### | · [Was der Wechsel mitnimmt](novaberg-roadmap.md#was-der-wechsel-mitnimmt) |
-| (2026-08-26) | laufend | ### | · [Zwei Folgen fuer laufende Arbeit](novaberg-roadmap.md#zwei-folgen-fuer-laufende-arbeit) |
-| (2026-08-26) | laufend | ### | · [Was ungemessen bleibt](novaberg-roadmap.md#was-ungemessen-bleibt) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 22:25 UTC — der Medoid ist gebaut, und die Messung faellt gegen ihn aus](novaberg-roadmap.md#26082026-2225-utc--der-medoid-ist-gebaut-und-die-messung-faellt-gegen-ihn-aus) |
-| (2026-08-26) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung-2) |
-| (2026-08-26) | laufend | ### | · [Was bleibt, und warum es bleibt](novaberg-roadmap.md#was-bleibt-und-warum-es-bleibt) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen](novaberg-roadmap.md#26082026-2124-utc--die-regel-bewacht-die-kleinere-der-beiden-quellen) |
-| (2026-08-26) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung-3) |
-| 2026-07-30 | laufend | ### | · [Und eine Frage vom 30.07.2026 ist damit beantwortet](novaberg-roadmap.md#und-eine-frage-vom-30072026-ist-damit-beantwortet) |
-| (2026-07-30) | laufend | ### | · [Was daraus folgt und was nicht](novaberg-roadmap.md#was-daraus-folgt-und-was-nicht) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 21:15 UTC — die Drift-Reihe laeuft, und ihr Zeitplan liegt ausserhalb](novaberg-roadmap.md#26082026-2115-utc--die-drift-reihe-laeuft-und-ihr-zeitplan-liegt-ausserhalb) |
-| (2026-08-26) | laufend | ### | · [Der Speicher, und warum es ihn braucht](novaberg-roadmap.md#der-speicher-und-warum-es-ihn-braucht) |
-| (2026-08-26) | laufend | ### | · [Was gemessen wird, ist ein Vergleich zweier Vergleiche](novaberg-roadmap.md#was-gemessen-wird-ist-ein-vergleich-zweier-vergleiche) |
-| (2026-08-26) | laufend | ### | · [Der Zeitplan liegt ausserhalb des Repositoriums — und das ist die Schwachstelle](novaberg-roadmap.md#der-zeitplan-liegt-ausserhalb-des-repositoriums--und-das-ist-die-schwachstelle) |
-| (2026-08-26) | laufend | ### | · [Was die Reihe nicht beantwortet](novaberg-roadmap.md#was-die-reihe-nicht-beantwortet) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 21:00 UTC — die Rauschgrenze, und die Skala, die einer Messung fehlte](novaberg-roadmap.md#26082026-2100-utc--die-rauschgrenze-und-die-skala-die-einer-messung-fehlte) |
-| (2026-08-26) | laufend | ### | · [Die Wirkungsmessung ist halb belegt und halb berichtigt](novaberg-roadmap.md#die-wirkungsmessung-ist-halb-belegt-und-halb-berichtigt) |
-| (2026-08-26) | laufend | ### | · [Die zweite Spalte ist der eigentliche Fund](novaberg-roadmap.md#die-zweite-spalte-ist-der-eigentliche-fund) |
-| (2026-08-26) | laufend | ### | · [Nebenbefund: die Live-Kosten enthalten die Konkurrenz](novaberg-roadmap.md#nebenbefund-die-live-kosten-enthalten-die-konkurrenz) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 20:05 UTC — das Fenster ist fort, und die Kontrolle steht still](novaberg-roadmap.md#26082026-2005-utc--das-fenster-ist-fort-und-die-kontrolle-steht-still) |
-| (2026-08-26) | laufend | ### | · [Zwei Schritte statt einem, und der Grund ist derselbe wie beim Fenster](novaberg-roadmap.md#zwei-schritte-statt-einem-und-der-grund-ist-derselbe-wie-beim-fenster) |
-| (2026-08-26) | laufend | ### | · [Der erste Lauf am produktiven Paar](novaberg-roadmap.md#der-erste-lauf-am-produktiven-paar) |
-| (2026-08-26) | laufend | ### | · [Die zweite Kontrolle hat den Bau geaendert](novaberg-roadmap.md#die-zweite-kontrolle-hat-den-bau-geaendert) |
-| (2026-08-26) | laufend | ### | · [Und die Bindung an das juengste Themenband faellt](novaberg-roadmap.md#und-die-bindung-an-das-juengste-themenband-faellt) |
-| (2026-08-26) | laufend | ### | · [Die Ampel bleibt rot, und der Grund ist eine stillstehende Kontrolle](novaberg-roadmap.md#die-ampel-bleibt-rot-und-der-grund-ist-eine-stillstehende-kontrolle) |
-| 2026-08-26 | laufend | ## | [26.08.2026, 19:42 UTC — das Auswahlkriterium, und eine Kostenannahme, die keine war](novaberg-roadmap.md#26082026-1942-utc--das-auswahlkriterium-und-eine-kostenannahme-die-keine-war) |
-| (2026-08-26) | laufend | ### | · [`gewicht_absolut` ist erreichbar, trennt, und bevorzugt das Alte](novaberg-roadmap.md#gewichtabsolut-ist-erreichbar-trennt-und-bevorzugt-das-alte) |
-| (2026-08-26) | laufend | ### | · [Die Schichtung ist die kleinere Haelfte, und die erste Zahl log](novaberg-roadmap.md#die-schichtung-ist-die-kleinere-haelfte-und-die-erste-zahl-log) |
-| (2026-08-26) | laufend | ### | · [Die Kostenannahme, die ein groesseres Budget verbot](novaberg-roadmap.md#die-kostenannahme-die-ein-groesseres-budget-verbot) |
-| (2026-08-26) | laufend | ### | · [Und die Eingabelaenge ist nicht der Treiber](novaberg-roadmap.md#und-die-eingabelaenge-ist-nicht-der-treiber) |
-| (2026-08-26) | laufend | ### | · [Entschieden: Faktor 4](novaberg-roadmap.md#entschieden-faktor-4) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 21:28 UTC — der Auftrag wurde von seiner eigenen Vormessung widerlegt](novaberg-roadmap.md#25082026-2128-utc--der-auftrag-wurde-von-seiner-eigenen-vormessung-widerlegt) |
-| (2026-08-25) | laufend | ### | · [Die naheliegende Reparatur, widerlegt am Material](novaberg-roadmap.md#die-naheliegende-reparatur-widerlegt-am-material) |
-| (2026-08-25) | laufend | ### | · [Die Gegenprobe des Eintrags haelt — und deckte etwas Groesseres auf](novaberg-roadmap.md#die-gegenprobe-des-eintrags-haelt--und-deckte-etwas-groesseres-auf) |
-| (2026-08-25) | laufend | ### | · [Die Zahl, die den Befund entschied](novaberg-roadmap.md#die-zahl-die-den-befund-entschied) |
-| (2026-08-25) | laufend | ### | · [Die Ursache steht in der Bauart, und das Konzept nannte sie neben ihrem Gegenteil](novaberg-roadmap.md#die-ursache-steht-in-der-bauart-und-das-konzept-nannte-sie-neben-ihrem-gegenteil) |
-| (2026-08-25) | laufend | ### | · [Es trifft das Zuwendungsrad an der Wurzel](novaberg-roadmap.md#es-trifft-das-zuwendungsrad-an-der-wurzel) |
-| (2026-08-25) | laufend | ### | · [Entschieden: fortgeschrieben wird die Grundlage, nicht der Text](novaberg-roadmap.md#entschieden-fortgeschrieben-wird-die-grundlage-nicht-der-text) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 20:55 UTC — der Nachzug, den die Frage nach den Moduldokumenten fand](novaberg-roadmap.md#25082026-2055-utc--der-nachzug-den-die-frage-nach-den-moduldokumenten-fand) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 20:37 UTC — `graph_run_lock`, und eine Regel, die einen Monat lang gegen sich selbst wuchs](novaberg-roadmap.md#25082026-2037-utc--graphrunlock-und-eine-regel-die-einen-monat-lang-gegen-sich-selbst-wuchs) |
-| (2026-08-25) | laufend | ### | · [Die Bauart stimmte, der Name nicht](novaberg-roadmap.md#die-bauart-stimmte-der-name-nicht) |
-| (2026-08-25) | laufend | ### | · [893 von 1479 — die Zahl war um den Faktor vier zu klein geschaetzt](novaberg-roadmap.md#893-von-1479--die-zahl-war-um-den-faktor-vier-zu-klein-geschaetzt) |
-| (2026-08-25) | laufend | ### | · [Nulllinie statt Aufraeumaktion](novaberg-roadmap.md#nulllinie-statt-aufraeumaktion) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 20:10 UTC — vier doppelte Kennungen, und nur eine war ein Versehen](novaberg-roadmap.md#25082026-2010-utc--vier-doppelte-kennungen-und-nur-eine-war-ein-versehen) |
-| (2026-08-25) | laufend | ### | · [Die erste Zaehlung ergab 27, und 26 davon waren keine](novaberg-roadmap.md#die-erste-zaehlung-ergab-27-und-26-davon-waren-keine) |
-| (2026-08-25) | laufend | ### | · [Nur eine der vier war ein Versehen](novaberg-roadmap.md#nur-eine-der-vier-war-ein-versehen) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 19:29 UTC — die neue Log-Zeile lief elfmal und meldete elfmal dasselbe](novaberg-roadmap.md#25082026-1929-utc--die-neue-log-zeile-lief-elfmal-und-meldete-elfmal-dasselbe) |
-| (2026-08-25) | laufend | ### | · [`8 von 8` stimmte nicht](novaberg-roadmap.md#8-von-8-stimmte-nicht) |
-| (2026-08-25) | laufend | ### | · [Fuer `verdict` gibt es den Gegenbeleg, fuer die Nutzlast nicht](novaberg-roadmap.md#fuer-verdict-gibt-es-den-gegenbeleg-fuer-die-nutzlast-nicht) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 19:03 UTC — 278 zu lange Zeilen umgebrochen, ohne den Stil des Bestands mitzunehmen](novaberg-roadmap.md#25082026-1903-utc--278-zu-lange-zeilen-umgebrochen-ohne-den-stil-des-bestands-mitzunehmen) |
-| (2026-08-25) | laufend | ### | · [Drei Fallen, jede erst beim Messen sichtbar](novaberg-roadmap.md#drei-fallen-jede-erst-beim-messen-sichtbar) |
-| (2026-08-25) | laufend | ### | · [Zwei Durchgaenge, beide mit Aequivalenzpruefung](novaberg-roadmap.md#zwei-durchgaenge-beide-mit-aequivalenzpruefung) |
-| (2026-08-25) | laufend | ### | · [Was bleibt, und warum](novaberg-roadmap.md#was-bleibt-und-warum) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 18:43 UTC — 884 Treffer weniger, und keiner davon war ein Fehler im Produktivcode](novaberg-roadmap.md#25082026-1843-utc--884-treffer-weniger-und-keiner-davon-war-ein-fehler-im-produktivcode) |
-| (2026-08-25) | laufend | ### | · [Erst pruefen, ob die Regel behebbar ist — dann ausnehmen](novaberg-roadmap.md#erst-pruefen-ob-die-regel-behebbar-ist--dann-ausnehmen) |
-| (2026-08-25) | laufend | ### | · [Die Wand bleibt in `tests/` scharf, und das ist gemessen](novaberg-roadmap.md#die-wand-bleibt-in-tests-scharf-und-das-ist-gemessen) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 18:16 UTC — die B-Wand, und zwei Defekte, die ein Linter-Treffer sichtbar gemacht hat](novaberg-roadmap.md#25082026-1816-utc--die-b-wand-und-zwei-defekte-die-ein-linter-treffer-sichtbar-gemacht-hat) |
-| (2026-08-25) | laufend | ### | · [37 der 39 stabilen B-Regeln sind hart — und zwei bewusst nicht](novaberg-roadmap.md#37-der-39-stabilen-b-regeln-sind-hart--und-zwei-bewusst-nicht) |
-| (2026-08-25) | laufend | ### | · [`F841`: von 17 Treffern waren zwei echte Defekte](novaberg-roadmap.md#f841-von-17-treffern-waren-zwei-echte-defekte) |
-| (2026-08-25) | laufend | ### | · [Und einer der vier Funde war beim Nachsehen keiner](novaberg-roadmap.md#und-einer-der-vier-funde-war-beim-nachsehen-keiner) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 17:51 UTC — 29 weitere Treffer, und `F841` zeigte vier Stellen, an denen etwas berechnet und weggeworfen wird](novaberg-roadmap.md#25082026-1751-utc--29-weitere-treffer-und-f841-zeigte-vier-stellen-an-denen-etwas-berechnet-und-weggeworfen-wird) |
-| (2026-08-25) | laufend | ### | · [`F841` ist keine Aufraeumregel, sondern ein Zeiger auf fehlende Leser](novaberg-roadmap.md#f841-ist-keine-aufraeumregel-sondern-ein-zeiger-auf-fehlende-leser) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 17:16 UTC — 330 Linter-Treffer maschinell abgeraeumt, und eine Wand mehr](novaberg-roadmap.md#25082026-1716-utc--330-linter-treffer-maschinell-abgeraeumt-und-eine-wand-mehr) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 18:20 UTC — Die Antwort geht raus, sobald sie freigegeben ist](novaberg-roadmap.md#25082026-1820-utc--die-antwort-geht-raus-sobald-sie-freigegeben-ist) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 17:30 UTC — Der Riegel vor der GPU kannte vier von fuenf Wegen nicht](novaberg-roadmap.md#25082026-1730-utc--der-riegel-vor-der-gpu-kannte-vier-von-fuenf-wegen-nicht) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 16:40 UTC — Eine fertige Antwort ging an einer Token-Zaehlung verloren](novaberg-roadmap.md#25082026-1640-utc--eine-fertige-antwort-ging-an-einer-token-zaehlung-verloren) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 15:25 UTC — `in einem Tag` war der Mai, `in einem Monat` war der Montag](novaberg-roadmap.md#25082026-1525-utc--in-einem-tag-war-der-mai-in-einem-monat-war-der-montag) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 14:20 UTC — Die 45 Alt-Eintraege des Defektregisters tragen einen Zustand](novaberg-roadmap.md#25082026-1420-utc--die-45-alt-eintraege-des-defektregisters-tragen-einen-zustand) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 12:45 UTC — Ein Suchmuster frass bei jedem Versionsstempel eine Leerzeile, 136 Dateien lang](novaberg-roadmap.md#25082026-1245-utc--ein-suchmuster-frass-bei-jedem-versionsstempel-eine-leerzeile-136-dateien-lang) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 21:30 UTC — Sechs Regeldokumente zeigten noch auf Dateien, die keine Einträge mehr tragen](novaberg-roadmap.md#25082026-2130-utc--sechs-regeldokumente-zeigten-noch-auf-dateien-die-keine-einträge-mehr-tragen) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 20:10 UTC — Das Backlog ist nach Gegenstand geteilt](novaberg-roadmap.md#25082026-2010-utc--das-backlog-ist-nach-gegenstand-geteilt) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 18:40 UTC — Das Backlog trägt seine Kategorie: 442 von 442](novaberg-roadmap.md#25082026-1840-utc--das-backlog-trägt-seine-kategorie-442-von-442) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 17:15 UTC — Die Gegenrichtung: 19 Abschnitte bekommen einen Schlüssel](novaberg-roadmap.md#25082026-1715-utc--die-gegenrichtung-19-abschnitte-bekommen-einen-schlüssel) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 16:30 UTC — Vier Etappen, 204 Einträge: das Backlog trägt seinen Zustand vollständig](novaberg-roadmap.md#25082026-1630-utc--vier-etappen-204-einträge-das-backlog-trägt-seinen-zustand-vollständig) |
-| (2026-08-25) | laufend | ### | · [Was die Prüfung an Erledigtem fand](novaberg-roadmap.md#was-die-prüfung-an-erledigtem-fand) |
-| (2026-08-25) | laufend | ### | · [Vier Zahlen, die sich seit ihrem Befund bewegt haben](novaberg-roadmap.md#vier-zahlen-die-sich-seit-ihrem-befund-bewegt-haben) |
-| (2026-08-25) | laufend | ### | · [Und drei Befunde über das Register selbst](novaberg-roadmap.md#und-drei-befunde-über-das-register-selbst) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 14:10 UTC — Zweite Etappe: 51 Backlog-Einträge, und die Prüfung trifft auf ihren eigenen Vortag](novaberg-roadmap.md#25082026-1410-utc--zweite-etappe-51-backlog-einträge-und-die-prüfung-trifft-auf-ihren-eigenen-vortag) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 13:20 UTC — Erste Etappe der Zustandsprüfung: 20 Backlog-Einträge gegen den Code](novaberg-roadmap.md#25082026-1320-utc--erste-etappe-der-zustandsprüfung-20-backlog-einträge-gegen-den-code) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 12:40 UTC — Das Backlog bekommt sein Findemittel, und es zählt aus, was ihm fehlt](novaberg-roadmap.md#25082026-1240-utc--das-backlog-bekommt-sein-findemittel-und-es-zählt-aus-was-ihm-fehlt) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 12:00 UTC — Das falsch beschriftete Kapitel ist aufgelöst, und die Chronik ist nach Monaten geteilt](novaberg-roadmap.md#25082026-1200-utc--das-falsch-beschriftete-kapitel-ist-aufgelöst-und-die-chronik-ist-nach-monaten-geteilt) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 11:10 UTC — Die Chronik bekommt ein Findemittel, und es findet als Erstes einen Fehler in ihr](novaberg-roadmap.md#25082026-1110-utc--die-chronik-bekommt-ein-findemittel-und-es-findet-als-erstes-einen-fehler-in-ihr) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 10:05 UTC — 21 Einträge standen als offen und waren es nicht mehr](novaberg-roadmap.md#25082026-1005-utc--21-einträge-standen-als-offen-und-waren-es-nicht-mehr) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 09:20 UTC — Das Bugregister wird geteilt, weil seine Größe den Zustand seiner Einträge altern ließ](novaberg-roadmap.md#25082026-0920-utc--das-bugregister-wird-geteilt-weil-seine-größe-den-zustand-seiner-einträge-altern-ließ) |
-| 2026-08-25 | laufend | ## | [25.08.2026, 08:40 UTC — Ein Nebensatz verschiebt die Ähnlichkeit weiter, als eine Schwelle reicht](novaberg-roadmap.md#25082026-0840-utc--ein-nebensatz-verschiebt-die-ähnlichkeit-weiter-als-eine-schwelle-reicht) |
-| (2026-08-25) | laufend | ### | · [Der Prüfstand war kaputt, nicht der Aufruf](novaberg-roadmap.md#der-prüfstand-war-kaputt-nicht-der-aufruf) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 22:00 UTC — Der Rückweg setzte eine Kopie neben ihr Original, und die Buchführung stimmte dabei](novaberg-roadmap.md#24082026-2200-utc--der-rückweg-setzte-eine-kopie-neben-ihr-original-und-die-buchführung-stimmte-dabei) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 21:00 UTC — Nova schrieb ihren eigenen Vorschlag dem Nutzer zu, weil ihr Impuls aus dem Verlauf fiel](novaberg-roadmap.md#24082026-2100-utc--nova-schrieb-ihren-eigenen-vorschlag-dem-nutzer-zu-weil-ihr-impuls-aus-dem-verlauf-fiel) |
-| (2026-08-24) | laufend | ### | · [Was die zweite Kontrolle einriss — sechs Befunde, davon zwei schwer](novaberg-roadmap.md#was-die-zweite-kontrolle-einriss--sechs-befunde-davon-zwei-schwer) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 19:55 UTC — 26 Kandidaten gelesen: zwei waren still behoben, und das Register hat fünf Formate](novaberg-roadmap.md#24082026-1955-utc--26-kandidaten-gelesen-zwei-waren-still-behoben-und-das-register-hat-fünf-formate) |
-| (2026-08-24) | laufend | ### | · [Was die zweite Kontrolle davon wieder einriss](novaberg-roadmap.md#was-die-zweite-kontrolle-davon-wieder-einriss) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 19:15 UTC — Die Liste steht, das Register hat vier Formate](novaberg-roadmap.md#24082026-1915-utc--die-liste-steht-das-register-hat-vier-formate) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 18:20 UTC — Die Uhr faellt, und der Burst steht sofort an ihrer Stelle](novaberg-roadmap.md#24082026-1820-utc--die-uhr-faellt-und-der-burst-steht-sofort-an-ihrer-stelle) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 17:05 UTC — Der Impuls-Turn, gemessen: ein Tor, das nie im Leerlauf schliesst](novaberg-roadmap.md#24082026-1705-utc--der-impuls-turn-gemessen-ein-tor-das-nie-im-leerlauf-schliesst) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 15:50 UTC — Der Kanal war gruen und aus dem Repositorium nicht herstellbar](novaberg-roadmap.md#24082026-1550-utc--der-kanal-war-gruen-und-aus-dem-repositorium-nicht-herstellbar) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 13:35 UTC — Der Telegram-Kanal ist aus, und der abgeloeste war der unruhigere](novaberg-roadmap.md#24082026-1335-utc--der-telegram-kanal-ist-aus-und-der-abgeloeste-war-der-unruhigere) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 12:45 UTC — Der Wartungslauf, und eine zweite Saettigung darunter](novaberg-roadmap.md#24082026-1245-utc--der-wartungslauf-und-eine-zweite-saettigung-darunter) |
-| 2026-08-24 | laufend | ## | [24.08.2026, 12:10 UTC — Die Salienz-Skala, und der Verstaerker, der sich selbst fuetterte](novaberg-roadmap.md#24082026-1210-utc--die-salienz-skala-und-der-verstaerker-der-sich-selbst-fuetterte) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 23:15 UTC — Eine Zeile hielt Novas Eigeninitiative acht Tage geschlossen](novaberg-roadmap.md#23082026-2315-utc--eine-zeile-hielt-novas-eigeninitiative-acht-tage-geschlossen) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 22:40 UTC — Die Messung zweier Bauteile fand den Weg dahin geschlossen](novaberg-roadmap.md#23082026-2240-utc--die-messung-zweier-bauteile-fand-den-weg-dahin-geschlossen) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 21:55 UTC — Rang 5: fuenf Knoten, und zweimal widerspricht die Nachmessung dem Befund](novaberg-roadmap.md#23082026-2155-utc--rang-5-fuenf-knoten-und-zweimal-widerspricht-die-nachmessung-dem-befund) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 20:10 UTC — Eine Zeile, deren Gegenstand es nicht mehr gibt](novaberg-roadmap.md#23082026-2010-utc--eine-zeile-deren-gegenstand-es-nicht-mehr-gibt) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 19:20 UTC — Sieben Prompt-Blöcke, die niemand geladen hat](novaberg-roadmap.md#23082026-1920-utc--sieben-prompt-blöcke-die-niemand-geladen-hat) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 18:50 UTC — Eine Konstante, die zweimal dastand, und niemand sah es](novaberg-roadmap.md#23082026-1850-utc--eine-konstante-die-zweimal-dastand-und-niemand-sah-es) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 18:05 UTC — Archiviert sieht nicht mehr aus wie geltend](novaberg-roadmap.md#23082026-1805-utc--archiviert-sieht-nicht-mehr-aus-wie-geltend) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 17:15 UTC — Eine Messung, die gegen den Bau entscheidet](novaberg-roadmap.md#23082026-1715-utc--eine-messung-die-gegen-den-bau-entscheidet) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 15:40 UTC — Nicht gesehen ist nicht fort](novaberg-roadmap.md#23082026-1540-utc--nicht-gesehen-ist-nicht-fort) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 10:20 UTC — Der Homeserver zieht nach Postgres, und der Client haengt dran](novaberg-roadmap.md#23082026-1020-utc--der-homeserver-zieht-nach-postgres-und-der-client-haengt-dran) |
-| 2026-08-23 | laufend | ## | [23.08.2026, 01:00 UTC — Ein Kanal mit zwei Absendern](novaberg-roadmap.md#23082026-0100-utc--ein-kanal-mit-zwei-absendern) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 20:15 UTC — Der Wissensspeicher bekommt eine Ebene und wird zur Wurzel](novaberg-roadmap.md#22082026-2015-utc--der-wissensspeicher-bekommt-eine-ebene-und-wird-zur-wurzel) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 19:05 UTC — Der Eigentuemer wird gefragt, nicht geraten](novaberg-roadmap.md#22082026-1905-utc--der-eigentuemer-wird-gefragt-nicht-geraten) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 16:45 UTC — Jede Wurzel sagt, wessen Material sie traegt](novaberg-roadmap.md#22082026-1645-utc--jede-wurzel-sagt-wessen-material-sie-traegt) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 14:45 UTC — Die Profil-Prompts bekommen jede Traeger-Form als Datum](novaberg-roadmap.md#22082026-1445-utc--die-profil-prompts-bekommen-jede-traeger-form-als-datum) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 11:20 UTC — Die Rangfolge steht jetzt im Register, nicht im Gespraech](novaberg-roadmap.md#22082026-1120-utc--die-rangfolge-steht-jetzt-im-register-nicht-im-gespraech) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 10:55 UTC — Eine neue Person bekommt keine geratene Haltung, sondern eine unvoreingenommene](novaberg-roadmap.md#22082026-1055-utc--eine-neue-person-bekommt-keine-geratene-haltung-sondern-eine-unvoreingenommene) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 09:35 UTC — Eine Spanne ohne Fall ist kein Nachweis, aber eine Zahl](novaberg-roadmap.md#22082026-0935-utc--eine-spanne-ohne-fall-ist-kein-nachweis-aber-eine-zahl) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 09:10 UTC — Zwei Stimmen zur selben Frage, und eine war die aeltere](novaberg-roadmap.md#22082026-0910-utc--zwei-stimmen-zur-selben-frage-und-eine-war-die-aeltere) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 08:35 UTC — Ein Defekt, der seit acht Tagen behoben war, und warum niemand es sah](novaberg-roadmap.md#22082026-0835-utc--ein-defekt-der-seit-acht-tagen-behoben-war-und-warum-niemand-es-sah) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 08:15 UTC — Ein Umlaut kostete das ganze Urteil, und die Messung dazu trug nicht](novaberg-roadmap.md#22082026-0815-utc--ein-umlaut-kostete-das-ganze-urteil-und-die-messung-dazu-trug-nicht) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 00:40 UTC — Eine Bestaetigung kann kein Datum mehr erfinden](novaberg-roadmap.md#22082026-0040-utc--eine-bestaetigung-kann-kein-datum-mehr-erfinden) |
-| 2026-08-22 | laufend | ## | [22.08.2026, 00:20 UTC — Die Verdichtung sieht jetzt, was tatsaechlich geschah](novaberg-roadmap.md#22082026-0020-utc--die-verdichtung-sieht-jetzt-was-tatsaechlich-geschah) |
-| 2026-08-21 | laufend | ## | [21.08.2026, 23:50 UTC — Die Abrufschwelle wirkt auch dort, wo jemand wirklich fragt](novaberg-roadmap.md#21082026-2350-utc--die-abrufschwelle-wirkt-auch-dort-wo-jemand-wirklich-fragt) |
-| 2026-08-21 | laufend | ## | [21.08.2026, 22:50 UTC — Das Defektregister ist auszaehlbar: 64 offen, 18 behoben](novaberg-roadmap.md#21082026-2250-utc--das-defektregister-ist-auszaehlbar-64-offen-18-behoben) |
-| 2026-08-21 | laufend | ## | [21.08.2026, 10:48 UTC — Zwei Kandidaten verbraucht, die Ursache belegt: der Index trägt neun Gegenstände je Datei](novaberg-roadmap.md#21082026-1048-utc--zwei-kandidaten-verbraucht-die-ursache-belegt-der-index-trägt-neun-gegenstände-je-datei) |
-| 2026-08-21 | laufend | ## | [21.08.2026, 10:30 UTC — Das Kurzzeitgedächtnis darf schweigen](novaberg-roadmap.md#21082026-1030-utc--das-kurzzeitgedächtnis-darf-schweigen) |
-| 2026-08-21 | laufend | ## | [21.08.2026, 09:40 UTC — Query Rewriting: die vier ungemessenen Konsumenten sind gemessen](novaberg-roadmap.md#21082026-0940-utc--query-rewriting-die-vier-ungemessenen-konsumenten-sind-gemessen) |
-| 2026-08-20 | laufend | ## | [20.08.2026, 19:38 UTC — Alle 70 Kennungen gegen den Code gehalten: zwölf waren erledigt](novaberg-roadmap.md#20082026-1938-utc--alle-70-kennungen-gegen-den-code-gehalten-zwölf-waren-erledigt) |
-| 2026-08-20 | laufend | ## | [20.08.2026, Nacht — Der Suchschlüssel trägt jetzt den Gegenstand des Gesprächs](novaberg-roadmap.md#20082026-nacht--der-suchschlüssel-trägt-jetzt-den-gegenstand-des-gesprächs) |
-| 2026-08-20 | laufend | ## | [20.08.2026, später Abend — Die Featureliste, zum zweiten Mal gegen den Bestand gehalten](novaberg-roadmap.md#20082026-später-abend--die-featureliste-zum-zweiten-mal-gegen-den-bestand-gehalten) |
-| 2026-08-20 | laufend | ## | [20.08.2026, Abend — Die Fundliste ist klassifiziert und leer](novaberg-roadmap.md#20082026-abend--die-fundliste-ist-klassifiziert-und-leer) |
-| 2026-08-20 | laufend | ## | [20.08.2026, später Nachmittag — Vier Register führten ihren Verlauf in je einer Zeile](novaberg-roadmap.md#20082026-später-nachmittag--vier-register-führten-ihren-verlauf-in-je-einer-zeile) |
-| 2026-08-20 | laufend | ## | [20.08.2026, abends — Ihr eigenes Inneres kam bei ihr als dritte Stelle an](novaberg-roadmap.md#20082026-abends--ihr-eigenes-inneres-kam-bei-ihr-als-dritte-stelle-an) |
-| 2026-08-20 | laufend | ## | [20.08.2026, nachmittags — Auf zwölf Zeichen kamen 838 zurück](novaberg-roadmap.md#20082026-nachmittags--auf-zwölf-zeichen-kamen-838-zurück) |
-| 2026-08-20 | laufend | ## | [20.08.2026, nachmittags — Der Index versteht jetzt jedes Format, das er annimmt](novaberg-roadmap.md#20082026-nachmittags--der-index-versteht-jetzt-jedes-format-das-er-annimmt) |
-| 2026-08-20 | laufend | ## | [20.08.2026, nachmittags — Die Gliederung kommt aus einem Parser, und der Riegel bleibt trotzdem stehen](novaberg-roadmap.md#20082026-nachmittags--die-gliederung-kommt-aus-einem-parser-und-der-riegel-bleibt-trotzdem-stehen) |
-| 2026-08-20 | laufend | ## | [20.08.2026, nachmittags — Die Blockkarte war halbiert, und nichts daran sah nach einem Fehler aus](novaberg-roadmap.md#20082026-nachmittags--die-blockkarte-war-halbiert-und-nichts-daran-sah-nach-einem-fehler-aus) |
-| 2026-08-20 | laufend | ## | [20.08.2026, mittags — Die Bibliothek findet auf Themenhöhe und ist auf Inhaltshöhe blind](novaberg-roadmap.md#20082026-mittags--die-bibliothek-findet-auf-themenhöhe-und-ist-auf-inhaltshöhe-blind) |
-| 2026-08-20 | laufend | ## | [20.08.2026, mittags — Ein Umbau, der vollständig stand und nichts brachte](novaberg-roadmap.md#20082026-mittags--ein-umbau-der-vollständig-stand-und-nichts-brachte) |
-| 2026-08-20 | laufend | ## | [20.08.2026, mittags — Der Lauf sagt jetzt, was er verloren hat](novaberg-roadmap.md#20082026-mittags--der-lauf-sagt-jetzt-was-er-verloren-hat) |
-| 2026-08-20 | laufend | ## | [20.08.2026, mittags — Der Boden trägt, und der Fehler sitzt woanders](novaberg-roadmap.md#20082026-mittags--der-boden-trägt-und-der-fehler-sitzt-woanders) |
-| 2026-08-20 | laufend | ## | [20.08.2026, vormittags — Die Bitte um JSON wird zur Fessel, und eine Zusage fällt dabei zweimal](novaberg-roadmap.md#20082026-vormittags--die-bitte-um-json-wird-zur-fessel-und-eine-zusage-fällt-dabei-zweimal) |
-| 2026-08-20 | laufend | ## | [20.08.2026 — Die Figur bekommt die Dokumente über sich selbst, und der Wächter verliert fünf davon still](novaberg-roadmap.md#20082026--die-figur-bekommt-die-dokumente-über-sich-selbst-und-der-wächter-verliert-fünf-davon-still) |
-| 2026-08-19 | laufend | ## | [19.08.2026 — Drei Rollen je Silo, und die Regel steht vor dem Bau](novaberg-roadmap.md#19082026--drei-rollen-je-silo-und-die-regel-steht-vor-dem-bau) |
-| 2026-08-19 | laufend | ## | [19.08.2026, nachts — Ein Vektor je Thema, und die Bibliothek findet](novaberg-roadmap.md#19082026-nachts--ein-vektor-je-thema-und-die-bibliothek-findet) |
-| 2026-08-19 | laufend | ## | [19.08.2026, nachts — Die Schwelle war nie das Problem](novaberg-roadmap.md#19082026-nachts--die-schwelle-war-nie-das-problem) |
-| 2026-08-19 | laufend | ## | [19.08.2026, nachts — Die Laufzeit springt zwölf Versionen, und ein Vorgabewert kippt](novaberg-roadmap.md#19082026-nachts--die-laufzeit-springt-zwölf-versionen-und-ein-vorgabewert-kippt) |
-| 2026-08-19 | laufend | ## | [19.08.2026, spät — Die Laufzeit ist vier Monate alt, und die Nulllinie steht](novaberg-roadmap.md#19082026-spät--die-laufzeit-ist-vier-monate-alt-und-die-nulllinie-steht) |
-| 2026-08-19 | laufend | ## | [19.08.2026, abends — Die tragende Variable bekommt ihre Spur](novaberg-roadmap.md#19082026-abends--die-tragende-variable-bekommt-ihre-spur) |
-| 2026-08-19 | laufend | ## | [19.08.2026 — Die Bibliothek wird bestellbar, und ein Riegel sperrt beinahe zwei Dienste aus](novaberg-roadmap.md#19082026--die-bibliothek-wird-bestellbar-und-ein-riegel-sperrt-beinahe-zwei-dienste-aus) |
-| 2026-08-19 | laufend | ## | [19.08.2026 — Ein fremder Dialog als Messgerät, und drei Umbauten, die nicht stattfanden](novaberg-roadmap.md#19082026--ein-fremder-dialog-als-messgerät-und-drei-umbauten-die-nicht-stattfanden) |
-| 2026-08-19 | laufend | ## | [19.08.2026 — Der Rückweg bekommt seinen zweiten Weg, und der dritte fällt weg](novaberg-roadmap.md#19082026--der-rückweg-bekommt-seinen-zweiten-weg-und-der-dritte-fällt-weg) |
-| 2026-08-19 | laufend | ## | [19.08.2026 — Die Spiegelung ist gebrochen, nachgemessen](novaberg-roadmap.md#19082026--die-spiegelung-ist-gebrochen-nachgemessen) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Der Wackelzeuge ist still, und die Zahl, die den Fall trägt, ist eine Null](novaberg-roadmap.md#18082026--der-wackelzeuge-ist-still-und-die-zahl-die-den-fall-trägt-ist-eine-null) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Der Rückweg schließt den Kreis, und der erste Lauf schrieb nichts](novaberg-roadmap.md#18082026--der-rückweg-schließt-den-kreis-und-der-erste-lauf-schrieb-nichts) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Der lesende Dienst bekommt seinen Aufrufer, und die Zahl steht in der Antwort](novaberg-roadmap.md#18082026--der-lesende-dienst-bekommt-seinen-aufrufer-und-die-zahl-steht-in-der-antwort) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Ein Boden, der am selben Tag fiel, und zwei Kanäle statt einer besseren Zahl](novaberg-roadmap.md#18082026--ein-boden-der-am-selben-tag-fiel-und-zwei-kanäle-statt-einer-besseren-zahl) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Eine Datei erreicht die Figur, und die Beschriftung ist die Aussage](novaberg-roadmap.md#18082026--eine-datei-erreicht-die-figur-und-die-beschriftung-ist-die-aussage) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Der Wächter, und ein Vorfilter, den ein Zeuge widerlegt hat](novaberg-roadmap.md#18082026--der-wächter-und-ein-vorfilter-den-ein-zeuge-widerlegt-hat) |
-| (2026-08-18) | laufend | ### | · [Der Vorfilter, den ein Zeuge gekippt hat](novaberg-roadmap.md#der-vorfilter-den-ein-zeuge-gekippt-hat) |
-| (2026-08-18) | laufend | ### | · [Was ausdrücklich nicht gebaut ist](novaberg-roadmap.md#was-ausdrücklich-nicht-gebaut-ist) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Der erste Dienst, dessen Anmeldung vor dem Code stand](novaberg-roadmap.md#18082026--der-erste-dienst-dessen-anmeldung-vor-dem-code-stand) |
-| (2026-08-18) | laufend | ### | · [Zwei Defekte, die erst die Messung fand — beide im eigenen Neubau](novaberg-roadmap.md#zwei-defekte-die-erst-die-messung-fand--beide-im-eigenen-neubau) |
-| 2026-08-18 | laufend | ## | [18.08.2026 — Die Werkzeugschicht für Dateien steht, der Dienst nicht](novaberg-roadmap.md#18082026--die-werkzeugschicht-für-dateien-steht-der-dienst-nicht) |
-| 2026-08-17 | laufend | ## | [17.08.2026 — Die Anmeldung bekommt einen Leser, der ihr widersprechen kann](novaberg-roadmap.md#17082026--die-anmeldung-bekommt-einen-leser-der-ihr-widersprechen-kann) |
-| 2026-08-17 | laufend | ## | [17.08.2026 — Ein erfundenes Datum, und die Prüfung dagegen](novaberg-roadmap.md#17082026--ein-erfundenes-datum-und-die-prüfung-dagegen) |
-| 2026-08-17 | laufend | ## | [17.08.2026 — Impulse fallen aus drei von fünf Profilen, und zwar begründet](novaberg-roadmap.md#17082026--impulse-fallen-aus-drei-von-fünf-profilen-und-zwar-begründet) |
-| 2026-08-17 | laufend | ## | [17.08.2026 — Jede Perspektive liest ihre eigene Seite](novaberg-roadmap.md#17082026--jede-perspektive-liest-ihre-eigene-seite) |
-| 2026-08-16 | laufend | ## | [16.08.2026 — Der Charakter des Menschen wurde aus den Gedanken der Figur destilliert](novaberg-roadmap.md#16082026--der-charakter-des-menschen-wurde-aus-den-gedanken-der-figur-destilliert) |
-| 2026-08-16 | laufend | ## | [16.08.2026 — Der Adaptiv-Hash wählt nach Stärke statt nach Fundreihenfolge](novaberg-roadmap.md#16082026--der-adaptiv-hash-wählt-nach-stärke-statt-nach-fundreihenfolge) |
-| 2026-08-16 | laufend | ## | [16.08.2026 — Ausgabe-Verifikation der Knoten](novaberg-roadmap.md#16082026--ausgabe-verifikation-der-knoten) |
-| 2026-08-16 | laufend | ## | [Chat 145 (16.08.2026) — Das oberste Band war leer, und niemand wusste es ✅](novaberg-roadmap.md#chat-145-16082026--das-oberste-band-war-leer-und-niemand-wusste-es) |
-| (2026-08-16) | laufend | ### | · [Der erste: die Ursache war widerlegt, die Marke blieb](novaberg-roadmap.md#der-erste-die-ursache-war-widerlegt-die-marke-blieb) |
-| (2026-08-16) | laufend | ### | · [Der zweite: die Abhilfe war zehn Tage älter als der Eintrag](novaberg-roadmap.md#der-zweite-die-abhilfe-war-zehn-tage-älter-als-der-eintrag) |
-| (2026-08-16) | laufend | ### | · [Was daraus für das Verfahren folgt](novaberg-roadmap.md#was-daraus-für-das-verfahren-folgt) |
-| 2026-08-16 | laufend | ## | [Chat 145 (16.08.2026) — Die Frist löschte die Wichtigsten, weil sie die Wichtigsten sind 🔶](novaberg-roadmap.md#chat-145-16082026--die-frist-löschte-die-wichtigsten-weil-sie-die-wichtigsten-sind) |
-| (2026-08-16) | laufend | ### | · [Der Befund liegt in der Auswahl, nicht im einzelnen Aufruf](novaberg-roadmap.md#der-befund-liegt-in-der-auswahl-nicht-im-einzelnen-aufruf) |
-| (2026-08-16) | laufend | ### | · [Gebaut](novaberg-roadmap.md#gebaut-1) |
-| (2026-08-16) | laufend | ### | · [Was der Zeuge kann, was ein Wertetest nicht kann](novaberg-roadmap.md#was-der-zeuge-kann-was-ein-wertetest-nicht-kann) |
-| (2026-08-16) | laufend | ### | · [Offen geblieben](novaberg-roadmap.md#offen-geblieben) |
-| 2026-08-16 | laufend | ## | [Chat 144 (16.08.2026) — Ein verworfener Mechanismus, und darunter ein zweiter, der gebaut ist und keinen Leser hat ✅](novaberg-roadmap.md#chat-144-16082026--ein-verworfener-mechanismus-und-darunter-ein-zweiter-der-gebaut-ist-und-keinen-leser-hat) |
-| (2026-08-16) | laufend | ### | · [Unter einem Namen standen zwei Dinge](novaberg-roadmap.md#unter-einem-namen-standen-zwei-dinge) |
-| (2026-08-16) | laufend | ### | · [Und die zweite Kontrolle hat den Befund zur Hälfte widerlegt — die härtere Hälfte](novaberg-roadmap.md#und-die-zweite-kontrolle-hat-den-befund-zur-hälfte-widerlegt--die-härtere-hälfte) |
-| (2026-08-16) | laufend | ### | · [Der Abgleich nach außen](novaberg-roadmap.md#der-abgleich-nach-außen) |
-| 2026-08-16 | laufend | ## | [Chat 143 (16.08.2026) — Die Konventionen werden gegen den Code gehalten, und eine schrieb den Fehler vor ✅](novaberg-roadmap.md#chat-143-16082026--die-konventionen-werden-gegen-den-code-gehalten-und-eine-schrieb-den-fehler-vor) |
-| 2026-08-15 | laufend | ## | [Chat 143 (15.08.2026) — Der Riegel misst den Moment, nicht die Person, und die Uhr fällt ✅](novaberg-roadmap.md#chat-143-15082026--der-riegel-misst-den-moment-nicht-die-person-und-die-uhr-fällt) |
-| 2026-08-15 | laufend | ## | [Chat 142 (15.08.2026) — Der Gedanke bringt seinen Zustand mit, und die Haltung überlebt den Turn 🔶](novaberg-roadmap.md#chat-142-15082026--der-gedanke-bringt-seinen-zustand-mit-und-die-haltung-überlebt-den-turn) |
-| (2026-08-15) | laufend | ### | · [Die Haltung überlebt den Turn — die Voraussetzung von Bauteil D](novaberg-roadmap.md#die-haltung-überlebt-den-turn--die-voraussetzung-von-bauteil-d) |
-| (2026-08-15) | laufend | ### | · [Die Nachprüfung — und was sie noch fand](novaberg-roadmap.md#die-nachprüfung--und-was-sie-noch-fand) |
-| (2026-08-15) | laufend | ### | · [Riegel 1 — ob sie überhaupt zugeht](novaberg-roadmap.md#riegel-1--ob-sie-überhaupt-zugeht) |
-| (2026-08-15) | laufend | ### | · [Die zweite Kontrolle des Riegels — und was sie fand](novaberg-roadmap.md#die-zweite-kontrolle-des-riegels--und-was-sie-fand) |
-| (2026-08-15) | laufend | ### | · [Die Queue bekommt die dritte Größe ihrer Lage](novaberg-roadmap.md#die-queue-bekommt-die-dritte-größe-ihrer-lage) |
-| 2026-08-15 | laufend | ## | [Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅](novaberg-roadmap.md#chat-141-15082026--die-queue-zieht-um-und-ein-gedanke-verfällt-statt-gelöscht-zu-werden) |
-| 2026-08-15 | laufend | ## | [Chat 140 (15.08.2026) — Eine Verbindung, die verworfen wird, erfährt davon ✅](novaberg-roadmap.md#chat-140-15082026--eine-verbindung-die-verworfen-wird-erfährt-davon) |
-| (2026-08-15) | laufend | ### | · [Bauteil A — der Verfall über das Intervall](novaberg-roadmap.md#bauteil-a--der-verfall-über-das-intervall) |
-| (2026-08-15) | laufend | ### | · [Der Stapel bekommt, was der Auftrag trägt](novaberg-roadmap.md#der-stapel-bekommt-was-der-auftrag-trägt) |
-| 2026-08-15 | laufend | ## | [Chat 139 (14./15.08.2026) — Drei Bauteile, und ein Verbot räumt seinen Platz ✅](novaberg-roadmap.md#chat-139-1415082026--drei-bauteile-und-ein-verbot-räumt-seinen-platz) |
-| 2026-08-14 | laufend | ## | [Chat 139 (14.08.2026) — Der Reiz-Platz trägt nur noch fremde Rede 🔶](novaberg-roadmap.md#chat-139-14082026--der-reiz-platz-trägt-nur-noch-fremde-rede) |
-| (2026-08-14) | laufend | ### | · [Aus vier Stellen wurden elf](novaberg-roadmap.md#aus-vier-stellen-wurden-elf) |
-| (2026-08-14) | laufend | ### | · [Die Bauart](novaberg-roadmap.md#die-bauart) |
-| (2026-08-14) | laufend | ### | · [Die Messung](novaberg-roadmap.md#die-messung-4) |
-| (2026-08-14) | laufend | ### | · [Der Materialblock — und die Zuschreibung kippt](novaberg-roadmap.md#der-materialblock--und-die-zuschreibung-kippt) |
-| 2026-08-14 | laufend | ## | [Chat 138 (13./14.08.2026) — Der Verfasser bekommt eine Aufgabe, und die Messung dreht den Tag ✅](novaberg-roadmap.md#chat-138-1314082026--der-verfasser-bekommt-eine-aufgabe-und-die-messung-dreht-den-tag) |
-| (2026-08-14) | laufend | ### | · [Ein Wert über den vorigen Turn entschied über diesen](novaberg-roadmap.md#ein-wert-über-den-vorigen-turn-entschied-über-diesen) |
-| (2026-08-14) | laufend | ### | · [Der Block hing an der Hypothese und nahm die Landschaft mit](novaberg-roadmap.md#der-block-hing-an-der-hypothese-und-nahm-die-landschaft-mit) |
-| (2026-08-14) | laufend | ### | · [Der Auftrag wird eine Aufgabe](novaberg-roadmap.md#der-auftrag-wird-eine-aufgabe) |
-| (2026-08-14) | laufend | ### | · [Was offen bleibt](novaberg-roadmap.md#was-offen-bleibt) |
-| (2026-08-14) | laufend | ### | · [Der Tag danach — gemessen statt gebaut](novaberg-roadmap.md#der-tag-danach--gemessen-statt-gebaut) |
-| (2026-08-14) | laufend | ### | · [Zwei Konzepte statt eines Baus](novaberg-roadmap.md#zwei-konzepte-statt-eines-baus) |
-| 2026-08-13 | laufend | ## | [Chat 137 (12./13.08.2026) — Der Prompt wird ein Drehbuch, und vier Messgeräte messen nichts ✅](novaberg-roadmap.md#chat-137-1213082026--der-prompt-wird-ein-drehbuch-und-vier-messgeräte-messen-nichts) |
-| (2026-08-13) | laufend | ### | · [Die Wörter kommen an](novaberg-roadmap.md#die-wörter-kommen-an) |
-| (2026-08-13) | laufend | ### | · [Der Prompt wird ein Drehbuch](novaberg-roadmap.md#der-prompt-wird-ein-drehbuch) |
-| (2026-08-13) | laufend | ### | · [Die Nulllinie — macht der Prompt eine Nova?](novaberg-roadmap.md#die-nulllinie--macht-der-prompt-eine-nova) |
-| (2026-08-13) | laufend | ### | · [Vier Messgeräte, die nichts gemessen haben](novaberg-roadmap.md#vier-messgeräte-die-nichts-gemessen-haben) |
-| 2026-08-11 | laufend | ## | [Chat 136 (11.08.2026) — Der Deckel war die Rauschquelle, und die Übersteuerung hatte nie gegriffen ✅](novaberg-roadmap.md#chat-136-11082026--der-deckel-war-die-rauschquelle-und-die-übersteuerung-hatte-nie-gegriffen) |
-| (2026-08-11) | laufend | ### | · [Die Verdichtung: gemessen, und der Deckel verliert](novaberg-roadmap.md#die-verdichtung-gemessen-und-der-deckel-verliert) |
-| (2026-08-11) | laufend | ### | · [Der Haltungsraum: eine Übersteuerung, die es nie gab](novaberg-roadmap.md#der-haltungsraum-eine-übersteuerung-die-es-nie-gab) |
-| (2026-08-11) | laufend | ### | · [Die Rundungsvorgabe fällt](novaberg-roadmap.md#die-rundungsvorgabe-fällt) |
-| 2026-08-12 | laufend | ### | · [Nachgemessen am 12.08.2026: drei Paare unter derselben Anordnung](novaberg-roadmap.md#nachgemessen-am-12082026-drei-paare-unter-derselben-anordnung) |
-| (2026-08-12) | laufend | ### | · [Abends: In welcher Form kommt eine Vorgabe überhaupt an?](novaberg-roadmap.md#abends-in-welcher-form-kommt-eine-vorgabe-überhaupt-an) |
-| (2026-08-12) | laufend | ### | · [Der Beleg, dass die offene Destillation trägt: drei Personen, drei Novas](novaberg-roadmap.md#der-beleg-dass-die-offene-destillation-trägt-drei-personen-drei-novas) |
-| 2026-08-09 | laufend | ## | [Chat 135 (09.08.2026) — Das Log überlebt den Behälter, der es geschrieben hat ✅](novaberg-roadmap.md#chat-135-09082026--das-log-überlebt-den-behälter-der-es-geschrieben-hat) |
-| (2026-08-09) | laufend | ### | · [Das Sampling-Profil reist mit der Messung](novaberg-roadmap.md#das-sampling-profil-reist-mit-der-messung) |
-| (2026-08-09) | laufend | ### | · [`distanz = 1,00` war kein Messwert, sondern die Tonlage eines Aktenauszugs](novaberg-roadmap.md#distanz--100-war-kein-messwert-sondern-die-tonlage-eines-aktenauszugs) |
-| (2026-08-09) | laufend | ### | · [Die Skala war das Messgerät, nicht der Gegenstand ✅](novaberg-roadmap.md#die-skala-war-das-messgerät-nicht-der-gegenstand) |
-| (2026-08-09) | laufend | ### | · [Das zweite Rad bekommt, was das erste seit drei Wochen hat ✅](novaberg-roadmap.md#das-zweite-rad-bekommt-was-das-erste-seit-drei-wochen-hat) |
-| (2026-08-09) | laufend | ### | · [Der Lauf bestimmt, wann der Charakter entsteht ✅](novaberg-roadmap.md#der-lauf-bestimmt-wann-der-charakter-entsteht) |
-| 2026-08-09 | laufend | ## | [Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅](novaberg-roadmap.md#chat-134-09082026--sieben-zip-die-nicht-dasselbe-meinen-und-eine-wand-die-nicht-aufgeht) |
-| (2026-08-09) | laufend | ### | · [Die tragende Vorfrage des Erkenntniszyklus ist beantwortet — er spart](novaberg-roadmap.md#die-tragende-vorfrage-des-erkenntniszyklus-ist-beantwortet--er-spart) |
-| (2026-08-09) | laufend | ### | · [Die Promotion verhungert, sie läuft nicht ab — und ein Fehler kostete bis heute den Gedächtniskandidaten](novaberg-roadmap.md#die-promotion-verhungert-sie-läuft-nicht-ab--und-ein-fehler-kostete-bis-heute-den-gedächtniskandidaten) |
-| (2026-08-09) | laufend | ### | · [Zwei Spuren, und der erste Bogen der Reihe steht](novaberg-roadmap.md#zwei-spuren-und-der-erste-bogen-der-reihe-steht) |
-| (2026-08-09) | laufend | ### | · [Die Reihe beginnt: eine Messreihe muss abschließen](novaberg-roadmap.md#die-reihe-beginnt-eine-messreihe-muss-abschließen) |
-| (2026-08-09) | laufend | ### | · [Die Plausibilitätsprüfung — drei Nähte, ein Ergebnis, vier offene Punkte](novaberg-roadmap.md#die-plausibilitätsprüfung--drei-nähte-ein-ergebnis-vier-offene-punkte) |
-| (2026-08-09) | laufend | ### | · [Die Rangordnung — Bänder statt Einzelurteile](novaberg-roadmap.md#die-rangordnung--bänder-statt-einzelurteile) |
-| 2026-08-09 | laufend | ## | [Chat 133 (08./09.08.2026) — Drei Orte, die es nicht gab, und ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅](novaberg-roadmap.md#chat-133-0809082026--drei-orte-die-es-nicht-gab-und-ein-krisenmarker-den-ein-hoffnungsvolles-wort-auslösen-konnte) |
-| (2026-08-09) | laufend | ### | · [Die Fundliste ist klassifiziert — 155 offene Funde auf null](novaberg-roadmap.md#die-fundliste-ist-klassifiziert--155-offene-funde-auf-null) |
-| (2026-08-09) | laufend | ### | · [Drei Linter-Wände statt einer](novaberg-roadmap.md#drei-linter-wände-statt-einer) |
-| (2026-08-09) | laufend | ### | · [S21 und S18 über den vollen Eingaberaum](novaberg-roadmap.md#s21-und-s18-über-den-vollen-eingaberaum) |
-| (2026-08-09) | laufend | ### | · [B2s Wiederholung ist nicht fahrbar](novaberg-roadmap.md#b2s-wiederholung-ist-nicht-fahrbar) |
-| (2026-08-09) | laufend | ### | · [Das Basis-Rad, und warum es heute nicht gesetzt wird](novaberg-roadmap.md#das-basis-rad-und-warum-es-heute-nicht-gesetzt-wird) |
-| (2026-08-09) | laufend | ### | · [Die Entscheidung zu B2s Wiederholung ist gefallen](novaberg-roadmap.md#die-entscheidung-zu-b2s-wiederholung-ist-gefallen) |
-| 2026-08-08 | laufend | ## | [Chat 132 (08.08.2026) — Ein Messgerät, das sich auf der fernen Hälfte der Nähe-Achse abschaltete ✅](novaberg-roadmap.md#chat-132-08082026--ein-messgerät-das-sich-auf-der-fernen-hälfte-der-nähe-achse-abschaltete) |
-| (2026-08-08) | laufend | ### | · [B2 — die Ist-Verteilung, und aus zwei Teilmengen wurden vier](novaberg-roadmap.md#b2--die-ist-verteilung-und-aus-zwei-teilmengen-wurden-vier) |
-| (2026-08-08) | laufend | ### | · [Die Kostenfrage, und ein Bauteil, das nie fahrbar war](novaberg-roadmap.md#die-kostenfrage-und-ein-bauteil-das-nie-fahrbar-war) |
-| (2026-08-08) | laufend | ### | · [B3, und dann die Naht zwischen Landschaft und Zuwendungsrad](novaberg-roadmap.md#b3-und-dann-die-naht-zwischen-landschaft-und-zuwendungsrad) |
-| 2026-08-07 | laufend | ## | [Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅](novaberg-roadmap.md#chat-131-07082026--die-trennung-von-kalibrieren-und-validieren-und-eine-zahl-die-ungenauer-ist-als-ihr-p-wert) |
-| (2026-08-07) | laufend | ### | · [Die Entscheidung](novaberg-roadmap.md#die-entscheidung-1) |
-| (2026-08-07) | laufend | ### | · [Die Nachrechnung, die den Zuschnitt geändert hat](novaberg-roadmap.md#die-nachrechnung-die-den-zuschnitt-geändert-hat) |
-| (2026-08-07) | laufend | ### | · [Der Bezugspunkt wanderte, und eine Begründung von vorgestern fällt](novaberg-roadmap.md#der-bezugspunkt-wanderte-und-eine-begründung-von-vorgestern-fällt) |
-| (2026-08-07) | laufend | ### | · [Und dann fiel B6, wenige Stunden nach seiner Aufnahme](novaberg-roadmap.md#und-dann-fiel-b6-wenige-stunden-nach-seiner-aufnahme) |
-| (2026-08-07) | laufend | ### | · [Die Staffel-Mechanik, ein zerstörter Bestand, und ein Riegel daraus](novaberg-roadmap.md#die-staffel-mechanik-ein-zerstörter-bestand-und-ein-riegel-daraus) |
-| (2026-08-07) | laufend | ### | · [Die Landschaften: alle erreichbar, das Verhältnis nicht](novaberg-roadmap.md#die-landschaften-alle-erreichbar-das-verhältnis-nicht) |
-| (2026-08-07) | laufend | ### | · [`novaberg-erreichbarkeit_k.md` — und die Suche, die es kürzer gemacht hat](novaberg-roadmap.md#novaberg-erreichbarkeitkmd--und-die-suche-die-es-kürzer-gemacht-hat) |
-| (2026-08-07) | laufend | ### | · [Was dabei abfiel](novaberg-roadmap.md#was-dabei-abfiel) |
-| 2026-08-07 | laufend | ## | [Chat 130 (06./07.08.2026) — Vier Messungen ohne eine Zeile Produktivcode, und der Auswahl-Kanal bekommt seine erste Zahl ✅](novaberg-roadmap.md#chat-130-0607082026--vier-messungen-ohne-eine-zeile-produktivcode-und-der-auswahl-kanal-bekommt-seine-erste-zahl) |
-| (2026-08-07) | laufend | ### | · [Die beiden Maße, die §0b vorab festgeschrieben und nie erhoben hatte](novaberg-roadmap.md#die-beiden-maße-die-0b-vorab-festgeschrieben-und-nie-erhoben-hatte) |
-| (2026-08-07) | laufend | ### | · [Ein Konzept für die Kalibrierung, und die Trennung, an der es hängt](novaberg-roadmap.md#ein-konzept-für-die-kalibrierung-und-die-trennung-an-der-es-hängt) |
-| (2026-08-07) | laufend | ### | · [B1 — überträgt der Prompt-Pfad einen Charakterunterschied überhaupt?](novaberg-roadmap.md#b1--überträgt-der-prompt-pfad-einen-charakterunterschied-überhaupt) |
-| (2026-08-07) | laufend | ### | · [P10-WIRKUNG beantwortet — und die beiden Gedächtnisschichten verhalten sich gegensätzlich](novaberg-roadmap.md#p10-wirkung-beantwortet--und-die-beiden-gedächtnisschichten-verhalten-sich-gegensätzlich) |
-| (2026-08-07) | laufend | ### | · [Was diese Sitzung nicht angefasst hat](novaberg-roadmap.md#was-diese-sitzung-nicht-angefasst-hat) |
-| 2026-08-06 | laufend | ## | [Chat 129 (05./06.08.2026) — Ein Name trug zwei Rollen, und der Agent, der nichts beschafft ✅](novaberg-roadmap.md#chat-129-0506082026--ein-name-trug-zwei-rollen-und-der-agent-der-nichts-beschafft) |
-| (2026-08-06) | laufend | ### | · [Was dabei abfiel](novaberg-roadmap.md#was-dabei-abfiel-1) |
-| (2026-08-06) | laufend | ### | · [In der Nacht: die zweite Hälfte von `SYK-B0` — ein Nullbefund, den die Auswahl erzwungen hat](novaberg-roadmap.md#in-der-nacht-die-zweite-hälfte-von-syk-b0--ein-nullbefund-den-die-auswahl-erzwungen-hat) |
-| (2026-08-06) | laufend | ### | · [Am Ende: der Erkenntniszyklus](novaberg-roadmap.md#am-ende-der-erkenntniszyklus) |
-| 2026-08-04 | laufend | ## | [Chat 128 (04.08.2026) — Die Bibliothek bekommt ihre Tabelle, und der Test war sein eigener Zünder ✅](novaberg-roadmap.md#chat-128-04082026--die-bibliothek-bekommt-ihre-tabelle-und-der-test-war-sein-eigener-zünder) |
-| (2026-08-04) | laufend | ### | · [Was der Test prüft — und was er nicht kann](novaberg-roadmap.md#was-der-test-prüft--und-was-er-nicht-kann) |
-| (2026-08-04) | laufend | ### | · [`WIS-3-DATEIEN` — die Bibliothek bekommt ihren Schreibpfad ✅](novaberg-roadmap.md#wis-3-dateien--die-bibliothek-bekommt-ihren-schreibpfad) |
-| (2026-08-04) | laufend | ### | · [Die Messung — und was sie über den Bestand sagt](novaberg-roadmap.md#die-messung--und-was-sie-über-den-bestand-sagt) |
-| (2026-08-04) | laufend | ### | · [Die Kreuztabelle sagt, wo der Hebel nicht sitzt — und `SYK-B4` Stufe 1 🔶](novaberg-roadmap.md#die-kreuztabelle-sagt-wo-der-hebel-nicht-sitzt--und-syk-b4-stufe-1) |
-| (2026-08-04) | laufend | #### | · · [Und dieselbe Stunde widerlegt das Bauteil](novaberg-roadmap.md#und-dieselbe-stunde-widerlegt-das-bauteil) |
-| (2026-08-04) | laufend | #### | · · [Und die nächste Messung erledigt auch den Nachfolger — vor dem Bau](novaberg-roadmap.md#und-die-nächste-messung-erledigt-auch-den-nachfolger--vor-dem-bau) |
-| (2026-08-04) | laufend | ### | · [`SYK-B1` gemessen — der Kopfblock bewegt nichts ✅](novaberg-roadmap.md#syk-b1-gemessen--der-kopfblock-bewegt-nichts) |
-| (2026-08-04) | laufend | #### | · · [Das Werkzeug war dabei zweimal die Untersuchung wert](novaberg-roadmap.md#das-werkzeug-war-dabei-zweimal-die-untersuchung-wert) |
-| (2026-08-04) | laufend | ### | · [Die Bibliothek erreicht das Gespräch ✅](novaberg-roadmap.md#die-bibliothek-erreicht-das-gespräch) |
-| (2026-08-04) | laufend | ### | · [Der Engpass ist die Warteschlange — eine widerlegte eigene Vermutung 🔶](novaberg-roadmap.md#der-engpass-ist-die-warteschlange--eine-widerlegte-eigene-vermutung) |
-| (2026-08-04) | laufend | #### | · · [Nachtrag derselben Nacht: die Freisprechung war voreilig](novaberg-roadmap.md#nachtrag-derselben-nacht-die-freisprechung-war-voreilig) |
-| (2026-08-04) | laufend | ### | · [Das Kurzzeitgedächtnis hört jetzt mit demselben Ohr ✅](novaberg-roadmap.md#das-kurzzeitgedächtnis-hört-jetzt-mit-demselben-ohr) |
-| 2026-08-04 | laufend | ## | [Chat 127 (04.08.2026) — Die Nulllinie steht, und das Urteil kommt vor dem Text 🔶](novaberg-roadmap.md#chat-127-04082026--die-nulllinie-steht-und-das-urteil-kommt-vor-dem-text) |
-| (2026-08-04) | laufend | ### | · [`SYK-B1` — das Urteil steht vor dem Text 🔶](novaberg-roadmap.md#syk-b1--das-urteil-steht-vor-dem-text) |
-| (2026-08-04) | laufend | ### | · [Zwei Konzepte, und der Wissensspeicher bekommt seinen Ort ✅](novaberg-roadmap.md#zwei-konzepte-und-der-wissensspeicher-bekommt-seinen-ort) |
-| (2026-08-04) | laufend | ### | · [Was dabei widerlegt wurde](novaberg-roadmap.md#was-dabei-widerlegt-wurde) |
-| 2026-08-03 | laufend | ## | [Chat 126 (03.08.2026) — Die Charakterbildungs-Messreihe: sechs Bögen, ein Totalausfall ✅](novaberg-roadmap.md#chat-126-03082026--die-charakterbildungs-messreihe-sechs-bögen-ein-totalausfall) |
-| (2026-08-03) | laufend | ### | · [Der Befund](novaberg-roadmap.md#der-befund) |
-| (2026-08-03) | laufend | ### | · [Was der Befund ausschließt](novaberg-roadmap.md#was-der-befund-ausschließt) |
-| (2026-08-03) | laufend | ### | · [Was daneben herauskam](novaberg-roadmap.md#was-daneben-herauskam) |
-| 2026-08-02 | laufend | ## | [Chat 126 (02.08.2026) — P10: der Suchschlüssel trägt Novas Antrieb ✅](novaberg-roadmap.md#chat-126-02082026--p10-der-suchschlüssel-trägt-novas-antrieb) |
-| (2026-08-02) | laufend | ### | · [Was die Messung ergeben hat](novaberg-roadmap.md#was-die-messung-ergeben-hat) |
-| (2026-08-02) | laufend | ### | · [Was die Umsetzung am Konzept widerlegt hat](novaberg-roadmap.md#was-die-umsetzung-am-konzept-widerlegt-hat) |
-| 2026-08-02 | laufend | ## | [Chat 125 (02.08.2026) — Der Synapsen-Umbau ist geschlossen: P9 ✅](novaberg-roadmap.md#chat-125-02082026--der-synapsen-umbau-ist-geschlossen-p9) |
-| (2026-08-02) | laufend | ### | · [P9a — die Leser, bevor der Drop ihnen die Grundlage nimmt](novaberg-roadmap.md#p9a--die-leser-bevor-der-drop-ihnen-die-grundlage-nimmt) |
-| (2026-08-02) | laufend | ### | · [P9b — das Codeschloss](novaberg-roadmap.md#p9b--das-codeschloss) |
-| 2026-08-02 | laufend | ## | [Chat 125 (02.08.2026) — Novas Ziele gehören einer Beziehung, und Pixie bedient ein Paar ✅](novaberg-roadmap.md#chat-125-02082026--novas-ziele-gehören-einer-beziehung-und-pixie-bedient-ein-paar) |
-| (2026-08-02) | laufend | ### | · [Was dabei abfiel](novaberg-roadmap.md#was-dabei-abfiel-2) |
-| 2026-08-01 | laufend | ## | [Chat 124 (01.08.2026) — Eine Queue vor dem HumanGraph, und der Turn bekommt einen Marker ✅](novaberg-roadmap.md#chat-124-01082026--eine-queue-vor-dem-humangraph-und-der-turn-bekommt-einen-marker) |
-| 2026-08-01 | laufend | ## | [Chat 124 (01.08.2026) — Jede Antwort nennt den Reiz, den sie beantwortet ✅](novaberg-roadmap.md#chat-124-01082026--jede-antwort-nennt-den-reiz-den-sie-beantwortet) |
-| 2026-08-01 | laufend | ## | [Chat 123 (01.08.2026) — Der Riegel zahlt sich noch am selben Tag aus 🔶](novaberg-roadmap.md#chat-123-01082026--der-riegel-zahlt-sich-noch-am-selben-tag-aus) |
-| (2026-08-01) | laufend | ### | · [Zwei weitere Stufen desselben Vorfalls](novaberg-roadmap.md#zwei-weitere-stufen-desselben-vorfalls) |
-| 2026-08-01 | laufend | ## | [Chat 123 (01.08.2026) — Zwei verlorene Turns, und der Riegel dagegen ✅](novaberg-roadmap.md#chat-123-01082026--zwei-verlorene-turns-und-der-riegel-dagegen) |
-| 2026-08-01 | laufend | ## | [Chat 123 (01.08.2026) — Ein Parameter mit zwei Bedeutungen ✅](novaberg-roadmap.md#chat-123-01082026--ein-parameter-mit-zwei-bedeutungen) |
-| (2026-08-01) | laufend | ### | · [Die Suite ist wieder grün](novaberg-roadmap.md#die-suite-ist-wieder-grün) |
-| 2026-08-01 | laufend | ## | [Chat 123 (01.08.2026) — Die Charakter-Räder werden eine Messreihe ✅](novaberg-roadmap.md#chat-123-01082026--die-charakter-räder-werden-eine-messreihe) |
-| (2026-08-01) | laufend | ### | · [Ein Einzelwert war die Ursache, nicht das Symptom](novaberg-roadmap.md#ein-einzelwert-war-die-ursache-nicht-das-symptom) |
-| (2026-08-01) | laufend | ### | · [Das Initiative-Rad bekommt dasselbe — und deckt einen Fehler auf](novaberg-roadmap.md#das-initiative-rad-bekommt-dasselbe--und-deckt-einen-fehler-auf) |
-| (2026-08-01) | laufend | ### | · [Beim Bauen gegen den Entwurf entschieden](novaberg-roadmap.md#beim-bauen-gegen-den-entwurf-entschieden) |
-| (2026-08-01) | laufend | ### | · [Gemessen am laufenden System](novaberg-roadmap.md#gemessen-am-laufenden-system) |
+| 2026-08-31 | 2026-08 | ## | [31.08.2026, 22:25 UTC — Die Praegungsschicht bekommt ihre Verstaerkung ✅](novaberg-roadmap-2026-08.md#31082026-2225-utc--die-praegungsschicht-bekommt-ihre-verstaerkung) |
+| (2026-08-31) | 2026-08 | ### | · [Der Faden trug das falsche Embedding](novaberg-roadmap-2026-08.md#der-faden-trug-das-falsche-embedding) |
+| (2026-08-31) | 2026-08 | ### | · [Die Naehe-Schwelle, und was die Nulllinie sagt](novaberg-roadmap-2026-08.md#die-naehe-schwelle-und-was-die-nulllinie-sagt) |
+| (2026-08-31) | 2026-08 | ### | · [Die Faltung stand als Tabelle da, nicht als Formel](novaberg-roadmap-2026-08.md#die-faltung-stand-als-tabelle-da-nicht-als-formel) |
+| (2026-08-31) | 2026-08 | ### | · [Zwei Grenzen, beide benannt](novaberg-roadmap-2026-08.md#zwei-grenzen-beide-benannt) |
+| (2026-08-31) | 2026-08 | ### | · [Und der Abschluss war zuerst behauptet, nicht ausgefuehrt](novaberg-roadmap-2026-08.md#und-der-abschluss-war-zuerst-behauptet-nicht-ausgefuehrt) |
+| 2026-08-31 | 2026-08 | ## | [31.08.2026, 21:35 UTC — Drei Schwellen, die eine Lage beschrieben und eine Zahl trugen ✅](novaberg-roadmap-2026-08.md#31082026-2135-utc--drei-schwellen-die-eine-lage-beschrieben-und-eine-zahl-trugen) |
+| (2026-08-31) | 2026-08 | ### | · [Zwei Grundgesamtheiten, und beide waren zuerst falsch](novaberg-roadmap-2026-08.md#zwei-grundgesamtheiten-und-beide-waren-zuerst-falsch) |
+| (2026-08-31) | 2026-08 | ### | · [Die Injektion war nie das Problem](novaberg-roadmap-2026-08.md#die-injektion-war-nie-das-problem) |
+| (2026-08-31) | 2026-08 | ### | · [Was die Zeugen gekostet haben](novaberg-roadmap-2026-08.md#was-die-zeugen-gekostet-haben) |
+| 2026-08-31 | 2026-08 | ## | [31.08.2026, 20:24 UTC — Ein Todesfall wog wie eine Mondumlaufzeit ✅](novaberg-roadmap-2026-08.md#31082026-2024-utc--ein-todesfall-wog-wie-eine-mondumlaufzeit) |
+| (2026-08-31) | 2026-08 | ### | · [Die Perzeption allein, ohne Graph und ohne Nova](novaberg-roadmap-2026-08.md#die-perzeption-allein-ohne-graph-und-ohne-nova) |
+| (2026-08-31) | 2026-08 | ### | · [Die Erregungsspanne: 0.10 bis 0.90, nicht 0.40 bis 0.60](novaberg-roadmap-2026-08.md#die-erregungsspanne-010-bis-090-nicht-040-bis-060) |
+| (2026-08-31) | 2026-08 | ### | · [Die Kalibrierung, und der Entwurf, den die Messung verwarf](novaberg-roadmap-2026-08.md#die-kalibrierung-und-der-entwurf-den-die-messung-verwarf) |
+| (2026-08-31) | 2026-08 | ### | · [Zeugen und Bilanz](novaberg-roadmap-2026-08.md#zeugen-und-bilanz) |
+| 2026-08-31 | 2026-08 | ## | [31.08.2026, 20:30 UTC — Die Praegungsschicht bekommt ihre erste Scheibe, und drei Baufehler dasselbe Muster](novaberg-roadmap-2026-08.md#31082026-2030-utc--die-praegungsschicht-bekommt-ihre-erste-scheibe-und-drei-baufehler-dasselbe-muster) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 22:38 UTC — Die Gravitationsschwelle konnte nicht mehr ablehnen](novaberg-roadmap-2026-08.md#30082026-2238-utc--die-gravitationsschwelle-konnte-nicht-mehr-ablehnen) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 17:25 UTC — Die Faszination bekommt ein Konzept, und drei Ernteversuche sterben](novaberg-roadmap-2026-08.md#30082026-1725-utc--die-faszination-bekommt-ein-konzept-und-drei-ernteversuche-sterben) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 13:01 UTC — Die Haltungsschicht: der Speicher steht](novaberg-roadmap-2026-08.md#30082026-1301-utc--die-haltungsschicht-der-speicher-steht) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 11:46 UTC — Scheibe 10: das Gewicht einer Luecke](novaberg-roadmap-2026-08.md#30082026-1146-utc--scheibe-10-das-gewicht-einer-luecke) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 10:45 UTC — Scheibe 8: die Treffer stehen im Block, der Wert steht in der Antwort](novaberg-roadmap-2026-08.md#30082026-1045-utc--scheibe-8-die-treffer-stehen-im-block-der-wert-steht-in-der-antwort) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 09:20 UTC — Der Client hat einen Testlauf](novaberg-roadmap-2026-08.md#30082026-0920-utc--der-client-hat-einen-testlauf) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 08:59 UTC — Der Suchanbieter: Serper zuerst, SearXNG als Rueckfall](novaberg-roadmap-2026-08.md#30082026-0859-utc--der-suchanbieter-serper-zuerst-searxng-als-rueckfall) |
+| 2026-08-30 | 2026-08 | ## | [30.08.2026, 07:35 UTC — Das »du« gehoert dem Schauspieler: die Wissensbloecke des Verfassers sprechen ueber Person A](novaberg-roadmap-2026-08.md#30082026-0735-utc--das-du-gehoert-dem-schauspieler-die-wissensbloecke-des-verfassers-sprechen-ueber-person-a) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 23:20 UTC — Die eine Suche auf Deutsch: eine Fuehrung, deren Wirkung das Labor nicht zeigt](novaberg-roadmap-2026-08.md#29082026-2320-utc--die-eine-suche-auf-deutsch-eine-fuehrung-deren-wirkung-das-labor-nicht-zeigt) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 22:58 UTC — Der Sprecher im [GEDAECHTNIS]-Block: wer eine Erinnerung gesagt hat](novaberg-roadmap-2026-08.md#29082026-2258-utc--der-sprecher-im-gedaechtnis-block-wer-eine-erinnerung-gesagt-hat) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 22:44 UTC — Die Suchdisziplin des Thinkers: eine Suche je Turn, die Sachlage-Treffer zuerst](novaberg-roadmap-2026-08.md#29082026-2244-utc--die-suchdisziplin-des-thinkers-eine-suche-je-turn-die-sachlage-treffer-zuerst) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 21:40 UTC — Der eigene Zug: die Rueckfrage sagt, wessen Ziel sie nennt](novaberg-roadmap-2026-08.md#29082026-2140-utc--der-eigene-zug-die-rueckfrage-sagt-wessen-ziel-sie-nennt) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 19:48 UTC — Die Betriebsmessung der Lage-Kette: 20 Turns](novaberg-roadmap-2026-08.md#29082026-1948-utc--die-betriebsmessung-der-lage-kette-20-turns) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 08:54 UTC — Scheibe 9 der Lage: der Sprecher — der Gedanke des Nutzers bleibt seiner](novaberg-roadmap-2026-08.md#29082026-0854-utc--scheibe-9-der-lage-der-sprecher--der-gedanke-des-nutzers-bleibt-seiner) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 08:32 UTC — Die Websuche antwortet wieder: Wikipedia-Volltext statt Bing](novaberg-roadmap-2026-08.md#29082026-0832-utc--die-websuche-antwortet-wieder-wikipedia-volltext-statt-bing) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 07:55 UTC — Der Drive-Tab rechnet die Motivation live, wie die Gravitation](novaberg-roadmap-2026-08.md#29082026-0755-utc--der-drive-tab-rechnet-die-motivation-live-wie-die-gravitation) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 07:30 UTC — Scheibe 8 der Lage: der Wissenstraeger — Antwortstoff statt Rueckfrage, mit Websuche](novaberg-roadmap-2026-08.md#29082026-0730-utc--scheibe-8-der-lage-der-wissenstraeger--antwortstoff-statt-rueckfrage-mit-websuche) |
+| 2026-08-29 | 2026-08 | ## | [29.08.2026, 06:55 UTC — Scheibe 7 der Lage: Behauptungen des Nutzers gegen Weltwissen](novaberg-roadmap-2026-08.md#29082026-0655-utc--scheibe-7-der-lage-behauptungen-des-nutzers-gegen-weltwissen) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 23:04 UTC — Scheibe 6 der Lage: der Frame-Aufloeser gegen den Gedaechtnis-Pool des Turns](novaberg-roadmap-2026-08.md#28082026-2304-utc--scheibe-6-der-lage-der-frame-aufloeser-gegen-den-gedaechtnis-pool-des-turns) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 22:09 UTC — Das Ziele-Panel zeigt nur noch lebende Ziele](novaberg-roadmap-2026-08.md#28082026-2209-utc--das-ziele-panel-zeigt-nur-noch-lebende-ziele) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 21:35 UTC — Der Gespraechskontext im Client: die fuenf Scheiben in einem Tab](novaberg-roadmap-2026-08.md#28082026-2135-utc--der-gespraechskontext-im-client-die-fuenf-scheiben-in-einem-tab) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 21:06 UTC — Scheibe 3: die Rueckfrage bekommt ihren Gegenstand](novaberg-roadmap-2026-08.md#28082026-2106-utc--scheibe-3-die-rueckfrage-bekommt-ihren-gegenstand) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 20:40 UTC — Scheibe 5: die Rueckkehr zu einer frueheren Blase](novaberg-roadmap-2026-08.md#28082026-2040-utc--scheibe-5-die-rueckkehr-zu-einer-frueheren-blase) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 20:29 UTC — `thema` benennt die Sache, nie den Wechsel](novaberg-roadmap-2026-08.md#28082026-2029-utc--thema-benennt-die-sache-nie-den-wechsel) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 20:15 UTC — Der Sachlage-Prompt sieht Novas Antworten ganz — und der Fund vom Nachmittag war halb falsch](novaberg-roadmap-2026-08.md#28082026-2015-utc--der-sachlage-prompt-sieht-novas-antworten-ganz--und-der-fund-vom-nachmittag-war-halb-falsch) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 19:56 UTC — Der Verfall der Ziele wird beim Lesen gerechnet: ein Tageslauf traegt keine Halbwertszeit von drei Stunden](novaberg-roadmap-2026-08.md#28082026-1956-utc--der-verfall-der-ziele-wird-beim-lesen-gerechnet-ein-tageslauf-traegt-keine-halbwertszeit-von-drei-stunden) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 18:55 UTC — Scheibe 2 gebaut: das kurzfristige Ziel — und zwei Praemissen, die die Messung korrigierte](novaberg-roadmap-2026-08.md#28082026-1855-utc--scheibe-2-gebaut-das-kurzfristige-ziel--und-zwei-praemissen-die-die-messung-korrigierte) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 17:40 UTC — Scheibe 4 gebaut: das Sachlage-Gedaechtnis und die Bruecke](novaberg-roadmap-2026-08.md#28082026-1740-utc--scheibe-4-gebaut-das-sachlage-gedaechtnis-und-die-bruecke) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 16:10 UTC — Der erste Zeuge: die Sachlage laeuft im Betrieb](novaberg-roadmap-2026-08.md#28082026-1610-utc--der-erste-zeuge-die-sachlage-laeuft-im-betrieb) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 14:30 UTC — Scheibe 4 entworfen: das Sachlage-Gedaechtnis](novaberg-roadmap-2026-08.md#28082026-1430-utc--scheibe-4-entworfen-das-sachlage-gedaechtnis) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 13:30 UTC — Scheibe 1 gebaut: der Sachlage-Knoten laeuft](novaberg-roadmap-2026-08.md#28082026-1330-utc--scheibe-1-gebaut-der-sachlage-knoten-laeuft) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 14:35 UTC (nachgetragen; gebaut 27.08. 20:00 – 28.08. 07:00 UTC) — Rueckfragen halbiert mit Art, Raum-Neutralisierung](novaberg-roadmap-2026-08.md#28082026-1435-utc-nachgetragen-gebaut-2708-2000--2808-0700-utc--rueckfragen-halbiert-mit-art-raum-neutralisierung) |
+| 2026-08-28 | 2026-08 | ## | [28.08.2026, 10:15 UTC — Lage-Analyse: die erste Scheibe der Verstehens-Schicht ist zugeschnitten](novaberg-roadmap-2026-08.md#28082026-1015-utc--lage-analyse-die-erste-scheibe-der-verstehens-schicht-ist-zugeschnitten) |
+| 2026-08-27 | 2026-08 | ## | [27.08.2026, 11:50 UTC — Addendum 2: der Abgleich des Verlaufs gegen die Speicher](novaberg-roadmap-2026-08.md#27082026-1150-utc--addendum-2-der-abgleich-des-verlaufs-gegen-die-speicher) |
+| (2026-08-27) | 2026-08 | ### | · [Der Determinismus-Befund nannte das Modell nicht](novaberg-roadmap-2026-08.md#der-determinismus-befund-nannte-das-modell-nicht) |
+| (2026-08-27) | 2026-08 | ### | · [Der Beleg des Rueckwegs stand nur in der Chronik](novaberg-roadmap-2026-08.md#der-beleg-des-rueckwegs-stand-nur-in-der-chronik) |
+| 2026-08-27 | 2026-08 | ## | [27.08.2026, 11:35 UTC — Addendum: die Frage nach dem Ganzen fand eine Zustandsangabe](novaberg-roadmap-2026-08.md#27082026-1135-utc--addendum-die-frage-nach-dem-ganzen-fand-eine-zustandsangabe) |
+| 2026-08-27 | 2026-08 | ## | [27.08.2026, 10:54 UTC — die Rechnung, und ein Beleg fuer eine Korrektur](novaberg-roadmap-2026-08.md#27082026-1054-utc--die-rechnung-und-ein-beleg-fuer-eine-korrektur) |
+| (2026-08-27) | 2026-08 | ### | · [Die Rechnung: entscheidbar geworden, und negativ ausgefallen](novaberg-roadmap-2026-08.md#die-rechnung-entscheidbar-geworden-und-negativ-ausgefallen) |
+| (2026-08-27) | 2026-08 | ### | · [Der Beleg: die Blockaktualisierung traegt](novaberg-roadmap-2026-08.md#der-beleg-die-blockaktualisierung-traegt) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 23:01 UTC — die Ursache war eine Konstante ohne Herleitung](novaberg-roadmap-2026-08.md#26082026-2301-utc--die-ursache-war-eine-konstante-ohne-herleitung) |
+| (2026-08-26) | 2026-08 | ### | · [Die Messung](novaberg-roadmap-2026-08.md#die-messung-1) |
+| (2026-08-26) | 2026-08 | ### | · [Was der Wechsel mitnimmt](novaberg-roadmap-2026-08.md#was-der-wechsel-mitnimmt) |
+| (2026-08-26) | 2026-08 | ### | · [Zwei Folgen fuer laufende Arbeit](novaberg-roadmap-2026-08.md#zwei-folgen-fuer-laufende-arbeit) |
+| (2026-08-26) | 2026-08 | ### | · [Was ungemessen bleibt](novaberg-roadmap-2026-08.md#was-ungemessen-bleibt) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 22:25 UTC — der Medoid ist gebaut, und die Messung faellt gegen ihn aus](novaberg-roadmap-2026-08.md#26082026-2225-utc--der-medoid-ist-gebaut-und-die-messung-faellt-gegen-ihn-aus) |
+| (2026-08-26) | 2026-08 | ### | · [Die Messung](novaberg-roadmap-2026-08.md#die-messung-2) |
+| (2026-08-26) | 2026-08 | ### | · [Was bleibt, und warum es bleibt](novaberg-roadmap-2026-08.md#was-bleibt-und-warum-es-bleibt) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 21:24 UTC — die Regel bewacht die kleinere der beiden Quellen](novaberg-roadmap-2026-08.md#26082026-2124-utc--die-regel-bewacht-die-kleinere-der-beiden-quellen) |
+| (2026-08-26) | 2026-08 | ### | · [Die Messung](novaberg-roadmap-2026-08.md#die-messung-3) |
+| 2026-07-30 | 2026-08 | ### | · [Und eine Frage vom 30.07.2026 ist damit beantwortet](novaberg-roadmap-2026-08.md#und-eine-frage-vom-30072026-ist-damit-beantwortet) |
+| (2026-07-30) | 2026-08 | ### | · [Was daraus folgt und was nicht](novaberg-roadmap-2026-08.md#was-daraus-folgt-und-was-nicht) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 21:15 UTC — die Drift-Reihe laeuft, und ihr Zeitplan liegt ausserhalb](novaberg-roadmap-2026-08.md#26082026-2115-utc--die-drift-reihe-laeuft-und-ihr-zeitplan-liegt-ausserhalb) |
+| (2026-08-26) | 2026-08 | ### | · [Der Speicher, und warum es ihn braucht](novaberg-roadmap-2026-08.md#der-speicher-und-warum-es-ihn-braucht) |
+| (2026-08-26) | 2026-08 | ### | · [Was gemessen wird, ist ein Vergleich zweier Vergleiche](novaberg-roadmap-2026-08.md#was-gemessen-wird-ist-ein-vergleich-zweier-vergleiche) |
+| (2026-08-26) | 2026-08 | ### | · [Der Zeitplan liegt ausserhalb des Repositoriums — und das ist die Schwachstelle](novaberg-roadmap-2026-08.md#der-zeitplan-liegt-ausserhalb-des-repositoriums--und-das-ist-die-schwachstelle) |
+| (2026-08-26) | 2026-08 | ### | · [Was die Reihe nicht beantwortet](novaberg-roadmap-2026-08.md#was-die-reihe-nicht-beantwortet) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 21:00 UTC — die Rauschgrenze, und die Skala, die einer Messung fehlte](novaberg-roadmap-2026-08.md#26082026-2100-utc--die-rauschgrenze-und-die-skala-die-einer-messung-fehlte) |
+| (2026-08-26) | 2026-08 | ### | · [Die Wirkungsmessung ist halb belegt und halb berichtigt](novaberg-roadmap-2026-08.md#die-wirkungsmessung-ist-halb-belegt-und-halb-berichtigt) |
+| (2026-08-26) | 2026-08 | ### | · [Die zweite Spalte ist der eigentliche Fund](novaberg-roadmap-2026-08.md#die-zweite-spalte-ist-der-eigentliche-fund) |
+| (2026-08-26) | 2026-08 | ### | · [Nebenbefund: die Live-Kosten enthalten die Konkurrenz](novaberg-roadmap-2026-08.md#nebenbefund-die-live-kosten-enthalten-die-konkurrenz) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 20:05 UTC — das Fenster ist fort, und die Kontrolle steht still](novaberg-roadmap-2026-08.md#26082026-2005-utc--das-fenster-ist-fort-und-die-kontrolle-steht-still) |
+| (2026-08-26) | 2026-08 | ### | · [Zwei Schritte statt einem, und der Grund ist derselbe wie beim Fenster](novaberg-roadmap-2026-08.md#zwei-schritte-statt-einem-und-der-grund-ist-derselbe-wie-beim-fenster) |
+| (2026-08-26) | 2026-08 | ### | · [Der erste Lauf am produktiven Paar](novaberg-roadmap-2026-08.md#der-erste-lauf-am-produktiven-paar) |
+| (2026-08-26) | 2026-08 | ### | · [Die zweite Kontrolle hat den Bau geaendert](novaberg-roadmap-2026-08.md#die-zweite-kontrolle-hat-den-bau-geaendert) |
+| (2026-08-26) | 2026-08 | ### | · [Und die Bindung an das juengste Themenband faellt](novaberg-roadmap-2026-08.md#und-die-bindung-an-das-juengste-themenband-faellt) |
+| (2026-08-26) | 2026-08 | ### | · [Die Ampel bleibt rot, und der Grund ist eine stillstehende Kontrolle](novaberg-roadmap-2026-08.md#die-ampel-bleibt-rot-und-der-grund-ist-eine-stillstehende-kontrolle) |
+| 2026-08-26 | 2026-08 | ## | [26.08.2026, 19:42 UTC — das Auswahlkriterium, und eine Kostenannahme, die keine war](novaberg-roadmap-2026-08.md#26082026-1942-utc--das-auswahlkriterium-und-eine-kostenannahme-die-keine-war) |
+| (2026-08-26) | 2026-08 | ### | · [`gewicht_absolut` ist erreichbar, trennt, und bevorzugt das Alte](novaberg-roadmap-2026-08.md#gewichtabsolut-ist-erreichbar-trennt-und-bevorzugt-das-alte) |
+| (2026-08-26) | 2026-08 | ### | · [Die Schichtung ist die kleinere Haelfte, und die erste Zahl log](novaberg-roadmap-2026-08.md#die-schichtung-ist-die-kleinere-haelfte-und-die-erste-zahl-log) |
+| (2026-08-26) | 2026-08 | ### | · [Die Kostenannahme, die ein groesseres Budget verbot](novaberg-roadmap-2026-08.md#die-kostenannahme-die-ein-groesseres-budget-verbot) |
+| (2026-08-26) | 2026-08 | ### | · [Und die Eingabelaenge ist nicht der Treiber](novaberg-roadmap-2026-08.md#und-die-eingabelaenge-ist-nicht-der-treiber) |
+| (2026-08-26) | 2026-08 | ### | · [Entschieden: Faktor 4](novaberg-roadmap-2026-08.md#entschieden-faktor-4) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 21:28 UTC — der Auftrag wurde von seiner eigenen Vormessung widerlegt](novaberg-roadmap-2026-08.md#25082026-2128-utc--der-auftrag-wurde-von-seiner-eigenen-vormessung-widerlegt) |
+| (2026-08-25) | 2026-08 | ### | · [Die naheliegende Reparatur, widerlegt am Material](novaberg-roadmap-2026-08.md#die-naheliegende-reparatur-widerlegt-am-material) |
+| (2026-08-25) | 2026-08 | ### | · [Die Gegenprobe des Eintrags haelt — und deckte etwas Groesseres auf](novaberg-roadmap-2026-08.md#die-gegenprobe-des-eintrags-haelt--und-deckte-etwas-groesseres-auf) |
+| (2026-08-25) | 2026-08 | ### | · [Die Zahl, die den Befund entschied](novaberg-roadmap-2026-08.md#die-zahl-die-den-befund-entschied) |
+| (2026-08-25) | 2026-08 | ### | · [Die Ursache steht in der Bauart, und das Konzept nannte sie neben ihrem Gegenteil](novaberg-roadmap-2026-08.md#die-ursache-steht-in-der-bauart-und-das-konzept-nannte-sie-neben-ihrem-gegenteil) |
+| (2026-08-25) | 2026-08 | ### | · [Es trifft das Zuwendungsrad an der Wurzel](novaberg-roadmap-2026-08.md#es-trifft-das-zuwendungsrad-an-der-wurzel) |
+| (2026-08-25) | 2026-08 | ### | · [Entschieden: fortgeschrieben wird die Grundlage, nicht der Text](novaberg-roadmap-2026-08.md#entschieden-fortgeschrieben-wird-die-grundlage-nicht-der-text) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 20:55 UTC — der Nachzug, den die Frage nach den Moduldokumenten fand](novaberg-roadmap-2026-08.md#25082026-2055-utc--der-nachzug-den-die-frage-nach-den-moduldokumenten-fand) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 20:37 UTC — `graph_run_lock`, und eine Regel, die einen Monat lang gegen sich selbst wuchs](novaberg-roadmap-2026-08.md#25082026-2037-utc--graphrunlock-und-eine-regel-die-einen-monat-lang-gegen-sich-selbst-wuchs) |
+| (2026-08-25) | 2026-08 | ### | · [Die Bauart stimmte, der Name nicht](novaberg-roadmap-2026-08.md#die-bauart-stimmte-der-name-nicht) |
+| (2026-08-25) | 2026-08 | ### | · [893 von 1479 — die Zahl war um den Faktor vier zu klein geschaetzt](novaberg-roadmap-2026-08.md#893-von-1479--die-zahl-war-um-den-faktor-vier-zu-klein-geschaetzt) |
+| (2026-08-25) | 2026-08 | ### | · [Nulllinie statt Aufraeumaktion](novaberg-roadmap-2026-08.md#nulllinie-statt-aufraeumaktion) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 20:10 UTC — vier doppelte Kennungen, und nur eine war ein Versehen](novaberg-roadmap-2026-08.md#25082026-2010-utc--vier-doppelte-kennungen-und-nur-eine-war-ein-versehen) |
+| (2026-08-25) | 2026-08 | ### | · [Die erste Zaehlung ergab 27, und 26 davon waren keine](novaberg-roadmap-2026-08.md#die-erste-zaehlung-ergab-27-und-26-davon-waren-keine) |
+| (2026-08-25) | 2026-08 | ### | · [Nur eine der vier war ein Versehen](novaberg-roadmap-2026-08.md#nur-eine-der-vier-war-ein-versehen) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 19:29 UTC — die neue Log-Zeile lief elfmal und meldete elfmal dasselbe](novaberg-roadmap-2026-08.md#25082026-1929-utc--die-neue-log-zeile-lief-elfmal-und-meldete-elfmal-dasselbe) |
+| (2026-08-25) | 2026-08 | ### | · [`8 von 8` stimmte nicht](novaberg-roadmap-2026-08.md#8-von-8-stimmte-nicht) |
+| (2026-08-25) | 2026-08 | ### | · [Fuer `verdict` gibt es den Gegenbeleg, fuer die Nutzlast nicht](novaberg-roadmap-2026-08.md#fuer-verdict-gibt-es-den-gegenbeleg-fuer-die-nutzlast-nicht) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 19:03 UTC — 278 zu lange Zeilen umgebrochen, ohne den Stil des Bestands mitzunehmen](novaberg-roadmap-2026-08.md#25082026-1903-utc--278-zu-lange-zeilen-umgebrochen-ohne-den-stil-des-bestands-mitzunehmen) |
+| (2026-08-25) | 2026-08 | ### | · [Drei Fallen, jede erst beim Messen sichtbar](novaberg-roadmap-2026-08.md#drei-fallen-jede-erst-beim-messen-sichtbar) |
+| (2026-08-25) | 2026-08 | ### | · [Zwei Durchgaenge, beide mit Aequivalenzpruefung](novaberg-roadmap-2026-08.md#zwei-durchgaenge-beide-mit-aequivalenzpruefung) |
+| (2026-08-25) | 2026-08 | ### | · [Was bleibt, und warum](novaberg-roadmap-2026-08.md#was-bleibt-und-warum) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 18:43 UTC — 884 Treffer weniger, und keiner davon war ein Fehler im Produktivcode](novaberg-roadmap-2026-08.md#25082026-1843-utc--884-treffer-weniger-und-keiner-davon-war-ein-fehler-im-produktivcode) |
+| (2026-08-25) | 2026-08 | ### | · [Erst pruefen, ob die Regel behebbar ist — dann ausnehmen](novaberg-roadmap-2026-08.md#erst-pruefen-ob-die-regel-behebbar-ist--dann-ausnehmen) |
+| (2026-08-25) | 2026-08 | ### | · [Die Wand bleibt in `tests/` scharf, und das ist gemessen](novaberg-roadmap-2026-08.md#die-wand-bleibt-in-tests-scharf-und-das-ist-gemessen) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 18:16 UTC — die B-Wand, und zwei Defekte, die ein Linter-Treffer sichtbar gemacht hat](novaberg-roadmap-2026-08.md#25082026-1816-utc--die-b-wand-und-zwei-defekte-die-ein-linter-treffer-sichtbar-gemacht-hat) |
+| (2026-08-25) | 2026-08 | ### | · [37 der 39 stabilen B-Regeln sind hart — und zwei bewusst nicht](novaberg-roadmap-2026-08.md#37-der-39-stabilen-b-regeln-sind-hart--und-zwei-bewusst-nicht) |
+| (2026-08-25) | 2026-08 | ### | · [`F841`: von 17 Treffern waren zwei echte Defekte](novaberg-roadmap-2026-08.md#f841-von-17-treffern-waren-zwei-echte-defekte) |
+| (2026-08-25) | 2026-08 | ### | · [Und einer der vier Funde war beim Nachsehen keiner](novaberg-roadmap-2026-08.md#und-einer-der-vier-funde-war-beim-nachsehen-keiner) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 17:51 UTC — 29 weitere Treffer, und `F841` zeigte vier Stellen, an denen etwas berechnet und weggeworfen wird](novaberg-roadmap-2026-08.md#25082026-1751-utc--29-weitere-treffer-und-f841-zeigte-vier-stellen-an-denen-etwas-berechnet-und-weggeworfen-wird) |
+| (2026-08-25) | 2026-08 | ### | · [`F841` ist keine Aufraeumregel, sondern ein Zeiger auf fehlende Leser](novaberg-roadmap-2026-08.md#f841-ist-keine-aufraeumregel-sondern-ein-zeiger-auf-fehlende-leser) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 17:16 UTC — 330 Linter-Treffer maschinell abgeraeumt, und eine Wand mehr](novaberg-roadmap-2026-08.md#25082026-1716-utc--330-linter-treffer-maschinell-abgeraeumt-und-eine-wand-mehr) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 18:20 UTC — Die Antwort geht raus, sobald sie freigegeben ist](novaberg-roadmap-2026-08.md#25082026-1820-utc--die-antwort-geht-raus-sobald-sie-freigegeben-ist) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 17:30 UTC — Der Riegel vor der GPU kannte vier von fuenf Wegen nicht](novaberg-roadmap-2026-08.md#25082026-1730-utc--der-riegel-vor-der-gpu-kannte-vier-von-fuenf-wegen-nicht) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 16:40 UTC — Eine fertige Antwort ging an einer Token-Zaehlung verloren](novaberg-roadmap-2026-08.md#25082026-1640-utc--eine-fertige-antwort-ging-an-einer-token-zaehlung-verloren) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 15:25 UTC — `in einem Tag` war der Mai, `in einem Monat` war der Montag](novaberg-roadmap-2026-08.md#25082026-1525-utc--in-einem-tag-war-der-mai-in-einem-monat-war-der-montag) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 14:20 UTC — Die 45 Alt-Eintraege des Defektregisters tragen einen Zustand](novaberg-roadmap-2026-08.md#25082026-1420-utc--die-45-alt-eintraege-des-defektregisters-tragen-einen-zustand) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 12:45 UTC — Ein Suchmuster frass bei jedem Versionsstempel eine Leerzeile, 136 Dateien lang](novaberg-roadmap-2026-08.md#25082026-1245-utc--ein-suchmuster-frass-bei-jedem-versionsstempel-eine-leerzeile-136-dateien-lang) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 21:30 UTC — Sechs Regeldokumente zeigten noch auf Dateien, die keine Einträge mehr tragen](novaberg-roadmap-2026-08.md#25082026-2130-utc--sechs-regeldokumente-zeigten-noch-auf-dateien-die-keine-einträge-mehr-tragen) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 20:10 UTC — Das Backlog ist nach Gegenstand geteilt](novaberg-roadmap-2026-08.md#25082026-2010-utc--das-backlog-ist-nach-gegenstand-geteilt) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 18:40 UTC — Das Backlog trägt seine Kategorie: 442 von 442](novaberg-roadmap-2026-08.md#25082026-1840-utc--das-backlog-trägt-seine-kategorie-442-von-442) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 17:15 UTC — Die Gegenrichtung: 19 Abschnitte bekommen einen Schlüssel](novaberg-roadmap-2026-08.md#25082026-1715-utc--die-gegenrichtung-19-abschnitte-bekommen-einen-schlüssel) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 16:30 UTC — Vier Etappen, 204 Einträge: das Backlog trägt seinen Zustand vollständig](novaberg-roadmap-2026-08.md#25082026-1630-utc--vier-etappen-204-einträge-das-backlog-trägt-seinen-zustand-vollständig) |
+| (2026-08-25) | 2026-08 | ### | · [Was die Prüfung an Erledigtem fand](novaberg-roadmap-2026-08.md#was-die-prüfung-an-erledigtem-fand) |
+| (2026-08-25) | 2026-08 | ### | · [Vier Zahlen, die sich seit ihrem Befund bewegt haben](novaberg-roadmap-2026-08.md#vier-zahlen-die-sich-seit-ihrem-befund-bewegt-haben) |
+| (2026-08-25) | 2026-08 | ### | · [Und drei Befunde über das Register selbst](novaberg-roadmap-2026-08.md#und-drei-befunde-über-das-register-selbst) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 14:10 UTC — Zweite Etappe: 51 Backlog-Einträge, und die Prüfung trifft auf ihren eigenen Vortag](novaberg-roadmap-2026-08.md#25082026-1410-utc--zweite-etappe-51-backlog-einträge-und-die-prüfung-trifft-auf-ihren-eigenen-vortag) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 13:20 UTC — Erste Etappe der Zustandsprüfung: 20 Backlog-Einträge gegen den Code](novaberg-roadmap-2026-08.md#25082026-1320-utc--erste-etappe-der-zustandsprüfung-20-backlog-einträge-gegen-den-code) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 12:40 UTC — Das Backlog bekommt sein Findemittel, und es zählt aus, was ihm fehlt](novaberg-roadmap-2026-08.md#25082026-1240-utc--das-backlog-bekommt-sein-findemittel-und-es-zählt-aus-was-ihm-fehlt) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 12:00 UTC — Das falsch beschriftete Kapitel ist aufgelöst, und die Chronik ist nach Monaten geteilt](novaberg-roadmap-2026-08.md#25082026-1200-utc--das-falsch-beschriftete-kapitel-ist-aufgelöst-und-die-chronik-ist-nach-monaten-geteilt) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 11:10 UTC — Die Chronik bekommt ein Findemittel, und es findet als Erstes einen Fehler in ihr](novaberg-roadmap-2026-08.md#25082026-1110-utc--die-chronik-bekommt-ein-findemittel-und-es-findet-als-erstes-einen-fehler-in-ihr) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 10:05 UTC — 21 Einträge standen als offen und waren es nicht mehr](novaberg-roadmap-2026-08.md#25082026-1005-utc--21-einträge-standen-als-offen-und-waren-es-nicht-mehr) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 09:20 UTC — Das Bugregister wird geteilt, weil seine Größe den Zustand seiner Einträge altern ließ](novaberg-roadmap-2026-08.md#25082026-0920-utc--das-bugregister-wird-geteilt-weil-seine-größe-den-zustand-seiner-einträge-altern-ließ) |
+| 2026-08-25 | 2026-08 | ## | [25.08.2026, 08:40 UTC — Ein Nebensatz verschiebt die Ähnlichkeit weiter, als eine Schwelle reicht](novaberg-roadmap-2026-08.md#25082026-0840-utc--ein-nebensatz-verschiebt-die-ähnlichkeit-weiter-als-eine-schwelle-reicht) |
+| (2026-08-25) | 2026-08 | ### | · [Der Prüfstand war kaputt, nicht der Aufruf](novaberg-roadmap-2026-08.md#der-prüfstand-war-kaputt-nicht-der-aufruf) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 22:00 UTC — Der Rückweg setzte eine Kopie neben ihr Original, und die Buchführung stimmte dabei](novaberg-roadmap-2026-08.md#24082026-2200-utc--der-rückweg-setzte-eine-kopie-neben-ihr-original-und-die-buchführung-stimmte-dabei) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 21:00 UTC — Nova schrieb ihren eigenen Vorschlag dem Nutzer zu, weil ihr Impuls aus dem Verlauf fiel](novaberg-roadmap-2026-08.md#24082026-2100-utc--nova-schrieb-ihren-eigenen-vorschlag-dem-nutzer-zu-weil-ihr-impuls-aus-dem-verlauf-fiel) |
+| (2026-08-24) | 2026-08 | ### | · [Was die zweite Kontrolle einriss — sechs Befunde, davon zwei schwer](novaberg-roadmap-2026-08.md#was-die-zweite-kontrolle-einriss--sechs-befunde-davon-zwei-schwer) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 19:55 UTC — 26 Kandidaten gelesen: zwei waren still behoben, und das Register hat fünf Formate](novaberg-roadmap-2026-08.md#24082026-1955-utc--26-kandidaten-gelesen-zwei-waren-still-behoben-und-das-register-hat-fünf-formate) |
+| (2026-08-24) | 2026-08 | ### | · [Was die zweite Kontrolle davon wieder einriss](novaberg-roadmap-2026-08.md#was-die-zweite-kontrolle-davon-wieder-einriss) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 19:15 UTC — Die Liste steht, das Register hat vier Formate](novaberg-roadmap-2026-08.md#24082026-1915-utc--die-liste-steht-das-register-hat-vier-formate) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 18:20 UTC — Die Uhr faellt, und der Burst steht sofort an ihrer Stelle](novaberg-roadmap-2026-08.md#24082026-1820-utc--die-uhr-faellt-und-der-burst-steht-sofort-an-ihrer-stelle) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 17:05 UTC — Der Impuls-Turn, gemessen: ein Tor, das nie im Leerlauf schliesst](novaberg-roadmap-2026-08.md#24082026-1705-utc--der-impuls-turn-gemessen-ein-tor-das-nie-im-leerlauf-schliesst) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 15:50 UTC — Der Kanal war gruen und aus dem Repositorium nicht herstellbar](novaberg-roadmap-2026-08.md#24082026-1550-utc--der-kanal-war-gruen-und-aus-dem-repositorium-nicht-herstellbar) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 13:35 UTC — Der Telegram-Kanal ist aus, und der abgeloeste war der unruhigere](novaberg-roadmap-2026-08.md#24082026-1335-utc--der-telegram-kanal-ist-aus-und-der-abgeloeste-war-der-unruhigere) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 12:45 UTC — Der Wartungslauf, und eine zweite Saettigung darunter](novaberg-roadmap-2026-08.md#24082026-1245-utc--der-wartungslauf-und-eine-zweite-saettigung-darunter) |
+| 2026-08-24 | 2026-08 | ## | [24.08.2026, 12:10 UTC — Die Salienz-Skala, und der Verstaerker, der sich selbst fuetterte](novaberg-roadmap-2026-08.md#24082026-1210-utc--die-salienz-skala-und-der-verstaerker-der-sich-selbst-fuetterte) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 23:15 UTC — Eine Zeile hielt Novas Eigeninitiative acht Tage geschlossen](novaberg-roadmap-2026-08.md#23082026-2315-utc--eine-zeile-hielt-novas-eigeninitiative-acht-tage-geschlossen) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 22:40 UTC — Die Messung zweier Bauteile fand den Weg dahin geschlossen](novaberg-roadmap-2026-08.md#23082026-2240-utc--die-messung-zweier-bauteile-fand-den-weg-dahin-geschlossen) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 21:55 UTC — Rang 5: fuenf Knoten, und zweimal widerspricht die Nachmessung dem Befund](novaberg-roadmap-2026-08.md#23082026-2155-utc--rang-5-fuenf-knoten-und-zweimal-widerspricht-die-nachmessung-dem-befund) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 20:10 UTC — Eine Zeile, deren Gegenstand es nicht mehr gibt](novaberg-roadmap-2026-08.md#23082026-2010-utc--eine-zeile-deren-gegenstand-es-nicht-mehr-gibt) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 19:20 UTC — Sieben Prompt-Blöcke, die niemand geladen hat](novaberg-roadmap-2026-08.md#23082026-1920-utc--sieben-prompt-blöcke-die-niemand-geladen-hat) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 18:50 UTC — Eine Konstante, die zweimal dastand, und niemand sah es](novaberg-roadmap-2026-08.md#23082026-1850-utc--eine-konstante-die-zweimal-dastand-und-niemand-sah-es) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 18:05 UTC — Archiviert sieht nicht mehr aus wie geltend](novaberg-roadmap-2026-08.md#23082026-1805-utc--archiviert-sieht-nicht-mehr-aus-wie-geltend) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 17:15 UTC — Eine Messung, die gegen den Bau entscheidet](novaberg-roadmap-2026-08.md#23082026-1715-utc--eine-messung-die-gegen-den-bau-entscheidet) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 15:40 UTC — Nicht gesehen ist nicht fort](novaberg-roadmap-2026-08.md#23082026-1540-utc--nicht-gesehen-ist-nicht-fort) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 10:20 UTC — Der Homeserver zieht nach Postgres, und der Client haengt dran](novaberg-roadmap-2026-08.md#23082026-1020-utc--der-homeserver-zieht-nach-postgres-und-der-client-haengt-dran) |
+| 2026-08-23 | 2026-08 | ## | [23.08.2026, 01:00 UTC — Ein Kanal mit zwei Absendern](novaberg-roadmap-2026-08.md#23082026-0100-utc--ein-kanal-mit-zwei-absendern) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 20:15 UTC — Der Wissensspeicher bekommt eine Ebene und wird zur Wurzel](novaberg-roadmap-2026-08.md#22082026-2015-utc--der-wissensspeicher-bekommt-eine-ebene-und-wird-zur-wurzel) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 19:05 UTC — Der Eigentuemer wird gefragt, nicht geraten](novaberg-roadmap-2026-08.md#22082026-1905-utc--der-eigentuemer-wird-gefragt-nicht-geraten) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 16:45 UTC — Jede Wurzel sagt, wessen Material sie traegt](novaberg-roadmap-2026-08.md#22082026-1645-utc--jede-wurzel-sagt-wessen-material-sie-traegt) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 14:45 UTC — Die Profil-Prompts bekommen jede Traeger-Form als Datum](novaberg-roadmap-2026-08.md#22082026-1445-utc--die-profil-prompts-bekommen-jede-traeger-form-als-datum) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 11:20 UTC — Die Rangfolge steht jetzt im Register, nicht im Gespraech](novaberg-roadmap-2026-08.md#22082026-1120-utc--die-rangfolge-steht-jetzt-im-register-nicht-im-gespraech) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 10:55 UTC — Eine neue Person bekommt keine geratene Haltung, sondern eine unvoreingenommene](novaberg-roadmap-2026-08.md#22082026-1055-utc--eine-neue-person-bekommt-keine-geratene-haltung-sondern-eine-unvoreingenommene) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 09:35 UTC — Eine Spanne ohne Fall ist kein Nachweis, aber eine Zahl](novaberg-roadmap-2026-08.md#22082026-0935-utc--eine-spanne-ohne-fall-ist-kein-nachweis-aber-eine-zahl) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 09:10 UTC — Zwei Stimmen zur selben Frage, und eine war die aeltere](novaberg-roadmap-2026-08.md#22082026-0910-utc--zwei-stimmen-zur-selben-frage-und-eine-war-die-aeltere) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 08:35 UTC — Ein Defekt, der seit acht Tagen behoben war, und warum niemand es sah](novaberg-roadmap-2026-08.md#22082026-0835-utc--ein-defekt-der-seit-acht-tagen-behoben-war-und-warum-niemand-es-sah) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 08:15 UTC — Ein Umlaut kostete das ganze Urteil, und die Messung dazu trug nicht](novaberg-roadmap-2026-08.md#22082026-0815-utc--ein-umlaut-kostete-das-ganze-urteil-und-die-messung-dazu-trug-nicht) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 00:40 UTC — Eine Bestaetigung kann kein Datum mehr erfinden](novaberg-roadmap-2026-08.md#22082026-0040-utc--eine-bestaetigung-kann-kein-datum-mehr-erfinden) |
+| 2026-08-22 | 2026-08 | ## | [22.08.2026, 00:20 UTC — Die Verdichtung sieht jetzt, was tatsaechlich geschah](novaberg-roadmap-2026-08.md#22082026-0020-utc--die-verdichtung-sieht-jetzt-was-tatsaechlich-geschah) |
+| 2026-08-21 | 2026-08 | ## | [21.08.2026, 23:50 UTC — Die Abrufschwelle wirkt auch dort, wo jemand wirklich fragt](novaberg-roadmap-2026-08.md#21082026-2350-utc--die-abrufschwelle-wirkt-auch-dort-wo-jemand-wirklich-fragt) |
+| 2026-08-21 | 2026-08 | ## | [21.08.2026, 22:50 UTC — Das Defektregister ist auszaehlbar: 64 offen, 18 behoben](novaberg-roadmap-2026-08.md#21082026-2250-utc--das-defektregister-ist-auszaehlbar-64-offen-18-behoben) |
+| 2026-08-21 | 2026-08 | ## | [21.08.2026, 10:48 UTC — Zwei Kandidaten verbraucht, die Ursache belegt: der Index trägt neun Gegenstände je Datei](novaberg-roadmap-2026-08.md#21082026-1048-utc--zwei-kandidaten-verbraucht-die-ursache-belegt-der-index-trägt-neun-gegenstände-je-datei) |
+| 2026-08-21 | 2026-08 | ## | [21.08.2026, 10:30 UTC — Das Kurzzeitgedächtnis darf schweigen](novaberg-roadmap-2026-08.md#21082026-1030-utc--das-kurzzeitgedächtnis-darf-schweigen) |
+| 2026-08-21 | 2026-08 | ## | [21.08.2026, 09:40 UTC — Query Rewriting: die vier ungemessenen Konsumenten sind gemessen](novaberg-roadmap-2026-08.md#21082026-0940-utc--query-rewriting-die-vier-ungemessenen-konsumenten-sind-gemessen) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, 19:38 UTC — Alle 70 Kennungen gegen den Code gehalten: zwölf waren erledigt](novaberg-roadmap-2026-08.md#20082026-1938-utc--alle-70-kennungen-gegen-den-code-gehalten-zwölf-waren-erledigt) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, Nacht — Der Suchschlüssel trägt jetzt den Gegenstand des Gesprächs](novaberg-roadmap-2026-08.md#20082026-nacht--der-suchschlüssel-trägt-jetzt-den-gegenstand-des-gesprächs) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, später Abend — Die Featureliste, zum zweiten Mal gegen den Bestand gehalten](novaberg-roadmap-2026-08.md#20082026-später-abend--die-featureliste-zum-zweiten-mal-gegen-den-bestand-gehalten) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, Abend — Die Fundliste ist klassifiziert und leer](novaberg-roadmap-2026-08.md#20082026-abend--die-fundliste-ist-klassifiziert-und-leer) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, später Nachmittag — Vier Register führten ihren Verlauf in je einer Zeile](novaberg-roadmap-2026-08.md#20082026-später-nachmittag--vier-register-führten-ihren-verlauf-in-je-einer-zeile) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, abends — Ihr eigenes Inneres kam bei ihr als dritte Stelle an](novaberg-roadmap-2026-08.md#20082026-abends--ihr-eigenes-inneres-kam-bei-ihr-als-dritte-stelle-an) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, nachmittags — Auf zwölf Zeichen kamen 838 zurück](novaberg-roadmap-2026-08.md#20082026-nachmittags--auf-zwölf-zeichen-kamen-838-zurück) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, nachmittags — Der Index versteht jetzt jedes Format, das er annimmt](novaberg-roadmap-2026-08.md#20082026-nachmittags--der-index-versteht-jetzt-jedes-format-das-er-annimmt) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, nachmittags — Die Gliederung kommt aus einem Parser, und der Riegel bleibt trotzdem stehen](novaberg-roadmap-2026-08.md#20082026-nachmittags--die-gliederung-kommt-aus-einem-parser-und-der-riegel-bleibt-trotzdem-stehen) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, nachmittags — Die Blockkarte war halbiert, und nichts daran sah nach einem Fehler aus](novaberg-roadmap-2026-08.md#20082026-nachmittags--die-blockkarte-war-halbiert-und-nichts-daran-sah-nach-einem-fehler-aus) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, mittags — Die Bibliothek findet auf Themenhöhe und ist auf Inhaltshöhe blind](novaberg-roadmap-2026-08.md#20082026-mittags--die-bibliothek-findet-auf-themenhöhe-und-ist-auf-inhaltshöhe-blind) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, mittags — Ein Umbau, der vollständig stand und nichts brachte](novaberg-roadmap-2026-08.md#20082026-mittags--ein-umbau-der-vollständig-stand-und-nichts-brachte) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, mittags — Der Lauf sagt jetzt, was er verloren hat](novaberg-roadmap-2026-08.md#20082026-mittags--der-lauf-sagt-jetzt-was-er-verloren-hat) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, mittags — Der Boden trägt, und der Fehler sitzt woanders](novaberg-roadmap-2026-08.md#20082026-mittags--der-boden-trägt-und-der-fehler-sitzt-woanders) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026, vormittags — Die Bitte um JSON wird zur Fessel, und eine Zusage fällt dabei zweimal](novaberg-roadmap-2026-08.md#20082026-vormittags--die-bitte-um-json-wird-zur-fessel-und-eine-zusage-fällt-dabei-zweimal) |
+| 2026-08-20 | 2026-08 | ## | [20.08.2026 — Die Figur bekommt die Dokumente über sich selbst, und der Wächter verliert fünf davon still](novaberg-roadmap-2026-08.md#20082026--die-figur-bekommt-die-dokumente-über-sich-selbst-und-der-wächter-verliert-fünf-davon-still) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026 — Drei Rollen je Silo, und die Regel steht vor dem Bau](novaberg-roadmap-2026-08.md#19082026--drei-rollen-je-silo-und-die-regel-steht-vor-dem-bau) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026, nachts — Ein Vektor je Thema, und die Bibliothek findet](novaberg-roadmap-2026-08.md#19082026-nachts--ein-vektor-je-thema-und-die-bibliothek-findet) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026, nachts — Die Schwelle war nie das Problem](novaberg-roadmap-2026-08.md#19082026-nachts--die-schwelle-war-nie-das-problem) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026, nachts — Die Laufzeit springt zwölf Versionen, und ein Vorgabewert kippt](novaberg-roadmap-2026-08.md#19082026-nachts--die-laufzeit-springt-zwölf-versionen-und-ein-vorgabewert-kippt) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026, spät — Die Laufzeit ist vier Monate alt, und die Nulllinie steht](novaberg-roadmap-2026-08.md#19082026-spät--die-laufzeit-ist-vier-monate-alt-und-die-nulllinie-steht) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026, abends — Die tragende Variable bekommt ihre Spur](novaberg-roadmap-2026-08.md#19082026-abends--die-tragende-variable-bekommt-ihre-spur) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026 — Die Bibliothek wird bestellbar, und ein Riegel sperrt beinahe zwei Dienste aus](novaberg-roadmap-2026-08.md#19082026--die-bibliothek-wird-bestellbar-und-ein-riegel-sperrt-beinahe-zwei-dienste-aus) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026 — Ein fremder Dialog als Messgerät, und drei Umbauten, die nicht stattfanden](novaberg-roadmap-2026-08.md#19082026--ein-fremder-dialog-als-messgerät-und-drei-umbauten-die-nicht-stattfanden) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026 — Der Rückweg bekommt seinen zweiten Weg, und der dritte fällt weg](novaberg-roadmap-2026-08.md#19082026--der-rückweg-bekommt-seinen-zweiten-weg-und-der-dritte-fällt-weg) |
+| 2026-08-19 | 2026-08 | ## | [19.08.2026 — Die Spiegelung ist gebrochen, nachgemessen](novaberg-roadmap-2026-08.md#19082026--die-spiegelung-ist-gebrochen-nachgemessen) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Der Wackelzeuge ist still, und die Zahl, die den Fall trägt, ist eine Null](novaberg-roadmap-2026-08.md#18082026--der-wackelzeuge-ist-still-und-die-zahl-die-den-fall-trägt-ist-eine-null) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Der Rückweg schließt den Kreis, und der erste Lauf schrieb nichts](novaberg-roadmap-2026-08.md#18082026--der-rückweg-schließt-den-kreis-und-der-erste-lauf-schrieb-nichts) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Der lesende Dienst bekommt seinen Aufrufer, und die Zahl steht in der Antwort](novaberg-roadmap-2026-08.md#18082026--der-lesende-dienst-bekommt-seinen-aufrufer-und-die-zahl-steht-in-der-antwort) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Ein Boden, der am selben Tag fiel, und zwei Kanäle statt einer besseren Zahl](novaberg-roadmap-2026-08.md#18082026--ein-boden-der-am-selben-tag-fiel-und-zwei-kanäle-statt-einer-besseren-zahl) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Eine Datei erreicht die Figur, und die Beschriftung ist die Aussage](novaberg-roadmap-2026-08.md#18082026--eine-datei-erreicht-die-figur-und-die-beschriftung-ist-die-aussage) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Der Wächter, und ein Vorfilter, den ein Zeuge widerlegt hat](novaberg-roadmap-2026-08.md#18082026--der-wächter-und-ein-vorfilter-den-ein-zeuge-widerlegt-hat) |
+| (2026-08-18) | 2026-08 | ### | · [Der Vorfilter, den ein Zeuge gekippt hat](novaberg-roadmap-2026-08.md#der-vorfilter-den-ein-zeuge-gekippt-hat) |
+| (2026-08-18) | 2026-08 | ### | · [Was ausdrücklich nicht gebaut ist](novaberg-roadmap-2026-08.md#was-ausdrücklich-nicht-gebaut-ist) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Der erste Dienst, dessen Anmeldung vor dem Code stand](novaberg-roadmap-2026-08.md#18082026--der-erste-dienst-dessen-anmeldung-vor-dem-code-stand) |
+| (2026-08-18) | 2026-08 | ### | · [Zwei Defekte, die erst die Messung fand — beide im eigenen Neubau](novaberg-roadmap-2026-08.md#zwei-defekte-die-erst-die-messung-fand--beide-im-eigenen-neubau) |
+| 2026-08-18 | 2026-08 | ## | [18.08.2026 — Die Werkzeugschicht für Dateien steht, der Dienst nicht](novaberg-roadmap-2026-08.md#18082026--die-werkzeugschicht-für-dateien-steht-der-dienst-nicht) |
+| 2026-08-17 | 2026-08 | ## | [17.08.2026 — Die Anmeldung bekommt einen Leser, der ihr widersprechen kann](novaberg-roadmap-2026-08.md#17082026--die-anmeldung-bekommt-einen-leser-der-ihr-widersprechen-kann) |
+| 2026-08-17 | 2026-08 | ## | [17.08.2026 — Ein erfundenes Datum, und die Prüfung dagegen](novaberg-roadmap-2026-08.md#17082026--ein-erfundenes-datum-und-die-prüfung-dagegen) |
+| 2026-08-17 | 2026-08 | ## | [17.08.2026 — Impulse fallen aus drei von fünf Profilen, und zwar begründet](novaberg-roadmap-2026-08.md#17082026--impulse-fallen-aus-drei-von-fünf-profilen-und-zwar-begründet) |
+| 2026-08-17 | 2026-08 | ## | [17.08.2026 — Jede Perspektive liest ihre eigene Seite](novaberg-roadmap-2026-08.md#17082026--jede-perspektive-liest-ihre-eigene-seite) |
+| 2026-08-16 | 2026-08 | ## | [16.08.2026 — Der Charakter des Menschen wurde aus den Gedanken der Figur destilliert](novaberg-roadmap-2026-08.md#16082026--der-charakter-des-menschen-wurde-aus-den-gedanken-der-figur-destilliert) |
+| 2026-08-16 | 2026-08 | ## | [16.08.2026 — Der Adaptiv-Hash wählt nach Stärke statt nach Fundreihenfolge](novaberg-roadmap-2026-08.md#16082026--der-adaptiv-hash-wählt-nach-stärke-statt-nach-fundreihenfolge) |
+| 2026-08-16 | 2026-08 | ## | [16.08.2026 — Ausgabe-Verifikation der Knoten](novaberg-roadmap-2026-08.md#16082026--ausgabe-verifikation-der-knoten) |
+| 2026-08-16 | 2026-08 | ## | [Chat 145 (16.08.2026) — Das oberste Band war leer, und niemand wusste es ✅](novaberg-roadmap-2026-08.md#chat-145-16082026--das-oberste-band-war-leer-und-niemand-wusste-es) |
+| (2026-08-16) | 2026-08 | ### | · [Der erste: die Ursache war widerlegt, die Marke blieb](novaberg-roadmap-2026-08.md#der-erste-die-ursache-war-widerlegt-die-marke-blieb) |
+| (2026-08-16) | 2026-08 | ### | · [Der zweite: die Abhilfe war zehn Tage älter als der Eintrag](novaberg-roadmap-2026-08.md#der-zweite-die-abhilfe-war-zehn-tage-älter-als-der-eintrag) |
+| (2026-08-16) | 2026-08 | ### | · [Was daraus für das Verfahren folgt](novaberg-roadmap-2026-08.md#was-daraus-für-das-verfahren-folgt) |
+| 2026-08-16 | 2026-08 | ## | [Chat 145 (16.08.2026) — Die Frist löschte die Wichtigsten, weil sie die Wichtigsten sind 🔶](novaberg-roadmap-2026-08.md#chat-145-16082026--die-frist-löschte-die-wichtigsten-weil-sie-die-wichtigsten-sind) |
+| (2026-08-16) | 2026-08 | ### | · [Der Befund liegt in der Auswahl, nicht im einzelnen Aufruf](novaberg-roadmap-2026-08.md#der-befund-liegt-in-der-auswahl-nicht-im-einzelnen-aufruf) |
+| (2026-08-16) | 2026-08 | ### | · [Gebaut](novaberg-roadmap-2026-08.md#gebaut-1) |
+| (2026-08-16) | 2026-08 | ### | · [Was der Zeuge kann, was ein Wertetest nicht kann](novaberg-roadmap-2026-08.md#was-der-zeuge-kann-was-ein-wertetest-nicht-kann) |
+| (2026-08-16) | 2026-08 | ### | · [Offen geblieben](novaberg-roadmap-2026-08.md#offen-geblieben) |
+| 2026-08-16 | 2026-08 | ## | [Chat 144 (16.08.2026) — Ein verworfener Mechanismus, und darunter ein zweiter, der gebaut ist und keinen Leser hat ✅](novaberg-roadmap-2026-08.md#chat-144-16082026--ein-verworfener-mechanismus-und-darunter-ein-zweiter-der-gebaut-ist-und-keinen-leser-hat) |
+| (2026-08-16) | 2026-08 | ### | · [Unter einem Namen standen zwei Dinge](novaberg-roadmap-2026-08.md#unter-einem-namen-standen-zwei-dinge) |
+| (2026-08-16) | 2026-08 | ### | · [Und die zweite Kontrolle hat den Befund zur Hälfte widerlegt — die härtere Hälfte](novaberg-roadmap-2026-08.md#und-die-zweite-kontrolle-hat-den-befund-zur-hälfte-widerlegt--die-härtere-hälfte) |
+| (2026-08-16) | 2026-08 | ### | · [Der Abgleich nach außen](novaberg-roadmap-2026-08.md#der-abgleich-nach-außen) |
+| 2026-08-16 | 2026-08 | ## | [Chat 143 (16.08.2026) — Die Konventionen werden gegen den Code gehalten, und eine schrieb den Fehler vor ✅](novaberg-roadmap-2026-08.md#chat-143-16082026--die-konventionen-werden-gegen-den-code-gehalten-und-eine-schrieb-den-fehler-vor) |
+| 2026-08-15 | 2026-08 | ## | [Chat 143 (15.08.2026) — Der Riegel misst den Moment, nicht die Person, und die Uhr fällt ✅](novaberg-roadmap-2026-08.md#chat-143-15082026--der-riegel-misst-den-moment-nicht-die-person-und-die-uhr-fällt) |
+| 2026-08-15 | 2026-08 | ## | [Chat 142 (15.08.2026) — Der Gedanke bringt seinen Zustand mit, und die Haltung überlebt den Turn 🔶](novaberg-roadmap-2026-08.md#chat-142-15082026--der-gedanke-bringt-seinen-zustand-mit-und-die-haltung-überlebt-den-turn) |
+| (2026-08-15) | 2026-08 | ### | · [Die Haltung überlebt den Turn — die Voraussetzung von Bauteil D](novaberg-roadmap-2026-08.md#die-haltung-überlebt-den-turn--die-voraussetzung-von-bauteil-d) |
+| (2026-08-15) | 2026-08 | ### | · [Die Nachprüfung — und was sie noch fand](novaberg-roadmap-2026-08.md#die-nachprüfung--und-was-sie-noch-fand) |
+| (2026-08-15) | 2026-08 | ### | · [Riegel 1 — ob sie überhaupt zugeht](novaberg-roadmap-2026-08.md#riegel-1--ob-sie-überhaupt-zugeht) |
+| (2026-08-15) | 2026-08 | ### | · [Die zweite Kontrolle des Riegels — und was sie fand](novaberg-roadmap-2026-08.md#die-zweite-kontrolle-des-riegels--und-was-sie-fand) |
+| (2026-08-15) | 2026-08 | ### | · [Die Queue bekommt die dritte Größe ihrer Lage](novaberg-roadmap-2026-08.md#die-queue-bekommt-die-dritte-größe-ihrer-lage) |
+| 2026-08-15 | 2026-08 | ## | [Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅](novaberg-roadmap-2026-08.md#chat-141-15082026--die-queue-zieht-um-und-ein-gedanke-verfällt-statt-gelöscht-zu-werden) |
+| 2026-08-15 | 2026-08 | ## | [Chat 140 (15.08.2026) — Eine Verbindung, die verworfen wird, erfährt davon ✅](novaberg-roadmap-2026-08.md#chat-140-15082026--eine-verbindung-die-verworfen-wird-erfährt-davon) |
+| (2026-08-15) | 2026-08 | ### | · [Bauteil A — der Verfall über das Intervall](novaberg-roadmap-2026-08.md#bauteil-a--der-verfall-über-das-intervall) |
+| (2026-08-15) | 2026-08 | ### | · [Der Stapel bekommt, was der Auftrag trägt](novaberg-roadmap-2026-08.md#der-stapel-bekommt-was-der-auftrag-trägt) |
+| 2026-08-15 | 2026-08 | ## | [Chat 139 (14./15.08.2026) — Drei Bauteile, und ein Verbot räumt seinen Platz ✅](novaberg-roadmap-2026-08.md#chat-139-1415082026--drei-bauteile-und-ein-verbot-räumt-seinen-platz) |
+| 2026-08-14 | 2026-08 | ## | [Chat 139 (14.08.2026) — Der Reiz-Platz trägt nur noch fremde Rede 🔶](novaberg-roadmap-2026-08.md#chat-139-14082026--der-reiz-platz-trägt-nur-noch-fremde-rede) |
+| (2026-08-14) | 2026-08 | ### | · [Aus vier Stellen wurden elf](novaberg-roadmap-2026-08.md#aus-vier-stellen-wurden-elf) |
+| (2026-08-14) | 2026-08 | ### | · [Die Bauart](novaberg-roadmap-2026-08.md#die-bauart) |
+| (2026-08-14) | 2026-08 | ### | · [Die Messung](novaberg-roadmap-2026-08.md#die-messung-4) |
+| (2026-08-14) | 2026-08 | ### | · [Der Materialblock — und die Zuschreibung kippt](novaberg-roadmap-2026-08.md#der-materialblock--und-die-zuschreibung-kippt) |
+| 2026-08-14 | 2026-08 | ## | [Chat 138 (13./14.08.2026) — Der Verfasser bekommt eine Aufgabe, und die Messung dreht den Tag ✅](novaberg-roadmap-2026-08.md#chat-138-1314082026--der-verfasser-bekommt-eine-aufgabe-und-die-messung-dreht-den-tag) |
+| (2026-08-14) | 2026-08 | ### | · [Ein Wert über den vorigen Turn entschied über diesen](novaberg-roadmap-2026-08.md#ein-wert-über-den-vorigen-turn-entschied-über-diesen) |
+| (2026-08-14) | 2026-08 | ### | · [Der Block hing an der Hypothese und nahm die Landschaft mit](novaberg-roadmap-2026-08.md#der-block-hing-an-der-hypothese-und-nahm-die-landschaft-mit) |
+| (2026-08-14) | 2026-08 | ### | · [Der Auftrag wird eine Aufgabe](novaberg-roadmap-2026-08.md#der-auftrag-wird-eine-aufgabe) |
+| (2026-08-14) | 2026-08 | ### | · [Was offen bleibt](novaberg-roadmap-2026-08.md#was-offen-bleibt) |
+| (2026-08-14) | 2026-08 | ### | · [Der Tag danach — gemessen statt gebaut](novaberg-roadmap-2026-08.md#der-tag-danach--gemessen-statt-gebaut) |
+| (2026-08-14) | 2026-08 | ### | · [Zwei Konzepte statt eines Baus](novaberg-roadmap-2026-08.md#zwei-konzepte-statt-eines-baus) |
+| 2026-08-13 | 2026-08 | ## | [Chat 137 (12./13.08.2026) — Der Prompt wird ein Drehbuch, und vier Messgeräte messen nichts ✅](novaberg-roadmap-2026-08.md#chat-137-1213082026--der-prompt-wird-ein-drehbuch-und-vier-messgeräte-messen-nichts) |
+| (2026-08-13) | 2026-08 | ### | · [Die Wörter kommen an](novaberg-roadmap-2026-08.md#die-wörter-kommen-an) |
+| (2026-08-13) | 2026-08 | ### | · [Der Prompt wird ein Drehbuch](novaberg-roadmap-2026-08.md#der-prompt-wird-ein-drehbuch) |
+| (2026-08-13) | 2026-08 | ### | · [Die Nulllinie — macht der Prompt eine Nova?](novaberg-roadmap-2026-08.md#die-nulllinie--macht-der-prompt-eine-nova) |
+| (2026-08-13) | 2026-08 | ### | · [Vier Messgeräte, die nichts gemessen haben](novaberg-roadmap-2026-08.md#vier-messgeräte-die-nichts-gemessen-haben) |
+| 2026-08-11 | 2026-08 | ## | [Chat 136 (11.08.2026) — Der Deckel war die Rauschquelle, und die Übersteuerung hatte nie gegriffen ✅](novaberg-roadmap-2026-08.md#chat-136-11082026--der-deckel-war-die-rauschquelle-und-die-übersteuerung-hatte-nie-gegriffen) |
+| (2026-08-11) | 2026-08 | ### | · [Die Verdichtung: gemessen, und der Deckel verliert](novaberg-roadmap-2026-08.md#die-verdichtung-gemessen-und-der-deckel-verliert) |
+| (2026-08-11) | 2026-08 | ### | · [Der Haltungsraum: eine Übersteuerung, die es nie gab](novaberg-roadmap-2026-08.md#der-haltungsraum-eine-übersteuerung-die-es-nie-gab) |
+| (2026-08-11) | 2026-08 | ### | · [Die Rundungsvorgabe fällt](novaberg-roadmap-2026-08.md#die-rundungsvorgabe-fällt) |
+| 2026-08-12 | 2026-08 | ### | · [Nachgemessen am 12.08.2026: drei Paare unter derselben Anordnung](novaberg-roadmap-2026-08.md#nachgemessen-am-12082026-drei-paare-unter-derselben-anordnung) |
+| (2026-08-12) | 2026-08 | ### | · [Abends: In welcher Form kommt eine Vorgabe überhaupt an?](novaberg-roadmap-2026-08.md#abends-in-welcher-form-kommt-eine-vorgabe-überhaupt-an) |
+| (2026-08-12) | 2026-08 | ### | · [Der Beleg, dass die offene Destillation trägt: drei Personen, drei Novas](novaberg-roadmap-2026-08.md#der-beleg-dass-die-offene-destillation-trägt-drei-personen-drei-novas) |
+| 2026-08-09 | 2026-08 | ## | [Chat 135 (09.08.2026) — Das Log überlebt den Behälter, der es geschrieben hat ✅](novaberg-roadmap-2026-08.md#chat-135-09082026--das-log-überlebt-den-behälter-der-es-geschrieben-hat) |
+| (2026-08-09) | 2026-08 | ### | · [Das Sampling-Profil reist mit der Messung](novaberg-roadmap-2026-08.md#das-sampling-profil-reist-mit-der-messung) |
+| (2026-08-09) | 2026-08 | ### | · [`distanz = 1,00` war kein Messwert, sondern die Tonlage eines Aktenauszugs](novaberg-roadmap-2026-08.md#distanz--100-war-kein-messwert-sondern-die-tonlage-eines-aktenauszugs) |
+| (2026-08-09) | 2026-08 | ### | · [Die Skala war das Messgerät, nicht der Gegenstand ✅](novaberg-roadmap-2026-08.md#die-skala-war-das-messgerät-nicht-der-gegenstand) |
+| (2026-08-09) | 2026-08 | ### | · [Das zweite Rad bekommt, was das erste seit drei Wochen hat ✅](novaberg-roadmap-2026-08.md#das-zweite-rad-bekommt-was-das-erste-seit-drei-wochen-hat) |
+| (2026-08-09) | 2026-08 | ### | · [Der Lauf bestimmt, wann der Charakter entsteht ✅](novaberg-roadmap-2026-08.md#der-lauf-bestimmt-wann-der-charakter-entsteht) |
+| 2026-08-09 | 2026-08 | ## | [Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅](novaberg-roadmap-2026-08.md#chat-134-09082026--sieben-zip-die-nicht-dasselbe-meinen-und-eine-wand-die-nicht-aufgeht) |
+| (2026-08-09) | 2026-08 | ### | · [Die tragende Vorfrage des Erkenntniszyklus ist beantwortet — er spart](novaberg-roadmap-2026-08.md#die-tragende-vorfrage-des-erkenntniszyklus-ist-beantwortet--er-spart) |
+| (2026-08-09) | 2026-08 | ### | · [Die Promotion verhungert, sie läuft nicht ab — und ein Fehler kostete bis heute den Gedächtniskandidaten](novaberg-roadmap-2026-08.md#die-promotion-verhungert-sie-läuft-nicht-ab--und-ein-fehler-kostete-bis-heute-den-gedächtniskandidaten) |
+| (2026-08-09) | 2026-08 | ### | · [Zwei Spuren, und der erste Bogen der Reihe steht](novaberg-roadmap-2026-08.md#zwei-spuren-und-der-erste-bogen-der-reihe-steht) |
+| (2026-08-09) | 2026-08 | ### | · [Die Reihe beginnt: eine Messreihe muss abschließen](novaberg-roadmap-2026-08.md#die-reihe-beginnt-eine-messreihe-muss-abschließen) |
+| (2026-08-09) | 2026-08 | ### | · [Die Plausibilitätsprüfung — drei Nähte, ein Ergebnis, vier offene Punkte](novaberg-roadmap-2026-08.md#die-plausibilitätsprüfung--drei-nähte-ein-ergebnis-vier-offene-punkte) |
+| (2026-08-09) | 2026-08 | ### | · [Die Rangordnung — Bänder statt Einzelurteile](novaberg-roadmap-2026-08.md#die-rangordnung--bänder-statt-einzelurteile) |
+| 2026-08-09 | 2026-08 | ## | [Chat 133 (08./09.08.2026) — Drei Orte, die es nicht gab, und ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅](novaberg-roadmap-2026-08.md#chat-133-0809082026--drei-orte-die-es-nicht-gab-und-ein-krisenmarker-den-ein-hoffnungsvolles-wort-auslösen-konnte) |
+| (2026-08-09) | 2026-08 | ### | · [Die Fundliste ist klassifiziert — 155 offene Funde auf null](novaberg-roadmap-2026-08.md#die-fundliste-ist-klassifiziert--155-offene-funde-auf-null) |
+| (2026-08-09) | 2026-08 | ### | · [Drei Linter-Wände statt einer](novaberg-roadmap-2026-08.md#drei-linter-wände-statt-einer) |
+| (2026-08-09) | 2026-08 | ### | · [S21 und S18 über den vollen Eingaberaum](novaberg-roadmap-2026-08.md#s21-und-s18-über-den-vollen-eingaberaum) |
+| (2026-08-09) | 2026-08 | ### | · [B2s Wiederholung ist nicht fahrbar](novaberg-roadmap-2026-08.md#b2s-wiederholung-ist-nicht-fahrbar) |
+| (2026-08-09) | 2026-08 | ### | · [Das Basis-Rad, und warum es heute nicht gesetzt wird](novaberg-roadmap-2026-08.md#das-basis-rad-und-warum-es-heute-nicht-gesetzt-wird) |
+| (2026-08-09) | 2026-08 | ### | · [Die Entscheidung zu B2s Wiederholung ist gefallen](novaberg-roadmap-2026-08.md#die-entscheidung-zu-b2s-wiederholung-ist-gefallen) |
+| 2026-08-08 | 2026-08 | ## | [Chat 132 (08.08.2026) — Ein Messgerät, das sich auf der fernen Hälfte der Nähe-Achse abschaltete ✅](novaberg-roadmap-2026-08.md#chat-132-08082026--ein-messgerät-das-sich-auf-der-fernen-hälfte-der-nähe-achse-abschaltete) |
+| (2026-08-08) | 2026-08 | ### | · [B2 — die Ist-Verteilung, und aus zwei Teilmengen wurden vier](novaberg-roadmap-2026-08.md#b2--die-ist-verteilung-und-aus-zwei-teilmengen-wurden-vier) |
+| (2026-08-08) | 2026-08 | ### | · [Die Kostenfrage, und ein Bauteil, das nie fahrbar war](novaberg-roadmap-2026-08.md#die-kostenfrage-und-ein-bauteil-das-nie-fahrbar-war) |
+| (2026-08-08) | 2026-08 | ### | · [B3, und dann die Naht zwischen Landschaft und Zuwendungsrad](novaberg-roadmap-2026-08.md#b3-und-dann-die-naht-zwischen-landschaft-und-zuwendungsrad) |
+| 2026-08-07 | 2026-08 | ## | [Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅](novaberg-roadmap-2026-08.md#chat-131-07082026--die-trennung-von-kalibrieren-und-validieren-und-eine-zahl-die-ungenauer-ist-als-ihr-p-wert) |
+| (2026-08-07) | 2026-08 | ### | · [Die Entscheidung](novaberg-roadmap-2026-08.md#die-entscheidung-1) |
+| (2026-08-07) | 2026-08 | ### | · [Die Nachrechnung, die den Zuschnitt geändert hat](novaberg-roadmap-2026-08.md#die-nachrechnung-die-den-zuschnitt-geändert-hat) |
+| (2026-08-07) | 2026-08 | ### | · [Der Bezugspunkt wanderte, und eine Begründung von vorgestern fällt](novaberg-roadmap-2026-08.md#der-bezugspunkt-wanderte-und-eine-begründung-von-vorgestern-fällt) |
+| (2026-08-07) | 2026-08 | ### | · [Und dann fiel B6, wenige Stunden nach seiner Aufnahme](novaberg-roadmap-2026-08.md#und-dann-fiel-b6-wenige-stunden-nach-seiner-aufnahme) |
+| (2026-08-07) | 2026-08 | ### | · [Die Staffel-Mechanik, ein zerstörter Bestand, und ein Riegel daraus](novaberg-roadmap-2026-08.md#die-staffel-mechanik-ein-zerstörter-bestand-und-ein-riegel-daraus) |
+| (2026-08-07) | 2026-08 | ### | · [Die Landschaften: alle erreichbar, das Verhältnis nicht](novaberg-roadmap-2026-08.md#die-landschaften-alle-erreichbar-das-verhältnis-nicht) |
+| (2026-08-07) | 2026-08 | ### | · [`novaberg-erreichbarkeit_k.md` — und die Suche, die es kürzer gemacht hat](novaberg-roadmap-2026-08.md#novaberg-erreichbarkeitkmd--und-die-suche-die-es-kürzer-gemacht-hat) |
+| (2026-08-07) | 2026-08 | ### | · [Was dabei abfiel](novaberg-roadmap-2026-08.md#was-dabei-abfiel) |
+| 2026-08-07 | 2026-08 | ## | [Chat 130 (06./07.08.2026) — Vier Messungen ohne eine Zeile Produktivcode, und der Auswahl-Kanal bekommt seine erste Zahl ✅](novaberg-roadmap-2026-08.md#chat-130-0607082026--vier-messungen-ohne-eine-zeile-produktivcode-und-der-auswahl-kanal-bekommt-seine-erste-zahl) |
+| (2026-08-07) | 2026-08 | ### | · [Die beiden Maße, die §0b vorab festgeschrieben und nie erhoben hatte](novaberg-roadmap-2026-08.md#die-beiden-maße-die-0b-vorab-festgeschrieben-und-nie-erhoben-hatte) |
+| (2026-08-07) | 2026-08 | ### | · [Ein Konzept für die Kalibrierung, und die Trennung, an der es hängt](novaberg-roadmap-2026-08.md#ein-konzept-für-die-kalibrierung-und-die-trennung-an-der-es-hängt) |
+| (2026-08-07) | 2026-08 | ### | · [B1 — überträgt der Prompt-Pfad einen Charakterunterschied überhaupt?](novaberg-roadmap-2026-08.md#b1--überträgt-der-prompt-pfad-einen-charakterunterschied-überhaupt) |
+| (2026-08-07) | 2026-08 | ### | · [P10-WIRKUNG beantwortet — und die beiden Gedächtnisschichten verhalten sich gegensätzlich](novaberg-roadmap-2026-08.md#p10-wirkung-beantwortet--und-die-beiden-gedächtnisschichten-verhalten-sich-gegensätzlich) |
+| (2026-08-07) | 2026-08 | ### | · [Was diese Sitzung nicht angefasst hat](novaberg-roadmap-2026-08.md#was-diese-sitzung-nicht-angefasst-hat) |
+| 2026-08-06 | 2026-08 | ## | [Chat 129 (05./06.08.2026) — Ein Name trug zwei Rollen, und der Agent, der nichts beschafft ✅](novaberg-roadmap-2026-08.md#chat-129-0506082026--ein-name-trug-zwei-rollen-und-der-agent-der-nichts-beschafft) |
+| (2026-08-06) | 2026-08 | ### | · [Was dabei abfiel](novaberg-roadmap-2026-08.md#was-dabei-abfiel-1) |
+| (2026-08-06) | 2026-08 | ### | · [In der Nacht: die zweite Hälfte von `SYK-B0` — ein Nullbefund, den die Auswahl erzwungen hat](novaberg-roadmap-2026-08.md#in-der-nacht-die-zweite-hälfte-von-syk-b0--ein-nullbefund-den-die-auswahl-erzwungen-hat) |
+| (2026-08-06) | 2026-08 | ### | · [Am Ende: der Erkenntniszyklus](novaberg-roadmap-2026-08.md#am-ende-der-erkenntniszyklus) |
+| 2026-08-04 | 2026-08 | ## | [Chat 128 (04.08.2026) — Die Bibliothek bekommt ihre Tabelle, und der Test war sein eigener Zünder ✅](novaberg-roadmap-2026-08.md#chat-128-04082026--die-bibliothek-bekommt-ihre-tabelle-und-der-test-war-sein-eigener-zünder) |
+| (2026-08-04) | 2026-08 | ### | · [Was der Test prüft — und was er nicht kann](novaberg-roadmap-2026-08.md#was-der-test-prüft--und-was-er-nicht-kann) |
+| (2026-08-04) | 2026-08 | ### | · [`WIS-3-DATEIEN` — die Bibliothek bekommt ihren Schreibpfad ✅](novaberg-roadmap-2026-08.md#wis-3-dateien--die-bibliothek-bekommt-ihren-schreibpfad) |
+| (2026-08-04) | 2026-08 | ### | · [Die Messung — und was sie über den Bestand sagt](novaberg-roadmap-2026-08.md#die-messung--und-was-sie-über-den-bestand-sagt) |
+| (2026-08-04) | 2026-08 | ### | · [Die Kreuztabelle sagt, wo der Hebel nicht sitzt — und `SYK-B4` Stufe 1 🔶](novaberg-roadmap-2026-08.md#die-kreuztabelle-sagt-wo-der-hebel-nicht-sitzt--und-syk-b4-stufe-1) |
+| (2026-08-04) | 2026-08 | #### | · · [Und dieselbe Stunde widerlegt das Bauteil](novaberg-roadmap-2026-08.md#und-dieselbe-stunde-widerlegt-das-bauteil) |
+| (2026-08-04) | 2026-08 | #### | · · [Und die nächste Messung erledigt auch den Nachfolger — vor dem Bau](novaberg-roadmap-2026-08.md#und-die-nächste-messung-erledigt-auch-den-nachfolger--vor-dem-bau) |
+| (2026-08-04) | 2026-08 | ### | · [`SYK-B1` gemessen — der Kopfblock bewegt nichts ✅](novaberg-roadmap-2026-08.md#syk-b1-gemessen--der-kopfblock-bewegt-nichts) |
+| (2026-08-04) | 2026-08 | #### | · · [Das Werkzeug war dabei zweimal die Untersuchung wert](novaberg-roadmap-2026-08.md#das-werkzeug-war-dabei-zweimal-die-untersuchung-wert) |
+| (2026-08-04) | 2026-08 | ### | · [Die Bibliothek erreicht das Gespräch ✅](novaberg-roadmap-2026-08.md#die-bibliothek-erreicht-das-gespräch) |
+| (2026-08-04) | 2026-08 | ### | · [Der Engpass ist die Warteschlange — eine widerlegte eigene Vermutung 🔶](novaberg-roadmap-2026-08.md#der-engpass-ist-die-warteschlange--eine-widerlegte-eigene-vermutung) |
+| (2026-08-04) | 2026-08 | #### | · · [Nachtrag derselben Nacht: die Freisprechung war voreilig](novaberg-roadmap-2026-08.md#nachtrag-derselben-nacht-die-freisprechung-war-voreilig) |
+| (2026-08-04) | 2026-08 | ### | · [Das Kurzzeitgedächtnis hört jetzt mit demselben Ohr ✅](novaberg-roadmap-2026-08.md#das-kurzzeitgedächtnis-hört-jetzt-mit-demselben-ohr) |
+| 2026-08-04 | 2026-08 | ## | [Chat 127 (04.08.2026) — Die Nulllinie steht, und das Urteil kommt vor dem Text 🔶](novaberg-roadmap-2026-08.md#chat-127-04082026--die-nulllinie-steht-und-das-urteil-kommt-vor-dem-text) |
+| (2026-08-04) | 2026-08 | ### | · [`SYK-B1` — das Urteil steht vor dem Text 🔶](novaberg-roadmap-2026-08.md#syk-b1--das-urteil-steht-vor-dem-text) |
+| (2026-08-04) | 2026-08 | ### | · [Zwei Konzepte, und der Wissensspeicher bekommt seinen Ort ✅](novaberg-roadmap-2026-08.md#zwei-konzepte-und-der-wissensspeicher-bekommt-seinen-ort) |
+| (2026-08-04) | 2026-08 | ### | · [Was dabei widerlegt wurde](novaberg-roadmap-2026-08.md#was-dabei-widerlegt-wurde) |
+| 2026-08-03 | 2026-08 | ## | [Chat 126 (03.08.2026) — Die Charakterbildungs-Messreihe: sechs Bögen, ein Totalausfall ✅](novaberg-roadmap-2026-08.md#chat-126-03082026--die-charakterbildungs-messreihe-sechs-bögen-ein-totalausfall) |
+| (2026-08-03) | 2026-08 | ### | · [Der Befund](novaberg-roadmap-2026-08.md#der-befund) |
+| (2026-08-03) | 2026-08 | ### | · [Was der Befund ausschließt](novaberg-roadmap-2026-08.md#was-der-befund-ausschließt) |
+| (2026-08-03) | 2026-08 | ### | · [Was daneben herauskam](novaberg-roadmap-2026-08.md#was-daneben-herauskam) |
+| 2026-08-02 | 2026-08 | ## | [Chat 126 (02.08.2026) — P10: der Suchschlüssel trägt Novas Antrieb ✅](novaberg-roadmap-2026-08.md#chat-126-02082026--p10-der-suchschlüssel-trägt-novas-antrieb) |
+| (2026-08-02) | 2026-08 | ### | · [Was die Messung ergeben hat](novaberg-roadmap-2026-08.md#was-die-messung-ergeben-hat) |
+| (2026-08-02) | 2026-08 | ### | · [Was die Umsetzung am Konzept widerlegt hat](novaberg-roadmap-2026-08.md#was-die-umsetzung-am-konzept-widerlegt-hat) |
+| 2026-08-02 | 2026-08 | ## | [Chat 125 (02.08.2026) — Der Synapsen-Umbau ist geschlossen: P9 ✅](novaberg-roadmap-2026-08.md#chat-125-02082026--der-synapsen-umbau-ist-geschlossen-p9) |
+| (2026-08-02) | 2026-08 | ### | · [P9a — die Leser, bevor der Drop ihnen die Grundlage nimmt](novaberg-roadmap-2026-08.md#p9a--die-leser-bevor-der-drop-ihnen-die-grundlage-nimmt) |
+| (2026-08-02) | 2026-08 | ### | · [P9b — das Codeschloss](novaberg-roadmap-2026-08.md#p9b--das-codeschloss) |
+| 2026-08-02 | 2026-08 | ## | [Chat 125 (02.08.2026) — Novas Ziele gehören einer Beziehung, und Pixie bedient ein Paar ✅](novaberg-roadmap-2026-08.md#chat-125-02082026--novas-ziele-gehören-einer-beziehung-und-pixie-bedient-ein-paar) |
+| (2026-08-02) | 2026-08 | ### | · [Was dabei abfiel](novaberg-roadmap-2026-08.md#was-dabei-abfiel-2) |
+| 2026-08-01 | 2026-08 | ## | [Chat 124 (01.08.2026) — Eine Queue vor dem HumanGraph, und der Turn bekommt einen Marker ✅](novaberg-roadmap-2026-08.md#chat-124-01082026--eine-queue-vor-dem-humangraph-und-der-turn-bekommt-einen-marker) |
+| 2026-08-01 | 2026-08 | ## | [Chat 124 (01.08.2026) — Jede Antwort nennt den Reiz, den sie beantwortet ✅](novaberg-roadmap-2026-08.md#chat-124-01082026--jede-antwort-nennt-den-reiz-den-sie-beantwortet) |
+| 2026-08-01 | 2026-08 | ## | [Chat 123 (01.08.2026) — Der Riegel zahlt sich noch am selben Tag aus 🔶](novaberg-roadmap-2026-08.md#chat-123-01082026--der-riegel-zahlt-sich-noch-am-selben-tag-aus) |
+| (2026-08-01) | 2026-08 | ### | · [Zwei weitere Stufen desselben Vorfalls](novaberg-roadmap-2026-08.md#zwei-weitere-stufen-desselben-vorfalls) |
+| 2026-08-01 | 2026-08 | ## | [Chat 123 (01.08.2026) — Zwei verlorene Turns, und der Riegel dagegen ✅](novaberg-roadmap-2026-08.md#chat-123-01082026--zwei-verlorene-turns-und-der-riegel-dagegen) |
+| 2026-08-01 | 2026-08 | ## | [Chat 123 (01.08.2026) — Ein Parameter mit zwei Bedeutungen ✅](novaberg-roadmap-2026-08.md#chat-123-01082026--ein-parameter-mit-zwei-bedeutungen) |
+| (2026-08-01) | 2026-08 | ### | · [Die Suite ist wieder grün](novaberg-roadmap-2026-08.md#die-suite-ist-wieder-grün) |
+| 2026-08-01 | 2026-08 | ## | [Chat 123 (01.08.2026) — Die Charakter-Räder werden eine Messreihe ✅](novaberg-roadmap-2026-08.md#chat-123-01082026--die-charakter-räder-werden-eine-messreihe) |
+| (2026-08-01) | 2026-08 | ### | · [Ein Einzelwert war die Ursache, nicht das Symptom](novaberg-roadmap-2026-08.md#ein-einzelwert-war-die-ursache-nicht-das-symptom) |
+| (2026-08-01) | 2026-08 | ### | · [Das Initiative-Rad bekommt dasselbe — und deckt einen Fehler auf](novaberg-roadmap-2026-08.md#das-initiative-rad-bekommt-dasselbe--und-deckt-einen-fehler-auf) |
+| (2026-08-01) | 2026-08 | ### | · [Beim Bauen gegen den Entwurf entschieden](novaberg-roadmap-2026-08.md#beim-bauen-gegen-den-entwurf-entschieden) |
+| (2026-08-01) | 2026-08 | ### | · [Gemessen am laufenden System](novaberg-roadmap-2026-08.md#gemessen-am-laufenden-system) |
 | 2026-07-31 | 2026-07 | ## | [Chat 120 (30.–31.07.2026) — Die Charakter-Räder werden sichtbar, und der Zeitparser bekommt drei Reparaturen ✅](novaberg-roadmap-2026-07.md#chat-120-3031072026--die-charakter-räder-werden-sichtbar-und-der-zeitparser-bekommt-drei-reparaturen) |
 | 2026-07-31 | 2026-07 | ### | · [Der Plattformwechsel ✅ (30.–31.07.2026)](novaberg-roadmap-2026-07.md#der-plattformwechsel--3031072026) |
 | 2026-07-31 | 2026-07 | ### | · [Die README sagt wieder, was der Code tut ✅ (31.07.2026)](novaberg-roadmap-2026-07.md#die-readme-sagt-wieder-was-der-code-tut--31072026) |
