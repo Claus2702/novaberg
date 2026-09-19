@@ -1,14 +1,35 @@
 # Novaberg — Meinungsbildung (Opinion Formation)
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Konzept — Wie Nova zu einer eigenen Haltung kommt
-**Stand:** 5. September 2026, 15:05 UTC (**§2a neu — woher (A) kommt**: Setzung des Eigentümers, dass Prägung und Faszination die Meinungsbildung tragen. Die Grenze zwischen (A) und (B) läuft entlang der **Quelle** — Fäden und Stränge gegen Recherche —, und die Meinung liegt **eine Stufe unterhalb** der valenzblinden Faszination: Die Valenz sitzt im Strang und ist dort **gebaut und im Bestand**, neun Stränge. Vorbehalt: alle neun tragen eine **positive** Valenz). Davor 3. September 2026, 21:30 UTC (**der Ort fuer die Praemisse-Kante existiert** — `abstrakt_knoten` traegt seit heute einen Typ-Diskriminator `art`; die Qualitaetsseite ist gefuellt, die Werteseite traegt keine Zeile, und `praemisse_knoten_id` zeigt weiterhin auf `lzg_knoten`, wo die abstrakten Knoten **nicht** liegen. §5a). Davor 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
-**Pfad:** novaberg/docs/novaberg-thinking-opinion_k.md
-**Status:** Konzept. Skelett steht, Kalibrierung offen. Bewusst offene Punkte sind durchgehend mit ⬜ markiert und in §10 gesammelt.
-**Verwandt:** novaberg-thinking-drive_k.md · novaberg-thinking-frames_k.md · novaberg-memory-synapsen_k.md · novaberg-node-gv_k.md · novaberg-node-tribunal.md · novaberg-pixie.md · novaberg-ei.md
+**Absicht:** Nova bildet im Hintergrund, aus Fäden und Strängen, eine eigene Haltung mit Vorzeichen zu Dingen und bringt sie im Antwort-Pfad als Abruf, Kollision oder Neutral ein — sodass sie einem Nutzer widersprechen kann, statt ihm zu folgen.
+**Stand:** 05.09.2026 (letzte inhaltliche Änderung; in drei Teile aufgeteilt am 19.09.2026)
+**Umsetzung:** `novaberg-featureliste.md` §6, Zeile ⏫ **Meinung / Willensstrang** (🟠) — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md) · [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md)
+**Entschieden:** 1 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md))
 
 > **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
 
+## § → Datei
+
+Die Abschnittsnummern sind bei der Aufteilung geblieben; ein Verweis der Form `novaberg-thinking-opinion_k.md §5a` löst sich über diese Tabelle auf.
+
+| § | Abschnitt | Datei |
+|---|---|---|
+| Kopf | bisheriger Stands-Kopf (Projekt, Dokument, Stand, Pfad, Status, Verwandt) | [`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md), *Bisheriger Kopf* |
+| Vorspann | Übergeordnet: der Erkenntniszyklus | hier |
+| 1 | Leitidee — Meinung ist der Bodensatz eines Wesens | hier |
+| 2 | Zwei Operationen, die nicht verwechselt werden dürfen | hier (mit Hinweis) |
+| 2a | Woher (A) kommt: Prägung und Faszination — Setzung des Eigentümers | hier (mit Hinweis) |
+| 3 | Zwei getrennte Pfade — Bildung und Anwendung | hier |
+| 4 | Die Bildung — Pixie als Erfahrungs-Maschine | hier |
+| 5 | Das Datenmodell — valenzierte Synapsen | hier (mit Hinweis) |
+| 5a | Was davon gebaut ist (30.08.2026) | [`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md) |
+| 6 | Die Anwendung — ein Spreading-Pass, drei Ausgänge | hier |
+| 7 | Die Kalibrierung — der Drehknopf zwischen Schmeichler und Stänkerer | hier |
+| 8 | Charakter als zweifache Funktion | hier |
+| 9 | Fundament-Abhängigkeiten und Phasierung | hier (mit Hinweis) |
+| 10 | Bewusst offene Punkte (Sammlung) — Punkt 1 beschreibt zugleich den **Willensstrang** | [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) |
+| 11 | Verwandte Dokumente | hier |
+| Leitsatz | Schlusszeile | hier |
 
 ---
 
@@ -25,6 +46,8 @@ Eine ehrliche Wache gleich zu Beginn: Tiefe allein genügt nicht. Eine Schleife,
 ---
 
 ## 2. Zwei Operationen, die nicht verwechselt werden dürfen
+
+*Hinweis zur Aufteilung (19.09.2026):* Der Kasten *„Widerlegt am 03.08.2026“* ist ein Messbefund und gehört der Sache nach zur Umsetzung ([`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md)); er bleibt hier, weil er die Abgrenzung von (B) trägt. Der offene Punkt am Ende des Abschnitts steht in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) unter *Offen beim Meister*.
 
 Was wie „Nova hat dazu eine Sicht" klingt, sind in Wahrheit zwei verschiedene Maschinen. Dieses Konzept baut nur die erste.
 
@@ -45,6 +68,8 @@ Der Stolperstein, der das lange verschleiert hat: Dieselbe Oberfläche — „Ki
 ---
 
 ## 2a. Woher (A) kommt: Prägung und Faszination — Setzung des Eigentümers, 05.09.2026
+
+*Hinweis zur Aufteilung (19.09.2026):* Der Abschnitt trägt die Setzung des Eigentümers vom 05.09.2026 im Wortlaut und dazu eine Messung vom selben Tag. Er bleibt ganz hier, weil die Setzung die Absicht von (A) trägt; [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) verweist unter *Entschieden* hierher.
 
 §2 trennt Haltung von rationaler Einschätzung und lässt offen, **woraus** die Haltung entsteht. Der
 Eigentümer hat das am 05.09.2026 gesetzt:
@@ -143,6 +168,8 @@ Pixies Aktivitätstypen speisen unterschiedlich (vgl. drive-Konzept, §5.5):
 
 ## 5. Das Datenmodell — valenzierte Synapsen
 
+*Hinweis zur Aufteilung (19.09.2026):* Die beiden Naming-Wachen am Ende sind offene Punkte, die erste mit einer Messung vom 30.08.2026; sie sind in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) aufgeführt. Was vom Datenmodell gebaut ist, steht in §5a ([`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md)).
+
 Kein neuer flacher Store. Die Meinung ist eine **Annotations-Schicht auf dem assoziativen Gedächtnis** (Synapsen P4) — additive Annotation, eures eigenen Prinzips treu.
 
 Ein Knoten trägt nicht „Thema → Score", sondern mehrwertig:
@@ -165,30 +192,6 @@ Drei Eigenschaften halten:
 ⬜ **Naming-Wache, die schwerere:** **Das Wort „Valenz" ist im Stack bereits vergeben** — an eine der sechs Gesprächsachsen des GV (`GV_VALENZ_SEKTOR` in `config.py`, dazu `valenz_quelle` in der Landschaftszeile). Sie ist **binär**, aus dem Plutchik-Sektor der Turn-Emotion abgeleitet, lebt **einen Turn** und misst, wie der *Moment* gefärbt ist — nicht, wie Nova zur *Sache* steht. `[gemessen]` — 30.08.2026: **618 Landschaftszeilen seit dem 08.08., alle mit Quelle, 573 positiv gegen 45 negativ**; die Achse steht in 93 % der Turns auf 1 und trennt damit fast nichts. Wer die Meinungsschicht wieder `valenz` nennt, legt zwei Gegenstände auf ein Wort. **Vorschlag zur Trennung: `turn_valenz` für die Achse, `haltung` für die Ladung am Knoten** — im Code und in der Doku durchgehalten.
 
 ⬜ **Naming-Wache:** „Cluster" ist im Stack bereits belegt — der GV hat 13 Strategie-Cluster (Dreischicht). Der valenzierte Speicher-Cluster ist etwas anderes. Im Code/Doku konsequent trennen (z.B. *Valenz-Region* vs. *Strategie-Cluster*), sonst droht die Impuls/Leitgedanke-Kollision aus Chat 73.
-
----
-
-## 5a. Was davon gebaut ist (30.08.2026)
-
-**Der Speicher steht: `lzg_knoten_haltung`.** Eine additive Annotation auf `lzg_knoten`, kein zweiter Store — und eine eigene Tabelle statt Spalten, weil ein Knoten **mehrere** Ladungen trägt (je Eigenschaft eine). Genau dieser Widerspruch unterscheidet die Haltung vom Schalter, und Spalten könnten ihn nicht tragen.
-
-| Feld | Was es trägt |
-|---|---|
-| `knoten_id`, `eigenschaft` | der Gegenstand; leere Eigenschaft = die Sache als ganze (die grobe Stufe aus §9) |
-| `ladung` | Vorzeichen **und** Stärke, −1.0 bis +1.0, als `CHECK` im Schema |
-| `emotion`, `quelle` | die Emotion dahinter; die Herkunft ist **Pflicht** — ohne sie ist eine Haltung nicht nachrechenbar |
-| `praemisse_knoten_id` | die Prämisse als **Kante**, wie §5 sie verlangt. Bis es Werte-Knoten gibt, bleibt sie leer — **und seit dem 03.09.2026 gibt es den Ort dafür**: `abstrakt_knoten` trägt einen Typ-Diskriminator `art` mit den Werten `qualitaet` und `wert`. Die Qualitätsseite ist gefüllt (sechs gesetzte Dimensionen, 25 profilierte Träger), **die Werteseite trägt keine Zeile.** Achtung beim Anschluss: Der Fremdschlüssel zeigt heute noch auf `lzg_knoten`, die abstrakten Knoten liegen aber **nicht** dort — Grund und Messwert in `novaberg-memory-qualitaetsprofil.md` §3a |
-| `staerke_roh` / `_decay`, `haeufigkeit`, `aktiv` | die Dynamik des Knotens (`F-VERFALL-1`): eine Haltung ist Gedächtnis, kein Faktum |
-
-**Drei Entscheidungen, die im Code stehen:**
-
-**Eine zweite Beobachtung ist kein zweiter Eintrag.** `UNIQUE (knoten_id, eigenschaft)`; die neue Ladung wandert mit halbem Gewicht in die vorhandene, `haeufigkeit` steigt, die Stärke wird auf 1.0 zurückgesetzt. Ein Ausreißer kippt damit keine gewachsene Haltung, eine wiederholte Erfahrung setzt sich trotzdem durch. Gemessen an einem echten Knoten: 0,8 dann 0,6 ergibt **+0,70 (×2)**.
-
-**Die Netto-Haltung ist gewichtet, nicht gemittelt** (`net_stance`). Eine oft bestätigte Ladung wiegt schwerer als eine einmalige, eine verfallene weniger als eine frische — der Widerspruch bleibt im Ergebnis sichtbar, statt sich wegzukürzen. Beispiel aus dem Betrieb: *faszinierend +0,70 (×2)* gegen *schwer zu fassen −0,40* ergibt **+0,333**. **Die Charaktergewichtung aus §6 fehlt weiterhin** — bis dahin zählt allein die Erfahrung.
-
-**Zwei Aktivitäten, und beide müssen gelten.** Der Graph löscht nicht, er lässt ruhen. Ein Knoten unter der Schwelle steht auf `aktiv = FALSE` und bleibt stehen — seine Ladung ebenso, und sie darf trotzdem nicht mehr sprechen. Der Leseweg verbindet deshalb mit dem Knoten und prüft **dessen** Aktivität mit. Ohne den Verbund hätte eine Haltung ihren Gegenstand überlebt, ohne dass irgendwo etwas falsch aussieht.
-
-**Was fehlt, ausdrücklich:** ein **Erzeuger** (niemand schreibt Ladungen — die Bildung aus §4 ist nicht gebaut) und ein **Leser** im Turn (der Spreading-Pass fragt sie nicht ab). Die Schicht ist damit vollständig gebaut und vollständig ungenutzt; 19 Zeugen decken sie ab, Gegenprobe 2/1/3/1/1.
 
 ---
 
@@ -249,6 +252,8 @@ Der Charakter tritt im System zweimal auf — und das ist die Eleganz:
 
 ## 9. Fundament-Abhängigkeiten und Phasierung
 
+*Hinweis zur Aufteilung (19.09.2026):* Der Abschnitt enthält zwei Messungen vom 30.08.2026 zum Stand der Fundamente. Er bleibt ganz hier, weil er Abhängigkeiten und Reihenfolge trägt; der offene Punkt am Ende ist in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) aufgeführt.
+
 Dieser Bau steht auf zwei Fundamenten. Das ist keine Verschiebung, es ist die Schichtung:
 
 1. **Synapsen P4** — das assoziative Substrat (Knoten/Kanten, Spreading-Aktivierung, Schalen). Die Ladung ist eine *Annotation darauf*. Ohne P4 kein Graph, den man annotieren könnte. `[gemessen]` — 30.08.2026: Das Substrat steht und heißt **`lzg_knoten` / `lzg_kanten`** (nicht `synapse_*`): **3.260 Knoten, 493.730 Kanten**, der Pass läuft (`memory/lzg_knoten.py::spreading_lesen`, `anker_retrieval`, `SCHALEN_FAKTOR`). **Eine Ladungsspalte gibt es nicht** — die Annotationsschicht fehlt vollständig.
@@ -264,31 +269,6 @@ Damit lässt sich der Mechanismus auf Themen-Ebene zünden und live beobachten, 
 **Vision-Horizont (späteres Modell):** Wahrnehmungs-Gravitation, die schon im Enricher färbt, plus die Ziel-Trajektorie im GV. Das sind Schichten, die Nova *zu Nova* machen — sie gehören in die Gesamtvision, sind aber noch nicht Teil dieses Konzepts.
 
 ⬜ **Erdung / Code-vor-Doku-Wache:** Der „verlängerte Gesprächsvektor" existiert live nur als die **Sprünge** (assoziative Hops 1–3) plus Trajektorie und das *rohe* `prompt_embedding`. Das *zielverschobene* Abfrage-Embedding (Wahrnehmungs-Gravitation, `e_nova = e_anfrage × (1−faktor) + Σ(e_ziel × …)`) ist **nicht** implementiert (Chat-87-Fund) — live liegt nur `gravitation = similarity × motivation` als Aktivierungsstärke pro Ziel. Die Meinungs-Abfrage hängt an den *live vorhandenen* Sprüngen + rohem Embedding. Die Vektor-Verschiebung ist selbst ein künftiger Bau, nicht Voraussetzung.
-
----
-
-## 10. Bewusst offene Punkte (Sammlung)
-
-1. ⬜ ~~Grenze zwischen Haltung (A) und rationaler Einschätzung (B)~~ → **gesetzt am 05.09.2026 (§2a): entlang der Quelle** — (A) aus Fäden und Strängen, (B) aus einer Recherche. **Offen bleibt die saubere Kombination beider in einer live-Antwort** (§2).
-
-   **Dieser Punkt hat seit Chat 126 einen Namen: der Willensstrang.** Nicht (A) und nicht (B), sondern die Instanz, die beide führt und daraus einen Einwand komponiert — das *„Du hast im Prinzip recht, aber…"*. Es ist kein neuer Baustein, sondern die **Klammer um drei Stränge**, die einzeln vorliegen und nichts voneinander wissen:
-
-   | Strang | Stand |
-   |---|---|
-   | **Fakten** | vorhanden und intakt — der Abruf liefert den richtigen Wert |
-   | **Haltung** | entworfen (dieses Dokument), hängt an valenzierten Kanten — **die emotionale Hälfte ist gebaut und im Bestand**: neun Stränge mit Valenz (§2a) |
-   | **Selbstbeobachtung** | entworfen — `novaberg-metakognition_k.md` §5.2/§5.3 |
-
-   **Was der Strang zusätzlich verlangt:** Zustimmung und Vorbehalt *gleichzeitig*, mit Mischungsverhältnis. Ein Aufzählungswert kann das nicht ausdrücken; eine Zahl allein ist weicher als Prosa und lädt zum Ausweichen ein. Die Form, die beides hält, trennt Entscheidung und Beschreibung — der diskrete Wert bindet, die Stärke steuert den Ton (§7), und ein Quellenfeld sagt, ob der Vorbehalt aus einem Fakt, aus einer Haltung oder aus beidem stammt.
-
-   **Reihenfolge:** Der Strang steht *hinter* der Eindämmung, nicht davor. §3 nennt den Grund selbst — eine Haltung, die im Turn gebildet wird, ist von dessen Rahmung infiziert; der Strang braucht den offline gefüllten Bodensatz. Die Eindämmung sorgt dafür, dass Nova **bemerkt**, wenn zwei Werte auseinandergehen; der Willensstrang dafür, dass sie etwas dazu **zu sagen** hat. Das erste ist Aufmerksamkeit, das zweite ist Charakter.
-
-   **Gemessen dazu am 03.08.2026:** Der Monotonie-Druck aus `novaberg-metakognition_k.md` §5.2 (Schwelle 40 %) schlüge auf zwei von Novas drei Verteilungen an — `tone` **51,7 %** empathisch und `beziehungs_dynamik` **45,0 %** vertrauen. Bei den Verlaufsformen greift er **nicht** (plateau 29,4 %): Dort fehlen drei Werte ganz, statt dass einer dominiert. **Ein Druck, der auf Dominanz misst, sieht ein leeres Feld nicht.**
-2. ⬜ Gewichtungs-Schema der Komposition — widersprüchliche Eigenschaften → Netto-Haltung (§6).
-3. ⬜ Die drei Kollisions-Schwellen (Schalentiefe, Kanten-Relevanz, Valenz) — der Schmeichler/Stänkerer-Drehknopf (§7).
-4. ⬜ `nova_kern`: Existiert ein Wert, der gegen pures Gefallen drückt? Inhalts-Entscheidung (§8).
-5. ⬜ Naming-Trennung Valenz-Region vs. GV-Strategie-Cluster (§5).
-6. ⬜ Verhältnis dieses Konzepts zum Pixie-Graph-Merge (Pfad 3) und zur Frame-basierten Kognition — Eigenschafts-Valenz hängt am Framing (§9).
 
 ---
 
