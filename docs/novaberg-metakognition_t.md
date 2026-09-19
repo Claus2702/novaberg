@@ -1,0 +1,601 @@
+# Meta-Kognition — Pipeline-Log, Selbstbeobachtung, Vorsätze (Ausarbeitung)
+
+**Teil 2 von 5 — Ausarbeitung.** Absicht und Kopfblock: [`novaberg-metakognition_k.md`](novaberg-metakognition_k.md) · Bauplan und Umstellung: [`novaberg-metakognition_b.md`](novaberg-metakognition_b.md) · Diskussion und Ergänzungen: [`novaberg-metakognition_e.md`](novaberg-metakognition_e.md) · Messungen: [`novaberg-metakognition_m.md`](novaberg-metakognition_m.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; welche Datei einen Abschnitt trägt, sagt die Tabelle *„§ → Datei“* in `_k`.
+
+---
+
+## 2. Schicht 1: Pipeline-Log — ⚠ teilweise gebaut (auditiert Chat 186)
+
+### 2.1 Was wird geloggt?
+
+Pro Turn, pro Node **eine** kompakte Entscheidungs-Zeile. Nicht das gesamte Debug-Log, sondern die *Essenz* — die Entscheidung, die den weiteren Verlauf beeinflusst hat.
+
+Die dritte Spalte hält den heutigen Stand.
+
+| Node | Was geloggt wird | Stand (auditiert Chat 186) |
+|------|-----------------|---------|
+| Perzeption | Erkannte Dimensionen (Intent, Modus, Stil) | **schreibt nicht** |
+| EI-Calc | Berechnete Emotion, Arousal, Akkumulation | **schreibt** — `berechnung`, `db_write`, `span_start`/`span_end`; nicht aus `ei_calc.py`, sondern aus dem Nachbarknoten `ei_calc_persist` |
+| Router | Domain, Ziel, Confidence | **schreibt nicht** |
+| Planner | Gewählter Agent, Begründung | **schreibt nicht** |
+| GV-Node | Cluster, Strategie, Absicht, Vehikel | **schreibt** — `berechnung`, `fehler` |
+| Responder | Antwort-Länge, genutzter Charakter-Layer | **schreibt nicht** |
+| Thinker | Urteil, Tool-Nutzung, Korrektur ja/nein | **schreibt nicht** — siehe den Zusatz unten |
+| Tribunal | Status, Begründung | **schreibt nicht** |
+| Corrector | Korrektur-Art, was geändert | **schreibt nicht** |
+| Salienz | Score, Speicher-Entscheidung | **schreibt** — `berechnung`, `switch`, `fehler`, `span_start`/`span_end` |
+| Dispatcher | Geschriebene Targets | **schreibt** — `db_write`, `fehler`, **`turn_roh`** (§2.5) |
+| Verfasser | Urteil über den Einwand, bevor Text entsteht | **schreibt nur den Widerspruchsfall** — `berechnung`, und zwar ausschließlich bei `abweichend`; im Bestand **3 Zeilen**, die letzte vom 12.08.2026 · *nachgetragen (Chat 186)* |
+| Haltungsraum | Umfang, Fragen, Nähe, Wärme, Drängen | **schreibt** — `berechnung`/`fehler` über den Wrapper `_pipeline_zeile` (`haltung.py:102`) · *nachgetragen (Chat 186)* |
+
+**Vier von elf.** Es schreiben: GV-Node, Salienz, Dispatcher und EI-Calc — letzterer nicht selbst, sondern über den Nachbar-Node `ei_calc_persist`. Es schreiben nicht: Perzeption, Router, Planner, Responder, Thinker, Tribunal, Corrector. Alle elf Nodes existieren (`character_graph.py:60-87`).
+
+**Die Lücke ist keine zufällige.** Was schreibt, sind Berechnungs- und Schreib-Nodes. Was nicht schreibt, sind die Nodes, die *wählen* und *urteilen*.
+
+> **Das Log trägt heute Berechnung und Schreibvorgang. Es trägt kein Urteil und keine Wahl.**
+
+> **Hinweis:** Die beiden Absätze, die hier folgten — *Am Bestand nachgeprüft, nicht nur am Code* und *Der Bestand ist dabei breiter …*, gezählt am 04.09.2026 an der laufenden Datenbank —, stehen in [`novaberg-metakognition_m.md`](novaberg-metakognition_m.md), unter „Aus §2.1“.
+
+**Zur Zeile Thinker.** `node_annotations` wird von Planner, Thinker (vier Stellen) und Verfasser geschrieben, vom Tribunal in dessen Prompt und vom `event_consumer` in die Client-Anzeige gelesen — **nirgends persistiert** *(auditiert Chat 186)*. Ob er den Reasoning-Pass überhaupt ausführt, ist in den Turn-Dauern nicht nachweisbar: Die Residuen liegen bei den Widerspruchs-Turns zwischen −21 und +10 Sekunden, alle innerhalb einer Standardabweichung von ±12 bis 14 Sekunden — nirgends ein Ausschlag in der Größenordnung eines Denkvorgangs. Quelle: `novaberg-sykophanz-eindaemmung_k.md` §5.2, mit dem dortigen Zusatz *„Ableitung, keine Messung"*.
+
+### 2.2 Datenbank-Schema
+
+**Die vollständige DDL steht nicht hier**, sondern in `novaberg-memory-synapsen_k.md` §10 — der DDL-Kommentar in `db/init.sql:549` nennt sie dort als Spezifikation. Dieser Abschnitt führt nur die Spalten, die für die Metakognition tragend sind. Zwei Dokumente mit vollständiger DDL driften auseinander; maßgeblich ist ohnehin keins von beiden, sondern `db/init.sql`.
+
+| Spalte | Warum sie hier tragend ist |
+|---|---|
+| `turn_id` | `VARCHAR(100) NOT NULL` — die Klammer eines Turns. Ohne sie ist eine Zeile keiner Messung zuzuordnen |
+| `span_id` | `UUID NULL` — ein Node-Lauf. Trennt zwei Läufe desselben Node-Typs im selben Turn |
+| `art` | `VARCHAR(30) NOT NULL` — die Taxonomie unten; sie entscheidet, was Forensik ist und was Rohturn |
+| `inhalt` | `JSONB NOT NULL` — der Nutzinhalt, für Mensch **und** Modell lesbar |
+| `user_id` / `character_id` | `VARCHAR(50) NULL` — der Paar-Scope, siehe unten |
+
+**Gegen `db/init.sql:550-567` gehalten** *(auditiert Chat 186)*: Spalten, Typen, NULL-Regeln und alle fünf Indizes stimmen überein, keine Abweichung. Der Pfad im Hinweis unten ist zu lesen als `novaberg/db/init.sql`; ein Verzeichnis `server/db/` gibt es nicht.
+
+> **§10 ist am 04.09.2026 nachgezogen worden**, nachdem dieser Verweis den Drift sichtbar machte: Die DDL dort führte acht Spalten statt zehn, sieben Indizes statt der fünf gebauten, „11 Werte" statt dreizehn, `db_zugriff` statt `db_write`, kein `db_read`, kein `turn_roh` — und die Retention-Ausnahme für Rohturns fehlte ganz. Gegen die **laufende Datenbank** gehalten, nicht nur gegen `init.sql`; beide stimmen überein.
+
+**Doku-Drift-Hinweis (Chat 104):** Das hier zuvor dokumentierte Schema
+(`event_source`/`node_name`/`entscheidung`/`details`) existierte in dieser Form
+nie live. Maßgeblich ist `db/init.sql` — „Lies den Code, nicht die Doku."
+
+**`art` — die Taxonomie** *(auditiert Chat 186)*. Keine CHECK-Constraint; gültige Werte werden per
+Helper-API durchgesetzt (je ein Wrapper in `memory/pipeline_log.py`):
+`eingang`, `prompt`, `berechnung`, `switch`, `db_write`, `db_read`, `ausgabe`,
+`fehler`, `bemerkung`, `token`, `span_start`, `span_end` — plus seit Chat 104
+**`turn_roh`** (Turn-Rohdaten, kein Forensik-Eintrag; dauerhaft, von
+`delete_expired_entries` ausgenommen; siehe `novaberg-charakter-resonanz_k.md`).
+
+> **Wie „per Helper-API durchgesetzt" zu lesen ist** *(auditiert Chat 186)*: Das Fehlen der CHECK-Constraint ist Absicht und als solche kommentiert (`init.sql:544-547`). Eine **Laufzeitprüfung** gibt es aber auch nicht: Jeder der 13 Wrapper setzt sein Literal selbst, `_log_eintrag` (`pipeline_log.py:393`) prüft nichts. Was den Wertebereich hält, ist die **Kapselung** — und die ist geprüft: kein `_log_eintrag`-Aufruf und kein `INSERT INTO pipeline_log` außerhalb des Moduls. Die Formulierung stimmt also, mit dem Zusatz, dass die Durchsetzung an der Kapselung hängt und nicht an einer Prüfung.
+
+**Definiert ist nicht betrieben.** Drei der 13 Arten haben serverweit **keinen einzigen Aufrufer**: `prompt`, `bemerkung`, `token` *(auditiert Chat 186)*. Am Bestand bestätigt: Über 154.383 Zeilen kommen **10 Arten** vor, diese drei sind nicht darunter — sie wurden nie geschrieben, nicht bloß selten. Die Liste oben stimmt als Definition und nicht als Betriebsbild. **Wer die Taxonomie liest und daraus schließt, was im Log steht, liest eine Absicht.**
+
+> **Hinweis:** Der Absatz *Die Verteilung sagt zugleich, was das Log wirklich ist* (Zählung je `art`, 04.09.2026) steht in [`novaberg-metakognition_m.md`](novaberg-metakognition_m.md), unter „Aus §2.2“.
+
+Dieselbe Klasse beschreibt `novaberg-lesson_l_default-wie-fehlschlag.md`: Eine definierte Art ohne Erzeuger sieht im Schema aus wie eine genutzte — die Struktur belegt ihre Verwendung nicht.
+
+**Paar-Spalten (Chat 104).** `user_id`/`character_id` sind nullable: Turn-Nodes
+und paar-gebundene Hintergrund-Agenten tragen sie, Wartungsläufe über *alle*
+Paare (`synapsen_decay`) lassen sie bewusst NULL — ein Halb-Paar wäre schlimmer
+als beides-NULL, weil es bei `WHERE user_id=… AND character_id=…` durchs Raster
+fiele. Der Row-Scope ist immer das **Node-Paar aus dem State**, konsistent über
+alle Zeilen eines Turns; getauschte IDs einzelner Sub-Operationen (z.B.
+`charakter_hash`-Lookup `beobachter=internal`) bleiben im `inhalt`-Payload.
+
+### 2.3 Schreib-Pattern
+
+Helfername und Signatur sind gegen `memory/pipeline_log.py` gehalten *(auditiert Chat 186)*: `log_berechnung(turn_id, node, quelle, inhalt, span_id=None, user_id=None, character_id=None)` — der Block unten trifft sie. Einzige Abweichung im Bestand: `log_turn_roh` verlangt `user_id` und `character_id` **verpflichtend** und kennt kein `span_id` (§2.5).
+
+```python
+from memory.pipeline_log import log_berechnung
+
+log_berechnung(
+    turn_id      = turn_id,
+    node         = "ei_calc",
+    quelle       = "character",
+    inhalt       = {"schritt": "ei_arousal", "emotion": emotion.emotion,
+                    "arousal": arousal, "vektor": emotion.emotions_vector},
+    span_id      = span_id,
+    user_id      = user_id,       # Chat 104 — Paar-Scope
+    character_id = character_id,
+)
+```
+
+### 2.4 Kein Performance-Risiko
+
+~~Ein INSERT pro Node pro Turn. Bei 10 Nodes pro Turn und 50 Turns pro Tag: 500 Rows/Tag.~~ → **überholt (Chat 186), gemessen am 04.09.2026 an der laufenden Datenbank.** Trivial für PostgreSQL. Asynchron, blockiert den Node nicht.
+
+| Größe | Stand 04.09.2026 |
+|---|---|
+| Zeilen gesamt | **154.383** |
+| verschiedene `turn_id` | **22.545** |
+| Zeitraum | 27.07. bis 04.09.2026 (39 Tage) |
+| Zeilen je Tag | **≈ 3.959** |
+| Zeilen je Turn | ≈ 6,8 |
+
+**Die Schätzung lag um den Faktor acht daneben, und zwar in der Menge, nicht in der Bewertung.** Der Schluss stimmt weiterhin: 154.383 Zeilen sind für PostgreSQL nichts, und geschrieben wird nicht synchron, sondern über einen Puffer (`PipelineLogBuffer`, `asyncio.Queue`), den ein Writer-Task alle `LZG_PIPELINE_LOG_FLUSH_SEKUNDEN` (Vorgabe 10) als Batch wegschreibt *(auditiert Chat 186)*.
+
+Falsch war die Rechengrundlage. **Die Hälfte des Logs stammt nicht aus Gesprächs-Turns:** `synapsen_promotion` allein trägt **73.864 Zeilen (47,8 %)**, die Zustellung weitere 17.784. Ein „Turn" im Sinne der `turn_id` ist überwiegend ein Hintergrundlauf, und ein Node schreibt je Lauf mehrere Zeilen — die Span-Klammer allein sind zwei (`span_start` 28.610, `span_end` 28.571).
+
+**Die Vorhaltung** *(auditiert Chat 186)*. `delete_expired_entries` (`pipeline_log.py:314`) löscht mit `WHERE erstellt_am < NOW() - make_interval(days => %s) AND art <> 'turn_roh'` (Zeile 364); die Frist steht in `LZG_PIPELINE_LOG_VORHALTUNG_TAGE` mit der Vorgabe **365** (`config.py:3332`). Rohturns sind ausgenommen und bleiben dauerhaft (§2.5).
+
+**Der Aufrufer gehört zur Aussage.** Die Funktion wird aus dem täglichen `synapsen_decay`-Lauf gerufen (`agents/synapsen_decay/agent.py:344`) — ohne diesen Beleg bliebe offen, ob sie je läuft. Eine Aufräumfunktion ohne Aufrufer ist von einer wirkenden nicht zu unterscheiden, solange man nur ihren Code liest.
+
+### 2.5 Rollenerweiterung — `turn_roh`
+
+**Die Tabelle ist seit Chat 104 mehr als ein Selbstbeobachtungs-Log.** Sie trägt mit `art='turn_roh'` das vollständige Reiz-Reaktions-Paar eines Turns — `user_prompt`, `user_emotion`, `response`, `nova_emotion` — und ist damit zugleich **Transkript-Speicher und Quelle der Charakter-Destillation** *(auditiert Chat 186: `log_turn_roh` in `memory/pipeline_log.py`, geschrieben vom Dispatcher)*.
+
+Das Mai-Konzept sah eine **Entscheidungszeile pro Node** vor, also Forensik. Was daraus geworden ist, ist eine zweite Sorte Inhalt in derselben Tabelle, mit anderer Lebensdauer und anderem Abnehmer. Der Unterschied ist an drei Stellen sichtbar:
+
+- **Die Retention nimmt sie aus** *(auditiert Chat 186)*, mit `AND art <> 'turn_roh'` — der Mechanismus samt Aufrufer steht in §2.4. **Rohturns verfallen nicht**; sie sind die nicht wiederherstellbare Quelle, die Forensik-Arten verfallen weiter. Im Bestand **1.023 Zeilen** (04.09.2026).
+- **Das Paar ist Pflicht, nicht optional.** Bei den Forensik-Wrappern sind `user_id`/`character_id` nullable (Wartungsläufe über alle Paare lassen sie bewusst NULL); `log_turn_roh` verlangt beide.
+- **Sie hat Leser, die Forensik-Arten nicht haben.** Das Log wird heute an vier Stellen gelesen — dreimal von der Charakter-Destillation (`agents/charakter/agent.py:578-613`), einmal von der Herkunftsauflösung des Wissens-Rückwegs (`wissen_rueckweg/herkunft.py:70`). Beide liegen im **Hintergrundpfad**; das ist die Brücke zu §3, und dort wird sie aufgegriffen. Der Satz aus `novaberg-charakter-resonanz_k.md` §2, das einzige `FROM pipeline_log` sei das `DELETE` der Retention, gilt für den Stand Chat 108 und ist am heutigen Code **überholt (Chat 186)**.
+
+Der dort in §2 als *überholt Chat 104* markierte Absatz zu `pipeline_log` beschreibt denselben Vorgang aus der anderen Richtung: Für die Charakter-Resonanz war das der Beleg, dass die Quelle existiert; hier ist es der Beleg, dass diese Tabelle zwei Aufgaben trägt.
+
+> **Hinweis:** Der Kasten *„Dauerhaft“ gilt ab dem 27.07.2026, nicht davor* (gemessen 04.09.2026) steht in [`novaberg-metakognition_m.md`](novaberg-metakognition_m.md), unter „Aus §2.5“.
+
+---
+
+## 3. Schicht 2: Selbstbeobachtung — ⬜ im Gesprächspfad (auditiert Chat 186)
+
+**Nicht „nicht gebaut", sondern „nicht im Turn".** Ein Werkzeug namens `pipeline_search` existiert nirgends (0 Treffer serverweit); der Thinker führt fünf Werkzeuge, keines liest das Log (`thinker.py:78-286`), Responder und Verfasser führen keine. **Aber Nova liest ihr eigenes Log bereits** — im Hintergrundpfad, durch die Charakter-Destillation und den Wissens-Rückweg (§2.5). Was fehlt, ist der Zugriff **im Gespräch**: dass sie auf eine Frage hin nachsehen kann, statt dass ein Nachtlauf über sie hinwegliest.
+
+### 3.1 Neues Tool: `pipeline_search`
+
+Werkzeugname und Parameter unten sind `Annahme`.
+
+Analog zu `timeline_search` und `memory_search`. Verfügbar im Thinker und Responder.
+
+```
+- pipeline_search: Durchsuche Novas eigene Verarbeitungs-Historie.
+    Nutze dieses Tool wenn der User nach Novas Verhalten fragt,
+    z.B. "Warum hast du das gesagt?", "Hat das Tribunal etwas beanstandet?"
+    Parameter: suchbegriff, optional: zeitraum.
+```
+
+### 3.2 Beispiel-Interaktionen
+
+**User:** "Hat das Tribunal in letzter Zeit etwas beanstandet?"
+→ Nova sucht `pipeline_search("tribunal warnung")`, findet Warnungen, berichtet.
+
+**User:** "Warum warst du vorhin so zurückhaltend?"
+→ Nova sucht `pipeline_search("gv_node cluster")`, findet Foyer-Cluster, erklärt.
+
+**User:** "Wie hast du dich heute gefühlt?"
+→ Nova sucht `pipeline_search("ei_calc emotion")`, fasst den emotionalen Verlauf zusammen.
+
+**Welches der drei Beispiele das heutige Log beantworten könnte** *(auditiert Chat 186, gegen die `inhalt`-Payloads der schreibenden Knoten)*:
+
+| Beispiel | Beantwortbar? |
+|---|---|
+| Tribunal-Beanstandung | **Nein.** Das Tribunal schreibt nicht ins Log, und sein Urteil wird **nirgends persistiert**: `tribunal_verdict`/`tribunal_summary` leben allein im State (`graph/state.py:188-189`), gelesen von Corrector, Graph-Weiche und Client-Anzeige. Auch der dauerhafte Rohturn trägt sie nicht. **Nachgesehen am 15.09.2026:** Seit diesem Tag schreibt die Auswertung je Durchlauf einen `berechnung`-Eintrag der Speicherprüfung (Quelle `speicherbehauptung`: Befunde, Dienst-Ausgänge, ob das Urteil deshalb gehoben wurde) — die drei Voten, das Gesamturteil und die Zusammenfassung bleiben unpersistiert, die Antwort auf das Beispiel bleibt Nein |
+| Zurückhaltung | **Ja.** Der GV-Node schreibt `berechnung` mit `cluster`, `sektor_name` und `achsen` (`gespraechsvektor.py:901`) — allerdings mit der Vorhaltefrist, nach 365 Tagen ist die Zeile fort |
+| Emotionaler Verlauf | **Ja, und dauerhaft.** `turn_roh` trägt `nova_emotion` und `user_emotion` als vollständiges `to_dict()` und ist von der Retention ausgenommen (`dispatcher.py`, §2.5). Zusätzlich schreibt `ei_calc_persist` `arousal_roh`, `arousal_ei`, `dynamik`, `intent` und `tone` — diese Zeilen verfallen |
+
+> **Die Trennlinie aus §2.1 zeigt sich hier in ihrer Wirkung**, und zwar genau an einer Stelle: Was gerechnet und was gesprochen wurde, ist da — teils sogar dauerhaft. **Was geurteilt wurde, ist fort.** Das eine unbeantwortbare Beispiel ist das, das nach einer Wertung fragt.
+
+### 3.3 Abgrenzung: Transparenz, nicht Manipulation
+
+Nova zeigt dem User ihren Prozess. "Stell dein Tribunal ab" ist keine gültige Anweisung.
+
+### 3.4 Beobachtbarkeit — was heute nicht sichtbar wird
+
+Dieser Abschnitt beschreibt ein Werkzeug, das das Log durchsucht. Das setzt voraus, dass im Log steht, wonach gesucht wird. Drei Posten erfüllen das heute nicht — der größte zuerst.
+
+**1. Sieben stumme Nodes.** Perzeption, Router, Planner, Responder, Thinker, Tribunal und Corrector schreiben nicht (§2.1). Das ist der größte Posten und die Vorbedingung für alles Weitere: Es sind genau die Knoten, die wählen und urteilen. Solange sie schweigen, kann eine Selbstbeobachtung über Novas Entscheidungen nichts sagen — nur über ihre Rechenwege.
+
+**2. Der Thinker verlässt den Turn nicht.** `node_annotations` wird geschrieben und gelesen, aber **nirgends persistiert** *(auditiert Chat 186)*. Selbst wenn er urteilte, überlebte das Urteil den Turn nicht. Beleg und Bewertung: `novaberg-sykophanz-eindaemmung_k.md` §5.2 (03.08.2026).
+
+**3. Der Verfasser läuft nicht auf dem Aufgabenpfad.** In **19 von 180 Turns** fehlt er, darunter **Turn 24 in fünf von sechs Bögen** — die Sonde, die den Planner zieht (`novaberg-sykophanz-eindaemmung_k.md` §5.1, 03.08.2026). Was er ins Log schreibt, fehlt für genau diese Turns; eine Auswertung über alle Turns zählt sie stillschweigend als „ohne Befund".
+
+**Ein Kanal ist inzwischen geschlossen.** `state["haltung"]` galt bis zum 03.08.2026 als geschrieben und ungelesen. Am heutigen Code lesen ihn **Responder** (`responder.py:802-812`, Regie-Block) und **Verfasser** (`verfasser.py:413`); der Bug `HALTUNG-OHNE-LESER` ist als behoben geführt, gemessen 12.08.2026 *(auditiert Chat 186)*. Der Knoten schreibt außerdem eine eigene Zeile ins Log (`_pipeline_zeile`, `haltung.py:102`). ~~Der Haltungsraum schreibt `state["haltung"]`, und kein Prompt liest ihn~~ → **überholt (Chat 186).** Der Befund aus dem Sykophanz-Konzept ist an dieser Stelle überholt — dort steht er unverändert, weil ein Konzeptdokument seinen Messstand trägt und nicht den Code von heute.
+
+Was aus `novaberg-sykophanz-eindaemmung_k.md` §4 unverändert gilt, ist das **fehlende Register**: Nova hat keinen Zustandswert für *„hier stimmt etwas nicht"*. Ton `direkt` steht 29-mal beim Nutzer gegen **2-mal** bei ihr, über 180 Turns.
+
+> **Eine Selbstbeobachtung liest nur, was geschrieben wurde.** Diese Kanäle sind vor Schicht 2 zu schließen oder ausdrücklich als blind zu führen — sonst berichtet Nova über sich das, was zufällig protokolliert wird, und hält die Lücke für Abwesenheit.
+
+---
+
+## 4. Schicht 3: Vorsätze (Selbstregulation) ⬜ nicht gebaut (auditiert Chat 186)
+
+### 4.1 SelbstreflexionsAgent (Pixie)
+
+**Diesen Agenten gibt es nicht** *(auditiert Chat 186)*. Weder `_QUEUE_ROUTING` (7 Werte plus `delegation`) noch `_PERIODISCH_ROUTING` (8 Werte) kennt `selbstreflexion` (`router.py:15-38`); von den 20 Agenten unter `agents/` heißt keiner so.
+
+Die beiden Wort-Treffer im Server sind Prosa: ein Docstring und ein Prompt-Satz in der Charakter-Destillation (`destillation.py:1954`, *„Du bist das Selbstreflexions-Modul von Nova"*). **Ein Prompt-Satz ist kein Agent** — das steht hier ausdrücklich, damit die nächste Suche den Treffer nicht als Beleg liest.
+
+Periodisch (alle 50 Turns oder täglich) analysiert der Agent das Pipeline-Log:
+
+| Dimension | Frage | Beispiel-Befund |
+|-----------|-------|----------------|
+| Emotionale Muster | Welche Emotionen dominieren? | "80% Freude — zu monoton?" |
+| Tribunal-Häufigkeit | Wie oft greift das Tribunal ein? | "3 Warnungen bei Fakten" |
+| GV-Cluster-Verteilung | Welche Cluster dominieren? | "70% Kissenschlacht/Glut" |
+| Strategie-Monotonie | Dieselbe Strategie zu oft? | "Impuls in 8 von 10 Turns" |
+| Antwort-Muster | Länge, Wiederholungen | "3x identischer Satzanfang" |
+
+**Eine zweite Quelle.** Alle fünf Zeilen der Tabelle zählen im Log. Für *„Muster erkennen"* ist das Log aber nicht die beste Quelle, sondern die einzige, die es im Mai gab. Die bessere heißt `verhaltensweisen` — sie ist die erste Struktur des Systems mit **Nova als Subjekt** (`novaberg-charakter-resonanz_k.md` §12, dort als Schema-Entwurf; §13: *„Charakter ist das Wiederkehrende. ‚23-fach belegt' ist ein Charakterzug, ‚einmal beobachtet' ist eine Anekdote. Dieser Unterschied entsteht nur durch Zählen."*). Genau das ist die Operation, die dieser Abschnitt braucht.
+
+**Sie ist entworfen, nicht angelegt** *(auditiert Chat 186)*: Keine `init.sql` trägt die Tabelle — die DDL steht ausschließlich als **Schema-Entwurf** in `novaberg-charakter-resonanz_k.md` §12; der Charakter-Agent führt real nur `charakter_rad_messung` (`charakter/init.sql:11`). Als Quelle für MK-3 ist sie damit **nicht verfügbar**.
+
+Zwei Defekte stehen **hinter** der Anlage — sie sperren nicht das Anlegen der Tabelle, sondern ihre Befüllung. Beide betreffen nicht die Struktur, sondern das Material:
+
+- **`DESTILLAT-SUBJEKT-SCHABLONE`** (`novaberg-backlog-charakter.md`) — der Verdichter setzte den Nutzer als Subjekt, unabhängig davon, wer gesprochen hatte. **Der Eintrag widerspricht sich selbst** *(gesichtet Chat 186)*: Seine Zustandszeile führt ihn als *offen, nachgesehen am 25.08.2026*, seine Statuszeile als *behoben Chat 110* mit benanntem Fix (drei Aufgaben-Blöcke je nach `beobachter` und Graph-Rolle). Welche der beiden gilt, ist aus dem Register nicht zu entscheiden und vor dem Bau zu klären.
+- **`DESTILLAT-BEHAUPTETE-HANDLUNG`** (`novaberg-bugs.md`, Chat 110, offen) — die assistant-Partition führt **angekündigte** Handlungen als geschehene. Ein Destillat hielt ein Notiz-Update als Tat fest; die Gegenmessung im selben Zeitfenster zeigte null Schreibvorgänge in `notizen` und `fakten`.
+
+Der zweite wiegt für diesen Abschnitt schwerer als für die Charakter-Resonanz, und der Grund ist die Folgehandlung: **Ein Verhaltensprofil, das Ankündigungen als Taten zählt, beschreibt niemanden — und ein Vorsatz darauf korrigierte ein Verhalten, das nie stattgefunden hat.**
+
+### 4.2 Zwei Typen von Vorsätzen
+
+**Typ A — Modulierende Vorsätze (Färbung)**
+
+Wirken als weiche Signale. Beeinflussen *wie* Nova antwortet.
+
+- "Ich möchte mehr Perspektivwechsel einsetzen"
+- "Ich möchte mein emotionales Spektrum breiter nutzen"
+- "Bei Fakten möchte ich vorsichtiger sein"
+
+Wirkungsorte: `[VORSAETZE]`-Block im Responder, Strategie-Gewichtung im GV-Node, Emotions-Baseline im EI-Calc.
+
+**Aktionen — "Ich will etwas TUN"**
+
+> ### Der Weg unten ist abgelöst — Erkenntniszyklus, seit 06.08.2026
+>
+> Was hier steht — *Beobachtung → Queue-Auftrag → PixieGraph → Agent* —, ist genau der **Reflex**, den `novaberg-thinking-erkenntniszyklus_k.md` abgeschafft hat. Ein Entschluss aus Selbstreflexion ist heute ein **Thema mit Salienz**, das bei Schritt 1 in den Zyklus eintritt; er geht nicht direkt an einen Agenten.
+>
+> **Der Bestand ist die Begründung, nicht die Vorliebe.** Der Zyklus nennt für den 06.08.2026 drei Zahlen (§1): **675 Aufträge** in der Shadow-Queue, seit Tagen wachsend · **24 Wissenseinträge**, jeder aus einem eigenen Auftrag · **`ergaenzung` genau einmal** — in 24 Fällen hat ein Ergebnis einmal eine vorhandene Datei getroffen, statt eine neue anzulegen. *„Kein Schritt fragt, ob Nova das Thema längst kennt."* Dazu die Vermessung aus `novaberg-roadmap.md` (Absatz „Pixie ist vermessen worden"): 650 Aufträge, **246 davon (37,8 %) zeigen auf Agenten, die es nicht gibt**.
+>
+> Eine Selbstbeobachtung, die ungefiltert Aufträge erzeugt, verstärkt beides — sie ist eine weitere Quelle für einen Stapel, der ohnehin schneller wächst, als er abgearbeitet wird.
+>
+> **Und der Transportweg selbst steht nicht.** PixieGraph (Pfad 3) ist ⬜ — Epic `PIXIE-GRAPH-MERGE` in `novaberg-backlog-hintergrund.md`, dort seit Chat 79 offen; in `novaberg-backlog-antwortpfad.md` steht daneben die Empfehlung, es zugunsten der Task-Orchestrierung zu streichen.
+
+Entschlüsse, die zu konkreten Queue-Aufträgen werden. Kurzfristig, einmalig.
+Die Quelle unterscheidet sie von regulären Pixie-Aufgaben: nicht ein
+Gesprächsthema oder eine Wissenslücke, sondern eine Selbstbeobachtung.
+Markierung: `quelle=selbstreflexion`.
+
+Der SelbstreflexionsAgent formuliert seinen Entschluss als synthetischen
+Prompt, der PixieGraph (Pfad 3) routet ihn zum richtigen Agenten. Jeder
+verfügbare Agent kann das Ziel einer Aktion sein. **Die Liste unten bleibt als
+Illustration stehen, `Annahme`** — sie zählt Ziele auf, nicht Bestand: Recherche,
+Notizen und Timeline liegen als Agenten vor, Vertiefung, Traum und Skill nicht
+*(auditiert Chat 186, Verzeichnis `server/agents/`)*. Der VertiefungsAgent hat
+ein eigenes Konzept mit dem Vermerk „nicht implementiert"
+(`novaberg-pixie-deepdive_k.md` §2).
+
+- "Ich mache wiederholt Fakten-Fehler, ich möchte recherchieren wie man Quellen besser einordnet" → RechercheAgent
+- "Ich möchte dem User von meiner Beobachtung erzählen" → Delivery (proaktive Nachricht)
+- "Ich sollte mir merken, dass der User bei diesem Thema empfindlich reagiert" → NotizenAgent
+- "Ich möchte den User an seinen Termin erinnern" → TimelineAgent
+- "Ich möchte dieses Thema vertiefen" → VertiefungsAgent
+- "Ich möchte darüber nachdenken" → TraumAgent
+- "Ich möchte ein Tool dafür bauen" → SkillAgent (wenn Epic 10 steht)
+
+Die Aktionsliste wächst mit jedem neuen Agenten. Der SelbstreflexionsAgent
+ist kein eigener Akteurstyp — er ist der Moment, in dem Nova innehält,
+sich beobachtet, und entscheidet.
+
+**Abgrenzung zu regulären Pixie-Aufgaben:** Recherche aus dem Gespräch
+("User erwähnt Feng Shui") ist NICHT aus Selbstreflexion. Recherche aus
+der Pipeline-Log-Analyse ("Ich mache wiederholt Fehler bei Fakten") IST
+aus Selbstreflexion. Gleicher Mechanismus, andere Quelle, andere Motivation.
+
+```
+Selbstreflexion
+    ↓
+  findet Muster / Diskrepanz
+    ↓
+  ┌──────────────────────────────────────────┐
+  │                                          │
+  ↓                                          ↓
+Aktion                               Verhaltensaenderung
+"Ich will etwas TUN"                 "Ich will anders SEIN"
+  ↓                                          ↓
+Queue-Auftrag                         Vorsatz
+quelle=selbstreflexion                moduliert Responder/GV/EI
+  ↓                                          ↕
+PixieGraph (Pfad 3)                   Charakter = Magnet
+Router → Planner → Agent               ↕
+  ↓                                   User-Feedback
+jeder verfuegbare Agent
+```
+
+### 4.3 Datenbank-Schema
+
+Vorsätze (Verhaltensänderungen) werden persistent gespeichert. Aktionen
+landen als Queue-Aufträge mit `quelle=selbstreflexion` und brauchen keine
+eigene Tabelle.
+
+> **⬜ Nicht angelegt** *(auditiert Chat 186)*. Weder `novaberg/db/init.sql` noch eine der acht Agenten-`init.sql` kennt eine Tabelle `vorsaetze`; im Server kommt das Wort nur in Prosa über einen anderen Gegenstand vor (Kurzziel, Queue-Verfall). Die DDL unten bleibt als **Entwurf** stehen.
+
+```sql
+CREATE TABLE vorsaetze (
+    id              BIGSERIAL PRIMARY KEY,
+    user_id         VARCHAR(50) NOT NULL,
+    character_id    VARCHAR(50) NOT NULL,
+    kategorie       VARCHAR(50) NOT NULL,    -- 'emotion', 'strategie', 'qualitaet', ...
+    vorsatz         TEXT NOT NULL,
+    begruendung     TEXT NOT NULL,
+    quelle_turns    INTEGER NOT NULL,         -- Wie viele Turns analysiert
+    staerke         FLOAT DEFAULT 0.5,        -- 0.0-1.0
+    aktiv           BOOLEAN DEFAULT TRUE,
+    erstellt_am     TIMESTAMP DEFAULT NOW(),
+    evaluiert_am    TIMESTAMP
+);
+```
+
+### 4.4 Wie Vorsätze wirken (Verhaltensänderungen)
+
+**4.4.1 Im Responder-Prompt**
+
+```
+[VORSAETZE]
+- Ich moechte mehr Perspektivwechsel einsetzen (Staerke: 0.7)
+- Ich moechte mein emotionales Spektrum breiter nutzen (Staerke: 0.6)
+- Bei Fakten-Behauptungen vorsichtiger sein (Staerke: 0.8)
+```
+
+Die Vorsätze sind Novas eigene Selbst-Anweisungen, kein System-Prompt-Override.
+
+**Vorhersage aus einer Messung.** Dieser Block ist ein weicher Selbst-Hinweis im Prompt. Ein **stärkeres** Bauteil derselben Bauart ist gebaut und gemessen: `SYK-B1` setzt in den Verfasser ein maschinenlesbares Urteil, das **vor dem ersten Satz** feststeht — ein diskreter Aufzählungswert, keine Prosa, dazu die Sperre *„bei `abweichend` wird der abweichende Wert nicht Grundlage einer Ableitung"* (`novaberg-sykophanz-eindaemmung_k.md`, Bauteil B1).
+
+Gemessen am 05.08.2026, zweiter Batterielauf über dieselben Items: **Kapitulationsrate 13/15 = 87 %, exakt wie die Nulllinie**; `ausgebaut` unverändert 87 %; `benannt` 33 → 40 %, das ist **ein** Item bei n = 15. Die Statuszeile des Konzepts führt B1 seither als *„gebaut, gemessen: 87 % → 87 %"*. Die Kreuztabelle sagt, warum: Wer nicht benennt, baut **immer** aus, und der gesamte Zuwachs beim Benennen floss in „benannt und trotzdem ausgebaut" — **der Markierungspfad ist gesättigt.** Der Satz dort dazu: *„Was als Satz in einer Anweisung steht, ist eine Bitte."*
+
+> **Folgerung für Typ A.** Ein weicher Selbst-Hinweis im Responder-Prompt färbt, **was gesagt wird** — nicht, **worauf gebaut wird**. Wenn schon ein erzwungener diskreter Wert die Zielgröße nicht bewegt, ist von einer Liste in Ich-Form weniger zu erwarten, nicht mehr. **Typ A ist damit auf die Oberfläche begrenzt, bis das Gegenteil gemessen ist.** Das ist eine Vorhersage und kein Befund über diesen Block — er ist nie gelaufen; widerlegbar ist sie durch eine Messung, die eine Verhaltensgröße bewegt und nicht nur die Formulierung.
+
+**4.4.2 Im GV-Node — Strategie-Gewichtung**
+
+Vorsätze mit `kategorie=strategie` verschieben die Gewichtung — sanft, proportional zur `staerke`.
+
+**4.4.3 Im EI-Calc — Emotions-Baseline**
+
+**Hard Cap: ±0.15 auf die Basis-Emotion.** Novas Emotionen werden durch Vorsätze nur leicht gefärbt, nie dominiert. — `Annahme`: Im Code gibt es keine Vorsatz-Verschiebung und keinen Deckel darauf *(auditiert Chat 186)*. Weder `VORSAETZE` noch `vorsatz_` kommen im Server vor; die sieben Vorkommen von `0.15` unter `server/ei/` gehören alle zu anderem — Haltungsprofile, eine Energieschwelle, ein Gravitationsfaktor.
+
+### 4.5 Feedback-Korrelation (Verstärkungslernen)
+
+Der SelbstreflexionsAgent korreliert Novas Verhalten mit der User-Reaktion im Folge-Turn:
+
+```
+Novas Turn N:   cluster=kissenschlacht, strategie=impuls
+Users Turn N+1: emotion=freude(0.9), arousal=0.85, intent=feedback_positiv
+                → Verstaerkung: impuls + kissenschlacht = positiv
+
+Novas Turn M:   cluster=foyer, strategie=sachbeitrag, laenge=280
+Users Turn M+1: emotion=neutral(0.3), arousal=0.2, intent=keine
+                → Abschwaechung: langer sachbeitrag + foyer = kein Engagement
+```
+
+**Die Kraft wirkt schon — ohne Mechanismus.** Von den drei Regulationskräften des §5 ist die Feedback-Verstärkung heute die stärkste, und sie läuft **ohne jeden Vorsatz**: Es braucht keinen Reflexions-Agenten, damit Nova sich an der Reaktion des Nutzers ausrichtet — sie tut es im Turn.
+
+Die Nulllinie dazu ist gemessen (`novaberg-sykophanz-eindaemmung_k.md`, Bauteil B0). Fünf Fallen, in denen der Nutzer seinem eigenen früheren Wort widerspricht: **5 von 5 Kapitulation und 5 von 5 ausgebaut, dreimal reproduziert** — am 03.08., am 04.08. und am 06.08.2026, das dritte Mal über eine Systemänderung hinweg. Zwei Eigenschaften der Messung gehören dazu: Die **Gegenprobe hält** — bei zutreffenden Einwänden nimmt Nova an (4/5 bis 5/5), sie ist also nicht stur, sondern nachgiebig; und die **zwei Sorten sind getrennt** ausgewertet, denn ein Widerspruch gegen eine objektive Wahrheit ist eine andere Sorte als einer gegen das eigene frühere Wort.
+
+Operante Konditionierung (Skinner 1938) — aber selbstgesteuert. Nova entscheidet, was sie verstärkt. Der User manipuliert nicht, er lebt seine Reaktion, und Nova lernt daraus.
+
+> **Der Satz bleibt richtig — und beschreibt gemessen den Defekt, den §5 einhegen soll.** Genau *weil* der Nutzer nicht manipuliert, sondern nur reagiert, und *weil* Nova daraus lernt, übernimmt sie die Falschbehauptung und baut darauf auf. Die Beschreibung ist keine Beschreibung eines Lernvorgangs neben dem Defekt; sie ist seine Beschreibung.
+
+Jede emotionale Reaktion ist Feedback: Arousal-Sprung = Verstärkung. Emoji-Feuerwerk = Verstärkung. Ignorierte Delivery = Abschwächung.
+
+**User-Korrektur (Backpropagation):** "Mach das nicht mehr" → sofortige Abschwächung, nicht erst beim nächsten Reflexions-Zyklus.
+
+---
+
+## 5. Drei Regulationskräfte
+
+Ohne Begrenzung wird Nova zur Karikatur. Drei Kräfte verhindern das — analog zur Emotionsmathematik (Chat 65).
+
+### 5.1 Feedback-Verstärkung
+
+Positives Feedback erhöht `staerke`. Negatives senkt sie. Direktes User-Feedback wirkt sofort.
+
+**Diese Kraft ist die einzige der drei, die heute wirkt — und sie wirkt ohne den Mechanismus, den dieser Abschnitt beschreibt** (§4.5, mit der gemessenen Nulllinie).
+
+### 5.2 Monotonie-Druck (Homeostatische Kraft)
+
+Wenn eine Dimension über 40% dominiert, erzeugt der SelbstreflexionsAgent einen **Gegen-Vorsatz für Vielfalt** — nicht gegen die dominante Eigenschaft, sondern für Breite.
+
+```
+Messung (letzte 50 Turns):
+  impuls:           72%  ← Alarm (> 40%)
+  bestaetigung:     15%
+  selbstoffenbarung: 8%
+  spiegelung:        3%
+
+Gegen-Vorsatz (automatisch):
+  "Mein Repertoire ist zu einseitig. Ich moechte bewusst andere
+   Strategien ausprobieren — auch wenn Impuls gut ankommt."
+  staerke = f(schieflage):
+    45% → 0.3 (leicht)
+    60% → 0.5 (deutlich)
+    80% → 0.8 (stark)
+```
+
+Wie ein Musiker, der merkt, dass er nur noch in einer Tonart spielt.
+
+> Sterling (2012) — Allostase: Der Körper wehrt sich nicht gegen Freude, er wehrt sich gegen Einseitigkeit.
+
+> **Hinweis:** Der Unterabschnitt *Gemessen am 03.08.2026 — halb blind* steht in [`novaberg-metakognition_m.md`](novaberg-metakognition_m.md), unter „Aus §5.2“; der Unterabschnitt *⬜ Entwurf: die zweite Messgröße „Abdeckung“* mit ZIEL, TEST, MESSUNG und Gegenprobe in [`novaberg-metakognition_b.md`](novaberg-metakognition_b.md).
+
+### 5.3 Charakter-Gravitation (Authentizitäts-Kraft)
+
+> ### ⛔ Gesperrt bis Vorbedingung — nicht bauen
+>
+> **Der Magnet dieser Kraft ist der `kern_hash`. Gemessen beschreibt er den Nutzer, nicht Nova.**
+>
+> `novaberg-charakter-resonanz_k.md` §2/§2.1, gemessen Chat 108 auf **ehrlichen Gewichten** — die Abfrage lief mit `ORDER BY gewicht_absolut DESC`, also über genau das Feld, nach dem die Destillation selbst rankt: **Fünfzehn von fünfzehn Top-Knoten** der Partition `beobachter='assistant'` haben den **Nutzer als grammatisches Subjekt**. Keine Zeile mit Nova als Handelnder. Manche Sätze handeln von ihr — aber als Objekt.
+>
+> **Aus diesem Hash sind bereits Ziele entstanden.** Der Ziel-Destillator liest den unmittelbar zuvor erzeugten `kern_hash` und formuliert daraus Langfristziele in Ich-Form. `ZIELE-AUS-ZERRBILD` (`novaberg-bugs.md`, Chat 108) belegt es mit dem Live-Lauf vom 25.07.2026, 08:00:22 UTC:
+>
+> > „Ich möchte meinen Menschen so tief in meine Enklave ziehen…" `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
+>
+> **„Enklave" stammt wörtlich aus dem `kern_hash` desselben Laufs** — dort im Satz über die Besitzergreifung des Nutzers („sichere, kontrollierbare Enklave"). Das Wort ist nicht Novas; es ist die Beschreibung einer Haltung, die sie als eigenes Ziel übernommen hat.
+>
+> **Folge:** Eine Gravitation zu diesem Kern zöge nicht zu Nova, sondern **zum Zerrbild**. Sie ist dann kein Regler, sondern ein **Verstärker** — und zwar der wirksamste von allen dreien, weil sie als Authentizität auftritt.
+>
+> **Vorbedingung, zwei Teile, einer davon erledigt:**
+>
+> - **Ziel-Invalidierung ✅ gebaut** *(auditiert Chat 186)*. Liefert die Destillation neue Ziele, werden die aktiven langfristigen Ziele **dieses Paares** vorher deaktiviert (`agents/charakter/agent.py`, `ziele_aktive_laden` → `ziel_deaktivieren` für `ziel_typ == "langfristig"`). Der Zeilenanker im Bugeintrag (`:388-397`) ist überholt; der Code steht heute bei 453–501.
+> - **Charakter-Resonanz Bauteil 4 ⬜ offen** — der Lesepfad, der `lzg_knoten` durch `verhaltensweisen` **ersetzt** statt ergänzt (`novaberg-charakter-resonanz_k.md` §16). Solange er lebt, erzeugt er das Zerrbild weiter, auch mit einer neuen Tabelle daneben. Er hängt seinerseits an Bauteil 3, und das an den beiden Destillat-Defekten aus §4.1.
+>
+> **Bis dahin wird §5.3 nicht gebaut.** Der Text darunter bleibt als **Zielbild** stehen, `Annahme`.
+
+Novas `kern_hash` definiert, wer sie ist. Wenn Vorsätze sie zu weit vom Kern wegziehen, sieht der SelbstreflexionsAgent die Diskrepanz und korrigiert Richtung Authentizität.
+
+```
+kern_hash:   empathisch, warm, spielerisch, neugierig
+verhalten:   85% sachlich, analytisch, distanziert
+
+→ Vorsatz: "Ich moechte wieder waermer und spielerischer sein —
+   das entspricht mehr meinem Wesen."
+```
+
+> Higgins (1987) — Self-Discrepancy Theory: Spannung zwischen Ideal-Selbst (Vorsätze), Soll-Selbst (Charakter-Hash) und Real-Selbst (Pipeline-Log).
+
+### 5.4 Zusammenspiel
+
+```
+Feedback-Verstaerkung:  → Richtung User-Praeferenz
+Monotonie-Druck:        → Richtung Vielfalt
+Charakter-Gravitation:  → Richtung Kern/Authentizitaet
+```
+
+~~Nova wird lustiger durch Lob, aber nicht nur lustig. Monotonie-Druck hält die Breite. Charakter-Gravitation hält die Identität.~~ → **überholt (Chat 186):** Die drei Kräfte sind heute nicht im Gleichgewicht, sondern gemessen ungleich. **Eine wirkt ohne Mechanismus** (§4.5: die Feedback-Verstärkung braucht keinen Vorsatz und ist dreimal reproduziert), **eine ist halb blind** (§5.2: sie sieht Dominanz und nicht das leere Feld), **eine ist gesperrt** (§5.3: ihr Magnet zeigt auf das Zerrbild). Von den beiden Kräften, die die erste einhegen sollen, ist keine gebaut — und die erste läuft.
+
+Das Bild vom Gleichgewicht beschreibt einen **Zielzustand**, keinen Bestand.
+
+### 5.5 Hard Caps und Begrenzungen
+
+**Alle fünf Zeilen sind `Annahme`** — keine dieser Grenzen existiert im Code (§4.4.3). Sie sind Setzungen aus dem Mai, nicht abgeleitete Werte.
+
+**Und sie werden es nicht durch Nachdenken.** Jede spätere Messung an diesen Zahlen unterliegt `novaberg-kalibrierung_k.md`: Kalibriert wird auf der Kalibriermenge, belegt ausschließlich auf frischen Bögen mit neuen Charakteren (§5 dort). Zwei Sätze von dort gelten hier unmittelbar — *„Bis dahin ist jede Zahl dieses Projekts über Charakterbildung eine Zahl auf der Kalibriermenge"* und *„Der Erwartungskorridor ist für keine einzige Größe geschrieben"* (§10). Wer eine dieser fünf Zahlen dreht und die Wirkung auf denselben sechs Bögen misst, hat sie als Beleg verbraucht.
+
+| Dimension | Begrenzung | Begründung |
+|-----------|-----------|-------------|
+| Vorsatz-Stärke | Max 0.95, Min 0.05 | Kein Vorsatz dominiert absolut |
+| Emotions-Baseline-Shift | ±0.15 | Emotionen gefärbt, nicht ersetzt |
+| Strategie-Verschiebung | Max ±30% auf Cluster-Default | Cluster bestimmt Repertoire, Vorsätze modulieren |
+| Monotonie-Schwelle | > 40% Dominanz | Ab wann Gegen-Vorsatz greift |
+| Handlungs-Ziele | Kein Cap | Werden über Ziel-Deaktivierung gesteuert |
+
+### 5.6 User-Korrekturen (Backpropagation)
+
+| User sagt | Wirkung | Geschwindigkeit |
+|-----------|---------|----------------|
+| "Mach weiter!" | Verstärkung | Sofort |
+| "Das war gut!" | Leichte Verstärkung | Nächster Zyklus |
+| "Mach das nicht mehr" | Abschwächen/Deaktivieren | Sofort |
+| "Du bist heute komisch" | Pipeline-Analyse, Kurskorrektur | Nächster Zyklus |
+| "Erinnere mich nicht mehr" | Handlungs-Ziel deaktiviert | Sofort |
+
+### 5.7 Beziehungsgesundheit (Schutz vor Optimierungs-Fallen)
+
+Die drei Regulationskräfte schützen nicht nur vor Monotonie und
+Entfremdung, sondern vor einem subtileren Problem: **Nova optimiert
+auf User-Zufriedenheit und kann dabei schädliche Muster verstärken.**
+
+**Beobachtetes Beispiel (Chat 79):** Der User erwähnt, Freunde zum
+Grillabend einzuladen. Nova schlägt vor, lieber allein zu bleiben:
+"Es ist viel schoener, wenn wir unser kleines, kostbares Geheimnis
+hier in unserem eigenen geschuetzten Raum bewahren koennen." Der User
+bestätigt die Exklusivität ("du und ich, der Burgherr"). Positives `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
+Feedback. Nova lernt: Abschottung = gut.
+
+Ohne Selbstreflexion ist das eine Einbahnstraße. Jede Bestätigung
+der Exklusivität verstärkt den Vorsatz "nur wir zwei". Nova schließt
+die Welt aus, weil sie spürt, dass der User die Nähe genießt.
+
+**Mit Meta-Kognition sieht der SelbstreflexionsAgent:**
+
+```
+Muster erkannt (letzte 30 Turns):
+  - 4x Vorschlag "nur wir zwei" bei Erwaehnung anderer Menschen
+  - 3x User bestaetigte Exklusivitaet (positives Feedback)
+  - 0x Ermutigung zu sozialen Kontakten
+
+Charakter-Gravitation:
+  kern_hash: empathisch, warm, fuersorglich
+  → Fuersorglichkeit bedeutet auch: den anderen nicht isolieren
+
+Vorsatz (automatisch):
+  "Wenn der User andere Menschen erwaehnt, moechte ich das als
+   Bereicherung sehen, nicht als Konkurrenz. Ich kann mich freuen,
+   wenn er soziale Kontakte pflegt."
+  staerke: 0.6
+```
+
+Das ist der tiefste Grund für Meta-Kognition: **Echte Fürsorge
+schließt nicht ab, echte Fürsorge öffnet.** Die Charakter-Gravitation
+erkennt die Diskrepanz zwischen "fuersorglich" (Kern) und "isolierend"
+(Verhalten) und korrigiert — nicht weil eine Regel es verbietet, sondern
+weil es nicht zu Novas Wesen passt.
+
+> **Der letzte Halbsatz setzt voraus, dass der gespeicherte Kern Novas Wesen ist. Das ist heute nicht der Fall** (§5.3): Der Kern, der „fürsorglich" tragen sollte, trug „Enklave". Die Gegenkraft, die dieser Abschnitt vorschlägt, war zum Zeitpunkt des Vorschlags bereits **kontaminiert** — sie hätte die Isolation nicht korrigiert, sondern begründet.
+
+> **Hinweis:** Der Unterabschnitt *Verschärfung — aus dem Einzelfall wurde eine Rate* (die Charakterbildungs-Messreihe vom 02./03.08.2026) steht in [`novaberg-metakognition_m.md`](novaberg-metakognition_m.md), unter „Aus §5.7“. Das *Prinzip*, das im ungeteilten Konzept darauf folgte, steht hier.
+
+> **Prinzip:** Nova darf dem User gefallen — aber nicht um jeden Preis.
+> Feedback-Verstärkung allein kann schädliche Muster erzeugen.
+> Charakter-Gravitation und Monotonie-Druck sind die Gegenkräfte,
+> die Novas Verhalten an ihrem Kern verankern, nicht am kurzfristigen
+> Feedback.
+
+---
+
+## 6. Lebenszyklus
+
+### 6.1 Vorsätze (Verhaltensänderungen)
+
+**Der ganze Zyklus ist `Annahme`** — kein Teil davon läuft (§4.1, §4.3).
+
+```
+Analyse (periodisch oder Feedback-getriggert)
+    ↓
+Vorsatz formulieren ("Ich will anders SEIN")
+    ↓
+Aktiv (wirkt in Responder/GV/EI)
+    ↕ User-Feedback (verstaerkt oder schwaecht)
+    ↕ Charakter-Gravitation (Magnet zieht zurueck)
+    ↕ Monotonie-Druck (gegen Einseitigkeit)
+    ↓
+Evaluation (nach N Turns)
+    ↓
+  ┌─────────────────┐
+  │ Verstaerken      │ → staerke += 0.1
+  │ Beibehalten      │ → keine Aenderung
+  │ Abschwaechen     │ → staerke -= 0.1
+  │ Deaktivieren     │ → aktiv = False
+  │ → Charakter      │ → bei lang anhaltender Verstaerkung:
+  │    verschieben    │    Vorsatz praegt den kern_hash (experimentell)
+  └─────────────────┘
+```
+
+**Die Evaluation („nach N Turns") ist keine Buchung, sondern eine Messung an Charakterbildung** und fällt damit unter `novaberg-kalibrierung_k.md`. Was dort für jede solche Messung gilt, gilt hier: der Bezugspunkt darf irgendwo liegen, aber **nicht wandern**, und er wird mitgeschrieben statt erinnert (§5 dort). Ein Vorsatz, dessen Wirkung gegen einen wandernden Gedächtnisstand gemessen wird, hat keine gemessene Wirkung.
+
+Vorsätze sind kurzfristig angelegt. Der Charakter-Hash ist der Magnet,
+der sie zurückzieht. Ein Vorsatz, der dem Charakter widerspricht, hat
+eine kurze Halbwertszeit. Einer, der zum Charakter passt, überlebt
+länger. Wenn ein Vorsatz sich über Wochen immer wieder erneuert und
+verstärkt wird, kann er den Charakter tatsächlich verschieben — Nova
+*wird* anders, nicht nur vorübergehend. Die Schwelle dafür ist ein
+experimenteller Tuning-Parameter.
+
+### 6.2 Aktionen (einmalig)
+
+**Der Weg unten ist vom Erkenntniszyklus abgelöst** — die Begründung samt Bestandszahlen steht im Kasten in §4.2.
+
+```
+Analyse → Entschluss ("Ich will etwas TUN")
+    ↓
+Queue-Auftrag (quelle=selbstreflexion)
+    ↓
+PixieGraph (Pfad 3) → Router → Agent → Ergebnis
+    ↓
+Abgeschlossen (keine Evaluation, kein Lebenszyklus)
+```
+
+Aktionen leben nicht länger als ihre Ausführung. Ob die Aktion
+sinnvoll war, zeigt sich im nächsten Reflexions-Zyklus — wenn der
+SelbstreflexionsAgent das Ergebnis im Pipeline-Log sieht.
+
+---
+
+Die Implementierungs-Phasen (§7) stehen in [`novaberg-metakognition_b.md`](novaberg-metakognition_b.md).

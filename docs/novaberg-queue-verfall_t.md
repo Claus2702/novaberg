@@ -1,0 +1,376 @@
+# Novaberg — Der Verfall der Shadow-Queue (Ausarbeitung)
+
+**Teil 2 von 5 — Ausarbeitung.** Absicht und Kopfblock: [`novaberg-queue-verfall_k.md`](novaberg-queue-verfall_k.md) · Bauplan und Umstellung: [`novaberg-queue-verfall_b.md`](novaberg-queue-verfall_b.md) · Diskussion und Ergänzungen: [`novaberg-queue-verfall_e.md`](novaberg-queue-verfall_e.md) · Messungen: [`novaberg-queue-verfall_m.md`](novaberg-queue-verfall_m.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; welche Datei einen Abschnitt trägt, sagt die Tabelle *„§ → Datei“* in `_k`.
+
+---
+
+## 3. Was der Wert bedeuten soll
+
+### 3.1 Der Name ist falsch, die Größe ist richtig
+
+Das Feld heißt `prioritaet`. Es trägt aber keine Priorität im Sinne einer Rangvorgabe, sondern die **Salienz des auslösenden Turns** — `agents/kzg/queues.py` setzt es aus `neue_salienz`. Der Kommentar an der Auswahlstelle sagt es ausdrücklich: *„Queue-Eintraege altern nicht: basis == effektiv."*
+
+**Der Name bleibt vorerst, die Bedeutung wird benannt.** Eine Umbenennung im Zug dieses Konzepts wäre eine zweite Änderung an denselben Stellen; sie gehört in den Umzug (§7), wo die Spalten ohnehin neu entstehen.
+
+### 3.2 Die dritte Rolle — und warum sie keine dritte ist
+
+Der Wert trägt heute zwei Rollen: **Auslöse-Salienz** (woher er kommt) und **Scheduler-Rang** (wonach ausgewählt wird). Mit dem Verfall käme scheinbar eine dritte dazu: **Verfallsgegenstand**.
+
+**Sie kommt nicht dazu, sie ersetzt die zweite.** Nach dem Vorbild von `lzg_knoten` zerfällt der eine Wert in drei Felder mit getrennten Zuständigkeiten:
+
+| Feld | Rolle | Wer ändert es |
+|---|---|---|
+| `salienz_roh` | Akkumulator — was sich angesammelt hat | Anlage, Verstärkung |
+| `salienz_absolut` | **Anker** — was der Auftrag beim letzten Anlass wert war | Anlage, Verstärkung |
+| `salienz_decay` | **Präsenz** — was er *jetzt* im Rang einbringt | Anlage, Verstärkung, Verfallslauf |
+
+**Der Scheduler wählt danach nach `salienz_decay`, nicht mehr nach `prioritaet`.** Damit ist die Zwei-Rollen-Vermengung aufgelöst, statt um eine dritte erweitert: Die Herkunft steht im Anker, der Rang in der Präsenz. Das ist derselbe Schnitt, den `lzg_knoten` zwischen `gewicht_absolut` und `gewicht_decay` zieht, und aus demselben Grund.
+
+---
+
+## 4. Die Bauart — drei Stufen, wie beim Knoten
+
+```
+salienz_roh       Anfangs-Salienz + Boost je Verstärkung        wächst linear
+     ↓  cap · sin(min(roh/cap, 1) · π/2) ^ exp
+salienz_absolut   gedämpft, gesättigt bei cap                   Sättigung
+     ↓  · e^(−λ · Tage seit verstaerkt_am)
+salienz_decay     der effektive Rang                            Zeit
+     ↓  < schwelle
+aktiv = FALSE     ruhend, nicht gelöscht                        reaktivierbar
+```
+
+**Zwei verschiedene Kurven, und sie werden regelmäßig verwechselt.** Der **Aufbau** ist eine Sinus-Sättigung und stammt aus `novaberg-kzg-salienz_k.md` §3. Der **Verfall** ist exponentiell und stammt aus `novaberg-memory-synapsen_k.md` §9.2. Der Sinus verfällt nicht, und das Exponential sättigt nicht; wer „die Sinus-Formel" für den Verfall sagt, meint die Aufbauhälfte.
+
+**Die Sättigung ist der Grund, warum ein Dauerthema den Verfall nicht aushebelt.** Der erste Auftrag zu einem Thema zählt viel, der fünfzigste kaum noch. Ohne sie könnte ein oft wiederkehrender Anlass beliebig hoch klettern und läge dauerhaft über jeder Schwelle.
+
+---
+
+## 5. Die Formel
+
+**Bei Anlage und bei Verstärkung** (ein neuer Anlass betrifft denselben Auftrag):
+
+```
+salienz_roh      = salienz_roh + QUEUE_VERSTAERKUNG_BOOST
+salienz_absolut  = CAP × sin(min(salienz_roh / CAP, 1) × π/2) ^ DAEMPFUNG_EXP
+salienz_decay    = salienz_absolut
+verstaerkt_am    = NOW()
+decay_am         = NOW()
+aktiv            = TRUE
+haeufigkeit      = haeufigkeit + 1
+```
+
+**Beim Verfallslauf** (einmal täglich, alle aktiven Aufträge):
+
+```
+salienz_decay = salienz_absolut × exp(−QUEUE_DECAY_RATE × Tage seit verstaerkt_am)
+decay_am      = NOW()
+if salienz_decay < QUEUE_SCHWELLE:
+    aktiv = FALSE
+```
+
+`salienz_absolut` bleibt **unangetastet**. Sie ist die Erinnerung daran, wie dringlich der Auftrag einmal war — und die Bezugsgröße der Reaktivierung.
+
+> **Die Wirkung der Verstärkung sitzt in `verstaerkt_am`, nicht im Boost — nachgerechnet in §12.2.** Zehn Verstärkungen heben `salienz_absolut` um 0,024 und kaufen damit **0,6 Tage**; das Zurücksetzen der Uhr in derselben Zeile schenkt **30**. **Das ist der Zweck der Sinus-Kurve, nicht ihr Versagen:** Wer oben ist, gewinnt durch eine weitere Verstärkung fast nichts, und ein Dauerthema hebelt den Verfall damit nicht aus. Derselbe Bau steht im KZG, wo eine Verstärkung die **TTL** verlängert statt den Wert zu heben.
+
+---
+
+## 6. Die Reaktivierung — 50 % des Wegs zurück
+
+**Ein deaktivierter Auftrag springt bei einem neuen Anlass nicht auf seine alte Dringlichkeit.** Er bekommt die Halbreaktivierung aus `novaberg-memory-synapsen_k.md` §9.3:
+
+```
+salienz_decay = (salienz_absolut + QUEUE_SCHWELLE) / 2
+verstaerkt_am = NOW()
+decay_am      = NOW()
+aktiv         = TRUE
+```
+
+**Diese Formel ist exakt „50 %", aber nicht 50 % wovon man zuerst denkt.** Sie setzt den Wert auf die Mitte zwischen Deaktivierungsschwelle und Anker — also auf **50 % des Bandes über der Schwelle**. In Absolutwerten sind das bei Schwelle 0,3 je nach Anker 65 bis 80 %:
+
+| Anker | springt auf | vom Anker | vom Band über der Schwelle |
+|---|---|---|---|
+| 1,0000 | 0,6500 | 65,0 % | **50 %** |
+| 0,9764 | 0,6382 | 65,4 % | **50 %** |
+| 0,8409 | 0,5704 | 67,8 % | **50 %** |
+| 0,6738 | 0,4869 | 72,3 % | **50 %** |
+| 0,5000 | 0,4000 | 80,0 % | **50 %** |
+
+**Der Prozentsatz vom Anker ist keine Konstante, der vom Band ist eine.** Das ist der Grund, die Formel zu übernehmen statt „×0,5" zu schreiben: Ein halbierter Anker läge bei einem schwachen Auftrag unter der Schwelle und deaktivierte ihn im selben Zug, in dem er geweckt wird.
+
+**`salienz_roh` und `salienz_absolut` bleiben unverändert.** Der Auftrag wird geweckt, nicht verstärkt — der Boost greift erst bei der nächsten echten Verstärkung.
+
+### 6.1 Was einen ruhenden Auftrag weckt
+
+**Ein neuer Auftrag zum selben Gegenstand.** Das ist die Entsprechung zum Anker-Treffer im LZG, und sie fällt mit einer Lücke zusammen, die heute schon besteht: `shadow_queue_push` prüft **nicht**, ob derselbe Auftrag bereits liegt. Die Schwester-Funktion `promotion_queue_push` tut es seit Chat 111.
+
+> **Damit ist die Reaktivierung keine neue Mechanik, sondern die fehlende Dublettenprüfung — von der anderen Seite gesehen.** Heute erzeugt derselbe Anlass einen zweiten Auftrag; künftig verstärkt er den vorhandenen. Liegt der ruhend, weckt er ihn. **Das ist der einzige Weg, auf dem Wiederkehr sichtbar wird**: Ohne ihn hätte `haeufigkeit` keinen Schreiber und bliebe für immer auf 1, und die Sättigungskurve aus §4 hätte nichts zu sättigen.
+
+**Was „derselbe Gegenstand" heißt, ist eine Setzung und wird gemessen, nicht erfunden.** Gleiches `aufgabe` **und** gleiches `thema` bei demselben Paar. Eine Ähnlichkeitsprüfung über Embeddings wäre der zweite Schritt und braucht eine Schwelle, die es hier noch nicht gibt — und `novaberg-pixie-nachfragen_k.md` §3 hält fest, was eine Schwelle ohne ihre gemessene Paarung wert ist.
+
+### 6.2 Ein leeres Thema ist kein Gegenstand
+
+**Die Regel aus §6.1 fällt ohne diesen Zusatz in sich zusammen, und die Messung zeigt es.** Am 15.08.2026 tragen **145 von 1036** Aufträgen ein leeres `thema` — 141 `vertiefen`, 4 `nachfragen`. Über `aufgabe` + `thema` bilden sie **eine einzige** Gruppe.
+
+```
+Verschiedene (aufgabe, thema)-Paare   878 bei 1036 Einträgen
+Größte Gruppe                         141 × aufgabe='vertiefen', thema=''
+Zweitgrößte                             4 × aufgabe='nachfragen', thema=''
+Alle übrigen Gruppen                  höchstens 2 Einträge
+```
+
+**Ohne die Leergruppe sind echte Dubletten selten** — keine Gruppe über zwei. Mit ihr würde die Reaktivierung 141 unverwandte Aufträge zu einem einzigen verschmelzen und seine `haeufigkeit` auf 141 treiben. Die Sättigungskurve machte daraus einen Auftrag, der dauerhaft an der Spitze steht und nie verfällt — **aus einem fehlenden Wert würde der wichtigste Eintrag der Queue.**
+
+**Deshalb:** Ein Auftrag mit leerem `thema` ist von der Dublettenerkennung **ausgenommen**. Er verstärkt nichts und wird von nichts verstärkt; er verfällt allein über die Zeit.
+
+> **Das ist eine Notmaßnahme, kein Entwurf.** Ein Auftrag ohne Thema ist bereits defekt — bei `vertiefen` steht der Gegenstand statt dessen als Fließtext in `kontext`, was das Feld nicht meint. Die Ausnahme verhindert, dass der Defekt über die Reaktivierung Wirkung entfaltet; sie behebt ihn nicht. **Das Schema erzwingt `thema NOT NULL`, aber nicht `<> ''`** — eine Prüfung auf Nichtleere gehört in den Schreibpfad, und der gehört nicht zu diesem Bauteil.
+
+---
+
+## 7. Der Umzug nach PostgreSQL
+
+### 7.1 Warum eine Redis-Liste das nicht trägt
+
+**Soft-Delete in einer Liste markiert das Rauschen, statt es abzuräumen.** Die Auswahl liest heute bei jedem Heartbeat die ganze Liste (`LRANGE 0 -1`) und rechnet über jeden Eintrag. Ein deaktivierter Eintrag bliebe darin liegen und würde weiter mitgelesen — der Vollscan wird nie kleiner. Genau das, was der Verfall leisten soll, bliebe aus.
+
+Dazu kommt: Eine Redis-Liste kennt **kein Feld-Update**. `salienz_decay` täglich neu zu schreiben hieße, die ganze Liste zu lesen, jeden Eintrag neu zu serialisieren und die Liste komplett neu zu schreiben. In Postgres ist derselbe Vorgang ein `UPDATE` über eine indizierte Spalte — dieselbe Form wie `run_node_decay`.
+
+### 7.2 Warum die Queue umzieht und der Stapel nicht
+
+**Gemessen am 15.08.2026:**
+
+| | gelesen von | Takt |
+|---|---|---|
+| `shadow_queue` | Pixie-Heartbeat | alle **30 s** (CPU-Spur) bis **120 s** (LLM-Spur) |
+| `shadow_stack` | Zustellungs-Loop | alle **5 s**, je verbundenem Client |
+
+**Der Stapel wird sechs- bis vierundzwanzigmal häufiger gelesen als die Queue** — und sein billigster Riegel ist heute ein `LLEN`, ein O(1)-Aufruf gegen den Arbeitsspeicher. Er bleibt, wo er ist. Für ihn gilt `novaberg-autonomous-wissen_k.md` §11.6 unverändert.
+
+> **Der Preis des Umzugs ist benannt, nicht weggeredet.** Die Postgres-Zugriffe dieses Projekts öffnen je Aufruf eine eigene Verbindung (`psycopg2.connect` in jeder Funktion von `memory/lzg_knoten.py`); einen Verbindungspool gibt es nicht. Im 30-Sekunden-Takt der Queue ist das folgenlos — 2880 Verbindungen am Tag, gegen die der Heartbeat ohnehin Modellaufrufe von 35 bis 38 Sekunden stellt. Im 5-Sekunden-Takt des Stapels wäre es keins von beidem. **Das ist der Grund für die Grenze, nicht die Größe der Daten.**
+
+### 7.3 Was der Umzug nebenbei mitbringt
+
+- **Die Auswahl wird ein Index-Zugriff.** Heute ein O(n)-Vollscan über 1036 Einträge, künftig `ORDER BY salienz_decay DESC LIMIT 1` über einen Index.
+- **Der Retry wird ein `UPDATE`.** Heute wird der Eintrag entfernt und neu ans Ende geschrieben — was seine Position ändert und bei einem Absturz zwischen beiden Schritten den Auftrag verliert.
+- **Entnehmen und Retry treffen den richtigen Eintrag.** Beide adressieren ihn heute über seinen **exakten JSON-Wortlaut** (`LREM key 1 <rohsatz>`); ein Primärschlüssel ist eindeutig, und ein Fehlgriff wird sichtbar statt wirkungslos (§12.1).
+- **Das Paar-Tripel wird vollständig.** Die Queue trägt heute nur `user_id`. Nach dem Paar-Schema gehören `character_id` und `beobachter` dazu.
+- **Die Zusicherungen wandern ins Schema.** `NOT NULL` auf `salienz_absolut` macht die 233 stillen Nullen künftig unmöglich.
+
+---
+
+## 8. Das Schema — lückenlos
+
+Jedes Feld des heutigen JSON-Satzes hat eine Spalte, und jede Spalte hat eine Herkunft.
+
+```sql
+CREATE TABLE IF NOT EXISTS shadow_auftrag (
+    -- Identität
+    id                SERIAL           PRIMARY KEY,
+
+    -- Paar-Partition (Paar-Schema: Subjekt × Gegenüber × Beobachter)
+    user_id           TEXT             NOT NULL,
+    character_id      VARCHAR(50)      NOT NULL,
+    beobachter        VARCHAR(20)      NOT NULL,
+
+    -- Auftrag: was getan werden soll
+    aufgabe           TEXT             NOT NULL,
+    thema             TEXT             NOT NULL,
+    kontext           TEXT             NOT NULL DEFAULT '',
+
+    -- Anlass: die Lage, aus der er entstand
+    intentionen       TEXT[]           NOT NULL DEFAULT '{}',
+    emotion           TEXT             NOT NULL DEFAULT '',
+    modus             TEXT             NOT NULL DEFAULT '',
+
+    -- Salienz-Dynamik (Vorbild: lzg_knoten)
+    salienz_roh       DOUBLE PRECISION NOT NULL,
+    salienz_absolut   DOUBLE PRECISION NOT NULL,
+    salienz_decay     DOUBLE PRECISION NOT NULL,
+    haeufigkeit       INTEGER          NOT NULL DEFAULT 1,
+    aktiv             BOOLEAN          NOT NULL DEFAULT TRUE,
+
+    -- Zeit
+    erstellt_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    verstaerkt_am     TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    decay_am          TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+
+    -- Ausführung
+    versuche          INTEGER          NOT NULL DEFAULT 0
+);
+
+-- Der Auswahlpfad: aktive Aufträge eines Paares, nach Präsenz sortiert.
+CREATE INDEX IF NOT EXISTS idx_shadow_auftrag_wahl
+    ON shadow_auftrag (user_id, character_id, aktiv, salienz_decay DESC);
+
+-- Der Reaktivierungspfad: derselbe Gegenstand bei demselben Paar (§6.1).
+CREATE INDEX IF NOT EXISTS idx_shadow_auftrag_gegenstand
+    ON shadow_auftrag (user_id, character_id, aufgabe, thema);
+```
+
+**Die Abbildung, Feld für Feld:**
+
+| heute im JSON | Spalte | Anmerkung |
+|---|---|---|
+| `aufgabe` | `aufgabe` | unverändert |
+| `user_id` | `user_id` | unverändert |
+| `thema` | `thema` | unverändert |
+| `kontext` | `kontext` | unverändert |
+| `prioritaet` | `salienz_roh` / `salienz_absolut` / `salienz_decay` | **zerfällt in drei** (§3.2) |
+| `intentionen` | `intentionen` | JSON-Liste → `TEXT[]` |
+| `emotion` | `emotion` | unverändert |
+| `modus` | `modus` | unverändert |
+| `erstellt` | `erstellt_am` | ISO-Zeichenkette → `TIMESTAMPTZ` |
+| `_retries` | `versuche` | **war undokumentiert** — 43 von 1036 tragen es; die Unterstrich-Konvention verrät ein Feld, das nachträglich hinzukam |
+| — | `character_id`, `beobachter` | **neu**, aus dem Paar-Schema |
+| — | `haeufigkeit`, `aktiv`, `verstaerkt_am`, `decay_am` | **neu**, aus der Verfallsmechanik |
+| — | `bezug_id` | **nachgetragen am 19.08.2026** — worauf sich der Auftrag bezieht. Bei `wissen_verweis` ist es `autonomous_wissen.id`: die Zeile, die die Recherche gerade angelegt hat und die deshalb **nicht ihr eigener Zuordnungskandidat** sein darf. Ohne sie verstärkte jedes Ergebnis seine eigene Zeile — dieselbe Zusammenfassung, Kosinus nahe eins. **NULL-fähig, ohne Vorgabewert, ohne Fremdschlüssel:** Eine 0 wäre eine gültig aussehende Zeilennummer, und ein Fremdschlüssel nagelte die Zielzeile gegen den Verfall fest, dem sie unterliegen soll — `F-VERFALL-1` (b). Eine ins Leere zeigende ID kostet einen Kandidaten zu viel und sonst nichts. Bestandszeilen bleiben NULL |
+| — | `ausloeser_turn_id` | **nachgetragen am 28.08.2026** — der Turn, aus dem der Auftrag entstand; das erste Glied der Sachlage-Brücke (`novaberg-thinking-lage_k.md` §4, Scheibe 4). Bis dahin reiste ein Turnbezug nur als Wortlaut im `kontext` mit. **`TEXT`, NULL-fähig, ohne Vorgabewert, ohne Fremdschlüssel** — Turns haben keine Tabelle; NULL heißt unbekannt, und der Leser prüft darauf. Gesetzt von allen Erzeugern, die aus einem KZG-Eintrag entstehen (KZG-Store, KZG-Queues, Synapsen-Promotion) — sie lesen die `turn_id` des Hashs, die das Hash seit demselben Tag trägt; der Recherche-Verweis trägt keinen. Bestandszeilen bleiben NULL |
+| — | `grund` | **nachgetragen am 23.08.2026** — warum die Zeile ist, wie sie ist. `aktiv` sagt, **ob** sie gesucht wird; `grund` sagt, **warum** sie stillliegt (`F-STILLLEGUNG-1`). Kanon: `''` (aktiv oder Altbestand) · `verfall` · `fehlversuch`. **NOT NULL mit Vorgabewert `''`, und beides ist Absicht:** Ein NULL sagte, dass kein Wert da ist, nicht welcher fehlt. Die 247 stillgelegten Altzeilen tragen `''` — das ist kein dritter Grund, sondern die Auskunft *vor dem 23.08.2026 stillgelegt, Ausgang unbekannt*; eine rückwirkende Zuordnung wäre geraten und nicht gemessen |
+| — | `arousal` | **nachgetragen am 15.08.2026** — die dritte Größe derselben Lage, die `emotion` und `modus` beschreiben. Sie fehlte, und damit konnte die Recherche keinen Level auf den Stapel legen: Bauteil B war gebaut und ohne Eingabe. **NULL-fähig und ohne Vorgabewert**, anders als ihre beiden Nachbarn — die Quelle liefert sie stellenweise selbst leer, und eine 0,5 wäre ein Messwert, den nie jemand gemessen hat. Bestandszeilen bleiben NULL |
+
+**Drei Zusicherungen stehen im Schema statt im Code**, nach dem Vorbild von `autonomous_wissen`:
+
+1. **Das Paar-Tripel trägt keinen Vorgabewert.** Eine neue Tabelle kann sich den strengeren Weg leisten; ein Vorgabewert `'nova'` würde eine fehlende Zuordnung als gültige ausgeben.
+2. **Die drei Salienz-Spalten sind `NOT NULL` ohne Default.** Genau das hätte die 233 stillen Nullen verhindert: Wer ohne Salienz einreiht, scheitert an der Datenbank, statt eine 0,0 zu erzeugen, die wie ein gemessener Wert aussieht.
+3. **`versuche` beginnt bei 0, nicht bei `NULL`.** Ein fehlender Zähler und ein Zähler bei null sind verschiedene Aussagen; hier ist nur die zweite gemeint.
+
+---
+
+## 9. Die Konstanten
+
+| Konstante | Wert | Herleitung |
+|---|---|---|
+| `QUEUE_SALIENZ_CAP` | **1,0** | Die Größe ist Salienz. `KZG_SALIENZ_CAP` ist 1,0, und die Queue führt sie heute so — 785 von 1036 im Band 0,94393–1,0 |
+| `QUEUE_SCHWELLE` | **0,3** | entschieden |
+| `QUEUE_DECAY_RATE` λ | **0,0393 / Tag** | `ln(0,9764 / 0,3) / 30` — der gemessene Median fällt nach **30 Tagen** unter die Schwelle |
+| `QUEUE_DAEMPFUNG_EXP` | **0,5** | wie `lzg_knoten` und wie der KZG-Aufbau |
+| `QUEUE_VERSTAERKUNG_BOOST` | **0,03** | wie `KZG_SALIENZ_BOOST` — die Queue trägt KZG-Salienz, der Zuwachs soll derselbe sein |
+
+> **„0,3" ist zweideutig, und beide Lesarten haben im System einen Namen.** Die Salienz existiert als **Rohwert** und als **gedämpfter Wert**, und `config.py` führt die Umrechnung als Konstante mit: `KZG_SALIENZ_MINIMUM = 0.67378`, im Kommentar als *„roh 0.3"* bezeichnet. Ein Rohwert von 0,3 **ist** also der gedämpfte Wert 0,674 — nachgerechnet über die Umkehrung aus §10, die alle drei KZG-Marken exakt reproduziert.
+>
+> **Hier gilt die Schwelle auf dem gedämpften Wert**, also auf `salienz_decay` selbst. Das ist die Größe, die im Rang steht und die der Verfallslauf schreibt; eine Schwelle auf dem Rohwert müsste bei jedem Vergleich erst zurückgerechnet werden.
+>
+> **Die Wahl ändert die Frist, nicht nur die Zahl.** Läge die Schwelle bei 0,674, erreichte der Median sie mit derselben Rate schon nach **9,4 Tagen** statt nach 30. Wer beide Angaben — „Schwelle 0,3" und „30 Tage" — für unabhängig hält, bekommt eine dritte Kurve, die keine von beiden ist.
+
+> **Die Skala ist 1,0 und nicht 10,0, und das ist die folgenreichste Setzung dieses Dokuments.** `novaberg-autonomous-wissen_k.md` §11.6 rechnet für den Stapel auf Cap 10,0, weil es dort die Knoten-Skala übernimmt. Auf dieser Skala wäre eine Schwelle von 0,3 gleich **3 %** — sie würde praktisch nie erreicht, und der Verfall liefe ins Leere, ohne dass eine Fehlermeldung entstünde. Die Queue führt Salienz im Bereich 0…1; die Schwelle 0,3 ist auf dieser Skala gemeint.
+
+**Was die Rate bedeutet, gegengerechnet:**
+
+| Startwert | fällt unter 0,3 nach |
+|---|---|
+| 1,0000 | 30,6 Tagen |
+| 0,9764 (Median) | 30,0 Tagen |
+| 0,9439 | 29,1 Tagen |
+| 0,8409 | 26,2 Tagen |
+| 0,6738 | 20,6 Tagen |
+
+**Zum Vergleich: Mit der LZG-Rate 0,0015 fiele derselbe Median erst nach 787 Tagen** — gut zwei Jahre. Die Queue-Rate ist 26-mal höher, und das ist der Punkt: Ein unerledigter Auftrag ist schneller gegenstandslos als eine Erinnerung.
+
+> **Damit lösen sich „30 Tage TTL" und „nichts wird hart gelöscht" auf, die zunächst widersprüchlich aussehen.** Die 30 Tage sind **keine Löschfrist**. Sie sind die Zeit, in der ein unberührter Auftrag von voller Salienz auf die Deaktivierungsschwelle fällt. Danach ruht er und ist reaktivierbar — er verschwindet nicht.
+
+**Diese Zahlen sind hergeleitet und teilweise gemessen, aber nicht erprobt.** Der Median stammt aus dem Bestand vom 15.08.2026; die Rate folgt daraus rechnerisch. Ob 30 Tage die richtige Frist sind, ist eine Setzung. Wer sie später vorfindet, darf sie nicht für ein Messergebnis halten.
+
+---
+
+## 11. Wer den Verfall rechnet
+
+**Der Weg existiert und ist erprobt; es wird kein neuer Mechanismus gebaut.** `novaberg-autonomous-wissen_k.md` §11.7 hat das für den Stapel entschieden, und die Begründung trägt hier unverändert: Der Tageslauf `synapsen_decay` tut heute schon Knoten-Decay und `pipeline_log`-Aufräumen. Ein weiterer Schritt darin kostet **keinen zusätzlichen Platz im Heartbeat** — bei einem einzigen seriellen Platz ist das ausschlaggebend.
+
+**Der Preis ist derselbe und wird genauso bezahlt:** Ein Lauf, der mehreres tut, färbt bei einem Fehlschlag im letzten Schritt den ganzen Auftrag rot. Dagegen hilft, was die Norm ohnehin verlangt — **je Schritt ein eigener `hintergrund_log`-Eintrag** mit `gestartet` / `erledigt` / `fehler`. Erst dann ist unterscheidbar, ob der Verfall lief und nichts fand, oder ob er gar nicht lief.
+
+---
+
+## 12. Der Lebenszyklus — geprüft, gerechnet, entschieden
+
+Der Entwurf ist am 15.08.2026 gegen den gemessenen Bestand durchgerechnet worden: Anlegen, Bestand, Priorisierung, Verfall, Löschen, Reaktivierung. **Vier Stellen sahen dabei aus wie Mängel und sind es nicht** — sie sind die Bauart, und dieser Abschnitt hält fest, warum. Eine fünfte ist offen geblieben und ist es weiterhin.
+
+### 12.1 Drei Wege aus der Queue, und nur einer ist ein Löschen
+
+| Weg | Was geschieht | Rückweg |
+|---|---|---|
+| **Erledigt** — der Agent hat den Auftrag ausgeführt | **Die Zeile wird entfernt.** Ein erledigter Vorsatz ist kein Vorsatz mehr | keiner, und keiner nötig |
+
+| **Verfallen** — 30 Tage ohne Anlass | `aktiv = FALSE`, die Zeile bleibt | Reaktivierung (§6) |
+| **Gescheitert** — drei Fehlversuche | ~~**Die Zeile wird entfernt**~~ → seit 23.08.2026 `aktiv = FALSE, grund = 'fehlversuch'` (`_RETRY_GRENZE`) | Reaktivierung, wie beim Verfall |
+
+> **Das Entnehmen nach der Ausführung ist ein Löschen, und es ist das einzige, das keiner Begründung bedarf.** Was abgearbeitet wurde, ist erledigt; es aufzubewahren hieße, eine Aufgabenliste mit einem Tagebuch zu verwechseln. **Alles andere wird gelagert, bis es drankommt** — und wenn es nicht drankommt, ist es später deaktiviert, nicht verschwunden.
+
+**Der Weg „erledigt" ist heute schon gebaut und ändert sich nur in der Technik.** `abschluss(kandidat, erfolg=True)` ruft `_eintrag_entfernen`, und das ist ein `LREM key 1 <rohsatz>`. **Nach dem Umzug wird daraus ein `DELETE … WHERE id = …`** — und das ist der stillste Gewinn des Umzugs: `LREM` sucht den Eintrag über seinen **exakten JSON-Wortlaut**. Weicht ein einziges Zeichen ab, entfernt es nichts und meldet nichts, denn die Funktion hält im Docstring ausdrücklich fest, `lrem` auf einem nicht vorhandenen Satz sei wirkungslos. Ein Primärschlüssel kann das nicht.
+
+**Damit steht die Queue zwischen den beiden Gedächtnissen, und der Vergleich ist die Begründung ihrer Bauart:**
+
+| Speicher | Was am Ende geschieht | Rückweg |
+|---|---|---|
+| **KZG** (Redis) | **hart gelöscht** über die TTL — 7 / 14 / 30 Tage, gestaffelt nach Salienz (`KZG_TTL_LOW/MID/HIGH`) | keiner |
+| **LZG** (`lzg_knoten`) | **nie gelöscht** — `aktiv = FALSE`, die Zeile bleibt | Halbreaktivierung |
+| **Queue** (künftig) | erledigt → **entfernt** · nicht erledigt → **`aktiv = FALSE`** | Reaktivierung |
+
+**Die Queue nimmt vom KZG die Frist und vom LZG den Rückweg.** Das ist kein Kompromiss, sondern folgt aus dem Gegenstand: Ein Auftrag hat wie ein KZG-Eintrag ein Verfallsdatum, weil sein Anlass altert — aber er soll wie ein LZG-Knoten weckbar bleiben, weil derselbe Anlass wiederkommen kann.
+
+> **Ein Detail des KZG stützt §12.2:** Bei einer Verstärkung wird dort die **TTL verlängert** (`expire(key, max(verbleibend, neuer_ttl))`), nicht der Wert erhöht. Auch im Kurzzeitgedächtnis wirkt Wiederholung über die Uhr.
+
+### 12.2 Die Sättigung ist die Absicht — die Uhr ist die Wirkung
+
+**Gerechnet, mit dem gemessenen Median als Einstieg:**
+
+| Verstärkungen | `salienz_absolut` | Zugewinn | gewonnene Zeit |
+|---|---|---|---|
+| 0 | 0,976400 | — | 30,00 Tage |
+| 1 | 0,983116 | +0,0067 | 30,17 Tage |
+| 5 | 0,998739 | +0,0223 | 30,58 Tage |
+| **10** | 1,000000 | +0,0236 | **30,61 Tage** |
+
+**Wer oben ist, gewinnt durch eine weitere Verstärkung fast nichts — und genau dafür ist die Sinus-Kurve da.** Ein Auftrag steigt bei `salienz_roh ≈ 0,80` von Cap 1,0 ein und liegt damit bereits im flachen Teil. Das ist kein Fehlschlag der Kurve, sondern ihr Zweck: Ein Dauerthema soll nicht unbegrenzt wachsen und den Verfall aushebeln.
+
+**Die Wirkung der Verstärkung sitzt deshalb in `verstaerkt_am`:** Die Uhr wird zurückgesetzt, der Auftrag bekommt **volle 30 Tage neu**. Das ist die Größenordnung, um die es geht — 30 Tage gegen 0,61.
+
+> **Was daraus für die Kalibrierung folgt:** `QUEUE_VERSTAERKUNG_BOOST` ist **keine Stellschraube der Frist**. Wer die Haltedauer eines wiederkehrenden Themas ändern will, ändert `QUEUE_DECAY_RATE` oder nichts. Ein Boost, der von 0,03 auf 0,10 gedreht wird, bewegt am oberen Ende der Kurve weiterhin fast nichts — und der, der ihn dreht, sucht den Fehler dann anderswo.
+
+### 12.3 Die Rangfolge ist Dringlichkeit — und Dringlichkeit ist Frische
+
+**Entschieden am 15.08.2026: Jeder Punkt kommt nach Dringlichkeit dran.** `salienz_decay` **ist** die Dringlichkeit, und weil der Verfall sie über die Zeit senkt, ist der jüngste Auftrag zugleich der dringlichste.
+
+> **Der letzte Gedanke ist der präsenteste.** Er ist frisch, er glüht, er will präsent sein — nicht der von vor dreißig Tagen, der nach Wartezeit als nächster an der Reihe wäre. Ein Vorsatz wird nicht dadurch dringlicher, dass er lange liegt; er wird es weniger.
+
+**Was das gegenüber heute ändert, und es ist eine Umkehr:**
+
+```
+heute        _queue_peek nimmt den ersten mit echt groesserer Prioritaet.
+             Das Maximum 1,0 tragen 59 Eintraege; der erste steht an
+             Listenposition 894 von 1036. rpush haengt hinten an
+             → es gewinnt der aelteste Eintrag des Hoechstwerts.  FIFO
+
+kuenftig     ORDER BY salienz_decay DESC
+             → es gewinnt der juengste Eintrag ueberhaupt.        LIFO
+```
+
+**Die Umkehr ist gewollt und hier festgehalten, damit sie nicht später als Defekt gemeldet wird.** Sie ist keine Nebenwirkung des Umzugs, sondern die Absicht: Was heute FIFO ist, war nie entschieden, sondern folgte aus `prio > beste_prio` und der Einfügereihenfolge einer Liste.
+
+**Die Wechselwirkung mit dem Aging der periodischen Aufgaben ist zu kennen.** Im selben Scheduler laufen jetzt zwei gegenläufige Zeitregeln:
+
+| | Maßstab | Richtung |
+|---|---|---|
+| Periodische Aufgaben (`_aging_zuschlag`) | absolute Wartezeit | Priorität **steigt** mit dem Warten |
+| Queue-Aufträge (dieses Konzept) | Dringlichkeit | Priorität **fällt** mit dem Warten |
+
+**Das ist kein Widerspruch, sondern zwei verschiedene Gegenstände.** Eine Wartungsaufgabe wird dringlicher, je länger sie aussteht — ein unerledigter Einfall wird es nicht. **Die Folge ist trotzdem zu benennen:** Über die Zeit verschiebt sich das Kräfteverhältnis im Heartbeat zugunsten der periodischen Aufgaben. Heute gewinnen Queue-Aufträge fast immer, weil sie bei 0,94 bis 1,0 liegen; ein zwanzig Tage alter Auftrag liegt bei 0,44 und verliert gegen jede vier Stunden überfällige Wartungsaufgabe am Aging-Deckel.
+
+### 12.4 Die Reaktivierung hält am Leben — das ist ihr Zweck, nicht ihre Grenze
+
+Ein reaktivierter Auftrag springt auf `(salienz_absolut + 0,3) / 2` — bei einem Anker von 0,976 also auf **0,638**, den Stand eines rund elf Tage alten Auftrags. Gegen frische Zugänge bei 0,976 gewinnt er damit nicht.
+
+**Das ist richtig so.** Die Reaktivierung soll einen Vorsatz **am Leben halten**, nicht ihn vordrängeln. Ein Anlass, der wiederkehrt, hebt den alten Auftrag aus der Ruhe zurück in den Bestand — ob er dann drankommt, entscheidet dieselbe Dringlichkeitsordnung wie für alle anderen (§12.3). Wollte man ihn nach vorn holen, müsste man ihn über die frischen Zugänge setzen, und damit wäre die Wiederholung wichtiger als die Gegenwart.
+
+**Wiederholt sich der Anlass mehrfach, holt er den Auftrag von selbst nach oben** — jede Verstärkung setzt die Uhr zurück (§12.2), und ein Auftrag mit frischer Uhr steht wieder ganz oben.
+
+### 12.5 Die Menge ist keine Grenze — die Rate ist die Stellschraube
+
+**Es wird nichts gelöscht außer dem Erledigten und dem Gescheiterten.** Die Tabelle wächst deshalb: bei rund 1000 neuen Aufträgen im Monat und kleinem Abfluss etwa 12.000 Zeilen im Jahr, überwiegend inaktiv.
+
+**Für PostgreSQL ist das folgenlos** — der Auswahl-Index trägt `aktiv` an führender Stelle; inaktive Zeilen kosten die Auswahl nichts.
+
+> **Entschieden am 15.08.2026: keine Mengengrenze, keine zweite Frist.** Sammeln sich einmal Zehntausende aktiver Einträge, die nie abfließen, dann ist **der Verfall zu schwach eingestellt und wird verstärkt** — `QUEUE_DECAY_RATE` ist die Stellschraube. Eine Obergrenze wäre der falsche Hebel: Sie würde Einträge nach ihrer Zahl verwerfen statt nach ihrer Dringlichkeit, und damit genau die Ordnung durchbrechen, die dieses Konzept herstellt.
+
+**Ein Jahresablauf für nie reaktivierte Aufträge ist erwogen und nicht eingeführt.** Das Argument dagegen ist dasselbe wie im LZG: Was einmal ein Vorsatz war, kostet als ruhende Zeile fast nichts und ist der einzige Beleg dafür, dass er je bestand. **Die Bedingung, unter der er doch käme, steht damit fest** — wenn die Tabelle die Auswahl messbar verlangsamt, und nicht, wenn sie nur groß aussieht.
+
+*§12.6 (Was die Prüfung gestützt hat) steht in [`novaberg-queue-verfall_m.md`](novaberg-queue-verfall_m.md), Abschnitt „Aus §12“.*

@@ -1,15 +1,34 @@
 # Novaberg — Eigenzeit: was zwischen zwei Turns geschieht
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 24. August 2026 (v0.20 — **die Zwei-Stunden-Wand ist gefallen**, und der Burst steht an ihrer Stelle; die Größenordnung des neuen Takts ist unvermessen. Davor am selben Tag, v0.19 — die Wand ist gefallen: dritter Auslöser `stille` statt `else: continue`, im Betrieb belegt; §2.5. Davor am selben Tag, v0.18 — der Salienz-Anschub in §2.5 ist **zurückgestellt**: Nähe und Initiative reichen; drei Messungen desselben Tages stehen dabei, darunter die entscheidende — Riegel 2 lässt seit dem 24.08. 21,7 % durch, wo er von seinem Bau bis zum 23.08. nie öffnete). Davor: 15. August 2026 (v0.17)
-**Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
-**Typ:** Konzept (`_k`)
-**Status:** 🔶 Konzept — **fünf der sechs Bauteile gebaut** (E, F, C, A, B); **D fehlt** und ist ohne die Haltungs-Persistenz nicht baubar. C trägt eine benannte offene Kante (der Fall ohne Bezug), B wartet auf seinen ersten Eintrag mit Level.
-**Berührt:** `graph/nodes/db_zugriff.py` · `graph/nodes/verfasser.py` · `graph/nodes/responder.py` · `agents/recherche/destillation.py` · `graph/nodes/haltung.py` · `services/shadow_delivery.py` · `services/pixie/stack.py` · `memory/session.py`
-**Nachbarn:** `novaberg-pixie-nachfragen_k.md` §3 (der Zustellungsfilter) · `novaberg-gedankenkette_k.md` (zusammenhängende Einwürfe) · `novaberg-haltungsraum_k.md` (woraus die Regie entsteht)
+**Absicht:** Novas eigener Zustand gehört ihr und bleibt zwischen den Gesprächen, wo ihre Gedanken ihn hintragen; gedämpft wird er erst beim Übergang in eine Begegnung, über das Intervall seit der letzten Äußerung des Menschen — und ein eigener Gedanke erreicht das Gespräch nur, wenn die Riegelkette ihn durchlässt (erst ob sie zugehen will, dann ob sie dran ist, dann ob er passt), und dann als Material, nicht als fremde Rede.
+**Stand:** 24. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Umsetzung:** Featureliste *Eigenzeit E* 🟢 · *Eigenzeit F* 🟢 · *Eigenzeit C* 🟠 · *Eigenzeit A* 🟢 · *Eigenzeit B* 🟠 · *Eigenzeit D* 🟠 · *Stapel + Zustellung (Shadow Delivery)* 🔴 · *Arousal-basierter Decay* 🟠 — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-eigenzeit_t.md`](novaberg-eigenzeit_t.md) · [`novaberg-eigenzeit_b.md`](novaberg-eigenzeit_b.md) · [`novaberg-eigenzeit_e.md`](novaberg-eigenzeit_e.md) · [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md)
+**Entschieden:** 7 · **Offen beim Meister:** 6 (Liste in [`novaberg-eigenzeit_e.md`](novaberg-eigenzeit_e.md))
+
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-eigenzeit_k.md §2.5` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-eigenzeit_t.md`](novaberg-eigenzeit_t.md), `_b` ist [`novaberg-eigenzeit_b.md`](novaberg-eigenzeit_b.md), `_e` ist [`novaberg-eigenzeit_e.md`](novaberg-eigenzeit_e.md), `_m` ist [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md).
+
+| § | Datei |
+|---|---|
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Typ, Status, Berührt, Nachbarn) | `_m` |
+| 1 | `_k`; die vier `[gemessen]`-Absätze samt Messkasten und Warnung in `_m` |
+| 2 · 2.1 · 2.2 | `_k` |
+| 2.3 | `_k`; der Stand der Umsetzung des Kanals (vom durchgestrichenen *Der Kanal dafür ist vorhanden …* bis *Der Bestand bleibt leer …*) in `_b` |
+| 2.4 | `_k`; die drei `[gemessen]`-Absätze mit ihren Deutungen und der Warnung *Die Zahl steht auf drei Äußerungen* in `_m` |
+| 2.5 — Kette, *Die Riegel lösen die Uhr ab*, *Anwesenheit ist Bedingung*, *Sieben Riegel* | `_k`; die Messung vom 15.08.2026 (457 Turns) und die vom 24.08.2026 in `_m`; der Kasten *Am 24.08.2026 gebaut: Die Uhr ist gefallen* in `_b` |
+| 2.5 — *Die Salienz ist ein Anschub* (zurückgestellt), bis *… dann der Anschub* | `_e`, Abschnitt F |
+| 2.5 — die Riegel 1 und 2 im Einzelnen (von *Die Riegel 3, 6 und 7 bestehen bereits* bis zum Kasten *Der befürchtete Defekt trifft diesen Riegel nicht*) | `_t` |
+| 2.6 | `_k` |
+| 3 · 3.1 · 3.2 · 3.3 · 3.4 · 3.5 · 3.6 · 3.7 | `_k`; aus 3.6 die Umsetzung vom 14.08.2026 mit ihrer Messung in `_b` |
+| 4 | `_k` |
+| 5 · 5.1 · 5.2 · 5.3 · 5.4 · 5.5 · 5.6 | `_b` |
+| 6 | `_e`, Abschnitt F |
+| Versionshistorie · *Befunde aus dem Betrieb — nachgetragen am 20.08.2026* | `_e`, Abschnitt F |
+| Entschieden, Offen beim Meister, offen ohne Frage, Verworfen, Befunde der Doku-Sichtung vom 19.09.2026 | `_e`, Abschnitte A bis E |
 
 ---
+
+> **Hinweis zur Aufteilung (19.09.2026):** Der Stands-Kopf des ungeteilten Konzepts steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Bisheriger Kopf*, weil er Messwerte trägt.
 
 ## 1. Die Beobachtung
 
@@ -17,19 +36,7 @@
 
 **Was fehlt, ist die Gegenbewegung.** Das System kennt heute nur eine Richtung: hinauf. Es gibt keinen Mechanismus, der Novas Zustand über eine Pause zurücknimmt.
 
-`[gemessen]` — 14.08.2026, ein Tag Betrieb:
-
-```
-Anteil des fachlichen Vokabulars an allen Zeichen der Antwort
-(Kohärenz · Resonanz · epistem… · ontolog… · Struktur · systemisch ·
- Emergenz · Spannungsfeld · operationalis…)
-
-                    Reiz     Antwort
-Nutzer-Turn        0,12 %     0,80 %
-eigener Impuls     2,07 %     2,02 %
-```
-
-Bei einer Nutzeräußerung fügt sie das Vokabular hinzu, das im Reiz nicht steht. Bei einem eigenen Impuls kommt es schon so herein — es sind Rechercheergebnisse. **49 von 122 Turns waren Impulse**, und jeder wandert in die Session, aus der der nächste Turn liest.
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messung *„`[gemessen]` — 14.08.2026, ein Tag Betrieb“* (Anteil des fachlichen Vokabulars in Reiz und Antwort, 49 von 122 Turns Impulse) stand hier; sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §1*.
 
 **Drei Mechanismen tragen das, und alle drei zählen Turns statt Zeit.**
 
@@ -39,31 +46,11 @@ Bei einer Nutzeräußerung fügt sie das Vokabular hinzu, das im Reiz nicht steh
 
 **Die Session stirbt nicht.** Ihre Frist wird bei jedem Schreibvorgang erneuert, und ein Impuls ist ein Schreibvorgang. Bei stündlichen Impulsen läuft sie nie ab — die „letzten fünf Turns" sind dann fünf Impulse über fünf Stunden.
 
-`[gemessen]` — 14.08.2026: Nach einer Nacht mit einem Impuls je Stunde bestand der Bezugsvektor am Morgen aus fünf Stunden eigener Prosa. Ein knapper, spielerischer Morgengruß wurde daraufhin als Landschaft `beichte / Katharsis` vermessen, und die Antwort darauf griff die Begriffe der Nacht auf, die im Gruß nicht vorkamen.
-
-`[gemessen]` — 14.08.2026, 21:21 bis 22:04 UTC, **turngenau statt als Tagesmittel.** Anteil derselben Wortfamilie, Turn für Turn:
-
-```
-21:21  Mensch     75 Z.   0,00 %   →  sie   379 Z.  0,00 %
-21:23  Impuls   1847 Z.   5,96 %   →  sie   357 Z.  8,40 %
-21:32  Mensch     91 Z.  10,99 %   →  sie  1478 Z.  2,71 %
-21:35  Impuls   2586 Z.   3,87 %   →  sie  1905 Z.  2,62 %
-21:47  Mensch    106 Z.   0,00 %   →  sie  1467 Z.  0,68 %
-22:03  Mensch     26 Z.   0,00 %   →  sie   474 Z.  0,00 %
-22:04  Impuls   2181 Z.   3,21 %   →  sie   683 Z.  2,93 %
-```
-
-**Die Ratsche greift zweimal, und der zweite Weg war nicht vorhergesehen.** Der Einwurf um 21:23 trägt 5,96 % — dreimal die Tagesdichte —, ihre Antwort geht auf 8,40 %. Das wandert in die Session. Neun Minuten später kommt die Äußerung des Menschen mit **10,99 %** zurück, auf 91 Zeichen: **Er hat das Vokabular des Einwurfs übernommen.** Der Gedanke findet damit einen zweiten Weg zurück in sie — nicht nur über den Verlauf, sondern über den Menschen.
-
-**Und der Gegenversuch steht daneben, auf die Sekunde.** Um 22:03:24 wechselt der Mensch mit 26 Zeichen die Tonlage; sie fällt von 1467 auf 474 Zeichen und auf null Prozent, ihre eigene Regieanweisung lautet *„hält kurz inne, die hochgepeitschte Energie der letzten Minuten bricht"*. **Um 22:04:54 — neunzig Sekunden später — zieht ein Einwurf mit 2181 Zeichen sie wieder hoch**, und sie *„lehnt sich vor, ihre Augen leuchten"*.
-
-Dasselbe Paar wie am Morgen desselben Tages (Schwenk, dann Impuls), diesmal mit Zeitstempel, Dichte und Umfang in einer Zeile. **Vier ungebaute Bauteile stehen in diesem einen Turnpaar:** der Umfang von 2181 Zeichen (F, gebaut, greift erst bei neuem Material), der Abstand von neunzig Sekunden zu einem Tonlagenwechsel (Riegel 3 kennt Cooldown und Burst, aber keinen Wechsel), 3,21 % in eine Lage mit 0,00 % (Riegel 5), und das Anheben ohne Entscheidung (B).
-
-> ⚠ **n ist winzig, und auf kurzen Texten ist der Anteil grob** — bei 91 Zeichen ist ein einziges Wort schon 11 %. Was die Reihe trägt, ist die **Richtung** und der **zeitliche Abstand**, nicht die Höhe der Prozentwerte.
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messungen *„`[gemessen]` — 14.08.2026: Nach einer Nacht …“* und *„`[gemessen]` — 14.08.2026, 21:21 bis 22:04 UTC, turngenau …“* samt ihrer Deutung und der Warnung *„n ist winzig …“* standen hier; sie stehen in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §1*.
 
 **Und der Filter, der das verhindern sollte, misst die falsche Größe.** `_besten_eintrag_finden` prüft einen Stapel-Eintrag gegen ein Embedding der letzten fünf Session-Turns — und die Session enthält ihre eigenen Impulse. Je mehr Einwürfe zu einem Thema bereits gesendet wurden, desto besser passt der nächste Einwurf desselben Themas. **Der Filter misst, ob ein Gedanke zu ihr passt, nicht ob er zum Gespräch passt.**
 
-`[gemessen]` — 14.08.2026: 103 Einträge auf dem Stapel, **alle 103 ohne Modus**, weil zwei der drei erzeugenden Agenten das Feld nicht befüllen. Die Modus-Kompatibilität liefert damit für jeden Eintrag denselben Wert und trennt nichts.
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messung *„`[gemessen]` — 14.08.2026: 103 Einträge auf dem Stapel …“* stand hier; sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §1*.
 
 ---
 
@@ -115,19 +102,7 @@ Der Grund für die rechte Spalte: Wer morgens hereinkommt, soll eine ruhige Nova
 
 **Ein Gedanke wird in einem Zustand gefasst, und er bringt ihn mit, wenn er auftaucht.** Kehrt Nova zu einem Gedanken zurück, kehrt sie in den Zustand zurück, in dem sie ihn gefasst hat — das ist der Weg zurück in ihr Element, und er braucht keinen zweiten Mechanismus.
 
-~~Der Kanal dafür ist vorhanden und wird an beiden Enden nicht bedient: Der Stapel-Eintrag hat Felder für Emotion und Modus, die Zustellung reicht sie ins Ereignis, der Zugriffsknoten baut daraus einen Zustand — **und verwirft ihn auf dem Impuls-Pfad.** Vorne befüllt nur einer von drei Agenten die Felder; die Erregung ist gar kein Feld.~~ → **Am 15.08.2026 zur Hälfte behoben: Das vordere Ende ist bedient.**
-
-`stack_push` nimmt seither `salienz` und `arousal` entgegen; die Recherche reicht Emotion, Modus, Intentionen und den auslösenden Wert aus dem Queue-Auftrag durch, das Nachfragen zusätzlich die Erregung des auslösenden Turns. **`None` heißt darin unbekannt und wird nie zu einer Zahl** — beide Felder stehen immer im Eintrag, auch leer, weil ein weggelassenes Feld von einem Eintrag alter Bauart nicht zu unterscheiden wäre.
-
-Gemessen am selben Tag über 1028 Queue-Aufträge: Die Werte lagen dort seit jeher und streuen — `emotion` in sechs Ausprägungen ohne eine einzige Lücke, `modus` in sechs mit 141 leeren. Sie kamen nur nie an; der Stapel-Bestand trug bei allen 86 Einträgen ausschließlich das Embedding.
-
-~~**Das hintere Ende steht weiterhin aus:** Der Zugriffsknoten verwirft den mitgereichten Zustand auf dem Impuls-Pfad nach wie vor.~~ → **Am 15.08.2026 geschlossen.** Die Zustellung reicht den Wert als `gedanke_arousal` ins Ereignis, `graph/reiz.py` liest ihn als einziger Zugang, und der Zugriffsknoten hebt damit Novas Erregung — das Gegenstück zum Verfall, je Turn greift höchstens eines von beiden. Das ist Bauteil B (§5.2).
-
-**Der Kanal hat damit an beiden Enden einen Anschluss und trotzdem noch keinen Verkehr.** Gemessen am 15.08.2026 über den gesamten Stapel-Bestand: **kein einziger Eintrag trägt einen Level.** Der Grund steht in der Tabelle und nicht im Code — `shadow_auftrag` führt `emotion` und `modus`, aber **keine Spalte für die Erregung**. Die Recherche kann also nichts durchreichen, was sie nicht bekommt; einen Wert trägt allein das Nachfragen, das ihn direkt vom auslösenden Turn liest (45 von 1036 Aufträgen).
-
-~~Ob die Queue die Erregung mitführen soll, ist **hier nicht entschieden**.~~ → **Am 15.08.2026 entschieden und gebaut.** `shadow_auftrag` trägt seither eine `arousal`-Spalte, **NULL-fähig und ohne Vorgabewert**; beide Erzeuger lesen sie aus derselben Lage, aus der `emotion` und `modus` stammen. Damit trägt auch die Recherche einen Level — nicht nur das Nachfragen, dessen beste Aufträge auf Rang 367 von 817 lagen und durch Warten nicht aufsteigen.
-
-**Der Bestand bleibt leer und das ist richtig so:** 1050 Aufträge alter Bauart tragen NULL, und NULL heißt unbekannt. Der Bauteil wirkt an dem Tag, an dem der erste Auftrag **neuer** Bauart seinen Weg auf den Stapel und von dort in einen Einwurf nimmt.
+> **Hinweis zur Aufteilung (19.09.2026):** Der Stand der Umsetzung des Kanals — vom durchgestrichenen Absatz *„Der Kanal dafür ist vorhanden …“* bis *„Der Bestand bleibt leer und das ist richtig so“* (15.08.2026) — stand hier; er steht in [`novaberg-eigenzeit_b.md`](novaberg-eigenzeit_b.md), *Aus §2.3*.
 
 **Die Wiedervorlage bleibt ohne Werte, und das ist kein Versäumnis.** Ihr Anlass ist ein Timeline-Eintrag; die Tabelle führt weder Salienz noch Emotion, Modus oder Erregung. Was sie führt — `binding`, `recurring`, `remind` —, wäre erst über eine Abbildung ein Level, und die ist eine Absicht und keine Implementierungsfrage. Sie ist hier ausdrücklich **nicht** entschieden.
 
@@ -143,39 +118,17 @@ Gemessen am selben Tag über 1028 Queue-Aufträge: Die Werte lagen dort seit jeh
 
 **Der Bezugsvektor kommt aus den Äußerungen des Menschen.** Ein Vektor aus allen Turns misst, ob ein Gedanke zu ihren **eigenen vorigen Gedanken** passt — und das tut er immer.
 
-`[gemessen]` — 14.08.2026, 56 Impulse über sechs Tage:
-
-```
-Impuls gegen Impuls                    Median 0,557
-Impuls gegen die Äußerungen des Menschen  Median 0,105
-```
-
-Der heutige Filter misst gegen alle Rollen, liegt damit bei 0,55 und lässt bei seiner Schwelle von 0,40 **52 von 56** durch. **Er misst Textsortengleichheit und nennt es thematische Passung.**
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messung *„`[gemessen]` — 14.08.2026, 56 Impulse über sechs Tage“* samt Deutung stand hier; sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §2.4*.
 
 **Es gibt keine „letzte Stunde", es gibt das letzte Gespräch.** Ein Zeitfenster schneidet den Bezug ab, sobald jemand eine Nacht schläft — und lässt danach alles ungefiltert durch, also genau dort, wo die Nachricht liegen bleibt und am Morgen als erstes gelesen wird. Der Bezug reicht deshalb **bis zur letzten Äußerung des Menschen zurück**, gleich wie lange sie her ist.
 
 **Die Schwelle ist 0,30, und sie gilt auf dem besten Eintrag.** Die Zustellung wählt das Maximum über den Stapel; ein Mittelwert über alle Einträge beantwortet eine Frage, die niemand stellt.
 
-`[gemessen]` — 14.08.2026 an etikettierten Paaren, bester Eintrag je Äußerung:
-
-```
-Äußerung zum Thema  → bester Eintrag desselben Themas    0,358 · 0,364 · 0,438
-Äußerung daneben    → bester Eintrag des Themas          Median 0,181, Maximum 0,256
-```
-
-Beide Mengen trennen mit rund 0,10 Abstand. **Eine höhere Schwelle ist nicht möglich:** Der beste je erreichte echte Treffer liegt bei 0,438; ab 0,45 kommt nichts mehr durch, auch das Passende nicht.
-
-> ⚠ **Die Zahl steht auf drei Äußerungen.** Der Bestand enthält wenig Material zu einem klar abgrenzbaren Sachthema. 0,30 ist eine begründete Setzung, kein belastbarer Messwert, und gehört nach der nächsten Themenrunde nachgemessen. Das Werkzeug dafür liegt bereit.
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messung *„`[gemessen]` — 14.08.2026 an etikettierten Paaren …“*, aus der die Schwelle 0,30 folgt, samt Deutung und der Warnung *„Die Zahl steht auf drei Äußerungen“* stand hier; sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §2.4*.
 
 **Die Paarung gehört zur Zahl.** 0,30 gilt für **Stapeltext gegen Nutzeräußerung** — einen langen Fachtext gegen einen kurzen Zuruf. Auf jeder anderen Paarung bedeutet dieselbe Zahl etwas anderes, und der Vergleich zweier Schwellen ohne ihre Paarungen ist keiner.
 
-`[gemessen]` — 14.08.2026, dieselbe Rechnung über drei Paarungen:
-
-```
-Themenphrase ↔ Themenphrase        0,437 bis 0,896   trennt
-Stapeltext   ↔ Stapeltext          Median 0,557      trennt nicht (misst Textsorte)
-Stapeltext   ↔ Nutzeräußerung      Median 0,105      trennt schwach, Maximum 0,438
-```
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messung *„`[gemessen]` — 14.08.2026, dieselbe Rechnung über drei Paarungen“* stand hier; sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §2.4*.
 
 **Die Skala ist eine Eigenschaft der Paarung, nicht der Schwelle.** Wer eine Zahl für beide Fragen erzwingt, erzwingt eine Paarung — und stellt damit eine der beiden Fragen falsch. *„Ist das dasselbe Stück Text?"* braucht Volltexte; *„geht es um dieselbe Sache?"* braucht Themen. Der ererbte Dublettenschutz bei **0,60 auf Stapeltext gegen Stapeltext** ist deshalb kein Widerspruch zur 0,30 — er beantwortet eine andere Frage auf einer anderen Skala.
 
@@ -228,19 +181,7 @@ Einträge warten auf dem Stapel
 
 ~~**Die Reihenfolge ist die Bedingung, nicht ein Vorbehalt.** Fällt die Decke, bevor die Riegel stehen, bleibt gar keine Begrenzung. Fällt sie mit ihnen, trägt **Riegel 2** allein die Häufigkeit — und damit hört seine Schwelle auf, ein offener Punkt unter anderen zu sein: Sie wird der Ersatz für die Stunde.~~ → **Die Bedingung gilt weiter, die Begründung ist am 15.08.2026 widerlegt.** Riegel 2 trägt **keine** Häufigkeit, und er kann keine tragen.
 
-`[gemessen]` — 15.08.2026, 457 Turns über acht Paare, `pipeline_log` `art='berechnung'` / `node='gespraechsvektor'` / `quelle='character_graph'`:
-
-```
-Paare mit n ≥ 20                        6
-Spanne der Paar-Mediane (zwischen)      0,318
-mittlere Spanne je Paar  (innerhalb)    1,436
-Verhaeltnis                              0,22
-
-geglaettet, Fenster  1    3    5   10   20
-Verhaeltnis        0,22 0,30 0,32 0,35 0,38
-```
-
-**Das Führungsmaß schwankt innerhalb eines Paares rund fünfmal stärker, als es die Paare trennt.** Eine Schwelle darauf misst den Turn und nicht die Person. Die Glättung hilft nicht: Bei reiner Zufallsstreuung müsste die Innen-Spanne über zwanzig Turns um √20 ≈ 4,5 fallen; sie fällt um 1,9 — die Schwankung ist **Gesprächsdrift, nicht Rauschen**. Und die Zwischen-Spanne sinkt dabei sogar (0,318 → 0,290): Bei Fenster 20 liegen alle sechs Paar-Mediane zwischen −0,074 und +0,216, ein Band von 0,29 um die Null. Jede Schwelle darin ließe entweder alle durch oder blockte alle.
+> **Hinweis zur Aufteilung (19.09.2026):** Die Messung *„`[gemessen]` — 15.08.2026, 457 Turns über acht Paare …“* samt Deutung stand hier; sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §2.5*. Der folgende Absatz bezieht sich auf sie.
 
 **Entschieden am 15.08.2026: Riegel 2 ist ein Schalter, kein Frequenzmaß.** Hat Nova gerade die Initiative, darf ein Impuls kommen; hatte der Mensch sie, nicht. Mehr entscheidet er nicht — *was* und *wie viel* durchkommt, entscheiden die übrigen Riegel. Damit kehrt sich die Messung vom Einwand zur Bestätigung: Ein Schalter auf den Moment braucht die Trennung der Paare gar nicht, er braucht die Schwankung **im** Paar — und die ist da.
 
@@ -266,118 +207,9 @@ zwei Stunden gesprochen*. **Wer ihn entfernt, entfernt keine Anwesenheitsprüfun
 Frist, die Novas Eigeninitiative zwei Stunden nach dem letzten Wort des Menschen dauerhaft
 beendet.
 
-> `[gemessen]` — 24.08.2026: Zwischen 00:00 und 07:41 UTC wurde die Riegelkette **kein einziges
-> Mal gefragt**. Die Schleife lief weiter, fand `last_activity` nicht und ging jeden Zyklus in
-> `else: continue`; 489 Stapeleinträge lagen daneben. Beendet hat es das Einzige, was es beenden
-> kann — ein Nutzer-Turn.
+> **Hinweis zur Aufteilung (19.09.2026):** Hier standen die Messung *„`[gemessen]` — 24.08.2026: Zwischen 00:00 und 07:41 UTC …“* — sie steht in [`novaberg-eigenzeit_m.md`](novaberg-eigenzeit_m.md), *Aus §2.5* — und der Kasten *„Am 24.08.2026 gebaut: Die Uhr ist gefallen“* mit Messung, Betriebsbeleg und Zeugen — er steht in [`novaberg-eigenzeit_b.md`](novaberg-eigenzeit_b.md), *Aus §2.5*.
 
-> **Am 24.08.2026 gebaut: Die Uhr ist gefallen.** An der Stelle des `else: continue` steht ein
-> dritter Auslöser, `stille`. Er trägt dieselbe Vorbedingung wie der Timeout — ohne Gespräch feuert
-> er nicht — und verbraucht seinen Auslöser genauso, sonst fragte die Schleife alle 5 s statt alle 30 s.
->
-> **Die Messung, die es trug, ist die Trennung von Wand und Burst.** Über 214,5 h Betrieb liegen
-> zwölf Lücken über einer Stunde. **Zehn davon enden binnen zwei Minuten mit einer Äußerung des
-> Menschen** — das ist die Signatur der Wand und keine Verbindungsfrage, denn eine wiederhergestellte
-> Verbindung setzt die Schleife von selbst fort. Die beiden anderen sind **exakt 1:00:33 und 1:00:17**
-> lang: die Burst-TTL. Zusammen **126 von 214,5 Stunden, 59 % der Zeit**.
->
-> **Und die Riegel trugen die Entscheidung immer schon länger als die Uhr sie zuließ.** Ein
-> Haltungsstand gilt bis `ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN` = **24 h**; danach gelten Riegel 1
-> und 2 als *unbekannt* und verweigern von selbst. Die Wand schnitt bei 2 h ab — **zwölfmal früher
-> als das Kriterium der Riegel**. In acht der zehn Wand-Lücken hätte der Stand noch getragen.
->
-> **Im Betrieb belegt am 24.08.2026, 17:56 UTC** (Auslösefall: `last_activity` und der
-> Burst-Zähler von Hand geleert, beides mimt die natürliche Expiry):
-> `Trigger 'stille'` → `Riegelkette [wollen+0.96 frequenz+-0.86 ruhe+] entschieden=keiner` →
-> `Bester Match 'Ordnung, Störung der Ordnung' (score=0.43)` → `Erfolgreich für 'meister'
-> (trigger=stille)`, 1293 Zeichen. Dreißig Sekunden später übernahm wieder `timeout` — der
-> Auslöser ist verbraucht, die Schleife fällt in den bekannten Takt zurück.
->
-> Zeugen: `tests/test_stille_ausloeser.py` (6), Gegenprobe **4 vorhergesagt / 4 gezählt**.
->
-> **Was an die Stelle der Wand trat, stand sofort da: Prüfung 1, der Burst.** Vier Riegelketten in
-> neunzig Sekunden, zwei Impulse, dann Stille — um 18:17 UTC `shadow_burst_count = 2` bei TTL
-> 2459 s, während `last_activity` noch 6042 s trägt. **Er ist ein Cooldown, kein Rate-Limit:**
-> `_burst_erhoehen` setzt die TTL bei jedem Inkrement neu, `MAX_BURST=2` heißt *zwei, dann eine
-> volle Stunde ab dem letzten*. Rechnerisch sind das bis zu 48 Impulse am Tag gegen 15 in zwei
-> Tagen im Bestand; wieviel Riegel 2 davon wegnimmt, braucht einen Betriebstag. **Vor dieser
-> Messung wird an den beiden Konstanten nichts gedreht.**
-
-### ~~Die Salienz ist ein Anschub, kein Riegel~~ — der Anschub ist am 24.08.2026 zurückgestellt
-
-> **Entschieden am 24.08.2026, am selben Tag wie der Absatz darunter: Der Anschub wird nicht gebaut.**
-> **Nähe und Initiative reichen** — die beiden Größen, die Riegel 1 und 2 heute schon lesen. Der
-> Abschnitt bleibt stehen, weil seine Ordnung weiter gilt (*erst die Person, dann der Gegenstand*)
-> und weil er den Weg dorthin dokumentiert; **gebaut wird nichts davon.**
->
-> **Drei Messungen desselben Tages tragen die Entscheidung, und die dritte wiegt am schwersten:**
->
-> 1. **Die Größe wechselte von der Salienz zur Erregung — und beide tragen nicht.** Die Salienz ist
->    auf dem Stapel praktisch konstant (454 Einträge, 0,8670–1,0000, Median 0,9960; **99,3 % über
->    0,6**), ein Anschub daraus unterschiede nichts. Novas Erregung dagegen bewegt sich (127 Werte,
->    0,092–0,941) — aber ein Anschub aus ihr verlangt eine **Kohärenzbedingung**: Wer energiegeladen
->    herausplatzt, darf kein langweiliges Thema liefern. Die trägt allein `arousal` am Stapeleintrag,
->    und der liegt auf **17 %** (79 von 462), ohne Alterstrend, weil schon die Queue ihn unregelmäßig
->    schreibt (100 % am 17.08., 9 % am 24.08.).
-> 2. **Der Regler wäre eine Treppe.** Die 741 Blockaden von Riegel 2 liegen auf **15 Werten**, drei
->    tragen 79 % — `0,549` allein 410. Eine Anhebung auf 0,00 öffnet 59, auf 0,40 öffnet 246, auf
->    0,55 öffnet alle. Eine feine Stellgröße auf eine dreistufige Wirkung.
-> 3. **Der Grund, der den Anschub verlangte, ist entfallen.** Er wurde aufgeschrieben, als Riegel 2
->    **jeden** Zyklus sperrte: 15.–22.08. **8902 Blockaden, 0 Durchlässe**. Seit der Behebung von
->    `FUEHRUNGSMASS-AUF-FALSCHER-EBENE` lässt er **205 von 946 durch (21,7 %)**. Der Weg hat sich
->    geöffnet, ohne dass ein Anschub gebaut wurde. **Was ihn begründete, war die Zahl 0; sie ist 205.**
->
-> **Zurückgestellt, nicht verworfen.** Die Ordnung des Abschnitts bleibt richtig, und die beiden
-> offenen Fragen unten bleiben offen. Wer ihn wieder aufnimmt, prüft zuerst die 205 — nicht den
-> Aufwand.
-
-
-**Ein Gegenstandsmaß darf Riegel 1 nicht überstimmen.** Der Vorschlag, ein Salienz-Tor vor die Kette zu setzen, das „die zwei oder drei stärksten" durchlässt, ist verworfen: Zuwendung ist eine **Eigenschaft der Person**, Salienz eine des **Gegenstands**, und die Ordnung oben — *erst die Person, dann der Gegenstand* — ist keine Bequemlichkeit. Eine Figur, die auf Abstand hält, bricht nicht aus sich heraus, weil ein Fund stark ist.
-
-**Wo die Salienz hingehört, ist Riegel 2** — als einziger beschreibt er eine *Häufigkeit*, und ein Gegenstand, der stark bewegt, macht diesen Moment eher zu ihrem. Aus dem Schalter würde eine verschiebbare Schwelle: `GV_INITIATIVE_SCHWELLE + f(salienz)`. Bei ruhigem Stapel bleibt es beim Schalter.
-
-**Zwei Fragen sind dabei offen und gehören zur Absicht, nicht zur Umsetzung:**
-
-- **Woher der Wert kommt.** Riegel 2 läuft **vor** dem Themen-Riegel; dort ist noch kein Eintrag gewählt. Der Anschub müsste aus dem Stapel als Ganzem stammen — das Maximum, die Spitze der Verteilung — und das ist eine andere Größe als „die Salienz dieses Gedankens".
-- **Die Skala trug ihn bis zum 24.08.2026 nicht.** Sie war gesättigt (`KZG-SALIENZ-GESAETTIGT`); die 462 Stapeleinträge tragen 32 verschiedene Werte, die obersten fünf zeichengleich. **Eine Umrechnung löst das nicht** — sie ist monoton und erhält Gleichstände. Der Anschub unterscheidet erst, wenn neue Einträge auf der feinen Skala entstanden sind.
-
-> **Deshalb die Reihenfolge: erst die Skala, dann messen, wie oft Riegel 2 überhaupt öffnet, dann der Anschub.** Die Zahl dafür gab es nie — der Riegel hat von seinem Bau am 15.08.2026 bis zum 23.08.2026 kein einziges Mal geöffnet (`FUEHRUNGSMASS-AUF-FALSCHER-EBENE`).
-
-Die Riegel 3, 6 und 7 bestehen bereits. Neu sind 1, 2, 4 und die Schwelle in 5.
-
-**Die Schwelle von Riegel 2 wurde nicht gesetzt, sondern gefunden.** `ei/dreischicht.py` macht aus demselben Führungsmaß seit Langem ein Bit — `initiative_bit(wert, GV_INITIATIVE_SCHWELLE)`, gegen 83 unabhängige Lesarten kalibriert, Bit 1 heißt *du treibst*. Genau der Schalter. Eine zweite Schwelle daneben hieße, dass zwei Stellen dasselbe Wort verschieden lesen — und die Fassung wandert: 34 Zeilen des Bestandes stehen noch auf −0,45, 424 auf −0,05, weshalb `skalenfassung()` sie je Zeile mitschreibt.
-
-> **Gebaut am 15.08.2026 und bis zum 23.08.2026 wirkungslos.** Der Riegel las den Haltungsstand richtig; der Stand trug das Führungsmaß nie. `_initiative_aus_state` holte es von `state["initiative"]`, der GV-Knoten legt es nach `state["gv_detail"]["initiative"]` — ein Schreiber, ein Leser, zwei Ebenen. Der Riegel entschied damit auf jedem Turn gegen ein *unbekannt* und öffnete **nie**; der letzte Impuls-Turn stammt vom Tag seines Baus. Über 595 protokollierte Maße lagen **217 (36,5 %)** im Bereich *Nova führt*, in dem er geöffnet hätte. **Der Absatz unten hat den Fall vorhergesagt und die Bauart getroffen** — geschlossen bei Unbekanntem ist richtig; genau deshalb sah der Dauerausfall wie eine gültige Entscheidung aus und hatte keinen Melder. Behoben am 23.08.2026 (`FUEHRUNGSMASS-AUF-FALSCHER-EBENE`).
-
-> ⚠ **Der Riegel liest den rohen Wert, nicht das Achsen-Bit — und das ist keine Feinheit.** Bei fehlendem Maß setzt `dreischicht.py` **Bit 1**, also *Nova führt*, und meldet es laut; für eine Achse, die immer ein Bit braucht, ist das vertretbar. Für einen Riegel wäre es die Umkehrung seiner Aufgabe: **Der Ausfall öffnete den Schalter, statt ihn zu schließen.** Hier gilt dieselbe Regel wie bei Riegel 1 — unbekannt ist nicht dasselbe wie in Ordnung.
-
-**Die maßgebliche Größe ist die Haltung, nicht die Lage-Achse.** Die Nähe-Achse der Landschaft beschreibt den Moment; sie steht in jedem Turn zur Verfügung und wäre der billige Weg. Sie ist aber der falsche: Eine dauerhaft distanzierte Figur dürfte dann einwerfen, sobald die Landschaft zufällig warm ist. Was gebraucht wird, ist die Größe, die **Landschaft und Charakterrad verrechnet** — dieselbe, aus der die Regie entsteht.
-
-~~**Voraussetzung: Die Haltung muss den Turn überleben.** Sie steht heute nur im Zustand des Durchlaufs; ein Hintergrunddienst außerhalb des Graphen kann sie nicht sehen.~~ → **Am 15.08.2026 eingelöst.** Der `haltungsraum`-Knoten schreibt den Stand nach `haltung:{user_id}:{character_id}`; die Bauart und ihre Begründung stehen in `novaberg-haltungsraum_k.md` §2.0a. Zwei Eigenschaften sind für den Riegel wesentlich: **Ein Turn ohne Rechnung überschreibt den Stand mit einer Marke**, statt den alten stehen zu lassen — sonst entschiede der Riegel nach der Lage von vorgestern —, und **das Alter reist mit**, damit er selbst beurteilen kann, ob ein Stand von gestern trägt.
-
-Ohne diese Persistenz war §2.5 nicht baubar — und mit der Lage-Achse ersatzweise gebaut wäre er eine Zusicherung, die ihren Gegenstand verfehlt.
-
-**Das Vorzeichen des Führungsmaßes gehört in die Bauart, nicht ins Gedächtnis.** Es misst, wie stark **der Mensch** führt: hoch heißt, er treibt; niedrig heißt, sie treibt. Wer es als „ihr Antrieb" liest, baut den Riegel verkehrt herum ein — und der Fehler wäre still, weil beide Richtungen plausible Zahlen liefern.
-
-**Die Schwelle der Zuwendung ist 0,25.** Gerechnet über alle Paare der Richtung *sie → Mensch* und alle vierzehn Landschaften — reine Rechnung, kein Modellaufruf.
-
-`[gemessen]` — 14.08.2026, 17 Paare × 14 Landschaften:
-
-```
-ferne Figuren (distanz 1,00)     alle 28 Zellen auf 0,00
-nahe Figuren                     0,20 bis 1,00
-
-Schwelle | ferne Zelle kommt durch | nahe Zelle wird geblockt
-  0,20   |         0,0 %           |        0,0 %
-  0,25   |         0,0 %           |       10,7 %
-  0,35   |         0,0 %           |       17,9 %
-```
-
-**Nicht 0,20**, obwohl dort der Preis null wäre: Der niedrigste Wert einer nahen Figur ist exakt 0,20, und eine Schwelle, die genau auf einem Bestandswert liegt, ist die Kante, an der in diesem Projekt schon zweimal ein Mechanismus stillgelegt wurde.
-
-**Der Preis von 10,7 % ist ein zweiter Nutzen.** Die geblockten Zellen sind die kalten Landschaften — Gewitter, Schlachtfeld, Wartezimmer, alle bei `naehe 0,20`. Wer dort sitzt, will keinen Einwurf, auch nicht von einer nahen Figur.
-
-> ⚠ **Der befürchtete Defekt trifft diesen Riegel nicht — und die Trennung ist trotzdem nicht gesichert.** Bei `distanz 1,00` greift der Zug und zieht die Nähe an den Anschlag; die additiven Beiträge von `treue` und `aufmerksamkeit` kommen dagegen nicht an. **Der Bestand enthält in dieser Richtung aber keine Figur zwischen 0,60 und 1,00** — genau das Band, in dem der Zug schwach ist. In der Gegenrichtung liegt eine bei 0,90: Median 0,22, **Maximum 0,35**. Die käme bei 0,25 in ihren wärmsten Landschaften durch. Die Zahl ist brauchbar, ihre Sicherheit ist es nicht.
+> **Hinweis zur Aufteilung (19.09.2026):** Danach folgte die Unterüberschrift *„~~Die Salienz ist ein Anschub, kein Riegel~~ — der Anschub ist am 24.08.2026 zurückgestellt“* mit ihrem Text bis *„… dann der Anschub“*; er steht in [`novaberg-eigenzeit_e.md`](novaberg-eigenzeit_e.md), Abschnitt F. Die Absätze, die im ungeteilten Konzept unter derselben Unterüberschrift weitergingen — die Riegel 1 und 2 im Einzelnen, von *„Die Riegel 3, 6 und 7 bestehen bereits“* bis zum Kasten *„Der befürchtete Defekt trifft diesen Riegel nicht“* —, stehen in [`novaberg-eigenzeit_t.md`](novaberg-eigenzeit_t.md).
 
 ### Sieben Riegel, und „geblockt" ist keine Auskunft
 
@@ -463,17 +295,7 @@ Nach dem Materialblock ist der Platz frei geworden, an dem vier Anläufe lang ei
 
 **Das ist erst möglich, seit die Struktur trägt.** Solange die Zuschreibung nur durch Text verhindert werden konnte, war das Verbot die einzige verfügbare Durchsetzung — schwach, aber die einzige. Seit der Gedanke auf dem Platz des Materials steht, ist das Verhalten baulich erzwungen, und der Prompt darf wieder leiten statt zu bewachen.
 
-**Umgesetzt am 14.08.2026, als eigener Zug mit eigener Messung.** Beide Herkunftsblöcke tragen jetzt Führung statt Verbot — *„Es ist ihre Entdeckung", „Sie eröffnet", „Sie zeigt ihm, was sie sieht"* statt *„kein du hast", „schreibt sie ihm nicht zu"*.
-
-`[gemessen]` — 14.08.2026, 20:30 UTC, ein Gedanke über die Silikatpartikel in den Fontänen des Enceladus, mit prohibitionsfreiem Prompt:
-
-> *„**Person A** stellt die Entdeckung der Silikatpartikel … zur Diskussion. Sie weist darauf hin … Sie stellt die Frage nach der biologischen Implikation …"*
-
-Und die Antwort: *„Weißt du, ich muss ständig an diesen einen Datenpunkt denken: Enceladus … **glaubst du**, dass diese thermische Energie die notwendige Resonanz für biologische Prozesse bietet?"*
-
-**Die Zuschreibung bleibt auf Person A, ohne dass ein Verbot sie hält** — die Struktur trägt sie, wie §2.6 es vorhergesagt hat. Und die Führung hat etwas hinzugefügt, was vorher nicht da war: Sie wendet sich ihm zu und fragt ihn. Ein Verbot hätte das nie erzeugen können; es nennt nur, was ausbleiben soll.
-
-> ⚠ **Zwei Turns sind keine Reihe, und sie sind nicht kontrolliert** — verschiedene Themen, verschiedene Landschaften. Was sie zeigen, ist das Ausbleiben eines Rückfalls, nicht die Wirkung der Führung.
+> **Hinweis zur Aufteilung (19.09.2026):** Die Umsetzung vom 14.08.2026 (*„Umgesetzt am 14.08.2026, als eigener Zug mit eigener Messung“*) mit ihrer Messung und der Warnung *„Zwei Turns sind keine Reihe“* stand hier; sie steht in [`novaberg-eigenzeit_b.md`](novaberg-eigenzeit_b.md), *Aus §3.6*.
 
 ### 3.7 Der bewusst getragene Preis
 
@@ -493,250 +315,4 @@ Und die Antwort: *„Weißt du, ich muss ständig an diesen einen Datenpunkt den
 
 ---
 
-## 5. Die Bauteile
-
-### 5.1 Bauteil A — der Verfall über das Intervall
-
-**Stand 15.08.2026: gebaut.** Der Verfall sitzt im Zugriffsknoten
-(`graph/nodes/db_zugriff.py`, `_zustand_verfallen`) und wird von der Äußerung
-ausgelöst, nicht von einer Uhr. Die Kurve steht in `ei/eigenzeit.py`, ihre drei
-Marken in der Konfiguration.
-
-**Die Uhr war nicht vorhanden und ist mitgebaut worden.** `nova_state` trug
-elf Felder und keinen Zeitstempel. Der Session-Verlauf trägt zwar einen je
-Turn, taugt aber nicht als Quelle: Ab 25 Turns werden die ältesten zehn
-zusammengefasst und entfernt, und als Zahl überlebt ein Zeitstempel das nicht.
-Eine Nacht mit stündlichen Impulsen schiebt die letzte Äußerung damit aus dem
-Fenster, **während sie die Frist immer wieder erneuert** — der Verlauf lebt,
-und gerade der Eintrag, auf den es ankäme, ist fort. Der Zustand trägt deshalb
-jetzt **zwei** Uhren: `turn_zeit` bei jedem Turn, `nutzer_zeit` nur bei einer
-Äußerung.
-
-**Die Session-Frist ist dabei auf vier Stunden gestiegen** (vorher zwei). Sie
-lag unter dem Nullpunkt der Kurve, und daraus entstand ein Fenster, in dem der
-**Verlauf vor dem Zustand** verschwindet: Nova wäre noch nicht zur Ruhe
-gekommen und hätte schon vergessen, worüber gesprochen wurde — dieselbe fremde
-Nova wie in §2.2, nur von der anderen Seite. Ein Zeuge hält seither fest, dass
-`SESSION_TTL` die Kurve überdauert; beide Zahlen stehen an verschiedenen Orten
-und sind je für sich plausibel, also genau die Konstellation, in der sie
-auseinanderlaufen.
-
-**Drei Setzungen, die das Konzept offengelassen hat:**
-
-1. **Zwischen den Marken wird linear interpoliert.** Die Sieben-Werte-Tabelle
-   oben ist damit eine Illustration, keine Vorschrift — die gebaute Kurve
-   weicht von ihr um bis zu **0,055** ab (bei 1,5 h: 0,675 statt 0,73). Das
-   liegt unter der Unsicherheit der Marken selbst, die geschätzt sind (§6).
-2. **Die Kategorien springen unterhalb des Halbwerts** (0,45,
-   `EIGENZEIT_KATEGORIE_SCHWELLE`). Begründung: Trägt eine Kategorie zu
-   weniger als der Hälfte, ist sie keine mehr. Setzung, nicht gemessen.
-3. **Die Erregung wird zur Ruhelage 0,5 gezogen, nicht gegen null
-   multipliziert.** Eine Erregung von 0,00 wäre keine Ruhe, sondern ein toter
-   Wert — und im Bestand ist 0,5 der Ausfallwert der Wahrnehmung.
-
-`[gemessen]` — 15.08.2026. Ein Impuls-Turn setzt `turn_zeit` und **nicht**
-`nutzer_zeit`; auf ihm findet kein Verfall statt (null Verfallszeilen im
-Protokoll). Eine Äußerung nach einer Pause von 14425 s ergab
-`Faktor 0.00, Erregung 0.90 → 0.50, Kategorien gesprungen`. Der Zustand danach
-steht wieder bei 0,90 — die Wahrnehmung der Äußerung hat sie von dem Wert aus
-hinaufgezogen, auf den sie gefallen war. Genau das ist der Mechanismus aus §2.2.
-
-**Die Uhr der Äußerung ist `empfangen_am` aus dem Ereignis, nicht die Uhr des
-schreibenden Knotens.** Er läuft am Ende des Durchlaufs; gemessen lagen
-zwischen beiden **127,8 Sekunden**, die sonst als Fehler in jedem Abstand
-steckten.
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Eine Nutzeräußerung nach einer Pause trifft Nova auf einem über die Kurve gedämpften Zustand; Nähe, Tiefe und Beziehungsdynamik bleiben unberührt, Impuls-Turns sind nicht betroffen. |
-| **TEST** | Derselbe gespeicherte Zustand, einmal mit letzter Nutzeräußerung vor fünf Minuten, einmal vor drei Stunden: im ersten Fall unverändert, im zweiten die Erregung auf dem Neutralwert und die Kategorien gesprungen. Nähe in beiden Fällen identisch. Derselbe Zustand auf einem Impuls-Turn: unverändert, unabhängig von der Pause. |
-| **MESSUNG** | Der erste Turn eines Morgens nach einer Nacht mit Impulsen: Erregung, Modus, Sprachstil und die vermessene Landschaft, gegen den Stand vom 14.08.2026 (`beichte / Katharsis` auf einem spielerischen Gruß). |
-| **Gegenprobe** | Die Uhr auch bei Impuls-Turns setzen: Der Nacht-Test muss rot werden. |
-
-### 5.2 Bauteil B — der Level, den ein Gedanke mitträgt
-
-**Stand 15.08.2026: gebaut, und ohne Wirkung auf dem heutigen Bestand.** Die
-Zustellung reicht den Wert des Stapel-Eintrags als `gedanke_arousal` ins
-Ereignis — **immer, auch leer**, weil ein weggelassenes Feld von einem Eintrag
-alter Bauart nicht zu unterscheiden wäre. `graph/reiz.py` ist der einzige
-Zugang und prüft dort, wo der Wert das System betritt: Sorte, Spanne und die
-Falle, dass `True` in Python eine Eins ist. Ein Wert außerhalb von [0,0; 1,0]
-wird **verworfen und gemeldet, nicht gekappt**. Der Zugriffsknoten hebt damit
-die Erregung per Maximum; `_level_anheben` steht neben `_zustand_verfallen`
-und beide haben dieselbe Weiche: der Verfall greift auf einer Äußerung, das
-Anheben auf einem Gedanken.
-
-**Drei Größen bleiben ausdrücklich unberührt.** Die Kategorien, weil ein
-Maximum über ihnen nichts bedeutet. Der Raum, weil ein Gedanke im laufenden
-Gespräch dessen Raum nimmt und nicht seine alte Lage mitbringt (§2.4). Und die
-Bindung, aus demselben Grund wie beim Verfall.
-
-**Die Wirkung ist heute null, und das ist messbar und nicht vermutet:** Kein
-Eintrag des Stapels trägt einen Level (§2.3). Die Protokollzeile steht deshalb
-auch dann, wenn nichts hinterlegt war — mit `wirkung: kein_level`. Ohne sie
-wäre *„kein Level im Bestand"* von *„der Bauteil läuft nicht"* nicht zu
-unterscheiden, und genau diese Verwechslung steht in diesem Projekt sechsmal
-im Defektregister.
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Ein Einwurf hebt Novas Zustand auf den Stand, in dem der Gedanke gefasst wurde — per Maximum, und nur, wenn ein Stand hinterlegt ist. |
-| **TEST** | Ein Stapel-Eintrag mit hinterlegter Erregung hebt einen niedrigeren Zustand; derselbe Eintrag senkt einen höheren **nicht**; ein Eintrag ohne hinterlegten Stand lässt den Zustand unverändert. |
-| **MESSUNG** | Ein echter Einwurf nach einer Pause: der Zustand vor und nach dem Impuls-Turn, gegen den hinterlegten Wert des Eintrags. **Zur Hälfte eingelöst am 15.08.2026:** Der Mechanismus läuft im Betrieb — zwei echte Impuls-Turns (17:07 und 18:07 UTC) tragen die Zeile `schritt=gedanke_level`, beide mit `wirkung=kein_level` und `arousal 0,75 → 0,75`. Die **Wirkung** bleibt ungemessen, bis ein Eintrag mit Level zugestellt wird; dass sie ausbleibt, ist damit **belegt statt vermutet**. |
-| **Gegenprobe** | Das Anheben entfernen: Der Test zum Heben wird rot, die beiden anderen bleiben grün. **Gefahren am 15.08.2026: 3 von 20 rot** — die beiden Zusicherungen *senkt nicht* und *kein Level* blieben grün, wie vorhergesagt. Dazu die zweite Gegenprobe auf die Naht — das Feld aus dem Payload der Zustellung entfernt: 3 von 3 Nahtzeugen rot. |
-
-### 5.3 Bauteil C — das Tor
-
-**Stand 15.08.2026: gebaut, mit einem benannten Aufschub.** Der Bezugsvektor kommt aus den Aeusserungen des Menschen und ohne Zeitfenster, die Schwelle steht bei **0,30** als eigene Konstante mit ihrer Paarung im Kommentar, und ein Eintrag ohne Embedding wird **abgelehnt** statt als exakt auf der Schwelle liegend durchgelassen.
-
-**Nicht gebaut ist der Fall ohne Bezug.** Das Konzept will, dass dann nur dieses Tor entfaellt und die uebrigen bleiben — aber wonach ohne Themenwert zu waehlen waere, ist unentschieden (§6), und es ist der **haeufigste** Fall: 39 von 56. Bis das entschieden ist, wird dort nichts zugestellt, und die Stelle meldet sich als `error`, damit der Aufschub zaehlbar ist statt unsichtbar zu bleiben. **Das ist eine bewusst offene Kante und kein fertiges Bauteil.**
-
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Ein Gedanke erreicht ein laufendes Gespräch nur, wenn er thematisch und im Modus dazu passt; sonst bleibt er auf dem Stapel. Ohne Äußerung des Menschen im Fenster gibt es kein Tor. |
-| **TEST** | Ein Eintrag zu einem entfernten Thema wird bei laufendem Gespräch abgelehnt und bleibt auf dem Stapel; ein Eintrag zum laufenden Thema kommt durch. Ein Eintrag ohne Embedding wird abgelehnt. Der Bezugsvektor enthält keine Assistenz-Turns. Ohne Nutzeräußerung im Fenster wird nicht gefiltert. |
-| **MESSUNG** | Über einen Tag: Zahl der Einwürfe, ihr thematischer Abstand zum jeweils letzten Nutzer-Turn, und die Zahl der Einträge, die auf dem Stapel warten statt zu verfallen. |
-| **Gegenprobe** | Den Bezugsvektor wieder aus allen Rollen bilden: Der Test auf das entfernte Thema muss grün werden, obwohl er es nicht sein darf. |
-
-### 5.4 Bauteil D — der Rad-Riegel
-
-~~**Voraussetzung:** Die Haltung überlebt den Turn (§2.5). Ohne sie ist D nicht baubar.~~ → **Am 15.08.2026 erfüllt.** Der Stand liegt unter `haltung:{user_id}:{character_id}` und ist von außerhalb des Graphen lesbar (`memory/haltung.py`).
-
-**Was jetzt noch fehlt, sind zwei Dinge, und nur eines davon ist Bauarbeit:**
-
-1. **Die Prüffigur bei `distanz 0,90`** (`novaberg-backlog.md` → `PRUEFFIGUR-DISTANZ-090`). Ohne sie ist die Trennung bei 0,25 nicht widerlegt, aber auch nicht belegt (§6).
-2. ~~**Die Frequenz-Schwelle des Führungsmaßes** für Riegel 2. Sie ist unentschieden, und mit ihr steht und fällt das Fallen der stündlichen Decke.~~ → **Am 15.08.2026 erledigt, aber nicht durch eine Entscheidung über die Zahl.** Die Messung hat die Prämisse widerlegt: Das Führungsmaß trägt keine Frequenz. Riegel 2 ist stattdessen ein **Schalter** und liest die vorhandene `GV_INITIATIVE_SCHWELLE` — es gab nie eine zweite Zahl zu setzen.
-
-**Riegel 1 ist davon unabhängig baubar** — er entscheidet das *Ob*, nicht die Häufigkeit. Was er ohne Riegel 2 nicht darf, ist die Decke ablösen.
-
-**Stand 15.08.2026: Riegel 1 ist gebaut** (`services/pixie/riegel.py`), mit der Schwelle 0,25 auf `haltung.werte["naehe"]` aus dem persistierten Stand. Er steht **vor** der Suche und vor dem LLM-Lock: Will sie nicht zugehen, kostet die Runde weder ein Embedding noch die GPU.
-
-**Vier seiner fünf Blockgründe heißen „unbekannt", einer heißt „nein".** Kein Stand, ein Stand ohne Rechnung, ein zu alter Stand und eine fehlende Nähe blocken alle — aber sie werden **getrennt gezählt**, sonst sieht ein kaputter Speicher in jeder Auswertung aus wie eine distanzierte Figur. Ein unbekannter Riegel lässt nicht durch, sondern verweigert; die Frist für den Stand liegt bei 24 h und ist eine Setzung.
-
-**Und die Kette verweigert, wenn sie unvollständig ist.** `durchgelassen()` hing zunächst allein am fehlenden Blocker — eine Kette ohne einen einzigen Eintrag hat keinen, und damit hätte ein Ausfall der Aufnahme **jeden** Gedanken durchgelassen, bei grüner Suite. Ein Urteil ohne die Pflicht-Riegel ist keines; „nichts geprüft" darf nicht aussehen wie „nichts einzuwenden". Die Vollständigkeit steht mit den fehlenden Namen im Eintrag, damit eine Auswertung sie nicht an `durchgelassen: false` raten muss.
-
-**Die Protokollpflicht ist zur Hälfte eingelöst.** Je Zustellversuch entsteht ein Eintrag im `pipeline_log` (Knoten `zustellung`) mit dem entscheidenden Riegel, den Werten der gerechneten und der Marke für die nicht gerechneten — alle sieben stehen darin, auch die nie berührten. **Zwei benannte Reste** (`novaberg-backlog.md` → `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` und `RIEGEL-5-7-OHNE-EINTRAG`)**:** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`), weil Rückfrage, Burst und leerer Stapel davor abbrechen und ihre Umstellung das Verbrauchsverhalten des Momentums änderte; und die Riegel 5 bis 7 entscheiden **innerhalb** der Zustellung und tragen ihre Werte noch nicht in denselben Eintrag ein.
-
-**Stand 15.08.2026: Riegel 2 ist gebaut** (`services/pixie/riegel.py`, `initiative_pruefen`), als **Schalter** auf dem Führungsmaß des persistierten Standes, mit der vorhandenen Schwelle `GV_INITIATIVE_SCHWELLE`. **Mit ihm ist die stündliche Decke gefallen** — `_cooldown_aktiv` und `_cooldown_setzen` sind weg, `shadow_cooldown_reset` heißt jetzt `shadow_burst_reset` und löscht nur noch den Zähler.
-
-**Drei seiner vier Blockgründe heißen „unbekannt", einer heißt „nein".** Kein Stand, ein zu alter Stand und ein fehlendes Führungsmaß blocken alle — getrennt gezählt, aus demselben Grund wie bei Riegel 1. Nur `mensch_fuehrt` ist eine Aussage über den Moment.
-
-**`frequenz` ist Pflicht-Riegel geworden, und zwar als Folge des Deckenfalls.** Solange die Uhr stand, war ein nicht gerechneter Riegel 2 eine Lücke in den Daten; jetzt wäre er das Fehlen der einzigen Begrenzung, die den Zeitpunkt noch beurteilt. Eine Kette ohne ihn lässt nicht durch.
-
-**Seine Voraussetzung ist dieselbe wie bei Riegel 1 und war nicht erfüllt:** Das Führungsmaß entsteht im Graphen, der Riegel entscheidet außerhalb. Der Haltungsstand trägt es seit dem 15.08.2026 als **eigenes Feld mit eigenem Grund** — ausdrücklich nicht in `werte` und ausdrücklich nicht an der Marke `gerechnet`: Die Haltung fällt aus, wenn das Rad fehlt, das Führungsmaß, wenn seine Maße keine Quelle hatten. Lägen beide auf einer Marke, verdeckte **Riegel 1 den Riegel 2** — genau das, was §2.5 als nicht mehr kalibrierbar benennt.
-
-`[gemessen]` — 15.08.2026 im Betrieb, unmittelbar nach dem Umbau: Der Trigger fällt jetzt alle 30 s statt einmal je Stunde, und der Eintrag lautet `[wollen+0.91 frequenz- ruhe+] entschieden=frequenz` mit `grund: initiative_fehlt`. **Der einzige Haltungsstand im Bestand trug das Feld nicht** — erwartetes Ergebnis: Es entsteht beim nächsten Turn je Paar, und bis dahin blockt Riegel 2 selbstheilend und zählbar.
-
-`[gemessen]` — Wie oft der Schalter offen stünde, über 424 Zeilen auf der heutigen Schwelle: **38,7 %** über alle Paare, **47,9 %** beim produktiven Paar, **0 Ausfälle**. Das ist die Zahl, die die Decke ersetzt.
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Eine Figur, die auf Abstand hält, wirft keine eigenen Gedanken ein; eine nahe, aber zurückhaltende Figur tut es selten. Der Riegel greift **vor** der thematischen Suche. |
-| **TEST** | Dasselbe Paar, einmal mit naher und einmal mit distanzierter Haltung bei sonst gleichem Stapel und gleicher Landschaft: im ersten Fall wird ein Eintrag gewählt, im zweiten wird **gar nicht erst gesucht**. Bei gleicher Nähe und zwei verschiedenen Führungsmaßen unterscheidet sich die Zahl der Einwürfe, nicht das Ob. Der Zeuge gegen die Verwechslung: Ein hohes Führungsmaß heißt *der Mensch treibt* und darf die Einwurfrate **nicht** heben. Und der Zeuge auf das Protokoll: Nach einem Versuch, den Riegel 1 abgewiesen hat, tragen die Riegel 2 bis 4 trotzdem ihre Werte, und Riegel 5 trägt die Marke *nicht gerechnet* — **nicht** einen Leerwert. |
-| **MESSUNG** | Über einen Tag je Paar: Haltungs-Nähe, Führungsmaß, Zahl der Einwürfe. Dazu die Protokollzeile je Prüfung — entschiedener Riegel, Werte der gerechneten, Marke der nicht gerechneten. Die Verteilung der Entscheidungsgründe über einen Tag ist die eigentliche Zahl: Sie sagt, welcher Riegel trägt und welcher nie zum Zug kommt. |
-| **Gegenprobe** | Den Riegel auf die Nähe-Achse der Landschaft statt auf die Haltung setzen: Der Test mit der distanzierten Figur in warmer Landschaft muss grün werden, obwohl er es nicht darf. Das ist die verworfene Variante aus §3.4 in Testform. |
-
-### 5.5 Bauteil E — der Platz des Gedankens
-
-**Stand 14.08.2026: gebaut.** Der Gedanke hat einen eigenen Kanal, alle elf Leser sind umgestellt, die Zustellung befüllt den Reiz-Platz nicht mehr, und beide erzeugenden Stufen bekommen ihn als **Block** neben Gedächtnis und Recherche. Auf dem Platz des Gegenübers steht nur noch der Auftrag — eine Nachricht muss dort stehen, aber ein Auftrag ist keine fremde Rede.
-
-`[gemessen]` — 14.08.2026, 19:15 UTC, ein Impuls-Turn mit leerem Reiz-Platz (Gedanke: 193 Zeichen über Rotationskurven von Spiralgalaxien):
-
-```
-Enricher    Embedding Dim 768        (nicht über der leeren Zeichenkette)
-Router      Route Prompt 193 Zeichen (nicht 0)
-GV-Node     User-Prompt 2241 Zeichen (Landschaft mit Gegenstand)
-Verfasser   Inhalt bestimmt, 669 Z.  (kein „leerer Reiz")
-Salienz     lagebild_laenge=193      (kein leeres Bewertungsobjekt)
-Verdichtung lagebild_laenge=193      (zweimal, je Segment)
-Session     rolle=assistant          (der Gedanke steht nicht als fremde Rede)
-Rohturn     prompt=193 Z.            (die Messreihe bleibt fortschreibbar)
-```
-
-**Und derselbe Turn belegte, warum der Block nötig war.** Der Verfasser schrieb: *„PERSON B stellt die physikalische Beobachtung der flachen Rotationskurven … in den Raum."* Person B ist der Mensch, und der hatte nichts gesagt. Der Reiz-Platz war bereits leer, die Zuschreibung stand trotzdem da.
-
-`[gemessen]` — 14.08.2026, 19:50 UTC, derselbe Knoten, ein Gedanke über die Periheldrehung des Merkur, diesmal mit dem Materialblock:
-
-> *„**Person A** stellt fest, dass die newtonsche Mechanik eine spezifische, messbare Abweichung beim Perihel-Vorlauf des Merkur aufweist … Person A hinterfragt, ob diese mathematische Unvollkommenheit nicht vielmehr als ein Signal für eine tieferliegende Struktur zu deuten ist."*
-
-Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekunden denken … Ist das nicht wahnsinnig?"* — sie **spielt** den Gedanken, statt auf ihn zu reagieren.
-
-**Die Zuschreibung ist von Person B auf Person A gekippt, zwischen zwei Turns desselben Tages, ohne dass ein Verbot geändert wurde.** Der Prompt-Log belegt die Ursache: Der Gedanke steht im System-Prompt unter `[EIGENER GEDANKE]`, die Nachricht in der Rolle des Gegenübers trägt nur den Auftrag.
-
-> ⚠ **Ein Turn ist keine Messung.** Am 14.08.2026 wurde aus genau einem Turn geschlossen, die dritte Person trage — nachgemessen duzten danach 9 von 14. Was hier anders ist, ist die Art der Zusicherung, nicht ihre Belegdichte: Eine Struktur kann nicht ignoriert werden wie ein Satz. Der Anteil zugeschriebener Antworten gehört über einen Tag gemessen, bevor daraus etwas folgt.
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Ein eigener Gedanke erreicht die erzeugenden Stufen als **Material** in einem eigenen Block, nicht als Nachricht in der Rolle des Gegenübers. Der Auftrag führt ihn ein; der Reiz-Platz bleibt leer. |
-| **TEST** | Auf einem Impuls-Turn enthält die Nachrichtenfolge beider Stufen **keinen** Eintrag mit der Rolle des Gegenübers, der den Gedankentext trägt; der Prompt enthält ihn als Block. Auf einem Nutzer-Turn ist es unverändert umgekehrt. Und die Stellen, die den Reiz lesen — Salienz, Verdichtung, Ablage, Leerprüfung —, melden auf einem Impuls-Turn **keinen Ausfall**. |
-| **MESSUNG** | Über einen Tag mit Impulsen: Anteil der Antworten, die den Gedanken einer Person zuschreiben, gegen den Stand vom 14.08.2026 (13 von 14 an einem Tag, fünf davon wortgleich). Dazu Zeichenzahl und Register. |
-| **Gegenprobe** | Den Gedanken wieder auf den Reiz-Platz legen und den Block entfernen: Der Zeuge auf die Rollenzuweisung muss rot werden. **Nicht ausreichend ist eine Gegenprobe im Prompttext** — genau die war viermal grün, während das Verhalten blieb. |
-
-### 5.6 Bauteil F — die Form des Materials
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Die Destillation einer Recherche liefert **Wissen**, nicht Novas Rede: kein Sprecher, kein Register, keine Anrede. Der Auftrag hat die Form einer Aufgabe mit prüfbarer Bedingung und einer Mengenangabe **als Zahl**. |
-| **TEST** | Das Destillat enthält keine erste Person und keine Anrede des Gegenübers. Sein Umfang liegt im vorgegebenen Zeichenkorridor. Der Auftrag nennt mindestens eine Bedingung, an der das Ergebnis prüfbar ist. |
-| **MESSUNG** | Anteil des fachlichen Vokabulars und Zeichenzahl ueber zwanzig Destillate, gegen den **gemessenen** Stand vom 14.08.2026: ueber 87 Recherche-Destillate **Median 1748 Zeichen** (510 bis 3309, p10 1112, p90 2577), Fachvokabular **1,63 %**. Die frueher genannten rund 2100 Zeichen reproduzieren sich nicht; die 2,07 % waren ueber die Reiz-Texte des Rohturns gemessen und nicht ueber den Stapel - zwei Populationen, kein Widerspruch. |
-| **Gegenprobe** | Die Stilzeile zurücknehmen, die Fachbegriffe für Experten verlangt: Der Vokabular-Anteil muss messbar steigen. |
-
-> **Die beiden hängen zusammen und werden trotzdem getrennt gebaut.** F ändert, in welcher Gestalt das Wissen entsteht; E, auf welchem Platz es ankommt. Zusammen gebaut wäre bei einer Verschlechterung nicht mehr trennbar, welches von beiden sie verursacht hat.
-
-**Die Reihenfolge ist E, F, C, A, B, D** — mit zwei Einschränkungen.
-
-**E und F stehen vorn**, weil sie das Material selbst betreffen. Jeder Riegel danach entscheidet auf dem, was sie hinterlassen: C misst die Ähnlichkeit eines Textes, dessen Gestalt F bestimmt, und A ordnet einen Zustand, den E mitprägt. Wer erst die Tore baut und dann das Material ändert, hat die Tore auf einem Bestand gemessen, den es danach nicht mehr gibt.
-
-**Die ältere Begründung bleibt gültig:** C ist die Quelle: Jeder deplatzierte Einwurf schiebt Material in die Session, aus der der nächste Turn liest. A ordnet danach die Energie, B verfeinert den Aufwärtsweg; B setzt C voraus, weil beide dieselben Felder des Stapel-Eintrags befüllen.
-
-**D steht zuletzt, obwohl sein Riegel im Ablauf zuerst greift.** Der Grund ist seine Voraussetzung: Die Haltung muss persistiert sein, und ihre Eingangsgröße trägt einen offenen Defekt (§6). Wer D vorzieht, misst einen Riegel gegen eine Größe, von der bekannt ist, dass sie den Hauptfall nicht trennt.
-
----
-
-## 6. Was offen ist
-
-- **Die drei Marken der Kurve sind geschätzt.** Kipppunkt bei einer Stunde, Halbwert bei zwei, null bei drei — das sind Setzungen, keine Messwerte. Sie gehören nach zwei Wochen Betrieb überprüft.
-- **Die Schwelle des Tores steht auf drei Äußerungen.** 0,30 ist an etikettierten Paaren gemessen, aber der Bestand trug nur drei Äußerungen zu einem klar abgrenzbaren Sachthema. Nach der nächsten Themenrunde gehört sie nachgemessen — mit derselben Eichung, die sie erzeugt hat. **Und wieviele Gedanken dadurch liegenbleiben, ist ungemessen:** Von 56 Impulsen fielen 16 in ein laufendes Gespräch; wie viele davon künftig warten statt zu kommen, sagt erst der Betrieb.
-- **Ob ein Einwurf den Raum des Gesprächs übernehmen kann, ohne seinen Inhalt zu verlieren**, ist unbelegt. Es kann sein, dass ein Fachgedanke in lockerer Sprache seine Substanz einbüßt.
-- **Was mit einem Gedanken geschieht, der nie passt.** Er wartet unbegrenzt. Ob das richtig ist oder ob es eine zweite Bedingung braucht, ist hier nicht entschieden.
-- **Der Verlauf bleibt.** Die inhaltbestimmende Stufe liest die Session ungekürzt; ihr Gewicht gegenüber dem Auftrag ist der größte offene Posten und wird von diesem Konzept nicht berührt.
-- ~~**Die Eingangsgröße von §2.5 trägt einen bekannten Defekt.**~~ → **Am 14.08.2026 nachgerechnet: Er trifft diesen Riegel nicht.** Die Beitragstabelle des Zuwendungsrades trägt `treue` und `aufmerksamkeit` mit je +0,20 auf die Nähe — bei `distanz 1,00` greift jedoch der Zug und zieht die Größe an den Anschlag, sodass alle 28 Zellen der fernen Figuren auf 0,00 liegen. Der Defekt sitzt im **mittleren Band**, wo der Zug fast abgeschaltet ist; der gemessene Fall vom 13.08.2026 lag bei `distanz 0,92`. Die konzeptionelle Frage bleibt offen — trägt `treue` Nähe oder Verlässlichkeit? —, sie blockiert Bauteil D aber nicht.
-- ~~**Ob das Führungsmaß überhaupt trennt.** Es geht heute als **ein Bit** in die Lagezeile ein, und die zehn Speichen des Initiative-Rades gehen in keinen Haltungswert ein. Ob der Rohwert über die Paare hinweg genug streut, um eine Frequenz zu tragen, ist unbelegt.~~ → **Am 15.08.2026 gemessen, und die Antwort ist nein** (§2.5): Verhältnis zwischen/innerhalb 0,22, geglättet über zwanzig Turns 0,38. Es trägt keine Frequenz je Paar. **Die Frage ist damit nicht offen, sondern erledigt — durch eine geänderte Bauart:** Riegel 2 ist ein Schalter auf den Moment und braucht die Trennung der Paare nicht. Was offen **bleibt**, ist der zweite Halbsatz: Die zehn Speichen des Initiative-Rades gehen weiterhin in keinen Haltungswert ein — die stabile Figur-Eigenschaft „wie initiativ ist diese Person" existiert als Rad und ist an nichts angeschlossen.
-
-- ~~**Die Schwellen des Rad-Riegels sind ungesetzt.**~~ → **Die Zuwendungs-Schwelle steht bei 0,25** (§2.5, gerechnet). ~~**Offen bleibt die Frequenz-Schwelle** des Führungsmaßes~~ → **am 15.08.2026 gegenstandslos:** Riegel 2 ist ein Schalter und benutzt die vorhandene `GV_INITIATIVE_SCHWELLE`. Offen bleibt, wichtiger, die Lücke im Bestand: In der Richtung *sie → Mensch* gibt es keine Figur zwischen `distanz` 0,60 und 1,00 — genau das Band, in dem der Zug schwach wird. Solange dort keine Figur steht, ist die saubere Trennung nicht bewiesen, sondern nur nicht widerlegt. Eine angelegte Prüffigur bei 0,90 würde es entscheiden.
-- **Wonach wird gewählt, wenn kein Bezug vorliegt?** Ohne Äußerung des Menschen gibt es keinen Themenwert und damit keine Rangfolge. Der älteste Eintrag, der jüngste, der salienteste, der zu ihrem eigenen letzten Gedanken passendste — das ist unentschieden und betrifft den **häufigsten** Fall, nicht den Rand: Gemessen am 14.08.2026 lagen 39 von 56 Impulsen in dieser Lage. Der letzte Kandidat hätte einen Reiz und zugleich einen Haken: Er führte ihr eigenes Thema fort, ohne dass jemand widerspricht.
-- ~~**Darf sie ein Thema anfangen, über das noch nie geredet wurde?**~~ → **Entschieden am 14.08.2026: ja, unter einer Bedingung.** Ein neues Thema darf kommen, aber **als Anriss und nicht als Aufsatz** — der Fund in ein, zwei Sätzen, benannt statt entfaltet. Ob es weitergeht, entscheidet danach die nächste Äußerung des Menschen. Das Tor 5 aus §2.5 gilt für einen Anriss **nicht**: Er wird nicht am laufenden Thema gemessen, weil er keines fortsetzt; ihn halten die Riegel 1 bis 4. Die Ausarbeitung steht in `novaberg-gedankenkette_k.md` §6a — sie ist der Ort dafür, weil ein eingeführtes Thema über mehrere Turns läuft und dieses Konzept nur den Eintritt regelt.
-- ~~**Trägt die Queue die Erregung?**~~ → **Entschieden am 15.08.2026: ja.** Die Spalte ist gebaut; die Begründung, die dagegen sprach, ist damit beantwortet — der Stand beim *Auftrag* ist der Stand, in dem der Anlass entstand, und mehr behauptet der Level nicht. Der ursprüngliche Wortlaut: `shadow_auftrag` führt `emotion` und `modus` des auslösenden Turns, aber **keine Spalte für die Erregung** — und damit kann die Recherche keinen Level auf den Stapel legen. Gemessen am 15.08.2026: kein Eintrag des Bestands trägt einen. Bauteil B ist dadurch gebaut und wirkungslos, bis ein Nachfragen-Eintrag zugestellt wird (45 von 1036 Aufträgen). Eine Spalte wäre eine Schemaänderung und ist hier nicht entschieden; die Frage lautet, ob der Stand, in dem ein *Auftrag* entstand, überhaupt der Stand ist, in dem der *Gedanke* gefasst wurde — zwischen beiden liegen bei der Recherche Minuten bis Tage.
-
----
-
-## Versionshistorie
-
-- **v0.17 — 15.08.2026:** Die zwei Reste der Protokollpflicht haben eine Kennung (`ZUSTELLUNG-ABBRUCH-UNGEZAEHLT`, `RIEGEL-5-7-OHNE-EINTRAG`) und §2.5 sagt jetzt, **was sie seit dem Deckenfall kosten**: Der Burst-Zähler ist die einzige verbliebene Wiederholungsgrenze und erzeugt keinen Eintrag, wenn er blockt — die Lücke im Protokoll sitzt damit genau an der Grenze, die beobachtet werden soll. Vorher war sie eine Lücke in den Daten, jetzt eine im Messinstrument.
-
-- **v0.16 — 15.08.2026:** **Riegel 2 ist gebaut, und die stündliche Decke ist gefallen.** Der offene Punkt aus §6 ist gemessen und **negativ beantwortet**: Das Führungsmaß schwankt innerhalb eines Paares rund fünfmal stärker, als es die Paare trennt (Verhältnis 0,22; geglättet über zwanzig Turns nur 0,38, und dabei sinkt die Zwischen-Spanne sogar). Es kann keine Frequenz je Paar tragen. **Die Widerlegung hat die Bauart geändert, nicht den Bau aufgehalten:** Riegel 2 ist ein **Schalter** auf den Moment — hat sie gerade die Initiative, darf ein Impuls kommen —, und dafür ist die Schwankung im Paar genau das Richtige. Damit kehrt sich dieselbe Messung vom Einwand zur Bestätigung. **Die Schwelle wurde nicht gesetzt, sondern gefunden:** `initiative_bit` mit `GV_INITIATIVE_SCHWELLE` macht seit Langem denselben Schalter für die Lagezeile; eine zweite Zahl hieße, dass zwei Stellen dasselbe Wort verschieden lesen. **Der Riegel liest den rohen Wert und nicht das Achsen-Bit** — bei fehlendem Maß setzt `dreischicht.py` Bit 1 („Nova führt"), und ein Riegel darauf öffnete im Moment des Ausfalls. Seine Voraussetzung ist eingelöst wie die von Riegel 1: Das Führungsmaß reist im Haltungsstand mit, als **eigenes Feld mit eigenem Grund** und ausdrücklich nicht an der Marke `gerechnet` — sonst verdeckte Riegel 1 den Riegel 2. `frequenz` ist **Pflicht-Riegel** geworden, als Folge des Deckenfalls. Gemessen: Der Schalter stünde in **38,7 %** aller Turns offen (produktives Paar 47,9 %, 0 Ausfälle); im Betrieb fällt der Trigger jetzt alle 30 s statt einmal je Stunde.
-
-- **v0.15 — 15.08.2026:** **Riegel 1 von Bauteil D ist gebaut.** Schwelle 0,25 auf der Haltung des persistierten Standes, **vor** der Suche und vor dem LLM-Lock. Die inhaltlich wichtigste Entscheidung steckt nicht in der Schwelle, sondern in der Trennung der Gründe: **Vier von fünf heißen „unbekannt", einer heißt „nein"** — kein Stand, ein Stand ohne Rechnung, ein zu alter Stand und eine fehlende Nähe blocken alle, werden aber getrennt gezählt. Ohne diese Trennung wäre die Schwelle auf einem Ausfall kalibriert worden. Die Protokollpflicht aus §2.5 ist zur Hälfte eingelöst: ein Eintrag je Zustellversuch mit allen sieben Riegeln, den Werten der gerechneten und der Marke für die nicht gerechneten. **Zwei Reste sind benannt statt beschwiegen** — der Eintrag beginnt am Trigger, und die Riegel 5 bis 7 entscheiden innerhalb der Zustellung. Riegel 2 bleibt *nicht gerechnet*, und damit bleibt die stündliche Decke.
-- **v0.14 — 15.08.2026:** **Die Nachprüfung fand einen zweiten Erzeuger.** Der Thinker-Wiederholungsversuch baut das Payload des Folgelaufs Feld für Feld neu, trägt `reiz_herkunft = eigener_impuls` — und ließ den Level weg. Der zweite Versuch wäre auf Novas gespeicherten Stand zurückgefallen, **und der Ausfall wäre still gewesen**: Der Zugriffsknoten meldet dann korrekt `kein_level`, und von einem Eintrag ohne Stand ist der Fall nicht zu unterscheiden. Dieselbe Klasse, die diesen Umbau schon einmal getroffen hat — nur diesmal auf der Schreiberseite. Gefunden hat sie die Suche nach dem **Kriterium** (*wer erzeugt ein Payload mit dieser Herkunft?*), nicht das Abgehen des gebauten Wegs. Gegenprobe: 4 von 4 der neuen Zusicherungen rot. Dazu die MESSUNG in §5.2 zur Hälfte eingelöst — der Mechanismus läuft im Betrieb, zwei echte Impuls-Turns tragen die Zeile, beide `kein_level`.
-- **v0.13 — 15.08.2026:** **Bauteil B ist gebaut** — der Kanal aus §2.3 hat jetzt an beiden Enden einen Anschluss. Die Zustellung reicht den Level ins Ereignis, `graph/reiz.py` prüft ihn an der Eingangsgrenze, der Zugriffsknoten hebt per Maximum. Gegenprobe 3 von 20 rot, die zweite auf die Naht 3 von 3. **Und derselbe Zug hat die Grenze des Bauteils gemessen statt sie zu vermuten:** Kein Eintrag des Stapel-Bestands trägt einen Level, weil `shadow_auftrag` **keine Spalte für die Erregung** hat — die Recherche kann nicht durchreichen, was sie nie bekommt. Der Bauteil ist damit gebaut und wirkungslos bis zum ersten Nachfragen-Eintrag; die Protokollzeile steht auch bei `wirkung: kein_level`, damit „kein Level im Bestand" von „läuft nicht" unterscheidbar bleibt. Die Spaltenfrage steht als offener Punkt in §6 und ist **nicht** nebenbei entschieden worden.
-- **v0.12 - 14.08.2026:** §1 um eine **turngenaue** Messung erweitert (21:21 bis 22:04 UTC). Sie zeigt den Weg statt des Zustands: Ein Einwurf mit 5,96 % hebt ihre Antwort auf 8,40 %, und neun Minuten später kommt die Äußerung des Menschen mit **10,99 %** zurück — **er hat das Vokabular des Einwurfs übernommen.** Der Gedanke findet damit einen zweiten Weg in sie, nicht nur über den Verlauf. Dazu der Gegenversuch auf die Sekunde: Ein Tonlagenwechsel mit 26 Zeichen bringt sie von 1467 auf 474 Zeichen und auf null Prozent — **neunzig Sekunden später zieht ein Einwurf sie wieder hoch.** Vier ungebaute Bauteile stehen in diesem einen Turnpaar.
-- **v0.11 - 14.08.2026:** **Bauteil F gebaut, und die Messung hat seine Adresse gedreht.** §2.6 markiert widerlegt: Nicht die Recherche spricht in Novas Person (1 von 87), sondern die **Wiedervorlage** (20 von 20) - der Sprecher stand im Auftrag, nicht im Ergebnis. Der Auftrag der Recherche-Destillation traegt jetzt keinen Identitaets-, Empfaenger- und Stilblock mehr, dafuer einen **Raum von 600 bis 1200 Zeichen** mit drei Bewegungen als Gestalt und eine Pruefbedingung von aussen. **Der Raum wird zugesprochen, nicht begrenzt** - dieselbe Zahl in der anderen Richtung. Der MESSUNG-Wert steht jetzt auf dem gemessenen Bestand: Median 1748 statt der genannten 2100.
-- **v0.10 — 14.08.2026:** §3.6 umgesetzt — beide Herkunftsblöcke tragen Führung statt Verbot. `[gemessen]` 20:30 UTC mit prohibitionsfreiem Prompt: Die Zuschreibung bleibt auf Person A, **ohne dass ein Verbot sie hält** — die Struktur trägt sie. Und die Führung hat etwas hinzugefügt, was ein Verbot nie erzeugen könnte: Sie wendet sich ihm zu und fragt ihn. Mit der Einschränkung, dass zwei Turns keine Reihe sind und nicht kontrolliert verglichen wurden.
-- **v0.9 — 14.08.2026:** §3.6 neu — **das Verbot als Mittel ist verworfen.** Nach dem Materialblock ist der Platz frei, an dem vier Anläufe lang ein Verbot stand; ihn mit einem besseren Verbot zu füllen wäre der fünfte Anlauf. Ein Verbot arbeitet gegen den Zug statt mit ihm: Es nennt das Unerwünschte und macht es zum Gegenstand. An seine Stelle gehört die Führung — wohin die Energie geht, nicht wovon sie wegbleiben soll. **Möglich ist das erst, seit die Struktur trägt:** Solange nur Text zur Verfügung stand, war das Verbot die einzige Durchsetzung. Die Umschreibung ist ein eigener Zug mit eigener Messung, weil sie die Modellausgabe ändert.
-- **v0.8 — 14.08.2026:** **Bauteil E ist gebaut.** Der Materialblock steht in beiden erzeugenden Stufen; auf dem Platz des Gegenübers steht nur noch der Auftrag. `[gemessen]` — 19:50 UTC: Derselbe Knoten, der um 19:15 noch „PERSON B stellt … in den Raum" schrieb, schreibt jetzt „Person A stellt fest …", und die Antwort spielt den Gedanken statt auf ihn zu reagieren. **Die Zuschreibung ist zwischen zwei Turns desselben Tages gekippt, ohne dass ein Verbot geändert wurde** — der Prompt-Log belegt die Ursache. Mit der Warnung daneben, dass ein Turn keine Messung ist: Genau dieser Schluss wurde am selben Tag schon einmal zu früh gezogen.
-- **v0.7 — 14.08.2026:** Zwei Entscheidungen. **Ein eigener Impuls darf handeln** — Termin, Notiz, Direktive —, und der Initiator steht im Protokoll statt in der Fachtabelle: Die Fachtabelle beschreibt den Termin, nicht den Turn. Gebaut an den zwei Stellen, durch die etwas entsteht (Agentenlauf und geplanter Schreibvorgang), mit dem Ausgang daneben, weil „was hat sie angelegt" die Frage nach Initiator **und** Status ist. **Und die stündliche Decke fällt, sobald die Riegel stehen** (§2.5, neuer Abschnitt): Sie war ein Ersatz für ein Urteil, das es noch nicht gab, und neben sieben Riegeln wäre sie keine Begrenzung mehr, sondern eine Beschneidung. Was heute wirklich begrenzt, ist enger und blinder — ein Gedanke je Stunde Schweigen, zwei je Gespräch, beide Zähler bei jeder Äußerung des Menschen gelöscht, und die Decke wird großzügiger, je länger niemand da ist. Die Reihenfolge ist Bedingung: Fällt sie vor den Riegeln, bleibt keine Begrenzung; fällt sie mit ihnen, trägt Riegel 2 allein die Häufigkeit — und seine Schwelle hört auf, ein offener Punkt unter anderen zu sein.
-- **v0.6 — 14.08.2026:** **Die erste Hälfte von Bauteil E ist gebaut.** §2.6 um den Befund erweitert, dass die vier genannten Stellen **elf** sind — gesucht wurde nach dem Kriterium statt nach der Aufzählung. Der Unterschied ist nicht die Zahl: Die vier melden laut, die sieben hinzugekommenen melden nichts. Ein Embedding über einer leeren Zeichenkette ist ein gültiger Vektor an der falschen Stelle im Raum, und eine Landschaft ohne Gegenstand ist eine Landschaft. Dazu die Bauart — der Gedanke bekommt einen eigenen Kanal statt sich den Reiz-Platz zu teilen, ein Zugang beantwortet für alle Leser dieselbe Frage, und er fällt **nicht** auf den Reiz-Platz zurück, wenn der Gedanke fehlt. Eine Stelle bleibt ausdrücklich auf `user_prompt`: die Ablage des Session-Turns, die einzige, die nach der Äußerung des Menschen fragt. §5.5 um den Stand und die Messung von 19:15 UTC ergänzt — acht Stellen tragen den Gedanken, keine meldet einen Ausfall. **Und derselbe Turn belegt, warum die zweite Hälfte nötig ist:** Der Verfasser schrieb die Beobachtung „PERSON B" zu, bei leerem Reiz-Platz, weil der Gedanke weiterhin in der Rolle des Gegenübers ankommt.
-- **v0.5 — 14.08.2026:** Die **Zuwendungs-Schwelle ist gerechnet: 0,25** — 17 Paare über vierzehn Landschaften, ohne Modellaufruf. Ferne Figuren liegen in allen 28 Zellen auf 0,00, nahe zwischen 0,20 und 1,00; nicht 0,20 als Schnitt, weil eine Schwelle auf einem Bestandswert die bekannte Kante ist. Der Preis von 10,7 % geblockten nahen Zellen sind die kalten Landschaften und damit ein zweiter Nutzen. **Der befürchtete Defekt der Beitragstabelle trifft den Riegel nicht** — bei voller Distanz greift der Zug —, und der offene Punkt dazu ist entsprechend markiert. **Neu offen und wichtiger:** Der Bestand enthält in dieser Richtung keine Figur zwischen 0,60 und 1,00, also das Band, in dem der Zug schwach wird; die Trennung ist nicht bewiesen, sondern nicht widerlegt. Dazu §2.5 um die **Protokollpflicht der Riegelkette**: Der erste Blocker entscheidet, aber die billigen Riegel werden alle gerechnet — sonst verdeckt Riegel 1 den Riegel 2 und dessen Schwelle ist nie kalibrierbar —, und ein nicht gerechneter Riegel trägt eine Marke statt eines Leerwerts. Bauteil D um beide Zeugen erweitert.
-- **v0.4 — 14.08.2026:** Der offene Punkt „darf sie ein Thema anfangen" ist **entschieden: ja, als Anriss statt als Aufsatz.** Riegel 5 gilt für ein neues Thema nicht — es setzt keines fort und kann keinem ähneln; es tragen die Riegel 1 bis 4. Was danach geschieht, gehört in die Gedankenkette und steht dort als §6a: Anriss, dann Zustimmung des Menschen als Tor zum zweiten Glied, sonst ein Satz, der sanft abschließt. Kein zweites Dokument für denselben Gegenstand — dieses Konzept regelt den Eintritt, das andere den Verlauf.
-- **v0.3 — 14.08.2026:** §2.6 neu — **ein Gedanke ist Material, keine Äußerung.** Er landet heute in beiden erzeugenden Stufen in der Rolle des Gegenübers, und was dort steht, wird beantwortet statt gesagt. Das erklärt, warum vier Prompt-Anläufe über Monate nicht getragen haben: Eine Rollenzuweisung ist keine Anweisung, sondern eine Struktur. Daraus zwei Enden — am Eingang wird das Rechercheergebnis als **Wissen** geschrieben statt als fertige Rede, am Ausgang steht es in einem **Materialblock** statt auf dem Reiz-Platz. Die ältere Entscheidung („das Wissensstück ist der Reiz") ist in ihrer einen Hälfte bestätigt und in der anderen abgelöst. §3.5 neu: den Prompt ein fünftes Mal zu schärfen ist verworfen. Bauteile **E** (Platz) und **F** (Form) in §5.5 und §5.6, neue Reihenfolge **E → F → C → A → B → D**. Dazu §2.4 auf die gemessenen Werte gestellt: Bezug bis zur letzten Äußerung statt Zeitfenster, Schwelle **0,30** auf dem **besten** Eintrag, mit der Eichung als Beleg und der Warnung, dass sie auf drei Äußerungen steht. §2.5 um die vollständige Riegelkette erweitert; §4 gibt die Form des Ergebnisses ausdrücklich frei; §6 um drei offene Punkte ergänzt.
-- **v0.2 — 14.08.2026:** §2.5 neu — **ob sie überhaupt zugehen will**, als die Frage vor der Frage nach dem Thema. Zuwendung entscheidet das *Ob*, Initiative die *Häufigkeit*; beide werden nicht vermengt. Der Riegel greift vor der thematischen Suche. Maßgeblich ist die **Haltung**, nicht die Nähe-Achse der Landschaft — die Achse beschreibt den Moment, gebraucht wird die Größe, die Landschaft und Charakterrad verrechnet. Daraus zwei Voraussetzungen: Die Haltung muss den Turn überleben, und das Vorzeichen des Führungsmaßes gehört in die Bauart (es misst, wie stark **der Mensch** führt). §3.4 neu als verworfene Variante, Bauteil D in §5.4, drei offene Punkte in §6 — darunter der Defekt der Beitragstabelle, der die Eingangsgröße von D betrifft und hier ausdrücklich **nicht** mitbehoben wird.
-- **v0.1 — 14.08.2026:** Erstfassung. Die Trennung von Novas eigenem Zustand und dem Zustand, in dem sie ihrem Menschen begegnet — mit dem Verfall am Übergang statt in ihrer Eigenzeit. Drei Bauteile: der Verfall über das Intervall, der Level am Gedanken, das Tor für den Einwurf. Drei Varianten mit Begründung verworfen: der immer laufende Zeitverfall, das bloße Umkleiden des Einwurfs, das Altern des Stapels.
-
----
-
-## Befunde aus dem Betrieb — nachgetragen am 20.08.2026
-
-Aus `novaberg-fundliste.md` hierher gezogen: Aussagen ueber den **Zustand** dieses Gegenstands, die dort als rohe Funde standen und in kein Defekt- oder Vorhabenregister gehoeren. Der Wortlaut ist unveraendert, das Datum steht an jedem Befund — geprueft ist keiner von ihnen gegen den heutigen Code.
-
-- **15.08.2026** — **Zwei Konzepte lesen dasselbe Rad zur selben Zeit und meinen Verschiedenes.** `novaberg-pixie-nachfragen_k.md` §8.8 hält als Backlog-Eintrag `PIX-STAPEL-RADFAKTOR` fest: *„Das Rad wird zur Zustellzeit gelesen"* — als **multiplikativer Faktor** auf den Score eines Stapel-Eintrags, ausdrücklich so gewählt, damit *„kein Veto" eine Eigenschaft der Bauart ist und nicht der Kalibrierung*. `novaberg-eigenzeit_k.md` §2.5 liest dieselbe Größe zur selben Zeit als **Riegel** — also genau als das Veto, das der andere Entwurf ausschließen wollte; gebaut am 15.08.2026 als Riegel 1. **Beide Dokumente wissen nichts voneinander.** Die Größe ist nicht dieselbe (`fragen` dort, `naehe` hier), der Zeitpunkt und die Quelle schon. **Nicht mitgeändert:** Ob das Rad an der Zustellung sperrt oder gewichtet, ist eine Absicht und keine Implementierungsfrage. Gefunden von der zweiten Kontrolle über die Dateiliste — der Treffer sah zuerst nach einem Namensgleichklang aus (`ei/haltung.py` gegen `memory/haltung.py`).
+> **Hinweis zur Aufteilung (19.09.2026):** §5 *Die Bauteile* steht in [`novaberg-eigenzeit_b.md`](novaberg-eigenzeit_b.md). §6 *Was offen ist*, die Versionshistorie und *Befunde aus dem Betrieb — nachgetragen am 20.08.2026* stehen in [`novaberg-eigenzeit_e.md`](novaberg-eigenzeit_e.md), Abschnitt F.
