@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `agents/synapsen_promotion/agent.py`: der Weg vom Kurzzeit- ins Langzeitgedächtnis
-**Stand:** 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 4. September 2026 (**zwei Defekte gegen das Konzept**: Der KZG-Hash wird entgegen §7.7 nach der Promotion **nicht geloescht** — der Eintrag geht erneut durch und matcht den Knoten, der aus ihm selbst entstand: **95,2 % aller 14.947 Verstaerkungen tragen `cosine = 1.0000`**, bis zu 91 je Turn ueber acht Tage. Und die Verstaerkung sitzt hier statt im Dispatcher, wo sie nach dem neuen §7.1a hingehoert. Beleg und Kennungen: `novaberg-memory-synapsen_k.md` §7.1a, `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `VERSTAERKUNG-OHNE-VERWENDUNG`.). Davor 1. September 2026 (angelegt — der Agent hatte kein Moduldokument, und der Defekt `PROMOTION-NUR-EIN-PAAR` wurde deshalb zunächst im Dokument seines abgelösten Vorgängers vermerkt)
+**Stand:** 19. September 2026, 20:53 UTC (`date -u`; ein unlesbarer Anlagezeitpunkt wird verworfen statt erfunden, §3a). Davor 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 4. September 2026 (**zwei Defekte gegen das Konzept**: Der KZG-Hash wird entgegen §7.7 nach der Promotion **nicht geloescht** — der Eintrag geht erneut durch und matcht den Knoten, der aus ihm selbst entstand: **95,2 % aller 14.947 Verstaerkungen tragen `cosine = 1.0000`**, bis zu 91 je Turn ueber acht Tage. Und die Verstaerkung sitzt hier statt im Dispatcher, wo sie nach dem neuen §7.1a hingehoert. Beleg und Kennungen: `novaberg-memory-synapsen_k.md` §7.1a, `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `VERSTAERKUNG-OHNE-VERWENDUNG`.). Davor 1. September 2026 (angelegt — der Agent hatte kein Moduldokument, und der Defekt `PROMOTION-NUR-EIN-PAAR` wurde deshalb zunächst im Dokument seines abgelösten Vorgängers vermerkt)
 **Pfad:** novaberg/docs/novaberg-node-synapsen-promotion.md
 **Konzept:** `novaberg-memory-synapsen_k.md` (P4 — Knoten, Kanten, Spreading)
 **Vorgänger:** `novaberg-pixie-promotion.md` — der `PromotionAgent`, den es nicht mehr gibt; die Zwei-Call-Bauart und die EVA-Härtung sind dort beschrieben und hier eingegangen
@@ -60,6 +60,12 @@ Grün heißt `LREM` aus der Arbeitsliste. Rot heißt: Der Eintrag **bleibt dort 
 
 Der Versuchszähler steht als eigener Hash, nicht in der Nutzlast: Ihn dort hochzuzählen hieße entnehmen, ändern, neu schreiben — und ein Absturz zwischen den Schritten verlöre genau den Eintrag, den die Mechanik retten soll.
 
+## 3a. Was verworfen wird
+
+**Verworfen wird, was nie grün werden kann**, und zwar vor dem Embedding: ein Auftrag ohne Schlüssel, ein Kurzzeit-Hash, dessen TTL abgelaufen ist, ein leerer Inhalt und seit dem 19.09.2026 ein fehlender oder unlesbarer Anlagezeitpunkt (`erstellt_am`; auch `nan`, unendlich und Werte ≤ 0, `_kzg_erstellt_am_lesen`). Ein verworfener Eintrag schreibt `fehler` in `hintergrund_log` und `pipeline_log`, beim Anlagezeitpunkt mit Rohwert und Schlüssel. Er verlässt die Arbeitsliste, denn erneutes Zustellen macht ihn nicht lesbar.
+
+**Bis zum 19.09.2026 stand für einen unlesbaren Anlagezeitpunkt still *jetzt*.** Der Knoten trug dann ein erfundenes `kzg_erstellt_am` (die Spalte ist `NOT NULL`) und sah aus wie jeder andere. Im Bestand hat das keine Spur hinterlassen: 4.552 von 4.555 Knoten tragen den Zeitpunkt ihres Schlüssels auf die Millisekunde, 3 weichen um 1 ms ab (Rundung) `[gemessen 19.09.2026]`.
+
 ---
 
 ## 4. Was gemessen ist
@@ -82,14 +88,15 @@ Der Versuchszähler steht als eigener Hash, nicht in der Nutzlast: Ihn dort hoch
 `tests/test_promotion_alle_paare.py` (5) — der periodische Lauf über alle Paare, der gezielte über eines, Nebenlisten, die Summierung, ein Fehler je Paar.
 `tests/test_promotion_arbeitsliste.py` (7) — was grün durchläuft, ist fort; was rot läuft, liegt sichtbar.
 `tests/test_promotion_queue_dubletten.py` (8) — derselbe Schlüssel steht höchstens einmal.
+`tests/test_promotion_erstellt_am.py` (4) — ein fehlender, unlesbarer oder nicht endlicher Anlagezeitpunkt ergibt keinen Knoten, sondern eine Fehlerzeile mit Rohwert; ein gültiger kommt unverändert am Knoten an. Er läuft durch den echten `invoke` bis `knoten_anlegen`.
 
-Redis ist in allen dreien ein Fake mit echter Listen-Semantik statt eines MagicMock: Geprüft wird, was am Ende in den Listen steht, nicht welche Methoden gerufen wurden.
+Redis ist in allen vieren ein Fake mit echter Listen-Semantik statt eines MagicMock: Geprüft wird, was am Ende in den Listen steht, nicht welche Methoden gerufen wurden.
 
 ---
 
 ## 6. Offene Punkte
 
-**Der Agent hat keinen eigenen Zeugen für den Promotionsvorgang selbst** — die drei Testdateien decken die Warteschlange, nicht die Umwandlung eines Kurzzeit-Eintrags in Knoten und Kanten. `_eintrag_verarbeiten` ist mit 86 Anweisungen und 13 Verzweigungen die komplexeste Funktion des Moduls und in den Zeugen durchgehend ersetzt.
+**Der Agent hat nur einen schmalen Zeugen für den Promotionsvorgang selbst.** Drei Testdateien decken die Warteschlange; `tests/test_promotion_erstellt_am.py` führt seit dem 19.09.2026 durch den echten `_eintrag_verarbeiten`, aber nur bis zur Anlage eines Knotens, mit ersetztem Embedding, Kandidaten und Kanten. Reinforcement, Halbreaktivierung und die Kantenbildung bleiben unbezeugt. `_eintrag_verarbeiten` ist mit 85 Anweisungen und 13 Verzweigungen die komplexeste Funktion des Moduls.
 
 **Der Lauf ist nach Paaren sequenziell.** Bei vielen Paaren mit großem Rückstand kann ein Heartbeat lange dauern; er läuft auf der CPU-Spur und blockiert dort die übrigen Agenten. Bisher nicht gemessen, weil der Rückstand vor dem 01.09.2026 nie abfloss.
 

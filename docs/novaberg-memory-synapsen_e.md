@@ -284,3 +284,5 @@ Chronik-Konzept.
 ### Abschlussstand
 
 `[entschieden 19.09.2026]` **P4 ist gebaut.** Abgeschlossen ist P4, sobald `SYNAPSEN-LIVE-VERIFY` (die Abnahme der Entitäts- und Timeline-Kanten, gemessen aus der Datenbank) und `KZG-ERSTELLT-AM-PARSE-HÄRTE` (zum Mitbauen in P4 vorgesehen, Notiz §7 in `_b`) geschlossen sind. Die übrigen fünf Folgeeinträge — `TRIGGER-2-RECACHE-KONZEPT-LÜCKE`, `REFAC-MAGNETE-AUDIT`, `EMOTIONS-VEKTOR-LEER`, M2.5b (FaktenAgent) und `DOKU-DRIFT-WELLE-PROMOTION` — laufen ohne P4-Bindung weiter. Der Meister: *„Zwei, Rest lösen“*. Der Zustand der Einträge steht im Backlog (`novaberg-backlog-gedaechtnis.md`, `novaberg-backlog-bauart.md`).
+
+`[gemessen 19.09.2026]` **P4 ist abgeschlossen: Beide Bedingungen sind geschlossen.** `SYNAPSEN-LIVE-VERIFY` ist aus der Datenbank abgenommen: Entität 1.831 von 1.831, Timeline 4.137 von 4.137 verpflichteten Paaren tragen ihre Kante. `KZG-ERSTELLT-AM-PARSE-HÄRTE` ist gebaut: Ein unlesbarer Anlagezeitpunkt wird verworfen statt erfunden. Die Belege stehen an beiden Einträgen im Backlog.
