@@ -44,6 +44,7 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 1 | Werden die Werte der zwei Betriebsturns vom 13.09.2026 — geschrieben vor der Wert-Regel, teils Notizen statt Angaben — im Bestand des Paares bereinigt? Der Text: *„ob sie bereinigt werden, entscheidet der Eigentümer“*. | `_t` §4 Scheibe 11, *Preis und Offenes* |
 | 2 | Soll der Verfasser die kritische Lücke vor den unkritischen Antwortstoff ziehen? Der Text: *„ist nicht entschieden“* — einen Adressaten nennt er nicht; hier geführt, weil die Frage das Soll betrifft. | `_t` §4 Scheibe 10, *Nebenbefund* |
 | 3 | Entsteht der Erinnerungs-Anker vor dem Termin: soll der Termin den Anker übernehmen (dieselbe ID)? Vorgelegt 19.09.2026. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+| 4 | Den Nachtrag am Gedächtnisknoten (Nr. 23) zurückstellen, bis ein echter Fall auftritt? Vorgelegt 19.09.2026 mit der Empfehlung *zurückstellen*: Von 96 Turns mit geprüfter Speicherbehauptung seit dem 15.09.2026 überstand **eine** beide Korrekturrunden (Prüf-Nutzer), im Paar des Eigentümers 0 (`labor/2026-09-19_nachtrag_vorher.py`). Der Bau bräuchte eine Schemaänderung, einen Audit-Lauf und einen Leser. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 
 ---
 
@@ -147,7 +148,7 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 
 Vorgelegt mit je einer Empfehlung; der Eigentümer im Chat, 19.09.2026:
 
-> **Angebot pro Turn oder pro Sache?** *„Pro Sache“* — hat Nova eine Sache angeboten, fragt sie nicht erneut, bis der Mensch geantwortet hat oder das Angebot verfallen ist.
+> **Angebot pro Turn oder pro Sache?** *„Pro Sache“* — vorgelegt als: hat Nova eine Sache angeboten, fragt sie nicht erneut, bis der Mensch geantwortet hat oder das Angebot verfallen ist. **Gebaut ist es enger:** für eine Sache wird in der Frist **einmal gewürfelt**, gleich ob das Angebot kam oder nicht (`_t` §4 Scheibe 12, Teil E2, Nachtrag).
 
 > **Nachtrag am Gedächtnisknoten (Teil A):** *„Ja, eigenes Feld. Das haben wir bisher auch schon so gemacht.“*
 
