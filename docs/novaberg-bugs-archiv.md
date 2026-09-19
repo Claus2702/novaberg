@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 19. September 2026, 15:59 UTC — **`THEMENZEILEN-NUR-IM-INSERT-ZWEIG` aus dem Register übernommen** (behoben am 19.08.2026, stand dort ohne Überschrift). Davor 17. September 2026, 19:40 UTC — **`ENRICH-NULLTERM-IST-EINE-ZAHL` aufgenommen und behoben** (ein Paar ohne aktive Ziele verlor jeden Turn). Davor 17. September 2026, 10:58 UTC — **`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` aus dem Register übernommen, behoben mit Scheibe 12 D1.** Davor 13. September 2026, 15:55 UTC — **Nachtrag an `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` nach der zweiten Kontrolle**: Der Vergleichsschluessel der Form schrieb mit `lower`, die Datenbank mit `casefold`, und die Ansprueche des Frame-Aufloesers liefen an der Wertpruefung vorbei; beides behoben, 31 Zeugen, Suite 3663 gruen. Davor 15:11 UTC — **`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` umgezogen**, am Tag nach seinem Befund: Die Formpruefung der Sachlage haelt jedes Objektfeld, auch die vorige Blase beim Laden; nach der Entscheidung des Eigentuemers ist eine Eigenschaft ohne Wert offen, nichts mit Aussage wird verworfen. 29 Zeugen, Suite 3656 gruen, im Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen. Davor 12. September 2026, 23:22 UTC — **Nachtrag an `ZUORDNUNG-ANDERER-ABSENDER-FREMD`**: die Ausfallmeldung nennt ihre Kennungen, der Client gibt die Frage frei. Davor 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
-**Inhalt:** **59 abgeschlossene Eintraege mit eigenem Abschnitt** (56 + `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` und `ENRICH-NULLTERM-IST-EINE-ZAHL` am 17.09.2026 + `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` am 19.09.2026) plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 19. September 2026, 16:09 UTC — **`GV-FARBTON-SUBJEKTWECHSEL` aus dem Register übernommen** (behoben am 10.09.2026, Rest in der Fundliste). Davor 19. September 2026, 15:59 UTC — **`THEMENZEILEN-NUR-IM-INSERT-ZWEIG` aus dem Register übernommen** (behoben am 19.08.2026, stand dort ohne Überschrift). Davor 17. September 2026, 19:40 UTC — **`ENRICH-NULLTERM-IST-EINE-ZAHL` aufgenommen und behoben** (ein Paar ohne aktive Ziele verlor jeden Turn). Davor 17. September 2026, 10:58 UTC — **`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` aus dem Register übernommen, behoben mit Scheibe 12 D1.** Davor 13. September 2026, 15:55 UTC — **Nachtrag an `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` nach der zweiten Kontrolle**: Der Vergleichsschluessel der Form schrieb mit `lower`, die Datenbank mit `casefold`, und die Ansprueche des Frame-Aufloesers liefen an der Wertpruefung vorbei; beides behoben, 31 Zeugen, Suite 3663 gruen. Davor 15:11 UTC — **`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` umgezogen**, am Tag nach seinem Befund: Die Formpruefung der Sachlage haelt jedes Objektfeld, auch die vorige Blase beim Laden; nach der Entscheidung des Eigentuemers ist eine Eigenschaft ohne Wert offen, nichts mit Aussage wird verworfen. 29 Zeugen, Suite 3656 gruen, im Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen. Davor 12. September 2026, 23:22 UTC — **Nachtrag an `ZUORDNUNG-ANDERER-ABSENDER-FREMD`**: die Ausfallmeldung nennt ihre Kennungen, der Client gibt die Frage frei. Davor 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
+**Inhalt:** **60 abgeschlossene Eintraege mit eigenem Abschnitt** (56 + `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` und `ENRICH-NULLTERM-IST-EINE-ZAHL` am 17.09.2026 + `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` und `GV-FARBTON-SUBJEKTWECHSEL` am 19.09.2026) plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -9,6 +9,45 @@
 > auszuformulieren hiesse, Belege zu erfinden. Die Regel gilt fuer neue Eintraege und fuer jeden, der
 > ohnehin angefasst wird.
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
+
+---
+
+## 19.09.2026 — aus dem offenen Register übernommen
+
+*Behoben am 10.09.2026, mit benanntem Rest; der Rest steht als Zeile in der Fundliste. Übernommen am 19.09.2026 beim Teilen des Registers nach Gegenstand.*
+
+#### GV-FARBTON-SUBJEKTWECHSEL — der Farbton behauptet etwas über den Nutzer und misst Nova ⚠️
+**Kategorie:** ANT
+
+**Zustand:** ✅ **behoben am 10.09.2026 — mit benanntem Rest.** Die Absichtsfrage, auf die der Eintrag wartete, ist entschieden (Setzung des Eigentuemers, 10.09.2026): Der Farbton beschreibt **den Raum**, also wie sich beide aktiv zueinander verhalten — nicht eine Seite. `_farbe_intent` und `_farbe_dynamik` lesen seither `internal` **und** `external` und nennen beide Seiten; die Namen richten sich nach dem Leser — angesprochen wird nie der Charakter, sondern der Schauspieler ueber die Rolle. 22 Zeugen in `tests/test_farbton_raum.py`, drei Gegenproben (2, 8 und 3 vorhergesagt, alle drei so gezaehlt), Betriebsbeleg am 10.09.2026. **Auf einem Impuls-Turn bleibt die zweite Quelle ungelesen** — dort ist `external` eine Kopie von `internal`; 81 von 154 solchen Turns haetten sonst einen Paarsatz aus zweimal demselben Wert getragen.
+
+**Der Rest, den die Abhilfe nicht deckt:** Der Eintrag nennt **vier** betroffene Farben. `_farbe_stil`, `_farbe_tone` und `_farbe_modus` sprechen bereits ueber den Raum (*„Der Ton ist sachlich"*, *„Das Gespraech ist fachlich"*) und behaupten nichts ueber den Nutzer — sie **messen** den Raum aber weiter aus einer Seite. Das ist keine Falschaussage mehr, sondern eine unvollstaendige Messung; die Zeile dazu steht in `novaberg-fundliste.md`.
+
+**Was gemessen war, bevor es behoben wurde** `[10.09.2026, ueber 1348 Turns]`: **1164 (86,3 %)** trugen mindestens einen Satz ueber den Nutzer aus Novas Werten. Bei der Dynamik waren **419 von 826 (50,7 %)** gegen den am Nutzer gemessenen Wert falsch, beim Intent **292 von 904 (32,3 %)** — zusammen **711 falsche Aussagen** im Bestand. Haeufigster Einzelfall: **167-mal** *„Der Nutzer ist offen und vertraut"* bei gemessener `distanz`.
+
+~~**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert und am Code belegt**: `ei/farbton.py:198-202` liest `state.get("internal")`, also Novas Werte; `:72` formuliert daraus *„Der Nutzer haelt Abstand."* — genau der Satz aus dem Beleg. Das gilt fuer die ganze Tabelle: acht Saetze beginnen mit *„Der Nutzer"*.~~
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel-hoch.**
+
+**Symptom:** `farbton_berechnen` liest durchgehend `internal` (Nova), formuliert aber
+Sätze über den Nutzer: *„Der Nutzer haelt Abstand."*, *„Der Nutzer ist offen und vertraut."*
+Vier der acht Farben sind betroffen (`_farbe_intent`, `_farbe_dynamik`, `_farbe_stil`/`_farbe_tone`
+und mittelbar `_farbe_modus`).
+
+**Beleg (28.07.2026, 12:34:46):** Der `[SITUATION]`-Block trug *„Der Nutzer haelt Abstand."*,
+während die Perzeption des Nutzers im selben Turn `dynamik=neutral` sagte. Die `distanz`
+stammte aus `perzeption_assistant` auf **Novas eigene** Antwort des Vorturns — die Felder
+`mode`, `language_style`, `relationship_dynamic`, `tone` und `intent` in `internal.emotion`
+kommen aus `redis:nova_state` und beschreiben Novas letzte Äußerung, nicht den Nutzer.
+
+**Auswirkung:** Das LLM bekommt eine Tatsachenbehauptung über den Nutzer, die auf einer
+Messung an Nova beruht. Eine dichte Fachantwort Novas lässt den nächsten Turn glauben, der
+Nutzer gehe auf Abstand. Konzept §10.1 nennt für `_farbe_dynamik` ausdrücklich das Beispiel
+„Der Nutzer öffnet sich" — gemeint ist die Perzeption des Nutzers.
+
+~~**Entscheidung nötig:** Welche der acht Farben Nova beschreiben sollen und welche den
+Nutzer. Der Node liest beides und hat beide Quellen zur Hand.~~ → **Am 10.09.2026 entschieden, und die Antwort war keine der beiden angebotenen.** Der Eigentuemer: *„Der Raum sagt, wie sich beide aktiv zueinander verhalten. Nicht einer aktiv und der zweite passiv, sondern beide gemeinsam schaffen den Raum."* Die Frage bot Nova **oder** Nutzer an; die Antwort ist **beide**, und die Asymmetrie wird benannt statt verrechnet — *„Nova ist offen und zugewandt, der Nutzer haelt Abstand."* Ein Mittelwert haette geloescht, was der Block zeigen soll.
+
+> **Der Sollzustand stand die ganze Zeit im Modul selbst.** `_farbe_dynamik` fragte im Docstring *„Wie nah sind wir uns?"* — beidseitig —, `_farbe_modus` trug die Regel *„Die Saetze beschreiben den Raum, nicht den Nutzer"*, und `lage_beschreiben` die Zusage *„Die Beschreibung adressiert niemanden"*. Drei Stellen nannten ihn, vier Zeilen dazwischen brachen ihn. **Was fehlte, war nicht die Regel, sondern die zweite Quelle.**
 
 ---
 
