@@ -874,18 +874,25 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | Dokument | Beschreibung |
 |----------|-------------|
 | novaberg-thinking-curiosity_k.md | Neugier (Charakter-Resonanz, intrinsische Motivation, Reflexion) |
-| novaberg-thinking-drive_k.md | Antrieb (Ziele, Motivation, Gravitation, Dual-Emotion) |
-| novaberg-thinking-drive_t.md | Antrieb — Umsetzung: Gravitations-Rechnung, Speicher der Dual-Emotion, Zieltabelle, Konfiguration |
-| novaberg-thinking-drive_e.md | Antrieb — Entscheidungen des Eigentümers, offene Fragen, Befunde |
-| novaberg-thinking-lage_k.md | Lage (Sachlage, Scheiben 1–12) — Absicht und Planung, mit Kopfblock und Tabelle „§ → Datei“ |
-| novaberg-thinking-lage_t.md | Lage — Umsetzung: Bauberichte und Messungen je Scheibe |
-| novaberg-thinking-lage_e.md | Lage — Entscheidungen des Eigentümers, offene Fragen, Befunde |
-| novaberg-thinking-faszination_k.md | Faszination — Absicht und Planung |
-| novaberg-thinking-faszination_t.md | Faszination — Umsetzung: Rechnung, Bauberichte, Messungen, verworfene technische Varianten |
-| novaberg-thinking-faszination_e.md | Faszination — Entscheidungen des Eigentümers, offene Fragen, Befunde |
-| novaberg-thinking-opinion_k.md | Meinung / Willensstrang — Absicht und Planung |
-| novaberg-thinking-opinion_t.md | Meinung / Willensstrang — Umsetzung (was gebaut ist) |
-| novaberg-thinking-opinion_e.md | Meinung / Willensstrang — Entscheidungen, offene Fragen, Befunde |
+| novaberg-thinking-drive_k.md | Antrieb (Ziele, Motivation, Gravitation, Dual-Emotion) — Absicht, mit Kopfblock und Tabelle „§ → Datei“ |
+| novaberg-thinking-drive_t.md | Antrieb — Ausarbeitung: Gravitations-Rechnung, Speicher der Dual-Emotion, Zieltabelle, Konfiguration |
+| novaberg-thinking-drive_b.md | Antrieb — Bauplan und Umstellung: Eingriffspunkte, Bauberichte |
+| novaberg-thinking-drive_e.md | Antrieb — Diskussion und Ergänzungen: Entscheidungen, offene Fragen, Befunde |
+| novaberg-thinking-drive_m.md | Antrieb — Messungen |
+| novaberg-thinking-lage_k.md | Lage (Sachlage, Scheiben 1–12) — Absicht, mit Kopfblock und Tabelle „§ → Datei“ |
+| novaberg-thinking-lage_t.md | Lage — Ausarbeitung: Tabellen, Schreib- und Rückweg |
+| novaberg-thinking-lage_b.md | Lage — Bauplan und Umstellung: die Scheiben mit `ZIEL`/`TEST`/`MESSUNG` und ihren Bauberichten |
+| novaberg-thinking-lage_e.md | Lage — Diskussion und Ergänzungen: Entscheidungen, offene Fragen, Befunde |
+| novaberg-thinking-lage_m.md | Lage — Messungen je Scheibe, Eichung der Nähe |
+| novaberg-thinking-faszination_k.md | Faszination — Absicht |
+| novaberg-thinking-faszination_t.md | Faszination — Ausarbeitung: Rechnung, verworfene technische Varianten |
+| novaberg-thinking-faszination_b.md | Faszination — Bauplan und Umstellung: Reihenfolge, Bauberichte |
+| novaberg-thinking-faszination_e.md | Faszination — Diskussion und Ergänzungen: Entscheidungen, offene Fragen, Befunde |
+| novaberg-thinking-faszination_m.md | Faszination — Messungen |
+| novaberg-thinking-opinion_k.md | Meinung / Willensstrang — Absicht |
+| novaberg-thinking-opinion_t.md | Meinung / Willensstrang — Ausarbeitung (was gebaut ist) |
+| novaberg-thinking-opinion_e.md | Meinung / Willensstrang — Diskussion und Ergänzungen: Entscheidungen, offene Fragen, Befunde |
+| novaberg-thinking-opinion_m.md | Meinung / Willensstrang — Messungen |
 | novaberg-thinking-erkenntniszyklus_k.md | **Der Erkenntniszyklus** — die Folge, in der Nova ein Thema durchdringt: Nachdenken vor Nachschlagen. Übergeordnet über Meinung, Neugier, Wissenslücken und Wissensspeicher |
 
 ### Tiefe 2 — Technik & Tools (3)
