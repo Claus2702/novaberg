@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 16 Eintraege, je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 17 Eintraege, je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -402,3 +402,20 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 **Status:** Offen, Entscheidung ausstehend. **Verwandt:** KZG-SEGMENT-DUPLIKAT.
 
 ---
+
+---
+
+### 19.09.2026 — aus dem Bau von `KZG-ERSTELLT-AM-PARSE-HÄRTE`
+
+#### PROMO-LAUF-ZAEHLT-VERWORFENE — der Lauf der Synapsen-Promotion zählt einen verworfenen Eintrag als promotet
+**Kategorie:** GED
+
+**Zustand:** offen — am Code gelesen am 19.09.2026, nicht gemessen.
+
+**Klasse:** Ein Zähler, der einen Fehlschlag als Erfolg führt. Severity **niedrig**: Es geht kein Datum verloren, aber das Audit des Laufs gibt ein falsches Bild.
+
+**Symptom:** `_eintrag_verarbeiten` (`server/agents/synapsen_promotion/agent.py`) verwirft einen Eintrag, dessen Vorbedingung nicht hält, über `_fehler` und kehrt dann normal zurück. `_paar_abarbeiten` zählt darauf `promotet += 1`. Das Verwerfen selbst ist gewollt, der Eintrag wird nie grün. Die Laufzeile `promotet=…, fehler=…` sagt aber nicht, wie viele Einträge verworfen wurden. Betroffen sind alle vier Vorbedingungen, die vierte (unlesbarer Anlagezeitpunkt) seit `404a19a`.
+
+**Soll:** Der Lauf führt verworfene Einträge getrennt von promoteten. Die einzelnen Fehlerzeilen stehen schon heute im `pipeline_log`.
+
+**Status:** Offen. Eingeordnet aus der Fundliste am 19.09.2026. **Verwandt:** `KZG-ERSTELLT-AM-PARSE-HÄRTE` (Backlog, abgeschlossen).

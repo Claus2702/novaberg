@@ -105,7 +105,7 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedächtnis (`GED`) — KZG, LZG, Promotion, Entitäten, Salienz, Verfall | [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md) | 16 |
+| Gedächtnis (`GED`) — KZG, LZG, Promotion, Entitäten, Salienz, Verfall | [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md) | 17 |
 | Hintergrund (`HGR`) — Pixie, Queue, Agenten, Recherche, Zustellung | [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md) | 21 |
 | Charakter (`CHA`) — Profile, Räder, Haltung, Emotion, Destillation | [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md) | 34 |
 | Antwortpfad (`ANT`) — Gesprächsvektor, Responder, Verfasser, Prompts | [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md) | 48 |
