@@ -393,6 +393,31 @@ class OfferCandidate:
     reason: str
 
 
+def _service_acted(result: object) -> bool:
+    """Hat dieser Dienst im Turn gehandelt oder gefragt?
+
+    Vorbedingung: keine; `result` ist ein AgentResult oder ein dict.
+    Nachbedingung: False genau dann, wenn kein Status gesetzt ist oder der
+        Dienst ablehnte, weil die Aeusserung **kein Auftrag an ihn** war
+        (`Korrektur.kein_auftrag`). Jeder andere Ausgang — abgeschlossen,
+        Rueckfrage, Fehler, Ablehnung in der Sache — zaehlt als gehandelt.
+        `[gelesen 19.09.2026]` Vorher zaehlte jede Ablehnung: Seit die
+        Notizen-Vorpruefung Bedarfsaussagen ablehnt, bot Nova auf sie nie an.
+    Fehlerfaelle: keine.
+    """
+    ist_dict: bool = isinstance(result, dict)
+    status = getattr(result, "status", None) or (result.get("status") if ist_dict else None)
+    if not status:
+        return False
+    if status != "abgelehnt":
+        return True
+    korrektur = getattr(result, "korrektur", None) or (result.get("korrektur") if ist_dict else None)
+    kein_auftrag = getattr(korrektur, "kein_auftrag", None)
+    if kein_auftrag is None and isinstance(korrektur, dict):
+        kein_auftrag = korrektur.get("kein_auftrag")
+    return kein_auftrag is not True
+
+
 def offer_candidate(
     sachlage:          object,
     verdict:           object,
@@ -405,12 +430,18 @@ def offer_candidate(
     Nachbedingung: der erste akute Gegenstand, den die gerechnete Naehe an den
         Zettel eines schreibenden Dienstes (Timeline, Notizen) stellt — sonst
         ein Kandidat ohne Namen mit dem Grund. **Kein Angebot**, wenn in diesem
-        Turn schon ein Dienst lief (dann ist gehandelt oder gefragt worden) oder
-        ein Auftrag laeuft: Anbieten ist fuer das, worum niemand gebeten hat.
+        Turn schon ein Dienst gehandelt oder gefragt hat (`_service_acted` —
+        eine Ablehnung als Nicht-Auftrag zaehlt nicht) oder ein Auftrag
+        laeuft — es sei denn, jeder gefragte Dienst lehnte ihn als
+        Nicht-Auftrag ab: Anbieten ist fuer das, worum niemand gebeten hat.
     """
-    if management_action:
+    ergebnisse: list = list(agent_results or [])
+    # Ein Auftrag, den jeder gefragte Dienst als Nicht-Auftrag abgelehnt hat,
+    # laeuft nicht: Der Router stellte zu, aber niemand hat gebeten.
+    nur_kein_auftrag: bool = bool(ergebnisse) and not any(_service_acted(r) for r in ergebnisse)
+    if management_action and not nur_kein_auftrag:
         return OfferCandidate("", "", "", "auftrag_laeuft")
-    if any(getattr(r, "status", None) or (isinstance(r, dict) and r.get("status")) for r in agent_results or []):
+    if any(_service_acted(r) for r in ergebnisse):
         return OfferCandidate("", "", "", "dienst_lief")
     if not isinstance(sachlage, dict) or not isinstance(verdict, dict) or verdict.get("ergebnis") != "gerechnet":
         return OfferCandidate("", "", "", "keine_naehe")

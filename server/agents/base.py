@@ -153,6 +153,10 @@ class Korrektur:
     befund: str      # Was am Auftrag nicht stimmt, in der Sprache des Auftraggebers
     beleg: str       # Welcher Bestandsteil widerspricht
     vorschlag: str   # Was der Dienst stattdessen taete, als ausfuehrbarer Auftrag
+    # True: Die Ablehnung sagt "das war kein Auftrag an mich" (die Klassifikation
+    # lehnte ab), nicht "der Auftrag ist falsch". Dann ist nichts gehandelt und
+    # nichts gefragt — Nova darf die Sache anbieten (utils/offers.py).
+    kein_auftrag: bool = False
 
 
 @dataclass

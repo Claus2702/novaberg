@@ -94,6 +94,7 @@ def dispatch_charakter_identitaet(state: dict) -> dict:
             status="abgelehnt",
             korrektur=Korrektur(
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
+                kein_auftrag=True,
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=(
                     "Beschreibe den Zug als dauerhafte Eigenschaft, etwa 'sei grundsaetzlich "

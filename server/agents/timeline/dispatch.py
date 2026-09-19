@@ -109,6 +109,7 @@ def dispatch_timeline(state: dict) -> dict:
             status="abgelehnt",
             korrektur=Korrektur(
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
+                kein_auftrag=True,
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=REJECTION_SUGGESTION,
             ),

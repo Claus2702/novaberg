@@ -63,10 +63,18 @@ def _build_task_block(
     # koennte dem Nutzer nichts sagen ausser "ging nicht". Der Weg fuehrt
     # nach `abgelehnt`, wo Befund und Vorschlag mitkommen — nicht in einen
     # Block fuer den blanken Fall.
+    # Eine Ablehnung als Nicht-Auftrag (`Korrektur.kein_auftrag`, 19.09.2026)
+    # ist keine Auskunft an den Nutzer: Er hat nichts verlangt, also gibt es
+    # nichts zu berichten. Sie bildet keinen Block und schneidet den Kontext
+    # nicht — der Turn laeuft als Gespraech weiter, mit Verfasser und Angebot.
+    # `[gelesen 19.09.2026]` Vorher antwortete Nova auf "Ich brauche noch
+    # Mehl" mit dem Vorschlag der Notizen-Klassifikation ("Sage, welche Liste
+    # gemeint ist ...").
     refusals: list = [
         r for r in agent_results
         if hasattr(r, "status") and r.status == "abgelehnt"
         and getattr(r, "korrektur", None) is not None
+        and not getattr(r.korrektur, "kein_auftrag", False)
     ]
     inquiries: list = [
         r for r in agent_results

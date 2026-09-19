@@ -107,6 +107,7 @@ def dispatch_notizen(state: dict) -> dict:
             status="abgelehnt",
             korrektur=Korrektur(
                 befund="Das habe ich nicht als Auftrag an mich verstanden.",
+                kein_auftrag=True,
                 beleg=f"Klassifikation: {grund}",
                 vorschlag=(
                     "Sage, welche Liste gemeint ist und was hinein oder heraus soll, etwa 'setz "

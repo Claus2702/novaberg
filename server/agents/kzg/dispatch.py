@@ -54,6 +54,16 @@ def abgelehnte_ausgaenge(state: dict) -> list[dict]:
     for index, r in enumerate(ergebnisse):
         if getattr(r, "status", "") != "abgelehnt":
             continue
+        if getattr(getattr(r, "korrektur", None), "kein_auftrag", False):
+            # Eine Ablehnung als Nicht-Auftrag (19.09.2026) ist kein Ausgang:
+            # Niemand hat etwas verlangt, also hat auch niemand etwas
+            # abgelehnt. Als "hat den Auftrag ABGELEHNT" im Kern waere sie
+            # eine falsche Tatsache — der Turn lief als Gespraech weiter.
+            logger.info(
+                "KZG-Ausgaenge: '%s' lehnte als Nicht-Auftrag ab — kein Ausgang",
+                getattr(r, "agent_name", "?"),
+            )
+            continue
         if any(getattr(spaeter, "status", "") == "abgeschlossen" for spaeter in ergebnisse[index + 1:]):
             logger.info(
                 "KZG-Ausgaenge: '%s' lehnte ab, ein spaeterer Dienst schloss ab — "

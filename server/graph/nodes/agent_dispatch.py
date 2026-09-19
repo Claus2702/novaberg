@@ -72,6 +72,9 @@ def _handlung_protokollieren(
         # Eintrag in der Fachtabelle war.
         "initiator": reiz_herkunft(state),
         "status":    getattr(letztes, "status", "unbekannt") if letztes else "ohne_ergebnis",
+        # Eine Ablehnung als Nicht-Auftrag von einer in der Sache trennen —
+        # ohne dieses Feld kann keine spaetere Messung es (19.09.2026).
+        "kein_auftrag": bool(getattr(getattr(letztes, "korrektur", None), "kein_auftrag", False)),
         # Der Auftrag im Wortlaut, gekappt: Ohne ihn ist im Nachhinein nicht
         # zu sehen, worauf der Agent reagiert hat — und genau das ist die
         # Frage bei einem Eintrag, den niemand erwartet hat.

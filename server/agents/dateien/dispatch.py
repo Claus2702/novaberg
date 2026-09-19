@@ -150,6 +150,7 @@ def _ablehnung(ergebnis_state: dict) -> AgentResult:
         status="abgelehnt",
         korrektur=Korrektur(
             befund="Das habe ich nicht als Frage an die abgelegten Unterlagen verstanden.",
+            kein_auftrag=True,
             beleg=f"Klassifikation: {grund}",
             vorschlag=(
                 "Wenn es in einer Datei stehen soll, nenn mir den Dateinamen "

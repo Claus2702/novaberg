@@ -201,6 +201,7 @@ def _ablehnung(ergebnis_state: dict) -> AgentResult:
         status="abgelehnt",
         korrektur=Korrektur(
             befund="Das habe ich nicht als Auftrag ueber ein Verzeichnis verstanden.",
+            kein_auftrag=True,
             beleg=f"Klassifikation: {grund}",
             vorschlag=(
                 f"Nenn mir das Verzeichnis als Ganzes, etwa 'du darfst in "
