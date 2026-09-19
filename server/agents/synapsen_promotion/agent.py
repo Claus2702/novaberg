@@ -34,7 +34,7 @@ Ergebnis daraus entfernt; siehe `invoke`.
 
 import json
 import logging
-from datetime import datetime, timezone
+import math
 
 from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.wissen_rueckweg.herkunft import material_waehlen
@@ -60,6 +60,36 @@ logger = logging.getLogger("ki_server.agents.synapsen_promotion")
 # Forensik-Markierung fuer pipeline_log (K5): quelle = Produzent, node = Stufe.
 QUELLE: str = "pixie"
 NODE: str = "synapsen_promotion"
+
+
+def _kzg_erstellt_am_lesen(roh: str) -> float | None:
+    """Liest den Anlagezeitpunkt eines KZG-Eintrags aus dem Hash-Feld `erstellt_am`.
+
+    Der Wert wird zu `lzg_knoten.kzg_erstellt_am` (`NOT NULL`). Bis zum
+    19.09.2026 stand an seiner Stelle still *jetzt*, sobald das Feld fehlte
+    oder unlesbar war — ein Knoten mit erfundenem Datum, der aussah wie jeder
+    andere. Diese Funktion erfindet nichts: Was kein Zeitpunkt ist, wird None,
+    und der Aufrufer verwirft den Eintrag sichtbar.
+
+    Vorbedingung: keine — `roh` ist der Text aus dem Hash, auch leer.
+    Nachbedingung: eine endliche Zahl groesser null (Unix-Sekunden) oder None.
+    Fehlerfaelle: leer, nicht als Zahl lesbar, `nan`, unendlich oder <= 0
+        ergibt None. `float()` nimmt `nan` und `inf` an; beides ist kein
+        Zeitpunkt, und `to_timestamp` machte aus `inf` ein `infinity`.
+
+    Returns:
+        Den Zeitpunkt in Unix-Sekunden oder None.
+    """
+    # ── Verarbeitung ────────────────────────────
+    try:
+        wert: float = float(roh)
+    except ValueError:
+        return None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not math.isfinite(wert) or wert <= 0:
+        return None
+    return wert
 
 
 class SynapsenPromotionAgent(BaseAgent):
@@ -402,6 +432,21 @@ class SynapsenPromotionAgent(BaseAgent):
             )
             return
 
+        # ── Vorbedingung 4: Anlagezeitpunkt lesbar ──────
+        # Kein Ersatzwert: Ein Knoten mit erfundenem Datum sieht aus wie ein
+        # echter. Verworfen wird wie bei Vorbedingung 2 und 3 — der Eintrag
+        # verlaesst die Arbeitsliste, denn ein unlesbarer Wert wird durch
+        # erneutes Zustellen nicht lesbar.
+        erstellt_am_raw: str = _hget("erstellt_am")
+        kzg_erstellt_am: float | None = _kzg_erstellt_am_lesen(erstellt_am_raw)
+        if kzg_erstellt_am is None:
+            self._fehler(
+                user_id, aufgabe, kzg_key, span_id,
+                f"KZG-Key '{kzg_key}': Feld 'erstellt_am' fehlt oder ist kein "
+                f"Zeitpunkt (Rohwert {erstellt_am_raw[:80]!r}) — verworfen",
+            )
+            return
+
         # ── KZG-Felder laden (nach Validierung) ──────
         character_id: str = _hget("character_id") or ASSISTANT_USER_ID
         beobachter: str = _hget("beobachter") or "user"
@@ -431,18 +476,6 @@ class SynapsenPromotionAgent(BaseAgent):
         # gewicht_decay = gewicht_absolut. Dass roh > CAP auftreten kann, ist
         # damit ausgeschlossen (KZG-GEWICHT-ABSOLUT-CEILING).
         salienz: float = float(_hget("salienz", "0"))
-
-        # kzg_erstellt_am ist ein Unix-Timestamp (Float). knoten_anlegen wandelt
-        # ihn per to_timestamp in TIMESTAMPTZ. Fallback: jetzt.
-        erstellt_am_raw: str = _hget("erstellt_am")
-        try:
-            kzg_erstellt_am: float = (
-                float(erstellt_am_raw)
-                if erstellt_am_raw
-                else datetime.now(timezone.utc).timestamp()
-            )
-        except ValueError:
-            kzg_erstellt_am = datetime.now(timezone.utc).timestamp()
 
         logger.info(
             f"Synapsen-Promotion: Paar={user_id}:{character_id}, Beobachter={beobachter}, "
