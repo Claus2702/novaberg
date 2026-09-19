@@ -347,7 +347,7 @@ def _resonanz_kontext_laden(state: ConversationState) -> str:
 # WARUM SIE SCHLAEFT (gemessen 28.07.2026):
 #   Die `fakten`-Tabelle hat 0 Zeilen und keinen Produzenten. Die Tripel-
 #   Extraktion wurde mit Synapsen P4 aus der Promotion herausgenommen —
-#   Festlegung K2 in novaberg-memory-synapsen-p4-entscheidungen_k.md:
+#   Festlegung K2 in novaberg-memory-synapsen_e.md, Abschnitt G:
 #   "Tripel-Extraktion entfaellt komplett in P4 ... Funktionalitaets-Bruch
 #   zwischen P4 und M2.5b wird akzeptiert (keine neuen Tripel, ...,
 #   eingefrorener Fakten-Bestand)."

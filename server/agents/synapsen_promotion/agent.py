@@ -7,7 +7,7 @@ Hat den Cluster-Aggregat-Pfad des PromotionAgent abgeloest; jener ist mit
 dem Codeschloss P9 aus dem Repositorium entfernt.
 
 Bewusste Abweichungen vom alten PromotionAgent (Entscheidungs-Doku
-novaberg-memory-synapsen-p4-entscheidungen_k.md):
+novaberg-memory-synapsen_e.md, Abschnitt G "Die Festlegungen zu P4"):
   - Keine LLM-Calls, keine Fakten-Extraktion, kein FaktenManager (K2). Die
     Magnet-Felder entitaet_ids/timeline_id liegen seit P3 (magnete_aufloesen)
     fertig im KZG-Eintrag.
