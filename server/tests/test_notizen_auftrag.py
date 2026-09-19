@@ -34,6 +34,22 @@ class FachabteilungTest(unittest.TestCase):
         self.assertIn("Aussage ueber einen Bedarf, keine Bitte", rejected)
         self.assertIn("Aussage ueber eine Sache, keine Bitte", rejected)
 
+    def test_die_ergaenzung_haengt_an_der_laufenden_liste_nicht_am_satzbau(self) -> None:
+        """Regel A ist ersetzt durch eine Ausnahme fuer die laufende Liste (19.09.2026).
+
+        `[gemessen 19.09.2026]` labor/2026-09-18_notizen_vorpruefung/ und
+        labor/2026-09-19_notizen_liste/, 21 Faelle: Mit dem Beispiel "Wir
+        brauchen auch Erdbeeren" = add_content schrieb die Klassifikation 15 von
+        27 Bedarfsaussagen ohne Liste; ohne es 3 von 27, aber die Ergaenzung
+        einer laufenden Liste fiel auf 18 von 21. Mit der Ausnahme in der
+        Vorpruefung: 6 von 27, Listen 21 von 21.
+        """
+        prompt = _build_classify_prompt(None, None)
+        self.assertNotIn('"Wir brauchen auch Erdbeeren" (wenn vorher eine Liste besprochen wurde)', prompt)
+        vorpruefung = prompt[prompt.index("VORPRUEFUNG"):prompt.index("Beispiele fuer rejected:")]
+        self.assertIn("gerade etwas auf eine Liste setzen lassen", vorpruefung)
+        self.assertIn("Ergaenzung\ndieser Liste", vorpruefung)
+
     def test_die_beispiele_stehen_in_keiner_messreihe(self) -> None:
         prompt = _build_classify_prompt(None, None)
         for messfall in ("Mehl und Hefe", "Reifengroesse", "Zaehlerstand", "Erdnuesse", "Spuelmittel", "Hausmeister", "Muellbeutel"):

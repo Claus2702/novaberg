@@ -16,6 +16,9 @@ zu erstellen, anzuzeigen, zu aendern oder zu loeschen?
 Gespraechsbeitraege, Kommentare ueber Listen und Redewendungen
 sind KEINE Auftraege. Eine Aussage ueber einen Bedarf oder eine Sache ist
 KEIN Auftrag — festgehalten wird nur, worum der User ausdruecklich bittet.
+AUSNAHME: Hat der User im Verlauf gerade etwas auf eine Liste setzen lassen,
+ist eine Bedarfsaussage ("X fehlt auch", "wir brauchen auch X") eine Ergaenzung
+dieser Liste → add_content.
 Wenn KEIN Auftrag erkennbar → action: "rejected"
 Im Zweifel: rejected.
 
@@ -45,7 +48,6 @@ AKTIONEN:
 "add_content" — User will INHALT zu einer bestehenden Notiz HINZUFUEGEN.
   Signale: "setz drauf", "fueg hinzu", "nimm auf", "pack auf die Liste"
   AUCH implizite Ergaenzungen:
-  "Wir brauchen auch Erdbeeren" (wenn vorher eine Liste besprochen wurde) = add_content
   "Ach, und Butter!" (Bezug auf vorherige Liste aus dem Verlauf) = add_content
 
 "remove_content" — User will einzelne EINTRAEGE aus einer Notiz ENTFERNEN.
