@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 17. September 2026, 19:40 UTC — **`ENRICH-NULLTERM-IST-EINE-ZAHL` aufgenommen und behoben** (ein Paar ohne aktive Ziele verlor jeden Turn). Davor 17. September 2026, 10:58 UTC — **`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` aus dem Register übernommen, behoben mit Scheibe 12 D1.** Davor 13. September 2026, 15:55 UTC — **Nachtrag an `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` nach der zweiten Kontrolle**: Der Vergleichsschluessel der Form schrieb mit `lower`, die Datenbank mit `casefold`, und die Ansprueche des Frame-Aufloesers liefen an der Wertpruefung vorbei; beides behoben, 31 Zeugen, Suite 3663 gruen. Davor 15:11 UTC — **`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` umgezogen**, am Tag nach seinem Befund: Die Formpruefung der Sachlage haelt jedes Objektfeld, auch die vorige Blase beim Laden; nach der Entscheidung des Eigentuemers ist eine Eigenschaft ohne Wert offen, nichts mit Aussage wird verworfen. 29 Zeugen, Suite 3656 gruen, im Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen. Davor 12. September 2026, 23:22 UTC — **Nachtrag an `ZUORDNUNG-ANDERER-ABSENDER-FREMD`**: die Ausfallmeldung nennt ihre Kennungen, der Client gibt die Frage frei. Davor 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
-**Inhalt:** **58 abgeschlossene Eintraege mit eigenem Abschnitt** (56 + `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` und `ENRICH-NULLTERM-IST-EINE-ZAHL` am 17.09.2026) plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
+**Stand:** 19. September 2026, 15:59 UTC — **`THEMENZEILEN-NUR-IM-INSERT-ZWEIG` aus dem Register übernommen** (behoben am 19.08.2026, stand dort ohne Überschrift). Davor 17. September 2026, 19:40 UTC — **`ENRICH-NULLTERM-IST-EINE-ZAHL` aufgenommen und behoben** (ein Paar ohne aktive Ziele verlor jeden Turn). Davor 17. September 2026, 10:58 UTC — **`PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` aus dem Register übernommen, behoben mit Scheibe 12 D1.** Davor 13. September 2026, 15:55 UTC — **Nachtrag an `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` nach der zweiten Kontrolle**: Der Vergleichsschluessel der Form schrieb mit `lower`, die Datenbank mit `casefold`, und die Ansprueche des Frame-Aufloesers liefen an der Wertpruefung vorbei; beides behoben, 31 Zeugen, Suite 3663 gruen. Davor 15:11 UTC — **`LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` umgezogen**, am Tag nach seinem Befund: Die Formpruefung der Sachlage haelt jedes Objektfeld, auch die vorige Blase beim Laden; nach der Entscheidung des Eigentuemers ist eine Eigenschaft ohne Wert offen, nichts mit Aussage wird verworfen. 29 Zeugen, Suite 3656 gruen, im Labor 0 Abstuerze, zwei Betriebsturns durchgelaufen. Davor 12. September 2026, 23:22 UTC — **Nachtrag an `ZUORDNUNG-ANDERER-ABSENDER-FREMD`**: die Ausfallmeldung nennt ihre Kennungen, der Client gibt die Frage frei. Davor 22:54 UTC — **`ZUORDNUNG-ANDERER-ABSENDER-FREMD` neu und abgelegt**, am Tag seines Befundes: Eine offene Frage im Desktop-Client machte jede Antwort an einen anderen Absender zu `fremd`; 16 falsche Warnungen, gemessen am Server-Log, behoben und am echten Handler gegen HEAD nachgemessen. Davor 12. September 2026 — **`GV-LAENGE-RUNDUNG-ZUR-GERADEN` umgezogen**, am Tag seiner Behebung: `_vektor_laenge_berechnen` rundet zur naechsten statt zur geraden Zahl, 68 von 1434 Rohturns gewinnen einen Schritt, die Quote des Strategie-Tors bleibt bei 36,6 %. Davor 11. September 2026 — `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` am Tag seines Befundes behoben und abgelegt: Der Pausenschalter hielt den Erzeuger an und nicht die Auslieferung; bei bestaetigtem `paused: true` liefen fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer Messreihe. Danach 0 Fremdturns in 20 Turns. Davor 9. September 2026 — `GRAVITATIONSTERM-OHNE-OBERGRENZE` am Tag seines Befundes behoben und abgelegt
+**Inhalt:** **59 abgeschlossene Eintraege mit eigenem Abschnitt** (56 + `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` und `ENRICH-NULLTERM-IST-EINE-ZAHL` am 17.09.2026 + `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` am 19.09.2026) plus **74 historische Kurzeintraege in Tabellenform** — behoben, geschlossen, gegenstandslos oder verworfen. `[gemessen]` 30.08.2026. **Die frueheren 123 waren die Summe beider Formen**, ohne dass der Kopf das sagte; deshalb stehen sie jetzt getrennt.
 
 > **Die Formregel vom 30.08.2026** (`novaberg-bugs.md`, Abschnitt *Die Form eines Eintrags*) verlangt
 > fuer jeden Eintrag einen eigenen Abschnitt. **Der Bestand hier wird dafuer nicht umgebaut:** Bei den
@@ -11,6 +11,29 @@
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---
+
+## 19.08.2026, nachts — die Themenzeilen fehlten auf dem Verstärkungsweg
+
+### `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` — die Themenzeilen fehlten auf dem Verstärkungsweg
+
+**Zustand:** ✅ behoben am 19.08.2026 · **Kategorie:** WIS · aus dem offenen Register übernommen am 19.09.2026, weil der Eintrag dort ohne Überschrift und schon geschlossen stand
+
+**`THEMENZEILEN-NUR-IM-INSERT-ZWEIG`** — gefunden und im selben Zug behoben.
+
+**Befund.** `AutonomousWissenRepository.speichern` hat zwei Zweige: Ein neuer Dateipfad wird angelegt, ein vorhandener **verstärkt** (`haeufigkeit` steigt, Gewichte wachsen). Die Themenzeilen nach Konvention 4 entstanden nur im Anlege-Zweig. Ein Eintrag mit dem Themenfeld `Alpha, Beta`, der später mit `Alpha, Gamma` verstärkt wird, behielt `Beta`.
+
+**Warum das mehr ist als ein fehlendes Update:** Die Bibliothek hätte eine Ausarbeitung über ein Thema gefunden, das sie **nicht mehr behandelt** — ein Treffer, der auf einen Text zeigt, in dem das Gesuchte nicht steht. Das ist die Sorte Fehler, die als richtige Antwort aussieht.
+
+**Reproduktionsweg.** Zweimal `speichern()` auf denselben `dateipfad`, beim zweiten Mal ein anderes Themenfeld; danach `SELECT thema FROM autonomous_wissen_thema WHERE wissen_id = …`.
+
+**Wie er gefunden wurde — die Kette ist der eigentliche Eintrag.** Die Gegenprobe hebelte `themen_zerlegen` aus und sagte 12 rote Tests voraus; **gezählt wurden 9**. Die drei fehlenden waren die Live-Zusicherungen der Schema-Datei: Sie legen ihre Themenzeilen per direktem `INSERT` an und umgehen den Schreibpfad — **kein Zeuge prüfte, dass `speichern()` sie erzeugt**. Der daraufhin gebaute Zeuge fand den Defekt sofort.
+
+> Weder die Suite (1985 grün) noch die Selbstprüfung des Bauenden hatten ihn. Die Abweichung *zwischen vorhergesagter und gezählter Zahl* hat ihn geliefert — nicht die Zahl selbst.
+
+**Geschlossen, wenn** — bereits erfüllt: Beide Zweige ziehen die Themenzeilen nach, zwei Zeugen decken Anlegen und Verstärken ab, Suite `Ran 1987 tests — OK`.
+
+---
+
 
 ## 17.09.2026 — ein Paar ohne Ziele verlor jeden Turn
 
