@@ -1,10 +1,25 @@
 # Novaberg — Pixie-Plugin-Architektur (Konzept)
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Pixie-Plugin-Architektur — User-Auftraege an Pixie-Agenten
-**Stand:** 29. April 2026, Chat 70
-**Pfad:** novaberg/docs/novaberg-pixie-plugin_k.md
-**Quellen:** Chat 70 (Architektur-Diskussion)
+**Absicht:** Der Nutzer kann Pixie einen Auftrag erteilen (*„Recherchiere X“*): Der Router erkennt ihn, Nova bestätigt sofort, und der Agent arbeitet ihn asynchron in mehreren Durchläufen ab, mit Zwischenmeldungen und jederzeit abbrechbar — derselbe Agent, der sonst im Hintergrund läuft.
+**Stand:** 15. August 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
+**Umsetzung:** Featureliste *Pixie-Plugin — der Nutzer beauftragt Pixie* ⚫ — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-pixie-plugin_t.md`](novaberg-pixie-plugin_t.md) · [`novaberg-pixie-plugin_b.md`](novaberg-pixie-plugin_b.md) · [`novaberg-pixie-plugin_e.md`](novaberg-pixie-plugin_e.md) · `_m`: keiner
+**Entschieden:** 0 · **Offen beim Meister:** 0 (Liste in [`novaberg-pixie-plugin_e.md`](novaberg-pixie-plugin_e.md))
+
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-pixie-plugin_k.md §2` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-pixie-plugin_t.md`](novaberg-pixie-plugin_t.md), `_b` ist [`novaberg-pixie-plugin_b.md`](novaberg-pixie-plugin_b.md), `_e` ist [`novaberg-pixie-plugin_e.md`](novaberg-pixie-plugin_e.md). `_m`: keiner.
+
+| § | Datei |
+|---|---|
+| 1 | `_k` |
+| 2 · 2.1 · 2.2 | `_k` |
+| 3 · 3.1 · 3.2 · 3.3 | `_t` |
+| 4 · 4.1 · 4.2 · 4.3 | `_t` |
+| 5 | `_k` |
+| 6 · 6.1 · 6.2 | `_b` |
+| 7 | `_k` |
+| Verwandte Dokumente, ohne Nummer | `_k` |
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Quellen) | `_e` (Abschnitt F) |
+| Entschieden, Offen beim Meister, Nachträge, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 ---
 
@@ -62,105 +77,6 @@ Der Agent selbst ist identisch. Derselbe Code, dieselben Tools, dieselben Dateie
 
 ---
 
-## 3. Architektur
-
-### 3.1 Queue-Eintrag fuer User-Auftraege
-
-```json
-{
-    "aufgabe": "recherche",
-    "modus": "auftrag",
-    "themen": "Zwiebelanbau",
-    "kern": "User will umfassende Recherche zum Thema Zwiebelanbau",
-    "context_user": "meister",
-    "scope": "umfassend"
-}
-```
-
-Feld `modus: "auftrag"` signalisiert dem Agenten: Mehrere Durchlaeufe, Zwischenmeldungen, breiterer Scope.
-
-### 3.2 Dispatch vom Router
-
-Neuer Pfad im Router-Output: Wenn die Domain ein Pixie-Agent ist, schreibt der Graph einen Queue-Eintrag statt einen Agent-Dispatch aufzurufen.
-
-```python
-# In graph/nodes/router.py (konzeptionell)
-if domain in PIXIE_DOMAINS:
-    # Asynchron: Queue-Eintrag schreiben
-    queue_eintrag = {
-        "aufgabe": domain,
-        "modus": "auftrag",
-        "themen": extrahierte_themen,
-        "kern": zusammenfassung,
-        "context_user": user_id
-    }
-    shadow_queue_push(user_id, queue_eintrag)   # seit 15.08.2026: Zeile
-                                                # in shadow_auftrag, und
-                                                # prioritaet ist Pflicht
-    
-    # Responder bekommt Hinweis fuer sofortige Antwort
-    return {"agent_result": AgentResult(
-        agent_name="pixie_dispatch",
-        ergebnis="Auftrag angenommen. Recherche laeuft im Hintergrund.",
-        status="angenommen"
-    )}
-```
-
-Der Responder sagt dem User sofort: "Ich recherchiere das fuer dich." Der Pixie-Router nimmt den Queue-Eintrag auf und leitet an den richtigen Agenten weiter.
-
-### 3.3 Erweiterbarkeit
-
-Neue Pixie-Auftraege = neue Domains im Router + neuer Agent-Ordner. Beispiele fuer zukuenftige Pixie-Plugins:
-
-| Domain | Agent | Beschreibung |
-|--------|-------|-------------|
-| `recherche` | RechercheAgent | Breite Web-Recherche |
-| `vertiefung` | VertiefungsAgent | Tiefe Recherche zu bekanntem Thema |
-| `zusammenfassung` | ZusammenfassungsAgent (zukuenftig) | Konsolidierung mehrerer Wissen-Dateien |
-| `skill` | SkillAgent (Epic 10, zukuenftig) | Code-Skill generieren via Claude API |
-
-Jeder Agent entscheidet selbst, wie viele Durchlaeufe er im Auftragsmodus faehrt. Der Router kennt nur die Domain, nicht die interne Logik — "Die Sekretaerin diagnostiziert nicht."
-
----
-
-## 4. Responder-Integration
-
-### 4.1 Sofortige Antwort
-
-Wenn der Router einen Pixie-Auftrag dispatcht, muss der Responder dem User sofort antworten — der User wartet nicht 15 Minuten auf eine Recherche:
-
-```
-User: "Recherchiere Zwiebelanbau fuer mich, umfassend."
-Nova: "Das mache ich! Gib mir etwas Zeit, das ist ein groesseres Thema.
-       Ich melde mich mit Ergebnissen."
-```
-
-Das `AgentResult` mit `status="angenommen"` gibt dem Responder den Hinweis, eine Bestaetigung zu formulieren.
-
-### 4.2 Zwischenmeldungen
-
-Im Auftragsmodus schickt der Agent nach jedem Durchlauf einen Stack-Push:
-
-```
-[Durchlauf 1 abgeschlossen]
-Nova: "Erster Ueberblick steht — Sorten, Zeitplanung, Grundlagen.
-       Ich vertiefe jetzt Hochbeet-Bau und Bodenqualitaet."
-
-[Durchlauf 3 abgeschlossen]
-Nova: "Schaedlinge und Begleitpflanzen sind drin.
-       Noch Ernte und Lagerung, dann konsolidiere ich."
-
-[Alle Durchlaeufe abgeschlossen]
-Nova: "Fertig! Die Recherche liegt in Obsidian bereit —
-       15 Seiten von Sortenauswahl bis Mischkultur."
-```
-
-### 4.3 Abbruch durch User
-
-Der User kann jederzeit sagen "Das reicht" oder "Stopp die Recherche." Der Router erkennt das als Abbruch-Signal und schreibt einen Queue-Eintrag mit `aufgabe: "abbruch"`. Der Agent beendet den aktuellen Durchlauf, speichert den bisherigen Stand, und meldet zurueck.
-
----
-
 ## 5. Abgrenzung zu User-Plugins
 
 | Aspekt | User-Plugin | Pixie-Plugin |
@@ -173,28 +89,6 @@ Der User kann jederzeit sagen "Das reicht" oder "Stopp die Recherche." Der Route
 | **Schreibziel** | PostgreSQL (Timeline, Notizen, etc.) | Dateisystem + pgvector |
 
 User-Plugins sind "Sachbearbeiter" — schnelle, transaktionale Operationen. Pixie-Plugins sind "Fachabteilungen" — gruendliche, zeitintensive Auftraege. Beide sind Plugins im selben System, angesteuert durch denselben Router.
-
----
-
-## 6. Implementierung
-
-### 6.1 Aenderungen
-
-| Datei | Aenderung |
-|-------|---------|
-| `graph/nodes/router.py` | Neue Domains (`recherche`, `vertiefung`) erkennen, Queue-Dispatch |
-| `services/pixie/router.py` | `modus: "auftrag"` auswerten, Scope an Agent weitergeben |
-| `agents/recherche/agent.py` | Auftragsmodus: Iterations-Loop, Zwischenmeldungen |
-| Router-Prompt | Neue Domains beschreiben: "Wenn der User eine umfassende Recherche will..." |
-| `AGENT.md` pro Agent | Beschreibt beide Modi (Hintergrund + Auftrag) |
-
-### 6.2 Reihenfolge
-
-1. Router-Prompt erweitern (Domain-Erkennung)
-2. Queue-Dispatch im Graph-Router
-3. Auftragsmodus im RechercheAgent (Iterations-Loop)
-4. Testen mit "Recherchiere X fuer mich"
-5. Spaeter: VertiefungsAgent, weitere Pixie-Plugins
 
 ---
 

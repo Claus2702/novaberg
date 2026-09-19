@@ -1,8 +1,24 @@
 # novaberg-pixie-graph-merge_k.md
 
-**Stand:** 8. Mai 2026, Chat 79
-**Status:** Konzept
-**Abhaengigkeiten:** Event-Modell (Chat 60), CharacterGraph (Pfad 2), Pixie-Heartbeat (Chat 33+)
+**Absicht:** Was Pixie im Hintergrund erarbeitet, erreicht den Nutzer durch denselben CharacterGraph wie eine Chat-Antwort — mit Novas Identität, Stimme und Qualitätsfiltern —, ohne den Chat-Pfad zu blockieren; reine Daten-Agenten bleiben draußen.
+**Stand:** 25. August 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
+**Umsetzung:** Featureliste *PixieGraph* ⚫ · *Stapel + Zustellung (Shadow Delivery)* 🔴 — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-pixie-graph-merge_t.md`](novaberg-pixie-graph-merge_t.md) · [`novaberg-pixie-graph-merge_b.md`](novaberg-pixie-graph-merge_b.md) · [`novaberg-pixie-graph-merge_e.md`](novaberg-pixie-graph-merge_e.md) · `_m`: keiner
+**Entschieden:** 0 · **Offen beim Meister:** 0 (Liste in [`novaberg-pixie-graph-merge_e.md`](novaberg-pixie-graph-merge_e.md))
+
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-pixie-graph-merge_k.md §2` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-pixie-graph-merge_t.md`](novaberg-pixie-graph-merge_t.md), `_b` ist [`novaberg-pixie-graph-merge_b.md`](novaberg-pixie-graph-merge_b.md), `_e` ist [`novaberg-pixie-graph-merge_e.md`](novaberg-pixie-graph-merge_e.md). `_m`: keiner.
+
+| § | Datei |
+|---|---|
+| 1 | `_k` |
+| 2 · 2.1 · 2.2 · 2.3 · 2.4 | `_t`, mit dem Kasten *„Abweichung, gebaut …“* am Kopf von §2 an seiner Stelle |
+| 3 | `_b` |
+| 4 | `_k` |
+| 5 (Phase 0 bis Phase 4) | `_b` |
+| 6 · 6.1 · 6.2 · 6.3 · 6.4 · 6.5 | `_e` (Abschnitt D) |
+| 7 | `_k` |
+| bisheriger Kopf (Stand, Status, Abhaengigkeiten) | `_e` (Abschnitt F) |
+| Entschieden, Offen beim Meister, verworfene Varianten, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 ---
 
@@ -22,100 +38,6 @@ Pixie-Agenten (Recherche, Vertiefung, Traeumen) laufen heute durch einen eigenen
 
 Ergebnis (beobachtet Chat 79): Recherche-Destillation klingt wie ein Wikipedia-Referat ("Es ist faszinierend..."), produziert Halluzinationen ("Spalte" statt "Spuele"), erzeugt Themen-Spiralen (RECH-SPIRAL), und hat keinen Bezug zum User oder zur Beziehung.
 
-## 2. Loesung: PixieGraph als zweite CharacterGraph-Instanz
-
-> **Abweichung, gebaut Chat 110.** Umgesetzt ist **nicht** die zweite Instanz auf CPU, sondern der Weg ueber die vorhandene Event-Infrastruktur in **dieselbe** Instanz: Die Shadow-Delivery feuert ein Event mit `source="character"`, der Event-Consumer faehrt den regulaeren CharacterGraph.
->
-> Warum so: Der Weg brauchte keinen neuen Graphen, keinen zweiten Provider und keine zweite Registrierung — nur eine `turn_id` und ein Event. Was der Entwurf mit einer eigenen Instanz erreichen wollte (Chat-Pfad nicht blockieren), leistet hier der Event-Consumer, der ohnehin ausserhalb des Request-Threads laeuft.
->
-> **Was der Entwurf damit offen laesst:** Die Trennung GPU/CPU nach Pfad ist nicht gebaut. Ein Impuls belegt dasselbe Chat-Modell wie eine Nutzer-Antwort. Ob das reicht, ist nicht gemessen — der Abschnitt unten beschreibt insofern weiterhin einen moeglichen Ausbau, keinen erledigten Stand.
-
-Pixie-Themen durchlaufen **denselben Graphen** wie Chat-Antworten — aber als eigene Instanz auf CPU, damit der Chat-Pfad (GPU) nie blockiert wird.
-
-```
-Chat-Pfad (Pfad 2):
-  CharacterGraph-Instanz auf GPU
-  Event-Source: "user"
-  Agenten: Timeline, Notizen, Fakten, ...
-  Provider: gemma4-gpu (Port 11434)
-
-Pixie-Pfad (Pfad 3):
-  CharacterGraph-Instanz auf CPU (+ GPU-Idle fuer Sprache)
-  Event-Source: "character"
-  Agenten: Recherche, Vertiefung, Traeumen (erweiterte Liste)
-  Provider: gemma4-cpu (Port 11435) / qwen3-32b-cpu (Analyse)
-```
-
-### 2.1 Was gleich bleibt
-
-Die gesamte Node-Topologie:
-
-```
-Enricher → EI-Calc → Router → [Planner → Agent-Dispatch] →
-GV-Node → Responder → Thinker → Tribunal → [Corrector] →
-Perzeption(Nova) → Salienz → Dispatcher → END
-```
-
-Jeder Node arbeitet identisch:
-- **Enricher:** Laedt Session, KZG, LZG, Charakter-Hash — Nova kennt sich selbst
-- **EI-Calc:** `event_source=character` → keine Empathie, nur Decay (wie Self-Trigger)
-- **Router:** Erkennt das Thema und routet zum Planner
-- **GV-Node:** Gespraechsvektor beeinflusst die Antwort
-- **Responder:** Formuliert in Novas Stimme, mit `[IDENTITAET]`-Block
-- **Thinker:** Prueft Qualitaet, erkennt Konflikte (THINK-TRANSITION-INFO greift)
-- **Tribunal:** Lehnt ab wenn noetig
-- **Dispatcher:** Schreibt Session-Turn, KZG, Salienz — vollstaendiger Datenpfad
-
-### 2.2 Was sich unterscheidet
-
-| Aspekt | Chat (Pfad 2) | Pixie (Pfad 3) |
-|--------|---------------|-----------------|
-| Instanz | Singleton, GPU | Eigene Instanz, CPU |
-| Provider | `get_chat_provider()` (GPU) | `get_background_provider()` (CPU) + GPU-Idle |
-| Event-Source | `"user"` | `"character"` |
-| Agenten-Liste im Planner | Timeline, Notizen, Fakten, Direktiven, ... | Recherche, Vertiefung, Traeumen (exklusiv) |
-| Trigger | Event-Queue (User schreibt) | Pixie-Heartbeat (Queue oder periodisch) |
-| Prompt-Quelle | User-Nachricht aus Session | Synthetischer Prompt aus Queue-Thema |
-| Blockiert GPU? | Ja (eigener Durchlauf) | Nein (CPU, GPU nur bei Idle-Sprache) |
-
-### 2.3 Synthetischer Prompt
-
-Der Pixie-Dispatcher baut aus dem Queue-Eintrag einen synthetischen Prompt, der aussieht wie ein interner Gedanke:
-
-```python
-# Queue-Eintrag:
-# {"aufgabe": "recherche", "thema": "Feng Shui Kuechengestaltung", ...}
-
-# Synthetischer Prompt fuer den PixieGraph:
-prompt = (
-    f"Ich moechte mehr ueber '{thema}' erfahren. "
-    f"Recherchiere das Thema und teile deine Erkenntnisse."
-)
-```
-
-Dieser Prompt durchlaeuft den Enricher (Session-Kontext), den Router (erkennt Recherche-Absicht), den Planner (waehlt RechercheAgent), und am Ende formt der Responder das Ergebnis in Novas Stimme — mit `[IDENTITAET]`, Charakter-Hash, Beziehungskontext.
-
-### 2.4 Keine Kollision
-
-Die zwei Instanzen teilen sich:
-- **Redis** (Session, KZG, LZG) — lesend/schreibend, aber verschiedene Turns
-- **PostgreSQL** (LZG, Entitaeten) — kein Konflikt, verschiedene Zeitpunkte
-- **Ollama** — verschiedene Ports (GPU: 11434, CPU: 11435), kein Modellwechsel
-
-Sie teilen sich NICHT:
-- **GPU** — Chat haelt die GPU, Pixie laeuft auf CPU (ausser GPU-Idle)
-- **Event-Queue** — Chat-Events und Pixie-Events sind verschiedene Quellen
-
-## 3. Was entfaellt
-
-| Komponente | Status | Ersetzt durch |
-|------------|--------|---------------|
-| `graph/agent_graph.py` | Entfaellt | PixieGraph (CharacterGraph-Instanz) |
-| `services/shadow_delivery.py` | Entfaellt | Dispatcher im PixieGraph |
-| `services/shadow_agent/tasks/nova_gedaechtnis.py` | Entfaellt | Responder + Dispatcher im PixieGraph |
-| `services/shadow_agent/base_task.py` | Entfaellt | Nicht mehr noetig |
-| AgentGraph-spezifischer State-Aufbau | Entfaellt | `create_state()` von CharacterGraph |
-
 ## 4. Was nicht umzieht
 
 Daten-Agenten, die keine Prompt-Verarbeitung brauchen:
@@ -128,81 +50,6 @@ Daten-Agenten, die keine Prompt-Verarbeitung brauchen:
 | ZielDecayAgent | Reine Ziel-Mathematik |
 
 Diese bleiben im Pixie-Heartbeat mit direktem `agent.invoke()` — kein Graph-Durchlauf noetig.
-
-## 5. Inkrementelle Migration
-
-### Phase 0 — Infrastruktur (kein Risiko)
-
-PixieGraph-Instanz bauen: `CharacterGraph` mit CPU-Provider instanziieren. Eigene Methode `create_pixie_state()` die den synthetischen Prompt und `event_source="character"` setzt. Planner-Agenten-Liste als Parameter oder Config.
-
-Kein Agent umgestellt, kein bestehendes Verhalten geaendert.
-
-### Phase 1 — RechercheAgent umstellen (Feature-Flag)
-
-```python
-# config.py
-PIXIE_PFAD3_RECHERCHE: bool = False  # Feature-Flag
-
-# pixie/dispatch.py
-if aufgabe == "recherche" and PIXIE_PFAD3_RECHERCHE:
-    # Neuer Pfad: durch PixieGraph
-    state = pixie_graph.create_pixie_state(thema, user_id, ...)
-    result = pixie_graph.invoke(state)
-else:
-    # Alter Pfad: AgentGraph + shadow_delivery
-    agent.invoke(agent_state)
-```
-
-Testen, vergleichen, stabilisieren. Flag auf `True` wenn zufrieden.
-
-### Phase 2 — Weitere Agenten umstellen
-
-- VertiefungsAgent (PIX-MIG-6) — erstmals als Agent implementieren, direkt im PixieGraph
-- NachfragenAgent (PIX-MIG-7) — ebenso
-- TraumAgent — ebenso
-
-Jeder Agent wird direkt fuer den PixieGraph gebaut, nicht fuer den alten AgentGraph.
-
-### Phase 3 — Alten Pfad abbauen
-
-Wenn alle sprachlichen Agenten durch den PixieGraph laufen:
-- `graph/agent_graph.py` loeschen
-- `services/shadow_delivery.py` loeschen
-- `services/shadow_agent/` restliche Dateien loeschen (utils.py Re-Export umleiten)
-
-### Phase 4 — Feinschliff
-
-- Planner-Agenten-Liste konfigurierbar machen (Pfad 2 vs. Pfad 3)
-- Session-Turns von Pixie-Durchlaeufen sichtbar im Client markieren
-- Delivery-Modus: Pixie-Ergebnis als proaktive Nachricht via WebSocket
-
-## 6. Offene Design-Fragen
-
-### 6.1 Session-Vermischung
-
-Pixie-Durchlaeufe erzeugen Session-Turns (Dispatcher schreibt). Diese Turns erscheinen in der Session neben User-Chat-Turns. Brauchen wir ein Flag `turn_source: "pixie"` um sie im Client unterscheidbar zu machen?
-
-### 6.2 Salienz fuer Pixie-Ergebnisse
-
-Der Salienz-Node bewertet die Speicherwuerdigkeit des Pixie-Ergebnisses. Aber Pixie-Recherchen sind per Definition speicherwuerdig (sonst waere nicht recherchiert worden). Braucht der Salienz-Node einen Bias fuer `event_source=character`?
-
-### 6.3 Thinker-Tools bei Pixie
-
-Der Thinker nutzt `timeline_check`, `memory_search`, `web_search`. Bei Recherche-Ergebnissen ist `web_search` im Thinker redundant (Recherche hat schon gesucht). Braucht der Thinker eine reduzierte Tool-Liste fuer Pixie-Durchlaeufe?
-
-### 6.4 Concurrent Pixie + Chat
-
-Was passiert wenn ein User chattet waehrend Pixie gerade einen PixieGraph-Durchlauf macht? Beide schreiben in dieselbe Session. Der Chat-Pfad hat den `graph_run_lock` (GPU). Pixie laeuft auf CPU — kein Lock-Konflikt. Aber Session-Writes koennten sich ueberlappen. Loesung: Dispatcher schreibt atomar (einzelner Redis-Call), Session-Reihenfolge durch Timestamp.
-
-> **Umbenannt am 25.08.2026: `llm_lock` heisst jetzt `graph_run_lock`.** Der Name sagte *Sperre vor dem Sprachmodell* und meinte *ein Graphenlauf zur Zeit*; seit dem Vormittag desselben Tages traegt `services/llm_riegel.py` den echten Modell-Riegel, und die Verwechslung waere teuer geworden.
-
-### 6.5 Queue-Duplikat-Pruefung
-
-RECH-SPIRAL entsteht, weil die Queue keine Themen-Aehnlichkeit prueft. Im PixieGraph wuerde der Thinker die Qualitaet pruefen, aber die Queue-Insertion passiert VOR dem Graph-Durchlauf. Braucht `shadow_queue_push` einen Embedding-Vergleich gegen die letzten N Eintraege?
-
-> **Zur Haelfte beantwortet am 15.08.2026.** `shadow_queue_push` prueft seither auf **Gleichheit** von `aufgabe` + `thema` und verstaerkt den vorhandenen Auftrag, statt einen zweiten anzulegen — die Queue liegt seit dem Umzug als Tabelle `shadow_auftrag` vor, und der Vergleich laeuft ueber einen Index statt ueber „die letzten N Eintraege".
->
-> **Der Embedding-Vergleich fehlt weiterhin, und er ist der Teil, der diese Spirale trifft:** Sie entsteht aus *verwandten* Themen, nicht aus identischen. Er braucht eine gemessene Schwelle auf einer benannten Paarung und ist in `novaberg-queue-verfall_k.md` §6.1 ausdruecklich als zweiter Schritt ausgeschlossen.
 
 ## 7. Prinzipien
 

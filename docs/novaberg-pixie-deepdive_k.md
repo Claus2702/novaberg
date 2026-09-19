@@ -1,33 +1,32 @@
 # Novaberg — Pixie-Agent: VertiefungsAgent (Konzept)
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** VertiefungsAgent — Konzept (noch nicht implementiert)
-**Stand:** 19. April 2026, Chat 57 (Modell-Alignment auf aktiven Connector)
-**Pfad:** novaberg/docs/novaberg-pixie-deepdive_k.md
-**Quellen:** nova-05-k-b.md (VertiefungsAgent-Abschnitte)
+**Absicht:** Ein VertiefungsAgent füllt gezielt tiefe Lücken in Novas vorhandenem Wissen — tief statt breit — und liefert nur, was sie noch nicht wusste; ausgelöst wird er, wenn das Nachdenken über den Bestand eine Lücke gefunden hat.
+**Stand:** 6. August 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
+**Umsetzung:** Featureliste *VertiefungsAgent* ⚫ · *Vertiefung (aus dem eigenen Bestand)* 🔴 — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-pixie-deepdive_t.md`](novaberg-pixie-deepdive_t.md) · `_b`: keiner · [`novaberg-pixie-deepdive_e.md`](novaberg-pixie-deepdive_e.md) · `_m`: keiner
+**Entschieden:** 0 · **Offen beim Meister:** 0 (Liste in [`novaberg-pixie-deepdive_e.md`](novaberg-pixie-deepdive_e.md))
+
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-pixie-deepdive_k.md §2` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-pixie-deepdive_t.md`](novaberg-pixie-deepdive_t.md), `_e` ist [`novaberg-pixie-deepdive_e.md`](novaberg-pixie-deepdive_e.md). `_b`: keiner, `_m`: keiner.
+
+| § | Datei |
+|---|---|
+| Kasten *„Übergeordnet seit dem 06.08.2026 …“* vor §1 | `_k` |
+| Kasten *„Bestätigt am 06.08.2026 …“* / *„Nicht baubar, solange …“* vor §1 | `_e` (Abschnitt D) |
+| 1 | `_k` |
+| 2 | `_t` |
+| 3 | `_k` |
+| 4 | `_t` |
+| Verwandte Dokumente, ohne Nummer | `_k` |
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Quellen) | `_e` (Abschnitt F) |
+| Entschieden, Offen beim Meister, überholte Fassungen, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 > **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
-
-
-> **Bestätigt am 06.08.2026: Die Quelle ist das Web**, wie in §4 beschrieben. `novaberg-autonomous-wissen_k.md` §11.3 führte `vertiefung` als „aus dem eigenen Bestand" — das gilt für die **Auswahl der Grabungsstelle**, nicht für das Material. Dieses Dokument ist vier Monate älter als der Wissensspeicher und kennt ihn nicht; seine Architektur bleibt trotzdem gültig.
->
-> **Nicht baubar, solange `PIX-WARTESCHLANGE-AM-MODELL` steht:** Der Agent importiert die Aufrufkette der Recherche, und jeder Hintergrundaufruf läuft gegen eine 300-Sekunden-Grenze bei 35–38 s Grundkosten.
 
 ---
 
 ## 1. Aufgabe
 
 Der VertiefungsAgent vertieft bestehendes Wissen basierend auf KZG-Einträgen. Während der RechercheAgent breite Überblicke verschafft, füllt der VertiefungsAgent spezifische Lücken in Novas vorhandenem Wissen — tief, nicht breit.
-
----
-
-## 2. Status
-
-**Konzept, nicht implementiert.** Aktuell existiert der alte Task `vertiefen` unter `services/shadow_agent/tasks/`, der aber vom Scheduler nicht mehr aufgerufen wird. Die Migration zum eigenständigen Agenten steht aus.
-
-**Trigger:** Queue-basiert (`aufgabe: vertiefen`), NICHT periodisch. Wird durch den KZG-Agent ausgelöst bei:
-- Intention `information_teilen` mit Salienz >= 0.7
-- Verstärkung mit Häufigkeit >= 3 und Salienz >= 0.7
 
 ---
 
@@ -43,30 +42,6 @@ Der VertiefungsAgent vertieft bestehendes Wissen basierend auf KZG-Einträgen. W
 | **Destillation** | "Das Wichtigste zum Thema" | "Nur das Neue, was Nova noch nicht wusste" |
 
 **Vertiefung = bestehendes Wissen vertiefen. Recherche = neues Wissen suchen.**
-
----
-
-## 4. Geplante Architektur
-
-Der VertiefungsAgent teilt Infrastruktur mit dem RechercheAgent. Suche, Bewertung und Destillation werden importiert — mit eigenen Prompts. Nur die Kontext-Assembly und die Lagebeurteilung sind eigenständig.
-
-```python
-# agents/vertiefung/agent.py
-from agents.recherche.suche import suche_und_fetch
-from agents.recherche.bewertung import bewerten       # gleiche Struktur, anderer Prompt
-from agents.recherche.destillation import destillieren  # Mistral, gleiche Struktur
-```
-
-Die Lagebeurteilung des VertiefungsAgenten fragt spezifischer: Wo hat Nova nur Oberfläche? Wo fehlen Mechanismen, Zusammenhänge, Gegenargumente?
-
-**Dual-Modell-Routing:** Identisch zum RechercheAgent — Qwen3-32B (`PIXIE_ANALYSE_MODEL`) für Analyse, `SHADOW_MODEL` (aktiv: Gemma 4) für Sprache.
-
-**Geplante Dateien:**
-
-| Datei | Beschreibung |
-|-------|-------------|
-| `agents/vertiefung/agent.py` | Eigene Lagebeurteilung, shared Infrastruktur |
-| `agents/vertiefung/AGENT.md` | Agent-Dokumentation |
 
 ---
 

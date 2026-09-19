@@ -1,10 +1,28 @@
 # Novaberg — Konzept: Fachabteilungs-Agenten
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Fachabteilungs-Agenten (Konzept/Vision)
-**Stand:** 19. April 2026, Chat 56
-**Pfad:** novaberg/docs/novaberg-agent-fachabteilung_k.md
-**Status:** Konzept — nicht implementiert, Pilot: CharakterIdentitaetAgent
+**Absicht:** Ein CRUD-Agent führt nicht aus, was nur sprachlich als Aktion erkannt ist: Er prüft die geplante Operation vor dem Ausführen gegen den Bestand, fragt bei Widerspruch, Ergänzung oder Redundanz differenziert zurück und prüft das gespeicherte Ergebnis danach auf Sinn.
+**Stand:** 20. August 2026 (am 19.09.2026 Herkunftsvermerke in §2.2 und Aufteilung in Teile, ohne inhaltliche Änderung)
+**Umsetzung:** Featureliste *Fachabteilungs-Agenten* ⚫ · *Scheibe 12 F — die Fachabteilung prueft den Bestand* 🟠 — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-agent-fachabteilung_t.md`](novaberg-agent-fachabteilung_t.md) · [`novaberg-agent-fachabteilung_b.md`](novaberg-agent-fachabteilung_b.md) · [`novaberg-agent-fachabteilung_e.md`](novaberg-agent-fachabteilung_e.md) · `_m`: keiner
+**Entschieden:** 2 · **Offen beim Meister:** 1 (Liste in [`novaberg-agent-fachabteilung_e.md`](novaberg-agent-fachabteilung_e.md))
+
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-agent-fachabteilung_k.md §2` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-agent-fachabteilung_t.md`](novaberg-agent-fachabteilung_t.md), `_b` ist [`novaberg-agent-fachabteilung_b.md`](novaberg-agent-fachabteilung_b.md), `_e` ist [`novaberg-agent-fachabteilung_e.md`](novaberg-agent-fachabteilung_e.md).
+
+| § | Datei |
+|---|---|
+| 1 | `_k` |
+| 2 · 2.1 · 2.2 · 2.3 | `_k` |
+| 3 · 3.1 · 3.2 · 3.3 · 3.4 | `_t` |
+| 4 · 4.1 · 4.2 · 4.3 · 4.4 · 4.5 | `_k` |
+| 5 · 5.1 · 5.2 · 5.3 | `_k` |
+| 6 | `_b` |
+| 7 · 7.1 · 7.2 · 7.3 · 7.4 | `_b` |
+| 8 · 8.1 · 8.2 · 8.3 · 8.4 · 8.5 | `_e` (Abschnitt D) |
+| 9 · 9.1 · 9.2 · 9.3 | `_k` |
+| 10 | `_b` |
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Status) | `_e` (Abschnitt F) |
+| bisherige Schlusszeile (*Erstellt … als Konzept-Papier*) | `_e` (Abschnitt F) |
+| Entschieden, Offen beim Meister, verworfene Varianten, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 ---
 
@@ -53,76 +71,6 @@ Alle drei Fälle teilen dieselbe Wurzel: **Der Agent prüft nicht, ob die Operat
 Reicht es, diese Fälle einzeln per Prompt-Tuning abzufangen (wie bei CLASSIFY-CONFIRM)? Oder brauchen wir eine architektonische Lösung?
 
 Die Entscheidung aus Chat 49: **Architektonische Lösung.** Die Einzelfall-Behebung skaliert nicht — jeder neue Agent, jede neue Aktion bringt neue Fälle. Eine strukturelle Intelligenz-Schicht löst viele Klassen von Problemen auf einmal.
-
----
-
-## 3. Das neue Konzept — Fachabteilungs-Pipeline
-
-### 3.1 Erweiterte Pipeline
-
-```
-Validate --> Classify --> Semantik-Check --> HITL-Gate --> CRUD --> Output-Validation --> Antwort
-```
-
-Zwei neue Nodes kommen hinzu:
-
-- **Semantik-Check** (vor HITL-Gate): Prüft die geplante Operation gegen den aktuellen Datenbestand auf Kohärenz, Widerspruch, Ergänzung oder Redundanz.
-- **Output-Validation** (nach CRUD): Prüft das tatsächlich gespeicherte Ergebnis auf semantischen Sinn.
-
-### 3.2 Semantik-Check — der Input-Prüfer
-
-**Input:**
-- Aktuelle aktive Datensätze (aus dem Fachgebiet des Agenten)
-- Geplante Operation (Aktion + neue/geänderte Daten)
-
-**Verarbeitung:** Ein LLM-Call mit klarem Prompt: "Ist diese Operation kohärent? Widerspricht sie dem Bestand? Ergänzt sie? Ist sie redundant?"
-
-**Output (strukturiertes JSON):**
-```json
-{
-  "kompatibilitaet": "widerspruch" | "ergaenzung" | "redundanz" | "identisch" | "passt",
-  "begruendung": "Kurze Erklärung",
-  "empfehlung": "fortsetzen" | "deaktiviere_aktuelle" | "zusammenfuehren" | "ablehnen",
-  "rueckfrage_fuer_user": "Optional: differenzierte Rückfrage statt Standard-Ja/Nein"
-}
-```
-
-**Pfade:**
-- `passt` → normaler HITL-Gate mit Standard-Rückfrage ("Soll ich das ausführen?")
-- `widerspruch` → erweiterte Rückfrage ("Das passt nicht zu X. Soll ich X deaktivieren?")
-- `ergaenzung` → Information ("Ich bin dann X und Y. OK?")
-- `redundanz` → Konsolidierungs-Rückfrage ("Das habe ich im Kern schon. Zusammenführen?")
-- `identisch` → Ablehnung ohne HITL-Gate ("Das habe ich bereits, nichts zu tun.")
-
-### 3.3 Output-Validation — der Ergebnis-Prüfer
-
-**Input:**
-- Das neu gespeicherte Datum (nach CRUD)
-- Der ursprüngliche User-Intent
-
-**Verarbeitung:** LLM-Prüfung: "Ergibt das Ergebnis semantisch Sinn im Kontext? Ist es eine sinnvolle Darstellung des User-Intents?"
-
-**Output:**
-- `valide` → weiter zur Antwort
-- `unsinnig` → Rollback-Signal (die CRUD-Operation wird zurückgenommen, und der User erhält eine erklärende Rückfrage)
-
-Beispiel: Bei einem Update mit subtraktivem Intent produziert der Classify "Nicht mehr das kleine Mädchen sein". Die Output-Validation erkennt: Das ist keine Charakter-Beschreibung, das ist eine Verneinung ohne Basis. → Rollback, zurück an den User: "Ich verstehe, du möchtest das 'kleine Mädchen' aus dem Charakter entfernen. Die aktuelle Beschreibung ist X. Soll der neue Charakter Y sein (X ohne kleines Mädchen)?"
-
-### 3.4 Differenzierte HITL-Gate-Rückfragen
-
-Aktuell ist das HITL-Gate eine Ja/Nein-Frage ("Soll ich das ausführen?"). Mit Fachabteilungs-Semantik werden die Rückfragen kontextspezifisch:
-
-| Situation | Standard-Rückfrage | Neue Rückfrage |
-|-----------|-------------------|----------------|
-| Create passt | "Soll ich das ausführen?" | "Soll ich das anlegen?" |
-| Create widerspricht | "Soll ich das ausführen?" | "Das widerspricht X. Soll ich X deaktivieren?" |
-| Update additiv | "Soll ich das ausführen?" | "Ich füge das hinzu und bin dann X und Y. OK?" |
-| Update subtraktiv | "Soll ich das ausführen?" | "Aus X wird dann Y. Passt das?" |
-| Delete | "Soll ich das ausführen?" | "X entfernen — bist du sicher?" |
-| Reactivate + Konflikt | "Soll ich das ausführen?" | "X reaktivieren und aktuellen Y deaktivieren?" |
-| Redundanz | — (aktuell nichts) | "Das habe ich im Kern schon. Zusammenführen?" |
-
-Jede Rückfrage-Art braucht ihren eigenen Resume-Pfad. Das hängt direkt mit dem RESUME-REJECT-Fix zusammen — wenn wir den reparieren, bauen wir gleich die Architektur für differenzierte Rückfrage-Typen mit ein.
 
 ---
 
@@ -180,93 +128,6 @@ HITL-Gates sind nicht nur Sicherheitsnetze, sondern Produktfeatures. Ein System,
 
 ---
 
-## 6. Konkrete Auswirkungen auf bestehende Bugs
-
-Viele der in Chat 48/49 entdeckten Bugs werden durch das Fachabteilungs-Epic **strukturell** gelöst:
-
-| Bug | Aktuell | Nach Epic |
-|-----|---------|-----------|
-| CRUD-DESTILL-SUBTRAKT | Negation wird als Anweisung gespeichert | Output-Validation erkennt unsinniges Ergebnis → Rollback + erklärende Rückfrage |
-| CRUD-REACTIVATE-COEXIST | Zwei widersprüchliche Charaktere aktiv | Semantik-Check erkennt Widerspruch → differenzierte Rückfrage |
-| HALL2-Update | Halluzinierte Bestätigung | Output-Validation prüft ob die Aktion tatsächlich Sinn gemacht hat |
-| RESP-CRUD-GENERIC | Corporate-Platitüden nach Agent-Erfolg | Differenzierte Rückfragen/Bestätigungen mit konkretem Inhalt-Bezug |
-| CLASSIFY-CONFIRM | In Chat 49 einzeln gefixt | Wäre durch Semantik-Check ebenfalls abgedeckt gewesen |
-
-Der RESUME-REJECT-Bug ist **Voraussetzung** für das Epic, nicht Teil seines Scopes: Ohne funktionierenden "Nein"-Pfad sind die differenzierten Rückfragen nutzlos.
-
----
-
-## 7. Umsetzungs-Plan
-
-### 7.1 Reihenfolge
-
-1. **RESUME-REJECT fixen.** Der "Nein"-Pfad muss zuverlässig funktionieren, bevor differenzierte Rückfragen eingebaut werden. Dabei die neue Rückfrage-Typen-Architektur mit-designen.
-
-2. **Pilot: CharakterIdentitaetAgent umbauen.** Die neue Pipeline erst an einem Agent erprobt, bevor sie auf alle vier ausgerollt wird. Charakter wurde in Chat 49 als Pilot identifiziert — dort wurden die meisten Fälle beobachtet.
-
-3. **Gemeinsame Infrastruktur bauen.** `agents/crud_validation.py` erweitern um `SemantikCheck`-Klasse, `OutputValidation`-Klasse, und neue Rückfrage-Typen in `crud_validation.py`.
-
-4. **Rollout auf die anderen drei Agenten.** DirektivenAgent, NotizenAgent, TimelineAgent bekommen die neuen Nodes. Agenten-spezifische Semantik-Check-Prompts in den jeweiligen Ordnern.
-
-5. **Doku nachziehen.** `novaberg-agent-character.md`, `novaberg-agent-directives.md`, `novaberg-agent-notes.md`, `novaberg-agent-timeline.md` werden auf den neuen Stand gebracht.
-
-### 7.2 Aufwand
-
-Mehrere Sessions. Nicht wenige. Das ist substantielle Architekturarbeit.
-
-Grobe Schätzung (aus Erfahrung mit ähnlich grossen Epics wie Prompt-Segregation oder CRUD-Härtung):
-- RESUME-REJECT + neue Rückfrage-Architektur: 1-2 Sessions
-- Pilot CharakterIdentitaetAgent: 2-3 Sessions
-- Gemeinsame Infrastruktur: 1 Session
-- Rollout auf 3 weitere Agenten: je 1 Session
-- Doku: 1 Session
-
-Realistisch: 8-10 Sessions über mehrere Wochen.
-
-### 7.3 Risiken
-
-- **Kontaminierung bestehender Tests:** Die CRUD-Härtung (Chat 42) hat gerade Stabilität gebracht. Der Umbau muss sie erhalten.
-- **Prompt-Engineering des Semantik-Checks:** Der neue LLM-Call muss zuverlässig JSON-Output liefern. Erfahrung mit Gemma 4 aus Chat 46/48 hilft.
-- **Latenz:** Ein zusätzlicher LLM-Call pro Agent-Operation erhöht die Antwortzeit. Gemma 4 ist schnell, aber nicht kostenlos.
-- **Regressions-Risiko bei Rollout:** Jeder Agent bringt eigene Fachsprachen, eigene Daten-Strukturen. Der Pilot muss sauber sein, bevor übertragen wird.
-
-### 7.4 Parallel-Arbeit
-
-Während die Fachabteilungs-Umbauten laufen, können andere Arbeiten parallelisiert werden:
-- Pixie-Classifier (unabhängig)
-- Träumen + Vertiefen (unabhängig)
-- Repo-Vorbereitung und Codeberg-Push (Meta-Arbeit)
-
-Nicht parallel: Andere CRUD-Agent-Änderungen, weil sie mit dem Epic kollidieren würden.
-
----
-
-## 8. Offene Fragen für die Umsetzung
-
-Diese Fragen werden bei der tatsächlichen Umsetzung zu klären sein, nicht jetzt:
-
-### 8.1 Sollen Semantik-Check und Output-Validation ein einzelner Node sein?
-
-Zwei getrennte Nodes sind sauberer (Separation of Concerns), aber kosten zwei LLM-Calls. Ein kombinierter Node wäre billiger, aber weniger klar strukturiert. Tendenz: getrennt, weil Kosten lokal unkritisch.
-
-### 8.2 Wie viel Fachwissen kommt in den Semantik-Check-Prompt?
-
-Der Charakter-Agent weiß, wie Charakter-Beschreibungen aussehen. Wie wird dieses Wissen in den Prompt eingebettet? Als Beispiel-Tabelle? Als Regeln? Als destilliertes Fachsprache-Dokument? Tendenz: aufbauend auf dem bestehenden Domain-Language-Konzept aus Epic 15.
-
-### 8.3 Wie wird der Resume-Flow für differenzierte Rückfragen designed?
-
-Wenn die Rückfrage "Soll ich X deaktivieren?" lautet, wie interpretiert der Agent "Ja" (= ja, deaktiviere X) versus "Nein" (= nein, lass X aktiv, aber mach den Rest der Aktion)? Braucht es strukturierte Antwort-Interpretation? Tendenz: Ja, als Teil des RESUME-REJECT-Fix.
-
-### 8.4 Was passiert bei wiederholtem Scheitern der Output-Validation?
-
-Wenn der Classify wiederholt unsinnige Destillationen produziert, soll der Agent aufgeben? Dem User sagen "Ich verstehe dich nicht, formuliere es anders"? Das ist eine UX-Entscheidung.
-
-### 8.5 Wie wird das Epic empirisch validiert?
-
-Nach dem Umbau müssen die in Chat 48/49 dokumentierten Bugs verschwinden. Ein Test-Set aus den Live-Konversationen dient als Regressions-Baseline. Jeder der dort dokumentierten Fälle muss durch das neue System korrekt behandelt werden.
-
----
-
 ## 9. Bezug zum Gesamt-System
 
 ### 9.1 Zur Cognitive Architecture
@@ -284,14 +145,3 @@ Die bestehende Trust-Boundary-Architektur (Validierung in Public, Logik in Priva
 Das Epic ist nur möglich, weil Gemma 4 lokal läuft. Kein Semantik-Check pro Agent-Operation bei Cloud-API-Kosten. Lokale LLMs ermöglichen architektonische Freiheiten, die bei API-basierten Systemen unwirtschaftlich wären. Die Fachabteilungs-Vision ist also **ein Zeichen der Reife lokaler KI**, nicht nur ein Feature.
 
 ---
-
-## 10. Nächste Schritte
-
-1. **Dieses Konzept lesen lassen.** Im nächsten Chat oder einer dedizierten Planungs-Session mit frischem Kopf.
-2. **Einzelne offene Fragen durchdenken** (§8).
-3. **RESUME-REJECT fixen.** Erster konkreter Umbau-Schritt.
-4. **Pilot starten.** CharakterIdentitaetAgent als erstes umbauen.
-
----
-
-*Erstellt in Chat 49 als Konzept-Papier. Basis: Live-Test-Beobachtungen in Chat 48/49, Design-Diskussion mit Meister. Inspiration: OpenClaw, Agentic Workflows, Anthropic's Agent Architecture.*
