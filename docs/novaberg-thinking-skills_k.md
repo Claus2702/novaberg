@@ -481,7 +481,7 @@ Wenn ein Zahnarzt-Termin angelegt werden soll, vervollständige die Slots
 über Vor-Wissen und frag nur, was wirklich offen ist.
 
 **Ort:** Default ist Treuchtlingen (Praxis Müller) — der Nutzer geht
-seit 2024 dorthin. Nur fragen, wenn ein neuer Ort genannt wurde.
+seit 2024 dorthin. Nur fragen, wenn ein neuer Ort genannt wurde. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 **Anlass:** Bei Routine-Terminen ist meist Zahnreinigung gemeint.
 Wenn der Nutzer Schmerzen oder konkretes Anliegen erwähnt, nimm das.

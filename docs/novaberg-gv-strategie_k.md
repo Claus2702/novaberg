@@ -18,7 +18,7 @@ Dieses Dokument beschreibt ein Modell das genau das tut: Es vermisst die Gesprä
 
 > **Leitmetapher:** Plutchik (1980) gab den Emotionen ein Rad — 8 Sektoren, 3 Intensitätsringe, benannte Zustände. Dieses Modell macht dasselbe für Gesprächszustände: "Glut" (die Zigarette danach), "Werkstatt" (begeistertes Fachgespräch), "Regen" (gemeinsame Trauer) — benannte Landschaften, die jeder kennt, aber die niemand systematisch kartiert hat.
 
-> **Ursprung der Metapher (Chat 71):** "Die Zigarette danach, das ist ein ganz anderer Moment als das Fachgespräch. Emotional, vertraut, hier ist Selbstoffenbarung und Kennenlernen ganz groß angeschrieben, freie Assoziationen, freie Gedanken, einfach ohne Angst, etwas falsches zu sagen, reden können. Wie bei der Zigarette nach dem Sex, man liegt noch Arm in Arm, die Gedanken kreisen leicht, entspannte Stimmung und man erzählt auch mal einfach Gedanken, ohne Fragen. Einfach nur Gedanken ohne zu kontrollieren aus dem Mund fließen lassen wie ein kleines, stilles Bächlein."
+> **Ursprung der Metapher (Chat 71):** "Die Zigarette danach, das ist ein ganz anderer Moment als das Fachgespräch. Emotional, vertraut, hier ist Selbstoffenbarung und Kennenlernen ganz groß angeschrieben, freie Assoziationen, freie Gedanken, einfach ohne Angst, etwas falsches zu sagen, reden können. Wie bei der Zigarette nach dem Sex, man liegt noch Arm in Arm, die Gedanken kreisen leicht, entspannte Stimmung und man erzählt auch mal einfach Gedanken, ohne Fragen. Einfach nur Gedanken ohne zu kontrollieren aus dem Mund fließen lassen wie ein kleines, stilles Bächlein." `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 ---
 

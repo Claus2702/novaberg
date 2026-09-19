@@ -1685,7 +1685,7 @@ Beschluss aus Chat 86: **selektive manuelle Übernahme, danach alte Tabelle lös
 
 ### 11.1 Selektion durch Meister
 
-Heute existieren rund 150 Einträge im `langzeitgedaechtnis`. Aus der Cluster-Promotion sind manche von ihnen semantisch sauber, andere thematisch kontaminiert (z.B. ID 67 mit Anna+Rosa+Grillen-Vermischung — der ursprüngliche Auslöser des Umbaus). Eine grobe Schätzung: rund 120 Einträge sind übernehmenswert, etwa 30 fallen weg.
+Heute existieren rund 150 Einträge im `langzeitgedaechtnis`. Aus der Cluster-Promotion sind manche von ihnen semantisch sauber, andere thematisch kontaminiert (z.B. ID 67 mit Anna+Rosa+Grillen-Vermischung — der ursprüngliche Auslöser des Umbaus). Eine grobe Schätzung: rund 120 Einträge sind übernehmenswert, etwa 30 fallen weg. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 Die Selektion macht Meister manuell. Vorteile: klare Hoheit, Einzelfall-Prüfung, kein zusätzlicher LLM-Aufwand. Bei rund 150 Einträgen ist die Hand-Selektion machbar, zumal die problematischen Einträge meist auf einen Blick erkennbar sind (Themen-Mischung, unklare Faktenlage).
 

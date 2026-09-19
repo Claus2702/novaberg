@@ -300,7 +300,7 @@ Das Frame-Lager sammelt:
 
 - **Welche Frame-Klassen haben wir gesehen?** (Termin, Einkauf, Reifenwechsel, Person *Anna*, Ort *Treuchtlingen*…)
 - **Welche Slots werden bei Klasse X typischerweise belegt?** (Bei *Termin* meistens `wer/wo/wann/was`, manchmal `anlass`, selten `kosten`.)
-- **Welche Werte tauchen häufig auf?** (Bei `wo` für *Zahnarzt-Termin* dieses Nutzers: *Treuchtlingen*.)
+- **Welche Werte tauchen häufig auf?** (Bei `wo` für *Zahnarzt-Termin* dieses Nutzers: *Treuchtlingen*.) `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 - **Welche Frame-Verbindungen treten auf?** (Reifenwechsel-Frame öffnet typisch Auto-Frame, das öffnet Standort-Frame.)
 
 Das Lager ist nicht autoritativ. Es zwingt keine Schemas auf. Es **hilft** beim Frame-Auflöser (Defaults rekonstruieren) und beim Plausibilitäts-Test (Anomalien erkennen).
@@ -466,7 +466,7 @@ Der Substanz-Filter trennt substantielles Wissen von dekorativem Smalltalk auf d
 
 ### 10.4 Entity Resolution (Pattern)
 
-Entity Resolution gleicht *"der Zahnarzt"* mit *"Dr. Müller, Treuchtlingen"* ab. Das ist Slot-Belegung im Personen-Frame über bestehendes Knowledge-Graph-Wissen. Entity Resolution ist eine Mechanik, die der Frame-Auflöser nutzt — kein paralleler Mechanismus.
+Entity Resolution gleicht *"der Zahnarzt"* mit *"Dr. Müller, Treuchtlingen"* ab. Das ist Slot-Belegung im Personen-Frame über bestehendes Knowledge-Graph-Wissen. Entity Resolution ist eine Mechanik, die der Frame-Auflöser nutzt — kein paralleler Mechanismus. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 ### 10.5 Drive und Neugier
 

@@ -31,7 +31,7 @@ Daraus folgt für Nova: Ihr Charakter zeigt sich nicht in dem, was *über sie* g
 
 Das heutige Charakter-System leistet diese These **nicht** — und der Grund ist keine Prompt-Schwäche, sondern eine fehlende Datenquelle.
 
-**Befund:** Der `kern_hash` (und alle fünf Profile) destillieren aus `lzg_knoten`. Diese Knoten enthalten aber **entfärbte Fakten-Klassifikate über den Nutzer** — nicht Novas Stimme. Stichprobe der Top-Knoten in Novas eigenem Topf (`beobachter=assistant`, `character_id=nova`): „Der Nutzer fragt nach dem OXTR-Gen", „Die Temperaturen liegen morgen zwischen 0 und 18 Grad". Von 111 Assistent-Knoten handeln grob 10 von Nova, ~101 vom Nutzer.
+**Befund:** Der `kern_hash` (und alle fünf Profile) destillieren aus `lzg_knoten`. Diese Knoten enthalten aber **entfärbte Fakten-Klassifikate über den Nutzer** — nicht Novas Stimme. Stichprobe der Top-Knoten in Novas eigenem Topf (`beobachter=assistant`, `character_id=nova`): „Der Nutzer fragt nach dem OXTR-Gen", „Die Temperaturen liegen morgen zwischen 0 und 18 Grad". Von 111 Assistent-Knoten handeln grob 10 von Nova, ~101 vom Nutzer. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 **Folge:** Novas „Selbstbild" wird aus nutzer-handelndem Material destilliert und ihr übergestülpt. Live beobachtet: Das Nova-Profil las sich als Kopie des Nutzer-Profils („Nova ist ein analytischer Perfektionist… **er** neigt… **sein** Beschützerinstinkt"), das Pflänzchen wurde dem Nutzer zugeschrieben, die Profile waren homogen. Die Deutung des LLM war *korrekt* — nur aus den falschen Daten.
 
@@ -59,6 +59,7 @@ Was heute **wirklich** fehlt, ist kein Speicher, sondern ein **Leser**: Das einz
 9.552  Der Nutzer möchte den Agenten besonders gut hegen und pflegen.
 9.309  Der Nutzer bezeichnet die angesprochene Person als sein kleines Mädchen.
 8.262  Die Temperaturen liegen morgen voraussichtlich zwischen 0 und 18 Grad.
+`[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 Manche Sätze *handeln* von Nova („das Gegenüber", „die angesprochene Person") — aber der Nutzer ist der Täter, Nova das Objekt.
 
@@ -287,7 +288,7 @@ Ein neuer Chat muss diese Zahlen kennen, sonst baut er gegen ein Phantom.
 
 **Vergleichsmessung KZG — Chat 109 (26.07.2026):** **773** Keys vor dem Gespräch, **777** danach. Gegenüber den 926 aus Chat 108 ein **Rückgang um ~153 an einem Tag**, bei **null Gesprächen seit dem 17.07.** Mechanismus **unklar**: KZG-Einträge verfallen per TTL, aber jede Verstärkung frischt den TTL wieder auf (`KZG-TTL-UNSTERBLICH`, backlog.md). Aus **zwei Messpunkten lässt sich keine Verfallsrate rechnen** — der Rückgang kann aus einem Stichtag, einem Neustart, einer Promotions-Welle oder tatsächlichem Ablauf stammen. **Offene Frage.** Die Chat-108-Zahl bleibt als Messung gültig und wird nicht überschrieben.
 
-**Der Defekt, präzise:** Es existiert **kein Schreiber im System, der einen Eintrag mit Subjekt = Nova erzeugt.** Der Klassifikator extrahiert aus jedem Turn Fakten — und die handeln immer vom Nutzer („Der Nutzer fragt nach dem OXTR-Gen"). Novas Antwort geht durch ihn hindurch, ohne dass je ein Eintrag entsteht, der sagt: *Nova ist so und so.*
+**Der Defekt, präzise:** Es existiert **kein Schreiber im System, der einen Eintrag mit Subjekt = Nova erzeugt.** Der Klassifikator extrahiert aus jedem Turn Fakten — und die handeln immer vom Nutzer („Der Nutzer fragt nach dem OXTR-Gen"). Novas Antwort geht durch ihn hindurch, ohne dass je ein Eintrag entsteht, der sagt: *Nova ist so und so.* `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 Die Partition `(nova, meister)` ist deshalb leer. **Nicht blockiert, nicht übersprungen — nie befüllt.** *(Ausdrücklich widerlegt Chat 108: Es gibt keinen aktiven Promotion-Guard gegen Nova. Der Legacy-Guard `if user_id == ASSISTANT_USER_ID: return 0` ist toter Code, weil `user_id` unter der Konvention immer `meister` ist. Der Synapsen-Pfad hat gar keinen Guard und trägt `beobachter` korrekt durch — die 231 Knoten sind der Beweis.)*
 
@@ -553,7 +554,7 @@ Tabelle (§12) + periodischer Agent nach §13 (erschöpfend, gebündelt, zwei Su
 Der `kern_hash` liest heute `lzg_knoten` mit `(meister, nova, beobachter='assistant')` — also *Novas Notizen über Meister* — und nennt es Novas Selbstbild. **Dieser Pfad muss für Novas Profil verschwinden**, nicht ergänzt werden. Solange er lebt, produziert er das Zerrbild, auch mit der neuen Tabelle daneben.
 Neu: Novas Profil liest **Verhaltensweisen mit `beobachter='assistant'`** im Paar `(meister, nova)` (fertig destilliert, mit Belegzahl als Gewicht), optional angereichert um die belegenden Rohturns.
 
-**Zusätzliche Anforderung — Langfristziele invalidieren** (ZIELE-AUS-ZERRBILD, `bugs.md`, Chat 108). Der Ziel-Destillator (`langfristige_ziele_destillieren`) läuft nur im Nova-Build und liest den unmittelbar zuvor erzeugten `kern_hash`. Aus dem Zerrbild sind bereits **embedded** Langfristziele in Ich-Form entstanden (768 Dim, eigener `ziel_decay`-Agent) — belegt Chat 108: „Ich möchte meinen Menschen so tief in meine Enklave ziehen…", wobei „Enklave" wörtlich aus dem Kern-Hash über die Besitzergreifung des Nutzers stammt.
+**Zusätzliche Anforderung — Langfristziele invalidieren** (ZIELE-AUS-ZERRBILD, `bugs.md`, Chat 108). Der Ziel-Destillator (`langfristige_ziele_destillieren`) läuft nur im Nova-Build und liest den unmittelbar zuvor erzeugten `kern_hash`. Aus dem Zerrbild sind bereits **embedded** Langfristziele in Ich-Form entstanden (768 Dim, eigener `ziel_decay`-Agent) — belegt Chat 108: „Ich möchte meinen Menschen so tief in meine Enklave ziehen…", wobei „Enklave" wörtlich aus dem Kern-Hash über die Besitzergreifung des Nutzers stammt. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 Ein reparierter Lesepfad erneuert den Hash — die daraus abgeleiteten Ziele **bleiben stehen**, bis sie jemand invalidiert. Bauteil 4 ist erst abgenommen, wenn die Altziele verworfen und aus dem neuen Hash neu destilliert sind. Die Ziele sind eine eigenständige Persistenzstufe **hinter** dem Hash, keine Ableitung, die sich von selbst mitzieht.
 

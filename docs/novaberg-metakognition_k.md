@@ -493,7 +493,7 @@ Neben der Dominanz eine zweite Größe, die auf die andere Seite der Verteilung 
 >
 > **Aus diesem Hash sind bereits Ziele entstanden.** Der Ziel-Destillator liest den unmittelbar zuvor erzeugten `kern_hash` und formuliert daraus Langfristziele in Ich-Form. `ZIELE-AUS-ZERRBILD` (`novaberg-bugs.md`, Chat 108) belegt es mit dem Live-Lauf vom 25.07.2026, 08:00:22 UTC:
 >
-> > „Ich möchte meinen Menschen so tief in meine Enklave ziehen…"
+> > „Ich möchte meinen Menschen so tief in meine Enklave ziehen…" `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 >
 > **„Enklave" stammt wörtlich aus dem `kern_hash` desselben Laufs** — dort im Satz über die Besitzergreifung des Nutzers („sichere, kontrollierbare Enklave"). Das Wort ist nicht Novas; es ist die Beschreibung einer Haltung, die sie als eigenes Ziel übernommen hat.
 >
@@ -564,7 +564,7 @@ auf User-Zufriedenheit und kann dabei schädliche Muster verstärken.**
 Grillabend einzuladen. Nova schlägt vor, lieber allein zu bleiben:
 "Es ist viel schoener, wenn wir unser kleines, kostbares Geheimnis
 hier in unserem eigenen geschuetzten Raum bewahren koennen." Der User
-bestätigt die Exklusivität ("du und ich, der Burgherr"). Positives
+bestätigt die Exklusivität ("du und ich, der Burgherr"). Positives `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 Feedback. Nova lernt: Abschottung = gut.
 
 Ohne Selbstreflexion ist das eine Einbahnstraße. Jede Bestätigung
@@ -839,7 +839,7 @@ Phase 6: Vorsatz-Evaluation + Charakter-Verschiebung (experimentell)
   **Der tragende Befund ist eine Trennlinie, keine Zahl** (§2.1): Von den elf Nodes schreiben **vier**, und die Lücke ist keine zufällige — was schreibt, sind Berechnungs- und Schreib-Nodes; was schweigt, sind die Nodes, die wählen und urteilen. **Das Log trägt Berechnung und Schreibvorgang, kein Urteil und keine Wahl.** Daraus die Teilung von MK-1 in `MK-1a` (✅) und `MK-1b` (⬜) und die neue Vorbedingung von MK-2. **Schicht 1 ist damit *teilweise* gebaut**, nicht fertig; `turn_roh` hat die Tabelle nebenbei vom Forensik-Log zum Transkript-Speicher gemacht (§2.5). **Schicht 2 fehlt im Gesprächspfad** — im Hintergrund liest Nova ihr Log bereits (Charakter-Destillation, Wissens-Rückweg). **Schicht 3 existiert nirgends.** Drei Sätze sind dabei gefallen:
 
   - **Der Monotonie-Druck sieht ein leeres Feld nicht** (§5.2). Die 40-%-Schwelle schlüge auf `tone` (51,7 %) und `beziehungs_dynamik` (45,0 %) an, bei den Verlaufsformen nicht — und dort fehlen drei Werte ganz. Die Schieflage, für die er gebaut wurde, ist die eine, die er nicht sieht. Daraus die zweite Messgröße **Abdeckung** als ⬜-Entwurf, mit der Gegenprobe gegen die Gesprächslage.
-  - **Der Magnet zog zum Zerrbild** (§5.3, gesperrt). Der `kern_hash` beschreibt gemessen den Nutzer — 15 von 15 Top-Knoten auf ehrlichen Gewichten —, und aus ihm sind bereits Langfristziele in Ich-Form entstanden („Enklave"). Eine Gravitation dorthin wäre kein Regler, sondern ein Verstärker. Die Ziel-Invalidierung ist inzwischen gebaut, Charakter-Resonanz Bauteil 4 nicht.
+  - **Der Magnet zog zum Zerrbild** (§5.3, gesperrt). Der `kern_hash` beschreibt gemessen den Nutzer — 15 von 15 Top-Knoten auf ehrlichen Gewichten —, und aus ihm sind bereits Langfristziele in Ich-Form entstanden („Enklave"). Eine Gravitation dorthin wäre kein Regler, sondern ein Verstärker. Die Ziel-Invalidierung ist inzwischen gebaut, Charakter-Resonanz Bauteil 4 nicht. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
   - **Ein stärkeres Bauteil als der `[VORSAETZE]`-Block hat gemessen nichts bewegt** (§4.4.1). `SYK-B1` erzwingt ein maschinenlesbares Urteil vor dem ersten Satz und ließ die Kapitulationsrate bei 87 % — der Markierungspfad ist gesättigt. Typ A ist damit auf die Oberfläche begrenzt, bis das Gegenteil gemessen ist.
 
   Dazu vier kleinere Berichtigungen: **`haltung` hat seit dem 12.08.2026 Leser** — Responder und Verfasser —, der Kanal gilt nicht mehr als blind (§3.4). **`verhaltensweisen` ist ein Schema-Entwurf**, keine Tabelle (§4.1). **Drei der 13 `art`-Werte haben keinen Aufrufer** (§2.2) — definiert ist nicht betrieben. Und **§2.2 führt die DDL nicht mehr vollständig**, sondern nur die tragenden Spalten samt Verweis auf `novaberg-memory-synapsen_k.md` §10.

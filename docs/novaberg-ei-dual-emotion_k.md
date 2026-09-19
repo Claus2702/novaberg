@@ -161,7 +161,7 @@ Strikte Partition über `user_id`:
 | Nova-KZG | `ASSISTANT_USER_ID` | "nova" |
 | Nova-Charakter-Hash | `ASSISTANT_USER_ID` | "nova" |
 
-**Umschalten auf Charlotte** → anderer `ASSISTANT_USER_ID` → komplett andere Emotionshistorie, anderes KZG, anderer Charakter. Dasselbe gilt umgekehrt: anderer User → anderer `DEFAULT_USER_ID`.
+**Umschalten auf Charlotte** → anderer `ASSISTANT_USER_ID` → komplett andere Emotionshistorie, anderes KZG, anderer Charakter. Dasselbe gilt umgekehrt: anderer User → anderer `DEFAULT_USER_ID`. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 **Innerhalb eines Turns** fließt alles durch den State — das ist das eine Momentum. User-Daten und Nova-Daten koexistieren im selben State-Dict, werden aber getrennt gespeichert.
 

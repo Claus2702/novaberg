@@ -2888,7 +2888,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Beleg (Datei:Funktion):** `graph/nodes/gespraechsvektor.py` → `_entity_kontext_laden` (beide Hop-Queries).
 
-**Auswirkung:** Genau die Fakten, die Nova für ihre Haltung braucht — „Der Nutzer heißt Claus", „Lumi ist krank", Ortsangaben — fehlen im Entity-Kontext.
+**Auswirkung:** Genau die Fakten, die Nova für ihre Haltung braucht — „Der Nutzer heißt Claus", „Lumi ist krank", Ortsangaben — fehlen im Entity-Kontext. `[Herkunft geprüft 19.09.2026: Lumi ist eine Pflanze]`
 
 **Lösungsrichtung:** Auf einen Wert kann man nicht weiterhüpfen — aber man kann ihn als **Kontext mitlesen**, wenn man ohnehin bei der Entität ist: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)`, ohne die Hop-Logik zu ändern (Hop 2 weiter nur über echte `objekt_id`-Kanten).
 

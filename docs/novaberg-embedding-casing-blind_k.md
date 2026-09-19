@@ -99,6 +99,8 @@ Die Kalibrierung förderte Dubletten im LZG zutage:
         [103] Lumi wird vermutlich nicht mehr lange leben.
 ```
 
+`[Herkunft geprüft 19.09.2026: Lumi ist eine Pflanze]`
+
 Paraphrasen desselben Fakts als **getrennte Knoten**. Genau das sollte
 `LZG_KNOTEN_MATCH_SCHWELLE = 0.85` verhindern. Passierquote im alten Raum: **0.06 %**.
 

@@ -214,7 +214,7 @@ Antwort als JSON:
 
 | Quelle | Wann | Beispiel |
 |--------|------|---------|
-| Shadow-Queue (DelegationsAgent) | Hohe Salienz, Effektivwert oder Emotions-Trigger | "Mehmet hat Finanzierungskrise" |
+| Shadow-Queue (DelegationsAgent) | Hohe Salienz, Effektivwert oder Emotions-Trigger | "Mehmet hat Finanzierungskrise" `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]` |
 | Shadow-Queue (KZG-Agent) | information_teilen + Salienz >= 0.7, oder Verstaerkung >= 3 | "Blockchain wurde 3x erwaehnt" |
 | User-Auftrag (Router) | User sagt "Recherchiere das fuer mich" | "Zwiebelanbau umfassend" |
 | Neugier (Traum-Modus) | Queue leer, Resonanz-Feld-Scan, Serendipity | Assoziative Querverbindung |

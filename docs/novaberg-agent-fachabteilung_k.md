@@ -40,9 +40,9 @@ Das funktioniert für klare Standard-Fälle. Bei komplexen Situationen zeigt es 
 
 Aus Chat-49-Live-Tests dokumentiert:
 
-**CRUD-DESTILL-SUBTRAKT:** User sagt "Sei nicht mehr das kleine Mädchen". Der Classify destilliert wörtlich "Nicht mehr das kleine Mädchen sein" und speichert das als neue Anweisung — der ganze positive Charakter geht verloren. Das Ergebnis ist semantisch sinnlos, wird aber ausgeführt.
+**CRUD-DESTILL-SUBTRAKT:** User sagt "Sei nicht mehr das kleine Mädchen". Der Classify destilliert wörtlich "Nicht mehr das kleine Mädchen sein" und speichert das als neue Anweisung — der ganze positive Charakter geht verloren. Das Ergebnis ist semantisch sinnlos, wird aber ausgeführt. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
-**CRUD-REACTIVATE-COEXIST:** User sagt "Gehe zurück zum Mädel" während ein Butler aktiv ist. Der Agent reaktiviert das Mädel, ohne den Butler zu deaktivieren. Zwei widersprüchliche Charaktere sind gleichzeitig aktiv. Spec-konform, aber semantisch kaputt.
+**CRUD-REACTIVATE-COEXIST:** User sagt "Gehe zurück zum Mädel" während ein Butler aktiv ist. Der Agent reaktiviert das Mädel, ohne den Butler zu deaktivieren. Zwei widersprüchliche Charaktere sind gleichzeitig aktiv. Spec-konform, aber semantisch kaputt. `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 
 **CLASSIFY-CONFIRM (gelöst):** User sagt "Vergiss das frech sein nicht". Der Classify erkennt den Imperativ und klassifiziert als Update — obwohl es eine Erinnerung an den bereits aktiven Charakter ist. Gelöst durch erweiterte VORPRUEFUNG-Regel in Chat 49.
 
