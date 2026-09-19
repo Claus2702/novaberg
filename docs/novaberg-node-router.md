@@ -329,7 +329,7 @@ Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung
 | `is_bare_consent` / `is_bare_refusal` | `utils/offers.py` | sagt die Äußerung nichts als *»ja«* bzw. *»nein«*; ein *»Danke«* allein ist keine Zustimmung, ein Satz mit eigener Sache keins von beiden |
 | `carries_own_request` | `utils/offers.py` | trägt der Turn einen eigenen Schreibauftrag — dann ist er keine Antwort auf eine offene Rückfrage |
 | `OfferCandidate`, `offer_candidate` | `utils/offers.py` | welche Sache für ein Angebot in Frage kommt (E2) — vor Pflicht und Ablehnung |
-| `ANGEBOT_PFLICHT_BODEN` | `config.py` | 0,33 — darunter bietet Nova nie an; darüber je Turn mit einer Wahrscheinlichkeit, die linear auf 100 % bei Pflicht 1,0 steigt (Notizen und Timeline; Entscheidung 18.09.2026, löst die Schwelle 0,9 ab) |
+| `ANGEBOT_PFLICHT_BODEN` | `config.py` | 0,33 — darunter bietet Nova nie an; darüber ~~je Turn~~ → je Sache (seit 19.09.2026, `utils/offers.py::draw_recorded`) mit einer Wahrscheinlichkeit, die linear auf 100 % bei Pflicht 1,0 steigt (Notizen und Timeline; Entscheidung 18.09.2026, löst die Schwelle 0,9 ab) |
 | `record_declined` / `declined_objects` | `memory/sachlage_properties.py` | das Nein als Eigenschaft `Speichern = abgelehnt` am Objekt (E3) |
 | `consent_fields` | `agents/object_nearness.py` | Ziel und Zeitangabe aus der zugestimmten Sache; aufgelöste Tage mit der Uhrzeit aus dem Wortlaut |
 | Prompts | `router.lage.angebot.txt`, `verfasser.angebot.txt`, `classify_timeline.zustimmung.txt`, `classify_notizen.zustimmung.txt` | der Zustimmungssatz im Empfang, das Angebot im Verfasser, die Bindung in den Klassifikationen |
