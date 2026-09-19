@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 910 Abschnitte in 6 Dateien — 398 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 911 Abschnitte in 6 Dateien — 399 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 285 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 286 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
@@ -20,7 +20,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 910 Marken, 910 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 911 Marken, 911 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -37,6 +37,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 16:12 UTC — das offene Bugregister ist nach Gegenstand geteilt](novaberg-roadmap.md#19092026-1612-utc--das-offene-bugregister-ist-nach-gegenstand-geteilt) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 16:00 UTC — das Synapsen-Konzept in fünf Teilen, als Probelauf für alle Konzepte](novaberg-roadmap.md#19092026-1600-utc--das-synapsen-konzept-in-fünf-teilen-als-probelauf-für-alle-konzepte) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 15:14 UTC — der August ist aus der laufenden Chronik ausgelagert](novaberg-roadmap.md#19092026-1514-utc--der-august-ist-aus-der-laufenden-chronik-ausgelagert) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 14:30 UTC — vier Konzepte in drei Teilen, die Herkunft geprüfter Beispiele vermerkt](novaberg-roadmap.md#19092026-1430-utc--vier-konzepte-in-drei-teilen-die-herkunft-geprüfter-beispiele-vermerkt) |
