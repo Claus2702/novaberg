@@ -6,7 +6,7 @@
 
 ## Entschieden — das Register
 
-Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: 21.
+Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: 24.
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|
@@ -31,6 +31,9 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 19 | 17.09.2026 | ein Angebot für Notizen nur ab Pflichtbewusstsein 0,9 — **überholt** durch Nr. 20 | umschrieben | `_t` §4 Scheibe 12, Teil E1 und Teil E2; `_k` §4 Scheibe 12, Entwurf, Zeile E |
 | 20 | 18.09.2026 | unter Pflichtbewusstsein 0,33 kein Angebot, darüber eine linear steigende Wahrscheinlichkeit | wörtlich | unten, §4 Scheibe 12, Teil E2 |
 | 21 | *„am selben Tag“* — der Absatz trägt 19.09.2026, 00:49 UTC | die Ergänzung einer laufenden Liste ist ein Auftrag | umschrieben | `_t` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* |
+| 22 | 19.09.2026 | das Angebot gilt pro Sache, nicht pro Turn | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+| 23 | 19.09.2026 | ein späterer Nachtrag am Gedächtnisknoten steht in einem eigenen Feld | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+| 24 | 19.09.2026 | ein Erinnerungs-Anker verknüpft einen vorhandenen Timeline-Eintrag zur selben Sache; nur ohne ihn entsteht ein neuer | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 
 **Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_k` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_t` §4 Scheibe 12, *Die Objektwahl der Lage*).
 
@@ -136,6 +139,20 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 *Aus `_t` §4 Scheibe 12, Teil E2 — gebaut, nach dem ersten Absatz.*
 
 > **Entscheidung des Eigentümers, 18.09.2026:** *„Dann machen wir es so, dass unter 0,33 nichts passiert und zwischen 0,33 und 1 entscheidet die Wahrscheinlichkeit zwischen 1 und 100%. Also 0,33 ist 0%, 0,67 ist 50%, 1,0 ist 100%"* — Anlass: *„dass wir Nova etwas Spielraum geben"*. Die Gerade durch 0,33 und 1,0 trifft 0,67 bei 50,7 %; gebaut ist die Gerade.
+
+---
+
+## §4 Scheibe 12 — die Entscheidungen vom 19.09.2026
+
+Vorgelegt mit je einer Empfehlung; der Eigentümer im Chat, 19.09.2026:
+
+> **Angebot pro Turn oder pro Sache?** *„Pro Sache“* — hat Nova eine Sache angeboten, fragt sie nicht erneut, bis der Mensch geantwortet hat oder das Angebot verfallen ist.
+
+> **Nachtrag am Gedächtnisknoten (Teil A):** *„Ja, eigenes Feld. Das haben wir bisher auch schon so gemacht.“*
+
+> **„Erinnerungs-Anker“ in der Timeline:** *„Du hast recht, wenn schon ein Eintrag _zur selben Sache_ in der Timeline steht, dann diese verknüpfen. Ansonsten soll natürlich ein neuer Eintrag mit ID angelegt werden, um einen Anker zu setzen.“* — Anlass: `[gemessen 18.09.2026]` Zu 7 von 7 Terminen der Prüf-Nutzer legte `agents/kzg/magnete.py::magnete_aufloesen` einen zweiten Timeline-Eintrag *„Erinnerungs-Anker <Datum>“* zum selben Zeitpunkt an (Fundliste).
+
+Nicht gebaut, Stand 19.09.2026, 11:40 UTC.
 
 ---
 

@@ -327,6 +327,14 @@ Der Verfasser bekommt einen `[ANGEBOT]`-Block (`prompts/default/verfasser.angebo
 
 **Scheibe 12 A, Punkt 2, gebaut am selben Morgen:** Der Ausgang eines Dienstes wird am Turn des Menschen vermerkt (`dispatcher.py::_ausgang_vermerken`) — der Verlauf trägt wieder `[ERLEDIGT]` oder `[FEHLGESCHLAGEN]`, zum ersten Mal seit dem 23.04.2026.
 
+#### Teil E2, Nachtrag (19.09.2026): eine Ablehnung als Nicht-Auftrag sperrt weder Gespräch noch Angebot
+
+**Anlass** `[gelesen 19.09.2026]`: Seit die Notizen-Vorprüfung Bedarfsaussagen ablehnt, lief *„Ich brauche noch Mehl"* so: Der Empfang stellt an Notizen zu, die Klassifikation lehnt als Nicht-Auftrag ab, der Planner fragt danach die Timeline (D1), die ebenso ablehnt — und dann baute der Planner einen Aufgabenblock mit Kontext-Schnitt. Der Verfasser lief nicht; Nova antwortete mit dem Vorschlag der Klassifikation (*„Sage, welche Liste gemeint ist …"*), und `offer_candidate` meldete `auftrag_laeuft`. Nova bot nie an, wie hoch das Pflichtbewusstsein auch war.
+
+**Gebaut:** `Korrektur.kein_auftrag` (`agents/base.py`) trennt die Ablehnung *„das war kein Auftrag an mich"* von der Ablehnung in der Sache. Gesetzt an allen sechs Klassifikations-Ablehnungen (Notizen, Timeline, Direktiven, Charakter-Identität, Dateien, Dateien-Wurzeln — Merkmal: Beleg `Klassifikation: …`). Eine solche Ablehnung bildet im Planner keinen Block und keinen Schnitt, zählt für `offer_candidate` nicht als *„Dienst lief"* und sperrt über `management_action` nicht, wenn jeder gefragte Dienst so ablehnte (`utils/offers.py::_service_acted`). Die KZG-Verdichtung führt sie nicht als *„hat den Auftrag ABGELEHNT"* (sonst eine falsche Tatsache im Kern). Das Pipeline-Log des Agent-Dispatch trägt das Kennzeichen.
+
+**TEST:** `test_angebot_nach_kein_auftrag.py`, 10 Zeugen, gegen den alten Code rot. **MESSUNG:** im Betrieb nicht gelaufen. Im Bestand der letzten 7 Tage steht **0** echter Turn mit einer solchen Ablehnung (zweite Kontrolle, 19.09.2026).
+
 #### Teil E3 — gebaut (18.09.2026): das Nein am Objekt
 
 Lehnt der Mensch ein offenes Angebot ab und sagt dabei nichts anderes (*»Nein danke«*, *»Lass mal«*, *»Lieber nicht«*), trägt jede Sache des Angebots die aktive Eigenschaft **`Speichern = abgelehnt`** im Eigenschaftsgedächtnis, gesprochen vom Nutzer, Quelle *Angebot abgelehnt* — eine gewöhnliche Eigenschaft, kein neues Feld. Ein zweites Nein ist eine Bestätigung. `declined_objects` liest sie für E2. Ein Satz, der ablehnt und etwas anderes sagt (*»Nein, trag lieber den Zahnarzt ein«*), ist keine blanke Ablehnung. Gebaut ohne Modell; gemessen ist er nicht im Betrieb — dort bot Nova bisher nie an.
