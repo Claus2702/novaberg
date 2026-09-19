@@ -94,7 +94,7 @@ Dieselbe Fehlerklasse hat Chat 110 beim Verdichter behoben (drei Aufgaben-Blöck
 
 Die Salienz wird gerechnet, die übrigen Felder nicht: `themen`, `dimension`, `gedaechtnistyp`, `intentionen`, `emotion`, `modus`, `entitaeten_roh`, `zeitausdruck_roh` kommen weiter aus dem LLM-Call — und deren Kontamination aus dem Lagebild ist gemessen. Der Rollen-Switch nach dem Vorbild von `_build_verdichtung_prompt` wird also gebraucht, ~~nur nicht mehr für die Salienz-Skala~~ — **und zwar samt Skala**: Sie bleibt als vierter Antrieb des Eigen-Pfads, und jede Lage braucht ihre eigene.
 
-**Gebaut und abgenommen.** Drei Aufgaben-Blöcke, geteilter Dimensionen-Block, beide `rules`-Dateien auf rollenneutrale Ausgaberegeln reduziert. Der invertierte Satz lag zweimal auf der Platte — auch im gemma4-Override, der die ganze Nutzer-Skala mitgeschleppt hatte. Details und Messung: `SALIENZ-PROMPT-NUTZER-SCHABLONE` in `novaberg-bugs.md`.
+**Gebaut und abgenommen.** Drei Aufgaben-Blöcke, geteilter Dimensionen-Block, beide `rules`-Dateien auf rollenneutrale Ausgaberegeln reduziert. Der invertierte Satz lag zweimal auf der Platte — auch im gemma4-Override, der die ganze Nutzer-Skala mitgeschleppt hatte. Details und Messung: `SALIENZ-PROMPT-NUTZER-SCHABLONE` in `novaberg-bugs-archiv-gedaechtnis.md`.
 
 | | |
 |---|---|

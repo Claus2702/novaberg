@@ -2,11 +2,11 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Verbindliche Konvention für (user_id, character_id, beobachter)
-**Stand:** 23. August 2026 — **§3.2 nachgezogen: der Lesepfad der Bibliothek filtert dreispaltig.** Davor: 16. August 2026 — **§2.1, §2.2 und zwei Designprinzipien richtiggestellt**: `user_id` trägt den Menschen, `character_id` die Figur, die Perspektive allein der `beobachter`. Davor: 29. April 2026, Chat 71
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 23. August 2026 — **§3.2 nachgezogen: der Lesepfad der Bibliothek filtert dreispaltig.** Davor: 16. August 2026 — **§2.1, §2.2 und zwei Designprinzipien richtiggestellt**: `user_id` trägt den Menschen, `character_id` die Figur, die Perspektive allein der `beobachter`. Davor: 29. April 2026, Chat 71
 **Pfad:** novaberg/docs/novaberg-convention-paar-schema.md
 **Typ:** Convention
 **Voraussetzung:** Paar-Schema-Migration, Chat 66 ✅
-**Folgendes:** CHAR-BEZ-STALE (novaberg-bugs.md), Backlog "Hash-Schema um beobachter erweitern", Backlog "Migrations-Skript Altdaten kzg:nova:nova:*"
+**Folgendes:** CHAR-BEZ-STALE (novaberg-bugs-archiv-charakter.md), Backlog "Hash-Schema um beobachter erweitern", Backlog "Migrations-Skript Altdaten kzg:nova:nova:*"
 
 ---
 
@@ -167,7 +167,7 @@ Konsequenz für Lese-Pfade:
 >
 > **Kein Weg zur Behebung in diesem Dokument.** Er berührt das Schema, und das
 > ist eine eigene Entscheidung. Geführt als **`CHAR-HASH-PAAR-VERTAUSCHT`**
-> in `novaberg-bugs.md`.
+> in `novaberg-bugs-charakter.md`.
 
 ---
 
@@ -228,7 +228,7 @@ Konsequenz für Lese-Pfade:
 ## 6. Verweise
 
 - Code-Fix Schritt 1: `server/services/shadow_agent/tasks/nova_gedaechtnis.py` (Chat 71)
-- Bug-Bericht: `novaberg-bugs.md` → CHAR-BEZ-STALE (Chat 71)
+- Bug-Bericht: `novaberg-bugs-archiv-charakter.md` → CHAR-BEZ-STALE (Chat 71)
 - Backlog: `novaberg-backlog.md` → "Hash-Schema um beobachter erweitern", "Migrations-Skript kzg:nova:nova:*"
 - Vorgängermigration: `novaberg-bugs.md` Chat 66 (Paar-Schema-Einführung)
 

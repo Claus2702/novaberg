@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Erschlossene Werte werden als gemessene ausgegeben
-**Stand:** 25. Juli 2026, Chat 108
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 25. Juli 2026, Chat 108
 **Pfad:** novaberg/docs/novaberg-lesson_l_ableitung-als-messung.md
 **Typ:** Lesson (L)
 **Auslöser:** vier Fehler derselben Klasse in einer Sitzung (Chat 108)
@@ -61,5 +61,5 @@ Ebenso: Ein TTL, eine Zeitzone, eine Zeilenzahl und eine Menge von Fundstellen s
 
 *Diese Lesson ist Archiv. Wenn Aspekte zu ergänzen sind, wird eine neue Lesson geschrieben, nicht diese hier überarbeitet. Lessons = Gegenwart-mit-Datum, nicht Gegenwart-evolvierend.*
 
-→ Korrigierte Falschaussage: CHARHASH-RESET-TRIGGER-FEHLT (`novaberg-bugs.md`, Abschnitt „Offen bleibt — das Flag wird nicht eingelöst")
+→ Korrigierte Falschaussage: CHARHASH-RESET-TRIGGER-FEHLT (`novaberg-bugs-charakter.md`, Abschnitt „Offen bleibt — das Flag wird nicht eingelöst")
 → Gemessener Stichtag: TURN-ROH-VOR-KRAFT1-ENTWERTET (`novaberg-backlog.md`)

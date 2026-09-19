@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul-Referenz — Achse I des Gesprächsvektors
-**Stand:** 29. Juli 2026, Chat 117 (Protokollpflicht der Skalenfassung, Kalibrierrechnung — §7, §8. Kern: Chat 116)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 29. Juli 2026, Chat 117 (Protokollpflicht der Skalenfassung, Kalibrierrechnung — §7, §8. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative.md
 **Konzept:** `novaberg-gv-initiative_k.md` — Herleitung, verworfene Wege, Grenzen
 **Dateien:** `ei/initiative.py` · `agents/charakter/destillation.py` (Rad) · `ei/dreischicht.py` (Binarisierung) · `graph/nodes/gespraechsvektor.py` (Quellen, Protokoll) · `graph/nodes/dispatcher.py` (Vorturn-Spur) · `ei/kalibrierung.py` · `agents/kalibrierung/` (Erhebung)
@@ -60,7 +60,7 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 
 **Warum das die Rechnung ändert und nicht nur verfeinert.** Zweiwertig legte `wollen` das Vorzeichen des Rohwerts fest: `Mittel(bewegung, wollen)` liegt bei `wollen = +1` zwingend in [0, +1] und bei `−1` zwingend in [−1, 0]. Gegen die Schwelle −0.45 entschied eine führende Intention das Bit damit allein — gemessen in 47,4 % der Turns.
 
-> ~~**⚠ Live trägt M1 heute nichts bei.**~~ → **Behoben am 30.07.2026, siehe unten.** `user_intentionen` hat keinen Erzeuger; die Achse rechnet in jedem Turn `rohwert = bewegung` und meldet `fehlend=['wollen']`. Der Defekt steht als `INITIATIVE-M1-OHNE-QUELLE` in `novaberg-bugs.md`. ~~**Solange er offen ist, wirkt die Dreiwertigkeit nur im Kalibrier-Korpus**~~ — das galt bis zum 30.07.2026.
+> ~~**⚠ Live trägt M1 heute nichts bei.**~~ → **Behoben am 30.07.2026, siehe unten.** `user_intentionen` hat keinen Erzeuger; die Achse rechnet in jedem Turn `rohwert = bewegung` und meldet `fehlend=['wollen']`. Der Defekt steht als `INITIATIVE-M1-OHNE-QUELLE` in `novaberg-bugs-archiv-antwortpfad.md`. ~~**Solange er offen ist, wirkt die Dreiwertigkeit nur im Kalibrier-Korpus**~~ — das galt bis zum 30.07.2026.
 
 **Seit dem 30.07.2026 rechnen Korpus und Laufzeit dieselbe Größe.** Der Salienz-Node des ersten Pfads legt die Vereinigung der Segment-Intentionen in den State, sie reisen mit dem Ereignis in den zweiten Pfad, und der Enricher gibt ihnen Vorrang vor seiner Ableitung aus der Historie. Live über zehn Turns: M1 in **allen acht** Achsenläufen vorhanden.
 
@@ -249,7 +249,7 @@ Zwei Eigenschaften sind Absicht, nicht Geschmack:
 
 **Was der alte Zuschnitt anrichtete.** Der Korpus kommt mit `ORDER BY erstellt_am`; ein Präfix ist damit seine älteste Ecke. Die Zahlen stehen im Konzept (`_k.md` §12.7): Betrag 26,7 Punkte auf den dreißig ältesten Paaren, **13,6 auf 125 Paaren des Vollkorpus**. Das Tor verlangt 20.
 
-**Damit ist jede bis dahin gefahrene Positions-Kontrolle entwertet** — auch die aus §8.1, deren 43,3 Punkte auf demselben Präfix stehen. Der Defekt trägt die Kennung `KALIBRIERUNG-STICHPROBE-IST-PRAEFIX` in `novaberg-bugs.md`.
+**Damit ist jede bis dahin gefahrene Positions-Kontrolle entwertet** — auch die aus §8.1, deren 43,3 Punkte auf demselben Präfix stehen. Der Defekt trägt die Kennung `KALIBRIERUNG-STICHPROBE-IST-PRAEFIX` in `novaberg-bugs-archiv-bauart.md`.
 
 **Was der Lauf heute tut, wenn das Tor fällt:** Er bricht ab und lässt die bestehende Schwelle stehen. Das ist unverändert und richtig; neu ist, dass er es jetzt auch tatsächlich tut, statt an einer geschönten Grundlage vorbeizukommen.
 
@@ -266,4 +266,4 @@ Zwei Eigenschaften sind Absicht, nicht Geschmack:
 | Der Kalibrier-Agent: Entwurf, Baustand, Grenzen des Zeugen | `_k.md` §7 |
 | Warum die Schwelle nicht der Median ist | `_k.md` §12 |
 | Verworfene Wege | `_k.md` §4.4, §6, §12 |
-| Der Defekt der Vorgängerin | `novaberg-bugs.md`, `GV-INITIATIVE-KIPPT-NIE` |
+| Der Defekt der Vorgängerin | `novaberg-bugs-archiv-antwortpfad.md`, `GV-INITIATIVE-KIPPT-NIE` |

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Bei `StateGraph(TypedDict)` ist das TypedDict die Verkabelung, nicht ein Typhinweis
-**Stand:** 24. Juni 2026, Chat 100
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 24. Juni 2026, Chat 100
 **Pfad:** novaberg/docs/novaberg-lesson_l_stategraph-channel-zwang.md
 **Kategorie:** Allgemein, nicht modul-bezogen — Grundlagen-Lesson für LangGraph-Datentransport
 **Schwester-Lesson:** `novaberg-lesson_l_silent-skip.md` (stilles Verwerfen ohne Fehler)
@@ -89,7 +89,7 @@ Ein TypedDict als Funktions-Argument ist ein folgenloser Typhinweis. Dasselbe Ty
 
 ## 7. Die Konsequenz
 
-`LZG-RESONANZ-STATE-DEKL` wurde von „Prio niedrig" auf erledigt umgewertet — und der ursprüngliche Eintrag im Backlog ausdrücklich als widerlegt markiert, damit die falsche Einschätzung nicht ein zweites Mal als Beruhigung dient. Der Bug steht jetzt in `novaberg-bugs.md` als Wurzel des P5-Render-Ausfalls.
+`LZG-RESONANZ-STATE-DEKL` wurde von „Prio niedrig" auf erledigt umgewertet — und der ursprüngliche Eintrag im Backlog ausdrücklich als widerlegt markiert, damit die falsche Einschätzung nicht ein zweites Mal als Beruhigung dient. Der Bug steht jetzt in `novaberg-bugs-archiv.md` als Wurzel des P5-Render-Ausfalls.
 
 Für künftige State-Felder gilt die Reihenfolge: erst den Channel im `ConversationState`-TypedDict deklarieren, dann Producer und Consumer verdrahten. Ein neuer Cross-Node-Wert ohne Channel-Deklaration ist kein „läuft schon, Deklaration nachziehen"-Fall, sondern ein nicht verdrahteter Pfad, der stillschweigend nichts transportiert.
 
@@ -107,4 +107,4 @@ Der eigentliche Preis war Diagnose-Zeit: drei vollständige Code-Audits, die kor
 
 → Schwester-Lesson: `novaberg-lesson_l_silent-skip.md` (stilles Verwerfen ohne Fehler)
 → Bezug: `novaberg-graph.md` (ConversationState als geteilte Datei / Clipboard-Prinzip)
-→ Bug: `novaberg-bugs.md` — `LZG-RESONANZ-STATE-DEKL`
+→ Bug: `novaberg-bugs-archiv.md` — `LZG-RESONANZ-STATE-DEKL`

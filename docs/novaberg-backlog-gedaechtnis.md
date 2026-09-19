@@ -717,7 +717,7 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 **Kategorie:** [GED] GEDAECHTNIS
 
 **Status:** Konzept
-**Bezug:** PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL (siehe novaberg-bugs.md, Sektion Datenqualität)
+**Bezug:** PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL (siehe novaberg-bugs-archiv-gedaechtnis.md, Sektion Datenqualität)
 **Vorbedingung:** Reducer-Umbau (novaberg-reducer-umbau_k.md) abgeschlossen.
 
 
@@ -1203,7 +1203,7 @@ Außerhalb des P4-Scope. P4 baut das semantische Netz, CHRONIK ist das episodisc
 
 **Side-Findings (durch EVA jetzt sichtbar):**
 
-- PROMO-FAKT-LEER: KZG-Einträge mit `klassifikation='fakt'` aber 0 extrahierten Fakten fallen aus beiden LZG-Schreib-Pfaden (siehe `novaberg-bugs.md`)
+- PROMO-FAKT-LEER: KZG-Einträge mit `klassifikation='fakt'` aber 0 extrahierten Fakten fallen aus beiden LZG-Schreib-Pfaden (siehe `novaberg-bugs-gedaechtnis.md`)
 
 **Folge-Sprint:** Code-Audit-Sprint zur systematischen EVA-Härtung aller Pipeline-Komponenten (siehe Epic unten).
 
@@ -1510,7 +1510,7 @@ Acht Folgepunkte aus dem P5-Lesepfad-Umbau plus die Live-Abnahme als nächster S
 | KANTEN-RICHTUNG-UNDOKUMENTIERT | `lzg_kanten` sind gerichtet (Spaltenposition: `knoten_a_id`=Quelle, `knoten_b_id`=Ziel; A→B und B→A separate Zeilen mit asymmetrischen Gewichten, by design in `lzg_kanten.py` `_kante_upsert`). Konzept-Schema §4.2 dokumentiert das nicht — ein früherer Schema-Audit las „ungerichtet", was in Chat 99 eine Audit-Runde gekostet hat. §4.2 muss die Richtungssemantik explizit machen (Konzept-Fix separat). | [GED] ⬜ Prio mittel |
 | SPREADING-RELEVANZ-BEOBACHTEN | Im Live-Betrieb prüfen, ob die assoziativen Erinnerungen das Gespräch bereichern oder Nova vom Thema wegziehen. Bei dominierenden Ausreißern ZUERST an `CLUSTER_ENRICHER_SPRUENGE` (Sprungtiefe) und den Sektor-/Schalen-Faktoren drehen, BEVOR ein zusätzlicher Relevanz-Filter erwogen wird. Empirisch entscheiden, nicht vorab lösen. | [GED] ⬜ Prio mittel — Test-Aufgabe |
 | LZG-RESONANZ-DATETIME | `erstellt_am` in `lzg_resonanz.erinnerungen` ist ein `datetime`-Objekt (`spreading_lesen` liefert es roh), nicht JSON-nativ. Aktuell folgenlos (Formatter nutzt `erstellt_am` nicht). Relevant, falls `lzg_resonanz` künftig serialisiert wird. | [GED] ⬜ Prio niedrig |
-| LZG-RESONANZ-STATE-DEKL | `lzg_resonanz` ist nicht im `ConversationState`-TypedDict (`state.py`) deklariert; läuft zur Laufzeit (TypedDict nicht runtime-enforced). Deklaration nachziehen. | [GED] ✅ Chat 100 behoben (jetzt in bugs.md geführt, `f14c8b4`). „Prio niedrig / läuft zur Laufzeit" widerlegt — war die Wurzel des P5-Render-Ausfalls, nicht harmlos: undeklarierte Keys werden bei `StateGraph(TypedDict)` am Node-Übergang still verworfen (Reducer sah `None`, kein Resonanz-Block) |
+| LZG-RESONANZ-STATE-DEKL | `lzg_resonanz` ist nicht im `ConversationState`-TypedDict (`state.py`) deklariert; läuft zur Laufzeit (TypedDict nicht runtime-enforced). Deklaration nachziehen. | [GED] ✅ Chat 100 behoben (jetzt in novaberg-bugs-archiv.md geführt, `f14c8b4`). „Prio niedrig / läuft zur Laufzeit" widerlegt — war die Wurzel des P5-Render-Ausfalls, nicht harmlos: undeklarierte Keys werden bei `StateGraph(TypedDict)` am Node-Übergang still verworfen (Reducer sah `None`, kein Resonanz-Block) |
 | LZG-RESONANZ-ENTITAET-NAMEN | Im `[GEDAECHTNIS]`-Block werden geteilte Entitäten generisch („eine gemeinsame Person/Sache") statt mit Namen gerendert, weil `geteilte_entitaet_ids` IDs sind und keine Namens-Auflösung vorliegt. §8.4.4-Beispiel zeigt „gemeinsame Entitaet Anna" — dafür Join auf `entitaeten` nötig. Themen werden bereits mit Namen verbalisiert. | [GED] ⬜ Prio niedrig |
 
 ---
@@ -1666,7 +1666,7 @@ In `memory/kzg.py` (`kzg_store`, Z.~343) und `agents/kzg/speicher.py` (`_neu_anl
 
 **Warum nicht sofort gefixt:** Die Umstellung ändert das Suchverhalten der Magnet-/Entitätsauflösung und gehört gemessen (Trefferquote vorher/nachher am echten Bestand), nicht nebenbei gemacht — dieselbe Regel wie bei den Prompt↔Knoten-Schwellwerten der Embedding-Migration. Sinnvoller Zeitpunkt: zusammen mit der Schwellwert-Kalibrierung nach dem Modellwechsel (EMBEDDING-CASING-BLIND Phase 0/4), weil sich dort ohnehin jede Ähnlichkeitsverteilung ändert.
 
-**Zusammenhang:** EMBEDDING-CASING-BLIND (Schwellwert-Kalibrierung) · RECHERCHE-KZG-INHALT-LEER (bugs.md, gleiche Sichtung).
+**Zusammenhang:** EMBEDDING-CASING-BLIND (Schwellwert-Kalibrierung) · RECHERCHE-KZG-INHALT-LEER (novaberg-bugs-archiv-hintergrund.md, gleiche Sichtung).
 
 **Ergänzung (Chat 107, Live-Messung):** Entitäts-Texte sind maximal 50 Zeichen — bei so kurzen Texten misst das Embedding fast nur Wortform. Die neue Schwelle 0.70 ist dort ein Schuss ins Blaue. → Nach dem Re-Embedding die 182 Entitätsnamen gegeneinander messen, dann steht die Magnet-Schwelle auf Boden. Priorität hoch.
 

@@ -48,7 +48,7 @@ Die Festlegung dazu ist `F-GV-2`.
 
 Absichtsfragen, die das Konzept selbst als offen führt:
 
-- **O1 — Caching der Charakter-Gewichtung.** `_t` §9.2, Kasten: *„Ob das Caching nachgezogen oder die Absicht aufgegeben wird, ist offen“* (dazu `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in `novaberg-bugs.md`).
+- **O1 — Caching der Charakter-Gewichtung.** `_t` §9.2, Kasten: *„Ob das Caching nachgezogen oder die Absicht aufgegeben wird, ist offen“* (dazu `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in `novaberg-bugs-antwortpfad.md`).
 - **O2 — Die Resonanzschwelle absolut oder je Paar.** `_t` Anhang A.1, Kasten: *„die offene Absichtsfrage (absolut gegen Perzentil je Paar)“*; geführt in `novaberg-kalibrierung_k.md` §3.3a.
 - **O3 — Ob die Spreizung zwischen Charakter und Landschaft gewollt ist.** `_m`, Schlussabschnitt: *„offen ist, ob die Spreizung gewollt ist: In einem Cluster, das ihre drei liebsten Werkzeuge sperrt, arbeitet Nova dauerhaft unter ihrer Präferenz“* — *„vor einer Entscheidung über mehrere Cluster messen“*.
 

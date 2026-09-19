@@ -10,7 +10,7 @@ Der Stands-Kopf des ungeteilten Konzepts, ungekürzt, mit dem Herkunftsvermerk. 
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Neudefinition und Kalibrierung der Achse I
-**Stand:** 31. Juli 2026 (§12.7 **die Positions-Kontrolle lief über ein Präfix** — auf gestreuter Grundlage fällt das Tor mit 13,6 statt 26,7 Punkten, und der Vorbehalt aus §12.4 ist mit vertauschten Seiten widerlegt: nicht der Nutzer ist der Münzwurf, sondern Nova. Die Schwelle aus §12.6 steht damit auf einem Tor, das nicht hält. Zuvor: §12.6 **Schwelle neu erhoben: −0.05** statt −0.45, 127 Turns, κ 0,406, κ außen 0,358; §4.1a **M1 ist dreiwertig** — zweiwertig bestimmte es das Vorzeichen des Rohwerts allein, gemessen in 47,4 % der Turns; §4.2 Punkt 3 für M1 **widerlegt**: `user_intentionen` hat keinen Erzeuger, die Achse läuft live auf zwei von drei Maßen; §1 der abgedruckte Live-Beleg enthält den Befund. Zuvor: §7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 31. Juli 2026 (§12.7 **die Positions-Kontrolle lief über ein Präfix** — auf gestreuter Grundlage fällt das Tor mit 13,6 statt 26,7 Punkten, und der Vorbehalt aus §12.4 ist mit vertauschten Seiten widerlegt: nicht der Nutzer ist der Münzwurf, sondern Nova. Die Schwelle aus §12.6 steht damit auf einem Tor, das nicht hält. Zuvor: §12.6 **Schwelle neu erhoben: −0.05** statt −0.45, 127 Turns, κ 0,406, κ außen 0,358; §4.1a **M1 ist dreiwertig** — zweiwertig bestimmte es das Vorzeichen des Rohwerts allein, gemessen in 47,4 % der Turns; §4.2 Punkt 3 für M1 **widerlegt**: `user_intentionen` hat keinen Erzeuger, die Achse läuft live auf zwei von drei Maßen; §1 der abgedruckte Live-Beleg enthält den Befund. Zuvor: §7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative_k.md
 **Typ:** Konzept
 **Herkunft:** `novaberg-gv-strategie_k.md` §3.1 (Achse 6) — dieses Dokument ersetzt die dortige Heuristik v1
@@ -38,7 +38,7 @@ Rechnung, Aufgabenteilung, fehlende Maße und Versatz stehen in [`novaberg-gv-in
 
 **Live belegt 29.07.2026, 13:56 UTC.** Zwei Turns; der zweite (Themenwechsel Mond → Saturnringe):
 
-> **⚠ Der abgedruckte Beleg enthält den Befund, gelesen am 30.07.2026.** Er trägt `fehlend=['wollen']` — M1 war schon in diesem Beispiel nicht messbar, und das ist kein Zustand jener zwei Turns, sondern der Regelfall (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`). Der Beleg zeigt also eine Achse, die auf zwei von drei Maßen läuft. **Was er belegt, bleibt richtig:** Die Achse kippt, und Sektor #14 ist erreichbar. Was er nicht belegt, ist die Vollständigkeit der Rechnung.
+> **⚠ Der abgedruckte Beleg enthält den Befund, gelesen am 30.07.2026.** Er trägt `fehlend=['wollen']` — M1 war schon in diesem Beispiel nicht messbar, und das ist kein Zustand jener zwei Turns, sondern der Regelfall (`novaberg-bugs-archiv-antwortpfad.md` → `INITIATIVE-M1-OHNE-QUELLE`). Der Beleg zeigt also eine Achse, die auf zwei von drei Maßen läuft. **Was er belegt, bleibt richtig:** Die Achse kippt, und Sektor #14 ist erreichbar. Was er nicht belegt, ist die Vollständigkeit der Rechnung.
 
 ```
 Initiative: wert=0.104 (roh=0.104, versatz=+0.00)
@@ -197,7 +197,7 @@ Im ungünstigsten Fall selten, nie zu. Der Charakter verschiebt, er schließt ni
 
 ### 12.6 Neuerhebung vom 30.07.2026 — die Größe hat sich geändert, nicht nur der Bestand
 
-**Warum überhaupt neu erhoben wurde.** −0.45 stammt aus einer Zeit, in der M1 die Laufzeit nie erreicht hat (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`): `user_intentionen` hatte keinen Erzeuger, die Achse rechnete `rohwert = bewegung`. Seit der Verkabelung trägt M1 bei. **Damit ist die Schwelle nicht nur veraltet, sondern für eine andere Größe erhoben** als die, auf die sie angewandt wurde.
+**Warum überhaupt neu erhoben wurde.** −0.45 stammt aus einer Zeit, in der M1 die Laufzeit nie erreicht hat (`novaberg-bugs-archiv-antwortpfad.md` → `INITIATIVE-M1-OHNE-QUELLE`): `user_intentionen` hatte keinen Erzeuger, die Achse rechnete `rohwert = bewegung`. Seit der Verkabelung trägt M1 bei. **Damit ist die Schwelle nicht nur veraltet, sondern für eine andere Größe erhoben** als die, auf die sie angewandt wurde.
 
 Auf dem heutigen Korpus trug −0.45 eine Minderheit von **4,7 %** gegen die in §12.3 geforderten 15 %. Live an zehn Turns nachgemessen: **8 von 8 mal Bit 0** — die Achse stand faktisch auf einem konstanten Bit, dem Zustand, den sie ablösen sollte.
 

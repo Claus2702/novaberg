@@ -312,7 +312,7 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 **Und die Frage selbst ist ueberholt.** `novaberg-thinking-erkenntniszyklus_k.md` §10 waehlt einen dritten Weg, den es beim Schreiben dieses Eintrags nicht gab: Die Intention bildet auf `nachdenken` ab, und **Schritt 6 des Zyklus waehlt** zwischen `recherche`, `vertiefen` und `klaerfrage`. Die Auftragsart bleibt also, ihr Erzeuger wechselt. **Wer jetzt den `vertiefung`-Agenten an den heutigen Router baut, baut den alten Reflexpfad** — genau den, den der Zyklus abschafft.
 
-**Dazu ein eigener Defekt:** 96 der 269 `vertiefen` tragen gar kein Thema (`VERTIEFEN-AUFTRAEGE-OHNE-THEMA` in `novaberg-bugs.md`). Fuer diesen Teil erledigt sich die Frage ohne Entscheidung — ein Auftrag ohne Gegenstand ist auch mit Agent nicht ausfuehrbar.
+**Dazu ein eigener Defekt:** 96 der 269 `vertiefen` tragen gar kein Thema (`VERTIEFEN-AUFTRAEGE-OHNE-THEMA` in `novaberg-bugs-archiv-hintergrund.md`). Fuer diesen Teil erledigt sich die Frage ohne Entscheidung — ein Auftrag ohne Gegenstand ist auch mit Agent nicht ausfuehrbar.
 
 **Was fertig waere.** ~~Beide Agenten existieren, oder beide Auftragsarten werden nicht mehr erzeugt und der Bestand ist abgeraeumt.~~ Es ist entschieden, ob `vertiefen` bis zum Zyklus weiter direkt erzeugt wird oder nicht mehr, und der Bestand ist entsprechend behandelt.
 
@@ -789,7 +789,7 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 **Kandidaten für Vitalzeichen (Startmenge, erweiterbar):**
 
 - **Embedding:** `embed("Hund") != embed("Katze")` — hätte den Bug in 1 Sekunde gefunden, an jedem einzelnen Tag der letzten 4 Monate. Dazu: `sim(bekanntes Paraphrasen-Paar) > sim(bekanntes Fremd-Paar)` mit Referenzpaaren aus der Kalibrierung Chat 107 (`lzg_knoten` 102 ↔ 103 → ~0.91 Paraphrase; 47 ↔ 83 → ~0.79 verschiedene Termine). Weicht ein Wert um mehr als 0.05 ab: Alarm.
-- **Retrieval:** Ein bekannter Prompt findet seinen bekannten Knoten. Liefert `anker_retrieval` überhaupt noch Treffer, oder ist die Trefferzahl über Nacht auf null gefallen? **Bestätigt durch IVFFLAT-RECALL-KOLLAPS (bugs.md): genau dieses Vitalzeichen hätte den Kollaps gefangen — der Eintrag hier wurde drei Stunden VOR dem Vorfall geschrieben.** Referenz-Probe seit Chat 107: `anker_retrieval("Was weißt du über Lumi?")` muss die Lumi-Knoten (118/308/102, Cosine ~0.67–0.74) liefern.
+- **Retrieval:** Ein bekannter Prompt findet seinen bekannten Knoten. Liefert `anker_retrieval` überhaupt noch Treffer, oder ist die Trefferzahl über Nacht auf null gefallen? **Bestätigt durch IVFFLAT-RECALL-KOLLAPS (novaberg-bugs-archiv-gedaechtnis.md): genau dieses Vitalzeichen hätte den Kollaps gefangen — der Eintrag hier wurde drei Stunden VOR dem Vorfall geschrieben.** Referenz-Probe seit Chat 107: `anker_retrieval("Was weißt du über Lumi?")` muss die Lumi-Knoten (118/308/102, Cosine ~0.67–0.74) liefern.
 - **Schreibpfade:** Ist in den letzten 24h überhaupt ein `lzg_knoten` entstanden? Ein Schreibpfad, der still versiegt, sieht aus wie ein ruhiger Tag.
 - **Index-Recall (vierter Kandidat, aus IVFFLAT-RECALL-KOLLAPS):** Dieselbe bekannte Query einmal über den Standard-Lesepfad und einmal exakt (Seq-Scan bzw. `probes=lists`) — weichen die Treffermengen ab, frisst ein approximativer Index still Recall. Relevant, sobald ab ~10k Zeilen wieder ein Vektor-Index angelegt wird.
 
@@ -903,6 +903,6 @@ Ein Termin aus ihrem Impuls ist von einem, um den gebeten wurde, nicht zu unters
 
 **Und ein Ausblick, der nicht mitentschieden ist:** Sobald Hände dazukommen, die außerhalb der Datenbank wirken, ist dieselbe Angabe die Grundlage jedes Handlungsprotokolls. Sie jetzt einzuziehen ist billiger als später, hat aber keinen eigenen Termindruck.
 
-**Der Sonderfall daneben ist ein Defekt und kein Teil dieser Entscheidung:** Ein Impuls-Turn läuft heute in den Resume-Pfad eines wartenden Agenten und löscht dessen Rückfrage — `novaberg-bugs.md` → `RESUME-VERBRAUCHT-DEN-IMPULS`. In fremdem Namen zu antworten ist etwas anderes, als selbst zu handeln.
+**Der Sonderfall daneben ist ein Defekt und kein Teil dieser Entscheidung:** Ein Impuls-Turn läuft heute in den Resume-Pfad eines wartenden Agenten und löscht dessen Rückfrage — `novaberg-bugs-archiv-antwortpfad.md` → `RESUME-VERBRAUCHT-DEN-IMPULS`. In fremdem Namen zu antworten ist etwas anderes, als selbst zu handeln.
 
 ---

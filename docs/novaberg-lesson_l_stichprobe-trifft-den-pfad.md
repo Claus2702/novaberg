@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Terminierende Live-Turns beweisen nichts über Pfade, die sie nicht betreten haben
-**Stand:** 11. Juli 2026, Chat 106
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 11. Juli 2026, Chat 106
 **Pfad:** novaberg/docs/novaberg-lesson_l_stichprobe-trifft-den-pfad.md
 **Auslöser:** AGENT-RUECKFRAGE-LOOP — dreimal an einem Tag traf die Stichprobe den Pfad daneben
 **Verwandt:** `novaberg-lesson_l_log-behauptet-was-es-weiss.md`, `novaberg-lesson_l_analyse-ersetzt-keine-messung.md`, `novaberg-lesson_l_quelle-vor-destillat.md`
@@ -48,4 +48,4 @@ Terminierende Turns fühlen sich wie Evidenz an — sie sind echte, live gemesse
 
 → Schwester-Lessons: `novaberg-lesson_l_log-behauptet-was-es-weiss.md`, `novaberg-lesson_l_analyse-ersetzt-keine-messung.md`
 → Modul-Dokument: `novaberg-node-planner.md` §3.1
-→ Bug-Eintrag: AGENT-RUECKFRAGE-LOOP (✅ Chat 106, novaberg-bugs.md)
+→ Bug-Eintrag: AGENT-RUECKFRAGE-LOOP (✅ Chat 106, novaberg-bugs-archiv-wissen.md)

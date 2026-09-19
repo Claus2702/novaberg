@@ -253,4 +253,4 @@ Alle 6 STRUCT-Phasen abgeschlossen. Smoke-Test grün.
 - Reducer-Logger-Name `graph.nodes.reducer` weicht von `ki_server.<modul>` ab (Tech-Debt).
 - `REDUCER_AKTIV` / `REDUCER_LOG_REMOVED` in `config.py:1008-1013` nach Umbau funktionslos (Tech-Debt).
 
-**Audit-Nebeneffekt:** Promotion-Pipeline-Audit ergab drei Datenverluste KZG→LZG (PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL — siehe novaberg-bugs.md, Sektion Datenqualität, sowie Epic „Memory-Promotion-Korrektur" in novaberg-backlog.md).
+**Audit-Nebeneffekt:** Promotion-Pipeline-Audit ergab drei Datenverluste KZG→LZG (PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL — siehe novaberg-bugs-archiv-gedaechtnis.md, Sektion Datenqualität, sowie Epic „Memory-Promotion-Korrektur" in novaberg-backlog.md).

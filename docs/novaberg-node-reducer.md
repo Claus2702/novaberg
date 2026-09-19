@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `reducer` (Memory-Konsolidierung im CharacterGraph)
-**Stand:** 30. August 2026 (der Block in den Namen seines Lesers — zweiter Kanal `memory_context_verfasser`; der Sprecher steht in der KZG-Zeile und an jeder Resonanz-Erinnerung — §3); davor 15. August 2026 (Zeilenzitat auf `thinker.py` durch den Ankernamen ersetzt); davor 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 30. August 2026 (der Block in den Namen seines Lesers — zweiter Kanal `memory_context_verfasser`; der Sprecher steht in der KZG-Zeile und an jeder Resonanz-Erinnerung — §3); davor 15. August 2026 (Zeilenzitat auf `thinker.py` durch den Ankernamen ersetzt); davor 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
 **Pfad:** novaberg/docs/novaberg-node-reducer.md
 **Datei:** `server/graph/nodes/reducer.py` (Wrapper in `server/graph/base.py:215-216`)
 **Formatter:** `server/graph/format/memory_context.py`
@@ -151,7 +151,7 @@ Drei latente Backlog-Punkte beim Reducer (Prio Niedrig, Backlog-Einträge werden
 
 Plus ein Befund aus dem Reducer-Audit (Chat 107):
 
-- **REDUCER-SIEHT-LZG-NICHT** (bugs.md) — LZG-Erinnerungen durchlaufen nie den Dedup. `spreading_lesen` schreibt nach `state["lzg_resonanz"]`; der Reducer reicht das Objekt unangetastet an den Formatter durch (siehe §3.1). Dedupliziert werden nur Session-Summary, KZG-Retrieval und Charakter. Gehört in den Reducer-Ausbau der Synapsen-Reihe (P8/P9); nach dem Re-Embedding messen, wie viele Paraphrasen-Dubletten tatsächlich gemeinsam im Kontext landen.
+- **REDUCER-SIEHT-LZG-NICHT** (novaberg-bugs-antwortpfad.md) — LZG-Erinnerungen durchlaufen nie den Dedup. `spreading_lesen` schreibt nach `state["lzg_resonanz"]`; der Reducer reicht das Objekt unangetastet an den Formatter durch (siehe §3.1). Dedupliziert werden nur Session-Summary, KZG-Retrieval und Charakter. Gehört in den Reducer-Ausbau der Synapsen-Reihe (P8/P9); nach dem Re-Embedding messen, wie viele Paraphrasen-Dubletten tatsächlich gemeinsam im Kontext landen.
 
 Korrigiert (Chat 107, Reducer-Audit): Die frühere Notiz **SESSION-SUMMARY-PFAD-INAKTIV** („kein Produzent im Codebase erzeugt `quelle="summary"`-Entries") ist überholt — der Produzent existiert im Enricher und feuert, sobald Redis eine Session-Summary hält (`_session_key(..., "summary")` in `enricher.py`). Der Smoke-Test im STRUCT-Sprint (Chat 75) lief schlicht ohne vorhandene Summary.
 

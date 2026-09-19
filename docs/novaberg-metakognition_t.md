@@ -221,7 +221,7 @@ Periodisch (alle 50 Turns oder täglich) analysiert der Agent das Pipeline-Log:
 Zwei Defekte stehen **hinter** der Anlage — sie sperren nicht das Anlegen der Tabelle, sondern ihre Befüllung. Beide betreffen nicht die Struktur, sondern das Material:
 
 - **`DESTILLAT-SUBJEKT-SCHABLONE`** (`novaberg-backlog-charakter.md`) — der Verdichter setzte den Nutzer als Subjekt, unabhängig davon, wer gesprochen hatte. **Der Eintrag widerspricht sich selbst** *(gesichtet Chat 186)*: Seine Zustandszeile führt ihn als *offen, nachgesehen am 25.08.2026*, seine Statuszeile als *behoben Chat 110* mit benanntem Fix (drei Aufgaben-Blöcke je nach `beobachter` und Graph-Rolle). Welche der beiden gilt, ist aus dem Register nicht zu entscheiden und vor dem Bau zu klären.
-- **`DESTILLAT-BEHAUPTETE-HANDLUNG`** (`novaberg-bugs.md`, Chat 110, offen) — die assistant-Partition führt **angekündigte** Handlungen als geschehene. Ein Destillat hielt ein Notiz-Update als Tat fest; die Gegenmessung im selben Zeitfenster zeigte null Schreibvorgänge in `notizen` und `fakten`.
+- **`DESTILLAT-BEHAUPTETE-HANDLUNG`** (`novaberg-bugs-charakter.md`, Chat 110, offen) — die assistant-Partition führt **angekündigte** Handlungen als geschehene. Ein Destillat hielt ein Notiz-Update als Tat fest; die Gegenmessung im selben Zeitfenster zeigte null Schreibvorgänge in `notizen` und `fakten`.
 
 Der zweite wiegt für diesen Abschnitt schwerer als für die Charakter-Resonanz, und der Grund ist die Folgehandlung: **Ein Verhaltensprofil, das Ankündigungen als Taten zählt, beschreibt niemanden — und ein Vorsatz darauf korrigierte ein Verhalten, das nie stattgefunden hat.**
 
@@ -423,7 +423,7 @@ Wie ein Musiker, der merkt, dass er nur noch in einer Tonart spielt.
 >
 > `novaberg-charakter-resonanz_k.md` §2/§2.1, gemessen Chat 108 auf **ehrlichen Gewichten** — die Abfrage lief mit `ORDER BY gewicht_absolut DESC`, also über genau das Feld, nach dem die Destillation selbst rankt: **Fünfzehn von fünfzehn Top-Knoten** der Partition `beobachter='assistant'` haben den **Nutzer als grammatisches Subjekt**. Keine Zeile mit Nova als Handelnder. Manche Sätze handeln von ihr — aber als Objekt.
 >
-> **Aus diesem Hash sind bereits Ziele entstanden.** Der Ziel-Destillator liest den unmittelbar zuvor erzeugten `kern_hash` und formuliert daraus Langfristziele in Ich-Form. `ZIELE-AUS-ZERRBILD` (`novaberg-bugs.md`, Chat 108) belegt es mit dem Live-Lauf vom 25.07.2026, 08:00:22 UTC:
+> **Aus diesem Hash sind bereits Ziele entstanden.** Der Ziel-Destillator liest den unmittelbar zuvor erzeugten `kern_hash` und formuliert daraus Langfristziele in Ich-Form. `ZIELE-AUS-ZERRBILD` (`novaberg-bugs-charakter.md`, Chat 108) belegt es mit dem Live-Lauf vom 25.07.2026, 08:00:22 UTC:
 >
 > > „Ich möchte meinen Menschen so tief in meine Enklave ziehen…" `[Herkunft geprüft 19.09.2026: keine realen Personen oder Angaben]`
 >

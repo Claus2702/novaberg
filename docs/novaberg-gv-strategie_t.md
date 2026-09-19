@@ -332,7 +332,7 @@ Die Situation bestimmt das Repertoire. Der Charakter bestimmt die Präferenz. Di
 
 Cosine-Similarity zwischen zusammengesetztem Charakter-Embedding und Strategie-Beschreibungstexten. ~~Gecacht bis `kern_aktualisiert_am` sich ändert.~~
 
-> **Überholt (Chat 114, gemessen):** Gecacht sind nur die sieben Strategie-Embeddings (statische Texte). Das Charakter-Embedding wird in **jedem** Turn neu berechnet; der Docstring von `charakter_gewichtung_berechnen` sagt es ausdrücklich („jedes Mal frisch, ~50ms"). Ob das Caching nachgezogen oder die Absicht aufgegeben wird, ist offen — siehe `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in bugs.md.
+> **Überholt (Chat 114, gemessen):** Gecacht sind nur die sieben Strategie-Embeddings (statische Texte). Das Charakter-Embedding wird in **jedem** Turn neu berechnet; der Docstring von `charakter_gewichtung_berechnen` sagt es ausdrücklich („jedes Mal frisch, ~50ms"). Ob das Caching nachgezogen oder die Absicht aufgegeben wird, ist offen — siehe `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in novaberg-bugs-antwortpfad.md.
 
 ```python
 def strategie_gewichtung_ableiten(state: dict) -> dict[str, float]:
@@ -498,7 +498,7 @@ charakter_filter:   cosine(Thema, Kern) ≥ 0.15   (GV_CHARAKTER_RESONANZ_SCHWEL
 
 > **Diese eine Zahl steht vor sieben verschiedenen Verteilungen** (`[gemessen 12.09.2026]`, 378 Turns über alle Paare mit Nova-Kern). Die Resonanz ist `cosine(turn, kern)` und damit paarweise; die Mediane liegen zwischen **0,097 und 0,282**. Bei zwei Paaren lässt 0,30 **keinen einzigen** Turn durch, bei den beiden oberen 23 und 27 %. Der Filter ist damit je Paar ein anderer — und der Bezug wandert mit jeder Kern-Destillation. Verteilung, Vorbehalt und die offene Absichtsfrage (absolut gegen Perzentil je Paar) in `novaberg-kalibrierung_k.md` §3.3a.
 
-**Ehrlicher Charakter-Filter (Chat 107, GV-RESONANZ-FALLBACK-LUEGT):** Der Filter greift nur, wenn die Resonanz überhaupt prüfbar ist (`resonanz_pruefbar`-Flag in `ei/wissensluecken.py`). Vorher setzte der Code bei fehlendem Charakter-Kern (Cold-Start) oder fehlgeschlagenem Kern-Embedding lautlos `charakter_resonanz = 0.5` — ein erfundener Wert über der Schwelle, der „nicht anwendbar" als „passt hervorragend" verkleidete. Jetzt: ohne prüfbare Resonanz qualifizieren sich Kandidaten allein über die Relevanz, Cold-Start loggt `warning`, Embedding-Defekt loggt `error`. Kein Verhaltenswechsel, ehrliche Verbuchung (behoben in Commit `1e5ae70`, Details in bugs.md).
+**Ehrlicher Charakter-Filter (Chat 107, GV-RESONANZ-FALLBACK-LUEGT):** Der Filter greift nur, wenn die Resonanz überhaupt prüfbar ist (`resonanz_pruefbar`-Flag in `ei/wissensluecken.py`). Vorher setzte der Code bei fehlendem Charakter-Kern (Cold-Start) oder fehlgeschlagenem Kern-Embedding lautlos `charakter_resonanz = 0.5` — ein erfundener Wert über der Schwelle, der „nicht anwendbar" als „passt hervorragend" verkleidete. Jetzt: ohne prüfbare Resonanz qualifizieren sich Kandidaten allein über die Relevanz, Cold-Start loggt `warning`, Embedding-Defekt loggt `error`. Kein Verhaltenswechsel, ehrliche Verbuchung (behoben in Commit `1e5ae70`, Details in novaberg-bugs-archiv-antwortpfad.md).
 
 ### A.2 Sechs Systeme
 

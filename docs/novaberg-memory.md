@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gedächtnis-System (Übersicht)
-**Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe)
 **Pfad:** novaberg/docs/novaberg-memory.md
 **Quellen:** nova-02-k.md (Gedächtnis-Konzept)
 
@@ -573,4 +573,4 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 - `novaberg-thinking-drive_k.md` — Drive-System-Konzept, Phasen 1-5
 - `novaberg-gv-strategie_k.md` — Gesprächs-Cluster-Modell, das die Gravitations-Faktoren in §11.4 liefert
 - `novaberg-backlog.md` §7 — TRIPLE-SALIENZ, MEMORY-SALIENZ-VERERBUNG, ENRICHER-AKTE, MIGRATION-PIX-CLEANUP, KZG-CLEANUP
-- `novaberg-bugs.md` — CHAR-LZG-LEAK, PFAD2-EMO-MIX, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR
+- `novaberg-bugs-archiv.md` — CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR; `novaberg-bugs-gedaechtnis.md` — PFAD2-EMO-MIX

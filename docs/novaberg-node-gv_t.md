@@ -40,7 +40,7 @@ Bis Chat 113 standen diese beiden Beine auf **verschiedenen Zeitständen**. `int
 
 Seit derselben Änderung sieht der Node auch die **emotionale Gravitation**: Der Node `emotionale_gravitation` färbt `nova_emotions_verlauf`, bevor der GV-Node läuft. Eine reaktivierte Erinnerung verschiebt damit Sektor, Cluster und Strategie — das ist so entschieden und in `novaberg-thinking-drive_k.md` §5.7 begründet.
 
-**Nachtrag Chat 114 — die Reparatur war unvollständig.** Der EmGrav-Node läuft *nach* `ei_calc` und ändert `nova_emotions_verlauf` ein zweites Mal. Die Übertragung nach `internal.emotion` fand aber nur in `ei_calc` statt: Die sechs Säulen lasen daraufhin die gravitationsgefärbte Lage, die Achsen die davor — dieselben zwei Zeitstände, eine Node-Position früher. Gemessen am 28.07.2026: Säulen `begeisterung`, Achsen `neugierig`, im selben Turn. Seit Chat 114 zieht der EmGrav-Node die Übertragung nach; beide Beine stehen wieder auf einem Stand (`GV-ACHSEN-ZWEI-ZEITSTAENDE` in bugs.md).
+**Nachtrag Chat 114 — die Reparatur war unvollständig.** Der EmGrav-Node läuft *nach* `ei_calc` und ändert `nova_emotions_verlauf` ein zweites Mal. Die Übertragung nach `internal.emotion` fand aber nur in `ei_calc` statt: Die sechs Säulen lasen daraufhin die gravitationsgefärbte Lage, die Achsen die davor — dieselben zwei Zeitstände, eine Node-Position früher. Gemessen am 28.07.2026: Säulen `begeisterung`, Achsen `neugierig`, im selben Turn. Seit Chat 114 zieht der EmGrav-Node die Übertragung nach; beide Beine stehen wieder auf einem Stand (`GV-ACHSEN-ZWEI-ZEITSTAENDE` in novaberg-bugs-archiv-antwortpfad.md).
 
 > **Hinweis:** Der Unterabschnitt *Ergebnis des Vollaudits* von §8.1 — 45 gemessene Läufe, die Verteilung der Sektoren und die offene Konzeptfrage zur Richtung bei `plateau` — steht in [`novaberg-node-gv_m.md`](novaberg-node-gv_m.md), unter „Aus §8.1“.
 
@@ -186,9 +186,9 @@ Seither fragt das Tor zuerst nach der Herkunft (`graph/reiz.py`, dieselbe Auskun
 
 **Offen und ausdrücklich nicht in diesem Zug geändert:** Die emotionale Gravitation läuft auf Impuls-Turns weiter und färbt Novas Lage, aus der Landschaft und Dreischicht gelesen werden. Ob sie dort hingehört, ist entschieden (nein), aber nicht gebaut — zusammen mit dieser Änderung wäre eine Verschlechterung keiner der beiden Ursachen zuzuordnen.
 
-**⚠ Entity-Hop-Historie (Chat 107):** Der Entity-Hop war von seiner Einführung bis zum 12.07.2026 **tot**. Beide Fakten-Queries in `_entity_kontext_laden` selektierten `f.beziehung` — eine Spalte, die nie existierte (sie heißt seit Bestehen der `fakten`-Tabelle `attribut`). Jede Ausführung warf `UndefinedColumn`; das pauschale `except Exception` degradierte den Crash zu `logger.warning` und gab `""` zurück — der Entity-Kontext hat den GV-Prompt **nie** erreicht (411 aktive Fakten, keiner je geliefert). Behoben in Commit `7df65f1` (GV-ENTITY-HOP-TOT, bugs.md), live belegt am 12.07.2026.
+**⚠ Entity-Hop-Historie (Chat 107):** Der Entity-Hop war von seiner Einführung bis zum 12.07.2026 **tot**. Beide Fakten-Queries in `_entity_kontext_laden` selektierten `f.beziehung` — eine Spalte, die nie existierte (sie heißt seit Bestehen der `fakten`-Tabelle `attribut`). Jede Ausführung warf `UndefinedColumn`; das pauschale `except Exception` degradierte den Crash zu `logger.warning` und gab `""` zurück — der Entity-Kontext hat den GV-Prompt **nie** erreicht (411 aktive Fakten, keiner je geliefert). Behoben in Commit `7df65f1` (GV-ENTITY-HOP-TOT, novaberg-bugs-archiv-antwortpfad.md), live belegt am 12.07.2026.
 
-**Design-Grenze (bleibt, als GV-WERT-FAKTEN-BLIND in bugs.md erfasst):** Der Hop nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur Entität→Entität-Fakten — live 47 von 411. Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nicht; genau dort liegen Fakten wie „Der Nutzer heißt Claus". Lösungsrichtung: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)` als mitgelesener Kontext, ohne die Hop-Logik zu ändern.
+**Design-Grenze (bleibt, als GV-WERT-FAKTEN-BLIND in novaberg-bugs-antwortpfad.md erfasst):** Der Hop nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur Entität→Entität-Fakten — live 47 von 411. Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nicht; genau dort liegen Fakten wie „Der Nutzer heißt Claus". Lösungsrichtung: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)` als mitgelesener Kontext, ohne die Hop-Logik zu ändern.
 
 **⚠ Der Faktenpfad schläft seit Chat 115 (29.07.2026).** Der Absatz darüber beschreibt weiterhin richtig, wie `_entity_kontext_laden` gebaut ist — die Funktion steht unverändert im Modul. Was nicht mehr gilt: dass sie aufgerufen wird, und die Zahlen 47/411/364.
 
@@ -208,7 +208,7 @@ Der Unterschied in der letzten Zeile ist kein Detail: Der Prompt-Block heißt de
 
 **Seit dem 29.08.2026 trägt jede Zeile des Blocks ihren Sprecher** (`_resonanz_kontext_laden`: *»… (direkt zum Thema; Sprecher: Nutzer; Themen: …; Färbung: …)«*, aus `beobachter` über `memory_context.py::speaker_label` — `user` → *Nutzer*, `assistant` → *Nova*, sonst *unbekannt* mit Warnung). Bis dahin las sich ein wörtlich zitierter Nutzersatz als Novas eigene Erinnerung; der Lesepfad (`spreading_lesen`) lud die Spalte gar nicht. Der Gesprächsvektor ist ein Analyse-Knoten und nennt den Charakter beim Namen (F-PROMPT-2); der Verfasser bekommt denselben Stoff im `[GEDAECHTNIS]`-Block als Person A / Person B. Zeugen: `tests/test_gv_resonanz_kontext.py`.
 
-**Beide Modalitäten sind vorgesehen, nicht alternativ** — Synapsen-Konzept §3.2 beschreibt sie als komplementär („Reine Fakten wären ein Polizeibericht. Reine Resonanz wäre ein Gefühl ohne Anker."). Mit M2.5b tritt der Faktenpfad wieder daneben, nicht an die Stelle. Wer ihn weckt, repariert vorher den Schlüssel-Mismatch; Details in `novaberg-bugs.md`, GV-ENTITY-HOP-FINDET-NICHTS.
+**Beide Modalitäten sind vorgesehen, nicht alternativ** — Synapsen-Konzept §3.2 beschreibt sie als komplementär („Reine Fakten wären ein Polizeibericht. Reine Resonanz wäre ein Gefühl ohne Anker."). Mit M2.5b tritt der Faktenpfad wieder daneben, nicht an die Stelle. Wer ihn weckt, repariert vorher den Schlüssel-Mismatch; Details in `novaberg-bugs-archiv-antwortpfad.md`, GV-ENTITY-HOP-FINDET-NICHTS.
 
 **Farbmisch-System:** Statt eines if/elif-Decision-Trees: 8 unabhängige Funktionen, jede gibt einen Satz oder Stille zurück. Neutral = leerer String — nur salient Dimensionen tragen bei.
 
@@ -326,7 +326,7 @@ mit Arousal ≥ 0.7; ein neutraler Zustand liegt bei ~0.56. Stand die Rechnung h
 Tor, war „nicht gerechnet" von „im Absturz" nicht zu unterscheiden — für den Leser des
 Panels und für jeden späteren Abnehmer der Zahl. Wer die Größe an weiterer Stelle liest
 (die Gedankenkette sieht sie als Pausenkriterium vor), erbt diese Unterscheidung.
-Belegt und behoben als `GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE` in `novaberg-bugs.md`.
+Belegt und behoben als `GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE` in `novaberg-bugs-archiv-antwortpfad.md`.
 
 ## GV-Panel (Chat 71, erweitert Chat 73 und 116)
 
@@ -375,7 +375,7 @@ Zwei Stellen weichen bewusst vom Prompt-Block ab:
   der Korridor richtig gesetzt?" nur mit dem Ausgeschlossenen zu beantworten ist.
 - **Kein `0.5`-Default bei fehlender Gewichtung.** `dreischicht_prompt_bauen` setzt ihn
   ein, das Panel zeigt `—`. Der Grund steht als `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in
-  `novaberg-bugs.md`: Gemessene Affinitäten liegen bei 0.195 bis 0.334, ein Default von 0.5
+  `novaberg-bugs-antwortpfad.md`: Gemessene Affinitäten liegen bei 0.195 bis 0.334, ein Default von 0.5
   läge über jedem echten Wert und erschiene als beste Passung.
 
 **Die Strategie-Kürzel werden im Client aufgelöst.** `Sa` allein sagt niemandem etwas, und

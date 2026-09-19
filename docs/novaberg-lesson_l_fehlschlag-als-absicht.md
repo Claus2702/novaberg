@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Erweiterung von default-wie-fehlschlag: der Miss, der sich als Gestaltung tarnt
-**Stand:** 11. Juli 2026, Chat 106
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 11. Juli 2026, Chat 106
 **Pfad:** novaberg/docs/novaberg-lesson_l_fehlschlag-als-absicht.md
 **Auslöser:** RESPONDER-VEKTOR-TOT — 16 Chats unsichtbar, weil der Miss wie eine Design-Entscheidung aussah
 **Verwandt:** `novaberg-lesson_l_default-wie-fehlschlag.md` (die Basis-Lesson), `novaberg-lesson_l_silent-skip.md`, `novaberg-lesson_l_log-behauptet-was-es-weiss.md`
@@ -53,4 +53,4 @@ Suchmuster für dieselbe Tarnung anderswo: bedingte Prompt-Blöcke (`if x: parts
 → Basis-Lesson: `novaberg-lesson_l_default-wie-fehlschlag.md`
 → Schwester-Lessons: `novaberg-lesson_l_log-behauptet-was-es-weiss.md`, `novaberg-lesson_l_silent-skip.md`
 → Modul-Dokument: `novaberg-node-responder.md` §2
-→ Bug-Einträge: RESPONDER-VEKTOR-TOT (✅ Chat 106), EI-VEKTOR-TEXT-EMOTIONSFEST, PLANNER-AKTIV-RELIKT, WEB-CONTEXT-ALTPFAD (novaberg-bugs.md)
+→ Bug-Einträge: RESPONDER-VEKTOR-TOT (✅ Chat 106, novaberg-bugs-archiv-antwortpfad.md), EI-VEKTOR-TEXT-EMOTIONSFEST (novaberg-bugs-charakter.md), PLANNER-AKTIV-RELIKT, WEB-CONTEXT-ALTPFAD (novaberg-bugs.md)

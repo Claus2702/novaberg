@@ -589,7 +589,7 @@ Gebaut wurden Achsen, Sektor, Cluster, Absicht/Strategie/Vehikel, Sprünge und I
 **Zwei bewusste Abweichungen vom Prompt-Block**, beide im Panel-Docstring begründet:
 
 - Der Prompt lässt `unpassend` ganz weg, damit das LLM nicht danach greift. Das Panel zeigt diese Strategien mit `✗` — wer beurteilen will, ob der Korridor richtig saß, muss sehen, was ausgeschlossen wurde.
-- `dreischicht_prompt_bauen` setzt bei fehlender Gewichtung `0.5` ein. **Das Panel tut das nicht** und zeigt `—`. Siehe `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in `novaberg-bugs.md`: Der Default liegt über jedem gemessenen Wert und erschiene als beste Passung.
+- `dreischicht_prompt_bauen` setzt bei fehlender Gewichtung `0.5` ein. **Das Panel tut das nicht** und zeigt `—`. Siehe `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in `novaberg-bugs-antwortpfad.md`: Der Default liegt über jedem gemessenen Wert und erschiene als beste Passung.
 
 **Nicht baubar aus `gv_detail`:** „Sprünge zwischen Sektoren über die letzten Turns". Der Blob trägt immer nur den aktuellen Turn, der Redis-Key wird bei jedem Turn überschrieben. Eine Sektor-Bahn über mehrere Turns braucht eine eigene Historie — das ist ein anderer Bau und nicht Teil dieses Punktes. Wer sie will, legt sie als eigenen Backlog-Eintrag an.
 
@@ -622,7 +622,7 @@ Drei kleine Punkte aus dem Reducer-Umbau, die nicht im Scope der STRUCT-Phasen l
 **Kategorie:** [ANT] ANTWORTPFAD
 
 **Status:** Offen
-**Bezug:** THINK-MEM-LOOP (novaberg-bugs.md), STRUCT-5c (Reducer-Umbau)
+**Bezug:** THINK-MEM-LOOP (novaberg-bugs-archiv-antwortpfad.md), STRUCT-5c (Reducer-Umbau)
 
 Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den gleichen Format-Vertrag wie der Responder-`memory_context`. Vorteile: ein einziger Format-Ort, Konsistenz für das LLM. Nachteile: möglicherweise Mit-Ursache von THINK-MEM-LOOP (das LLM verbraucht alle Reasoning-Iterationen ohne Konvergenz, weil die Metadaten-Klammer es ablenkt).
 
@@ -640,7 +640,7 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 **Kategorie:** [ANT] ANTWORTPFAD
 
 **Status:** Designed (Chat 78), Implementierung ausstehend
-**Bezug:** Bug `THINK-MEM-CONFLICT` (`novaberg-bugs.md`), Responder-`task_block` (Chat 54), strukturierte Kontextualisierung (Chat 27)
+**Bezug:** Bug `THINK-MEM-CONFLICT` (`novaberg-bugs-archiv.md`), Responder-`task_block` (Chat 54), strukturierte Kontextualisierung (Chat 27)
 
 **Problem:** Der Thinker hat Information-Gap zum Agent-Run im selben Turn. `memory_context` zeigt Vor-Insert-Stand, eigene Tool-Aufrufe sehen Nach-Insert-Stand. Resultat: korrekte Antworten werden mit Konflikt-Formulierungen überschrieben (siehe Bug `THINK-MEM-CONFLICT`).
 

@@ -57,7 +57,7 @@ CREATE INDEX idx_lzg_knoten_aktiv
 -- KEIN Vektor-Index mehr (12.07.2026): idx_lzg_knoten_embedding (ivfflat,
 -- lists=100) wurde entfernt — bei ~300 Zeilen und probes=1 durchsuchte er
 -- eine einzige Liste und lieferte Zufallstreffer statt Nearest Neighbors
--- (IVFFLAT-RECALL-KOLLAPS, bugs.md). Bis ~10k Zeilen exakter Seq-Scan;
+-- (IVFFLAT-RECALL-KOLLAPS, novaberg-bugs-archiv-gedaechtnis.md). Bis ~10k Zeilen exakter Seq-Scan;
 -- danach Index neu anlegen mit lists ≈ rows/1000 und kalibrierten probes.
 CREATE INDEX idx_lzg_knoten_themen 
     ON lzg_knoten USING gin (themen);

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterIdentitaetAgent (Persoenlichkeits-Saatgut)
-**Stand:** 12. Juli 2026, Chat 107 (Boden-Warnung: Destillation rechnete bis zum Reset auf Zufallsgewichten, siehe §2)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Boden-Warnung: Destillation rechnete bis zum Reset auf Zufallsgewichten, siehe §2)
 **Pfad:** novaberg/docs/novaberg-agent-character.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -32,7 +32,7 @@ Die Charakter-Anweisung ist das Saatgut, die Destillations-Schichten sind der Bo
 
 Seit RESP-CHAR1 (Chat 45) sind die Destillations-Schichten (nova_kern, nova_beziehung, nova_adaptiv, nova_intentionen) direkt im `[IDENTITAET]`-Block konsolidiert, nicht mehr in einem separaten `[CHARAKTER]`-Block. Diese Konsolidierung hat eine wichtige Eigenschaft sichtbar gemacht:
 
-> **⚠ Boden-Warnung (Chat 107, 12.07.2026):** Die Destillation, die diesen „Boden" liefert, rechnete bis zum Gewichts-Reset am 12.07.2026 auf **Zufallsgewichten** (2910 Skelett-Kollisionen im casing-blinden Embedding-Raum, EMBEDDING-CASING-BLIND). Der bestehende `charakter_hash` ist auf altem Fundament entstanden; der Kern muss neu destilliert werden, und der Reset stößt das nicht automatisch an — siehe CHARHASH-RESET-TRIGGER-FEHLT (bugs.md) und die Fundament-Warnung in `novaberg-pixie-character-hash.md` §3.
+> **⚠ Boden-Warnung (Chat 107, 12.07.2026):** Die Destillation, die diesen „Boden" liefert, rechnete bis zum Gewichts-Reset am 12.07.2026 auf **Zufallsgewichten** (2910 Skelett-Kollisionen im casing-blinden Embedding-Raum, EMBEDDING-CASING-BLIND). Der bestehende `charakter_hash` ist auf altem Fundament entstanden; der Kern muss neu destilliert werden, und der Reset stößt das nicht automatisch an — siehe CHARHASH-RESET-TRIGGER-FEHLT (novaberg-bugs-charakter.md) und die Fundament-Warnung in `novaberg-pixie-character-hash.md` §3.
 
 ### 2.1 Basis-Persoenlichkeit ohne aktive Anweisung (Chat 49)
 
@@ -135,7 +135,7 @@ Der kritische Unterschied: Imperativ + Bezug auf einen aktiven Zug mit **Einford
 | "Vergiss den Charakter" / "Sei wieder normal" | (action: delete) | Deaktivierung |
 | "Was bist du fuer ein Typ?" | (action: read) | Abfrage |
 
-> **Bekannter Bug CRUD-DESTILL-SUBTRAKT (Chat 49):** Bei subtraktiven Updates speichert der Classify haeufig nur die Negation ("Nicht mehr das kleine Maedchen sein") statt den bestehenden Charakter minus dem subtrahierten Attribut. Der bestehende Charakter geht dabei verloren. Siehe `novaberg-bugs.md`.
+> **Bekannter Bug CRUD-DESTILL-SUBTRAKT (Chat 49):** Bei subtraktiven Updates speichert der Classify haeufig nur die Negation ("Nicht mehr das kleine Maedchen sein") statt den bestehenden Charakter minus dem subtrahierten Attribut. Der bestehende Charakter geht dabei verloren. Siehe `novaberg-bugs-charakter.md`.
 
 ### 4.3 [FACHSPRACHE]-Block
 

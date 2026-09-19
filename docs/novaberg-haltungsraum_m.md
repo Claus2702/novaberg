@@ -95,7 +95,7 @@ Das Rad hat zwei Ausgänge, und nur einer wirkt:
 | `nutzer_gewichtung` (Skalar) | Salienzformel | **real** — entscheidet, was ins Gedächtnis wandert |
 | `nutzer_gewichtung_rad` (12 Speichen) | `haltung_berechnen` → `state["haltung"]` | nur die Anzeige im Event-Consumer |
 
-**Damit kann ein Basis-Rad die Sektorverteilung nicht ermöglichen** — der Sektor fällt aus sechs Achsen im GV-Knoten, die Haltung wird danach gerechnet, und ihr Ergebnis liest kein Prompt. Der Gedanke „ein frisches Paar soll nicht tagelang bei nichts anfangen" trifft zu; er trifft aber den **Skalar** und nicht die Speichen. Dort startet ein frisches Paar auf dem Spalten-Default 0,9, und dieser Wert geht direkt in die Salienzformel — siehe `RAD-WERT-AUF-SPALTEN-DEFAULT` in `novaberg-bugs.md`.
+**Damit kann ein Basis-Rad die Sektorverteilung nicht ermöglichen** — der Sektor fällt aus sechs Achsen im GV-Knoten, die Haltung wird danach gerechnet, und ihr Ergebnis liest kein Prompt. Der Gedanke „ein frisches Paar soll nicht tagelang bei nichts anfangen" trifft zu; er trifft aber den **Skalar** und nicht die Speichen. Dort startet ein frisches Paar auf dem Spalten-Default 0,9, und dieser Wert geht direkt in die Salienzformel — siehe `RAD-WERT-AUF-SPALTEN-DEFAULT` in `novaberg-bugs-charakter.md`.
 
 ### Vormerkung: die Richtung ist entschieden, die Setzung wartet
 

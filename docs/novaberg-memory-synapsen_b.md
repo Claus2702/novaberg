@@ -205,7 +205,7 @@ Pipeline-Log ist Teil des LZG-Kernumbaus (Punkt 10). Vorsätze, Selbstbeobachtun
 
 ### 12.4 Konsequenzen für die Bug-Liste
 
-Nach Abschluss des Synapsen-Umbaus werden in `novaberg-bugs.md` die Einträge aus 12.1 (obsolet) als gelöst markiert, mit Verweis auf das Synapsen-Konzept. Die Einträge aus 12.3 (transformiert) werden präzisiert oder in andere Konzepte verschoben. Die Einträge aus 12.2 (bleibt) bleiben unverändert.
+Nach Abschluss des Synapsen-Umbaus werden im Bugregister (Teil nach Kategorie, Fundort je Kennung: `novaberg-bugs-index.md`) die Einträge aus 12.1 (obsolet) als gelöst markiert, mit Verweis auf das Synapsen-Konzept. Die Einträge aus 12.3 (transformiert) werden präzisiert oder in andere Konzepte verschoben. Die Einträge aus 12.2 (bleibt) bleiben unverändert.
 
 Im `novaberg-backlog.md` wird das Epic `Memory-Kern-Umbau (Synapsen-Modell, Chat 86)` von „Konzept-Phase" auf „in Umsetzung" gesetzt, sobald der Brudi-Plan startet. Das ältere Epic `Memory-Promotion-Korrektur (Chat 75)` wird mit dem Vermerk geschlossen, dass die offenen Phasen M3b und M5c im Synapsen-Umbau aufgehen.
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 18. September 2026 (**§4a: zwei Entscheidungs-Einträge** — die Form der Nachricht und das Ergebnis, auch das leere). Davor 5. September 2026, 20:28 UTC (die **Zeichenspanne** der Regie wird nicht von jedem Modell befolgt — 996 statt 175 Zeichen beim Fernmodell; ein Override auf der Prompt-Modellebene formuliert sie in Saetzen und ist als Provisorium vermerkt). Davor 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 18. September 2026 (**§4a: zwei Entscheidungs-Einträge** — die Form der Nachricht und das Ergebnis, auch das leere). Davor 5. September 2026, 20:28 UTC (die **Zeichenspanne** der Regie wird nicht von jedem Modell befolgt — 996 statt 175 Zeichen beim Fernmodell; ein Override auf der Prompt-Modellebene formuliert sie in Saetzen und ist als Provisorium vermerkt). Davor 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -417,7 +417,7 @@ Leitgedanke: Die Leichtigkeit halten, nicht erklaeren.
 
 Fehlen alle Angaben — übersprungener GV-Node und neutraler Stil —, entfällt der Block; das steht in einer Log-Zeile, statt still zu geschehen.
 
-**Gemessen (28.07.2026):** Bei Cluster `feuerwerk` und einem Prompt ohne jeden Stilwunsch griff die Antwort das Bild des Nutzers auf, statt es zu übersetzen, und schloss mit einer Frage — was der Cluster vorsieht. Zwei Turns; die Wirkung auf den Ton lässt sich nicht im Unit-Test sichern, nur beobachten. Details: `novaberg-bugs.md`, GV-METADATEN-ERREICHEN-DIE-SPRACHE-NICHT.
+**Gemessen (28.07.2026):** Bei Cluster `feuerwerk` und einem Prompt ohne jeden Stilwunsch griff die Antwort das Bild des Nutzers auf, statt es zu übersetzen, und schloss mit einer Frage — was der Cluster vorsieht. Zwei Turns; die Wirkung auf den Ton lässt sich nicht im Unit-Test sichern, nur beobachten. Details: `novaberg-bugs-archiv-antwortpfad.md`, GV-METADATEN-ERREICHEN-DIE-SPRACHE-NICHT.
 
 **Was der Block nicht tut:** Er kürzt den Verlauf nicht. `SESSION_MAX_TURNS = 20` heißt weiterhin, dass ein langer abstrakter Absatz rund zehn Wortwechsel im Prompt überlebt. Das Verlaufs-Trimming steht seit Chat 72 als Vorschlag (c) zum Echo-Bug im Backlog und ist durch diese Messung als der wirksamste der drei belegt.
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Ein stärkeres Modell liest denselben Code und kommt zum selben Schluss
-**Stand:** 11. Juli 2026, Chat 106
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 11. Juli 2026, Chat 106
 **Pfad:** novaberg/docs/novaberg-lesson_l_analyse-ersetzt-keine-messung.md
 **Auslöser:** THINKER-SELFTRIGGER-KANALLOS — der Vorschlag, den Beweis durch ein besseres Modell zu ersetzen
 **Verwandt:** `novaberg-lesson_l_stichprobe-trifft-den-pfad.md`, `novaberg-lesson_l_quelle-vor-destillat.md`, `novaberg-lesson_l_default-wie-fehlschlag.md` §5 („Eine Zahl schlägt drei Hypothesen")
@@ -47,4 +47,4 @@ Ein Analyse-Upgrade fühlt sich wie Fortschritt an und ist sofort verfügbar; ei
 *Diese Lesson ist Archiv. Wenn Aspekte zu ergänzen sind, wird eine neue Lesson geschrieben, nicht diese hier überarbeitet. Lessons = Gegenwart-mit-Datum, nicht Gegenwart-evolvierend.*
 
 → Schwester-Lessons: `novaberg-lesson_l_stichprobe-trifft-den-pfad.md`, `novaberg-lesson_l_log-behauptet-was-es-weiss.md`
-→ Bug-Eintrag: THINKER-SELFTRIGGER-KANALLOS (✅ Chat 106, novaberg-bugs.md)
+→ Bug-Eintrag: THINKER-SELFTRIGGER-KANALLOS (✅ Chat 106, novaberg-bugs-archiv-antwortpfad.md)

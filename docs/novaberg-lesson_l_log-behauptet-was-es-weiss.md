@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Wer eine Wirkung loggt, die er nicht beobachten kann, baut einen Zeugen, der gegen ihn aussagt
-**Stand:** 11. Juli 2026, Chat 106
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 11. Juli 2026, Chat 106
 **Pfad:** novaberg/docs/novaberg-lesson_l_log-behauptet-was-es-weiss.md
 **Auslöser:** THINKER-SELFTRIGGER-KANALLOS — das Log behauptete das Gegenteil der Wahrheit
 **Verwandt:** `novaberg-lesson_l_default-wie-fehlschlag.md`, `novaberg-lesson_l_silent-skip.md`, `novaberg-lesson_l_code-vor-doku.md`, `novaberg-lesson_l_ollama-think-content-split.md` (Nachtrag), `novaberg-lesson_l_fehlschlag-als-absicht.md`
@@ -74,4 +74,4 @@ Der Positivbefund gehört dazu: Die CRUD-Agenten verifizieren sich selbst (`RETU
 
 → Schwester-Lessons: `novaberg-lesson_l_stichprobe-trifft-den-pfad.md`, `novaberg-lesson_l_fehlschlag-als-absicht.md`, `novaberg-lesson_l_analyse-ersetzt-keine-messung.md`
 → Modul-Dokumente: `novaberg-node-thinker.md` §3.5, `novaberg-convention-event-model.md` §7
-→ Bug-Einträge: THINKER-SELFTRIGGER-KANALLOS (✅), BROADCAST-VERSCHLUCKT-FEHLER, SHADOW-DELIVERY-DATENVERLUST, WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG, BATCH-ZAEHLER-ZAEHLEN-AUFRUFE (novaberg-bugs.md, Chat 106)
+→ Bug-Einträge: THINKER-SELFTRIGGER-KANALLOS (✅, novaberg-bugs-archiv-antwortpfad.md), BROADCAST-VERSCHLUCKT-FEHLER (novaberg-bugs-antwortpfad.md), SHADOW-DELIVERY-DATENVERLUST (novaberg-bugs-archiv-hintergrund.md), WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG (novaberg-bugs-hintergrund.md), BATCH-ZAEHLER-ZAEHLEN-AUFRUFE (novaberg-bugs-gedaechtnis.md) (Chat 106)

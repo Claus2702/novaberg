@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Wer den gefundenen Fall repariert, hat die Klasse nicht behoben
-**Stand:** 5. September 2026
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 5. September 2026
 **Pfad:** novaberg/docs/novaberg-lesson_l_zweite-fundstelle-nach-behebung.md
 **Typ:** Lesson (L)
 **Auslöser:** `FADEN-EMBEDDING-VERDUENNT` — behoben am 01.09.2026, dieselbe Klasse zwanzig Zeilen tiefer bis zum 05.09.2026
@@ -85,5 +85,5 @@ gehabt, wäre die Faszination auf einer Größe kalibriert worden, die systemati
 *Diese Lesson ist Archiv. Wenn Aspekte zu ergänzen sind, wird eine neue Lesson geschrieben, nicht
 diese hier überarbeitet. Lessons = Gegenwart-mit-Datum, nicht Gegenwart-evolvierend.*
 
-→ Defektregister: `novaberg-bugs-archiv.md`, `FADEN-EMBEDDING-VERDUENNT` (dort als `[2×]`)
+→ Defektregister: `novaberg-bugs-archiv-charakter.md`, `FADEN-EMBEDDING-VERDUENNT` (dort als `[2×]`)
 → Moduldokument: `novaberg-node-praegung.md` §6c

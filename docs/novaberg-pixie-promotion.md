@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 19. September 2026, 20:24 UTC (`date -u`; Vermerk *Historisch* — der beschriebene Agent ist mit P9 gelöscht). Davor 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 19. September 2026, 20:24 UTC (`date -u`; Vermerk *Historisch* — der beschriebene Agent ist mit P9 gelöscht). Davor 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
@@ -100,7 +100,7 @@ Die übrigen `_hget`-Aufrufe (haeufigkeit, intentionen, emotion, modus, arousal,
 
 **Ausgabe-Verifikation:** Nach erfolgreichem LZG-INSERT wird ein Audit-Eintrag `erledigt` geschrieben mit Ergebnis-Zusammenfassung (klassifikation, extrahierte_fakten_anzahl, lzg_eintrag_geschrieben). Falls die Klassifikation weder `fakt`/`gemischt` noch `erinnerung`/`gemischt` greift (theoretischer Fall, sollte nicht vorkommen): Audit `fehler` mit Begründung "Klassifikation ohne LZG-Schreib-Pfad".
 
-**Bekannte Folge-Lücke:** PROMO-FAKT-LEER (siehe `novaberg-bugs.md`) — KZG-Einträge mit `klassifikation='fakt'` und 0 extrahierten Fakten fallen aus dem LZG-Schreib-Pfad. Durch EVA jetzt protokolliert (`lzg_eintrag_geschrieben=false`), aber der Datenverlust bleibt bis Fix.
+**Bekannte Folge-Lücke:** PROMO-FAKT-LEER (siehe `novaberg-bugs-gedaechtnis.md`) — KZG-Einträge mit `klassifikation='fakt'` und 0 extrahierten Fakten fallen aus dem LZG-Schreib-Pfad. Durch EVA jetzt protokolliert (`lzg_eintrag_geschrieben=false`), aber der Datenverlust bleibt bis Fix.
 
 ---
 

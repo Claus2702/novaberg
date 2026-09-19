@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
-**Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe, ivfflat-Indizes entfernt, Retrieval-Schwelle 0.40)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe, ivfflat-Indizes entfernt, Retrieval-Schwelle 0.40)
 **Pfad:** novaberg/docs/archive/novaberg-mem-lzg.md
 **Berichtigt am 23.08.2026:** Diese Zeile nannte den Ort **vor** dem Verschieben ins Archiv. Der `Stand` oben bleibt unveraendert — er sagt, wann der **Inhalt** zuletzt galt, und daran hat sich nichts geaendert.
 **Quellen:** nova-02-m-c.md
@@ -54,7 +54,7 @@ Tabelle: `langzeitgedaechtnis`
 
 **Indexes:**
 - Partial Index `idx_lzg_aktiv` auf `(user_id, character_id) WHERE aktiv = TRUE` — alle Abfragen filtern auf Paar + aktive Einträge (Chat 62)
-- **Kein Vektor-Index mehr** (seit 12.07.2026): Die ivfflat-Indizes auf `langzeitgedaechtnis` und `lzg_knoten` wurden entfernt (Commit `0fd54a1`) — ivfflat mit lists=100 bei ~300 Zeilen und probes=1 durchsuchte eine einzige Liste und lieferte Zufallstreffer statt Nearest Neighbors (IVFFLAT-RECALL-KOLLAPS, bugs.md). Bis ~10k Zeilen läuft die KNN-Suche exakt per Seq-Scan; erst danach wieder einen Index anlegen (dann lists ≈ rows/1000 und `ivfflat.probes` mitkalibrieren, siehe Kommentar in `db/init.sql`)
+- **Kein Vektor-Index mehr** (seit 12.07.2026): Die ivfflat-Indizes auf `langzeitgedaechtnis` und `lzg_knoten` wurden entfernt (Commit `0fd54a1`) — ivfflat mit lists=100 bei ~300 Zeilen und probes=1 durchsuchte eine einzige Liste und lieferte Zufallstreffer statt Nearest Neighbors (IVFFLAT-RECALL-KOLLAPS, novaberg-bugs-archiv-gedaechtnis.md). Bis ~10k Zeilen läuft die KNN-Suche exakt per Seq-Scan; erst danach wieder einen Index anlegen (dann lists ≈ rows/1000 und `ivfflat.probes` mitkalibrieren, siehe Kommentar in `db/init.sql`)
 
 Zusätzliche EI-Metadaten-Spalten (intentionen, emotion, modus, sprach_stil, beziehungs_dynamik, tone) werden bei der Promotion aus dem KZG-Eintrag übernommen und per `ALTER TABLE ADD COLUMN` hinzugefügt.
 

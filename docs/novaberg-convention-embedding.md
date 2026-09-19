@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Verbindliche Konventionen für Embedding-Texte, Embedding-Modelle und die Grenze zwischen Vektor und strukturierten Feldern
-**Stand:** 12. September 2026 (§5 um die **Gegenrichtung** erweitert und erstmals mit Zahl: Eine kurze Anfrage gegen ein vielgestaltiges Ziel kostet **0,03 bis 0,10 Cosinus**, gemessen an sechs Charakterkernen und 373 Turns — und es ist keine reine Verschiebung, Spearman 0,68 bis 0,91. Das Niveau ist damit belegt, die Streuung zwischen Gegenstaenden nicht). Davor 21. August 2026 (**Konvention 4 kennt einen dritten Fall** — die Beschreibung *eines* Gegenstands aus mehreren Blickwinkeln, für den der eine Vektor die richtige Form ist; am Dateienindex gemessen, der Umbau dorthin ist zurückgebaut. Das Register führte den Fall seit dem 20.08.2026, dieses Dokument nicht — gefunden von der Konventionsprüfung am Sitzungsende). Davor: 16. August 2026 (gegen den Code geprüft: Konvention 1 und 3 eingelöst, Konvention 2 zur Hälfte; ein siebter Speicher in den Geltungsbereich aufgenommen). Davor: 12. Juli 2026
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. September 2026 (§5 um die **Gegenrichtung** erweitert und erstmals mit Zahl: Eine kurze Anfrage gegen ein vielgestaltiges Ziel kostet **0,03 bis 0,10 Cosinus**, gemessen an sechs Charakterkernen und 373 Turns — und es ist keine reine Verschiebung, Spearman 0,68 bis 0,91. Das Niveau ist damit belegt, die Streuung zwischen Gegenstaenden nicht). Davor 21. August 2026 (**Konvention 4 kennt einen dritten Fall** — die Beschreibung *eines* Gegenstands aus mehreren Blickwinkeln, für den der eine Vektor die richtige Form ist; am Dateienindex gemessen, der Umbau dorthin ist zurückgebaut. Das Register führte den Fall seit dem 20.08.2026, dieses Dokument nicht — gefunden von der Konventionsprüfung am Sitzungsende). Davor: 16. August 2026 (gegen den Code geprüft: Konvention 1 und 3 eingelöst, Konvention 2 zur Hälfte; ein siebter Speicher in den Geltungsbereich aufgenommen). Davor: 12. Juli 2026
 **Pfad:** novaberg/docs/novaberg-convention-embedding.md
 **Typ:** Convention
 **Anlass:** EMBEDDING-CASING-BLIND (Befund und Beweiskette: `novaberg-embedding-casing-blind_k.md`), Migration 12.07.2026
@@ -169,7 +169,7 @@ Der Absatz oben nennt den Fall *lange Anfrage, kurzes Ziel*. Der umgekehrte stan
 → novaberg-embedding-casing-blind_k.md — Befund, Beweiskette, Migrationsentscheidung
 → novaberg-memory-synapsen_k.md §9 — Gewichts-Reset 12.07.2026 (Bruch in der Historie)
 → novaberg-mem-kzg.md §6 — KZG-Embed-Formel (Thema/Aussage, ohne valenz)
-→ novaberg-bugs.md — EMBEDDING-CASING-BLIND, IVFFLAT-RECALL-KOLLAPS, ENTITAET-EMBED-DREIFACH
+→ novaberg-bugs-archiv-gedaechtnis.md — IVFFLAT-RECALL-KOLLAPS; novaberg-bugs.md — EMBEDDING-CASING-BLIND, ENTITAET-EMBED-DREIFACH
 → novaberg-backlog.md — VITALZEICHEN (Embedding-/Retrieval-Proben), GESPRAECH-ARCHIV-LEER
 ```
 

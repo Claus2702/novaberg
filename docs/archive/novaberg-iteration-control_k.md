@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Iteration Control — Gedankenbildung vs. Gedankenverkettung, deterministische Terminierung des Planner-Resolve-Loops (Kurzkonzept)
-**Stand:** 04. Juli 2026, Chat 100+
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 04. Juli 2026, Chat 100+
 **Pfad:** novaberg/docs/archive/novaberg-iteration-control_k.md
 **Berichtigt am 23.08.2026:** Diese Zeile nannte den Ort **vor** dem Verschieben ins Archiv. Der `Stand` oben bleibt unveraendert — er sagt, wann der **Inhalt** zuletzt galt, und daran hat sich nichts geaendert.
 **Typ:** Konzept (`_k`)
@@ -225,7 +225,7 @@ Lebt der `TaskLedger` nur pro Turn (In-Memory State-Channel) oder persistent üb
 - `novaberg-convention-event-model.md` — Self-Event, `source`/`typ`, `MAX_SELF_TRIGGERS` (Gedankenverkettung, §2.2/§2.3)
 - `novaberg-node-ei-calc-persist.md`, `novaberg-node-perception.md` — Selbst-Perzeption → `nova_state` (emotionale Kette)
 - `novaberg-thinking-curiosity_k.md` — mehrsignaliges Stopp-Kriterium (explorative Bildung)
-- `novaberg-bugs.md` / `novaberg-backlog.md` — `PENDING-RELEVANZ` (offener Terminierungs-Sub-Fall der Rückfrage, §2.3)
+- `novaberg-bugs-antwortpfad.md` / `novaberg-backlog.md` — `PENDING-RELEVANZ` (offener Terminierungs-Sub-Fall der Rückfrage, §2.3)
 - `novaberg-node-salience.md` — Salienz als Amygdala; Affekt in der Bewertung (Abgrenzung: „Salienz braucht Emotion" ist eigenes Thema, nicht Iteration Control)
 - `stategraph-channel-zwang` (Lesson) — Channel-Deklarationszwang
 

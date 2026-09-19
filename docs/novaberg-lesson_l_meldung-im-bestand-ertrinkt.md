@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Das Werkzeug hatte den Absturz gemeldet, bevor er zuschlug
-**Stand:** 31. Juli 2026, Chat 120
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 31. Juli 2026, Chat 120
 **Pfad:** novaberg/docs/novaberg-lesson_l_meldung-im-bestand-ertrinkt.md
 **Auslöser:** `CHAT-NAME-OHNE-ERZEUGER` — acht Linter-Treffer, zwei echte Abstürze, niemand sah sie
 **Verwandt:** `novaberg-lesson_l_default-wie-fehlschlag.md`, `novaberg-lesson_l_log-behauptet-was-es-weiss.md`
@@ -57,4 +57,4 @@ Der Prüfsatz für jede Regelfamilie, bevor sie in den geduldeten Bestand wander
 ---
 
 → Die harte Teilmenge steht in `ruff-hart.toml`; ihre Aufnahmekriterien stehen dort im Kopf.
-→ Der Defekt: `novaberg-bugs.md` → `CHAT-NAME-OHNE-ERZEUGER`
+→ Der Defekt: `novaberg-bugs-archiv-antwortpfad.md` → `CHAT-NAME-OHNE-ERZEUGER`

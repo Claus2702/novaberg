@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Eine zu breite Regel verwandelt den harmlosen Ausfall in den schädlichen
-**Stand:** 31. Juli 2026, Chat 120
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 31. Juli 2026, Chat 120
 **Pfad:** novaberg/docs/novaberg-lesson_l_parst-nicht-schlaegt-parst-falsch.md
 **Auslöser:** `bereits`/`schon` als Rückwärts-Signal im Zeitparser (Chat 120)
 **Verwandt:** `novaberg-lesson_l_default-wie-fehlschlag.md`, `novaberg-lesson_l_miss-als-sicherung.md`
@@ -57,4 +57,4 @@ Eine Erweiterung, die den harmlosen Ausfall in den schädlichen verwandelt, ist 
 ---
 
 → Zeitparser: `novaberg-tool-timeparser.md` §10.4
-→ Der Befund, aus dem es stammt: `novaberg-bugs.md` → `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT`
+→ Der Befund, aus dem es stammt: `novaberg-bugs-archiv-wissen.md` → `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT`

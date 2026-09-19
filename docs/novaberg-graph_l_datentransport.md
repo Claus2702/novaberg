@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Middleware darf filtern, nicht transformieren
-**Stand:** 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 12. April 2026, Chat 44 (migriert, Inhalt unverändert)
+**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 12. April 2026, Chat 44 (migriert, Inhalt unverändert)
 **Pfad:** novaberg/docs/novaberg-graph_l_datentransport.md
 **Ursprung:** nova-11-l-c.md
 **Typ:** Lesson (L)
@@ -64,7 +64,7 @@ Die Tags `[emotionaler_ausdruck | wut | emotional]` im Text erzeugten zwei Folge
 state["session_turns"] = raw_turns          # Vollstaendige Dicts
 ```
 
-> ~~Der Enricher filtert Shadow-Impulse (`[Nova-Impuls]`-Praefix im `kern`).~~ **Am 24.08.2026 entfernt, und er hat es nie getan:** Den Marker setzte im ganzen Server niemand — die Bedingung war die einzige Fundstelle (`novaberg-bugs.md` → `KONTAMINATIONSFILTER-TOT`). **Der Impuls gehoert in den Verlauf**; was der Filter verhindern wollte, war eine Verwechslung, und die verhindert jetzt der benannte Sprecher (`memory/session.py::sprecher_bezeichnen`), ohne die Aeusserung zu verlieren.
+> ~~Der Enricher filtert Shadow-Impulse (`[Nova-Impuls]`-Praefix im `kern`).~~ **Am 24.08.2026 entfernt, und er hat es nie getan:** Den Marker setzte im ganzen Server niemand — die Bedingung war die einzige Fundstelle (`novaberg-bugs-archiv-antwortpfad.md` → `KONTAMINATIONSFILTER-TOT`). **Der Impuls gehoert in den Verlauf**; was der Filter verhindern wollte, war eine Verwechslung, und die verhindert jetzt der benannte Sprecher (`memory/session.py::sprecher_bezeichnen`), ohne die Aeusserung zu verlieren.
 
 Jeder Konsument formatiert selbst:
 
