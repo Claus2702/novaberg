@@ -1,10 +1,28 @@
 # Novaberg — Projekt
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Konzept, Vision, Leitprinzipien, Persönlichkeit
-**Stand:** 19. April 2026, Chat 57 (Nova/Novaberg-Bereinigung)
-**Pfad:** novaberg/docs/novaberg-project_k.md
-**Quellen:** nova-00-k.md (Konzept), nova-06-k.md (Identität)
+**Absicht:** Nova ist ein lokaler Begleiter, der vollständig dem Nutzer gehört — mit Gedächtnis, Emotion, einem Unterbewusstsein, das zwischen den Gesprächen weiterarbeitet, und eigenen Zielen; ihre Persönlichkeit entsteht aus der Interaktion statt aus einer Konfiguration, und ihre Antworten werden aus mehreren Perspektiven geprüft.
+**Stand:** 19. April 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Umsetzung:** keine eigene Zeile der Featureliste — das Leitbild umfasst alle ihre Zeilen — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-project_t.md`](novaberg-project_t.md) · [`novaberg-project_b.md`](novaberg-project_b.md) · [`novaberg-project_e.md`](novaberg-project_e.md) · Messungen (`_m`): keiner
+**Entschieden:** 0 · **Offen beim Meister:** 0 (Liste in [`novaberg-project_e.md`](novaberg-project_e.md))
+
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-project_k.md §8` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-project_t.md`](novaberg-project_t.md), `_b` ist [`novaberg-project_b.md`](novaberg-project_b.md), `_e` ist [`novaberg-project_e.md`](novaberg-project_e.md).
+
+| § | Datei |
+|---|---|
+| Titelzeile, Kopfblock, Tabelle | `_k` |
+| *Vorwort: Der Name* | `_k` |
+| 1 · 2 | `_k` |
+| 3 · 3.1 · 3.2 · 3.3 | `_k` |
+| 4 · 4.1 · 4.2 · 4.3 · 4.4 · 4.5 | `_k` |
+| 5 | `_k` |
+| 6 · 6.1 · 6.2 · 6.3 · 6.4 | `_k` |
+| 6.5 | `_t` |
+| 7 (mit *Die Schwierigkeit der Bewertung*) · 8 | `_k` |
+| 9 (Phasen 1 bis 5) · 10 | `_b` |
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Quellen) | `_e` |
+| bisherige Schlusszeile (*Konsolidiert aus …*) | `_e` |
+| Entschieden, Offen beim Meister, verworfene Varianten, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 ---
 
@@ -153,15 +171,7 @@ Das Saatgut kommt aus drei Quellen:
 
 Nova ist kein Freund und kein Therapeut — sie ist eine Assistentin. Ein Butler fragt nicht ständig nach Aufträgen — er steht bereit. Eigeninitiative zeigen, aber sich nicht aufdrängen.
 
-### 6.5 Anti-Floskel-Maßnahmen
-
-Aus dem Prompt-Feintuning (Chat 7):
-
-- **Längenspiegel:** „Antworte kürzer als der Prompt des Users"
-- **Callcenter-Negativassoziation:** „Du bist KEIN Callcenter-Bot"
-- **Verbotene Phrasen:** „Lass es mich wissen", „Zögere nicht", „Ich bin hier für dich", „Ich stehe dir zur Seite", etc.
-- **Interne Tags unterdrücken:** Keine `[Nova-Impuls]`-Tags, keine Salienz-Scores in der Antwort
-- **Variable Einstiegssätze:** Keine repetitiven „Hey! Ich hab gerade über..." — Nova formuliert frei
+> **Hinweis zur Aufteilung (19.09.2026):** §6.5 *Anti-Floskel-Maßnahmen* steht in [`novaberg-project_t.md`](novaberg-project_t.md).
 
 ---
 
@@ -210,66 +220,3 @@ Die Antwort ist Pluralismus: Drei unabhängige Perspektiven korrigieren sich geg
 **Ohne Kompromisse. Qualität vor Geschwindigkeit.**
 
 ---
-
-## 9. Evolution (44 Chats)
-
-### Phase 1: Grundlagen (Chats 1–12, März 2026)
-| Chat | Meilenstein |
-|------|------------|
-| **1** (12. März) | Die Idee: Pluralismus, Kognition, Datensouveränität |
-| **3** (14. März) | Gedächtnis: KZG, LZG, Salienz, Timeline, Kontaminations-Problem |
-| **5** (17. März) | Plugin-System, Nova getauft |
-| **6** (17.–18. März) | Dual-LLM: GPU + CPU, Shadow Agent, Ende-zu-Ende-Test |
-| **8** (21. März) | Graph-Refactoring, EI, Perzeption-Node, Ebbinghaus-Decay |
-| **11** (24. März) | Gedächtnis-Epic abgeschlossen, alle Manager validiert |
-
-### Phase 2: Emotionale Intelligenz (Chats 14–20, März 2026)
-| Chat | Meilenstein |
-|------|------------|
-| **18** (28. März) | Plutchik-Oktagon: 8 Sektoren, 16+1 Emotionen |
-| **19** (28. März) | Prompt v2: EI-MIKRO, Anti-Floskeln, Butler-Prinzip, CAT-Konzept |
-| **20** (28.–29. März) | CAT-Implementierung, Novas eigener Hash, System-Prompt-Bug, 5-Schichten validiert |
-
-### Phase 3: Agentic Workflow Architecture (Chats 22–32, März–April 2026)
-| Chat | Meilenstein |
-|------|------------|
-| **22** (30. März) | Epic 11 Phase 1: NotizenAgent als Pilot |
-| **26** (2. April) | Aktionsklassifikation im Agent, TimelineAgent komplett |
-| **27** (2. April) | [BLOCKNAME]-Schema, Strukturierte Kontextualisierung |
-| **30** (4. April) | "Daten vollständig transportieren, Formatierung am Konsumenten" |
-| **31–32** (5. April) | DelegationsAgent, Yin-Yang-Prinzip |
-
-### Phase 4: Qualität, Web & Spezialisierung (Chats 34–38, April 2026)
-| Chat | Meilenstein |
-|------|------------|
-| **35** (6. April) | Web-Integration: SearXNG + RechercheAgent Ende-zu-Ende |
-| **38** (8. April) | Tri-LLM-Architektur (Qwen3 + Mistral GPU + Mistral CPU) |
-
-### Phase 5: Identität, CRUD-Härtung & Normalisierung (Chats 39–44, April 2026)
-| Chat | Meilenstein |
-|------|------------|
-| **39** (9. April) | Claude API Provider, Gesprächsvektor-Node |
-| **40** (10.–11. April) | CharakterIdentitaetAgent + DirektivenAgent, Tribunal Score-System |
-| **41** (11. April) | Telegram-Bot live, REDIS-PERSIST, Zeitparser-Fixes |
-| **42** (11. April) | CRUD-Härtung: 4 Agenten, verb_mappings, Verifikation |
-| **43** (12. April) | KONTEXT1-Fix, Resume-Bug, Epic 15 Pilot (Domain-Language-Normalisierung) |
-| **44** (12. April) | Epic 15 Rollout (3 Agenten), DELEG-REG Fix |
-
----
-
-## 10. Ausblick
-
-Novaberg ist funktionsfähig und wächst. 44 Sessions, 75 Dokumente, 12 Nodes im HumanGraph, ein Agent-System mit 11 Agenten (4 User-Agenten, 6 Pixie-Agenten, 1 DelegationsAgent), ein Unterbewusstsein das eigenständig recherchiert, und ein Telegram-Bot als zweiter Kommunikationskanal. Was kommt:
-
-- **Epic 15 (4/6 ✅):** Domain-Language-Normalisierung auf alle Agenten ausrollen
-- **Epic 16:** Entity-First-Retrieval — Knowledge Graph vor Websuche
-- **RESP-CHAR1 (hoch):** Base-Charakter-Prompt im Responder — Hauptursache für Leblosigkeit
-- **Traum-Modus (Epic 8):** Pixie assoziiert frei bei leerer Queue
-- **Antrieb & Dual-Emotion:** Nova entwickelt eigene Ziele mit Gravitation auf Salienz und Gesprächsvektor — mit eigenem Emotionsstrang
-- **Voice (TTS/STT):** Spracheingabe und -ausgabe
-
-Das Ziel ist kein perfekter Assistent. Das Ziel ist ein System, das mit seinem Nutzer wächst — das besser wird, je länger man es nutzt.
-
----
-
-*Konsolidiert aus nova-00-k.md (Konzept) und nova-06-k.md (Identität). Für Architektur → novaberg-architecture.md. Für Graph → novaberg-graph.md.*

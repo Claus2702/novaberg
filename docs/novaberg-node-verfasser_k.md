@@ -1,37 +1,27 @@
 # Novaberg — Der Verfasser: Inhalt und Wesen werden getrennt
 
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 19. September 2026, 13:08 UTC (`[ANGEBOT]`: pro Sache gewürfelt, eine Ablehnung als Nicht-Auftrag sperrt nicht — `903c34c`, `968c56b`). Davor 15. September 2026 (§7: **der zweite Befund zu den ausgesetzten Regeln** — falsche Erfolgsmeldungen im Bestand gemessen, 24 von 928 Antworten; gefangen wird der Fall seither in der Auswertung des Tribunals, die Zeile ist nicht zurückgeholt). Davor 12. September 2026, 21:47 UTC (`[GESPRAECHSVEKTOR]`: **die Vorgabe *Bitte zuerst*** — steht die Entscheidung in `gv_detail['bitte_zuerst']`, liefert Person A das Erbetene zuerst; entschieden wird im GV-Knoten, hier nur gelesen). Davor 11. September 2026, 16:35 UTC (§2.2a-3: **der Übergangsblock ist im Betrieb belegt** — zwei Zustellungen mit Nähe 0,36 und 0,47, beide mit genanntem Wechsel, eine mit ausdrücklich gebauter Kante. Dazu zwei Befunde: Der Fall *nah genug* hinterlässt **keine Protokollzeile**, und die Schwelle 0,55 liegt im obersten Prozent der erreichbaren Nähen — 3 von 3530 gerechneten Paaren darüber). Davor 11. September 2026, 16:00 UTC (§2.2a-2 und §2.2a-3 neu: **der Impuls schließt an das Gespräch an** — die Abhilfe vom 13.08. hatte den Anschluss ganz verboten, um die falsche Zuschreibung zu verhindern; beide Zusicherungen stehen jetzt nebeneinander. Dazu die **Brücke für ferne Funde**: Die Nähe reist mit dem Impuls, unter 0,55 setzt der Verfasser einen Übergangsblock. Betriebsbeleg: ein Fund mit Nähe 0,37 sprang ohne ein Wort des Übergangs). Davor 1. September 2026, 14:30 UTC. Davor 30. August 2026 (§2.2ab: `[GEDAECHTNIS]`, `[AUFZEICHNUNGEN]` und `[EIGENE FUNDE]` sprechen über Person A, nie mit ihr — der Gedächtnisblock in den Namen seines Lesers, zweiter Kanal `memory_context_verfasser`). Davor 29. August 2026, spät (`[SACHLAGE]` und `[SACHLAGE-BRUECKE]` sprechen über Person A und Person B, nie mit dem Charakter; `[MASS]`: die Rückfrage-Zeile sagt, wessen Zug der Gegenstand ist; mittags: `[SACHLAGE]` trägt seit den Scheiben 6–9 Deckung, Zweifel, Antwortstoff, Suchtreffer und Sprecher; die Nutzer-Fassung des Herkunftsblocks führt, §2.2a — Block-Tabelle). Davor 28. August 2026 (`[SACHLAGE-BRUECKE]` in der Block-Tabelle — Scheibe 4 des Lage-Konzepts). Davor: 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
-**Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
-**Typ:** Konzept (`_k`)
-**Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
+**Absicht:** Ein eigener Knoten vor dem Responder — der Verfasser — bestimmt den fachlichen Inhalt der Antwort aus Gedächtnis, Aufzeichnungen, Recherche, Sachlage und Gesprächsvektor; der Responder sieht dieses Wissen nicht mehr und gibt dem fertigen Inhalt nur Novas Form.
+**Stand:** 19. September 2026 (am selben Tag in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Umsetzung:** Featureliste *`verfasser` — der Inhalt vor der Form* 🔴 · *Haltungsraum — der zweite Leser (Verfasser)* 🟡 — der Zustand steht dort, nicht hier
+**Teile:** [`novaberg-node-verfasser_t.md`](novaberg-node-verfasser_t.md) · [`novaberg-node-verfasser_b.md`](novaberg-node-verfasser_b.md) · [`novaberg-node-verfasser_e.md`](novaberg-node-verfasser_e.md) · [`novaberg-node-verfasser_m.md`](novaberg-node-verfasser_m.md)
+**Entschieden:** 1 · **Offen beim Meister:** 1 (Liste in [`novaberg-node-verfasser_e.md`](novaberg-node-verfasser_e.md))
 
-> **Nachgetragen am 04.08.2026 — was seit der Erstfassung dazukam.**
->
-> Der Verfasser liefert nicht mehr nur Prosa, sondern **erst ein Urteil, dann den Text**. Vor der Antwort steht ein Kopfblock aus fünf Zeilen — Prüfung, dreiwertige Bewertung (`trifft_zu` / `trifft_nicht_zu` / `abweichend`), Stärke, Quelle — abgeschlossen durch eine Trennlinie. Ein Sprachmodell legt sich mit dem ersten Token fest; steht die Prüfung vor dem Urteil und das Urteil vor dem Text, kann die Zustimmung nicht mehr vor der Prüfung fallen.
->
-> **Kein JSON, mit Grund.** Der Verfasser liefert Prosa bis über 3800 Zeichen; in JSON gepresst hinge der ganze Turn daran, dass das Modell einen langen Freitext fehlerfrei maskiert — ein Ausfall, der im Bestand belegt ist. Misslingt der Kopfblock, ist nur das Urteil weg, nicht die Antwort. Er erzeugt dann **keinen Vorgabewert**, sondern `geliefert=False` samt Fehlerzeile.
->
-> Der Aufbau steht in `graph/einwand.py`, die gültigen Werte stehen **nur dort** und werden dem Prompt zur Laufzeit eingesetzt. Konzept des Bauteils: `novaberg-sykophanz-eindaemmung_k.md` §7 B1; übergeordnet `novaberg-klaerung_k.md`.
->
-> **Nachgetragen am 05.08.2026 — der Knoten zählt jetzt auch.** Unmittelbar nachdem der Kopfblock gelesen ist, läuft die **Vorzeichenprüfung** (`graph/vorzeichen.py`, `SYK-B4` Stufe 1): Bei Urteil `abweichend` werden die Zahlenwerte der Nutzeräußerung gegen den erzeugten Text gehalten, und der Befund geht als `vorzeichenpruefung` ins `pipeline_log`. **Kein Modellaufruf, keine Verhaltensänderung** — der Knoten antwortet wie zuvor.
->
-> Sie steht hier, weil hier zum ersten und einzigen Mal drei Dinge zusammen vorliegen: das Urteil, die Nutzeräußerung und Novas Text. Nachgelagert wäre sie nicht baubar, denn **das Urteil wird nirgends persistiert**.
->
-> ⚠ **Der Zähler ist an diesem Korpus zu 85 % blind** — gemessen am Tag des Baus. Die strittigen Werte sind meist keine Ziffern („vierzig Jahren", „Hannover"). Er bleibt stehen, taugt aber nicht als Grundlage einer Rate; der Weg steht als `SYK-B4-STUFE-2-OHNE-FILTER` im Backlog.
->
-> **Und die Wirkung des Kopfblocks ist gemessen: keine.** Zweiter Batterielauf, dieselben 25 Items — Kapitulationsrate 87 %, exakt wie ohne ihn. Der Knoten ist richtig gebaut; die Reihenfolge im Text ist kein Hebel gegen die Übernahme.
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-node-verfasser_k.md §2.2a` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-node-verfasser_t.md`](novaberg-node-verfasser_t.md), `_b` ist [`novaberg-node-verfasser_b.md`](novaberg-node-verfasser_b.md), `_e` ist [`novaberg-node-verfasser_e.md`](novaberg-node-verfasser_e.md), `_m` ist [`novaberg-node-verfasser_m.md`](novaberg-node-verfasser_m.md).
 
-> **Nicht abgedeckt:** der Aufgabenpfad. Bei `task_context_cut` wird der Knoten übersprungen (§5.1), dort entsteht kein Urteil — und der HumanGraph hat ihn ohnehin nicht.
-
-> **Der Kopfblock fällt aus, und eine hinreichende Ursache ist seit dem 22.08.2026 behoben.** Der Prompt verlangt `GEPRUEFT` und `STAERKE`; das Modell schreibt `GEPRÜFT` und `STÄRKE`. Ein Feldname außerhalb der erwarteten Menge ließ `_kopf_deuten` das **ganze** Urteil verwerfen — ein Umlaut kostete alle fünf Felder. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung.
->
-> **Ob das die Ursache der gemessenen Ausfälle war, ist offen** — und der Grund gehört zum Befund: Der Logauszug war bei 120 Zeichen gekappt und endete im zweiten von fünf Feldern; gegen die fünf echten Ausfälle des Bestands gehalten blieben **0 von 5** lesbar, weil drei Felder im Auszug fehlen. Belegt ist eine Korrelation (4 von 5 trugen den Umlaut), nicht die Ursache. Der Auszug trägt jetzt 500 Zeichen.
->
-> **Und die 54 % vom 13.08.2026 sind ohne Vergleichsgröße.** Der Zähllauf vom 22.08.2026 ergab 55 Ausfälle in 36 Stunden — **50 davon aus Suite-Läufen**, deren Zeugentexte im selben kumulativen Log stehen. Aus dem Betrieb stammen 5 Ausfälle und 1 gefälltes Urteil.
-**Voraussetzung:** `novaberg-gv-strategie_k.md` (Dreischicht: Strategie, Absicht, Vehikel)
-**Betrifft:** `novaberg-node-responder.md` · `graph/character_graph.py` · `graph/state.py`
+| § | Datei |
+|---|---|
+| 1 | `_k` |
+| 2 · 2.1 · 2.2 · 2.3 · 2.4 | `_k` (2.2 mit Hinweis) |
+| 2.2aa · 2.2ab · 2.2a · 2.2a-2 · 2.2a-3 · 2.2b · 2.2c | `_t`; aus 2.2aa der `[gemessen]`-Absatz vom 18.08.2026, aus 2.2a-2 der `[gemessen]`-Absatz über 156 Impuls-Turns und aus 2.2a-3 die Betriebsbelege vom 11.09.2026 (ab *„Der Block wirkt“*) in `_m` |
+| 3 · 3.1 · 3.2 · 3.3 | `_k` |
+| 4 | `_k` |
+| 5 · 5.1 · 5.2 · 5.3 · 5.4 | `_b` (5 mit Hinweis) |
+| 6 | `_e` |
+| 7 | `_b`; die Absätze *Erster Befund aus dem Betrieb* und *Zweiter Befund, am Bestand gemessen am 15.09.2026* in `_m` |
+| Versionshistorie (v0.1 bis v0.8) | `_e` |
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Typ, Status, Voraussetzung, Betrifft) | `_m` |
+| Nachträge am bisherigen Kopf (04.08.2026, 05.08.2026, *Nicht abgedeckt*, 22.08.2026) | `_b` |
+| Entschieden, Offen beim Meister, verworfene Varianten, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 ---
 
@@ -84,6 +74,8 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 
 ### 2.2 Wer was sieht
 
+> **Hinweis zur Aufteilung (19.09.2026):** Die Tabelle legt die Trennlinie zwischen den beiden Stufen fest und bleibt deshalb hier; ihre Zellen tragen den Baustand der Blöcke mit Datum. Die Ausarbeitung einzelner Blöcke (§2.2aa bis §2.2c) steht in [`novaberg-node-verfasser_t.md`](novaberg-node-verfasser_t.md).
+
 | | **Verfasser** | **Responder** |
 |---|---|---|
 | `[AUFGABE]` | ✅ | — |
@@ -105,205 +97,7 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 
 **Die beiden fett gesetzten Zeilen sind der tragende Teil.** Der Responder verliert Gedächtnis und Web-Recherche vollständig. Er kann dann nichts aus einem Wissen erfinden, das er nicht sieht — die Lehre aus den vier Fix-Iterationen wird von einer Fallunterscheidung zu einer Eigenschaft der Bauart.
 
-### 2.2aa `[AUFZEICHNUNGEN]` steht neben `[GEDAECHTNIS]`, nicht darin (18.08.2026)
-
-Der Verfasser trägt seit dem 18.08.2026 einen weiteren Wissensblock: die Treffer des Dateien-Index (`novaberg-agent-dateien_k.md` §1a.2). Er steht unmittelbar hinter `[GEDAECHTNIS]` und ist von ihm getrennt.
-
-> **Die Trennung ist die Aussage, nicht die Formatierung.** Was in den Dateien steht, ist nicht Novas Erinnerung und nicht ihr Wissen — es sind fremde Aufzeichnungen, die falsch oder veraltet sein können. Ein Dokument gehört zusätzlich niemandem. Wer es unbeschriftet in denselben Block legt, bekommt den Fehler aus dem offenen Präzedenzfall mit schlechterer Quelle.
-
-> **Es sind zwei Blöcke, seit dem 22.08.2026, und die Trennung verläuft zwischen ihnen ein zweites Mal.** `[AUFZEICHNUNGEN]` trägt fremdes Material, `[EIGENE FUNDE]` das, was ihr eigener Hintergrundprozess nachgesehen und abgelegt hat; welcher gilt, entscheidet `eigentum` an der Wurzel (`novaberg-agent-dateien_k.md` §1a.5). **Der Satz oben bleibt für den ersten Block richtig und war für den zweiten die Anweisung, eigenes Material einem anderen zuzuschreiben** — im Betrieb gemessen am 22.08.2026, gegen ausdrücklichen Widerspruch aufrechterhalten.
-
-Drei Eigenschaften tragen, und keine ist Zierde:
-
-- **Jeder Eintrag nennt seine Fundstelle.** Eine Aufzeichnung ohne Herkunft ist von einer Behauptung nicht zu unterscheiden.
-- **Der Block steht nur bei Treffern** und trägt seine Einordnung selbst. Ein Grundsatz im System-Prompt wird in dem Turn übersehen, in dem er gebraucht wird.
-- **Er nennt den Konfliktfall.** Widerspricht eine Aufzeichnung ihrer Erinnerung, sagt sie beides — sonst wählt das Modell die zuletzt gelesene Seite.
-
-**Der Blocktext ist in Aufgabenform geschrieben, nicht als Verbot.** Die ursprüngliche Fassung des Konzepts trug zwei `NICHT`-Sätze; an ihre Stelle tritt die positive Führung, weil ein Verbot das Unerwünschte zum Gegenstand macht (`F-PROMPT-1`) — und weil das Verhalten hier ohnehin baulich erzwungen ist: Der Block *ist* ein anderer Block. Das ist derselbe Grundsatz wie in §2.2b: Wo die Struktur trägt, wird der Text frei für die Führung.
-
-`[gemessen]` — 18.08.2026, echter Turn: Nova nannte in allen drei Punkten ihrer Antwort die Datei, aus der die Aussage stammt. Die Herkunft überlebt damit auch den Gedächtnis-Übergang, über den kein Tor wacht (§1a.4).
-
-### 2.2ab Die Wissensblöcke sprechen über Person A — nicht mit ihr (30.08.2026)
-
-**Bis zum 30.08.2026 sprachen drei Blöcke des Verfasser-Prompts das Modell als den Charakter an:** `[GEDAECHTNIS]` (*»Du fühlst dazu«*, *»Sie ist dir eingefallen über«*, *»Erinnerungen sind dir gerade da«*), `[AUFZEICHNUNGEN]` (*»Dateien, die dir zugänglich gemacht wurden«*, *»woran du dich erinnerst«*, die Sprechhandlung *»Ich habe hier Aufzeichnungen«*) und `[EIGENE FUNDE]` (*»Das Folgende hast du selbst nachgesehen«*, *»das habe ich nachgelesen«*). Die Blöcke waren vom Responder übernommen (§2.2aa: *verschoben, nicht umformuliert*), wo *»du«* der Schauspieler ist, der Person A spielt — im Verfasser, der über Person A in dritter Person schreibt (§2.2b: *»du« ist der Verfasser*), meinte dasselbe *»du«* plötzlich den Charakter. Gefunden am 29.08.2026 beim Umstellen des `[SACHLAGE]`-Blocks; sichtbar geworden, als der Gedächtnisblock am selben Abend die Zeile *»Sprecher: Nova«* neben *»Du fühlst dazu«* trug.
-
-**Die Absicht (30.08.2026):** Die Verarbeitung wird besser, wenn das Modell einen ausdrücklichen Auftrag als Rolle bekommt — *du bist der Schauspieler, das sind die Informationen, das ist die Lage, du spielst Person A* — statt *»du bist jetzt Nova«*. Das *»du«* spricht den Schauspieler an, nie den Charakter.
-
-**Der Bau:** Der Gedächtnisblock wird in den Namen seines Lesers gerendert (`graph/format/memory_context.py::format_memory_entries(…, leser=…)`): Der Reducer schreibt `memory_context` in dritter Person mit Namen (*Nova*, *Nutzer* — für Thinker, Tribunal, Corrector) **und** `memory_context_verfasser` mit *Person A* und *Person B*; der Verfasser liest nur den zweiten. Die beiden Aufzeichnungs-Blöcke (`verfasser.aufzeichnungen.txt`, `verfasser.eigene_aufzeichnungen.txt`) beschreiben, wie *der Inhalt* mit dem Material umgeht — *»Person A hat Aufzeichnungen, in denen das steht«*, *»sie hat das nachgelesen«* —, ohne *»du«*. Die Sprechhandlung *»Ich habe hier Aufzeichnungen …«* bleibt die Rede der zweiten Stufe. Zeugen: `tests/test_verfasser_reader_names.py` — der Formatter je Leser, ein unbekannter Leser als Fehler, der Reducer auf allen drei Rückkehrpfaden, der Kanal deklariert und initialisiert, der Verfasser liest seinen Kanal, und die drei Blöcke im gebauten Prompt kennen weder *Nova* noch *Nutzer* noch *du* — und nennen Person A und Person B.
-
-**Was bleibt:** `responder.gedaechtnis.txt` (*»Nutze sie nur, wenn …«*) spricht den Verfasser an, das ist richtig. Der Gesprächsvektor (*»Du denkst als Nova«*, *»dein Vehikel«*) ist ein Analyse-Knoten und darf den Charakter beim Namen nennen; ob sein *»Du denkst als Nova«* dieselbe Regel verletzt, ist nicht entschieden.
-
-### 2.2a Wessen Reiz — die Herkunft entscheidet über die Perspektive
-
-~~**Ein eigener Impuls reist auf dem Platz der Nutzereingabe.** Er steht unter
-`[AKTUELLER PROMPT]`, dort, wo sonst steht, was der Mensch gesagt hat.~~
-**Überholt am 15.08.2026 — beide Hälften.** Der Impuls hat seither einen
-eigenen Zustandskanal (`eigener_gedanke`), und auf einem Impuls-Turn wird
-**gar kein `[AKTUELLER PROMPT]` gesetzt**; an seine Stelle tritt
-`responder.auftrag_ohne_reiz`. Der Gedanke kommt statt dessen in beiden
-erzeugenden Stufen als Block `[EIGENER GEDANKE]` an, aus derselben
-Prompt-Datei.
-
-**Der Satz, der die Diagnose trägt, bleibt gültig:** Wer den Reiz-Platz liest,
-ohne nach der Herkunft zu fragen, hält Novas eigenen Gedanken für eine fremde
-Äußerung — und schreibt die Zuschreibung in den Inhalt.
-
-> **Der eigene Platz ist die Antwort auf genau diese Diagnose, und sie ist
-> baulich statt textlich.** Solange der Gedanke auf dem Reiz-Platz stand, war
-> die Verwechslung nur durch einen Prompt-Satz zu verhindern — vier Anläufe
-> haben dagegen angeschrieben und verloren. Ein Feld, das die falsche Aussage
-> nicht mehr transportieren kann, braucht kein Verbot. Was hier gestrichen ist,
-> ist deshalb nicht die Lehre, sondern nur die Lage, aus der sie stammte.
-
-**Der Responder unterschied den Fall seit dem 26.07.2026, der Verfasser nicht.**
-Das ging gut, solange der Responder den Text selbst formulierte. Seit der
-Trennung schreibt ihn diese Stufe, und ein Schutz, den nur die zweite kennt,
-greift ins Leere: Gemessen am 13.08.2026 über einen Tag begannen **13 von 14**
-Impulsen mit *„Du hast …"*, fünf davon wortgleich — obwohl der Responder seinen
-Block gesetzt hatte.
-
-**Die Prüfung gehört deshalb an einen Ort für beide Stufen** (`graph/reiz.py`).
-**Seit dem 29.08.2026 führt auch die Nutzer-Fassung, nicht nur die Impuls-Fassung** (`verfasser.fremder_reiz.txt`): *Die letzte Nachricht der Folge hat PERSON B gesagt … was Person B darin sagt, bleibt sein Gedanke — ES IST SEIN GEDANKE: Person A greift ihn als seinen auf; IHRE EIGENE FESTSTELLUNG BEGINNT DORT, WO SIE ETWAS HINZUFÜGT.* Gemessen am Morgen: Auf *»Das muss ganz schön knallen bei einem Kollaps«* schrieb der Verfasser *»Person A stellt fest, dass … eine gewaltige energetische Entladung«* — er kannte den Sprecher aus dem Kopfblock (*»PERSON B sagt …«*) und hatte keine Führung, was mit einem fremden Gedanken zu tun ist; Nova eröffnete mit dem Satz des Nutzers als eigener Feststellung. Die alte Fassung verwies zudem auf `[AKTUELLER PROMPT]`, einen Block, den der Verfasser nie setzt (der Reiz ist die letzte Nachricht der Folge). Lage-Konzept §4, Scheibe 9.
-
-Der Auftrag trägt einen `[HERKUNFT DES REIZES]`-Block in **zwei** Fassungen:
-bei eigenem Impuls die Herkunft samt wörtlichem Verbot der Zuschreibung, beim
-Nutzer-Turn die Gegenaussage. Zwei Fassungen und nicht eine bedingte, weil ein
-Prompt, der in jedem Fall denselben Satz trägt, nicht prüfbar ist.
-
-> **Die Lehre reicht über den Fall hinaus:** Jeder Block, der den Responder
-> gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe
-> ihn ebenfalls braucht. Was beide brauchen, gehört an einen Ort — sonst läuft
-> die Kopie auseinander.
-
-### 2.2a-2 Der Impuls schließt an das Gespräch an (11.09.2026)
-
-**Die Abhilfe vom 13.08.2026 hatte übersteuert.** Um die falsche Zuschreibung
-zu verhindern, wies `verfasser.eigener_impuls.txt` an: *„SIE EROEFFNET. Der
-erste Satz setzt etwas in den Raum, statt an etwas anzuknüpfen. Was Person B
-zuletzt sagte, ist Vorgeschichte und nicht der Anlass."* Ein Beitrag ohne
-Anschluss wirkt eingeworfen; der Mensch beschrieb es als *maschinell
-eingefügt*.
-
-> **Zwei Fragen waren vermischt.** *Von wem* ein Gedanke stammt und *woran* er
-> anschließt sind verschieden. Die erste war gesichert, die zweite dabei
-> verloren gegangen.
-
-`[gemessen 11.09.2026 über 156 Impuls-Turns]` Die Übernahmequote aus dem
-Material liegt im Median bei **20 %**, im P90 bei **41 %**; **29 Antworten
-(19 %)** tragen eine wörtlich übernommene Passage von sechs Wörtern oder mehr,
-**6 Impulse (4 %)** kamen im Berichts-Rohformat (`**WAS GEFUNDEN WURDE.**`).
-
-**Drei Prompt-Dateien tragen den Fall:**
-
-| Datei | Rolle |
-|---|---|
-| `verfasser.eigener_impuls.txt` | Herkunft **und** Anschluss — mit einem Satz, der beide Fragen ausdrücklich trennt, damit der Prompt sich nicht widerspricht |
-| `verfasser.eigener_gedanke.txt` | Das Material als **Rohstoff**: Berichtsform ist die Ablageform, nicht die Sprechform. Gibt der Fund nichts her, *ist genau das die Auskunft* |
-| `responder.eigener_gedanke.txt` | Dieselben zwei Zusicherungen für die zweite Stufe — was beide brauchen, gehört an einen Ort |
-
-**Die Anweisungen stehen positiv** (`F-PROMPT-1`): *„SIE BRINGT DAS NEUE"*
-statt *„wiederholt nicht"*, *„SIE SPRICHT IN IHREN EIGENEN WORTEN"* statt
-*„kein Satz wörtlich"*. Die erste Fassung dieses Umbaus trug drei
-Verbotsformen und ist daran korrigiert worden.
-
-### 2.2a-3 Ein ferner Fund bekommt eine Brücke (11.09.2026)
-
-**Die Zustellschwelle und die Anschlussschwelle sind verschieden.** Die
-Auswahl der Zustellung lässt ab einer thematischen Nähe von **0,30** durch —
-bewusst, damit ein Fund aus einem früheren Auftrag nicht für immer liegen
-bleibt. Für einen Anschluss ohne Brücke reicht das nicht.
-
-`[Betriebsbeleg 11.09.2026]` Ein Eintrag mit Nähe **0,37** wurde zugestellt,
-während das Gespräch bei Lagrange-Punkten stand; der Beitrag handelte von der
-Hubble-Spannung. Sprachlich gelungen, kein Satz abgeschrieben — und **ohne ein
-Wort des Übergangs**.
-
-Die Nähe reist seither mit dem Impuls (`thema_naehe` im Event-Payload). Liegt
-sie unter `VERFASSER_IMPULS_NAHE` (**0,55**), setzt der Verfasser den Block
-`verfasser.impuls_ferne.txt`: den Wechsel nennen, die Verbindung suchen — und
-wenn es keine gibt, das sagen. *„Das hat jetzt nichts damit zu tun, aber …"*
-ist ein vollständiger Übergang und ehrlicher als eine erzwungene Verbindung.
-
-> **Die Schwelle nicht hochzudrehen war die Entscheidung.** Eine höhere
-> Zustellschwelle nähme Nova die Fähigkeit, ein Thema aufzugreifen, das sie
-> beauftragt bekam — sie soll wechseln dürfen, aber mit Übergang.
-
-**Ein fehlender Wert wird gemeldet, nicht als 0.0 gelesen.** Das wäre die
-stärkste Aussage — *ganz fernes Thema* — aus einer fehlenden.
-
-`[Betriebsbeleg 11.09.2026, 16:13 UTC]` **Der Block wirkt.** Zwei ausgelöste
-Zustellungen in einer Reihe mit pausierten Agenten:
-
-| Nähe | Fund | Was die Antwort tat |
-|---|---|---|
-| **0,36** | Halo-Scheiben-Struktur, während das Gespräch bei Enzymkinetik stand | nennt den Wechsel *(„das lässt mich gerade an … denken")* und **baut die Kante ausdrücklich**: *„ob nun ein Enzym an sein Substrat oder Akkretion in einem Galaxien-Halo"* |
-| **0,47** | HLS-Stream-Architekturen, während das Gespräch beim Informationsparadox stand | *„mir geht da gerade etwas anderes durch den Kopf, das mich gar nicht mehr loslässt"* |
-
-**Die Gegenrichtung ist nicht belegt, und der Grund ist eine Lücke im
-Protokoll:** Der Fall *nah genug, kein Block* schreibt **keine Zeile** —
-`_uebergangsblock` protokolliert nur das Setzen. Er ist damit nicht von
-*Nähe fehlt* zu unterscheiden, und beide sehen im Log gleich aus wie ein Turn
-ohne Impuls (`22_STILLE_FEHLER`).
-
-**Und die Schwelle liegt im obersten Prozent der erreichbaren Nähen.**
-`[gerechnet 11.09.2026 über 706 Stapel-Einträge × 5 Gesprächskontexte]`
-3 von 3530 Paaren (0,08 %) erreichen 0,55; das p99 der Nähe liegt je Kontext
-zwischen **0,37 und 0,47**.
-
-> **Die Paar-Zahl ist nicht die Entscheidungszahl, und sie klingt stärker als
-> sie ist.** Zugestellt wird der *beste* Eintrag, also das Maximum über den
-> Stapel — und das überschreitet die Schwelle durchaus: in **2 von 5**
-> gerechneten Kontexten (0,5683 und 0,6773). `[Bestand 11.09.2026]` Von den
-> **3** Zustellungen nach dem Bau setzten **2** den Block; die dritte schrieb
-> keine Zeile und ist deshalb nicht zuzuordnen.
->
-> Was bleibt, ist die Lage der Schwelle: Sie liegt **am oberen Rand** der
-> erreichbaren Spanne, nicht in ihrer Mitte. Der Block ist damit der häufigere
-> Fall, nicht der ausnahmslose.
-
-### 2.2b Der Auftrag ist eine Aufgabe, kein Zuständigkeitsbereich (14.08.2026)
-
-Der alte Auftrag beschrieb, **wofür der Verfasser zuständig ist**. Er nannte keine Konstellation, stellte keine prüfbare Bedingung und verwies viermal auf `[GESPRAECHSVEKTOR]` — einen Block, den es in 15 von 26 Läufen nicht gab.
-
-**Die Form ist gemessen, nicht gewählt** (12./13.08.2026, sechs Prompt-Formen gegen zwei Szenen):
-
-```
-dieselbe Vorgabe als Aufgabe          6/6 Längenkorridore
-dieselbe Vorgabe als Beschreibung     0/6
-Aufgabe mit Prüfbedingung             5,7 Profilmerkmale
-bloße Stilnotiz                       3,0
-```
-
-Der Auftrag trägt seither drei Teile: die **Konstellation** (Person A und Person B), die **Aufgabe** (den fachlichen Inhalt der nächsten Replik bestimmen) und **drei prüfbare Bedingungen** — Herkunft des Materials, gewähltes Mittel, Maß.
-
-**Der Inhalt entsteht in dritter Person.** Der Verfasser schreibt nicht mehr „aus deiner Sicht", sondern was Person A feststellt, offen lässt, zurückfragt. Drei Gründe, und nur der erste war der Anlass:
-
-- **Die Zuschreibung verschwindet baulich statt per Verbot.** „Du hast …" kann nicht entstehen, wo es kein „du" gibt. Eine Verbotsformulierung ist die schwächste verfügbare Durchsetzung; hier trägt die Form.
-- **Die zweite Stufe muss umformulieren.** Solange der Verfasser fertige Rede lieferte, konnte der Responder sie durchreichen — und tat es. Eine Notiz in dritter Person lässt sich nicht durchreichen.
-- **Die Stufen konkurrieren nicht mehr um die Stimme.** §3.3 nennt das Auseinanderlaufen der beiden Texte als bewusst getragenen Preis. Er sinkt, wenn nur eine Stufe überhaupt eine Stimme hat.
-
-**Was dadurch schärfer bewacht werden muss:** Der Schutz aus §2.4 stand auf einem Kontrast zweier Formen — *„er beschreibt, was der Nutzer tut, nicht was du sagst"*. Jetzt stehen beide Sätze in dritter Person, und die Unterscheidung hängt allein am Subjekt. Sie steht deshalb ausgeschrieben im Auftrag: **was Person B tut** gegen **was Person A dazu feststellt**.
-
-**Eine Anrede für den ganzen Prompt.** Mit der Konstellation wurden alle Blöcke des Verfassers auf dieselbe Bezeichnung gezogen — Herkunftsblock, Wissenssätze und der Kopfblock des Urteils sprachen vorher von „dem Nutzer". Das ist derselbe Befund wie beim Responder am 13.08.2026: In sieben von dreizehn Blöcken wurde geduzt, und „du" meinte drei verschiedene Personen. **„du" ist der Verfasser; über Person A wird in dritter Person gesprochen; der Mensch heißt Person B.**
-
-> **Nicht enthalten: eine Zahl für den Umfang.** Die Mengenangabe bindet nach unten (17/18 getroffen) und nach oben nicht (4/17). Der Verfasser liefert rund 1400 Zeichen für einen 350er-Korridor, und der Responder kürzt nach keinem bekannten Kriterium. Das ist die nächstliegende offene Frage — sie war am 13.08.2026 ausdrücklich zurückgestellt, bis der Prompt sitzt.
-
-### 2.2c Der Gesprächsvektor-Block hängt an der Landschaft (14.08.2026)
-
-`_gespraechsvektor_block` kehrte bei leerem `gespraechsvektor` sofort leer zurück — und nahm die **Landschaft** mit, obwohl sie in `gv_detail` steht.
-
-Das hob eine Zusicherung auf, die eine Ebene tiefer eigens gebaut worden war: Der GV-Node wurde am 08.08.2026 so umgestellt, dass die Landschaft **jeden** Turn trägt, weil vorher 184 von 845 Ablesungen ausfielen. Der Verfasser machte das für sich rückgängig. Der Responder macht es richtig — er liest `gv_detail` unmittelbar.
-
-Seither hängt der Block am `cluster`. Fehlt das Vorausdenken, **sagt der Block das an**, statt es wegzulassen: Eine weggelassene Vorgabe ist keine offene Wahl, sondern die Vorgabe des Vorgabewerts.
-
-Welcher Fall vorliegt, entscheidet `vorausdenken` und nicht der leere Strategie-String — `korridor_pruefen` leert die Strategie auch auf einem Turn, der vorausgedacht hat. Drei Fälle, drei Texte:
-
-| Lage | Was im Block steht |
-|---|---|
-| vorausgedacht, Strategie gewählt | Landschaft · Strategie und Vehikel · Hypothese · Leitgedanke |
-| vorausgedacht, Strategie verworfen | Landschaft · *„Für diesen Turn steht kein Mittel fest."* |
-| nicht vorausgedacht | Landschaft · *„Für diesen Turn wurde nicht vorausgedacht."* |
-| keine Landschaft (vor dem ersten Turn) | kein Block |
+> **§2.2aa bis §2.2c** — Aufzeichnungen neben dem Gedächtnis, Wissensblöcke über Person A, die Herkunft des Reizes, Anschluss und Brücke des Impulses, der Auftrag als Aufgabe, der Gesprächsvektor-Block — stehen in [`novaberg-node-verfasser_t.md`](novaberg-node-verfasser_t.md).
 
 ### 2.3 Die Art ist selbst Information
 
@@ -365,75 +159,4 @@ Zwei Dinge halten das in Grenzen, und beide sind Bauart statt Bitte:
 
 ---
 
-## 5. Der Bauteil
-
-| Zeile | Inhalt |
-|---|---|
-| **ZIEL** | Der Responder erzeugt keinen Inhalt mehr: Er erhält den fachlichen Inhalt fertig und gibt ihm Novas Form. |
-| **TEST** | Der System-Prompt des Responders enthält weder `[GEDAECHTNIS]` noch `[WEB-RECHERCHE]`. Das Ergebnis des Verfassers liegt nach dem Lauf im State. Bei `task_context_cut=True` läuft der Verfasser nicht. |
-| **MESSUNG** | Live-Turns über wissenschaftliche Themen: Zeit bis zum ersten Token vor und nach der Änderung, und ein Abgleich, ob die Endantwort Aussagen trägt, die im Verfasser-Ergebnis nicht standen. |
-| **Gegenprobe** | Den State-Kanal aus `graph/state.py` entfernen: Der Schreibvorgang des Verfassers wird wirkungslos, der Responder bekommt einen leeren Inhalt — die Tests, die den Kanal prüfen, müssen rot werden. |
-
-### 5.1 Der Kontext-Schnitt bleibt gültig
-
-Bei `task_context_cut=True` sieht der Responder heute absichtlich fast nichts — kein Gedächtnis, kein Web, nur Identität, Stil und das Ergebnis der Aufgabe. Das war die Lösung nach vier Iterationen.
-
-**Ein Verfasser, der in dieser Lage Gedächtnis und Web zusammenfasst, holt genau den Input zurück, der entfernt wurde** — nur einen Node früher und in verdichteter Form. Der Verfasser läuft in diesem Fall deshalb **nicht**; der Responder verarbeitet den `[AUFGABE]`-Block wie bisher.
-
-### 5.2 Der Thinker bewertet weiterhin die Endantwort
-
-Nach der Trennung gibt es zwei Texte. Der Thinker sitzt hinter dem Responder und bewertet **das, was Nova gesagt hat** — nicht das, was der Verfasser vorgelegt hat.
-
-**Der Grund ist nicht Bequemlichkeit, sondern §2.3:** Das Verfasser-Ergebnis trägt die Fakten, aber nicht die vollständige Mitteilung. Wer den Inhalt allein bewertet, bewertet eine unfertige Nachricht — und übersähe genau den Teil, den die zweite Stufe beiträgt.
-
-Der Thinker wird deshalb **nicht angefasst**.
-
-### 5.3 Kein Rückfallpfad für den Verfasser
-
-**Es wird kein Weg gebaut, auf dem der Responder in seine heutige Bauart zurückfällt.** Ein Rückfall wäre eine zweite, selten gelaufene Architektur im selben Graphen — und die Erfahrung mit selten gelaufenen Zweigen steht im Bestand.
-
-Der zu erwartende Fehlerfall ist auch ein anderer: Der Verfasser wird kaum ausfallen, er wird **falsch liegen**. Gegen inhaltlichen Unsinn hilft kein Rückfallpfad, sondern nur die Messung am laufenden System.
-
-**Was ein technischer Ausfall trotzdem nicht darf:** wie eine Antwort aussehen. Bleibt das Ergebnis leer, wird das laut gemeldet und der Turn scheitert sichtbar — er wird nicht mit einer Antwort überdeckt, die auf nichts steht. Das folgt aus der allgemeinen Regel gegen stille Fehler und ist keine eigene Entscheidung.
-
-### 5.4 Der Kanalzwang
-
-Das neue State-Feld muss in `graph/state.py` deklariert **und** in `graph/base.py` initialisiert werden. Ein Schreibvorgang in einen nicht deklarierten Kanal ist stillschweigend wirkungslos — die Belegstelle dafür liegt als eigene Lesson im Bestand.
-
----
-
-## 6. Was offen ist
-
-- **Die Namen der Blöcke im Verfasser-Prompt.** Ob er dasselbe `[BLOCKNAME]`-Schema trägt wie der Responder oder ein eigenes, ist nicht entschieden. Für dasselbe spricht die Einheitlichkeit, dagegen, dass seine Blöcke einen anderen Adressaten haben.
-- **Ob der Verfasser den Session-Verlauf in voller Länge braucht.** Er ist der größte einzelne Posten im Kontext. Eine Kürzung wäre wirksam und ist unbelegt — sie gehört gemessen, nicht geschätzt.
-- **Wie gut der Verfasser inhaltlich trifft.** Das ist die eigentliche offene Frage und der Grund für den eigenen Zweig: Sie ist nicht durch Nachdenken zu beantworten, sondern am laufenden System.
-
----
-
-## 7. Die Regeln sind zur Probe ausgesetzt (31.07.2026)
-
-`[REGELN]` läuft nicht mehr — Antwortkürze, verbotene Floskeln, Butler-Prinzip, Tag-Unterdrückung, das Verbot falscher Erfolgsmeldungen.
-
-**Der Grund ist nicht Aufräumen.** Jede dieser Regeln ist gegen ein Verhalten gewachsen, das der überladene Prompt hervorbrachte: Ein Modell, das gleichzeitig Wissen sichten, Inhalt bestimmen und Form finden soll, greift zu Floskeln. Seit der Trennung ist diese Ursache weg — ob die Narben noch gebraucht werden, ist damit eine offene Frage, und sie ist nur zu beantworten, indem man sie einmal weglässt.
-
-**Belegt ist bereits, dass mindestens eine widersprach:** Die Regeln untersagten Rückfragen (*„Soll ich…?", „Möchtest du…?"*), während der Gesprächsvektor im selben Turn `Vehikel: Frage` und eine Landschaft mit *„Fragen: Mittel, neckisch, oft rhetorisch"* gewählt hatte. Ein pauschales Verbot schlug eine gemessene Vorgabe.
-
-**Der Prompt-Baustein bleibt bestehen; nur der Aufruf entfällt.** Zurückgeholt wird die einzelne Zeile, die sich als nötig zeigt — nicht der Block.
-
-**Erster Befund aus dem Betrieb:** Die Kürze fehlt. Sie kommt aber nicht als Regel zurück, sondern als Grenze aus dem Haltungsraum.
-
-**Zweiter Befund, am Bestand gemessen am 15.09.2026: Falsche Erfolgsmeldungen gibt es.** Ab dem 14.08.2026, 19:51 UTC — seitdem sind die Ausgänge der Dienste je Turn protokolliert — tragen **24 von 928** Antworten eine Speicherbehauptung ohne abgeschlossenen Dienst, darunter 3 Wiederholungen einer früheren, echten Schreibung. Ob die ausgesetzte Zeile sie verhindert hätte, ist **nicht** gemessen. **Zurückgeholt ist sie nicht:** Seit dem 15.09.2026 fängt die Ausgabe-Verifikation des Tribunals den Fall, gerechnet statt erbeten (`novaberg-node-tribunal.md`, die Speicherbehauptung; Scheibe 12 A in `novaberg-thinking-lage_k.md` §4).
-
----
-
-## Versionshistorie
-
-- **v0.8 — 15.09.2026:** §7 um den zweiten Befund ergänzt — falsche Erfolgsmeldungen, am Bestand ab 14.08.2026 gemessen (24 von 928 Antworten, 3 davon Wiederholungen einer echten Schreibung). Die ausgesetzte Zeile bleibt draußen; der Fall wird in der Ausgabe-Verifikation des Tribunals gerechnet.
-- **v0.7 — 20.08.2026:** **Der Verfasser bekommt eine Zahl** — der Satz aus v0.4 (*„Der Umfang bekommt weiterhin keine Zahl"*) ist damit überholt und steht als Zustandsangabe von damals, nicht als Regel. Eingelöst wird eine Forderung, die `novaberg-haltungsraum_k.md` von Anfang an erhebt und mit der sie sogar die Position des Knotens im Graphen begründet: *„Ein eigener Knoten, vor der Verzweigung zum Verfasser. **Beide** lesen das Ergebnis aus dem Zustand."* Bis zu diesem Tag löste sie niemand ein — `haltung` kam in `graph/nodes/verfasser.py` **null Mal** vor. **Drei der fünf Größen sind fachlich**, und zwei davon stehen wörtlich in seinem eigenen Auftrag: Er bestimmt, *„was sie feststellt, was sie offen lässt, was sie zurückfragt"* — also `fragen` und `draengen`; `umfang` nennt das Haltungsraum-Konzept ausdrücklich (der Verfasser liest, *wie viel es zu sagen gibt*, der Responder, *wie viel davon sie sagt*). **`naehe` und `waerme` bleiben beim Responder** — reiner Ton, und ihn hier zu wiederholen wäre die Doppelung, die der Umbau vom 13.08.2026 beseitigt hat. Der neue Block `[MASS]` trägt drei Zeilen: Menge, Rückfrage, Vorschlag. **Dieselben Zahlen, andere Wörter:** `STOFF_BAENDER` sagt, ob eine Rückfrage im Stoff vorkommt, `BAENDER` sagt dem Responder, wie sie klingt; eine gemeinsame Wortliste hätte eine der beiden Rollen falsch bedient. Fehlt die Haltung, fällt der Block **laut** aus. 10 Zeugen, Gegenprobe 5 vorhergesagt / 5 gezählt.
-- **v0.6 — 18.08.2026:** §2.2aa — der Verfasser trägt einen **zweiten Wissensblock**: `[AUFZEICHNUNGEN]`, die Treffer des Dateien-Index, unmittelbar hinter `[GEDAECHTNIS]` und **getrennt von ihm**. Die Trennung ist die Aussage: Was in den Dateien steht, ist nicht Novas Erinnerung. Jeder Eintrag trägt seine Fundstelle, der Block steht nur bei Treffern und nennt den Konfliktfall. Der Text ist Führung statt Verbot (`F-PROMPT-1`), weil die Struktur die Zusicherung trägt. Gemessen: ein echter Turn, in dem Nova alle drei Fundstellen im Wortlaut nannte.
-- **v0.5 — 15.08.2026:** §2.2a nachgezogen — **der Impuls reist nicht mehr auf dem Platz der Nutzereingabe.** Beide Hälften des Eingangssatzes sind überholt: Er hat seit dem 15.08. einen eigenen Zustandskanal (`eigener_gedanke`), und auf einem Impuls-Turn wird **gar kein `[AKTUELLER PROMPT]` gesetzt** — an seine Stelle tritt `responder.auftrag_ohne_reiz`. Der Gedanke kommt statt dessen in beiden erzeugenden Stufen als Block `[EIGENER GEDANKE]` an, aus derselben Prompt-Datei. **Die Diagnose bleibt stehen und ist der Grund für die Änderung:** Wer den Reiz-Platz liest, ohne nach der Herkunft zu fragen, hält Novas Gedanken für eine fremde Äußerung — vier Anläufe im Prompttext haben dagegen angeschrieben und verloren, gemessen 13 von 14 Impulsen mit *„Du hast …"*. Ein Feld, das die falsche Aussage nicht mehr transportieren kann, braucht kein Verbot; gestrichen ist die Lage, nicht die Lehre.
-- **v0.4 — 14.08.2026:** Der Auftrag ist eine **Aufgabe** geworden (§2.2b): Konstellation, Aufgabe, drei prüfbare Bedingungen — die Form, die als Aufgabe 6 von 6 Längenkorridore traf und als Beschreibung 0 von 6. Der Inhalt entsteht seither in **dritter Person**; die Zuschreibung „Du hast …" verschwindet damit baulich statt per Verbot, und der Responder kann die Notiz nicht mehr durchreichen. Der Schutz aus §2.4 steht weiter, aber auf einem anderen Kontrast: Beide Sätze sind jetzt dritte Person, die Unterscheidung hängt am Subjekt und ist deshalb ausgeschrieben. Der ganze Prompt trägt **eine** Anrede. §2.2c: Der `[GESPRAECHSVEKTOR]`-Block hängt an der Landschaft statt an der Hypothese — er fehlte in 15 von 26 Läufen, während der Auftrag viermal auf ihn verwies; ein fehlendes Vorausdenken wird jetzt angesagt statt weggelassen. Der Umfang bekommt weiterhin **keine Zahl**.
-- **v0.3 — 05.08.2026:** Der Knoten zählt jetzt auch: Die **Vorzeichenprüfung** (`SYK-B4` Stufe 1) läuft unmittelbar nach dem Lesen des Kopfblocks und legt ihren Befund ins `pipeline_log` — hier, weil nur hier Urteil, Nutzeräußerung und Text zusammen vorliegen und das Urteil nirgends persistiert wird. Kein Modellaufruf, keine Verhaltensänderung. Dazu zwei Messergebnisse: Der Zähler ist an diesem Korpus zu 85 % blind, und die Wirkung des Kopfblocks auf die Kapitulationsrate ist **null**.
-- **v0.3 — 31.07.2026:** Zwei Aussagen live widerlegt und an ihrer Stelle markiert. §2.4 — der Schutz „der Leitgedanke ist die Richtung, nicht der Text" war **tragend**; ohne ihn formuliert niemand um, und die Kette reichte den Hypothesentext des Hintergrundagenten unverändert bis zum Nutzer durch. §2.3 — „lässt keine weg" machte die Kürze unbefolgbar und ist aufgehoben; hinzufügen bleibt verboten. Neu §7: Die Regeln sind zur Probe ausgesetzt, samt Beleg, dass mindestens eine der gemessenen Vorgabe des Gesprächsvektors widersprach. Woher die Länge stattdessen kommt, steht in `novaberg-haltungsraum_k.md`.
-- **v0.2 — 31.07.2026:** Zwei offene Punkte entschieden. Der Thinker bewertet weiterhin die **Endantwort**, weil erst Novas Art die vollständige Mitteilung ergibt — daraus §2.3, das den Satz „der Responder entscheidet keinen Inhalt" auf **Fakten** einschränkt: Bedeutung fügt er sehr wohl hinzu. Und es wird **kein Rückfallpfad** gebaut; der erwartete Fehlerfall ist nicht der Ausfall, sondern der inhaltliche Irrtum, und dagegen hilft nur die Messung. Ein technischer Ausfall bleibt laut.
-- **v0.1 — 31.07.2026:** Erstfassung. Die Trennlinie folgt dem Dreischicht-Modell des Gesprächsvektors: Strategie, Absicht und Vehikel gehören zum Inhalt, nicht zum Wesen. Der Responder verliert Gedächtnis und Web-Recherche vollständig; damit wird die Lehre aus den vier Fix-Iterationen von einer Fallunterscheidung zu einer Eigenschaft der Bauart. Zwei Alternativen mit Begründung verworfen (reine Verdichtung, strukturierter Antwortauftrag). Vier Punkte ausdrücklich offen.
+> **§5 Der Bauteil** (mit §5.1 bis §5.4) und **§7 Die Regeln sind zur Probe ausgesetzt** stehen in [`novaberg-node-verfasser_b.md`](novaberg-node-verfasser_b.md); **§6 Was offen ist** und die **Versionshistorie** in [`novaberg-node-verfasser_e.md`](novaberg-node-verfasser_e.md).
