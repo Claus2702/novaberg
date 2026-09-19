@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 18. September 2026, 21:14 UTC (die Dienstwahl steht im Pipeline-Log, und bei einer Zustimmung reisen die Sachen des Angebots). Davor 17. September 2026, 14:27 UTC (**Scheibe 12 D2b** — der Objektbezug: der gefragte Dienst bekommt die akuten Objekte an seinem Zettel als `objekt_bezug`). Davor 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
+**Stand:** 19. September 2026, 13:08 UTC (eine Ablehnung als Nicht-Auftrag bildet keinen Aufgabenblock und keinen Kontext-Schnitt, `968c56b`). Davor 18. September 2026, 21:14 UTC (die Dienstwahl steht im Pipeline-Log, und bei einer Zustimmung reisen die Sachen des Angebots). Davor 17. September 2026, 14:27 UTC (**Scheibe 12 D2b** — der Objektbezug: der gefragte Dienst bekommt die akuten Objekte an seinem Zettel als `objekt_bezug`). Davor 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -140,7 +140,7 @@ Am Ende jedes Planner-Durchlaufs (sofern Agent-Ergebnisse vorliegen könnten) ru
 **Prioritätsreihenfolge:**
 
 1. Rückfrage (`inquiry`) → kein Kontext-Schnitt (User braucht Kontext für Antwort)
-2. Ablehnung mit Gegenangebot (`abgelehnt`) → Kontext-Schnitt — ein Urteil ist keine Störung und steht deshalb vor dem Fehler
+2. Ablehnung mit Gegenangebot (`abgelehnt`) → Kontext-Schnitt — ein Urteil ist keine Störung und steht deshalb vor dem Fehler. **Seit 19.09.2026 nicht für eine Ablehnung als Nicht-Auftrag** (`Korrektur.kein_auftrag`, die Klassifikation lehnte ab): Sie bildet keinen Block und schneidet den Kontext nicht — der Nutzer hat nichts verlangt, also gibt es nichts zu berichten; der Turn läuft als Gespräch mit Verfasser und Angebot weiter. Vorher antwortete Nova auf *„Ich brauche noch Mehl"* mit dem Vorschlag der Klassifikation.
 3. Fehler (`error`) → Kontext-Schnitt
 4. Verworfen (`dismissed`) → Kontext-Schnitt
 5. Erfolg (`completed`) → Kontext-Schnitt
@@ -245,7 +245,7 @@ Regelwerk: `novaberg-convention-nmcp.md` §6.7, §6.8.
 | nach jedem anderen Ausgang | Schluss, Aufgabenblock |
 | **Objektbezug** (seit D2b) | beim Fragen eines Agenten `state["objekt_bezug"] = objects_for_service(sachlage, objekt_urteil, name)` — die akuten Objekte, die das Urteil an diesen Zettel stellt, mit bekannten Eigenschaften; für jeden Dienst der Reihe neu gesetzt, leer nach einem Sachlage-Ausfall |
 
-**Der Aufgabenblock** (§4.3): Hat ein späterer Dienst abgeschlossen, ist gescheitert oder wurde verworfen, steht dessen Ausgang im Block, nicht die Ablehnung davor — sie war eine Weitergabe. Aus demselben Grund zählt die Verdichtung ins Kurzzeitgedächtnis eine Ablehnung, nach der ein anderer Dienst abschloss, nicht als Ausgang (`agents/kzg/dispatch.py::abgelehnte_ausgaenge`).
+**Der Aufgabenblock** (§4.3): Hat ein späterer Dienst abgeschlossen, ist gescheitert oder wurde verworfen, steht dessen Ausgang im Block, nicht die Ablehnung davor — sie war eine Weitergabe. Aus demselben Grund zählt die Verdichtung ins Kurzzeitgedächtnis eine Ablehnung, nach der ein anderer Dienst abschloss, nicht als Ausgang (`agents/kzg/dispatch.py::abgelehnte_ausgaenge`) — und seit 19.09.2026 auch keine Ablehnung als Nicht-Auftrag.
 
 **Gemessen** (`labor/2026-09-17_planner_d1/`): 60 Äußerungen, echter Router und Planner, keine Agenten — Notizen-Fälle zuerst richtig 7 → 13 von 13, Termine 4 → 4. **Nicht gemessen:** die Kette *Ablehnung → nächster Dienst* mit echten Agenten; bezeugt in `tests/test_planner_objektwahl.py`.
 
