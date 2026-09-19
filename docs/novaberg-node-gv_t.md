@@ -192,7 +192,7 @@ Seither fragt das Tor zuerst nach der Herkunft (`graph/reiz.py`, dieselbe Auskun
 
 **⚠ Der Faktenpfad schläft seit Chat 115 (29.07.2026).** Der Absatz darüber beschreibt weiterhin richtig, wie `_entity_kontext_laden` gebaut ist — die Funktion steht unverändert im Modul. Was nicht mehr gilt: dass sie aufgerufen wird, und die Zahlen 47/411/364.
 
-Gemessen am 28.07.2026 hatte `fakten` **0 Zeilen** und keinen erreichbaren Produzenten. Die Tripel-Extraktion wurde mit Synapsen P4 aus der Promotion herausgenommen (Festlegung K2 in `novaberg-memory-synapsen-p4-entscheidungen_k.md`, Chat 91) — ausdrücklich als terminierter Verzicht mit benanntem Nachfolger, dem FaktenAgent als eigenständiger Fachabteilung (M2.5b). Der dort akzeptierte Preis war ein *eingefrorener* Bestand; der Reset am 27.07.2026 machte daraus einen leeren.
+Gemessen am 28.07.2026 hatte `fakten` **0 Zeilen** und keinen erreichbaren Produzenten. Die Tripel-Extraktion wurde mit Synapsen P4 aus der Promotion herausgenommen (Festlegung K2 in `novaberg-memory-synapsen_e.md` Abschnitt G, *Die Festlegungen zu P4*, Chat 91) — ausdrücklich als terminierter Verzicht mit benanntem Nachfolger, dem FaktenAgent als eigenständiger Fachabteilung (M2.5b). Der dort akzeptierte Preis war ein *eingefrorener* Bestand; der Reset am 27.07.2026 machte daraus einen leeren.
 
 Unabhängig davon traf Hop 1 auch vorher nicht: Der Schlüssel ist eine Themenphrase, die Entitätsnamen sind Eigennamen, beide `ILIKE`-Richtungen 0 Treffer über 45 Läufe.
 

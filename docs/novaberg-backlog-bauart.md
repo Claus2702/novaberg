@@ -908,7 +908,7 @@ elif typ == "user_message":
 **Kategorie:** [BAU] BAUART
 
 **Status:** ✅ MS-Welle vollständig abgeschlossen (Block 1–5). Block 1 (Chat 92), Block 2 + Block 3 (Chat 93/94), Block 5 (Chat 96), Block 4 + Inbetriebnahme + Pixie-Reaktivierung (Chat 97).
-**Bezug:** novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91), Audit-Ausgaben Chat 91, novaberg-microservice-modell-queue_k.md
+**Bezug:** novaberg-memory-synapsen_e.md Abschnitt G und novaberg-memory-synapsen_b.md §13.6 (Festlegungen und Entscheidungs-Notiz zu P4, Chat 91), Audit-Ausgaben Chat 91, novaberg-microservice-modell-queue_k.md
 **Vorbedingung:** Keine — kann parallel zur Bestands-Pipeline aufgebaut werden, Migration erfolgt Pfad für Pfad.
 
 
@@ -995,7 +995,7 @@ Endgültige Re-Evaluation in Punkt 9 (Pixie-Reaktivierung).
 
 P4 setzt **strukturell** auf der MS-Welle auf: der neue Pixie-Agent `synapsen_promotion` ruft Embedding über die konsolidierte Schnittstelle, schreibt in `lzg_knoten`/`lzg_kanten` über die Microservice-Queue. Ohne MS-Welle würde P4 auf brüchiger Grundlage aufsetzen — zwei Embedding-Pfade in einem neuen Agent, `think=False`-Hartkodierung blockiert Qwen-3.6-Thinking für die Klassifikations-Logik.
 
-K-Punkte für P4 sind unabhängig von der MS-Welle bereits in Chat 91 abgeschlossen (`novaberg-memory-synapsen-p4-entscheidungen_k.md`). Implementation wartet auf MS-Welle-Abschluss.
+K-Punkte für P4 sind unabhängig von der MS-Welle bereits in Chat 91 abgeschlossen (`novaberg-memory-synapsen_e.md` Abschnitt G, *Die Festlegungen zu P4*). Implementation wartet auf MS-Welle-Abschluss.
 
 
 ### Block 3 — Offene Restpunkte (Chat 93)
@@ -1200,7 +1200,7 @@ Diese fünf Stellen sind Pattern-Geschwister zu `_sprach_stil_erkennen` (siehe B
 
 **Kategorie:** [BAU] BAUART
 
-**Status:** ⬜ Beobachtet, nicht implementiert
+**Status:** ✅ **abgeschlossen am 19.09.2026** — der alte `PromotionAgent` ist mit P9 gelöscht (in `server/` nicht mehr auffindbar, gesucht 19.09.2026). Die Doku starb aber nicht mit ihm, wie die Prio unten annahm: `novaberg-pixie-promotion.md` stand weiter ohne Vermerk. Sie trägt jetzt oben den Vermerk *Historisch*, und die sieben Drift-Stellen gelten gegen einen Code, den es nicht mehr gibt. Von P4 gelöst am 19.09.2026 (`[entschieden]`, der Meister: *„Zwei, Rest lösen“*).
 **Prio:** Niedrig — Doku stirbt mit dem alten Code in P9
 **Auslöser:** PromotionAgent-Audit 1 (Chat 91)
 
@@ -1249,7 +1249,7 @@ Beide Lücken sind nicht durch Chat 97 verursacht; sie wurden beim Abschluss nur
 
 **Kategorie:** [BAU] BAUART
 
-**Status:** ⬜ Beobachtet, mit MS-Welle erledigt
+**Status:** ⬜ offen, fünf von sechs Befunden entfallen — am Code nachgesehen am 19.09.2026. Bis dahin stand hier *„Beobachtet, mit MS-Welle erledigt“*, der Index führte den Eintrag als offen. Befund 1–4 und 6: `embedding_manager`, `pixie_llm_call`, `init_providers`, `_pixie_idle_provider`, `_repair_truncated_json` und `_clean_json_response` kommen in `server/` nicht mehr als Code vor (nur `pixie_llm_call` noch in Kommentaren, die sein Entfernen vermerken). Befund 5 besteht fort: `agents/recherche/destillation.py` nennt in Modul-Docstring und Kommentaren weiterhin *Mistral*. Welches Modell dort heute läuft, ist nicht nachgesehen.
 **Prio:** Niedrig
 **Auslöser:** Audit 4 (Microservice-Vorbereitung, Chat 91)
 

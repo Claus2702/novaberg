@@ -385,6 +385,150 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 5. Pipeline-Log zeigt für jeden Promotions-Vorgang einen kompletten Span mit allen Entscheidungs-Schritten und berechneten Werten.
 6. Bestehende `langzeitgedaechtnis`-Einträge sind unverändert — die alte Tabelle wird in dieser Phase weder geschrieben noch gelesen.
 
+#### Die Entscheidungs-Notiz zu P4 — Wellen, Konstanten, Agent, Backlog, Beifang, Sprint-Planung
+
+Aus der früheren Konzept-Notiz zu P4 (Chat 91, vor der Implementation), am 19.09.2026 hierher gezogen, wortgleich; den Umzug vermerkt [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md) Abschnitt G. Die Nummern sind die der Notiz, nicht die des Konzepts. §1 und die Festlegungen K1 bis K10 (§3) stehen mit dem Messergebnis am Code in [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md) Abschnitt G, die verwandten Dokumente aus §9 in `_k` §15. Wo der Code am 19.09.2026 abweicht, steht es am Punkt.
+
+##### 2. Reihenfolge der Wellen
+
+1. **Pre-P4-Fix** — `queues.py:72` Schwelle vereinheitlichen
+2. **Microservice-Modell-Queue** — eigener Sprint mit Konzept, Audit,
+   Implementation (Blocker für P4)
+3. **Synapsen P4** — neuer Pixie-Agent `synapsen_promotion` auf dem
+   Microservice-Layer
+4. **Synapsen P5** — Enricher als Reader
+5. **Synapsen P6** — Decay-Job
+6. ... weitere Phasen gemäß `novaberg-memory-synapsen_k.md` §13
+
+##### 4. Neue Konstanten in `config.py`
+
+```python
+# Synapsen P4 — Match-Erkennung
+LZG_KNOTEN_MATCH_SCHWELLE = 0.85  # Cosine-Schwelle für Knoten-Reinforcement
+
+# Synapsen P4 — Reinforcement
+LZG_KNOTEN_REINFORCEMENT_BOOST = 0.1  # Additiver Boost auf gewicht_roh
+
+# Feature-Flag
+SYNAPSEN_PROMOTION_AKTIV = False  # auf True nach Microservice-Welle + P4-Test
+```
+
+Plus die in §6 ohnehin vorgesehenen Schicht-Faktoren, Tiefe-Faktoren,
+`LZG_PIPELINE_LOG_VORHALTUNG_TAGE = 365` etc. — sofern noch nicht in
+`config.py`.
+
+`[gemessen am Code 19.09.2026]` `LZG_KNOTEN_MATCH_SCHWELLE` **abweichend:** `0.82`, kalibriert am 12.07.2026 auf das neue Embedding-Modell (`novaberg-embedding-casing-blind_k.md`); der Kommentar in `server/config.py` verwirft 0.85 als funktionslos. `[entschieden 19.09.2026]` Der Code gilt, die Festlegung ist überholt. Der Meister: *„Code gilt“*.
+
+`[gemessen am Code 19.09.2026]` `LZG_KNOTEN_REINFORCEMENT_BOOST` **trägt:** `0.1` in `server/config.py`.
+
+`[gemessen am Code 19.09.2026]` `SYNAPSEN_PROMOTION_AKTIV` **fehlt**, bewusst: mit P9 am 02.08.2026 entfallen (Kommentar in `server/config.py`); der Agent läuft ohne Schalter (`server/agents/synapsen_promotion/agent.py` `periodic_task`). `[entschieden 19.09.2026]` Der Code gilt, die Festlegung ist überholt. Der Meister: *„Code gilt“*.
+
+`[gemessen am Code 19.09.2026]` Die Konstanten aus §6 des Konzepts **tragen:** `LZG_SCHICHT_FAKTOR_{TIMELINE,THEMEN,EMBEDDING,ENTITAET}`, `LZG_EMBEDDING_SCHWELLWERT`, `LZG_TIMELINE_TOLERANZ_*` und `LZG_PIPELINE_LOG_VORHALTUNG_TAGE = 365` stehen in `server/config.py`.
+
+##### 5. Neuer Pixie-Agent — Architektur-Eckpunkte
+
+**Vermutliche Pfad-Lokation:** `novaberg/server/agents/synapsen_promotion/`
+mit `agent.py` und `AGENT.md`. Endgültiger Pfad bei Sprint-Planung.
+
+**Kein:**
+- Kein LLM-Call (kein Call 1, kein Call 2, kein FaktenManager-Aufruf)
+- Keine Cluster-Logik, keine Aggregation
+- Keine Caller-Tags
+
+**Ja:**
+- KZG-Queue lesen wie heute (`redis_client.lpop`)
+- EVA-Vorbedingungs-Checks (drei wie heute + ggf. neue für Schema-Härte)
+- Match-Erkennung (Hybrid Magnet + Vector)
+- Anlage- oder Reinforcement-Pfad
+- Kanten-Berechnung (vier Schichten, Sinus-Geometrie)
+- Schreibziele: `lzg_knoten`, `lzg_kanten`, `hintergrund_log`,
+  `pipeline_log`
+- Trigger 2 (Re-Cache) bei Reinforcement
+- Embed-Aufruf über Microservice-Queue
+
+**Stilllegung alter Pfad:** `PromotionAgent` (alt) bleibt im Repository
+hinter `SYNAPSEN_PROMOTION_AKTIV=True`, vollständige Entfernung in P9.
+
+`[gemessen am Code 19.09.2026]` Die Queue wird **abweichend** gelesen: per `LMOVE` in eine Arbeitsliste statt mit `lpop`; der Eintrag verlässt sie erst nach grünem Ergebnis (seit 09.08.2026; `server/agents/synapsen_promotion/agent.py` Modul-Docstring und `_paar_abarbeiten`). `[entschieden 19.09.2026]` Der Code gilt, die Festlegung ist überholt. Der Meister: *„Code gilt“*.
+
+`[gemessen am Code 19.09.2026]` Der Agent liegt in `server/agents/synapsen_promotion/agent.py`. Die Stilllegung ist erledigt: Der alte `PromotionAgent` ist mit P9 gelöscht (Modul-Docstring des Agenten, `server/config.py`).
+
+##### 6. Backlog-Einträge aus dieser Welle
+
+Folgende Punkte aus den K-Klärungen sind nicht P4-Scope und gehören in
+`novaberg-backlog.md`:
+
+- **MICROSERVICE-MODELL-QUEUE** — Konzept und Implementation der
+  FIFO-Queue für Modell-Aufrufe (Nomic, Gemma4, künftige Modelle).
+  **Blocker für P4.** Microservice-Architektur, threadsafe,
+  Vorbereitung auf sternförmigen Orchestrator-Graph.
+
+- **KONZEPT-CHRONIK** — Vollständiges Turn-Log als episodisches
+  Nachschlagewerk, dauerhaft, `turn_id`-indiziert. Eigenes Konzeptpapier
+  nach P4-P9. Stichworte: episodisches Gedächtnis (Tulving), Lookup-
+  Mechanismus für Knoten-Kontextualisierung. Bezugspunkte:
+  `novaberg-mem-session.md` für Turn-Struktur, `turn_id`-Konvention aus
+  Chat 88.
+
+- **KZG-VERDICHTER-KONTEXT-VERLUST** — Verdichter produziert entkernte
+  Einträge wie „Der Nutzer bestätigt das." Sollte gar nicht erst
+  entstehen. Prompt-Refinement-Sprint. Verbunden mit Chronik:
+  Verdichter-Fix reduziert das Problem, Chronik bietet
+  Sicherheitsnetz.
+
+- **KONFIG-PIXIE-AKTIV-HARDCODED** — `PIXIE_AKTIV = False` ist
+  hartcodiert in `config.py:129`, alle anderen Pixie-Konstanten sind
+  env-konfigurierbar. Anpassen für Pixie-Reaktivierung nach P4.
+
+- **PROMO-QUEUE-SCHWELLE-ASYMMETRIE** — Durch Pre-P4-Fix erledigt;
+  Doku-Drift in `novaberg-pixie-promotion.md` und
+  `novaberg-pixie.md` (beide nennen noch 0.8) nachziehen.
+
+- **DOKU-DRIFT-WELLE-PROMOTION** — Sammlung der sieben Drift-Punkte
+  aus Audit 1: Methoden-Namen, Schwellen 0.75 vs. 0.85,
+  Modell-Trennung Doku vs. Code, Prompt-Lokation, `hash_dirty`
+  paar-spezifisch, O6 nur LLM-Prompt-Regel, Entitäts-Typ `tier`.
+  Erfolgt in Welle nach P9 (alter Code wird ohnehin gelöscht).
+
+##### 7. Beifang-Punkte (im Backlog, nicht P4-blockierend)
+
+- **`emotions_vektor`-Befüllung** — Spalte ist NOT NULL DEFAULT '', wird
+  aber im KZG vom Salience-Node leer gelassen. Eigener
+  Salience-Sprint später.
+
+- **`kzg_erstellt_am` Parse-Härte** — neue Spalte NOT NULL, alter Code
+  fing Parse-Fehler ab. Vorbedingungs-Check im neuen Agent.
+
+- **`gedaechtnistyp` neu befüllt statt NULL** — Lese-Pfad muss in P5
+  darauf vorbereitet sein.
+
+- **Trigger 2 Re-Cache-Konzept-Lücke** — Was ist „echte Aktivierung"
+  im 1:1-Umzug? Konzept-Klärung in eigener Welle, Trigger 2 ist
+  faktisch P6+.
+
+- **`fakten`-Tabelle-Konsistenz und Entity-Merge** — Explizit außerhalb
+  P4-Scope, eigenes Faktengedächtnis-Konzept (Konzept §3.2).
+
+- **Konzept §4.1 vs. `init.sql` FK-Drift bei `timeline_id`** —
+  Funktional gleichwertig, Doku-Sync.
+
+- **`magnete_aufloesen` ohne Audit-Trail** — Backlog
+  REFAC-MAGNETE-AUDIT, separater Sprint.
+
+##### 8. Pfad zur Sprint-Planung
+
+Nach Microservice-Welle:
+
+1. **Audit-Refresh** — Code-Stand prüfen (es können bis dahin Wochen
+   vergangen sein), Schema-Stand, Migrationsstand
+2. **Sprint-Schneidung** — Welle-Phasen (Schema → Helfer → Schreibpfad
+   → Kanten) oder Code-Pfade (Anlage → Reinforcement → Trigger-2).
+   Tendenz: Welle-Phasen, weil robuster.
+3. **Brudi-Sprints** — sequentiell, mit Audit-Vorbau pro Sprint nach
+   Reducer-Vorbild
+4. **Inbetriebnahme** — `SYNAPSEN_PROMOTION_AKTIV=True` schrittweise,
+   Pipeline-Log-Beobachtung, dann Pixie-Reaktivierung
+
 ### 13.7 P5 — Enricher liest aus `lzg_knoten` und `lzg_kanten`
 
 **Ziel.** Der Enricher schaltet von der alten `langzeitgedaechtnis`-Tabelle auf die neuen Tabellen um. Initial-Retrieval (pgvector-Cosine auf `lzg_knoten`), Spreading-Activation entlang `lzg_kanten`, Sortierung nach Sortier-Gewicht. Cold-Start: das neue Netz ist zu diesem Zeitpunkt nur mit den seit P4 neu promotierten Knoten gefüllt — Bestandsdaten kommen erst in P8.

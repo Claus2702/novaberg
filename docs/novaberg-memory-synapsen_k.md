@@ -1,10 +1,10 @@
 # Novaberg — Memory-Kern: Synapsen-Modell
 
 **Absicht:** Novas Langzeitgedächtnis ist ein assoziatives Netz — jede promotete Erinnerung bleibt ein eigener Knoten mit Stärke, Verfall und Reaktivierung, Kanten sind abgeleitete Assoziationen über Entität, Zeit, Thema und Embedding, der Abruf geht von Embedding-Ankern entlang der Kanten, und verstärkt wird nur, was eine Antwort tatsächlich verwendet.
-**Stand:** 18. September 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 19. September 2026, 20:15 UTC (die Notiz zu P4 aufgenommen: Festlegungen K1–K10 nach `_e` Abschnitt G, Bauplan nach `_b` §13.6, verwandte Dokumente nach §15). Davor 18. September 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *Synapsen-Modell* 🟠 · *Zwei-Call-Promotion* 🟢 · *Ebbinghaus-Decay + Soft-Delete* 🟢 · *Halbreaktivierung* 🟠 · *KZG-Magnetfelder* 🔴 · *Pipeline-Log* 🔴 · *Wahrnehmungs-Gravitation* 🟠 · *Langzeitgedächtnis alt* 🟢 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) · [`novaberg-memory-synapsen_b.md`](novaberg-memory-synapsen_b.md) · [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md) · [`novaberg-memory-synapsen_m.md`](novaberg-memory-synapsen_m.md)
-**Entschieden:** 2 · **Offen beim Meister:** 0 (Liste in [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md))
+**Entschieden:** 5 · **Offen beim Meister:** 0 (Liste in [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md))
 
 **§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-memory-synapsen_k.md §7` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md), `_b` ist [`novaberg-memory-synapsen_b.md`](novaberg-memory-synapsen_b.md), `_e` ist [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md), `_m` ist [`novaberg-memory-synapsen_m.md`](novaberg-memory-synapsen_m.md).
 
@@ -32,6 +32,9 @@
 | bisheriger Kopf (Projekt, Dokument, Stand, Messung vom 02.08.2026, Pfad, Vorgänger-Konzepte) | `_m` |
 | bisherige Schlusszeile (*Konzept-Stand …*) | `_e` |
 | Entschieden, Offen beim Meister, verworfene Varianten, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
+| Notiz zu P4 (bis 19.09.2026 eigene Datei): §1 Kontext und §3 Festlegungen K1–K10, mit dem Messergebnis am Code | `_e` Abschnitt G |
+| Notiz zu P4: §2 Wellen, §4 Konstanten, §5 Agent, §6 Backlog, §7 Beifang, §8 Sprint-Planung | `_b` §13.6, *Die Entscheidungs-Notiz zu P4* |
+| Notiz zu P4: §9 Verwandte Dokumente | `_k` §15 |
 
 ---
 
@@ -211,3 +214,7 @@ Wo das Synapsen-Modell über die zitierte Forschung hinausgeht oder eigene Akzen
 - `novaberg-gv-strategie_k.md` — Gesprächsvektor-Konzept, Cluster und Sprung-Geschwindigkeit
 - `novaberg-pixie-character-hash.md` — Charakter-Hash-Destillation (Pixie-Pfad, außerhalb des LZG-Kerns)
 - `novaberg-backlog.md` Epic „Memory-Promotion-Korrektur" (Chat 75) — M3b und M5 werden durch diesen Umbau anders gelöst oder ersetzt
+
+**Aus der Notiz zu P4** (§9, am 19.09.2026 hierher gezogen, `_e` Abschnitt G). Die Notiz nannte außerdem dieses Konzept, `novaberg-pixie-promotion.md` (*„Live-Doku alter PromotionAgent“*), `novaberg-mem-kzg.md` (*„KZG-Architektur, Salienz-Skala“*), `novaberg-mem-lzg.md` (*„LZG-Architektur (alt)“*) und `novaberg-backlog.md` (*„Backlog, M2.5b FaktenAgent“*); sie stehen oben schon und sind nicht doppelt aufgeführt.
+
+- Audit 1 + Audit 2 Ausgaben (Chat 91)

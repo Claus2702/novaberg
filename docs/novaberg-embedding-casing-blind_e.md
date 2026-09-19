@@ -91,7 +91,7 @@ Gefunden, nicht aufgelöst. Auflösen heißt, gegen den Code prüfen oder entsch
 | **B3** | `_m`, bisheriger Kopf, *Nachtrag 04.09.2026* | Der Nachtrag ganz oben sagt, die Ursache des heutigen Bilds sei **nicht** das Embedding — gegen das Titelthema. Das Dokument liest sich eher als Befundbericht denn als Konzept | `[gelesen 19.09.2026]` |
 | **B4** | `_t` §4.1, `LZG_EMBEDDING_SCHWELLWERT` 0.55 | `novaberg-memory-synapsen_t.md` §6 und §7.5 führen 0.85 (dort `_e` B4) | `[gelesen 19.09.2026]` |
 | **B5** | `_m`, bisheriger Kopf, Nachtrag 04.09.2026 | Der KZG-Eintrag wird nach der Promotion nicht gelöscht, ebenso `novaberg-kzg-salienz_e.md` (bisheriger Kopf); `novaberg-memory-synapsen_t.md` §7.7 sagt, er wird gelöscht (dort `_e` B5) | `[gelesen 19.09.2026]` |
-| **B6** | `_t` §4.1, `LZG_KNOTEN_MATCH_SCHWELLE` 0.82 | `novaberg-memory-synapsen-p4-entscheidungen_k.md` nennt die Schwelle 0.85 | `[gelesen 19.09.2026]` |
+| **B6** | `_t` §4.1, `LZG_KNOTEN_MATCH_SCHWELLE` 0.82 | Die Festlegungen zu P4 nennen die Schwelle 0.85 (`novaberg-memory-synapsen_e.md` Abschnitt G, K10; `novaberg-memory-synapsen_b.md` §13.6, Notiz §4) | `[gelesen 19.09.2026]` |
 | **B7** | `_b` §5, Phase 3, Schritt 5 | *„Boost seit Einführung unverändert 0.1“*; `novaberg-memory-synapsen_t.md` §6 führt `LZG_KNOTEN_REINFORCEMENT_BOOST = 0.5` (dort `_e` B3) | `[gelesen 19.09.2026]` |
 
 ---

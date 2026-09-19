@@ -18,7 +18,7 @@
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedächtnis (`GED`) — KZG, LZG, Promotion, Entitäten, Salienz, Verfall | [`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md) | 21 |
+| Gedächtnis (`GED`) — KZG, LZG, Promotion, Entitäten, Salienz, Verfall | [`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md) | 24 |
 | Hintergrund (`HGR`) — Pixie, Queue, Agenten, Recherche, Zustellung | [`novaberg-bugs-archiv-hintergrund.md`](novaberg-bugs-archiv-hintergrund.md) | 19 |
 | Charakter (`CHA`) — Profile, Räder, Haltung, Emotion, Destillation | [`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md) | 22 |
 | Antwortpfad (`ANT`) — Gesprächsvektor, Responder, Verfasser, Prompts | [`novaberg-bugs-archiv-antwortpfad.md`](novaberg-bugs-archiv-antwortpfad.md) | 47 |

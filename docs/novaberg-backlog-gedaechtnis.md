@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Gedaechtnis — KZG, LZG, Promotion, Entitaeten, Salienz, Verfall
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 76 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 77 Eintraege (19.09.2026: `SYNAPSEN-K8-SKALA` neu).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -862,7 +862,7 @@ plausibel (frühestes Auftreten der Erinnerung).
 **Status:** abgeschlossen — **alle zehn Sprints.** Der Umbau ist gebaut. ~~Offen bleiben zwei Reste, die keine Sprints sind: die dünne Zeit- und Entitätsschicht aus P3 (unten) und die ungemessene Wirkung von P10 (`P10-WIRKUNG-UNGEMESSEN`).~~ → **Ein Rest, seit 07.08.2026:** die dünne Zeit- und Entitätsschicht aus P3 (unten). `P10-WIRKUNG-UNGEMESSEN` ist beantwortet; die Kalibrierung der Cluster-Faktoren, die daraus folgt, ist keine Synapsen-Arbeit mehr, sondern ein Bauteil des Kalibrierungskonzepts.
 
 *Die vorige Angabe „P0–P3 implementiert, P4 wartet auf MS-Welle" stammte aus Chat 91 und war fünf Phasen im Rückstand — P4 bis P8 sind zwischen Chat 98 und 111 gebaut worden, ohne dass diese Tabelle nachgezogen wurde. Nachgemessen am 02.08.2026 gegen den Bestand, nicht gegen die Doku.*
-**Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91)
+**Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen_e.md Abschnitt G (Festlegungen zu P4, Chat 91)
 **Vorbedingung:** Microservice-Modell-Queue (eigenes Epic, Chat 91). P4 setzt auf der MS-Welle auf — Embedding-Konsolidierung und `pixie_llm_call`-Konsolidierung sind strukturelle Blocker.
 
 
@@ -879,7 +879,7 @@ plausibel (frühestes Auftreten der Erinnerung).
 | Punkt 7 | Migration und selektive Bestandsdaten-Übernahme | ✅ Chat 86 |
 | Punkt 8 | Bug- und Backlog-Reset | ✅ Chat 86 |
 | Punkt 9 | Implementierungs-Phasen P1–P10 | ✅ **P1–P9 (Chat 125), P10 (Chat 126)** — Stand am 02.08.2026 gegen den Bestand gemessen, siehe Tabelle unten |
-| Punkt 10 | P4-Klärungspunkte (K1–K10) | ✅ Chat 91 — `novaberg-memory-synapsen-p4-entscheidungen_k.md` |
+| Punkt 10 | P4-Klärungspunkte (K1–K10) | ✅ Chat 91 — `novaberg-memory-synapsen_e.md` Abschnitt G, *Die Festlegungen zu P4* |
 
 
 ### Stand der Sprints, gemessen am 02.08.2026
@@ -947,7 +947,7 @@ Mehrere Phasen des Memory-Promotion-Epics werden durch den Synapsen-Umbau anders
 
 - **M3b** (entitaet_ids + timeline_id im Promotion-Code) — wird Teil von Punkt 3 (Schreibpfad-Sicht des Synapsen-Modells)
 - **M5a** (Charakter-Hash profitiert von echten EI-Profilen) — bereits erledigt durch Backfill und Code-Fix in Chat 82/83/84
-- **M5b** (FaktenManager-Reaktivierung) — bleibt separat, hängt nicht direkt am Synapsen-Umbau. **Chat 91:** wird als M2.5b geführt (FaktenAgent als eigenständige Fachabteilung analog TimelineAgent, kein Plugin mehr). Schreibpfad in `fakten`-Tabelle bleibt orthogonal zum Synapsen-Modell. Verschoben auf nach Synapsen-Umbau, eigenes Faktengedächtnis-Konzeptpapier siehe Synapsen-§3.2.
+- **M5b** (FaktenManager-Reaktivierung) — bleibt separat, hängt nicht direkt am Synapsen-Umbau. **Chat 91:** wird als M2.5b geführt (FaktenAgent als eigenständige Fachabteilung analog TimelineAgent, kein Plugin mehr). Schreibpfad in `fakten`-Tabelle bleibt orthogonal zum Synapsen-Modell. Verschoben auf nach Synapsen-Umbau, eigenes Faktengedächtnis-Konzeptpapier siehe Synapsen-§3.2. **Seit dem 19.09.2026 von P4 gelöst:** M2.5b ist keine Bedingung für den Abschluss von P4 (`[entschieden]`, der Meister: *„Zwei, Rest lösen“*; `novaberg-memory-synapsen_e.md`, Abschnitt G).
 
   **Chat 115 — Bestandsaufnahme vor der Umsetzung.** Das Faktengedächtnis ist gewollt und eingeplant; die Frage ist allein der Zeitpunkt. Gemessen 28./29.07.2026:
 
@@ -1348,7 +1348,7 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Status:** ⬜ Strukturell offen, größtenteils mit P9-Löschung erledigt
+**Status:** ⬜ Strukturell offen, größtenteils mit P9-Löschung erledigt. **Seit dem 19.09.2026 von P4 gelöst**, mit einer Ausnahme: `KZG-ERSTELLT-AM-PARSE-HÄRTE` ist eine der zwei Bedingungen für den Abschluss von P4. Die übrigen offenen Punkte (`TRIGGER-2-RECACHE-KONZEPT-LÜCKE`, `REFAC-MAGNETE-AUDIT`, `EMOTIONS-VEKTOR-LEER`) laufen als eigene Arbeit ohne P4-Bindung weiter. `[entschieden]` — 19.09.2026, der Meister: *„Zwei, Rest lösen“* (`novaberg-memory-synapsen_e.md`, Abschnitt G).
 **Prio:** Niedrig
 **Auslöser:** PromotionAgent-Audit 1 (Chat 91)
 
@@ -1392,13 +1392,28 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. Seit dem 19.09.2026 eine der zwei Bedingungen für den Abschluss von Synapsen P4 (`novaberg-memory-synapsen_e.md`, Abschnitt G). Seit Mai läuft der Agent im Betrieb, der Bestand für die Abnahme ist also da: Gemessen wird aus der Datenbank, nur lesend, ohne Messturns.
 
 Entitäts- und Timeline-Kantenschicht des Synapsen-Netzes sind unter Live-Last noch nicht verifiziert. Embedding- und Themen-Schicht sind bestätigt (Migration: 110 Kanten; Live: 55+ Kanten an den ersten Live-Knoten 91–101).
 
 Entitäts-Magneten existieren live (Knoten 93 mit `entitaet_ids={234,235}`, Knoten 98 mit `{210}`), bilden aber noch keine Kanten — die Migrations-Knoten tragen keine `entitaet_ids`, also greift die Schicht erst, wenn ein zweiter Live-Knoten dieselbe Entität referenziert. Timeline-Schicht analog: kein Knoten mit `timeline_id` im Live-Bestand.
 
 Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein synthetisches Trigger-Skript.
+
+---
+
+
+## Messung: SYNAPSEN-K8-SKALA — Wo beginnt ein neuer Knoten, seit die Salienz auf 0–1 liegt?
+
+**Kategorie:** [GED] GEDAECHTNIS
+
+**Zustand:** ⬜ offen — angelegt am 19.09.2026.
+
+Festlegung K8 von P4 übernimmt die KZG-Salienz direkt als `gewicht_roh` eines neuen Knotens. Begründet war das mit *„dieselbe Skala 0–10“*. Seit Chat 113 steht `KZG_SALIENZ_CAP` auf 1.0, `LZG_KNOTEN_GEWICHT_CAP` weiter auf 10: `gewicht_roh` liegt damit in 0..1 auf einer Kurve bis 10 (`server/memory/lzg_knoten.py` `knoten_anlegen`, `gewicht_absolut_berechnen`). Ob neue Knoten deshalb dauerhaft im untersten Bereich beginnen und was das für Decay und Lesepfad heißt, ist nicht gemessen.
+
+**Zu messen:** Die Verteilung von `gewicht_roh` und `gewicht_absolut` der Knoten, die nach dem Skalenumbau angelegt wurden, gegen die Knoten davor. Dazu die Frage, wie weit ein neuer Knoten von der Schwelle des Lesepfads entfernt ist. Nur lesend aus der Datenbank.
+
+**Danach entscheidet der Meister**, ob beim Anlegen auf die Gewichtsskala umgerechnet wird. `[entschieden]` — 19.09.2026, der Meister: *„Erst messen“*. P4 hängt nicht daran (`novaberg-memory-synapsen_e.md`, Abschnitt G). Berichtigt wird dabei auch die Logzeile `kzg_salienz=… (0-10)` im Promotions-Agenten (`server/agents/synapsen_promotion/agent.py`).
 
 ---
 

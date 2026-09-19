@@ -2,11 +2,13 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
+**Stand:** 19. September 2026, 20:24 UTC (`date -u`; Vermerk *Historisch* — der beschriebene Agent ist mit P9 gelöscht). Davor 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
 ---
+
+> **Historisch — der hier beschriebene `PromotionAgent` ist gelöscht.** `[gemessen 19.09.2026]` Der Code des alten Agenten (`class PromotionAgent`, `_klassifiziere`, `_extrahiere_fakten`) kommt in `server/` nicht mehr vor; entfernt mit P9 des Synapsen-Umbaus (Chat 125). Nachfolger ist der `SynapsenPromotionAgent` ohne Sprachmodell-Aufruf (`server/agents/synapsen_promotion/agent.py`), beschrieben in `novaberg-memory-synapsen_k.md` und seinen Teilen. Das Dokument bleibt als Erklärung stehen, warum ältere Daten und Einträge so aussehen. **Die sieben Drift-Stellen aus `DOKU-DRIFT-WELLE-PROMOTION` gelten gegen einen Code, den es nicht mehr gibt.** Wer mit dem heutigen Code arbeitet, liest hier nicht.
 
 > **Hinweis (Chat 88): Synapsen-Umbau im Gang.**
 > Die hier beschriebene Cluster-Promotion mit Aggregat-Schicht wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Jeder ehemalige KZG-Eintrag wird künftig zum eigenständigen Knoten in `lzg_knoten`, Cluster werden zu gerichteten Kanten in `lzg_kanten` mit eigenen Decays und Reinforcement-Pfaden. Tabellen `lzg_knoten`/`lzg_kanten` sind seit P2 (Chat 88) angelegt, aber leer — die neue Promotion-Logik kommt in P4 und steht noch aus. Dieses Dokument beschreibt den heutigen Stand der alten Cluster-Promotion bis zur Umsetzung. Während des Umbaus ruhen alle Promotion-bezogenen Sprints, die nicht unmittelbar Teil des Synapsen-Konzepts sind.

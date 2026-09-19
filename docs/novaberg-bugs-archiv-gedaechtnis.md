@@ -1,6 +1,6 @@
 # Novaberg — Bugs, Archiv: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 21 Eintraege, je mit `GED` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 24 Eintraege, je mit `GED` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -686,3 +686,31 @@ Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zog nicht d
 **Verwandt:** PIXIE-QUEUE-LAUF-DISSENS.
 
 ---
+
+---
+
+## Nachgetragen am 19.09.2026 — drei Bugs aus Synapsen P4, die nur in der Chronik standen
+
+Behoben im Mai 2026 mit P4 und dort in der Chronik abgehakt (`novaberg-roadmap-2026-05.md`, *Synapsen P4 — Vollständig live*). In kein Register und in kein Archiv eingetragen. Nachgetragen, damit das Findemittel sie kennt. Mehr als die Chronik sagt, steht hier nicht, weil mehr nicht belegt ist.
+
+### `PROMO-VERSTAERKT-BLIND` — verstärkte KZG-Einträge erreichten die Promotion nie
+
+**Kategorie:** GED
+
+**Zustand:** behoben — Chat 92/98, Mai 2026, laut Chronik. Am Code nachgesehen am 19.09.2026: `queues_befuellen` in `server/agents/kzg/queues.py` liest `verstaerkte_eintraege` und reiht verstärkte Einträge über der Schwelle ein.
+
+**Befund laut Chronik:** `speichern()` reichte `verstaerkte_eintraege` nicht durch, deshalb konnte ein verstärkter Nachbar die Promotions-Schwelle nie auslösen.
+
+### `PROMO-QUEUE-DEADBRANCH` — toter `verstaerkt`-Zweig beim Einreihen
+
+**Kategorie:** GED
+
+**Zustand:** behoben — mit PROMO-VERSTAERKT-BLIND, Mai 2026, laut Chronik (*„tote `verstaerkt`-Branch entfernt“*).
+
+### `PROMO-QUEUE-USER-MISMATCH` — die Konsumenten lasen ein Feld, das nie gesetzt wurde
+
+**Kategorie:** GED
+
+**Zustand:** behoben — Commit `f91888e` (*fix(pixie): propagate user_id through queue payloads, remove context_user_id ghost field*). Am Code nachgesehen am 19.09.2026: `context_user_id` kommt in `server/` außerhalb von Kommentaren nicht mehr vor.
+
+**Befund laut Chronik:** Vier Konsumenten lasen `context_user_id`, das nie gesetzt wurde. `user_id` geht jetzt im Promotions- und im Shadow-Payload mit.

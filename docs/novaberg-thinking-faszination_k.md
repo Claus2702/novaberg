@@ -1,12 +1,12 @@
 # Novaberg — Faszination: der Zug zu einem Thema, unabhängig davon, ob er guttut
 
 **Absicht:** Nova kehrt zu Themen zurück, die sie über viele Episoden gebunden haben, gleich ob sie ihr guttun, und fragt dort mehr.
-**Stand:** 7. September 2026 (am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 7. September 2026 (am 19.09.2026, 20:15 UTC, den Verweis auf die Festlegungen zu P4 umgestellt, ohne inhaltliche Änderung). Davor: am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung
 **Umsetzung:** `novaberg-featureliste.md` — ⏫ **Faszination** 🟠 · **Praegungsschicht — Faeden** (Scheibe 1) 🟠 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md) · [`novaberg-thinking-faszination_b.md`](novaberg-thinking-faszination_b.md) · [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md) · [`novaberg-thinking-faszination_m.md`](novaberg-thinking-faszination_m.md)
 **Entschieden:** 9 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md))
 
-**Voraussetzung:** `novaberg-memory-synapsen-p4-entscheidungen_k.md` (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
+**Voraussetzung:** `novaberg-memory-synapsen_e.md` Abschnitt G, *Die Festlegungen zu P4* (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
 **Betrifft:** `novaberg-thinking-curiosity_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-charakter-resonanz_k.md` · `novaberg-node-ei-calc.md` · `novaberg-node-emotionale-gravitation.md` · `novaberg-thinking-drive_k.md`
 
 **§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Dokuments; ein Verweis der Form `novaberg-thinking-faszination_k.md §7.7` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md), `_b` ist [`novaberg-thinking-faszination_b.md`](novaberg-thinking-faszination_b.md), `_e` ist [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md), `_m` ist [`novaberg-thinking-faszination_m.md`](novaberg-thinking-faszination_m.md).
