@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 904 Abschnitte in 5 Dateien — 392 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 908 Abschnitte in 5 Dateien — 396 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 641 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 645 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 904 Marken, 904 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 908 Marken, 908 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -36,6 +36,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 14:30 UTC — vier Konzepte in drei Teilen, die Herkunft geprüfter Beispiele vermerkt](novaberg-roadmap.md#19092026-1430-utc--vier-konzepte-in-drei-teilen-die-herkunft-geprüfter-beispiele-vermerkt) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 12:14 UTC — das Angebot gilt pro Sache, und die Bedarfsaussage im Betrieb 🔧](novaberg-roadmap.md#19092026-1214-utc--das-angebot-gilt-pro-sache-und-die-bedarfsaussage-im-betrieb) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 11:36 UTC — eine Ablehnung als Nicht-Auftrag sperrt weder Gespräch noch Angebot 🔧](novaberg-roadmap.md#19092026-1136-utc--eine-ablehnung-als-nicht-auftrag-sperrt-weder-gespräch-noch-angebot) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 00:49 UTC — *„Ich brauche noch Mehl"* wird seltener eine Notiz, die laufende Liste bleibt 🔧](novaberg-roadmap.md#19092026-0049-utc--ich-brauche-noch-mehl-wird-seltener-eine-notiz-die-laufende-liste-bleibt) |
 | 2026-09-18 | laufend | ## | [18.09.2026, 23:29 UTC — jeder Dienst schreibt sein Audit selbst 🔧](novaberg-roadmap.md#18092026-2329-utc--jeder-dienst-schreibt-sein-audit-selbst) |
 | 2026-09-18 | laufend | ## | [18.09.2026, 23:24 UTC — Nova bietet Termine zum Eintragen an und nennt sie beim Namen 🔧](novaberg-roadmap.md#18092026-2324-utc--nova-bietet-termine-zum-eintragen-an-und-nennt-sie-beim-namen) |
 | 2026-09-18 | laufend | ## | [18.09.2026, 22:13 UTC — das Angebot gilt der Sache, die angeboten wurde 🔧](novaberg-roadmap.md#18092026-2213-utc--das-angebot-gilt-der-sache-die-angeboten-wurde) |

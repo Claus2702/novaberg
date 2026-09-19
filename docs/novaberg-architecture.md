@@ -875,6 +875,17 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 |----------|-------------|
 | novaberg-thinking-curiosity_k.md | Neugier (Charakter-Resonanz, intrinsische Motivation, Reflexion) |
 | novaberg-thinking-drive_k.md | Antrieb (Ziele, Motivation, Gravitation, Dual-Emotion) |
+| novaberg-thinking-drive_t.md | Antrieb — Umsetzung: Gravitations-Rechnung, Speicher der Dual-Emotion, Zieltabelle, Konfiguration |
+| novaberg-thinking-drive_e.md | Antrieb — Entscheidungen des Eigentümers, offene Fragen, Befunde |
+| novaberg-thinking-lage_k.md | Lage (Sachlage, Scheiben 1–12) — Absicht und Planung, mit Kopfblock und Tabelle „§ → Datei“ |
+| novaberg-thinking-lage_t.md | Lage — Umsetzung: Bauberichte und Messungen je Scheibe |
+| novaberg-thinking-lage_e.md | Lage — Entscheidungen des Eigentümers, offene Fragen, Befunde |
+| novaberg-thinking-faszination_k.md | Faszination — Absicht und Planung |
+| novaberg-thinking-faszination_t.md | Faszination — Umsetzung: Rechnung, Bauberichte, Messungen, verworfene technische Varianten |
+| novaberg-thinking-faszination_e.md | Faszination — Entscheidungen des Eigentümers, offene Fragen, Befunde |
+| novaberg-thinking-opinion_k.md | Meinung / Willensstrang — Absicht und Planung |
+| novaberg-thinking-opinion_t.md | Meinung / Willensstrang — Umsetzung (was gebaut ist) |
+| novaberg-thinking-opinion_e.md | Meinung / Willensstrang — Entscheidungen, offene Fragen, Befunde |
 | novaberg-thinking-erkenntniszyklus_k.md | **Der Erkenntniszyklus** — die Folge, in der Nova ein Thema durchdringt: Nachdenken vor Nachschlagen. Übergeordnet über Meinung, Neugier, Wissenslücken und Wissensspeicher |
 
 ### Tiefe 2 — Technik & Tools (3)
