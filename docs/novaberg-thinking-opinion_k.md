@@ -1,9 +1,9 @@
 # Novaberg — Meinungsbildung (Opinion Formation)
 
 **Absicht:** Nova bildet im Hintergrund, aus Fäden und Strängen, eine eigene Haltung mit Vorzeichen zu Dingen und bringt sie im Antwort-Pfad als Abruf, Kollision oder Neutral ein — sodass sie einem Nutzer widersprechen kann, statt ihm zu folgen.
-**Stand:** 05.09.2026 (letzte inhaltliche Änderung; in drei Teile aufgeteilt am 19.09.2026)
+**Stand:** 05.09.2026 (letzte inhaltliche Änderung; in drei, dann in fünf Teile aufgeteilt am 19.09.2026)
 **Umsetzung:** `novaberg-featureliste.md` §6, Zeile ⏫ **Meinung / Willensstrang** (🟠) — der Zustand steht dort, nicht hier
-**Teile:** [`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md) · [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md)
+**Teile:** [`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md) · `novaberg-thinking-opinion_b.md` — keiner · [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) · [`novaberg-thinking-opinion_m.md`](novaberg-thinking-opinion_m.md)
 **Entschieden:** 1 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md))
 
 > **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
@@ -14,7 +14,7 @@ Die Abschnittsnummern sind bei der Aufteilung geblieben; ein Verweis der Form `n
 
 | § | Abschnitt | Datei |
 |---|---|---|
-| Kopf | bisheriger Stands-Kopf (Projekt, Dokument, Stand, Pfad, Status, Verwandt) | [`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md), *Bisheriger Kopf* |
+| Kopf | bisheriger Stands-Kopf (Projekt, Dokument, Stand, Pfad, Status, Verwandt) | [`novaberg-thinking-opinion_m.md`](novaberg-thinking-opinion_m.md), *Bisheriger Kopf* |
 | Vorspann | Übergeordnet: der Erkenntniszyklus | hier |
 | 1 | Leitidee — Meinung ist der Bodensatz eines Wesens | hier |
 | 2 | Zwei Operationen, die nicht verwechselt werden dürfen | hier (mit Hinweis) |
@@ -30,6 +30,8 @@ Die Abschnittsnummern sind bei der Aufteilung geblieben; ein Verweis der Form `n
 | 10 | Bewusst offene Punkte (Sammlung) — Punkt 1 beschreibt zugleich den **Willensstrang** | [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) |
 | 11 | Verwandte Dokumente | hier |
 | Leitsatz | Schlusszeile | hier |
+| — | Bauplan und Umstellung | keiner — das Konzept führt keine Bauteile mit `ZIEL` / `TEST` / `MESSUNG` (Befund 7 in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md)) |
+| — | Entschieden, Offen beim Meister, verworfene Varianten, Befunde der Doku-Sichtung vom 19.09.2026 | [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md), Abschnitte A, B, C, E |
 
 ---
 
@@ -47,7 +49,7 @@ Eine ehrliche Wache gleich zu Beginn: Tiefe allein genügt nicht. Eine Schleife,
 
 ## 2. Zwei Operationen, die nicht verwechselt werden dürfen
 
-*Hinweis zur Aufteilung (19.09.2026):* Der Kasten *„Widerlegt am 03.08.2026“* ist ein Messbefund und gehört der Sache nach zur Umsetzung ([`novaberg-thinking-opinion_t.md`](novaberg-thinking-opinion_t.md)); er bleibt hier, weil er die Abgrenzung von (B) trägt. Der offene Punkt am Ende des Abschnitts steht in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) unter *Offen beim Meister*.
+*Hinweis zur Aufteilung (19.09.2026):* Der Kasten *„Widerlegt am 03.08.2026“* ist ein Messbefund und gehört der Sache nach zu den Messungen ([`novaberg-thinking-opinion_m.md`](novaberg-thinking-opinion_m.md)); er bleibt hier, weil er die Abgrenzung von (B) trägt und die durchgestrichene Aussage an ihrer Stelle markiert. Der offene Punkt am Ende des Abschnitts steht in [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) unter *Offen beim Meister*.
 
 Was wie „Nova hat dazu eine Sicht" klingt, sind in Wahrheit zwei verschiedene Maschinen. Dieses Konzept baut nur die erste.
 

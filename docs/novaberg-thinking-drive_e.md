@@ -1,10 +1,10 @@
-# Novaberg — Antrieb (Entscheidungen)
+# Novaberg — Antrieb (Diskussion und Ergänzungen)
 
-**Teil 3 von 3 — Diskussion, Entscheidungen, offene Fragen.** Absicht und Planung: [`novaberg-thinking-drive_k.md`](novaberg-thinking-drive_k.md) · Umsetzung: [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; welche Datei einen Abschnitt trägt, sagt die Tabelle *„§ → Datei“* in `_k`.
+**Teil 4 von 5 — Diskussion und Ergänzungen:** Entscheidungen, offene Fragen, verworfene Varianten, Befunde. Absicht und Kopfblock: [`novaberg-thinking-drive_k.md`](novaberg-thinking-drive_k.md) · Ausarbeitung: [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md) · Bauplan und Umstellung: [`novaberg-thinking-drive_b.md`](novaberg-thinking-drive_b.md) · Messungen: [`novaberg-thinking-drive_m.md`](novaberg-thinking-drive_m.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; welche Datei einen Abschnitt trägt, sagt die Tabelle *„§ → Datei“* in `_k`. Die Abschnitte dieser Datei tragen Buchstaben, damit sie nicht mit den Abschnittsnummern des Konzepts verwechselt werden; D (verschobene offene Abschnitte) und F (Ergänzungen) haben hier keinen Inhalt.
 
 ---
 
-## 1. Entschieden
+## A. Entschieden
 
 Beide Entscheidungen stehen mitten in einem Abschnitt, den sie tragen, und bleiben dort. Hier steht der Verweis.
 
@@ -17,7 +17,7 @@ Der Wortlaut der Entscheidungen steht in keinem der beiden Abschnitte; beide geb
 
 ---
 
-## 2. Offen beim Meister
+## B. Offen beim Meister
 
 Keine. Das Konzept stellt keine Frage an den Meister.
 
@@ -28,7 +28,7 @@ Keine. Das Konzept stellt keine Frage an den Meister.
 
 ---
 
-## 3. Diskussion und verworfene Varianten
+## C. Diskussion und verworfene Varianten
 
 Die verworfenen Fassungen stehen durchgestrichen an ihrer Stelle, mit Grund:
 
@@ -40,7 +40,7 @@ Die verworfenen Fassungen stehen durchgestrichen an ihrer Stelle, mit Grund:
 
 ---
 
-## 4. Befunde der Doku-Sichtung vom 19.09.2026
+## E. Befunde der Doku-Sichtung vom 19.09.2026
 
 Gefunden, nicht aufgelöst. Auflösen heißt, gegen den Code oder den Meister prüfen — das ist ein eigener Schritt.
 
@@ -53,3 +53,5 @@ Gefunden, nicht aufgelöst. Auflösen heißt, gegen den Code oder den Meister pr
 | **B5** | `_k` §13.3, Tabelle | Die Zeile verweist auf `novaberg-thinking-drive.md`, ohne `_k`; die Datei heißt `novaberg-thinking-drive_k.md` | `[gelesen 19.09.2026]` |
 | **B6** | `_k` §6, §8.4 | Das Konzept sagt nicht, ob die zweiseitige Emotion (Nova und Nutzer getrennt) und das Konfliktsignal `emotion_konflikt` gebaut sind; §6.1 spricht im Präsens von *„Heute hat Nova keine eigene Emotion“*, während `_k` §5.7 die Nova-Emotion (Pfad 2) als bestehende Formel ergänzt | `[gelesen 19.09.2026]` |
 | **B7** | `_k`, ganzes Konzept | Keine Reihenfolge und keine Phasen der Bauteile, kein `ZIEL` / `TEST` / `MESSUNG` je Bauteil; ein Abnahmekriterium nur teilweise (`_t` §11: 0,5–2,0 aktivierte Zielsätze je Turn); offene Fragen nur als *„Startwerte kalibrieren“* | `[gelesen 19.09.2026]` |
+
+**Seit der Nachteilung in fünf Teile (19.09.2026)** steht §8 in `_b`: Die Stellen `_k` §8.2 (B1) und `_k` §8.4 (B6) heißen jetzt `_b` §8.2 und `_b` §8.4, und die Bauteile, deren Form B7 vermisst, stehen in [`novaberg-thinking-drive_b.md`](novaberg-thinking-drive_b.md). Der bisherige Kopf, auf den B1 verweist, steht in `_m`.

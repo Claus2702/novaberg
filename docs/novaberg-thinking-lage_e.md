@@ -1,16 +1,16 @@
-# Novaberg — Die Lage-Analyse (Entscheidungen)
+# Novaberg — Die Lage-Analyse (Diskussion und Ergänzungen)
 
-**Teil 3 von 3 — Diskussion, Entscheidungen, offene Fragen.** Absicht und Planung: [`novaberg-thinking-lage_k.md`](novaberg-thinking-lage_k.md) · Umsetzung: [`novaberg-thinking-lage_t.md`](novaberg-thinking-lage_t.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; die Tabelle *„§ → Datei“* steht in `_k`. Ein *„oben“* oder *„unten“* im Text kann in einen anderen Teil zeigen. Die Herkunft der Beispiele steht in `_k`.
+**Teil 4 von 5 — Diskussion und Ergänzungen:** Entscheidungen, offene Fragen, verworfene Varianten, Befunde. Absicht und Kopfblock: [`novaberg-thinking-lage_k.md`](novaberg-thinking-lage_k.md) · Ausarbeitung: [`novaberg-thinking-lage_t.md`](novaberg-thinking-lage_t.md) · Bauplan und Umstellung: [`novaberg-thinking-lage_b.md`](novaberg-thinking-lage_b.md) · Messungen: [`novaberg-thinking-lage_m.md`](novaberg-thinking-lage_m.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; welche Datei einen Abschnitt trägt, sagt die Tabelle *„§ → Datei“* in `_k`. Ein *„oben“* oder *„unten“* im Text kann in einen anderen Teil zeigen. Die Herkunft der Beispiele steht in `_k`.
 
 ---
 
-## Entschieden — das Register
+## A. Entschieden — das Register
 
 Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: 24.
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|
-| 1 | 28.08.2026 | `sachlage_verlauf` verfällt nicht, weil Turns auch keinen Verfall haben — im Text: *„so entschieden bei der Freigabe“* der DDL | umschrieben | `_k` §4 Scheibe 4, DDL |
+| 1 | 28.08.2026 | `sachlage_verlauf` verfällt nicht, weil Turns auch keinen Verfall haben — im Text: *„so entschieden bei der Freigabe“* der DDL | umschrieben | `_b` §4 Scheibe 4, DDL |
 | 2 | 13.09.2026 | `gedeckt` ist die Angabe selbst; ohne Wert ist eine Eigenschaft offen | umschrieben | `_k` §3, Nachtrag am Artefakt; beantwortet die Absichtsfrage in `_t` §3 |
 | 3 | 13.09.2026 | die Absicht des Eigenschaftsgedächtnisses: ablegen, später binden, ablösen statt überschreiben | umschrieben | `_k` §4 Scheibe 11 |
 | 4 | 13./14.09.2026 | nur ein ausdrücklicher Auftrag legt einen Termin an | wörtlich | unten, §4 Scheibe 12 |
@@ -27,31 +27,62 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 15 | 16.09.2026 | das Kriterium der Zuordnung: Erledigung → Timeline, Sache mit Zeitbezug → Notizen | wörtlich | `_k` §4 Scheibe 12, *Das Kriterium der Zuordnung* |
 | 16 | 16.09.2026 | eine Behauptung, die beide Korrekturrunden übersteht, wird nicht entfernt; ein Korrektursatz wird angehängt | wörtlich | unten, §4 Scheibe 12, *Offen für den Bau* |
 | 17 | 16.09.2026, 20:55 UTC | ohne Abstand, je Zettel für sich; im Grenzfall beide Dienste fragen | wörtlich | unten, §4 Scheibe 12, Teil C2 |
-| 18 | 17.09.2026 | Notizen nur auf ausdrücklichen Auftrag | umschrieben | `_t` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* |
-| 19 | 17.09.2026 | ein Angebot für Notizen nur ab Pflichtbewusstsein 0,9 — **überholt** durch Nr. 20 | umschrieben | `_t` §4 Scheibe 12, Teil E1 und Teil E2; `_k` §4 Scheibe 12, Entwurf, Zeile E |
+| 18 | 17.09.2026 | Notizen nur auf ausdrücklichen Auftrag | umschrieben | `_b` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* |
+| 19 | 17.09.2026 | ein Angebot für Notizen nur ab Pflichtbewusstsein 0,9 — **überholt** durch Nr. 20 | umschrieben | `_b` §4 Scheibe 12, Teil E1 und Teil E2; `_b` §4 Scheibe 12, Entwurf, Zeile E |
 | 20 | 18.09.2026 | unter Pflichtbewusstsein 0,33 kein Angebot, darüber eine linear steigende Wahrscheinlichkeit | wörtlich | unten, §4 Scheibe 12, Teil E2 |
-| 21 | *„am selben Tag“* — der Absatz trägt 19.09.2026, 00:49 UTC | die Ergänzung einer laufenden Liste ist ein Auftrag | umschrieben | `_t` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* |
+| 21 | *„am selben Tag“* — der Absatz trägt 19.09.2026, 00:49 UTC | die Ergänzung einer laufenden Liste ist ein Auftrag | umschrieben | `_b` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* |
 | 22 | 19.09.2026 | das Angebot gilt pro Sache, nicht pro Turn | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 | 23 | 19.09.2026 | ein späterer Nachtrag am Gedächtnisknoten steht in einem eigenen Feld | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 | 24 | 19.09.2026 | ein Erinnerungs-Anker verknüpft einen vorhandenen Timeline-Eintrag zur selben Sache; nur ohne ihn entsteht ein neuer | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 
-**Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_k` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_t` §4 Scheibe 12, *Die Objektwahl der Lage*).
-
-## Offen beim Meister
-
-| Nr. | Frage | Steht in |
-|---|---|---|
-| 1 | Werden die Werte der zwei Betriebsturns vom 13.09.2026 — geschrieben vor der Wert-Regel, teils Notizen statt Angaben — im Bestand des Paares bereinigt? Der Text: *„ob sie bereinigt werden, entscheidet der Eigentümer“*. | `_t` §4 Scheibe 11, *Preis und Offenes* |
-| 2 | Soll der Verfasser die kritische Lücke vor den unkritischen Antwortstoff ziehen? Der Text: *„ist nicht entschieden“* — einen Adressaten nennt er nicht; hier geführt, weil die Frage das Soll betrifft. | `_t` §4 Scheibe 10, *Nebenbefund* |
-| 3 | Entsteht der Erinnerungs-Anker vor dem Termin: soll der Termin den Anker übernehmen (dieselbe ID)? Vorgelegt 19.09.2026. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
-| 4 | Den Nachtrag am Gedächtnisknoten (Nr. 23) zurückstellen, bis ein echter Fall auftritt? Vorgelegt 19.09.2026 mit der Empfehlung *zurückstellen*: Von 96 Turns mit geprüfter Speicherbehauptung seit dem 15.09.2026 überstand **eine** beide Korrekturrunden (Prüf-Nutzer), im Paar des Eigentümers 0 (`labor/2026-09-19_nachtrag_vorher.py`). Der Bau bräuchte eine Schemaänderung, einen Audit-Lauf und einen Leser. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+**Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_b` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_b` §4 Scheibe 12, *Die Objektwahl der Lage*).
 
 ---
 
-## §4 Scheibe 12 — die Entscheidungen des Eigentümers
+## B. Offen beim Meister
 
-*Aus `_k` §4 Scheibe 12, zwischen dem Anlass und dem Entwurf.*
+| Nr. | Frage | Steht in |
+|---|---|---|
+| 1 | Werden die Werte der zwei Betriebsturns vom 13.09.2026 — geschrieben vor der Wert-Regel, teils Notizen statt Angaben — im Bestand des Paares bereinigt? Der Text: *„ob sie bereinigt werden, entscheidet der Eigentümer“*. | `_b` §4 Scheibe 11, *Preis und Offenes* |
+| 2 | Soll der Verfasser die kritische Lücke vor den unkritischen Antwortstoff ziehen? Der Text: *„ist nicht entschieden“* — einen Adressaten nennt er nicht; hier geführt, weil die Frage das Soll betrifft. | `_m` §4 Scheibe 10, *Nebenbefund* |
+| 3 | Entsteht der Erinnerungs-Anker vor dem Termin: soll der Termin den Anker übernehmen (dieselbe ID)? Vorgelegt 19.09.2026. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+| 4 | Den Nachtrag am Gedächtnisknoten (Nr. 23) zurückstellen, bis ein echter Fall auftritt? Vorgelegt 19.09.2026 mit der Empfehlung *zurückstellen*: Von 96 Turns mit geprüfter Speicherbehauptung seit dem 15.09.2026 überstand **eine** beide Korrekturrunden (Prüf-Nutzer), im Paar des Eigentümers 0 (`labor/2026-09-19_nachtrag_vorher.py`). Der Bau bräuchte eine Schemaänderung, einen Audit-Lauf und einen Leser. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 
+**Offen ohne Frage** — Punkte, die das Konzept selbst als offen führt, ohne einen Adressaten zu nennen:
+
+- `_b` §4 Scheibe 11, *Preis und Offenes* — außer dem Punkt, der oben als Nr. 1 steht.
+- Abschnitt D unten, *Offen für den Bau* — die Punkte ohne Durchstreichung (vgl. Befund B4 und B5) und das, was *„vor dem Bau zu messen“* ist.
+- `_b` §4 Scheibe 12: *Was offen bleibt* bei Teil A, B, C1 und der Objektwahl; *Offen aus Teil A* bei Teil F und A; *Bleibt offen* in Teil E2, *Nachgezogen 18.09.2026*; *Offen bleiben* in Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag*.
+- `_m` §4 Scheibe 12: der Schluss von Teil D2 (*Offen bleiben die halbe Zustimmungsquote …*), Teil D1 (*Nicht gemessen*); `_m` §4 Scheibe 10, *Was der Betrieb nicht belegt*.
+- `_b` §4 Scheibe 5 — ob aus der Wiederaufnahme ein Stapel wird, *„entscheidet der Betrieb“*.
+- `_k` §5 — ob zwei Drittel fragender Schlüsse zu viel sind, *„ist eine Haltungsfrage und kein Befund“*.
+
+---
+
+## C. Diskussion und verworfene Varianten
+
+Die verworfenen und überholten Fassungen stehen an ihrer Stelle, durchgestrichen oder mit Grund; hier stehen die Verweise:
+
+- `_k` §3a — die Fortschreibung ist beim Kern-Hash abgelehnt und bei der Lage gewollt, mit Grund.
+- `_b` §4 Scheibe 2, Kasten *Warum das Objekt und nicht das Nutzerziel* — der Vergleich der `nutzerziel`-Sätze per Kosinus; ersetzt durch das akute Objekt.
+- `_b` §4 Scheibe 5 — kein Stapel im Sinne von Grosz & Sidner in dieser Scheibe.
+- `_b` §4 Scheibe 6 — das Urteil im Sachlage-Call (Feld `aus_gedaechtnis`); ersetzt durch einen eigenen Call.
+- `_b` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* — die Sperre im Notizen-Aushang am Empfang, zurückgenommen; die Regel *„Wir brauchen auch Erdbeeren“* der Vorprüfung, ersetzt durch eine Ausnahme.
+- `_m` §4 Scheibe 12, Teil C2, *Das Notizen-Merkmal nachgeeicht* — zehn Fassungen des Merkmals, keine übernommen.
+- `_m` §4 Scheibe 12, Teil D2 — ein Satz im Dispatch-Guard, verworfen nach der Regel vor dem Lauf.
+- `_m` §4 Scheibe 12, *Die Objektwahl der Lage* — Fassung B verworfen, C übernommen.
+- `_m` §4 Scheibe 12, Teil A — der Korrekturauftrag von Lauf 1 (ein Verbot), ersetzt durch die Wiedergabe des Wunsches.
+- Abschnitt D unten, Teil C2 — der Abstand als Entscheidungsgröße; Abschnitt D, *Offen für den Bau* — das Thinker-Modell als Prüfer der Speicherbehauptung und das Entfernen der Behauptung, beide mit Grund verworfen.
+
+---
+
+## D. Aus §4 Scheibe 12 — Entscheidungen im Wortlaut und Offenes für den Bau
+
+*Diese Stellen standen im ungeteilten Konzept in §4 Scheibe 12; der Plan der Scheibe steht in [`novaberg-thinking-lage_b.md`](novaberg-thinking-lage_b.md), die Messungen in [`novaberg-thinking-lage_m.md`](novaberg-thinking-lage_m.md).*
+
+### §4 Scheibe 12 — die Entscheidungen des Eigentümers
+
+*Aus §4 Scheibe 12 (heute in `_b`), zwischen dem Anlass und dem Entwurf.*
 
 **Die Entscheidungen des Eigentümers (13. und 14.09.2026), im Wortlaut:**
 
@@ -79,13 +110,13 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 
 ---
 
-## §4 Scheibe 12 — Offen für den Bau
+### §4 Scheibe 12 — Offen für den Bau
 
-*Aus `_k` §4 Scheibe 12, nach der Vorbedingung.*
+*Aus §4 Scheibe 12 (heute in `_b`), nach der Vorbedingung.*
 
 **Offen für den Bau:**
 
-*Der erste Punkt — die Nähe, gemessen und geeicht am 16.09.2026, samt* Zwei Schwellen und der geeichte Wortlaut *— steht in [`novaberg-thinking-lage_t.md`](novaberg-thinking-lage_t.md) §4, Scheibe 12.*
+*Der erste Punkt — die Nähe, gemessen und geeicht am 16.09.2026, samt* Zwei Schwellen und der geeichte Wortlaut *— steht in [`novaberg-thinking-lage_m.md`](novaberg-thinking-lage_m.md) §4, Scheibe 12.*
 
 - **Die Pflicht-Schwelle** für das Angebot, am Speichenwert `pflicht` des Paares zu eichen.
 - **Die Form der Ablehnung** im Gesprächskontext: eine Eigenschaft wie jede andere (sie wandert dann mit Scheibe 11 ins Gedächtnis) oder ein eigenes Feld am Objekt.
@@ -114,9 +145,9 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 
 ---
 
-## §4 Scheibe 12, Teil C2 — die Entscheidung über den Abstand
+### §4 Scheibe 12, Teil C2 — die Entscheidung über den Abstand
 
-*Aus `_t` §4 Scheibe 12, Teil C2 — gebaut, nach den zwei Befunden aus der Messung.*
+*Aus §4 Scheibe 12, Teil C2 — gebaut (heute in `_b`), nach den zwei Befunden aus der Messung (heute in `_m`).*
 
 ~~**Vor Teil D zu entscheiden — der Abstand steht gegen eine Aussage über das Soll.**~~ → **Entschieden am 16.09.2026, 20:55 UTC.** Der Eigentümer, nach der Rechnung unten:
 
@@ -136,50 +167,76 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 
 ---
 
-## §4 Scheibe 12, Teil E2 — die Entscheidung über die Wahrscheinlichkeit
+### §4 Scheibe 12, Teil E2 — die Entscheidung über die Wahrscheinlichkeit
 
-*Aus `_t` §4 Scheibe 12, Teil E2 — gebaut, nach dem ersten Absatz.*
+*Aus §4 Scheibe 12, Teil E2 — gebaut (heute in `_b`), nach dem ersten Absatz.*
 
 > **Entscheidung des Eigentümers, 18.09.2026:** *„Dann machen wir es so, dass unter 0,33 nichts passiert und zwischen 0,33 und 1 entscheidet die Wahrscheinlichkeit zwischen 1 und 100%. Also 0,33 ist 0%, 0,67 ist 50%, 1,0 ist 100%"* — Anlass: *„dass wir Nova etwas Spielraum geben"*. Die Gerade durch 0,33 und 1,0 trifft 0,67 bei 50,7 %; gebaut ist die Gerade.
 
 ---
 
-## §4 Scheibe 12 — die Entscheidungen vom 19.09.2026
+### §4 Scheibe 12 — die Entscheidungen vom 19.09.2026
 
 Vorgelegt mit je einer Empfehlung; der Eigentümer im Chat, 19.09.2026:
 
-> **Angebot pro Turn oder pro Sache?** *„Pro Sache“* — vorgelegt als: hat Nova eine Sache angeboten, fragt sie nicht erneut, bis der Mensch geantwortet hat oder das Angebot verfallen ist. **Gebaut ist es enger:** für eine Sache wird in der Frist **einmal gewürfelt**, gleich ob das Angebot kam oder nicht (`_t` §4 Scheibe 12, Teil E2, Nachtrag).
+> **Angebot pro Turn oder pro Sache?** *„Pro Sache“* — vorgelegt als: hat Nova eine Sache angeboten, fragt sie nicht erneut, bis der Mensch geantwortet hat oder das Angebot verfallen ist. **Gebaut ist es enger:** für eine Sache wird in der Frist **einmal gewürfelt**, gleich ob das Angebot kam oder nicht (`_b` §4 Scheibe 12, Teil E2, Nachtrag).
 
 > **Nachtrag am Gedächtnisknoten (Teil A):** *„Ja, eigenes Feld. Das haben wir bisher auch schon so gemacht.“*
 
 > **„Erinnerungs-Anker“ in der Timeline:** *„Du hast recht, wenn schon ein Eintrag _zur selben Sache_ in der Timeline steht, dann diese verknüpfen. Ansonsten soll natürlich ein neuer Eintrag mit ID angelegt werden, um einen Anker zu setzen.“* — Anlass: `[gemessen 18.09.2026]` Zu 7 von 7 Terminen der Prüf-Nutzer legte `agents/kzg/magnete.py::magnete_aufloesen` einen zweiten Timeline-Eintrag *„Erinnerungs-Anker <Datum>“* zum selben Zeitpunkt an (Fundliste).
 
-Stand 19.09.2026, 12:14 UTC: **pro Sache gebaut** (`_t` §4 Scheibe 12, Teil E2, Nachtrag). Nachtrag am Gedächtnisknoten und Erinnerungs-Anker nicht gebaut.
+Stand 19.09.2026, 12:14 UTC: **pro Sache gebaut** (`_b` §4 Scheibe 12, Teil E2, Nachtrag). Nachtrag am Gedächtnisknoten und Erinnerungs-Anker nicht gebaut.
 
 **Offene Frage aus dem Bau (19.09.2026):** Der Anker entsteht bei der Aussage, der echte Termin erst auf die Zustimmung — zum Zeitpunkt des Ankers gibt es nichts zu verknüpfen. Vorgelegt mit der Empfehlung: Legt die Timeline später einen Termin zum selben Zeitpunkt an, wird der vorhandene Anker zu diesem Termin (dieselbe ID, kein zweiter Eintrag).
 
 ---
 
-## Befunde der Doku-Sichtung vom 19.09.2026
+## E. Befunde der Doku-Sichtung vom 19.09.2026
 
 Widersprüche, die eine Sichtung aller Konzepte am 19.09.2026 gefunden hat und die noch niemand aufgelöst hat. **Sie sind hier festgehalten und nicht korrigiert:** Auflösen heißt, gegen den Code oder den Eigentümer zu prüfen, und das ist ein eigener Schritt. Die Zeilenangaben *„Z.“* beziehen sich auf das ungeteilte Konzept vor dem 19.09.2026; die Stelle nennt den Teil, in dem die Zeile seither steht.
 
-**B1 — die Zahl der Scheiben.** Stelle: `_k` §4, Überschrift und Nachtrag (Z.141, Z.143). Die Überschrift lautet *„Die drei Scheiben des Umbaus“*, der Nachtrag vom 13.09.2026 nennt *„elf“* Scheiben, das Konzept führt zwölf (Scheibe 12, `_k` §4). `[gelesen 19.09.2026]`
+B1 bis B10 stammen aus der Sichtung; B11 bis B17 sind beim Teilen in fünf Teile am selben Tag gelesen, ihre Stellen nennen Teil und Abschnitt, keine Zeile.
+
+**B1 — die Zahl der Scheiben.** Stelle: `_b` §4, Überschrift und Nachtrag (Z.141, Z.143). Die Überschrift lautet *„Die drei Scheiben des Umbaus“*, der Nachtrag vom 13.09.2026 nennt *„elf“* Scheiben, das Konzept führt zwölf (Scheibe 12, `_b` §4). `[gelesen 19.09.2026]`
 
 **B2 — das Artefaktschema.** Stelle: `_k` §3, das Schema `lage = {…}` (Z.68–84) gegen den Nachtrag Z.89. Das Schema zeigt die Felder der Erstfassung; der Nachtrag räumt ein, dass das Artefakt seit den Scheiben 4–11 gewachsen ist (`thema`, `wiederaufnahme`, `quellen`, `plausibilitaet`, `traeger`, `recherche`, `sprecher`, `kritikalitaet`), *„ohne dass dieser Abschnitt nachgezogen wurde“*. `[gelesen 19.09.2026]`
 
-**B3 — der Status von Scheibe 12.** Stelle: `_t` §4 Scheibe 12, Status-Zeile (Z.442) gegen `_k` §4 Scheibe 12, Entwurfstabelle Zeilen D–F (Z.481–483), und gegen `_t` §4 Scheibe 12, Teil D2, D1, E1, E2, E3 und F. Die Status-Zeile sagt *„D bis F sind nicht gebaut“*; Tabelle und Abschnitte führen D1, D2, E1, E2, E3 und F als gebaut (17. und 18.09.2026). `[gelesen 19.09.2026]`
+**B3 — der Status von Scheibe 12.** Stelle: `_b` §4 Scheibe 12, Status-Zeile (Z.442) gegen `_b` §4 Scheibe 12, Entwurfstabelle Zeilen D–F (Z.481–483), und gegen `_b` §4 Scheibe 12, Teil D2, D1, E1, E2, E3 und F. Die Status-Zeile sagt *„D bis F sind nicht gebaut“*; Tabelle und Abschnitte führen D1, D2, E1, E2, E3 und F als gebaut (17. und 18.09.2026). `[gelesen 19.09.2026]`
 
-**B4 — Pflicht-Schwelle und Form der Ablehnung als offen geführt.** Stelle: `_e` §4 Scheibe 12, *Offen für den Bau*, die Punkte *Die Pflicht-Schwelle* und *Die Form der Ablehnung* (Z.547, Z.548) gegen `_t` §4 Scheibe 12, Teil E2 (Z.643) und Teil E3 (Z.657). Beide Punkte stehen ohne Markierung als offen; E2 nennt den Boden 0,33 als gebaut, E3 die Ablehnung als *„eine gewöhnliche Eigenschaft, kein neues Feld“*. `[gelesen 19.09.2026]`
+**B4 — Pflicht-Schwelle und Form der Ablehnung als offen geführt.** Stelle: `_e` §4 Scheibe 12, *Offen für den Bau*, die Punkte *Die Pflicht-Schwelle* und *Die Form der Ablehnung* (Z.547, Z.548) gegen `_b` §4 Scheibe 12, Teil E2 (Z.643) und Teil E3 (Z.657). Beide Punkte stehen ohne Markierung als offen; E2 nennt den Boden 0,33 als gebaut, E3 die Ablehnung als *„eine gewöhnliche Eigenschaft, kein neues Feld“*. `[gelesen 19.09.2026]`
 
-**B5 — der Wortlaut des angehängten Satzes.** Stelle: `_e` §4 Scheibe 12, *Offen für den Bau*, Schlusssatz (Z.570) gegen `_t` §4 Scheibe 12, *Teil F und Teil A, Punkt 1* (Z.639). Z.570 führt *„der Wortlaut des angehängten Satzes“* als offen; Z.639 nennt den gebauten Korrektursatz im Wortlaut. `[gelesen 19.09.2026]`
+**B5 — der Wortlaut des angehängten Satzes.** Stelle: `_e` §4 Scheibe 12, *Offen für den Bau*, Schlusssatz (Z.570) gegen `_b` §4 Scheibe 12, *Teil F und Teil A, Punkt 1* (Z.639). Z.570 führt *„der Wortlaut des angehängten Satzes“* als offen; Z.639 nennt den gebauten Korrektursatz im Wortlaut. `[gelesen 19.09.2026]`
 
-**B6 — die Schwelle 0,9 für Notizen-Angebote.** Stelle: `_t` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* (Z.681) gegen `_k` §4 Scheibe 12, Entwurfstabelle Zeile E (Z.482) und `_t` §4 Scheibe 12, Teil E2 (Z.643). Z.681 nennt ein Angebot *„ab 0,9“* ohne Markierung; seit dem 18.09.2026 gilt der Boden 0,33 mit steigender Wahrscheinlichkeit (Register Nr. 19 und 20). `[gelesen 19.09.2026]`
+**B6 — die Schwelle 0,9 für Notizen-Angebote.** Stelle: `_b` §4 Scheibe 12, Teil E1, Absatz *Notizen nur auf ausdrücklichen Auftrag* (Z.681) gegen `_b` §4 Scheibe 12, Entwurfstabelle Zeile E (Z.482) und `_b` §4 Scheibe 12, Teil E2 (Z.643). Z.681 nennt ein Angebot *„ab 0,9“* ohne Markierung; seit dem 18.09.2026 gilt der Boden 0,33 mit steigender Wahrscheinlichkeit (Register Nr. 19 und 20). `[gelesen 19.09.2026]`
 
-**B7 — die Kappung in `_render_history`.** Stelle: `_t` §4 Scheibe 12, Teil B, *Was offen bleibt* (Z.762) gegen `_t` §4 Scheibe 12, Absatz *Scheibe 12 B, nachgezogen am selben Morgen* (Z.661). Z.762 führt die Kappung auf 1600 Zeichen als offen; Z.661 nennt sie behoben (*„Seither kommt der Verlauf ungekürzt“*). `[gelesen 19.09.2026]`
+**B7 — die Kappung in `_render_history`.** Stelle: `_b` §4 Scheibe 12, Teil B, *Was offen bleibt* (Z.762) gegen `_b` §4 Scheibe 12, Absatz *Scheibe 12 B, nachgezogen am selben Morgen* (Z.661). Z.762 führt die Kappung auf 1600 Zeichen als offen; Z.661 nennt sie behoben (*„Seither kommt der Verlauf ungekürzt“*). `[gelesen 19.09.2026]`
 
-**B8 — die Reihenfolge der Unterabschnitte von Scheibe 12.** Stelle: `_t` §4 Scheibe 12. Die Unterabschnitte stehen als C2, D2, *Die Zustimmung kommt an*, F und A Punkt 1, E2, E3, E1, D1, *Die Objektwahl der Lage*, C1, B, A — weder in der Reihenfolge der Teile noch in der Zeitfolge. Die Teilung hat die Reihenfolge des Originals beibehalten. `[gelesen 19.09.2026]`
+**B8 — die Reihenfolge der Unterabschnitte von Scheibe 12.** Stelle: `_b` §4 Scheibe 12, die Messungen dazu unter denselben Überschriften in `_m` §4. Die Unterabschnitte stehen als C2, D2, *Die Zustimmung kommt an*, F und A Punkt 1, E2, E3, E1, D1, *Die Objektwahl der Lage*, C1, B, A — weder in der Reihenfolge der Teile noch in der Zeitfolge. Die Teilung hat die Reihenfolge des Originals beibehalten. `[gelesen 19.09.2026]`
 
 **B9 — §5 als ein einzelner Absatz.** Stelle: `_k` §5 (Z.785). Der Abschnitt *„Was ausdrücklich nicht gebaut wird“* ist ein einziger Absatz mit vier Durchstreichungen und mehreren Nachträgen; welche Teile heute noch *nicht gebaut* sind, ist nur durch Lesen aller Nachträge zu ermitteln. `[gelesen 19.09.2026]`
 
-**B10 — die Schlusszeile.** Stelle: `_t`, *Bisheriger Kopf*, Schlusszeile (Z.813) gegen den bisherigen Stands-Kopf (Z.5). Die Schlusszeile lautet *„Stand 28.08.2026. Erstfassung …“*; der Stands-Kopf reicht bis zum 19.09.2026, 00:49 UTC. `[gelesen 19.09.2026]`
+**B10 — die Schlusszeile.** Stelle: `_e`, F, Schlusszeile (Z.813) gegen den bisherigen Stands-Kopf in `_m`, *Bisheriger Kopf* (Z.5). Die Schlusszeile lautet *„Stand 28.08.2026. Erstfassung …“*; der Stands-Kopf reicht bis zum 19.09.2026, 00:49 UTC. `[gelesen 19.09.2026]`
+
+**B11 — Teil A: Korrektursatz und `[ERLEDIGT]`.** Stelle: `_b` §4 Scheibe 12, Teil A — gebaut, *Was offen bleibt* gegen `_b` §4 Scheibe 12, *Teil F und Teil A, Punkt 1 — gebaut (18.09.2026)* und den Absatz *Scheibe 12 A, Punkt 2, gebaut am selben Morgen* in Teil E2. *Was offen bleibt* nennt den Korrektursatz *„entschieden, nicht gebaut“* und sagt, der Verlauf trage `[ERLEDIGT]` *„seit dem 23.04.2026 nicht mehr“*; Teil F und A nennt den Korrektursatz gebaut, der Absatz in Teil E2 sagt, der Verlauf trage `[ERLEDIGT]` wieder. Ebenso Abschnitt D unten, *Offen für den Bau*, Punkt 2: *„der Aufrufer fehlt seit dem 23.04.2026“*. `[gelesen 19.09.2026]`
+
+**B12 — D2 als nicht gebaut.** Stelle: `_b` §4 Scheibe 12, Teil D1, Absatz *Zugeschnitten aus Teil D* gegen `_b` §4 Scheibe 12, *Teil D2 — gebaut (17.09.2026)*. D1 nennt den `[LAGE]`-Block im Router und den Objektbezug *„D2, nicht gebaut“*; D2 ist gebaut. `[gelesen 19.09.2026]`
+
+**B13 — die Untergrenze je Dienst.** Stelle: `_b` §4 Scheibe 12, Teil C1, *Was offen bleibt* (*„Die Untergrenze je Dienst ist nicht gemessen“*), und `_m` §4 Scheibe 12, *Offen für den Bau, erster Punkt* (*„Offen bleibt eine Untergrenze je Dienst“*), gegen Abschnitt D unten, Teil C2, *Nachgemessen am selben Abend*, Punkt 1: *„Eine eigene Untergrenze je Dienst bringt nichts Messbares“*. `[gelesen 19.09.2026]`
+
+**B14 — die Weitergabe nach einer Ablehnung.** Stelle: Abschnitt D unten, Teil C2, *Umgesetzt im Schatten am selben Abend* (*„`abgelehnt` des einen beendet die Zustellung an den anderen nicht. Nicht gebaut.“*) gegen `_b` §4 Scheibe 12, *Teil D1 — gebaut (17.09.2026)* (*„nach `abgelehnt` oder `rejected` den nächsten“*). `[gelesen 19.09.2026]`
+
+**B15 — der Nachtrag am Gedächtnisknoten.** Stelle: `_b` §4 Scheibe 12, *Teil F und Teil A, Punkt 1*, *Offen aus Teil A* (*„Text oder eigenes Feld“*) und Abschnitt D unten, *Offen für den Bau*, Schlusssatz, gegen Abschnitt D, *die Entscheidungen vom 19.09.2026* (Register Nr. 23: eigenes Feld). `[gelesen 19.09.2026]`
+
+**B16 — Angebote im Betrieb.** Stelle: `_b` §4 Scheibe 12, *Teil E3 — gebaut (18.09.2026)* (*„dort bot Nova bisher nie an“*) und Teil E1, *Die Grenze* (*„Nova bietet bisher gar nicht an“*) gegen `_m` §4 Scheibe 12, Teil E2, *Gemessen im Betrieb* (bei Pflicht 1,0 *„2 von 2“* Angebote) und `_m` §4 Scheibe 12, Teil E2, Nachtrag (*„3 von 3 Angebote“*). `[gelesen 19.09.2026]`
+
+**B17 — die Entwurfstabelle, Zeilen C und D.** Stelle: `_b` §4 Scheibe 12, Entwurfstabelle. Zeile C: *„noch liest niemand das Urteil“* gegen `_b` Teil D1 (*„Der Router schreibt das Urteil der Objekt-Nähe als `objekt_urteil`“*, der Planner ordnet danach); Zeile D: *„im Betrieb noch kein Lauf“* gegen `_m` §4 Scheibe 12, Teil D2, *Im Betrieb bestätigt am 17.09.2026*. `[gelesen 19.09.2026]`
+
+---
+
+## F. Bisheriger Schluss
+
+Die Schlusszeile des ungeteilten Konzepts, ungekürzt. Sie trägt keinen Messwert und steht deshalb hier; der bisherige Stands-Kopf steht in [`novaberg-thinking-lage_m.md`](novaberg-thinking-lage_m.md).
+
+**Bisherige Schlusszeile:**
+
+*Stand 28.08.2026. Erstfassung, am selben Tag ergänzt: wissenschaftliche Prüfung (§2a) und das Blasen-Modell des Kontexts (§3a). Die Annahmen sind im Projekt formuliert und decken sich mit der etablierten Forschung — geprüft, nicht übernommen.*

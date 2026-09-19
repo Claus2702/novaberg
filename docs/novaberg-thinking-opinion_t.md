@@ -1,23 +1,12 @@
-# Novaberg — Meinungsbildung (Opinion Formation) — Umsetzung und Ausarbeitung
+# Novaberg — Meinungsbildung (Opinion Formation) — Ausarbeitung
 
-**Teil 2 von 3 — Umsetzung und Ausarbeitung.** Absicht und Planung: [`novaberg-thinking-opinion_k.md`](novaberg-thinking-opinion_k.md) · Entscheidungen und offene Fragen: [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md)
-
----
-
-## Bisheriger Kopf
-
-*Der Stands-Kopf des Konzepts bis zur Aufteilung am 19.09.2026, ungekürzt.*
-
-**Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Konzept — Wie Nova zu einer eigenen Haltung kommt
-**Stand:** 5. September 2026, 15:05 UTC (**§2a neu — woher (A) kommt**: Setzung des Eigentümers, dass Prägung und Faszination die Meinungsbildung tragen. Die Grenze zwischen (A) und (B) läuft entlang der **Quelle** — Fäden und Stränge gegen Recherche —, und die Meinung liegt **eine Stufe unterhalb** der valenzblinden Faszination: Die Valenz sitzt im Strang und ist dort **gebaut und im Bestand**, neun Stränge. Vorbehalt: alle neun tragen eine **positive** Valenz). Davor 3. September 2026, 21:30 UTC (**der Ort fuer die Praemisse-Kante existiert** — `abstrakt_knoten` traegt seit heute einen Typ-Diskriminator `art`; die Qualitaetsseite ist gefuellt, die Werteseite traegt keine Zeile, und `praemisse_knoten_id` zeigt weiterhin auf `lzg_knoten`, wo die abstrakten Knoten **nicht** liegen. §5a). Davor 30. August 2026 (die Fundamente gegen den Bestand gehalten: Pixie läuft, das Substrat heißt `lzg_*` und trägt 3.260 Knoten; dazu die Naming-Wache — `valenz` ist an die GV-Achse vergeben). Davor: Erstfassung
-**Pfad:** novaberg/docs/novaberg-thinking-opinion_k.md
-**Status:** Konzept. Skelett steht, Kalibrierung offen. Bewusst offene Punkte sind durchgehend mit ⬜ markiert und in §10 gesammelt.
-**Verwandt:** novaberg-thinking-drive_k.md · novaberg-thinking-frames_k.md · novaberg-memory-synapsen_k.md · novaberg-node-gv_k.md · novaberg-node-tribunal.md · novaberg-pixie.md · novaberg-ei.md
+**Teil 2 von 5 — Ausarbeitung.** Absicht und Kopfblock: [`novaberg-thinking-opinion_k.md`](novaberg-thinking-opinion_k.md) · Bauplan und Umstellung: keiner · Diskussion und Ergänzungen: [`novaberg-thinking-opinion_e.md`](novaberg-thinking-opinion_e.md) · Messungen: [`novaberg-thinking-opinion_m.md`](novaberg-thinking-opinion_m.md). Die Abschnittsnummern sind die des ungeteilten Konzepts; welche Datei einen Abschnitt trägt, sagt die Tabelle *„§ → Datei“* in `_k`. Der bisherige Kopf steht in `_m`.
 
 ---
 
 ## 5a. Was davon gebaut ist (30.08.2026)
+
+*Hinweis zur Aufteilung in fünf Teile (19.09.2026):* Der Abschnitt ist dem Titel nach ein Baubericht; er beschreibt aber das Datenmodell der Meinungsschicht — Tabelle, Felder und die drei Entscheidungen, die im Code stehen — und bleibt deshalb in der Ausarbeitung. Einen eigenen Bauplan (`_b`) hat das Konzept nicht.
 
 **Der Speicher steht: `lzg_knoten_haltung`.** Eine additive Annotation auf `lzg_knoten`, kein zweiter Store — und eine eigene Tabelle statt Spalten, weil ein Knoten **mehrere** Ladungen trägt (je Eigenschaft eine). Genau dieser Widerspruch unterscheidet die Haltung vom Schalter, und Spalten könnten ihn nicht tragen.
 

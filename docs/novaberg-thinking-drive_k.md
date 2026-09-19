@@ -1,12 +1,12 @@
 # Novaberg — Antrieb (Konzept)
 
 **Absicht:** Nova trägt eigene Ziele auf drei Zeithorizonten, die wie Gravitation wirken — sie heben zielnahe Turns in der Salienz, geben dem Gesprächsvektor Richtung und färben Novas eigene, vom Nutzer getrennte Emotion.
-**Stand:** 9. September 2026 (am 19.09.2026 in drei Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 9. September 2026 (am 19.09.2026 in drei Teile aufgeteilt, am selben Tag in fünf nachgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste ⏫ *Antrieb / Ziele* 🟠 · *Dual-Emotion Phase 2* 🟠 · *Dual-Emotion Phase 3* 🟠 · *Emotionale Gravitation* 🟠 — der Zustand steht dort, nicht hier
-**Teile:** [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md) · [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md)
+**Teile:** [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md) · [`novaberg-thinking-drive_b.md`](novaberg-thinking-drive_b.md) · [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md) · [`novaberg-thinking-drive_m.md`](novaberg-thinking-drive_m.md)
 **Entschieden:** 2 · **Offen beim Meister:** 0 (Liste in [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md))
 
-**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-thinking-drive_k.md §7` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md), `_e` ist [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md).
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-thinking-drive_k.md §7` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md), `_b` ist [`novaberg-thinking-drive_b.md`](novaberg-thinking-drive_b.md), `_e` ist [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md), `_m` ist [`novaberg-thinking-drive_m.md`](novaberg-thinking-drive_m.md).
 
 | § | Datei |
 |---|---|
@@ -19,13 +19,13 @@
 | 6 · 6.1 · 6.2 · 6.3 · 6.4 · 6.5 | `_k` (6.3 mit Hinweis) |
 | 6.6 | `_t` |
 | 7 · 7.1 · 7.2 | `_t` (7 mit Hinweis) |
-| 8 · 8.1 · 8.2 · 8.3 · 8.4 · 8.5 · 8.6 · 8.7 | `_k` (8 mit Hinweis) |
+| 8 · 8.1 · 8.2 · 8.3 · 8.4 · 8.5 · 8.6 · 8.7 | `_b` (8 mit Hinweis) |
 | 9 · 9.1 | `_k` |
 | 10 · 10.1 · 10.2 · 10.3 | `_k` |
 | 11 | `_t` |
 | 12 | `_k` |
 | 13 · 13.1 · 13.2 · 13.3 | `_k` |
-| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Quellen) | `_t` |
+| bisheriger Kopf (Projekt, Dokument, Stand, Pfad, Quellen) | `_m` |
 | Entscheidungen, offene Fragen, Befunde der Doku-Sichtung vom 19.09.2026 | `_e` |
 
 ---
@@ -460,55 +460,7 @@ Nova warnt nicht als Lehrer oder Bevormundung — sie bringt eine eigene Emotion
 
 ---
 
-## 8. Eingriffspunkte in die bestehende Architektur
-
-> **Hinweis zur Aufteilung (19.09.2026):** Die Eingriffspunkte sind die Planung der Bauteile und bleiben hier. §8.2 nennt die Rechnung, die §5.3 (in `_t`) als ersetzt führt — Befund B1 in `_e`.
-
-### 8.1 Enricher — Zielsätze laden
-
-Der Enricher trägt heute alle Kontextquellen zusammen (Session, KZG, LZG, Charakter-Hash). Künftig lädt er zusätzlich die aktiven Zielsätze und berechnet die Embedding-Similarity zu den Turn-Themen. Ergebnis: ein neues State-Feld `aktivierte_ziele` mit den Zielsätzen, deren Gravitation über der Schwelle liegt.
-
-### 8.2 Salienz — Gravitationsterm
-
-Die Salienz bekommt den Gravitationsterm als Input. Nach dem LLM-Call (der die Basis-Salienz berechnet) wird der Term in Python addiert: `salienz_final = salienz_basis + gravitationsterm`. Das verändert die KZG-TTL, die Promotion-Wahrscheinlichkeit und den Shadow-Queue-Trigger.
-
-### 8.3 GV-Node — Aktivierte Ziele als Kontext
-
-Der GV-Node erhält die aktivierten Zielsätze als zusätzlichen Kontext für seinen LLM-Call. Die Zielsätze werden als "Gedanken, die mir gerade durch den Kopf gehen" gerahmt — konsistent mit der "Du bist mittendrin"-Philosophie.
-
-### 8.4 Responder — Zwei Emotionsströme
-
-Der Responder bekommt heute den EI-MIKRO-Block (Nutzer-Emotion) und den GV-Block (Gesprächsrichtung). Künftig bekommt er zusätzlich Novas eigenen Emotionszustand als 8-dimensionalen Plutchik-Vektor, natürlichsprachlich formuliert. Zwei getrennte Blöcke:
-
-```
-[EI-MIKRO]
-Die Stimmung des Gegenübers ist neutral und ruhig.
-
-[NOVA-EMOTION]
-Du bist gerade freudig überrascht. Das Thema berührt etwas, das dir am Herzen liegt.
-```
-
-Bei gesetztem `emotion_konflikt`-Flag bekommt der Responder einen zusätzlichen Hinweis:
-
-```
-[NOVA-EMOTION]
-Du bist hin- und hergerissen. Du freust dich für ihn, aber du machst dir Sorgen
-wegen der finanziellen Situation. Beides ist echt — zeig beides.
-```
-
-Der Charakter entscheidet, wie beides zusammenfließt.
-
-### 8.5 Session-Gedächtnis — Nova-Emotion mitführen
-
-Pro Turn wird Novas Emotionszustand (8-dimensionaler Vektor) im Session-State persistiert. Der Decay wird pro Dimension in Python berechnet, bevor der nächste Turn verarbeitet wird. Zusätzlich werden die `aktivierte_ziele` und das gecachte Turn-Embedding im Session-State gehalten, um bei Themenkonstanz Neuberechnungen zu vermeiden.
-
-### 8.6 Pixie-Agenten — Zielsatz-Produktion
-
-Am Ende jeder Pixie-Aktivität (Recherche, Vertiefen, Träumen) wird ein zusätzlicher Schritt ausgeführt: "Formuliere ein Ziel basierend auf dem Ergebnis. Bewerte die Motivation (0.0–1.0) und die Emotion." Das Ergebnis wird in `ziele` mit `ziel_typ = 'mittelfristig'` geschrieben.
-
-### 8.7 Charakter-Destillation — Langfristige Zielsatz-Produktion
-
-Bei der Charakter-Destillation formuliert Pixie zusätzlich zum Charakter-Hash 1–2 langfristige Zielsätze. Diese werden in `ziele` mit `ziel_typ = 'langfristig'` geschrieben und ersetzen die vorherigen.
+> **§8 Eingriffspunkte in die bestehende Architektur** (mit §8.1 bis §8.7) steht in [`novaberg-thinking-drive_b.md`](novaberg-thinking-drive_b.md).
 
 ---
 

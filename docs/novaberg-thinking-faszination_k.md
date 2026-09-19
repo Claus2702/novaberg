@@ -1,15 +1,15 @@
 # Novaberg — Faszination: der Zug zu einem Thema, unabhängig davon, ob er guttut
 
 **Absicht:** Nova kehrt zu Themen zurück, die sie über viele Episoden gebunden haben, gleich ob sie ihr guttun, und fragt dort mehr.
-**Stand:** 7. September 2026
+**Stand:** 7. September 2026 (am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** `novaberg-featureliste.md` — ⏫ **Faszination** 🟠 · **Praegungsschicht — Faeden** (Scheibe 1) 🟠 — der Zustand steht dort, nicht hier
-**Teile:** [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md) · [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md)
+**Teile:** [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md) · [`novaberg-thinking-faszination_b.md`](novaberg-thinking-faszination_b.md) · [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md) · [`novaberg-thinking-faszination_m.md`](novaberg-thinking-faszination_m.md)
 **Entschieden:** 9 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md))
 
 **Voraussetzung:** `novaberg-memory-synapsen-p4-entscheidungen_k.md` (P4) · `novaberg-thinking-opinion_k.md` (dieselbe abstrakte Schicht) · `novaberg-convention-abgeleitete-werte.md` · `novaberg-kzg-salienz_k.md` (das Faden-Tor steht darauf)
 **Betrifft:** `novaberg-thinking-curiosity_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-charakter-resonanz_k.md` · `novaberg-node-ei-calc.md` · `novaberg-node-emotionale-gravitation.md` · `novaberg-thinking-drive_k.md`
 
-**Wo die Abschnitte stehen.** Die Nummern sind die des ungeteilten Dokuments; ein Verweis der Form `novaberg-thinking-faszination_k.md §7.7` findet seinen Abschnitt über diese Tabelle.
+**§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Dokuments; ein Verweis der Form `novaberg-thinking-faszination_k.md §7.7` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md), `_b` ist [`novaberg-thinking-faszination_b.md`](novaberg-thinking-faszination_b.md), `_e` ist [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md), `_m` ist [`novaberg-thinking-faszination_m.md`](novaberg-thinking-faszination_m.md).
 
 | § | Abschnitt | Datei | Hinweis |
 |---|---|---|---|
@@ -33,21 +33,21 @@
 | 4.3 | Objektmerkmale sind der Beweisweg | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 4.4 | Dieselbe abstrakte Schicht wie `opinion_k` | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 4.5 | Die Wert-Kante braucht drei Zustände | [`_k`](novaberg-thinking-faszination_k.md) |  |
-| 5 | Das Qualitäts-Vokabular ist gesetzt | [`_t`](novaberg-thinking-faszination_t.md) | überwiegend Messung am Bestand; die Entscheidung selbst steht in `_e` §15 Nr. 4 |
+| 5 | Das Qualitäts-Vokabular ist gesetzt | [`_m`](novaberg-thinking-faszination_m.md) | überwiegend Messung am Bestand; die Entscheidung selbst steht in `_e` §15 Nr. 4 |
 | 6 | Die sechs Dimensionen (Überschrift) | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 6.1 | Warum sechs und nicht acht | [`_k`](novaberg-thinking-faszination_k.md) |  |
-| 6.2 | Der Satz ist am Bestand geprüft | [`_t`](novaberg-thinking-faszination_t.md) | Messung |
-| 6.3 | Wann ein Träger profiliert wird | [`_k`](novaberg-thinking-faszination_k.md) | Planungsregel mit angehängter Widerlegung; die Messungen dazu in `_t` |
+| 6.2 | Der Satz ist am Bestand geprüft | [`_m`](novaberg-thinking-faszination_m.md) | Messung |
+| 6.3 | Wann ein Träger profiliert wird | [`_k`](novaberg-thinking-faszination_k.md) | Planungsregel mit angehängter Widerlegung; die Messungen dazu in `_m` |
 | 7 | Die Prägung — Fäden und Stränge (Überschrift) | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 7.1 | Woher die Schicht kommt | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 7.2 | Der Faden — Grundsatz | [`_k`](novaberg-thinking-faszination_k.md) | die Unterabschnitte „Die Tabellen“ und „Die Formkurve“ stehen in `_t` |
 | 7.3 | Das Tor | [`_k`](novaberg-thinking-faszination_k.md) | Absicht mit einem nachgetragenen Betriebsbeleg |
-| 7.4 | Verstärkung füllt die Lücke | [`_t`](novaberg-thinking-faszination_t.md) | Formel, Rechnungen, Messung |
+| 7.4 | Verstärkung füllt die Lücke | [`_t`](novaberg-thinking-faszination_t.md) | Regel, Rechnungen, Rechenweg; der Unterabschnitt „Gemessen am 30.08.2026 — und der Befund kehrt die Annahme um“ in `_m` |
 | 7.5 | Herkunft und Ausgang | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 7.6 | Alle Fäden werden geschrieben | [`_k`](novaberg-thinking-faszination_k.md) |  |
-| 7.7 | Der Strang | [`_t`](novaberg-thinking-faszination_t.md) | mischt Absicht (die drei Achsen) und Bau; überwiegend Bauberichte, Formeln, Messungen |
+| 7.7 | Der Strang | [`_t`](novaberg-thinking-faszination_t.md) | mischt Absicht (die drei Achsen) und Bau; der Kasten „Gebaut am 01.09.2026 — die Zuordnung, nicht die Achsen“ in `_b` |
 | 7.8 | Die Sektor-Destillation | [`_t`](novaberg-thinking-faszination_t.md) | mischt Absicht (Histogramm statt Mittelwert) und Bau; überwiegend Baubericht |
-| 7.9 | Verfall: zwei Stimmen aus einer Quelle | [`_t`](novaberg-thinking-faszination_t.md) | Formel, Konstanten, Messung |
+| 7.9 | Verfall: zwei Stimmen aus einer Quelle | [`_t`](novaberg-thinking-faszination_t.md) | Formel, Konstanten; der `[gemessen]`-Absatz „gegen den echten Bestand“ in `_m` |
 | 7.10 | Was wir bewusst getrennt halten | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 7.11 | Der Name entsteht | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 7.12 | Zwei Andockwege | [`_k`](novaberg-thinking-faszination_k.md) | Absicht mit einer Messung, die sie relativiert |
@@ -66,34 +66,33 @@
 | 10.0 | Zwei Regeln, die die Bauart vorgeben | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 10.1 | Der Merkmalszug | [`_t`](novaberg-thinking-faszination_t.md) | Formel |
 | 10.2 | Der Anker | [`_t`](novaberg-thinking-faszination_t.md) | Formel und Bau |
-| 10.3 | Der Prägungszug | [`_t`](novaberg-thinking-faszination_t.md) | Formel, Bau, Messung |
-| 10.3a | Der Strangzug | [`_t`](novaberg-thinking-faszination_t.md) | Formel, Bau, Messung |
+| 10.3 | Der Prägungszug | [`_t`](novaberg-thinking-faszination_t.md) | Formel und Bau; der `[gemessen]`-Absatz gegen den echten Bestand mit Tabelle, Kreuzprobe und Kasten in `_m` |
+| 10.3a | Der Strangzug | [`_t`](novaberg-thinking-faszination_t.md) | Formel und Bau; die Messung an fünf und an 50 Trägern in `_m` |
 | 10.4 | Der Verfall der Qualitäten | [`_t`](novaberg-thinking-faszination_t.md) | der Kasten „Entschieden am 05.09.2026“ steht in `_e` |
 | 10.5 | Die Turn-Modulatoren | [`_t`](novaberg-thinking-faszination_t.md) |  |
-| 10.6 | Zusammenführung | [`_t`](novaberg-thinking-faszination_t.md) |  |
+| 10.6 | Zusammenführung | [`_t`](novaberg-thinking-faszination_t.md) | Formel; „Gebaut und zum ersten Mal gerechnet“ in `_m`, „Die Trägerseite bekommt einen eigenen Lauf“ und „Die Reihe bekommt einen Leser“ in `_b` |
 | 10.6a | Wo die Rechnung steht — die Bezeichner | [`_t`](novaberg-thinking-faszination_t.md) |  |
 | — | *Die Konstanten* (unnummeriert, hinter 10.6a) | [`_t`](novaberg-thinking-faszination_t.md) |  |
 | 10.7 | Warum die Krise nicht auf null setzt | [`_k`](novaberg-thinking-faszination_k.md) |  |
-| 11 | Wie sie sich bemerkbar macht | [`_k`](novaberg-thinking-faszination_k.md) | die Unterabschnitte „Gebaut am 07.09.2026“ und „Im Betrieb belegt“ stehen in `_t` |
-| 11a | Ein Provisorium | [`_t`](novaberg-thinking-faszination_t.md) | Baubericht; trägt eine Setzung des Eigentümers, Verweis in `_e` |
-| — | *Stand der Abdeckung — 06.09.2026* (unnummeriert) | [`_t`](novaberg-thinking-faszination_t.md) |  |
-| — | *Der Engpass war die Längenschwelle* (unnummeriert) | [`_t`](novaberg-thinking-faszination_t.md) |  |
-| — | *Die Faszination rechnet im Turn* (unnummeriert) | [`_t`](novaberg-thinking-faszination_t.md) |  |
+| 11 | Wie sie sich bemerkbar macht | [`_k`](novaberg-thinking-faszination_k.md) | der Unterabschnitt „Gebaut am 07.09.2026“ in `_b`; „Im Betrieb belegt“ und die Messung der Wirkung in `_m` |
+| 11a | Ein Provisorium | [`_b`](novaberg-thinking-faszination_b.md) | Baubericht; trägt eine Setzung des Eigentümers, Verweis in `_e` |
+| — | *Stand der Abdeckung — 06.09.2026* (unnummeriert) | [`_m`](novaberg-thinking-faszination_m.md) |  |
+| — | *Der Engpass war die Längenschwelle* (unnummeriert) | [`_m`](novaberg-thinking-faszination_m.md) |  |
+| — | *Die Faszination rechnet im Turn* (unnummeriert) | [`_m`](novaberg-thinking-faszination_m.md) |  |
 | 12 | Die Falsifikationsproben | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 12.1 | Valenzblindheit | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 12.2 | Abgrenzung zur Neugier | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 12.3 | Der Zwilling | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 12.4 | Der Botaniker | [`_k`](novaberg-thinking-faszination_k.md) |  |
 | 13 | Was offen ist | [`_e`](novaberg-thinking-faszination_e.md) |  |
-| 14 | Reihenfolge | [`_k`](novaberg-thinking-faszination_k.md) | Planung; die Zustandsspalte ist eine Kopie und nicht nachgeführt (Befund in `_e`) |
+| 14 | Reihenfolge | [`_b`](novaberg-thinking-faszination_b.md) | Planung, mit „Die Reihenfolge ist am 30.08.2026 entschieden“; die Zustandsspalte ist eine Kopie und nicht nachgeführt (Befund in `_e`) |
 | 15 | Entscheidungsprotokoll | [`_e`](novaberg-thinking-faszination_e.md) |  |
 | 16 | Verworfene Ansätze mit Grund | [`_t`](novaberg-thinking-faszination_t.md) | überwiegend technische Varianten |
-| — | *Änderungsverlauf* | [`_t`](novaberg-thinking-faszination_t.md) |  |
-| — | *Bisheriger Kopf* (Projekt, Dokument, Stand, Pfad, Typ, Status) | [`_t`](novaberg-thinking-faszination_t.md) |  |
-
+| — | *Änderungsverlauf* | [`_e`](novaberg-thinking-faszination_e.md) | Abschnitt F |
+| — | *Bisheriger Kopf* (Projekt, Dokument, Stand, Pfad, Typ, Status) | [`_m`](novaberg-thinking-faszination_m.md) | trägt Messwerte |
+| — | Entschieden, Offen beim Meister, Befunde der Doku-Sichtung vom 19.09.2026 | [`_e`](novaberg-thinking-faszination_e.md) | Abschnitte A, B, E |
 
 ---
-
 
 ## 0. Wie dieses Dokument entstanden ist, und warum das hier steht
 
@@ -479,7 +478,7 @@ kann das nicht ausdrücken — ununterscheidbar von *„nie geprüft"*. Wörtlic
 
 ---
 
-## 5. → [`_t`](novaberg-thinking-faszination_t.md) §5 — Das Qualitäts-Vokabular ist gesetzt, nicht geerntet
+## 5. → [`_m`](novaberg-thinking-faszination_m.md) §5 — Das Qualitäts-Vokabular ist gesetzt, nicht geerntet
 
 ## 6. Die sechs Dimensionen
 
@@ -499,11 +498,11 @@ kann das nicht ausdrücken — ununterscheidbar von *„nie geprüft"*. Wörtlic
 - **`bewaeltigbarkeit`** ist bei Silvia eine Relation zwischen Reiz und **Person** → **Tor beim
   Lesen**, nicht Merkmal beim Schreiben.
 
-### 6.2 → [`_t`](novaberg-thinking-faszination_t.md) §6.2 — Der Satz ist am Bestand geprüft
+### 6.2 → [`_m`](novaberg-thinking-faszination_m.md) §6.2 — Der Satz ist am Bestand geprüft
 
 ### 6.3 Wann ein Träger profiliert wird
 
-*Aufteilung: Planungsregel mit angehängter Widerlegung — bleibt hier; die Messungen stehen in [`_t`](novaberg-thinking-faszination_t.md) §6.2 und „Der Engpass war die Längenschwelle“.*
+*Aufteilung: Planungsregel mit angehängter Widerlegung — bleibt hier; die Messungen stehen in [`_m`](novaberg-thinking-faszination_m.md) §6.2 und „Der Engpass war die Längenschwelle“.*
 
 Ein LLM-Call je Träger ist der Preis. Die Dämpfung liegt in der Größe selbst: **Profiliert wird erst,
 was eine Wiederkehr-Schwelle überschritten hat** — man fragt sich nicht beim ersten Mal, was einen an
@@ -917,7 +916,7 @@ berechnet** — Regel (2).
 
 ## 11. Wie sie sich bemerkbar macht
 
-*Aufteilung: Die Unterabschnitte „Gebaut am 07.09.2026“ und „Im Betrieb belegt“ stehen in [`_t`](novaberg-thinking-faszination_t.md) §11.*
+*Aufteilung: Der Unterabschnitt „Gebaut am 07.09.2026“ steht in [`_b`](novaberg-thinking-faszination_b.md) §11, „Im Betrieb belegt“ und die Messung der Wirkung stehen in [`_m`](novaberg-thinking-faszination_m.md) §11.*
 
 | Signatur | Woran messbar | Zustand |
 |---|---|---|
@@ -968,55 +967,7 @@ Recherche absinken.** Tut er das nicht, sitzt der Verfall am falschen Ort.
 
 ## 13. → [`_e`](novaberg-thinking-faszination_e.md) §13 — Was offen ist
 
-## 14. Reihenfolge
-
-*Aufteilung: Planung. Die Spalte „Zustand“ ist eine Kopie — der Zustand steht in der Featureliste; ein Widerspruch dazu ist als Befund in [`_e`](novaberg-thinking-faszination_e.md) geführt.*
-
-| # | Voraussetzung | Zustand |
-|---|---|---|
-| 1 | MS-Welle Block 2 ff. | in Arbeit |
-| 2 | Synapsen P4 — Knoten, Kanten, Spreading | blockiert durch (1) |
-| 3 | ~~**`KZG-SALIENZ-NEUBAU`** — das Faden-Tor steht darauf~~ | **hinfällig als Vorbedingung** — `[gemessen]` 30.08.2026 über 2.747 Läufe steht `salienz_effektiv` auf [0…1], Maximum exakt 1,000, keiner darüber. Der Skalenbruch ist am 24.08.2026 behoben; der Sprint bleibt offen (die Formel ist nicht idempotent), **aber das Tor braucht ihn nicht** |
-| 4 | ~~**`EMGRAV-SCHWELLE-TOT`** — solange jeder Knoten die Schwelle reißt, kann kein Faden verfallen~~ | **erfüllt** — behoben am 30.08.2026, gemessen 0,71 Aktivierungen je Turn statt 2,00 |
-| 5 | **abstrakte Schicht** — Qualitäts- und Werte-Knoten mit Typ-Diskriminator | ~~offen~~ → **Qualitätsseite gebaut am 03.09.2026**: `abstrakt_knoten` (Typ-Diskriminator `art`) und `traeger_qualitaet` (vorzeichenlose Kante), Erzeuger seit dem **06.09.2026 als eigener Agent** `agents/qualitaet_profil/` (täglich, `llm`-Spur) — im Tageslauf stand er in der `cpu`-Spur und hat in drei Tagen **keinen einzigen Träger profiliert**, zwei Läufe `0 von 20` mit `SpurVerletzungError`, weil ein Profil einen Modellaufruf kostet; Merkmalszug als Leser. **72 Träger, 432 Kanten im Bestand** `[gemessen 06.09.2026]`, 328 Kandidaten offen — davor 25 / 150. Die **Werte**seite trägt keine Zeile — `praemisse_knoten_id` wartet weiter. Die abstrakten Knoten liegen in einer **eigenen Tabelle** statt in `lzg_knoten`; Grund und Messwert in `novaberg-memory-qualitaetsprofil.md` §3a |
-| 6 | `charakter_rad_messung` liefert eine stabile Reihe | gebaut, braucht Laufzeit |
-| 7 | ~~`PIXIE_AKTIV` steht auf `False`~~ | **erfüllt** — `PIXIE_AKTIV=true` im laufenden Container, `[gemessen]` 30.08.2026; nur der Code-Default in `config.py:360` ist `false` |
-| 8 | Haltungsraum bekommt einen Leser | offen |
-
-### Die Reihenfolge ist am 30.08.2026 entschieden: die Prägungsschicht zuerst
-
-**Die Frage lautete zwei Wege lang falsch.** `opinion_k` §9 wählte *grob zuerst, Zerlegung später*,
-der Zwilling-Test sagte das Gegenteil — beide Wege führen über die abstrakte Schicht und damit über
-zwei Fundamente, die nicht stehen. **Am 30.08.2026 ist ein dritter Weg frei geworden**, und zwar
-durch Messung, nicht durch Bauen:
-
-| | vorher | seit dem 30.08.2026 |
-|---|---|---|
-| Faden-Tor | wartet auf `KZG-SALIENZ-NEUBAU` | Salienz steht auf [0…1], **hinfällig** |
-| Verstärkung | Schwelle lehnt nichts ab | `EMGRAV-SCHWELLE-TOT` **behoben** |
-| Reaktivierung zählbar | nein, kein Schlüssel | ~~`knoten_id` im `pipeline_log`~~ **[Widerlegt 04.09.2026: Das Protokoll trägt keine einzige LZG-Reaktivierung — alle 105 Aktivierungen der Gravitation sind KZG-Schlüssel. Die brauchbare Verlaufsquelle ist der Promotion-Pfad, und dessen Zähler messen bis zur Behebung der Verstärkungsschleife Wiederholung statt Wiederkehr (`novaberg-memory-synapsen_k.md` §7.1a). Seit dem 04.09.2026 protokolliert der Enricher zusätzlich `lzg_resonanz_ids` — das gelesene Material je Turn.]** |
-| Verdichtung | `PIXIE_AKTIV = False` angenommen | steht auf `true`, **erfüllt** |
-
-**Die Prägungsschicht hängt an keiner der drei verbliebenen offenen Zeilen.** MS-Welle, Synapsen P4
-und die abstrakte Schicht tragen die **Qualitätsseite** — `neuheit` als Kanteneigenschaft, die
-Generalisierung des Zwillings, die Trägerzählung. Fäden hängen an Embeddings und Emotionen.
-
-**Was sie braucht, ist DDL:** je eine Tabelle für Fäden und Stränge. Das ist der einzige Posten, und
-er ist anzukündigen, weil ein Schemawechsel erst nach einem Neustart wirkt.
-
-> **Der Grund für diese Reihenfolge ist nicht, dass sie die billigste ist.** Sie ist die einzige, die
-> heute eine **Messreihe** erzeugt. `α`, die Halbstrecke, die acht Sektorfaktoren und der Boden sind
-> allesamt Setzungen, die ohne laufende Fäden nicht kalibrierbar sind — und diese Reihe braucht
-> Wochen, gleich wann sie beginnt. Jeder Tag, an dem zuerst die abstrakte Schicht gebaut wird, ist
-> ein Tag ohne Daten für die Kalibrierung.
-
-**Die abstrakte Schicht ist damit nicht verworfen, nur nicht zuerst.** Der Zwilling-Test gilt
-unverändert: Eine themengeführte Faszination **sähe in den Logs aus wie eine funktionierende** — die
-Klasse der stillen Fehlschläge mit fünf dokumentierten Fällen. Sie bleibt Vorbedingung der
-**Faszination**; `opinion_k` §9 zieht weiterhin mit, wenn sie fällt.
-
-**Drei Konzepte, ein Verdichtungsmechanismus.** Faden → Strang, Knoten → Werte-Cluster und Träger →
-Qualität sind strukturell dasselbe.
+## 14. → [`_b`](novaberg-thinking-faszination_b.md) §14 — Reihenfolge
 
 ---
 
