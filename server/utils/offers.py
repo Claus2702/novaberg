@@ -170,6 +170,58 @@ def offer_store(redis_client: object, user_id: str, character_id: str,
     return True
 
 
+def draw_key(user_id: str, character_id: str, thing: str) -> str:
+    """Der Schluessel, unter dem der Wurf fuer eine Sache je Paar liegt.
+
+    Vorbedingung: keine. Nachbedingung: gleich fuer dieselbe Sache in
+    anderer Schreibung (Gross/Klein, Raender, Auszeichnung wie `**Termin**`).
+    `[gemessen 19.09.2026, zweite Kontrolle]` 54 von 471 akuten Objektnamen
+    trugen Sterne; im Paar meister/nova stand dieselbe Sache 7,5 min
+    auseinander als `Termin` und `**Termin**`.
+    Fehlerfaelle: keine.
+    """
+    return f"angebot_wurf:{user_id}:{character_id}:{_MARKUP.sub('', thing).strip().casefold()}"
+
+
+def draw_recorded(redis_client: object, user_id: str, character_id: str, thing: str) -> bool | None:
+    """Wurde fuer diese Sache schon gewuerfelt, und ist das noch nicht verfallen?
+
+    Entscheidung des Eigentuemers, 19.09.2026: Das Angebot gilt **pro Sache**,
+    nicht pro Turn — hat Nova gewuerfelt, wuerfelt sie fuer dieselbe Sache
+    nicht erneut, bis die Frist (`ANGEBOT_VERFALL_SEKUNDEN`) um ist.
+
+    Vorbedingung: keine.
+    Nachbedingung: True/False; **None, wenn der Speicher nicht antwortet** —
+        der Aufrufer entscheidet, welche Seite die vorsichtige ist.
+    Fehlerfaelle: keine Ausnahme nach aussen; ein Speicherfehler wird laut.
+    """
+    try:
+        return bool(redis_client.exists(draw_key(user_id, character_id, thing)))
+    except Exception as fehler:  # noqa: BLE001 — der Antwortpfad haelt nicht an
+        logger.exception("Angebot: Wurf fuer %r nicht lesbar (%s)", thing, type(fehler).__name__)
+        return None
+
+
+def draw_record(redis_client: object, user_id: str, character_id: str, thing: str,
+                ttl_seconds: float) -> bool:
+    """Haelt fest, dass fuer diese Sache gewuerfelt wurde — gleich mit welchem Ausgang.
+
+    Vorbedingung: `ttl_seconds` ist positiv.
+    Nachbedingung: True, wenn der Wurf festgehalten ist; sonst False und laut.
+    Fehlerfaelle: keine Ausnahme nach aussen.
+    """
+    if ttl_seconds <= 0:
+        logger.error("Angebot: Verfallszeit %r ist nicht positiv", ttl_seconds)
+        return False
+    try:
+        redis_client.setex(draw_key(user_id, character_id, thing), int(ttl_seconds), "1")
+    except Exception as fehler:  # noqa: BLE001 — der Antwortpfad haelt nicht an
+        logger.exception("Angebot: Wurf fuer %r nicht festgehalten (%s)",
+                         thing, type(fehler).__name__)
+        return False
+    return True
+
+
 def offer_load(redis_client: object, user_id: str, character_id: str) -> Offer | None:
     """Liest das offene Angebot des Paares, oder `None`.
 

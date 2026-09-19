@@ -31,11 +31,13 @@ from datetime import datetime
 
 from config import (
     ANGEBOT_PFLICHT_BODEN,
+    ANGEBOT_VERFALL_SEKUNDEN,
     POSTGRES_URL,
     PROMPTS,
     VERFASSER_IMPULS_NAHE,
     get_node_config,
 )
+from config import redis_client as cfg_redis_client
 from ei.haltungssprache import stoffzeilen
 from graph.einwand import kopf_anweisung, urteil_lesen
 
@@ -57,7 +59,7 @@ from memory.session import (
     verlauf_gruppieren,
 )
 from services.model_services import ChatRequest, model_service
-from utils.offers import OfferCandidate, offer_candidate
+from utils.offers import OfferCandidate, draw_record, draw_recorded, offer_candidate
 
 #: Wieviele Wortwechsel der Verfasser im Verlauf sieht. Vorher sah er den
 #: ganzen `session_turns`-Bestand; die Zahl ist die Obergrenze, die es bis
@@ -371,8 +373,9 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
     Nachbedingung: Der Block steht genau dann, wenn eine Sache am Zettel von
         Timeline oder Notizen steht, in diesem Turn kein Dienst lief und kein
         Auftrag laeuft, Novas Pflichtbewusstsein zum Menschen nicht unter dem
-        Boden liegt, die Sache nicht abgelehnt ist (E3) und der Zug dieses
-        Turns unter der Wahrscheinlichkeit aus `_offer_probability` bleibt
+        Boden liegt, die Sache nicht abgelehnt ist (E3), fuer sie in der Frist
+        noch nicht gewuerfelt wurde (pro Sache, Entscheidung 19.09.2026) und
+        der Zug unter der Wahrscheinlichkeit aus `_offer_probability` bleibt
         (Entscheidung 18.09.2026). Steht er, traegt `state["angebot_kandidat"]`
         die angebotene Sache, sonst ist es leer. **Jeder Ausgang steht als
         `verfasser.angebot` im Pipeline-Log**, mit Wahrscheinlichkeit und Zug,
@@ -402,10 +405,17 @@ def _offer_block(state: ConversationState, sachlage: object) -> str:
             ausgang = "unter_boden"
         elif kandidat.name in declined_objects(POSTGRES_URL, user_id, character_id, [kandidat.name]):
             ausgang = "abgelehnt"
+        elif (schon := draw_recorded(cfg_redis_client, user_id, character_id,
+                                     kandidat.name)) is not False:
+            # Pro Sache (19.09.2026): schon gewuerfelt, oder der Speicher sagt
+            # es nicht — dann nicht fragen, die vorsichtige Seite.
+            ausgang = "schon_gewuerfelt" if schon else "wurf_unbekannt"
         else:
             chance: float = _offer_probability(pflicht)
             zug: float = random.random()  # noqa: S311 — ein Wurf, kein Geheimnis
             eingang.update({"wahrscheinlichkeit": round(chance, 3), "zug": round(zug, 3)})
+            draw_record(cfg_redis_client, user_id, character_id, kandidat.name,
+                        ANGEBOT_VERFALL_SEKUNDEN)
             if zug >= chance:
                 ausgang = "nicht_gezogen"
             else:

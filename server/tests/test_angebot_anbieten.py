@@ -25,7 +25,7 @@ from unittest.mock import patch
 
 from config import PROMPTS
 from graph.nodes import verfasser
-from utils.offers import find_offers, offer_candidate
+from utils.offers import draw_key, find_offers, offer_candidate
 
 SACHLAGE = {"objekte": [{"name": "Abholung der Schwester", "klasse": "vorgang", "akut": True,
                          "gedeckt": {"Tag": "Samstag"}}]}
@@ -74,18 +74,74 @@ class KurveTest(unittest.TestCase):
         self.assertEqual(verfasser._offer_probability(1.3), 1.0)
 
 
+class WurfSpeicher:
+    """Ein Redis-Ersatz fuer die Wuerfe: exists/setex, auf Wunsch gestoert."""
+
+    def __init__(self, gestoert: bool = False) -> None:
+        """Leer; `gestoert` laesst jeden Lesezugriff scheitern."""
+        self.inhalt: dict[str, int] = {}
+        self.gestoert = gestoert
+
+    def exists(self, key: str) -> int:
+        if self.gestoert:
+            raise ConnectionError
+        return int(key in self.inhalt)
+
+    def setex(self, key: str, ttl: int, wert: str) -> None:
+        self.inhalt[key] = ttl
+
+
+def _weiche(rad: dict | None, abgelehnt: set[str] | None = None,
+            zug: float = 0.0, speicher: object = None) -> tuple[str, list[dict]]:
+    """Faehrt `_offer_block` mit ersetztem Rad, Ablehnung, Log, Wurfspeicher und Zufall."""
+    eintraege: list[dict] = []
+    state = {"user_id": "pruefer", "character_id": "nova", "turn_id": "t1",
+             "objekt_urteil": URTEIL, "agent_results": [], "management_action": ""}
+    wuerfe = speicher if speicher is not None else WurfSpeicher()
+    with patch.object(verfasser, "nutzer_gewichtung_rad_laden", return_value=(rad, "destilliert")), \
+         patch.object(verfasser, "declined_objects", return_value=abgelehnt or set()), \
+         patch.object(verfasser, "log_decision", lambda **kw: eintraege.append(kw)), \
+         patch.object(verfasser, "cfg_redis_client", wuerfe), \
+         patch.object(verfasser.random, "random", return_value=zug):
+        return verfasser._offer_block(state, SACHLAGE), eintraege
+
+
+class ProSacheTest(unittest.TestCase):
+    """Das Angebot gilt pro Sache, nicht pro Turn (Entscheidung 19.09.2026)."""
+
+    def _zweimal(self, erster_zug: float) -> tuple[list[dict], list[dict], WurfSpeicher]:
+        speicher = WurfSpeicher()
+        eins = _weiche({"pflicht": 0.773}, zug=erster_zug, speicher=speicher)[1]
+        zwei = _weiche({"pflicht": 0.773}, zug=0.0, speicher=speicher)[1]
+        return eins, zwei, speicher
+
+    def test_nach_einem_angebot_fragt_sie_dieselbe_sache_nicht_wieder(self) -> None:
+        eins, zwei, speicher = self._zweimal(0.0)
+        ausgaenge = (eins[0]["outcome"], zwei[0]["outcome"])
+        self.assertEqual(ausgaenge, ("angeboten", "schon_gewuerfelt"))
+        self.assertEqual(list(speicher.inhalt.values()), [900])
+
+    def test_nach_einem_nicht_gezogenen_wurf_wuerfelt_sie_nicht_neu(self) -> None:
+        eins, zwei, _ = self._zweimal(0.99)
+        ausgaenge = (eins[0]["outcome"], zwei[0]["outcome"])
+        self.assertEqual(ausgaenge, ("nicht_gezogen", "schon_gewuerfelt"))
+
+    def test_gestoerter_speicher_heisst_kein_angebot_und_laut(self) -> None:
+        with self.assertLogs("ki_server.offers", level="ERROR"):
+            block, eintraege = _weiche({"pflicht": 1.0}, speicher=WurfSpeicher(gestoert=True))
+        self.assertEqual((block, eintraege[0]["outcome"]), ("", "wurf_unbekannt"))
+
+    def test_derselbe_schluessel_fuer_andere_schreibung(self) -> None:
+        gross = draw_key("u", "nova", " Abholung der Schwester")
+        self.assertEqual(gross, draw_key("u", "nova", "abholung der schwester "))
+        self.assertEqual(draw_key("u", "nova", "**Termin**"), draw_key("u", "nova", "Termin"))
+
+
 class WeicheTest(unittest.TestCase):
 
     def _block(self, rad: dict | None, abgelehnt: set[str] | None = None,
-               zug: float = 0.0) -> tuple[str, list[dict]]:
-        eintraege: list[dict] = []
-        state = {"user_id": "pruefer", "character_id": "nova", "turn_id": "t1",
-                 "objekt_urteil": URTEIL, "agent_results": [], "management_action": ""}
-        with patch.object(verfasser, "nutzer_gewichtung_rad_laden", return_value=(rad, "destilliert")), \
-             patch.object(verfasser, "declined_objects", return_value=abgelehnt or set()), \
-             patch.object(verfasser, "log_decision", lambda **kw: eintraege.append(kw)), \
-             patch.object(verfasser.random, "random", return_value=zug):
-            return verfasser._offer_block(state, SACHLAGE), eintraege
+               zug: float = 0.0, speicher: object = None) -> tuple[str, list[dict]]:
+        return _weiche(rad, abgelehnt, zug, speicher)
 
     def test_zug_unter_der_wahrscheinlichkeit_bietet_sie_an(self) -> None:
         """Ein Zug unter der Wahrscheinlichkeit ergibt das Angebot.
@@ -125,6 +181,7 @@ class WeicheTest(unittest.TestCase):
                 with patch.object(verfasser, "nutzer_gewichtung_rad_laden", return_value=({"pflicht": pflicht}, "x")), \
                      patch.object(verfasser, "declined_objects", return_value=set()), \
                      patch.object(verfasser, "log_decision", lambda **kw: None), \
+                     patch.object(verfasser, "cfg_redis_client", WurfSpeicher()), \
                      patch.object(verfasser.random, "random", return_value=0.0):
                     verfasser._offer_block(state, SACHLAGE)
                 self.assertEqual(state["angebot_kandidat"], erwartet)
