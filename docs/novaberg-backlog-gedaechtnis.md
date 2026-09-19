@@ -16,6 +16,17 @@
 
 ---
 
+## Block 19.09.2026 — Schwellen, gemessen an einem einzigen Einbettungsmodell
+
+Die Schwellen der fünf Suchräume (Kurzzeitgedächtnis, Langzeitgedächtnis, Bibliothek, Dateienindex, Empfang der Fachdienste) sind alle mit **einem** Modell und **ohne** Aufgaben-Präfixe gemessen. Beide Nachmessungen brauchen keinen Aufruf eines Sprachmodells: Anfragen, Einträge, Objekte und Soll-Zuordnungen liegen vor, neu gerechnet werden nur die Einbettungen.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `EMBED-PRAEFIX-NACHMESSEN` | **Die Präfix-Entscheidung beruht auf sechs Triplets, und die Befunde zur Lücke zwischen Anfrage und gespeichertem Vektor könnten an ihr hängen.** Nachmessung: dieselben Anfragen und Einträge wie in den Schwellenmessungen (Boden des Kurzzeitgedächtnisses, Messrichtung und Verdünnung der Bibliothek, Zuordnung an die Fachdienste), eingebettet mit den Präfixen für Anfrage und Dokument. **Vorhersage aus der Literatur zur Asymmetrie von Anfrage und Dokument:** Die Lücke wird kleiner; die eigene Vormessung sagt das Gegenteil. Entscheidet, ob die Entscheidung in `novaberg-embedding-casing-blind_k.md` §3 bleibt. | [GED] ungebändigt — ⬜ **offen** — angelegt am 19.09.2026. |
+| `EMBED-ZWEITES-MODELL-NACHMESSEN` | **Jede Schwelle ist an einem Modell geeicht; ob die Muster dahinter Eigenschaften dieses Modells sind, ist nicht gemessen.** Nachmessung derselben Reihen mit einem zweiten Einbettungsmodell (Rückfall `embeddinggemma` liegt bereit). **Vorhersage:** Die Zahlen verschieben sich, die Muster bleiben — Boden über einer naiv gesetzten Schwelle, Verdünnung über mehrere Themen, schlechte Treffer von Inhaltsfragen auf Themenvektoren, absolute Nähe vor Abstand bei der Zuordnung. Hält ein zweites Modell die Muster nicht, sind sie Eigenschaften des einen. | [GED] ungebändigt — ⬜ **offen** — angelegt am 19.09.2026. |
+
+---
+
 ## Block 19.08.2026 — ein Vektor je Gegenstand
 
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Kategorien; hier stehen die von **Gedaechtnis**. Ueberschrift und Text stehen in jeder empfangenden Datei.

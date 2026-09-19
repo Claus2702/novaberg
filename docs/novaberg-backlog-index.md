@@ -1,13 +1,13 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 440 Eintraege mit Kennung — 364 offen, 73 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 442 Eintraege mit Kennung — 366 offen, 73 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 439 von 440 Eintraegen zugeordnet.
+**Kategorie:** 441 von 442 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 78 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 67 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 55 |
@@ -310,7 +310,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 | Kuerzel | Kategorie | zugeordnet |
 |---|---|---|
-| `GED` | GEDAECHTNIS | 77 |
+| `GED` | GEDAECHTNIS | 79 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 73 |
 | `ANT` | ANTWORTPFAD | 55 |
@@ -323,86 +323,88 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 440 Eintraege
+## Alle 442 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
-| GED | 29 | offen | `EMBED-LISTE-DELEGATIONSAKTEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-gedaechtnis.md) |
-| GED | 53 | abgeschlossen | `SALIENZKURVE-UNTEN-ZU-STEIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-gedaechtnis.md) |
-| GED | 69 | offen | `QUERY-REWRITING-QUELLE-STEHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
-| GED | 82 | abgeschlossen | `SUCHSCHLUESSEL-OHNE-VERLAUF` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
-| GED | 111 | offen | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 163 | offen | `EBBINGHAUS-KONSTANTEN-TOT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 176 | offen | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 189 | offen | `ENTITAET-IDS-LEER-82-PROZENT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
-| GED | 420 | offen | `REFAC-KZG-CODE-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 421 | abgeschlossen | `ZIEL-DECAY-FORMEL-KUMULATIV` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 422 | abgeschlossen | `ZIEL-DECAY-TYP-FILTER` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 423 | abgeschlossen | `ZIEL-DECAY-DOKU-LUEGT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 424 | offen | `ENRICHER-REDIS-UNGESCHUETZT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
-| GED | 427 | offen | `EPIC-EMOTIONALE-GRAVITATION` | [EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen na](novaberg-backlog-gedaechtnis.md) |
-| GED | 466 | abgeschlossen | `KZG-DEDUP` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
-| GED | 475 | abgeschlossen | `KZG-KERN-BLIND` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
-| GED | 484 | offen | `KZG-L` | [Epic: KZG-Liberalisierung + LZG-Destillation (Chat 6](novaberg-backlog-gedaechtnis.md) |
-| GED | 704 | offen | `EPIC-PROMOTION-KORREKTUR` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 786 | offen | `PROMO-CLUSTER-EI-UPDATE` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 811 | offen | `PROMO-CLUSTER-TIE-DETERMINISM` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 823 | offen | `PROMO-DESTILL-DEAD` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 834 | offen | `PROMO-INTENTIONEN-FORMAT-DRIFT` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 847 | abgeschlossen | `EPIC-MEMORY-KERN-UMBAU` | [EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell](novaberg-backlog-gedaechtnis.md) |
-| GED | 984 | offen | `SESSION-SUMMARY-INACTIVE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
-| GED | 996 | offen | `LZG-HAEUFIGKEIT-AMBIVALENT` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1019 | offen | `MEMORY-SALIENZ-VERERBUNG` | [Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf sema](novaberg-backlog-gedaechtnis.md) |
-| GED | 1052 | offen | `ENRICHER-AKTE` | [Konzept: ENRICHER-AKTE — Strukturierte Memory-Contex](novaberg-backlog-gedaechtnis.md) |
-| GED | 1088 | offen | `KONZEPT-TURNLOG-CHRONIK` | [KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log al](novaberg-backlog-gedaechtnis.md) |
-| GED | 1142 | abgeschlossen | `KZG-CLEANUP` | [Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-E](novaberg-backlog-gedaechtnis.md) |
-| GED | 1172 | abgeschlossen | `SPRINT-PIXIE-EVA-HAERTUNG` | [SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekomm](novaberg-backlog-gedaechtnis.md) |
-| GED | 1204 | offen | `DOPPEL-SESSION-LOAD` | [Performance: DOPPEL-SESSION-LOAD — Session-Turns wer](novaberg-backlog-gedaechtnis.md) |
-| GED | 1240 | offen | `SESSION-SUMMARY-PFAD-INAKTIV` | [Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1277 | offen | `KZG-VERDICHTER-KONTEXT-VERLUST` | [Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter pro](novaberg-backlog-gedaechtnis.md) |
-| GED | 1308 | offen | `SALIENZ-VERDICHTUNG-MEHRFACH` | [Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Ver](novaberg-backlog-gedaechtnis.md) |
-| GED | 1334 | offen | `AUDIT-1-BEIFANG-PROMOTION` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1348 | offen | `EMOTIONS-VEKTOR-LEER` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1349 | offen | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1350 | abgeschlossen | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1351 | offen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1352 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1359 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
-| GED | 1380 | offen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timelin](novaberg-backlog-gedaechtnis.md) |
-| GED | 1395 | offen | `SYNAPSEN-DUAL-LZG` | [Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten](novaberg-backlog-gedaechtnis.md) |
-| GED | 1410 | offen | `KZG-GEWICHT-ABSOLUT-CEILING` | [Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfu](novaberg-backlog-gedaechtnis.md) |
-| GED | 1474 | abgeschlossen | `P5-LIVE-ABNAHME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1475 | offen | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1476 | offen | `SPREADING-RELEVANZ-BEOBACHTEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1477 | offen | `LZG-RESONANZ-DATETIME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1478 | abgeschlossen | `LZG-RESONANZ-STATE-DEKL` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1479 | offen | `LZG-RESONANZ-ENTITAET-NAMEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
-| GED | 1496 | offen | `ENRICHER-DUP` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
-| GED | 1497 | offen | `TOK-DRIFT-SALIENCE` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
-| GED | 1538 | abgeschlossen | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | [Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1555 | offen | `HALBREAKTIVIERUNG-LIVE` | [Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Mat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1571 | offen | `SYNAPSEN-REAKTIV-SCHWELLE` | [Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schw](novaberg-backlog-gedaechtnis.md) |
-| GED | 1584 | offen | `HAEUFIGKEIT-AUF-KNOTEN` | [Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_](novaberg-backlog-gedaechtnis.md) |
-| GED | 1593 | offen | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | [Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorisch](novaberg-backlog-gedaechtnis.md) |
-| GED | 1602 | offen | `GESPRAECH-ARCHIV-VERWAIST` | [Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1613 | offen | `KZG-QUELLE-IST-USER-ID` | [Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `u](novaberg-backlog-gedaechtnis.md) |
-| GED | 1622 | offen | `ENTITAET-EMBED-DREIFACH` | [Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad emb](novaberg-backlog-gedaechtnis.md) |
-| GED | 1639 | offen | `GESPRAECH-ARCHIV-LEER` | [Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohges](novaberg-backlog-gedaechtnis.md) |
-| GED | 1650 | offen | `PIPELINE-LOG-MERGE-BLIND` | [Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement](novaberg-backlog-gedaechtnis.md) |
-| GED | 1659 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
-| GED | 1668 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
-| GED | 1677 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
-| GED | 1688 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1703 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
-| GED | 1720 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
-| GED | 1735 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1752 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
-| GED | 1783 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1833 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
-| GED | 1858 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1899 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
-| GED | 1934 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1961 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
+| GED | 25 | offen | `EMBED-PRAEFIX-NACHMESSEN` | [Block 19.09.2026 — Schwellen, gemessen an einem einz](novaberg-backlog-gedaechtnis.md) |
+| GED | 26 | offen | `EMBED-ZWEITES-MODELL-NACHMESSEN` | [Block 19.09.2026 — Schwellen, gemessen an einem einz](novaberg-backlog-gedaechtnis.md) |
+| GED | 40 | offen | `EMBED-LISTE-DELEGATIONSAKTEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-gedaechtnis.md) |
+| GED | 64 | abgeschlossen | `SALIENZKURVE-UNTEN-ZU-STEIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-gedaechtnis.md) |
+| GED | 80 | offen | `QUERY-REWRITING-QUELLE-STEHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
+| GED | 93 | abgeschlossen | `SUCHSCHLUESSEL-OHNE-VERLAUF` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
+| GED | 122 | offen | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 174 | offen | `EBBINGHAUS-KONSTANTEN-TOT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 187 | offen | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 200 | offen | `ENTITAET-IDS-LEER-82-PROZENT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 431 | offen | `REFAC-KZG-CODE-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 432 | abgeschlossen | `ZIEL-DECAY-FORMEL-KUMULATIV` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 433 | abgeschlossen | `ZIEL-DECAY-TYP-FILTER` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 434 | abgeschlossen | `ZIEL-DECAY-DOKU-LUEGT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 435 | offen | `ENRICHER-REDIS-UNGESCHUETZT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 438 | offen | `EPIC-EMOTIONALE-GRAVITATION` | [EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen na](novaberg-backlog-gedaechtnis.md) |
+| GED | 477 | abgeschlossen | `KZG-DEDUP` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
+| GED | 486 | abgeschlossen | `KZG-KERN-BLIND` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
+| GED | 495 | offen | `KZG-L` | [Epic: KZG-Liberalisierung + LZG-Destillation (Chat 6](novaberg-backlog-gedaechtnis.md) |
+| GED | 715 | offen | `EPIC-PROMOTION-KORREKTUR` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 797 | offen | `PROMO-CLUSTER-EI-UPDATE` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 822 | offen | `PROMO-CLUSTER-TIE-DETERMINISM` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 834 | offen | `PROMO-DESTILL-DEAD` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 845 | offen | `PROMO-INTENTIONEN-FORMAT-DRIFT` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 858 | abgeschlossen | `EPIC-MEMORY-KERN-UMBAU` | [EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell](novaberg-backlog-gedaechtnis.md) |
+| GED | 995 | offen | `SESSION-SUMMARY-INACTIVE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1007 | offen | `LZG-HAEUFIGKEIT-AMBIVALENT` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1030 | offen | `MEMORY-SALIENZ-VERERBUNG` | [Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf sema](novaberg-backlog-gedaechtnis.md) |
+| GED | 1063 | offen | `ENRICHER-AKTE` | [Konzept: ENRICHER-AKTE — Strukturierte Memory-Contex](novaberg-backlog-gedaechtnis.md) |
+| GED | 1099 | offen | `KONZEPT-TURNLOG-CHRONIK` | [KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log al](novaberg-backlog-gedaechtnis.md) |
+| GED | 1153 | abgeschlossen | `KZG-CLEANUP` | [Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-E](novaberg-backlog-gedaechtnis.md) |
+| GED | 1183 | abgeschlossen | `SPRINT-PIXIE-EVA-HAERTUNG` | [SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekomm](novaberg-backlog-gedaechtnis.md) |
+| GED | 1215 | offen | `DOPPEL-SESSION-LOAD` | [Performance: DOPPEL-SESSION-LOAD — Session-Turns wer](novaberg-backlog-gedaechtnis.md) |
+| GED | 1251 | offen | `SESSION-SUMMARY-PFAD-INAKTIV` | [Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1288 | offen | `KZG-VERDICHTER-KONTEXT-VERLUST` | [Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter pro](novaberg-backlog-gedaechtnis.md) |
+| GED | 1319 | offen | `SALIENZ-VERDICHTUNG-MEHRFACH` | [Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 1345 | offen | `AUDIT-1-BEIFANG-PROMOTION` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1359 | offen | `EMOTIONS-VEKTOR-LEER` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1360 | offen | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1361 | abgeschlossen | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1362 | offen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1363 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1370 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
+| GED | 1391 | offen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timelin](novaberg-backlog-gedaechtnis.md) |
+| GED | 1406 | offen | `SYNAPSEN-DUAL-LZG` | [Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten](novaberg-backlog-gedaechtnis.md) |
+| GED | 1421 | offen | `KZG-GEWICHT-ABSOLUT-CEILING` | [Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfu](novaberg-backlog-gedaechtnis.md) |
+| GED | 1485 | abgeschlossen | `P5-LIVE-ABNAHME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1486 | offen | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1487 | offen | `SPREADING-RELEVANZ-BEOBACHTEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1488 | offen | `LZG-RESONANZ-DATETIME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1489 | abgeschlossen | `LZG-RESONANZ-STATE-DEKL` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1490 | offen | `LZG-RESONANZ-ENTITAET-NAMEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1507 | offen | `ENRICHER-DUP` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
+| GED | 1508 | offen | `TOK-DRIFT-SALIENCE` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
+| GED | 1549 | abgeschlossen | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | [Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1566 | offen | `HALBREAKTIVIERUNG-LIVE` | [Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Mat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1582 | offen | `SYNAPSEN-REAKTIV-SCHWELLE` | [Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schw](novaberg-backlog-gedaechtnis.md) |
+| GED | 1595 | offen | `HAEUFIGKEIT-AUF-KNOTEN` | [Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1604 | offen | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | [Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorisch](novaberg-backlog-gedaechtnis.md) |
+| GED | 1613 | offen | `GESPRAECH-ARCHIV-VERWAIST` | [Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1624 | offen | `KZG-QUELLE-IST-USER-ID` | [Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `u](novaberg-backlog-gedaechtnis.md) |
+| GED | 1633 | offen | `ENTITAET-EMBED-DREIFACH` | [Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad emb](novaberg-backlog-gedaechtnis.md) |
+| GED | 1650 | offen | `GESPRAECH-ARCHIV-LEER` | [Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohges](novaberg-backlog-gedaechtnis.md) |
+| GED | 1661 | offen | `PIPELINE-LOG-MERGE-BLIND` | [Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement](novaberg-backlog-gedaechtnis.md) |
+| GED | 1670 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
+| GED | 1679 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
+| GED | 1688 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
+| GED | 1699 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1714 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1731 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1746 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1763 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
+| GED | 1794 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1844 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
+| GED | 1869 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1910 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1945 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1972 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
 | HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
 | HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
 | HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |

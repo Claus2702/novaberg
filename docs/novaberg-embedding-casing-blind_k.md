@@ -123,10 +123,12 @@ Gemessen auf sechs deutschen Triplets, alle Kandidaten im Vergleich:
 - Bestes Signal/Rausch-Verhältnis — **50× über dem IST-Zustand**
 - **768 Dimensionen** → kein `ALTER TABLE`, kein Index-Neubau
 - 512-Token-Limit: `lzg_knoten` max. 618 Zeichen (p95 = 330) → **Faktor 2,4 Luft**
+  > **Nachtrag 19.09.2026 — die Grenze ist belegt, und woher sie kommt.** `[gemessen]` Das betriebene Modell trägt in seinen Metadaten `context_length = 512` (Ollama `/api/show`). Ollamas `/api/embed` kürzt eine längere Eingabe **still am Ende**, solange `truncate` nicht ausdrücklich `false` ist — die Voreinstellung ist `true`, und der Server setzt den Parameter nicht. **Die Modellbeschreibung sagt etwas anderes und gilt hier nicht:** Nussbaum & Duderstadt (2025, arXiv:2502.07972) trainieren mit Segmenten von 2048 Tokens und kürzen nur in einer Auswertung auf 512 — die betriebene Fassung ist auf 512 begrenzt. Wer eine Grenze aus dem Papier des Modells liest statt aus dem Dienst, liest die falsche. Was über ~1500 Zeichen liegt, bettet der Dienst nur mit seinem Anfang ein (Phase 1 unten; ein zweiter Fall steht in der Fundliste vom 19.09.2026).
 - VRAM: 955 MB gegen 604 MB von v1 → **netto +351 MB**. Live verifiziert:
   gemma4-gpu (21 GB) + v2-moe passen gemeinsam zu 100 % auf die GPU
 - **Präfixe schaden bei allen Modellen** (v1, v2-moe, embeddinggemma — konsistent
   gemessen). Datenblatt empfiehlt sie; die Messung widerspricht. Wir folgen der Messung.
+  > **Nachtrag 19.09.2026 — die Messung ist klein, die Gegenseite ist die Bauart des Modells.** Die Entscheidung beruht auf **sechs** Triplets. Das Modell ist für die Präfixe trainiert, und seine Beschreibung benutzt sie in der eigenen Auswertung (dort „search query" und „search document"); die Unterscheidung von Anfrage und Dokument ist genau das, wofür sie gebaut sind. Seitdem sind Schwellenmessungen an fünf Suchräumen entstanden, deren Befunde zur Lücke zwischen Frage und gespeichertem Vektor teilweise auf den fehlenden Präfixen beruhen könnten. **Die Entscheidung bleibt bis zur Nachmessung stehen** — `EMBED-PRAEFIX-NACHMESSEN` in `novaberg-backlog-gedaechtnis.md`.
 
 **Rückfall:** `embeddinggemma` (gezogen, nicht löschen bis zur Abnahme).
 **Verworfen:** `bge-m3` (gelöscht — schlechter *und* Schema-Migration).
