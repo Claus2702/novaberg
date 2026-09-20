@@ -1416,7 +1416,23 @@ Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein s
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** ⬜ offen — angelegt am 19.09.2026.
+**Zustand:** ⬜ offen — **gemessen am 20.09.2026, die Entscheidung fehlt noch.** Angelegt am 19.09.2026.
+
+**Messung (20.09.2026, `[gemessen]`, laufende DB, nur lesend; Abfragen, Auswertung, Gegenprobe und Kontrollrechnung in `labor/2026-09-20_k8-skala/`).** Schnitt ist `ae69547` vom 28.07.2026, 09:42 UTC — der Commit, der `KZG_SALIENZ_CAP` von 10.0 auf 1.0 senkt.
+
+**Der heutige Wert ist nicht der Anlagewert:** Reinforcement erhöht `gewicht_roh`. Über die Knoten nach dem Umbau liegt die Korrelation zwischen `haeufigkeit` und `gewicht_roh` bei 0,997, und alle 1.759 Knoten mit `gewicht_roh > 1` sind verstärkte. Die Anlagewerte stehen deshalb in der Zeile *nie verstärkt*.
+
+| Menge | n | roh min/Median/max | absolut min/Median/max |
+|---|---|---|---|
+| vor dem Umbau, nie verstärkt | 29 | 0,673 / 0,727 / 1,000 | 3,248 / 3,376 / 3,955 |
+| nach dem Umbau, nie verstärkt | 2.413 | 0,727 / 0,881 / 1,000 | 3,376 / 3,714 / 3,955 |
+| nach dem Umbau, alle | 4.429 | 0,727 / 0,999 / 15,500 | 3,376 / 3,953 / 10,000 |
+
+**Ein neuer Knoten startet bei `gewicht_absolut` 3,38 bis 3,96 von 10**, nicht am unteren Rand: Die Dämpfung `10 · sin(roh/10 · π/2)^0,5` hebt kleine Werte an, weil der Exponent unter 1 liegt.
+
+**Die Schwellen:** Deaktiviert wird unter `LZG_KNOTEN_MIN_GEWICHT = 0.1`, verglichen mit `gewicht_decay` (beim Anlegen gleich `gewicht_absolut`). Keiner der 4.429 Knoten liegt darunter; das kleinste `gewicht_decay` im Bestand ist 3,118, inaktiv sind 0 — Faktor 34 zwischen Anfangsgewicht und Deaktivierung. **Im Lesepfad entscheidet kein Gewicht:** `anker_retrieval` filtert über die Ähnlichkeit (`min_similarity = 0.40`); das Gewicht wirkt erst in der Spreading-Aktivierung.
+
+**Die Wahl, die der Meister hat** (Kontrollrechnung mit der echten `gewicht_absolut_berechnen`): Salienz 0,1 / 0,5 / 0,88 / 1,0 ergibt heute 1,253 / 2,801 / 3,712 / 3,955; auf die Knotenskala gestreckt ergäbe sie 3,955 / 8,409 / 9,911 / 10,000. Die echte Spreizung der Anlagewerte (0,727 bis 1,0) liegt heute in 0,58 Punkten, gestreckt in 0,46 — **beide Enden der Kurve trennen schlecht**, die Dämpfung ist für frei wachsende Werte gebaut, nicht für einen gedeckelten Eingang.
 
 Festlegung K8 von P4 übernimmt die KZG-Salienz direkt als `gewicht_roh` eines neuen Knotens. Begründet war das mit *„dieselbe Skala 0–10“*. Seit Chat 113 steht `KZG_SALIENZ_CAP` auf 1.0, `LZG_KNOTEN_GEWICHT_CAP` weiter auf 10: `gewicht_roh` liegt damit in 0..1 auf einer Kurve bis 10 (`server/memory/lzg_knoten.py` `knoten_anlegen`, `gewicht_absolut_berechnen`). Ob neue Knoten deshalb dauerhaft im untersten Bereich beginnen und was das für Decay und Lesepfad heißt, ist nicht gemessen.
 
