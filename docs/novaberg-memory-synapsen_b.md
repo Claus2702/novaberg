@@ -437,7 +437,7 @@ mit `agent.py` und `AGENT.md`. Endgültiger Pfad bei Sprint-Planung.
 
 **Ja:**
 - KZG-Queue lesen wie heute (`redis_client.lpop`)
-- EVA-Vorbedingungs-Checks (drei wie heute + ggf. neue für Schema-Härte)
+- EVA-Vorbedingungs-Checks (drei wie heute + ggf. neue für Schema-Härte) — **gebaut, und es sind vier:** Die vierte prüft den Anlagezeitpunkt aus dem KZG-Hash; fehlt er oder ist er unlesbar, wird der Eintrag verworfen und im `pipeline_log` gemeldet, statt mit *jetzt* einen Knoten mit erfundenem Datum anzulegen (`[gebaut 20.09.2026]`, `404a19a`).
 - Match-Erkennung (Hybrid Magnet + Vector)
 - Anlage- oder Reinforcement-Pfad
 - Kanten-Berechnung (vier Schichten, Sinus-Geometrie)
@@ -498,6 +498,7 @@ Folgende Punkte aus den K-Klärungen sind nicht P4-Scope und gehören in
 
 - **`kzg_erstellt_am` Parse-Härte** — neue Spalte NOT NULL, alter Code
   fing Parse-Fehler ab. Vorbedingungs-Check im neuen Agent.
+  **Erledigt am 20.09.2026** (`404a19a`): Der Agent verwirft einen fehlenden, unlesbaren, nicht endlichen oder nicht positiven Wert und nimmt ihn aus der Arbeitsliste; vier Zeugen, Gegenprobe 4 rot. Im Bestand hatte der stille Rückfall nie gegriffen (`KZG-ERSTELLT-AM-PARSE-HÄRTE`, Backlog).
 
 - **`gedaechtnistyp` neu befüllt statt NULL** — Lese-Pfad muss in P5
   darauf vorbereitet sein.

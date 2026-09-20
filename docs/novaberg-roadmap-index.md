@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 914 Abschnitte in 6 Dateien — 402 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 918 Abschnitte in 6 Dateien — 406 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 289 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
@@ -20,7 +20,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 914 Marken, 914 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 918 Marken, 918 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -37,6 +37,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-09-20 | laufend | ## | [20.09.2026, 07:46 UTC — das Anfangsgewicht bleibt: der untere Bereich der Skala gehört dem Verfall](novaberg-roadmap.md#20092026-0746-utc--das-anfangsgewicht-bleibt-der-untere-bereich-der-skala-gehört-dem-verfall) |
+| 2026-09-20 | laufend | ## | [20.09.2026, 00:21 UTC — ein neuer Synapsen-Knoten startet bei 3,4 von 10, nicht unten](novaberg-roadmap.md#20092026-0021-utc--ein-neuer-synapsen-knoten-startet-bei-34-von-10-nicht-unten) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 20:53 UTC — Synapsen P4 ist abgeschlossen: ein unlesbarer Anlagezeitpunkt wird verworfen statt erfunden](novaberg-roadmap.md#19092026-2053-utc--synapsen-p4-ist-abgeschlossen-ein-unlesbarer-anlagezeitpunkt-wird-verworfen-statt-erfunden) |
+| 2026-09-19 | laufend | ## | [19.09.2026, 20:42 UTC — Synapsen: die Entitäts- und Timeline-Kanten tragen](novaberg-roadmap.md#19092026-2042-utc--synapsen-die-entitäts--und-timeline-kanten-tragen) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 20:24 UTC — Synapsen P4: die Abweichungen gelten, zwei Einträge bis zum Abschluss](novaberg-roadmap.md#19092026-2024-utc--synapsen-p4-die-abweichungen-gelten-zwei-einträge-bis-zum-abschluss) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 19:17 UTC — das Bugs-Archiv ist nach Gegenstand geteilt, ein Findemittel für alle Bugs](novaberg-roadmap.md#19092026-1917-utc--das-bugs-archiv-ist-nach-gegenstand-geteilt-ein-findemittel-für-alle-bugs) |
 | 2026-09-19 | laufend | ## | [19.09.2026, 18:43 UTC — alle Konzepte in fünf Teilen](novaberg-roadmap.md#19092026-1843-utc--alle-konzepte-in-fünf-teilen) |
