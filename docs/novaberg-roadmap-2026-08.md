@@ -531,7 +531,7 @@ Linter 1198 → 1200 (zwei `D` in den neuen Zeugen), harte Wand sauber, `codepru
 
 ## 27.08.2026, 11:50 UTC — Addendum 2: der Abgleich des Verlaufs gegen die Speicher
 
-Auf die Frage, ob alles Relevante aus dem Chat in der Doku steht, wurde der **Verlauf gegen die Speicher** gehalten — nicht die eigene Liste gegen die Dokumente (`31_SITZUNG.md` §9a). Zwei Luecken, und die erste wiegt.
+Auf die Frage, ob alles Relevante aus dem Chat in der Doku steht, wurde der **Verlauf gegen die Speicher** gehalten — nicht die eigene Liste gegen die Dokumente (so verlangt es ein internes Dokument). Zwei Luecken, und die erste wiegt.
 
 ### Der Determinismus-Befund nannte das Modell nicht
 
@@ -553,11 +553,11 @@ Der echte Lauf der Blockaktualisierung — acht Pruefungen, vier Stempel — war
 
 ## 27.08.2026, 11:35 UTC — Addendum: die Frage nach dem Ganzen fand eine Zustandsangabe
 
-**Die Schlusspruefung war gelaufen, dreizehn von dreizehn belegt.** Dann kam die Frage: *„Hast Du dann alles aktuell? Harness, Konzepte, Lessons, Module, Roadmap, Backlog, Bugs, Handzettel?"* — **dieselbe Frage, die am 25.08.2026 zwei Luecken fand.**
+**Die Schlusspruefung war gelaufen, dreizehn von dreizehn belegt.** Dann kam die Frage: *„Hast Du dann alles aktuell? Harness, Konzepte, Lessons, Module, Roadmap, Backlog, Bugs, […]?"* — **dieselbe Frage, die am 25.08.2026 zwei Luecken fand.**
 
 Diesmal gesucht statt behauptet, und mit dem Zugriff, den der Nachzug nicht benutzt: **Nennt ein Zustandsdokument eine Groesse, die der Code nicht mehr hat?**
 
-**Ein Treffer, und es ist die Klasse aus `31_SITZUNG.md` §4a.** `novaberg-charakter-rad-messreihe_k.md` behauptet in §1 und in der MESSUNG-Zeile eine **Verfahrensstreuung des Faktors von 0.08**. Sie wurde bei Produktions-Temperatur **0.2** erhoben. Seit dem 26.08.2026 steht der Knoten auf **0.0**, und drei Rad-Laeufe auf demselben Eingang sind zeichengleich — **Spanne 0,0000**.
+**Ein Treffer, und es ist eine Klasse aus einem internen Dokument.** `novaberg-charakter-rad-messreihe_k.md` behauptet in §1 und in der MESSUNG-Zeile eine **Verfahrensstreuung des Faktors von 0.08**. Sie wurde bei Produktions-Temperatur **0.2** erhoben. Seit dem 26.08.2026 steht der Knoten auf **0.0**, und drei Rad-Laeufe auf demselben Eingang sind zeichengleich — **Spanne 0,0000**.
 
 > **Die Verfahrensstreuung ist nicht kleiner geworden, sie ist verschwunden.** Und damit ist das Kriterium der MESSUNG-Zeile nicht mehr anwendbar: *„Liegen sie gleichauf, misst die Reihe nur Rauschen"* — gegen null liegt nichts gleichauf.
 
@@ -567,7 +567,7 @@ Dazu ein zweiter, kleinerer: `RAD-GESPEICHERT-NICHT-REPRODUZIERBAR` liess ausdru
 
 **Warum der Nachzug es nicht fand:** Er ging entlang dessen, was gebaut wurde — Auswahl, Medoid, Temperatur. Die Verfahrensstreuung ist keine Groesse des Baus, sondern eine **Kennzahl in einem fremden Konzept**, die zufaellig davon abhaengt. **Sie lag quer zum Weg**, wie das Moduldokument am 25.08.2026.
 
-> **Der Unterschied zum letzten Mal:** Diesmal war der `grep` bereits als Schritt vorgesehen — er stand seit dem 25.08.2026 im Handzettel als *„nennt ein Zustandsdokument einen Bezeichner, den der Code nicht mehr hat?"*. **Er lief nicht von selbst, sondern weil dieselbe Frage noch einmal gestellt wurde.** Ein Schritt, der nur auf Nachfrage laeuft, ist kein Schritt.
+> **Der Unterschied zum letzten Mal:** Diesmal war der `grep` bereits als Schritt vorgesehen — er stand seit dem 25.08.2026 in einem internen Dokument als *„nennt ein Zustandsdokument einen Bezeichner, den der Code nicht mehr hat?"*. **Er lief nicht von selbst, sondern weil dieselbe Frage noch einmal gestellt wurde.** Ein Schritt, der nur auf Nachfrage laeuft, ist kein Schritt.
 
 Geprueft und **ohne Befund**: `novaberg-agent-character.md` (anderer Agent), `novaberg-architecture.md` (beschreibt die Tabelle, nicht die Erhebung), `novaberg-graph-rechenkette.md`, `novaberg-node-gv_k.md`, die Moduldokumente der Leser, und der Harness (`F-RAD-2` traegt beide Ergaenzungen).
 
@@ -992,13 +992,13 @@ Jedes trägt jetzt einen Umbenennungsvermerk, damit ein alter Verweis auflösbar
 
 ### Die Bauart stimmte, der Name nicht
 
-Der Handzettel fragte, ob `llm_lock` die falsche Bauart sei. **Geprueft: nein.** Beide Verwendungsstellen nehmen nicht blockierend, jeder fruehe Rueckweg gibt frei, der Hauptweg in einem `finally` — genau das, was ein Ressourcen-Riegel leisten soll. Die Marke ueber den Vorgang gibt es daneben schon (`turn_beginnen`/`turn_beenden`), und der Kommentar an der Stelle sagt, was der Riegel zusaetzlich abdeckt: den Pixie- und den Recherche-Pfad.
+Ein internes Dokument fragte, ob `llm_lock` die falsche Bauart sei. **Geprueft: nein.** Beide Verwendungsstellen nehmen nicht blockierend, jeder fruehe Rueckweg gibt frei, der Hauptweg in einem `finally` — genau das, was ein Ressourcen-Riegel leisten soll. Die Marke ueber den Vorgang gibt es daneben schon (`turn_beginnen`/`turn_beenden`), und der Kommentar an der Stelle sagt, was der Riegel zusaetzlich abdeckt: den Pixie- und den Recherche-Pfad.
 
 **Der Name sagte „Sperre vor dem Sprachmodell" und meinte „ein Graphenlauf zur Zeit".** Seit dem Vormittag traegt `services/llm_riegel.py` den echten Modell-Riegel; die Verwechslung waere von da an teuer geworden. Jetzt `graph_run_lock`, 38 Stellen in 12 Dateien, davon 6 in `patch`-Zeichenketten.
 
 ### 893 von 1479 — die Zahl war um den Faktor vier zu klein geschaetzt
 
-`novaberg/CLAUDE.md` und `12_NAMENSGEBUNG.md` §1 schreiben englische Bezeichner vor und verbieten Denglisch. Eine erste Stichprobe ueber 30 Woerter ergab 224 Funktionen; die Messung gegen eine Wortliste aus **allen 430 mehrfach vorkommenden Namensteilen** des Bestands ergibt:
+`novaberg/CLAUDE.md` und ein internes Dokument schreiben englische Bezeichner vor und verbieten Denglisch. Eine erste Stichprobe ueber 30 Woerter ergab 224 Funktionen; die Messung gegen eine Wortliste aus **allen 430 mehrfach vorkommenden Namensteilen** des Bestands ergibt:
 
 | | |
 |---|---:|
@@ -1025,7 +1025,7 @@ Deshalb wie beim Linter: Bestand zaehlen und dulden, **die Wand steht vor dem Zu
 **TEST:** `labor/2026-08-25_backlog_kennungen.py` — Rueckgabe 0 Dubletten, mit Positivkontrolle **durch** den Vergleich.
 **MESSUNG:** 285 Kennungen ueber sechs Traegerdateien, **4 → 0** mehrfach getragen.
 
-**Der Handzettel sprach von neun**; gemessen waren es vier. Fuenf hat die Teilung des Registers zwischenzeitlich aufgeloest.
+**Ein internes Dokument sprach von neun**; gemessen waren es vier. Fuenf hat die Teilung des Registers zwischenzeitlich aufgeloest.
 
 ### Die erste Zaehlung ergab 27, und 26 davon waren keine
 
@@ -1056,7 +1056,7 @@ Nebenbei entfernt: In `HALTUNG-SPANNENENDEN-OFFEN` stand `**Kategorie:** [CHA] C
 **TEST:** `tests/test_nutzlast_belegung.py`, fuenf Zeugen; Gegenproben 2 und 4 rot.
 **MESSUNG:** Suite **2322 → 2327 gruen**, 0 uebersprungen. Im Betriebslog 11 von 11 Turns mit allen drei neuen Zeilen.
 
-**Der Handzettel fragte nach der Anwesenheit, und die war da.** Fenster 16:41 bis 17:03 UTC, elf Turns, jede der drei am Vortag gebauten Zeilen elfmal, in fester Reihenfolge mit zwei bis vier Sekunden Abstand:
+**Ein internes Dokument fragte nach der Anwesenheit, und die war da.** Fenster 16:41 bis 17:03 UTC, elf Turns, jede der drei am Vortag gebauten Zeilen elfmal, in fester Reihenfolge mit zwei bis vier Sekunden Abstand:
 
 | Zeile | Vorkommen | Wert |
 |---|---:|---|
@@ -1269,9 +1269,9 @@ Von 17 Treffern waren **fuenf** echte Ueberbleibsel und sind entfernt: zweimal `
 
 **Zwei Riegel gegen die Ueberdehnung, beide bezeugt:** Ein Abbruch **vor** der Freigabe stellt nichts zu — wer frueher sendet, sendet irgendwann einen Text, den Thinker und Tribunal nie gesehen haben. Und gesendet wird genau einmal.
 
-**Ein bestehender Zeuge wurde umgedreht statt geloescht** (`20_TESTS/zusicherung-umdrehen.md`): `test_ohne_antwort_wird_nichts_zugestellt` sicherte genau die Stille zu, um die es ging.
+**Ein bestehender Zeuge wurde umgedreht statt geloescht** (so verlangt es ein internes Dokument): `test_ohne_antwort_wird_nichts_zugestellt` sicherte genau die Stille zu, um die es ging.
 
-**Die Nachvollziehbarkeit kam auf Nachfrage des Auftraggebers dazu — und sie stand laengst im Harness.** `18_NACHVOLLZIEHBARKEIT.md` §3 fordert die Eingangsgroessen einzeln, §7 ist als maschinell pruefbares Gate markiert und **nie gebaut worden**; deshalb hat nie etwas angeschlagen. Drei Luecken sind jetzt zu:
+**Die Nachvollziehbarkeit kam auf Nachfrage des Auftraggebers dazu — und sie stand laengst im Harness.** Ein internes Dokument fordert die Eingangsgroessen einzeln und markiert die Pruefung als maschinell pruefbares Gate und **nie gebaut worden**; deshalb hat nie etwas angeschlagen. Drei Luecken sind jetzt zu:
 
 - Die Weiche nennt `verdict`, `correction_round` und `max_corrections`, bevor sie entscheidet.
 - Sie liest sie mit `.get()` statt `[...]`. **Ein fehlendes `tribunal_verdict` warf einen `KeyError` in einer Kante** — der Graph erreichte END nicht, und nirgends stand, welcher Wert gefehlt hatte.
@@ -1297,7 +1297,7 @@ Von 17 Treffern waren **fuenf** echte Ueberbleibsel und sind entfernt: zweimal `
 
 **10.304 GPU-Aufrufe aus zwei getrennt serialisierten Warteschlangen, die voneinander nichts wussten** — beide auf **einem** `ollama.Client` und damit auf einem httpx-Verbindungspool. Belegt am Log vom 13:33:21 UTC: Der ChatWorker sendete `send_request_headers` **ohne eigenes `connect_tcp`**, auf einer Verbindung, die der EmbedWorker 77 ms zuvor geoeffnet hatte und noch benutzte.
 
-**Die Serialisierung je Worker war intakt.** `worker_base._run()` ist eine FIFO-Schleife mit einem Verbraucher — der Dienst-Gedanke war gebaut. Die Luecke lag zwischen den Warteschlangen, und `llm_lock` konnte sie nicht sehen: **Es umschloss einen Aufrufer** (den Lauf des CharakterGraphen) **statt der Ressource** — genau der Fall aus `17_NEBENLAEUFIGKEIT/riegel-schuetzt-ressource.md`, den der Harness seit dem 16.08.2026 beschreibt.
+**Die Serialisierung je Worker war intakt.** `worker_base._run()` ist eine FIFO-Schleife mit einem Verbraucher — der Dienst-Gedanke war gebaut. Die Luecke lag zwischen den Warteschlangen, und `llm_lock` konnte sie nicht sehen: **Es umschloss einen Aufrufer** (den Lauf des CharakterGraphen) **statt der Ressource** — genau der Fall, den ein internes Dokument seit dem 16.08.2026 beschreibt.
 
 **Gebaut:** `services/llm_riegel.py`. Drei Ressourcen, drei Riegel, **drei Verbindungspools** — `ollama_gpu_chat`, `ollama_gpu_embed`, `ollama_cpu_chat`. Der eigene Client je Riegel ist Teil der Abhilfe: Zwei Riegel auf einem Client waeren zwei Schloesser an derselben Tuer.
 
@@ -1334,7 +1334,7 @@ Von 17 Treffern waren **fuenf** echte Ueberbleibsel und sind entfernt: zweimal `
 
 **Das behobene Glied:** `output_tokens = response.get("eval_count", 0)`. **Der Vorgabewert greift nur beim fehlenden Schluessel** — der Anbieter schickte ihn mit, auf `null`. Die Eingabezeile darueber kannte den Fall bereits und trug einen Fallback; die Ausgabezeile nicht. Beide gehen jetzt durch `_zaehlerstand()`.
 
-> **Der Zeuge war nicht baubar, bevor die Attrappe den Fall bilden konnte.** `_antwort(eval_count=None)` liess den Schluessel *weg* — genau die Gleichsetzung von *fehlt* und *ist null*, um die es geht. Fuer `thinking` gab es dafuer seit langem einen eigenen Ausdruck, fuer die Zaehler nicht. **Eine Attrappe, die eine Form der Wirklichkeit nicht erzeugen kann, macht den Defekt unbezeugbar und meldet Erfolg** (`20_TESTS/attrappe-grenze.md`).
+> **Der Zeuge war nicht baubar, bevor die Attrappe den Fall bilden konnte.** `_antwort(eval_count=None)` liess den Schluessel *weg* — genau die Gleichsetzung von *fehlt* und *ist null*, um die es geht. Fuer `thinking` gab es dafuer seit langem einen eigenen Ausdruck, fuer die Zaehler nicht. **Eine Attrappe, die eine Form der Wirklichkeit nicht erzeugen kann, macht den Defekt unbezeugbar und meldet Erfolg** (so beschreibt es ein internes Dokument).
 
 **Suite:** 2288 → **2293 gruen**, 0 uebersprungen. Gegenprobe: zwei Zeugen vorher rot, mit exakt dem `TypeError` aus dem Betriebslog.
 
@@ -1856,7 +1856,7 @@ Ein Eigen-Impuls **ist** ein alleinstehender assistant-Turn. Er traf diesen Zwei
 | Satz des Impulses im Verlauf wiederzufinden | **nein** | **ja** |
 | Beiträge hinein / heraus | 8 / 6 | 8 / 8 |
 
-**Die Daten waren die ganze Zeit vollständig.** Alle 24 Turns tragen `herkunft`, acht davon `eigener_impuls`. Das Feld existiert seit dem 30.07.2026 — angelegt bei `PFAD1-TIMEOUT-TURNVERLUST`, ausdrücklich mit dem Kommentar, dass sonst *„wer den Verlauf aus dem Speicher las, einen Impuls für eine Antwort hielt"*. **Kein Renderer hat es je gelesen.** Der Sprecher wurde aus der Position **erschlossen**, obwohl er **mitgeschickt** wurde — `22_STILLE_FEHLER/bezug-aus-reihenfolge.md` in Reinform, vier Wochen lang.
+**Die Daten waren die ganze Zeit vollständig.** Alle 24 Turns tragen `herkunft`, acht davon `eigener_impuls`. Das Feld existiert seit dem 30.07.2026 — angelegt bei `PFAD1-TIMEOUT-TURNVERLUST`, ausdrücklich mit dem Kommentar, dass sonst *„wer den Verlauf aus dem Speicher las, einen Impuls für eine Antwort hielt"*. **Kein Renderer hat es je gelesen.** Der Sprecher wurde aus der Position **erschlossen**, obwohl er **mitgeschickt** wurde — die Klasse aus einem internen Dokument in Reinform, vier Wochen lang.
 
 > **Der Verlust war unsichtbar, weil das Übrige lesbar blieb.** Fällt der Impuls heraus, stehen im Verlauf noch eine Nova-Zeile und darunter die Nachfrage des Nutzers — ein sauberer Wortwechsel. Die Lücke ist nur daran zu erkennen, dass eine Antwort auf eine Frage antwortet, die nicht dasteht, und daran zweifelt niemand, der den Verlauf zum ersten Mal liest. **Genau das unterscheidet eine Verschiebung von einem Ausfall.**
 
@@ -1887,7 +1887,7 @@ Zustand n=13 der echten Session, Fenster max_turns=5
 
 Bei **16 von 24** Zuständen lagen weniger Nutzer-Turns im Fenster als vorher, bei einem keiner. Berichtigt über `fenster_waehlen`: Die Zahl zählt wieder **Wortwechsel**, und Impulse dazwischen kommen mit. Nach der Berichtigung kein Zustand ohne Nutzer-Turn. Sechs weitere Zeugen.
 
-**2. Wörtliche Gesprächsinhalte standen in vier veröffentlichten Dateien und im Zeugen.** Der Beleg des Befundes trug den Wortlaut zweier echter Turns, darunter einen **Kosenamen** — den `32_VEROEFFENTLICHUNG.md` §1a ausdrücklich nennt. Vor dem Umbau kam er in `docs/` **null** Mal vor. Ersetzt durch die Struktur, die den Befund allein trägt; der Zeuge fährt jetzt einen nachgebauten Verlauf. **Die eigene Prüfung hatte den Verstoß nicht gefunden, weil sie nur `docs/` absuchte** — `server/tests/` wird ebenso veröffentlicht. Gegenprobe über den ganzen Diff: 576 echte Fünf-Wort-Folgen gegen 453 neue Zeilen, **0 Überschneidungen**.
+**2. Wörtliche Gesprächsinhalte standen in vier veröffentlichten Dateien und im Zeugen.** Der Beleg des Befundes trug den Wortlaut zweier echter Turns, darunter einen **Kosenamen** — den ein internes Dokument ausdrücklich nennt. Vor dem Umbau kam er in `docs/` **null** Mal vor. Ersetzt durch die Struktur, die den Befund allein trägt; der Zeuge fährt jetzt einen nachgebauten Verlauf. **Die eigene Prüfung hatte den Verstoß nicht gefunden, weil sie nur `docs/` absuchte** — `server/tests/` wird ebenso veröffentlicht. Gegenprobe über den ganzen Diff: 576 echte Fünf-Wort-Folgen gegen 453 neue Zeilen, **0 Überschneidungen**.
 
 **3. Ein Zeitstempel war an vier Stellen falsch zugeschrieben.** Die Nachfrage des Nutzers liegt bei 18:37:47, nicht bei 18:38:21 — das ist Novas Antwort. Die entscheidende Spanne ist damit **sieben** Sekunden, nicht 41. Dieselbe Zahl war aus der Fundzeile in vier Dokumente kopiert worden, ohne noch einmal gerechnet zu werden.
 
@@ -4232,7 +4232,7 @@ Ergebnis des Tages:
 **Im Blindvergleich dreier Fassungen gewann der unveränderte Bestand.** Damit ist kein Prompt
 geändert, kein Stichtag nötig, und die 88 Rad-Messungen bleiben gültig.
 
-**Die Ursache der Fehlspur ist benannt und als Regel übernommen** (`21_MESSUNG/streuung-vor-ursache.md`):
+**Die Ursache der Fehlspur ist benannt und als Regel übernommen** (in einem internen Dokument):
 Der Ausgangswert von 42 % Gegenüber-Bezug im gespeicherten Profil war kein Befund über den
 Prompt, sondern der schlechteste Lauf einer streuenden Erhebung — drei Läufe desselben Prompts
 ergaben 16,5 / 24,5 / 19,7 %. Daraus der Backlog-Eintrag `PROFIL-EINMALERHEBUNG`: Die Räder
@@ -6104,7 +6104,7 @@ Und das Gewicht wird umgerechnet: `gewicht_decay` läuft bis 10.0, der ContextEn
 
 **Umfang:** Suite 1031 → **1040 Tests**, grün, 0 übersprungen. Nulllinie **2182**, beide Wände sauber. **Gegenprobe:** Hook-Verschiebung zurückgenommen → **1 rot**, der Reihenfolge-Test, wie vorhergesagt.
 
-> **Beim Bauen fiel ein eigener Verstoß auf:** `such_vektor` war im State-Typ nicht deklariert. Innerhalb einer Funktion funktioniert das, weil das Dict direkt mutiert wird — die Regel aus `13_DATENSTRUKTUREN` §4 existiert trotzdem, und zwar wegen genau der Fälle, in denen es nicht funktioniert. Nachgeholt.
+> **Beim Bauen fiel ein eigener Verstoß auf:** `such_vektor` war im State-Typ nicht deklariert. Innerhalb einer Funktion funktioniert das, weil das Dict direkt mutiert wird — die interne Regel dazu existiert trotzdem, und zwar wegen genau der Fälle, in denen es nicht funktioniert. Nachgeholt.
 
 ### Der Engpass ist die Warteschlange — eine widerlegte eigene Vermutung 🔶
 

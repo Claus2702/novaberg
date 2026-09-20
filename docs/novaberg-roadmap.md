@@ -184,7 +184,7 @@ Dazu entschieden (`novaberg-thinking-lage_e.md`, Nr. 22–24): das Angebot gilt 
 
 ## 18.09.2026, 22:13 UTC — das Angebot gilt der Sache, die angeboten wurde 🔧
 
-**Scheibe 12 E2, Punkt 1 des Handzettels von Chat 205.** Ein erkanntes Angebot wird nicht mehr an **alle** akuten Objekte des Turns gebunden, sondern an die Sache, die der Verfasser anbieten ließ (`state["angebot_kandidat"]`); ohne sie an die einzige akute Sache am Zettel von Timeline oder Notizen, sonst an keine — dann wird ein *»Gerne«* nicht von selbst zum Auftrag (`utils/offers.py::offer_binding`). Der Prompt verlangt, dass der Angebotssatz die Sache beim Namen nennt.
+**Scheibe 12 E2, erster Punkt eines internen Dokuments.** Ein erkanntes Angebot wird nicht mehr an **alle** akuten Objekte des Turns gebunden, sondern an die Sache, die der Verfasser anbieten ließ (`state["angebot_kandidat"]`); ohne sie an die einzige akute Sache am Zettel von Timeline oder Notizen, sonst an keine — dann wird ein *»Gerne«* nicht von selbst zum Auftrag (`utils/offers.py::offer_binding`). Der Prompt verlangt, dass der Angebotssatz die Sache beim Namen nennt.
 
 **TEST:** 6 neue Zeugen in `test_angebot_bezug.py` und `test_angebot_anbieten.py`; gegen den alten Code rot. Suite **4054 grün, 0 übersprungen**.
 
@@ -1136,7 +1136,7 @@ steht die Verdrahtungsdatei.
 
 Die Pruefbarkeits-Regel (*Kern vorhanden **und** Wert an jedem Kandidaten*) ist
 aus dem Ablauf in `_resonanz_pruefbar` geloest — inline war sie nur behauptet
-(`20_TESTS/entscheidung-inline-ist-nicht-bezeugbar.md`). Fehlt der Wert bei einem
+(so sagt es eine interne Regel). Fehlt der Wert bei einem
 Kandidaten, faellt die Schwelle fuer den **ganzen Turn** aus und eine
 `error`-Zeile sagt es; ihn durchzulassen oder zu verwerfen haette beides etwas
 anderes entschieden, als die Schwelle behauptet.
@@ -1452,7 +1452,7 @@ Kandidaten je Lauf.
 Tor 3 war eine Listen-Komprehension ohne Ausgabe; davor lag ein ganz stummer
 Rueckkehrpfad. **Der Ausfall war deshalb nicht als Ausfall zu sehen** — nur
 als eine Null in einer Zeile, die auch *„lief und fand nichts"* bedeuten
-konnte (`22_STILLE_FEHLER`).
+konnte (so beschrieben in einem internen Dokument).
 
 ### Die Schwelle trug ihren eigenen Wachposten
 
@@ -1634,7 +1634,7 @@ faellt das foermliche Register mit.
 > **Die Kandidatenliste war ueber Mechanismen gebildet und enthielt den zweiten
 > Befund derselben Stunde nicht** — die Trennung in zwei Defekte war die
 > Vorentscheidung, die die Ursache verdeckte. Als Lesson uebernommen
-> (`21_MESSUNG`).
+> (in einem internen Dokument).
 >
 > **Und zwei Tageszahlen waren ueber alle 14 Paare gezaehlt statt ueber eines.**
 > Der *„Ausreisser 10.09., 25 %"* existiert nicht: Auf das produktive Paar
@@ -2212,7 +2212,7 @@ nicht.** Der Zusammenhang benennt die Abhilfe selbst.
 
 **Vier fehlende Wertemengen als Konstanten.** `tone`, `sprach_stil`,
 `beziehungs_dynamik` und der Perzeptions-`intent` standen nur als Aufzaehlung im
-Prompt; `11_EVA` nennt genau das — eine geschlossene Menge ohne deklarierte
+Prompt; eine interne Regel nennt genau das — eine geschlossene Menge ohne deklarierte
 Obermenge ist benutzbar und nicht pruefbar. Fuenf Zeugen halten jede Konstante
 wortgleich gegen die Prompt-Datei.
 
@@ -2247,7 +2247,7 @@ Schreibvarianten, keine Uebersetzungen.
 **Der erste Anlauf sagte 11 rote Zeugen voraus und ergab 1.** Der Rueckbau nahm
 vier der sechs Felder vom Zug und entfernte das Ausreisser-Protokoll
 vollstaendig — und **kein einziger Zeuge** wurde davon rot. Die 19 belegten, dass
-der Zug *kann*, nicht dass er *gerufen wird* (`20_TESTS/verdrahtung.md`). Acht
+der Zug *kann*, nicht dass er *gerufen wird* (so beschreibt es ein internes Dokument). Acht
 Verdrahtungs-Zeugen spaeter: **8 vorhergesagt, 9 gezaehlt.**
 
 **Betriebsbeleg** `[gemessen 20:23:49 UTC]`: Die erste Zeile im echten Turn
@@ -2362,7 +2362,7 @@ Er schreibt seither eine **Eingangszeile vor jeder Verzweigung** — Zahl der Wr
 **Der HumanGraph nimmt denselben Dispatcher und hat konstruktiv keine Antwort** — er
 verarbeitet die Nutzeraeusserung, bevor Nova formuliert hat. Er meldete `response_leer` bei
 **jedem** Turn. Eine Warnung im Regelfall begraebt den Befund
-(`22_STILLE_FEHLER/warnung-meldet-den-regelfall.md`, dort der zweite Fall). Die Zeile bleibt
+(so beschreibt es ein internes Dokument, dort der zweite Fall). Die Zeile bleibt
 stehen, ihr Grund unterscheidet seither `kein_antwortpfad` vom echten Ausfall — wer die Zeile
 im erwarteten Fall ganz weglaesst, macht ihn vom stillen Ausfall wieder ununterscheidbar.
 
@@ -2936,7 +2936,7 @@ Nullprofile.
 
 **Der erste Wert, den ein Turn je getragen hat.** Vier Zeugen bewachen die
 Schwelle beidseitig — sie nennen Zahlen aus dem Bestand statt Symbole
-(`20_TESTS` §4j), und die Gegenprobe traf in beide Richtungen ihre Vorhersage.
+(so verlangt es ein internes Dokument), und die Gegenprobe traf in beide Richtungen ihre Vorhersage.
 Suite **3221 → 3225**.
 
 ---
@@ -3082,8 +3082,8 @@ Registry** (`only`, `quantizations`); ohne ihn waehlt der Vermittler je Aufruf f
 anderes Ziel als den Betrieb.
 
 > **Die Konfiguration endet nicht am Modell.** Wer ueber einen Vermittler misst, dem gehoert die
-> Anbieterwahl dazu — sie bestimmt, **wer** antwortet. Als vierter Fall an
-> `21_MESSUNG/konfiguration-mitsenden.md` eingetragen; die drei vorigen betrafen Kontextfenster,
+> Anbieterwahl dazu — sie bestimmt, **wer** antwortet. Als vierter Fall in ein
+> internes Dokument eingetragen; die drei vorigen betrafen Kontextfenster,
 > Temperatur und Quelle.
 
 **Zwei Folgen stehen an:** Die Zahlen der Zitatregel (**24 % → 10 %**) stammen aus dem ungepinnten
@@ -3096,7 +3096,7 @@ Suite **3202 gruen, 0 uebersprungen**.
 
 ## 06.09.2026, 16:30 UTC — die Luecke der Faszination wird nachpruefbar ✅
 
-**Der Handzettel fuehrt den Faszinations-Leser als gesperrt, *solange die Faszination im Turn 0
+**Ein internes Dokument fuehrt den Faszinations-Leser als gesperrt, *solange die Faszination im Turn 0
 ist*. Gemessen ist beides — und es sind zwei verschiedene Zahlen:**
 
 | | |
@@ -3107,7 +3107,7 @@ ist*. Gemessen ist beides — und es sind zwei verschiedene Zahlen:**
 | Faszination im **Bestand** (Hintergrundlauf 15:56 UTC) | 72 von 72 gerechnet, roh **0,0 bis 0,7182** |
 | Faszination im **Turn** (letzter, 10:34 UTC) | 3 geprueft, **3 ohne Profil**, `werte: {}` |
 
-**Im Bestand steht sie nicht mehr auf null** — die Aussage des Handzettels gilt dort nicht mehr.
+**Im Bestand steht sie nicht mehr auf null** — die Aussage jenes internen Dokuments gilt dort nicht mehr.
 **Im Turn steht sie weiter leer**, weil die gelesenen Traeger kein Profil hatten. Nur die zweite
 Zahl entscheidet ueber die Sperre.
 
@@ -3115,7 +3115,7 @@ Zahl entscheidet ueber die Sperre.
 nicht, **welche** Traeger das waren — damit liess sich nicht nachsehen, ob der Profil-Erzeuger, der
 taeglich 20 aufholt, die **gelesenen** trifft. Seit heute steht `ohne_profil_ids` daneben, aus
 derselben Not wie die Modulatoren in derselben Zeile: Ohne die Eingangsgroesse ist das Ergebnis
-nicht nachrechenbar (`18_NACHVOLLZIEHBARKEIT`).
+nicht nachrechenbar (Forderung eines internen Dokuments).
 
 1 Zeuge dazu (`tests/test_faszination_erzeuger.py`, jetzt 12), Gegenprobe 1 rot, Suite **3202
 gruen, 0 uebersprungen**, harte Wand 0.
@@ -3238,7 +3238,7 @@ uebersprungen** (davor 3191), harte Wand 0, Linter **25 Befunde = die Nulllinie 
 
 > **Zur Auswertung des Serverlogs:** Es mischt Suite und Betrieb — die Zeugen laufen im selben
 > Container gegen dasselbe Log. Fuer den Betriebsbeleg zaehlen nur Zeilen nach dem Neustart
-> (`21_MESSUNG/log-mischt-suite-und-betrieb.md`).
+> (so verlangt es eine interne Regel).
 
 ## 06.09.2026, 15:05 UTC — der Destillationstakt, aus zwei Quellen gezaehlt 🔬
 
@@ -3262,7 +3262,7 @@ ab, als neue Fassungen entstehen**; die Reihe verliert nichts.
 **Was der Fund trifft, ist der Satz, der den Takt begruendet:** *Pixie destilliert ohnehin alle zehn
 Minuten.* Pixie **prueft** alle zehn Minuten und destilliert nur bei gesetztem `hash_dirty`
 (`agents/charakter/agent.py:158`). Im Konzept durchgestrichen und mit den gemessenen Zahlen ersetzt
-(`40_DOKU_GRUNDSAETZE`: widerlegt wird markiert, nicht geloescht).
+(nach einer internen Regel: widerlegt wird markiert, nicht geloescht).
 
 **Fuer die Rueckkopplungs-Messung aendert sich nichts** — mehr Zyklen zwischen den Abgriffen machen
 den ausbleibenden Anstieg staerker, nicht schwaecher.
@@ -3378,7 +3378,7 @@ beiden Runden bei **11 Dauerwoertern gesamt**.
 Nach der ersten Messung (2 gegen 6) galt als belegt, dass die Regel das Wort selbst liefert; die
 zweite Fassung wurde daraufhin umgeschrieben. Bei n = 20 blieb von dem Vorzeichen nichts uebrig.
 **Eine Wirkung an einem Modelltext hat erst dann eine Zahl, wenn ihre Streuung danebensteht** — als
-Lesson in `21_MESSUNG` uebernommen.
+Lesson in ein internes Dokument uebernommen.
 
 **Der Befund selbst haelt, und zwar schaerfer als am Vormittag.** Gemessen wurde bis dahin gegen
 1662 Wissensdateien; der Prompt bekommt aber nur **20 Begegnungen**, und die Anrede steht dort in
@@ -3411,7 +3411,7 @@ Ausdruck trifft nur die Backtick-Form der Ueberschriften und liefert **52**, wae
 **155** den Altbestand (`#### KENNUNG` ohne Backticks, 103 Eintraege) mitzaehlt. Die Vorschrift
 traegt seither beide Ausdruecke mit ihren Zahlen. Bestand danach: **157 offene Kennungen**.
 
-**Drei Handzettel-Entscheidungen sind im selben Zug gefallen:** die `.env` bleibt wie sie ist, die
+**Drei Entscheidungen aus einem internen Dokument sind im selben Zug gefallen:** die `.env` bleibt wie sie ist, die
 Stimme hat niedere Prioritaet, der Anbieterwechsel ruht.
 
 ## 06.09.2026, 11:31 UTC — der Riegel hatte recht, die Einordnung nicht ✅
@@ -4158,7 +4158,7 @@ Teilnehmerzahl ist das Gegenteil der Klasse, gegen die geprueft wurde.
 Ein Zwischenlauf des Strukturpruefers lief mit falschem relativem Pfad und gab **leere
 Ausgabe statt eines Fehlers**; die Leere wurde als *„kein Befund"* gelesen. Der Befund war
 die ganze Zeit da. **Ein Werkzeug, das nicht auffindbar ist, meldet Erfolg** — derselbe
-Satz, den `19_WERKZEUGE` fuer die Pipe schon traegt, hier ueber den Arbeitspfad.
+Satz, den ein internes Dokument fuer die Pipe schon traegt, hier ueber den Arbeitspfad.
 
 ---
 
@@ -4987,7 +4987,7 @@ strang_staerke = ( 0,4 · mittel(faden.salienz)
 
 **16 Zeugen waren grün, der Linter sauber, die Suite mit 2872 Tests grün.** Ein Zeuge gegen eine nachgebildete Verbindung prüft die **Rechnung** auf den Zahlen, die er selbst hineingibt — die Abfrage ist für ihn ein String, den der Mock wegwirft. Gefunden hat es die Vorhersage: Die Fadenzahl stand als erste Größe darin und war doppelt so groß wie der Bestand.
 
-Die Berührung steht jetzt in einem eigenen Ausdruck. Neu im Harness: `20_TESTS/mock-verdeckt-die-abfrage.md`.
+Die Berührung steht jetzt in einem eigenen Ausdruck. Neu im Harness: eine interne Lesson dazu.
 
 ---
 
@@ -5097,7 +5097,7 @@ Die zweite Zeile ist die wichtigere. Vier Fäden eines Tages zu einem Thema erge
 - **`TageslaufRuftDenBestandslaufTest` ersetzt vier Schritte des Tageslaufs, der neue fünfte stand nicht dabei** — er lief gegen `POSTGRES_URL` über **alle** Paare und legte bei jedem Suitenlauf einen Strang über die vier Fäden des Messpaars an. Der Zeuge wurde nicht geändert; er wurde gefährlich, weil sein Gegenstand wuchs.
 - **Vier `tearDown`-Pfade löschen `praegung_faden`, aber nicht den Strang**, den `faden_anlegen` seither mitgründet. `ON DELETE SET NULL` nimmt ihn nicht mit — er blieb als verwaiste Zeile stehen.
 
-**Dritter Fall dieser Klasse in fünf Tagen** (`20_TESTS/neuer-seiteneffekt-alte-zeugen.md`, 28.08. und 01.09.). Beide Wege geschlossen, Bestand zurückgesetzt, **Gegenprobe: Suitenlauf danach, `praegung_strang` 0 Zeilen, `strang_id` 0-mal gesetzt.**
+**Dritter Fall dieser Klasse in fünf Tagen** (in einem internen Dokument gefuehrt, 28.08. und 01.09.). Beide Wege geschlossen, Bestand zurückgesetzt, **Gegenprobe: Suitenlauf danach, `praegung_strang` 0 Zeilen, `strang_id` 0-mal gesetzt.**
 
 ---
 
@@ -5151,7 +5151,7 @@ Die Schlusspruefung der Sitzung fand nichts am Produkt und **dreimal etwas an si
 
 > **Eine Pruefung, die jede Sitzung dieselbe ueberholte Warnung ausgibt, erzieht dazu, sie zu ueberlesen** — und dann faellt auch die neue nicht mehr auf.
 
-**`C17` las die Zahl der ungepushten Commits aus einem Commit-Hash.** Das Muster suchte hinter dem Wort mit zwoelf Zeichen Luecke und traf die **1** in `e1efe7e`; gemeldet wurde eine Abweichung gegen die gemessenen 4, obwohl der Handzettel recht hatte.
+**`C17` las die Zahl der ungepushten Commits aus einem Commit-Hash.** Das Muster suchte hinter dem Wort mit zwoelf Zeichen Luecke und traf die **1** in `e1efe7e`; gemeldet wurde eine Abweichung gegen die gemessenen 4, obwohl das interne Dokument recht hatte.
 
 **Und die erste Abhilfe machte es schlimmer.** Ein Backtick-Verbot in der Luecke liess das Muster gar nicht mehr greifen: **Aus einer Falschmeldung wurde Schweigen.** Das ist die teurere Haelfte — eine Falschmeldung wird bemerkt, eine schweigende Pruefung besetzt den Platz, an dem sonst jemand nachsaehe. Jetzt wird zuerst **vor** dem Wort gesucht und nur ersatzweise dahinter.
 
@@ -5176,9 +5176,9 @@ Die Schlusspruefung der Sitzung fand nichts am Produkt und **dreimal etwas an si
 
 > **Und die Zahl daneben, die nicht gemessen werden konnte, steht als solche da.** Die 71 sind die *aktivierten* Punkte und per Bauart alle ueber 0,18; ueber die abgelehnten fuehrt der Log nichts. Wie viel eine andere Schwelle durchliesse, ist mit diesem Bestand **nicht** zu beantworten — beinahe haette hier eine Tabelle mit Schwellen von 0,10 bis 0,45 gestanden, deren untere Haelfte nur die Filterung des Logs abbildet.
 
-**Und ein Aufgabeneintrag, den seine eigene Regel verlangt.** Die Beweiskette-Regel entstand heute frueh und ist maschinell pruefbar; `01_LESSON_UEBERNAHME` §6 verlangt dafuer einen Eintrag im Katalog, und der fehlte. Nachgetragen als **`C25`**: *Traegt das Dokument eines heute gemessenen Moduls ein heutiges Datum?* Die Suche ist billig, das Urteil braucht den Menschen — dass gemessen wurde, geht aus einem Diff nicht hervor.
+**Und ein Aufgabeneintrag, den seine eigene Regel verlangt.** Die Beweiskette-Regel entstand heute frueh und ist maschinell pruefbar; eine interne Regel verlangt dafuer einen Eintrag im Katalog, und der fehlte. Nachgetragen als **`C25`**: *Traegt das Dokument eines heute gemessenen Moduls ein heutiges Datum?* Die Suche ist billig, das Urteil braucht den Menschen — dass gemessen wurde, geht aus einem Diff nicht hervor.
 
-> **Der fehlende Eintrag stand im Handzettel und wurde von keiner Pruefung gefunden.** Die Regel ueber Regeln hat selbst keine.
+> **Der fehlende Eintrag stand in einem internen Dokument und wurde von keiner Pruefung gefunden.** Die Regel ueber Regeln hat selbst keine.
 
 Suite unveraendert **2807 gruen, 0 uebersprungen**.
 
@@ -5352,7 +5352,7 @@ Auf die Frage, ob alle Module aktuell seien, fiel ein Fehler des Vormittags auf:
 
 Behoben: `novaberg-node-synapsen-promotion.md` angelegt, mit dem Defekt, der Arbeitslisten-Mechanik, den Messungen und den drei Zeugendateien. Der Vorgaenger traegt im Kopf einen Vermerk und bleibt als **Herkunft** stehen — die Zwei-Call-Bauart und die EVA-Haertung sind in den Nachfolger eingegangen.
 
-**Und das neue Dokument trug die Beweiskette von Anfang an** — die Regel von heute Vormittag (`41_DOKU_ARTEFAKTE/moduldokument.md` v1.0) bei ihrer ersten Anwendung.
+**Und das neue Dokument trug die Beweiskette von Anfang an** — die Regel von heute Vormittag (ein internes Dokument, v1.0) bei ihrer ersten Anwendung.
 
 ---
 
