@@ -1412,11 +1412,11 @@ Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein s
 ---
 
 
-## Messung: SYNAPSEN-K8-SKALA — Wo beginnt ein neuer Knoten, seit die Salienz auf 0–1 liegt?
+## Messung: ~~SYNAPSEN-K8-SKALA — Wo beginnt ein neuer Knoten, seit die Salienz auf 0–1 liegt?~~ — entschieden am 20.09.2026
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** ⬜ offen — **gemessen am 20.09.2026, die Entscheidung fehlt noch.** Angelegt am 19.09.2026.
+**Zustand:** ✅ abgeschlossen am 20.09.2026 — gemessen und entschieden: **es wird nicht umgerechnet.** Der Meister: *„Der Einstiegspunkt ist so gewünscht. Die Skala wird nach oben durch Verstärkung bedient.“* Die Antwort stand bereits im Konzept (`novaberg-memory-synapsen_t.md` §5.4: *„Der untere Bereich der Skala gehört dem Verfall, nicht der Anlage“*, mit der Haltbarkeitsrechnung von 6,4 bis 8,4 Jahren); die Messung bestätigt sie am Bestand. Der Wortlaut steht im Entscheidungsteil (`novaberg-memory-synapsen_e.md`, Abschnitt G, K8, E6). ~~offen — angelegt am 19.09.2026, gemessen am 20.09.2026.~~
 
 **Messung (20.09.2026, `[gemessen]`, laufende DB, nur lesend; Abfragen, Auswertung, Gegenprobe und Kontrollrechnung in `labor/2026-09-20_k8-skala/`).** Schnitt ist `ae69547` vom 28.07.2026, 09:42 UTC — der Commit, der `KZG_SALIENZ_CAP` von 10.0 auf 1.0 senkt.
 

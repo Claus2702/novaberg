@@ -14,6 +14,7 @@ Die Entscheidungen stehen in dem Abschnitt, den sie tragen, und bleiben dort. Hi
 | **E2** | `_b` §11, Absatz *„Beschluss …: selektive manuelle Übernahme, danach alte Tabelle löschen“* | Bestandsdaten des alten Langzeitgedächtnisses werden von Hand ausgewählt übernommen, danach wird die alte Tabelle gelöscht. **Gegenstandslos geworden am 27.07.2026, ausgeführt nie** (Kasten am Kopf von §11) | Konzeptphase, Mai 2026 — der Abschnitt nennt kein Datum |
 | **E3** | Abschnitt G unten, K5 und K10; `_b` §13.6, *Die Entscheidungs-Notiz zu P4*, §4 und §5 | Wo der Code von den Festlegungen zu P4 abweicht, gilt der Code, die Festlegung ist überholt — *„Code gilt“* | 19.09.2026 |
 | **E4** | Abschnitt G unten, K8 | Ob das Anfangsgewicht neuer Knoten umgerechnet wird, wird erst gemessen — *„Erst messen“* | 19.09.2026 |
+| **E6** | Abschnitt G unten, K8 | Das Anfangsgewicht wird **nicht** umgerechnet: Der Einstiegspunkt ist so gewünscht, nach oben bedient die Verstärkung die Skala | 20.09.2026 |
 | **E5** | Abschnitt G unten, *Abschlussstand* | P4 schließt mit `SYNAPSEN-LIVE-VERIFY` und `KZG-ERSTELLT-AM-PARSE-HÄRTE`, die übrigen fünf Folgeeinträge laufen ohne P4-Bindung — *„Zwei, Rest lösen“* | 19.09.2026 |
 
 Der Wortlaut von E1 und E2 steht in keinem der beiden Abschnitte; beide geben sie als Ergebnis wieder. E3 bis E5 stehen wörtlich am Punkt.
@@ -40,7 +41,7 @@ Keine. Das Konzept stellt keine Frage an den Meister.
 - `_t` §7.1a: eine echte Nulllinie über nachweislich fremde Knoten fehlt; die Segmentzahl ist neu zu messen, wenn die Antworten länger und mehrteilig werden.
 - `_m`, *Bisheriger Kopf*: ob Entitäts- und Zeitschicht greifen, wenn es etwas zu greifen gibt — ebenfalls an der Charakterbildungs-Messreihe.
 - `_k` §3.2: das Faktengedächtnis als eigenes Konzeptpapier, *„sobald der LZG-Kern dieses Konzepts steht“*.
-- Abschnitt G, K8 (E4): ob das Anfangsgewicht neuer Knoten umgerechnet wird — entscheidbar erst nach der Messung der Anfangsgewichte aus der Datenbank.
+- ~~Abschnitt G, K8 (E4): ob das Anfangsgewicht neuer Knoten umgerechnet wird — entscheidbar erst nach der Messung der Anfangsgewichte aus der Datenbank.~~ **Gemessen und entschieden am 20.09.2026 (E6), siehe K8.**
 
 ---
 
@@ -231,7 +232,11 @@ verloren haben.
 
 `[gemessen am Code 19.09.2026]` **abweichend.** Die Übernahme ist direkt, `gewicht_absolut` und `gewicht_decay` stehen wie festgelegt. Die Begründung trägt nicht mehr: `KZG_SALIENZ_CAP` ist seit Chat 113 `1.0`, `LZG_KNOTEN_GEWICHT_CAP` ist `10.0` — ein neuer Knoten bekommt `gewicht_roh` im Bereich 0 bis 1 auf einer Kurve, die bis 10 reicht. Die Logzeile im Agenten schreibt weiter `(0-10)`. Fundstelle: `server/agents/synapsen_promotion/agent.py` `_eintrag_verarbeiten` (Kommentar K8, Logzeile `kzg_salienz=… (0-10)`); `server/memory/lzg_knoten.py` `knoten_anlegen`, `gewicht_absolut_berechnen`; `server/config.py` `KZG_SALIENZ_CAP`, `LZG_KNOTEN_GEWICHT_CAP`, `LZG_KNOTEN_DAEMPFUNG_EXP`.
 
-`[entschieden 19.09.2026]` Die Begründung *„dieselbe Skala 0–10“* gilt seit Chat 113 nicht mehr. Ob umgerechnet wird, wird erst gemessen — der Meister: *„Erst messen“*. Gemessen werden die Anfangsgewichte neuer Knoten aus der Datenbank; danach entscheidet der Meister. Ein eigener Backlog-Eintrag folgt. P4 hängt nicht daran.
+`[entschieden 19.09.2026]` Die Begründung *„dieselbe Skala 0–10“* gilt seit Chat 113 nicht mehr. Ob umgerechnet wird, wird erst gemessen — der Meister: *„Erst messen“*.
+
+`[gemessen 20.09.2026, laufende DB, nur lesend]` **Der Einstieg liegt bei 3,4 bis 4,0 von 10, nicht unten.** Die 2.413 nie verstärkten Knoten seit dem Skalenumbau (`ae69547`, 28.07.2026) tragen `gewicht_roh` 0,727 bis 1,0 und `gewicht_absolut` 3,376 bis 3,955; die Dämpfung hebt kleine Werte an, weil ihr Exponent unter 1 liegt. Kein Knoten liegt unter der Ruheschwelle 0,1, der kleinste `gewicht_decay` im Bestand ist 3,118, inaktiv sind 0. **Der heutige `gewicht_roh` ist nicht der Anlagewert** — Reinforcement erhöht ihn (Korrelation zu `haeufigkeit` 0,997; alle 1.759 Knoten über 1,0 sind verstärkte). Belege in `labor/2026-09-20_k8-skala/`; dieselbe Aussage steht seit dem 30.08.2026 in `_t` §5.4 (*„Der untere Bereich der Skala gehört dem Verfall, nicht der Anlage“*).
+
+`[entschieden 20.09.2026]` **Es wird nicht umgerechnet; die Festlegung bleibt, nur ihre Begründung wird ersetzt.** Der Meister: *„Die Antwort auf die Frage mit der Synapsen-K8-Skala liegt im Konzept. Das ist alles bereits geplant und ausgearbeitet. Der Einstiegspunkt ist so gewünscht. Die Skala wird nach oben durch Verstärkung bedient.“* Die direkte Übernahme trägt also nicht mehr, weil beide Skalen gleich wären, sondern **weil der untere Bereich dem Verfall gehört**: Ein Knoten betritt die Skala bei 3 bis 4 und wandert nach unten, solange ihn niemand berührt, oder nach oben, wenn er wiederkehrt. Die Haltbarkeitsrechnung in `_t` §5.4 ist damit die Begründung des Einstiegspunkts. Gemessen werden die Anfangsgewichte neuer Knoten aus der Datenbank; danach entscheidet der Meister. Ein eigener Backlog-Eintrag folgt. P4 hängt nicht daran.
 
 #### K9 — Embedding-Quelle
 

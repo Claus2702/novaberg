@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 444 Eintraege mit Kennung — 365 offen, 76 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 444 Eintraege mit Kennung — 364 offen, 77 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 443 von 444 Eintraegen zugeordnet.
 
@@ -371,7 +371,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | GED | 1363 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
 | GED | 1370 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
 | GED | 1391 | abgeschlossen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: ~~SYNAPSEN-LIVE-VERIFY — Entitäts- und Timel](novaberg-backlog-gedaechtnis.md) |
-| GED | 1415 | offen | `SYNAPSEN-K8-SKALA` | [Messung: SYNAPSEN-K8-SKALA — Wo beginnt ein neuer Kn](novaberg-backlog-gedaechtnis.md) |
+| GED | 1415 | abgeschlossen | `SYNAPSEN-K8-SKALA` | [Messung: ~~SYNAPSEN-K8-SKALA — Wo beginnt ein neuer ](novaberg-backlog-gedaechtnis.md) |
 | GED | 1446 | offen | `SYNAPSEN-DUAL-LZG` | [Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten](novaberg-backlog-gedaechtnis.md) |
 | GED | 1461 | offen | `KZG-GEWICHT-ABSOLUT-CEILING` | [Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfu](novaberg-backlog-gedaechtnis.md) |
 | GED | 1525 | abgeschlossen | `P5-LIVE-ABNAHME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
