@@ -41,6 +41,7 @@ from agents.wissen_rueckweg.herkunft import material_waehlen
 from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
+    KZG_SALIENZ_CAP,
     MAX_PROMOTION_RUECKSTELLUNGEN,
     MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
     PIXIE_AKTIV,
@@ -479,7 +480,7 @@ class SynapsenPromotionAgent(BaseAgent):
 
         logger.info(
             f"Synapsen-Promotion: Paar={user_id}:{character_id}, Beobachter={beobachter}, "
-            f"kzg_salienz={salienz:.3f} (0-10), entitaeten={entitaet_ids}, "
+            f"kzg_salienz={salienz:.3f} (0-{KZG_SALIENZ_CAP:g}), entitaeten={entitaet_ids}, "
             f"timeline_id={timeline_id}"
         )
 
