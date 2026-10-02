@@ -5,11 +5,13 @@
 **Umsetzung:** keine Featurezeile — sie entsteht, wenn Novaberg das Feature bekommt (Entscheidung vom 02.10.2026, `novaberg-avatar_e.md`). Im Client ist nichts gebaut; ein HTML-Prototyp liegt unter `labor/avatar/` (§13).
 **Teile:** `novaberg-avatar_t.md` · `novaberg-avatar_b.md` · `novaberg-avatar_e.md` · `novaberg-avatar_m.md`
 **Grundlagen:** `novaberg-ei-plutchik.md`, `novaberg-ei-dual-emotion_k.md`
-**Entschieden:** 5 · **Offen beim Meister:** 6 (Liste in `novaberg-avatar_e.md`)
+**Entschieden:** 5 · **Offen beim Meister:** 9 (Liste in `novaberg-avatar_e.md`)
 
 > Alle Bezeichner für **neue** Bausteine (Klassen, Felder, Funktionen) sind **Vorschläge**.
 > Aussagen über das **bestehende** System stammen aus den oben genannten Dokumenten,
 > nicht aus dem Code. Sie gelten als Doku-Stand, bis ein Audit sie belegt (Abschnitt 11).
+>
+> → **Am Code belegt am 02.10.2026:** O1–O5 und O9 (`novaberg-avatar_e.md` §11), der Datenvertrag in `novaberg-avatar_t.md` §14.
 
 ---
 
@@ -20,11 +22,13 @@
 | 1, 2 | Ziel, Leitprinzip | `novaberg-avatar_k.md` |
 | 3–9 | Darstellungsstil, Parameterraum, Emotions-Mapping, Intensität und Mischung, Übergangsmodell, Schichtenmodell, Integration im GTK4-Client | `novaberg-avatar_t.md` |
 | 10 | Testbarkeit | `novaberg-avatar_b.md` |
+| 14, 15 | Datenvertrag mit dem Server, Portierung nach GTK4 und Cairo | `novaberg-avatar_t.md` |
+| 16 | Bauteile für den Client (B1–B8) | `novaberg-avatar_b.md` |
 | 11, 12 | Offene Punkte, Annahmen | `novaberg-avatar_e.md` |
 | 13 (Einleitung), 13.1, 13.3, 13.9, 13.12–13.14 | Figur aus Vorlage: Pipeline, Alternative, bewegliches Kinn, Sprechschicht, Muskelkanäle, Einzellaute | `novaberg-avatar_t.md` |
 | 13.8, 13.10, 13.11 | Feinabstimmung des Prototyps nach Sichtprüfung | `novaberg-avatar_b.md` |
 | 13.2, 13.4–13.7, 13.15, 13.16 | Befunde und Messungen | `novaberg-avatar_m.md` |
-| — | Änderungen der Fassungen 0.1 bis 0.5, Entscheidungen, Befunde der Aufteilung | `novaberg-avatar_e.md` |
+| — | Änderungen der Fassungen 0.1 bis 0.5, Entscheidungen, Befunde der Aufteilung, Abweichungen Prototyp ↔ Konzept | `novaberg-avatar_e.md` |
 
 ---
 

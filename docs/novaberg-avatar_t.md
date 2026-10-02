@@ -2,7 +2,7 @@
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
 **Stand:** 02.10.2026
-**Inhalt:** wie die Absicht ausgearbeitet ist — Darstellungsstil, Parameterraum `FaceState`, Emotions-Mapping, Intensität und Mischung, Übergangsmodell, Schichten, Integration im Client (§3–§9); aus dem Prototyp die Pipeline der Figur, die Alternative zur Vorlage, das bewegliche Kinn, die Sprechschicht, die Muskelkanäle des Mundes und die Einzellaute (§13 in Teilen).
+**Inhalt:** wie die Absicht ausgearbeitet ist — Darstellungsstil, Parameterraum `FaceState`, Emotions-Mapping, Intensität und Mischung, Übergangsmodell, Schichten, Integration im Client (§3–§9); aus dem Prototyp die Pipeline der Figur, die Alternative zur Vorlage, das bewegliche Kinn, die Sprechschicht, die Muskelkanäle des Mundes und die Einzellaute (§13 in Teilen); dazu der Datenvertrag mit dem Server (§14) und die Portierung nach GTK4 und Cairo (§15).
 
 ---
 
@@ -147,6 +147,7 @@ Kanäle ohne eigenes moderates Schlüsselbild liegen linear zwischen Neutral und
 Die Schwelle 0,6 entspricht der Wahl der kanonischen Emotion im Prototyp
 (intensiv ab Arousal 0,6). Offen: ob das zur Grenze intensiv/moderat in der
 Perzeption passt — gegen den Code zu prüfen.
+→ **Geprüft am 02.10.2026:** Der Server kennt keine solche Grenze; Name und Arousal werden unabhängig gesetzt. Es gilt §5.2: Das Arousal bestimmt die Ausprägung, der Name nur den Sektor (§14.1).
 
 Bei offenem Mund und negativer Mundkrümmung wird die Kontur kastenförmig
 (Exponent der Konturkurve 2 → bis 5) und die Mundwinkel sinken tiefer — sonst
@@ -248,7 +249,7 @@ Reihenfolge der Kombination:
 1. Schicht 1 liefert den Basiszustand.
 2. Schicht 2 moduliert `eye_open` (Blinzeln) multiplikativ und verschiebt die Figur (Atmen).
 3. ~~Schicht 3 addiert auf `mouth_open`, begrenzt auf den Kanalbereich.~~
-   → Schicht 3 blendet weich ein und legt Öffnung, Kiefer und Muskelkanäle additiv auf die Emotion; die Breite wirkt als Faktor auf die Emotionsbreite (W10, §13.12, §13.13).
+   → Schicht 3 blendet weich ein und ~~legt Öffnung, Kiefer und Muskelkanäle additiv auf die Emotion; die Breite wirkt als Faktor auf die Emotionsbreite~~ → überblendet Öffnung und Kiefer zwischen Emotion und Sprache und addiert die Muskelkanäle; die Breite folgt aus ihnen (W10, §13.12, §13.13; berichtigt nach dem Prototyp, P4).
 
 Schicht 2 und 3 verändern nie das Emotionsziel.
 
@@ -468,3 +469,92 @@ Grundlage sind die Action Units (AU) des Facial Action Coding System. Kiefer (`j
 - Text -> Laute regelbasiert (`wordToPhonemes`): Vokallänge aus Dehnungs-h, Doppelvokal, ie und Silbenstruktur;
   Endungen -e/-en/-el -> Schwa, -er und r nach Vokal -> `6`; Betonung erste Silbe, nach be-/ge-/ver-/zer-/ent-/emp- die zweite.
   Bekannte Fehler: Buch -> kurzes u, Abend/Pferd -> kurzer Vokal. Für die Produktion: Ausspracheregeln durch ein Lexikon/G2P-Modell ersetzen.
+
+---
+
+## 14. Datenvertrag: was der Client braucht und woher es kommt
+
+**Stand 02.10.2026.** Abgeleitet aus dem Prototyp (`labor/avatar/index.html`, vollständig gelesen) und belegt am Code dieses Tages. Leitlinie: Der Client bekommt, was das Gesicht bewegt — Maßstab ist der Prototyp, nicht das Verfügbare.
+
+### 14.1 Was der Prototyp verarbeitet
+
+Von außen nur drei Größen: einen **Sektor** (0 = neutral, 1–8), ein **Arousal** (0..1) und einen **Text zum Sprechen** samt Tempo. Den kanonischen Namen zeigt er nur an; die Ausprägung moderat/intensiv bestimmt allein das Arousal (§5.2, §6.1). Eine Mischung mehrerer Emotionen (§6.2) und den Konflikt (§6.3) setzt er nicht um.
+
+### 14.2 Was heute schon mit der Antwort reist
+
+Die Antwort erreicht den Client als WebSocket-Nachricht `character_response` (`server/services/event_consumer.py`, `_antwort_nutzlast_bauen`). Für den Avatar trägt sie bereits:
+
+| Feld | Inhalt | Stand |
+|---|---|---|
+| `nova_emotion` | kanonischer Name, Eintrag 0 von `nova_emotions_verlauf` | Novas Emotion, mit der sie antwortet — gerechnet vor dem Responder |
+| `nova_arousal` | 0..1, Eintrag 0 des Verlaufs | wie oben |
+| `nova_emotions_verlauf` | `list[dict]` mit `emotion`, `gewicht`, `arousal`; die Dominante trägt Gewicht 1.0 | wie oben |
+| `nova_emotion_konflikt` | `bool` | wie oben |
+| `nachricht` | Novas Antworttext | — |
+
+**Kein Client-Code liest heute eines dieser Felder.** Die Felder `emotion` und `arousal` derselben Nachricht stammen aus `internal.emotion` und beschreiben bei der Freigabe Novas Wahrnehmung ihrer eigenen Antwort; der Avatar liest sie **nicht**.
+
+### 14.3 Was fehlt
+
+1. **Der Sektor.** Die Nachricht trägt den Namen, nicht den Sektor. Die einzige Abbildung Name → Sektor ist `EMOTION_SEKTOR_MAP` (`server/config.py`): `dict[str, int]`, 16 Schlüssel, Werte 1–8, `neutral` nicht enthalten. **Der Server liefert den Sektor** als neues Feld `nova_sektor` (`int` 1–8, `null` bei `neutral`), damit der Client den Kanon nicht ein weiteres Mal führt. Ein Name außerhalb von `EMOTION_KANON` ist ein Defekt: `null` und eine Error-Zeile im Server-Log; der Avatar zeigt dann Neutral (§10).
+2. **Die Antworten aus eigenem Impuls.** Der Client leitet eine `character_response` mit `reiz_herkunft = "eigener_impuls"` an `_invoke_impulse` und **nicht an die Panels** (`client/ui/stream_handler.py`, `_ws_on_message`). Der Avatar muss auch dann reagieren: Ein eigener Gedanke ist eine Äußerung Novas mit ihrer Emotion.
+
+### 14.4 Was der Avatar nicht braucht
+
+Strategie, Absicht, Vehikel und Haltung (`gv_detail`, `haltung`) bewegen im Prototyp kein Gesicht, und das Leitprinzip (§2) lässt den Avatar nur den Emotionszustand darstellen. Sie werden **nicht** übertragen. Soll eine davon später sichtbar werden — etwa das Vehikel *Frage* —, ist das eine neue Absicht und gehört zuerst nach §1.
+
+### 14.5 Sprechen
+
+Im Repositorium gibt es **keine Sprachausgabe** — keine Bibliothek, keinen Dienst, keine Abhängigkeit (gelesen am 02.10.2026). Damit gibt es auch keine Lautzeiten. Der Prototyp leitet sie aus dem Text ab (§13.12, §13.14); der Client kann das mit `nachricht` genauso. Ob der Avatar ohne Ton spricht, ist offen (O9). Der Server entfernt aus dem Antworttext weder Markdown noch Sternchen; ob Text in `*…*` gesprochen wird, ist offen (O12).
+
+---
+
+## 15. Portierung nach GTK4 und Cairo
+
+**Stand 02.10.2026.** Grundlage: Inventur des Prototyps (1312 Zeilen) und des Clients, beide vom 02.10.2026.
+
+### 15.1 Der Prototyp ist die Referenz
+
+Wo der Text dieses Konzepts vom Prototyp abweicht, gilt für den Bau der Prototyp — mit den Ausnahmen, die einzeln entschieden sind. Die Abweichungen stehen in `novaberg-avatar_e.md`, *Abweichungen Prototyp ↔ Konzept* (P1–P17), jede mit dem, was gebaut wird.
+
+### 15.2 Schichten des Codes
+
+Die Trennung aus §2 wird zur Gliederung: reine Logik ohne GTK, Zeichnen ohne Widget, ein dünnes Panel.
+
+| Teil | Inhalt | GTK? | Umfang im Prototyp |
+|---|---|---|---|
+| Ausdruck | Sektor-Schlüsselbilder (`SECTORS`), Ziel aus Sektor und Arousal (`sectorTarget`) | nein | ≈ 55 Zeilen |
+| Animator | Feder je Kanal, Mundversatz 150 ms, Blinzeln, Atmen, Boil-Takt | nein | ≈ 50 Zeilen |
+| Sprechen | Laute aus Text, Lauttabellen, Koartikulation, Zusammenführung mit der Emotion | nein | ≈ 270 Zeilen |
+| Zeichnen | Augen, Brauen, Mund, Zähne, Falten, Extras als Funktionen `(cr, zustand, seed)` | Cairo, kein Widget | ≈ 600 Zeilen |
+| Grundbild | Bildvarianten, Gesichts- und Halsebene, Gitterverzerrung des Kinns | Cairo | ≈ 120 Zeilen |
+| Panel | `Gtk.DrawingArea`, Bildtakt, Empfang der Antwort | ja | neu |
+
+Der Client hat bisher keinen Ort für GTK-freie Logik (am nächsten `client/ui/formatierung.py`) und keinen für Bilder; Ablage und Aufteilung in Module sind offen (O14). Neue Dateien tragen englische Bezeichner.
+
+### 15.3 Browser-Mittel und ihre Entsprechung
+
+| Mittel im Prototyp | in Cairo | Entscheidung |
+|---|---|---|
+| Pfade, `quadraticCurveTo`, `arc`, gedrehte Ellipse | vorhanden; quadratisch → kubisch (2/3-Regel), Ellipse über `save`/`rotate`/`scale` | übertragen |
+| `fill` und danach `stroke`/`clip` auf demselben Pfad | `fill_preserve`, `clip_preserve` | übertragen |
+| Verläufe, `setTransform`, Offscreen-Canvas, `destination-out` | vorhanden (`cairo.Matrix`, `ImageSurface`, `OPERATOR_DEST_OUT`) | übertragen |
+| `globalAlpha` | fehlt | Deckkraft in die Farbe einrechnen |
+| `filter: blur()` beim Ausstanzen der Gesichtsebene | fehlt | Gesichtsebene vorab berechnen und als Bild mit Alphakanal ablegen, wie die Halsebene |
+| JPEG-Bilder | Cairo liest nur PNG | Bilder als PNG ablegen |
+| `drawImage` je Dreieck, 338 je Frame | möglich, teuer | verzerrte Gesichtsebene nur neu rechnen, wenn sich der Kiefer ändert; Bildrate messen (`novaberg-avatar_b.md` §16, B7) |
+| `requestAnimationFrame`, `performance.now()` | `add_tick_callback`, Zeit der Frame-Clock | **eine** Uhr für Animation und Sprechen (vgl. den behobenen Fehler in §13.12) |
+| `Math.round` | Pythons `round` rundet .5 zur geraden Zahl | `math.floor(x + 0.5)` |
+| Zufall für Strichlagen (Park-Miller-Generator, Hash) | in Python exakt nachbildbar | übertragen; `Math.random` nur für die Blinzelabstände |
+
+### 15.4 Das Panel im Client
+
+- **Turn-reaktiv und einmalig** (`CATEGORY = "turn_reactive"`, `UNIQUE = True`); nur solche Panels erhalten eine Antwort (`client/ui/panel_registry.py`, `broadcast_turn`). Ein Eintrag in der Werkzeugleiste ist Pflicht (`client/ui/main_window.py`, `_TOOLBAR_PANELS`; geprüft von `client/tests/test_toolbar_panels.py`).
+- **Kein REST:** Das Panel lädt nichts; `load_data` wird trotzdem überschrieben, sonst steht beim Öffnen „Fehler“ in der Fußzeile.
+- **Der Bildtakt hängt an der Sichtbarkeit:** Die Registry baut bei jedem Klick eine neue Instanz, und es gibt keinen Abbau-Hook. Der Takt (`add_tick_callback`) startet bei `map` und endet bei `unmap`.
+- **Antwort → Ziel:** `on_turn_received` liest `nova_sektor`, `nova_arousal` und `nachricht` und setzt das neue Ziel; ein laufender Übergang geht vom sichtbaren Zustand aus weiter (§7.2).
+- **Die Testbedienung des Prototyps** — Sektor-Knöpfe, Regler, Muskelregler, Gesprächssimulation — wird nicht übernommen.
+
+### 15.5 Prüfbarkeit ohne Bildschirm
+
+`Gtk.DrawingArea()` stürzt ohne Display-Sitzung ab (gemessen am 02.10.2026). Die Tests prüfen deshalb die Logik direkt und das Zeichnen über Funktionen `(cr, breite, höhe, zustand, seed)` auf einer `cairo.ImageSurface`, ohne Widget. Die Zeugen des Clients laufen auf dem Host neben der Server-Suite.

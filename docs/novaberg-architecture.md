@@ -869,9 +869,9 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-ei-character-profiles.md | Charakter-Profile & Hash (5 Dimensionen, alle im Prompt, Pipeline) |
 | novaberg-ei-language-adaptation.md | Sprachadaption (CAT, Feature-Scoring) |
 | novaberg-avatar_k.md | **Emotions-Avatar** — Konzept: Ein 2D-Avatar im GTK4-Client zeigt Novas eigenen Emotionszustand als lebende Bleistiftskizze und entscheidet selbst nichts — Absicht, mit Kopfblock und Tabelle „§ → Datei“ (⬜ im Client nicht gebaut, HTML-Prototyp unter `labor/avatar/`) |
-| novaberg-avatar_t.md | Emotions-Avatar — Ausarbeitung: Parameterraum `FaceState`, 8 Sektor-Gesichter, Arousal und Mischung, Federübergang, Schichten, Figur aus Vorlage, Sprechschicht, Muskelkanäle nach FACS |
-| novaberg-avatar_b.md | Emotions-Avatar — Bauplan: Tests der Bausteine, Feinabstimmung des Prototyps |
-| novaberg-avatar_e.md | Emotions-Avatar — Diskussion und Ergänzungen: Entscheidungen, offene Punkte O1–O11, Annahmen, Befunde der Aufteilung |
+| novaberg-avatar_t.md | Emotions-Avatar — Ausarbeitung: Parameterraum `FaceState`, 8 Sektor-Gesichter, Arousal und Mischung, Federübergang, Schichten, Figur aus Vorlage, Sprechschicht, Muskelkanäle nach FACS, Datenvertrag mit dem Server, Portierung nach GTK4 und Cairo |
+| novaberg-avatar_b.md | Emotions-Avatar — Bauplan: Tests der Bausteine, Feinabstimmung des Prototyps, Bauteile B1–B8 für den Client |
+| novaberg-avatar_e.md | Emotions-Avatar — Diskussion und Ergänzungen: Entscheidungen, offene Punkte O1–O14, Annahmen, Befunde der Aufteilung, Abweichungen Prototyp ↔ Konzept |
 | novaberg-avatar_m.md | Emotions-Avatar — Messungen: Mundgeometrie je Emotion an Fotos dreier Personen, Lippenbewegung beim Sprechen an zwei Sprecherinnen |
 
 ### Tiefe 2 — Kognition (2)

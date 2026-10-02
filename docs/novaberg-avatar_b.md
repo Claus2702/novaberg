@@ -2,7 +2,7 @@
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
 **Stand:** 02.10.2026
-**Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Bauteile mit `ZIEL` / `TEST` / `MESSUNG` für den Client gibt es noch nicht.
+**Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Dazu die Bauteile für den Client mit `ZIEL` / `TEST` / `MESSUNG` (§16).
 
 ---
 
@@ -21,6 +21,25 @@ Jeder Baustein ist ohne GTK testbar. Tests, die ohne das jeweilige Verhalten rot
 | Determinismus Renderer | gleicher `FaceState` + gleicher Seed → identische Pfade |
 
 ---
+
+---
+
+## 16. Bauteile für den Client
+
+**Stand 02.10.2026.** Reihenfolge nach Abhängigkeit; B1 und B3 können nebeneinander laufen. Ein Bauteil, das den Client berührt, berichtet zwei Bilanzzeilen — Server-Suite und Zeugen des Clients.
+
+| Nr | Bauteil | ZIEL | TEST | MESSUNG | Prüftiefe |
+|---|---|---|---|---|---|
+| B1 | Sektor in der Antwort (Server) | Jede `character_response` trägt `nova_sektor` passend zu `nova_emotion`: 1–8, `null` bei `neutral`, `null` mit Error-Zeile bei einem Namen außerhalb des Kanons | Zeugen für alle 17 kanonischen Namen und einen unbekannten; bestehende Felder unverändert; Gegenprobe | eine echte `character_response` aus einem Mess-Turn mit wissenschaftlichem Thema: `nova_sektor` passt zu `nova_emotion` | schmal — additiv und rückholbar |
+| B2 | Impulse erreichen den Avatar (Client) | Eine Antwort aus eigenem Impuls erreicht das Avatar-Panel wie eine gewöhnliche; die übrigen Panels verhalten sich unverändert | Zeuge am Stream-Handler mit ersetztem `GLib.idle_add` (Muster `client/tests/test_stream_assignment.py`) | ein echter Impuls bei geöffnetem Panel: das Gesicht wechselt | schmal |
+| B3 | Ausdruck und Animator (Logik) | Aus Sektor und Arousal entsteht dasselbe Ziel wie im Prototyp, und der sichtbare Zustand folgt ihm stetig | die Tests aus §10; dazu Gleichheit mit Referenzwerten des Prototyps für alle neun Sektoren bei Arousal 0, 0,3, 0,6, 0,85 und 1,0 | — reine Logik, gemessen in B7 | tief — eine Abweichung vom Prototyp wäre still |
+| B4 | Sprechen (Logik) | Aus einem Text entstehen dieselben Laute, Zeiten und Mundkanäle wie im Prototyp | Charakterisierung: Ausgabe des Prototyps für einen festen Satz Testsätze gegen die Python-Ausgabe, mit Toleranz für Gleitkomma | — | tief — wie B3 |
+| B5 | Bilder | Grundbild, Gesichts- und Halsebene liegen als PNG vor, die Gesichtsebene vorab ausgestanzt mit Alphakanal | Größe, Kanäle, Alphakanal unter der Kinnlinie | Sichtvergleich mit dem Prototyp | schmal — erst nach O13 |
+| B6 | Zeichnen | Dieselben Kanäle und derselbe Seed ergeben dieselbe Zeichnung, und das Gesicht gleicht dem Prototyp | Determinismus (gleiche Eingabe → gleiche Pixel), Grenzwerte aller Kanäle ohne Fehler | Sichtvergleich je Sektor neben dem Prototyp, durch den Meister | tief |
+| B7 | Panel | Das Avatar-Panel zeigt Novas Emotion des laufenden Turns und lebt auch ohne Wechsel | Registrierung und Werkzeugleiste (bestehender Test); der Takt startet bei `map` und endet bei `unmap` | echter Turn mit wissenschaftlichem Thema: das Gesicht wechselt in etwa 1 s; Bildrate in Cairo bei Standardgröße, mit Kinnverzerrung und beim Sprechen | schmal |
+| B8 | Sprechen im Panel | Erreicht eine Antwort das Panel, spricht der Mund ihren Text | Zeuge: Antwort → Lautfolge gestartet, Ende → Ruhe | echter Turn | schmal — erst nach O9 |
+
+**Nicht in v1:** Mischung des Verlaufs (O7), Konflikt (O8), Vorlauf des Mundes vor dem Ton (keine Tonausgabe), Ausspracheregeln aus einem Lexikon.
 
 ## 13. Figur aus Vorlage (Prototyp, 29.09.2026)
 

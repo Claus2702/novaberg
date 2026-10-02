@@ -2,7 +2,7 @@
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
 **Stand:** 02.10.2026
-**Inhalt:** Entscheidungen, offene Punkte (§11), Annahmen (§12), die Änderungen der Fassungen 0.1 bis 0.5, der Kopf der übernommenen Fassung 0.10 und die Befunde der Aufteilung.
+**Inhalt:** Entscheidungen, offene Punkte (§11), Annahmen (§12), die Änderungen der Fassungen 0.1 bis 0.5, der Kopf der übernommenen Fassung 0.10 und die Befunde der Aufteilung und die Abweichungen zwischen Prototyp und Konzept (P1–P17).
 
 ---
 
@@ -20,7 +20,7 @@ Die Feinabstimmungen nach Sichtprüfung (*Hinweis Meister*) stehen an ihrer Stel
 
 ## Offen beim Meister
 
-O6, O7, O8, O9 und der Rest von O10 (§11), dazu aus `_m` §13.16: ob die Öffnung bei Konsonanten ein Persönlichkeitsparameter Novas wird statt eines festen Tabellenwerts.
+O6, O7, O8, O9, der Rest von O10 und O12–O14 (§11), dazu aus `_m` §13.16: ob die Öffnung bei Konsonanten ein Persönlichkeitsparameter Novas wird statt eines festen Tabellenwerts.
 
 ---
 
@@ -30,16 +30,17 @@ O6, O7, O8, O9 und der Rest von O10 (§11), dazu aus `_m` §13.16: ob die Öffnu
 
 | Nr | Frage | Doku sagt |
 |---|---|---|
-| O1 | Stimmen Kanon, Sektor-Map und Bezeichner im Code mit `novaberg-ei-plutchik.md` §3 überein? | 16 + neutral, `EMOTION_SEKTOR_MAP`, `EMOTION_KANON` in `config.py` |
-| O2 | Struktur von Novas Emotionszustand im Code: Felder, Wertebereiche, Arousal pro Eintrag? | `nova_emotions_verlauf: list[dict]`, Dominante = 1.0 |
-| O3 | Erreichen `nova_emotion`, `nova_arousal`, ggf. der Verlauf den Client? Über welchen Weg? | in `GespraechAntwort` ergänzt, Client offen |
-| O4 | Panel-Basisklasse, Registrierung, UNIQUE/CATEGORY; Referenz-Panel mit DrawingArea/Cairo? | — |
-| O5 | Wo sind die Plutchik-Farben definiert (Gravitationsgraph)? | — |
+| O1 | Stimmen Kanon, Sektor-Map und Bezeichner im Code mit `novaberg-ei-plutchik.md` §3 überein? | 16 + neutral, `EMOTION_SEKTOR_MAP`, `EMOTION_KANON` in `config.py` → **belegt am 02.10.2026:** `EMOTION_KANON` 16 + `neutral`; `EMOTION_SEKTOR_MAP` bildet die 16 auf 1–8 ab, `neutral` fehlt darin (`server/config.py`) |
+| O2 | Struktur von Novas Emotionszustand im Code: Felder, Wertebereiche, Arousal pro Eintrag? | `nova_emotions_verlauf: list[dict]`, Dominante = 1.0 → **belegt am 02.10.2026:** Einträge mit `emotion`, `gewicht`, `arousal`, Eintrag 0 ist die Dominante; geschrieben von Emotionsberechnung und emotionaler Gravitation vor dem Responder |
+| O3 | Erreichen `nova_emotion`, `nova_arousal`, ggf. der Verlauf den Client? Über welchen Weg? | in `GespraechAntwort` ergänzt, Client offen → **belegt am 02.10.2026:** `nova_emotion`, `nova_arousal`, `nova_emotions_verlauf`, `nova_emotion_konflikt` reisen in `character_response`; kein Client-Code liest sie; Antworten aus eigenem Impuls erreichen die Panels nicht (`_t` §14) |
+| O4 | Panel-Basisklasse, Registrierung, UNIQUE/CATEGORY; Referenz-Panel mit DrawingArea/Cairo? | — → **belegt am 02.10.2026:** `PanelBase`, ausdrückliche Registrierung, nur `turn_reactive` und `UNIQUE` erhalten Antworten; Cairo-Referenz `client/ui/widgets/radar_chart.py` und `client/ui/panels/gravity_map_panel.py`; Animation und Bilder gibt es im Client noch nicht (`_t` §15.4) |
+| O5 | Wo sind die Plutchik-Farben definiert (Gravitationsgraph)? | — → **belegt am 02.10.2026:** nur im Client, modulintern in `client/ui/panels/gravity_map_panel.py`; der Server führt keine Farben |
 
 **Hinweis Doku-Drift:** `novaberg-ei-plutchik.md` §9 beschreibt für
 `client/ui/emotionen_tab.py` einen „QPainter-Umbau“. Qt ist laut Projektstand
 aufgegeben (GTK4). Der Abschnitt ist vermutlich veraltet und sollte im Audit
 mit geprüft werden.
+→ **Bestätigt am 02.10.2026:** `client/ui/emotionen_tab.py` gibt es nicht; das Emotions-Panel ist `client/ui/panels/emotions_panel.py` und zeichnet mit Cairo.
 
 ### Designentscheidungen
 
@@ -48,8 +49,11 @@ mit geprüft werden.
 | O6 | Lineare oder nichtlineare Arousal-Kennlinie für die Gesichtsausprägung? → **teilweise beantwortet** durch O11: stückweise linear über zwei Schlüsselbilder je Sektor (`_t` §6.1); offen für Sektoren und Kanäle ohne moderates Schlüsselbild (W5) |
 | O7 | Vollen Verlauf mischen oder nur die Dominante zeigen? |
 | O8 | Darstellung von `nova_emotion_konflikt` als sichtbare Ambivalenz? |
-| O9 | Quelle für die Sprechschicht: existiert TTS mit Pegel oder Visemen? ~~Falls nicht, entfällt Schicht 3 in v1.~~ → Der Prototyp spricht ohne TTS, mit Lautzeiten aus dem Text (`_t` §13.12, §13.14); mit TTS startet der Mund 0,10–0,14 s vor dem Ton (`_m` §13.15, §13.16). Offen bleibt, ob v1 ohne Tonausgabe spricht (W4) |
+| O9 | Quelle für die Sprechschicht: existiert TTS mit Pegel oder Visemen? ~~Falls nicht, entfällt Schicht 3 in v1.~~ → Der Prototyp spricht ohne TTS, mit Lautzeiten aus dem Text (`_t` §13.12, §13.14); mit TTS startet der Mund 0,10–0,14 s vor dem Ton (`_m` §13.15, §13.16). Offen bleibt, ob v1 ohne Tonausgabe spricht (W4). → **belegt am 02.10.2026:** keine Sprachausgabe im Repositorium (`_t` §14.5) |
 | O10 | ~~Figurendesign~~ — teilweise beantwortet: Figur aus Bleistiftvorlage, siehe Abschnitt 13. Offen bleibt, ob die Merkmale in Stil und Detailgrad weiter an die Vorlage angeglichen werden müssen (Sichtprüfung). |
+| O12 | Wird Text in Sternchen — Regieanweisung, Geste — gesprochen oder übersprungen? (`_t` §14.5) |
+| O13 | Dürfen die Bilder der Figur (Grundbild, Gesichts- und Halsebene) ins öffentliche Repositorium, oder liegen sie außerhalb und werden über einen Pfad geladen? (`_b` §16, B5) |
+| O14 | Ablage im Client und Aufteilung in Module (`_t` §15.2) |
 
 ---
 
@@ -81,6 +85,32 @@ mit geprüft werden.
 | W9 | `_t` §13.12 | *„Zeitquelle Weg 3 (aus Text)“* — Weg 1 und Weg 2 sind nirgends benannt. |
 | W10 | `_t` §8 | Schicht 3 *„Mundöffnung“*, *„addiert auf `mouth_open`“* — seit §13.12 und §13.13 setzt die Sprechschicht Öffnung, Kiefer, Breite und Muskelkanäle. |
 | W11 | `_t` §6.1, `_m` §13.7 | Moderate Schlüsselbilder nur für Trauer und Ärger, Enttäuschung `mw`/`mo` 80/6 — der Prototyp führt auch für Enttäuschung ein moderates Schlüsselbild (80/0) und intensiv 84/12 (`labor/avatar/index.html`, `SECTORS`, gelesen am 02.10.2026). |
+
+---
+
+## Abweichungen Prototyp ↔ Konzept
+
+`[gelesen]` — 02.10.2026, Inventur des Prototyps `labor/avatar/index.html` gegen die Fassung 0.10. Für den Bau gilt der Prototyp (`_t` §15.1), außer wo die letzte Spalte etwas anderes sagt.
+
+| Nr | Prototyp | Konzept | Gebaut wird |
+|---|---|---|---|
+| P1 | Halsebene: Gesichtsebene unter der Kinnlinie ausgestanzt, darunter eine feste Halsebene (`neck0..2`), Kinnlinie aus 35 Punkten, Abfall zum Hals | fehlt (in einer späteren Fassung als §13.17 beschrieben, hier nicht übernommen) | Prototyp |
+| P2 | Kinnverzerrung seitlich auslaufend von 80 bis 170 px | `_t` §13.9: ab 110 px, null bei 230 px | Prototyp |
+| P3 | Nase im Verzerrungsgitter: längs −150 bis −65 px, seitlich 60–140 px | nicht beschrieben | Prototyp |
+| P4 | Sprechen: Öffnung und Kiefer werden zwischen Emotion und Sprache **überblendet**, die Muskelkanäle addiert; die Breite folgt aus AU20/AU18/AU22 | `_t` §8 und §13.12: additiv, Breite als Faktor | Prototyp; die Auflösung W10 in `_t` §8 ist entsprechend berichtigt |
+| P5 | Dauern: kurzer Vokal 100 ms, Konsonanten 60–95 ms je Lautklasse | `_t` §13.12: 115 / 165 / 70 ms | Prototyp |
+| P6 | Betonung: Schwa `@` 0,5, `6` 0,7 | `_t` §13.12: 0,55, `6` nicht genannt | Prototyp |
+| P7 | 38 Laute | `_t` §13.14: 37 | Prototyp |
+| P8 | Lautwerte nach der Kalibrierung (z. B. I `str` 0,35, i: 0,5; u: `pk` 0,8; O `fn` 0,7) | `_t` §13.13 nennt die älteren Werte | Prototyp |
+| P9 | Atmen skaliert die Figur um die Mitte der Unterkante (x 0,3 %, y 0,5 %, Periode ≈ 6 s) | `_t` §8: verschiebt die Figur | Prototyp |
+| P10 | Doppelstrich nur bei Träne und Schweiß | `_t` §3: jede Linie | Prototyp |
+| P11 | Zeichnen schaltet an Schwellen: Träne und Schweiß ab 0,25, Auge zu ab 0,12, Mund offen ab 2 px | `_t` §4: keine Schalter | Prototyp — die Kanäle bleiben stetig, nur die Zeichnung schaltet |
+| P12 | Lagen per Zufall springen im Boil-Takt (Brauenhaare, Lidschatten, Schatten unter Auge und Lippe, Röte, äußere Wimpern); ein gemeinsamer Seed wird je nach Zustand verschieden weit verbraucht und verschiebt das Zittern der später gezeichneten Teile | `_t` §3; `_b` §13.10: verwackeln, nicht springen | Prototyp im Bild, aber **ein Seed je Teil** — ein Zustandswechsel an einem Teil verschiebt die anderen nicht |
+| P13 | kein Blickrauschen; der Blick kommt nur aus `gx`/`gy` der Sektoren | `_t` §13.13 nennt ein Blickrauschen | Prototyp |
+| P14 | `L`/`R` der Muskelkanäle wirken auf die linke bzw. rechte **Bildseite**; der Kommentar im Prototyp sagt „aus Sicht von Nova“ | `_t` §13.13: Seiten getrennt | Bildseite, wie der Prototyp aussieht; im Code so benannt |
+| P15 | Mundversatz mit nur einem Wartplatz: Kommen Zielwechsel öfter als alle 150 ms, übernimmt der Mund keinen davon, solange sie anhalten | `_t` §7.4 | je Zielwechsel ein eigener Zeitpunkt |
+| P16 | fehlen: Verhalten bei unbekannter Emotion, zustandslose Zeichenfunktion, Zwischenspeicher der Verzerrung, `lid_lower`, `nose_wrinkle` | `_b` §10, `_t` §9, §13.9, §4 | unbekannt → Neutral und Error-Log; Zeichnen zustandslos; Zwischenspeicher; `lid_lower` und `nose_wrinkle` ohne Wirkung in v1 |
+| P17 | Kanalwerte in Pixeln der Vorlage (z. B. `mw` = halbe Mundbreite 73–110), nicht normiert | `_t` §4: Bereiche −1..1, 0..1.5 usw. | Einheiten des Prototyps; die Bereiche in §4 bleiben Vorschläge |
 
 ---
 
