@@ -45,10 +45,10 @@ mit geprüft werden.
 
 | Nr | Frage |
 |---|---|
-| O6 | Lineare oder nichtlineare Arousal-Kennlinie für die Gesichtsausprägung? |
+| O6 | Lineare oder nichtlineare Arousal-Kennlinie für die Gesichtsausprägung? → **teilweise beantwortet** durch O11: stückweise linear über zwei Schlüsselbilder je Sektor (`_t` §6.1); offen für Sektoren und Kanäle ohne moderates Schlüsselbild (W5) |
 | O7 | Vollen Verlauf mischen oder nur die Dominante zeigen? |
 | O8 | Darstellung von `nova_emotion_konflikt` als sichtbare Ambivalenz? |
-| O9 | Quelle für die Sprechschicht: existiert TTS mit Pegel oder Visemen? Falls nicht, entfällt Schicht 3 in v1. |
+| O9 | Quelle für die Sprechschicht: existiert TTS mit Pegel oder Visemen? ~~Falls nicht, entfällt Schicht 3 in v1.~~ → Der Prototyp spricht ohne TTS, mit Lautzeiten aus dem Text (`_t` §13.12, §13.14); mit TTS startet der Mund 0,10–0,14 s vor dem Ton (`_m` §13.15, §13.16). Offen bleibt, ob v1 ohne Tonausgabe spricht (W4) |
 | O10 | ~~Figurendesign~~ — teilweise beantwortet: Figur aus Bleistiftvorlage, siehe Abschnitt 13. Offen bleibt, ob die Merkmale in Stil und Detailgrad weiter an die Vorlage angeglichen werden müssen (Sichtprüfung). |
 
 ---
@@ -66,7 +66,7 @@ mit geprüft werden.
 
 ## Befunde der Aufteilung
 
-`[gelesen]` — 02.10.2026, beim Aufteilen der Fassung 0.10. Widersprüche im Text, noch nicht aufgelöst:
+`[gelesen]` — 02.10.2026, beim Aufteilen der Fassung 0.10. Widersprüche im Text. **Alle elf aufgelöst am 02.10.2026** — markiert an der Stelle selbst, gegen den Text und gegen den Prototyp geprüft (`labor/avatar/index.html`):
 
 | Nr | Stelle | Befund |
 |---|---|---|
@@ -107,6 +107,8 @@ mit geprüft werden.
 - Offene Frage zur Mischung gegensätzlicher Emotionen (v0.1 O7) entfällt:
   Das entscheidet die bestehende Sektor-Normalisierung, nicht der Avatar.
 - Datenquelle präzisiert: Novas eigener Emotionsstrang (Dual-Emotion).
+
+Die Fassungen 0.6 bis 0.10 haben keine Änderungsliste; ihre Änderungen stehen datiert in §13.8 bis §13.16 (W1).
 
 ## Kopf der übernommenen Fassung 0.10
 

@@ -53,6 +53,8 @@ sind Kanäle mit Wert 0..1. Nur so ist jeder Übergang interpolierbar.
 
 Der Neutralzustand ist ein fester `FaceState`, gegen den alle anderen definiert werden.
 
+**Ergänzt am 02.10.2026 (W3):** Zum Parameterraum gehören seit §13.13 die Muskelkanäle des Mundes, je 0..1 — `au10`, `au12`, `au15`, `au16`, `au20` je Seite getrennt (`L`/`R`), dazu `au17`, `au18`, `au22`, `au23`, `au24`, `au28`. Die Sprechkanäle aus §13.12 sind darin aufgegangen: `round` ist kein eigener Kanal mehr, sondern folgt aus AU18 und AU22; `press` wirkt als AU24, `fv` als AU28 (Prototyp `labor/avatar/index.html`, gelesen am 02.10.2026).
+
 **Lippen und Kiefer getrennt (v0.5):** Damit sind Mundformen möglich, bei denen die
 Lippen offen sind, der Kiefer aber geschlossen bleibt: zusammengebissene Zähne
 (Frustration, `mouth_open` 12, `jaw` 0) und die Angst-Grimasse mit beiden
@@ -108,9 +110,10 @@ Der Avatar braucht **nicht 16 Keyframes, sondern 8 Sektor-Gesichter + Neutral**.
   automatisch durch Mischung benachbarter Sektoren (Abschnitt 6.2).
 
 Kalibrierung der 8 Sektor-Gesichter zunächst aus dem Prototyp —
-**nicht validiert**, nur Ausgangspunkt. Sektor 6 (Enttäuschung) ist dort nicht
-enthalten und muss neu entworfen werden (hängende Mundwinkel, gesenkter Blick,
+**nicht validiert**, nur Ausgangspunkt. ~~Sektor 6 (Enttäuschung) ist dort nicht
+enthalten und muss neu entworfen werden~~ (hängende Mundwinkel, gesenkter Blick,
 leicht verengte Augen — Richtung „Vertrauen gebrochen“, nicht „Ekel“).
+→ **Im Prototyp entworfen** (W2, aufgelöst am 02.10.2026, siehe `novaberg-avatar_e.md`, Befunde der Aufteilung): Mund nach Messung `novaberg-avatar_m.md` §13.7, Brauen flach gesenkt mit schweren Lidern (§4.1), Oberlippenheber AU10 einseitig betont (§13.13).
 
 ---
 
@@ -133,9 +136,12 @@ die moderate kanonische Emotion (bei Arousal `MOD_AROUSAL` = 0,6) und eines für
 intensive (bei 1,0). Interpolation stückweise linear: Neutral → moderat → intensiv.
 Kanäle ohne eigenes moderates Schlüsselbild liegen linear zwischen Neutral und intensiv.
 
+**Nachgetragen am 02.10.2026 (W11):** Der Prototyp führt ein moderates Schlüsselbild für drei Sektoren — Trauer, Enttäuschung und Ärger —, die Tabelle nannte zwei. Die Werte der Zeile Enttäuschung stammen aus dem Prototyp (`labor/avatar/index.html`, `SECTORS`, gelesen am 02.10.2026).
+
 | Sektor | moderat (≤ 0,6) | intensiv (→ 1,0) |
 |---|---|---|
-| 5 Trauer | traurigkeit: Mund geschlossen, Winkel unten, schmaler (`mw` 84) | verzweiflung: Weinen, offen (`mo` 34), breit (`mw` 106), Träne |
+| 5 Trauer | traurigkeit: Mund geschlossen, Winkel unten, schmaler (`mw` 84) | verzweiflung: Weinen, offen (~~`mo` 34~~ → `mo` 28), breit (~~`mw` 106~~ → `mw` 96), Träne — korrigiert in `novaberg-avatar_b.md` §13.11 (W6) |
+| 6 Enttäuschung | enttaeuschung: geschlossen (`mw` 80, `mo` 0) — nachgetragen (W11) | frustration: `mw` 84, `mo` 12 — nachgetragen (W11) |
 | 7 Ärger | aerger: Lippen gepresst, geschlossen (`mw` 68) | wut: Schreien, offen (`mo` 70), `mw` 76 |
 
 Die Schwelle 0,6 entspricht der Wahl der kanonischen Emotion im Prototyp
@@ -148,6 +154,7 @@ liest sich Weinen/Schreien als Grinsen.
 - Die Intensitätsstufen sind Punkte auf derselben Achse, keine eigenen Keyframes.
 - Offen: ob eine nichtlineare Kennlinie nötig ist, damit moderate Emotionen
   sichtbar genug sind (O6).
+  → **Teilweise beantwortet** durch O11 (oben): stückweise linear über zwei Schlüsselbilder. Offen bleibt die Kennlinie für Sektoren und Kanäle ohne moderates Schlüsselbild (W5).
 
 ### 6.2 Mischung aus dem Emotionsverlauf
 
@@ -234,13 +241,14 @@ Pro Frame werden drei unabhängige Schichten zu einem `FaceState` kombiniert:
 |---|---|---|
 | 1 Emotion | Federübergang zum Ziel-`FaceState` | Novas Emotionszustand |
 | 2 Lebendigkeit | Blinzeln (zufällige Abstände), Atmen, Line Boil | lokal im Avatar |
-| 3 Sprechen | Mundöffnung | Audiopegel oder Viseme — Quelle offen (O9) |
+| 3 Sprechen | ~~Mundöffnung~~ → Öffnung, Kiefer, Breite und Muskelkanäle des Mundes (W10, §13.12, §13.13) | Audiopegel oder Viseme — Quelle offen (O9); im Prototyp Lautzeiten aus dem Text (§13.12, §13.14) |
 
 Reihenfolge der Kombination:
 
 1. Schicht 1 liefert den Basiszustand.
 2. Schicht 2 moduliert `eye_open` (Blinzeln) multiplikativ und verschiebt die Figur (Atmen).
-3. Schicht 3 addiert auf `mouth_open`, begrenzt auf den Kanalbereich.
+3. ~~Schicht 3 addiert auf `mouth_open`, begrenzt auf den Kanalbereich.~~
+   → Schicht 3 blendet weich ein und legt Öffnung, Kiefer und Muskelkanäle additiv auf die Emotion; die Breite wirkt als Faktor auf die Emotionsbreite (W10, §13.12, §13.13).
 
 Schicht 2 und 3 verändern nie das Emotionsziel.
 
@@ -331,7 +339,7 @@ unteren Gesichtsbereich, Verschiebung entlang der Gesichtsachse:
 - Kinn = (`jaw` − 30) · Gewicht; Gewicht 1 von Mundhöhe + 130 px bis Kinn,
   zum Hals hin und seitlich (ab 110 px, null bei 230 px) weich auslaufend.
   Geschlossener Kiefer → Kinn 30 px höher; Schreien (`jaw` 52) → 22 px tiefer
-  als in der Vorlage. Damit entfällt die Grenze aus 13.4 (Öffnung nicht über das Kinn).
+  als in der Vorlage. Damit entfällt die Grenze aus ~~13.4~~ → 13.7 in `novaberg-avatar_m.md` (Ärger intensiv `mo` 70; W7) (Öffnung nicht über das Kinn).
 - Nase 5 px länger (Nasenspitze und Oberlippe), Mund 5 px tiefer (`MOUTH_C`).
 - Ohren, Haare, Schultern außerhalb der Gewichte.
 
@@ -345,13 +353,14 @@ der seitlichen Abschwächung.
 ### 13.12 Sprechschicht: Lippensynchronität aus Text (02.10.2026, Prototyp)
 
 Umsetzung von Schicht 3 (Abschnitt 8) als Prototyp; Zeitquelle Weg 3 (aus Text),
+(W9: die drei Wege nach *Grenzen* unten — Lautzeiten der TTS, Analyse des Audios, Ableitung aus dem Text; die Nummern der ersten beiden sind nicht überliefert)
 damit die Mundbilder geprüft werden können, bevor eine TTS angebunden ist (O9 offen).
 
 **Viseme (12, Deutsch):** Ruhe, M/B/P, F/W, A, E, I, O, U, Ö/Ü, S (s, z, t, d, n),
 SCH (sch, ch, j), L/R/K/G (l, r, k, g, h, ng). Je Visem: Lippenöffnung, Kiefer,
 Breitenfaktor auf die Emotions-Mundbreite, Rundung, Pressen, F/W.
 
-**Neue Kanäle (nur Sprechschicht):** `round` (Rundung/Vorstülpen: Mund schmaler,
+**Neue Kanäle (nur Sprechschicht)** — ~~eigene Kanäle~~ → seit §13.13 über die Muskelkanäle: `round` aus AU18/AU22, `press` als AU24, `fv` als AU28 (W3): `round` (Rundung/Vorstülpen: Mund schmaler,
 Lippen dicker, Zähne weitgehend verdeckt), `press` (Lippen gepresst und eingerollt,
 Öffnung und Kiefer × (1 − press)), `fv` (Oberlippe leicht angehoben, Unterlippe dünner).
 
@@ -389,7 +398,7 @@ zwischen zwei „u“). Ersetzt durch das Dominanzmodell nach Cohen & Massaro (1
 - Federn je Kanal: Lippenöffnung ω 32, Kiefer 20, Breite 18, Rundung 16,
   Pressen 45, F/W 30.
 Werte aus der Literatur gesetzt, nicht gemessen. Kalibrierung an einem Video einer
-deutsch sprechenden Person (frontal, 10–20 s) steht aus.
+deutsch sprechenden Person (frontal, 10–20 s) ~~steht aus~~ → durchgeführt am 02.10.2026, *Kalibrierung an Video* unten und `novaberg-avatar_m.md` §13.15, §13.16 (W8).
 
 **Kalibrierung an Video (02.10.2026):** Mitschnitt einer Nachrichtensendung
 (640 × 360, 25 Bilder/s), nur zur Messung von Bewegungskennzahlen verwendet.
