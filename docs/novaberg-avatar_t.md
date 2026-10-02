@@ -530,7 +530,25 @@ Die Trennung aus §2 wird zur Gliederung: reine Logik ohne GTK, Zeichnen ohne Wi
 | Grundbild | Bildvarianten, Gesichts- und Halsebene, Gitterverzerrung des Kinns | Cairo | ≈ 120 Zeilen |
 | Panel | `Gtk.DrawingArea`, Bildtakt, Empfang der Antwort | ja | neu |
 
-Der Client hat bisher keinen Ort für GTK-freie Logik (am nächsten `client/ui/formatierung.py`) und keinen für Bilder; Ablage und Aufteilung in Module sind offen (O14). Neue Dateien tragen englische Bezeichner.
+Der Client hat bisher keinen Ort für GTK-freie Logik (am nächsten `client/ui/formatierung.py`) und keinen für Bilder; ~~Ablage und Aufteilung in Module sind offen (O14)~~. Neue Dateien tragen englische Bezeichner.
+
+→ **Entschieden am 02.10.2026 (O14, `novaberg-avatar_e.md`):** Die Logik liegt in einem eigenen Paket `client/avatar/` ohne GTK und ohne `requests`; nur das Panel liegt unter `client/ui/panels/`. Die Abhängigkeit läuft nur von `ui` nach `avatar`. Der Schnitt in Module — die Namen sind Vorschläge:
+
+| Modul | Inhalt | Zugriff |
+|---|---|---|
+| `client/avatar/face.py` | die Datentypen: `FaceState` (ein Feld je Kanal, in Pixeln der Vorlage), `Pose` (sichtbarer Zustand mit Zunge, Blinzeln, Atem, Boil-Takt), `Utterance` (Sektor, Arousal, Text) | keiner |
+| `client/avatar/expression.py` | Schlüsselbilder, `face_target(sector, arousal) -> FaceState` — der einzige Teil, der Emotionen kennt | keiner |
+| `client/avatar/animator.py` | Feder je Kanal, Mundversatz, Blinzeln, Atmen, Boil-Takt | keiner; Zeit und Zufallsquelle als Parameter |
+| `client/avatar/speech.py` | Laute aus Text, Lauttabellen, Koartikulation, Zusammenführung mit der Emotion | keiner |
+| `client/avatar/puppet.py` | die Fäden: Animator- und Sprechzustand zusammen, ein Schritt je Bild | keiner |
+| `client/avatar/drawing.py` (aufteilbar) | Strichformen, Augen, Brauen, Mund, Falten, Extras auf einem gegebenen Cairo-Kontext | Cairo |
+| `client/avatar/base_image.py` | Gitterverzerrung des Kinns, Zwischenspeicher der verzerrten Gesichtsebene | Cairo |
+| `client/avatar/layers.py` | das Laden der Bilder — der einzige Dateizugriff | Dateisystem |
+| `client/ui/panels/avatar_panel.py` | `PanelBase`, `turn_reactive`, `UNIQUE`; Bildtakt von `map` bis `unmap`; macht aus der Antwort eine `Utterance` | GTK |
+
+- **Eine Uhr:** Nur das Panel liest die Zeit der Frame-Clock und gibt sie als Sekunden an die Logik; Ausdruck, Animator und Sprechen lesen nie selbst eine Uhr. Die Zeugen treiben die Zeit künstlich.
+- **Ein Seed je Teil** (`novaberg-avatar_e.md`, P12), abgeleitet aus dem Boil-Takt; das Blinzeln zieht aus einer Zufallsquelle, die das Panel erzeugt und ein Zeuge festsetzt. Pixelgleich zum Prototyp ist die Zeichnung damit nicht — die Gleichheit prüft der Sichtvergleich (`novaberg-avatar_b.md` §16, B6).
+- **Die Bilder** liegen in `client/avatar/images/`; den Ort nennt eine Konstante in `client/config.py`. Fehlt ein Bild, zeigt das Panel einen Hinweis statt des Gesichts und schreibt eine Error-Zeile.
 
 ### 15.3 Browser-Mittel und ihre Entsprechung
 

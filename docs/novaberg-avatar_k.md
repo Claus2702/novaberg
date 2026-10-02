@@ -5,7 +5,7 @@
 **Umsetzung:** keine Featurezeile — sie entsteht, wenn Novaberg das Feature bekommt (Entscheidung vom 02.10.2026, `novaberg-avatar_e.md`). Im Client ist nichts gebaut; ein HTML-Prototyp liegt unter `labor/avatar/` (§13).
 **Teile:** `novaberg-avatar_t.md` · `novaberg-avatar_b.md` · `novaberg-avatar_e.md` · `novaberg-avatar_m.md`
 **Grundlagen:** `novaberg-ei-plutchik.md`, `novaberg-ei-dual-emotion_k.md`
-**Entschieden:** 5 · **Offen beim Meister:** 9 (Liste in `novaberg-avatar_e.md`)
+**Entschieden:** 10 · **Offen beim Meister:** 8 (Liste in `novaberg-avatar_e.md`)
 
 > Alle Bezeichner für **neue** Bausteine (Klassen, Felder, Funktionen) sind **Vorschläge**.
 > Aussagen über das **bestehende** System stammen aus den oben genannten Dokumenten,
@@ -55,6 +55,9 @@ Analog zu „LLM als Sprach-Renderer“: Der Avatar entscheidet nichts.
 - Der Avatar erhält einen **Ziel-Emotionszustand** und stellt ihn dar.
 - Der Avatar kennt keine Gesprächsinhalte, leitet keine Emotionen ab und
   normalisiert nicht erneut.
+- **Er ist eine Puppe, an der Fäden gezogen werden** (Entscheidung vom 02.10.2026, `novaberg-avatar_e.md`):
+  Entschieden wird vorher, in der Emotionsberechnung, im Verfasser und im Responder; der Avatar
+  bekommt die Fäden — Emotion und Arousal, beim Sprechen die Laute — und nimmt die Stellung ein.
 
 | Baustein | Verantwortung | Kennt Emotionen? |
 |---|---|---|

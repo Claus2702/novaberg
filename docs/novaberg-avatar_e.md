@@ -15,12 +15,17 @@
 | 01.10.2026 | Brauen bei Freude bewusst abweichend von FACS leicht angehoben | `_b` §13.8 |
 | 02.10.2026 | Mund in Muskelkanäle nach FACS aufteilen (Vorgabe Meister) | `_t` §13.13 |
 | 02.10.2026 | Featureliste: *„Die Feature-Liste ergänzen wir, wenn Novaberg ein neues Feature hat. Noch ist es nicht soweit.“* | Kopfblock `_k` |
+| 02.10.2026 | Der Avatar ist eine Puppe: *„Der Avatar muss den Inhalt nicht kennen, er ist keine KI, nur eine Puppe, eine Darstellung. Alles andere ist ja bereits im Verfasser und im Responder. Hier ist nur ein Fäden Ziehen gegeben, um den Avatar zu bewegen. In diesem Zustand braucht er keine Inhalte kennen. So denke ich, dass der Avatar auch in der html-Datei gebaut ist. Laute, Konsonanten und Vokale geben Reize, bestimmte Mundstellungen einzunehmen“* | `_k` §2 |
+| 02.10.2026 | O14, Ablage: *„client/avatar/ ist okay.“* — die Logik im Paket `client/avatar/` ohne GTK, das Panel unter `client/ui/panels/` | `_t` §15.2 |
+| 02.10.2026 | Eine Uhr: *„Uhr ist absolut okay.“* — nur das Panel liest die Zeit und gibt sie als Zahl an die Logik; ein Seed je Teil, die Zeichnung ist damit nicht pixelgleich zum Prototyp | `_t` §15.2, `_b` §16 B6 |
+| 02.10.2026 | Ort der Bilder: *„Der Ort für Bilder wäre gut bei client/avatar/ in der Nähe.“* — `client/avatar/images/`, genannt von einer Konstante in `client/config.py` | `_t` §15.2, `_b` §16 B5 |
+| 02.10.2026 | Referenzwerte: *„Punkt 4 nehme ich auch an.“* — die Werte des Prototyps als erzeugte JSON-Dateien bei den Client-Tests, ihr Erzeuger im Labor neben dem Prototyp | `_b` §16 B3, B4 |
 
 Die Feinabstimmungen nach Sichtprüfung (*Hinweis Meister*) stehen an ihrer Stelle in `_b` §13.8, §13.10, §13.11 und `_t` §13.12.
 
 ## Offen beim Meister
 
-O6, O7, O8, O9, der Rest von O10 und O12–O14 (§11), dazu aus `_m` §13.16: ob die Öffnung bei Konsonanten ein Persönlichkeitsparameter Novas wird statt eines festen Tabellenwerts.
+O6, O7, O8, O9, der Rest von O10, O12 und O13 (§11), dazu aus `_m` §13.16: ob die Öffnung bei Konsonanten ein Persönlichkeitsparameter Novas wird statt eines festen Tabellenwerts.
 
 ---
 
@@ -52,8 +57,8 @@ mit geprüft werden.
 | O9 | Quelle für die Sprechschicht: existiert TTS mit Pegel oder Visemen? ~~Falls nicht, entfällt Schicht 3 in v1.~~ → Der Prototyp spricht ohne TTS, mit Lautzeiten aus dem Text (`_t` §13.12, §13.14); mit TTS startet der Mund 0,10–0,14 s vor dem Ton (`_m` §13.15, §13.16). Offen bleibt, ob v1 ohne Tonausgabe spricht (W4). → **belegt am 02.10.2026:** keine Sprachausgabe im Repositorium (`_t` §14.5) |
 | O10 | ~~Figurendesign~~ — teilweise beantwortet: Figur aus Bleistiftvorlage, siehe Abschnitt 13. Offen bleibt, ob die Merkmale in Stil und Detailgrad weiter an die Vorlage angeglichen werden müssen (Sichtprüfung). |
 | O12 | Wird Text in Sternchen — Regieanweisung, Geste — gesprochen oder übersprungen? (`_t` §14.5) |
-| O13 | Dürfen die Bilder der Figur (Grundbild, Gesichts- und Halsebene) ins öffentliche Repositorium, oder liegen sie außerhalb und werden über einen Pfad geladen? (`_b` §16, B5) |
-| O14 | Ablage im Client und Aufteilung in Module (`_t` §15.2) |
+| O13 | Dürfen die Bilder der Figur (Grundbild, Gesichts- und Halsebene) ins öffentliche Repositorium, oder liegen sie außerhalb und werden über einen Pfad geladen? (`_b` §16, B5) → **Ort entschieden am 02.10.2026:** `client/avatar/images/`; offen bleibt, ob sie committet werden |
+| O14 | ~~Ablage im Client und Aufteilung in Module (`_t` §15.2)~~ → **entschieden am 02.10.2026** (Entscheidungen oben, `_t` §15.2) |
 
 ---
 
