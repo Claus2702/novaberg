@@ -110,6 +110,7 @@ class PanelBase(Gtk.Box):
     PANEL_LABEL: str = ""
     UNIQUE: bool = True
     CATEGORY: str = "on_demand"  # turn_reactive | on_demand | query | log_stream
+    REACTS_TO_IMPULSE: bool = False  # True = bekommt auch einen Impuls Novas als Turn
     NEEDS_USER_SELECTOR: bool = True
     PERSPEKTIVE_DEDUPLIZIERT: bool = False  # True = nur einmalige Gesprächspaare (kein Beobachter-Split)
     PERSPEKTIVE_BIDIREKTIONAL: bool = False  # True = beide Richtungen jedes Paares

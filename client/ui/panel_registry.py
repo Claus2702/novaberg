@@ -25,6 +25,7 @@ from gi.repository import Gtk  # noqa: E402
 
 from ui.child_window import ChildWindow  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
+from ui.turn_routing import deliver_turn  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -161,22 +162,19 @@ class PanelRegistry:
         """Leitet Turn-Daten an alle offenen turn_reactive-Panels weiter."""
         if not self._open_panels:
             return
+        panels = [child_window.panel for child_window in self._open_panels.values()]
+        deliver_turn(panels, turn_data, impulse=False)
 
-        benachrichtigt: int = 0
-        for child_window in self._open_panels.values():
-            panel: PanelBase = child_window.panel
-            if panel.CATEGORY != "turn_reactive":
-                continue
-            try:
-                panel.on_turn_received(turn_data)
-                benachrichtigt += 1
-            except Exception as fehler:
-                logger.error(
-                    f"Panel '{panel.PANEL_ID}': on_turn_received fehlgeschlagen: {fehler}"
-                )
+    def broadcast_impulse(self, turn_data: dict) -> None:
+        """Leitet einen Impuls Novas nur an die offenen Panels weiter, die ihn wollen.
 
-        if benachrichtigt:
-            logger.debug(f"Turn an {benachrichtigt} Panel(s) verteilt")
+        Ein Panel will ihn, wenn es ``turn_reactive`` ist und ``REACTS_TO_IMPULSE`` trägt;
+        die übrigen laden bei einem Impuls nicht neu.
+        """
+        if not self._open_panels:
+            return
+        panels = [child_window.panel for child_window in self._open_panels.values()]
+        deliver_turn(panels, turn_data, impulse=True)
 
 
 # ═══════════════════════════════════════════════════════════════════

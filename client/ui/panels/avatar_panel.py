@@ -50,6 +50,7 @@ class AvatarPanel(PanelBase):
     PANEL_LABEL = "🙂 Avatar"
     UNIQUE = True
     CATEGORY = "turn_reactive"
+    REACTS_TO_IMPULSE = True
     NEEDS_USER_SELECTOR = False
     DEFAULT_WIDTH = 480
     DEFAULT_HEIGHT = 540

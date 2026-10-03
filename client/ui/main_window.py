@@ -44,6 +44,7 @@ from config import (  # noqa: E402
 from ui.chat_view      import ChatView                    # noqa: E402
 from ui.panel_registry import PanelRegistry, create_default_registry  # noqa: E402
 from ui.status_bar     import StatusBar                   # noqa: E402
+from ui.turn_routing   import impulse_turn_data           # noqa: E402
 from ui.stream_handler import (                           # noqa: E402
     StreamHandler,
     ZUORDNUNG_FREMD,
@@ -539,6 +540,11 @@ class MainWindow(Gtk.ApplicationWindow):
         else:
             logger.info(f"Pixie-Impuls empfangen: {text[:80]!r}")
             self._chat_view.add_impulse_message(text)
+
+        # Novas eigener Impuls ist ein Wort Novas: der Avatar bekommt ihn, sonst keiner.
+        turn_data = impulse_turn_data(text, data)
+        if turn_data is not None:
+            self._registry.broadcast_impulse(turn_data)
 
     def _handle_connection(self, status: str) -> None:
         logger.debug(f"Verbindungsstatus -> {status}")
