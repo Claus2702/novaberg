@@ -1102,13 +1102,35 @@ Der Eigentümer, 03.10.2026: *„Was jetzt noch fehlt ist nur die Textausgabe in
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — Wunsch des Eigentümers; ein Beispiel im Labor liegt vor (`labor/avatar/pixie_rauschen.html`).
+**Zustand:** ⬜ offen — Konzept vollständig, Bau beschlossen am 03.10.2026 (*„Gut, das bauen wir so den Avatar ein.“*): `novaberg-avatar_t.md` §17, Bauteile L0–L5 in `novaberg-avatar_b.md` §18. Vorher: Wunsch des Eigentümers; ein Beispiel im Labor liegt vor (`labor/avatar/pixie_rauschen.html`), dann der Generator `labor/avatar/leerlauf.html`.
 
 Der Eigentümer, 03.10.2026: *„Ebenfalls möchte ich die Aktivitäten von Pixie im Leerlauf, wenn Nova selbst gerade nichts tut, visualisieren. Pixie rechnet gerade, dann sollte der Avatar das wiedergeben. Pixies Emotion. verschiedene Ausdrücke von Nachdenken im Gesicht."*
 
-**Skizze aus dem Labor, nicht entschieden:** Im Leerlauf trägt das Gesicht Pixies Emotion schwach (geringes Arousal) und darüber eine Schicht *Nachdenken*: Blick, Brauen und Mundwinkel bewegen sich in glattem Rauschen, dessen Stärke Pixies Aktivität folgt; Ausdrücke des Nachdenkens als Formen (Grübeln, Erinnern, Abwägen, Einfall); dazu wahlweise das Linien-Zittern stärker und feine Grafitstriche an der Schläfe als sichtbares „Rauschen". **Offen:** woher der Client Pixies Aktivität und Emotion bekommt (heute meldet die Statuszeile nur `momentum`); wann Leerlauf beginnt und endet; ob eine Antwort Novas das Nachdenken sofort ablöst.
+**Skizze aus dem Labor, nicht entschieden:** Im Leerlauf trägt das Gesicht Pixies Emotion schwach (geringes Arousal) und darüber eine Schicht *Nachdenken*: Blick, Brauen und Mundwinkel bewegen sich in glattem Rauschen, dessen Stärke Pixies Aktivität folgt; Ausdrücke des Nachdenkens als Formen (Grübeln, Erinnern, Abwägen, Einfall); dazu wahlweise das Linien-Zittern stärker und feine Grafitstriche an der Schläfe als sichtbares „Rauschen". ~~**Offen:** woher der Client Pixies Aktivität und Emotion bekommt (heute meldet die Statuszeile nur `momentum`); wann Leerlauf beginnt und endet; ob eine Antwort Novas das Nachdenken sofort ablöst.~~ → **geklärt 03.10.2026:** aus dem neuen Ereignis `pixie_auftrag` (§17.8; `momentum` ist kein Wert Pixies, sondern des Routers); die Zustände und ihre Auslöser in §17.2; eine Antwort löst jeden Zustand ab, über ein Einatmen.
 
 **Zusammenhang:** `novaberg-avatar_b.md` §16 · Pixie (`novaberg-featureliste.md` §8)
+
+## Feature: AVATAR-VALENZ-RESERVE — die Valenz behält Reserve über mittlerer Freude (03.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — vom Eigentümer zurückgestellt: *„Den Punkt mit der hohen Valenz ohne Reserve prüfen wir später."*
+
+**Befund** (Analyse eines Mitschnitts des Leerlauf-Generators, 03.10.2026): Bei Freude mit Arousal 0,6 steht die Valenz auf 1,00 — mehr Freude ist auf der Skala nicht mehr unterscheidbar, und im Nachklang fällt sie zu Pixies Neugier 0,45 auf 0,35. **Herkunft:** `EMOTION_VALENZ` in `server/config.py` (`begeisterung` 1,00, `freude` 0,80); der Begriff wechselt bei `MOD_AROUSAL` 0,6, also genau beim Arousal des Mitschnitts — die Valenz ist eine Stufe je Sektor, keine stetige Funktion des Arousals. **Wirkung heute:** im Gesicht keine; im Leerlauf steuert die Valenz nur Schwellen (Abwenden ab −0,4, Schluss eines Zyklus); dieselbe Tabelle färbt die Prägung (`server/memory/praegung.py`). **Zu prüfen:** ob die Valenz stetig aus Sektor und Arousal folgen und unter 1,0 bleiben soll.
+
+**Zusammenhang:** `novaberg-avatar_k.md` §3 · `AVATAR-PIXIE-LEERLAUF`
+
+## Feature: AVATAR-SMILEY-AUSDRUECKE — die gängigen Smileys als Ausdruck im Gesicht des Avatars (03.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Wunsch des Eigentümers.
+
+Der Eigentümer, 03.10.2026: *„Halte bitte im Backlog fest, dass wir auch die Mimik der gängigen etwa 10 Smileys für einen Ausdruck auf das Gesicht des Avatars bringen müssen. Etwa ein neckiges Zunge rausstrecken oder ein Grinsen mit gebleckten Zähnen."*
+
+**Was es dafür schon gibt:** Die Figur hat Zunge und Zähne als eigene Teile (Zähne als feste Kieferebenen, `novaberg-avatar_t.md` §13; die Zunge in der Sprechschicht, §13.12) und bewegliches Kinn (§13.9); kurze Ausdrücke über der Emotion kennt der Leerlauf als Formen (Einfall, Blick zum Betrachter; §17.4). **Zu bauen:** etwa zehn Ausdrücke als Schlüsselbilder über den Kanälen des Gesichts — Vorschlag, nicht entschieden: Zunge herausstrecken, Grinsen mit gebleckten Zähnen, Zwinkern, Lachen mit zugekniffenen Augen, schiefes Lächeln, Kussmund, Augenrollen, Staunen mit offenem Mund, Träne, Schmollen. **Offen:** welche zehn; woher der Avatar den Anlass bekommt — er ist eine Puppe und liest keinen Inhalt (§2), ein Smiley im Antworttext ist aber Inhalt; denkbar ist ein eigenes Feld der Antwort, das der Server setzt; ob ein Smiley-Ausdruck kurz über der Emotion liegt wie eine Form oder sie ablöst; ob die Zunge außerhalb des Sprechens einen eigenen Kanal braucht.
+
+**Zusammenhang:** `novaberg-avatar_k.md` §2 · `novaberg-avatar_t.md` §13, §17 · `AVATAR-PIXIE-LEERLAUF`
 
 ## Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — keine Preiswarnung für ein Modell, das gerade nicht läuft (03.10.2026)
 
