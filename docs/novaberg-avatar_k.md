@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar (Konzept)
 
 **Absicht:** Ein 2D-Avatar im GTK4-Client zeigt Novas eigenen Emotionszustand als lebende Bleistiftskizze; er stellt dar, was die Emotionsberechnung liefert, und entscheidet selbst nichts.
-**Stand:** 03.10.2026 (§3 neu: die Denkweisen im Leerlauf). Davor 02.10.2026
+**Stand:** 03.10.2026 (§3 neu: die Denkweisen im Leerlauf; dazu entschieden: das Nachdenken taktet länger). Davor 02.10.2026
 **Umsetzung:** ~~keine Featurezeile — sie entsteht, wenn Novaberg das Feature bekommt (Entscheidung vom 02.10.2026, `novaberg-avatar_e.md`). Im Client ist nichts gebaut; ein HTML-Prototyp liegt unter `labor/avatar/` (§13).~~ → **seit 03.10.2026 gebaut** und im Client gesehen (`novaberg-avatar_b.md` §16, Featurezeile *Avatar-Panel*); der Prototyp unter `labor/avatar/` bleibt die Referenz.
 **Teile:** `novaberg-avatar_t.md` · `novaberg-avatar_b.md` · `novaberg-avatar_e.md` · `novaberg-avatar_m.md`
 **Grundlagen:** `novaberg-ei-plutchik.md`, `novaberg-ei-dual-emotion_k.md`
@@ -86,4 +86,5 @@ Analog zu „LLM als Sprach-Renderer“: Der Avatar entscheidet nichts.
 
 - **Pixies Start als Ereignis, nur als Rückfall:** *„der Start Pixies mit Auftrag und Emotion kann als Ereignis an den Client geschickt werden, darf aber konvergentes Denken in Turns und die User-Interaktion nicht stören, sondern nur den Fallback setzen und — wenn Nova bereits im Leerlauf ist — auf die Änderung des Fallbacks hinweisen. Das müssen wir am Server ändern.“* → Backlog `PIXIE-START-ALS-EREIGNIS` (`novaberg-backlog-hintergrund.md`).
 - **Blinzeln bei Ärger wie bei Freude:** *„Die Blinzelrate: Ärger wie Freude. Ärger kann auch ruhig ablaufen und hat keine Beschleunigung der Frequenz automatisch im Beiklang.“* Die Emotion allein beschleunigt das Blinzeln nicht; die Recherche fand für Ärger ohnehin keine Messung.
+- **Das Nachdenken taktet länger als das Rauschen:** auf den Vorschlag, die Taktlänge im Nachdenken mit dem Faktor 1,3 statt 0,85 zu rechnen und dort am Blickwechsel seltener zu blinzeln (Wahrscheinlichkeit 0,3 statt 0,7): *„Ja, Faktor 1,3 wirkt gut, dann testen wir erneut“*. Anlass: Die Analyse eines Mitschnitts des Generators las Konvergenz an wenigen, langen Formen; mit den kurzen Formen blinzelte Nova im Nachdenken öfter als im Rauschen (im Labor gemessen, Freude 0,6 gegen Neugier 0,45: 25,5 gegen 21,8 je Minute, danach 16,2 gegen 22,6).
 
