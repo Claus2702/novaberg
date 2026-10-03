@@ -570,7 +570,7 @@ Der Client hat bisher keinen Ort für GTK-freie Logik (am nächsten `client/ui/f
 - **Turn-reaktiv und einmalig** (`CATEGORY = "turn_reactive"`, `UNIQUE = True`); nur solche Panels erhalten eine Antwort (`client/ui/panel_registry.py`, `broadcast_turn`). Ein Eintrag in der Werkzeugleiste ist Pflicht (`client/ui/main_window.py`, `_TOOLBAR_PANELS`; geprüft von `client/tests/test_toolbar_panels.py`).
 - **Kein REST:** Das Panel lädt nichts; `load_data` wird trotzdem überschrieben, sonst steht beim Öffnen „Fehler“ in der Fußzeile.
 - **Der Bildtakt hängt an der Sichtbarkeit:** Die Registry baut bei jedem Klick eine neue Instanz, und es gibt keinen Abbau-Hook. Der Takt (`add_tick_callback`) startet bei `map` und endet bei `unmap`.
-- **Antwort → Ziel:** `on_turn_received` liest `nova_sektor`, `nova_arousal` und `nachricht` und setzt das neue Ziel; ein laufender Übergang geht vom sichtbaren Zustand aus weiter (§7.2).
+- **Antwort → Ziel:** `on_turn_received` liest ~~`nova_sektor`, `nova_arousal` und `nachricht`~~ → **gebaut 03.10.2026:** `nova_emotion` (den Namen; der Sektor folgt aus den Namen der Schlüsselbilder, `neutral` → neutral, ein unbekannter Name → Error-Zeile und neutral), `nova_arousal` und `antwort` — so kommt die `character_response` im Client an; ein `nova_sektor` vom Server ist nicht nötig — und setzt das neue Ziel; ein laufender Übergang geht vom sichtbaren Zustand aus weiter (§7.2).
 - **Die Testbedienung des Prototyps** — Sektor-Knöpfe, Regler, Muskelregler, Gesprächssimulation — wird nicht übernommen.
 
 ### 15.5 Prüfbarkeit ohne Bildschirm
