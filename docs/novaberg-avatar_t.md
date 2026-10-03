@@ -1,8 +1,8 @@
 # Novaberg — Emotions-Avatar: Ausarbeitung
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 02.10.2026
-**Inhalt:** wie die Absicht ausgearbeitet ist — Darstellungsstil, Parameterraum `FaceState`, Emotions-Mapping, Intensität und Mischung, Übergangsmodell, Schichten, Integration im Client (§3–§9); aus dem Prototyp die Pipeline der Figur, die Alternative zur Vorlage, das bewegliche Kinn, die Sprechschicht, die Muskelkanäle des Mundes und die Einzellaute (§13 in Teilen); dazu der Datenvertrag mit dem Server (§14) und die Portierung nach GTK4 und Cairo (§15).
+**Stand:** 03.10.2026 (§17 neu: der Leerlauf). Davor 02.10.2026
+**Inhalt:** wie die Absicht ausgearbeitet ist — Darstellungsstil, Parameterraum `FaceState`, Emotions-Mapping, Intensität und Mischung, Übergangsmodell, Schichten, Integration im Client (§3–§9); aus dem Prototyp die Pipeline der Figur, die Alternative zur Vorlage, das bewegliche Kinn, die Sprechschicht, die Muskelkanäle des Mundes und die Einzellaute (§13 in Teilen); dazu der Datenvertrag mit dem Server (§14), die Portierung nach GTK4 und Cairo (§15) und der Leerlauf mit seinen vier Denkweisen (§17).
 
 ---
 
@@ -576,3 +576,104 @@ Der Client hat bisher keinen Ort für GTK-freie Logik (am nächsten `client/ui/f
 ### 15.5 Prüfbarkeit ohne Bildschirm
 
 `Gtk.DrawingArea()` stürzt ohne Display-Sitzung ab (gemessen am 02.10.2026). Die Tests prüfen deshalb die Logik direkt und das Zeichnen über Funktionen `(cr, breite, höhe, zustand, seed)` auf einer `cairo.ImageSurface`, ohne Widget. Die Zeugen des Clients laufen auf dem Host neben der Server-Suite.
+
+---
+
+## 17. Leerlauf: die Denkweisen im Client
+
+**Stand 03.10.2026.** Die Absicht steht in `novaberg-avatar_k.md` §3 (Rauschen, Nachdenken, Antwort, Nachklang; *„Zufall, aber geformt“*). Dieser Abschnitt sagt, wie der Client sie umsetzt; die Bauteile stehen in `novaberg-avatar_b.md` §18.
+
+### 17.1 Der Generator ist die Referenz
+
+Für die Leerlauf-Schicht ist der Generator im Labor, was der Prototyp für das Gesicht ist (§15.1): `labor/avatar/leerlauf_bauen.py` erzeugt `leerlauf.html` über dem Prototyp, Stand 03.10.2026. **Wo dieser Text vom Generator abweicht, gilt für den Bau der Generator** — ausgenommen die Abweichungen in §17.9. Die Werte des Generators und ihre Herkunft stehen in `labor/avatar/recherche_mimik_leerlauf.md` (§1.2 Formen, §2 Zeitwerte, §4 Raum, §5 Generator); geschätzte Werte tragen dort und im Code ein **(S)**.
+
+Seine Prüfung `labor/avatar/leerlauf_pruefen.py` lässt ihn über eine eigene Uhr laufen (Anker `#sim`, `#turnab`) und legt den Verlauf als JSON ab — Zustände, Formen mit Dauer und Blickpunkt, Lidschläge, Mundöffnung je Form. **Daraus entstehen die Referenzwerte des Clients** (`novaberg-avatar_b.md` §18, L1): Der Zufall des Generators hat einen Startwert (mulberry32) und ist in Python exakt nachbildbar; bei gleichem Startwert, gleichen Eingängen und gleicher Reihenfolge der Ziehungen plant der Client dieselben Formen mit denselben Dauern.
+
+### 17.2 Die Zustände und ihre Auslöser im Client
+
+| Zustand | beginnt | endet | Emotion | Aktivität `a` |
+|---|---|---|---|---|
+| **Rauschen** | beim Öffnen des Panels; am Ende des Nachklangs | ein Turn oder ein Impuls beginnt; eine Antwort trifft ein | **Pixies Auftrag** (§17.8): Emotion und Arousal des zuletzt begonnenen Auftrags, der noch läuft und eine Emotion trägt — Pixie rechnet in zwei Spuren, ein Auftrag ohne Emotion verdrängt keinen mit; läuft keiner mit Emotion, neutral mit Arousal 0 | 0,6, solange in einer Spur ein Auftrag läuft, sonst 0,2 (S) |
+| **Nachdenken** | der Client sendet eine Nachricht des Nutzers; ein Impuls geht in den CharacterGraph (§17.8) | eine Antwort trifft ein → Einatmen, dann Antwort; der Turn scheitert (`turn_gescheitert`) → Rauschen; Wächter: nach 600 s ohne Antwort → Rauschen mit Warning-Zeile | **Novas aktuelle Emotion** — die ihrer letzten Antwort (Absicht §3: *„beginnt Nova mit der aktuellen Emotion nachzudenken“*); vor der ersten Antwort neutral | 0,7 |
+| **Antwort** | nach dem Einatmen; die Wiedergabe beginnt | Ende der Wiedergabe + 0,4 s | die der Antwort (`nova_emotion`, `nova_arousal`) | 0 |
+| **Nachklang** | Ende der Antwort | nach `(6 + 24·N) · U(0,8; 1,2)` s, bei N = 0,5 also 14,4–21,6 s | Nova klingt aus, in den letzten 40 % zu Pixie (§17.3) | 0,2 |
+
+- **Eine Antwort, die ohne Nachdenken eintrifft** — ein Impuls, dessen Beginn der Client nicht kannte, eine Antwort im Rauschen oder im Nachklang —, geht ebenso über das Einatmen in die Antwort.
+- **Ein neuer Turn unterbricht jeden Zustand sofort**; Nachklang und Rauschen haben keinen Vorrang vor dem Nutzer. Den Übergang glättet die Feder (Blick ≈ 0,14 s, Gesicht ≈ 0,5–1 s).
+- **Trifft eine Antwort während einer Antwort ein**, löst die neue die laufende ab, wie heute (§15.4).
+- **Ein Ereignis Pixies ändert im Nachdenken und in der Antwort nichts Sichtbares**; es setzt nur den Rückfall (entschieden, `novaberg-avatar_k.md` §3). **Im Nachklang** zielt die Überblendung der letzten 40 % auf den jeweils aktuellen Rückfall — sie ist der Übergang in ihn, kein Teil des Turns; so liest es auch der Generator in jedem Bild. **Im Rauschen** plant der nächste Zyklus mit der neuen Emotion, und die Basis gleitet über die Feder hinüber.
+- **Die Stufen des CharacterGraph** (`character_stage`) taugen **nicht** als Auslöser: Sie tragen keine Herkunft und kommen zum Teil erst **nach** der Antwort — die Antwort geht schon bei `perzeption_assistant` hinaus, die Stufen des Nachlaufs folgen ihr (`server/services/event_consumer.py`, gelesen am 03.10.2026). Ein Auslöser aus ihnen schickte Nova nach der Antwort zurück ins Nachdenken.
+
+### 17.3 Schichten
+
+Von unten nach oben, jede ein eigener Prozess (Perlin 1997; Andrist 2014):
+
+| Schicht | Inhalt | Werte |
+|---|---|---|
+| Emotionsbasis | `face_target(sektor, arousal · f)` — im Rauschen und Nachdenken schwach (f = 0,5), in der Antwort voll (f = 1); im Nachklang Nova ausklingend (0,7 → 0,35 ihres Arousals über die ersten 60 %), in den letzten 40 % geglättet zu Pixie | Generator `lage`, `BASIS_FAKTOR` |
+| Form | Abweichung je Gesichtskanal zur Basis, mal der Amplitude `k = (0,5 + 0,5·a) · (0,7 + 0,3·N)` | `FORMEN`, `abweichung` |
+| Blick | Blickpunkt der Form plus kleine Sakkaden im Takt der Form; **nicht** mit `k` skaliert — der Blick trägt das Nachdenken | `blickBasis`, `sakkaden` |
+| Lidschlag | eigener Prozess (§17.6); ersetzt das feste Blinzeln der Puppe (`client/avatar/puppet.py`, `_blink`) | `lidschlaege` |
+| Rauschen | glattes Rauschen auf Brauen, Mundwinkeln und Mund, Stärke ∝ `a`; nicht in der Antwort | `rauschen`, `AMP` |
+| Sprechen | in der Antwort die Sprechschicht (§13.12) über der Emotion, wie heute | — |
+
+**Der Mund im Leerlauf:** Die Öffnung der Basis ist auf 2 begrenzt, sonst liest sich eine offene Freude-Basis als Sprechen. Nur F9 (Einfall) hebt die Grenze auf, **im Nachdenken keine Form** — dort bleibt der Mund ruhig. F14 (*Mund leicht offen*) legt `+4 · k` über die begrenzte Basis (im Rauschen ≈ +2,7). **Offen** heißt in den Prüfungen: Öffnung `mo` über 4.
+
+**Die Feder je Kanalgruppe:** dieselbe kritisch gedämpfte Feder (§7.3), aber mit ω je Gruppe — Gesicht `5 · (1 + 0,8·E)`, Pupille 5, Blick 35 (eine Sakkade erreicht 95 % nach 0,14 s). Der Mundversatz (§7.4) entfällt im Leerlauf.
+
+### 17.4 Formen, Gruppen und Zyklus
+
+- **Formen:** F1–F17 (Konzentration, Erinnern, Vorstellen, Ins Leere, Denklast, Verwirrung, Unsicherheit, Skepsis, Einfall, Sorge, Formulieren, Nachsinnen, Kinn hoch, Mund offen, Lächeln kontrolliert, Blick zum Betrachter, Fixieren), dazu **E1** Einatmen und für die Antwort **A0** Denkblick weiter, **A1** Zuwenden, **A2** Wegsehen beim Sprechen.
+- **Gruppe je Zustand und Emotion:** Gewicht = Grundgewicht des Sektors (`GRUND`) × Faktor des Zustands (`GRUPPE`, 0 = gehört nicht dazu) × Modifikatoren aus Tiefe, Energie, Aktivität, Nähe, Richtung und Valenz (`MOD`). Rauschen: breit, leicht zu inneren, weiten Formen geneigt. Nachdenken: Anstrengung, Prüfen, Formulieren; kein Abschweifen (F4), kein offener Mund (F14). Nachklang: Nachsinnen, ins Leere, gebremstes Lächeln; keine Last, kein Einfall.
+- **Art des Auftrags** (nur im Rauschen, Generator `gewichte`): Recherche hebt Erinnern und Vorstellen (F2, F3 × 1,5), Reflexion Nachsinnen oder Sorge je nach Valenz (F12/F10 × 1,5), Wissenslücke Verwirrung (F6 × 1,5). Die Abbildung der Arten des Servers steht in §17.8.
+- **Zyklus:** 4–5 Formen ohne Zurücklegen nach Gewicht, Wiederholungen über Zyklen gedämpft, geordnet nach den Regeln R1–R8 (Eröffnung mit Blickwechsel, Einfall nur nach Vorläufern, höchstens zwei Asymmetrien, keine Form zweimal, Kontrast zwischen Nachbarn, Schluss mit F16 oder abwärts, Lidschlag am Blickwechsel) — `zyklusPlanen`, `ordnen`.
+- **Takt:** `x_c = max(0,5; (6 − 4·E + Δ_S + (T − 0,3)) · Faktor)`, Faktor Rauschen 1, **Nachdenken 1,3** (entschieden, `novaberg-avatar_k.md` §3), Nachklang 1,3. Jede Form steht eine Zeit aus einer Dreiecksverteilung über `0,65·x_c` bis `1,35·x_c` (mindestens 1,5 s, höchstens 10 s) mit Gipfel bei `x_c`.
+
+### 17.5 Antwort und Einatmen
+
+- **Einatmen (E1):** Das Nachdenken endet mit 0,7–0,9 s leicht geöffnetem Mund (Torreira 2015); der Blick bleibt, wo er ist, wenn er abgewandt war — sonst wendet er sich ab wie beim Sprechen (`blickWeiter`).
+- **Antwort:** A0 — der Denkblick läuft in die ersten Worte hinein, `min(2,23 s · U(0,65; 1,35); 40 % der Antwort)` (Andrist 2013: das Denk-Wegsehen endet 2,23 s nach Beginn der Äußerung); dann F16 mit kurzem Brauenheben (0,6 s); dann A1 und A2 im Wechsel, Wegsehen 1,96 s alle 4,75 s (je · U(0,65; 1,35)); **die letzten 1,5 s beim Betrachter** — der Sprecher gibt das Wort mit dem Blick zurück (Kendon 1967; Ho 2015).
+- **Nachklang:** beginnt mit F16 (1,5–3 s, Blick zum Gegenüber), dann Zyklen der Nachklang-Gruppe. Seine Dauer ist eine Grenze: Die laufende Form endet an ihr.
+
+### 17.6 Lidschlag
+
+- **Rate je Minute:** Grundrate je Zustand (Rauschen 15, Nachdenken 12, Antwort 20, Nachklang 15) + 12·E; Angst +6, Trauer −2, während F4 +3; begrenzt auf 8–32. Ärger beschleunigt nicht (entschieden, `novaberg-avatar_k.md` §3).
+- **Zwei Quellen:** ein Poisson-Prozess mit 0,8 s Sperrzeit und gekoppelte Lidschläge — am Blickwechsel über 0,4 mit Wahrscheinlichkeit 0,7, **im Nachdenken 0,3** (entschieden), ein langer beim Einfall, eine Serie aus 2–3 nach Denklast (F5), während F5 keine. Die gekoppelten der letzten 60 s werden von der Poisson-Rate abgezogen.
+- **Form:** Schließen 80–100 ms, Öffnen 150–250 ms; länger bei F4 und Trauer (× 1,2).
+- **Gemessen im Generator** (03.10.2026, je Lage 20 Startwerte × drei Antwortlängen): bei Freude 0,6 gegen Pixies Neugier 0,45 Nachdenken 16,2 · Rauschen 22,6 · Antwort 29,5 je Minute. Die Energie hebt die Rate in jedem Zustand; hat Nova deutlich mehr Energie als Pixie (Ärger 0,9 gegen Neugier 0,45), blinzelt sie im Nachdenken etwas öfter als im Rauschen (23,0 gegen 21,5; gemessen in einem Lauf derselben Prüfung mit Pixie bei 0,45 — seitdem fährt die Prüfung die Ärger-Lage mit gleicher Energie).
+
+### 17.7 Die Lage im Raum in v1
+
+Der Generator nimmt die Lage im Novaberg-Raum als Eingang — Energie E, Valenz V, Richtung R, Tiefe T, Nähe N. **In v1 folgen E und V der Emotion des Zustands, R, T und N stehen fest:** E = Arousal; V = Valenz des Sektors, moderat oder intensiv je nach Arousal unter oder ab 0,6 (die Tabelle wie `EMOTION_VALENZ` in `server/config.py`; zur fehlenden Reserve `AVATAR-VALENZ-RESERVE`); R offen, T 0,3, N 0,5 — der Kaltstart des Raums (`novaberg-gv-strategie_t.md` §3.4). Den Raum an den Client zu übertragen ist eine eigene, spätere Absicht.
+
+### 17.8 Datenvertrag: was der Leerlauf braucht
+
+Gelesen am 03.10.2026; die Fundstellen sind die dieses Tages.
+
+| Was | heute | Zu bauen |
+|---|---|---|
+| **Ein Turn beginnt** | Der Client sendet in `MainWindow._send_current_input` (`client/ui/main_window.py`); kein Panel erfährt es — `PanelBase` kennt nur `on_turn_received` | ein Verteiler an die Panels, die es wollen — nach dem Muster von `REACTS_TO_IMPULSE`: Panels mit `REACTS_TO_IDLE = True` bekommen `on_idle_event(ereignis)`, mit den Ereignissen `turn_beginnt`, `turn_gescheitert`, `pixie_auftrag` und `impuls_denkt` (Vorschlag — `PanelBase` ist eine gemeinsame Klasse, ihre Erweiterung ist eine Architekturentscheidung) |
+| **Die Antwort trifft ein** | `on_turn_received` mit `nova_emotion`, `nova_arousal`, `antwort`, auch aus eigenem Impuls (§16, B2) | nichts |
+| **Die Wiedergabe endet** | die Sprechschicht weiß es (`SpeechState.active`, `start_ms`, `end_ms`) | die Puppe meldet das Ende an die Leerlauf-Schicht |
+| **Der Turn scheitert** | WebSocket `turn_gescheitert` (`client/ui/stream_handler.py`), nur an den Chat | dasselbe Ereignis an `on_idle_event` |
+| **Pixie beginnt oder beendet einen Auftrag** | nur in Redis (`shadow_status`, `server/services/pixie/scheduler.py`, `pixie_heartbeat`), gelesen per REST; **nichts geht an den Client** | **Server:** WebSocket-Ereignis `pixie_auftrag` mit `phase` (`beginn`/`ende`), `spur` (`llm`/`cpu`), `art`, `emotion` (kanonischer Name oder `null`), `arousal` (0..1 oder `null`) — **ohne `thema`**: das Thema ist Gesprächsinhalt. **`beginn`**, wenn ein Gewinner feststeht und sein Lauf beginnt; **`ende`**, wenn dieser Lauf vorbei ist, auch mit Fehler — **nicht** am Zurücksetzen von `shadow_status`: Das `finally` des Heartbeats setzt den Schlüssel auch nach jedem leeren Heartbeat zurück (CPU-Spur alle 30 s), und beide Spuren teilen ihn. **Gesendet mit `await broadcast(…)`** — `pixie_heartbeat` läuft als async-Job im Event-Loop (`AsyncIOScheduler`, `server/main.py`); `broadcast_threadsafe` wartete dort auf eine Coroutine desselben Loops und hielte den Server 5 s je Verbindung an (`server/api/websocket.py`, `future.result(timeout=…)`). Ein Fehler beim Senden stört den Auftrag nicht und schreibt eine Error-Zeile. **Nur Aufträge mit Nutzer** senden; periodische Aufgaben tragen weder Emotion noch Nutzer und bleiben ohne Ereignis. Backlog `PIXIE-START-ALS-EREIGNIS` |
+| **Ein Impuls geht in den CharacterGraph** | die Zustellung (`server/services/shadow_delivery.py`, `_delivery_ausfuehren`) fährt nur den AgentGraph und legt ein Ereignis in die Queue; den CharacterGraph fährt danach der Event-Consumer (`server/services/event_consumer.py`, Herkunft `reiz_herkunft = eigener_impuls`). Seine Stufen sind von denen eines Nutzer-Turns nicht zu unterscheiden | **Server:** WebSocket-Ereignis `impuls_denkt` mit `phase` `beginn`, wenn der Event-Consumer den CharacterGraph für einen Impuls startet, und `ende` in seinem `finally` — auch wenn keine Antwort entsteht; ohne Inhalt; async gesendet wie oben. **Client:** `ende` beendet nur ein Nachdenken, auf das keine Antwort kam; die Antwort geht schon bei `perzeption_assistant` hinaus, das `ende` kommt danach |
+
+**Woher Pixies Emotion kommt:** Ein Auftrag (`ShadowAuftrag`) trägt `emotion` und `arousal` aus der Salienz des Turns, der ihn ausgelöst hat (`server/memory/kzg.py`, `server/agents/kzg/queues.py`; `beobachter = "user"` gesetzt in `server/services/shadow_agent/utils.py`); `None` heißt unbekannt.
+
+**Die Art des Auftrags** kommt aus der geschlossenen Menge der Aufgaben in `server/services/pixie/router.py`, nie als Freitext. Für die Gewichte des Rauschens (§17.4): `recherche`, `vertiefen`, `verweis`, `wissen_rueckweg` → Recherche; `nachfragen` → Reflexion; jede andere → keine Gewichtung. Die Intention *Reflexion* bildet der Server heute auf `recherche` ab (`server/agents/kzg/queues.py`); die Wissenslücke ist eine periodische Aufgabe und sendet kein Ereignis — beide Gewichte des Generators bleiben damit in v1 ohne Anlass. Periodische Aufgaben tragen keine. **Eine eigene Emotion Pixies gibt es nicht** — *„dieser [Auftrag] hat Emotionen“* (Absicht §3) ist genau diese.
+
+**Der Avatar bekommt weiter keinen Gesprächsinhalt** (§2, §14.4): kein Thema, keinen Text des Auftrags.
+
+### 17.9 Abweichungen vom Generator
+
+| Generator | Client | Grund |
+|---|---|---|
+| Bedienung im Platz des Mischpults, Anker `#sim`, `#aufnahme` | entfallen | Testbedienung (§15.4) |
+| Das Ende des Nachdenkens ist vorab bekannt (`denkEnde`) | Der Client kennt es nicht; das Einatmen beginnt, wenn die Antwort eintrifft, und die Wiedergabe beginnt danach — ≈ 0,8 s später als heute | Ereignis statt Plan; ohne Ton (O9) verschiebt sich nichts Hörbares |
+| `performance.now()` | die Zeit der Frame-Clock (§15.2, *eine Uhr*) | — |
+| Pixies Emotion, Aktivität und Auftragsart von Hand | aus `pixie_auftrag` (§17.8) | — |
+| Raum über Regler | fest wie §17.7 | der Client bekommt den Raum nicht |
+| Lidschlag ersetzt `drawEye` des Prototyps | ersetzt das Blinzeln der Puppe (`puppet.py`, `_blink`) | dieselbe Form, ein Ort |
+
+**Vor dem Bau** wird der Generator an das Ereignismodell des Clients angeglichen — das Einatmen beginnt beim Eintreffen der Antwort, Pixies Auftrag kommt als Ereignis —, damit die Referenzwerte dieselben Ziehungen in derselben Reihenfolge tragen (`novaberg-avatar_b.md` §18, L0).

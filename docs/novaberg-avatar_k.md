@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar (Konzept)
 
 **Absicht:** Ein 2D-Avatar im GTK4-Client zeigt Novas eigenen Emotionszustand als lebende Bleistiftskizze; er stellt dar, was die Emotionsberechnung liefert, und entscheidet selbst nichts.
-**Stand:** 03.10.2026 (§3 neu: die Denkweisen im Leerlauf; dazu entschieden: das Nachdenken taktet länger). Davor 02.10.2026
+**Stand:** 03.10.2026 (§3 neu: die Denkweisen im Leerlauf; dazu entschieden: das Nachdenken taktet länger; ausgearbeitet in `_t` §17, Bauteile in `_b` §18). Davor 02.10.2026
 **Umsetzung:** ~~keine Featurezeile — sie entsteht, wenn Novaberg das Feature bekommt (Entscheidung vom 02.10.2026, `novaberg-avatar_e.md`). Im Client ist nichts gebaut; ein HTML-Prototyp liegt unter `labor/avatar/` (§13).~~ → **seit 03.10.2026 gebaut** und im Client gesehen (`novaberg-avatar_b.md` §16, Featurezeile *Avatar-Panel*); der Prototyp unter `labor/avatar/` bleibt die Referenz.
 **Teile:** `novaberg-avatar_t.md` · `novaberg-avatar_b.md` · `novaberg-avatar_e.md` · `novaberg-avatar_m.md`
 **Grundlagen:** `novaberg-ei-plutchik.md`, `novaberg-ei-dual-emotion_k.md`
@@ -24,6 +24,8 @@
 | 10 | Testbarkeit | `novaberg-avatar_b.md` |
 | 14, 15 | Datenvertrag mit dem Server, Portierung nach GTK4 und Cairo | `novaberg-avatar_t.md` |
 | 16 | Bauteile für den Client (B1–B8) | `novaberg-avatar_b.md` |
+| 17 | Leerlauf: Zustände und Auslöser, Schichten, Formen, Antwort, Lidschlag, Raum, Datenvertrag, Abweichungen vom Generator | `novaberg-avatar_t.md` |
+| 18 | Bauteile für den Leerlauf (L0–L5) und Abnahme | `novaberg-avatar_b.md` |
 | 11, 12 | Offene Punkte, Annahmen | `novaberg-avatar_e.md` |
 | 13 (Einleitung), 13.1, 13.3, 13.9, 13.12–13.14 | Figur aus Vorlage: Pipeline, Alternative, bewegliches Kinn, Sprechschicht, Muskelkanäle, Einzellaute | `novaberg-avatar_t.md` |
 | 13.8, 13.10, 13.11 | Feinabstimmung des Prototyps nach Sichtprüfung | `novaberg-avatar_b.md` |
@@ -80,11 +82,12 @@ Analog zu „LLM als Sprach-Renderer“: Der Avatar entscheidet nichts.
 
 **Das Leitprinzip bleibt (§2):** Der Avatar entscheidet nichts — er bekommt je Zustand die Emotion und spielt aus einer Gruppe stimmiger Mimiken eine Abfolge. **Zufall, aber geformt:** Welche Mimiken zu einem Zustand und einer Emotion gehören, wie lange eine steht, welche auf welche folgen darf und wie lang die Pausen sind, ist festgelegt; welche davon gerade kommt, entscheidet der Zufall.
 
-**Grundlage:** die Recherche `labor/avatar/recherche_mimik_leerlauf.md` (03.10.2026: Verhaltensweisen beim Denken mit Belegstärke, Zeitwerte, Leerlauf virtueller Agenten, Zuordnung zum Novaberg-Raum, Entwurf eines Generators). **Was der Client heute bekommt:** `character_stage` während eines Turns (Beginn und Fortschritt des Nachdenkens, ohne Emotion als Feld) und die Antwort mit `nova_emotion`/`nova_arousal`; **nicht:** Pixies Phase und die Emotion ihres Auftrags. **Backlog:** `AVATAR-PIXIE-LEERLAUF` (`novaberg-backlog-antwortpfad.md`).
+**Grundlage:** die Recherche `labor/avatar/recherche_mimik_leerlauf.md` (03.10.2026: Verhaltensweisen beim Denken mit Belegstärke, Zeitwerte, Leerlauf virtueller Agenten, Zuordnung zum Novaberg-Raum, Entwurf eines Generators). ~~**Was der Client heute bekommt:** `character_stage` während eines Turns (Beginn und Fortschritt des Nachdenkens, ohne Emotion als Feld) und die Antwort mit `nova_emotion`/`nova_arousal`; **nicht:** Pixies Phase und die Emotion ihres Auftrags.~~ → **Am Code gelesen 03.10.2026:** `character_stage` taugt nicht als Auslöser — ohne Herkunft und zum Teil erst nach der Antwort; den Beginn eines Turns kennt nur das Senden im Client, Pixies Auftrag und den Beginn eines Impulses meldet der Server nicht (`novaberg-avatar_t.md` §17.2, §17.8). **Umsetzung:** ausgearbeitet in `novaberg-avatar_t.md` §17, Bauteile L0–L5 und Abnahme in `novaberg-avatar_b.md` §18. **Backlog:** `AVATAR-PIXIE-LEERLAUF` (`novaberg-backlog-antwortpfad.md`), `PIXIE-START-ALS-EREIGNIS` (`novaberg-backlog-hintergrund.md`).
 
 **Entschieden vom Meister, 03.10.2026:**
 
 - **Pixies Start als Ereignis, nur als Rückfall:** *„der Start Pixies mit Auftrag und Emotion kann als Ereignis an den Client geschickt werden, darf aber konvergentes Denken in Turns und die User-Interaktion nicht stören, sondern nur den Fallback setzen und — wenn Nova bereits im Leerlauf ist — auf die Änderung des Fallbacks hinweisen. Das müssen wir am Server ändern.“* → Backlog `PIXIE-START-ALS-EREIGNIS` (`novaberg-backlog-hintergrund.md`).
 - **Blinzeln bei Ärger wie bei Freude:** *„Die Blinzelrate: Ärger wie Freude. Ärger kann auch ruhig ablaufen und hat keine Beschleunigung der Frequenz automatisch im Beiklang.“* Die Emotion allein beschleunigt das Blinzeln nicht; die Recherche fand für Ärger ohnehin keine Messung.
+- **Der Generator wird so eingebaut:** *„Gut, das bauen wir so den Avatar ein. Wir haben Leerlauf Emotionen und Rauschen mit Pixie. Das Konzept sollte vollständig sein.“* → `novaberg-avatar_t.md` §17, Bauteile `novaberg-avatar_b.md` §18. Zurückgestellt: *„Den Punkt mit der hohen Valenz ohne Reserve prüfen wir später.“* → `AVATAR-VALENZ-RESERVE`.
 - **Das Nachdenken taktet länger als das Rauschen:** auf den Vorschlag, die Taktlänge im Nachdenken mit dem Faktor 1,3 statt 0,85 zu rechnen und dort am Blickwechsel seltener zu blinzeln (Wahrscheinlichkeit 0,3 statt 0,7): *„Ja, Faktor 1,3 wirkt gut, dann testen wir erneut“*. Anlass: Die Analyse eines Mitschnitts des Generators las Konvergenz an wenigen, langen Formen; mit den kurzen Formen blinzelte Nova im Nachdenken öfter als im Rauschen (im Labor gemessen, Freude 0,6 gegen Neugier 0,45: 25,5 gegen 21,8 je Minute, danach 16,2 gegen 22,6).
 

@@ -1,8 +1,8 @@
 # Novaberg — Emotions-Avatar: Bauplan und Umstellung
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 02.10.2026
-**Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Dazu die Bauteile für den Client mit `ZIEL` / `TEST` / `MESSUNG` (§16).
+**Stand:** 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
+**Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Dazu die Bauteile für den Client mit `ZIEL` / `TEST` / `MESSUNG` (§16) und die für den Leerlauf samt Abnahme (§18).
 
 ---
 
@@ -42,6 +42,44 @@ Jeder Baustein ist ohne GTK testbar. Tests, die ohne das jeweilige Verhalten rot
 **Stand 03.10.2026 — gebaut, nicht im Betrieb gemessen.** Unter `client/avatar/` stehen Ausdruck und Animator (B3), Sprechen (B4), Zeichnen von Strich, Augen, Brauen, Extras und Mund (B6), Grundbild mit Verzerrung und ganzes Bild (`compose.draw_face`, `layers.load_layers`), die Puppe (`puppet.py`) und das Panel `client/ui/panels/avatar_panel.py` mit Eintrag in Registry und Werkzeugleiste (B7, mit B8). Die Zeugen laufen ohne GTK und ohne `cairo` (189 mit B2), die Client-Suite auf dem Host mit `test_toolbar_panels.py` (219 grün). Referenzwerte: `client/tests/avatar_reference/expression.json` (45 Ziele) und `speech.json` (vier synthetische Sätze), erzeugt aus dem Prototyp mit `labor/avatar/referenz_ausdruck.js` und `referenz_sprechen.js`. **Gemessen** mit echtem Cairo auf dem Host: das ganze Bild in allen neun Sektoren gleich dem Prototyp (Aufnahmen des Prototyps ohne Fenster, Bild für Bild daneben); eine Antwort spricht lippensynchron nach Lautzeiten — Öffnung je Silbe, Lippenschluss bei m/b/p, danach der Ausdruck; ein Bild mit 600 px braucht in Ruhe ≈ 30 ms, beim Sprechen ≈ 40 ms (≈ 25–34 Bilder/s; der Prototyp im Browser 60). **B1 entfällt für v1:** Die Antwort an den Client trägt `nova_emotion` und `nova_arousal`; das Panel bildet den Sektor aus dem Namen. **B5:** Die Bilder als PNG (`labor/avatar/bilder_png.py`) liegen in `client/avatar/images/`, aber nicht im Repositorium (O13) — fehlen sie, zeigt das Panel eine Meldung. **B2 gebaut:** Eine Antwort aus eigenem Impuls (`reiz_herkunft: eigener_impuls`) erreicht nur das Avatar-Panel, mit ihrem Text unter `antwort` (`client/ui/turn_routing.py`, `broadcast_impulse`); die übrigen Panels laden bei einem Impuls nicht neu, eine Nachricht eines anderen Clients erreicht den Avatar nicht. Client-Suite auf dem Host danach `Ran 219 tests` / `OK`. **Offen:** der echte Turn und ein echter Impuls im sichtbaren Fenster; die Bildrate; ob `nova_emotion: ""` (ein Turn ohne Emotionsverlauf) neutral bedeutet oder ein Fehler ist — heute neutral mit Error-Zeile.
 
 **Nicht in v1:** Mischung des Verlaufs (O7), Konflikt (O8), Vorlauf des Mundes vor dem Ton (keine Tonausgabe), Ausspracheregeln aus einem Lexikon.
+
+## 18. Bauteile für den Leerlauf
+
+**Stand 03.10.2026.** Was gebaut wird, steht in `novaberg-avatar_t.md` §17; die Referenz ist der Generator im Labor (§17.1). Reihenfolge nach Abhängigkeit: L0 → L1 → L2 → L3 → L5; L4 kann neben L1 bis L3 laufen. Ein Bauteil, das den Client berührt, berichtet die Zeugen des Clients; L4 die Server-Suite.
+
+| Nr | Bauteil | ZIEL | TEST | MESSUNG | Prüftiefe |
+|---|---|---|---|---|---|
+| L0 | Referenz (Labor, vor dem Bau) | Der Generator folgt dem Ereignismodell des Clients (§17.9), und seine Verläufe liegen als Referenzwerte vor | `labor/avatar/leerlauf_pruefen.py` grün; die Referenz als erzeugte JSON-Datei `client/tests/avatar_reference/idle.json`: Ereignisfolgen (Turn, Antwort, Ende der Wiedergabe, Pixie-Auftrag) × Startwerte × Lagen, je Lauf Zustände, Formen mit Beginn, Dauer und Blickpunkt, Lidschläge und Ziele aller Kanäle zu festen Zeiten | — | tief — eine falsche Referenz macht jeden Zeugen falsch |
+| L1 | Leerlauf-Logik (`client/avatar/idle.py`, Katalog in einem eigenen Modul) | Für dieselben Ereignisse, Eingänge und denselben Startwert plant der Client dieselben Zustände, Formen, Dauern, Blickpunkte und Lidschläge wie der Generator | Charakterisierung gegen `idle.json` (Gleitkomma mit Toleranz); dazu die Prüfpunkte des Generators als Zeugen: kein F14 und kein offener Mund im Nachdenken, Einatmen 0,7–0,9 s, Nachklang endet an seiner Dauer, Antwort beginnt abgewandt und endet beim Betrachter, Lidschläge Nachdenken < Rauschen < Antwort bei gleicher Energie | — reine Logik, gemessen in L3 | tief — eine Abweichung vom Generator wäre still |
+| L2 | Puppe mit Leerlauf (`puppet.py`, `animator.py`) | Die Puppe nimmt in jedem Zustand die Ziele des Leerlaufs ein — Feder je Kanalgruppe, Lidschlag aus dem Leerlauf, in der Antwort die Sprechschicht darüber — und meldet das Ende der Wiedergabe | Ziele gegen `idle.json` zu festen Zeiten; Stetigkeit beim Zustandswechsel (kein Sprung in Lage oder Geschwindigkeit); 1 s in 10 und in 60 Schritten ergibt denselben Endzustand (§10); das feste Blinzeln der Puppe (`_blink`) schweigt | — | tief |
+| L3 | Panel und Ereignisse im Client | Sendet der Nutzer, denkt Nova nach; trifft die Antwort ein, atmet sie ein und spricht; danach klingt sie nach und fällt ins Rauschen; ein gescheiterter Turn führt ins Rauschen | Zeugen am Verteiler mit ersetztem `GLib.idle_add` (Muster `client/tests/test_stream_assignment.py`): Senden → `turn_beginnt` an Panels mit `REACTS_TO_IDLE`, an andere nicht; `turn_gescheitert` → Rauschen; Wächter nach 600 s | ein echter Turn mit wissenschaftlichem Thema im sichtbaren Fenster, als Mitschnitt; Abnahme nach §18.1 | schmal |
+| L4 | Pixie-Ereignisse (Server) | Beginnt oder beendet Pixie einen Auftrag, und beginnt oder endet der CharacterGraph für einen Impuls, erfährt es der Client — ohne Thema, ohne den Auftrag oder den Server anzuhalten | Zeugen mit ersetztem Broadcast: ein Auftrag → `pixie_auftrag` `beginn` und `ende` mit `spur`, `art`, `emotion`, `arousal` und **ohne** `thema`; ein leerer Heartbeat → kein Ereignis; eine periodische Aufgabe → kein Ereignis; ein Fehler beim Senden → Error-Zeile, der Auftrag läuft weiter; ein Impuls ohne Antwort → `impuls_denkt` `ende`; **ein Zeuge mit echtem Event-Loop**, dass das Senden aus dem Heartbeat nicht wartet (der ersetzte Broadcast sähe ein `broadcast_threadsafe` im Loop nicht); Gegenprobe | ein echter Pixie-Lauf: die Ereignisse im Log des Clients, ihre Felder ohne Inhalt | tief — ein Fehler im Hintergrund wäre still. **Eigener Arbeitsbaum** — der eingehängte Baum lädt die laufende Nova neu (`--reload`) |
+| L5 | Pixie im Client | Ein Auftrag Pixies färbt das Rauschen; im Turn ändert er nichts Sichtbares; ein Impuls lässt Nova nachdenken | Zeugen: `pixie_auftrag` im Rauschen → nächster Zyklus mit der neuen Emotion und `a` = 0,6; im Nachdenken → nur der Rückfall; `impuls_denkt` → Nachdenken, `ende` ohne Antwort → Rauschen | ein echter Pixie-Lauf bei offenem Panel: das Rauschen wechselt die Emotion | schmal |
+
+### 18.1 Abnahme
+
+Ein Turn gilt als abgenommen, wenn ein Betrachter ohne Bedienung die Phasen erkennt und die Prüfpunkte halten. Übernommen aus der Analyse eines Mitschnitts des Generators (03.10.2026).
+
+**Wahrnehmung — ohne Panelwerte:**
+
+- Nachdenken wird als Denken gelesen, nicht als Staunen oder Abwesenheit.
+- Der Wechsel Nachdenken → Antwort ist am Gesicht erkennbar, bevor der erste Laut kommt.
+- Die Emotion bleibt während des Sprechens sichtbar.
+- Der Nachklang wirkt als Nachhall, nicht als Abbruch.
+- Der Übergang ins Rauschen zeigt keinen Sprung.
+
+**Messung — in den Zeugen von L1, im Betrieb an einem Mitschnitt:**
+
+- Nachdenken: Blick abgewandt außer bei Denklast (F5, starr geradeaus) und nach einem Einfall (F9, Blick zurück); kein offener Mund (Öffnung über 4) länger als 1 s außer dem Einatmen; Einatmen 0,7–0,9 s.
+- Lidschläge: Nachdenken < Rauschen < Antwort bei gleicher Energie.
+- Nachklang endet an seiner geplanten Dauer.
+- Antwort über 5 s: zu Beginn abgewandt, die letzten 1,5 s beim Betrachter.
+
+**Fälle:** kurze Antwort mit positiver Emotion; lange Antwort über 15 s, neutral; negative Emotion mit hohem Arousal; neuer Turn während des Nachklangs; neuer Turn während des Nachdenkens; Pixie-Auftrag während eines Turns und im Rauschen.
+
+**Nicht in v1:** die Lage im Raum aus dem Server (§17.7); Linien-Zittern und Grafitstriche als sichtbares Rauschen (Skizze in `AVATAR-PIXIE-LEERLAUF`); die Valenz mit Reserve (`AVATAR-VALENZ-RESERVE`).
+
+---
 
 ## 13. Figur aus Vorlage (Prototyp, 29.09.2026)
 
