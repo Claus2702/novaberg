@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 66 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 67 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -906,3 +906,16 @@ Ein Termin aus ihrem Impuls ist von einem, um den gebeten wurde, nicht zu unters
 **Der Sonderfall daneben ist ein Defekt und kein Teil dieser Entscheidung:** Ein Impuls-Turn läuft heute in den Resume-Pfad eines wartenden Agenten und löscht dessen Rückfrage — `novaberg-bugs-archiv-antwortpfad.md` → `RESUME-VERBRAUCHT-DEN-IMPULS`. In fremdem Namen zu antworten ist etwas anderes, als selbst zu handeln.
 
 ---
+
+## Feature: PIXIE-START-ALS-EREIGNIS — der Start eines Auftrags Pixies geht mit Emotion an den Client (03.10.2026)
+
+**Kategorie:** [HIN] HINTERGRUND
+
+**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau am Server.
+
+Der Eigentümer, 03.10.2026: *„der Start Pixies mit Auftrag und Emotion kann als Ereignis an den Client geschickt werden, darf aber konvergentes Denken in Turns und die User-Interaktion nicht stören, sondern nur den Fallback setzen und — wenn Nova bereits im Leerlauf ist — auf die Änderung des Fallbacks hinweisen. Das müssen wir am Server ändern."*
+
+**Zu bauen:** Beginnt Pixie einen Auftrag, sendet der Server ein Ereignis an den Client mit dem Auftrag (Art, ohne Gesprächsinhalt) und seiner Emotion (Sektor/Name, Arousal). **Der Client setzt damit nur den Rückfall** — den Zustand, in den der Avatar nach einem Turn und dem Nachklang fällt (*Rauschen*, `novaberg-avatar_k.md` §3). Läuft gerade ein Turn (Nachdenken, Antwort), ändert das Ereignis nichts Sichtbares; ist Nova schon im Leerlauf, wechselt das Rauschen auf die neue Emotion. **Abgrenzung:** kein Eingriff in den Turn, die Zuordnung offener Nachrichten oder den Chat. **Vorher zu klären:** wo der Start eines Auftrags im Server stattfindet (Pixie, Queue), und dass das Ereignis keine Inhalte des Auftrags trägt, die öffentlich nicht hingehören. **Vor einem Bau am Server:** eigener Arbeitsbaum — der eingehängte Baum lädt die laufende Nova neu (`--reload`).
+
+**Zusammenhang:** `AVATAR-PIXIE-LEERLAUF` (`novaberg-backlog-antwortpfad.md`) · `novaberg-avatar_k.md` §3
+

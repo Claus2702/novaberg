@@ -1,14 +1,14 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 448 Eintraege mit Kennung — 368 offen, 77 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 449 Eintraege mit Kennung — 369 offen, 77 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 447 von 448 Eintraegen zugeordnet.
+**Kategorie:** 447 von 449 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 79 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 67 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 68 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 59 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
@@ -304,7 +304,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Ohne Kategorie — 1 Eintraege
+## Ohne Kategorie — 2 Eintraege
 
 **Die zweite Arbeitsliste.** Das Backlog wird nach Gegenstand geteilt, und die Zuordnung gehoert an den Eintrag, nicht an den Abschnitt: Die groessten Abschnitte gruppieren nach **Herkunft** — *aus der Klassifikation der Fundliste*, *Offene Epics* — und tragen Eintraege aus allen Gegenstaenden nebeneinander.
 
@@ -319,11 +319,12 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
+| 910 | Ueberschrift ## | `PIXIE-START-ALS-EREIGNIS` | Feature: PIXIE-START-ALS-EREIGNIS — der Start eines Auftrags |
 | 68 | Tabellenzeile | `FASZINATION-PRAEGUNG` | Block 30.08.2026 — aus dem Faszinationskonzept |
 
 ---
 
-## Alle 448 Eintraege
+## Alle 449 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -473,6 +474,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | HGR | 805 | offen | `PIXIE-TURN-ID-LEER` | [Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter Characte](novaberg-backlog-hintergrund.md) |
 | HGR | 836 | abgeschlossen | `QUEUE-VERFALL-KONZEPT` | [QUEUE-VERFALL-KONZEPT — der Stapel und die Queue bra](novaberg-backlog-hintergrund.md) |
 | HGR | 875 | offen | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | [IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angel](novaberg-backlog-hintergrund.md) |
+| — | 910 | offen | `PIXIE-START-ALS-EREIGNIS` | [Feature: PIXIE-START-ALS-EREIGNIS — der Start eines ](novaberg-backlog-hintergrund.md) |
 | CHA | 27 | abgeschlossen | `ZITAT-ENTWERTEN` | [Block 06.09.2026, abends — aus der Setzung zum Zitat](novaberg-backlog-charakter.md) |
 | CHA | 37 | abgeschlossen | `DECKUNG-BRAUCHT-EINEN-ANDEREN-ORT` | [Block 06.09.2026 — aus der Deckungsmessung am Profil](novaberg-backlog-charakter.md) |
 | CHA | 47 | abgeschlossen | `FALTUNG-OHNE-PERIODISCHEN-LAUF` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
