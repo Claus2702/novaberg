@@ -7,6 +7,7 @@ Module ausschließlich aus dieser Datei importieren.
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 
 # ─────────────────────────────────────────────
 # Server-Verbindung
@@ -116,6 +117,14 @@ RADAR_LABEL_COLOR:       tuple[float, float, float, float] = (0.7, 0.7, 0.7, 1.0
 # nicht das Grün der Speichenfläche: Er ist keine elfte Achse, sondern die
 # aus allen Achsen gerechnete Bilanz.
 RADAR_NABE_COLOR:        tuple[float, float, float, float] = (0.95, 0.65, 0.2, 1.0)
+
+# ─────────────────────────────────────────────
+# Avatar
+# ─────────────────────────────────────────────
+# Verzeichnis der Bildebenen (`base<i>.png`, `neck<i>.png`, `face<i>.png`), relativ
+# zum Paket bestimmt. Die Bilder liegen nicht im Repositorium; fehlen sie, zeigt das
+# Avatar-Panel eine Meldung statt des Gesichts.
+AVATAR_IMAGE_DIR: Path = Path(__file__).resolve().parent / "avatar" / "images"
 
 # ─────────────────────────────────────────────
 # Logging

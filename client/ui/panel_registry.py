@@ -188,6 +188,7 @@ def create_default_registry() -> PanelRegistry:
     registry = PanelRegistry()
 
     # Bereits implementierte Panels.
+    from ui.panels.avatar_panel import AvatarPanel
     from ui.panels.character_panel import CharacterPanel
     from ui.panels.emotions_panel import EmotionsPanel
     from ui.panels.goals_panel import GoalsPanel
@@ -211,6 +212,7 @@ def create_default_registry() -> PanelRegistry:
     registry.register(SachlagePanel)
     registry.register(NahtPanel)
     registry.register(SystemPanel)
+    registry.register(AvatarPanel)
 
     # Platzhalter — werden in späteren Prompts registriert:
     # ...

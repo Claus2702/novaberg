@@ -66,6 +66,7 @@ _TOOLBAR_PANELS: list[str] = [
     "🧭 Gesprächsvektor",
     "🫧 Gesprächskontext",
     "📏 Nahtspannen",
+    "🙂 Avatar",
     "Fakten",
     "System",
     "Pixie",
