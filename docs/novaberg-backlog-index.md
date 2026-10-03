@@ -1,16 +1,16 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 444 Eintraege mit Kennung — 364 offen, 77 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 448 Eintraege mit Kennung — 368 offen, 77 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 443 von 444 Eintraegen zugeordnet.
+**Kategorie:** 447 von 448 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 79 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 67 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 55 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 59 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 98 |
 
@@ -313,7 +313,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `GED` | GEDAECHTNIS | 80 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 73 |
-| `ANT` | ANTWORTPFAD | 55 |
+| `ANT` | ANTWORTPFAD | 59 |
 | `WIS` | WISSEN | 71 |
 | `BAU` | BAUART | 98 |
 
@@ -323,7 +323,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 444 Eintraege
+## Alle 448 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -602,6 +602,10 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1054 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
 | ANT | 1065 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
 | ANT | 1077 | offen | `ANGEBOT-ALS-ALLGEMEINER-ABLAUF` | [Feature: ANGEBOT-ALS-ALLGEMEINER-ABLAUF — Nova biete](novaberg-backlog-antwortpfad.md) |
+| ANT | 1089 | offen | `AVATAR-UNTERTITEL` | [Feature: AVATAR-UNTERTITEL — der gesprochene Text al](novaberg-backlog-antwortpfad.md) |
+| ANT | 1101 | offen | `AVATAR-PIXIE-LEERLAUF` | [Feature: AVATAR-PIXIE-LEERLAUF — der Avatar zeigt, d](novaberg-backlog-antwortpfad.md) |
+| ANT | 1113 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
+| ANT | 1123 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |

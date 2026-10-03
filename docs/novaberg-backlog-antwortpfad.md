@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Antwortpfad — Gespraechsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 46 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 50 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1085,3 +1085,48 @@ Der Eigentümer: *„Ich denke, dass das gleiche bei Terminen, bei Notizen, spä
 **Skizze, nicht entschieden:** Jeder Dienst beschreibt selbst, wie er angeboten wird — Verb, entscheidende Speiche, Boden (in der Art von `F-PLANNER-2`). Eine Recherche hinge dann eher an der Neugier als am Pflichtbewusstsein. **Offen bleibt die Absicht:** welche Speiche je Dienst.
 
 **Zusammenhang:** Scheibe 12 E (`novaberg-thinking-lage_k.md`) · `F-PLANNER-2`
+
+## Feature: AVATAR-UNTERTITEL — der gesprochene Text als Untertitel unter dem Avatar (03.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Wunsch des Eigentümers nach dem ersten Sehen des Avatars im Client.
+
+Der Eigentümer, 03.10.2026: *„Was jetzt noch fehlt ist nur die Textausgabe in Form von Untertitel unter dem Avatar, so dass man dort mitlesen kann. Der Text ist ja vorhanden, man müsste also nur die aktuellen Worte einblenden mit dem gerade gesprochenen Wort etwas hervorgehoben, zum Beispiel unterstrichen. Oft wird je nur ein Ausschnitt als Unteritel eingeblendet, da der Platz begrenzt ist."*
+
+**Was es dafür schon gibt:** Das Sprechen kennt je Zeitpunkt den Laut und seine Stelle im Text nicht mehr — `speech.text_to_phonemes` macht aus Wörtern Laute, die Zeitachse (`speechStart`-Abschnitte) trägt den Laut, nicht das Wort. **Zu bauen:** je Wort sein Zeitfenster in der Zeitachse (erster bis letzter Laut), daraus zu jeder Zeit das gesprochene Wort; im Panel unter dem Gesicht ein Ausschnitt — die Zeile um das aktuelle Wort, das Wort unterstrichen, weiterrückend wie ein Untertitel; nach dem Satz ausblenden. **Offen:** wie viele Wörter der Ausschnitt trägt (eine Zeile, zwei), ob Satzzeichen eine Zeile beenden; Text in Sternchen (O12).
+
+**Zusammenhang:** `novaberg-avatar_b.md` §16 · `client/avatar/speech.py`, `client/ui/panels/avatar_panel.py`
+
+## Feature: AVATAR-PIXIE-LEERLAUF — der Avatar zeigt, dass Pixie im Leerlauf rechnet (03.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Wunsch des Eigentümers; ein Beispiel im Labor liegt vor (`labor/avatar/pixie_rauschen.html`).
+
+Der Eigentümer, 03.10.2026: *„Ebenfalls möchte ich die Aktivitäten von Pixie im Leerlauf, wenn Nova selbst gerade nichts tut, visualisieren. Pixie rechnet gerade, dann sollte der Avatar das wiedergeben. Pixies Emotion. verschiedene Ausdrücke von Nachdenken im Gesicht."*
+
+**Skizze aus dem Labor, nicht entschieden:** Im Leerlauf trägt das Gesicht Pixies Emotion schwach (geringes Arousal) und darüber eine Schicht *Nachdenken*: Blick, Brauen und Mundwinkel bewegen sich in glattem Rauschen, dessen Stärke Pixies Aktivität folgt; Ausdrücke des Nachdenkens als Formen (Grübeln, Erinnern, Abwägen, Einfall); dazu wahlweise das Linien-Zittern stärker und feine Grafitstriche an der Schläfe als sichtbares „Rauschen". **Offen:** woher der Client Pixies Aktivität und Emotion bekommt (heute meldet die Statuszeile nur `momentum`); wann Leerlauf beginnt und endet; ob eine Antwort Novas das Nachdenken sofort ablöst.
+
+**Zusammenhang:** `novaberg-avatar_b.md` §16 · Pixie (`novaberg-featureliste.md` §8)
+
+## Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — keine Preiswarnung für ein Modell, das gerade nicht läuft (03.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Wunsch des Eigentümers.
+
+Der Eigentümer, 03.10.2026: *„Halte bitte fest, dass wir gerade mit dem lokalen Modell arbeiten, daher ist eine Information zu einem Preisanstieg eines nicht aktiven Models über Open Router nicht interessant, die Anzeige kann ausgelassen werden."* **Stand am 03.10.2026:** Nova arbeitet mit dem lokalen Modell; die Statuszeile zeigt Kosten von 0. Die Warnung kommt vom Server als `preis_warnung` in der `character_response` (`server/services/event_consumer.py`, `server/api/drive.py`) und öffnet im Client ein Fenster (`client/ui/main_window.py`, `_preis_warnung_zeigen`). **Zu bauen:** eine Preiswarnung nur für Modelle, die gerade eine Verbindung tragen; für ein nicht aktives Modell keine Anzeige. **Offen:** ob der Server sie gar nicht erst meldet (dann sieht auch das Protokoll nichts) oder der Client sie nur nicht anzeigt; ob sie beim Umschalten auf das Modell nachgeholt wird.
+
+**Zusammenhang:** `CLIENT-STATUSZEILE-MODELLVERBINDUNG` · System-Panel + StatusBar (`novaberg-featureliste.md` §11)
+
+## Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die Statuszeile nennt die aktive Modellverbindung (03.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Wunsch des Eigentümers.
+
+Der Eigentümer, 03.10.2026: *„In der Statuszeile wäre eine Schlagwort mit dem Namen der aktuellen Modellverbindung interessant, damit ich nachvollziehen kann, ob wir eine Verbindung zu einem Anbieter oder zum lokalen Modell haben."* Heute zeigt die Statuszeile Verbindung · Kosten · Pixie (`set_kosten`, seit 06.09.2026). **Zu bauen:** ein Schlagwort mit dem Namen der Modellverbindung des letzten Turns (etwa *lokal* oder der Anbieter), aus einem Feld der `character_response`, das der Server aus der tatsächlich benutzten Verbindung setzt — nicht aus der Konfiguration, sonst zeigte es eine Absicht statt des Zustands. **Offen:** ob je Knoten verschiedene Verbindungen laufen (dann: die der Antwort, oder eine Mischung), und was bei einem Rückfall auf eine andere Verbindung steht.
+
+**Zusammenhang:** `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` · `novaberg-featureliste.md` §11, §12
+
