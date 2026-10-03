@@ -511,7 +511,9 @@ class IdleFrame:
 
     `targets` sind die Ziele aller Kanäle, `lid_open` die Öffnung des Lids (1 offen),
     `face_omega` ω der Feder des Gesichts, `amplitude` die Amplitude k der Formen,
-    `activity` die Aktivität a.
+    `activity` die Aktivität a. `answer_at_ms` ist im Zustand Antwort die Zeit
+    (`at_ms`) der Antwort, die gesprochen wird, sonst None — daran erkennt der
+    Aufrufer, welche Antwort beginnt.
     """
 
     state: IdleState
@@ -521,6 +523,7 @@ class IdleFrame:
     face_omega: float
     amplitude: float
     activity: float
+    answer_at_ms: float | None
 
 
 @dataclass
@@ -618,11 +621,12 @@ class _Plan:
 
 @dataclass(frozen=True)
 class _Answer:
-    """Eine Antwort, die wartet oder gesprochen wird."""
+    """Eine Antwort, die wartet oder gesprochen wird; `at_ms` die Zeit ihres Eintreffens."""
 
     sector: int
     arousal: float
     playback_ms: float
+    at_ms: float
 
 
 @dataclass
@@ -1498,6 +1502,7 @@ class IdleLogic:
         self._before_last: str | None = None
         self._last_drawn: frozenset[str] = frozenset()
         self._playback_ms = 0.0
+        self._answer_at_ms: float | None = None
         self._lid = _Lid()
         self._lid_open = 1.0
         self._face_omega = 5.0
@@ -1567,12 +1572,16 @@ class IdleLogic:
         self._blinks(now, inputs, inst)
         targets = self._targets(now, inputs, inst)
         self._trace_mouth(inputs, targets)
+        answering = inputs.state is IdleState.ANSWER
         frame = IdleFrame(inputs.state, inst.form_id, targets, self._lid_open, self._face_omega,
-                          inputs.amplitude, inputs.activity)
+                          inputs.amplitude, inputs.activity,
+                          self._answer_at_ms if answering else None)
 
         # ── Ausgabe-Verifikation ──
         if not 0.0 <= frame.lid_open <= 1.0:
             raise RuntimeError(f"step: Lid {frame.lid_open} außerhalb 0..1")
+        if answering and frame.answer_at_ms is None:
+            raise RuntimeError("step: Antwort ohne die Zeit der gesprochenen Antwort")
         return frame
 
     # ------------------------------------------------------------ Ereignisse
@@ -1689,7 +1698,7 @@ class IdleLogic:
 
         # ── Verarbeitung ──
         answer = _Answer(_sector_of(event.emotion), _arousal_of(event.arousal, "Antwort"),
-                         float(event.playback_ms))
+                         float(event.playback_ms), float(event.at_ms))
         if self._situation.state is IdleState.ANSWER:
             self._begin_answer(now, answer, "eine neue Antwort löst die laufende ab")
         else:
@@ -1875,6 +1884,7 @@ class IdleLogic:
         # ── Verarbeitung ──
         self._nova.sector, self._nova.arousal = answer.sector, answer.arousal
         self._playback_ms = answer.playback_ms
+        self._answer_at_ms = answer.at_ms
         self._set_state(IdleState.ANSWER, now, reason, None)
 
         # ── Ausgabe-Verifikation ──

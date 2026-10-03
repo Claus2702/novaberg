@@ -15,6 +15,7 @@ von einer einzigen Uhr für Animation und Sprechen.
 """
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, fields, replace
 
 from avatar.face import FaceState
@@ -107,17 +108,49 @@ def spring_step(
     """Ein exakter Schritt der kritisch gedämpften Feder über `dt` Sekunden, je Kanal.
 
     Mit `d = x - ziel` und `e = exp(-omega * dt)`: `tmp = (v + omega * d) * dt`,
-    `x_neu = ziel + (d + tmp) * e`, `v_neu = (v - omega * tmp) * e`.
+    `x_neu = ziel + (d + tmp) * e`, `v_neu = (v - omega * tmp) * e`. Alle Kanäle
+    mit demselben `omega` — `spring_step_each` mit einem ω für jeden.
     """
     # ── Eingabe-Validierung ──
     _check_omega(omega)
-    if not math.isfinite(dt) or dt < 0:
-        raise ValueError(f"spring_step: Zeitschritt {dt!r} muss endlich und >= 0 sein")
 
     # ── Verarbeitung ──
-    decay = math.exp(-omega * dt)
+    result = spring_step_each(current, velocity, target, dict.fromkeys(_CHANNELS, omega), dt)
+
+    # ── Ausgabe-Verifikation ──
+    _check_face(result[0], "spring_step: Position")
+    return result
+
+
+def spring_step_each(
+    current: FaceState, velocity: FaceState, target: FaceState,
+    omegas: Mapping[str, float], dt: float,
+) -> tuple[FaceState, FaceState]:
+    """Ein exakter Schritt der kritisch gedämpften Feder über `dt` Sekunden, ω je Kanal.
+
+    Dieselbe Feder wie `spring_step`, aber jeder Kanal mit seinem eigenen ω aus
+    `omegas` — so folgt der Blick schneller als das Gesicht. Exakt gelöst: Eine
+    Spanne in zehn oder in sechzig Schritten ergibt bei festem Ziel denselben Stand.
+    Vorbedingung: `omegas` nennt genau die Kanäle von `FaceState`, jedes ω endlich
+    und positiv; `dt` endlich und >= 0; die Zustände endlich.
+    Nachbedingung: Position und Geschwindigkeit endlich.
+    Fehlerfälle: TypeError oder ValueError bei verletzter Vorbedingung.
+    """
+    # ── Eingabe-Validierung ──
+    if not isinstance(omegas, Mapping) or set(omegas) != set(_CHANNELS):
+        raise ValueError("spring_step_each: omegas nennt nicht genau die Kanäle des Gesichts")
+    for omega in omegas.values():
+        _check_omega(omega)
+    if not math.isfinite(dt) or dt < 0:
+        raise ValueError(f"spring_step: Zeitschritt {dt!r} muss endlich und >= 0 sein")
+    for face, label in ((current, "Position"), (velocity, "Geschwindigkeit"), (target, "Ziel")):
+        _check_face(face, f"spring_step_each: {label}")
+
+    # ── Verarbeitung ──
     positions, velocities = {}, {}
     for name in _CHANNELS:
+        omega = omegas[name]
+        decay = math.exp(-omega * dt)
         goal = getattr(target, name)
         offset = getattr(current, name) - goal
         speed = getattr(velocity, name)
