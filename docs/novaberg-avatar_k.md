@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar (Konzept)
 
 **Absicht:** Ein 2D-Avatar im GTK4-Client zeigt Novas eigenen Emotionszustand als lebende Bleistiftskizze; er stellt dar, was die Emotionsberechnung liefert, und entscheidet selbst nichts.
-**Stand:** 03.10.2026 (§3 neu: die Denkweisen im Leerlauf; dazu entschieden: das Nachdenken taktet länger; ausgearbeitet in `_t` §17, Bauteile in `_b` §18). Davor 02.10.2026
+**Stand:** 03.10.2026, 19:19 UTC (§3: die Arbeitszyklen gehen als Ereignisse an den Client, auch für die Statuszeile). Davor 03.10.2026 (§3 neu: die Denkweisen im Leerlauf; dazu entschieden: das Nachdenken taktet länger; ausgearbeitet in `_t` §17, Bauteile in `_b` §18). Davor 02.10.2026
 **Umsetzung:** ~~keine Featurezeile — sie entsteht, wenn Novaberg das Feature bekommt (Entscheidung vom 02.10.2026, `novaberg-avatar_e.md`). Im Client ist nichts gebaut; ein HTML-Prototyp liegt unter `labor/avatar/` (§13).~~ → **seit 03.10.2026 gebaut** und im Client gesehen (`novaberg-avatar_b.md` §16, Featurezeile *Avatar-Panel*); der Prototyp unter `labor/avatar/` bleibt die Referenz.
 **Teile:** `novaberg-avatar_t.md` · `novaberg-avatar_b.md` · `novaberg-avatar_e.md` · `novaberg-avatar_m.md`
 **Grundlagen:** `novaberg-ei-plutchik.md`, `novaberg-ei-dual-emotion_k.md`
@@ -86,6 +86,7 @@ Analog zu „LLM als Sprach-Renderer“: Der Avatar entscheidet nichts.
 
 **Entschieden vom Meister, 03.10.2026:**
 
+- **Die Arbeitszyklen gehen als Ereignisse an den Client — auch für die Statuszeile:** auf die Feststellung, dass es für Pixies Aufträge und für einen Impuls im CharacterGraph weder Start noch Ende als Ereignis gibt: *„Wir müssen natürlich die Arbeitszyklen mit Events an den Client geben. Auch schon deshalb, weil in der Statuszeile die Information erscheinen sollte. Dort haben wir bereits einen Eintrag Pixie: idle“*. Daraus folgt: Die Ereignisse aus `novaberg-avatar_t.md` §17.8 (`pixie_auftrag`, `impuls_denkt`) haben einen zweiten Empfänger neben dem Avatar — die Statuszeile des Clients (`client/ui/status_bar.py`). Heute ist ihr *„Pixie: idle“* der Startwert des Labels; überschrieben wird er nur von einem `momentum` aus den Metadaten eines Turns (`client/ui/main_window.py`, gelesen 03.10.2026), Pixies Arbeit erreicht ihn nie. → `novaberg-avatar_b.md` §18, L4 und L5.
 - **Pixies Start als Ereignis, nur als Rückfall:** *„der Start Pixies mit Auftrag und Emotion kann als Ereignis an den Client geschickt werden, darf aber konvergentes Denken in Turns und die User-Interaktion nicht stören, sondern nur den Fallback setzen und — wenn Nova bereits im Leerlauf ist — auf die Änderung des Fallbacks hinweisen. Das müssen wir am Server ändern.“* → Backlog `PIXIE-START-ALS-EREIGNIS` (`novaberg-backlog-hintergrund.md`).
 - **Blinzeln bei Ärger wie bei Freude:** *„Die Blinzelrate: Ärger wie Freude. Ärger kann auch ruhig ablaufen und hat keine Beschleunigung der Frequenz automatisch im Beiklang.“* Die Emotion allein beschleunigt das Blinzeln nicht; die Recherche fand für Ärger ohnehin keine Messung.
 - **Der Generator wird so eingebaut:** *„Gut, das bauen wir so den Avatar ein. Wir haben Leerlauf Emotionen und Rauschen mit Pixie. Das Konzept sollte vollständig sein.“* → `novaberg-avatar_t.md` §17, Bauteile `novaberg-avatar_b.md` §18. Zurückgestellt: *„Den Punkt mit der hohen Valenz ohne Reserve prüfen wir später.“* → `AVATAR-VALENZ-RESERVE`.
