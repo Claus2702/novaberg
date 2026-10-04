@@ -1144,6 +1144,20 @@ Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße i
 
 **Zusammenhang:** `novaberg-avatar_b.md` §18 (L6) · `novaberg-avatar_k.md` §3
 
+## Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet die Pupille (04.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau in Referenz und Client.
+
+Der Eigentümer, 04.10.2026, auf den Hinweis, dass Angst und Überraschung die Pupille heute verengen (Konvention des Zeichentricks) und dass Erregung sie beim Menschen weitet: *„Erregung soll sie weiten, ja.“*
+
+**Heute:** `pupil_size` (1 = neutral) kommt aus der Emotion (`client/avatar/expression.py`: Angst 0,72, Überraschung 0,8, Neugier 1,1), aus den Formen des Leerlaufs (F5 Denklast +0,12, F3 +0,05, F4 −0,05) und aus der Denklast (+0,06 × Aktivität), begrenzt auf 0,6–1,3 (`client/avatar/idle.py`); die Feder folgt mit ω 5. Das Arousal wirkt nicht unmittelbar.
+
+**Zu bauen:** Das Arousal weitet die Pupille. Angst und Überraschung verengen sie nicht mehr. Wie stark sie weitet, legt die Referenz fest, nach dem Grundsatz in `novaberg-avatar_k.md` §3: klein und lebendig, nicht deutlich. Zuerst im Generator, dann in Client und Zeugen; die Charakterisierung von L1 folgt der Referenz.
+
+**Zusammenhang:** `novaberg-avatar_k.md` §3 · `novaberg-avatar_t.md` §17 · `AVATAR-PIXIE-LEERLAUF`
+
 ## Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — keine Preiswarnung für ein Modell, das gerade nicht läuft (03.10.2026)
 
 **Kategorie:** [ANT] ANTWORTPFAD
