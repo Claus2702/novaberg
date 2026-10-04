@@ -101,7 +101,7 @@ TRANSITIONS = frozenset({
 
 def _turn(emotion: object = "freude", arousal: object = 0.5, text: object = "Hallo") -> dict:
     """Eine Antwort, wie sie beim Client ankommt."""
-    return {"nova_emotion": emotion, "nova_arousal": arousal, "antwort": text}
+    return {"emotion": emotion, "arousal": arousal, "antwort": text}
 
 
 def _channels(face: FaceState) -> tuple[float, ...]:
@@ -440,7 +440,7 @@ class TurnFieldsTest(unittest.TestCase):
 
     def test_missing_emotion_gives_neutral_with_error(self) -> None:
         turn = _turn()
-        del turn["nova_emotion"]
+        del turn["emotion"]
         with self.assertLogs(LOGGER, level="ERROR"):
             utterance = utterance_from_turn(turn)
         self.assertIsNone(utterance.sector)
@@ -448,7 +448,40 @@ class TurnFieldsTest(unittest.TestCase):
 
     def test_missing_arousal_gives_neutral_with_error(self) -> None:
         turn = _turn()
-        del turn["nova_arousal"]
+        del turn["arousal"]
+        with self.assertLogs(LOGGER, level="ERROR"):
+            utterance = utterance_from_turn(turn)
+        self.assertEqual((utterance.sector, utterance.arousal), (None, 0.0))
+
+    def test_utterance_shows_the_perception_not_the_mood_at_turn_start(self) -> None:
+        """Der Zeuge des Ziels: beide Paare mit verschiedenen Werten, gelesen wird `emotion`."""
+        turn = _turn("freude", 0.65)
+        turn.update({"nova_emotion": "traurigkeit", "nova_arousal": 0.2})
+        with self.assertNoLogs(LOGGER, level="WARNING"):
+            utterance = utterance_from_turn(turn)
+        self.assertEqual(utterance, Utterance(PROTOTYPE_NAMES["freude"], 0.65, "Hallo"))
+        self.assertNotEqual(PROTOTYPE_NAMES["freude"], PROTOTYPE_NAMES["traurigkeit"])
+
+    def test_turn_with_only_the_mood_at_turn_start_gives_neutral_with_error(self) -> None:
+        """Kein Rückfall: `nova_emotion`/`nova_arousal` allein zeigen kein Gesicht."""
+        turn = {"nova_emotion": "freude", "nova_arousal": 0.65, "antwort": "Hallo"}
+        with self.assertLogs(LOGGER, level="ERROR"):
+            utterance = utterance_from_turn(turn)
+        self.assertEqual(utterance, Utterance(None, 0.0, "Hallo"))
+
+    def test_missing_emotion_does_not_fall_back_to_the_mood_at_turn_start(self) -> None:
+        turn = _turn("freude", 0.65)
+        turn.update({"nova_emotion": "traurigkeit", "nova_arousal": 0.2})
+        del turn["emotion"]
+        with self.assertLogs(LOGGER, level="ERROR"):
+            utterance = utterance_from_turn(turn)
+        self.assertEqual((utterance.sector, utterance.arousal), (None, 0.0))
+
+    def test_missing_arousal_does_not_fall_back_to_the_mood_at_turn_start(self) -> None:
+        """Kein Rückfall nur beim Arousal: `nova_arousal` springt nicht ein."""
+        turn = _turn("freude", 0.65)
+        turn.update({"nova_emotion": "traurigkeit", "nova_arousal": 0.2})
+        del turn["arousal"]
         with self.assertLogs(LOGGER, level="ERROR"):
             utterance = utterance_from_turn(turn)
         self.assertEqual((utterance.sector, utterance.arousal), (None, 0.0))

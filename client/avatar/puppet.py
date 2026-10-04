@@ -19,7 +19,10 @@ Startwert kommt aus dem `random.Random`, das der Aufrufer übergibt.
 
 `utterance_from_turn` setzt die Antwort an den Client in eine `Utterance` um:
 der Name der Emotion wird zum Sektor über die Namen der Schlüsselbilder, das
-Arousal wird begrenzt, der Text bleibt, wie er ist.
+Arousal wird begrenzt, der Text bleibt, wie er ist. Gelesen werden `emotion` und
+`arousal`: die Wahrnehmung der Antwort selbst, nicht `nova_emotion` und `nova_arousal`,
+Novas Stimmung zu Beginn des Turns. Fehlen die beiden, gibt es keinen Rückfall auf
+diese.
 """
 
 import logging
@@ -469,10 +472,10 @@ def _sector_from_name(name: object) -> int | None:
     """
     # ── Eingabe-Validierung ──
     if not isinstance(name, str):
-        logger.error(f"Avatar: nova_emotion {name!r} ist kein Name, zeige Neutral")
+        logger.error(f"Avatar: emotion {name!r} ist kein Name, zeige Neutral")
         return None
     if name not in SECTOR_BY_NAME:
-        logger.error(f"Avatar: nova_emotion '{name}' unbekannt, zeige Neutral")
+        logger.error(f"Avatar: emotion '{name}' unbekannt, zeige Neutral")
         return None
 
     # ── Verarbeitung ──
@@ -495,13 +498,13 @@ def _arousal_from_value(value: object) -> float | None:
     # ── Eingabe-Validierung ──
     is_number = isinstance(value, int | float) and not isinstance(value, bool)
     if not is_number or not math.isfinite(value):
-        logger.error(f"Avatar: nova_arousal {value!r} keine endliche Zahl, zeige Neutral")
+        logger.error(f"Avatar: arousal {value!r} keine endliche Zahl, zeige Neutral")
         return None
 
     # ── Verarbeitung ──
     clamped = max(0.0, min(1.0, float(value)))
     if clamped != value:
-        logger.warning(f"Avatar: nova_arousal {value!r} außerhalb 0..1, begrenzt auf {clamped}")
+        logger.warning(f"Avatar: arousal {value!r} außerhalb 0..1, begrenzt auf {clamped}")
 
     # ── Ausgabe-Verifikation ──
     if not 0.0 <= clamped <= 1.0:
@@ -512,20 +515,22 @@ def _arousal_from_value(value: object) -> float | None:
 def utterance_from_turn(turn_data: Mapping) -> Utterance:
     """Die Äußerung aus einer Antwort an den Client.
 
-    `nova_emotion` wird über `SECTOR_BY_NAME` zum Sektor, `nova_arousal` auf 0..1
-    begrenzt, `antwort` ist der Text.
+    `emotion` (die Wahrnehmung der Antwort selbst) wird über `SECTOR_BY_NAME` zum
+    Sektor, `arousal` auf 0..1 begrenzt, `antwort` ist der Text. `nova_emotion` und
+    `nova_arousal` (Novas Stimmung zu Beginn des Turns) werden nie gelesen.
     Vorbedingung: keine — die Antwort kommt vom Server und wird ganz geprüft.
     Nachbedingung: Sektor None oder 1–8, Arousal in 0..1, Text str.
-    Fehlerfälle (je eine Error-Zeile, kein Absturz): Fehlen `nova_emotion` oder
-    `nova_arousal`, ist der Name unbekannt oder das Arousal keine Zahl, zeigt das
-    Gesicht Neutral; fehlt `antwort` oder ist sie kein Text, bleibt der Mund still.
+    Fehlerfälle (je eine Error-Zeile, kein Absturz): Fehlen `emotion` oder
+    `arousal`, ist der Name unbekannt oder das Arousal keine Zahl, zeigt das
+    Gesicht Neutral, auch wenn nur `nova_emotion`/`nova_arousal` dastehen; fehlt
+    `antwort` oder ist sie kein Text, bleibt der Mund still.
     Ist die Antwort kein Mapping, ist alles neutral und still.
     """
     # ── Eingabe-Validierung ──
     if not isinstance(turn_data, Mapping):
         logger.error(f"Avatar: Antwort ist kein Mapping: {type(turn_data).__name__}")
         return NEUTRAL_UTTERANCE
-    missing = [key for key in ("nova_emotion", "nova_arousal") if key not in turn_data]
+    missing = [key for key in ("emotion", "arousal") if key not in turn_data]
     if missing:
         logger.error(f"Avatar: Antwort ohne {missing}, zeige Neutral")
 
@@ -533,8 +538,8 @@ def utterance_from_turn(turn_data: Mapping) -> Utterance:
     sector: int | None = None
     arousal = 0.0
     if not missing:
-        sector = _sector_from_name(turn_data["nova_emotion"])
-        checked = _arousal_from_value(turn_data["nova_arousal"])
+        sector = _sector_from_name(turn_data["emotion"])
+        checked = _arousal_from_value(turn_data["arousal"])
         if checked is None:
             sector = None
         else:
