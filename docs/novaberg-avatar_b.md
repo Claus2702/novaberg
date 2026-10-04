@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar: Bauplan und Umstellung
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 04.10.2026, 20:31 UTC (§18: L0′c gebaut). Davor 04.10.2026, 19:45 UTC (§18: L0′b gebaut). Davor 04.10.2026, 17:30 UTC (§18: L0′a gebaut). Davor 04.10.2026, 15:35 UTC (§18: L4 gebaut). Davor 04.10.2026, 14:32 UTC (§16: die Wahrnehmung der Antwort im Betrieb gemessen). Davor 04.10.2026, 14:16 UTC (§16: das Gesicht zeigt beim Sprechen die Wahrnehmung der Antwort). Davor 04.10.2026, 13:41 UTC (§18: der Umbruch der Phasenanzeige behoben). Davor 04.10.2026, 13:39 UTC (§18: L6 im Betrieb gemessen). Davor 04.10.2026, 12:52 UTC (§18: L3 im Betrieb gemessen; L6 gebaut; die Reihenfolge L6 → Generator → L4/L5). Davor 04.10.2026, 11:28 UTC (§18: L3 gebaut). Davor 04.10.2026, 10:30 UTC (§18: L3 kennt alle vier Ereignisse und baut den Weg aus `_t` §17.10; L4 erst nach L3 und mit Thema; L5 mit Arbeitszustand, Art der Aufgabe und Tooltip). Davor 03.10.2026, 20:48 UTC (§18: die Statuszeile zeigt jeden Arbeitszustand, L5). Davor 03.10.2026, 19:19 UTC (§18: L5 zeigt Pixies Arbeitszyklus auch in der Statuszeile). Davor 03.10.2026, 19:07 UTC (§18: L2 gebaut). Davor 03.10.2026, 17:09 UTC (§18: L1 gebaut). Davor 03.10.2026, 13:40 UTC (§18: L0 gebaut). Davor 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
+**Stand:** 04.10.2026, 21:05 UTC (§18.1: die Abnahme in der Fassung der nachgestellten Referenz — Nachdenken, Antwort, Lidschläge, Kopf, Pupille, Fall *langes Nachdenken*). Davor 04.10.2026, 20:31 UTC (§18: L0′c gebaut). Davor 04.10.2026, 19:45 UTC (§18: L0′b gebaut). Davor 04.10.2026, 17:30 UTC (§18: L0′a gebaut). Davor 04.10.2026, 15:35 UTC (§18: L4 gebaut). Davor 04.10.2026, 14:32 UTC (§16: die Wahrnehmung der Antwort im Betrieb gemessen). Davor 04.10.2026, 14:16 UTC (§16: das Gesicht zeigt beim Sprechen die Wahrnehmung der Antwort). Davor 04.10.2026, 13:41 UTC (§18: der Umbruch der Phasenanzeige behoben). Davor 04.10.2026, 13:39 UTC (§18: L6 im Betrieb gemessen). Davor 04.10.2026, 12:52 UTC (§18: L3 im Betrieb gemessen; L6 gebaut; die Reihenfolge L6 → Generator → L4/L5). Davor 04.10.2026, 11:28 UTC (§18: L3 gebaut). Davor 04.10.2026, 10:30 UTC (§18: L3 kennt alle vier Ereignisse und baut den Weg aus `_t` §17.10; L4 erst nach L3 und mit Thema; L5 mit Arbeitszustand, Art der Aufgabe und Tooltip). Davor 03.10.2026, 20:48 UTC (§18: die Statuszeile zeigt jeden Arbeitszustand, L5). Davor 03.10.2026, 19:19 UTC (§18: L5 zeigt Pixies Arbeitszyklus auch in der Statuszeile). Davor 03.10.2026, 19:07 UTC (§18: L2 gebaut). Davor 03.10.2026, 17:09 UTC (§18: L1 gebaut). Davor 03.10.2026, 13:40 UTC (§18: L0 gebaut). Davor 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
 **Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Dazu die Bauteile für den Client mit `ZIEL` / `TEST` / `MESSUNG` (§16) und die für den Leerlauf samt Abnahme (§18).
 
 ---
@@ -148,15 +148,19 @@ Ein Turn gilt als abgenommen, wenn ein Betrachter ohne Bedienung die Phasen erke
 - Die Emotion bleibt während des Sprechens sichtbar.
 - Der Nachklang wirkt als Nachhall, nicht als Abbruch.
 - Der Übergang ins Rauschen zeigt keinen Sprung.
+- **Seit 04.10.2026 (L0′c):** Im Nachdenken wendet Nova den Kopf mit dem Blick etwa 10° zur Seite und mit dem Blick zum Betrachter zurück, sonst bewegt er sich kaum. Der Hals verdrillt sich, die Schultern stehen, keine hellen Nähte.
 
-**Messung — in den Zeugen von L1, im Betrieb an einem Mitschnitt:**
+**Messung — in den Zeugen von L1, im Betrieb an einem Mitschnitt** (seit 04.10.2026 in der Fassung der nachgestellten Referenz L0′a–L0′c, `labor/avatar/leerlauf_pruefen.py`):
 
-- Nachdenken: Blick abgewandt außer bei Denklast (F5, starr geradeaus) und nach einem Einfall (F9, Blick zurück); kein offener Mund (Öffnung über 4) länger als 1 s außer dem Einatmen; Einatmen 0,7–0,9 s.
-- Lidschläge: Nachdenken < Rauschen < Antwort bei gleicher Energie.
+- Nachdenken: Blick abgewandt ~~außer bei Denklast (F5, starr geradeaus) und nach einem Einfall (F9, Blick zurück)~~ → **außer nach einem Einfall (F9, ab 1 s) und einem seltenen kurzen Blick zum Betrachter (F16); im langen Nachdenken (120 s) höchstens 12 % der Zeit beim Betrachter**, über alle Läufe der Lage; kein offener Mund (Öffnung über 4) länger als 1 s außer dem Einatmen; Einatmen 0,7–0,9 s, **Mund 7–11**.
+- **Antwort:** Die Basis gleitet über A0 (bei A0 ab 1,45 s in 500 ms höchstens 30 % des Wegs); die Öffnung aus dem Leerlauf ≤ 2; in Antworten über 10 s steht kein Ziel der Brauen und Mundwinkel 5 s still.
+- Lidschläge: Nachdenken < Rauschen < Antwort bei gleicher Energie; **seit 04.10.2026 dazu Nachklang < Antwort, bei gleicher Energie von Nova und Pixie Nachklang ≤ Rauschen + 10 %**. Keine Doppelschläge, keine Paare im Abstand von genau 0,8 s (höchstens 1 % der Poisson-Lidschläge bei 800–820 ms); am Ende der Antwort ein Lidschlag, danach eine kurze Ruhe — in −0,4 … +4 s um das Ende höchstens in 2 % der Läufe einer Lage 4 und nie 5; beim Einfall genau einer; das Auge ist in jedem Lidschlag mindestens 40 ms ganz geschlossen; im langen Nachdenken liegt der Median der längsten Pause bei höchstens 10 s.
+- **Kopf:** Ziel in ±15°; ein Kopfziel gilt 200 ms (zurück 150 ms) nach seinem Blick; am Ende einer Antwort ab 5 s höchstens 0,5° von der Mitte; mit und ohne Kopf derselbe Plan.
+- **Pupille:** Erregung weitet sie um 0,12·E; mit Angst und Überraschung 0,9 ist sie im Nachdenken und in der Antwort nie unter 1.
 - Nachklang endet an seiner geplanten Dauer.
 - Antwort über 5 s: zu Beginn abgewandt, die letzten 1,5 s beim Betrachter.
 
-**Fälle:** kurze Antwort mit positiver Emotion; lange Antwort über 15 s, neutral; negative Emotion mit hohem Arousal; neuer Turn während des Nachklangs; neuer Turn während des Nachdenkens; Pixie-Auftrag während eines Turns und im Rauschen.
+**Fälle:** kurze Antwort mit positiver Emotion; lange Antwort über 15 s, neutral; negative Emotion mit hohem Arousal; neuer Turn während des Nachklangs; neuer Turn während des Nachdenkens; Pixie-Auftrag während eines Turns und im Rauschen; **langes Nachdenken (120 s)**.
 
 **Nicht in v1:** die Lage im Raum aus dem Server (§17.7); Linien-Zittern und Grafitstriche als sichtbares Rauschen (Skizze in `AVATAR-PIXIE-LEERLAUF`); die Valenz mit Reserve (`AVATAR-VALENZ-RESERVE`).
 

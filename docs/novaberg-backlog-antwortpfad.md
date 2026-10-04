@@ -1152,7 +1152,7 @@ Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße i
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau in Referenz und Client.
+**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau in Referenz und Client. **In der Referenz gebaut am 04.10.2026 (L0′a, `novaberg-avatar_b.md` §18):** +0,12·E, ungedämpft, in allen vier Zuständen; Angst und Überraschung tragen kein eigenes `ps` mehr (`labor/avatar/index.html`); geprüft mit P-1 (ps(E 0,9) − ps(E 0,3) = 0,072) und P-2 (Angst und Überraschung 0,9 im Nachdenken und in der Antwort nie unter 1). **Im Client offen** — `client/avatar/expression.py` und `client/avatar/idle.py` folgen mit L1′.
 
 Der Eigentümer, 04.10.2026, auf den Hinweis, dass Angst und Überraschung die Pupille heute verengen (Konvention des Zeichentricks) und dass Erregung sie beim Menschen weitet: *„Erregung soll sie weiten, ja.“*
 
