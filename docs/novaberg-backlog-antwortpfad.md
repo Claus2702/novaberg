@@ -1102,7 +1102,7 @@ Der Eigentümer, 03.10.2026: *„Was jetzt noch fehlt ist nur die Textausgabe in
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — Konzept vollständig, Bau beschlossen am 03.10.2026 (*„Gut, das bauen wir so den Avatar ein.“*): `novaberg-avatar_t.md` §17, Bauteile L0–L5 in `novaberg-avatar_b.md` §18. Vorher: Wunsch des Eigentümers; ein Beispiel im Labor liegt vor (`labor/avatar/pixie_rauschen.html`), dann der Generator `labor/avatar/leerlauf.html`.
+**Zustand:** ⬜ offen — Konzept vollständig, Bau beschlossen am 03.10.2026 (*„Gut, das bauen wir so den Avatar ein.“*): `novaberg-avatar_t.md` §17, Bauteile L0–L5 in `novaberg-avatar_b.md` §18. **Im Bau:** L0–L3 gebaut (03. und 04.10.2026); offen sind L4, L5 und die Messung im sichtbaren Fenster. Vorher: Wunsch des Eigentümers; ein Beispiel im Labor liegt vor (`labor/avatar/pixie_rauschen.html`), dann der Generator `labor/avatar/leerlauf.html`.
 
 Der Eigentümer, 03.10.2026: *„Ebenfalls möchte ich die Aktivitäten von Pixie im Leerlauf, wenn Nova selbst gerade nichts tut, visualisieren. Pixie rechnet gerade, dann sollte der Avatar das wiedergeben. Pixies Emotion. verschiedene Ausdrücke von Nachdenken im Gesicht."*
 
