@@ -26,6 +26,7 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 - **Gemessen:** zwölf Eingriffe in die Referenz, jeder an seinem Prüfpunkt rot; die Gegenproben, die am Eintrag darunter ausstanden, sind damit gelaufen.
 - **Befunde:** Jenseits der Grenze klappt die Zeichnung links schon ab −21,5° um, rechts ab 27°; die Prüfung *längste Pause im Nachdenken* (L-6) liegt ohne Abstand an ihrer Grenze (Median 10,0 s gegen 10). Einzelheiten in `novaberg-avatar_b.md` §18.
+- **Sichtprüfung, 22:00 UTC:** Der Eigentümer hat die nachgestellte Referenz mit Kopfdrehung abgenommen — *„Leerlauf sieht sehr gut! Index auch. Und ja die Bewegungen sehen sehr gut aus“*. Als Nächstes zieht der Client nach (L1′, L2′).
 
 ## 04.10.2026, 20:31 UTC — Die Kopfdrehung in der Referenz (L0′c)
 
