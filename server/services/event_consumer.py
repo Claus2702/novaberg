@@ -343,6 +343,12 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
 #: `correct`; die ersten beiden fuehren zu diesem Knoten, der dritte zurueck
 #: in den Corrector. Erscheint er also, ist entschieden und der Text steht —
 #: die vier Knoten ab hier aendern ihn nicht mehr.
+#:
+#: **Ein Knoten erscheint im Stream erst, wenn er gelaufen ist.** Die
+#: Antwort wartet also auf die Wahrnehmung (`perzeption_assistant`), und das
+#: ist gewollt seit dem 04.10.2026: Das Gesicht des Avatars zeigt die
+#: Emotion, die diese Wahrnehmung in der Antwort gefunden hat. Wer die
+#: Auslieferung frueher legt, nimmt dem Avatar seine Emotion.
 _KNOTEN_NACH_FREIGABE: str = "perzeption_assistant"
 
 
@@ -617,11 +623,18 @@ def _antwort_nutzlast_bauen(
     Freigabe durch `evaluate` (der Regelfall seit dem 25.08.2026) und am Ende
     des Laufs als Rueckfall, falls die Freigabe nicht erreicht wurde.
 
-    Die vier Felder aus `internal` beschreiben **Novas Zustand nach ihrer
-    eigenen Antwort** — sie entstehen erst im Nachlauf und sind bei der
-    Freigabe leer. Gemessen am 25.08.2026 liest der Client sieben der acht
-    Zustandsfelder gar nicht; einzig `momentum` wird angezeigt, und das steht
-    schon vor dem Responder.
+    **`emotion` und `arousal` sind Novas Wahrnehmung ihrer eigenen Antwort**
+    (aus `internal.emotion`). Die Auslieferung haengt am Ende von
+    `perzeption_assistant` (`_KNOTEN_NACH_FREIGABE`), die Wahrnehmung liegt
+    also bei der Freigabe schon vor — gemessen am 04.10.2026, sie steht
+    rund 6 ms vor dem Senden im Zustand. Das Avatar-Panel liest diese beiden
+    Felder fuer das Gesicht, waehrend Nova spricht. `nova_emotion` und
+    `nova_arousal` dagegen sind Eintrag 0 von `nova_emotions_verlauf`, den
+    `ei_calc` zu Beginn des Turns aus Novas frueheren Antworten rechnet; das
+    Panel liest sie nicht. Die uebrigen Felder aus `internal.emotion`
+    (`emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `intent`,
+    `tone`, `gespraechs_modus`) stehen mit ihren Werten in der Nutzlast;
+    wann sie gefuellt werden, belegt dieser Code nicht.
 
     Args:
         zustand: Der Graphenzustand, aus dem gebaut wird.
