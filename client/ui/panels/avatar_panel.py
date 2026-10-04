@@ -30,8 +30,15 @@ from avatar.pose import Pose  # noqa: E402
 from avatar.puppet import (  # noqa: E402
     Puppet,
     new_puppet,
+    puppet_status,
     puppet_step,
     utterance_from_turn,
+)
+from avatar.status_text import (  # noqa: E402
+    BandSegment,
+    band_segments,
+    status_due,
+    status_lines,
 )
 from config import AVATAR_IMAGE_DIR  # noqa: E402
 from ui.avatar_feed import AvatarFeed  # noqa: E402
@@ -41,6 +48,11 @@ from ui.work_events import WorkEvent  # noqa: E402
 logger = logging.getLogger(__name__)
 
 MICROSECONDS = 1_000_000  # Frame-Clock zählt in Mikrosekunden
+BAND_HEIGHT = 22  # Höhe des Bandes in Pixeln
+BAND_FONT = 11.0
+BAND_RUNNING = (0.35, 0.60, 0.90, 0.95)  # die laufende Form
+BAND_IDLE = (0.50, 0.50, 0.50, 0.35)  # die übrigen Formen
+BAND_TEXT = (0.95, 0.95, 0.95, 1.0)
 
 
 class AvatarPanel(PanelBase):
@@ -81,10 +93,104 @@ class AvatarPanel(PanelBase):
         self._area.connect("map", self._on_map)
         self._area.connect("unmap", self._on_unmap)
         self.content_area.append(self._area)
+        self._build_status_view()
 
         # ── Ausgabe-Verifikation ──
         if self._area.get_parent() is not self.content_area:
             raise RuntimeError("AvatarPanel: Zeichenfläche nicht eingehängt")
+
+    def _build_status_view(self) -> None:
+        """Hängt die Phasenanzeige unter das Gesicht: vier Zeilen und das Band.
+
+        Vorbedingung: `content_area` und die Zeichenfläche des Gesichts stehen.
+        Nachbedingung: die Anzeige hängt leer unter dem Gesicht (`_band` leer, `_status_at`
+        None, `_band_area` das Band), oder `_status_labels` ist None und eine Error-Zeile
+        steht im Log; das Gesicht läuft in beiden Fällen weiter.
+        """
+        # ── Eingabe-Validierung ──
+        self._status_labels: list[Gtk.Label] | None = None
+        self._status_at: float | None = None
+        self._band: list[BandSegment] = []
+
+        # ── Verarbeitung ──
+        try:
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            labels = [Gtk.Label() for _ in range(4)]  # Zustand, Form, Fortgang, Spanne
+            for label in labels:
+                label.set_xalign(0.0)
+                label.set_wrap(True)
+                label.add_css_class("dim-label")
+            self._band_area = Gtk.DrawingArea()
+            self._band_area.set_content_height(BAND_HEIGHT)
+            self._band_area.set_hexpand(True)
+            self._band_area.set_draw_func(self._on_draw_band)
+            for child in (labels[0], labels[1], labels[2], self._band_area, labels[3]):
+                box.append(child)
+            self.content_area.append(box)
+        except Exception as error:
+            logger.exception(f"AvatarPanel: Phasenanzeige nicht gebaut: {error}")
+            return
+        self._status_labels = labels
+
+        # Keine Ausgabe-Verifikation: Ohne Anzeige läuft das Gesicht weiter, der Fehler steht
+        # schon im Log.
+
+    def _refresh_status(self, now: float) -> None:
+        """Zieht die Anzeige nach, höchstens alle 120 ms; ein Fehler schaltet nur die Anzeige ab.
+
+        Vorbedingung: `now` ist die Zeit des Bildes, das `puppet_step` eben gerechnet hat.
+        Nachbedingung: die Anzeige zeigt die Phase zu `now`, wenn das Intervall verstrichen
+        war; sonst blieb sie stehen. Bei einem Fehler steht er im Log und in der ersten Zeile.
+        """
+        # ── Eingabe-Validierung ──
+        if self._status_labels is None or self._puppet is None:
+            return
+        if not status_due(self._status_at, now):
+            return
+
+        # ── Verarbeitung ──
+        self._status_at = now
+        try:
+            status = puppet_status(self._puppet, now)
+            lines = status_lines(status)
+            self._band = band_segments(status)
+            texts = (lines.state, lines.form, lines.progress, lines.span)
+            for label, text in zip(self._status_labels, texts, strict=True):
+                label.set_text(text)
+            self._status_labels[1].set_markup(f"<b>{GLib.markup_escape_text(lines.form)}</b>")
+            self._band_area.queue_draw()
+        except Exception as error:
+            logger.exception(f"AvatarPanel: Phasenanzeige bei {now:.3f} s fehlgeschlagen: {error}")
+            self._status_labels[0].set_text(f"Phasenanzeige angehalten — Fehler: {error}")
+            self._status_labels = None
+        # Keine Ausgabe-Verifikation: Der Fehlerweg meldet im Log und im Panel.
+
+    def _on_draw_band(self, _area: Gtk.DrawingArea, cr: object, width: int, height: int) -> None:
+        """Zeichnet das Band: Breite nach Dauer, die laufende Form hervorgehoben.
+
+        Vorbedingung: `_band` trägt Abschnitte, deren Anteile 1 ergeben.
+        Nachbedingung: ein Kasten je Form mit ihrer Kennung; ohne Band wird nichts gezeichnet.
+        """
+        # ── Eingabe-Validierung ──
+        if not self._band or width <= 0 or height <= 0:
+            return
+
+        # ── Verarbeitung ──
+        cr.set_font_size(BAND_FONT)
+        left = 0.0
+        for segment in self._band:
+            span = segment.share * width
+            if segment.running:
+                cr.set_source_rgba(*BAND_RUNNING)
+            else:
+                cr.set_source_rgba(*BAND_IDLE)
+            cr.rectangle(left + 1, 0, max(span - 2, 1), height)
+            cr.fill()
+            cr.set_source_rgba(*BAND_TEXT)
+            cr.move_to(left + 4, height - 6)
+            cr.show_text(segment.form_id)
+            left += span
+        # Keine Ausgabe-Verifikation: `band_segments` hat die Anteile geprüft.
 
     def _show_message(self, text: str) -> None:
         """Ersetzt den Inhalt des Panels durch eine Meldung."""
@@ -158,6 +264,7 @@ class AvatarPanel(PanelBase):
             self._show_message(f"Avatar angehalten — Fehler im Takt.\n{error}")
             return GLib.SOURCE_REMOVE
         widget.queue_draw()
+        self._refresh_status(now)
 
         # ── Ausgabe-Verifikation ──
         if self._pose is None:

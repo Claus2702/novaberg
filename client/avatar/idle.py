@@ -24,9 +24,22 @@ from types import MappingProxyType
 from typing import ClassVar
 
 from avatar import idle_catalog as catalog
-from avatar.expression import JAW_FACTOR_DEFAULT, MOD_AROUSAL, face_target
+from avatar.expression import JAW_FACTOR_DEFAULT, MOD_AROUSAL, SECTORS, face_target
 from avatar.face import PROTOTYPE_KEYS, FaceState
 from avatar.idle_catalog import FORMS, FormSpec, GazePoint, IdleState
+from avatar.idle_status import (
+    NOTE_AFTERGLOW,
+    NOTE_INHALING,
+    NOTE_PLAYBACK,
+    NOTE_WAITING,
+    SOURCE_NOVA,
+    SOURCE_PIXIE,
+    BandItem,
+    IdleStatus,
+    StatusForm,
+    StatusNext,
+    StatusSpan,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +53,7 @@ ORIGIN_IMPULSE = "impulse"
 _PLAN_CYCLE = "cycle"
 _PLAN_ANSWER = "answer"
 _PLAN_INHALE = "inhale"
+_Note = tuple[str | None, float | None, float | None]
 _MAX_FORMS_PER_STEP = 60
 _FALLBACK_REPLAN_MS = 3000.0  # hängt der Plan weiter zurück, beginnt der nächste jetzt
 
@@ -612,11 +626,15 @@ class _FormInstance:
 
 @dataclass
 class _Plan:
-    """Ein Plan: Zyklus, Antwort oder nur das Einatmen; `drawn` die gezogenen Formen."""
+    """Ein Plan: Zyklus, Antwort oder nur das Einatmen; `drawn` die gezogenen Formen.
+
+    `span` ist die Spanne, mit der ein Zyklus geplant wurde; Antwort und Einatmen haben keine.
+    """
 
     kind: str
     forms: list[_FormInstance]
     drawn: frozenset[str]
+    span: "_Span | None" = None
 
 
 @dataclass(frozen=True)
@@ -911,6 +929,137 @@ def _span(inputs: _Inputs) -> _Span:
     if not catalog.SPAN_MIN_S <= span.lo <= span.hi:
         raise RuntimeError(f"_span: Spanne {span} verkehrt")
     return span
+
+
+def _afterglow_mix(situation: _Situation, now: float) -> tuple[float, float]:
+    """Der Fortschritt p des Nachklangs und der Anteil Pixies an seiner Emotion.
+
+    Vorbedingung: `now` endlich; die Dauer des Nachklangs in `situation` ist gesetzt.
+    Nachbedingung: p und mix in 0..1; mix ist 0, solange p vor der Überblendung liegt.
+    """
+    # ── Eingabe-Validierung ──
+    if not math.isfinite(now) or situation.afterglow_duration <= 0:
+        raise ValueError(f"_afterglow_mix: Zeit {now} oder Dauer {situation.afterglow_duration}")
+
+    # ── Verarbeitung ──
+    p = _clamp((now - situation.since) / situation.afterglow_duration, 0.0, 1.0)
+    blend = catalog.AFTERGLOW_BLEND_FROM
+    mix = _smoothstep((p - blend) / (1 - blend))
+
+    # ── Ausgabe-Verifikation ──
+    if not (0.0 <= p <= 1.0 and 0.0 <= mix <= 1.0):
+        raise RuntimeError(f"_afterglow_mix: p {p} oder mix {mix} außerhalb 0..1")
+    return p, mix
+
+
+def _status_note(situation: _Situation, now: float) -> _Note:
+    """Die Angabe zum Zustand: Art, Sekunden und beim Nachklang seine Dauer.
+
+    Vorbedingung: `now` endlich, nicht vor dem Beginn des Zustands.
+    Nachbedingung: keine Angabe im Rauschen, sonst eine Art aus `NOTES`; Sekunden ≥ 0.
+    """
+    # ── Eingabe-Validierung ──
+    if not math.isfinite(now):
+        raise ValueError(f"_status_note: Zeit {now} nicht endlich")
+
+    # ── Verarbeitung ──
+    state = situation.state
+    note: _Note = (None, None, None)
+    if state is IdleState.THINKING:
+        note = ((NOTE_INHALING, max(0.0, situation.answer_from - now) / 1000, None)
+                if situation.inhaling else (NOTE_WAITING, None, None))
+    elif state is IdleState.ANSWER:
+        note = (NOTE_PLAYBACK, max(0.0, situation.answer_end - now) / 1000, None)
+    elif state is IdleState.AFTERGLOW:
+        note = (NOTE_AFTERGLOW, max(0.0, situation.afterglow_end - now) / 1000,
+                situation.afterglow_duration / 1000)
+
+    # ── Ausgabe-Verifikation ──
+    if (note[0] is None) is not (state is IdleState.NOISE):
+        raise RuntimeError(f"_status_note: Angabe {note[0]!r} im Zustand {state.value}")
+    return note
+
+
+def _status_source(situation: _Situation, now: float) -> str:
+    """Wessen Emotion gilt: im Rauschen Pixies, im Nachklang ab der halben Überblendung.
+
+    Vorbedingung: `now` endlich.
+    Nachbedingung: `Nova` oder `Pixie`, dieselbe Seite wie in `_inputs`.
+    """
+    # ── Eingabe-Validierung ──
+    if not isinstance(situation, _Situation):
+        raise TypeError(f"_status_source: keine Lage: {type(situation).__name__}")
+
+    # ── Verarbeitung ──
+    source = SOURCE_NOVA
+    if situation.state is IdleState.NOISE:
+        source = SOURCE_PIXIE
+    elif situation.state is IdleState.AFTERGLOW and _afterglow_mix(situation, now)[1] >= 0.5:
+        source = SOURCE_PIXIE
+
+    # ── Ausgabe-Verifikation ──
+    if source not in (SOURCE_NOVA, SOURCE_PIXIE):
+        raise RuntimeError(f"_status_source: Quelle {source!r}")
+    return source
+
+
+def _status_form(inst: _FormInstance, now: float) -> StatusForm:
+    """Die laufende Form als Wert.
+
+    Vorbedingung: `inst` eine Form des Katalogs, `now` endlich.
+    Nachbedingung: die Dauer der Form und wie lange sie steht, in Sekunden.
+    """
+    # ── Eingabe-Validierung ──
+    if inst.form_id not in FORMS or not math.isfinite(now):
+        raise ValueError(f"_status_form: Form {inst.form_id!r} oder Zeit {now} ungültig")
+
+    # ── Verarbeitung ──
+    return StatusForm(inst.form_id, FORMS[inst.form_id].name, (now - inst.t0) / 1000,
+                      inst.duration / 1000, inst.gaze.x, inst.gaze.y)
+
+
+def _status_next(plan: _Plan, index: int, now: float) -> StatusNext | None:
+    """Die Form nach der laufenden mit der Zeit bis zu ihrem Beginn; None an der letzten.
+
+    Vorbedingung: `index` liegt im Plan.
+    Nachbedingung: die Form mit Stelle `index + 1` und die Sekunden bis zu ihrem Beginn.
+    """
+    # ── Eingabe-Validierung ──
+    if not 0 <= index < len(plan.forms):
+        raise ValueError(f"_status_next: Stelle {index} außerhalb des Plans")
+
+    # ── Verarbeitung ──
+    if index + 1 >= len(plan.forms):
+        return None
+    following = plan.forms[index + 1]
+    return StatusNext(following.form_id, FORMS[following.form_id].name,
+                      (following.t0 - now) / 1000)
+
+
+def _build_status(now: float, situation: _Situation, plan: _Plan, index: int,
+                  inputs: _Inputs) -> IdleStatus:
+    """Setzt die Phase aus Zustand, Plan und Lage zusammen; liest nur.
+
+    Vorbedingung: `plan` ist der laufende Plan, `index` seine laufende Stelle, `inputs` die
+    Lage zu `now`.
+    Nachbedingung: ein Wert, dessen Band die Formen des Plans in ihrer Reihenfolge trägt.
+    """
+    # ── Eingabe-Validierung ──
+    if not 0 <= index < len(plan.forms):
+        raise ValueError(f"_build_status: Stelle {index} außerhalb des Plans")
+
+    # ── Verarbeitung ──
+    note, note_s, note_total_s = _status_note(situation, now)
+    span = plan.span
+    return IdleStatus(
+        state=situation.state, since_ms=situation.since,
+        elapsed_s=(now - situation.since) / 1000, note=note, note_s=note_s,
+        note_total_s=note_total_s, source=_status_source(situation, now),
+        sector_name=SECTORS[inputs.sector].name, arousal=inputs.arousal,
+        form=_status_form(plan.forms[index], now), next_form=_status_next(plan, index, now),
+        band=tuple(BandItem(f.form_id, f.duration / 1000) for f in plan.forms), position=index,
+        plan_kind=plan.kind,
+        span=None if span is None else StatusSpan(span.xc, span.lo, span.hi, span.count))
 
 
 def _modifiers(inputs: _Inputs) -> tuple[tuple[frozenset[str], float], ...]:
@@ -1544,6 +1693,28 @@ class IdleLogic:
         # ── Verarbeitung ──
         self._queue.push(event)
 
+    def status(self, now_ms: float) -> IdleStatus:
+        """Die Phase zu `now_ms`: Zustand, Form, nächste Form, Band, Spanne — nur gelesen.
+
+        Zieht keine Zufallszahl, setzt kein Feld und behandelt kein Ereignis; die Spanne
+        ist die, mit der der Plan gerechnet wurde.
+        Vorbedingung: now_ms endlich und nicht vor dem letzten Schritt.
+        Nachbedingung: ein Wert zum Stand des letzten Schritts, die Logik unverändert.
+        Fehlerfälle: nicht endliche oder rückläufige Zeit.
+        """
+        # ── Eingabe-Validierung ──
+        if not isinstance(now_ms, int | float) or not math.isfinite(now_ms):
+            raise ValueError(f"status: Zeit {now_ms!r} nicht endlich")
+        if now_ms < self._now:
+            raise ValueError(f"status: Zeit {now_ms} vor dem letzten Schritt {self._now}")
+
+        # ── Verarbeitung ──
+        now = float(now_ms)
+        plan = self._plan
+        if plan is None:
+            raise RuntimeError("status: kein Plan")
+        return _build_status(now, self._situation, plan, self._index, self._inputs(now))
+
     def step(self, now_ms: float, gaze_x: float, gaze_y: float) -> IdleFrame:
         """Ein Schritt: fällige Ereignisse, Zustand, Form, Sakkaden, Lidschläge, Ziele.
 
@@ -2088,7 +2259,7 @@ class IdleLogic:
         gaps = [abs(b.t0 - (a.t0 + a.duration)) for a, b in zip(forms, forms[1:], strict=False)]
         if any(gap > 1e-6 for gap in gaps):
             raise RuntimeError(f"_plan_cycle: Lücke im Zyklus ({max(gaps)} ms)")
-        return _Plan(_PLAN_CYCLE, forms, frozenset(chosen))
+        return _Plan(_PLAN_CYCLE, forms, frozenset(chosen), span)
 
     def _choose(self, weights: dict[str, float], span: _Span, inputs: _Inputs) -> list[str]:
         """Zieht die Formen eines Zyklus und bessert nach R4 (Asymmetrien), R2 (Einfall), R1.
@@ -2391,9 +2562,8 @@ class IdleLogic:
         situation, nova, pixie = self._situation, self._nova, self._pixie
         state = situation.state
         if state is IdleState.AFTERGLOW:
-            p = _clamp((now - situation.since) / situation.afterglow_duration, 0.0, 1.0)
+            p, mix = _afterglow_mix(situation, now)
             blend = catalog.AFTERGLOW_BLEND_FROM
-            mix = _smoothstep((p - blend) / (1 - blend))
             fade = catalog.AFTERGLOW_START_FACTOR - catalog.AFTERGLOW_FADE * min(1, p / blend)
             nova_basis = _basis(nova.sector, nova.arousal * fade)
             pixie_basis = _basis(pixie.sector, pixie.arousal * catalog.BASE_FACTOR[IdleState.NOISE])

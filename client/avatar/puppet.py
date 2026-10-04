@@ -41,6 +41,7 @@ from avatar.idle import (
     TurnBegins,
     TurnFailed,
 )
+from avatar.idle_status import IdleStatus
 from avatar.pose import Pose
 from avatar.speech import (
     SILENT,
@@ -442,6 +443,21 @@ def puppet_step(puppet: Puppet, now: float) -> Pose:
     if pose.boil_tick < 0:
         raise RuntimeError(f"puppet_step: Takt {pose.boil_tick} negativ")
     return pose
+
+
+def puppet_status(puppet: Puppet, now: float) -> IdleStatus:
+    """Die Phase des Leerlaufs der Puppe zur Zeit `now`, auf der Uhr von `puppet_step`.
+
+    Liest nur: Die Puppe bleibt unverändert, der Leerlauf zieht keine Zufallszahl.
+    Vorbedingung: `now` endlich, nicht vor dem letzten Schritt.
+    Nachbedingung: der Wert, den `IdleLogic.status` für dieselbe Zeit liefert.
+    Fehlerfälle: TypeError ohne Puppe, ValueError bei ungültiger oder rückläufiger Zeit.
+    """
+    # ── Eingabe-Validierung ──
+    _check_not_before_last_step(puppet, now, "puppet_status")
+
+    # ── Verarbeitung ──
+    return puppet.idle.status(_logic_ms(puppet, now))
 
 
 def _sector_from_name(name: object) -> int | None:
