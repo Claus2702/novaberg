@@ -43,6 +43,7 @@ from avatar.status_text import (  # noqa: E402
 from config import AVATAR_IMAGE_DIR  # noqa: E402
 from ui.avatar_feed import AvatarFeed  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
+from ui.status_label import set_status_text, status_label  # noqa: E402
 from ui.work_events import WorkEvent  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -115,11 +116,7 @@ class AvatarPanel(PanelBase):
         # ── Verarbeitung ──
         try:
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-            labels = [Gtk.Label() for _ in range(4)]  # Zustand, Form, Fortgang, Spanne
-            for label in labels:
-                label.set_xalign(0.0)
-                label.set_wrap(True)
-                label.add_css_class("dim-label")
+            labels = [status_label() for _ in range(4)]  # Zustand, Form, Fortgang, Spanne
             self._band_area = Gtk.DrawingArea()
             self._band_area.set_content_height(BAND_HEIGHT)
             self._band_area.set_hexpand(True)
@@ -155,9 +152,8 @@ class AvatarPanel(PanelBase):
             lines = status_lines(status)
             self._band = band_segments(status)
             texts = (lines.state, lines.form, lines.progress, lines.span)
-            for label, text in zip(self._status_labels, texts, strict=True):
-                label.set_text(text)
-            self._status_labels[1].set_markup(f"<b>{GLib.markup_escape_text(lines.form)}</b>")
+            for index, (label, text) in enumerate(zip(self._status_labels, texts, strict=True)):
+                set_status_text(label, text, bold=index == 1)
             self._band_area.queue_draw()
         except Exception as error:
             logger.exception(f"AvatarPanel: Phasenanzeige bei {now:.3f} s fehlgeschlagen: {error}")
