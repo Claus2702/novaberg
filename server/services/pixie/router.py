@@ -25,6 +25,11 @@ _QUEUE_ROUTING: dict[str, str] = {
     "wissen_verweis":   "wissen_rueckweg",
 }
 
+# Die geschlossene Menge der Auftragsarten aus den Queues: was ein Auftrag als
+# `aufgabe` tragen kann, wenn der Router ihm einen Agenten zuordnet. Der Client
+# bekommt die Art aus dieser Menge, nie als Freitext.
+QUEUE_JOB_KINDS: frozenset[str] = frozenset(_QUEUE_ROUTING) | {"delegation"}
+
 # Mapping: Periodische Aufgabe (Schedule-Key-Suffix) -> Agent-Name
 _PERIODISCH_ROUTING: dict[str, str] = {
     "promotion":      "promotion",

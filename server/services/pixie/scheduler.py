@@ -42,6 +42,7 @@ from services.model_services.spur import SPUR_LLM, spur_setzen, spur_zuruecksetz
 from services.pixie.dispatch import abschluss, agent_ausfuehren
 from services.pixie.kandidaten import kandidaten_sammeln
 from services.pixie.router import route
+from services.work_events import pixie_job_events
 
 logger = logging.getLogger("ki_server.pixie")
 
@@ -142,12 +143,16 @@ async def pixie_heartbeat(app_state, spur: str = SPUR_LLM) -> None:
             logger.warning(f"Pixie: Kein Agent fuer Kandidat '{gewinner['name']}' gefunden")
             return
 
-        # Agent ausfuehren — die Spur reist als Kontextmarke mit
-        marke = spur_setzen(spur)
-        try:
-            erfolg: bool = await agent_ausfuehren(agent_name, gewinner, app_state)
-        finally:
-            spur_zuruecksetzen(marke)
+        # Agent ausfuehren — die Spur reist als Kontextmarke mit. Der Client
+        # erfaehrt Beginn und Ende **dieses Laufs**, auch wenn er scheitert;
+        # nicht das Ende des Heartbeats: Das `finally` unten laeuft auch nach
+        # jedem leeren Heartbeat.
+        async with pixie_job_events(gewinner, spur):
+            marke = spur_setzen(spur)
+            try:
+                erfolg: bool = await agent_ausfuehren(agent_name, gewinner, app_state)
+            finally:
+                spur_zuruecksetzen(marke)
 
         # Abschluss
         abschluss(gewinner, erfolg)

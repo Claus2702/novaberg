@@ -24,6 +24,7 @@ from services.events import (
 )
 from services.model_costs import BACKGROUND_TURN, CURRENT_TURN
 from services.prompt_eingang import turn_beenden, turn_beginnen
+from services.work_events import with_impulse_events
 
 logger = logging.getLogger("ki_server.event_consumer")
 
@@ -567,11 +568,16 @@ async def event_consumer_loop(
                 )
 
                 # ── CharacterGraph ausführen ──
+                # Bei einem Impuls erfährt der Client Beginn und Ende des
+                # Durchlaufs; das Ende auch ohne Antwort, und erst nach ihr.
                 try:
-                    await _event_verarbeiten(
+                    await with_impulse_events(
                         event, user_id, character_id,
-                        redis_client, character_graph, compiled_character,
-                        websocket_map, graph_run_lock,
+                        _event_verarbeiten(
+                            event, user_id, character_id,
+                            redis_client, character_graph, compiled_character,
+                            websocket_map, graph_run_lock,
+                        ),
                     )
                 finally:
                     # Hier endet der Turn — nicht nach Pfad 1. Solange der
