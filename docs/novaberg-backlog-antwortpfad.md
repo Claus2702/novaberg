@@ -1132,6 +1132,18 @@ Der Eigentümer, 03.10.2026: *„Halte bitte im Backlog fest, dass wir auch die 
 
 **Zusammenhang:** `novaberg-avatar_k.md` §2 · `novaberg-avatar_t.md` §13, §17 · `AVATAR-PIXIE-LEERLAUF`
 
+## Feature: AVATAR-STATUS-SCHRIFT — die Phasenanzeige des Avatars schreibt so groß wie die Statusleiste (04.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau im Client.
+
+Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße im Status des Avatar-Panels an die Größe in der Statusleiste des Client-Panels anpassen. Das reduziert etwas das Gewicht der Anzeige unter dem Avatar.“*
+
+**Zu bauen:** Die Zeilen der Phasenanzeige (`client/ui/status_label.py`, `status_label()`) bekommen die Schriftgröße der Statusleiste des Hauptfensters (`.nova-statusbar-label`, heute `font-size: 12px` in `client/ui/main_window.py`). Bisher tragen sie nur `dim-label` und damit die Größe des Systems. Die Größe kommt aus einer gemeinsamen Quelle, nicht aus einer zweiten Zahl 12. Das Band (`BAND_FONT` in `avatar_panel.py`) wird mit angeglichen, wenn es größer schreibt. **Abgrenzung:** kein Umbruch (Kürzung und Tooltip bleiben), keine Änderung am Text.
+
+**Zusammenhang:** `novaberg-avatar_b.md` §18 (L6) · `novaberg-avatar_k.md` §3
+
 ## Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — keine Preiswarnung für ein Modell, das gerade nicht läuft (03.10.2026)
 
 **Kategorie:** [ANT] ANTWORTPFAD
