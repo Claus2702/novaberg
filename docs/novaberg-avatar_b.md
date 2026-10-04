@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar: Bauplan und Umstellung
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 04.10.2026, 14:32 UTC (§16: die Wahrnehmung der Antwort im Betrieb gemessen). Davor 04.10.2026, 14:16 UTC (§16: das Gesicht zeigt beim Sprechen die Wahrnehmung der Antwort). Davor 04.10.2026, 13:41 UTC (§18: der Umbruch der Phasenanzeige behoben). Davor 04.10.2026, 13:39 UTC (§18: L6 im Betrieb gemessen). Davor 04.10.2026, 12:52 UTC (§18: L3 im Betrieb gemessen; L6 gebaut; die Reihenfolge L6 → Generator → L4/L5). Davor 04.10.2026, 11:28 UTC (§18: L3 gebaut). Davor 04.10.2026, 10:30 UTC (§18: L3 kennt alle vier Ereignisse und baut den Weg aus `_t` §17.10; L4 erst nach L3 und mit Thema; L5 mit Arbeitszustand, Art der Aufgabe und Tooltip). Davor 03.10.2026, 20:48 UTC (§18: die Statuszeile zeigt jeden Arbeitszustand, L5). Davor 03.10.2026, 19:19 UTC (§18: L5 zeigt Pixies Arbeitszyklus auch in der Statuszeile). Davor 03.10.2026, 19:07 UTC (§18: L2 gebaut). Davor 03.10.2026, 17:09 UTC (§18: L1 gebaut). Davor 03.10.2026, 13:40 UTC (§18: L0 gebaut). Davor 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
+**Stand:** 04.10.2026, 15:35 UTC (§18: L4 gebaut). Davor 04.10.2026, 14:32 UTC (§16: die Wahrnehmung der Antwort im Betrieb gemessen). Davor 04.10.2026, 14:16 UTC (§16: das Gesicht zeigt beim Sprechen die Wahrnehmung der Antwort). Davor 04.10.2026, 13:41 UTC (§18: der Umbruch der Phasenanzeige behoben). Davor 04.10.2026, 13:39 UTC (§18: L6 im Betrieb gemessen). Davor 04.10.2026, 12:52 UTC (§18: L3 im Betrieb gemessen; L6 gebaut; die Reihenfolge L6 → Generator → L4/L5). Davor 04.10.2026, 11:28 UTC (§18: L3 gebaut). Davor 04.10.2026, 10:30 UTC (§18: L3 kennt alle vier Ereignisse und baut den Weg aus `_t` §17.10; L4 erst nach L3 und mit Thema; L5 mit Arbeitszustand, Art der Aufgabe und Tooltip). Davor 03.10.2026, 20:48 UTC (§18: die Statuszeile zeigt jeden Arbeitszustand, L5). Davor 03.10.2026, 19:19 UTC (§18: L5 zeigt Pixies Arbeitszyklus auch in der Statuszeile). Davor 03.10.2026, 19:07 UTC (§18: L2 gebaut). Davor 03.10.2026, 17:09 UTC (§18: L1 gebaut). Davor 03.10.2026, 13:40 UTC (§18: L0 gebaut). Davor 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
 **Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Dazu die Bauteile für den Client mit `ZIEL` / `TEST` / `MESSUNG` (§16) und die für den Leerlauf samt Abnahme (§18).
 
 ---
@@ -121,6 +121,15 @@ Jeder Baustein ist ohne GTK testbar. Tests, die ohne das jeweilige Verhalten rot
   - Die Blickrichtung erreicht das Bild kaum.
   - Im Nachklang ist die Lidschlagrate am höchsten.
 - **Neu:** Die Antwort trägt die Emotion des vorigen Turns (Fundliste).
+
+**L4 gebaut, 04.10.2026, 15:35 UTC.** Der Server sendet die Arbeitszyklen an den Client.
+
+- **`pixie_auftrag`** (`server/services/work_events.py`, gerufen im Heartbeat `server/services/pixie/scheduler.py`): `beginn` nach der Wahl des Agenten und vor seinem Lauf, `ende` nach dem Lauf, auch mit Fehler, nie nach einem leeren Heartbeat. Felder `phase`, `spur`, `art` (geschlossene Menge `QUEUE_JOB_KINDS` des Routers), `emotion`/`arousal` und `thema` nur, wenn der Auftrag sie trägt — abwesend, nicht leer. Nur Aufträge mit Nutzer, an diesen Nutzer; periodische Aufgaben senden nichts. Auch die Promotions-Queue sendet (Spur `cpu`, ohne Emotion).
+- **`impuls_denkt`** (Event-Consumer): `beginn` und `ende` um den ganzen Durchlauf eines Impulses, `ende` auch ohne Antwort und nach einem Fehler, immer nach der Antwort.
+- **Gesendet mit `await broadcast(…)`**; ein Fehler beim Senden schreibt eine Error-Zeile, Auftrag und Turn laufen weiter.
+- **Zeugen** `server/tests/test_work_events.py` (18), darunter einer mit echtem Event-Loop: Das Senden aus dem Heartbeat hält den Loop nicht an. Server-Suite `Ran 4094 tests` / `OK` (vorher 4076). Gegenprobe `emotion: null` statt Weglassen → 1 rot, wie vorhergesagt; drei weitere vorhergesagt, nicht gelaufen.
+- **Die Messung steht aus:** ein echter Pixie-Auftrag bei offenem Panel; im Rauschen zeigt die Phasenanzeige *Emotion: Pixie* mit der Emotion des Auftrags.
+- **Befund:** `_event_verarbeiten` erwirbt `graph_run_lock` blockierend in einer Koroutine (bis 60 s); das hielte auch das Senden an (Fundliste).
 
 ### 18.1 Abnahme
 

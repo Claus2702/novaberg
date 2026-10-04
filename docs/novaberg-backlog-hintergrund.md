@@ -911,7 +911,7 @@ Ein Termin aus ihrem Impuls ist von einem, um den gebeten wurde, nicht zu unters
 
 **Kategorie:** [HIN] HINTERGRUND
 
-**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau am Server.
+**Zustand:** ~~⬜ offen — entschieden vom Eigentümer, Bau am Server.~~ → 🟠 **gebaut 04.10.2026** (L4, `novaberg-avatar_b.md` §18); die Messung im Betrieb steht aus.
 
 Der Eigentümer, 03.10.2026: *„der Start Pixies mit Auftrag und Emotion kann als Ereignis an den Client geschickt werden, darf aber konvergentes Denken in Turns und die User-Interaktion nicht stören, sondern nur den Fallback setzen und — wenn Nova bereits im Leerlauf ist — auf die Änderung des Fallbacks hinweisen. Das müssen wir am Server ändern."*
 
