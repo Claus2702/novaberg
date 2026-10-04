@@ -50,6 +50,7 @@ from ui.stream_handler import (                           # noqa: E402
     ZUORDNUNG_FREMD,
     ZUORDNUNG_UNBEOBACHTET,
 )
+from ui.work_events    import TurnFailure, TurnStarted, WorkEvent  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -102,6 +103,7 @@ class MainWindow(Gtk.ApplicationWindow):
             on_done       = self._handle_done,
             on_impulse    = self._handle_impulse,
             on_connection = self._handle_connection,
+            on_work_event = self._handle_work_event,
             user_id       = DEFAULT_USER_ID,
         )
 
@@ -402,6 +404,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self._awaiting_response = True
         self._status_bar.set_connection_status("Gesendet")
 
+        # Nova denkt ab jetzt nach, auch wenn das Senden gleich scheitert: Das meldet
+        # `_handle_error` als gescheiterten Turn.
+        self._handle_work_event(TurnStarted())
+
         self._stream.send_message(text)
 
     def _on_close_request(self, window: Gtk.ApplicationWindow) -> bool:
@@ -519,6 +525,11 @@ class MainWindow(Gtk.ApplicationWindow):
         self._awaiting_response = False
         self._status_bar.set_connection_status("Getrennt")
 
+        # Der Server erfährt von einem Fehler beim Senden nie; ohne dieses Ereignis
+        # dächte Nova im Avatar bis zum Wächter weiter nach. `_on_error` kommt nur
+        # aus dem Sendethread (SSE), nie aus dem WebSocket.
+        self._handle_work_event(TurnFailure())
+
     def _handle_done(self) -> None:
         """Der Endpunkt hat die Äußerung angenommen — mehr sagt das Stream-Ende nicht.
 
@@ -537,6 +548,7 @@ class MainWindow(Gtk.ApplicationWindow):
             # User-Eingabe von einem anderen Client — als User-Bubble anzeigen.
             logger.info(f"User-Nachricht von anderem Client: {text[:80]!r}")
             self._chat_view.add_user_message(text)
+            self._handle_work_event(TurnStarted())
         else:
             logger.info(f"Pixie-Impuls empfangen: {text[:80]!r}")
             self._chat_view.add_impulse_message(text)
@@ -545,6 +557,15 @@ class MainWindow(Gtk.ApplicationWindow):
         turn_data = impulse_turn_data(text, data)
         if turn_data is not None:
             self._registry.broadcast_impulse(turn_data)
+
+    def _handle_work_event(self, event: WorkEvent) -> None:
+        """Gibt ein Ereignis der Arbeitszyklen an die offenen Panels, die es wollen.
+
+        Vorbedingung: `event` ist ein Ereignis aus `ui.work_events`; die Registry weist
+        anderes mit TypeError ab.
+        """
+        logger.debug(f"Arbeitsereignis: {type(event).__name__}")
+        self._registry.broadcast_work_event(event)
 
     def _handle_connection(self, status: str) -> None:
         logger.debug(f"Verbindungsstatus -> {status}")

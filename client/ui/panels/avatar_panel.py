@@ -29,14 +29,14 @@ from avatar.layers import AvatarLayers, LayerError, load_layers  # noqa: E402
 from avatar.pose import Pose  # noqa: E402
 from avatar.puppet import (  # noqa: E402
     Puppet,
-    Utterance,
     new_puppet,
-    puppet_cue,
     puppet_step,
     utterance_from_turn,
 )
 from config import AVATAR_IMAGE_DIR  # noqa: E402
+from ui.avatar_feed import AvatarFeed  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
+from ui.work_events import WorkEvent  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,7 @@ class AvatarPanel(PanelBase):
     UNIQUE = True
     CATEGORY = "turn_reactive"
     REACTS_TO_IMPULSE = True
+    REACTS_TO_WORK = True
     NEEDS_USER_SELECTOR = False
     DEFAULT_WIDTH = 480
     DEFAULT_HEIGHT = 540
@@ -60,7 +61,7 @@ class AvatarPanel(PanelBase):
         # ── Eingabe-Validierung ──
         self._layers: AvatarLayers | None = None
         self._puppet: Puppet | None = None
-        self._pending: Utterance | None = None
+        self._feed = AvatarFeed()
         self._pose: Pose | None = None
         self._tick_id: int | None = None
         self._rng = random.Random()
@@ -137,7 +138,7 @@ class AvatarPanel(PanelBase):
             logger.debug("AvatarPanel: Takt angehalten")
 
     def _on_tick(self, widget: Gtk.Widget, frame_clock: object) -> bool:
-        """Ein Bild: Zeit aus der Frame-Clock, wartende Äußerung übergeben, Pose rechnen.
+        """Ein Bild: Zeit aus der Frame-Clock, Wartendes in Reihenfolge übergeben, Pose rechnen.
 
         Ein Fehler hält den Takt an und ersetzt das Gesicht durch eine Meldung — ein
         stehendes Gesicht ohne Meldung sähe aus wie ein ruhiges.
@@ -149,9 +150,7 @@ class AvatarPanel(PanelBase):
         try:
             if self._puppet is None:
                 self._puppet = new_puppet(now, self._rng)
-            if self._pending is not None:
-                utterance, self._pending = self._pending, None
-                puppet_cue(self._puppet, utterance, now)
+            self._feed.deliver(self._puppet, now)
             self._pose = puppet_step(self._puppet, now)
         except Exception as error:
             logger.exception(f"AvatarPanel: Bild bei {now:.3f} s fehlgeschlagen: {error}")
@@ -198,9 +197,16 @@ class AvatarPanel(PanelBase):
         utterance = utterance_from_turn(turn_data)
 
         # ── Verarbeitung ──
-        self._pending = utterance
-        # Keine Ausgabe-Verifikation: Die Zuweisung kann nicht scheitern; die Zeile protokolliert.
+        self._feed.add(utterance)
+        # Keine Ausgabe-Verifikation: `add` prüft selbst, dass der Eintrag vorgemerkt ist.
         logger.debug(
             f"AvatarPanel: Äußerung vorgemerkt (Sektor {utterance.sector}, "
             f"Arousal {utterance.arousal:.2f}, {len(utterance.text)} Zeichen)"
         )
+
+    def on_work_event(self, event: WorkEvent) -> None:
+        """Merkt das Ereignis hinter den bisherigen vor; der nächste Takt übergibt es."""
+        # Keine Eingabe-Validierung und keine Ausgabe-Verifikation: `add` weist ab, was kein
+        # Arbeitsereignis ist, und prüft selbst, dass der Eintrag vorgemerkt ist.
+        self._feed.add(event)
+        logger.debug(f"AvatarPanel: {type(event).__name__} vorgemerkt")

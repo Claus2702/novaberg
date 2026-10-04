@@ -25,7 +25,7 @@ from gi.repository import Gtk  # noqa: E402
 
 from ui.child_window import ChildWindow  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
-from ui.turn_routing import deliver_turn  # noqa: E402
+from ui.turn_routing import deliver_turn, deliver_work_event  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -175,6 +175,16 @@ class PanelRegistry:
             return
         panels = [child_window.panel for child_window in self._open_panels.values()]
         deliver_turn(panels, turn_data, impulse=True)
+
+    def broadcast_work_event(self, event: object) -> None:
+        """Leitet ein Ereignis der Arbeitszyklen an die offenen Panels weiter, die es wollen.
+
+        Ein Panel will es, wenn es ``REACTS_TO_WORK`` trägt; die Kategorie spielt keine Rolle.
+        """
+        if not self._open_panels:
+            return
+        panels = [child_window.panel for child_window in self._open_panels.values()]
+        deliver_work_event(panels, event)
 
 
 # ═══════════════════════════════════════════════════════════════════

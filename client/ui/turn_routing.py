@@ -3,11 +3,14 @@ Turn-Verteilung — welche Panels einen Turn oder einen Impuls Novas bekommen.
 
 Das Modul importiert kein GTK, damit die Verteilung ohne Fenster prüfbar ist.
 Die Panels kommen als Objekte mit ``PANEL_ID``, ``CATEGORY``,
-``REACTS_TO_IMPULSE`` und ``on_turn_received``.
+``REACTS_TO_IMPULSE`` und ``on_turn_received``; für die Arbeitszyklen tragen sie
+``REACTS_TO_WORK`` und ``on_work_event``.
 """
 
 import logging
 from collections.abc import Iterable, Mapping
+
+from ui.work_events import WORK_EVENT_TYPES
 
 
 logger = logging.getLogger(__name__)
@@ -68,4 +71,34 @@ def deliver_turn(panels: Iterable, turn_data: dict, *, impulse: bool) -> int:
     # ── Ausgabe-Verifikation ──
     if delivered:
         logger.debug(f"{'Impuls' if impulse else 'Turn'} an {delivered} Panel(s) verteilt")
+    return delivered
+
+
+def deliver_work_event(panels: Iterable, event: object) -> int:
+    """Gibt ein Ereignis der Arbeitszyklen an die Panels weiter, die es wollen.
+
+    Vorbedingung: ``event`` ist eines der Ereignisse aus ``ui.work_events``.
+    Nachbedingung: Rückgabe ist die Zahl der Panels, deren ``on_work_event`` gelaufen ist.
+    Gewählt wird nach ``REACTS_TO_WORK`` allein, nicht nach ``CATEGORY``.
+    Fehlerfall: Ein Panel, dessen ``on_work_event`` scheitert, wird als Fehler
+    protokolliert und zählt nicht; die übrigen bekommen das Ereignis trotzdem.
+    """
+    # ── Eingabe-Validierung ──
+    if not isinstance(event, WORK_EVENT_TYPES):
+        raise TypeError(f"deliver_work_event: {type(event).__name__} ist kein Arbeitsereignis")
+
+    # ── Verarbeitung ──
+    delivered = 0
+    for panel in panels:
+        if not panel.REACTS_TO_WORK:
+            continue
+        try:
+            panel.on_work_event(event)
+            delivered += 1
+        except Exception as error:
+            logger.error(f"Panel '{panel.PANEL_ID}': on_work_event fehlgeschlagen: {error}")
+
+    # ── Ausgabe-Verifikation ──
+    if delivered:
+        logger.debug(f"{type(event).__name__} an {delivered} Panel(s) verteilt")
     return delivered

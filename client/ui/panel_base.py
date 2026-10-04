@@ -111,6 +111,7 @@ class PanelBase(Gtk.Box):
     UNIQUE: bool = True
     CATEGORY: str = "on_demand"  # turn_reactive | on_demand | query | log_stream
     REACTS_TO_IMPULSE: bool = False  # True = bekommt auch einen Impuls Novas als Turn
+    REACTS_TO_WORK: bool = False  # True = bekommt die Ereignisse der Arbeitszyklen
     NEEDS_USER_SELECTOR: bool = True
     PERSPEKTIVE_DEDUPLIZIERT: bool = False  # True = nur einmalige Gesprächspaare (kein Beobachter-Split)
     PERSPEKTIVE_BIDIREKTIONAL: bool = False  # True = beide Richtungen jedes Paares
@@ -261,6 +262,16 @@ class PanelBase(Gtk.Box):
 
         Turn-reactive Panels überschreiben diese Methode, um sich bei
         neuen Turns selbst zu aktualisieren.
+        """
+        pass
+
+    def on_work_event(self, event: object) -> None:
+        """Wird bei jedem Ereignis der Arbeitszyklen aufgerufen. Default: nichts tun.
+
+        Nur Panels mit ``REACTS_TO_WORK = True`` bekommen es, gleich welche
+        ``CATEGORY`` sie tragen — und wie jede Verteilung der Registry nur Panels mit
+        ``UNIQUE``, denn nur die führt sie als offen. ``event`` ist eines der
+        Ereignisse aus ``ui.work_events``.
         """
         pass
 

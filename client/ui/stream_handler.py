@@ -41,6 +41,7 @@ from config import (
     WS_RECONNECT_INTERVAL,
     WS_URL,
 )
+from ui.work_events import WorkEvent, work_event_from_payload
 
 
 logger = logging.getLogger(__name__)
@@ -82,6 +83,7 @@ ErrorCallback      = Callable[[str], None]             # (nachricht,)
 DoneCallback       = Callable[[], None]                # ()
 ImpulseCallback    = Callable[[str, dict], None]       # (text, rohdaten)
 ConnectionCallback = Callable[[str], None]             # (status-text,)
+WorkEventCallback  = Callable[[WorkEvent], None]       # (ereignis,)
 
 
 def _create_http_session() -> requests.Session:
@@ -109,6 +111,7 @@ class StreamHandler:
         on_done:       DoneCallback,
         on_impulse:    ImpulseCallback,
         on_connection: ConnectionCallback,
+        on_work_event: WorkEventCallback,
         user_id:       str = DEFAULT_USER_ID,
     ) -> None:
         logger.debug(f"StreamHandler wird initialisiert (user_id='{user_id}')")
@@ -118,6 +121,7 @@ class StreamHandler:
         self._on_done       = on_done
         self._on_impulse    = on_impulse
         self._on_connection = on_connection
+        self._on_work_event = on_work_event
         self._user_id       = user_id
 
         # SSE-Zustand
@@ -462,6 +466,13 @@ class StreamHandler:
             )
             self._release_failed(data.get("nachrichten_ids", []))
             GLib.idle_add(self._invoke_stage, "Ausfall", nachricht)
+            self._dispatch_work_event(data)
+            return
+
+        if typ in ("pixie_auftrag", "impuls_denkt"):
+            # Arbeitszyklen tragen keinen Text für den Chat. Der Auffangzweig darunter
+            # zeigte sie als Wort Novas — als JSON-Zeile in einer hervorgehobenen Bubble.
+            self._dispatch_work_event(data)
             return
 
         # Alles andere (Pixie-Impulse, Shadow-Delivery, ...) an die UI reichen.
@@ -649,9 +660,37 @@ class StreamHandler:
             logger.exception(f"Fehler im on_connection-Callback: {fehler}")
         return False
 
+    def _invoke_work_event(self, event: WorkEvent) -> bool:
+        """Ruft `on_work_event` im UI-Thread.
+
+        Nachbedingung: gibt immer False zurück, damit `GLib.idle_add` nicht wiederholt;
+        eine Ausnahme des Rückrufs wird protokolliert und nicht weitergereicht.
+        """
+        try:
+            self._on_work_event(event)
+        except Exception as fehler:
+            logger.exception(f"Fehler im on_work_event-Callback: {fehler}")
+        return False
+
     # ─── Direkter Dispatch-Helper (aus Worker-Threads aufgerufen) ───
     def _dispatch_error(self, message: str) -> None:
         GLib.idle_add(self._invoke_error, message)
+
+    def _dispatch_work_event(self, data: dict) -> None:
+        """Formt die Nutzlast zum Ereignis um und reicht es an den UI-Thread.
+
+        Eine ungültige Nutzlast ergibt kein Ereignis; die Error-Zeile schreibt die
+        Umformung. Umgeformt wird hier und nicht im Hauptfenster, damit ein
+        ungültiges Ereignis den UI-Thread nie erreicht.
+
+        Vorbedingung: `data` ist die Nutzlast als Mapping.
+        Nachbedingung: genau ein `idle_add` mit dem Ereignis, wenn die Nutzlast gültig ist,
+        sonst keiner.
+        """
+        event = work_event_from_payload(data)
+        if event is None:
+            return
+        GLib.idle_add(self._invoke_work_event, event)
 
     def _dispatch_done(self) -> None:
         GLib.idle_add(self._invoke_done)

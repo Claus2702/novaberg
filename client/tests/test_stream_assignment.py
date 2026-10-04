@@ -5,7 +5,7 @@ dass eine ankommende Antwort zu einer anderen Frage gehoert — sie liest sich
 richtig, sie passt nur nicht. Bis heute war sie nur am laufenden Client
 geprueft.
 
-Der Zeuge braucht weder Server noch Fenster: Der Konstruktor nimmt sechs
+Der Zeuge braucht weder Server noch Fenster: Der Konstruktor nimmt sieben
 Rueckrufe und baut nur eine HTTP-Sitzung auf, ohne sie zu benutzen.
 """
 
@@ -32,6 +32,7 @@ def _handler() -> StreamHandler:
         on_done=still,
         on_impulse=still,
         on_connection=still,
+        on_work_event=still,
     )
 
 
