@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar: Bauplan und Umstellung
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 04.10.2026, 12:52 UTC (§18: L3 im Betrieb gemessen; L6 gebaut; die Reihenfolge L6 → Generator → L4/L5). Davor 04.10.2026, 11:28 UTC (§18: L3 gebaut). Davor 04.10.2026, 10:30 UTC (§18: L3 kennt alle vier Ereignisse und baut den Weg aus `_t` §17.10; L4 erst nach L3 und mit Thema; L5 mit Arbeitszustand, Art der Aufgabe und Tooltip). Davor 03.10.2026, 20:48 UTC (§18: die Statuszeile zeigt jeden Arbeitszustand, L5). Davor 03.10.2026, 19:19 UTC (§18: L5 zeigt Pixies Arbeitszyklus auch in der Statuszeile). Davor 03.10.2026, 19:07 UTC (§18: L2 gebaut). Davor 03.10.2026, 17:09 UTC (§18: L1 gebaut). Davor 03.10.2026, 13:40 UTC (§18: L0 gebaut). Davor 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
+**Stand:** 04.10.2026, 13:41 UTC (§18: der Umbruch der Phasenanzeige behoben). Davor 04.10.2026, 13:39 UTC (§18: L6 im Betrieb gemessen). Davor 04.10.2026, 12:52 UTC (§18: L3 im Betrieb gemessen; L6 gebaut; die Reihenfolge L6 → Generator → L4/L5). Davor 04.10.2026, 11:28 UTC (§18: L3 gebaut). Davor 04.10.2026, 10:30 UTC (§18: L3 kennt alle vier Ereignisse und baut den Weg aus `_t` §17.10; L4 erst nach L3 und mit Thema; L5 mit Arbeitszustand, Art der Aufgabe und Tooltip). Davor 03.10.2026, 20:48 UTC (§18: die Statuszeile zeigt jeden Arbeitszustand, L5). Davor 03.10.2026, 19:19 UTC (§18: L5 zeigt Pixies Arbeitszyklus auch in der Statuszeile). Davor 03.10.2026, 19:07 UTC (§18: L2 gebaut). Davor 03.10.2026, 17:09 UTC (§18: L1 gebaut). Davor 03.10.2026, 13:40 UTC (§18: L0 gebaut). Davor 03.10.2026 (§18 neu: Bauteile für den Leerlauf). Davor 02.10.2026
 **Inhalt:** die Tests der Bausteine (§10) und die Bauberichte des Prototyps (§13.8, §13.10, §13.11). Dazu die Bauteile für den Client mit `ZIEL` / `TEST` / `MESSUNG` (§16) und die für den Leerlauf samt Abnahme (§18).
 
 ---
@@ -110,6 +110,17 @@ Jeder Baustein ist ohne GTK testbar. Tests, die ohne das jeweilige Verhalten rot
   - die Anzeige in jedem Bild → 2.
 - **Ohne Zeugen** ist, dass das Panel `status_due` aufruft; das zeigt erst die Messung.
 - **Die Messung steht aus:** ein Turn im sichtbaren Fenster mit je mindestens 30 s Rauschen davor und danach.
+
+**L6 im Betrieb gemessen, 04.10.2026.** Der Mitschnitt läuft 305 s: zwei Turns über Astronomie, der zweite im Nachklang des ersten, davor und danach Rauschen. Die Anzeige ist alle 0,25 s abgelesen und das Gesicht Bild für Bild vermessen.
+
+- **Die Anzeige folgt dem Gesicht:** Alle 9 Zustandswechsel liegen innerhalb von 0,25 s an Chat, Mund und Lidschlag. Rund 80 Formwechsel gehen bei *in 0 s* zur angekündigten Form. Abgebrochen wird eine Form nur bei einem Zustandswechsel, und dort gehört es so. Die Markierung im Band stimmt, und nichts flackert.
+- **Ein Turn im Nachklang** wechselt sofort ins Nachdenken.
+- **Ein Mangel:** ~~Im Nachklang bricht die erste Zeile um, und das Gesicht springt von 409 auf 392 px (Fundliste).~~ → **behoben 13:41 UTC:** Keine Zeile bricht mehr um, was nicht passt, wird mit „…“ gekürzt, und der volle Text steht im Tooltip (`client/ui/status_label.py`). Ein Zeuge mit GTK (`client/tests/test_status_view.py`, läuft auf dem Rechner mit Anzeige) hält die Höhe für kurzen und längsten Text gleich; sein Zwilling mit Umbruch wird höher. Die ganze Client-Suite ergibt `Ran 400 tests` / `OK`. Die Gegenprobe mit Umbruch: 5 rot.
+- **Die Befunde aus der Messung von L3 bestehen fort**, jetzt mit der Anzeige belegt:
+  - Das Einatmen dauert 0,75 s wie geplant, ist aber im Bild nicht zu sehen.
+  - Die Blickrichtung erreicht das Bild kaum.
+  - Im Nachklang ist die Lidschlagrate am höchsten.
+- **Neu:** Die Antwort trägt die Emotion des vorigen Turns (Fundliste).
 
 ### 18.1 Abnahme
 
