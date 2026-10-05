@@ -27,7 +27,11 @@ from avatar.base_image import (
     JAW_TOLERANCE,
     WARP_TRIANGLES,
     WarpCache,
+    _affine_terms,
+    _grown_corners,
+    _pattern_terms,
     affine,
+    fill_triangles,
     grown_triangle,
     render_warped,
     smooth01,
@@ -101,13 +105,27 @@ class FakeSurface:
         return f"FakeSurface({self.label})"
 
 
+class FakePattern:
+    """Ein Muster auf einer Fläche, das jede gesetzte Matrix mitschreibt."""
+
+    def __init__(self, surface: FakeSurface) -> None:
+        """Merkt die Fläche; noch keine Matrix gesetzt."""
+        self.surface = surface
+        self.matrices: list[tuple] = []
+
+    def set_matrix(self, matrix: tuple) -> None:
+        """Schreibt die Matrix mit."""
+        self.matrices.append(matrix)
+
+
 class FakeCanvas:
     """Ersatz für `CairoCanvas`: neue Flächen mit aufzeichnendem Kontext, Matrizen als Tupel."""
 
     def __init__(self) -> None:
-        """Beginnt ohne Flächen."""
+        """Beginnt ohne Flächen und ohne Muster."""
         self.surfaces: list[FakeSurface] = []
         self.contexts: list[RecordingContext] = []
+        self.patterns: list[FakePattern] = []
 
     def new_surface(self, width: int, height: int) -> tuple[FakeSurface, RecordingContext]:
         """Eine neue Fläche und ihr Kontext; beide werden gemerkt."""
@@ -120,6 +138,12 @@ class FakeCanvas:
     def matrix(self, coefficients: tuple) -> tuple:
         """Die Matrix als markiertes Tupel."""
         return ("matrix", coefficients)
+
+    def pattern(self, surface: FakeSurface) -> FakePattern:
+        """Ein neues Muster auf `surface`; es wird gemerkt."""
+        pattern = FakePattern(surface)
+        self.patterns.append(pattern)
+        return pattern
 
 
 class RecordingGradients:
@@ -605,8 +629,17 @@ class HeadTurnPathTest(unittest.TestCase):
         cr = RecordingContext()
         draw_face(cr, SIZE, _pose(head_yaw=0.06), _layers(), _tools())
         names = cr.names()
-        self.assertEqual(names.count("clip"), moved)
-        self.assertEqual(names.count("set_source_surface"), moved + 1)  # dazu die Unterlage
+        # Angepasst mit dem `fill` je Dreieck: Bis dahin zählte der Zeuge `clip` = moved.
+        # Jetzt ist jedes Dreieck ein `fill`, dazu der Hintergrund; gemalt (`paint`) wird
+        # nur die Unterlage, ein `clip` kommt auf `cr` nicht mehr vor.
+        self.assertEqual(names.count("fill"), moved + 1)
+        self.assertEqual(names.count("paint"), 1)
+        self.assertNotIn("clip", names)
+        # Angepasst mit dem einen Muster je Aufruf: Bis dahin war `set_source_surface`
+        # = moved + 1. Jetzt setzt nur die Unterlage eine Fläche; die Dreiecke setzen
+        # mit `set_source` das Muster.
+        self.assertEqual(names.count("set_source_surface"), 1)  # die Unterlage
+        self.assertEqual(names.count("set_source"), moved)
 
 
 class DrawTurnedTest(unittest.TestCase):
@@ -629,10 +662,92 @@ class DrawTurnedTest(unittest.TestCase):
             ("restore", ()),
         ]
         self.assertEqual(self.cr.calls[:5], underlay)
-        self.assertEqual(self.cr.names().count("clip"), len(self.moved))
-        transforms = [args[0] for name, args in self.cr.calls if name == "transform"]
-        want = [("matrix", affine(t.warp.source, t.warp.dest)) for t in self.moved]
-        self.assertEqual(transforms, want)
+        # Angepasst mit dem `fill` je Dreieck: Bis dahin zählte der Zeuge `clip` = moved.
+        names = self.cr.names()
+        self.assertEqual(names.count("fill"), len(self.moved))
+        self.assertEqual(names.count("paint"), 1)  # nur die Unterlage
+        self.assertNotIn("clip", names)
+        # Angepasst mit dem einen Muster je Aufruf: Bis dahin trug `cr` je Dreieck
+        # `transform(affine)`. Jetzt trägt die Matrix das Muster, als Umkehrung von
+        # Abbildung mal Maßstab; dass es die Umkehrung ist, prüft
+        # `test_pattern_terms_invert_affine_and_scale`.
+        self.assertNotIn("transform", names)
+        self.assertEqual(len(self.canvas.patterns), 1)
+        pattern = self.canvas.patterns[0]
+        self.assertIs(pattern.surface, self.head)
+        scale = SRC / SIZE
+        want = [
+            ("matrix", _pattern_terms(t.warp.source, t.warp.dest, scale, scale))
+            for t in self.moved
+        ]
+        self.assertEqual(pattern.matrices, want)
+
+    def test_each_triangle_is_one_fill_with_the_surface_as_pattern(self) -> None:
+        """Ein save/restore um alle; je Dreieck Pfad, Muster und `fill`."""
+        # Angepasst mit dem einen Muster je Aufruf: Bis dahin stand je Dreieck `save`,
+        # Pfad, `transform`, `scale`, `set_source_surface`, `fill`, `restore` (10
+        # Aufrufe). Jetzt nur Pfad, `set_source` und `fill` (6), die Matrix am Muster.
+        draw_turned(self.cr, self.canvas, self.head, self.triangles)
+        first = self.moved[0].warp
+        clip = grown_triangle(first.dest)
+        pattern = self.canvas.patterns[0]
+        want = [
+            ("save", ()),
+            ("move_to", clip[0]),
+            ("line_to", clip[1]),
+            ("line_to", clip[2]),
+            ("close_path", ()),
+            ("set_source", (pattern,)),
+            ("fill", ()),
+        ]
+        self.assertEqual(self.cr.calls[5:12], want)
+        self.assertEqual(self.cr.calls[-1], ("restore", ()))
+        self.assertEqual(len(self.cr.calls), 5 + 2 + 6 * len(self.moved))
+
+    def test_pattern_terms_invert_affine_and_scale(self) -> None:
+        """Die Matrix des Musters legt jede Ecke des Ziels auf die Ecke der Quelle in der Ebene.
+
+        Bisher lag ein Pixel `q` der Ebene unter `transform(affine)` und `scale(s, s)`
+        bei `affine(s·q)`. Die Matrix muss also jede Ecke von `dest` auf die Ecke von
+        `source` geteilt durch `s` legen, und mit `affine(s·…)` verkettet die Einheit sein.
+        """
+        self.assertGreater(len(self.moved), 100)
+        s = SRC / SIZE
+        for t in self.moved:
+            source, dest = t.warp.source, t.warp.dest
+            a, b, c, d, e, f = _pattern_terms(source, dest, s, s)
+            for (sx, sy), (dx, dy) in zip(source, dest, strict=True):
+                self.assertAlmostEqual(a * dx + c * dy + e, sx / s, delta=1e-6)
+                self.assertAlmostEqual(b * dx + d * dy + f, sy / s, delta=1e-6)
+            fa, fb, fc, fd, fe, ff = affine(source, dest)
+            for qx, qy in ((0.0, 0.0), (SIZE, 0.0), (0.0, SIZE)):  # Ecken der Ebene
+                px, py = fa * s * qx + fc * s * qy + fe, fb * s * qx + fd * s * qy + ff
+                self.assertAlmostEqual(a * px + c * py + e, qx, delta=1e-6)
+                self.assertAlmostEqual(b * px + d * py + f, qy, delta=1e-6)
+
+    def test_pattern_terms_without_the_scale_miss_the_layer(self) -> None:
+        """Zwilling: Ohne den Maßstab läge die Ecke um den Faktor `SRC / SIZE` daneben."""
+        first = max(self.moved, key=lambda t: t.warp.source[0][0]).warp  # rechts, x groß
+        (sx, _), (dx, dy) = first.source[0], first.dest[0]
+        a, _, c, _, e, _ = _pattern_terms(first.source, first.dest, 1.0, 1.0)
+        self.assertAlmostEqual(a * dx + c * dy + e, sx, delta=1e-6)
+        self.assertGreater(abs(a * dx + c * dy + e - sx * SIZE / SRC), 100)
+
+    def test_unchecked_cores_equal_the_checked_functions(self) -> None:
+        """Die Schleife rechnet ungeprüft, Bit für Bit wie `affine` und `grown_triangle`."""
+        self.assertGreater(len(self.moved), 100)
+        for t in self.moved:
+            source, dest = t.warp.source, t.warp.dest
+            self.assertEqual(_affine_terms(source, dest), affine(source, dest))
+            self.assertEqual(_grown_corners(dest), grown_triangle(dest))
+
+    def test_fill_triangles_rejects_an_empty_layer(self) -> None:
+        with self.assertRaises(ValueError):
+            fill_triangles(self.cr, self.canvas, FakeSurface("leer", 0, 0), [self.moved[0].warp])
+        self.assertEqual(self.cr.calls, [])  # abgewiesen vor dem ersten Strich
+        # Zwilling: mit Fläche ein Dreieck, ein `fill`
+        self.assertEqual(fill_triangles(self.cr, self.canvas, self.head, [self.moved[0].warp]), 1)
+        self.assertEqual(self.cr.names().count("fill"), 1)
 
     def test_turn_clip_corners_grow_radially(self) -> None:
         draw_turned(self.cr, self.canvas, self.head, self.triangles)
@@ -678,6 +793,8 @@ class WithoutCairoTest(unittest.TestCase):
             # Erst die echte Matrix braucht Cairo — und meldet sein Fehlen laut
             with self.assertRaises(ImportError):
                 base_image.CairoCanvas().matrix((1.0, 0.0, 0.0, 1.0, 0.0, 0.0))
+            with self.assertRaises(ImportError):
+                base_image.CairoCanvas().pattern(object())
 
     def test_the_block_stops_a_cairo_import(self) -> None:
         # Zwilling: unter derselben Sperre scheitert ein Modul, das Cairo oben importiert

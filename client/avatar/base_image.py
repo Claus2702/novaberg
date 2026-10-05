@@ -86,7 +86,11 @@ class Canvas(Protocol):
         ...
 
     def matrix(self, coefficients: Affine) -> object:
-        """Eine Matrix für `cr.transform`."""
+        """Eine Matrix für `cr.transform` oder `pattern.set_matrix`."""
+        ...
+
+    def pattern(self, surface: object) -> object:
+        """Ein Muster auf `surface` für `cr.set_source`, Matrix zunächst die Einheit."""
         ...
 
 
@@ -131,6 +135,25 @@ class CairoCanvas:
         result = cairo.Matrix(*coefficients)
 
         # Keine Ausgabe-Verifikation: cairo.Matrix übernimmt die sechs Werte unverändert.
+        return result
+
+    def pattern(self, surface: object) -> object:
+        """Ein `cairo.SurfacePattern` auf `surface`.
+
+        Filter und Rand bleiben bei der Vorgabe von Cairo, wie bei
+        `set_source_surface`, das dasselbe Muster mit der Matrix der Verschiebung baut.
+        Vorbedingung: `surface` eine Cairo-Fläche.
+        Nachbedingung: ein Muster auf `surface`, Matrix die Einheit.
+        Fehlerfälle: TypeError aus Cairo bei einem fremden Objekt; ImportError ohne pycairo.
+        """
+        # Keine Eingabe-Validierung: den Typ der Fläche prüft cairo.SurfacePattern.
+
+        # ── Verarbeitung ──
+        import cairo  # erst hier, damit das Modul ohne pycairo lädt
+
+        result = cairo.SurfacePattern(surface)
+
+        # Keine Ausgabe-Verifikation: Cairo baut das Muster oder wirft.
         return result
 
 
@@ -245,7 +268,27 @@ def affine(source: Triangle, dest: Triangle) -> Affine:
         raise ValueError(f"affine: Quelldreieck {source!r} ohne Fläche")
 
     # ── Verarbeitung ──
+    result = _affine_terms(source, dest)
+
+    # ── Ausgabe-Verifikation ──
+    if not all(math.isfinite(v) for v in result):
+        raise RuntimeError(f"affine: Koeffizienten {result!r} nicht endlich")
+    return result
+
+
+def _affine_terms(source: Triangle, dest: Triangle) -> Affine:
+    """Die Rechnung von `affine` ohne Prüfung, für die Schleife in `fill_triangles`.
+
+    Vorbedingung: wie `affine`; geprüft hat sie der Aufrufer, für ein ganzes Gitter.
+    Nachbedingung: dieselben Koeffizienten wie `affine`, Bit für Bit.
+    Fehlerfälle: ZeroDivisionError bei einer Quelle mit Fläche genau 0.
+    """
+    # Keine Eingabe-Validierung: `affine` und der Bau des Gitters prüfen vorher.
+
+    # ── Verarbeitung ──
+    (sx0, sy0), (sx1, sy1), (sx2, sy2) = source
     (dx0, dy0), (dx1, dy1), (dx2, dy2) = dest
+    den = sx0 * (sy1 - sy2) + sx1 * (sy2 - sy0) + sx2 * (sy0 - sy1)
     a = (dx0 * (sy1 - sy2) + dx1 * (sy2 - sy0) + dx2 * (sy0 - sy1)) / den
     b = (dy0 * (sy1 - sy2) + dy1 * (sy2 - sy0) + dy2 * (sy0 - sy1)) / den
     c = (dx0 * (sx2 - sx1) + dx1 * (sx0 - sx2) + dx2 * (sx1 - sx0)) / den
@@ -253,11 +296,42 @@ def affine(source: Triangle, dest: Triangle) -> Affine:
     cross = (sx1 * sy2 - sx2 * sy1, sx2 * sy0 - sx0 * sy2, sx0 * sy1 - sx1 * sy0)
     e = (dx0 * cross[0] + dx1 * cross[1] + dx2 * cross[2]) / den
     f = (dy0 * cross[0] + dy1 * cross[1] + dy2 * cross[2]) / den
-    result = (a, b, c, d, e, f)
 
-    # ── Ausgabe-Verifikation ──
-    if not all(math.isfinite(v) for v in result):
-        raise RuntimeError(f"affine: Koeffizienten {result!r} nicht endlich")
+    # Keine Ausgabe-Verifikation: `affine` prüft das Ergebnis; in `fill_triangles` geht
+    # seine Umkehrung (`_pattern_terms`) an `Canvas.matrix`, das nicht endliche
+    # Koeffizienten abweist.
+    return (a, b, c, d, e, f)
+
+
+def _pattern_terms(source: Triangle, dest: Triangle, sx: float, sy: float) -> Affine:
+    """Die Matrix des Musters für ein Dreieck: die Umkehrung von Abbildung mal Maßstab.
+
+    Bisher stand die Ebene unter `transform(affine)`, `scale(sx, sy)` und
+    `set_source_surface(layer, 0, 0)`: Ein Pixel `q` der Ebene lag im Raum des Pfads
+    bei `affine(sx·qx, sy·qy)`. Ein Muster bildet umgekehrt vom Raum des Pfads auf die
+    Ebene ab, also mit der Umkehrung genau dieser Abbildung.
+    Vorbedingung: wie `_affine_terms`; dazu ein Zieldreieck mit Fläche.
+    Nachbedingung: Koeffizienten in der Reihenfolge von `affine`, die jede Ecke von
+    `dest` auf die Ecke von `source` geteilt durch (`sx`, `sy`) legen.
+    Fehlerfälle: ZeroDivisionError bei Quelle oder Ziel mit Fläche genau 0.
+    """
+    # Keine Eingabe-Validierung: der Bau des Gitters prüft vorher, einmal je Bild.
+
+    # ── Verarbeitung ──
+    a, b, c, d, e, f = _affine_terms(source, dest)
+    a, b, c, d = a * sx, b * sx, c * sy, d * sy
+    det = a * d - b * c
+    result = (
+        d / det,
+        -b / det,
+        -c / det,
+        a / det,
+        (c * f - d * e) / det,
+        (b * e - a * f) / det,
+    )
+
+    # Keine Ausgabe-Verifikation: `Canvas.matrix` weist nicht endliche Koeffizienten ab;
+    # die Umkehrung bezeugt `test_pattern_terms_invert_affine_and_scale`.
     return result
 
 
@@ -277,19 +351,39 @@ def grown_triangle(dest: Triangle) -> Triangle:
     _check_triangle(dest, "grown_triangle")
 
     # ── Verarbeitung ──
+    grown = _grown_corners(dest)
     cx = sum(p[0] for p in dest) / 3
     cy = sum(p[1] for p in dest) / 3
-    grown = []
-    for px, py in dest:
-        vx, vy = px - cx, py - cy
-        length = math.hypot(vx, vy) or 1.0
-        grown.append((px + vx / length * CLIP_GROW, py + vy / length * CLIP_GROW))
 
     # ── Ausgabe-Verifikation ──
     for (px, py), (gx, gy) in zip(dest, grown, strict=True):
         before = math.hypot(px - cx, py - cy)
         if before > 0 and abs(math.hypot(gx - cx, gy - cy) - before - CLIP_GROW) > 1e-6:
             raise RuntimeError(f"grown_triangle: Ecke ({px}, {py}) nicht radial gewachsen")
+    return grown
+
+
+def _grown_corners(dest: Triangle) -> Triangle:
+    """Die Rechnung von `grown_triangle` ohne Prüfung, für die Schleife in `fill_triangles`.
+
+    Vorbedingung: drei endliche Punkte; geprüft hat sie der Aufrufer, für ein ganzes Gitter.
+    Nachbedingung: dieselben Ecken wie `grown_triangle`, Bit für Bit.
+    Fehlerfälle: keine eigenen; nicht endliche Ecken ergäben nicht endliche Ecken.
+    """
+    # Keine Eingabe-Validierung: `grown_triangle` und der Bau des Gitters prüfen vorher.
+
+    # ── Verarbeitung ──
+    (x0, y0), (x1, y1), (x2, y2) = dest
+    cx = (x0 + x1 + x2) / 3
+    cy = (y0 + y1 + y2) / 3
+    grown = []
+    for px, py in dest:
+        vx, vy = px - cx, py - cy
+        length = math.hypot(vx, vy) or 1.0
+        grown.append((px + vx / length * CLIP_GROW, py + vy / length * CLIP_GROW))
+
+    # Keine Ausgabe-Verifikation: `grown_triangle` prüft das Ergebnis; für die Schleife
+    # bezeugt es `test_turn_clip_corners_grow_radially`.
     return tuple(grown)
 
 
@@ -405,6 +499,54 @@ def draw_triangle(
 
     # Keine Ausgabe-Verifikation: save und restore stehen paarweise; die Koeffizienten
     # prüft affine.
+
+
+def fill_triangles(
+    ctx: "cairo.Context", canvas: Canvas, layer: object, triangles: Sequence[WarpTriangle]
+) -> int:
+    """Dreiecke wie `draw_triangle`, aber je Dreieck ein `fill` statt `clip` und `paint`.
+
+    Für die Kopfdrehung, die je Bild rund tausend Dreiecke zeichnet. Ein Muster auf
+    `layer` je Aufruf; je Dreieck bekommt es die Matrix des Dreiecks
+    (`_pattern_terms`), der Pfad ist das vergrößerte Zieldreieck im Raum von `ctx`.
+    Kein `save`, `transform` oder neues Muster je Dreieck. Ein `clip` baut in Cairo je
+    Aufruf eine Maske, ein `fill` nicht. Das Bild ist dasselbe: Beide malen die Quelle
+    mit OVER durch die geglättete Deckung desselben Pfads, und die Matrix des Musters
+    ist dieselbe Abbildung wie vorher `transform` und `scale`.
+    Geprüft wird nicht je Dreieck: Ecken endlich und jede Quelle mit Fläche sichert der
+    Bau des Gitters (`head_turn.yaw_grid`, `head_turn.yaw_triangles`), einmal je Bild.
+    Vorbedingung: `layer` eine Fläche mit Breite und Höhe > 0; Dreiecke aus einem
+    geprüften Gitter.
+    Nachbedingung: jedes Dreieck in der Reihenfolge von `triangles` auf `ctx`; `ctx`
+    steht danach wieder wie vorher (ein `save`/`restore` um alle). Rückgabe: Zahl der
+    Dreiecke.
+    Fehlerfälle: ValueError bei leerer Fläche; nicht endliche Koeffizienten weist
+    `Canvas.matrix` ab; ZeroDivisionError bei einem Dreieck mit Fläche genau 0.
+    """
+    # ── Eingabe-Validierung ──
+    width, height = layer.get_width(), layer.get_height()
+    if width <= 0 or height <= 0:
+        raise ValueError(f"fill_triangles: Ebene {width} × {height} leer")
+
+    # ── Verarbeitung ──
+    sx, sy = SRC / width, SRC / height
+    pattern = canvas.pattern(layer)
+    ctx.save()
+    for triangle in triangles:
+        clip = _grown_corners(triangle.dest)
+        terms = _pattern_terms(triangle.source, triangle.dest, sx, sy)
+        pattern.set_matrix(canvas.matrix(terms))
+        ctx.move_to(*clip[0])
+        ctx.line_to(*clip[1])
+        ctx.line_to(*clip[2])
+        ctx.close_path()
+        ctx.set_source(pattern)
+        ctx.fill()
+    ctx.restore()
+
+    # Keine Ausgabe-Verifikation: save und restore stehen paarweise; Cairo prüft die
+    # Fläche beim Malen selbst.
+    return len(triangles)
 
 
 def _check_triangle(triangle: Sequence[Point], where: str) -> None:

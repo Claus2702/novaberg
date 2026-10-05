@@ -1,7 +1,9 @@
 """Zeugen für die Rechnung der Kopfdrehung: Gitter, Kinnlinie, Hals, Grenze.
 
 Die Verschiebungen unter `avatar_reference/yaw.json` sind aus dem Prototyp erzeugt
-(`yawGitter`) und tragen je Winkel die Verschiebung an allen 24 × 29 Punkten. Die
+(`yawGitter`) und tragen je Winkel die Verschiebung an allen 24 × 29 Punkten. Zwischen
+diesen Winkeln ist `yaw_shift`, die Rechnung in einem Stück, der Maßstab für das
+Gitter aus der vorab gerechneten Basis. Die
 Zeichnung der Drehung bezeugt `test_avatar_compose.py`. Kein Zeuge braucht pycairo,
 GTK, eine Datei außer der Referenz oder einen Bildschirm.
 """
@@ -9,22 +11,29 @@ GTK, eine Datei außer der Referenz oder einen Bildschirm.
 import json
 import math
 import unittest
+from dataclasses import replace
 from pathlib import Path
+from unittest import mock
 
+from avatar import head_turn
 from avatar.drawing_eye import EYE_LEFT, EYE_RIGHT
 from avatar.drawing_tools import SRC, UX, UY
 from avatar.head_turn import (
+    AXIS_DEPTH,
+    DEPTH_MAX,
     HEAD_C,
     JAWLINE,
     NECK_CX,
     NECK_LEN,
     NECK_R,
+    YAW_BASIS,
     YAW_TRIANGLES,
     YAW_XS,
     YAW_YS,
     TurnPoint,
     jaw_y,
     neck_shift,
+    yaw_basis,
     yaw_grid,
     yaw_shift,
     yaw_triangles,
@@ -120,6 +129,90 @@ class ReferenceTest(unittest.TestCase):
                 x, y = p.source
                 self.assertAlmostEqual(p.dest[0], x + UX * p.shift, delta=EXACT)
                 self.assertAlmostEqual(p.dest[1], y + UY * p.shift, delta=EXACT)
+
+
+class BasisTest(unittest.TestCase):
+    """Die vorab gerechnete Basis ergibt an jedem Gitterpunkt die Verschiebung des Prototyps."""
+
+    # Winkel neben denen von `yaw.json`: beide Vorzeichen, knapp über der Schwelle des
+    # Wegs, krumme Werte und die Grenze
+    ANGLES = (-14.5, -7.25, -0.06, 0.06, 2.5, 9.75, 15.0)
+
+    def test_grid_from_the_basis_equals_the_prototype_at_every_point(self) -> None:
+        for deg in self.ANGLES:
+            th = deg * math.pi / 180
+            s = math.sin(th)
+            pairs = [
+                (p.source, p.shift, yaw_shift(p.source[0], p.source[1], s, th))
+                for row in yaw_grid(deg)
+                for p in row
+            ]
+            with self.subTest(deg=deg):
+                self.assertEqual(len(pairs), 24 * 29)
+                # Die erste Abweichung nennen, nicht die ganze Liste
+                off = [pair for pair in pairs if abs(pair[1] - pair[2]) > EXACT]
+                self.assertEqual(off[:1], [], f"{len(off)} Punkte weichen ab")
+
+    def test_the_compared_shifts_are_not_flat(self) -> None:
+        """Zwilling: Bei 9,75° wandert ein Punkt weit, bei −0,06° noch messbar."""
+        self.assertGreater(max(abs(p.shift) for row in yaw_grid(9.75) for p in row), 15.0)
+        self.assertGreater(max(abs(p.shift) for row in yaw_grid(-0.06) for p in row), 0.05)
+
+    def test_basis_is_the_lattice_and_in_range(self) -> None:
+        self.assertEqual([len(row) for row in YAW_BASIS], [24] * 29)
+        points = [b for row in YAW_BASIS for b in row]
+        self.assertEqual([b.source for b in points], [(x, y) for y in YAW_YS for x in YAW_XS])
+        for b in points:
+            self.assertTrue(AXIS_DEPTH <= b.z <= DEPTH_MAX, b)
+            self.assertTrue(all(0.0 <= w <= 1.0 for w in (b.hang, b.edge, b.neck_fall)), b)
+            if not b.on_cylinder:
+                self.assertEqual((b.neck_asin, b.neck_fall), (0.0, 0.0), b)
+        # Zwilling: Es gibt Punkte auf dem Halszylinder und daneben
+        on = sum(b.on_cylinder for b in points)
+        self.assertGreater(on, 0)
+        self.assertLess(on, len(points))
+
+    def test_yaw_basis_rejects_non_finite_input(self) -> None:
+        for args in ((math.nan, 0.0), (0.0, math.inf)):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                yaw_basis(*args)
+
+
+class GridCheckTest(unittest.TestCase):
+    """Das Gitter wird einmal geprüft: Ausgabe in `yaw_grid`, Eingabe in `yaw_triangles`."""
+
+    def _basis_with(self, **changes: object) -> tuple:
+        """`YAW_BASIS` mit einem geänderten Punkt im Gesicht (Zeile 12, Spalte 12)."""
+        rows = [list(row) for row in YAW_BASIS]
+        rows[12][12] = replace(rows[12][12], **changes)
+        return tuple(tuple(row) for row in rows)
+
+    def test_grid_with_a_broken_basis_is_rejected(self) -> None:
+        for changes in ({"z": math.nan}, {"z": 1e6}):
+            with (
+                self.subTest(changes=changes),
+                mock.patch.object(head_turn, "YAW_BASIS", self._basis_with(**changes)),
+                self.assertRaises(RuntimeError),
+            ):
+                yaw_grid(5.0)
+
+    def test_grid_with_a_sound_basis_passes(self) -> None:
+        """Zwilling: dieselbe Änderung im erlaubten Bereich geht durch und wirkt."""
+        z = YAW_BASIS[12][12].z
+        with mock.patch.object(head_turn, "YAW_BASIS", self._basis_with(z=z - 1.0)):
+            changed = yaw_grid(5.0)[12][12].shift
+        self.assertNotEqual(changed, yaw_grid(5.0)[12][12].shift)
+
+    def test_triangles_reject_a_foreign_or_non_finite_point(self) -> None:
+        for field, value in (("dest", (math.nan, 500.0)), ("source", (500.5, 500.0))):
+            grid = yaw_grid(5.0)
+            grid[12][12] = replace(grid[12][12], **{field: value})
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                yaw_triangles(grid)
+
+    def test_triangles_from_a_checked_grid_pass(self) -> None:
+        """Zwilling: das unveränderte Gitter ergibt alle Dreiecke."""
+        self.assertEqual(len(yaw_triangles(yaw_grid(5.0))), YAW_TRIANGLES)
 
 
 class FoldTest(unittest.TestCase):

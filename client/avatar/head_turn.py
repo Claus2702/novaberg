@@ -26,10 +26,15 @@ Gezeichnet wird mit Unterlage (`draw_turned`): Erst liegt das ungedrehte Bild ga
 darunter, darüber nur die Dreiecke, an denen mindestens eine Ecke verschoben ist. Ein
 Dreieck ohne Verschiebung ist die Identität und deckte genau die Unterlage; außerhalb
 von Kopf und Hals wird so nichts gezeichnet, und jede Naht zwischen den Dreiecken ist
-verdeckt.
+verdeckt. Jedes Dreieck ist ein `fill` mit der Zwischenfläche als Muster
+(`fill_triangles`), kein `clip` mit `paint`.
 
 Die Rechnung ist die des Prototyps (`yawShift`, `neckShift`, `jawY`, `yawGitter`,
 `yawWarpDraw`), Zeichen für Zeichen; die Zahlen in den Formeln stehen dort genauso.
+`yaw_shift` rechnet sie für einen Punkt in einem Stück. Das Gitter rechnet sie in
+zwei Teilen: Was nur am Gitterpunkt hängt (Tiefe, `hang`, `edge`, die Lage auf dem
+Hals), steht einmal beim Laden in `YAW_BASIS`; je Bild bleibt der Teil mit dem
+Winkel. Beide ergeben dieselbe Verschiebung.
 Das Modul importiert weder Cairo noch GTK.
 """
 
@@ -37,7 +42,7 @@ import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from avatar.base_image import Canvas, WarpTriangle, draw_triangle, paint_layer, smooth01
+from avatar.base_image import Canvas, WarpTriangle, fill_triangles, paint_layer, smooth01
 from avatar.drawing_tools import SRC, UX, UY, Point
 from avatar.idle_catalog import YAW_MAX
 
@@ -98,6 +103,25 @@ class TurnTriangle:
 
     warp: WarpTriangle
     moved: bool
+
+
+@dataclass(frozen=True)
+class YawBasis:
+    """Was die Verschiebung eines Gitterpunkts trägt und nicht vom Winkel abhängt.
+
+    Je Bild bleibt `(z · s · hang + (1 − hang) · Hals) · edge`; der Hals ist
+    `NECK_R · (sin(neck_asin + th · neck_fall) − neck_a)` auf dem Halszylinder, der
+    Sinus begrenzt auf ±90°, daneben 0.
+    """
+
+    source: Point
+    z: float  # Tiefe vor der Drehachse
+    hang: float  # 1 über dem Kinn, 0 am Hals
+    edge: float  # 1 im Bild, 0 auf dem Bildrand
+    on_cylinder: bool  # |neck_a| < 1: der Punkt liegt auf dem Halszylinder
+    neck_a: float  # (x − NECK_CX) / NECK_R
+    neck_asin: float  # asin(neck_a); 0 neben dem Hals
+    neck_fall: float  # (1 − t)^NECK_FALL: so viel vom Winkel wirkt hier; 0 neben dem Hals
 
 
 def jaw_y(x: float) -> float:
@@ -166,7 +190,8 @@ def yaw_shift(x: float, y: float, s: float, th: float) -> float:
     `s` ist der Sinus von `th`. Über dem Kinn ist es die Tiefe vor der Drehachse mal
     `s`, darunter die Verdrillung des Halses; der Übergang (`hang`) liegt über dem Hals
     genau an der Kinnlinie, daneben bei den Haaren weicher. Zum Bildrand hin klingt
-    alles auf null aus (`edge`).
+    alles auf null aus (`edge`). Die Rechnung in einem Stück, wie im Prototyp; das
+    Gitter teilt sie mit `yaw_basis` und muss dasselbe ergeben.
     Vorbedingung: alle vier endlich.
     Nachbedingung: endlich und höchstens `DEPTH_MAX · |s| + NECK_SHIFT_MAX` im Betrag;
     0 auf dem Bildrand.
@@ -212,16 +237,87 @@ def yaw_shift(x: float, y: float, s: float, th: float) -> float:
     return result
 
 
+def yaw_basis(x: float, y: float) -> YawBasis:
+    """Der Teil von `yaw_shift` am Punkt (x, y), der nicht vom Winkel abhängt.
+
+    Dieselben Ausdrücke wie in `yaw_shift` und `neck_shift`, in derselben Reihenfolge,
+    damit das Gitter dieselbe Verschiebung ergibt, nicht nur eine nahe.
+    Vorbedingung: beide endlich.
+    Nachbedingung: `AXIS_DEPTH` ≤ `z` ≤ `DEPTH_MAX`; `hang`, `edge` und `neck_fall` in
+    0..1; neben dem Hals `neck_asin` und `neck_fall` 0.
+    Fehlerfälle: ValueError bei nicht endlicher Eingabe.
+    """
+    # ── Eingabe-Validierung ──
+    if not (math.isfinite(x) and math.isfinite(y)):
+        raise ValueError(f"yaw_basis: {x!r}, {y!r} nicht endlich")
+
+    # ── Verarbeitung ──
+    dx, dy = x - HEAD_C[0], y - HEAD_C[1]
+    u = dx * UX + dy * UY
+    v = -dx * UY + dy * UX
+    r = 195 - 45 * smooth01(60, 260, v)
+    au = min(1.0, abs(u) / r)
+    ah = min(1.0, abs(u) / HAIR_R)
+    face = (
+        (1 - smooth01(r * 0.92, r + 45, abs(u)))
+        * smooth01(-345, -270, v)
+        * (1 - smooth01(260, 330, v))
+    )
+    nose = NOSE_DEPTH * math.exp(
+        -(u * u) / (2 * 38 * 38) - ((v - 15) * (v - 15)) / (2 * 55 * 55)
+    )
+    z = AXIS_DEPTH + HAIR_DEPTH * (1 - ah * ah) + face * (FACE_DEPTH * (1 - au * au) + nose)
+    on_neck = 1 - smooth01(NECK_R, NECK_R * 1.25, abs(x - NECK_CX))
+    jy = jaw_y(x)
+    hang = (1 - on_neck) * (1 - smooth01(260, 340, v)) + on_neck * (
+        1 - smooth01(jy - 6, jy + 14, y)
+    )
+    edge = (
+        smooth01(0, 60, x)
+        * (1 - smooth01(SRC - 60, SRC, x))
+        * smooth01(0, 40, y)
+        * (1 - smooth01(SRC - 60, SRC, y))
+    )
+    a = (x - NECK_CX) / NECK_R
+    on_cylinder = abs(a) < 1
+    neck_asin, neck_fall = 0.0, 0.0
+    if on_cylinder:
+        t = max(0.0, min(1.0, (y - jy) / NECK_LEN))
+        neck_asin, neck_fall = math.asin(a), math.pow(1 - t, NECK_FALL)
+    basis = YawBasis(
+        source=(x, y), z=z, hang=hang, edge=edge, on_cylinder=on_cylinder,
+        neck_a=a, neck_asin=neck_asin, neck_fall=neck_fall,
+    )
+
+    # ── Ausgabe-Verifikation ──
+    if not AXIS_DEPTH <= z <= DEPTH_MAX:
+        raise RuntimeError(f"yaw_basis: Tiefe {z} bei ({x}, {y}) außerhalb der Spanne")
+    if not all(0.0 <= w <= 1.0 for w in (hang, edge, neck_fall)):
+        raise RuntimeError(f"yaw_basis: Gewicht außerhalb 0..1 bei ({x}, {y}): {basis!r}")
+    return basis
+
+
+# Die Basis aller Gitterpunkte, einmal beim Laden: Zeilen über `YAW_YS`, je Zeile über
+# `YAW_XS`, wie `yaw_grid`.
+YAW_BASIS: tuple[tuple[YawBasis, ...], ...] = tuple(
+    tuple(yaw_basis(x, y) for x in YAW_XS) for y in YAW_YS
+)
+
+
 def yaw_grid(deg: float) -> list[list[TurnPoint]]:
     """Das Drehgitter für `deg` Grad: Zeilen über `YAW_YS`, je Zeile Punkte über `YAW_XS`.
 
     Wie `yawGitter`: Ein Winkel jenseits der Grenze ist ein Fehler des Aufrufers, kein
-    Bild.
+    Bild. Je Punkt wird nur der Teil mit dem Winkel gerechnet, der Rest steht in
+    `YAW_BASIS`; das Ergebnis ist dasselbe wie `yaw_shift` an jedem Punkt.
     Vorbedingung: `deg` eine endliche Zahl mit |`deg`| ≤ `YAW_MAX`.
     Nachbedingung: `len(YAW_YS)` Zeilen zu `len(YAW_XS)` Punkten; die Quelle ist der
-    Gitterpunkt, das Ziel die Quelle plus `shift` entlang (`UX`, `UY`), `shift` endlich.
+    Gitterpunkt, das Ziel die Quelle plus `shift` entlang (`UX`, `UY`), `shift` endlich
+    und höchstens `DEPTH_MAX · |sin θ| + NECK_SHIFT_MAX` im Betrag. Geprüft wird das
+    einmal für das ganze Gitter, nicht je Punkt.
     Fehlerfälle: TypeError, wenn `deg` keine Zahl ist; ValueError bei nicht endlichem
-    Winkel oder jenseits von ±`YAW_MAX`.
+    Winkel oder jenseits von ±`YAW_MAX`; RuntimeError, wenn das Gitter die
+    Nachbedingung verletzt.
     """
     # ── Eingabe-Validierung ──
     if isinstance(deg, bool) or not isinstance(deg, int | float):
@@ -234,20 +330,30 @@ def yaw_grid(deg: float) -> list[list[TurnPoint]]:
     # ── Verarbeitung ──
     th = deg * math.pi / 180
     s = math.sin(th)
+    half_pi = math.pi / 2
     grid = []
-    for y in YAW_YS:
+    for basis_row in YAW_BASIS:
         row = []
-        for x in YAW_XS:
-            shift = yaw_shift(x, y, s, th)
+        for b in basis_row:
+            neck = 0.0
+            if b.on_cylinder:
+                ang = max(-half_pi, min(half_pi, b.neck_asin + th * b.neck_fall))
+                neck = NECK_R * (math.sin(ang) - b.neck_a)
+            shift = (b.z * s * b.hang + (1 - b.hang) * neck) * b.edge
+            x, y = b.source
             dest = (x + UX * shift, y + UY * shift)
-            row.append(TurnPoint(source=(x, y), dest=dest, shift=shift))
+            row.append(TurnPoint(source=b.source, dest=dest, shift=shift))
         grid.append(row)
 
     # ── Ausgabe-Verifikation ──
     if len(grid) != len(YAW_YS) or any(len(row) != len(YAW_XS) for row in grid):
         raise RuntimeError("Kopfdrehung: Gitter hat nicht 24 × 29 Punkte")
-    if not all(math.isfinite(p.shift) for row in grid for p in row):
+    shifts = [p.shift for row in grid for p in row]
+    if not all(math.isfinite(v) for v in shifts):
         raise RuntimeError("Kopfdrehung: eine Verschiebung ist keine Zahl")
+    bound = DEPTH_MAX * abs(s) + NECK_SHIFT_MAX
+    if max(abs(v) for v in shifts) > bound:
+        raise RuntimeError(f"Kopfdrehung: eine Verschiebung liegt über {bound}")
     return grid
 
 
@@ -257,24 +363,35 @@ def yaw_triangles(grid: list[list[TurnPoint]]) -> list[TurnTriangle]:
     Je Zelle erst (oben links, oben rechts, unten links), dann (oben rechts, unten
     rechts, unten links); zeilenweise. Ein Dreieck gilt als verschoben, wenn an
     mindestens einer Ecke die Verschiebung nicht 0 ist.
-    Vorbedingung: `grid` aus `yaw_grid`, `len(YAW_YS)` Zeilen zu `len(YAW_XS)` Punkten.
+    Hier wird das Gitter einmal geprüft, für jedes Dreieck daraus: Die Zeichnung
+    (`fill_triangles`) prüft nicht mehr je Dreieck.
+    Vorbedingung: `grid` aus `yaw_grid`, `len(YAW_YS)` Zeilen zu `len(YAW_XS)` Punkten;
+    jede Quelle der Gitterpunkt (`YAW_XS`[i], `YAW_YS`[j]) — die Achsen steigen streng,
+    also hat jedes Quelldreieck Fläche —, jedes Ziel endlich.
     Nachbedingung: `YAW_TRIANGLES` Dreiecke; Quelle und Ziel aus den Ecken.
-    Fehlerfälle: ValueError bei einem Gitter anderer Form.
+    Fehlerfälle: ValueError bei einem Gitter anderer Form, mit fremder Quelle oder
+    nicht endlichem Ziel.
     """
     # ── Eingabe-Validierung ──
     if len(grid) != len(YAW_YS) or any(len(row) != len(YAW_XS) for row in grid):
         raise ValueError("yaw_triangles: Gitter hat nicht 24 × 29 Punkte")
+    lattice = [(x, y) for y in YAW_YS for x in YAW_XS]
+    points = [p for row in grid for p in row]
+    if [p.source for p in points] != lattice:
+        raise ValueError("yaw_triangles: eine Quelle ist nicht der Gitterpunkt")
+    if not all(math.isfinite(p.dest[0]) and math.isfinite(p.dest[1]) for p in points):
+        raise ValueError("yaw_triangles: ein Ziel ist nicht endlich")
 
     # ── Verarbeitung ──
     triangles = []
     for j in range(len(YAW_YS) - 1):
         for i in range(len(YAW_XS) - 1):
             p, q, r, u = grid[j][i], grid[j][i + 1], grid[j + 1][i], grid[j + 1][i + 1]
-            for corners in ((p, q, r), (q, u, r)):
+            for a, b, c in ((p, q, r), (q, u, r)):
                 warp = WarpTriangle(
-                    source=tuple(c.source for c in corners), dest=tuple(c.dest for c in corners)
+                    source=(a.source, b.source, c.source), dest=(a.dest, b.dest, c.dest)
                 )
-                moved = any(c.shift != 0 for c in corners)
+                moved = a.shift != 0 or b.shift != 0 or c.shift != 0
                 triangles.append(TurnTriangle(warp=warp, moved=moved))
 
     # ── Ausgabe-Verifikation ──
@@ -289,8 +406,8 @@ def draw_turned(
     """Legt das ungedrehte Bild `head` als Unterlage, darüber die verschobenen Dreiecke.
 
     `cr` steht in Pixeln der Vorlage; `head` wird auf `SRC` × `SRC` gestreckt wie in
-    `paint_layer`. Jedes verschobene Dreieck wird mit `draw_triangle` gezeichnet, also
-    auf das radial vergrößerte Zieldreieck begrenzt.
+    `paint_layer`. Die verschobenen Dreiecke zeichnet `fill_triangles`: je Dreieck ein
+    `fill` des radial vergrößerten Zieldreiecks mit `head` als Muster.
     Vorbedingung: `head` eine Fläche mit Breite und Höhe > 0; `triangles` aus
     `yaw_triangles`.
     Nachbedingung: Unterlage und alle verschobenen Dreiecke liegen auf `cr`, in der
@@ -307,10 +424,9 @@ def draw_turned(
 
     # ── Verarbeitung ──
     paint_layer(cr, head)
-    moved = [t for t in triangles if t.moved]
-    for triangle in moved:
-        draw_triangle(cr, canvas, head, triangle.warp)
+    moved = [t.warp for t in triangles if t.moved]
+    drawn = fill_triangles(cr, canvas, head, moved)
 
-    # Keine Ausgabe-Verifikation: paint_layer und draw_triangle stellen `cr` mit
+    # Keine Ausgabe-Verifikation: paint_layer und fill_triangles stellen `cr` mit
     # save/restore wieder her; Cairo prüft die Fläche beim Malen selbst.
-    return len(moved)
+    return drawn
