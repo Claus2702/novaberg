@@ -1219,3 +1219,30 @@ Der Eigentümer, 03.10.2026: *„In der Statuszeile wäre eine Schlagwort mit de
 
 **Zusammenhang:** `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` · `novaberg-featureliste.md` §11, §12
 
+## Befund: ANTWORT-MUSTER-ECHO — Nova übernimmt Form und Muster aus dem Kontext, statt den Inhalt zu bewerten (05.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Anliegen des Eigentümers; die Absicht steht, der Weg nicht.
+
+Der Eigentümer, 05.10.2026: *„Ich habe aber die Befürchtung, und das stört mich etwas, dass sie sehr schnell Dinge wiederholt und aufnimmt. Das ständige ‚Chef' und dergleichen. Auch die Regieanweisungen. Sie liest das einmal, dann macht sie es dauernd, weil es im Kontext steht und die LLM das Muster sofort kopiert. Sie sollte in Erinnerungen, im Kontext, in Assoziationen, etc. eher den Inhalt bewerten, nicht Form und Muster und diese sofort kopieren wie das ‚Chef'.“*
+
+**Gemessen** am 05.10.2026 an 1621 Antworten im Pipeline-Protokoll, nur gezählt:
+
+| Halbmonat | Antworten | „Chef“ bei Nova | „Chef“ beim Eigentümer | Regieanweisung in Sternchen |
+|---|---|---|---|---|
+| Juli, 2. Hälfte | 255 | 0 | 0 | 16 |
+| August, 1. Hälfte | 347 | 0 | 0 | 78 |
+| August, 2. Hälfte | 356 | 4 | 3 | 92 |
+| September, 1. Hälfte | 536 | 364 | 2 | 26 |
+| September, 2. Hälfte | 96 | 26 | 0 | 4 |
+| Oktober, 1. Hälfte | 31 | 27 | 0 | 8 |
+
+Der Eigentümer schrieb die Anrede fünfmal; Nova trägt sie seit Anfang September in zwei von drei Antworten, im Oktober in 27 von 31. Gezählt als Regieanweisung ist eine Kursivstelle in Sternchen ab 20 Zeichen.
+
+**Dazu, ebenfalls vom Eigentümer:** Wird eine Form für Regieanweisungen vorgegeben, dann mit einem eigenen Zeichen, das in Markdown keine Bedeutung hat — nicht `*…*`, das zugleich Betonung ist: *„Wenn, dann müssen wir es gleich richtig machen.“* Heute erkennt der Avatar Regieanweisungen an der Kursivschrift (O12, `client/avatar/stage_directions.py`). Der Bestand trägt 158 kursive Stellen mit einem oder zwei Wörtern, fast alle Betonung; der Avatar spricht sie nicht.
+
+**Offen (Absicht):** wie Erinnerung, Verlauf und Assoziationen in den Prompt gelangen, damit Nova den Inhalt aufnimmt und nicht die Form; ob Regieanweisungen gewollt sind und mit welchem Zeichen.
+
+**Zusammenhang:** `AVATAR-UNTERTITEL` · O12 (`novaberg-avatar_e.md`) · `server/memory/session.py`
+

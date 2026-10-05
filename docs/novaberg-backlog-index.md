@@ -1,16 +1,16 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 455 Eintraege mit Kennung — 371 offen, 81 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 456 Eintraege mit Kennung — 372 offen, 81 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 453 von 455 Eintraegen zugeordnet.
+**Kategorie:** 454 von 456 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 79 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 68 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 65 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 66 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 98 |
 
@@ -313,7 +313,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `GED` | GEDAECHTNIS | 80 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 73 |
-| `ANT` | ANTWORTPFAD | 65 |
+| `ANT` | ANTWORTPFAD | 66 |
 | `WIS` | WISSEN | 71 |
 | `BAU` | BAUART | 98 |
 
@@ -324,7 +324,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 455 Eintraege
+## Alle 456 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -614,6 +614,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1188 | abgeschlossen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
 | ANT | 1202 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
 | ANT | 1212 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
+| ANT | 1222 | offen | `ANTWORT-MUSTER-ECHO` | [Befund: ANTWORT-MUSTER-ECHO — Nova übernimmt Form un](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |
