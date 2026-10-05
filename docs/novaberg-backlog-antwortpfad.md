@@ -1166,7 +1166,7 @@ Der Eigentümer, 04.10.2026, auf den Hinweis, dass Angst und Überraschung die P
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — gemessen, die Entscheidung über den Weg liegt beim Eigentümer.
+**Zustand:** ✅ erledigt am 05.10.2026, 05:50 UTC — **hingenommen**. Der Eigentümer nach der Sichtprüfung im Client: *„Nachdenken im Client sieht gut aus. Geschwindigkeit ist sauber“*. Kein Weg, der vom Prototyp abweicht. (Bis dahin: offen, gemessen, die Entscheidung lag beim Eigentümer.)
 
 **Gemessen am 05.10.2026** mit Cairo auf dem Host (Median, Drehung 1°, `novaberg-avatar_b.md` §18, L2′b und L2′c): Bei 600 px braucht ein Bild ohne Drehung 27,5–28,0 ms in Ruhe und 39,0 ms beim Sprechen, mit Drehung nach der Beschleunigung (L2′c) 48,6–49,1 ms und 59,3–59,7 ms (vorher 58,4 und 68,2 ms). Bei 409 px, der Größe des Panels im Betrieb, sind es 22,6–23,0 ms ohne und 36,0–36,5 ms mit Drehung in Ruhe. Das Ziel — mit Drehung höchstens ein Drittel mehr, bei 600 px ≤ 37 ms in Ruhe und ≤ 52 ms beim Sprechen — ist verfehlt. **Es betrifft fast jedes Bild:** Durch das Wandern von 1° liegt der Kopf praktisch immer über der Schwelle von 0,05°, ab der der gedrehte Weg läuft.
 

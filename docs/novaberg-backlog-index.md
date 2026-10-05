@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 454 Eintraege mit Kennung — 373 offen, 78 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 454 Eintraege mit Kennung — 372 offen, 79 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 452 von 454 Eintraegen zugeordnet.
 
@@ -610,7 +610,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1123 | offen | `AVATAR-SMILEY-AUSDRUECKE` | [Feature: AVATAR-SMILEY-AUSDRUECKE — die gängigen Smi](novaberg-backlog-antwortpfad.md) |
 | ANT | 1139 | offen | `AVATAR-STATUS-SCHRIFT` | [Feature: AVATAR-STATUS-SCHRIFT — die Phasenanzeige d](novaberg-backlog-antwortpfad.md) |
 | ANT | 1151 | abgeschlossen | `AVATAR-PUPILLE-AROUSAL` | [Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet di](novaberg-backlog-antwortpfad.md) |
-| ANT | 1165 | offen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
+| ANT | 1165 | abgeschlossen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
 | ANT | 1179 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
 | ANT | 1189 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
