@@ -9,6 +9,11 @@ Die Zeit der fallenden Träne folgt aus dem Takt: Der Takt zählt `BOIL_MS`
 Millisekunden wie `Math.floor(t / 110)` im Prototyp, die Träne rückt also im Takt
 der Strichlage vor statt stetig.
 
+Ist der Kopf um mehr als `TURN_MIN` Grad gedreht, wird das Bild ohne Atem — Hals,
+verzerrtes Gesicht und alle Züge — zuerst auf eine Zwischenfläche gezeichnet und diese
+dann mit dem Drehgitter (`avatar.head_turn`) aufgelegt, mit Atem und Maßstab. Bis
+`TURN_MIN` bleibt der Zeichenweg genau der ungedrehte.
+
 Das Modul importiert weder Cairo noch GTK. Runde Linienenden und -ecken stehen als
 Zahl (`LINE_CAP_ROUND`, `LINE_JOIN_ROUND`); Verläufe, Matrizen und neue Flächen
 bauen die Adapter in `FaceTools`.
@@ -20,6 +25,7 @@ from typing import TYPE_CHECKING
 from avatar.base_image import JAW_TOLERANCE, Canvas, WarpCache, paint_layer, warped_face
 from avatar.drawing import check_face, draw_brows, draw_extras, draw_eyes
 from avatar.drawing_tools import SRC, Gradients, check_tick, set_rgba
+from avatar.head_turn import TURN_MIN, draw_turned, yaw_grid, yaw_triangles
 from avatar.idle_catalog import YAW_MAX as HEAD_YAW_MAX
 from avatar.layers import LAYER_VARIANTS, AvatarLayers
 from avatar.mouth_drawing import draw_mouth
@@ -91,7 +97,9 @@ def draw_face(
     `load_layers`.
     Nachbedingung: Hintergrund, Hals, verzerrtes Gesicht und alle Züge auf `cr`; `cr`
     steht danach wieder wie vorher; der Zwischenspeicher trägt die verzerrte Ebene der
-    Fassung `boil_tick % 3` für den Kiefer der Pose.
+    Fassung `boil_tick % 3` für den Kiefer der Pose. Bei |`head_yaw`| > `TURN_MIN`
+    liegt das Bild durch das Drehgitter auf `cr`: die Zwischenfläche als Unterlage,
+    darüber die verschobenen Dreiecke; sonst zeichnet es wie ohne Drehung.
     Fehlerfälle: ValueError bei verletzter Vorbedingung.
     """
     # ── Eingabe-Validierung ──
@@ -102,10 +110,11 @@ def draw_face(
         raise ValueError(f"draw_face: {layers!r} sind keine AvatarLayers")
 
     # ── Verarbeitung ──
-    face, tick = pose.face, pose.boil_tick
-    variant = tick % LAYER_VARIANTS
-    jaw = max(0.0, face.jaw)
+    variant = pose.boil_tick % LAYER_VARIANTS
+    jaw = max(0.0, pose.face.jaw)
     warped = warped_face(tools.warp_cache, tools.canvas, layers.face[variant], variant, jaw)
+    turned = abs(pose.head_yaw) > TURN_MIN
+    triangles = yaw_triangles(yaw_grid(pose.head_yaw)) if turned else []
     cr.save()
     set_rgba(cr, BACKGROUND, 1.0)
     cr.rectangle(0, 0, size, size)
@@ -114,17 +123,48 @@ def draw_face(
     cr.scale(1 + pose.breath * BREATH_X, 1 + pose.breath * BREATH_Y)
     cr.translate(-size / 2, -size)
     cr.scale(size / SRC, size / SRC)
-    paint_layer(cr, layers.neck[variant])
-    paint_layer(cr, warped)
-    cr.set_line_cap(LINE_CAP_ROUND)
-    cr.set_line_join(LINE_JOIN_ROUND)
-    draw_brows(cr, face, tick)
-    draw_eyes(cr, tools.gradients, face, pose.blink, tick)
-    draw_mouth(cr, tools.gradients, face, pose.tongue, tick)
-    draw_extras(cr, face, float(tick * BOIL_MS), tick)
+    if turned:
+        head, ctx = tools.canvas.new_surface(size, size)
+        ctx.scale(size / SRC, size / SRC)
+        _draw_head(ctx, pose, layers, tools, warped)
+        draw_turned(cr, tools.canvas, head, triangles)
+    else:
+        _draw_head(cr, pose, layers, tools, warped)
     cr.restore()
 
     # ── Ausgabe-Verifikation ──
     entry = tools.warp_cache.entries.get(variant)
     if entry is None or entry.surface is not warped or abs(entry.jaw - jaw) > JAW_TOLERANCE:
         raise RuntimeError("draw_face: Zwischenspeicher trägt die gezeichnete Ebene nicht")
+
+
+def _draw_head(
+    ctx: "cairo.Context", pose: Pose, layers: AvatarLayers, tools: FaceTools, warped: object
+) -> None:
+    """Hals, verzerrtes Gesicht und alle Züge auf `ctx`, in Pixeln der Vorlage.
+
+    Vorbedingung: `ctx` steht in Pixeln der Vorlage; `warped` ist die verzerrte
+    Gesichtsebene der Fassung `boil_tick % 3` aus dem Zwischenspeicher.
+    Nachbedingung: Halsebene, Gesichtsebene, Brauen, Augen, Mund und Extras auf `ctx`,
+    in dieser Reihenfolge, mit runden Linienenden und -ecken.
+    Fehlerfälle: ValueError, wenn `warped` nicht die Ebene der Fassung im Zwischenspeicher ist.
+    """
+    # ── Eingabe-Validierung ──
+    face, tick = pose.face, pose.boil_tick
+    variant = tick % LAYER_VARIANTS
+    entry = tools.warp_cache.entries.get(variant)
+    if entry is None or entry.surface is not warped:
+        raise ValueError("_draw_head: Gesichtsebene nicht aus dem Zwischenspeicher")
+
+    # ── Verarbeitung ──
+    paint_layer(ctx, layers.neck[variant])
+    paint_layer(ctx, warped)
+    ctx.set_line_cap(LINE_CAP_ROUND)
+    ctx.set_line_join(LINE_JOIN_ROUND)
+    draw_brows(ctx, face, tick)
+    draw_eyes(ctx, tools.gradients, face, pose.blink, tick)
+    draw_mouth(ctx, tools.gradients, face, pose.tongue, tick)
+    draw_extras(ctx, face, float(tick * BOIL_MS), tick)
+
+    # Keine Ausgabe-Verifikation: Die Zeichner prüfen ihre Eingaben selbst und
+    # schreiben nur auf `ctx`.

@@ -47,7 +47,8 @@ WARP_Y0, WARP_Y1 = 380.0, 880.0
 WARP_NX = 13
 WARP_NY = 13
 WARP_TRIANGLES = WARP_NX * WARP_NY * 2
-CLIP_GROW = 0.6  # Clip je Dreieck leicht vergrößert, gegen Haarrisse zwischen den Dreiecken
+# Clip je Dreieck radial um so viele Pixel vergrößert, gegen Haarrisse zwischen den Dreiecken
+CLIP_GROW = 1.6
 JAW_TOLERANCE = 0.05  # Kieferänderung in Pixeln, unter der die Ebene nicht neu gerechnet wird
 DEGENERATE = 1e-9  # kleinere Fläche (doppelt) heißt: Dreieck ohne Fläche
 
@@ -261,11 +262,15 @@ def affine(source: Triangle, dest: Triangle) -> Affine:
 
 
 def grown_triangle(dest: Triangle) -> Triangle:
-    """Das Zieldreieck, jede Ecke je Achse um `CLIP_GROW` vom Schwerpunkt weg geschoben.
+    """Das Zieldreieck, jede Ecke radial um `CLIP_GROW` vom Schwerpunkt weg geschoben.
 
+    Wie `triangleDraw` im Prototyp: So wird jede Kante verbreitert, auch die
+    Diagonale einer Gitterzelle; achsenweise geschoben bliebe sie liegen, und über
+    ihr bliebe eine helle Naht.
     Vorbedingung: drei endliche Punkte.
-    Nachbedingung: jede Koordinate liegt `CLIP_GROW` weiter vom Schwerpunkt, oder gleich
-    weit, wo sie mit ihm zusammenfällt (`Math.sign(0)` = 0 im Prototyp).
+    Nachbedingung: jede Ecke liegt auf der Geraden vom Schwerpunkt durch die Ecke,
+    `CLIP_GROW` weiter von ihm entfernt; eine Ecke im Schwerpunkt bleibt, wo sie ist
+    (`|| 1` im Prototyp).
     Fehlerfälle: ValueError bei nicht endlichen Punkten.
     """
     # ── Eingabe-Validierung ──
@@ -274,14 +279,18 @@ def grown_triangle(dest: Triangle) -> Triangle:
     # ── Verarbeitung ──
     cx = sum(p[0] for p in dest) / 3
     cy = sum(p[1] for p in dest) / 3
-    grown = tuple(
-        (p[0] + _sign(p[0] - cx) * CLIP_GROW, p[1] + _sign(p[1] - cy) * CLIP_GROW) for p in dest
-    )
+    grown = []
+    for px, py in dest:
+        vx, vy = px - cx, py - cy
+        length = math.hypot(vx, vy) or 1.0
+        grown.append((px + vx / length * CLIP_GROW, py + vy / length * CLIP_GROW))
 
     # ── Ausgabe-Verifikation ──
-    if len(grown) != 3:
-        raise RuntimeError("grown_triangle: nicht drei Ecken")
-    return grown
+    for (px, py), (gx, gy) in zip(dest, grown, strict=True):
+        before = math.hypot(px - cx, py - cy)
+        if before > 0 and abs(math.hypot(gx - cx, gy - cy) - before - CLIP_GROW) > 1e-6:
+            raise RuntimeError(f"grown_triangle: Ecke ({px}, {py}) nicht radial gewachsen")
+    return tuple(grown)
 
 
 def warped_face(
@@ -334,7 +343,7 @@ def render_warped(canvas: Canvas, layer: object, jaw: float) -> object:
     surface, ctx = canvas.new_surface(width, height)
     ctx.scale(width / SRC, height / SRC)
     for triangle in triangles:
-        _draw_triangle(ctx, canvas, layer, triangle)
+        draw_triangle(ctx, canvas, layer, triangle)
 
     # ── Ausgabe-Verifikation ──
     if (surface.get_width(), surface.get_height()) != (width, height):
@@ -365,10 +374,18 @@ def paint_layer(cr: "cairo.Context", surface: object) -> None:
     # Fläche beim Malen selbst.
 
 
-def _draw_triangle(
+def draw_triangle(
     ctx: "cairo.Context", canvas: Canvas, layer: object, triangle: WarpTriangle
 ) -> None:
-    """Ein Dreieck: auf das vergrößerte Zieldreieck begrenzen, Ebene affin abgebildet malen."""
+    """Ein Dreieck: auf das vergrößerte Zieldreieck begrenzen, Ebene affin abgebildet malen.
+
+    `ctx` steht in Pixeln der Vorlage; `layer` wird wie in `paint_layer` auf `SRC` ×
+    `SRC` gestreckt und mit der Abbildung von `triangle.source` auf `triangle.dest`
+    gemalt. Gilt für die Kinnverzerrung und die Kopfdrehung.
+    Vorbedingung: Quelle mit Fläche, alle Ecken endlich, `layer` eine Fläche.
+    Nachbedingung: `ctx` steht danach wieder wie vorher (`save`/`restore`).
+    Fehlerfälle: ValueError aus `grown_triangle` und `affine`.
+    """
     # ── Eingabe-Validierung ──
     clip = grown_triangle(triangle.dest)
     coefficients = affine(triangle.source, triangle.dest)
@@ -402,15 +419,3 @@ def _check_triangle(triangle: Sequence[Point], where: str) -> None:
             raise ValueError(f"{where}: Ecke {point!r} nicht endlich")
 
     # Keine Ausgabe-Verifikation: Rückkehr heißt drei endliche Ecken.
-
-
-def _sign(value: float) -> float:
-    """Vorzeichen wie `Math.sign`: −1, 0 oder 1."""
-    # ── Eingabe-Validierung ──
-    # value ist eine endliche Differenz zweier geprüfter Koordinaten.
-
-    # ── Verarbeitung ──
-    result = (value > 0) - (value < 0)
-
-    # ── Ausgabe-Verifikation ──
-    return float(result)

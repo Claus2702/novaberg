@@ -39,13 +39,20 @@ from avatar.compose import FaceTools, check_pose, draw_face
 from avatar.drawing import MOUTH_CENTER
 from avatar.drawing_tools import SRC, UX, UY
 from avatar.face import NEUTRAL
+from avatar.head_turn import YAW_TRIANGLES, draw_turned, yaw_grid, yaw_triangles
 from avatar.layers import AvatarLayers, LayerError, load_layers
 from avatar.pose import Pose
 
 EXACT = 1e-9
 SIZE = 600
 IMAGE_DIR = Path("/avatar-bilder")  # synthetisch; FakeSource kennt nur diesen Pfad
-COMPOSE_MODULES = ("avatar.base_image", "avatar.compose", "avatar.layers", "avatar.pose")
+COMPOSE_MODULES = (
+    "avatar.base_image",
+    "avatar.compose",
+    "avatar.head_turn",
+    "avatar.layers",
+    "avatar.pose",
+)
 
 
 class RecordingContext:
@@ -180,6 +187,21 @@ def _at(lx: float, ly: float) -> tuple[float, float]:
     )
 
 
+def _clips(ctx: RecordingContext) -> list[tuple]:
+    """Die Ecken jedes Clips in Reihenfolge: je ein `move_to` und zwei `line_to`."""
+    points = [args for name, args in ctx.calls if name in ("move_to", "line_to")]
+    return [tuple(points[k : k + 3]) for k in range(0, len(points), 3)]
+
+
+def _assert_grown(test: unittest.TestCase, clip: tuple, dest: tuple) -> None:
+    """Jede Ecke des Clips liegt 1,6 weiter vom Schwerpunkt, auf der Geraden durch die Ecke."""
+    cx, cy = sum(p[0] for p in dest) / 3, sum(p[1] for p in dest) / 3
+    for (gx, gy), (dx, dy) in zip(clip, dest, strict=True):
+        before, after = math.hypot(dx - cx, dy - cy), math.hypot(gx - cx, gy - cy)
+        test.assertAlmostEqual(after - before, 1.6, delta=EXACT)
+        test.assertAlmostEqual((dx - cx) * (gy - cy) - (dy - cy) * (gx - cx), 0.0, delta=1e-6)
+
+
 class SmoothTest(unittest.TestCase):
     """`smooth01` ist der Smoothstep des Prototyps, begrenzt auf 0..1."""
 
@@ -269,12 +291,33 @@ class TrianglesTest(unittest.TestCase):
             affine(((0, 0), (1, 1), (2, 2)), ((0, 0), (1, 0), (0, 1)))
 
     def test_clip_grows_away_from_the_centroid(self) -> None:
-        # Schwerpunkt (1, 1); eine Koordinate auf dem Schwerpunkt bleibt (Math.sign(0) = 0)
+        # Angepasst mit der radialen Nahtkorrektur: Bis dahin rückte jede Koordinate je
+        # Achse um 0,6 (Math.sign), erwartet waren (−0,6, −0,6), (2,6, −0,6), (1, 3,6).
+        # Schwerpunkt (1, 1); jede Ecke rückt 1,6 entlang der Geraden vom Schwerpunkt
+        # weg: (0, 0) und (2, 0) liegen √2 von ihm, (1, 3) genau 2 über ihm.
+        g = 1.6 / math.sqrt(2)
         grown = grown_triangle(((0, 0), (2, 0), (1, 3)))
-        want = ((-0.6, -0.6), (2.6, -0.6), (1.0, 3.6))
+        want = ((-g, -g), (2 + g, -g), (1.0, 4.6))
         for got_point, want_point in zip(grown, want, strict=True):
             for got, expected in zip(got_point, want_point, strict=True):
                 self.assertAlmostEqual(got, expected, delta=EXACT)
+
+    def test_clip_widens_the_diagonal_too(self) -> None:
+        # Die halbe Gitterzelle (0, 0), (1, 0), (0, 1) mit der Diagonale x + y = 1.
+        # Achsenweise um 0,6 blieben (1, 0) → (1,6, −0,6) und (0, 1) → (−0,6, 1,6) auf
+        # ihr; radial rücken beide um 1,6/√5 ≈ 0,72 über sie hinaus.
+        grown = grown_triangle(((0, 0), (1, 0), (0, 1)))
+        for x, y in grown[1:]:
+            self.assertAlmostEqual(x + y - 1, 1.6 / math.sqrt(5), delta=EXACT)
+
+    def test_chin_clip_corners_grow_radially(self) -> None:
+        canvas = FakeCanvas()
+        render_warped(canvas, FakeSurface("face0"), 40.0)
+        triangles = warp_triangles(40.0)
+        clips = _clips(canvas.contexts[0])
+        self.assertEqual(len(clips), len(triangles))
+        for clip, triangle in zip(clips, triangles, strict=True):
+            _assert_grown(self, clip, triangle.dest)
 
     def test_render_draws_all_triangles_clipped(self) -> None:
         canvas, layer = FakeCanvas(), FakeSurface("face0")
@@ -510,6 +553,100 @@ class HeadYawPoseTest(unittest.TestCase):
             with self.subTest(yaw=yaw):
                 check_pose(_pose(head_yaw=yaw), "Zeuge")
         self.assertEqual(_pose().head_yaw, 0.0)
+
+
+class HeadTurnPathTest(unittest.TestCase):
+    """`draw_face` bis 0,05° auf dem ungedrehten Weg, darüber durch das Drehgitter."""
+
+    def test_up_to_0_05_degrees_the_path_is_unchanged(self) -> None:
+        layers, tools = _layers(), _tools()
+        straight = RecordingContext()
+        draw_face(straight, SIZE, _pose(breath=0.4), layers, tools)
+        for yaw in (0.05, -0.05):
+            cr = RecordingContext()
+            draw_face(cr, SIZE, _pose(breath=0.4, head_yaw=yaw), layers, tools)
+            self.assertEqual(cr.calls, straight.calls, yaw)
+        self.assertEqual(len(tools.canvas.surfaces), 1)  # nur die Kinnverzerrung
+
+    def test_above_0_05_degrees_the_head_goes_through_an_intermediate_surface(self) -> None:
+        """Zwilling: Bei 0,06° zeichnen die Züge auf die Zwischenfläche, nicht auf `cr`."""
+        layers, tools, cr = _layers(), _tools(), RecordingContext()
+        with mock.patch.object(compose, "_draw_head", wraps=compose._draw_head) as head:
+            draw_face(cr, SIZE, _pose(breath=1.0, head_yaw=0.06), layers, tools)
+        canvas = tools.canvas
+        self.assertEqual(len(canvas.surfaces), 2)  # Kinnverzerrung, dann die Zwischenfläche
+        surface, ctx = canvas.surfaces[1], canvas.contexts[1]
+        self.assertEqual((surface.width, surface.height), (SIZE, SIZE))
+        self.assertEqual(head.call_count, 1)
+        self.assertIs(head.call_args.args[0], ctx)
+        # Die Zwischenfläche: im Maßstab der Vorlage, ohne Atem; Hals, Gesicht, Züge
+        self.assertEqual(ctx.calls[0], ("scale", (SIZE / SRC, SIZE / SRC)))
+        self.assertNotIn(("translate", (300.0, 600)), ctx.calls)
+        painted = [args[0] for name, args in ctx.calls if name == "set_source_surface"]
+        self.assertIs(painted[0], layers.neck[0])
+        self.assertIs(painted[1], canvas.surfaces[0])
+        self.assertGreater(ctx.names().count("stroke"), 100)
+        # Auf `cr`: Hintergrund, Atem, Maßstab, dann nur noch die Zwischenfläche
+        names = cr.names()
+        start = names.index("translate")
+        got_sx, got_sy = cr.calls[start + 1][1]
+        self.assertAlmostEqual(got_sx, 1.003, delta=EXACT)
+        self.assertAlmostEqual(got_sy, 1.005, delta=EXACT)
+        self.assertEqual(cr.calls[start + 3], ("scale", (SIZE / SRC, SIZE / SRC)))
+        self.assertNotIn("stroke", names)
+        self.assertEqual(names.count("save"), names.count("restore"))
+        sources = [args[0] for name, args in cr.calls if name == "set_source_surface"]
+        self.assertTrue(all(s is surface for s in sources))
+
+    def test_above_0_05_degrees_only_the_moved_triangles_are_drawn(self) -> None:
+        moved = sum(t.moved for t in yaw_triangles(yaw_grid(0.06)))
+        self.assertGreater(moved, 0)
+        self.assertLess(moved, YAW_TRIANGLES)
+        cr = RecordingContext()
+        draw_face(cr, SIZE, _pose(head_yaw=0.06), _layers(), _tools())
+        names = cr.names()
+        self.assertEqual(names.count("clip"), moved)
+        self.assertEqual(names.count("set_source_surface"), moved + 1)  # dazu die Unterlage
+
+
+class DrawTurnedTest(unittest.TestCase):
+    """`draw_turned`: erst die Unterlage, dann nur die verschobenen Dreiecke, radial begrenzt."""
+
+    def setUp(self) -> None:
+        self.canvas, self.cr = FakeCanvas(), RecordingContext()
+        self.head = FakeSurface("head", SIZE, SIZE)
+        self.triangles = yaw_triangles(yaw_grid(12.0))
+        self.moved = [t for t in self.triangles if t.moved]
+
+    def test_underlay_then_only_the_moved_triangles(self) -> None:
+        drawn = draw_turned(self.cr, self.canvas, self.head, self.triangles)
+        self.assertEqual(drawn, len(self.moved))
+        underlay = [
+            ("save", ()),
+            ("scale", (SRC / SIZE, SRC / SIZE)),
+            ("set_source_surface", (self.head, 0, 0)),
+            ("paint", ()),
+            ("restore", ()),
+        ]
+        self.assertEqual(self.cr.calls[:5], underlay)
+        self.assertEqual(self.cr.names().count("clip"), len(self.moved))
+        transforms = [args[0] for name, args in self.cr.calls if name == "transform"]
+        want = [("matrix", affine(t.warp.source, t.warp.dest)) for t in self.moved]
+        self.assertEqual(transforms, want)
+
+    def test_turn_clip_corners_grow_radially(self) -> None:
+        draw_turned(self.cr, self.canvas, self.head, self.triangles)
+        clips = _clips(self.cr)
+        self.assertEqual(len(clips), len(self.moved))
+        for clip, triangle in zip(clips, self.moved, strict=True):
+            _assert_grown(self, clip, triangle.warp.dest)
+
+    def test_empty_surface_or_wrong_count_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            draw_turned(self.cr, self.canvas, FakeSurface("leer", 0, 0), self.triangles)
+        with self.assertRaises(ValueError):
+            draw_turned(self.cr, self.canvas, self.head, self.triangles[:-1])
+        self.assertEqual(self.cr.calls, [])  # abgewiesen vor dem ersten Strich
 
 
 class WithoutCairoTest(unittest.TestCase):
