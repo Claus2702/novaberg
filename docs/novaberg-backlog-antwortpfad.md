@@ -1134,19 +1134,40 @@ Der Eigentümer, 03.10.2026: *„Halte bitte im Backlog fest, dass wir auch die 
 
 **Was es dafür schon gibt:** Die Figur hat Zunge und Zähne als eigene Teile (Zähne als feste Kieferebenen, `novaberg-avatar_t.md` §13; die Zunge in der Sprechschicht, §13.12) und bewegliches Kinn (§13.9); kurze Ausdrücke über der Emotion kennt der Leerlauf als Formen (Einfall, Blick zum Betrachter; §17.4). **Zu bauen:** etwa zehn Ausdrücke als Schlüsselbilder über den Kanälen des Gesichts — Vorschlag, nicht entschieden: Zunge herausstrecken, Grinsen mit gebleckten Zähnen, Zwinkern, Lachen mit zugekniffenen Augen, schiefes Lächeln, Kussmund, Augenrollen, Staunen mit offenem Mund, Träne, Schmollen. **Offen:** ~~welche zehn~~ → gewählt 04.10.2026 (oben); woher der Avatar den Anlass bekommt — er ist eine Puppe und liest keinen Inhalt (§2), ein Smiley im Antworttext ist aber Inhalt; denkbar ist ein eigenes Feld der Antwort, das der Server setzt; ob ein Smiley-Ausdruck kurz über der Emotion liegt wie eine Form oder sie ablöst; ob die Zunge außerhalb des Sprechens einen eigenen Kanal braucht.
 
+**Erneut genannt vom Eigentümer, 05.10.2026:** *„Und wir haben noch die Smileys: kurze, spontane Mimikänderung wie grinsen, lächeln, Zunge blecken, usw.“* Neu ist hier *spontan*: Der Ausdruck kommt kurz und von selbst, als Mitteilung über der Emotion.
+
 **Zusammenhang:** `novaberg-avatar_k.md` §2 · `novaberg-avatar_t.md` §13, §17 · `AVATAR-PIXIE-LEERLAUF`
 
 ## Feature: AVATAR-STATUS-SCHRIFT — die Phasenanzeige des Avatars schreibt so groß wie die Statusleiste (04.10.2026)
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau im Client.
+**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau im Client; **als Nächstes angegangen** (05.10.2026, der Eigentümer: *„Die Schrift unter dem Avatar ist noch zu groß, wir haben hier einen Eintrag im Backlog, den wir jetzt angehen.“*).
 
 Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße im Status des Avatar-Panels an die Größe in der Statusleiste des Client-Panels anpassen. Das reduziert etwas das Gewicht der Anzeige unter dem Avatar.“*
 
 **Zu bauen:** Die Zeilen der Phasenanzeige (`client/ui/status_label.py`, `status_label()`) bekommen die Schriftgröße der Statusleiste des Hauptfensters (`.nova-statusbar-label`, heute `font-size: 12px` in `client/ui/main_window.py`). Bisher tragen sie nur `dim-label` und damit die Größe des Systems. Die Größe kommt aus einer gemeinsamen Quelle, nicht aus einer zweiten Zahl 12. Das Band (`BAND_FONT` in `avatar_panel.py`) wird mit angeglichen, wenn es größer schreibt. **Abgrenzung:** kein Umbruch (Kürzung und Tooltip bleiben), keine Änderung am Text.
 
 **Zusammenhang:** `novaberg-avatar_b.md` §18 (L6) · `novaberg-avatar_k.md` §3
+
+## Feature: AVATAR-GLANZLICHT-FEST — die Glanzlichter der Augen bleiben stehen, wenn die Pupille wandert (05.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — Wunsch des Eigentümers, Bau in Prototyp und Client.
+
+Der Eigentümer, 05.10.2026: *„Zudem haben die Pupillen Spiegelungen, kleine weiße Punkte, die bewegen sich mit den Pupillen. Das sollten wir ändern. Spiegellungen bleiben gleich.“*
+
+**Heute:** Die beiden Glanzlichter liegen fest zur Iris und wandern mit ihr. Im Client sitzen sie in `client/avatar/drawing_eye.py`, `_pupil`, bei `iris ± ir·(0,32…0,36)`, im Prototyp in `drawEye`. Ein Glanzlicht ist die Spiegelung einer Lichtquelle auf der Hornhaut; es bleibt beim Blickwechsel nahezu an seinem Ort.
+
+**Zu bauen:** Die Glanzlichter liegen fest zum Auge, gemessen an seiner Mitte, nicht zur Iris. Erst im Prototyp, dann im Client mit Bild gegen Prototyp.
+
+**Offen für die Ausarbeitung:**
+
+- ob ein Glanzlicht sichtbar bleibt, wenn die Iris unter ihm wegwandert und es über dem Weiß des Auges läge;
+- ob es beim Blinzeln und bei engem Lid mit dem Lid verschwindet wie heute.
+
+**Zusammenhang:** `novaberg-avatar_t.md` §13 · `AVATAR-PUPILLE-AROUSAL`
 
 ## Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet die Pupille (04.10.2026)
 
