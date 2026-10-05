@@ -1,11 +1,43 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 21 Eintraege, je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 23 Eintraege, je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 ---
+
+## 05.10.2026 — aus dem Audit der Emotions-Architektur, am Code abgeleitet
+
+### `KOMMENTAR-AROUSAL-EXPONENT` — der Kommentar in `config.py` nennt `arousal²`, der Code rechnet `arousal³`
+**Kategorie:** BAU
+
+**Zustand:** offen — gelesen am 05.10.2026 (`novaberg` `60aaa69`).
+
+**Symptom.** `server/config.py:1884`, Kommentar zu `EMOTION_GLAETTUNGS_MAXIMUM`: *„Der aktuelle Turn trägt `GLAETTUNGS_MAXIMUM × arousal²` bei“*. `server/ei/berechnung.py:245` (`_emotions_verlauf_berechnen`) rechnet `EMOTION_GLAETTUNGS_MAXIMUM * arousal ** 3`. Zehn Zeilen darüber (`config.py:1874`) steht richtig `arousal³`.
+
+**Wirkung.** Wer die Konstante nach dem Kommentar einstellt, rechnet mit dem falschen Exponenten: Bei Arousal 0,5 trägt der aktuelle Turn 0,5 bei, nicht 1,0.
+
+**Was fertig wäre.** Kommentar und Code nennen denselben Exponenten.
+
+**Quelle.** Audit `labor/avatar/2026-10-05_audit-emotion-architektur.md`, A1.
+
+**Priorität:** niedrig.
+
+### `GRAVITATION-FAKTOR-SESSION-TOT` — `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ist definiert und wird nirgends gelesen
+**Kategorie:** BAU
+
+**Zustand:** offen — gezählt am 05.10.2026 (`novaberg` `60aaa69`).
+
+**Symptom.** `server/config.py:2771`: `EMOTIONALE_GRAVITATION_FAKTOR_SESSION: float = 1.0` (*„Session-Einträge: frisch, volle Wirkung“*). Ein `grep` über `server/` findet nur diese Definition (1 Treffer). Die Faktoren für KZG (0,8) und LZG (0,5) liest `server/ei/gravitation.py` (`:762`, `_kzg_emotionale_eintraege`; `:832-834`, `gravitation_lzg_berechnen`).
+
+**Wirkung.** Die Konstante täuscht eine dritte Quelle der emotionalen Gravitation vor, die Session, die nicht gebaut ist; eine Änderung ihres Werts wirkt nicht.
+
+**Was fertig wäre.** Entweder liest die Gravitation eine Session-Quelle mit diesem Faktor, oder die Konstante entfällt.
+
+**Quelle.** Audit `labor/avatar/2026-10-05_audit-emotion-architektur.md`, A1.
+
+**Priorität:** niedrig.
 
 ## 17.09.2026 — der laufende Dienst kannte den gebauten Code nicht
 

@@ -1,11 +1,58 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 48 Eintraege, je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 51 Eintraege, je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 ---
+
+## 05.10.2026 — aus dem Audit der Emotions-Architektur, am Code abgeleitet
+
+### `EMOTION-SYNONYM-UNAUFGELOEST` — ein Synonym im Feld `emotion` erreicht den Avatar unaufgelöst
+**Kategorie:** ANT
+
+**Zustand:** offen — abgeleitet aus dem Code am 05.10.2026 (`novaberg` `60aaa69`), nicht im Betrieb gemessen.
+
+**Symptom.** Die Wahrnehmung der eigenen Antwort (`server/graph/nodes/perzeption.py`, `perceive`, Rolle `assistant`) lässt im Feld `emotion` Kanon und Synonyme zu (`_EMOTION_ODER_SYNONYM`, `:101`). `to_canonical` gibt einen Wert aus dieser Menge unverändert zurück (`server/utils/canon.py:113-114`). `character_response.emotion` (`server/services/event_consumer.py:705`, `_antwort_nutzlast_bauen`) kann so ein Synonym wie „sorge“ tragen.
+
+**Wirkung.** Der Avatar kennt nur die 16 kanonischen Namen. `client/avatar/puppet.py:492-494` (`_sector_from_name`) zeigt dann das neutrale Gesicht und schreibt eine Error-Zeile; die Emotion der Antwort geht für diesen Turn verloren. Dieselbe Lücke hat die Emotion eines Pixie-Auftrags, die auf ihrem Weg nicht kanonisiert wird (`client/avatar/idle.py:455-457`, `_sector_of`).
+
+**Was fertig wäre.** `character_response.emotion` trägt immer einen Namen aus `EMOTION_KANON` oder `neutral`; ein Zeuge mit einem Synonym in der Wahrnehmung belegt es.
+
+**Quelle.** Audit `labor/avatar/2026-10-05_audit-emotion-architektur.md`, A2 (Nebenbefunde) und A7.
+
+**Priorität:** mittel.
+
+### `WAHRNEHMUNG-RUECKFALL-UNMARKIERT` — bricht die Wahrnehmung der Antwort ab, geht der Stand von vor der Antwort ohne Kennzeichnung hinaus
+**Kategorie:** ANT
+
+**Zustand:** offen — abgeleitet aus dem Code am 05.10.2026 (`novaberg` `60aaa69`), nicht im Betrieb gemessen.
+
+**Symptom.** `_wahrnehmung_erheben` (`server/graph/nodes/perzeption.py:274`) fängt nur `json.JSONDecodeError` und `KeyError` (`:304`). Bei jedem anderen Fehler endet der Graph vor dem Rückruf der Freigabe (`server/services/event_consumer.py:454-458`), und der Rückfallpfad in `_event_verarbeiten` (`:929-937`) sendet `internal.emotion` aus der Rechnung vor der Antwort (`ei_calc`, emotionale Gravitation).
+
+**Wirkung.** Der Avatar zeigt den berechneten Zustand vor der Antwort, als wäre er die Wahrnehmung der Antwort; die Nachricht sagt nicht, welche Quelle gilt. Eine Auswertung der Emotionsfelder kann den Turn nicht als Rückfall erkennen.
+
+**Was fertig wäre.** Die Nachricht kennzeichnet ihre Quelle (Wahrnehmung oder Rückfall), oder der Rückfall sendet keine Emotion; ein Zeuge mit einem Fehler im Modellaufruf der Wahrnehmung belegt es.
+
+**Quelle.** Audit `labor/avatar/2026-10-05_audit-emotion-architektur.md`, A2 (Nebenbefunde).
+
+**Priorität:** mittel.
+
+### `MODUS-STIL-UNGEPRUEFT-GESENDET` — `gespraechs_modus` und `sprach_stil` gehen mit dem rohen Wert der Wahrnehmung hinaus
+**Kategorie:** ANT
+
+**Zustand:** offen — abgeleitet aus dem Code am 05.10.2026 (`novaberg` `60aaa69`), nicht im Betrieb gemessen.
+
+**Symptom.** Die Antwort geht am Ende von `perzeption_assistant` hinaus (`server/services/event_consumer.py:353`, `_KNOTEN_NACH_FREIGABE`; `:885-891`). Die Plausibilitätskorrektur von Modus und Stil läuft erst danach in `ei_calc_persist` (`server/graph/nodes/ei_calc_persist.py:172`, `:209`). `character_response.sprach_stil` und `.gespraechs_modus` (`event_consumer.py:709`, `:718`) tragen deshalb den unkorrigierten Wert. Der Kommentar `event_consumer.py:930-932` („von perzeption_assistant + ei_calc_persist gesetzt“) trifft nur auf den Rückfallpfad zu.
+
+**Wirkung.** Client und Auswertungen sehen einen anderen Modus und Stil als den, den der Server danach speichert.
+
+**Was fertig wäre.** Beide Felder tragen den korrigierten Wert, oder die Korrektur läuft vor der Freigabe; ein Zeuge mit einem unplausiblen Modus der Wahrnehmung belegt es.
+
+**Quelle.** Audit `labor/avatar/2026-10-05_audit-emotion-architektur.md`, A2 (Nebenbefunde).
+
+**Priorität:** niedrig.
 
 ## Einzelbefunde ohne eigenen Datumsabschnitt
 
