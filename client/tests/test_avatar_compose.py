@@ -42,7 +42,7 @@ from avatar.base_image import (
 from avatar.compose import FaceTools, check_pose, draw_face
 from avatar.drawing import MOUTH_CENTER
 from avatar.drawing_tools import SRC, UX, UY
-from avatar.face import NEUTRAL
+from avatar.face import EYE_DEG_PER_GAZE, NEUTRAL
 from avatar.head_turn import YAW_TRIANGLES, draw_turned, yaw_grid, yaw_triangles
 from avatar.layers import AvatarLayers, LayerError, load_layers
 from avatar.pose import Pose
@@ -583,14 +583,25 @@ class HeadTurnPathTest(unittest.TestCase):
     """`draw_face` bis 0,05° auf dem ungedrehten Weg, darüber durch das Drehgitter."""
 
     def test_up_to_0_05_degrees_the_path_is_unchanged(self) -> None:
+        """Bis 0,05° wird der gerade Weg gezeichnet; nur die Iris steht um den Blickhalt versetzt.
+
+        Der Kopfwinkel wirkt allein in `iris_center`, ohne Schwelle; ein Kopf von `yaw` zeichnet
+        also dasselbe wie ein gerader Kopf mit Blick `gaze_x − yaw / EYE_DEG_PER_GAZE`.
+        """
         layers, tools = _layers(), _tools()
-        straight = RecordingContext()
-        draw_face(straight, SIZE, _pose(breath=0.4), layers, tools)
-        for yaw in (0.05, -0.05):
+
+        def calls(yaw: float, gaze_x: float) -> list:
+            face = replace(NEUTRAL, gaze_x=gaze_x)
             cr = RecordingContext()
-            draw_face(cr, SIZE, _pose(breath=0.4, head_yaw=yaw), layers, tools)
-            self.assertEqual(cr.calls, straight.calls, yaw)
+            draw_face(cr, SIZE, _pose(face=face, breath=0.4, head_yaw=yaw), layers, tools)
+            return cr.calls
+
+        for yaw in (0.05, -0.05):
+            with self.subTest(yaw=yaw):
+                self.assertEqual(calls(yaw, 0.0), calls(0.0, -yaw / EYE_DEG_PER_GAZE))
         self.assertEqual(len(tools.canvas.surfaces), 1)  # nur die Kinnverzerrung
+        # Zwilling: ohne den Ausgleich des Blicks weicht die Iris ab, auch unter `TURN_MIN`
+        self.assertNotEqual(calls(0.05, 0.0), calls(0.0, 0.0))
 
     def test_above_0_05_degrees_the_head_goes_through_an_intermediate_surface(self) -> None:
         """Zwilling: Bei 0,06° zeichnen die Züge auf die Zwischenfläche, nicht auf `cr`."""
@@ -621,6 +632,26 @@ class HeadTurnPathTest(unittest.TestCase):
         self.assertEqual(names.count("save"), names.count("restore"))
         sources = [args[0] for name, args in cr.calls if name == "set_source_surface"]
         self.assertTrue(all(s is surface for s in sources))
+
+    def test_the_head_yaw_reaches_the_iris_through_the_turned_path(self) -> None:
+        """Bei Kopf 10° (über `TURN_MIN`) liegt die Iris um 10/34 · 25 px hinter der bei 0,06°.
+
+        Linkes Auge hw 50: Weg je Einheit Blick 25 px, entlang der Achse (cos 9°, sin 9°).
+        Beide Läufe gehen durch die Zwischenfläche, nur der Winkel unterscheidet sie.
+        """
+        def iris(yaw: float) -> tuple[float, float]:
+            tools = _tools()
+            face = replace(NEUTRAL, gaze_x=0.5)
+            draw_face(RecordingContext(), SIZE, _pose(face=face, head_yaw=yaw), _layers(), tools)
+            arcs = [a for n, a in tools.canvas.contexts[1].calls if n == "arc"]
+            found = [a for a in arcs if abs(a[2] - 23.0) < EXACT]
+            self.assertTrue(found)
+            return found[0][0], found[0][1]
+
+        slight, turned = iris(0.06), iris(10.0)
+        back = -(10.0 - 0.06) / EYE_DEG_PER_GAZE * 25.0
+        self.assertAlmostEqual(turned[0] - slight[0], back * 0.9876883405951378, delta=EXACT)
+        self.assertAlmostEqual(turned[1] - slight[1], back * 0.15643446504023087, delta=EXACT)
 
     def test_above_0_05_degrees_only_the_moved_triangles_are_drawn(self) -> None:
         moved = sum(t.moved for t in yaw_triangles(yaw_grid(0.06)))

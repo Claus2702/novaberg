@@ -25,7 +25,7 @@ from typing import ClassVar
 
 from avatar import idle_catalog as catalog
 from avatar.expression import JAW_FACTOR_DEFAULT, MOD_AROUSAL, SECTORS, face_target
-from avatar.face import PROTOTYPE_KEYS, FaceState
+from avatar.face import EYE_DEG_PER_GAZE, PROTOTYPE_KEYS, FaceState
 from avatar.idle_catalog import FORMS, FormSpec, GazePoint, IdleState
 from avatar.idle_status import (
     NOTE_AFTERGLOW,
@@ -1851,11 +1851,12 @@ class _HeadTurn:
         self._enabled = enabled
         self._trace = trace
         self._target = 0.0
+        self._gaze_hold = 0.0
         self._key: _HeadKey | None = None
         self._waiting: list[_HeadWaiting] = []
 
         # ── Ausgabe-Verifikation ──
-        if self._waiting or self._target != 0.0:
+        if self._waiting or self._target != 0.0 or self._gaze_hold != 0.0:
             raise RuntimeError("_HeadTurn: Beginn nicht beim Betrachter")
 
     def step(self, now: float, inst: _FormInstance, state: IdleState) -> None:
@@ -1878,6 +1879,7 @@ class _HeadTurn:
             self._key = key
             if not (key[2] == "" and inst.head_inherits):
                 target, kind, delay = _head_rule(inst, x, state)
+                self._gaze_hold = target  # der Blick gilt ab jetzt, nicht erst mit dem Kopf
                 self._waiting.append(_HeadWaiting(now + delay, target, kind, x, now))
         while self._waiting and self._waiting[0].from_ms <= now:
             due = self._waiting.pop(0)
@@ -1889,6 +1891,26 @@ class _HeadTurn:
         # ── Ausgabe-Verifikation ──
         if self._waiting and self._waiting[0].from_ms <= now:
             raise RuntimeError("_HeadTurn.step: ein fälliges Ziel wartet noch")
+
+    def gaze_hold(self) -> float:
+        """Das Kopfziel der Regel ohne Wandern, wie es beim letzten Einreihen festgehalten wurde.
+
+        Der Blick der Form liegt um dieses Ziel (in Einheiten gx) weiter außen, damit das
+        Auge seinen Punkt hält, während der Kopf nachzieht. Eine Form, die das Kopfziel
+        erbt, lässt es stehen. Abgeschaltet 0: der Zwilling blickt wie ohne Kopf.
+        Vorbedingung: keine.
+        Nachbedingung: ein Wert in ±YAW_MAX.
+        Fehlerfälle: ein Wert jenseits ±YAW_MAX.
+        """
+        # Keine Eingabe-Validierung: Es gibt keine Eingabe; `_head_rule` hat den Wert geprüft.
+
+        # ── Verarbeitung ──
+        hold = self._gaze_hold if self._enabled else 0.0
+
+        # ── Ausgabe-Verifikation ──
+        if not abs(hold) <= catalog.YAW_MAX:
+            raise RuntimeError(f"_HeadTurn.gaze_hold: {hold} jenseits ±{catalog.YAW_MAX}")
+        return hold
 
     def target(self, now: float) -> float:
         """Das Ziel von yaw: Regel plus leises Wandern, hart begrenzt; abgeschaltet 0.
@@ -3210,7 +3232,10 @@ class IdleLogic:
         if deviation.smooth_brow:
             for key in catalog.BROWS:
                 target[key] = min(target[key], 0)
-        target["gx"] = _clamp(deviation.gaze[0], -0.9, 0.9)
+        # Der Blick liegt um das Kopfziel weiter außen: Das Auge hält seinen Punkt, während der
+        # Kopf nachzieht, und steht im Gesicht bei der Form, wenn er angekommen ist.
+        hold = self._head.gaze_hold() / EYE_DEG_PER_GAZE
+        target["gx"] = _clamp(deviation.gaze[0] + hold, -0.9, 0.9)
         target["gy"] = _clamp(deviation.gaze[1], -0.7, 0.7)
         target["lidU"] += 0.3 * max(0, target["gy"])
         target["eo"] += catalog.EYE_OPEN_GAZE_UP * max(0, -target["gy"])

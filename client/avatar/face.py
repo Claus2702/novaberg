@@ -92,6 +92,11 @@ PROTOTYPE_KEYS: dict[str, str] = {
     "au28": "au28",
 }
 
+# Grad Augendrehung je Einheit gx: Die Iris wandert 0,5 · hw je Einheit (IRIS_TRAVEL_X),
+# und 0,075 · hw entsprechen etwa 5°. Die Entfernung des fixierten Punkts ist
+# vernachlässigt (bei 5 m: +2 %). Plan und Zeichnung des Blickhalts lesen dieselbe Zahl.
+EYE_DEG_PER_GAZE = 34.0
+
 NEUTRAL = FaceState(
     brow_left_inner=0.0,
     brow_left_outer=0.0,

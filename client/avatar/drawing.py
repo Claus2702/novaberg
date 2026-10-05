@@ -42,6 +42,7 @@ from avatar.drawing_tools import (
     set_rgba,
 )
 from avatar.face import FaceState
+from avatar.pose import Pose
 
 if TYPE_CHECKING:
     import cairo
@@ -154,30 +155,35 @@ def draw_brows(cr: "cairo.Context", face: FaceState, boil_tick: int) -> None:
         raise RuntimeError("draw_brows: eine Braue hat keinen Zufall gezogen")
 
 
-def draw_eyes(
-    cr: "cairo.Context", gradients: Gradients, face: FaceState, blink: float, boil_tick: int
-) -> None:
-    """Beide Augen; `blink` 1 heißt offen, 0 geschlossen.
+def draw_eyes(cr: "cairo.Context", gradients: Gradients, pose: Pose) -> None:
+    """Beide Augen; `pose.blink` 1 heißt offen, 0 geschlossen.
 
-    Vorbedingung: `face` mit endlichen Kanälen, `blink` in 0..1, `boil_tick` ganze
-    Zahl ≥ 0; `gradients` baut die Verläufe (`CairoGradients` im Client).
-    Nachbedingung: beide Augen auf `cr`, jedes mit dem Zufall seines Teils.
+    Vorbedingung: `pose.face` mit endlichen Kanälen, `pose.blink` in 0..1,
+    `pose.boil_tick` ganze Zahl ≥ 0, `pose.head_yaw` endlich; `gradients` baut die
+    Verläufe (`CairoGradients` im Client).
+    Nachbedingung: beide Augen auf `cr`, jedes mit dem Zufall seines Teils; die Iris
+    um den Kopfwinkel zurückgenommen.
     Fehlerfälle: ValueError bei verletzter Vorbedingung.
     """
     # ── Eingabe-Validierung ──
-    check_face(face, "draw_eyes")
-    check_tick(boil_tick, "draw_eyes")
+    if not isinstance(pose, Pose):
+        raise ValueError(f"draw_eyes: {pose!r} ist keine Pose")
+    check_face(pose.face, "draw_eyes")
+    check_tick(pose.boil_tick, "draw_eyes")
+    blink, yaw = pose.blink, pose.head_yaw
     if isinstance(blink, bool) or not isinstance(blink, int | float):
         raise ValueError(f"draw_eyes: Blinzelwert {blink!r} keine Zahl")
     if not 0.0 <= blink <= 1.0:
         raise ValueError(f"draw_eyes: Blinzelwert {blink!r} außerhalb 0..1")
+    if isinstance(yaw, bool) or not isinstance(yaw, int | float) or not math.isfinite(yaw):
+        raise ValueError(f"draw_eyes: head_yaw {yaw!r} keine endliche Zahl")
 
     # ── Verarbeitung ──
     used = []
     for eye, part in ((EYE_LEFT, PART_EYE_LEFT), (EYE_RIGHT, PART_EYE_RIGHT)):
-        seed = part_seed(boil_tick, part)
+        seed = part_seed(pose.boil_tick, part)
         pen = Pen(cr=cr, rng=ParkMiller(state=seed))
-        draw_eye(pen, gradients, eye, face, blink)
+        draw_eye(pen, gradients, eye, pose)
         used.append(pen.rng.state != seed)
 
     # ── Ausgabe-Verifikation ──

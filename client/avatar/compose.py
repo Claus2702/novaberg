@@ -162,7 +162,7 @@ def _draw_head(
     ctx.set_line_cap(LINE_CAP_ROUND)
     ctx.set_line_join(LINE_JOIN_ROUND)
     draw_brows(ctx, face, tick)
-    draw_eyes(ctx, tools.gradients, face, pose.blink, tick)
+    draw_eyes(ctx, tools.gradients, pose)
     draw_mouth(ctx, tools.gradients, face, pose.tongue, tick)
     draw_extras(ctx, face, float(tick * BOIL_MS), tick)
 

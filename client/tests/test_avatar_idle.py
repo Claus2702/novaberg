@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from avatar import idle_catalog as catalog
-from avatar.face import PROTOTYPE_KEYS
+from avatar.face import EYE_DEG_PER_GAZE, PROTOTYPE_KEYS
 from avatar.idle import (
     AnswerArrives,
     IdleEvent,
@@ -86,7 +86,8 @@ class _Step(NamedTuple):
     targets: tuple[float, ...]  # in der Reihenfolge von STEP_KEYS
     face_omega: float
     head_yaw: float
-    plan: int  # Prüfsumme des Bilds ohne yaw: für den Zwilling ohne Drehung (Y5)
+    plan: int  # Prüfsumme des Bilds ohne yaw und gx: für den Zwilling ohne Drehung (Y5)
+    gx: float  # der Blick des Plans, mit dem Kopfziel des Blickhalts (Y7)
 
 
 STEP_KEYS = ("mw", "mo", "jaw", "eo", "gy", "ps", "bli", "bri", "blo", "bro", "mc")
@@ -188,6 +189,15 @@ def _replay(index: int, trace: IdleTrace, head_turn: bool) -> Iterator[tuple[int
         yield t, logic.step(float(t), 0.0, 0.0)
 
 
+def _plan_key(frame: IdleFrame) -> int:
+    """Die Prüfsumme des Bilds ohne Kopfwinkel und ohne Blick in x.
+
+    Der Blick in x trägt mit dem Blickhalt das Kopfziel, der Zwilling ohne Drehung
+    plant ihn ohne; alles andere muss gleich sein.
+    """
+    return hash(replace(frame, head_yaw=0.0, targets=replace(frame.targets, gaze_x=0.0)))
+
+
 def _simulation(index: int) -> _Run:
     """Der Lauf `index` im Client: Verlauf, Bilder an den Proben, alle Schritte.
 
@@ -204,7 +214,7 @@ def _simulation(index: int) -> _Run:
             probes.append((t, frame))
         values = tuple(getattr(frame.targets, _KEY_TO_FIELD[k]) for k in STEP_KEYS)
         steps.append(_Step(t, frame.state, frame.form_id, values, frame.face_omega,
-                           frame.head_yaw, hash(replace(frame, head_yaw=0.0))))
+                           frame.head_yaw, _plan_key(frame), frame.targets.gaze_x))
     _SIMULATIONS[index] = (trace, probes, steps)
     return _SIMULATIONS[index]
 
@@ -684,7 +694,7 @@ class BlinkCheckpointTest(unittest.TestCase):
 
 
 class HeadCheckpointTest(unittest.TestCase):
-    """Y1–Y4 an den Kopfzielen der Läufe, Y5 als Zwilling ohne Drehung über alle Läufe."""
+    """Y1–Y4 an den Kopfzielen der Läufe, Y5 als Zwilling ohne Drehung, Y7 am Blickhalt."""
 
     ART_MAX = {catalog.HEAD_SMALL: 9.0, catalog.HEAD_DEEP_KIND: 11.0, catalog.HEAD_BACK: 0.0}
 
@@ -715,13 +725,41 @@ class HeadCheckpointTest(unittest.TestCase):
             twin_trace = IdleTrace()
             differing = still = 0
             for step, (t, frame) in zip(steps, _replay(index, twin_trace, False), strict=True):
-                differing += step.t != t or step.plan != hash(frame)
+                differing += step.t != t or step.plan != _plan_key(frame)
                 still += frame.head_yaw != 0.0
             moved += any(abs(s.head_yaw) > 1.0 for s in steps)
             with self.subTest(run=_label(index)):
                 self.assertEqual((differing, still), (0, 0))
                 self.assertEqual(twin_trace, trace)
         self.assertGreater(moved, 0)
+
+    def test_y7_the_gaze_lies_by_the_head_target_further_out(self) -> None:
+        """Y7: gx = clamp(gx des Zwillings + P / 34, −0,9, 0,9), P allein aus dem Verlauf.
+
+        P(t) ist das Ziel des Eintrags mit dem größten `gaze_change_ms` ≤ t, sonst 0. Die
+        letzten `HEAD_FOLLOWS_MS` eines Laufs fehlen: Dort steht ein eingereihtes Ziel
+        noch nicht im Verlauf.
+        """
+        checked = strong = 0
+        wrong: list[tuple[str, int, float, float]] = []
+        for index, (trace, _, steps) in _all_runs():
+            end = REFERENCE["laeufe"][index]["sim_ms"] - catalog.HEAD_FOLLOWS_MS
+            twin = _replay(index, IdleTrace(), False)
+            hold, heads = 0.0, iter(trace.heads)
+            upcoming = next(heads, None)
+            for step, (_, frame) in zip(steps, twin, strict=True):
+                while upcoming is not None and upcoming.gaze_change_ms <= step.t:
+                    hold, upcoming = upcoming.target, next(heads, None)
+                if step.t > end:
+                    continue
+                expected = max(-0.9, min(0.9, frame.targets.gaze_x + hold / EYE_DEG_PER_GAZE))
+                checked += 1
+                strong += abs(hold) >= 5.0
+                if abs(step.gx - expected) > 1e-9:
+                    wrong.append((_label(index), step.t, step.gx, expected))
+        self.assertEqual(wrong[:5], [])
+        self.assertGreater(checked, 0)
+        self.assertGreater(strong, 0, "Y7 in keinem Lauf geprüft")
 
 
 class RuleTest(unittest.TestCase):

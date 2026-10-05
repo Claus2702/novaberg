@@ -27,7 +27,8 @@ from avatar.drawing_tools import (
     set_rgba,
     trace_path,
 )
-from avatar.face import FaceState
+from avatar.face import EYE_DEG_PER_GAZE, FaceState
+from avatar.pose import Pose
 
 if TYPE_CHECKING:
     import cairo
@@ -153,24 +154,29 @@ def lid_extent(
     return up, lo
 
 
-def iris_center(eye: EyeGeometry, face: FaceState, up: float) -> Point:
+def iris_center(eye: EyeGeometry, face: FaceState, up: float, head_yaw: float) -> Point:
     """Mitte der Iris: Blick verschiebt sie, ein weit offenes Oberlid hebt sie leicht.
 
     Der Weg je Einheit Blick ist `IRIS_TRAVEL_X` und `IRIS_TRAVEL_Y` (siehe dort):
-    weit genug, dass ein abgewandter Blick als abgewandt gelesen wird.
-    Vorbedingung: `up` endlich.
-    Nachbedingung: `L(E, gx · hw · 0,5, gy · hw · 0,26 − up · 0,12)`.
-    Fehlerfälle: ValueError aus `local_point` bei nicht endlicher Eingabe.
+    weit genug, dass ein abgewandter Blick als abgewandt gelesen wird. Der Kopfwinkel
+    (Grad) nimmt die Iris zurück, `head_yaw / EYE_DEG_PER_GAZE` Einheiten Blick, ohne
+    Bedingung und ohne Grenze: Das Auge hält seinen Punkt, während der Kopf nachzieht.
+    Vorbedingung: `up` und `head_yaw` endlich.
+    Nachbedingung: `L(E, (gx − yaw / 34) · hw · 0,5, gy · hw · 0,26 − up · 0,12)`.
+    Fehlerfälle: ValueError bei nicht endlichem `up` oder `head_yaw`, aus `local_point`
+    bei nicht endlicher Eingabe.
     """
     # ── Eingabe-Validierung ──
     if not math.isfinite(up):
         raise ValueError(f"iris_center: up {up!r} nicht endlich")
+    if not math.isfinite(head_yaw):
+        raise ValueError(f"iris_center: head_yaw {head_yaw!r} nicht endlich")
 
     # ── Verarbeitung ──
     hw = eye.half_width
     center = local_point(
         eye.center,
-        face.gaze_x * hw * IRIS_TRAVEL_X,
+        (face.gaze_x - head_yaw / EYE_DEG_PER_GAZE) * hw * IRIS_TRAVEL_X,
         face.gaze_y * hw * IRIS_TRAVEL_Y - up * 0.12,
     )
 
@@ -233,17 +239,17 @@ def closed_lid(eye: EyeGeometry) -> list[Point]:
     return lid
 
 
-def draw_eye(
-    pen: Pen, gradients: Gradients, eye: EyeGeometry, face: FaceState, blink: float
-) -> None:
+def draw_eye(pen: Pen, gradients: Gradients, eye: EyeGeometry, pose: Pose) -> None:
     """Ein Auge, offen oder geschlossen, in der Reihenfolge des Prototyps.
 
-    Vorbedingung: `face` geprüft (endliche Kanäle), `blink` in 0..1.
+    Die Pose liefert Gesicht, Lidschlag und Kopfwinkel; der Winkel reicht bis zur Iris.
+    Vorbedingung: `pose.face` geprüft (endliche Kanäle), `pose.blink` in 0..1.
     Nachbedingung: das Auge steht auf `pen.cr`; Speichern und Wiederherstellen des
     Kontexts sind ausgeglichen.
     Fehlerfälle: ValueError aus den Prüfungen der Werkzeuge.
     """
     # ── Eingabe-Validierung ──
+    face, blink = pose.face, pose.blink
     opening = eye_opening(face, blink)
 
     # ── Verarbeitung ──
@@ -254,7 +260,7 @@ def draw_eye(
     _lid_hatching(pen, eye, lids)
     _smoky_corner(pen, gradients, eye)
     _graphite_below(pen, eye)
-    _eyeball(pen, gradients, eye, face, lids)
+    _eyeball(pen, gradients, eye, pose, lids)
     _upper_lash_line(pen, lids.upper)
     _lash_clumps(pen, eye, lids.upper)
     _crease_lines(pen, lids.crease)
@@ -460,10 +466,11 @@ def _graphite_below(pen: Pen, eye: EyeGeometry) -> None:
 
 
 def _eyeball(
-    pen: Pen, gradients: Gradients, eye: EyeGeometry, face: FaceState, lids: Lids
+    pen: Pen, gradients: Gradients, eye: EyeGeometry, pose: Pose, lids: Lids
 ) -> None:
     """Augapfel, Iris und Pupille, beschnitten auf die Lidöffnung, mit Schatten des Lids."""
     # ── Eingabe-Validierung ──
+    face = pose.face
     hw, side = eye.half_width, eye.side
     cr = pen.cr
 
@@ -489,7 +496,7 @@ def _eyeball(
     cr.new_path()
     cr.rectangle(corner[0], corner[1], hw * 2.4, hw * 2)
     cr.fill()
-    iris = iris_center(eye, face, lids.up)
+    iris = iris_center(eye, face, lids.up, pose.head_yaw)
     _iris(pen, gradients, eye, iris)
     _pupil(cr, gradients, eye, face, iris)
     for k in range(3):

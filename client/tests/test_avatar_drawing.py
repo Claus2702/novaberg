@@ -48,7 +48,8 @@ from avatar.drawing_tools import (
     park_miller_next,
     part_seed,
 )
-from avatar.face import NEUTRAL, PROTOTYPE_KEYS, FaceState
+from avatar.face import EYE_DEG_PER_GAZE, NEUTRAL, PROTOTYPE_KEYS, FaceState
+from avatar.pose import Pose
 
 REFERENCE_PATH = Path(__file__).parent / "avatar_reference" / "expression.json"
 DRAWING_MODULES = ("avatar.drawing", "avatar.drawing_eye", "avatar.drawing_tools")
@@ -186,9 +187,14 @@ def _face(**changes: float) -> FaceState:
     return replace(NEUTRAL, **changes)
 
 
-def _eyes(face: FaceState, blink: float, tick: int = 3) -> RecordingContext:
+def _pose(face: FaceState, blink: float, tick: int, head_yaw: float) -> Pose:
+    """Eine Pose, die nur trägt, was die Augen lesen; jeder Wert steht ausdrücklich da."""
+    return Pose(face=face, tongue=0.0, blink=blink, breath=0.0, boil_tick=tick, head_yaw=head_yaw)
+
+
+def _eyes(face: FaceState, blink: float, tick: int = 3, head_yaw: float = 0.0) -> RecordingContext:
     cr = RecordingContext()
-    draw_eyes(cr, RecordingGradients(), face, blink, tick)
+    draw_eyes(cr, RecordingGradients(), _pose(face, blink, tick, head_yaw))
     return cr
 
 
@@ -237,7 +243,7 @@ class DeterminismTest(unittest.TestCase):
     def _record(self, tick: int) -> list[list]:
         brows, eyes, extras = RecordingContext(), RecordingContext(), RecordingContext()
         draw_brows(brows, self.face, tick)
-        draw_eyes(eyes, RecordingGradients(), self.face, 0.5, tick)
+        draw_eyes(eyes, RecordingGradients(), _pose(self.face, 0.5, tick, 0.0))
         draw_extras(extras, self.face, 900.0, tick)
         return [brows.calls, eyes.calls, extras.calls]
 
@@ -360,7 +366,7 @@ class ReferenceTargetsTest(unittest.TestCase):
             draw_brows(cr, face, 7)
             draw_extras(cr, face, 1234.5, 7)
             for blink in (0.0, 0.5, 1.0):
-                draw_eyes(cr, RecordingGradients(), face, blink, 7)
+                draw_eyes(cr, RecordingGradients(), _pose(face, blink, 7, 0.0))
             with self.subTest(target=label):
                 self.assertGreater(cr.names().count("stroke"), 0)
                 self.assertEqual(_violations(cr.calls), [])
@@ -456,9 +462,9 @@ class IrisPathTest(unittest.TestCase):
         cases = ((EYE_LEFT, ((0.0, 0.0), (0.25, 6.25), (0.5, 12.5))),
                  (EYE_RIGHT, ((0.0, 0.0), (0.25, 7.5), (0.5, 15.0))))
         for eye, steps in cases:
-            rest = iris_center(eye, NEUTRAL, 0.0)
+            rest = iris_center(eye, NEUTRAL, 0.0, 0.0)
             for gaze, shift in steps:
-                x, y = iris_center(eye, _face(gaze_x=gaze), 0.0)
+                x, y = iris_center(eye, _face(gaze_x=gaze), 0.0, 0.0)
                 with self.subTest(hw=eye.half_width, gx=gaze):
                     self.assertAlmostEqual(x - rest[0], shift * COS9, delta=EXACT)
                     self.assertAlmostEqual(y - rest[1], shift * SIN9, delta=EXACT)
@@ -466,9 +472,9 @@ class IrisPathTest(unittest.TestCase):
     def test_gaze_down_moves_the_iris_by_0_26_of_the_half_width(self) -> None:
         # Linkes Auge: gy 0,25 / 0,5 / −0,5 rückt die Iris um 0,26 · 50 · gy
         # = 3,25 / 6,5 / −6,5 px entlang der Längsachse (−sin 9°, cos 9°).
-        rest = iris_center(EYE_LEFT, NEUTRAL, 0.0)
+        rest = iris_center(EYE_LEFT, NEUTRAL, 0.0, 0.0)
         for gaze, shift in ((0.25, 3.25), (0.5, 6.5), (-0.5, -6.5)):
-            x, y = iris_center(EYE_LEFT, _face(gaze_y=gaze), 0.0)
+            x, y = iris_center(EYE_LEFT, _face(gaze_y=gaze), 0.0, 0.0)
             with self.subTest(gy=gaze):
                 self.assertAlmostEqual(x - rest[0], -shift * SIN9, delta=EXACT)
                 self.assertAlmostEqual(y - rest[1], shift * COS9, delta=EXACT)
@@ -488,6 +494,54 @@ class IrisPathTest(unittest.TestCase):
         rest, turned = drawn(0.0), drawn(0.25)
         self.assertAlmostEqual(turned[0] - rest[0], 6.25 * COS9, delta=EXACT)
         self.assertAlmostEqual(turned[1] - rest[1], 6.25 * SIN9, delta=EXACT)
+
+
+class IrisHoldTest(unittest.TestCase):
+    """Der Kopfwinkel nimmt die Iris um Winkel / 34 Einheiten Blick zurück."""
+
+    def test_head_yaw_pulls_the_iris_back_even_past_the_middle(self) -> None:
+        # Linkes Auge hw 50: Weg je Einheit 50 · 0,5 = 25 px entlang der Achse.
+        # gx 0,5 / Kopf 0°:  0,5 · 25             = 12,5 px
+        # gx 0,5 / Kopf 10°: (0,5 − 10/34) · 25   =  5,147 px
+        # gx 0   / Kopf 10°: (0 − 10/34) · 25     = −7,353 px, über die Mitte hinaus.
+        rest = iris_center(EYE_LEFT, NEUTRAL, 0.0, 0.0)
+        cases = ((0.5, 0.0, 12.5), (0.5, 10.0, (0.5 - 10 / 34) * 25), (0.0, 10.0, -10 / 34 * 25))
+        for gaze, yaw, shift in cases:
+            x, y = iris_center(EYE_LEFT, _face(gaze_x=gaze), 0.0, yaw)
+            with self.subTest(gx=gaze, yaw=yaw):
+                self.assertAlmostEqual(x - rest[0], shift * COS9, delta=EXACT)
+                self.assertAlmostEqual(y - rest[1], shift * SIN9, delta=EXACT)
+        self.assertAlmostEqual((0.5 - 10 / 34) * 25, 5.147, delta=1e-3)
+        self.assertAlmostEqual(-10 / 34 * 25, -7.353, delta=1e-3)
+
+    def test_non_finite_head_yaw_is_rejected(self) -> None:
+        for yaw in (math.nan, math.inf):
+            with self.subTest(yaw=yaw), self.assertRaises(ValueError):
+                iris_center(EYE_LEFT, NEUTRAL, 0.0, yaw)
+        # Zwilling: ein endlicher Winkel geht durch
+        self.assertEqual(len(iris_center(EYE_LEFT, NEUTRAL, 0.0, 10.0)), 2)
+
+    def test_the_drawn_iris_follows_the_head_yaw(self) -> None:
+        # gx 0,5, Kopf 10°: Die gezeichnete Iris steht dort, wo iris_center sie hat, also
+        # (0,5 − 10/34) · 25 − 12,5 = −7,353 px gegenüber dem Kopf bei 0°.
+        def drawn(yaw: float) -> tuple[float, float]:
+            arcs = _arcs(_eyes(_face(gaze_x=0.5), 1.0, head_yaw=yaw))
+            iris = [a for a in arcs if abs(a[2] - IRIS_RADIUS_LEFT) < EXACT]
+            self.assertTrue(iris)
+            return iris[0][0], iris[0][1]
+
+        straight, turned = drawn(0.0), drawn(10.0)
+        back = -10 / EYE_DEG_PER_GAZE * 25
+        self.assertAlmostEqual(turned[0] - straight[0], back * COS9, delta=EXACT)
+        self.assertAlmostEqual(turned[1] - straight[1], back * SIN9, delta=EXACT)
+        self.assertAlmostEqual(back, -7.353, delta=1e-3)
+
+    def test_draw_eyes_rejects_a_non_finite_head_yaw(self) -> None:
+        for yaw in (math.nan, math.inf, True):
+            with self.subTest(yaw=yaw), self.assertRaises(ValueError):
+                _eyes(NEUTRAL, 0.0, head_yaw=yaw)
+        # Zwilling: ein endlicher Winkel geht auch bei geschlossenem Auge durch
+        self.assertGreater(len(_eyes(NEUTRAL, 0.0, head_yaw=10.0).calls), 0)
 
 
 class PrototypeFormulaTest(unittest.TestCase):
