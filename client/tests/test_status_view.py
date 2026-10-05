@@ -39,6 +39,15 @@ class StatusLabelTest(unittest.TestCase):
         self.assertFalse(label.get_wrap())
         self.assertEqual(label.get_ellipsize(), Pango.EllipsizeMode.END)
 
+    def test_carries_the_statusbar_class_and_keeps_dim_label(self) -> None:
+        label = status_label()
+        self.assertTrue(label.has_css_class("nova-statusbar-label"))
+        self.assertTrue(label.has_css_class("dim-label"))
+
+    def test_twin_plain_label_lacks_the_statusbar_class(self) -> None:
+        """Zwilling: Ein einfaches Label trägt die Klasse nicht, der Zeuge unterscheidet also."""
+        self.assertFalse(Gtk.Label().has_css_class("nova-statusbar-label"))
+
     def test_height_is_the_same_for_short_and_longest_text(self) -> None:
         label = status_label()
         label.set_text(SHORT)

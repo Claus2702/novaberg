@@ -15,7 +15,8 @@ def status_label() -> Gtk.Label:
 
     Vorbedingung: GTK ist initialisiert.
     Nachbedingung: das Label bricht nicht um, kürzt am Ende mit „…“, steht linksbündig
-    und trägt die Klasse `dim-label`.
+    und trägt die Klassen `dim-label` und `nova-statusbar-label` (Schriftgröße der Statusleiste,
+    aus derselben CSS am Display).
     """
     # ── Eingabe-Validierung ──
     # Keine Eingabe.
@@ -26,10 +27,13 @@ def status_label() -> Gtk.Label:
     label.set_wrap(False)
     label.set_ellipsize(Pango.EllipsizeMode.END)
     label.add_css_class("dim-label")
+    label.add_css_class("nova-statusbar-label")
 
     # ── Ausgabe-Verifikation ──
     if label.get_wrap() or label.get_ellipsize() != Pango.EllipsizeMode.END:
         raise RuntimeError("status_label: Zeile nicht auf Kürzung am Ende gestellt")
+    if not label.has_css_class("nova-statusbar-label"):
+        raise RuntimeError("status_label: Zeile trägt nicht die Klasse der Statusleiste")
     return label
 
 
