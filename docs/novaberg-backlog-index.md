@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 456 Eintraege mit Kennung — 372 offen, 81 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 456 Eintraege mit Kennung — 371 offen, 82 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 454 von 456 Eintraegen zugeordnet.
 
@@ -604,7 +604,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1054 | abgeschlossen | `SACHLAGE-SCHEIBE-8-TRAEGER` | [Feature: SACHLAGE-SCHEIBE-8-TRAEGER — der Wissenstra](novaberg-backlog-antwortpfad.md) |
 | ANT | 1065 | abgeschlossen | `SACHLAGE-SCHEIBE-9-SPRECHER` | [Feature: SACHLAGE-SCHEIBE-9-SPRECHER — der Sprecher:](novaberg-backlog-antwortpfad.md) |
 | ANT | 1077 | offen | `ANGEBOT-ALS-ALLGEMEINER-ABLAUF` | [Feature: ANGEBOT-ALS-ALLGEMEINER-ABLAUF — Nova biete](novaberg-backlog-antwortpfad.md) |
-| ANT | 1089 | offen | `AVATAR-UNTERTITEL` | [Feature: AVATAR-UNTERTITEL — der gesprochene Text al](novaberg-backlog-antwortpfad.md) |
+| ANT | 1089 | abgeschlossen | `AVATAR-UNTERTITEL` | [Feature: AVATAR-UNTERTITEL — der gesprochene Text al](novaberg-backlog-antwortpfad.md) |
 | ANT | 1101 | offen | `AVATAR-PIXIE-LEERLAUF` | [Feature: AVATAR-PIXIE-LEERLAUF — der Avatar zeigt, d](novaberg-backlog-antwortpfad.md) |
 | ANT | 1113 | offen | `AVATAR-VALENZ-RESERVE` | [Feature: AVATAR-VALENZ-RESERVE — die Valenz behält R](novaberg-backlog-antwortpfad.md) |
 | ANT | 1123 | offen | `AVATAR-SMILEY-AUSDRUECKE` | [Feature: AVATAR-SMILEY-AUSDRUECKE — die gängigen Smi](novaberg-backlog-antwortpfad.md) |
