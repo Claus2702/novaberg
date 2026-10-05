@@ -33,8 +33,10 @@ from avatar.drawing import (
 from avatar.drawing_eye import (
     EYE_LEFT,
     EYE_RIGHT,
+    EyeGeometry,
     closed_lid,
     iris_center,
+    iris_radius,
     lid_extent,
     pupil_radius,
 )
@@ -409,9 +411,10 @@ class ClosedEyeTest(unittest.TestCase):
         self.assertAlmostEqual(y, 376.2909441035, delta=SHAKE_FINE + EXACT)
 
     def test_blink_one_draws_the_open_eye(self) -> None:
-        # Zwilling: offen gibt es je Auge einen Augapfel mit Beschnitt
+        # Zwilling: offen gibt es je Auge einen Augapfel mit Beschnitt und den Beschnitt der
+        # Glanzlichter auf die Iris: zwei Beschnitte je Auge
         names = _eyes(NEUTRAL, 1.0).names()
-        self.assertEqual(names.count("clip"), 2)
+        self.assertEqual(names.count("clip"), 4)
         self.assertIn("set_source", names)
 
     def test_below_0_06_closed(self) -> None:
@@ -424,7 +427,7 @@ class ClosedEyeTest(unittest.TestCase):
         """Zwilling: ab 0,06 offen, auch bei 0,1, wo früher (unter 0,12) noch zu war."""
         for blink in (0.06, 0.1):
             with self.subTest(blink=blink):
-                self.assertEqual(_eyes(NEUTRAL, blink).names().count("clip"), 2)
+                self.assertEqual(_eyes(NEUTRAL, blink).names().count("clip"), 4)
 
     def test_closed_eye_strokes_follow_the_prototype(self) -> None:
         """Je Auge die Lidlinie in sieben Strichen, nach außen kräftiger, und 8 × 3 Wimpern."""
@@ -542,6 +545,97 @@ class IrisHoldTest(unittest.TestCase):
                 _eyes(NEUTRAL, 0.0, head_yaw=yaw)
         # Zwilling: ein endlicher Winkel geht auch bei geschlossenem Auge durch
         self.assertGreater(len(_eyes(NEUTRAL, 0.0, head_yaw=10.0).calls), 0)
+
+
+def _arc_with_radius(arcs: list[tuple], radius: float) -> tuple:
+    """Den einen Bogen mit diesem Radius; mehr oder weniger als einer ist ein Fehler."""
+    found = [a for a in arcs if abs(a[2] - radius) < EXACT]
+    if len(found) != 1:
+        raise AssertionError(f"Radius {radius}: {len(found)} Bögen statt einem")
+    return found[0]
+
+
+def _big_glint(face: FaceState, eye: EyeGeometry, head_yaw: float = 0.0) -> tuple:
+    """Das große Glanzlicht (Radius 0,16 · ir) des Auges, gezeichnet bei offenem Lid."""
+    arcs = _arcs(_eyes(face, 1.0, head_yaw=head_yaw))
+    return _arc_with_radius(arcs, iris_radius(eye) * 0.16)
+
+
+class GlintTest(unittest.TestCase):
+    """Die Glanzlichter bleiben im Bild stehen, der Kopf nimmt sie mit, die Iris wandert."""
+
+    def test_the_glint_ignores_the_gaze_but_the_iris_follows_it(self) -> None:
+        for eye in (EYE_LEFT, EYE_RIGHT):
+            rest = _big_glint(NEUTRAL, eye)
+            for gx in (-0.3, 0.0, 0.3):
+                for gy in (-0.3, 0.0, 0.3):
+                    glint = _big_glint(_face(gaze_x=gx, gaze_y=gy), eye)
+                    with self.subTest(hw=eye.half_width, gx=gx, gy=gy):
+                        self.assertAlmostEqual(glint[0], rest[0], delta=EXACT)
+                        self.assertAlmostEqual(glint[1], rest[1], delta=EXACT)
+
+    def test_the_iris_under_the_glint_moves_with_the_gaze(self) -> None:
+        """Zwilling: bei gx ±0,3 liegen die Irismitten (Weg 0,6 · 25 = 15 px) weit auseinander."""
+        for eye in (EYE_LEFT, EYE_RIGHT):
+            radius = iris_radius(eye)
+            # die Iris wird zuerst gezeichnet: der erste Bogen mit ihrem Radius
+            right = self._first_arc(_face(gaze_x=0.3), radius)
+            left = self._first_arc(_face(gaze_x=-0.3), radius)
+            with self.subTest(hw=eye.half_width):
+                self.assertGreater(math.dist(right[:2], left[:2]), 10.0)
+
+    def test_head_yaw_takes_the_glint_back_along_the_eye_axis(self) -> None:
+        # Linkes Auge hw 50, gx 0,3, Kopf 10°: −10/34 · 50 · 0,5 = −7,353 px entlang der Achse.
+        face = _face(gaze_x=0.3)
+        straight, turned = _big_glint(face, EYE_LEFT), _big_glint(face, EYE_LEFT, 10.0)
+        shift = -10 / EYE_DEG_PER_GAZE * 50 * 0.5
+        self.assertAlmostEqual(shift, -7.353, delta=1e-3)
+        self.assertAlmostEqual(turned[0] - straight[0], shift * COS9, delta=EXACT)
+        self.assertAlmostEqual(turned[1] - straight[1], shift * SIN9, delta=EXACT)
+
+    def test_at_rest_both_glints_sit_on_the_iris_center_plus_the_offsets(self) -> None:
+        # Offenes Auge: up = hw · 0,5 · 1 = 25 (links) bzw. 30 (rechts), Mitte L(E, 0, −0,12 · up).
+        # Versätze in Bildkoordinaten: (−0,32 · ir, −0,36 · ir) und (+0,34 · ir, +0,3 · ir).
+        for eye in (EYE_LEFT, EYE_RIGHT):
+            hw, ir = eye.half_width, iris_radius(eye)
+            lift = -hw * 0.5 * 0.12
+            cx = eye.center[0] - lift * SIN9
+            cy = eye.center[1] + lift * COS9
+            arcs = _arcs(_eyes(NEUTRAL, 1.0))
+            big = _arc_with_radius(arcs, ir * 0.16)
+            small = _arc_with_radius(arcs, ir * 0.06)
+            with self.subTest(hw=hw):
+                self.assertAlmostEqual(big[0], cx - ir * 0.32, delta=EXACT)
+                self.assertAlmostEqual(big[1], cy - ir * 0.36, delta=EXACT)
+                self.assertAlmostEqual(small[0], cx + ir * 0.34, delta=EXACT)
+                self.assertAlmostEqual(small[1], cy + ir * 0.3, delta=EXACT)
+
+    def test_the_glints_are_clipped_to_the_iris_and_the_pupil_is_not(self) -> None:
+        for eye in (EYE_LEFT, EYE_RIGHT):
+            calls = _eyes(NEUTRAL, 1.0).calls
+            ir = iris_radius(eye)
+            big = next(i for i, c in enumerate(calls) if self._is_arc(c, ir * 0.16))
+            clip = max(i for i in range(big) if calls[i][0] == "clip")
+            with self.subTest(hw=eye.half_width):
+                # der Kreis der Iris, dann clip, dann die Glanzlichter, dann restore
+                self.assertEqual(calls[clip - 1][0], "arc")
+                self.assertAlmostEqual(calls[clip - 1][1][2], ir, delta=EXACT)
+                self.assertEqual(calls[clip - 3][0], "save")
+                restore = next(i for i in range(big, len(calls)) if calls[i][0] == "restore")
+                small = next(i for i, c in enumerate(calls) if self._is_arc(c, ir * 0.06))
+                self.assertLess(small, restore)
+                # Zwilling: die Pupille liegt vor dem save dieses Beschnitts
+                pupil = pupil_radius(eye, NEUTRAL) * 1.08
+                pupil_at = next(i for i, c in enumerate(calls) if self._is_arc(c, pupil))
+                self.assertLess(pupil_at, clip - 3)
+
+    @staticmethod
+    def _first_arc(face: FaceState, radius: float) -> tuple:
+        return next(a for a in _arcs(_eyes(face, 1.0)) if abs(a[2] - radius) < EXACT)
+
+    @staticmethod
+    def _is_arc(call: tuple, radius: float) -> bool:
+        return call[0] == "arc" and abs(call[1][2] - radius) < EXACT
 
 
 class PrototypeFormulaTest(unittest.TestCase):

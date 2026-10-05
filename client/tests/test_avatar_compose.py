@@ -583,22 +583,38 @@ class HeadTurnPathTest(unittest.TestCase):
     """`draw_face` bis 0,05° auf dem ungedrehten Weg, darüber durch das Drehgitter."""
 
     def test_up_to_0_05_degrees_the_path_is_unchanged(self) -> None:
-        """Bis 0,05° wird der gerade Weg gezeichnet; nur die Iris steht um den Blickhalt versetzt.
+        """Bis 0,05° wird der gerade Weg gezeichnet; Iris und Glanzlichter stehen versetzt.
 
-        Der Kopfwinkel wirkt allein in `iris_center`, ohne Schwelle; ein Kopf von `yaw` zeichnet
-        also dasselbe wie ein gerader Kopf mit Blick `gaze_x − yaw / EYE_DEG_PER_GAZE`.
+        Der Kopfwinkel wirkt in `iris_center` und im Ort der Glanzlichter, ohne Schwelle; ein
+        Kopf von `yaw` zeichnet also dasselbe wie ein gerader Kopf mit Blick
+        `gaze_x − yaw / EYE_DEG_PER_GAZE`, nur dass die Glanzlichter dem Blick nicht folgen,
+        dem Kopf aber um `−yaw / 34 · hw · 0,5` entlang der Achse.
         """
         layers, tools = _layers(), _tools()
+        # Radien der Glanzlichter (0,16 und 0,06 · ir, ir = 0,46 · hw) je Auge, links hw 50
+        glint_radii = [hw * 0.46 * f for hw in (50.0, 60.0) for f in (0.16, 0.06)]
+        glint_hw = (50.0, 50.0, 60.0, 60.0)
 
-        def calls(yaw: float, gaze_x: float) -> list:
+        def is_glint(call: tuple) -> bool:
+            return call[0] == "arc" and any(abs(call[1][2] - r) < 1e-9 for r in glint_radii)
+
+        def calls(yaw: float, gaze_x: float) -> tuple[list, list]:
             face = replace(NEUTRAL, gaze_x=gaze_x)
             cr = RecordingContext()
             draw_face(cr, SIZE, _pose(face=face, breath=0.4, head_yaw=yaw), layers, tools)
-            return cr.calls
+            rest = [c for c in cr.calls if not is_glint(c)]
+            return rest, [c[1] for c in cr.calls if is_glint(c)]
 
         for yaw in (0.05, -0.05):
             with self.subTest(yaw=yaw):
-                self.assertEqual(calls(yaw, 0.0), calls(0.0, -yaw / EYE_DEG_PER_GAZE))
+                turned, twin = calls(yaw, 0.0), calls(0.0, -yaw / EYE_DEG_PER_GAZE)
+                self.assertEqual(turned[0], twin[0])
+                self.assertEqual(len(turned[1]), 4)
+                cos9, sin9 = math.cos(math.radians(9)), math.sin(math.radians(9))
+                for hw, a, b in zip(glint_hw, turned[1], twin[1], strict=True):
+                    shift = -yaw / EYE_DEG_PER_GAZE * hw * 0.5
+                    self.assertAlmostEqual(a[0] - b[0], shift * cos9, delta=1e-9)
+                    self.assertAlmostEqual(a[1] - b[1], shift * sin9, delta=1e-9)
         self.assertEqual(len(tools.canvas.surfaces), 1)  # nur die Kinnverzerrung
         # Zwilling: ohne den Ausgleich des Blicks weicht die Iris ab, auch unter `TURN_MIN`
         self.assertNotEqual(calls(0.05, 0.0), calls(0.0, 0.0))

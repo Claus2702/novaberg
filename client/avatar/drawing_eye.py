@@ -499,6 +499,7 @@ def _eyeball(
     iris = iris_center(eye, face, lids.up, pose.head_yaw)
     _iris(pen, gradients, eye, iris)
     _pupil(cr, gradients, eye, face, iris)
+    _glints(cr, eye, iris, pose.head_yaw, lids.up)
     for k in range(3):
         cr.new_path()
         trace_path(cr, lids.upper)
@@ -599,9 +600,8 @@ def _iris_fibers(pen: Pen, eye: EyeGeometry, iris: Point) -> None:
 def _pupil(
     cr: "cairo.Context", gradients: Gradients, eye: EyeGeometry, face: FaceState, iris: Point
 ) -> None:
-    """Pupille mit weichem Rand und zwei Glanzlichter."""
+    """Pupille mit weichem Rand; sie bleibt an der Iris."""
     # ── Eingabe-Validierung ──
-    ir = iris_radius(eye)
     pr = pupil_radius(eye, face)
 
     # ── Verarbeitung ──
@@ -610,17 +610,46 @@ def _pupil(
     cr.arc(iris[0], iris[1], pr * 1.08, 0, FULL_TURN)
     cr.set_source(gradients.radial((*iris, pr * 0.7), (*iris, pr * 1.08), stops))
     cr.fill()
-    glints = (
-        (iris[0] - ir * 0.32, iris[1] - ir * 0.36, ir * 0.16, 0.95),
-        (iris[0] + ir * 0.34, iris[1] + ir * 0.3, ir * 0.06, 0.8),
+
+    # Keine Ausgabe-Verifikation: Der Radius ist in pupil_radius geprüft.
+
+
+def _glints(
+    cr: "cairo.Context", eye: EyeGeometry, iris: Point, head_yaw: float, up: float
+) -> None:
+    """Zwei Glanzlichter: im Bild fest, der Kopf nimmt sie mit; nur über der Iris.
+
+    Der Bezugspunkt `gc = L(E, −head_yaw / 34 · hw · 0,5, −up · 0,12)` hängt nicht am
+    Blick: Wandert die Iris, bleibt das Licht stehen. Die Versätze stehen in Bildkoordinaten.
+    Vorbedingung: `head_yaw` und `up` endlich (prüft `local_point`).
+    """
+    # ── Eingabe-Validierung ──
+    ir = iris_radius(eye)
+    hw = eye.half_width
+
+    # ── Verarbeitung ──
+    gc = local_point(
+        eye.center,
+        -head_yaw / EYE_DEG_PER_GAZE * hw * IRIS_TRAVEL_X,
+        -up * 0.12,
     )
+    glints = (
+        (gc[0] - ir * 0.32, gc[1] - ir * 0.36, ir * 0.16, 0.95),
+        (gc[0] + ir * 0.34, gc[1] + ir * 0.3, ir * 0.06, 0.8),
+    )
+    cr.save()
+    cr.new_path()
+    cr.arc(iris[0], iris[1], ir, 0, FULL_TURN)
+    cr.clip()
     for x, y, radius, alpha in glints:
         cr.new_path()
         cr.arc(x, y, radius, 0, FULL_TURN)
         set_rgba(cr, (252.0, 252.0, 250.0), alpha)
         cr.fill()
+    cr.restore()
 
-    # Keine Ausgabe-Verifikation: Die Radien sind in iris_radius und pupil_radius geprüft.
+    # Keine Ausgabe-Verifikation: save und restore stehen in derselben Funktion ohne
+    # Rückkehr dazwischen; Radius und Punkt sind geprüft.
 
 
 def _upper_lash_line(pen: Pen, upper: Sequence[Point]) -> None:
