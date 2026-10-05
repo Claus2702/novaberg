@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar: Ausarbeitung
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 05.10.2026, 00:27 UTC (§4, §13.1, §13.18 neu, §15.2, §15.3, §17.1, §17.9: der Client zieht nach — L1′ plant wie die nachgestellte Referenz, das Kopfziel `head_yaw` neben dem Gesicht; L2′a Auge und Kopffeder; L2′b/L2′c die Kopfdrehung im Bild über eine Zwischenfläche, nur die verschobenen Dreiecke). Davor 04.10.2026, 21:05 UTC (§4, §17.1, §17.3–§17.7, §17.9: der Leerlauf auf dem Stand der nachgestellten Referenz L0′a–L0′c — Nachdenken abgewandt, Einatmen, Antwort ohne Sprung, Pupille, Blick an der Iris, Lidschläge, Kopfdrehung). Davor 04.10.2026, 15:35 UTC (§17.8: L4 gebaut). Davor 04.10.2026, 14:30 UTC (§14.2, §15.4, §17.2, §17.8: die Antwort zeigt die Wahrnehmung der Antwort selbst, `emotion`/`arousal`). Davor 04.10.2026, 11:28 UTC (§17.10: der Auffangzweig nach L3). Davor 04.10.2026, 10:30 UTC (§17.10 neu: der Weg der Arbeitszyklen im Client, entschieden; §17.2: Absender, Sendefehler, Öffnen des Panels; §17.8: Verteiler entschieden, `pixie_auftrag` mit Thema für die Statuszeile). Davor 03.10.2026, 19:07 UTC (§17.3, §17.8, §17.9: die Puppe lebt aus dem Leerlauf, L2). Davor 03.10.2026, 13:40 UTC (§17: der Generator folgt dem Ereignismodell des Clients, §17.1, §17.3, §17.6, §17.8, §17.9). Davor 03.10.2026 (§17 neu: der Leerlauf). Davor 02.10.2026
+**Stand:** 05.10.2026, 06:15 UTC (§5.2, §6.1, §13.1: die Sektor-Gesichter folgen der Literatur, wo sie es klar belegt — Angst, Weitung nur nach oben, Zuversicht, moderate Freude; im Prototyp und im Client; eigene Setzungen gekennzeichnet). Davor 05.10.2026, 00:27 UTC (§4, §13.1, §13.18 neu, §15.2, §15.3, §17.1, §17.9: der Client zieht nach — L1′ plant wie die nachgestellte Referenz, das Kopfziel `head_yaw` neben dem Gesicht; L2′a Auge und Kopffeder; L2′b/L2′c die Kopfdrehung im Bild über eine Zwischenfläche, nur die verschobenen Dreiecke). Davor 04.10.2026, 21:05 UTC (§4, §17.1, §17.3–§17.7, §17.9: der Leerlauf auf dem Stand der nachgestellten Referenz L0′a–L0′c — Nachdenken abgewandt, Einatmen, Antwort ohne Sprung, Pupille, Blick an der Iris, Lidschläge, Kopfdrehung). Davor 04.10.2026, 15:35 UTC (§17.8: L4 gebaut). Davor 04.10.2026, 14:30 UTC (§14.2, §15.4, §17.2, §17.8: die Antwort zeigt die Wahrnehmung der Antwort selbst, `emotion`/`arousal`). Davor 04.10.2026, 11:28 UTC (§17.10: der Auffangzweig nach L3). Davor 04.10.2026, 10:30 UTC (§17.10 neu: der Weg der Arbeitszyklen im Client, entschieden; §17.2: Absender, Sendefehler, Öffnen des Panels; §17.8: Verteiler entschieden, `pixie_auftrag` mit Thema für die Statuszeile). Davor 03.10.2026, 19:07 UTC (§17.3, §17.8, §17.9: die Puppe lebt aus dem Leerlauf, L2). Davor 03.10.2026, 13:40 UTC (§17: der Generator folgt dem Ereignismodell des Clients, §17.1, §17.3, §17.6, §17.8, §17.9). Davor 03.10.2026 (§17 neu: der Leerlauf). Davor 02.10.2026
 **Inhalt:** wie die Absicht ausgearbeitet ist — Darstellungsstil, Parameterraum `FaceState`, Emotions-Mapping, Intensität und Mischung, Übergangsmodell, Schichten, Integration im Client (§3–§9); aus dem Prototyp die Pipeline der Figur, die Alternative zur Vorlage, das bewegliche Kinn, die Sprechschicht, die Muskelkanäle des Mundes und die Einzellaute (§13 in Teilen); dazu der Datenvertrag mit dem Server (§14), die Portierung nach GTK4 und Cairo (§15) und der Leerlauf mit seinen vier Denkweisen (§17).
 
 ---
@@ -116,6 +116,17 @@ enthalten und muss neu entworfen werden~~ (hängende Mundwinkel, gesenkter Blick
 leicht verengte Augen — Richtung „Vertrauen gebrochen“, nicht „Ekel“).
 → **Im Prototyp entworfen** (W2, aufgelöst am 02.10.2026, siehe `novaberg-avatar_e.md`, Befunde der Aufteilung): Mund nach Messung `novaberg-avatar_m.md` §13.7, Brauen flach gesenkt mit schweren Lidern (§4.1), Oberlippenheber AU10 einseitig betont (§13.13).
 
+**Abgleich mit der Literatur (05.10.2026, im Prototyp und im Client):** Die Sektor-Gesichter sind gegen eine Zusammenstellung des Eigentümers zur Mimik je Emotion und Arousal gehalten (`labor/avatar/Mimik je Emotion und Arousal.md`). Wo die Literatur es klar belegt, folgen sie ihr:
+
+- **Angst:** Die Außenbraue hebt sich mit (`blo`/`bro` ~~+4~~ → −6, AU2), das Unterlid spannt sich (`arc` 0,15, AU7) — Kohler 2008, Cordaro 2018. `barch` bleibt 5.
+- **Weitung des Auges hebt nur das Oberlid** (AU5, Susskind 2008): Das Unterlid folgt der Öffnung nur bis 1 (§13.1, Auge). Überraschung (`eo` 1,215) und Angst (1,12) weiten deshalb nach oben.
+- **Zuversicht:** Die Lippen pressen leicht (`au24` 0,2) — Campos 2013.
+- **Freude, moderat:** ein eigenes Schlüsselbild, Lächeln ohne Zähne (`mo` 6, `jaw` 2 bei Arousal 0,6; bis dahin linear 19,2 und 14,4) — Campos 2013, Ambadar 2009. Darüber linear bis `mo` 32 (§6.1).
+
+**Eigene Setzung, keine Literatur:** Dankbarkeit, Enttäuschung und Frustration, Hoffnung, alle Beträge der Augenöffnung `eo`, Weinen, Schreien, Tränen und Schweiß. Ihre Werte stammen aus der Gestaltung des Prototyps und den Sichtprüfungen des Eigentümers, nicht aus Messungen an Gesichtern.
+
+**Nicht übernommen:** ein eigenes `MOD_AROUSAL` je Sektor — O11 gilt weiter (§6.1); der Quotient der Quelle ist eine Umrechnung der Aktivierung, keine Messung am Gesicht.
+
 ---
 
 ## 6. Intensität und Mischung
@@ -137,10 +148,11 @@ die moderate kanonische Emotion (bei Arousal `MOD_AROUSAL` = 0,6) und eines für
 intensive (bei 1,0). Interpolation stückweise linear: Neutral → moderat → intensiv.
 Kanäle ohne eigenes moderates Schlüsselbild liegen linear zwischen Neutral und intensiv.
 
-**Nachgetragen am 02.10.2026 (W11):** Der Prototyp führt ein moderates Schlüsselbild für drei Sektoren — Trauer, Enttäuschung und Ärger —, die Tabelle nannte zwei. Die Werte der Zeile Enttäuschung stammen aus dem Prototyp (`labor/avatar/index.html`, `SECTORS`, gelesen am 02.10.2026).
+**Nachgetragen am 02.10.2026 (W11):** Der Prototyp führt ein moderates Schlüsselbild für drei Sektoren — Trauer, Enttäuschung und Ärger —, die Tabelle nannte zwei. **Seit 05.10.2026 für vier:** Freude kam dazu (§5.2, Abgleich mit der Literatur). Die Werte der Zeile Enttäuschung stammen aus dem Prototyp (`labor/avatar/index.html`, `SECTORS`, gelesen am 02.10.2026).
 
 | Sektor | moderat (≤ 0,6) | intensiv (→ 1,0) |
 |---|---|---|
+| 1 Freude | freude: Lächeln ohne Zähne (`mo` 6, `jaw` 2) — seit 05.10.2026 | begeisterung: offen (`mo` 32) |
 | 5 Trauer | traurigkeit: Mund geschlossen, Winkel unten, schmaler (`mw` 84) | verzweiflung: Weinen, offen (~~`mo` 34~~ → `mo` 28), breit (~~`mw` 106~~ → `mw` 96), Träne — korrigiert in `novaberg-avatar_b.md` §13.11 (W6) |
 | 6 Enttäuschung | enttaeuschung: geschlossen (`mw` 80, `mo` 0) — nachgetragen (W11) | frustration: `mw` 84, `mo` 12 — nachgetragen (W11) |
 | 7 Ärger | aerger: Lippen gepresst, geschlossen (`mw` 68) | wut: Schreien, offen (`mo` 70), `mw` 76 |
@@ -305,7 +317,7 @@ lokalen Koordinatensystem gezeichnet.
    auf die Lidöffnung, Wimpern, Lidfalte), Mund (Mundlinie bzw. Öffnung, Lippen
    als Versatzkurven mit Amorbogen-Profil, Zähne, Lachfalten ab `mouth_curve` > 10).
    Positionen stammen aus der Vorlage (Augen- und Mundwinkel, Brauenpunkte).
-   - **Auge** (seit 04.10.2026 im Prototyp, seit 05.10.2026 im Client, L2′a): Der Blick rückt die Iris um 0,5·hw je Einheit quer und 0,26·hw längs (hw = halbe Augenbreite; bis dahin 0,3 und 0,16 — ein Blick von 0,25 zur Seite rückte sie nur 0,075·hw und las sich noch als Blickkontakt). Unter der Öffnung 0,06 (bis dahin 0,12) ist das Auge geschlossen gezeichnet: eine Lidlinie in sieben Strichen (1,2 bis 5 px, nach außen kräftiger) und 8 Büschel zu je 3 Wimpern — vorher ein dünner Strich, schwächer als die Wimpernlinie des offenen Auges.
+   - **Auge** (seit 04.10.2026 im Prototyp, seit 05.10.2026 im Client, L2′a): Der Blick rückt die Iris um 0,5·hw je Einheit quer und 0,26·hw längs (hw = halbe Augenbreite; bis dahin 0,3 und 0,16 — ein Blick von 0,25 zur Seite rückte sie nur 0,075·hw und las sich noch als Blickkontakt). Unter der Öffnung 0,06 (bis dahin 0,12) ist das Auge geschlossen gezeichnet: eine Lidlinie in sieben Strichen (1,2 bis 5 px, nach außen kräftiger) und 8 Büschel zu je 3 Wimpern — vorher ein dünner Strich, schwächer als die Wimpernlinie des offenen Auges. **Seit 05.10.2026 hebt Weitung nur das Oberlid** (AU5, Susskind 2008): Das Unterlid folgt der Öffnung nur bis 1, `lo = 0,27·hw·min(eo, 1)·blink − 0,22·hw·arc` (bis dahin `0,27·hw·eo·blink`); der Lidschlag schließt beide Lider weiter, das Oberlid bleibt `0,5·hw·eo·blink`. Im Client trägt `lid_extent` den Lidschlag deshalb als eigenen Wert (§5.2).
 4. **Animation:** unverändert nach Abschnitt 7 und 8 (Feder, Kanalversatz, Blinzeln, Atmen).
 5. **Zähne als feste Kieferebenen** (Vorgabe Meister, 29.09.2026): Die Zähne
    skalieren und verformen sich nicht mit dem Mund.

@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 935 Abschnitte in 7 Dateien — 423 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 936 Abschnitte in 7 Dateien — 424 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 17 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 18 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 935 Marken, 935 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 936 Marken, 936 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-05 | laufend | ## | [05.10.2026, 06:15 UTC — Der Client zeigt die Mimik nach der Literatur](novaberg-roadmap.md#05102026-0615-utc--der-client-zeigt-die-mimik-nach-der-literatur) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 05:50 UTC — Der Eigentümer nimmt Nachdenken und Kopfdrehung im Client ab](novaberg-roadmap.md#05102026-0550-utc--der-eigentümer-nimmt-nachdenken-und-kopfdrehung-im-client-ab) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 00:27 UTC — Der Client folgt der nachgestellten Referenz, der Kopf dreht sich im Bild (L1′, L2′a–L2′c)](novaberg-roadmap.md#05102026-0027-utc--der-client-folgt-der-nachgestellten-referenz-der-kopf-dreht-sich-im-bild-l1-l2al2c) |
 | 2026-10-04 | laufend | ## | [04.10.2026, 21:49 UTC — Die Gegenproben zur Kopfdrehung (L0′c)](novaberg-roadmap.md#04102026-2149-utc--die-gegenproben-zur-kopfdrehung-l0c) |
