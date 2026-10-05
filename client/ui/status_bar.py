@@ -52,8 +52,8 @@ class StatusBar(Gtk.Box):
         self._kosten_label.set_xalign(0.5)
         self._kosten_label.add_css_class("nova-statusbar-label")
 
-        # Rechtes Label — Pixie-Zustand
-        self._pixie_label = Gtk.Label(label="Pixie: idle")
+        # Rechtes Label — Arbeitszustand (Nova und Pixie); schreibt nur der Arbeitszustand
+        self._pixie_label = Gtk.Label(label="idle")
         self._pixie_label.set_xalign(1.0)
         self._pixie_label.add_css_class("nova-statusbar-label")
 
@@ -71,10 +71,11 @@ class StatusBar(Gtk.Box):
         logger.debug(f"StatusBar: Verbindungsstatus -> '{text}'")
         self._connection_label.set_text(text)
 
-    def set_pixie_status(self, text: str) -> None:
-        """Pixie-Zustand (rechtes Label) setzen."""
-        logger.debug(f"StatusBar: Pixie-Status -> '{text}'")
+    def set_work_status(self, text: str, tooltip: str) -> None:
+        """Arbeitszustand (rechtes Label) setzen; ein leerer Tooltip entfernt den alten."""
+        logger.debug(f"StatusBar: Arbeitszustand -> '{text}'")
         self._pixie_label.set_text(text)
+        self._pixie_label.set_tooltip_text(tooltip or None)
 
     def set_kosten(
         self,

@@ -84,6 +84,7 @@ DoneCallback       = Callable[[], None]                # ()
 ImpulseCallback    = Callable[[str, dict], None]       # (text, rohdaten)
 ConnectionCallback = Callable[[str], None]             # (status-text,)
 WorkEventCallback  = Callable[[WorkEvent], None]       # (ereignis,)
+MessageOpenCallback = Callable[[str], None]            # (nachrichten_id,)
 
 
 def _create_http_session() -> requests.Session:
@@ -113,6 +114,7 @@ class StreamHandler:
         on_connection: ConnectionCallback,
         on_work_event: WorkEventCallback,
         user_id:       str = DEFAULT_USER_ID,
+        on_message_open: Optional[MessageOpenCallback] = None,
     ) -> None:
         logger.debug(f"StreamHandler wird initialisiert (user_id='{user_id}')")
         self._on_stage      = on_stage
@@ -123,6 +125,9 @@ class StreamHandler:
         self._on_connection = on_connection
         self._on_work_event = on_work_event
         self._user_id       = user_id
+        # Der Beobachter der offenen Kennungen ist freiwillig: Wer nur die Antworten
+        # braucht, übergibt ihn nicht.
+        self._on_message_open = on_message_open
 
         # SSE-Zustand
         self._sse_thread:   Optional[threading.Thread] = None
@@ -291,6 +296,7 @@ class StreamHandler:
                 with self._turn_schloss:
                     self._offene_nachrichten.add(nachrichten_id)
                     self._gesendete_nachrichten.add(nachrichten_id)
+                GLib.idle_add(self._invoke_message_open, nachrichten_id)
 
             logger.info(
                 f"SSE: Nachricht angenommen — warte auf Antwort zu "
@@ -670,6 +676,20 @@ class StreamHandler:
             self._on_work_event(event)
         except Exception as fehler:
             logger.exception(f"Fehler im on_work_event-Callback: {fehler}")
+        return False
+
+    def _invoke_message_open(self, message_id: str) -> bool:
+        """Meldet dem Beobachter eine Kennung, die der Server soeben bestätigt hat.
+
+        Nachbedingung: gibt immer False zurück; ohne Beobachter geschieht nichts, eine
+        Ausnahme des Rückrufs wird protokolliert und nicht weitergereicht.
+        """
+        if self._on_message_open is None:
+            return False
+        try:
+            self._on_message_open(message_id)
+        except Exception as fehler:
+            logger.exception(f"Fehler im on_message_open-Callback: {fehler}")
         return False
 
     # ─── Direkter Dispatch-Helper (aus Worker-Threads aufgerufen) ───

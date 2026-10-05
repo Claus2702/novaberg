@@ -51,6 +51,38 @@ def _pixie(**extra) -> dict:
     return payload
 
 
+class MessageOpenTest(unittest.TestCase):
+    """Die Bestätigung des Servers meldet die Kennung dem Beobachter."""
+
+    def _handler(self, opened: list) -> StreamHandler:
+        still = lambda *args, **kwargs: None  # noqa: E731
+        return StreamHandler(
+            on_stage=still, on_answer=still, on_error=still, on_done=still,
+            on_impulse=still, on_connection=still, on_work_event=still,
+            on_message_open=opened.append,
+        )
+
+    def _confirm(self, handler: StreamHandler, payload: dict) -> None:
+        with patch("ui.stream_handler.GLib.idle_add", side_effect=lambda f, *a: f(*a)):
+            handler._dispatch_sse_event("processing", json.dumps(payload))
+
+    def test_the_confirmed_id_reaches_the_observer(self) -> None:
+        opened: list = []
+        self._confirm(self._handler(opened), {"nachrichten_id": "m1"})
+        self.assertEqual(opened, ["m1"])
+
+    def test_a_confirmation_without_an_id_reaches_nobody(self) -> None:
+        opened: list = []
+        with self.assertLogs("ui.stream_handler", level="ERROR"):
+            self._confirm(self._handler(opened), {})
+        self.assertEqual(opened, [])
+
+    def test_without_an_observer_the_confirmation_still_works(self) -> None:
+        handler = _Recorder().handler()
+        self._confirm(handler, {"nachrichten_id": "m1"})
+        self.assertEqual(handler._offene_nachrichten, {"m1"})
+
+
 class WorkEventEntryTest(unittest.TestCase):
     """Die drei Typen erreichen den neuen Rückruf und sonst nichts."""
 

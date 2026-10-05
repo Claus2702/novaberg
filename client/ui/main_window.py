@@ -21,6 +21,7 @@ eigentliche Geschäftslogik sitzt in :class:`ChatView` und
 
 import logging
 import threading
+import time
 
 import gi
 import requests
@@ -44,17 +45,31 @@ from config import (  # noqa: E402
 from ui.chat_view      import ChatView                    # noqa: E402
 from ui.panel_registry import PanelRegistry, create_default_registry  # noqa: E402
 from ui.status_bar     import StatusBar                   # noqa: E402
-from ui.turn_routing   import impulse_turn_data           # noqa: E402
+from ui.turn_routing   import deliver_work_event, impulse_turn_data  # noqa: E402
 from ui.stream_handler import (                           # noqa: E402
     StreamHandler,
     ZUORDNUNG_FREMD,
     ZUORDNUNG_UNBEOBACHTET,
 )
 from ui.work_events    import TurnFailure, TurnStarted, WorkEvent  # noqa: E402
+from ui.work_state     import (                           # noqa: E402
+    WorkState,
+    advance,
+    expire,
+    impulse_answered,
+    message_opened,
+    named_ids,
+    opening_event,
+    status_text,
+    turn_answered,
+)
 
 
 logger = logging.getLogger(__name__)
 
+
+# Wie oft der Wächter nachsieht; er greift bei 600 s, ein paar Sekunden mehr schaden nicht.
+WATCHDOG_TICK_SECONDS = 10
 
 # Panel-Buttons für die obere Toolbar (deutsche UI-Texte).
 _TOOLBAR_PANELS: list[str] = [
@@ -105,6 +120,14 @@ class MainWindow(Gtk.ApplicationWindow):
             on_connection = self._handle_connection,
             on_work_event = self._handle_work_event,
             user_id       = DEFAULT_USER_ID,
+            on_message_open = self._handle_message_open,
+        )
+
+        # Was gerade läuft; er ist der einzige Schreiber des Arbeitstextes der Statuszeile.
+        # Der Wächter läuft im Takt unten und beendet einen Turn oder Impuls ohne Ende.
+        self._work_state: WorkState = WorkState()
+        self._watchdog_id: int = GLib.timeout_add_seconds(
+            WATCHDOG_TICK_SECONDS, self._on_watchdog_tick,
         )
 
         # Flag: Warten wir auf eine WebSocket-Antwort nach Pfad 1?
@@ -354,6 +377,11 @@ class MainWindow(Gtk.ApplicationWindow):
         logger.debug(f"Toolbar-Klick: Panel '{panel_id}' öffnen")
         child_window = self._registry.open_panel(panel_id, self)
         if child_window is not None:
+            # Denkt der CharacterGraph schon, beginnt das Panel im Nachdenken: Es bekommt den
+            # Beginn nachgereicht, den es verpasst hat. Aufträge Pixies reicht niemand nach.
+            opening = opening_event(self._work_state)
+            if opening is not None:
+                deliver_work_event([child_window.panel], opening)
             child_window.present()
 
     def _on_entry_activate(self, entry: Gtk.Entry) -> None:
@@ -413,6 +441,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def _on_close_request(self, window: Gtk.ApplicationWindow) -> bool:
         """Beim Schließen: Threads stoppen, dann Fenster endgültig schließen."""
         logger.info("Schließen-Anforderung — StreamHandler wird gestoppt")
+        GLib.source_remove(self._watchdog_id)
         self._stream.stop()
         # ``False`` → Schließen nicht verhindern (Default-Handler übernimmt).
         return False
@@ -451,10 +480,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self._awaiting_response = False
         self._status_bar.set_connection_status("Verbunden")
 
-        # Pixie-Momentum-Anzeige aktualisieren (optional, nur wenn gesetzt)
-        momentum: str = meta.get("momentum", "")
-        if momentum:
-            self._status_bar.set_pixie_status(f"Pixie: momentum={momentum}")
+        # Die Antwort nimmt die Kennungen, die sie nennt; erst wenn keine mehr offen ist,
+        # endet das Denken des Turns. Das Momentum steht nicht mehr in der Statuszeile:
+        # Es ist ein Wert des Turns und überschriebe die Arbeit.
+        self._set_work_state(turn_answered(self._work_state, named_ids(meta)))
 
         # Was der Betrieb kostet. **`None` wird durchgereicht, nicht zu 0
         # gemacht** — die Statuszeile zeigt dafuer einen Strich, und ein
@@ -556,16 +585,70 @@ class MainWindow(Gtk.ApplicationWindow):
         # Novas eigener Impuls ist ein Wort Novas: der Avatar bekommt ihn, sonst keiner.
         turn_data = impulse_turn_data(text, data)
         if turn_data is not None:
+            self._set_work_state(impulse_answered(self._work_state))
             self._registry.broadcast_impulse(turn_data)
 
     def _handle_work_event(self, event: WorkEvent) -> None:
-        """Gibt ein Ereignis der Arbeitszyklen an die offenen Panels, die es wollen.
+        """Schreibt den Arbeitszustand fort und gibt das Ereignis an die Panels, die es wollen.
 
-        Vorbedingung: `event` ist ein Ereignis aus `ui.work_events`; die Registry weist
-        anderes mit TypeError ab.
+        Vorbedingung: `event` ist ein Ereignis aus `ui.work_events`; der Arbeitszustand
+        und die Registry weisen anderes mit TypeError ab.
+        Das Ereignis erreicht zuerst den Arbeitszustand, dann die offenen Panels.
         """
         logger.debug(f"Arbeitsereignis: {type(event).__name__}")
+        self._set_work_state(advance(self._work_state, event, time.monotonic()))
         self._registry.broadcast_work_event(event)
+
+    def _handle_message_open(self, message_id: str) -> None:
+        """Der Server hat eine gesendete Nachricht bestätigt: Ihre Kennung gilt als offen.
+
+        Vorbedingung: `message_id` ist ein nichtleerer Text; sonst TypeError bzw. ValueError.
+        """
+        # ── Eingabe-Validierung ──
+        if not isinstance(message_id, str):
+            raise TypeError(f"message_id ist {type(message_id).__name__}, kein Text")
+        if not message_id:
+            raise ValueError("message_id ist leer")
+
+        # ── Verarbeitung ──
+        self._set_work_state(message_opened(self._work_state, message_id))
+
+    def _on_watchdog_tick(self) -> bool:
+        """Beendet, was zu lange ohne Antwort oder Ende denkt; der Takt läuft bis zum Schließen.
+
+        Vorbedingung: Der Arbeitszustand des Fensters ist ein `WorkState`; der Takt darf nicht
+        vor dem ersten Zustand laufen. Sonst TypeError.
+        """
+        # ── Eingabe-Validierung ──
+        if not isinstance(self._work_state, WorkState):
+            raise TypeError(f"Arbeitszustand ist {type(self._work_state).__name__}, kein WorkState")
+
+        # ── Verarbeitung ──
+        expired = expire(self._work_state, time.monotonic())
+        if expired != self._work_state:
+            self._set_work_state(expired)
+        return GLib.SOURCE_CONTINUE
+
+    def _set_work_state(self, state: WorkState) -> None:
+        """Übernimmt den Zustand und schreibt den Text der Statuszeile daraus — als einziger.
+
+        Vorbedingung: `state` ist ein `WorkState`; sonst TypeError, und der alte Zustand bleibt.
+        Eine Art ohne Text ist ein Fehler im Protokoll; die Zeile nennt dann nicht den
+        Schlüssel, sagt aber, dass Pixie arbeitet.
+        """
+        # ── Eingabe-Validierung ──
+        if not isinstance(state, WorkState):
+            raise TypeError(f"state ist {type(state).__name__}, kein WorkState")
+
+        # ── Verarbeitung ──
+        self._work_state = state
+        try:
+            shown = status_text(state)
+        except ValueError as error:
+            logger.error(f"Statuszeile: {error}")
+            self._status_bar.set_work_status("Pixie: Art ohne Text", "")
+            return
+        self._status_bar.set_work_status(shown.text, shown.tooltip)
 
     def _handle_connection(self, status: str) -> None:
         logger.debug(f"Verbindungsstatus -> {status}")
