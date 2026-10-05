@@ -515,21 +515,87 @@ def text_to_phonemes(text: str) -> tuple[Phone, ...]:
         raise TypeError(f"text_to_phonemes: Text ist kein str: {type(text).__name__}")
 
     # ── Verarbeitung ──
-    rest_ms = float(PHONE_CLASSES["rest"].duration_ms)
     phones: list[Phone] = []
     for token in _TOKEN.findall(text.lower()):
-        if _SPACE.fullmatch(token):
-            phones.append(Phone(GAP_CODE, float(GAP_MS), 1.0))
-        elif _PUNCTUATION.fullmatch(token):
-            phones.append(Phone(REST_CODE, rest_ms, 1.0))
-        else:
-            phones.extend(word_to_phonemes(token))
-    phones.append(Phone(REST_CODE, rest_ms, 1.0))
+        phones.extend(_token_phones(token))
+    phones.append(Phone(REST_CODE, float(PHONE_CLASSES["rest"].duration_ms), 1.0))
     result = tuple(phones)
 
     # ── Ausgabe-Verifikation ──
     if result[-1].code != REST_CODE:
         raise RuntimeError("text_to_phonemes: die Schlusspause fehlt")
+    return result
+
+
+def _token_phones(token: str) -> tuple[Phone, ...]:
+    """Die Laute eines Tokens aus `_TOKEN`: Lücke, Pause oder die Laute des Worts."""
+    # ── Eingabe-Validierung ──
+    if not isinstance(token, str) or not token:
+        raise ValueError(f"_token_phones: kein Token: {token!r}")
+
+    # ── Verarbeitung ──
+    if _SPACE.fullmatch(token):
+        result: tuple[Phone, ...] = (Phone(GAP_CODE, float(GAP_MS), 1.0),)
+    elif _PUNCTUATION.fullmatch(token):
+        result = (Phone(REST_CODE, float(PHONE_CLASSES["rest"].duration_ms), 1.0),)
+    else:
+        result = word_to_phonemes(token)
+
+    # ── Ausgabe-Verifikation ──
+    if not all(isinstance(p, Phone) for p in result):
+        raise RuntimeError(f"_token_phones: Token {token!r} ergab einen Eintrag ohne Phone")
+    return result
+
+
+@dataclass(frozen=True)
+class WrittenWord:
+    """Ein Wort des Texts, wie es dasteht, und die Laute, die es auf der Zeitachse erzeugt.
+
+    `phones` sind alle Laute des Worts samt den Pausen seiner Satzzeichen, in der
+    Reihenfolge von `text_to_phonemes`. `letters` ist die Spanne `[von, bis)` in `phones`,
+    die seine Buchstaben erzeugen; None, wenn es keinen Laut aus Buchstaben gibt (`42`, `–`).
+    """
+
+    text: str
+    phones: tuple[Phone, ...]
+    letters: tuple[int, int] | None
+
+
+def text_to_words(text: str) -> tuple[WrittenWord, ...]:
+    """Die Wörter eines Texts, durch Leerraum begrenzt, mit ihren Lauten.
+
+    Dieselbe Zerlegung wie `text_to_phonemes`: Alle Laute der Wörter hintereinander, mit
+    der Schlusspause am Ende, sind dessen Laute ohne die Wortlücken.
+    Vorbedingung: `text` ist ein str.
+    Nachbedingung: je Stück Text zwischen zwei Leerräumen ein Wort, in Schreibweise und
+    Reihenfolge des Texts; ein Text ohne Wörter ergibt ein leeres Tupel.
+    Fehlerfälle: TypeError, wenn `text` kein str ist.
+    """
+    # ── Eingabe-Validierung ──
+    if not isinstance(text, str):
+        raise TypeError(f"text_to_words: Text ist kein str: {type(text).__name__}")
+
+    # ── Verarbeitung ──
+    words: list[WrittenWord] = []
+    for chunk in _SPACE.split(text):
+        if not chunk:
+            continue
+        phones: list[Phone] = []
+        first: int | None = None
+        end = 0
+        for token in _TOKEN.findall(chunk.lower()):
+            made = _token_phones(token)
+            if not _PUNCTUATION.fullmatch(token):
+                first = len(phones) if first is None else first
+                end = len(phones) + len(made)
+            phones.extend(made)
+        sounds = None if first is None or end == first else (first, end)
+        words.append(WrittenWord(chunk, tuple(phones), sounds))
+    result = tuple(words)
+
+    # ── Ausgabe-Verifikation ──
+    if any(p.code == GAP_CODE for word in result for p in word.phones):
+        raise RuntimeError("text_to_words: eine Wortlücke steckt in einem Wort")
     return result
 
 

@@ -58,6 +58,7 @@ from avatar.speech import (
     text_to_phonemes,
 )
 from avatar.stage_directions import spoken_text
+from avatar.subtitle import Subtitle, SubtitleRun, subtitle_at, subtitle_run
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +121,8 @@ class Puppet:
     im letzten Schritt folgte, `frame` das letzte Bild des Leerlaufs. `head_yaw` und
     `head_velocity` sind Lage (Grad) und Geschwindigkeit der Kopffeder. `texts` hält den
     Text jeder Antwort, die noch nicht gesprochen wird, nach ihrer Zeit im Leerlauf;
-    `speaking_at_ms` ist die Zeit der zuletzt begonnenen.
+    `speaking_at_ms` ist die Zeit der zuletzt begonnenen. `subtitle` hält den Untertitel
+    der Antwort, die gesprochen wird oder eben gesprochen wurde; None ohne eine.
     """
 
     start_s: float
@@ -135,6 +137,7 @@ class Puppet:
     speaking_at_ms: float | None
     head_yaw: float
     head_velocity: float
+    subtitle: SubtitleRun | None = None
 
 
 NEUTRAL_UTTERANCE = Utterance(None, 0.0, "")
@@ -376,12 +379,37 @@ def _begin_speaking(puppet: Puppet, frame: IdleFrame, now: float) -> None:
         puppet.speech = start_speech(puppet.speech, text, now * 1000.0)
     elif begins and puppet.speech.active:
         puppet.speech = replace(puppet.speech, active=False)
+    _begin_subtitle(puppet, text, begins)
 
     # ── Ausgabe-Verifikation ──
     if text.strip() and (not puppet.speech.active or puppet.speech.start_ms != now * 1000.0):
         raise RuntimeError("_begin_speaking: Sprechen nicht mit der Antwort begonnen")
     if begins and not text.strip() and puppet.speech.active:
         raise RuntimeError("_begin_speaking: Antwort mit leerem Text, altes Sprechen läuft")
+
+
+def _begin_subtitle(puppet: Puppet, text: str, begins: bool) -> None:
+    """Hält den Untertitel einer Antwort, die in diesem Schritt begonnen hat.
+
+    Eine neue Antwort ersetzt den Untertitel sofort; eine ohne Text (etwa aus lauter
+    Regieanweisungen) lässt ihn leer. Beginnt keine, bleibt er, wie er ist.
+    Vorbedingung: `text` ist der Text der begonnenen Antwort, `begins` ob eine begann; mit
+    Text hat `start_speech` das Sprechen eben begonnen.
+    Nachbedingung: bei `begins` mit Text trägt die Puppe seinen Untertitel ab `speech.start_ms`,
+    bei `begins` ohne Text keinen.
+    Fehlerfälle: TypeError bei falschen Typen.
+    """
+    # ── Eingabe-Validierung ──
+    if not isinstance(text, str) or not isinstance(begins, bool):
+        raise TypeError("_begin_subtitle: Text kein str oder Beginn kein bool")
+
+    # ── Verarbeitung ──
+    if begins:
+        puppet.subtitle = subtitle_run(text, puppet.speech.start_ms) if text.strip() else None
+
+    # ── Ausgabe-Verifikation ──
+    if begins and (puppet.subtitle is not None) != bool(text.strip()):
+        raise RuntimeError("_begin_subtitle: Untertitel passt nicht zum Text der Antwort")
 
 
 def _end_speaking(puppet: Puppet, frame: IdleFrame) -> None:
@@ -403,6 +431,7 @@ def _end_speaking(puppet: Puppet, frame: IdleFrame) -> None:
     # ── Verarbeitung ──
     if left_answer and puppet.speech.active:
         puppet.speech = replace(puppet.speech, active=False)
+        puppet.subtitle = None  # nur die Unterbrechung leert ihn; nach dem Ende hält er 1,5 s
 
     # ── Ausgabe-Verifikation ──
     if left_answer and puppet.speech.active:
@@ -477,6 +506,28 @@ def puppet_status(puppet: Puppet, now: float) -> IdleStatus:
 
     # ── Verarbeitung ──
     return puppet.idle.status(_logic_ms(puppet, now))
+
+
+def puppet_subtitle(puppet: Puppet, now: float) -> Subtitle | None:
+    """Der Untertitel der Puppe zur Zeit `now`, auf der Uhr von `puppet_step`; None, wenn leer.
+
+    Liest nur: Die Puppe bleibt unverändert.
+    Vorbedingung: `now` endlich, nicht vor dem letzten Schritt.
+    Nachbedingung: die Tafel des gesprochenen Worts (`subtitle_at`) oder None ohne Antwort,
+    nach Ablauf der Haltezeit und nach einer Unterbrechung.
+    Fehlerfälle: TypeError ohne Puppe, ValueError bei ungültiger oder rückläufiger Zeit.
+    """
+    # ── Eingabe-Validierung ──
+    _check_not_before_last_step(puppet, now, "puppet_subtitle")
+
+    # ── Verarbeitung ──
+    run = puppet.subtitle
+    result = None if run is None else subtitle_at(run, now * 1000.0)
+
+    # ── Ausgabe-Verifikation ──
+    if result is not None and run is None:
+        raise RuntimeError("puppet_subtitle: Untertitel ohne Antwort")
+    return result
 
 
 def _sector_from_name(name: object) -> int | None:

@@ -2,7 +2,8 @@
 
 Das Panel lädt nichts vom Server. Jede Antwort wird über `utterance_from_turn` zur
 Äußerung und über `puppet_cue` zum neuen Ziel der Puppe; der Mund spricht den Text
-nach Lautzeiten, ohne Ton.
+nach Lautzeiten, ohne Ton. Darunter steht der gesprochene Text als Untertitel, das
+gesprochene Wort unterstrichen; das Label ist immer zwei Zeilen hoch.
 
 Eine Uhr für alles: Allein der Takt des Panels liest die Zeit, aus der Frame-Clock,
 und gibt sie an Puppe und Äußerung weiter. Der Takt läuft nur, solange das Panel
@@ -32,6 +33,7 @@ from avatar.puppet import (  # noqa: E402
     new_puppet,
     puppet_status,
     puppet_step,
+    puppet_subtitle,
     utterance_from_turn,
 )
 from avatar.status_text import (  # noqa: E402
@@ -40,10 +42,12 @@ from avatar.status_text import (  # noqa: E402
     status_due,
     status_lines,
 )
+from avatar.subtitle import Subtitle, subtitle_markup  # noqa: E402
 from config import AVATAR_IMAGE_DIR  # noqa: E402
 from ui.avatar_feed import AvatarFeed  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
 from ui.status_label import set_status_text, status_label  # noqa: E402
+from ui.subtitle_label import set_subtitle_markup, subtitle_label  # noqa: E402
 from ui.work_events import WorkEvent  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -94,11 +98,60 @@ class AvatarPanel(PanelBase):
         self._area.connect("map", self._on_map)
         self._area.connect("unmap", self._on_unmap)
         self.content_area.append(self._area)
+        self._build_subtitle_view()
         self._build_status_view()
 
         # ── Ausgabe-Verifikation ──
         if self._area.get_parent() is not self.content_area:
             raise RuntimeError("AvatarPanel: Zeichenfläche nicht eingehängt")
+
+    def _build_subtitle_view(self) -> None:
+        """Hängt den Untertitel zwischen das Gesicht und die Phasenanzeige, leer, zwei Zeilen hoch.
+
+        Vorbedingung: `content_area` und die Zeichenfläche des Gesichts stehen.
+        Nachbedingung: `_subtitle_label` hängt unter dem Gesicht und zeigt nichts, oder es ist
+        None und eine Error-Zeile steht im Log; das Gesicht läuft in beiden Fällen weiter.
+        """
+        # ── Eingabe-Validierung ──
+        self._subtitle_label: Gtk.Label | None = None
+        self._subtitle_shown: Subtitle | None = None
+        if self._area.get_parent() is not self.content_area:
+            raise RuntimeError("AvatarPanel: Untertitel vor der Zeichenfläche gebaut")
+
+        # ── Verarbeitung ──
+        try:
+            label = subtitle_label()
+            self.content_area.append(label)
+        except Exception as error:
+            logger.exception(f"AvatarPanel: Untertitel nicht gebaut: {error}")
+            return
+        self._subtitle_label = label
+
+        # Keine Ausgabe-Verifikation: Ohne Untertitel läuft das Gesicht weiter, der Fehler
+        # steht schon im Log.
+
+    def _refresh_subtitle(self, now: float) -> None:
+        """Zieht den Untertitel nach, wenn sich sein Inhalt ändert; ein Fehler schaltet ihn ab.
+
+        Vorbedingung: `now` ist die Zeit des Bildes, das `puppet_step` eben gerechnet hat.
+        Nachbedingung: das Label zeigt den Untertitel zu `now`; bei einem Fehler steht er im
+        Log, das Label ist leer und der Untertitel bleibt aus.
+        """
+        # ── Eingabe-Validierung ──
+        if self._subtitle_label is None or self._puppet is None:
+            return
+
+        # ── Verarbeitung ──
+        try:
+            subtitle = puppet_subtitle(self._puppet, now)
+            if subtitle != self._subtitle_shown:
+                set_subtitle_markup(self._subtitle_label, subtitle_markup(subtitle))
+                self._subtitle_shown = subtitle
+        except Exception as error:
+            logger.exception(f"AvatarPanel: Untertitel bei {now:.3f} s fehlgeschlagen: {error}")
+            self._subtitle_label.set_text("")
+            self._subtitle_label = None
+        # Keine Ausgabe-Verifikation: Der Fehlerweg meldet im Log, `set_subtitle_markup` prüft.
 
     def _build_status_view(self) -> None:
         """Hängt die Phasenanzeige unter das Gesicht: vier Zeilen und das Band.
@@ -260,6 +313,7 @@ class AvatarPanel(PanelBase):
             self._show_message(f"Avatar angehalten — Fehler im Takt.\n{error}")
             return GLib.SOURCE_REMOVE
         widget.queue_draw()
+        self._refresh_subtitle(now)
         self._refresh_status(now)
 
         # ── Ausgabe-Verifikation ──
