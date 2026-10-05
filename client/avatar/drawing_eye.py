@@ -121,23 +121,31 @@ def eye_opening(face: FaceState, blink: float) -> float:
     return opening
 
 
-def lid_extent(eye: EyeGeometry, face: FaceState, opening: float) -> tuple[float, float]:
+def lid_extent(
+    eye: EyeGeometry, face: FaceState, opening: float, blink: float
+) -> tuple[float, float]:
     """Wie weit Ober- und Unterlid auseinanderstehen: `(up, lo)` in Pixeln.
 
     `up = hw · 0,5 · opening · (1 − 0,35 · lidU)`,
-    `lo = hw · 0,27 · opening − arc · hw · 0,22`.
-    Vorbedingung: `opening` endlich.
+    `lo = hw · 0,27 · min(eye_open, 1) · blink − arc · hw · 0,22`.
+    Weitung hebt nur das Oberlid (AU5): das Unterlid folgt der Öffnung bis 1, der
+    Lidschlag schließt es weiter mit. `blink` kommt eigens, weil sich `min(eye_open, 1)`
+    aus dem Produkt `opening` nicht zurückrechnen lässt.
+    Vorbedingung: `opening` endlich, `blink` in 0..1.
     Nachbedingung: beide Werte endlich.
-    Fehlerfälle: ValueError bei nicht endlicher Öffnung.
+    Fehlerfälle: ValueError bei verletzter Vorbedingung.
     """
     # ── Eingabe-Validierung ──
     if not math.isfinite(opening):
         raise ValueError(f"lid_extent: Öffnung {opening!r} nicht endlich")
+    if not 0.0 <= blink <= 1.0:
+        raise ValueError(f"lid_extent: Blinzelwert {blink!r} außerhalb 0..1")
 
     # ── Verarbeitung ──
     hw = eye.half_width
     up = hw * 0.5 * opening * (1 - 0.35 * face.lid_upper)
-    lo = hw * 0.27 * opening - face.eye_arc * hw * 0.22
+    # Susskind 2008: Weitung hebt nur das Oberlid.
+    lo = hw * 0.27 * min(face.eye_open, 1.0) * blink - face.eye_arc * hw * 0.22
 
     # ── Ausgabe-Verifikation ──
     if not (math.isfinite(up) and math.isfinite(lo)):
@@ -242,7 +250,7 @@ def draw_eye(
     if opening < CLOSED_BELOW:
         _closed_eye(pen, eye)
         return
-    lids = _open_lids(eye, face, opening)
+    lids = _open_lids(eye, face, opening, blink)
     _lid_hatching(pen, eye, lids)
     _smoky_corner(pen, gradients, eye)
     _graphite_below(pen, eye)
@@ -351,10 +359,10 @@ def _closed_lash_clumps(pen: Pen, side: int, lid: Sequence[Point]) -> None:
     # Keine Ausgabe-Verifikation: Jeder Strich ist in fine geprüft.
 
 
-def _open_lids(eye: EyeGeometry, face: FaceState, opening: float) -> Lids:
+def _open_lids(eye: EyeGeometry, face: FaceState, opening: float, blink: float) -> Lids:
     """Ober- und Unterlid und die Lidfalte, die dem Oberlid in festem Abstand folgt."""
     # ── Eingabe-Validierung ──
-    up, lo = lid_extent(eye, face, opening)
+    up, lo = lid_extent(eye, face, opening, blink)
     inner, outer = _corners(eye)
     hw, side = eye.half_width, eye.side
 

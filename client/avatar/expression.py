@@ -73,18 +73,23 @@ def _keyframes(
 # Mundmaße nach Messung an drei Personen; Schlüsselbilder wie im Prototyp.
 SECTORS: tuple[SectorKeyframes, ...] = (
     _keyframes(0, "Neutral", {}),
+    # Moderate Freude lächelt ohne Zähne (AU25 nur bei hoher Erregung): Campos 2013,
+    # Ambadar 2009, 05.10.2026.
     _keyframes(1, "Freude", {
         "bli": -6, "blo": -6, "bri": -6, "bro": -6, "eo": 0.68, "arc": 0.9,
         "mc": 40, "mo": 32, "mw": 110, "blush": 1,
-    }),
+    }, {"mo": 6, "jaw": 2}),
+    # Leicht gepresste Lippen (AU24): Campos 2013, 05.10.2026.
     _keyframes(2, "Zuversicht", {
         "bli": -2, "blo": -2, "bri": -2, "bro": -2, "eo": 0.85, "arc": 0.45, "lidU": 0.25,
-        "mc": 16, "mo": 3, "mw": 89,
+        "mc": 16, "mo": 3, "mw": 89, "au24": 0.2,
     }),
     # Angst und Überraschung ohne eigene Pupille: Erregung weitet sie, das rechnet der
     # Leerlauf aus dem Arousal (idle_catalog.PUPIL_ENERGY).
+    # Außenbrauen heben sich mit (AU2), Unterlid spannt sich (AU7): Kohler 2008,
+    # Cordaro 2018, 05.10.2026.
     _keyframes(3, "Angst", {
-        "bli": -20, "blo": 4, "bri": -20, "bro": 4, "barch": 5, "eo": 1.12,
+        "bli": -20, "blo": -6, "bri": -20, "bro": -6, "barch": 5, "eo": 1.12, "arc": 0.15,
         "mc": -6, "mo": 22, "jaw": 6, "mw": 80, "au20L": 0.7, "au20R": 0.7, "sweat": 1,
     }),
     _keyframes(4, "Überraschung", {

@@ -515,17 +515,32 @@ class PrototypeFormulaTest(unittest.TestCase):
 
     def test_eye_open_1215(self) -> None:
         # Linkes Auge, eo 1,215, blink 1, lidU 0, arc 0:
-        # up = 50 · 0,5 · 1,215 = 30,375; lo = 50 · 0,27 · 1,215 = 16,4025.
+        # up = 50 · 0,5 · 1,215 = 30,375; Weitung hebt nur das Oberlid, das Unterlid
+        # folgt der Öffnung bis 1: lo = 50 · 0,27 · min(1,215; 1) · 1 = 13,5.
         # Die Iris hebt sich um up · 0,12 = 3,645: Mitte L(E, 0, −3,645)
         # = (521 + 3,645 · sin 9°, 366 − 3,645 · cos 9°) = (521,5702036, 362,3998760).
         face = _face(eye_open=1.215)
-        up, lo = lid_extent(EYE_LEFT, face, 1.215)
+        up, lo = lid_extent(EYE_LEFT, face, 1.215, 1.0)
         self.assertAlmostEqual(up, 30.375, delta=EXACT)
-        self.assertAlmostEqual(lo, 16.4025, delta=EXACT)
+        self.assertAlmostEqual(lo, 13.5, delta=EXACT)
+        # Zwilling: bei eo 1,0 steht das Unterlid genauso
+        _, lo_one = lid_extent(EYE_LEFT, _face(eye_open=1.0), 1.0, 1.0)
+        self.assertAlmostEqual(lo, lo_one, delta=EXACT)
         iris = [a for a in _arcs(_eyes(face, 1.0)) if abs(a[2] - 23.0) < EXACT]
         self.assertTrue(iris)
         self.assertAlmostEqual(iris[0][0], 521.570203625072, delta=EXACT)
         self.assertAlmostEqual(iris[0][1], 362.399875998531, delta=EXACT)
+
+    def test_blink_closes_lower_lid_when_wide(self) -> None:
+        # eo 1,215: lo = 50 · 0,27 · 1 · blink; bei blink 0,5 genau die Hälfte von blink 1.
+        face = _face(eye_open=1.215)
+        _, lo_full = lid_extent(EYE_LEFT, face, 1.215, 1.0)
+        _, lo_half = lid_extent(EYE_LEFT, face, 1.215 * 0.5, 0.5)
+        self.assertAlmostEqual(lo_half, 6.75, delta=EXACT)
+        self.assertAlmostEqual(lo_half, lo_full / 2, delta=EXACT)
+        # Zwilling: ein Blinzelwert außerhalb 0..1 wird abgewiesen
+        with self.assertRaises(ValueError):
+            lid_extent(EYE_LEFT, face, 1.215, 1.5)
 
     def test_non_finite_channel_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
