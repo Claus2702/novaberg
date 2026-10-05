@@ -610,10 +610,10 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1123 | offen | `AVATAR-SMILEY-AUSDRUECKE` | [Feature: AVATAR-SMILEY-AUSDRUECKE — die gängigen Smi](novaberg-backlog-antwortpfad.md) |
 | ANT | 1141 | abgeschlossen | `AVATAR-STATUS-SCHRIFT` | [Feature: AVATAR-STATUS-SCHRIFT — die Phasenanzeige d](novaberg-backlog-antwortpfad.md) |
 | ANT | 1153 | offen | `AVATAR-GLANZLICHT-FEST` | [Feature: AVATAR-GLANZLICHT-FEST — die Glanzlichter d](novaberg-backlog-antwortpfad.md) |
-| ANT | 1172 | abgeschlossen | `AVATAR-PUPILLE-AROUSAL` | [Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet di](novaberg-backlog-antwortpfad.md) |
-| ANT | 1186 | abgeschlossen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
-| ANT | 1200 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
-| ANT | 1210 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
+| ANT | 1174 | abgeschlossen | `AVATAR-PUPILLE-AROUSAL` | [Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet di](novaberg-backlog-antwortpfad.md) |
+| ANT | 1188 | abgeschlossen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
+| ANT | 1202 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
+| ANT | 1212 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |

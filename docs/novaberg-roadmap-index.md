@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 942 Abschnitte in 7 Dateien — 430 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 943 Abschnitte in 7 Dateien — 431 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 24 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 25 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 942 Marken, 942 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 943 Marken, 943 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-05 | laufend | ## | [05.10.2026, 18:47 UTC — Die Glanzlichter der Augen bleiben stehen, wenn der Blick wandert (Prototyp)](novaberg-roadmap.md#05102026-1847-utc--die-glanzlichter-der-augen-bleiben-stehen-wenn-der-blick-wandert-prototyp) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 17:10 UTC — Die Phasenanzeige unter dem Avatar schreibt kleiner](novaberg-roadmap.md#05102026-1710-utc--die-phasenanzeige-unter-dem-avatar-schreibt-kleiner) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 16:59 UTC — Der Eigentümer nimmt den Blickhalt im Generator ab](novaberg-roadmap.md#05102026-1659-utc--der-eigentümer-nimmt-den-blickhalt-im-generator-ab) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 15:24 UTC — Die Statuszeile zeigt jede laufende Arbeit (L5)](novaberg-roadmap.md#05102026-1524-utc--die-statuszeile-zeigt-jede-laufende-arbeit-l5) |

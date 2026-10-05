@@ -228,6 +228,16 @@ Jeder Baustein ist ohne GTK testbar. Tests, die ohne das jeweilige Verhalten rot
   - das Momentum schreibt wieder: 1 rot.
 - **Im Betrieb ungemessen:** Pixie ist seit dem 03.10.2026, 12:28 UTC, pausiert und verwirft jeden Heartbeat. Ein echter Auftrag bei offenem Panel steht deshalb für L4 und L5 aus. Nebenbefunde stehen in der Fundliste.
 
+**G1 gebaut, 05.10.2026, 18:47 UTC** — die Glanzlichter in der Referenz (`AVATAR-GLANZLICHT-FEST`). Ein Glanzlicht spiegelt eine feste Lichtquelle; wohin es fällt, hängt davon ab, wohin das Auge im Raum blickt, nicht davon, wie es im Kopf steht.
+
+- **Zeichnung** (`drawEye` des Prototyps): Der Bezugspunkt der beiden Glanzlichter ist die Iris, um den Teil des Blickwegs zurückgenommen, den sie nicht mitgehen: `gc = ic − (1 − k) · W`, mit `W = gx − halt + yaw / 34`, dem Blick im Raum. Anker `#glanz=0|50|100` setzt `k`; ohne Anker gilt 0. Größen, Versätze und Farben bleiben.
+- **Was daraus folgt:** Beim Blickwechsel stehen die Glanzlichter, und die Iris wandert unter ihnen weg. Dreht der Kopf nach und das Auge hält seinen Punkt, wandern Iris und Glanzlichter zusammen mit dem Augapfel, bei 10° um etwa 8–10 px der Vorlage (gerechnet aus der Verschiebung der Augen durch das Drehgitter, 17 px, weniger dem Rückweg der Iris).
+- **Entschieden mit dem Bau:** Die Glanzlichter liegen nur über der Iris, beschnitten auf ihren Rand; Lid und Lidschlag verdecken sie wie bisher.
+- **Prüfung** an Aufnahmen ohne Fenster, Lage aus den Zeichenaufrufen: Bei Blicken bis ±0,3 wandert das große Glanzlicht 0,0000 px, die Iris 12–15 px; mit `#glanz=100` geht es den ganzen Irisweg mit, mit `#glanz=50` die Hälfte; mit Kopf 8° liegt es für `#halt=0` und `#halt=geo` am selben Punkt; bei Blick 0 ist das Bild für jeden Wert pixelgleich mit dem Stand davor. Fünf Gegenproben rot wie vorhergesagt: `k` ohne Wirkung, Vorzeichen, Blick ohne Kopfwinkel, ohne den Rand der Iris, senkrecht ohne `k`. Leerlauf-Prüfer `523 Läufe, 0 Verstöße`, die Referenz des Ausdrucks ohne abweichenden Wert.
+- **Nicht gemessen:** die Wege an echten Zuständen des Leerlaufs, weil Aufnahmen mit gedrehtem Kopf zeitweise hängen (Fundliste, 05.10.2026).
+- **Der Eigentümer**, 05.10.2026: *„Das Glanzlicht ist ja eine Reflektion eines normal feststehenden Körpers oder Fensters. Wenn sich die Pupille bewegt, bleibt es starr, weil der Winkel gleich bleibt. Dreht sich der Kopf, verschiebt sich der runde Augapfel und damit die Reflektion auf der Oberfläche etwas.“* Am echten Auge wandert es beim Blickwechsel etwa halb mit, weil der Mittelpunkt der Hornhaut vor dem Drehpunkt liegt (`#glanz=50`, gerechnet); die Vorgabe bleibt starr.
+- **Im Client noch nicht:** `client/avatar/drawing_eye.py` `_pupil` legt die Glanzlichter fest zur Iris; offen sind die Sichtprüfung des Eigentümers und der Client mit Bild gegen den Prototyp.
+
 ### 18.1 Abnahme
 
 Ein Turn gilt als abgenommen, wenn ein Betrachter ohne Bedienung die Phasen erkennt und die Prüfpunkte halten. Übernommen aus der Analyse eines Mitschnitts des Generators (03.10.2026).

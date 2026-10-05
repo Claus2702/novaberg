@@ -1154,7 +1154,7 @@ Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße i
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — Wunsch des Eigentümers, Bau in Prototyp und Client.
+**Zustand:** ~~⬜ offen — Wunsch des Eigentümers, Bau in Prototyp und Client.~~ → **Im Prototyp gebaut am 05.10.2026, 18:47 UTC** (G1, `novaberg-avatar_b.md` §18): Beim Blickwechsel stehen die Glanzlichter, dreht der Kopf, wandern sie mit dem Augapfel; Anker `#glanz=0|50|100`, ohne Anker 0. **Rest, als Rest benannt:** die Sichtprüfung des Eigentümers am Bild und der Client (`client/avatar/drawing_eye.py` `_pupil`) mit Bild gegen den Prototyp.
 
 Der Eigentümer, 05.10.2026: *„Zudem haben die Pupillen Spiegelungen, kleine weiße Punkte, die bewegen sich mit den Pupillen. Das sollten wir ändern. Spiegellungen bleiben gleich.“*
 
@@ -1164,8 +1164,10 @@ Der Eigentümer, 05.10.2026: *„Zudem haben die Pupillen Spiegelungen, kleine w
 
 **Offen für die Ausarbeitung:**
 
-- ob ein Glanzlicht sichtbar bleibt, wenn die Iris unter ihm wegwandert und es über dem Weiß des Auges läge;
-- ob es beim Blinzeln und bei engem Lid mit dem Lid verschwindet wie heute.
+- ob ein Glanzlicht sichtbar bleibt, wenn die Iris unter ihm wegwandert und es über dem Weiß des Auges läge; → **entschieden mit dem Bau, 05.10.2026:** nein, die Glanzlichter liegen nur über der Iris, beschnitten auf ihren Rand;
+- ob es beim Blinzeln und bei engem Lid mit dem Lid verschwindet wie heute. → **entschieden mit dem Bau, 05.10.2026:** ja.
+
+Der Eigentümer, 05.10.2026, zur Rechnung dahinter: *„Das Glanzlicht ist ja eine Reflektion eines normal feststehenden Körpers oder Fensters. Wenn sich die Pupille bewegt, bleibt es starr, weil der Winkel gleich bleibt. Dreht sich der Kopf, verschiebt sich der runde Augapfel und damit die Reflektion auf der Oberfläche etwas.“*
 
 **Zusammenhang:** `novaberg-avatar_t.md` §13 · `AVATAR-PUPILLE-AROUSAL`
 
