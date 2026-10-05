@@ -8,6 +8,8 @@ interpoliert: Neutral -> moderat -> intensiv.
 
 Werte, Reihenfolge der Rechnung und der Vorgabewert des Kiefers folgen dem
 Prototyp; die Gleichheit prüfen Referenzwerte unter `tests/avatar_reference/`.
+Die Kopfdrehung (Kanal `yaw` des Prototyps) setzt keine Emotion: Sie ist kein Feld
+des Ausdrucks, sondern ein eigener Wert des Leerlaufs (`IdleFrame.head_yaw`).
 """
 
 import logging
@@ -79,12 +81,14 @@ SECTORS: tuple[SectorKeyframes, ...] = (
         "bli": -2, "blo": -2, "bri": -2, "bro": -2, "eo": 0.85, "arc": 0.45, "lidU": 0.25,
         "mc": 16, "mo": 3, "mw": 89,
     }),
+    # Angst und Überraschung ohne eigene Pupille: Erregung weitet sie, das rechnet der
+    # Leerlauf aus dem Arousal (idle_catalog.PUPIL_ENERGY).
     _keyframes(3, "Angst", {
-        "bli": -20, "blo": 4, "bri": -20, "bro": 4, "barch": 5, "eo": 1.12, "ps": 0.72,
+        "bli": -20, "blo": 4, "bri": -20, "bro": 4, "barch": 5, "eo": 1.12,
         "mc": -6, "mo": 22, "jaw": 6, "mw": 80, "au20L": 0.7, "au20R": 0.7, "sweat": 1,
     }),
     _keyframes(4, "Überraschung", {
-        "bli": -30, "blo": -28, "bri": -30, "bro": -28, "barch": -7, "eo": 1.215, "ps": 0.8,
+        "bli": -30, "blo": -28, "bri": -30, "bro": -28, "barch": -7, "eo": 1.215,
         "mc": 0, "mo": 23, "mw": 73,
     }),
     _keyframes(5, "Trauer", {

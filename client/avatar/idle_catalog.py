@@ -131,7 +131,9 @@ FORMS: Mapping[str, FormSpec] = MappingProxyType({f.form_id: f for f in (
           saccade_jump=0.15),
     _form("F4", "Ins Leere", {"lidU": 0.2, "eo": -0.06}, GAZE_BLANK, pupil=-0.05,
           nominal=_P(0.2, 0.05), saccade_interval=(3000, 7000), saccade_jump=0.1),
-    _form("F5", "Denklast", {"bli": 3, "bri": 3, "blo": 3, "bro": 3}, _P(0, 0.1), pupil=0.12),
+    # Fester Blick ins Leere, seitlich unten — geradeaus las er sich als Blickkontakt.
+    # 0,3 liegt deutlich außerhalb des Kastens um den Betrachter (|x| ≤ 0,12, |y| ≤ 0,15).
+    _form("F5", "Denklast", {"bli": 3, "bri": 3, "blo": 3, "bro": 3}, _P(0.3, 0.3), pupil=0.12),
     _form("F6", "Verwirrung",
           {"bli": 5, "bri": -2, "blo": 2, "bro": 2, "eo": -0.08, "arc": 0.15, "ma": 3},
           _P(0.2, 0), asymmetric=True, saccade_interval=(1500, 2500), saccade_jump=0.08),
@@ -161,8 +163,9 @@ FORMS: Mapping[str, FormSpec] = MappingProxyType({f.form_id: f for f in (
           _P(0.3, 0.3), saccade_interval=(2000, 3000), saccade_jump=0.05),
     _form("F16", "Blick zum Betrachter", {"eo": 0.03}, _P(0, 0), accent=True),
     _form("F17", "Fixieren", {"eo": -0.1, "bli": 6, "bri": 6, "au24": 0.2}, _P(0.15, 0)),
-    # Ende des Nachdenkens: Einatmen mit leicht geöffnetem Mund vor dem ersten Laut.
-    _form("E1", "Einatmen", {"mo": 6}, GAZE_CONTINUE),
+    # Ende des Nachdenkens: Einatmen mit leicht geöffnetem Mund vor dem ersten Laut, die
+    # Augen etwas weiter — mehrere kleine Zeichen statt eines großen (mo 10,5 · k ≈ 7,6).
+    _form("E1", "Einatmen", {"mo": 10.5, "eo": 0.05}, GAZE_CONTINUE),
     # Antwort: keine Denkformen, sondern die Blickregelung des Sprechers.
     _form("A0", "Wegsehen fortgesetzt (spricht)", {}, GAZE_CONTINUE),
     _form("A1", "Zuwenden (spricht)", {}, _P(0, 0), saccade_interval=(1500, 2500),
@@ -254,22 +257,42 @@ SECTOR_BY_NAME: Mapping[str, int] = MappingProxyType({
     "hoffnung": 8, "neugierig": 8,
 })
 
-# Grundlage der Emotion je Zustand: face_target(Sektor, Arousal · Faktor). Der
-# Nachklang klingt von 0,7 auf 0,35 aus und blendet dann zu Pixie über.
+# Grundlage der Emotion je Zustand: face_target(Sektor, Arousal · Faktor). In der
+# Antwort 0,75 — mit 1 las sich Freude 0,5 beim Sprechen als Grinsen mit Zähnen. Der
+# Nachklang klingt von 0,7 auf 0,35 aus (Faktor 1 − 0,5 · Anteil) und blendet dann zu
+# Pixie über; die Energie klingt mit aus.
 BASE_FACTOR: Mapping[IdleState, float] = MappingProxyType({
-    IdleState.NOISE: 0.5, IdleState.THINKING: 0.5, IdleState.ANSWER: 1.0,
+    IdleState.NOISE: 0.5, IdleState.THINKING: 0.5, IdleState.ANSWER: 0.75,
 })
 AFTERGLOW_START_FACTOR = 0.7
-AFTERGLOW_FADE = 0.35
+AFTERGLOW_FADE_SHARE = 0.5  # 0,7 · (1 − 0,5) = 0,35 am Ende des Ausklingens
 AFTERGLOW_BLEND_FROM = 0.6  # Anteil der Dauer, ab dem zu Pixie überblendet wird
 
 # Aktivität a je Zustand: Rauschen 0,6 mit laufendem Auftrag, sonst 0,2; im Turn
-# feste Last, in der Antwort keine, im Nachklang Ruhe.
+# feste Last, im Nachklang Ruhe. In der Antwort 0,25: leises Rauschen statt eines
+# eingefrorenen Gesichts, nur auf Brauen und Mundwinkeln (NOISE_IN_ANSWER).
 ACTIVITY_THINKING = 0.7
 ACTIVITY_AFTERGLOW = 0.2
 ACTIVITY_JOB = 0.6
 ACTIVITY_IDLE = 0.2
-ACTIVITY_ANSWER = 0.0
+ACTIVITY_ANSWER = 0.25
+
+# Einfall F9 im Nachdenken ist ein Akzent: Phase a und b 1,0 s, dann Lächeln und Blick
+# zurück 1,0–2,0 s — Dauer F9_THINKING_MS[0] + U(F9_THINKING_MS[1], F9_THINKING_MS[2]).
+# Im Rauschen behält F9 die Spanne.
+F9_THINKING_MS: tuple[float, float, float] = (1000.0, 1000.0, 2000.0)
+# F9 sieht in Phase a und b mindestens so weit zur Seite.
+F9_AWAY_MIN = 0.2
+
+# R7 im Nachdenken: F16 mit halber Wahrscheinlichkeit und kurz.
+ACCENT_THINKING_SHARE = 0.5
+ACCENT_THINKING_MS: tuple[float, float] = (1000.0, 1500.0)
+ACCENT_MS: tuple[float, float] = (1000.0, 2000.0)
+
+# Erregung weitet die Pupille: + 0,12·E auf den Radius, mit E ungedämpft.
+PUPIL_ENERGY = 0.12
+# Das Oberlid hebt sich beim Blick nach oben: + 0,08 auf eo je Einheit −gy.
+EYE_OPEN_GAZE_UP = 0.08
 
 # Faktor der Spanne je Zustand; Nachdenken konvergent = wenige, längere Formen.
 SPAN_FACTOR: Mapping[IdleState, float] = MappingProxyType({
@@ -289,7 +312,23 @@ BLINK_ENERGY_RATE = 12.0
 BLINK_RATE_MIN = 8.0
 BLINK_RATE_MAX = 32.0
 BLINK_REFRACTORY_MS = 800.0
+# Nach dem langen Lidschlag des Einfalls deckt die Sperre Phase a und b; nach dem am
+# Ende der Antwort den Blick zum Gegenüber (F16) bis zu seinem frühesten Ende.
+BLINK_REFRACTORY_INSIGHT_MS = 1000.0
+BLINK_REFRACTORY_END_MS = 1500.0
+# Geschlossene Phase zwischen Schließen und Öffnen, × Lidform: Das geschlossene Auge
+# erscheint in mindestens einem Bild.
+BLINK_HOLD_MS = 40.0
 BLINK_FIRST_MS = 1200.0  # der erste Lidschlag nach dem Start
+# Art eines Lidschlags; gekoppelt ist jeder außer dem aus dem Poisson-Prozess.
+BLINK_POISSON = "poisson"
+BLINK_GAZE_SHIFT = "r8"
+BLINK_INSIGHT = "f9"
+BLINK_SERIES = "f5"
+BLINK_ANXIETY = "angst"
+BLINK_END = "ende"
+BLINK_KINDS = frozenset({BLINK_POISSON, BLINK_GAZE_SHIFT, BLINK_INSIGHT, BLINK_SERIES,
+                         BLINK_ANXIETY, BLINK_END})
 # Wahrscheinlichkeit eines Lidschlags am Blickwechsel über 0,4; im Nachdenken
 # seltener, Konzentration senkt die Rate.
 BLINK_AT_GAZE_SHIFT = 0.7
@@ -345,6 +384,27 @@ NOISE_AMPLITUDES: tuple[tuple[str, float], ...] = (
     ("bli", 4), ("bri", 4), ("blo", 2), ("bro", 2), ("ma", 3), ("mc", 3), ("au23", 0.15),
     ("au18", 0.1),
 )
+# In der Antwort rauscht es nur auf Brauen und Mundwinkeln; die Lippen gehören der Stimme.
+NOISE_IN_ANSWER = frozenset({"bli", "bri", "blo", "bro", "mc"})
+
+# Kopfdrehung (Gierwinkel in Grad, plus = nach rechts aus Sicht des Betrachters wie gx).
+# Der Kopf folgt dem Blick der Form 200 ms später, meist wenig, nachdenklich zur Seite
+# etwa 10°; zum Betrachter zurück nach 150 ms. h je Form aus einer eigenen Zufallsquelle.
+HEAD_PER_GAZE = 10.0  # Grad je Einheit gx ('klein', höchstens 5°)
+HEAD_DEEP = 10.0  # nachdenklich zur Seite ('tief', 9–11°)
+HEAD_SIDE = 0.12  # bis hier gilt der Blick als beim Betrachter
+HEAD_SIDE_DEEP = 0.25  # erst deutlich seitlich dreht der Kopf tief mit
+# F7 pendelt — tief wäre ein Kopfschütteln; der Weg von F9 dauert nur 1 s.
+HEAD_DEEP_FORMS = frozenset(DRAWABLE) - {"F7", "F9"}
+HEAD_FOLLOWS_MS = 200.0
+HEAD_RETURN_MS = 150.0
+HEAD_WANDER = 1.0  # Grad, glattes Rauschen wie auf Brauen und Mund
+HEAD_WANDER_CHANNEL = 11  # Phase des Rauschens
+YAW_MAX = 15.0  # harte Grenze des Ziels, Grad
+HEAD_SMALL = "klein"
+HEAD_DEEP_KIND = "tief"
+HEAD_BACK = "zurueck"
+
 # Die Mundmuskeln nach FACS, begrenzt auf 0..1.
 MOUTH_AU: tuple[str, ...] = (
     "au10L", "au10R", "au12L", "au12R", "au15L", "au15R", "au16L", "au16R", "au20L", "au20R",
@@ -379,8 +439,10 @@ def _check_catalog() -> None:
         problems += [f"{state.value}: {f} nicht ziehbar" for f in group if f not in DRAWABLE]
     named = (MOD_DEEP | MOD_LIGHT | MOD_LIVELY | MOD_CALM | MOD_LOAD | MOD_DRIFT | MOD_PRIVATE
              | MOD_CONTROLLED | ASYMMETRIC | PRECURSORS | DOWNWARD | POSITIVE | NEGATIVE
-             | OPENERS_ANGER)
+             | OPENERS_ANGER | HEAD_DEEP_FORMS)
     problems += [f"{f}: in einer Regelmenge, nicht im Katalog" for f in named if f not in FORMS]
+    problems += [f"{k}: Rauschen der Antwort ohne Amplitude" for k in NOISE_IN_ANSWER
+                 if k not in dict(NOISE_AMPLITUDES)]
 
     # ── Ausgabe-Verifikation ──
     if problems:

@@ -1,9 +1,9 @@
 """Zeugen für den Ausdruck des Avatars: das Ziel aus Sektor und Arousal.
 
 Die Referenzwerte unter `avatar_reference/expression.json` sind aus dem Prototyp
-erzeugt (9 Sektoren × 5 Arousal-Stufen × 35 Kanäle) und werden nicht von Hand
-geändert. Eine Abweichung davon wäre im Bild still — das Gesicht sähe nur ein
-wenig anders aus.
+erzeugt (9 Sektoren × 5 Arousal-Stufen × 36 Kanäle, davon `yaw` die Kopfdrehung)
+und werden nicht von Hand geändert. Eine Abweichung davon wäre im Bild still —
+das Gesicht sähe nur ein wenig anders aus.
 
 Toleranz 1e-9 in den Einheiten der Kanäle (Pixel, Faktor, 0..1): Python und der
 Prototyp rechnen dieselben Operationen in derselben Reihenfolge mit IEEE-754-
@@ -23,6 +23,7 @@ from avatar.expression import face_target
 from avatar.face import NEUTRAL, PROTOTYPE_KEYS, FaceState
 
 TOLERANCE = 1e-9
+YAW_KEY = "yaw"
 REFERENCE_PATH = Path(__file__).parent / "avatar_reference" / "expression.json"
 
 
@@ -45,11 +46,19 @@ class ReferenceTest(unittest.TestCase):
         cls.reference = _load_reference()
 
     def test_channels_and_neutral_match_the_prototype(self) -> None:
+        # yaw ist der Kanal der Kopfdrehung: kein Feld des Ausdrucks, keine Emotion setzt ihn
         self.assertEqual(list(PROTOTYPE_KEYS), [f.name for f in fields(FaceState)])
-        self.assertEqual(list(PROTOTYPE_KEYS.values()), self.reference["kanaele"])
-        self.assertEqual(len(self.reference["kanaele"]), 35)
+        self.assertEqual(list(PROTOTYPE_KEYS.values()) + [YAW_KEY], self.reference["kanaele"])
+        self.assertEqual(len(self.reference["kanaele"]), 36)
         for field, key in PROTOTYPE_KEYS.items():
             self.assertEqual(getattr(NEUTRAL, field), self.reference["neutral"][key], key)
+        self.assertEqual(self.reference["neutral"][YAW_KEY], 0)
+
+    def test_no_emotion_turns_the_head(self) -> None:
+        entries = self.reference["werte"]
+        self.assertEqual(len(entries), 45)
+        turned = [(e["sektor"], e["arousal"]) for e in entries if e["face"][YAW_KEY] != 0]
+        self.assertEqual(turned, [])
 
     def test_mod_arousal_matches_the_prototype(self) -> None:
         self.assertEqual(expression.MOD_AROUSAL, self.reference["mod_arousal"])

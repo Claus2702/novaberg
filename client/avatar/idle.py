@@ -194,6 +194,29 @@ class Mulberry32:
             raise RuntimeError(f"exponential: {value} nicht ≥ 0")
         return value
 
+    def gamma3(self, mean: float) -> float:
+        """Gamma mit Form 3 und Mittel `mean`: drei Exponentialziehungen mit mean/3, summiert.
+
+        Gleicher Mittelwert wie eine Exponentialziehung, aber seltener sehr kurz oder
+        sehr lang. Die Summe läuft von links, wie im Generator.
+        Vorbedingung: mean ist endlich und positiv.
+        Nachbedingung: ein Wert ≥ 0; `draws` ist um drei gewachsen.
+        Fehlerfälle: ein Mittel ≤ 0 oder nicht endlich.
+        """
+        # ── Eingabe-Validierung ──
+        if not (math.isfinite(mean) and mean > 0):
+            raise ValueError(f"gamma3: Mittel {mean} nicht positiv")
+        draws_before = self.draws
+
+        # ── Verarbeitung ──
+        third = mean / 3
+        value = self.exponential(third) + self.exponential(third) + self.exponential(third)
+
+        # ── Ausgabe-Verifikation ──
+        if self.draws != draws_before + 3:
+            raise RuntimeError("gamma3: nicht genau drei Ziehungen")
+        return value
+
     def triangle(self, lo: float, peak: float, hi: float) -> float:
         """Dreiecksverteilung über lo..hi mit Gipfel bei `peak`; ohne Spanne lo.
 
@@ -220,6 +243,29 @@ class Mulberry32:
         if not lo - 1e-9 <= value <= hi + 1e-9:
             raise RuntimeError(f"triangle: {value} außerhalb [{lo}, {hi}]")
         return value
+
+
+def head_seed(seed: int) -> int:
+    """Der Startwert der Zufallsquelle des Kopfs, aus dem des Leerlaufs wie im Generator.
+
+    Der Startwert wird vorzeichenlos (0 wird 1), dann imul mit 0x9E3779B1, xor
+    0x85EBCA6B; 0 wird 1. So zieht der Plan aus seiner Quelle genau wie ohne Kopf.
+    Vorbedingung: seed ist eine ganze Zahl.
+    Nachbedingung: ein Startwert in 1..2³²−1.
+    Fehlerfälle: seed ist keine ganze Zahl.
+    """
+    # ── Eingabe-Validierung ──
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        raise TypeError(f"head_seed: Startwert {seed!r} ist keine ganze Zahl")
+
+    # ── Verarbeitung ──
+    base = (seed & _UINT32) or 1
+    value = ((_imul(base, 0x9E3779B1) ^ 0x85EBCA6B) & _UINT32) or 1
+
+    # ── Ausgabe-Verifikation ──
+    if not 1 <= value <= _UINT32:
+        raise RuntimeError(f"head_seed: {value} außerhalb 32 Bit")
+    return value
 
 
 # ---------------------------------------------------------------- Rechnen ------
@@ -527,7 +573,9 @@ class IdleFrame:
     `face_omega` ω der Feder des Gesichts, `amplitude` die Amplitude k der Formen,
     `activity` die Aktivität a. `answer_at_ms` ist im Zustand Antwort die Zeit
     (`at_ms`) der Antwort, die gesprochen wird, sonst None — daran erkennt der
-    Aufrufer, welche Antwort beginnt.
+    Aufrufer, welche Antwort beginnt. `head_yaw` ist das Ziel der Kopfdrehung in Grad
+    (plus = nach rechts aus Sicht des Betrachters, wie gx), in ±`YAW_MAX`; die Feder
+    des Kopfs führt der Aufrufer. Ist die Drehung abgeschaltet, ist es 0.
     """
 
     state: IdleState
@@ -538,6 +586,7 @@ class IdleFrame:
     amplitude: float
     activity: float
     answer_at_ms: float | None
+    head_yaw: float
 
 
 @dataclass
@@ -569,13 +618,31 @@ class TracedForm:
 
 @dataclass
 class TracedBlink:
-    """Ein Lidschlag: Schritt, Zustand, gekoppelt oder aus dem Poisson-Prozess, Form."""
+    """Ein Lidschlag: Schritt, Zustand, Art, gekoppelt (nicht Poisson), Beginn und Form.
+
+    `begin_ms` ist der Beginn des Schließens — vor `at_ms`, wenn er an einen
+    laufenden ansetzt; `hold_ms` die geschlossene Phase.
+    """
 
     at_ms: float
     state: IdleState
+    kind: str
     coupled: bool
+    begin_ms: float
     close_ms: float
+    hold_ms: float
     open_ms: float
+
+
+@dataclass
+class TracedHead:
+    """Ein Kopfziel, das gültig wird: Schritt, Ziel ohne Wandern, Art, Blick, Blickwechsel."""
+
+    at_ms: float
+    target: float
+    kind: str
+    gaze_x: float
+    gaze_change_ms: float
 
 
 @dataclass
@@ -595,6 +662,7 @@ class IdleTrace:
     forms: list[TracedForm] = field(default_factory=list)
     blinks: list[TracedBlink] = field(default_factory=list)
     events: list[TracedEvent] = field(default_factory=list)
+    heads: list[TracedHead] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------- Innen --------
@@ -611,7 +679,11 @@ class _Gaze:
 
 @dataclass
 class _FormInstance:
-    """Eine geplante Form: Beginn, Dauer, Seite, Blick, Sakkade, Pendel."""
+    """Eine geplante Form: Beginn, Dauer, Seite, Blick, Sakkade, Pendel, Kopf.
+
+    `head_h` ist die Ziehung des Kopfs (eigene Quelle); `head_inherits`: die Form setzt
+    den Blick der vorigen fort und behält auch deren Kopfziel (E1, A0).
+    """
 
     form_id: str
     t0: float
@@ -622,6 +694,8 @@ class _FormInstance:
     pendulum: int = 0
     next_saccade: float = math.inf
     previous_gaze: _Gaze | None = None
+    head_h: float = 0.0
+    head_inherits: bool = False
 
 
 @dataclass
@@ -667,10 +741,19 @@ class _Job:
 
 @dataclass
 class _Situation:
-    """Der Zustand und was an ihm hängt: Herkunft, Einatmen, Antwort, Nachklang."""
+    """Der Zustand und was an ihm hängt: Herkunft, Einatmen, Antwort, Nachklang.
+
+    `blink_since`: ab hier zählen die gekoppelten Lidschläge — im Nachklang ab dem
+    Beginn der Antwort. `glide_basis`, `glide_noise`: Basis und Rauschen vor dem ersten
+    Laut, aus denen die Antwort über `glide_ms` (die Dauer von A0) gleitet.
+    """
 
     state: IdleState = IdleState.NOISE
     since: float = 0.0
+    blink_since: float = 0.0
+    glide_basis: Mapping[str, float] | None = None
+    glide_noise: Mapping[str, float] | None = None
+    glide_ms: float = math.inf
     origin: str | None = None
     inhaling: bool = False
     answer_from: float = math.inf
@@ -684,14 +767,18 @@ class _Situation:
 
 @dataclass
 class _Lid:
-    """Der Prozess der Lidschläge: laufender Lidschlag, Sperrzeit, Serie, Protokoll."""
+    """Der Prozess der Lidschläge: laufender Lidschlag, Sperrzeit, Serie, Protokoll.
+
+    `series` trägt je fälligem Lidschlag Zeit und Art.
+    """
 
     start: float = -1.0
     close: float = 90.0
+    hold: float = 0.0
     open: float = 200.0
     next_ms: float = 0.0
     blocked_until: float = 0.0
-    series: list[float] = field(default_factory=list)
+    series: list[tuple[float, str]] = field(default_factory=list)
     log: list[tuple[float, bool]] = field(default_factory=list)
     scale: float = 1.0
     rate: float = 15.0
@@ -700,12 +787,16 @@ class _Lid:
 
 @dataclass(frozen=True)
 class _Inputs:
-    """Was im Augenblick als Eingang anliegt: Emotion, Basis, Lage im Raum, Aktivität."""
+    """Was im Augenblick als Eingang anliegt: Emotion, Basis, Lage im Raum, Aktivität.
+
+    `noise` ist die Stärke des Rauschens je Kanal von `NOISE_AMPLITUDES`.
+    """
 
     state: IdleState
     sector: int
     arousal: float
     basis: Mapping[str, float]
+    noise: Mapping[str, float]
     energy: float
     valence: float
     sector_valence: float
@@ -950,6 +1041,32 @@ def _afterglow_mix(situation: _Situation, now: float) -> tuple[float, float]:
     if not (0.0 <= p <= 1.0 and 0.0 <= mix <= 1.0):
         raise RuntimeError(f"_afterglow_mix: p {p} oder mix {mix} außerhalb 0..1")
     return p, mix
+
+
+def _noise_strength(situation: _Situation, activity: float, glide: float) -> dict[str, float]:
+    """Die Stärke des Rauschens je Kanal: die Aktivität; in der Antwort nur Brauen und Mundwinkel.
+
+    In der Antwort gleitet sie wie die Basis aus dem Rauschen vor dem ersten Laut.
+    Vorbedingung: activity und glide in 0..1.
+    Nachbedingung: ein Wert in 0..1 je Kanal von `NOISE_AMPLITUDES`.
+    Fehlerfälle: activity oder glide außerhalb 0..1.
+    """
+    # ── Eingabe-Validierung ──
+    if not (0.0 <= activity <= 1.0 and 0.0 <= glide <= 1.0):
+        raise ValueError(f"_noise_strength: Aktivität {activity} oder Gleiten {glide}")
+
+    # ── Verarbeitung ──
+    answering = situation.state is IdleState.ANSWER
+    start = situation.glide_noise if answering else None
+    strength = {}
+    for key, _amplitude in catalog.NOISE_AMPLITUDES:
+        goal = activity if not answering or key in catalog.NOISE_IN_ANSWER else 0.0
+        strength[key] = goal if start is None else start[key] + (goal - start[key]) * glide
+
+    # ── Ausgabe-Verifikation ──
+    if not all(0.0 <= v <= 1.0 for v in strength.values()):
+        raise RuntimeError(f"_noise_strength: {strength} außerhalb 0..1")
+    return strength
 
 
 def _status_note(situation: _Situation, now: float) -> _Note:
@@ -1379,7 +1496,7 @@ def _insight_phase(
         raise ValueError(f"_insight_phase: {inst.form_id} ohne vorigen Blick")
 
     # ── Verarbeitung ──
-    away = (inst.previous_gaze.x, 0.15)
+    away = (_insight_away_x(inst), 0.15)
     if u < 500:
         phase: tuple[Mapping[str, float], tuple[float, float], bool, bool] = ({}, away, False,
                                                                              False)
@@ -1393,6 +1510,34 @@ def _insight_phase(
     if len(phase) != 4:
         raise RuntimeError("_insight_phase: unvollständige Phase")
     return phase
+
+
+def _insight_away_x(inst: _FormInstance) -> float:
+    """F9, Phase a und b: die Seite des Wegsehens — die der vorigen Form, mindestens 0,2.
+
+    Liegt der vorige Blick näher an der Mitte, sieht F9 0,2 zu dessen Seite; ohne Seite
+    (x = 0) zur Seite der Form. Sonst sähe das „Weg“ nach einer Form nah der Mitte den
+    Betrachter an.
+    Vorbedingung: F9 mit dem Blick der vorigen Form.
+    Nachbedingung: |x| ≥ 0,2.
+    Fehlerfälle: eine andere Form oder kein voriger Blick.
+    """
+    # ── Eingabe-Validierung ──
+    if inst.form_id != "F9" or inst.previous_gaze is None:
+        raise ValueError(f"_insight_away_x: {inst.form_id} ohne vorigen Blick")
+
+    # ── Verarbeitung ──
+    vx = inst.previous_gaze.x
+    least = catalog.F9_AWAY_MIN
+    if abs(vx) >= least:
+        x = vx
+    else:
+        x = least * (math.copysign(1.0, vx) if vx else inst.side)
+
+    # ── Ausgabe-Verifikation ──
+    if not abs(x) >= least:
+        raise RuntimeError(f"_insight_away_x: {x} näher an der Mitte als {least}")
+    return x
 
 
 def _speaking_y(r: float, avoiding: bool) -> float:
@@ -1570,25 +1715,24 @@ def _mirror_gaze(inst: _FormInstance) -> None:
 def _finish_targets(target: dict[str, float], now: float, inputs: _Inputs) -> FaceState:
     """Der Schluss der Ziele: Rauschen, Kiefer, Grenzen der Mundmuskeln, Lid und Augen.
 
-    Außer in der Antwort kommt das Rauschen der Mikroschicht dazu, und der Kiefer
-    folgt der Öffnung; in der Antwort bleibt der Kiefer der Basis.
+    Das Rauschen der Mikroschicht kommt mit der Stärke der Lage je Kanal dazu (in der
+    Antwort nur auf Brauen und Mundwinkeln), und der Kiefer folgt der begrenzten
+    Öffnung, auch in der Antwort.
     Vorbedingung: Ziele aller Kanäle unter den Schlüsseln des Prototyps.
     Nachbedingung: ein `FaceState` mit endlichen Werten; `target` ist mitgeführt.
     Fehlerfälle: ein fehlender Kanal, ein nicht endliches Ziel.
     """
     # ── Eingabe-Validierung ──
     missing = [key for key in _KEYS if key not in target]
+    missing += [key for key, _ in catalog.NOISE_AMPLITUDES if key not in inputs.noise]
     if missing:
         raise ValueError(f"_finish_targets: Kanäle fehlen: {missing}")
 
     # ── Verarbeitung ──
-    answer = inputs.state is IdleState.ANSWER
-    if not answer:
-        for i, (key, amp) in enumerate(catalog.NOISE_AMPLITUDES):
-            target[key] += amp * inputs.activity * _noise(now, i + 1)
+    for i, (key, amp) in enumerate(catalog.NOISE_AMPLITUDES):
+        target[key] += amp * inputs.noise[key] * _noise(now, i + 1)
     target["mo"] = max(0, target["mo"])
-    if not answer:
-        target["jaw"] = target["mo"] * JAW_FACTOR_DEFAULT
+    target["jaw"] = target["mo"] * JAW_FACTOR_DEFAULT
     for key in catalog.MOUTH_AU:
         target[key] = _clamp(target[key], 0.0, 1.0)
     target["lidU"] = _clamp(target["lidU"], 0.0, 1.0)
@@ -1599,6 +1743,174 @@ def _finish_targets(target: dict[str, float], now: float, inputs: _Inputs) -> Fa
     if not all(math.isfinite(v) for v in target.values()):
         raise RuntimeError(f"_finish_targets: nicht endliches Ziel bei {now} ms")
     return state
+
+
+# ---------------------------------------------------------------- Kopf ---------
+
+_HeadKey = tuple[str, float, str]
+
+
+def _head_section(inst: _FormInstance, u: float) -> tuple[float, _HeadKey]:
+    """Der Blickabschnitt, dem der Kopf folgt: Blick x und Schlüssel des Abschnitts.
+
+    Der Schlüssel wechselt mit der Form, mit dem Pendel von F7 und mit der Phase von
+    F9 (weg bis 1 s, dann zurück zum Betrachter). Die kleinen Sakkaden zählen nicht.
+    Der erste Abschnitt einer gewöhnlichen Form trägt die Phase "".
+    Vorbedingung: eine geplante Form, u ms seit ihrem Beginn.
+    Nachbedingung: ein endliches x und ein Schlüssel mit Form und Beginn.
+    Fehlerfälle: nicht endliches u.
+    """
+    # ── Eingabe-Validierung ──
+    if not math.isfinite(u):
+        raise ValueError(f"_head_section: u {u} nicht endlich")
+
+    # ── Verarbeitung ──
+    form_id, t0 = inst.form_id, inst.t0
+    if form_id == "F7":
+        x2 = inst.gaze.x2 if inst.gaze.x2 is not None else inst.gaze.x
+        section = (x2 if inst.pendulum else inst.gaze.x, (form_id, t0, f"p{inst.pendulum}"))
+    elif form_id == "F9":
+        away = u < 1000
+        section = (_insight_away_x(inst) if away else 0.0,
+                   (form_id, t0, "weg" if away else "zurueck"))
+    else:
+        section = (inst.gaze.x, (form_id, t0, ""))
+
+    # ── Ausgabe-Verifikation ──
+    if not math.isfinite(section[0]):
+        raise RuntimeError(f"_head_section: {form_id} ohne endlichen Blick")
+    return section
+
+
+def _head_rule(inst: _FormInstance, x: float, state: IdleState) -> tuple[float, str, float]:
+    """Das Kopfziel zum Blick x: Ziel in Grad, Art und Verzögerung in ms.
+
+    |x| ≤ 0,12 → 0 nach 150 ms ('zurueck'); im Nachdenken, bei einer ziehbaren Form
+    außer F7 und F9 und |x| ≥ 0,25 → Seite · 10 · (0,9 + 0,2·h) ('tief'); sonst
+    Seite · 10 · |x| · (0,6 + 0,4·h) ('klein'), beide nach 200 ms.
+    Vorbedingung: x endlich, h der Form in [0, 1).
+    Nachbedingung: ein Ziel innerhalb ±YAW_MAX.
+    Fehlerfälle: nicht endliches x, h außerhalb [0, 1).
+    """
+    # ── Eingabe-Validierung ──
+    if not math.isfinite(x) or not 0.0 <= inst.head_h < 1.0:
+        raise ValueError(f"_head_rule: x {x}, h {inst.head_h}")
+
+    # ── Verarbeitung ──
+    side = 1 if x > 0 else -1
+    deep = (state is IdleState.THINKING and inst.form_id in catalog.HEAD_DEEP_FORMS
+            and abs(x) >= catalog.HEAD_SIDE_DEEP)
+    if abs(x) <= catalog.HEAD_SIDE:
+        rule = (0.0, catalog.HEAD_BACK, catalog.HEAD_RETURN_MS)
+    elif deep:
+        rule = (side * catalog.HEAD_DEEP * (0.9 + 0.2 * inst.head_h), catalog.HEAD_DEEP_KIND,
+                catalog.HEAD_FOLLOWS_MS)
+    else:
+        rule = (side * catalog.HEAD_PER_GAZE * abs(x) * (0.6 + 0.4 * inst.head_h),
+                catalog.HEAD_SMALL, catalog.HEAD_FOLLOWS_MS)
+
+    # ── Ausgabe-Verifikation ──
+    if not abs(rule[0]) <= catalog.YAW_MAX:
+        raise RuntimeError(f"_head_rule: Ziel {rule[0]} jenseits ±{catalog.YAW_MAX}")
+    return rule
+
+
+@dataclass(frozen=True)
+class _HeadWaiting:
+    """Ein Kopfziel, das erst ab `from_ms` gilt, mit dem, woraus es entstand."""
+
+    from_ms: float
+    target: float
+    kind: str
+    gaze_x: float
+    gaze_change_ms: float
+
+
+class _HeadTurn:
+    """Die Kopfdrehung: Ziel nach der Regel, verzögert, der Reihe nach; dazu ein Wandern.
+
+    Zieht keine Zufallszahl — h je Form zieht `IdleLogic` aus der eigenen Quelle des
+    Kopfs. Abgeschaltet (`enabled` False) plant sie genau gleich, nur das Ziel ist 0:
+    der Zwilling.
+    """
+
+    def __init__(self, enabled: bool, trace: IdleTrace | None) -> None:
+        """Beginnt beim Betrachter, ohne Abschnitt und ohne wartendes Ziel.
+
+        Vorbedingung: enabled ist ein Wahrheitswert; trace ein Verlauf oder None.
+        Nachbedingung: Ziel 0, keine Warteschlange.
+        Fehlerfälle: falsche Typen.
+        """
+        # ── Eingabe-Validierung ──
+        if not isinstance(enabled, bool):
+            raise TypeError(f"_HeadTurn: enabled {enabled!r} ist kein Wahrheitswert")
+        if trace is not None and not isinstance(trace, IdleTrace):
+            raise TypeError(f"_HeadTurn: trace ist kein IdleTrace: {type(trace).__name__}")
+
+        # ── Verarbeitung ──
+        self._enabled = enabled
+        self._trace = trace
+        self._target = 0.0
+        self._key: _HeadKey | None = None
+        self._waiting: list[_HeadWaiting] = []
+
+        # ── Ausgabe-Verifikation ──
+        if self._waiting or self._target != 0.0:
+            raise RuntimeError("_HeadTurn: Beginn nicht beim Betrachter")
+
+    def step(self, now: float, inst: _FormInstance, state: IdleState) -> None:
+        """Ein Schritt: ein neuer Blickabschnitt reiht sein Ziel ein; fällige werden gültig.
+
+        Ein Abschnitt, der den Blick der vorigen Form fortsetzt (E1, A0 nach einem
+        abgewandten Blick), behält auch deren Kopfziel. Die Ziele gelten der Reihe nach:
+        Ein später eingereihtes mit kürzerer Verzögerung wartet auf das vor ihm.
+        Vorbedingung: now endlich; die laufende Form.
+        Nachbedingung: kein fälliges Ziel wartet mehr.
+        Fehlerfälle: nicht endliche Zeit.
+        """
+        # ── Eingabe-Validierung ──
+        if not math.isfinite(now):
+            raise ValueError(f"_HeadTurn.step: Zeit {now} nicht endlich")
+
+        # ── Verarbeitung ──
+        x, key = _head_section(inst, now - inst.t0)
+        if key != self._key:
+            self._key = key
+            if not (key[2] == "" and inst.head_inherits):
+                target, kind, delay = _head_rule(inst, x, state)
+                self._waiting.append(_HeadWaiting(now + delay, target, kind, x, now))
+        while self._waiting and self._waiting[0].from_ms <= now:
+            due = self._waiting.pop(0)
+            self._target = due.target
+            if self._trace is not None:
+                self._trace.heads.append(
+                    TracedHead(now, due.target, due.kind, due.gaze_x, due.gaze_change_ms))
+
+        # ── Ausgabe-Verifikation ──
+        if self._waiting and self._waiting[0].from_ms <= now:
+            raise RuntimeError("_HeadTurn.step: ein fälliges Ziel wartet noch")
+
+    def target(self, now: float) -> float:
+        """Das Ziel von yaw: Regel plus leises Wandern, hart begrenzt; abgeschaltet 0.
+
+        Vorbedingung: now endlich.
+        Nachbedingung: ein Ziel in ±YAW_MAX.
+        Fehlerfälle: nicht endliche Zeit.
+        """
+        # ── Eingabe-Validierung ──
+        if not math.isfinite(now):
+            raise ValueError(f"_HeadTurn.target: Zeit {now} nicht endlich")
+
+        # ── Verarbeitung ──
+        yaw = 0.0
+        if self._enabled:
+            wander = catalog.HEAD_WANDER * _noise(now, catalog.HEAD_WANDER_CHANNEL)
+            yaw = _clamp(self._target + wander, -catalog.YAW_MAX, catalog.YAW_MAX)
+
+        # ── Ausgabe-Verifikation ──
+        if not abs(yaw) <= catalog.YAW_MAX:
+            raise RuntimeError(f"_HeadTurn.target: {yaw} jenseits ±{catalog.YAW_MAX}")
+        return yaw
 
 
 # ---------------------------------------------------------------- Leerlauf -----
@@ -1616,13 +1928,14 @@ class IdleLogic:
 
     def __init__(
         self, seed: int, nova: Mood = NEUTRAL_MOOD, running_jobs: Sequence[PixieJob] = (),
-        trace: IdleTrace | None = None,
+        trace: IdleTrace | None = None, head_turn: bool = True,
     ) -> None:
         """Beginnt im Rauschen; Aufträge, die schon laufen, setzen vorher den Rückfall.
 
         Vorbedingung: seed ganzzahlig; `nova` Novas Emotion zu Beginn (die ihrer
         letzten Antwort, vor der ersten neutral); `running_jobs` Pixies Aufträge mit
-        at_ms ≤ 0; `trace` sammelt den Verlauf, wenn gesetzt.
+        at_ms ≤ 0; `trace` sammelt den Verlauf, wenn gesetzt; `head_turn` False hält
+        das Ziel des Kopfs bei 0 und plant sonst genau gleich (der Zwilling).
         Nachbedingung: Zustand Rauschen mit dem ersten Zyklus, erster Lidschlag bei 1,2 s.
         Fehlerfälle: falsche Typen, ein laufender Auftrag mit at_ms > 0.
         """
@@ -1637,6 +1950,8 @@ class IdleLogic:
 
         # ── Verarbeitung ──
         self._rng = Mulberry32(seed)
+        self._head_rng = Mulberry32(head_seed(seed))  # h je Form, nie aus dem Plan
+        self._head = _HeadTurn(head_turn, trace)
         self._trace = trace
         self._queue = _EventQueue()
         self._nova = _Emotion(_sector_of(nova.emotion), _arousal_of(nova.arousal, "Nova"))
@@ -1740,13 +2055,14 @@ class IdleLogic:
         inst = self._current()
         inputs = self._inputs(now)
         self._saccades(now, inst)
+        self._head.step(now, inst, inputs.state)  # nach den Sakkaden: das Pendel steht
         self._blinks(now, inputs, inst)
         targets = self._targets(now, inputs, inst)
         self._trace_mouth(inputs, targets)
         answering = inputs.state is IdleState.ANSWER
         frame = IdleFrame(inputs.state, inst.form_id, targets, self._lid_open, self._face_omega,
                           inputs.amplitude, inputs.activity,
-                          self._answer_at_ms if answering else None)
+                          self._answer_at_ms if answering else None, self._head.target(now))
 
         # ── Ausgabe-Verifikation ──
         if not 0.0 <= frame.lid_open <= 1.0:
@@ -1948,12 +2264,16 @@ class IdleLogic:
 
     # ------------------------------------------------------------ Zustände
 
-    def _set_state(self, name: IdleState, now: float, reason: str, origin: str | None) -> None:
+    def _set_state(self, name: IdleState, now: float, reason: str, origin: str | None,
+                   glide_from: _Inputs | None = None) -> None:
         """Wechselt den Zustand, verwirft eine wartende Antwort und plant neu.
 
+        Eine Antwort gleitet über A0 aus `glide_from` (dem Gesicht vor dem ersten
+        Laut), ohne es aus der Lage dieses Augenblicks. Der Nachklang zählt die
+        gekoppelten Lidschläge ab dem Beginn der Antwort.
         Vorbedingung: ein Zustand; `origin` sagt, wer ein Nachdenken begann.
         Nachbedingung: der Zustand gilt ab now mit neuem Plan, dessen erste Form begonnen hat.
-        Fehlerfälle: kein Zustand.
+        Fehlerfälle: kein Zustand; eine Antwort, die nicht mit A0 beginnt.
         """
         # ── Eingabe-Validierung ──
         if not isinstance(name, IdleState):
@@ -1962,6 +2282,11 @@ class IdleLogic:
         # ── Verarbeitung ──
         previous = self._current() if self._plan is not None else None
         situation = self._situation
+        if name is IdleState.ANSWER:
+            before = glide_from if glide_from is not None else self._inputs(now)
+            situation.glide_basis, situation.glide_noise = before.basis, before.noise
+            situation.glide_ms = math.inf  # bis A0 geplant ist
+        situation.blink_since = situation.since if name is IdleState.AFTERGLOW else now
         situation.state, situation.since = name, now
         situation.inhaling, situation.answer_from, situation.waiting = False, math.inf, None
         situation.origin = origin
@@ -1978,11 +2303,15 @@ class IdleLogic:
             opening = "F16"
         self._trace_state(now, name, reason)
         self._plan_next(now, opening, previous)
+        if name is IdleState.ANSWER:
+            situation.glide_ms = self._current().duration
         self._form_begins(None, self._current(), now)
 
         # ── Ausgabe-Verifikation ──
         if self._situation.state is not name:
             raise RuntimeError(f"_set_state: {name.value} nicht gesetzt")
+        if name is IdleState.ANSWER and self._current().form_id != "A0":
+            raise RuntimeError(f"_set_state: die Antwort beginnt mit {self._current().form_id}")
 
     def _trace_state(self, now: float, name: IdleState, reason: str) -> None:
         """Vermerkt einen Zustandswechsel im Verlauf, mit der Grenze von Antwort und Nachklang.
@@ -2029,6 +2358,7 @@ class IdleLogic:
             del plan.forms[self._index + 1:]
         else:
             situation.state, situation.since = IdleState.THINKING, now
+            situation.blink_since = now
             self._trace_state(now, IdleState.THINKING, "Antwort ohne Nachdenken")
             plan = self._plan = _Plan(_PLAN_INHALE, [], frozenset())
         situation.inhaling, situation.answer_from = True, now + duration
@@ -2053,10 +2383,11 @@ class IdleLogic:
             raise TypeError(f"_begin_answer: keine Antwort: {answer!r}")
 
         # ── Verarbeitung ──
+        before = self._inputs(now)  # das Gesicht vor dem ersten Laut, mit der Emotion von vorher
         self._nova.sector, self._nova.arousal = answer.sector, answer.arousal
         self._playback_ms = answer.playback_ms
         self._answer_at_ms = answer.at_ms
-        self._set_state(IdleState.ANSWER, now, reason, None)
+        self._set_state(IdleState.ANSWER, now, reason, None, before)
 
         # ── Ausgabe-Verifikation ──
         if self._situation.answer_end != now + answer.playback_ms + catalog.PLAYBACK_TAIL_MS:
@@ -2093,6 +2424,7 @@ class IdleLogic:
                     TracedEvent(situation.playback_end, "wiedergabe_endet", now))
         if answering and now >= situation.answer_end:
             self._set_state(IdleState.AFTERGLOW, now, "Wiedergabe beendet", None)
+            self._end_blink(now)
 
         # ── Ausgabe-Verifikation ──
         if self._situation.state is IdleState.ANSWER and now >= self._situation.answer_end:
@@ -2159,7 +2491,7 @@ class IdleLogic:
 
         R8: Wechselt der Blick um mehr als 0,4, fällt mit 0,7 ein Lidschlag auf den
         Beginn, im Nachdenken mit 0,3. Beim Einfall genau ein langer Lidschlag; er
-        ersetzt den am Blickwechsel und den ersten einer fälligen Serie.
+        ersetzt den am Blickwechsel und die ganze fällige Serie und sperrt 1 s.
         Vorbedingung: die neue Form; ohne vorige der Blick des Gesichts.
         Nachbedingung: Lidform gesetzt, die Form im Verlauf vermerkt.
         Fehlerfälle: keine Form.
@@ -2174,12 +2506,14 @@ class IdleLogic:
         self._lid.scale = self._blink_scale(self._inputs(now), new.form_id)
         thinking = self._situation.state is IdleState.THINKING
         if new.form_id == "F9":
-            self._lid.series = [t for t in self._lid.series if t > now]
-            self._blink(now, 1.5, True, True)
+            # die längere Sperre hält Phase a und b frei von einem zweiten Lidschlag
+            self._lid.series = []
+            self._blink(now, 1.5, True, catalog.BLINK_INSIGHT)
+            self._lid.blocked_until = now + catalog.BLINK_REFRACTORY_INSIGHT_MS
         elif _hypot(b.x - a.x, b.y - a.y) > catalog.GAZE_SHIFT_FOR_BLINK:
             p = catalog.BLINK_AT_GAZE_SHIFT_THINKING if thinking else catalog.BLINK_AT_GAZE_SHIFT
             if self._rng.next() < p:
-                self._blink(now, 1.0, False, True)
+                self._blink(now, 1.0, False, catalog.BLINK_GAZE_SHIFT)
         if self._trace is not None:
             self._trace.forms.append(TracedForm(now, self._situation.state, new.form_id, new.t0,
                                                 new.duration, b.x, b.y))
@@ -2245,15 +2579,21 @@ class IdleLogic:
         t = start
         if opening is not None:
             t = self._append(forms, opening, inputs, (t, self._rng.uniform(1500, 3000)))
+        thinking = inputs.state is IdleState.THINKING
         for form_id in sequence:
             before = forms[-1] if forms else None
-            t = self._append(forms, form_id, inputs,
-                             (t, self._rng.triangle(span.lo, span.xc, span.hi) * 1000))
+            if form_id == "F9" and thinking:  # F9 im Nachdenken: ein Akzent
+                low, lo, hi = catalog.F9_THINKING_MS
+                duration = low + self._rng.uniform(lo, hi)
+            else:
+                duration = self._rng.triangle(span.lo, span.xc, span.hi) * 1000
+            t = self._append(forms, form_id, inputs, (t, duration))
             if before is not None and not _contrast(before.form_id, form_id, inputs.amplitude,
                                                     before.gaze, forms[-1].gaze):
                 _mirror_gaze(forms[-1])
         if accent:
-            self._append(forms, "F16", inputs, (t, self._rng.uniform(1000, 2000)))
+            span_ms = catalog.ACCENT_THINKING_MS if thinking else catalog.ACCENT_MS
+            self._append(forms, "F16", inputs, (t, self._rng.uniform(*span_ms)))
 
         # ── Ausgabe-Verifikation ──
         gaps = [abs(b.t0 - (a.t0 + a.duration)) for a, b in zip(forms, forms[1:], strict=False)]
@@ -2321,6 +2661,7 @@ class IdleLogic:
     def _accent(self, inputs: _Inputs) -> bool:
         """R7: F16 als Akzent anhängen — bei Nähe ≥ 0,5 mit p = N, bei negativer Valenz N/2.
 
+        Im Nachdenken halb so oft: dort las sich Blickkontakt am Ende als Warten.
         Vorbedingung: eine Lage.
         Nachbedingung: True mit der Wahrscheinlichkeit oben; ohne Nähe keine Ziehung.
         Fehlerfälle: keine Lage.
@@ -2333,7 +2674,8 @@ class IdleLogic:
         near = catalog.SPACE_NEARNESS
         if near < 0.5:
             return False
-        p = near if inputs.valence >= 0 else 0.5 * near
+        share = catalog.ACCENT_THINKING_SHARE if inputs.state is IdleState.THINKING else 1.0
+        p = (near if inputs.valence >= 0 else 0.5 * near) * share
         accent = self._rng.next() < p
 
         # ── Ausgabe-Verifikation ──
@@ -2506,6 +2848,11 @@ class IdleLogic:
         else:
             gaze = _gaze_program(spec.gaze, side, inputs, self._rng)
         inst = _FormInstance(form_id, t0, duration, side, gaze)
+        # Kopf: h je Form aus der eigenen Quelle, genau eine Ziehung; „weiter“ hinter einem
+        # abgewandten Blick behält auch dessen Kopfziel
+        inst.head_h = self._head_rng.next()
+        inst.head_inherits = (spec.gaze == catalog.GAZE_CONTINUE and previous is not None
+                              and _averted(previous.gaze))
         if form_id == "F9":
             inst.previous_gaze = previous.gaze if previous is not None else _Gaze(0.2, 0.0)
         if spec.saccade_interval is not None:
@@ -2549,7 +2896,9 @@ class IdleLogic:
 
         Rauschen: Pixies Rückfall; Nachdenken und Antwort: Nova; Nachklang: Nova
         klingt von 0,7 auf 0,35 ihres Arousals aus und blendet in den letzten 40 % zu
-        Pixie über. In v1 folgen E und V der Emotion, die Lage im Raum steht fest.
+        Pixie über, die Energie klingt mit aus. Die Antwort gleitet über A0 aus dem
+        Gesicht vor dem ersten Laut, Basis wie Rauschen. In v1 folgen E und V der
+        Emotion, die Lage im Raum steht fest.
         Vorbedingung: now endlich.
         Nachbedingung: eine Lage mit Amplitude k = (0,5 + 0,5·a) · (0,7 + 0,3·N).
         Fehlerfälle: nicht endliche Zeit.
@@ -2561,30 +2910,40 @@ class IdleLogic:
         # ── Verarbeitung ──
         situation, nova, pixie = self._situation, self._nova, self._pixie
         state = situation.state
+        glide = 1.0
         if state is IdleState.AFTERGLOW:
             p, mix = _afterglow_mix(situation, now)
-            blend = catalog.AFTERGLOW_BLEND_FROM
-            fade = catalog.AFTERGLOW_START_FACTOR - catalog.AFTERGLOW_FADE * min(1, p / blend)
-            nova_basis = _basis(nova.sector, nova.arousal * fade)
+            fade_out = 1 - catalog.AFTERGLOW_FADE_SHARE * min(1, p / catalog.AFTERGLOW_BLEND_FROM)
+            nova_basis = _basis(nova.sector,
+                                nova.arousal * catalog.AFTERGLOW_START_FACTOR * fade_out)
             pixie_basis = _basis(pixie.sector, pixie.arousal * catalog.BASE_FACTOR[IdleState.NOISE])
             basis = {k: nova_basis[k] + (pixie_basis[k] - nova_basis[k]) * mix for k in _KEYS}
             sector = pixie.sector if mix >= 0.5 else nova.sector
             arousal = nova.arousal + (pixie.arousal - nova.arousal) * mix
+            # die Energie klingt mit aus wie die Basis: Takt, ω und Lidschlag
+            energy = nova.arousal * fade_out * (1 - mix) + pixie.arousal * mix
             nova_valence = _valence(nova.sector, nova.arousal)
             sector_valence = nova_valence + (_valence(pixie.sector, pixie.arousal)
                                              - nova_valence) * mix
         else:
             source = pixie if state is IdleState.NOISE else nova
             sector, arousal = source.sector, source.arousal
+            energy = arousal
             basis = _basis(sector, arousal * catalog.BASE_FACTOR[state])
             sector_valence = _valence(sector, arousal)
+            if state is IdleState.ANSWER and situation.glide_basis is not None:
+                # die Antwort gleitet über A0 aus dem Gesicht vor dem ersten Laut
+                glide = _smoothstep((now - situation.since) / situation.glide_ms)
+                start = situation.glide_basis
+                basis = {k: start[k] + (basis[k] - start[k]) * glide for k in _KEYS}
         activity = {IdleState.NOISE: self._activity, IdleState.THINKING: catalog.ACTIVITY_THINKING,
                     IdleState.AFTERGLOW: catalog.ACTIVITY_AFTERGLOW,
                     IdleState.ANSWER: catalog.ACTIVITY_ANSWER}[state]
-        energy, valence = arousal, sector_valence
+        noise = _noise_strength(situation, activity, glide)
+        valence = sector_valence
         direction = catalog.SPACE_DIRECTION
         inputs = _Inputs(
-            state=state, sector=sector, arousal=arousal, basis=basis, energy=energy,
+            state=state, sector=sector, arousal=arousal, basis=basis, noise=noise, energy=energy,
             valence=valence, sector_valence=sector_valence, activity=activity,
             amplitude=(0.5 + 0.5 * activity) * (0.7 + 0.3 * catalog.SPACE_NEARNESS),
             anger=sector == catalog.SECTOR_ANGER,
@@ -2651,9 +3010,10 @@ class IdleLogic:
     def _blinks(self, now: float, inputs: _Inputs, inst: _FormInstance) -> None:
         """Der Prozess der Lidschläge: Serie, Poisson mit Sperrzeit, Abzug der gekoppelten.
 
-        Gekoppelte Lidschläge (Blickwechsel, Einfall, Serien) zählen nur im laufenden
-        Zustand, als Rate über seine bisherige Dauer (höchstens die letzte Minute, als
-        Fenster mindestens 10 s); diese Rate wird von der Poisson-Rate abgezogen.
+        Gekoppelte Lidschläge (alle außer Poisson) zählen nur im laufenden Zustand, im
+        Nachklang ab dem Beginn der Antwort, als Rate über diese Dauer (höchstens die
+        letzte Minute, als Fenster mindestens 10 s); diese Rate wird von der
+        Poisson-Rate abgezogen. Fällig in der Sperrzeit: ab ihrem Ende neu gezogen.
         Während F5 kein Poisson-Lidschlag; bei Angst manchmal eine Serie.
         Vorbedingung: Lage und laufende Form.
         Nachbedingung: Öffnung des Lids für diesen Schritt gesetzt.
@@ -2668,76 +3028,105 @@ class IdleLogic:
         lid.scale = self._blink_scale(inputs, inst.form_id)
         lid.rate = blink_rate(inputs.state, inputs.sector, inputs.energy, inst.form_id)
         lid.log = [entry for entry in lid.log if entry[0] > now - 60000]
-        since = max(self._situation.since, now - 60000)
+        since = max(self._situation.blink_since, now - 60000)
         window = max(10000.0, now - since)
         coupled = sum(1 for t, is_coupled in lid.log if is_coupled and t >= since) * 60000 / window
         lid.poisson = _clamp(lid.rate - coupled, lid.rate / 4, lid.rate)
-        if lid.series and now >= lid.series[0]:
-            lid.series.pop(0)
-            self._blink(now, 1.0, True, True)
+        mean = max(200.0, 60000 / lid.poisson - catalog.BLINK_REFRACTORY_MS)
+        if lid.series and now >= lid.series[0][0]:
+            self._blink(now, 1.0, True, lid.series.pop(0)[1])
         elif lid.blocked_until > now >= lid.next_ms:
-            lid.next_ms = lid.blocked_until
+            lid.next_ms = lid.blocked_until + self._rng.gamma3(mean)
         elif now >= lid.next_ms:
-            self._poisson_blink(now, inputs, inst)
+            self._poisson_blink(now, inputs, inst, mean)
         self._lid_open = self._lid_value(now)
 
         # ── Ausgabe-Verifikation ──
         if not 0.0 <= self._lid_open <= 1.0:
             raise RuntimeError(f"_blinks: Lid {self._lid_open} außerhalb 0..1")
 
-    def _poisson_blink(self, now: float, inputs: _Inputs, inst: _FormInstance) -> None:
+    def _poisson_blink(self, now: float, inputs: _Inputs, inst: _FormInstance,
+                       mean: float) -> None:
         """Ein fälliger Lidschlag des Poisson-Prozesses und der Abstand bis zum nächsten.
 
-        Vorbedingung: der nächste Lidschlag ist fällig, die Sperrzeit vorbei.
+        Abstand: Sperrzeit + Gamma(3) mit dem Mittel `mean` — so dicht wie mit einer
+        Exponentialziehung, aber ohne dicht folgende Doppelschläge.
+        Vorbedingung: der nächste Lidschlag ist fällig, die Sperrzeit vorbei; mean > 0.
         Nachbedingung: der nächste liegt mindestens 0,8 s nach now.
-        Fehlerfälle: eine Rate ≤ 0.
+        Fehlerfälle: eine Rate oder ein Mittel ≤ 0.
         """
         # ── Eingabe-Validierung ──
         lid = self._lid
-        if not lid.poisson > 0:
-            raise ValueError(f"_poisson_blink: Rate {lid.poisson}")
+        if not (lid.poisson > 0 and mean > 0):
+            raise ValueError(f"_poisson_blink: Rate {lid.poisson}, Mittel {mean}")
 
         # ── Verarbeitung ──
         if inst.form_id != "F5":
-            self._blink(now, 1.0, False, False)
+            self._blink(now, 1.0, False, catalog.BLINK_POISSON)
             if inputs.sector == catalog.SECTOR_ANXIETY and self._rng.next() < 0.25:
-                lid.series.append(now + self._rng.uniform(250, 400))
-        mean = max(200.0, 60000 / lid.poisson - catalog.BLINK_REFRACTORY_MS)
-        lid.next_ms = now + catalog.BLINK_REFRACTORY_MS + self._rng.exponential(mean)
+                lid.series.append((now + self._rng.uniform(250, 400), catalog.BLINK_ANXIETY))
+        lid.next_ms = now + catalog.BLINK_REFRACTORY_MS + self._rng.gamma3(mean)
 
         # ── Ausgabe-Verifikation ──
         if not lid.next_ms >= now + catalog.BLINK_REFRACTORY_MS:
             raise RuntimeError(f"_poisson_blink: nächster Lidschlag {lid.next_ms} zu früh")
 
-    def _blink(self, now: float, factor: float, force: bool, coupled: bool) -> None:
-        """Ein Lidschlag: Schließen 80–100 ms, Öffnen 150–250 ms, mal Faktor und Lidform.
+    def _blink(self, now: float, factor: float, force: bool, kind: str) -> None:
+        """Ein Lidschlag: Schließen 80–100 ms, 40 ms zu, Öffnen 150–250 ms, mal Faktor und Lidform.
 
-        In der Sperrzeit von 0,8 s fällt er aus, außer er ist erzwungen.
-        Vorbedingung: Faktor > 0.
-        Nachbedingung: der Lidschlag läuft ab now, die Sperrzeit bis now + 0,8 s.
-        Fehlerfälle: Faktor ≤ 0.
+        In der Sperrzeit von 0,8 s fällt er aus, außer er ist erzwungen. Läuft noch
+        einer, setzt der neue an dessen Öffnung v an: sein Schließen beginnt dort,
+        wo 1 − q² = v ist — sonst sähe ein Einfall kurz nach einem Lidschlag das
+        Auge nie geschlossen. Gekoppelt ist jede Art außer Poisson.
+        Vorbedingung: Faktor > 0, eine Art aus `BLINK_KINDS`.
+        Nachbedingung: der Lidschlag läuft ab `lid.start` ≤ now, die Sperrzeit bis now + 0,8 s.
+        Fehlerfälle: Faktor ≤ 0, eine unbekannte Art.
         """
         # ── Eingabe-Validierung ──
-        if not factor > 0:
-            raise ValueError(f"_blink: Faktor {factor}")
+        if not factor > 0 or kind not in catalog.BLINK_KINDS:
+            raise ValueError(f"_blink: Faktor {factor}, Art {kind!r}")
         lid = self._lid
         if not force and now < lid.blocked_until:
             return
 
         # ── Verarbeitung ──
         scale = factor * lid.scale
-        lid.start = now
+        v = self._lid_value(now)  # Öffnung eines laufenden Lidschlags, sonst 1
         lid.close = self._rng.uniform(80, 100) * scale
+        lid.hold = catalog.BLINK_HOLD_MS * scale
         lid.open = self._rng.uniform(150, 250) * scale
+        lid.start = now - math.sqrt(1 - v) * lid.close
+        coupled = kind != catalog.BLINK_POISSON
         lid.blocked_until = now + catalog.BLINK_REFRACTORY_MS
         lid.log.append((now, coupled))
         if self._trace is not None:
-            self._trace.blinks.append(
-                TracedBlink(now, self._situation.state, coupled, lid.close, lid.open))
+            self._trace.blinks.append(TracedBlink(now, self._situation.state, kind, coupled,
+                                                  lid.start, lid.close, lid.hold, lid.open))
 
         # ── Ausgabe-Verifikation ──
-        if not (lid.close > 0 and lid.open > 0):
-            raise RuntimeError(f"_blink: Form ({lid.close}, {lid.open})")
+        if not (lid.close > 0 and lid.open > 0 and lid.start <= now):
+            raise RuntimeError(f"_blink: Form ({lid.close}, {lid.open}) ab {lid.start}")
+
+    def _end_blink(self, now: float) -> None:
+        """Ende der Antwort: genau ein Lidschlag, danach die längere Sperre von 1,5 s.
+
+        Fiel eben einer, sperrt er den am Ende, und er bleibt der eine.
+        Vorbedingung: now endlich.
+        Nachbedingung: gesperrt mindestens bis now + 1,5 s.
+        Fehlerfälle: nicht endliche Zeit.
+        """
+        # ── Eingabe-Validierung ──
+        if not math.isfinite(now):
+            raise ValueError(f"_end_blink: Zeit {now} nicht endlich")
+
+        # ── Verarbeitung ──
+        self._blink(now, 1.0, False, catalog.BLINK_END)
+        lid = self._lid
+        lid.blocked_until = max(lid.blocked_until, now + catalog.BLINK_REFRACTORY_END_MS)
+
+        # ── Ausgabe-Verifikation ──
+        if lid.blocked_until < now + catalog.BLINK_REFRACTORY_END_MS:
+            raise RuntimeError(f"_end_blink: Sperre bis {lid.blocked_until}")
 
     def _blink_series(self, t: float) -> None:
         """R3: nach Denklast (F5) eine Serie aus 2–3 Lidschlägen in höchstens 1 s.
@@ -2751,17 +3140,17 @@ class IdleLogic:
             raise ValueError(f"_blink_series: Zeit {t} nicht endlich")
 
         # ── Verarbeitung ──
-        series = [t, t + self._rng.uniform(300, 450)]
+        times = [t, t + self._rng.uniform(300, 450)]
         if self._rng.next() < 0.5:
-            series.append(t + self._rng.uniform(650, 950))
-        self._lid.series = series
+            times.append(t + self._rng.uniform(650, 950))
+        self._lid.series = [(at, catalog.BLINK_SERIES) for at in times]
 
         # ── Ausgabe-Verifikation ──
         if not 2 <= len(self._lid.series) <= 3:
             raise RuntimeError(f"_blink_series: {len(self._lid.series)} Lidschläge")
 
     def _lid_value(self, now: float) -> float:
-        """Die Öffnung des Lids: quadratisch zu, quadratisch auf; danach offen.
+        """Die Öffnung des Lids: quadratisch zu, geschlossen, quadratisch auf; danach offen.
 
         Vorbedingung: now endlich.
         Nachbedingung: ein Wert in 0..1; ein abgelaufener Lidschlag ist beendet.
@@ -2774,16 +3163,20 @@ class IdleLogic:
         # ── Verarbeitung ──
         lid = self._lid
         value = 1.0
-        if lid.start >= 0:
-            u = now - lid.start
-            if u < lid.close:
-                q = u / lid.close
-                value = 1 - q * q
-            elif u < lid.close + lid.open:
-                q = (u - lid.close) / lid.open
-                value = 1 - (1 - q) * (1 - q)
-            else:
-                lid.start = -1.0
+        closed_until = lid.close + lid.hold
+        u = now - lid.start
+        if lid.start < 0:
+            value = 1.0  # kein Lidschlag läuft
+        elif u < lid.close:
+            q = u / lid.close
+            value = 1 - q * q
+        elif u < closed_until:
+            value = 0.0
+        elif u < closed_until + lid.open:
+            q = (u - closed_until) / lid.open
+            value = 1 - (1 - q) * (1 - q)
+        else:
+            lid.start = -1.0
 
         # ── Ausgabe-Verifikation ──
         if not 0.0 <= value <= 1.0:
@@ -2795,9 +3188,10 @@ class IdleLogic:
     def _targets(self, now: float, inputs: _Inputs, inst: _FormInstance) -> FaceState:
         """Die Ziele aller Kanäle: Basis + Abweichung · k, Blick der Form, Rauschen.
 
-        Im Leerlauf ist die Öffnung der Basis auf 2 begrenzt, solange keine Form sie
-        öffnet — im Nachdenken öffnet keine. Der Blick ist allein der der Form, nicht
-        skaliert. In der Antwort kein Rauschen und der Kiefer der Basis.
+        Die Öffnung der Basis ist auf 2 begrenzt, solange keine Form sie öffnet — im
+        Nachdenken öffnet keine, in der Antwort öffnet die Stimme. Der Blick ist allein
+        der der Form, nicht skaliert. Das Oberlid hebt sich beim Blick nach oben; die
+        Pupille folgt Basis, Form, Last und Energie.
         Vorbedingung: Lage und laufende Form.
         Nachbedingung: endliche Ziele; ω des Gesichts gesetzt.
         Fehlerfälle: ein nicht endliches Ziel.
@@ -2810,7 +3204,7 @@ class IdleLogic:
         deviation = _deviation(inst, now - inst.t0)
         basis, k, answer = inputs.basis, inputs.amplitude, inputs.state is IdleState.ANSWER
         target = {key: basis[key] + deviation.dev.get(key, 0) * k for key in _KEYS}
-        if not answer and (not deviation.opens or inputs.state is IdleState.THINKING):
+        if answer or not deviation.opens or inputs.state is IdleState.THINKING:
             target["mo"] = (min(basis["mo"], catalog.MOUTH_OPEN_IDLE_MAX)
                             + deviation.dev.get("mo", 0) * k)
         if deviation.smooth_brow:
@@ -2819,8 +3213,10 @@ class IdleLogic:
         target["gx"] = _clamp(deviation.gaze[0], -0.9, 0.9)
         target["gy"] = _clamp(deviation.gaze[1], -0.7, 0.7)
         target["lidU"] += 0.3 * max(0, target["gy"])
+        target["eo"] += catalog.EYE_OPEN_GAZE_UP * max(0, -target["gy"])
         load = 0.06 * inputs.activity if inst.form_id in catalog.MOD_LOAD else 0
-        target["ps"] = _clamp(basis["ps"] + deviation.pupil + load, 0.6, 1.3)
+        target["ps"] = _clamp(basis["ps"] + deviation.pupil + load
+                              + catalog.PUPIL_ENERGY * inputs.energy, 0.6, 1.3)
         state = _finish_targets(target, now, inputs)
         self._face_omega = 5 * (1 + 0.8 * inputs.energy)
 
