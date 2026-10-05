@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 938 Abschnitte in 7 Dateien — 426 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 939 Abschnitte in 7 Dateien — 427 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 20 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 21 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 938 Marken, 938 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 939 Marken, 939 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-05 | laufend | ## | [05.10.2026, 14:01 UTC — Der Blickhalt im Generator: Der Blick zur Seite bleibt, wenn der Kopf nachdreht](novaberg-roadmap.md#05102026-1401-utc--der-blickhalt-im-generator-der-blick-zur-seite-bleibt-wenn-der-kopf-nachdreht) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 12:57 UTC — Der Blickhalt als Entwurf im Labor](novaberg-roadmap.md#05102026-1257-utc--der-blickhalt-als-entwurf-im-labor) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 06:33 UTC — Der Eigentümer nimmt die Mimik im Client ab](novaberg-roadmap.md#05102026-0633-utc--der-eigentümer-nimmt-die-mimik-im-client-ab) |
 | 2026-10-05 | laufend | ## | [05.10.2026, 06:15 UTC — Der Client zeigt die Mimik nach der Literatur](novaberg-roadmap.md#05102026-0615-utc--der-client-zeigt-die-mimik-nach-der-literatur) |
