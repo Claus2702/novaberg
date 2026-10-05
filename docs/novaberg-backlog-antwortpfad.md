@@ -1142,7 +1142,7 @@ Der Eigentümer, 03.10.2026: *„Halte bitte im Backlog fest, dass wir auch die 
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau im Client; **als Nächstes angegangen** (05.10.2026, der Eigentümer: *„Die Schrift unter dem Avatar ist noch zu groß, wir haben hier einen Eintrag im Backlog, den wir jetzt angehen.“*).
+**Zustand:** ✅ **umgesetzt am 05.10.2026, 17:10 UTC:** `status_label()` (`client/ui/status_label.py`) gibt jeder Zeile der Phasenanzeige die Klasse der Statusleiste, `nova-statusbar-label`; die CSS des Hauptfensters hängt am Display und erreicht so auch das Fenster des Panels. Es gibt keine zweite Zahl, `dim-label` bleibt, das Band (11) bleibt. Die Ausgabe-Verifikation prüft die Klasse, ein Zeuge mit Zwilling steht in `client/tests/test_status_view.py`. Ganze Client-Suite `Ran 553 tests` / `OK`. Gegenprobe ohne die Klasse: 6 Fehler, alle Zeugen, die `status_label()` rufen. **Rest:** die Sichtprüfung im Client. ~~⬜ offen — entschieden vom Eigentümer, Bau im Client; **als Nächstes angegangen** (05.10.2026, der Eigentümer: *„Die Schrift unter dem Avatar ist noch zu groß, wir haben hier einen Eintrag im Backlog, den wir jetzt angehen.“*).~~
 
 Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße im Status des Avatar-Panels an die Größe in der Statusleiste des Client-Panels anpassen. Das reduziert etwas das Gewicht der Anzeige unter dem Avatar.“*
 
