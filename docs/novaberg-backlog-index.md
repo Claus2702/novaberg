@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 455 Eintraege mit Kennung — 372 offen, 80 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 455 Eintraege mit Kennung — 371 offen, 81 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 453 von 455 Eintraegen zugeordnet.
 
@@ -609,7 +609,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1113 | offen | `AVATAR-VALENZ-RESERVE` | [Feature: AVATAR-VALENZ-RESERVE — die Valenz behält R](novaberg-backlog-antwortpfad.md) |
 | ANT | 1123 | offen | `AVATAR-SMILEY-AUSDRUECKE` | [Feature: AVATAR-SMILEY-AUSDRUECKE — die gängigen Smi](novaberg-backlog-antwortpfad.md) |
 | ANT | 1141 | abgeschlossen | `AVATAR-STATUS-SCHRIFT` | [Feature: AVATAR-STATUS-SCHRIFT — die Phasenanzeige d](novaberg-backlog-antwortpfad.md) |
-| ANT | 1153 | offen | `AVATAR-GLANZLICHT-FEST` | [Feature: AVATAR-GLANZLICHT-FEST — die Glanzlichter d](novaberg-backlog-antwortpfad.md) |
+| ANT | 1153 | abgeschlossen | `AVATAR-GLANZLICHT-FEST` | [Feature: AVATAR-GLANZLICHT-FEST — die Glanzlichter d](novaberg-backlog-antwortpfad.md) |
 | ANT | 1174 | abgeschlossen | `AVATAR-PUPILLE-AROUSAL` | [Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet di](novaberg-backlog-antwortpfad.md) |
 | ANT | 1188 | abgeschlossen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
 | ANT | 1202 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
