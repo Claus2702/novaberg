@@ -1154,7 +1154,7 @@ Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße i
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ~~⬜ offen — Wunsch des Eigentümers, Bau in Prototyp und Client.~~ → **Im Prototyp gebaut am 05.10.2026, 18:47 UTC** (G1, `novaberg-avatar_b.md` §18): Beim Blickwechsel stehen die Glanzlichter, dreht der Kopf, wandern sie mit dem Augapfel; Anker `#glanz=0|50|100`, ohne Anker 0. **Rest, als Rest benannt:** die Sichtprüfung des Eigentümers am Bild und der Client (`client/avatar/drawing_eye.py` `_pupil`) mit Bild gegen den Prototyp.
+**Zustand:** ~~⬜ offen — Wunsch des Eigentümers, Bau in Prototyp und Client.~~ → **Im Prototyp gebaut am 05.10.2026, 18:47 UTC** (G1, `novaberg-avatar_b.md` §18): Beim Blickwechsel stehen die Glanzlichter, dreht der Kopf, wandern sie mit dem Augapfel; Anker `#glanz=0|50|100`, ohne Anker 0. **Sichtprüfung bestanden, 05.10.2026, 19:02 UTC:** *„Die Sichtprüfung sagt gut so. Die Glanzlichter gehen bei Kopfbewegung mit, bei Pupillenbewegung bleiben sie. Genau so muss es sein.“* **Rest, als Rest benannt:** ~~die Sichtprüfung des Eigentümers am Bild und~~ der Client (`client/avatar/drawing_eye.py` `_pupil`) mit Bild gegen den Prototyp.
 
 Der Eigentümer, 05.10.2026: *„Zudem haben die Pupillen Spiegelungen, kleine weiße Punkte, die bewegen sich mit den Pupillen. Das sollten wir ändern. Spiegellungen bleiben gleich.“*
 
