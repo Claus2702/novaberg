@@ -29,6 +29,7 @@ Der Eigentümer: *„Die Schrift unter dem Avatar ist noch zu groß“* (`AVATAR
 
 - Die Zeilen der Phasenanzeige tragen jetzt die Klasse der Statusleiste und schreiben so in 12 px aus derselben Quelle.
 - Ganze Client-Suite `Ran 553 tests` / `OK`. Gegenprobe ohne die Klasse: 6 Fehler.
+- **Im Client abgenommen** (17:19 UTC): *„Die Schriftgröße passt jetzt.“*
 - **Festgehalten am selben Tag:**
   - `AVATAR-GLANZLICHT-FEST`: Die Glanzlichter der Augen bleiben stehen, wenn die Pupille wandert.
   - `AVATAR-SMILEY-AUSDRUECKE`: Die Smileys kommen *spontan*.
