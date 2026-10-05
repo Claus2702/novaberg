@@ -57,6 +57,7 @@ from avatar.speech import (
     start_speech,
     text_to_phonemes,
 )
+from avatar.stage_directions import spoken_text
 
 logger = logging.getLogger(__name__)
 
@@ -531,8 +532,9 @@ def utterance_from_turn(turn_data: Mapping) -> Utterance:
     """Die Äußerung aus einer Antwort an den Client.
 
     `emotion` (die Wahrnehmung der Antwort selbst) wird über `SECTOR_BY_NAME` zum
-    Sektor, `arousal` auf 0..1 begrenzt, `antwort` ist der Text. `nova_emotion` und
-    `nova_arousal` (Novas Stimmung zu Beginn des Turns) werden nie gelesen.
+    Sektor, `arousal` auf 0..1 begrenzt, `antwort` ist der Text ohne die kursiv
+    gesetzten Regieanweisungen (`spoken_text`). `nova_emotion` und `nova_arousal`
+    (Novas Stimmung zu Beginn des Turns) werden nie gelesen.
     Vorbedingung: keine — die Antwort kommt vom Server und wird ganz geprüft.
     Nachbedingung: Sektor None oder 1–8, Arousal in 0..1, Text str.
     Fehlerfälle (je eine Error-Zeile, kein Absturz): Fehlen `emotion` oder
@@ -563,7 +565,7 @@ def utterance_from_turn(turn_data: Mapping) -> Utterance:
     if not isinstance(text, str):
         logger.error(f"Avatar: antwort {type(text).__name__} ist kein Text, der Mund bleibt still")
         text = ""
-    result = Utterance(sector, arousal, text)
+    result = Utterance(sector, arousal, spoken_text(text))
 
     # ── Ausgabe-Verifikation ──
     if result.sector is not None and not 1 <= result.sector <= SECTOR_COUNT:

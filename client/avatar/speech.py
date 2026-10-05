@@ -12,7 +12,9 @@ Laute auf ganzen Millisekunden liegen: Ob ein Zeitpunkt genau auf einer Grenze l
 entscheidet über den angezeigten Laut und über das Ende, und eine Umrechnung aus
 Sekunden verschöbe solche Punkte um eine Rundungsstelle.
 
-Text in Sternchen wird gesprochen wie anderer Text: Das Sternchen ist kein Laut.
+Regieanweisungen (Text in `*…*` oder `_…_`, im Chat kursiv) entfallen vor dem Sprechen:
+`avatar.stage_directions.spoken_text` filtert den Text in `utterance_from_turn`, bevor er
+hierher kommt. Dieses Modul spricht, was es bekommt; ein Sternchen darin ist kein Laut.
 """
 
 import logging
