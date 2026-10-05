@@ -1,16 +1,16 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 453 Eintraege mit Kennung — 373 offen, 77 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 454 Eintraege mit Kennung — 373 offen, 78 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 451 von 453 Eintraegen zugeordnet.
+**Kategorie:** 452 von 454 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 79 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 68 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 63 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 64 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 98 |
 
@@ -313,7 +313,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `GED` | GEDAECHTNIS | 80 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 73 |
-| `ANT` | ANTWORTPFAD | 63 |
+| `ANT` | ANTWORTPFAD | 64 |
 | `WIS` | WISSEN | 71 |
 | `BAU` | BAUART | 98 |
 
@@ -324,7 +324,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 453 Eintraege
+## Alle 454 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -609,9 +609,10 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1113 | offen | `AVATAR-VALENZ-RESERVE` | [Feature: AVATAR-VALENZ-RESERVE — die Valenz behält R](novaberg-backlog-antwortpfad.md) |
 | ANT | 1123 | offen | `AVATAR-SMILEY-AUSDRUECKE` | [Feature: AVATAR-SMILEY-AUSDRUECKE — die gängigen Smi](novaberg-backlog-antwortpfad.md) |
 | ANT | 1139 | offen | `AVATAR-STATUS-SCHRIFT` | [Feature: AVATAR-STATUS-SCHRIFT — die Phasenanzeige d](novaberg-backlog-antwortpfad.md) |
-| ANT | 1151 | offen | `AVATAR-PUPILLE-AROUSAL` | [Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet di](novaberg-backlog-antwortpfad.md) |
-| ANT | 1165 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
-| ANT | 1175 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
+| ANT | 1151 | abgeschlossen | `AVATAR-PUPILLE-AROUSAL` | [Feature: AVATAR-PUPILLE-AROUSAL — Erregung weitet di](novaberg-backlog-antwortpfad.md) |
+| ANT | 1165 | offen | `AVATAR-DREHUNG-BILDZEIT` | [Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf](novaberg-backlog-antwortpfad.md) |
+| ANT | 1179 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
+| ANT | 1189 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |

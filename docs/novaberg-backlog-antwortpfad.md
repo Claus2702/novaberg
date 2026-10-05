@@ -1152,15 +1152,29 @@ Der Eigentümer, 04.10.2026: *„Halte bitte fest, dass wir die Schriftgröße i
 
 **Kategorie:** [ANT] ANTWORTPFAD
 
-**Zustand:** ⬜ offen — entschieden vom Eigentümer, Bau in Referenz und Client. **In der Referenz gebaut am 04.10.2026 (L0′a, `novaberg-avatar_b.md` §18):** +0,12·E, ungedämpft, in allen vier Zuständen; Angst und Überraschung tragen kein eigenes `ps` mehr (`labor/avatar/index.html`); geprüft mit P-1 (ps(E 0,9) − ps(E 0,3) = 0,072) und P-2 (Angst und Überraschung 0,9 im Nachdenken und in der Antwort nie unter 1). **Im Client offen** — `client/avatar/expression.py` und `client/avatar/idle.py` folgen mit L1′.
+**Zustand:** ✅ **umgesetzt am 05.10.2026** (L1′, `novaberg-avatar_b.md` §18): `client/avatar/idle.py` weitet die Pupille mit der Energie (`idle_catalog.PUPIL_ENERGY` 0,12), `client/avatar/expression.py` gibt Angst und Überraschung keine eigene Pupille mehr; P-1 an der Regel und P-2 an eigenen Läufen bezeugt, die Charakterisierung folgt der neu erzeugten Referenz; Gegenprobe `PUPIL_ENERGY` 0 → P-1 und 32 Läufe rot. **Rest, als Rest benannt:** die Messung im Betrieb (ein echter Turn im sichtbaren Fenster, `novaberg-avatar_b.md` §18.1) steht aus. ~~⬜ offen — entschieden vom Eigentümer, Bau in Referenz und Client.~~ **In der Referenz gebaut am 04.10.2026 (L0′a, `novaberg-avatar_b.md` §18):** +0,12·E, ungedämpft, in allen vier Zuständen; Angst und Überraschung tragen kein eigenes `ps` mehr (`labor/avatar/index.html`); geprüft mit P-1 (ps(E 0,9) − ps(E 0,3) = 0,072) und P-2 (Angst und Überraschung 0,9 im Nachdenken und in der Antwort nie unter 1). ~~**Im Client offen** — `client/avatar/expression.py` und `client/avatar/idle.py` folgen mit L1′.~~ → im Client gebaut mit L1′ (oben).
 
 Der Eigentümer, 04.10.2026, auf den Hinweis, dass Angst und Überraschung die Pupille heute verengen (Konvention des Zeichentricks) und dass Erregung sie beim Menschen weitet: *„Erregung soll sie weiten, ja.“*
 
-**Heute:** `pupil_size` (1 = neutral) kommt aus der Emotion (`client/avatar/expression.py`: Angst 0,72, Überraschung 0,8, Neugier 1,1), aus den Formen des Leerlaufs (F5 Denklast +0,12, F3 +0,05, F4 −0,05) und aus der Denklast (+0,06 × Aktivität), begrenzt auf 0,6–1,3 (`client/avatar/idle.py`); die Feder folgt mit ω 5. Das Arousal wirkt nicht unmittelbar.
+**~~Heute~~ → Bis L1′ (04.10.2026):** `pupil_size` (1 = neutral) kommt aus der Emotion (`client/avatar/expression.py`: Angst 0,72, Überraschung 0,8, Neugier 1,1), aus den Formen des Leerlaufs (F5 Denklast +0,12, F3 +0,05, F4 −0,05) und aus der Denklast (+0,06 × Aktivität), begrenzt auf 0,6–1,3 (`client/avatar/idle.py`); die Feder folgt mit ω 5. ~~Das Arousal wirkt nicht unmittelbar.~~ → Seit L1′ (05.10.2026) weitet es sie um 0,12·E; Angst und Überraschung tragen keine eigene Pupille mehr.
 
 **Zu bauen:** Das Arousal weitet die Pupille. Angst und Überraschung verengen sie nicht mehr. Wie stark sie weitet, legt die Referenz fest, nach dem Grundsatz in `novaberg-avatar_k.md` §3: klein und lebendig, nicht deutlich. Zuerst im Generator, dann in Client und Zeugen; die Charakterisierung von L1 folgt der Referenz.
 
 **Zusammenhang:** `novaberg-avatar_k.md` §3 · `novaberg-avatar_t.md` §17 · `AVATAR-PIXIE-LEERLAUF`
+
+## Feature: AVATAR-DREHUNG-BILDZEIT — der gedrehte Kopf kostet im Client zu viel Bildzeit (05.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Zustand:** ⬜ offen — gemessen, die Entscheidung über den Weg liegt beim Eigentümer.
+
+**Gemessen am 05.10.2026** mit Cairo auf dem Host (Median, Drehung 1°, `novaberg-avatar_b.md` §18, L2′b und L2′c): Bei 600 px braucht ein Bild ohne Drehung 27,5–28,0 ms in Ruhe und 39,0 ms beim Sprechen, mit Drehung nach der Beschleunigung (L2′c) 48,6–49,1 ms und 59,3–59,7 ms (vorher 58,4 und 68,2 ms). Bei 409 px, der Größe des Panels im Betrieb, sind es 22,6–23,0 ms ohne und 36,0–36,5 ms mit Drehung in Ruhe. Das Ziel — mit Drehung höchstens ein Drittel mehr, bei 600 px ≤ 37 ms in Ruhe und ≤ 52 ms beim Sprechen — ist verfehlt. **Es betrifft fast jedes Bild:** Durch das Wandern von 1° liegt der Kopf praktisch immer über der Schwelle von 0,05°, ab der der gedrehte Weg läuft.
+
+**Was übrig ist:** das Rastern der 996 verschobenen Dreiecke in Cairo, rund 12 ms bei 409 px. Ausgeschöpft sind die Wege, die das Bild des Prototyps behalten: die vorab gerechnete Basis des Gitters, die Prüfung je Gitter statt je Dreieck, `fill` statt `clip` und `paint`, ein Muster je Aufruf; ein schnellerer Filter des Musters ändert nichts (47–48 ms).
+
+**Zu entscheiden:** ob der Aufschlag hingenommen wird, oder einer der Wege, die vom Prototyp abweichen — ein gröberes Gitter, gedrehte Ebenen im Zwischenspeicher, eine Schwelle über 0,05°. Jeder davon wäre eine Abweichung, die `novaberg-avatar_t.md` §15 nennen müsste, und braucht einen eigenen Bau mit Messung des Bildes gegen den Prototyp.
+
+**Zusammenhang:** `novaberg-avatar_t.md` §13.18, §15.3 · `novaberg-avatar_b.md` §18 (L2′b, L2′c) · Avatar-Panel (`novaberg-featureliste.md` §11, Rest *Bildrate*)
 
 ## Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — keine Preiswarnung für ein Modell, das gerade nicht läuft (03.10.2026)
 
