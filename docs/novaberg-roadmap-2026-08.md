@@ -7,7 +7,8 @@
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-09 | [`novaberg-roadmap.md`](novaberg-roadmap.md) | laufend, dort gezählt |
+| 2026-10 | [`novaberg-roadmap.md`](novaberg-roadmap.md) | laufend, dort gezählt |
+| 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 138 |
 | 2026-08 | **novaberg-roadmap-2026-08.md** ← diese Datei | 187 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
