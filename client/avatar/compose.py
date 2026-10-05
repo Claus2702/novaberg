@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 from avatar.base_image import JAW_TOLERANCE, Canvas, WarpCache, paint_layer, warped_face
 from avatar.drawing import check_face, draw_brows, draw_extras, draw_eyes
 from avatar.drawing_tools import SRC, Gradients, check_tick, set_rgba
+from avatar.idle_catalog import YAW_MAX as HEAD_YAW_MAX
 from avatar.layers import LAYER_VARIANTS, AvatarLayers
 from avatar.mouth_drawing import draw_mouth
 from avatar.pose import Pose
@@ -50,7 +51,8 @@ def check_pose(pose: Pose, where: str) -> None:
     """Wirft ValueError, wenn `pose` keine gültige Pose ist.
 
     Gültig: `face` mit endlichen Kanälen, `tongue` und `blink` in 0..1, `breath` in
-    −1..1, `boil_tick` ganze Zahl ≥ 0.
+    −1..1, `boil_tick` ganze Zahl ≥ 0, `head_yaw` in −15..15 Grad.
+    Fehlerfälle: TypeError, wenn `head_yaw` keine Zahl ist.
     """
     # ── Eingabe-Validierung ──
     if not isinstance(pose, Pose):
@@ -69,6 +71,11 @@ def check_pose(pose: Pose, where: str) -> None:
             raise ValueError(f"{where}: {name} {value!r} keine Zahl")
         if not low <= value <= 1.0:
             raise ValueError(f"{where}: {name} {value!r} außerhalb {low:g}..1")
+    yaw = pose.head_yaw
+    if isinstance(yaw, bool) or not isinstance(yaw, int | float):
+        raise TypeError(f"{where}: head_yaw {yaw!r} keine Zahl")
+    if not abs(yaw) <= HEAD_YAW_MAX:
+        raise ValueError(f"{where}: head_yaw {yaw!r} außerhalb ±{HEAD_YAW_MAX:g}°")
 
     # Keine Ausgabe-Verifikation: Rückkehr heißt gültig.
 

@@ -33,7 +33,19 @@ if TYPE_CHECKING:
     import cairo
 
 EYE_SEGMENTS = 20  # Stützpunkte je Lidkurve minus eins (`N` im Prototyp)
-CLOSED_BELOW = 0.12  # unter dieser Öffnung ist das Auge zu
+# Unter dieser Öffnung ist das Auge geschlossen gezeichnet. Bei 0,12 wechselte die
+# Zeichnung früh: Ein Lidschlag zeigte länger das dünne geschlossene Auge als das
+# offene mit seiner Wimpernlinie. Ein Lidschlag des Leerlaufs hält das Auge
+# mindestens 40 ms ganz zu, das geschlossene Bild bleibt also sichtbar.
+CLOSED_BELOW = 0.06
+CLOSED_LASH_CLUMPS = 8  # Wimpernbüschel des geschlossenen Auges
+CLUMP_STRANDS = (-1, 0, 1)  # drei Wimpern je Büschel: Versatz der Wurzel in Schritten
+# Weg der Iris je Einheit Blick, als Anteil der halben Augenbreite. Bei 0,3 rückte
+# ein Blick von 0,25 zur Seite die Iris nur um 0,075 · hw, und das liest ein
+# Betrachter noch als Blick zu ihm. Bei 0,9 Blick bleibt der Irisrand mit 0,5 noch
+# in der Lidspalte (0,45 + 0,46 = 0,91 · hw).
+IRIS_TRAVEL_X = 0.5
+IRIS_TRAVEL_Y = 0.26
 CREASE_GAP = 14  # Abstand der Lidfalte zum Oberlid in der Mitte, in Pixeln
 LASH_CLUMPS = 10
 LOWER_LASHES = 13
@@ -136,8 +148,10 @@ def lid_extent(eye: EyeGeometry, face: FaceState, opening: float) -> tuple[float
 def iris_center(eye: EyeGeometry, face: FaceState, up: float) -> Point:
     """Mitte der Iris: Blick verschiebt sie, ein weit offenes Oberlid hebt sie leicht.
 
+    Der Weg je Einheit Blick ist `IRIS_TRAVEL_X` und `IRIS_TRAVEL_Y` (siehe dort):
+    weit genug, dass ein abgewandter Blick als abgewandt gelesen wird.
     Vorbedingung: `up` endlich.
-    Nachbedingung: `L(E, gx · hw · 0,3, gy · hw · 0,16 − up · 0,12)`.
+    Nachbedingung: `L(E, gx · hw · 0,5, gy · hw · 0,26 − up · 0,12)`.
     Fehlerfälle: ValueError aus `local_point` bei nicht endlicher Eingabe.
     """
     # ── Eingabe-Validierung ──
@@ -146,7 +160,11 @@ def iris_center(eye: EyeGeometry, face: FaceState, up: float) -> Point:
 
     # ── Verarbeitung ──
     hw = eye.half_width
-    center = local_point(eye.center, face.gaze_x * hw * 0.3, face.gaze_y * hw * 0.16 - up * 0.12)
+    center = local_point(
+        eye.center,
+        face.gaze_x * hw * IRIS_TRAVEL_X,
+        face.gaze_y * hw * IRIS_TRAVEL_Y - up * 0.12,
+    )
 
     # Keine Ausgabe-Verifikation: local_point prüft seinen Punkt.
     return center
@@ -253,24 +271,19 @@ def _corners(eye: EyeGeometry) -> tuple[Point, Point]:
 
 
 def _closed_eye(pen: Pen, eye: EyeGeometry) -> None:
-    """Geschlossenes Auge: vierfache Lidlinie, 16 Wimpern nach unten, flache Falte."""
+    """Geschlossenes Auge: Lidlinie, Wimpernbüschel nach unten, flache Falte.
+
+    Die Lidlinie hat das Gewicht der Wimpernlinie des offenen Auges, nach außen
+    kräftiger. Vorher war sie ein Strich von 1,6 mit Deckkraft 0,5 und Wimpern von
+    0,9 — das geschlossene Auge war damit dünner als die Wimpernlinie des offenen.
+    """
     # ── Eingabe-Validierung ──
     lid = closed_lid(eye)
     hw, side = eye.half_width, eye.side
 
     # ── Verarbeitung ──
-    for k in range(4):
-        fine(pen, [(x, y + k * 0.7) for x, y in lid], 1.6, 0.5)
-    for i in range(16):
-        f = i / 15
-        p = lid[min(EYE_SEGMENTS, 5 + js_round(f * 15))]
-        length = 6 + f * 9
-        lash = [
-            p,
-            (p[0] + side * length * 0.35, p[1] + length * 0.6),
-            (p[0] + side * length * 0.7, p[1] + length * 0.85),
-        ]
-        fine(pen, lash, 0.9, 0.6)
+    _closed_lid_line(pen, lid)
+    _closed_lash_clumps(pen, side, lid)
     crease = quad(
         local_point(eye.center, -side * hw * 0.75, -6),
         local_point(eye.center, side * hw * 0.1, -hw * 0.2),
@@ -278,6 +291,62 @@ def _closed_eye(pen: Pen, eye: EyeGeometry) -> None:
         EYE_SEGMENTS,
     )
     fine(pen, crease, 1.0, 0.3, 0.8)
+
+    # Keine Ausgabe-Verifikation: Jeder Strich ist in fine geprüft.
+
+
+def _closed_lid_line(pen: Pen, lid: Sequence[Point]) -> None:
+    """Die Lidlinie des geschlossenen Auges in sieben Strichen, nach außen kräftiger.
+
+    Innen ein feiner Strich (1,2), ab Punkt 4 vier Lagen von 2,2, deren Abstand nach
+    außen wächst, ab Punkt 6 einer von 3,6 und ab Punkt 12 einer von 5.
+    Vorbedingung: `lid` aus `closed_lid`, `EYE_SEGMENTS + 1` Punkte.
+    Nachbedingung: sieben Striche auf `pen.cr`.
+    Fehlerfälle: ValueError bei einer Lidlinie anderer Länge.
+    """
+    # ── Eingabe-Validierung ──
+    if len(lid) != EYE_SEGMENTS + 1:
+        raise ValueError(f"_closed_lid_line: {len(lid)} Punkte statt {EYE_SEGMENTS + 1}")
+
+    # ── Verarbeitung ──
+    fine(pen, lid[:8], 1.2, 0.65, 0.3)
+    for k in range(4):
+        layer = [
+            (x, y + k * 0.7 * (0.25 + 0.75 * (i + 4) / EYE_SEGMENTS))
+            for i, (x, y) in enumerate(lid[4:])
+        ]
+        fine(pen, layer, 2.2, 0.7, 0.4)
+    fine(pen, lid[6:], 3.6, 0.78, 0.3)
+    fine(pen, lid[12:], 5.0, 0.7, 0.3)
+
+    # Keine Ausgabe-Verifikation: Jeder Strich ist in fine geprüft.
+
+
+def _closed_lash_clumps(pen: Pen, side: int, lid: Sequence[Point]) -> None:
+    """`CLOSED_LASH_CLUMPS` Büschel zu je drei Wimpern nach unten, innen dünner und kürzer.
+
+    Die drei Wimpern eines Büschels haben getrennte Wurzeln (1,2 px Abstand) und
+    laufen zur Spitze zusammen; jede ist ein kräftiger Ansatz und ein feiner Strich.
+    Vorbedingung: `lid` aus `closed_lid`, `side` −1 oder 1.
+    Nachbedingung: `CLOSED_LASH_CLUMPS · 3 · 2` Striche auf `pen.cr`.
+    Fehlerfälle: ValueError bei einer Lidlinie anderer Länge oder einer anderen Seite.
+    """
+    # ── Eingabe-Validierung ──
+    if len(lid) != EYE_SEGMENTS + 1 or side not in (-1, 1):
+        raise ValueError(f"_closed_lash_clumps: {len(lid)} Punkte, Seite {side!r}")
+
+    # ── Verarbeitung ──
+    for i in range(CLOSED_LASH_CLUMPS):
+        f = i / (CLOSED_LASH_CLUMPS - 1)
+        weight, length = 0.55 + 0.55 * f, 6 + 9 * f
+        p = lid[min(EYE_SEGMENTS - 1, 6 + js_round(f * 13))]
+        tip = (p[0] + side * length * 0.7, p[1] + length * 0.85)
+        for strand in CLUMP_STRANDS:
+            root = (p[0] + strand * 1.2, p[1])
+            mid = (root[0] + side * length * 0.35, root[1] + length * 0.6)
+            curve = quad(root, mid, (tip[0] + strand * 0.8, tip[1] + strand * 0.5), 6)
+            fine(pen, curve[:4], 1.8 * weight, 0.8, 0.15)
+            fine(pen, curve, 1.1 * weight, 0.8, 0.15)
 
     # Keine Ausgabe-Verifikation: Jeder Strich ist in fine geprüft.
 

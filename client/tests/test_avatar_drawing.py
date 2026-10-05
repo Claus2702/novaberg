@@ -30,7 +30,14 @@ from avatar.drawing import (
     draw_extras,
     draw_eyes,
 )
-from avatar.drawing_eye import EYE_LEFT, closed_lid, lid_extent, pupil_radius
+from avatar.drawing_eye import (
+    EYE_LEFT,
+    EYE_RIGHT,
+    closed_lid,
+    iris_center,
+    lid_extent,
+    pupil_radius,
+)
 from avatar.drawing_tools import (
     PART_BROW_LEFT,
     PART_EYE_RIGHT,
@@ -49,6 +56,48 @@ POINT_CALLS = ("move_to", "line_to", "curve_to", "translate")
 EXACT = 1e-9
 SHAKE_FINE = 0.1  # fine verwackelt um höchstens ±0,4 · 0,5 / 2
 PART_NAMES = ("Brauen", "Augen", "Extras")
+COS9 = 0.9876883405951378
+SIN9 = 0.15643446504023087
+IRIS_RADIUS_LEFT = 23.0  # 50 · 0,46
+
+
+def _closed_eye_strokes() -> list[tuple[float, float, int]]:
+    """Die Striche eines geschlossenen Auges im Prototyp: Breite, Deckkraft, Kurvenstücke.
+
+    Ein Strich durch n Punkte hat n − 2 Kurvenstücke (`trace_path`). Lidlinie: innen
+    Punkte 0–7 mit 1,2/0,65, vier Lagen ab Punkt 4 mit 2,2/0,7, ab Punkt 6 3,6/0,78, ab
+    Punkt 12 5/0,7. Dann 8 Büschel zu je 3 Wimpern, jede ein Ansatz aus 4 Punkten
+    (1,8 · wf) und ein Strich aus 7 Punkten (1,1 · wf), wf = 0,55 + 0,55 · i/7, Deckkraft
+    0,8. Zuletzt die Falte, 21 Punkte mit 1/0,3.
+    Vorbedingung: keine; die Zahlen sind aus `drawEye` abgeschrieben.
+    """
+    lid = [(1.2, 0.65, 6)] + [(2.2, 0.7, 15)] * 4 + [(3.6, 0.78, 13), (5.0, 0.7, 7)]
+    lashes = []
+    for i in range(8):
+        weight = 0.55 + 0.55 * i / 7
+        lashes += [(1.8 * weight, 0.8, 2), (1.1 * weight, 0.8, 5)] * 3
+    return lid + lashes + [(1.0, 0.3, 19)]
+
+
+def _strokes(cr: "RecordingContext") -> list[tuple[float, float, int]]:
+    """Je Strich auf `cr`: Breite, Deckkraft und Zahl der Kurvenstücke, in Zeichenfolge.
+
+    Vorbedingung: `cr` hat Striche aus `fine` aufgezeichnet (new_path, Pfad, Breite,
+    Farbe, stroke).
+    """
+    strokes, width, alpha, curves = [], math.nan, math.nan, 0
+    for name, args in cr.calls:
+        if name == "new_path":
+            curves = 0
+        if name == "curve_to":
+            curves += 1
+        if name == "set_line_width":
+            width = args[0]
+        if name == "set_source_rgba":
+            alpha = args[3]
+        if name == "stroke":
+            strokes.append((width, alpha, curves))
+    return strokes
 
 
 class RecordingContext:
@@ -340,11 +389,11 @@ class ClosedEyeTest(unittest.TestCase):
     def test_blink_zero_draws_the_closed_lid(self) -> None:
         cr = _eyes(NEUTRAL, 0.0)
         names = cr.names()
-        # Geschlossen: kein Augapfel (kein clip, kein Verlauf), je Auge 4 Lidlinien,
-        # 16 Wimpern und 1 Falte = 21 Striche, zwei Augen = 42.
+        # Geschlossen: kein Augapfel (kein clip, kein Verlauf), je Auge 7 Striche der
+        # Lidlinie, 8 Büschel × 3 Wimpern × 2 Striche und 1 Falte = 56, zwei Augen = 112.
         self.assertNotIn("clip", names)
         self.assertNotIn("set_source", names)
-        self.assertEqual(names.count("stroke"), 42)
+        self.assertEqual(names.count("stroke"), 112)
         # Erster Strich beginnt am inneren Winkel L(E, 50, 2,5)
         # = (521 + 50 · cos 9° − 2,5 · sin 9°, 366 + 50 · sin 9° + 2,5 · cos 9°)
         # = (569,9933309, 376,2909441), verwackelt um höchstens 0,1.
@@ -359,6 +408,35 @@ class ClosedEyeTest(unittest.TestCase):
         self.assertEqual(names.count("clip"), 2)
         self.assertIn("set_source", names)
 
+    def test_below_0_06_closed(self) -> None:
+        """Öffnung 0,0599 und 0,03: kein Augapfel — das Auge ist geschlossen gezeichnet."""
+        for blink in (0.0599, 0.03):
+            with self.subTest(blink=blink):
+                self.assertNotIn("clip", _eyes(NEUTRAL, blink).names())
+
+    def test_from_0_06_open(self) -> None:
+        """Zwilling: ab 0,06 offen, auch bei 0,1, wo früher (unter 0,12) noch zu war."""
+        for blink in (0.06, 0.1):
+            with self.subTest(blink=blink):
+                self.assertEqual(_eyes(NEUTRAL, blink).names().count("clip"), 2)
+
+    def test_closed_eye_strokes_follow_the_prototype(self) -> None:
+        """Je Auge die Lidlinie in sieben Strichen, nach außen kräftiger, und 8 × 3 Wimpern."""
+        strokes = _strokes(_eyes(NEUTRAL, 0.0))
+        want = _closed_eye_strokes() * 2
+        self.assertEqual(len(strokes), len(want))
+        for index, (got, expected) in enumerate(zip(strokes, want, strict=True)):
+            with self.subTest(strich=index):
+                self.assertAlmostEqual(got[0], expected[0], delta=EXACT)
+                self.assertAlmostEqual(got[1], expected[1], delta=EXACT)
+                self.assertEqual(got[2], expected[2])
+        lashes = [s for s in strokes if s[2] == 5]
+        self.assertEqual(len(lashes), 2 * 8 * 3)
+        # Nach außen kräftiger: innen 1,2, Mitte 2,2, ab Punkt 6 3,6, außen 5
+        widths = [strokes[i][0] for i in (0, 1, 5, 6)]
+        self.assertEqual(widths, sorted(widths))
+        self.assertEqual(len(set(widths)), 4)
+
     def test_blink_out_of_range_is_rejected(self) -> None:
         for blink in (-0.1, 1.5, math.nan, True):
             with self.subTest(blink=blink), self.assertRaises(ValueError):
@@ -366,6 +444,50 @@ class ClosedEyeTest(unittest.TestCase):
         # Zwilling: beide Grenzen gehen durch
         self.assertGreater(len(_eyes(NEUTRAL, 0.0).calls), 0)
         self.assertGreater(len(_eyes(NEUTRAL, 1.0).calls), 0)
+
+
+class IrisPathTest(unittest.TestCase):
+    """Der Blick rückt die Iris um 0,5 · hw je Einheit quer und 0,26 · hw längs."""
+
+    def test_gaze_sideways_moves_the_iris_by_half_the_half_width(self) -> None:
+        # Linkes Auge hw 50, rechtes hw 60: gx 0 / 0,25 / 0,5 rückt die Iris um
+        # 0 / 0,125 · hw / 0,25 · hw = 0 / 6,25 / 12,5 bzw. 0 / 7,5 / 15 px entlang
+        # der Gesichtsachse (cos 9°, sin 9°).
+        cases = ((EYE_LEFT, ((0.0, 0.0), (0.25, 6.25), (0.5, 12.5))),
+                 (EYE_RIGHT, ((0.0, 0.0), (0.25, 7.5), (0.5, 15.0))))
+        for eye, steps in cases:
+            rest = iris_center(eye, NEUTRAL, 0.0)
+            for gaze, shift in steps:
+                x, y = iris_center(eye, _face(gaze_x=gaze), 0.0)
+                with self.subTest(hw=eye.half_width, gx=gaze):
+                    self.assertAlmostEqual(x - rest[0], shift * COS9, delta=EXACT)
+                    self.assertAlmostEqual(y - rest[1], shift * SIN9, delta=EXACT)
+
+    def test_gaze_down_moves_the_iris_by_0_26_of_the_half_width(self) -> None:
+        # Linkes Auge: gy 0,25 / 0,5 / −0,5 rückt die Iris um 0,26 · 50 · gy
+        # = 3,25 / 6,5 / −6,5 px entlang der Längsachse (−sin 9°, cos 9°).
+        rest = iris_center(EYE_LEFT, NEUTRAL, 0.0)
+        for gaze, shift in ((0.25, 3.25), (0.5, 6.5), (-0.5, -6.5)):
+            x, y = iris_center(EYE_LEFT, _face(gaze_y=gaze), 0.0)
+            with self.subTest(gy=gaze):
+                self.assertAlmostEqual(x - rest[0], -shift * SIN9, delta=EXACT)
+                self.assertAlmostEqual(y - rest[1], shift * COS9, delta=EXACT)
+
+    def test_the_drawn_iris_sits_at_iris_center(self) -> None:
+        """Die Iris steht, wo `iris_center` sie hat: gx 0,25 rückt sie um 6,25 px.
+
+        Bei offenem Auge (eo 1, lidU 0) hebt das Oberlid die Iris um 25 · 0,12 = 3 px;
+        die Differenz zweier Blicke ist davon frei.
+        """
+        def drawn(gaze: float) -> tuple[float, float]:
+            arcs = _arcs(_eyes(_face(gaze_x=gaze), 1.0))
+            iris = [a for a in arcs if abs(a[2] - IRIS_RADIUS_LEFT) < EXACT]
+            self.assertTrue(iris)
+            return iris[0][0], iris[0][1]
+
+        rest, turned = drawn(0.0), drawn(0.25)
+        self.assertAlmostEqual(turned[0] - rest[0], 6.25 * COS9, delta=EXACT)
+        self.assertAlmostEqual(turned[1] - rest[1], 6.25 * SIN9, delta=EXACT)
 
 
 class PrototypeFormulaTest(unittest.TestCase):

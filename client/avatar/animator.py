@@ -149,20 +149,59 @@ def spring_step_each(
     # ── Verarbeitung ──
     positions, velocities = {}, {}
     for name in _CHANNELS:
-        omega = omegas[name]
-        decay = math.exp(-omega * dt)
-        goal = getattr(target, name)
-        offset = getattr(current, name) - goal
-        speed = getattr(velocity, name)
-        tmp = (speed + omega * offset) * dt
-        positions[name] = goal + (offset + tmp) * decay
-        velocities[name] = (speed - omega * tmp) * decay
+        positions[name], velocities[name] = _spring_formula(
+            getattr(current, name), getattr(velocity, name), getattr(target, name),
+            omegas[name], dt)
     result = FaceState(**positions), FaceState(**velocities)
 
     # ── Ausgabe-Verifikation ──
     _check_face(result[0], "spring_step: Position")
     _check_face(result[1], "spring_step: Geschwindigkeit")
     return result
+
+
+def spring_one(
+    position: float, velocity: float, goal: float, omega: float, dt: float
+) -> tuple[float, float]:
+    """Ein exakter Schritt derselben Feder für einen einzelnen Wert, etwa den Kopf.
+
+    Dieselbe Formel wie in `spring_step_each`, nur ohne `FaceState`: Ein Wert, der
+    kein Kanal des Gesichts ist, folgt seinem Ziel genau wie die Kanäle.
+    Vorbedingung: alle Zahlen endlich, `omega` positiv, `dt` >= 0.
+    Nachbedingung: Lage und Geschwindigkeit endlich.
+    Fehlerfälle: TypeError oder ValueError bei verletzter Vorbedingung.
+    """
+    # ── Eingabe-Validierung ──
+    _check_omega(omega)
+    if not math.isfinite(dt) or dt < 0:
+        raise ValueError(f"spring_one: Zeitschritt {dt!r} muss endlich und >= 0 sein")
+    if not all(math.isfinite(v) for v in (position, velocity, goal)):
+        raise ValueError(f"spring_one: Lage {position!r}, Tempo {velocity!r}, Ziel {goal!r}")
+
+    # ── Verarbeitung ──
+    result = _spring_formula(position, velocity, goal, omega, dt)
+
+    # ── Ausgabe-Verifikation ──
+    if not all(math.isfinite(v) for v in result):
+        raise RuntimeError(f"spring_one: Ergebnis {result!r} nicht endlich")
+    return result
+
+
+def _spring_formula(
+    position: float, velocity: float, goal: float, omega: float, dt: float
+) -> tuple[float, float]:
+    """Die kritisch gedämpfte Feder über `dt`, exakt gelöst (`springStep` im Prototyp).
+
+    Mit `d = x − ziel` und `e = exp(−ω·dt)`: `tmp = (v + ω·d)·dt`,
+    `x_neu = ziel + (d + tmp)·e`, `v_neu = (v − ω·tmp)·e`.
+    Vorbedingung: von den Aufrufern geprüft — Zahlen endlich, ω > 0, `dt` ≥ 0.
+    Nachbedingung: das Paar (Lage, Geschwindigkeit) nach dem Schritt.
+    """
+    # ── Verarbeitung ──
+    decay = math.exp(-omega * dt)
+    offset = position - goal
+    tmp = (velocity + omega * offset) * dt
+    return goal + (offset + tmp) * decay, (velocity - omega * tmp) * decay
 
 
 def _with_mouth(target: FaceState, mouth: FaceState) -> FaceState:

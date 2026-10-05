@@ -3,8 +3,10 @@
 Hier laufen die Fäden zusammen. Die Puppe hält eine `IdleLogic`; jeder Schritt
 (`puppet_step`) gibt ihr den Blick, den die Feder gerade zeigt, nimmt ihre Ziele
 und führt die Feder je Kanalgruppe dorthin — Blick ω 35, Pupille ω 5, alle übrigen
-Kanäle das ω des Gesichts aus dem Leerlauf, ohne Mundversatz. Das Lid ist das des
-Leerlaufs. In der Antwort liegt die Sprechschicht über dem Mund.
+Kanäle das ω des Gesichts aus dem Leerlauf, ohne Mundversatz. Den Kopf führt eine
+eigene Feder mit ω 3,5 (`HEAD_OMEGA`) zum Kopfziel des Leerlaufs (`IdleFrame.head_yaw`);
+die Pose trägt ihn als `head_yaw`. Das Lid ist das des Leerlaufs. In der Antwort
+liegt die Sprechschicht über dem Mund.
 
 Eine Antwort (`puppet_cue`) geht mit der Dauer ihrer Wiedergabe an den Leerlauf;
 gesprochen wird sie erst, wenn der Leerlauf sie beginnen lässt — nach dem
@@ -32,7 +34,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields, replace
 from types import MappingProxyType
 
-from avatar.animator import spring_step_each
+from avatar.animator import spring_one, spring_step_each
 from avatar.compose import BOIL_MS
 from avatar.face import NEUTRAL, FaceState
 from avatar.idle import (
@@ -62,6 +64,9 @@ BREATH_PERIOD_MS = 950.0  # Atem: sin(t / 950) wie im Prototyp
 MAX_STEP_S = 0.1  # längster Zeitschritt des Sprechens, wie im Prototyp
 GAZE_OMEGA = 35.0  # 1/s: eine Sakkade erreicht 95 % nach 0,14 s
 PUPIL_OMEGA = 5.0  # 1/s
+# Der Kopf ist träger als das Gesicht: eigene Feder, 50 % nach 0,48 s, 95 % nach
+# 1,36 s; das ω des Gesichts (5 bis 9) wäre für einen Kopf zu flink.
+HEAD_OMEGA = 3.5  # 1/s
 # Die Kanäle mit eigenem ω; alle übrigen folgen dem ω des Gesichts aus dem Leerlauf.
 GROUP_OMEGA: Mapping[str, float] = MappingProxyType({
     "gaze_x": GAZE_OMEGA, "gaze_y": GAZE_OMEGA, "pupil_size": PUPIL_OMEGA,
@@ -111,7 +116,8 @@ class Puppet:
     `start_s` ist die Zeit des ersten Bildes; Leerlauf, Atem und Takt zählen ab dort.
     `last_step_s` ist die Zeit des letzten Schritts. `face` und `velocity` sind Lage
     und Geschwindigkeit der Feder (ohne Sprechschicht), `targets` die Ziele, denen sie
-    im letzten Schritt folgte, `frame` das letzte Bild des Leerlaufs. `texts` hält den
+    im letzten Schritt folgte, `frame` das letzte Bild des Leerlaufs. `head_yaw` und
+    `head_velocity` sind Lage (Grad) und Geschwindigkeit der Kopffeder. `texts` hält den
     Text jeder Antwort, die noch nicht gesprochen wird, nach ihrer Zeit im Leerlauf;
     `speaking_at_ms` ist die Zeit der zuletzt begonnenen.
     """
@@ -126,6 +132,8 @@ class Puppet:
     idle: IdleLogic
     texts: dict[float, str]
     speaking_at_ms: float | None
+    head_yaw: float
+    head_velocity: float
 
 
 NEUTRAL_UTTERANCE = Utterance(None, 0.0, "")
@@ -182,8 +190,8 @@ def new_puppet(now: float, rng: random.Random) -> Puppet:
     Der Startwert des Leerlaufs ist eine Ziehung von `SEED_BITS` Bit aus `rng`: Mit
     demselben `rng` plant die Puppe gleich, mit einem anderen anders.
     Vorbedingung: `now` endliche Zahl in Sekunden, `rng` ein `random.Random`.
-    Nachbedingung: Feder in Ruhe auf `NEUTRAL`, Sprechen still, keine Antwort wartet;
-    der Leerlauf beginnt ohne Ereignis im Rauschen.
+    Nachbedingung: Feder in Ruhe auf `NEUTRAL`, der Kopf gerade und in Ruhe, Sprechen
+    still, keine Antwort wartet; der Leerlauf beginnt ohne Ereignis im Rauschen.
     Fehlerfälle: ValueError bei ungültiger Zeit, TypeError ohne `random.Random`.
     """
     # ── Eingabe-Validierung ──
@@ -203,6 +211,8 @@ def new_puppet(now: float, rng: random.Random) -> Puppet:
         idle=IdleLogic(rng.getrandbits(SEED_BITS)),
         texts={},
         speaking_at_ms=None,
+        head_yaw=0.0,
+        head_velocity=0.0,
     )
 
     # ── Ausgabe-Verifikation ──
@@ -405,14 +415,16 @@ def puppet_step(puppet: Puppet, now: float) -> Pose:
     Blick, den die Feder vor dem Schritt zeigt; beginnt er eine Antwort, beginnt ihr
     Sprechen (ohne Text endet ein laufendes), verlässt er die Antwort vor dem Ende der
     Wiedergabe, endet es. Dann die
-    Feder je Kanalgruppe zu seinen Zielen (`spring_step_each`, ω aus `_omegas`), der
+    Feder je Kanalgruppe zu seinen Zielen (`spring_step_each`, ω aus `_omegas`), die
+    Kopffeder zum Kopfziel (`spring_one`, `HEAD_OMEGA`, derselbe Zeitschritt), der
     Sprechschritt, der Mund aus Feder und Sprechen (`mouth_state_combine`), das Lid
     des Leerlaufs, Atem `sin(t / 950)` und Takt der Strichlage `floor(t / 110)`; `t`
     in ms ab dem ersten Bild. Der Zeitschritt des Sprechens ist auf `MAX_STEP_S`
     begrenzt, die Feder rechnet exakt über die ganze Spanne.
     Vorbedingung: `now` endlich, nicht vor dem letzten Schritt.
     Nachbedingung: eine Pose mit endlichen Kanälen, Lid und Zunge in 0..1, Atem in
-    −1..1, Takt ganze Zahl ≥ 0; das Lid ist das des Leerlaufs; die Puppe steht bei `now`.
+    −1..1, Takt ganze Zahl ≥ 0, Kopf endlich; das Lid ist das des Leerlaufs; die Puppe
+    steht bei `now`.
     Fehlerfälle: TypeError ohne Puppe, ValueError bei ungültiger oder rückläufiger Zeit.
     """
     # ── Eingabe-Validierung ──
@@ -426,6 +438,8 @@ def puppet_step(puppet: Puppet, now: float) -> Pose:
     _end_speaking(puppet, frame)
     puppet.face, puppet.velocity = spring_step_each(
         puppet.face, puppet.velocity, frame.targets, _omegas(frame.face_omega), dt_s)
+    puppet.head_yaw, puppet.head_velocity = spring_one(
+        puppet.head_yaw, puppet.head_velocity, frame.head_yaw, HEAD_OMEGA, dt_s)
     puppet.targets, puppet.frame = frame.targets, frame
     puppet.speech = speech_step(puppet.speech, now * 1000.0, min(dt_s, MAX_STEP_S))
     face, tongue = mouth_state_combine(puppet.face, puppet.speech)
@@ -435,11 +449,12 @@ def puppet_step(puppet: Puppet, now: float) -> Pose:
         blink=frame.lid_open,
         breath=math.sin(t_ms / BREATH_PERIOD_MS),
         boil_tick=math.floor(t_ms / BOIL_MS),
+        head_yaw=puppet.head_yaw,
     )
     puppet.last_step_s = float(now)
 
     # ── Ausgabe-Verifikation ──
-    if not all(math.isfinite(v) for v in (pose.tongue, pose.blink, pose.breath)):
+    if not all(math.isfinite(v) for v in (pose.tongue, pose.blink, pose.breath, pose.head_yaw)):
         raise RuntimeError(f"puppet_step: Pose nicht endlich bei {now}")
     if not 0.0 <= pose.blink <= 1.0:
         raise RuntimeError(f"puppet_step: Lid {pose.blink} außerhalb 0..1")

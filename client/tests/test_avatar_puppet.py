@@ -12,7 +12,9 @@ Gegen die Referenz selbst prüft `test_avatar_idle.py`: Sie plant mit dem Blick
 
 Die Feder je Kanalgruppe rechnen die Zeugen selbst nach, mit ω als Zahl (Blick 35,
 Pupille 5, alle übrigen Kanäle das ω des Gesichts aus dem Leerlauf), nicht aus dem
-Modul gelesen.
+Modul gelesen. Die Kopffeder (ω 3,5) prüft `HeadSpringTest` zusätzlich gegen `kopf`
+und `kopf_ende` der Referenz: Dort bekommt die Puppe die Bilder eines Laufs, wie
+`test_avatar_idle.py` sie plant.
 
 Die Zuordnung Name → Sektor steht hier als eigene Tabelle, abgeschrieben aus den
 Schlüsselbildern des Prototyps (`hi` und `lo` je Sektor), nicht aus dem Modul
@@ -34,6 +36,7 @@ from avatar.idle import (
     AnswerArrives,
     IdleFrame,
     IdleLogic,
+    IdleTrace,
     ImpulseThinks,
     PixieJob,
     TurnBegins,
@@ -54,6 +57,8 @@ from avatar.puppet import (
 )
 from avatar.speech import speech_timeline, text_to_phonemes
 
+from tests.test_avatar_idle import REFERENCE, STEP_MS, _replay, _sorted_inputs
+
 STEP_S = 0.01
 CASE_STEP_S = 0.02  # Schritt der Fälle aus der Referenz, wie dort
 START_S = 100.0
@@ -62,6 +67,10 @@ GAZE_OMEGA = 35.0
 PUPIL_OMEGA = 5.0
 BLEND_OMEGA = 12.0  # 1/s, Feder des Sprechanteils
 SLACK = 1e-9  # Rundung der Gleitkommarechnung, weit unter jeder Bewegung
+HEAD_OMEGA = 3.5  # 1/s, die Kopffeder des Referenzgenerators
+HEAD_RUN = ("lang_neutral", 1)  # Fall und Startwert: eine Antwort von 20 s
+HEAD_TOLERANCE = 1e-3  # die Referenz rundet die Kopffeder auf vier Stellen
+HEAD_END_FROM_MS = 5000  # Y4: geprüft wird das Ende einer Antwort ab 5 s
 CHANNELS: tuple[str, ...] = tuple(f.name for f in fields(FaceState))
 REFERENCE_PATH = Path(__file__).parent / "avatar_reference" / "idle.json"
 
@@ -625,6 +634,130 @@ class SpringTest(unittest.TestCase):
         for index in range(len(CASES)):
             caught |= _case_result(index).caught_snaps
         self.assertLessEqual(TRANSITIONS, caught)
+
+
+class _ReplayedLogic(IdleLogic):
+    """Ein Leerlauf, der die Bilder eines Laufs der Referenz wiedergibt, Schritt für Schritt.
+
+    Die Bilder plant `_replay` aus `test_avatar_idle.py` mit dem Blick (0, 0) wie der
+    Referenzgenerator; den Blick der Puppe übergeht dieser Leerlauf deshalb.
+    """
+
+    def __init__(self, frames: Iterator[tuple[int, IdleFrame]]) -> None:
+        super().__init__(0)
+        self._frames = frames
+
+    def step(self, now_ms: float, gaze_x: float, gaze_y: float) -> IdleFrame:
+        """Das nächste Bild des Laufs; Vorbedingung: `now_ms` ist seine Zeit im 20-ms-Raster."""
+        t, frame = next(self._frames)
+        if abs(t - now_ms) > 1e-6:
+            raise AssertionError(f"Schritt bei {now_ms} ms, Bild des Laufs bei {t} ms")
+        return frame
+
+
+class _FixedHeadLogic(IdleLogic):
+    """Ein Leerlauf, dessen Kopfziel fest bei 10° steht; alles andere wie im echten."""
+
+    def step(self, now_ms: float, gaze_x: float, gaze_y: float) -> IdleFrame:
+        """Das Bild des Leerlaufs mit dem Kopfziel 10°."""
+        return replace(super().step(now_ms, gaze_x, gaze_y), head_yaw=10.0)
+
+
+def _run_index(case: str, seed: int) -> int:
+    """Die Stelle des Laufs mit Fall `case` und Startwert `seed` in der Referenz.
+
+    Vorbedingung: genau ein solcher Lauf.
+    """
+    found = [i for i, run in enumerate(REFERENCE["laeufe"])
+             if run["fall"] == case and run["seed"] == seed]
+    if len(found) != 1:
+        raise AssertionError(f"{len(found)} Läufe {case}/{seed}")
+    return found[0]
+
+
+def _head_of_run(index: int) -> dict[int, float]:
+    """Der Kopf der Puppe je Schritt (ms) über den Lauf `index`, mit dessen Kopfzielen.
+
+    Die Puppe beginnt bei 0 s und schreitet wie der Generator im 20-ms-Raster. Jede
+    Antwort des Laufs trägt einen leeren Text: Der Kopf hängt nicht am Sprechen.
+    Vorbedingung: `index` ist ein Lauf der Referenz.
+    """
+    run = REFERENCE["laeufe"][index]
+    puppet = new_puppet(0.0, random.Random(0))  # noqa: S311 — keine Kryptografie
+    puppet.idle = _ReplayedLogic(_replay(index, IdleTrace(), True))
+    puppet.texts = {float(t): "" for t, e in _sorted_inputs(run) if e["typ"] == "antwort"}
+    return {t: puppet_step(puppet, t / 1000.0).head_yaw
+            for t in range(STEP_MS, run["sim_ms"] + 1, STEP_MS)}
+
+
+def _answer_length(run: dict, end_ms: int) -> int:
+    """Wie lange die Antwort lief, die bei `end_ms` in den Nachklang endet (wie Y4).
+
+    Vorbedingung: vor `end_ms` beginnt im Lauf ein Zustand Antwort.
+    """
+    starts = [z["t"] for z in run["zustaende"]
+              if z["z"] == IdleState.ANSWER.value and z["t"] < end_ms]
+    if not starts:
+        raise AssertionError(f"kein Beginn einer Antwort vor {end_ms} ms")
+    return end_ms - max(starts)
+
+
+class HeadSpringTest(unittest.TestCase):
+    """Der Kopf folgt dem Kopfziel des Leerlaufs mit eigener Feder, ω 3,5, wie im Generator.
+
+    Gegen die Referenz: Die Puppe bekommt die Bilder eines Laufs (`HEAD_RUN`) und
+    schreitet im 20-ms-Raster; ihr Kopf muss `kopf` jeder Probe und `kopf_ende` am Ende
+    jeder Antwort ab 5 s treffen, auf 1e-3.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # nicht `cls.run`: das verdeckte `TestCase.run`
+        cls.reference_run = REFERENCE["laeufe"][_run_index(*HEAD_RUN)]
+        cls.head = _head_of_run(_run_index(*HEAD_RUN))
+
+    def test_head_matches_kopf_of_every_probe(self) -> None:
+        probes = self.reference_run["proben"]
+        for probe in probes:
+            with self.subTest(t=probe["t"]):
+                self.assertAlmostEqual(self.head[probe["t"]], probe["kopf"], delta=HEAD_TOLERANCE)
+        # Zwilling: der Kopf dreht sich im Lauf — sonst verglichen die Proben nur Nullen
+        self.assertGreater(max(abs(p["kopf"]) for p in probes), 1.0)
+
+    def test_head_at_the_end_of_each_answer_from_5_s(self) -> None:
+        ends = [e for e in self.reference_run["kopf_ende"]
+                if _answer_length(self.reference_run, e["t"]) >= HEAD_END_FROM_MS]
+        for end in ends:
+            with self.subTest(t=end["t"]):
+                self.assertAlmostEqual(self.head[end["t"]], end["kopf"], delta=HEAD_TOLERANCE)
+        self.assertGreater(len(ends), 0)  # Zwilling: es gab ein Ende zu prüfen
+
+    def test_a_short_answer_is_not_an_end_from_5_s(self) -> None:
+        """Zwilling zur Auswahl: Die Antwort in `kurz_positiv` läuft 2,08 s und fällt heraus."""
+        short = REFERENCE["laeufe"][_run_index("kurz_positiv", 1)]
+        self.assertEqual([_answer_length(short, e["t"]) for e in short["kopf_ende"]], [2080])
+
+    def test_head_follows_a_fixed_target_with_omega_3_5(self) -> None:
+        """Jeder Schritt von 10 ms ist die Feder mit ω 3,5, nachgerechnet, nicht ω des Gesichts."""
+        driver = _Driver(self)
+        driver.puppet.idle = _FixedHeadLogic(_idle_seed(7))
+        yaw, speed, face_omegas = 0.0, 0.0, set()
+        for _ in range(100):
+            pose = driver.step()
+            yaw, speed = _spring(yaw, speed, 10.0, HEAD_OMEGA, STEP_S)
+            face_omegas.add(driver.puppet.frame.face_omega)
+            self.assertAlmostEqual(pose.head_yaw, yaw, delta=SLACK)
+        # Nach 1 s: Rest (1 + 3,5)·e^−3,5 ≈ 0,136 des Wegs, also rund 8,6°
+        self.assertAlmostEqual(yaw, 10.0 * (1 - 4.5 * math.exp(-3.5)), delta=1e-6)
+        # Zwilling: das ω des Gesichts war ein anderes — mit ihm stünde der Kopf woanders
+        self.assertNotIn(HEAD_OMEGA, face_omegas)
+
+    def test_a_new_puppet_holds_its_head_straight(self) -> None:
+        """Gerade und in Ruhe; nach einem Schritt von 10 ms hat er sich kaum bewegt."""
+        puppet = new_puppet(START_S, random.Random(7))  # noqa: S311 — keine Kryptografie
+        self.assertEqual((puppet.head_yaw, puppet.head_velocity), (0.0, 0.0))
+        # Ziel höchstens 15°: Rest nach 10 ms (1 + 0,035)·e^−0,035 ≈ 0,9994 des Wegs
+        self.assertLess(abs(_Driver(self).step().head_yaw), 15.0 * 0.001)
 
 
 class LidTest(unittest.TestCase):

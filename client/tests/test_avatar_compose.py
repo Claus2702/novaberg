@@ -35,7 +35,7 @@ from avatar.base_image import (
     warp_triangles,
     warped_face,
 )
-from avatar.compose import FaceTools, draw_face
+from avatar.compose import FaceTools, check_pose, draw_face
 from avatar.drawing import MOUTH_CENTER
 from avatar.drawing_tools import SRC, UX, UY
 from avatar.face import NEUTRAL
@@ -491,6 +491,25 @@ class ComposeTest(unittest.TestCase):
             with self.assertRaises(ValueError, msg=repr(size)):
                 draw_face(RecordingContext(), size, _pose(), layers, tools)
         self.assertEqual(tools.warp_cache.renders, 0)  # abgewiesen vor jeder Rechnung
+
+
+class HeadYawPoseTest(unittest.TestCase):
+    """Die Pose trägt den Kopf in Grad; `check_pose` lässt ±15° zu, endlich, als Zahl."""
+
+    def test_head_yaw_outside_15_degrees_or_not_a_number_is_rejected(self) -> None:
+        for yaw in (15.01, -15.01, math.nan, math.inf):
+            with self.subTest(yaw=yaw), self.assertRaises(ValueError):
+                check_pose(_pose(head_yaw=yaw), "Zeuge")
+        for yaw in (True, "3"):
+            with self.subTest(yaw=yaw), self.assertRaises(TypeError):
+                check_pose(_pose(head_yaw=yaw), "Zeuge")
+
+    def test_head_yaw_up_to_15_degrees_passes(self) -> None:
+        """Zwilling: die Grenzen selbst, ganze Zahlen und der Vorgabewert 0 gehen durch."""
+        for yaw in (15.0, -15.0, 7, 0.0):
+            with self.subTest(yaw=yaw):
+                check_pose(_pose(head_yaw=yaw), "Zeuge")
+        self.assertEqual(_pose().head_yaw, 0.0)
 
 
 class WithoutCairoTest(unittest.TestCase):

@@ -19,3 +19,7 @@ class Pose:
     blink: float  # 1 offen, 0 geschlossen
     breath: float  # Atem in -1..1, der Sinus des Atemzugs
     boil_tick: int  # Takt der Strichlage, ganze Zahl ≥ 0
+    # Drehung des Kopfes in Grad, wie die Kopffeder sie zeigt (plus = nach rechts aus
+    # Sicht des Betrachters), |Wert| ≤ 15. Ohne Angabe 0: Wer keinen Kopf führt, zeigt
+    # ihn gerade.
+    head_yaw: float = 0.0
