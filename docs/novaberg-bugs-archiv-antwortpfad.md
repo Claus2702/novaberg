@@ -1,9 +1,157 @@
 # Novaberg — Bugs, Archiv: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 47 Eintraege, je mit `ANT` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 53 Eintraege, je mit `ANT` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 05.10.2026 — geschlossen bei der Durchsicht der offenen Eintraege
+
+**Diese Eintraege standen als offen im Register und waren es nicht mehr.** Am 05.10.2026 ist jeder offene Eintrag gegen den Code am HEAD `17bf86e` gehalten worden; die Zustandszeile je Eintrag nennt den Beleg. *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Die Stelle, an der der Befund galt, gibt es nicht mehr.
+
+---
+
+### `RESUME-VERBRAUCHT-IMPULS` — ein Impuls als Nutzer-Antwort verbraucht
+**Kategorie:** ANT
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der Riegel sitzt vor dem Dispatch, im Router: Ist der Reiz ein eigener Gedanke, bleibt der Wartezustand stehen, und `management_action = "resume"` wird nicht gesetzt (`server/graph/nodes/router.py:276-297`, `reiz_ist_eigener_gedanke` in `server/graph/reiz.py:42-62`; `ca0ee90` vom 14.08.2026, Zeugen `server/tests/test_impuls_und_rueckfrage.py`). Der Router ist der einzige Setzer von `resume`; damit gilt der Riegel für jeden Dienst. Der Zustand vom 20.08.2026 hatte nur den Dispatch der Timeline angesehen.
+
+**Zustand bis 05.10.2026:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `agents/timeline/dispatch.py:134` liest weiter `user_prompt` ohne Herkunftspruefung — der akute Fall ist entschaerft, der Riegel fehlt.
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Resume-Pfad eines wartenden Agenten konnte einen eigenen Impuls als Nutzer-Antwort verbrauchen.** Der Router setzt `management_action="resume"`, sobald ein `pending_agent`-Key existiert — unabhaengig von der Herkunft des Reizes; `_handle_resume` las danach `user_prompt` als *„User hat auf eine Rueckfrage geantwortet"*. Auf einem Impuls-Turn stand dort Novas Gedanke. **Seit der Abloesung des Reiz-Platzes ist dieser Platz auf einem Impuls-Turn leer**, der Gedanke kann die Rueckfrage also nicht mehr beantworten — die Stelle wurde bewusst **nicht** auf den Reiz umgestellt. Was der Agent stattdessen mit einer leeren Antwort tut, ist ungeprueft.
+
+**Geschlossen, wenn** Der Resume-Pfad nimmt nur Nutzer-Antworten als Antwort an.
+
+---
+
+### `NOVA-SPRICHT-VON-FACHABTEILUNG` — Abhilfe am 20.08.2026, Wirkung ungemessen
+**Kategorie:** ANT
+
+**Zustand:** behoben — **im Betrieb gemessen am 05.10.2026**, nur gezählt: In `pipeline_log` (`turn_roh`, Feld `response`) enthielten vor der Abhilfe 17 von 679 Antworten seit dem 01.07.2026 das Wort *Fachabteilung*, danach 0 von rund 940. Der einzige spätere Treffer (20.08.2026, 14:31 UTC) liegt vor dem Commit `98a7f9a` (15:37 UTC). Die Abhilfe steht an allen vier Stellen (`server/prompts/default/responder.aufgabe_erfolg.txt`, `responder.aufgabe_ablehnung.txt`, `server/graph/format/agent_results.py`, `server/graph/nodes/thinker.py:494-497`). Dieselbe Klasse steht noch an Stellen, die der Eintrag nicht nennt: `server/graph/nodes/planner.py:177`, `:224` und `server/prompts/default/responder.aufgabe_rueckfrage.txt:2` (*„Ein Agent benoetigt …“*), Fundliste 05.10.2026.
+
+**Zustand bis 05.10.2026:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Abhilfe steht im Code und 5 Zeugen decken die Bloecke, aber die Schlussbedingung ist ein echter Turn in der Ich-Form — und der hat seit der Aenderung nicht stattgefunden. Solange die Wirkung einer Prompt-Aenderung ungemessen ist, ist der Defekt nicht belegt weg: Ein gruener Zeuge belegt die Zusicherung, nicht das Verhalten im Betrieb.
+
+**Befund.** Wenn ein Dienst eine Anweisung ausgeführt oder abgelehnt hatte, sprach Nova über ihn
+in der dritten Person. Gemessen an ihren eigenen Antworten aus einer laufenden Sitzung, dreimal:
+*„Ich habe die Rückmeldung der Fachabteilung geprüft"*, *„Die Fachabteilung hat die Operation
+abgeschlossen"*, *„Die Fachabteilung hat den Auftrag als unpassend eingestuft."* Für den Nutzer
+entsteht damit ein dritter Teilnehmer im Gespräch, den es nicht gibt.
+
+**Reproduktion.** Der Wortlaut stand in ihrem Prompt. `responder.aufgabe_erfolg` sagte *„Die
+zuständige Fachabteilung hat folgende Operation ausgeführt"*, `responder.aufgabe_ablehnung`
+*„Eine Fachabteilung hat den Auftrag geprüft … sie hat geurteilt, dass der Auftrag so nicht zu
+ihr gehört"* — dritte Person, unbestimmter Artikel, eigenes Fürwort. Sie gab weiter, was dastand.
+
+**Die Ursache ist ein Begriff, der seinen Adressaten gewechselt hat.** „Fachabteilung" ist eine
+Architektur-Metapher: `novaberg-agent-fachabteilung_k.md` benutzt sie, um zu sagen, dass ein
+Agent mitdenkt statt CRUD-Maske zu sein. Das ist eine Aussage über die Bauart, gerichtet an
+Entwickler. Unverändert in den Prompt der Figur übernommen, bezeichnet sie dort jemand anderen.
+
+**Dieselbe Klasse zum dritten Mal.** `VERFASSER-KENNT-DIE-QUELLE-NICHT` — Novas eigener Impuls
+reiste auf dem Platz der Nutzereingabe, und 13 von 14 Antworten begannen mit *„Du hast …"*.
+`NOVA-UEBERNIMMT-BIOGRAFIE` — die Biografie eines Menschen als eigene. Jedes Mal folgte die
+Zuschreibung aus der **Form**, nicht aus einer Anweisung.
+
+**Abhilfe, zwei Hälften.** Beide Blöcke sprechen sie als Handelnde an (*„du hast es getan"*,
+*„Das Urteil ist deins"*). Und der **Datenteil** trug die Instanz mit: unter dem Rahmen stand
+`- Agent 'notizen': …`. Ohne die zweite Änderung hätte die erste nichts genützt; jetzt steht dort
+der Bereichsname ohne das Wort *Agent*, die Unterscheidung mehrerer Dienste bleibt. Der Thinker
+liest denselben Vorgang seither als *„Nova hat"* — sonst bewertete er ihre Antwort gegen ein
+Bild, das der Responder nicht mehr hat.
+
+**Was dabei fast danebenging:** Die erste Fassung der Abhilfe schrieb *„es war deine Hand, nicht
+die einer anderen Stelle"* — eine Verbotsform, die `F-PROMPT-1` untersagt, weil sie das
+Unerwünschte zum Gegenstand macht. Korrigiert, und der Zeuge prüft seither die **Abwesenheit**
+des Verbots mit.
+
+**Geschlossen, wenn** ein echter Turn sie in der Ich-Form sprechen lässt. **Das steht aus:** 5
+Zeugen belegen die Blöcke, Gegenprobe mit der alten Fassung 2 vorhergesagt / 2 gezählt — ein
+Lauf im Betrieb hat seit der Änderung nicht stattgefunden.
+
+---
+
+### `AGT4` — Kontext-Referenzierung
+**Kategorie:** ANT
+
+**Zustand:** geschlossen — aufgegangen in `ROUTE3`, nachgesehen am 05.10.2026 gegen HEAD `17bf86e`. Die 3-Stufen-Auflösung und `target_typ` stehen (`server/agents/notizen/klassifikation.py:163`, `server/agents/notizen/suche.py:75-77`); der ganze offene Anteil (Recency gegen Semantik) steht in `ROUTE3`.
+
+**Zustand bis 05.10.2026:** aufgegangen in `ROUTE3` — gesichtet am 25.08.2026. Der Eintrag traegt keinen eigenen Befund mehr: Er meldet die 3-Stufen-Aufloesung als implementiert und verweist fuer den Rest ausdruecklich auf `ROUTE3`. Ein Eintrag, dessen ganzer offener Anteil woanders steht, ist kein zweiter Defekt.
+**Entdeckt:** Chat 24
+**Status:** 3-Stufen-Auflösung + target_typ implementiert. Recency vs. Semantik noch offen (ROUTE3).
+
+---
+
+### `RESP-CRUD-GENERIC` — Generische Aktionsbestätigung statt inhaltlicher Referenz
+**Kategorie:** ANT
+
+**Zustand:** behoben an der Ursache — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der Responder kennt den Inhalt der Änderung: Der Dienst gibt ihn als Ergebnis zurück (`server/agents/charakter_identitaet/crud.py:267`, `:347`), und `[AUFGABE]` setzt ihn ein (`server/graph/nodes/planner.py:166-170`, `server/prompts/default/responder.aufgabe_erfolg.txt:5`, `{ergebnis_texte}`). Ein Live-Test nach dem Umbau des Aufgabenblocks referenzierte alle Punkte statt Floskeln (Anmerkung unten); eine Zählung im Bestand gibt es nicht.
+
+**Zustand bis 05.10.2026:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: generische Antwort auf eine CRUD-Operation. Formulierungsbefund.
+**Entdeckt:** Chat 49, Telegram-Konversation "frecher Charakter"
+**Symptom:** Nach erfolgreichem CharakterIdentitaetAgent-Update ("Etwas frecher, macht gerne böse Witze über das hohe Alter...") antwortet Nova mit einer leeren Corporate-Platitüde:
+> "Alles klar, das Update ist eingespielt. Ich werde ab jetzt mit vollem Einsatz dabei sein und die Qualität unserer Interaktion auf das nächste Level heben. Ich freue mich darauf, dich weiterhin so tatkräftig zu unterstützen!"
+**Analyse:** Die Antwort bezieht sich nicht auf den konkreten Inhalt der Direktive — weder "frech" noch "böse Witze" noch "Alter" kommen vor. Stattdessen: generisches RLHF-Bestätigungsvokabular ("voller Einsatz", "nächstes Level", "tatkräftig unterstützen"). Das ist inhaltlich korrekt (Agent lief, Direktive gespeichert), aber stilistisch leblos und bricht die Charakter-Kontinuität — direkt danach läuft Nova im nächsten Turn aber in die neue Rolle hinein.
+**Abgrenzung:** Gegensatz zu HALL2-Update. Dort halluziniert der Responder Erfolg **ohne** Agent-Lauf. Hier läuft der Agent korrekt, aber die Bestätigung ist **inhaltsleer**.
+**Verwandt:** BUTLER1 (RLHF-Corporate-Sprech), THER1 (RLHF-Phrasenrepertoire).
+**Lösungsansatz:** Responder-Prompt bei CRUD-Erfolg: "Greife den konkreten Inhalt der Änderung auf. Keine generischen Dankes- oder Einsatz-Floskeln." Eventuell Block [AKTIONSERGEBNIS] um die neuen Charakter-Attribute herum, mit Hinweis auf Verwendung.
+**Prio:** Mittel — bricht die Charakter-Immersion im Moment der Aktionsbestätigung, besonders auffällig nach Charakter-Updates.
+**Anmerkung Chat 54:** Durch den `task_block`-Refactor bekommt der Responder jetzt den konkreten Ergebnis-Text vom Agent. Im Live-Test ("Einkaufsliste aktualisieren") referenziert Nova alle Items statt Corporate-Phrasen zu verwenden. Möglicherweise entschärft, weiter beobachten.
+
+---
+
+### `REDUCER-MULTILINE` — Mehrzeilen-Plugin-Blöcke werden vom String-Parser fragmentiert ⚠
+**Kategorie:** ANT
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der String-Parser, den der Eintrag meint, gibt es nicht mehr: Der Reducer arbeitet seit dem Umbau `49921b0` (02.05.2026) auf strukturierten `ContextEntry` und dedupliziert über `entry["inhalt"]` (`server/graph/nodes/reducer.py:147-217`); er zerlegt keine Zeilen. Genau diesen Umbau nennt der Eintrag als Lösung.
+
+**Zustand bis 05.10.2026:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: mehrzeilige Eintraege im Reducer. Der Eintrag nennt keine Stelle und kein Muster, an dem sich das ohne Lauf zeigen liesse.
+**Entdeckt:** Chat 74, 02. Mai 2026
+**Symptom:** Der Reducer-Erst-Iteration-Parser zerlegt mehrzeilige Plugin-Blöcke (Notizen mit mehreren Listenpunkten) in einzelne Zeilen. Beobachtung: "einkaufsliste: kümmel" wird ein Eintrag, "kardamon" und "hefe" werden zu eigenständigen Einträgen ohne Präfix mit Gewicht 0.0.
+**Risiko:** Bei zufälligem Match-Wort ("hefe" auch in einem anderen Eintrag) würde die Notiz löchrig — der Reducer würde "hefe" entfernen und der Responder bekäme die Notiz unvollständig.
+**Status:** Latenter Bug, schlägt heute nicht zu, weil keine Match-Kollisionen aufgetreten sind. Wird durch Reducer-Umbau (`novaberg-reducer-umbau_k.md`) strukturell gelöst — strukturierte ContextEntries statt String-Parser.
+**Prio:** Mittel — solange der Reducer aktiv ist, latentes Datenintegritäts-Risiko. Behebung mit Reducer-Umbau.
+
+---
+
+### `GV-WERT-FAKTEN-BLIND` — 364 von 411 Fakten erreichen den Gesprächsvektor nie **Gegenstand verschoben (Chat 115)**
+**Kategorie:** ANT
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. `_entity_kontext_laden` (`server/graph/nodes/gespraechsvektor.py:374`) hat keinen Aufrufer, der Kommentarblock davor sagt *„SCHLAEFT“*, und die Wissensquelle des Gesprächsvektors ist `lzg_resonanz`. Die INNER-JOIN-Bauart steht noch (`:432-434`, `:453-455`) und wirkt erst wieder mit einem Erzeuger für `fakten`; dorthin gehört sie dann.
+
+**Zustand bis 05.10.2026:** offen, **ueberholt** — nachgesehen am 25.08.2026. Der Nachtrag im Koerper sagt bereits, dass der Gespraechsvektor keine Fakten mehr liest. Dazu kommt der Bestand: Die Tabelle `fakten` traegt **0 Zeilen**. Beide Haelften der Zahl *„364 von 411"* haben damit keinen Gegenstand mehr; was bleibt, ist die Frage nach der zweiten Wissensquelle, und die haengt am Resonanzweg, nicht an den Fakten.
+
+> **Nachtrag Chat 115 — zwei Aussagen dieses Eintrags gelten nicht mehr, eine schon.**
+>
+> **Überholt:** *„erreichen den Gesprächsvektor nie"*. Der Gesprächsvektor liest seit Chat 115
+> überhaupt keine Fakten mehr — seine zweite Wissensquelle ist `lzg_resonanz`
+> (GV-ENTITY-HOP-FINDET-NICHTS). Der Eintrag ist damit kein GV-Bug mehr.
+>
+> **Überholt:** die Zahlen 411 / 47 / 364. Sie stammen vom 12.07.2026; der Reset am
+> 27.07.2026 hat den Bestand entfernt. Gemessen 28.07.2026: `fakten` = 0 Zeilen.
+>
+> **Gilt weiter:** Die Aussage über die Bauart. `_entity_kontext_laden` nutzt
+> `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur
+> Entität→Entität-Kanten; Wert-Fakten bleiben konstruktionsbedingt außen vor. Die Funktion
+> schläft, aber sie steht unverändert im Modul. **Wer sie mit M2.5b weckt, trifft diesen
+> Befund unverändert an** — zusammen mit dem Schlüssel-Mismatch aus Tür 1 des
+> GV-ENTITY-HOP-FINDET-NICHTS-Eintrags. Die Lösungsrichtung unten (`LEFT JOIN` +
+> `COALESCE`) ist davon unberührt gültig.
+>
+> Neu zu messen ist beides erst, wenn die Tabelle wieder einen Produzenten hat.
+
+**Entdeckt:** Chat 107, beim GV-Entity-Hop-Fix (GV-ENTITY-HOP-TOT) als Design-Grenze dokumentiert; hier als eigener Bug erfasst.
+
+**Klasse:** Blinder Fleck im Entity-Hop, Severity **Mittel** — der Hop funktioniert, aber auf 11 % des Faktenbestands.
+
+**Symptom:** `_entity_kontext_laden` nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` — erfasst nur Entität→Entität-Fakten (live 47 von 411). Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nie.
+
+**Beleg (Datei:Funktion):** `graph/nodes/gespraechsvektor.py` → `_entity_kontext_laden` (beide Hop-Queries).
+
+**Auswirkung:** Genau die Fakten, die Nova für ihre Haltung braucht — „Der Nutzer heißt Claus", „Lumi ist krank", Ortsangaben — fehlen im Entity-Kontext. `[Herkunft geprüft 19.09.2026: Lumi ist eine Pflanze]`
+
+**Lösungsrichtung:** Auf einen Wert kann man nicht weiterhüpfen — aber man kann ihn als **Kontext mitlesen**, wenn man ohnehin bei der Entität ist: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)`, ohne die Hop-Logik zu ändern (Hop 2 weiter nur über echte `objekt_id`-Kanten).
 
 ---
 

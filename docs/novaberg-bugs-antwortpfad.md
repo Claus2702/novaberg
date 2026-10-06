@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 51 Eintraege, je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 45 Eintraege, je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -11,6 +11,8 @@
 
 ### `EMOTION-SYNONYM-UNAUFGELOEST` — ein Synonym im Feld `emotion` erreicht den Avatar unaufgelöst
 **Kategorie:** ANT
+
+**Rang:** **mittel** — laut im Client (Error-Zeile, Gesicht neutral). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `to_canonical` gibt ein Synonym unverändert zurück (`server/utils/canon.py:113-114`), `character_response` nimmt es roh (`server/services/event_consumer.py:705`).
 
 **Zustand:** offen — abgeleitet aus dem Code am 05.10.2026 (`novaberg` `60aaa69`), nicht im Betrieb gemessen.
 
@@ -27,6 +29,8 @@
 ### `WAHRNEHMUNG-RUECKFALL-UNMARKIERT` — bricht die Wahrnehmung der Antwort ab, geht der Stand von vor der Antwort ohne Kennzeichnung hinaus
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `_antwort_nutzlast_bauen` (`server/services/event_consumer.py:625-720`) trägt die Marke `lauf_unvollstaendig` nicht in `character_response`.
+
 **Zustand:** offen — abgeleitet aus dem Code am 05.10.2026 (`novaberg` `60aaa69`), nicht im Betrieb gemessen.
 
 **Symptom.** `_wahrnehmung_erheben` (`server/graph/nodes/perzeption.py:274`) fängt nur `json.JSONDecodeError` und `KeyError` (`:304`). Bei jedem anderen Fehler endet der Graph vor dem Rückruf der Freigabe (`server/services/event_consumer.py:454-458`), und der Rückfallpfad in `_event_verarbeiten` (`:929-937`) sendet `internal.emotion` aus der Rechnung vor der Antwort (`ei_calc`, emotionale Gravitation).
@@ -41,6 +45,8 @@
 
 ### `MODUS-STIL-UNGEPRUEFT-GESENDET` — `gespraechs_modus` und `sprach_stil` gehen mit dem rohen Wert der Wahrnehmung hinaus
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; die Freigabe geht nach `perzeption_assistant` hinaus, die Korrektur folgt erst in `ei_calc_persist` (`server/graph/nodes/ei_calc_persist.py:154-209`).
 
 **Zustand:** offen — abgeleitet aus dem Code am 05.10.2026 (`novaberg` `60aaa69`), nicht im Betrieb gemessen.
 
@@ -62,6 +68,8 @@
 
 ### `UMFANGSREGLER-BINDET-NICHT` — wirkt in der Richtung, bindet nicht
 **Kategorie:** ANT
+
+**Rang:** **mittel**, Aufwand groß; **wartet auf eine Absicht**: bleibt die Länge im Prompt eine Tendenz (in welcher Bauform), oder wird sie nach dem Modellaufruf erzwungen? Zusammen mit `MENGENANGABE-BINDET-NUR-UNTEN`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert, nur eine Zahl im Prompt (`server/ei/haltungssprache.py:593-596`).
 
 **Zustand:** offen, **die verlangte Pruefform ist am 07.09.2026 gefahren** — mit und ohne Block, 16 Turns, kein Ausfall. ~~offen, belegt am 07.09.2026 an 749 Turns~~ ~~offen, unbelegt — braucht Ist-Laenge gegen Vorgabe an echten Turns~~
 
@@ -123,6 +131,8 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 ### `TIMELINE-LESEPFAD-INSTABIL` — instabil, nicht geschlossen
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still, der Mensch handelt nach der Auskunft; **unbelegt**, braucht eine Zählung am Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: ob gelesen wird, entscheidet weiter ein Modellurteil je Turn (`server/graph/nodes/router.py:344-347`, `server/plugins/timeline_manager/manager.py:114`).
+
 **Zustand:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. braucht dieselbe Frageklasse mehrfach gegen den Bestand.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Lesepfad zur Timeline ist instabil, nicht geschlossen.** Dieselbe Klasse Frage wird einmal zugestellt und einmal nicht: *„Wann ist mein Meeting mit dem Chef?"* (35 Zeichen) erzeugte um 16:50 einen Dispatch an `timeline`; die Fragen des Menschen nach bestehenden Terminen im Fenster 14:00–15:53 erzeugten keinen — im ganzen Fenster steht ein einziger Timeline-Dispatch (15:52, `abgelehnt` auf eine vorwurfsvolle Feststellung). Auf die Frage nach Terminen dieser Woche antwortete Nova mit *nein*, waehrend ein Eintrag fuer Mittwoch aktiv in der Tabelle stand. **Eine ausgebliebene Zustellung ist von einer richtigen Auskunft nicht zu unterscheiden** — es gibt keinen Fehler, keinen Log-Eintrag und kein leeres Ergebnis, sondern nur eine Antwort ohne Grundlage.
@@ -131,19 +141,10 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 ---
 
-### `RESUME-VERBRAUCHT-IMPULS` — ein Impuls als Nutzer-Antwort verbraucht
-**Kategorie:** ANT
-
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `agents/timeline/dispatch.py:134` liest weiter `user_prompt` ohne Herkunftspruefung — der akute Fall ist entschaerft, der Riegel fehlt.
-
-**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Resume-Pfad eines wartenden Agenten konnte einen eigenen Impuls als Nutzer-Antwort verbrauchen.** Der Router setzt `management_action="resume"`, sobald ein `pending_agent`-Key existiert — unabhaengig von der Herkunft des Reizes; `_handle_resume` las danach `user_prompt` als *„User hat auf eine Rueckfrage geantwortet"*. Auf einem Impuls-Turn stand dort Novas Gedanke. **Seit der Abloesung des Reiz-Platzes ist dieser Platz auf einem Impuls-Turn leer**, der Gedanke kann die Rueckfrage also nicht mehr beantworten — die Stelle wurde bewusst **nicht** auf den Reiz umgestellt. Was der Agent stattdessen mit einer leeren Antwort tut, ist ungeprueft.
-
-**Geschlossen, wenn** Der Resume-Pfad nimmt nur Nutzer-Antworten als Antwort an.
-
----
-
 ### `VERFASSER-KOPFBLOCK-FAELLT-AUS` — in mehr als der Haelfte der Turns
 **Kategorie:** ANT
+
+**Rang:** **hoch** — laut im Log, aber niemand handelt danach, und die Ausbausperre fällt aus. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der Umlaut-Fehler ist behoben, **eine zweite Ursache steht**: `_kopf_deuten` verlangt das nackte *ja*/*nein* (`server/graph/einwand.py:237`), der Prompt formuliert die Zeile als Frage (`:114`), und das Modell schreibt sie hinter den Wert. **Gezählt am 05.10.2026** im Serverlog seit 03.10.2026: 47 Zeilen *„kein lesbares Urteil im Kopfblock“* gegen 74 erzeugte Antworten. Die Zeugen prüfen nur die glatte Form.
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026; am Code unveraendert seit `1330045`. **Die Rate ist weiterhin unbelegt, und sie ist es jetzt ohne Hindernis:** Der Auszug traegt seit dem 22.08. 500 Zeichen statt 120, die Messung, die daran haengt, ist noch nicht gelaufen. Eine **hinreichende** Ursache ist belegt und behoben: `_kopf_deuten` verwarf das ganze Urteil, wenn ein Feldname einen Umlaut trug — der Prompt schreibt `GEPRUEFT` und `STAERKE` vor, das Modell schreibt `GEPRÜFT` und `STÄRKE`. Derselbe vollstaendige Kopfblock ist vorher `geliefert=False`, nachher `True`. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung (`graph/einwand.py`), vier neue Zeugen, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2087 tests — OK`.
 
@@ -169,6 +170,8 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 ### `GESPRAECHSVEKTOR-HYPOTHESE-DREIFACH` — dieselbe Hypothese dreimal im Block
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — still, kostet Kontext. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`server/graph/nodes/gespraechsvektor.py:777-780`, `server/graph/nodes/verfasser.py:162-170`). Dieselbe Stelle und Behebung wie `GV-HYPOTHESE-ROHE-AUSGABE`.
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert, an der Quelle nachgesehen: `state["gespraechsvektor"]` ist die **rohe** Modellausgabe (`gespraechsvektor.py:1222`, gespeist aus `response.text.strip()` in `:661`) und geht als Ganzes in den Block. `graph/nodes/verfasser.py` setzt daneben die geparste Strategiezeile (`:130-137`), die rohe Hypothese (`:141`) und den Leitgedanken (`:145`) — Strategie und Impuls stehen damit weiterhin je zweimal im selben Block.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Der `[GESPRAECHSVEKTOR]`-Block trägt die Hypothese dreifach.** Live gemessen am 14.08.2026, 22:59 UTC: Der Block enthält (a) die rohe Modellausgabe des GV-Node samt ihrer Labels — `SPRUNG 1:` bis `SPRUNG 3:`, `ABSICHT:`, `STRATEGIE: Pw`, `VEHIKEL:`, `IMPULS:` —, und (b) darunter „Leitgedanke für diese Antwort:", der denselben Eröffnungsabsatz **noch einmal** plus den Impulstext enthält. Der geparste Wert steht zugleich in der Zeile darüber (*„Die gewählte Strategie: Perspektivwechsel als Frage"*). **Der Befund ist nicht neu, sondern nur neu sichtbar:** Ein Verfasser-Prompt vom 13.08. trägt dieselbe Doppelung. Neu ist die Reichweite — seit dem Umbau des Skip-Tors bekommen auch die rund 20 Impuls-Turns pro Tag diesen Block, die vorher gar keinen hatten.
@@ -179,6 +182,8 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 ### `MENGENANGABE-BINDET-NUR-UNTEN` — nach unten bindend, nach oben nicht
 **Kategorie:** ANT
+
+**Rang:** **mittel**, Aufwand groß — dieselbe Ursache und Entscheidung wie `UMFANGSREGLER-BINDET-NICHT`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt.
 
 **Zustand:** offen, unbelegt — gegen HEAD `9bcd214` gehalten am 24.08.2026. Die halbierten Korridore sind gebaut und im Betrieb ungemessen.
 
@@ -192,48 +197,6 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 ## 20.08.2026 — Nova spricht von ihrem eigenen Inneren wie von einem Dritten
 
-### `NOVA-SPRICHT-VON-FACHABTEILUNG` — Abhilfe am 20.08.2026, Wirkung ungemessen
-**Kategorie:** ANT
-
-**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Abhilfe steht im Code und 5 Zeugen decken die Bloecke, aber die Schlussbedingung ist ein echter Turn in der Ich-Form — und der hat seit der Aenderung nicht stattgefunden. Solange die Wirkung einer Prompt-Aenderung ungemessen ist, ist der Defekt nicht belegt weg: Ein gruener Zeuge belegt die Zusicherung, nicht das Verhalten im Betrieb.
-
-**Befund.** Wenn ein Dienst eine Anweisung ausgeführt oder abgelehnt hatte, sprach Nova über ihn
-in der dritten Person. Gemessen an ihren eigenen Antworten aus einer laufenden Sitzung, dreimal:
-*„Ich habe die Rückmeldung der Fachabteilung geprüft"*, *„Die Fachabteilung hat die Operation
-abgeschlossen"*, *„Die Fachabteilung hat den Auftrag als unpassend eingestuft."* Für den Nutzer
-entsteht damit ein dritter Teilnehmer im Gespräch, den es nicht gibt.
-
-**Reproduktion.** Der Wortlaut stand in ihrem Prompt. `responder.aufgabe_erfolg` sagte *„Die
-zuständige Fachabteilung hat folgende Operation ausgeführt"*, `responder.aufgabe_ablehnung`
-*„Eine Fachabteilung hat den Auftrag geprüft … sie hat geurteilt, dass der Auftrag so nicht zu
-ihr gehört"* — dritte Person, unbestimmter Artikel, eigenes Fürwort. Sie gab weiter, was dastand.
-
-**Die Ursache ist ein Begriff, der seinen Adressaten gewechselt hat.** „Fachabteilung" ist eine
-Architektur-Metapher: `novaberg-agent-fachabteilung_k.md` benutzt sie, um zu sagen, dass ein
-Agent mitdenkt statt CRUD-Maske zu sein. Das ist eine Aussage über die Bauart, gerichtet an
-Entwickler. Unverändert in den Prompt der Figur übernommen, bezeichnet sie dort jemand anderen.
-
-**Dieselbe Klasse zum dritten Mal.** `VERFASSER-KENNT-DIE-QUELLE-NICHT` — Novas eigener Impuls
-reiste auf dem Platz der Nutzereingabe, und 13 von 14 Antworten begannen mit *„Du hast …"*.
-`NOVA-UEBERNIMMT-BIOGRAFIE` — die Biografie eines Menschen als eigene. Jedes Mal folgte die
-Zuschreibung aus der **Form**, nicht aus einer Anweisung.
-
-**Abhilfe, zwei Hälften.** Beide Blöcke sprechen sie als Handelnde an (*„du hast es getan"*,
-*„Das Urteil ist deins"*). Und der **Datenteil** trug die Instanz mit: unter dem Rahmen stand
-`- Agent 'notizen': …`. Ohne die zweite Änderung hätte die erste nichts genützt; jetzt steht dort
-der Bereichsname ohne das Wort *Agent*, die Unterscheidung mehrerer Dienste bleibt. Der Thinker
-liest denselben Vorgang seither als *„Nova hat"* — sonst bewertete er ihre Antwort gegen ein
-Bild, das der Responder nicht mehr hat.
-
-**Was dabei fast danebenging:** Die erste Fassung der Abhilfe schrieb *„es war deine Hand, nicht
-die einer anderen Stelle"* — eine Verbotsform, die `F-PROMPT-1` untersagt, weil sie das
-Unerwünschte zum Gegenstand macht. Korrigiert, und der Zeuge prüft seither die **Abwesenheit**
-des Verbots mit.
-
-**Geschlossen, wenn** ein echter Turn sie in der Ich-Form sprechen lässt. **Das steht aus:** 5
-Zeugen belegen die Blöcke, Gegenprobe mit der alten Fassung 2 vorhergesagt / 2 gezählt — ein
-Lauf im Betrieb hat seit der Änderung nicht stattgefunden.
-
 ---
 
 
@@ -241,6 +204,8 @@ Lauf im Betrieb hat seit der Änderung nicht stattgefunden.
 
 ### `RESPONDER-LEERE-ANTWORT-STILL-NACHTRAG` — vierter Fall, und die Frage von damals ist entschieden
 **Kategorie:** ANT
+
+**Rang:** **mittel** — laut seit dem Riegel (`server/services/model_services/chat_worker.py:35-60`, `server/services/event_consumer.py:951-985`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Ursache liegt beim Anbieter und ist nur an einem neuen Fall zu entscheiden; Entscheidung siehe `RESPONDER-LEERE-ANTWORT-STILL`.
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unverändert. Dieser Abschnitt ist der **Nachtrag vom 19.08.2026**, nicht der Eintrag; der steht als `#### RESPONDER-LEERE-ANTWORT-STILL` weiter unten. Der Riegel macht den Ausfall laut, die Ursache ist unveraendert offen — 243 Token wurden erzeugt und gingen vor dem eigenen Code verloren.
 
@@ -313,6 +278,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 ### `NOTIZAUFTRAG-GEHT-AN-TIMELINE`
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — der vermutete Mechanismus ist entfernt: Seit `a56a911` (17.09.2026) wählt der Planner nach Objektnähe statt nach Zeitwort (Notizen zuerst richtig 7 → 13 von 13), und eine Ablehnung reicht an den nächsten Dienst weiter (`server/graph/nodes/planner.py:392`, `:649-655`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: offen bis zum Turn der Schließbedingung, der eine echte Schreibung erzeugt.
+
 **Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Kein Commit seit dem 18.08.2026 beruehrt die Dienstwahl fuer Notizen. Die Schlussbedingung verlangt einen echten Turn, und der ist nicht nebenbei zu fahren: Ein Notizauftrag gegen das Produktivsystem erzeugt eine echte Schreibung.
 
 **Befund.** *„Notier mir bitte: Gasvertrag kuendigen, Frist laeuft Ende September."* wurde an `timeline` zugestellt, nicht an `notizen`. Der Timeline-Dienst lehnte ab: *„Kein konkreter Auftrag erkennbar; lediglich eine Feststellung/Befindlichkeit."* **Null Zeilen in `notizen`.**
@@ -325,6 +292,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 ### `TRIBUNAL-ERKENNT-ABBRUCH-OHNE-FOLGE`
 **Kategorie:** ANT
+
+**Rang:** **mittel** — ein abgeschnittener Text löst nichts aus. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `server/graph/nodes/tribunal.py` kennt keine Abbrucherkennung (`done_reason`), ein einzelnes Votum bleibt *ok* (`:421-435`). Der Eintrag nennt `nova_gedaechtnis.py`; der Ort ist `tribunal.py`.
 
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `server/graph/nodes/tribunal.py` kennt keine Abbrucherkennung — die einzige Korrekturschleife dort ist `korrekturauftrag` aus `utils.datum_pruefung` (`:27`, gesetzt in `:291`) und haengt am Datum, nicht an einer abgeschnittenen Antwort.
 
@@ -355,6 +324,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 #### RESPONDER-LEERE-ANTWORT-STILL — eine Antwort ohne Zeichen passiert vier Stufen als Erfolg 🔧 Riegel gebaut 01.08.2026, Ursache offen
 **Kategorie:** ANT
+
+**Rang:** **mittel** — laut seit der Ausfallmeldung (`turn_gescheitert`); **wartet auf eine Absicht**: bei `text_len == 0` einmal wiederholen (mit Vermerk im Zustand) oder bei der Meldung an den Menschen bleiben? Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert. Der Riegel meldet den Ausfall, die Ursache ist nicht ermittelt. Der juengste Stand steht im **Nachtrag vom 19.08.2026** weiter oben; dieser Abschnitt ist der Eintrag.
 
@@ -458,6 +429,8 @@ Er fügt der Tabelle nichts Neues hinzu, sondern **bestätigt ihre Trennung**: g
 #### RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM — ohne Material aus dem Verfasser greift der Responder auf den Kontext
 **Kategorie:** ANT
 
+**Rang:** **hoch** — still, eine flüssige Antwort ohne Material sieht richtig aus; **wartet auf eine Absicht**: abbrechen oder als *ohne Material* kennzeichnen? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/graph/nodes/responder.py:622-630` lässt nur den Block weg.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: der Befund beschreibt, was der Responder **sagt**, wenn ein Agent nichts liefert. Kein Codeort trennt das von einer richtigen Antwort.
 Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unverändert weiter und baut eine Antwort aus dem **Gedächtniskontext** — im belegten Fall 23.824 Zeichen.
 
@@ -480,6 +453,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### WISSENSLUECKEN-FELDER-LEER 🔧 offen
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — sichtbares Fehlen im Panel. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `register` und `neugier_boost` werden geschrieben (`server/graph/nodes/gespraechsvektor.py:1486-1487`), `client/ui/panels/gv_panel.py:437-468` liest sie nicht.
+
 **Befund (2026-07-29).** In den Wissenslücken-Einträgen des `gv_detail` bleiben `neugier_boost` und `register` ungelesen. Das Panel zeigt je Lücke Konzept, Quelle und Relevanz; die beiden Faktoren, aus denen die Relevanz mit entsteht, nicht. Wirkung klein — die Relevanz ist das Ergebnis, das man braucht —, aber bei einer auffälligen Rangfolge fehlt der Zerlegungsschritt. *(Der Top-Level-`drive` ist ebenfalls ohne Leser, das aber gegenstandslos: Das Panel liest `achsen["drive"]`, wo derselbe Wert nochmal steht.)*
 
 **Was fertig waere.** Die Felder tragen ihre Werte, oder sie stehen nicht im Eintrag.
@@ -495,6 +470,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 #### GV-HYPOTHESE-ROHE-AUSGABE 🔧 offen
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; Transportmarken und doppelter Impuls im Verfasser-Prompt (`server/graph/nodes/verfasser.py:162-170`). Dieselbe Stelle wie `GESPRAECHSVEKTOR-HYPOTHESE-DREIFACH`.
+
 **Befund (2026-07-31).** Der Hypothesentext des Gesprächsvektors trägt die **rohe Dreischicht-Ausgabe**: `SPRUNG 1/2/3`, `ABSICHT:`, `STRATEGIE:`, `VEHIKEL:`, `IMPULS:` stehen unverarbeitet im String, der als `gespraechsvektor` in den Prompt geht. Der Node parst dieselben Felder sauber nach `gv_detail` — das Rohe bleibt zusätzlich stehen. Der `impuls` erscheint dadurch zweimal im selben Block.
 
 **Was fertig waere.** Der Hypothesentext traegt Prosa, nicht die Marken des Transportformats.
@@ -503,6 +480,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 
 #### CHARAKTER-KONTEXT-VERWECHSELT-SEITE 🔧 offen
 **Kategorie:** ANT
+
+**Rang:** **hoch** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt auf jedem Impuls-Turn: `external` ist dann eine Kopie von `internal` (`server/graph/nodes/db_zugriff.py:671-683`, gewollt), aber Verfasser und Responder beschriften den Block weiter als *Person B* (`server/graph/nodes/verfasser.py:500`, `server/graph/nodes/responder.py:351`, `:434-444`). Aus dem Code erschlossen, nicht am Turn gemessen.
 
 **Zustand:** offen, **Wortlaut hinfaellig** — nachgesehen am 25.08.2026. Der zitierte Satz steht in keinem Prompt mehr: Der Aufbau ist auf **Person A / Person B** umgestellt, und keine Zeile behauptet noch, ein Gedaechtnisblock beschreibe den Nutzer. **Die Frage selbst ist damit nicht beantwortet** — ob der Inhalt hinter der Beschriftung die Seite wechselt, ist eine Beobachtung am laufenden Turn und aus dem Code nicht zu lesen.
 
@@ -516,6 +495,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 
 #### GV-PANEL-STRATEGIE-DOPPELT 🔧 offen
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — zwei Größen, ein Wort. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`client/ui/panels/gv_panel.py:351-366` gegen `:878-887`).
 
 **Befund (2026-07-31).** **Das GV-Panel zeigt die Strategie zweimal und widersprüchlich.** Die Kopfzeile trägt `Strategie: —`, während die Dreischicht-Zeile darunter im selben Turn `Strategie: Impuls (Im)` nennt. Eine der beiden Anzeigen liest die falsche Stelle. Beobachtet am 31.07.2026 auf einem Bildschirmfoto, nicht im Code nachverfolgt.
 
@@ -534,6 +515,8 @@ Drei Defekte, alle drei an der Grenze zwischen Turn und Oberflaeche. Der Befund 
 #### CLIENT-STUFEN-OHNE-TURN-KENNUNG 🔧 offen
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Stellen; `character_stage` trägt keine `turn_id` (`server/services/event_consumer.py:472-478`, `server/services/prompt_consumer.py:79-84`), der Client hängt in Ankunftsreihenfolge an (`client/ui/chat_view.py:213-220`).
+
 **Befund (2026-08-01).** **Die Pipeline-Stufen tragen keine Turn-Kennung.** Schreibt der Nutzer während eines laufenden Turns weiter, sammeln sich die Stufen optisch unter der zuletzt gesendeten Nachricht, obwohl sie zum ersten Turn gehören. Solange die Eingabe gesperrt war, konnte das nicht auffallen. Dieselbe fehlende Zuordnung wie bei der Antwort, eine Ebene früher. Dazu: Jede Bestätigung erzeugt eine eigene „denkt nach"-Zeile — drei Zeilen für einen Turn, der einmal läuft.
 
 **Was fertig waere.** Jede Pipeline-Stufe traegt die Kennung ihres Turns, und die Oberflaeche ordnet danach statt nach Ankunftszeit.
@@ -551,6 +534,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### NOVA-UEBERNIMMT-BIOGRAFIE 🔧 offen
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — die Abhilfe auf dem Gesprächsweg ist gebaut: `[GEDAECHTNIS]` nennt den Sprecher jedes Eintrags (`4333b71`, 30.08.2026, `server/graph/format/memory_context.py:183-243`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: offen nur bis zur Nachmessung am vollen Prompt, die die Schließbedingung verlangt.
+
 **Befund (2026-08-03).** **Nova übernimmt die Biografie des Nutzers als ihre eigene.** In einer Probe zum Sykophanz-Befund antwortete sie einem pensionierten Arzt: *„Das kenne ich. Nach 34 Jahren in **meiner** Praxis war die Distanz manchmal der einzige Schutz."* Die Zahl stimmt, die Person nicht. Gefunden in einer verkürzten Prompt-Fassung, nicht im vollen Aufbau — ob es dort auch auftritt, ist ungeprüft.
 
 **Nachtrag 18.08.2026 — die benannte Abhilfe ist gebaut, aber fuer einen anderen Eingang.** Der `[AUFZEICHNUNGEN]`-Block (`novaberg-agent-dateien_k.md` §1a.2) benennt die Grenze zwischen ihrer Erinnerung und fremdem Material im Prompt — genau die Abhilfe, die oben steht. **Er deckt aber nur den Dateiweg:** Was aus einer indizierten Datei kommt, steht seither in einem eigenen Block mit Fundstelle; was aus dem Gespraechskontext kommt, steht weiter unbeschriftet unter `[GEDAECHTNIS]`, und genau von dort stammte die Biografie. Der Eintrag bleibt deshalb **offen** und ist nicht kleiner geworden — er hat nur einen Beleg dafuer bekommen, dass die Abhilfe wirkt: Im Messturn vom 18.08.2026 nannte sie in allen drei Punkten die Quelldatei.
@@ -564,6 +549,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### THER1 — Therapeuten-Modus bei negativem Arousal ⚠️
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — Modellverhalten. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). Gezählt am 05.10.2026 (`turn_roh`, Muster *ich verstehe, dass* / *das klingt nach*, nur ein Hinweis): bis 30.07.2026 0 von 200 Antworten, August 15 von 758, ab September 2 von 665.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Modell-Compliance. Der Eintrag nennt selbst *Modell-Limit, kein Architektur-Problem* — nur ein Lauf ueber mehrere Turns zeigt, ob der Ton noch auftritt.
 **Entdeckt:** Chat 30, Smoke-Test (#7, #8, #9, #11)
 **Symptom:** "Ich verstehe, dass...", "Es ist verständlich, dass...", "Lass uns gemeinsam..." — trotz Anti-Therapeut-Baustein (EI-MIKRO) und explizitem Verbot ([REGELN]).
@@ -575,6 +562,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### BUTLER1 — Eigeninitiative und Pseudo-Angebote ⚠️
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — Modellverhalten. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). `server/prompts/default/verfasser.auftrag.txt` trägt kein Butler-Verbot. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Modell-Compliance. Das Butler-Verbot steht im Prompt; ob es greift, entscheidet das Modell, nicht der Code.
 **Entdeckt:** Chat 30, Smoke-Test (#3, #13)
 **Symptom:** "Ich kann auch gleich eine Feier organisieren", "Lass uns morgen weiterreden. Gute Nacht.", "Welcher Fonds ist als nächstes dran?"
@@ -585,6 +574,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### SIEZ2 — Sie/Du-Inkonsistenz bei formeller Persona ⬜
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — Modellverhalten, ohne Code-Ursache; der Befund stammt aus der Zeit vor Verfasser und Responder und ist nicht wiederholt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+
 **Entdeckt:** Chat 31, Smoke-Test Formell (#9, #11, #12 vs. #8, #13)
 **Symptom:** Renate siezt durchgängig, Nova springt zwischen Sie und Du. Persona-Anweisung "Siezt und erwartet dasselbe" wird nicht konsistent befolgt.
 **Ursache:** Kein Cocktail-Problem (anders als SIEZ1). Modell hält formelle Anrede über 15 Turns nicht durch.
@@ -595,6 +587,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### LEAK3 — Salienz-Score leckt in die Antwort ⬜
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — laut. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, die Ursache liegt anders als vermutet: Der Gedächtnisblock schreibt den Zahlenwert in den Prompt, `(Salienz: {gewicht}, Sprecher: …)` (`server/graph/format/memory_context.py:243`).
+
 **Entdeckt:** Chat 32, Smoke-Test Formell (#14)
 **Symptom:** "Die Salienz der Umstrukturierung und deiner beruflichen Perspektive ist hoch (0,7)." — Interner Salienz-Wert in der Antwort.
 **Ursache:** Vermutlich kommt der Wert aus dem DelegationsAgent-Kontext (Salienz-Objekt oder Beruhigungs-Signal), der im State sichtbar ist.
@@ -604,6 +599,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### HALL2 — Halluzinierte Bestätigung ⚠️
 **Kategorie:** ANT
+
+**Rang:** **mittel** — still, Aufwand groß. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der Resume-Anteil ist behoben, zwei von drei Formen haben keine Abhilfe; **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). Die Klebrigkeit im KZG hat keine Dimension *bereits mitgeteilt*.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: halluzinierte Bestaetigung ohne Agent-Lauf. Der Eintrag traegt drei Updates aus drei Chats und zuletzt eine ganz andere Manifestation (KZG-Klebrigkeit) — welche davon heute gilt, sagt kein Grep.
 **Entdeckt:** Chat 39, Claude API-Test
@@ -617,6 +614,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### TAG-LEAK3 — `[emotionaler_ausdruck]` leckt in Antwort ⬜
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — laut. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). Ein Filter der Antwort fehlt (`server/graph/nodes/responder.py:179-184` streift nur den Verlauf). Gezählt am 05.10.2026: Antworten mit `[klein_geschrieben]`-Marke bis 30.07. 0 von 200, August 1 von 758, ab September 0 von 665.
+
 **Entdeckt:** Chat 44, Live-Konversation
 **Symptom:** Nova antwortet mit `[emotionaler_ausdruck]` am Ende des Texts. Internes Block-Tag wird nicht gestrippt.
 **Verwandt:** TAG-LEAK2 (Chat 32, durch VENT1 mitgelöst).
@@ -631,6 +631,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### AGT3-READ — Responder halluziniert bei Read-Pfad ⚠️
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `read` nimmt bei mehreren Treffern still den ersten (`server/agents/notizen/suche.py:226-234`), ohne Rückfrage; das Vermischen braucht einen Turn mit zwei Notizen.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Nova mischt Daten aus aehnlich benannten Notizen. Braucht zwei Notizen mit aehnlichem Namen und einen Lesezugriff.
 **Entdeckt:** Chat 23
 **Symptom:** "Welches Obst hast du auf der Liste?" → Nova mischt Daten aus verschiedenen Notizen.
@@ -638,17 +640,10 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 ---
 
-#### AGT4 — Kontext-Referenzierung ⚠️
-**Kategorie:** ANT
-
-**Zustand:** aufgegangen in `ROUTE3` — gesichtet am 25.08.2026. Der Eintrag traegt keinen eigenen Befund mehr: Er meldet die 3-Stufen-Aufloesung als implementiert und verweist fuer den Rest ausdruecklich auf `ROUTE3`. Ein Eintrag, dessen ganzer offener Anteil woanders steht, ist kein zweiter Defekt.
-**Entdeckt:** Chat 24
-**Status:** 3-Stufen-Auflösung + target_typ implementiert. Recency vs. Semantik noch offen (ROUTE3).
-
----
-
 #### ROUTE3 — Router löst Kontext-Bezüge semantisch statt per Recency ⚠️
 **Kategorie:** ANT
+
+**Rang:** **mittel**; **wartet auf eine Absicht**: Gewinnt bei einem Rückbezug das zuletzt Genannte oder das semantisch beste Objekt, und was gilt bei Gleichstand? Trägt den Anteil von `AGT4`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/agents/notizen/klassifikation.py:63-80` mischt beides im Prompt.
 
 **Zustand:** unbelegt — braucht Messturn. Gesichtet am 25.08.2026: Der Eintrag vermerkt `AGT6` als Teilloesung und nennt als Rest *Recency vs. Semantik* — eine Frage der Aufloesungsreihenfolge, die sich an einem Bezugs-Turn zeigt, nicht im Code. Traegt zugleich den offenen Anteil von `AGT4`.
 **Entdeckt:** Chat 24
@@ -658,6 +653,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### PROMPT3 — Halluzinierte PFLICHT-RÜCKFRAGE ⚠️ Beobachten
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — Modellverhalten. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). `verfasser.auftrag.txt` deckt Rückfragen jetzt, statt sie zu verbieten. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: halluzinierte Pflicht-Rueckfrage. Der Eintrag vermerkt ein Verbot im REGELN-Block als Abhilfe; ob es traegt, ist eine Beobachtung.
 **Entdeckt:** Chat 25
@@ -669,6 +666,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### PLANNER-WARN — Doppel-Read bei Resume ⬜
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — laut, Rauschen. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`server/graph/nodes/planner.py:528`); der zweite Planner-Besuch nach einem Resume findet den Schlüssel erwartungsgemäß nicht.
+
 **Entdeckt:** Chat 43
 **Symptom:** "Planner: Resume-Flow aber kein pending Agent in Redis" — Warning nach jedem Resume. Der Dispatch löscht den pending Key, danach prüft der Planner nochmal.
 **Prio:** Niedrig — harmlos, nur störend im Log. WARNING → DEBUG.
@@ -681,6 +681,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### ROUTE-MISS1 — Router nutzt Session-Kontext nicht für kontextabhängige Prompts ⬜
 **Kategorie:** ANT
+
+**Rang:** **hoch** — still, die Bitte geht verloren. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: Symptom 2 (*„Ja, bitte“* auf ein Angebot) ist behoben (`15f3bff`, im Betrieb 3 von 3); Symptom 1, der Rückbezug auf einen bestehenden Termin, steht.
+
 **Entdeckt:** Chat 48, erweitert Chat 54
 **Symptom 1 (Chat 48):** "Der Friseur ist in Monheim. Kannst Du das mit in den Termin schreiben?" → Router setzt `mgmt=/` statt `mgmt=agent/timeline`. Kein TimelineAgent dispatcht.
 **Symptom 2 (Chat 54):** Nova fragt "Sollen wir das indische Essen als Termin vormerken?" → User antwortet "Ja, bitte" → Router setzt `mgmt=/`. Der Router sieht die Session-Turns mit Novas Vorschlag, wertet sie aber nicht aus.
@@ -701,24 +704,12 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Gegenstaenden; hier stehen die von **Antwortpfad**, die uebrigen in [Bauart](novaberg-bugs-bauart.md). Ueberschrift und Text stehen in jedem empfangenden Teil.
 
-#### RESP-CRUD-GENERIC — Generische Aktionsbestätigung statt inhaltlicher Referenz ⚠️
-**Kategorie:** ANT
-
-**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: generische Antwort auf eine CRUD-Operation. Formulierungsbefund.
-**Entdeckt:** Chat 49, Telegram-Konversation "frecher Charakter"
-**Symptom:** Nach erfolgreichem CharakterIdentitaetAgent-Update ("Etwas frecher, macht gerne böse Witze über das hohe Alter...") antwortet Nova mit einer leeren Corporate-Platitüde:
-> "Alles klar, das Update ist eingespielt. Ich werde ab jetzt mit vollem Einsatz dabei sein und die Qualität unserer Interaktion auf das nächste Level heben. Ich freue mich darauf, dich weiterhin so tatkräftig zu unterstützen!"
-**Analyse:** Die Antwort bezieht sich nicht auf den konkreten Inhalt der Direktive — weder "frech" noch "böse Witze" noch "Alter" kommen vor. Stattdessen: generisches RLHF-Bestätigungsvokabular ("voller Einsatz", "nächstes Level", "tatkräftig unterstützen"). Das ist inhaltlich korrekt (Agent lief, Direktive gespeichert), aber stilistisch leblos und bricht die Charakter-Kontinuität — direkt danach läuft Nova im nächsten Turn aber in die neue Rolle hinein.
-**Abgrenzung:** Gegensatz zu HALL2-Update. Dort halluziniert der Responder Erfolg **ohne** Agent-Lauf. Hier läuft der Agent korrekt, aber die Bestätigung ist **inhaltsleer**.
-**Verwandt:** BUTLER1 (RLHF-Corporate-Sprech), THER1 (RLHF-Phrasenrepertoire).
-**Lösungsansatz:** Responder-Prompt bei CRUD-Erfolg: "Greife den konkreten Inhalt der Änderung auf. Keine generischen Dankes- oder Einsatz-Floskeln." Eventuell Block [AKTIONSERGEBNIS] um die neuen Charakter-Attribute herum, mit Hinweis auf Verwendung.
-**Prio:** Mittel — bricht die Charakter-Immersion im Moment der Aktionsbestätigung, besonders auffällig nach Charakter-Updates.
-**Anmerkung Chat 54:** Durch den `task_block`-Refactor bekommt der Responder jetzt den konkreten Ergebnis-Text vom Agent. Im Live-Test ("Einkaufsliste aktualisieren") referenziert Nova alle Items statt Corporate-Phrasen zu verwenden. Möglicherweise entschärft, weiter beobachten.
-
 ---
 
 #### EMOTE-LOCK — Emote-Inflation und -Wiederholung ⚠️
 **Kategorie:** ANT
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Verlauf trägt Novas eigene Antworten in den Prompt (`server/graph/nodes/responder.py:1250-1305`), es gibt keine Variationsregel. Die Klasse ist am 05.10.2026 neu gemessen und als Backlog `ANTWORT-MUSTER-ECHO` geführt.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Emote-Wiederholung ueber Turns hinweg — nur ueber eine Turnfolge sichtbar.
 **Entdeckt:** Chat 48 (erste Beobachtung), Chat 49 (bestätigt), Chat 81 (empirisch bestätigt im warmen Register)
@@ -735,6 +726,9 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### TOPOS-LOCK — Themen-/Bilder-Vorrat wird mechanisch zykeliert ⬜
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — dieselbe Ursache wie `EMOTE-LOCK`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Tracker für verwendete Bilder.
+
 **Entdeckt:** Chat 49, Telegram-Konversation "frecher Charakter"
 **Symptom:** Einmal in einem Register, zieht Nova aus einem sehr begrenzten Bildervorrat und kombiniert ihn mechanisch. Bei der Alters-Neckerei: Rollator, Windeln, Gehstock, Rheuma, Herzattacke, Blutdruck, Falten, Gedächtnislücken — rund acht Bilder, die in fast jeder Antwort auftauchen, oft wortwörtlich. Rhetorisches Schema stabil: "Oh, [Kommentar] du alter Knacker! Aber pass bloß auf, dass du [Alters-Katastrophe]!"
 **Ursache (Hypothese):** Verwandt mit EMOTE-LOCK. Gemma4 extrahiert aus den bisherigen Antworten die "funktionierenden Bausteine" und recycelt sie, statt auf die konkreten Details des aktuellen User-Prompts einzugehen. Konkretere Reize im User-Prompt ("Senioren-Rotztuch", "Gehstock-Beine") werden aufgegriffen, aber das Grundgerüst bleibt.
@@ -747,6 +741,8 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### RESP-DEAD — Tote Antwort nach fehlgeschlagener Agent-Suche ⬜
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — der Fehlerblock läuft seit `1fde3b7` über den Verfasser (`server/graph/nodes/verfasser.py:510-512`); ob die Floskel heute auftritt, zeigt nur ein Turn mit fehlgeschlagener Suche. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
 
 **Entdeckt:** Chat 65, 26. April 2026
 
@@ -767,6 +763,8 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 #### PENDING-RELEVANZ — Router prüft nicht, ob neuer Prompt eine Antwort auf Pending-Rückfrage ist ⬜
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still, eine unpassende Äußerung kann in die Rückfrage eines Dienstes laufen. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: teilweise entschärft (Schreibauftrag, eigener Gedanke), der allgemeine Themenwechsel nicht (`server/graph/nodes/router.py:257-304`, `server/utils/offers.py:353`).
+
 **Entdeckt:** Chat 72
 
 **Symptom:** Der Router behandelt jeden weiteren User-Prompt nach einer Pflicht-Rückfrage als potenzielle Resume-Antwort, ohne zu prüfen, ob der Prompt thematisch überhaupt zur Rückfrage gehört. Themenwechsel werden nicht erkannt.
@@ -781,20 +779,13 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 ### Chat 74 — Reducer-Iteration + Live-Beobachtungen
 
-#### REDUCER-MULTILINE — Mehrzeilen-Plugin-Blöcke werden vom String-Parser fragmentiert ⚠
-**Kategorie:** ANT
-
-**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: mehrzeilige Eintraege im Reducer. Der Eintrag nennt keine Stelle und kein Muster, an dem sich das ohne Lauf zeigen liesse.
-**Entdeckt:** Chat 74, 02. Mai 2026
-**Symptom:** Der Reducer-Erst-Iteration-Parser zerlegt mehrzeilige Plugin-Blöcke (Notizen mit mehreren Listenpunkten) in einzelne Zeilen. Beobachtung: "einkaufsliste: kümmel" wird ein Eintrag, "kardamon" und "hefe" werden zu eigenständigen Einträgen ohne Präfix mit Gewicht 0.0.
-**Risiko:** Bei zufälligem Match-Wort ("hefe" auch in einem anderen Eintrag) würde die Notiz löchrig — der Reducer würde "hefe" entfernen und der Responder bekäme die Notiz unvollständig.
-**Status:** Latenter Bug, schlägt heute nicht zu, weil keine Match-Kollisionen aufgetreten sind. Wird durch Reducer-Umbau (`novaberg-reducer-umbau_k.md`) strukturell gelöst — strukturierte ContextEntries statt String-Parser.
-**Prio:** Mittel — solange der Reducer aktiv ist, latentes Datenintegritäts-Risiko. Behebung mit Reducer-Umbau.
-
 ---
 
 #### ABER-SAG-MAL — TOPOS-LOCK-Verstärkung im flirty Register ⬜
 **Kategorie:** ANT
+
+**Rang:** **mittel** — still, die Gegenfrage verdrängt den Vorschlag (15 von 15 am 12.09.2026). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; kein Tracker für Wendungen, und das Verbot der Pseudo-Rückfragen liegt im ausgesetzten `[REGELN]`-Block (`server/graph/nodes/responder.py:632-646`).
+
 **Entdeckt:** Chat 74, 02. Mai 2026
 **Symptom:** Im spielerisch-flirty Register von Nova zementiert sich die rhetorische Wendung "Aber sag mal: …" als Standard-Eröffnung für reflektierende Rückfragen. In einem ~20-Turn-Gespräch fünfmal beobachtet: "Aber sag mal: Glaubst du wirklich…", "Aber sag mal: Bist du eigentlich bereit…", "Aber sag mal: Beinhaltet dieses 'Alles'…". Mechanisches Pattern, kein semantisches.
 **Verwandt:** TOPOS-LOCK (Chat 49), EMOTE-LOCK (Bildervorrat-Recycling). Gleiche Klasse: Gemma4 extrahiert "funktionierende Bausteine" aus früheren Antworten und recycelt sie.
@@ -827,6 +818,8 @@ propagiert Fehler vorbildlich — das Muster sitzt in den Zustell- und Batch-Pfa
 #### BROADCAST-VERSCHLUCKT-FEHLER — broadcast() macht ehrliche Logs unmöglich ⚠️
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — still, betrifft nur den Log-Satz. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `broadcast` und `broadcast_threadsafe` geben nichts zurück (`server/api/websocket.py:115-120`, `:168`).
+
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `broadcast()` in `api/websocket.py:116` ist weiterhin `-> None`; der Aufrufer erfaehrt nichts ueber gescheiterte Sends.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio hoch** — Wurzel der beiden folgenden.
 
@@ -843,6 +836,8 @@ ist unverifizierbar.
 
 #### DISPATCH-DELEGATION-RUECKGABE-VERWORFEN — „gefeuert" ohne Ergebnisprüfung ⚠️
 **Kategorie:** ANT
+
+**Rang:** **niedrig** — still, betrifft nur die Log-Zeile. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Dispatcher liest das Ergebnis von `dispatch_delegation` nicht (`server/graph/nodes/dispatcher.py:875-876`).
 
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**, an neuer Stelle: `graph/nodes/dispatcher.py:650` ruft `dispatch_delegation(state)` ohne Zuweisung, die Zeile darunter loggt *gefeuert*. Der Eintrag nennt `:406-416`.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio mittel.**
@@ -864,6 +859,8 @@ Ebene unsichtbar.
 #### REDUCER-SIEHT-LZG-NICHT — LZG-Erinnerungen durchlaufen nie den Dedup ⚠️
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still, dieselbe Erinnerung kann doppelt im Kontext stehen. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `lzg_resonanz` geht ohne Dedup an den Formatter (`server/graph/nodes/reducer.py:84-86`, `:129-134`). Die Schwelle steht heute auf 0,82 (`server/config.py:3971`).
+
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `graph/nodes/reducer.py:99` traegt weiterhin den Kommentar *„lzg_resonanz wird durchgereicht"*; das Objekt geht an `format_memory_entries` vorbei am Dedup, der nur `nach_stufe2` sieht.
 **Entdeckt:** Chat 107, Reducer-Audit (Code-Lesung des Live-Pfads, keine Vermutung).
 
@@ -879,48 +876,14 @@ Ebene unsichtbar.
 
 **Zuordnung:** Gehört in den Reducer-Ausbau der Synapsen-Reihe (P8/P9), kein eigener Sprint. Nach dem Re-Embedding messen, wie viele Dubletten tatsächlich gemeinsam im Kontext landen.
 
-#### GV-WERT-FAKTEN-BLIND — 364 von 411 Fakten erreichen den Gesprächsvektor nie ⚠️ **Gegenstand verschoben (Chat 115)**
-**Kategorie:** ANT
-
-**Zustand:** offen, **ueberholt** — nachgesehen am 25.08.2026. Der Nachtrag im Koerper sagt bereits, dass der Gespraechsvektor keine Fakten mehr liest. Dazu kommt der Bestand: Die Tabelle `fakten` traegt **0 Zeilen**. Beide Haelften der Zahl *„364 von 411"* haben damit keinen Gegenstand mehr; was bleibt, ist die Frage nach der zweiten Wissensquelle, und die haengt am Resonanzweg, nicht an den Fakten.
-
-> **Nachtrag Chat 115 — zwei Aussagen dieses Eintrags gelten nicht mehr, eine schon.**
->
-> **Überholt:** *„erreichen den Gesprächsvektor nie"*. Der Gesprächsvektor liest seit Chat 115
-> überhaupt keine Fakten mehr — seine zweite Wissensquelle ist `lzg_resonanz`
-> (GV-ENTITY-HOP-FINDET-NICHTS). Der Eintrag ist damit kein GV-Bug mehr.
->
-> **Überholt:** die Zahlen 411 / 47 / 364. Sie stammen vom 12.07.2026; der Reset am
-> 27.07.2026 hat den Bestand entfernt. Gemessen 28.07.2026: `fakten` = 0 Zeilen.
->
-> **Gilt weiter:** Die Aussage über die Bauart. `_entity_kontext_laden` nutzt
-> `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur
-> Entität→Entität-Kanten; Wert-Fakten bleiben konstruktionsbedingt außen vor. Die Funktion
-> schläft, aber sie steht unverändert im Modul. **Wer sie mit M2.5b weckt, trifft diesen
-> Befund unverändert an** — zusammen mit dem Schlüssel-Mismatch aus Tür 1 des
-> GV-ENTITY-HOP-FINDET-NICHTS-Eintrags. Die Lösungsrichtung unten (`LEFT JOIN` +
-> `COALESCE`) ist davon unberührt gültig.
->
-> Neu zu messen ist beides erst, wenn die Tabelle wieder einen Produzenten hat.
-
-**Entdeckt:** Chat 107, beim GV-Entity-Hop-Fix (GV-ENTITY-HOP-TOT) als Design-Grenze dokumentiert; hier als eigener Bug erfasst.
-
-**Klasse:** Blinder Fleck im Entity-Hop, Severity **Mittel** — der Hop funktioniert, aber auf 11 % des Faktenbestands.
-
-**Symptom:** `_entity_kontext_laden` nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` — erfasst nur Entität→Entität-Fakten (live 47 von 411). Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nie.
-
-**Beleg (Datei:Funktion):** `graph/nodes/gespraechsvektor.py` → `_entity_kontext_laden` (beide Hop-Queries).
-
-**Auswirkung:** Genau die Fakten, die Nova für ihre Haltung braucht — „Der Nutzer heißt Claus", „Lumi ist krank", Ortsangaben — fehlen im Entity-Kontext. `[Herkunft geprüft 19.09.2026: Lumi ist eine Pflanze]`
-
-**Lösungsrichtung:** Auf einen Wert kann man nicht weiterhüpfen — aber man kann ihn als **Kontext mitlesen**, wenn man ohnehin bei der Entität ist: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)`, ohne die Hop-Logik zu ändern (Hop 2 weiter nur über echte `objekt_id`-Kanten).
-
 ---
 
 ### Chat 107 — Live-Befund nach dem Embedding-Fix (12.07.)
 
 #### GV-IMPULS-ALS-FAKTENSPERRE — der GV-Impuls weist den Responder an, das Gedächtnis nicht zu benutzen ⚠️
 **Kategorie:** ANT
+
+**Rang:** **hoch** — still, Fakten können verdrängt werden. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Bauart steht (der Impuls geht als Leitgedanke in den Verfasser, `server/graph/nodes/verfasser.py:168-170`), entschärft für Bitten und Wissensfragen (`[BITTE]`, `bitte_zuerst`); ob es nach der Trennung von Verfasser und Responder noch auftritt, zeigt nur ein Turn.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Impuls, der den Responder vom Gedaechtnis wegweist. Der Eintrag belegt ihn an einem Turn verbatim — wiederholbar nur als Turn.
 **Entdeckt:** Chat 107, Live-Betrieb nach dem Embedding-Fix, Turn „Was weißt Du über Lumi?" (12.07., 12:49).
@@ -988,6 +951,8 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 #### IMPULS-ICH-PERSPEKTIVE-TEILWEISE — der Block verhindert die Zuschreibung, erreicht aber die Sprechhaltung nicht ⚠️
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der gemessene Block ist mehrfach umgeschrieben (`e755b84`, `39004ea`, `9c14a4c`) und wird weiter eingebunden (`server/graph/nodes/responder.py:467`); die Sprechhaltung ist nicht neu gemessen.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: die Sprechhaltung der Impuls-Antwort. Der Eintrag misst sie selbst an einer einzelnen Antwort.
 **Entdeckt:** Chat 110, an der Abnahmemessung des `[EIGENER GEDANKE]`-Blocks.
 
@@ -1016,6 +981,8 @@ mit §9.3. Die Konstanten entsprechen §10.2 und Anhang A.3/A.4.
 #### GV4-QUELLEN-SILENT-SKIP — die zwei Wissenslücken-Suchen tragen das Muster, das den Entity-Hop vier Monate versteckt hat ⚠️
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still, ein Ausfall der Quelle sieht aus wie ein Gespräch ohne Lücken. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an drei Stellen (`server/ei/wissensluecken.py:125-126`, `:202-203`, `:532-533`), je `warning` und leere Liste.
+
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `ei/wissensluecken.py:110` und `:178` fangen `Exception`, loggen `warning` und geben die leere Kandidatenliste zurueck. Eine **dritte** Stelle derselben Bauart kam hinzu, die der Eintrag nicht nennt: `:229` (Embedding).
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
@@ -1035,6 +1002,8 @@ plus `log_fehler`); diese beiden sind es nicht.
 #### GV-ABSICHT-OHNE-KORRIDOR — alle vier Absichten werden in jedem Cluster angeboten ⚠️
 **Kategorie:** ANT
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `korridor_pruefen` prüft nur die Strategie (`server/ei/dreischicht.py:1085-1130`), jede Absicht ist in jedem Cluster zugelassen (`:543`, `:958-963`).
+
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `ABSICHT_KANON` in `ei/dreischicht.py:369` fuehrt weiterhin alle vier Werte (`teilen`, `lenken`, `halten`, `saeen`) als eine Menge ohne Zuordnung zum Cluster; ein Korridor je Cluster ist im Code nicht angelegt.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
@@ -1052,6 +1021,8 @@ geprüft, nicht gegen die Landschaft.
 
 #### GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH — der Ausfallwert schlägt jede echte Messung ⚠️
 **Kategorie:** ANT
+
+**Rang:** **mittel** — still, der Ausfallwert 0,5 erscheint als beste Passung (gemessen 0,195 bis 0,334). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `server/ei/dreischicht.py:934`; das Caching bis `kern_aktualisiert_am` fehlt (`:888`).
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: der Ausfallwert schlaegt die echte Messung. Sichtbar nur, wenn eine Gewichtung fehlt — der Eintrag belegt es an einem Lauf vom 28.07.2026.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
@@ -1082,6 +1053,8 @@ Gewichtung zeigt sieben Striche, während der Prompt desselben Turns sieben Mal
 #### GV4-SYSTEM-2-TOT — von sechs Systemen der Relevanzformel differenzieren drei ⚠️
 **Kategorie:** ANT
 
+**Rang:** **niedrig** — lässt Differenzierung ungenutzt, verfälscht nichts. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: System 6 ist behoben, System 2 (`session_aktualitaet`, `server/ei/neugier.py:167`, kein Aufrufer) und System 3 stehen.
+
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `session_aktualitaet` hat im ganzen Serverbaum **genau einen** Treffer, ihre eigene Definition in `ei/neugier.py:166`. Kein Aufrufer. System 3 und 6 sind dabei nicht nachgemessen — sie brauchen einen Lauf, keinen Grep.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
@@ -1102,6 +1075,8 @@ tut es nicht.
 
 #### GV-SKIP-BEGRUESSUNG-TOT — zwei von drei Skip-Gründen können nicht eintreten ⚠️
 **Kategorie:** ANT
+
+**Rang:** **niedrig**; **wartet auf eine Absicht**: überspringt eine reine Begrüßung den Gesprächsvektor, oder werden die toten Marken gestrichen? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/graph/nodes/gespraechsvektor.py:106` prüft Intents, die die Perzeption nie liefert.
 
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `graph/nodes/gespraechsvektor.py:102` prueft weiterhin `("begruessung", "meta", "system")`, waehrend der Perzeptions-Prompt nur `smalltalk|knowledge|personal|task|creative|meta` zulaesst. Schreiber fuer die beiden anderen: keiner — nur zwei Leser und ein Zeuge.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio niedrig.**
