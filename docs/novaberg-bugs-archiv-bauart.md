@@ -1,9 +1,50 @@
 # Novaberg — Bugs, Archiv: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 15 Eintraege, je mit `BAU` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 17 Eintraege, je mit `BAU` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 05.10.2026 — geschlossen bei der Durchsicht der offenen Eintraege
+
+**Diese Eintraege standen als offen im Register und waren es nicht mehr.** Am 05.10.2026 ist jeder offene Eintrag gegen den Code am HEAD `17bf86e` gehalten worden; die Zustandszeile je Eintrag nennt den Beleg. *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Die Stelle, an der der Befund galt, gibt es nicht mehr.
+
+---
+
+### `THINKING-NULL-FALLE-LATENT`
+**Kategorie:** BAU
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026, beide Zähler. Seit `9cd1350` (25.08.2026) gehen `input_tokens` und `output_tokens` durch `_zaehlerstand`, das `None`, Zeichenketten und falsche Typen auffängt (`server/services/llm_provider.py:185`, `:355-360`); `_antwort_umschlag_melden` liest mit `or 0`.
+
+**Zustand bis 05.10.2026:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Die Falle ist noch da, sie ist nur umgezogen, und eine ihrer beiden Hälften hat sich nebenbei geschlossen.** Die Zeilen 166/168/169 des Befundes gibt es nicht mehr; die Rechnung steht heute in `services/llm_provider.py:314-318`.
+
+| Zähler | heute | trägt ein gesetztes `null`? |
+|---|---|---|
+| `input_tokens` | `.get("prompt_eval_count", 0)`, danach `if not input_tokens:` mit Rückfall auf `message` | **nein** — der Rückfall fängt `None` mit ab, unabsichtlich |
+| `output_tokens` | `.get("eval_count", 0)`, ohne Absicherung | **ja** — `input_tokens + output_tokens` stürzt |
+
+> **Die Absicherung, die der Befund verlangte, ist an anderer Stelle gebaut:** `_antwort_umschlag_melden` liest dieselben zwei Schlüssel in `:143-144` mit `int(... or 0)`. Zwei Lesestellen desselben Feldpaars, eine abgesichert, eine nicht — die ungesicherte ist die, die rechnet.
+
+**Befund (2026-07-30).** Dieselbe Falle wie `OLLAMA-THINKING-NULL` sitzt latent drei Zeilen darüber: `services/llm_provider.py` liest `response.get("prompt_eval_count", 0)` und `response.get("eval_count", 0)`. Kommt dort je ein gesetztes `null` statt eines fehlenden Schlüssels, rechnet `input_tokens + output_tokens` mit `None` und stürzt — im Pfad der Token-Verbuchung, also **nach** dem erfolgreichen Call. Heute schlägt es nicht zu; Ollama liefert beide Zähler. *(Zeilennummern gemessen 30.07.2026: 166, 168, 169.)*
+
+**Was fertig waere.** Dieselbe Absicherung wie in der behobenen Stelle drei Zeilen darueber.
+
+**Prioritaet:** mittel.
+
+---
+
+### `KOPFZEILENZEIT-ALS-UTC-BESCHRIFTET` — CEST als UTC beschriftet
+**Kategorie:** BAU
+
+**Zustand:** behoben — nachgesehen am 05.10.2026. Die Köpfe der Register tragen UTC aus `date -u`; die drei falschen Kopfzeiten berichtigte `ba4d9b5`, der alte Stempel in der Featureliste ist als CEST-Irrtum markiert. Stichprobe gegen die Commitzeit (UTC): Featureliste 21:32 gegen 21:37, Roadmap 21:32 gegen 21:37, Backlog 10:05 gegen 11:49 — kein Kopf liegt hinter seinem Commit.
+
+**Zustand bis 05.10.2026:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. am 20.08.2026 erneut: Featureliste Kopf ~20:55 UTC gegen Commit 18:36 UTC, Backlog ~21:20 gegen 18:39, Bugs ~18:30 gegen 17:25 — jede Kopfzeit liegt hinter ihrem Commit.
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Zeitangaben der Featureliste-Kopfzeile sind teils CEST und als UTC beschriftet.** Der Stand *„19. August 2026, ~19:45 UTC"* gehört zum Commit `08367cf`, der `2026-08-19 19:47:52 +0200` trägt — also **17:47 UTC**. Die Kette der Fortführungen läuft dadurch scheinbar rückwärts, sobald jemand korrekt in UTC einträgt. Betrifft jede Auswertung, die Kopfzeilen-Zeiten gegen Commit-Zeiten hält.
+
+**Geschlossen, wenn** Jede Zeitangabe in Registerkoepfen ist UTC oder traegt ihre Zone.
 
 ---
 

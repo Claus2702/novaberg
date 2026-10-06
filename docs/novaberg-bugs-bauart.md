@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 23 Eintraege, je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 21 Eintraege, je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -11,6 +11,8 @@
 
 ### `KOMMENTAR-AROUSAL-EXPONENT` — der Kommentar in `config.py` nennt `arousal²`, der Code rechnet `arousal³`
 **Kategorie:** BAU
+
+**Rang:** **niedrig** — nur der Kommentar. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `server/config.py:1884` sagt `arousal²`, gerechnet wird `arousal ** 3` (`server/ei/berechnung.py:245`).
 
 **Zustand:** offen — gelesen am 05.10.2026 (`novaberg` `60aaa69`).
 
@@ -26,6 +28,8 @@
 
 ### `GRAVITATION-FAKTOR-SESSION-TOT` — `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ist definiert und wird nirgends gelesen
 **Kategorie:** BAU
+
+**Rang:** **niedrig** — eine Konstante ohne Leser. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `server/config.py:2771` ist die einzige Fundstelle.
 
 **Zustand:** offen — gezählt am 05.10.2026 (`novaberg` `60aaa69`).
 
@@ -43,6 +47,8 @@
 
 ### `RELOAD-GREIFT-NICHT-AM-EINGEHAENGTEN-CODE` — 24 Stunden Betrieb auf altem Stand
 **Kategorie:** BAU
+
+**Rang:** **hoch** — still, jede Betriebsmessung bleibt zweideutig, und ein Neustart bricht laufende Turns ab; **wartet auf eine Absicht**: läuft der Dienst im Betrieb mit `--reload` oder ohne, mit Neustart als festem Bauschritt? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/Dockerfile:21` startet weiter mit `--reload` auf dem eingehängten Code. Möglicherweise dieselbe Ursache wie die drei Turns ohne `turn_roh` (`TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT`).
 
 **Zustand:** offen — gemessen am 17.09.2026 im Betrieb. **Nachtrag 18.09.2026:** Im Prozess, der seit dem Neustart vom 17.09.2026 läuft, **greift der Reload** — das Serverlog meldet um 07:45 UTC *„WatchFiles detected changes in 'config.py', 'utils/offers.py'. Reloading…"*. Der Defekt ist also nicht der Mount an sich; warum der Prozess vom 16.09. einen Tag lang nicht neu lud, ist ungeklärt. **Und die Kehrseite ist jetzt belegt:** Jede gespeicherte Datei unter `server/` startet den Dienst neu und **bricht einen laufenden Turn ab** — ein Messturn der zweiten Sitzung endete so mitten in der Sachlage. Wer baut, während im Betrieb gesprochen wird, beendet das Gespräch.
 
@@ -74,6 +80,8 @@ Der Ablauf, aus dem Betriebslog:
 
 #### `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` — `done=False` wird protokolliert und nie geprueft
 **Kategorie:** BAU
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `done_reason` und `done` gehen nur in die Logzeile (`server/services/llm_provider.py:143-161`), keine Verzweigung hängt daran.
 
 **Zustand:** offen — gegen HEAD `b47e9ec` am 25.08.2026 im Betrieb belegt.
 
@@ -119,19 +127,12 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 *Die Einträge dieses Abschnitts standen bis zum 19.09.2026 ohne eigene Überschrift unter dem Abschnitt vom 25.08.2026, zu dem nur der erste Eintrag davor gehört. Ihre Befunddaten reichen vom 05.08. bis zum 18.09.2026.*
 
-### `KOPFZEILENZEIT-ALS-UTC-BESCHRIFTET` — CEST als UTC beschriftet
-**Kategorie:** BAU
-
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. am 20.08.2026 erneut: Featureliste Kopf ~20:55 UTC gegen Commit 18:36 UTC, Backlog ~21:20 gegen 18:39, Bugs ~18:30 gegen 17:25 — jede Kopfzeit liegt hinter ihrem Commit.
-
-**Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Zeitangaben der Featureliste-Kopfzeile sind teils CEST und als UTC beschriftet.** Der Stand *„19. August 2026, ~19:45 UTC"* gehört zum Commit `08367cf`, der `2026-08-19 19:47:52 +0200` trägt — also **17:47 UTC**. Die Kette der Fortführungen läuft dadurch scheinbar rückwärts, sobald jemand korrekt in UTC einträgt. Betrifft jede Auswertung, die Kopfzeilen-Zeiten gegen Commit-Zeiten hält.
-
-**Geschlossen, wenn** Jede Zeitangabe in Registerkoepfen ist UTC oder traegt ihre Zone.
-
 ---
 
 ### `BEANTWORTETE-ABSICHT-STEHT-OFFEN` — beantwortet im Register, offen am Bauort
 **Kategorie:** BAU
+
+**Rang:** **niedrig** — Doku. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, die Stelle ist nach `novaberg-agent-dateien_t.md` gewandert und steht dort weiter als offen; beantwortet in `novaberg-agent-dateien_e.md`.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `novaberg-agent-dateien_k.md:831` fuehrt die Frage weiter als offen.
 
@@ -144,6 +145,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `FRISTANGABE-WIDERSPRICHT-SICH` — zwei Saetze, ein Absatz, Gegenteiliges
 **Kategorie:** BAU
 
+**Rang:** **niedrig** — Doku, Redaktionsrest. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`novaberg-agent-dateien_t.md`).
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `novaberg-agent-dateien_k.md:829` traegt beide Saetze unveraendert.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Zwei Sätze im selben Absatz sagen Gegenteiliges über dieselbe Frist.** `novaberg-agent-dateien_k.md` §4b.1b: *„Die Rohfassung überlebt den Kurzzeit-Eintrag damit **nicht** um das Zwölffache, sondern unbegrenzt"* — und unmittelbar danach *„Die Rohfassung überlebt den Kurzzeit-Eintrag um mehr als das Zwölffache"*. Redaktionsrest der Berichtigung: Der berichtigte Satz steht, der berichtete blieb stehen. **Wer den Absatz von unten liest, bekommt die widerlegte Aussage.**
@@ -155,6 +158,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `REPODOKU-VERWEIST-NACH-INNEN` — oeffentliche Doku zeigt auf internes Material
 **Kategorie:** BAU
 
+**Rang:** **mittel** — betrifft, was öffentlich steht, und der Bestand ist größer als gemeldet (grob zwei Dutzend Zeiger). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: von drei Stellen ist eine umformuliert, `novaberg-tool-dateien_k.md:33` und `novaberg-haltungsraum_t.md:400` stehen.
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. mindestens `novaberg-tool-dateien_k.md:32` und `novaberg-haltungsraum_k.md:478` stehen unveraendert.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Drei Repo-Dokumente verweisen auf interne Regeldokumente, die es öffentlich nicht gibt.** Mechanisch gezählt über das Muster `<zwei Ziffern>_<GROSSBUCHSTABEN>`, nach Abzug der Prompt-Dateinamen bleiben **3 Fundstellen in 3 Dateien**: `novaberg-tool-dateien_k.md:19` (*„markieren, nicht löschen"* mit Quellenangabe), `novaberg-haltungsraum_k.md:472` (*„die stille Verwechslung, gegen die … geschrieben ist"*) und `novaberg-roadmap.md:3581` (*„die Regel aus … §4 existiert trotzdem"*). **Für einen öffentlichen Leser geht der Zeiger ins Leere und verrät zugleich, dass internes Material existiert** — genau die Verweisrichtung, die einseitig sein soll. Die inhaltliche Aussage ist an allen drei Stellen richtig und trägt sich auch ohne den Zeiger; es genügt, den Satz zu nennen statt seiner Quelle. Kein Defekt am System. Aufgefallen beim Lesen des Werkzeug-Konzepts für die Versionierung.
@@ -165,6 +170,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ### `ZEUGE-FLACKERT-OHNE-REPRODUKTION` — gelegentlich rot, nicht reproduzierbar
 **Kategorie:** BAU
+
+**Rang:** **mittel** — still, ein namenloser roter Zeuge entwertet die grüne Suite. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Sperre ist behoben (`8175849`), der namenlose Zeuge und `test_queue_arousal` sind offen; `server/agents/base.py:488` (`setup`) läuft weiter ohne Sperrfrist.
 
 **Zustand:** offen — **ein Mechanismus am 18.09.2026 gefunden, gemessen und behoben** (`8175849`); der Ausfall vom 17./18.08.2026 ist damit nicht erklärt. ~~offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. braucht einen Lauf mit festgehaltener Ausgabe je Durchgang.~~
 
@@ -186,6 +193,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ### `KOSTENSPALTE-MISCHT-PREISGENERATIONEN` — der Bestand ist nicht auswertbar
 **Kategorie:** BAU
+
+**Rang:** **niedrig** — nur der historische Bestand; mit dem lokalen Modell entstehen kaum neue Generationen. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der laufende Teil ist behoben (`server/services/model_costs.py:78`, `:114`), `record_usage` schreibt keinen angewandten Preis.
 
 **Zustand:** offen — der laufende Defekt ist am 09.09.2026 behoben, der **Bestand** bleibt falsch.
 
@@ -211,6 +220,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `IMPORTE-UEBERSPRINGEN-SCHICHT` — 39 Importe ueber die Schichtgrenze
 **Kategorie:** BAU
 
+**Rang:** **niedrig** — still, Aufwand groß, als geduldeter Bestand gezählt (A8b). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (z. B. `server/agents/base.py:492`, `server/agents/charakter/agent.py:63`).
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026, weiterhin **52**, mit derselben Strukturpruefung gezaehlt, die die 39 geliefert hat (Pruefung A8b). Die Zahl steht seit dem 20.08. still; sie ist nicht zurueckgegangen und gegenueber den 39 des Befundes um ein Drittel gewachsen.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **39 Importe überspringen eine Schichtgrenze.** `agents/*` importiert `tools/db_manager` und `tools/redis_manager` direkt und umgeht damit die Repository-Schicht. Betroffen sind unter anderem `agents/base.py`, `agents/charakter/agent.py`, `agents/kalibrierung/korpus.py`.
@@ -221,6 +232,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ### `DEFAULTS-WIE-MESSWERTE` — 11 Vorgabewerte sehen aus wie Messungen
 **Kategorie:** BAU
+
+**Rang:** **mittel** — still, Aufwand mittel (DDL je Begleitfeld). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an fünf von fünf Spalten (`db/init.sql:125`, `:512`, `:514`, `:531`, `server/agents/delegation/init.sql:40`).
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `db/init.sql:125,311,313` tragen weiter `DEFAULT 0.5` ohne Begleitfeld.
 
@@ -233,6 +246,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `EVA-SEKTION-OHNE-PRUEFUNG` — 20 Sektionsmarken ohne Pruefung darunter
 **Kategorie:** BAU
 
+**Rang:** **niedrig** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an drei Stellen (`server/api/chat.py:241-242`, `:345-346`, `server/agents/kalibrierung/korpus.py:311-312`).
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026, weiterhin **36**, mit derselben Strukturpruefung gezaehlt (Pruefung A5). **Die 20 des Befundes stammen aus einer anderen Zaehlung** — dieselbe Pruefung stand am 16.08.2026 bei 25, am 20.08. bei 36 und steht seither still.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **20 Sektionsmarken `Ausgabe-Verifikation` haben keine Prüfung unter sich.** Zwei Formen: ein blankes `return` (`api/chat.py:238`, `agents/kalibrierung/korpus.py:310`) und eine Logzeile, die den Wert nennt und nichts mit ihm tut (`agents/charakter/agent.py:659`). Die zweite ist die heimtückischere — sie liest sich wie eine Prüfung mit Protokoll.
@@ -243,6 +258,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ### `LOESCHREGELN-DREIGETEILT` — drei Regeln fuer dasselbe
 **Kategorie:** BAU
+
+**Rang:** **niedrig**; **wartet auf eine Absicht**: welche Löschregel für Fremdschlüssel im Normalfall gilt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gewachsen auf 10 CASCADE, 11 SET NULL, 3 RESTRICT, 4 ohne Klausel.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. heute **4x CASCADE, 3x SET NULL, 2x NO ACTION** ueber alle Schemadateien — `autonomous_wissen_thema.wissen_id` ist am 19.08.2026 als vierter CASCADE dazugekommen; die Politik ist weiter nicht entschieden.
 
@@ -255,6 +272,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `CLIPBOARD-BEGRIFF-DOPPELT` — ein Begriff, zwei Sachen
 **Kategorie:** BAU
 
+**Rang:** **niedrig** — Doku. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`novaberg-referenz-aufloesung_t.md` gegen `novaberg-convention-planner-needs.md` §3).
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `novaberg-referenz-aufloesung_k.md:391` fuehrt den Begriff weiter in der zweiten Bedeutung.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **„Clipboard-Prinzip" bezeichnet zwei verschiedene Sachen.** Seit dem 16.08.2026 ist es der Name einer Konvention: ein deklarierter, flacher, optionaler Zustands-Schlüssel zwischen zwei Stufen desselben Turns. `novaberg-referenz-aufloesung_k.md` §391 benutzt denselben Begriff für etwas anderes — *„`user_prompt` wird NIE verändert, nur ergänzt"*. Beides ist plausibel benannt, und genau deshalb fällt die Kollision beim Lesen nicht auf. Dieselbe Klasse wie `F-AUFGABE-1` (ein Name gehört genau einer Rolle), nur an einem Begriff statt an einem Aufgabennamen.
@@ -266,6 +285,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `ENRICHERPROMPT-LEERE-HUELLE` — beide Enden offen
 **Kategorie:** BAU
 
+**Rang:** **niedrig** — totes Feld. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `enricher_prompt` steht nur in `server/plugins/base.py:64`, `novaberg-architecture.md` nennt es weiter.
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `plugins/base.py:64` ist die einzige Fundstelle im Serverbaum — kein Deklarant, kein Leser.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **`enricher_prompt` ist eine leere Hülle mit beiden Enden offen.** Die Eigenschaft steht in `plugins/base.py` und gehört zu den drei Selbstbeschreibungs-Kanälen der ersten Generation. Gemessen: **null Manager deklarieren sie, null Stellen lesen sie.** `router_prompt` (5 Deklaranten, gelesen) und `salienz_prompt` (1 Deklarant, gelesen) leben; dieser ist nie in Betrieb gegangen. `novaberg-architecture.md` nennt ihn trotzdem. Der Endzustand des Verfalls, den `SELBSTAUSKUNFT-OHNE-LESER` in seiner Frühform beschreibt.
@@ -276,6 +297,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 ### `PIXIE-NACHFRAGEN-FEHLT-IM-INDEX` — ein Konzept ohne Indexeintrag
 **Kategorie:** BAU
+
+**Rang:** **niedrig** — Doku. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `novaberg-architecture.md` (Tabelle *Tiefe 2 — Pixie-Agenten*) nennt `novaberg-pixie-nachfragen` nicht.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. 0 Treffer fuer den Dateinamen in `novaberg-architecture.md`.
 
@@ -298,6 +321,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD 🔧 offen
 **Kategorie:** BAU
 
+**Rang:** **mittel** — laut, aber der Fehler zeigt auf das Modell statt auf den Aufrufer. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `submit_sync` prüft keinen laufenden Loop (`server/services/model_services/worker_base.py:151`, `:187`, `:194`).
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `services/model_services/worker_base.py:151` traegt weiterhin keinen `asyncio.get_running_loop()`-Versuch, und die Debug-Zeile in `:187` schreibt weiter woertlich *„submit_sync aus Worker-Thread"* — eine Behauptung, die an keiner Stelle geprueft wird. Die Pruefung waere weiterhin eine Zeile.
 
 **Befund (2026-07-29).** `submit_sync` behauptet in seiner Logzeile, aus einem Worker-Thread gerufen zu werden, und prüft es nicht. `services/model_services/worker_base.py`, `submit_sync`: Der Docstring nennt als Verwendung ausdrücklich „Konsumenten in sync-Kontexten (LangGraph-Nodes in `asyncio.to_thread`-Worker-Threads)", die Debug-Zeile schreibt wörtlich „submit_sync aus Worker-Thread" — beides ohne Prüfung. Wird die Funktion aus dem Event-Loop-Thread gerufen, blockiert sie den Loop, der die Antwort zustellen müsste, und läuft in den Timeout: gemessen am 29.07.2026 **33 Fehlschläge zu je 60 Sekunden hintereinander**, während dieselbe Ollama-Instanz direkt in 0,142 s antwortete. Die Fehlermeldung nennt dabei nur `TimeoutError` mit leerem Text und weist auf das Modell statt auf den Aufrufer. Die Prüfung wäre eine Zeile — ein `asyncio.get_running_loop()` in `try/except`: Gibt es im aufrufenden Thread einen laufenden Loop, ist der Aufruf falsch. Dieselbe Klasse wie `novaberg-lesson_l_log-behauptet-was-es-weiss.md`; Kontext in `novaberg-lesson_l_async-bruecken.md`.
@@ -305,24 +330,6 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 **Was fertig waere.** Der Aufruf prueft, ob er im Event-Loop-Thread laeuft, und scheitert dort laut statt in einen Timeout.
 
 **Prioritaet:** hoch.
-
-#### THINKING-NULL-FALLE-LATENT 🔧 offen
-**Kategorie:** BAU
-
-**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Die Falle ist noch da, sie ist nur umgezogen, und eine ihrer beiden Hälften hat sich nebenbei geschlossen.** Die Zeilen 166/168/169 des Befundes gibt es nicht mehr; die Rechnung steht heute in `services/llm_provider.py:314-318`.
-
-| Zähler | heute | trägt ein gesetztes `null`? |
-|---|---|---|
-| `input_tokens` | `.get("prompt_eval_count", 0)`, danach `if not input_tokens:` mit Rückfall auf `message` | **nein** — der Rückfall fängt `None` mit ab, unabsichtlich |
-| `output_tokens` | `.get("eval_count", 0)`, ohne Absicherung | **ja** — `input_tokens + output_tokens` stürzt |
-
-> **Die Absicherung, die der Befund verlangte, ist an anderer Stelle gebaut:** `_antwort_umschlag_melden` liest dieselben zwei Schlüssel in `:143-144` mit `int(... or 0)`. Zwei Lesestellen desselben Feldpaars, eine abgesichert, eine nicht — die ungesicherte ist die, die rechnet.
-
-**Befund (2026-07-30).** Dieselbe Falle wie `OLLAMA-THINKING-NULL` sitzt latent drei Zeilen darüber: `services/llm_provider.py` liest `response.get("prompt_eval_count", 0)` und `response.get("eval_count", 0)`. Kommt dort je ein gesetztes `null` statt eines fehlenden Schlüssels, rechnet `input_tokens + output_tokens` mit `None` und stürzt — im Pfad der Token-Verbuchung, also **nach** dem erfolgreichen Call. Heute schlägt es nicht zu; Ollama liefert beide Zähler. *(Zeilennummern gemessen 30.07.2026: 166, 168, 169.)*
-
-**Was fertig waere.** Dieselbe Absicherung wie in der behobenen Stelle drei Zeilen darueber.
-
-**Prioritaet:** mittel.
 
 ### Chat 133 — aus der Fundliste klassifiziert, Block 31.07. (08.08.2026)
 
@@ -332,6 +339,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 
 #### PIPELINE-QUELLE-ZWEI-SCHREIBWEISEN 🔧 offen
 **Kategorie:** BAU
+
+**Rang:** **mittel** — still, ein Filter auf `quelle='character'` verliert Zeilen. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt und hat sich ausgebreitet (`server/graph/nodes/gespraechsvektor.py:914`, `server/graph/nodes/sachlage.py:1005`, `:1479`).
 
 **Befund (2026-07-31).** Der GV-Node schreibt seine Protokollzeile mit `quelle="character_graph"` als Literal, während Enricher und Salienz dafür `pipeline_quelle(state)` benutzen und `"character"` schreiben. Zwei Schreibweisen derselben Größe in derselben Spalte: Wer nach `quelle='character'` filtert, verliert die GV-Zeilen, ohne dass etwas fehlt.
 
@@ -343,6 +352,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 
 #### PFAD1-TIMEOUT-TURNVERLUST — ein Aussetzer im Modell löscht die Nutzeräußerung, und ein Impuls füllt die Lücke 🔧 Teil (C) gelöst Chat 119
 **Kategorie:** BAU
+
+**Rang:** **mittel** — laut. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: (C) ist behoben (`4dd71d7`), (B) steht (`server/services/model_services/worker_base.py:194` verwirft ein knapp verspätetes Ergebnis), (A) ist nicht ermittelt.
 
 **(C) gelöst am 30.07.2026 — der Datenverlust ist weg.** Das Ereignis wird jetzt auch dann erzeugt, wenn Pfad 1 mit einer Ausnahme endet, und es trägt den Vermerk `pfad1_ausfall` mit Ausnahmetyp und Meldung. `db_zugriff` meldet ihn als `error` und sagt ausdrücklich, dass `external.emotion` die Defaults der Datenklasse trägt und **keine Messung** ist — ohne diesen Vermerk käme ein Zusammenbruch stromabwärts als ruhige Nutzeräußerung an. Das Feld erscheint nur, wenn es etwas zu sagen hat; ein dauerhaftes `pfad1_ausfall: ""` wäre ein stiller Default.
 
@@ -398,6 +409,8 @@ Unterscheidbar war er nur an **einer** Stelle: der Bubble-Farbe des Clients. **I
 #### REDIS-KEY-ASYMMETRY — Inline-Key-Konstruktion ohne Helper, Reader-Setter-Schema-Mismatch ⬜
 **Kategorie:** BAU
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an drei Familien (`hash_dirty`, `drive:short_term:`, `gv:detail:`), es gibt keinen zentralen Key-Helfer.
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Eigenschaft 1 gilt unveraendert:** Es gibt weiterhin keinen zentralen Helfer fuer `hash_dirty`; jede Stelle baut den Key per f-string (`memory/kzg.py:546`, `agents/kzg/queues.py:135`, `agents/synapsen_promotion/agent.py:472`). Das Vorbild `_kzg_key()` steht weiter allein in `memory/kzg.py:69` und bedient nur seine eigene Familie.
 
 > **Eigenschaft 3 hat sich verschoben.** Der Leser hartcodiert nicht mehr `(DEFAULT_USER_ID, ASSISTANT_USER_ID)`, sondern iteriert ueber eine **Paarliste aus der Konfiguration** (`agents/charakter/agent.py:150`, `AKTIVES_PAAR_USER_ID`). Die Asymmetrie ist damit nicht behoben, sondern hat die Form gewechselt: Sie liegt jetzt zwischen *Setzer schreibt fuer jedes Paar* und *Leser liest fuer genau eins* — mit `HASH-DIRTY-WAISENKEYS` als gemessener Folge, dort 12 ungelesene Keys.
@@ -427,6 +440,8 @@ Unterscheidbar war er nur an **einer** Stelle: der Bubble-Farbe des Clients. **I
 
 #### PATH1-LATENZ — Pfad-1 kann unter GPU-Druck sehr langsam werden ⬜
 **Kategorie:** BAU
+
+**Rang:** **niedrig** — Einzelereignis vom 23.04.2026, die Modelle sind seither gewechselt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `OLLAMA_KEEP_ALIVE` ist nirgends gesetzt.
 
 **Zustand:** offen, **unbelegt** — nachgesehen am 25.08.2026. Der Befund ist ein Einmal-Ereignis ohne Wiederholung; die naheliegende Stellschraube (`OLLAMA_KEEP_ALIVE`) ist an keiner Stelle gesetzt, also auch nicht als Abhilfe versucht worden. Ohne einen zweiten Fall ist nichts zu messen.
 **Entdeckt:** Chat 61, 23. April 2026
