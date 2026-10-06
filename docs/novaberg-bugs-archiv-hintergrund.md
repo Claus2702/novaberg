@@ -1,9 +1,68 @@
 # Novaberg — Bugs, Archiv: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 19 Eintraege, je mit `HGR` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 22 Eintraege, je mit `HGR` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 05.10.2026 — geschlossen bei der Durchsicht der offenen Eintraege
+
+**Diese Eintraege standen als offen im Register und waren es nicht mehr.** Am 05.10.2026 ist jeder offene Eintrag gegen den Code am HEAD `17bf86e` gehalten worden; die Zustandszeile je Eintrag nennt den Beleg. *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Die Stelle, an der der Befund galt, gibt es nicht mehr.
+
+---
+
+### `ZIEL-VERFALLEN-BLEIBT-AKTIV` — der Verfall raeumt die Motivation ab und laesst das Ziel stehen
+**Kategorie:** HGR
+
+**Zustand:** geschlossen — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. **Die Schließbedingung war schon bei der Messung erfüllt:** Seit `5c7b2ae` (28.07.2026) setzt der Verfall eine Zeile unter `ZIEL_DEAKTIVIERUNGS_SCHWELLE` = 0,15 auf `aktiv = FALSE` und `aktualisiert_am = NOW()` (`server/memory/ziele.py:599-607`, `server/config.py:3476`). Die vier gemessenen Ziele lagen mit 0,19 bis 0,20 darüber und waren zu Recht aktiv. Dass die Verfallsschreibung selbst `aktualisiert_am` nicht setzt, steht weiter so im Code; die Schließbedingung verlangt es nicht.
+
+**Zustand bis 05.10.2026:** offen — am Bestand gemessen am 30.08.2026.
+
+**Symptom.** Vier mittelfristige Ziele des Paares `falle` tragen `aktiv = true` bei einer Motivation von **0,19 bis 0,20** gegen eine `motivation_basis` von 0,60 bis 0,65. Der `ZielDecayAgent` hat sie auf rund ein Drittel ihres Ausgangswertes gesenkt — und die Aktivitaet nicht beendet.
+
+| id | Motivation | Basis | erstellt | aktualisiert |
+|---|---|---|---|---|
+| 7019 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
+| 7020 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
+| 7021 | 0,20 | 0,65 | 06.08.2026 | 06.08.2026 |
+| 7022 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
+
+Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktualisiert_am` steht bei allen auf dem Erstelldatum — der Verfall schreibt die Motivation, ohne die Zeile als bearbeitet zu markieren.
+
+**Warum das ein Defekt ist und nicht eine Einstellung.** Der Verfall ist die Bauart des Gedaechtnisses: Was lange niemanden interessiert hat, soll leiser werden, bis es **ruht**. Hier senkt er den Wert und laesst die Zeile im aktiven Bestand — sie erscheint in jeder Abfrage, die nach `aktiv` filtert, mit einem Gewicht, das ihre Bedeutungslosigkeit bereits ausdrueckt. **Ein Leser, der nach Aktivitaet filtert und nach Motivation gewichtet, bekommt sie zweimal verschieden beantwortet.**
+
+**Nicht Teil dieses Befundes:** Die Vermutung, es gaebe zwei Zustaende in `ziele.motivation` — Zeilen mit und ohne `motivation_basis` —, ist am Bestand **widerlegt**: **376 von 376 Zeilen tragen eine Basis** (kurzfristig 14, mittelfristig 14, langfristig 348). Die Annahme entstand aus einer Abfrage, in der die Spalte nicht abgefragt war.
+
+**Was fertig waere.** Eine Schwelle, unter der der Verfall die Zeile auf `aktiv = false` setzt — oder die begruendete Festlegung, dass Ziele nie von selbst ruhen und `aktiv` allein von aussen gesetzt wird. Beides ist vertretbar; der heutige Zustand ist keins von beidem.
+
+**Verwandt:** `ZIELE-RUHEN-OHNE-ABRAEUMPFAD` (Backlog, Hintergrund) — dort die andere Haelfte: 331 abgeschaltete Ziele bei voller Motivation.
+
+---
+
+### `RECHERCHE-OHNE-AUDIT` — der RechercheAgent schrieb keinen Audit-Eintrag
+**Kategorie:** HGR
+
+**Zustand:** behoben — im Code seit `e89b2eb` und `80d4b37` (18.09.2026), **im Betrieb belegt am 05.10.2026**: `hintergrund_log` trägt am 03.10.2026 unter `aufgabe = 'recherche'` 7 Zeilen `gestartet`, 5 `erledigt` und 1 `fehler`, gezählt ohne Inhalte. Ein Lauf (11:58:35 UTC) blieb ohne Abschlusszeile; das ist ein eigener Fund (Fundliste, 05.10.2026).
+
+**Befund (2026-08-04).** **Der RechercheAgent schreibt keinen `hintergrund_log`-Eintrag.** Ein Durchlauf dauert zehn Minuten und belegt den einzigen seriellen Platz, hinterlässt im Audit aber nichts; im Protokoll der letzten sechs Stunden stehen nur `ziel_decay`, `synapsen_decay` und `synapsen_promotion`. Ob eine Recherche lief, ist damit nur aus dem Behälter-Log rekonstruierbar, das rotiert. Seit dem 04.08. schreibt der Bibliotheks-Schritt einen eigenen Eintrag — der Durchlauf selbst weiterhin nicht.
+
+**Was fertig waere.** `gestartet` / `erledigt` / `fehler` im `hintergrund_log`, wie bei jedem anderen Hintergrundlauf.
+
+**Prioritaet:** hoch.
+
+**Nachtrag 18.09.2026 — nicht geschlossen, obwohl der Rahmen-Audit steht.** Seit `ac86792` schreibt der Pixie-Dispatch `gestartet`/`erledigt`/`fehler` um jeden Agentenlauf, **ausser** bei Agenten, die `writes_own_audit` melden. Der RechercheAgent meldet es, weil er eine `_audit_log`-Methode traegt — die schreibt aber nur den **Bibliotheks-Schritt** (`recherche_bibliothek`), nicht den Lauf. Der Rahmen faellt damit genau fuer den Agenten aus, fuer den dieser Eintrag ihn verlangt. **Im Code behoben am selben Tag** (`e89b2eb`): Der Agent meldet `writes_own_audit = False`, der Rahmen schreibt den Lauf als `recherche`, der Schritt bleibt `recherche_bibliothek`. **Offen bis zum Betriebsbeleg** — ein Recherchelauf braucht einen Auftrag in der Queue und war am 18.09.2026 nicht herbeizufuehren. Dieselbe Form trug `synapsen_promotion` (Audit je Eintrag, der Lauf ohne Zeile); behoben in `3beecc9`. **Am selben Abend umgebaut** (`80d4b37`, Entscheidung zu NMCP §7): Der Agent belegt seinen Lauf jetzt **selbst** unter `recherche` — `gestartet` mit dem Thema, `erledigt` mit der Laenge des Destillats oder `fehler`; der Rahmen im Dispatch ist entfallen. Die Pruefform fuer den Betriebsbeleg bleibt: `hintergrund_log where aufgabe = 'recherche'`.
+
+---
+
+### `PIX1` — Delivery blockiert Event Loop
+**Kategorie:** HGR
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der Eintrag trägt nur seine Überschrift; die bekannte Blockade der Zustellung ist `SHADOW-DELIVERY-BLOCKING-INVOKE` (Archiv, behoben). Heute läuft der AgentGraph der Zustellung über `asyncio.to_thread` (`server/services/shadow_delivery.py:678`), und in `shadow_delivery.py` steht kein blockierender Aufruf mehr (`submit_sync`, `.invoke(`, `time.sleep`: keiner außerhalb des Threads).
+
+**Entdeckt:** Chat 23
+**Prio:** Mittel — UX-Bug, kein Datenverlust.
 
 ---
 

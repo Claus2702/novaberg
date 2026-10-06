@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 21 Eintraege, je mit `**Kategorie:** HGR`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 18 Eintraege, je mit `**Kategorie:** HGR`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -13,6 +13,8 @@ Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdi
 
 ### `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION` — die Schreibung schlug fehl, der Status sagt `abgeschlossen`
 **Kategorie:** HGR
+
+**Rang:** **niedrig** — im Code behoben (`150597e`, 18.09.2026; 19 Rückgaben über `verified_outcome`), **offen nur bis zum Betriebslauf**, den der Zustand verlangt: eine echte Schreibung, die scheitert. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
 
 **Zustand:** **im Code behoben am 18.09.2026** — `agents/write_outcome.py::verified_outcome`, an allen 18 verifizierenden Rückgaben von Timeline, Notizen, Direktiven und Charakter-Identität; ein Strukturzeuge zählt sie am Syntaxbaum, ein Durchlauf des Timeline-Anlegens mit gescheiterter Verifikation meldet `fehler`. Die fünf Dokumente mit der widerlegten Aussage über `CrudErgebnis` sind berichtigt. **Offen bis zum Archiv:** der Betriebslauf, in dem eine echte Schreibung scheitert und die Antwort sie nicht bestätigt. ~~**Und ein Fall, den der Umbau nicht erklärt:** … Nicht untersucht.~~ → **erklärt und behoben am 18.09.2026:** Der Ausgang kam aus der Duplikat-Prüfung der Suche — ohne Ziel fiel sie in die Übersicht, und ein Erinnerungs-Anker der KZG galt als Duplikat (`agents/timeline/suche.py::find_duplicates`, Scheibe 12 F).
 
@@ -36,32 +38,10 @@ Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdi
 
 *Die Einträge dieses Abschnitts standen bis zum 19.09.2026 ohne eigene Überschrift unter dem Abschnitt vom 25.08.2026, zu dem nur der erste Eintrag davor gehört. Ihre Befunddaten reichen vom 05.08. bis zum 18.09.2026.*
 
-### `ZIEL-VERFALLEN-BLEIBT-AKTIV` — der Verfall raeumt die Motivation ab und laesst das Ziel stehen
-**Kategorie:** HGR
-
-**Zustand:** offen — am Bestand gemessen am 30.08.2026.
-
-**Symptom.** Vier mittelfristige Ziele des Paares `falle` tragen `aktiv = true` bei einer Motivation von **0,19 bis 0,20** gegen eine `motivation_basis` von 0,60 bis 0,65. Der `ZielDecayAgent` hat sie auf rund ein Drittel ihres Ausgangswertes gesenkt — und die Aktivitaet nicht beendet.
-
-| id | Motivation | Basis | erstellt | aktualisiert |
-|---|---|---|---|---|
-| 7019 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
-| 7020 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
-| 7021 | 0,20 | 0,65 | 06.08.2026 | 06.08.2026 |
-| 7022 | 0,19 | 0,60 | 06.08.2026 | 06.08.2026 |
-
-Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktualisiert_am` steht bei allen auf dem Erstelldatum — der Verfall schreibt die Motivation, ohne die Zeile als bearbeitet zu markieren.
-
-**Warum das ein Defekt ist und nicht eine Einstellung.** Der Verfall ist die Bauart des Gedaechtnisses: Was lange niemanden interessiert hat, soll leiser werden, bis es **ruht**. Hier senkt er den Wert und laesst die Zeile im aktiven Bestand — sie erscheint in jeder Abfrage, die nach `aktiv` filtert, mit einem Gewicht, das ihre Bedeutungslosigkeit bereits ausdrueckt. **Ein Leser, der nach Aktivitaet filtert und nach Motivation gewichtet, bekommt sie zweimal verschieden beantwortet.**
-
-**Nicht Teil dieses Befundes:** Die Vermutung, es gaebe zwei Zustaende in `ziele.motivation` — Zeilen mit und ohne `motivation_basis` —, ist am Bestand **widerlegt**: **376 von 376 Zeilen tragen eine Basis** (kurzfristig 14, mittelfristig 14, langfristig 348). Die Annahme entstand aus einer Abfrage, in der die Spalte nicht abgefragt war.
-
-**Was fertig waere.** Eine Schwelle, unter der der Verfall die Zeile auf `aktiv = false` setzt — oder die begruendete Festlegung, dass Ziele nie von selbst ruhen und `aktiv` allein von aussen gesetzt wird. Beides ist vertretbar; der heutige Zustand ist keins von beidem.
-
-**Verwandt:** `ZIELE-RUHEN-OHNE-ABRAEUMPFAD` (Backlog, Hintergrund) — dort die andere Haelfte: 331 abgeschaltete Ziele bei voller Motivation.
-
 ### `THEMENEMBEDDING-TRAEGT-DESTILLAT` — der Name sagt Thema, der Inhalt ist das Destillat
 **Kategorie:** HGR
+
+**Rang:** **niedrig** — die Wirkung ist behoben (ein Vektor je Thema, `4f16143`), die Schließbedingung nicht: Spalte `themen_embedding`, Docstring *„Zusammenfassung“* und Argument `destillat` nennen weiter drei Dinge (`server/agents/recherche/agent.py:473-489`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `agents/recherche/agent.py:383` uebergibt weiter `ergebnis.destillat`.
 
@@ -74,6 +54,8 @@ Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktu
 ### `RUECKWEG-OHNE-IDEMPOTENZ` — derselbe Fund zweimal eingereiht laeuft zweimal
 **Kategorie:** HGR
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Rückweg hat keine Fundkennung, die Dublettenabwehr hängt am Modellurteil (`server/agents/wissen_rueckweg/einarbeitung.py:223`, `:310`).
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. keine Fundkennung, kein Register in `agents/wissen_rueckweg/`.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Rückweg hat keine Idempotenz — derselbe Fund zweimal eingereiht läuft zweimal.** Der Auftrag trägt keine Kennung des Fundes, und der Agent führt kein Register darüber, was er schon eingearbeitet hat. Was die Dublette heute verhindert, ist **allein der Modellaufruf**: Er sieht den Text der Datei und soll `nach=null` setzen, wenn der Fund schon dasteht. **Das ist eine Zusicherung des Prompts, keine der Struktur** — und damit genau die Sorte, die unter Last nachgibt. Die Shadow-Queue verstärkt zwar denselben Gegenstand statt ihn zu doppeln; das deckt die zweite Einreihung, nicht den zweiten Lauf.
@@ -84,6 +66,8 @@ Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktu
 
 ### `FEHLVERSUCHSPFAD-LOESCHT-HART` — zur Haelfte behoben am 23.08.2026
 **Kategorie:** HGR
+
+**Rang:** **niedrig**; **wartet auf eine Absicht**: ob ein Auftrag mit Fehlversuchen in der Auswahl zurücksteht. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die erste Hälfte ist behoben (`6c3f33b`: stilllegen mit Grund statt löschen), die Auswahl zieht weiter den Salienzstärksten zuerst (`server/memory/repositories/shadow_auftrag_repository.py:394`).
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert. **Die erste Haelfte ist gebaut, die zweite ausdruecklich nicht.** `versuch_zaehlen` legt an der Grenze still statt zu loeschen: `aktiv = FALSE, grund = 'fehlversuch'`. Der Verfallspfad schreibt `grund = 'verfall'` — zwei Ausgaenge, zwei Werte, sonst traegt die Spalte keine Unterscheidung. DDL angekuendigt und angelegt am 23.08.2026 (`F-DDL-1`): `shadow_auftrag.grund VARCHAR(20) NOT NULL DEFAULT ''`. Zeugen: `tests/test_queue_verfall.py` (i, i2, i3) und `tests/test_shadow_auftrag_schema.py`, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2188 tests — OK`.
 
@@ -106,6 +90,8 @@ Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktu
 ### `ZWEI-FRISTEN-7200-VERSCHIEDEN` — gleiche Zahl, verschiedene Bedeutung
 **Kategorie:** HGR
 
+**Rang:** **niedrig** — heute ohne falsches Ergebnis. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `ex=7200` steht dreimal als Literal (`server/services/prompt_consumer.py:199`, `server/services/shadow_delivery.py:1033`, `:1085`).
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `services/prompt_consumer.py:213` traegt die 7200 s weiter hartkodiert.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **Zwei Fristen von 7200 s bedeuten Verschiedenes und sind jetzt auseinandergelaufen.** `SESSION_TTL` steht seit heute auf 14400 s, weil die Session die Verfallskurve überdauern muss. Der Schlüssel `last_activity:{user_id}` trägt seine 7200 s **hartkodiert** in `services/prompt_consumer.py` und steuert die Idle-Erkennung des Pixie — ein anderer Zweck, dieselbe Zahl. Ob die beiden je gekoppelt gedacht waren, ist unbelegt; `novaberg-pixie.md` §150 nennt die 7200 s als Eigenschaft dieses Schlüssels. **Nicht mitgeändert:** Der Zweck ist ein anderer, und eine Reparatur im Zug eines fremden Auftrags vermischt zwei Ursachen.
@@ -116,6 +102,8 @@ Korpusweit stehen **4 aktive Ziele unter 0,25**; es sind genau diese vier. `aktu
 
 ### `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG` — die Aenderung erreicht den Stapel nicht
 **Kategorie:** HGR
+
+**Rang:** **niedrig**; **wartet auf eine Absicht**: ob Altbestand über 1200 Zeichen auf dem Stapel verworfen, neu verdichtet oder liegen gelassen wird. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Aufräumweg im Code (`server/services/pixie/stack.py:30-101`).
 
 **Zustand:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. braucht die Altersverteilung des Stapels gegen den Korridor.
 
@@ -138,6 +126,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### UNREGISTRIERTER-AGENT-GEWINNT 🔧 offen
 **Kategorie:** HGR
 
+**Rang:** **mittel** — laut (ERROR, Audit-Zeile), kostet Zyklen. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `vertiefen` → `vertiefung` (`server/services/pixie/router.py:18`) hat keinen Agenten, die Registry wird erst nach der Wahl geprüft. `PIXIE-AGENT-MISSING` ist dasselbe Symptom im Log.
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Der Befund steht; sein Schaden ist durch einen Umbau kleiner geworden, der ihn nicht meinte.** `services/pixie/router.py:18` bildet `vertiefen` weiter auf `vertiefung` ab, und `server/agents/` führt keinen solchen Agenten; die Registry-Prüfung sitzt weiterhin **hinter** der Wahl des Gewinners (`services/pixie/dispatch.py:33`, `return False`). Ein Auftrag ohne Agenten kann den Heartbeat also weiterhin gewinnen — was fertig wäre, ist nicht gebaut.
 
 > **Die Spurentrennung nimmt ihm die Verdrängung, nicht den Leerlauf.** `services/pixie/scheduler.py::_spur_von` fragt den Router **vor** der Wahl — aber nur nach der Lastart. Sein Docstring sagt die Folge ausdrücklich: *„Ein Kandidat ohne auffindbaren Agenten bleibt in der LLM-Spur: Dort fällt er auf und blockiert nichts Schnelles."* Der Auftrag gewinnt und läuft ins Leere; die CPU-Spur bleibt frei. Die sechs Minuten ohne anderen Job aus dem Befund von 2026-07-27 sind damit nicht mehr die Wirkung, die zu erwarten ist.
@@ -153,6 +143,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### ROUTER-MISS-OHNE-ABSCHLUSS 🔧 offen
 **Kategorie:** HGR
 
+**Rang:** **niedrig** — laut, heute nicht ausgelöst (alle periodischen Namen sind routebar). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt als Falle, `server/services/pixie/scheduler.py:142-144` kehrt ohne `abschluss()` zurück.
+
 **Befund (2026-07-28).** Der Router-Miss-Pfad in `services/pixie/scheduler.py` kehrt zurück, **ohne `abschluss()` zu rufen**. Ein periodischer Kandidat, für den kein Agent gefunden wird, behält damit sein `next_run` und wird beim nächsten Heartbeat erneut Kandidat. Ohne Aging war das harmlos — er verlor gegen die Queue. Mit dem Aging (Chat 113) wächst sein Zuschlag bis zum Deckel, und er gewinnt dann **jeden** Zyklus, ohne je zu laufen. Heute nicht akut: Alle sieben vorhandenen `pixie:schedule:*`-Einträge sind routebar, sechs über die Tabelle, `ziel_decay` über die Namensgleichheit. Der Fund ist die Falle für den nächsten Agenten ohne Routing-Eintrag.
 
 **Was fertig waere.** Jeder Pfad, der einen Auftrag annimmt, schliesst ihn auch ab.
@@ -161,6 +153,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 #### DISPATCH-ABSCHLUSS-UNVOLLSTAENDIG 🔧 offen
 **Kategorie:** HGR
+
+**Rang:** **niedrig** — im Betrieb kaum erreichbar: Bei `PIXIE_AKTIV=false` wird der Heartbeat gar nicht registriert. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `server/services/pixie/dispatch.py:181` entfernt vor der Abfrage (`:184`).
 
 **Befund (2026-07-30).** `services/pixie/dispatch.py` `abschluss()`: Das Entfernen eines Queue-Auftrags steht **vor** der Abfrage auf `PIXIE_AKTIV`. Bei abgeschaltetem Pixie ist ein fehlgeschlagener Auftrag entfernt und wird nicht wieder eingereiht — er ist weg. Heute nicht akut, der Schalter steht im Betrieb auf `true`; eine Falle fuer den, der ihn umlegt. Durch einen Test gepinnt (`tests/test_pixie_abschluss.py`), damit die Reparatur eine Entscheidung ist und kein Nebeneffekt.
 
@@ -171,6 +165,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### RECHERCHE-LEER-GLEICH-AUSFALL 🔧 offen
 **Kategorie:** HGR
 
+**Rang:** **mittel** — der Agent unterscheidet Ausfall und leeres Ergebnis nicht, ein Suchausfall verbraucht Fehlversuche. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`server/agents/recherche/suche.py:18-90`, `agent.py:604`); nur das Anbieter-Log trennt beides.
+
 **Befund (2026-07-30).** **„Keine Treffer" und „Suchdienst ausgefallen" nehmen im `RechercheAgent` denselben Weg.** Beide enden in `Keine Ergebnisse gefunden — Abbruch`, mit derselben Logzeile und ohne Unterscheidung. SearXNG liefert die Information mit: Jede Antwort trägt ein Feld `unresponsive_engines` mit Engine-Namen und Grund (`Suspended: CAPTCHA`, `Suspended: too many requests`, `access denied`, `timeout`). Das Feld wird nicht gelesen. Gemessen am 30.07.2026: 14 geprüfte Engines, 12 stumm, und die Ursache stand in jeder einzelnen Antwort.
 
 **Was fertig waere.** Keine Treffer und ein ausgefallener Suchdienst sind unterscheidbar.
@@ -179,6 +175,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 #### RECHERCHE-RELEVANZ-UNGEPRUEFT 🔧 offen
 **Kategorie:** HGR
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `server/agents/recherche/suche.py` filtert nur Sperrliste und Domain-Dublette, der Docstring nennt einen Relevanzfilter, den es nicht gibt.
 
 **Befund (2026-07-30).** **Der `RechercheAgent` prüft die Relevanz seiner Treffer nicht.** Nach der Wiederherstellung der Suche holte er für die Anfragen *information self-gravitation*, *neurobiological coherence resonance* und *topological phase transition* drei Texte: `photos.google.com` (3514 Zeichen), `support.microsoft.com` (4715) und einen Wikipedia-Artikel (5000). Zwei von drei sind Produktseiten ohne Bezug zur Anfrage und gehen unbewertet in die Weiterverarbeitung. Derselbe Effekt bei einer direkten Messung mit einer biologischen Fachanfrage aus drei Begriffen: erster Treffer eine Produktseite für ein Nahrungsergänzungsmittel. Die Trefferqualität hängt an der Engine, die Bewertung fehlt unabhängig davon.
 
@@ -199,6 +197,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### WIEDERVORLAGE-SATZ-STATT-MATERIAL 🔧 offen
 **Kategorie:** HGR
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `server/agents/wiedervorlage/agent.py:144-150` legt den formulierten Satz auf den Stapel, die Zustellung verlangt das Material (`server/services/shadow_delivery.py:611-614`).
+
 **Befund (2026-08-05).** **Der WiedervorlageAgent legt einen fertig formulierten Satz auf den Stapel, wo die Zustellung Material erwartet.** `_nachfrage_formulieren()` lässt das Sprachmodell mit `BUTLER_SYSTEM_PROMPT` „eine kurze, freundliche Erinnerung für den Benutzer" schreiben, und dieser Satz wird als `inhalt` gepusht. Die Zustellung reicht jeden `inhalt` unverändert als `user_prompt` in den AgentGraph — mit dem Kommentar: *„Das Wissensstueck selbst ist der Reiz — nicht ein daraus formulierter Satz. […] Vorher sprach die Delivery den Gedanken aus, bevor er gedacht war."* Genau dieser Fall ist im Zustellungspfad behoben und im Agenten nicht: Nova bekommt eine an sie adressierte Butler-Erinnerung als Reiz und reagiert darauf, als hätte jemand sie ihr gesagt. Der `RechercheAgent` macht es anders und legt sein Destillat ab. **Zwei Bauarten, eine Zustellung.**
 
 **Was fertig waere.** Der Agent liefert Material statt eines fertigen Satzes, oder die Zustellung erklaert, dass sie einen fertigen Satz erwartet — beides, aber nicht keines.
@@ -208,25 +208,18 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### RECHERCHE-SALIENZ-KONSTANT 🔧 offen
 **Kategorie:** HGR
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt am KZG-Eintrag (`server/agents/recherche/agent.py:717`, fest 0.7); Bibliothek und Stapel lesen den Wert aus dem Auftrag (`8130ce1`, `0316832`).
+
 **Befund (2026-08-04).** **Der RechercheAgent schreibt seinem KZG-Eintrag eine feste Salienz von 0.7** (`agents/recherche/agent.py`, `salienz_obj`). Der Wert ist ein Literal im Code, kein Ergebnis: Jede Recherche landet mit demselben Gewicht im Gedächtnis, gleich wie bedeutsam ihr Auslöser war. Der auslösende Wert steht im Queue-Auftrag und wird an dieser Stelle nicht gelesen — dieselbe Fehlerklasse wie der Vorgabewert, den `salienz_anfang` in der Bibliothek ausdrücklich verbietet.
 
 **Was fertig waere.** Die Salienz kommt aus dem ausloesenden Auftrag statt aus einem Literal.
 
 **Prioritaet:** mittel.
 
-#### RECHERCHE-OHNE-AUDIT 🔧 offen
-**Kategorie:** HGR
-
-**Befund (2026-08-04).** **Der RechercheAgent schreibt keinen `hintergrund_log`-Eintrag.** Ein Durchlauf dauert zehn Minuten und belegt den einzigen seriellen Platz, hinterlässt im Audit aber nichts; im Protokoll der letzten sechs Stunden stehen nur `ziel_decay`, `synapsen_decay` und `synapsen_promotion`. Ob eine Recherche lief, ist damit nur aus dem Behälter-Log rekonstruierbar, das rotiert. Seit dem 04.08. schreibt der Bibliotheks-Schritt einen eigenen Eintrag — der Durchlauf selbst weiterhin nicht.
-
-**Was fertig waere.** `gestartet` / `erledigt` / `fehler` im `hintergrund_log`, wie bei jedem anderen Hintergrundlauf.
-
-**Prioritaet:** hoch.
-
-**Nachtrag 18.09.2026 — nicht geschlossen, obwohl der Rahmen-Audit steht.** Seit `ac86792` schreibt der Pixie-Dispatch `gestartet`/`erledigt`/`fehler` um jeden Agentenlauf, **ausser** bei Agenten, die `writes_own_audit` melden. Der RechercheAgent meldet es, weil er eine `_audit_log`-Methode traegt — die schreibt aber nur den **Bibliotheks-Schritt** (`recherche_bibliothek`), nicht den Lauf. Der Rahmen faellt damit genau fuer den Agenten aus, fuer den dieser Eintrag ihn verlangt. **Im Code behoben am selben Tag** (`e89b2eb`): Der Agent meldet `writes_own_audit = False`, der Rahmen schreibt den Lauf als `recherche`, der Schritt bleibt `recherche_bibliothek`. **Offen bis zum Betriebsbeleg** — ein Recherchelauf braucht einen Auftrag in der Queue und war am 18.09.2026 nicht herbeizufuehren. Dieselbe Form trug `synapsen_promotion` (Audit je Eintrag, der Lauf ohne Zeile); behoben in `3beecc9`. **Am selben Abend umgebaut** (`80d4b37`, Entscheidung zu NMCP §7): Der Agent belegt seinen Lauf jetzt **selbst** unter `recherche` — `gestartet` mit dem Thema, `erledigt` mit der Laenge des Destillats oder `fehler`; der Rahmen im Dispatch ist entfallen. Die Pruefform fuer den Betriebsbeleg bleibt: `hintergrund_log where aufgabe = 'recherche'`.
-
 #### SHADOW-STACK-THEMA-LEER 🔧 offen
 **Kategorie:** HGR
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `stack_push` prüft `thema` nicht (`server/services/pixie/stack.py:30-101`), zwei Aufrufer können leer liefern.
 
 **Befund (2026-08-04).** **Der Shadow-Stack trägt einen Eintrag mit leerem `thema`.** Der Auswahlvektor wird aus `f"{thema} {inhalt[:200]}"` gebildet; fehlt das Thema, trägt die halbe Grundlage nichts bei. Zwei solche Einträge erreichten untereinander eine Kosinus-Ähnlichkeit von 0,933 und wären als Duplikate behandelt worden, obwohl sie inhaltlich nichts teilen.
 
@@ -238,11 +231,6 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Gegenstaenden; hier stehen die von **Hintergrund**, die uebrigen in [Gedächtnis](novaberg-bugs-gedaechtnis.md), [Charakter](novaberg-bugs-charakter.md), [Antwortpfad](novaberg-bugs-antwortpfad.md), [Wissen](novaberg-bugs-wissen.md). Ueberschrift und Text stehen in jedem empfangenden Teil.
 
-#### PIX1 — Delivery blockiert Event Loop ⬜
-**Kategorie:** HGR
-**Entdeckt:** Chat 23
-**Prio:** Mittel — UX-Bug, kein Datenverlust.
-
 ---
 
 ### Datenqualität
@@ -251,6 +239,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### PIXIE-AGENT-MISSING — Periodische Pixie-Dispatches auf nicht-registrierte Agenten ⬜
 **Kategorie:** HGR
+
+**Rang:** **niedrig** — laut. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt für `vertiefung`; `nachfragen` ist gebaut. Dieselbe Ursache wie `UNREGISTRIERTER-AGENT-GEWINNT`, dort genauer.
 
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Zur Haelfte ueberholt:** `nachfragen` ist gebaut und liegt als `server/agents/nachfragen/` in der Registry; die ERROR-Zeile dazu kann nicht mehr entstehen. `vertiefung` gibt es weiterhin nicht, und `services/pixie/router.py:18` bildet weiter darauf ab.
 
@@ -287,6 +277,8 @@ propagiert Fehler vorbildlich — das Muster sitzt in den Zustell- und Batch-Pfa
 
 #### WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG — fällige Erinnerung weggesnoozed ohne Erinnerung ⚠️
 **Kategorie:** HGR
+
+**Rang:** **hoch** — still, nicht rückholbar: Eine fällige Erinnerung wird bei leerer Modellantwort oder gescheitertem Push trotzdem um sieben Tage verschoben und als verarbeitet gezählt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `server/agents/wiedervorlage/agent.py:144-161`.
 
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `_wiedervorlage_verschieben(eintrag)` und `verarbeitet += 1` stehen weiterhin ausserhalb des `if nachfrage:`-Blocks und laufen bedingungslos je Schleifendurchlauf. Der Stack-Push haengt an der Bedingung, das Verschieben nicht.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio hoch — DATENVERLUST.**
@@ -336,6 +328,8 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 #### IMPULS-BEZIEHUNGSRECHERCHE — Vertiefung kann die Beziehung selbst zum Gedächtnisinhalt machen ⚠️
 **Kategorie:** HGR
 
+**Rang:** **niedrig**; **wartet auf eine Absicht**: ob die Beziehung zwischen Nutzer und Figur Gegenstand einer Recherche sein darf. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Ausschluss im Code.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: **Entscheidung ausstehend, kein Defekt** — ob die Beziehung selbst Gegenstand der Vertiefung sein darf, ist keine Messung, sondern eine Festlegung.
 **Entdeckt:** Chat 110, beim Lesen der Impuls-Inhalte über die Brücke.
 
@@ -355,6 +349,8 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 #### PIXIE-QUEUE-LAUF-DISSENS — Dispatcher und Agent meinen Verschiedenes mit „ein Queue-Lauf" ⚠️
 **Kategorie:** HGR
+
+**Rang:** **niedrig** — der stille Verlust ist durch die Arbeitsliste beseitigt (`e35363f`, 09.08.2026: `LMOVE`, Entfernen erst nach Erfolg). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: Teil (1) steht dokumentiert, Teil (2) legt weiter genau einen Eintrag zurück und kann ihn doppelt einreihen, Teil (3) ist behoben.
 
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Einer der drei Befunde ist behoben, die beiden tragenden stehen.**
 
