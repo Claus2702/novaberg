@@ -1,9 +1,32 @@
 # Novaberg — Bugs, Archiv: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 28 Eintraege, je mit `CHA` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 29 Eintraege, je mit `CHA` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.10.2026 — geschlossen durch Entscheidung
+
+**Diese Einträge waren offen, weil eine Absicht fehlte, und die Entscheidung vom 06.10.2026 verlangt keinen Bau.** Der Befund ist damit hingenommen, nicht behoben; die Zustandszeile je Eintrag sagt, was gilt.
+
+---
+
+### `RAD-WERT-AUF-SPALTEN-DEFAULT`
+**Kategorie:** CHA
+
+**Zustand:** geschlossen am 06.10.2026 durch Entscheidung, nicht behoben — das Herkunftsfeld unterscheidet einen gerechneten Wert vom Spalten-Default; der Default bleibt.
+
+**Rang:** **niedrig** — entschärft durch das Herkunftsfeld (`server/agents/charakter/agent.py:1224-1226`, `server/memory/charakter.py:98`); ~~wartet auf eine Absicht: Genügt das Herkunftsfeld (dann schließen), oder wird der Spalten-Default `0.9` (`db/init.sql:1022`, gleich `RAD_NABE`) zu NULL?~~ → **entschieden am 06.10.2026** (unten). Letzteres wäre DDL. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: **Das Herkunftsfeld genügt**; der Spalten-Default bleibt, und der Eintrag ist geschlossen.
+
+**Befund (2026-07-30).** Ein gerechneter Rad-Wert kann **exakt auf dem Spalten-Default landen**, und dann ist er von „nie erhoben" nur noch am Herkunftsfeld zu unterscheiden. Gemessen am 30.07.2026, 20:07 UTC: Novas `nutzer_gewichtung` stand auf **0.90** — dem Wert der Nabe und zugleich dem Default der Spalte —, entstanden aus `+0.12` Zuwendung gegen `−0.12` Abwendung, die sich exakt aufhoben. Fünf von zwölf Speichen waren belegt, die Fläche im Diagramm deutlich schief. Ohne `nutzer_gewichtung_quelle` wäre das ein Ausfall gewesen, der wie ein Messergebnis aussieht; mit ihm und der Speichen-Anzeige ist es auf einen Blick als Messung lesbar. Der Fund ist nicht der Wert — bei der nächsten Destillation um 22:00 UTC stand er auf 1.06 —, sondern der Beleg, dass der vorhergesagte Kollisionsfall im Bestand tatsächlich eintritt (`novaberg-lesson_l_default-wie-fehlschlag.md`, `novaberg-gv-initiative_k.md` §6.4).
+
+**Was fertig waere.** Ein gerechneter Wert ist ohne Blick aufs Herkunftsfeld von einem nie erhobenen unterscheidbar.
+
+**Prioritaet:** mittel.
 
 ---
 

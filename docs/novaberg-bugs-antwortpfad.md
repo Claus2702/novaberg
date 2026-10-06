@@ -69,7 +69,9 @@
 ### `UMFANGSREGLER-BINDET-NICHT` — wirkt in der Richtung, bindet nicht
 **Kategorie:** ANT
 
-**Rang:** **mittel**, Aufwand groß; **wartet auf eine Absicht**: bleibt die Länge im Prompt eine Tendenz (in welcher Bauform), oder wird sie nach dem Modellaufruf erzwungen? Zusammen mit `MENGENANGABE-BINDET-NUR-UNTEN`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert, nur eine Zahl im Prompt (`server/ei/haltungssprache.py:593-596`).
+**Rang:** **mittel**, Aufwand groß; ~~wartet auf eine Absicht: bleibt die Länge im Prompt eine Tendenz (in welcher Bauform), oder wird sie nach dem Modellaufruf erzwungen?~~ → **entschieden am 06.10.2026** (unten). Zusammen mit `MENGENANGABE-BINDET-NUR-UNTEN`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert, nur eine Zahl im Prompt (`server/ei/haltungssprache.py:593-596`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Die Länge bleibt eine **Tendenz im Prompt**; nach dem Modellaufruf wird nichts erzwungen — Kürzen zerschneidet Sätze, Nachfordern kostet einen Aufruf. ~~In der Bauform Sätze und Absätze statt Zeichen; Sätze kann das Modell zählen, Zeichen nicht.~~ → **Die Bauform ist am selben Tag neu entschieden**, weil die Begründung unbelegt war und einer Messung widersprach: In [`novaberg-haltungsraum_m.md`](novaberg-haltungsraum_m.md) bindet eine Satzvorgabe, zerstört aber den knappen Stil (1 von 3 Inhaltsmarken gegen 3 von 3 mit einem Zeichenkorridor). Der Eigentümer: *„Wir nehmen c“* — **erst messen, dann entscheiden:** Satzform gegen Zeichenkorridor, an Länge **und** Stil, mit dem Instrument vom 07.09.2026 (unten) und rund 30 bis 40 Turns zu Sachfragen. **Das Ziel:** Die Länge bindet in beide Richtungen, ohne den knappen Stil zu verlieren. Bis dahin bleibt die Bauform Zeichen. Gilt ebenso für `MENGENANGABE-BINDET-NUR-UNTEN`.
 
 **Zustand:** offen, **die verlangte Pruefform ist am 07.09.2026 gefahren** — mit und ohne Block, 16 Turns, kein Ausfall. ~~offen, belegt am 07.09.2026 an 749 Turns~~ ~~offen, unbelegt — braucht Ist-Laenge gegen Vorgabe an echten Turns~~
 
@@ -184,6 +186,8 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 **Kategorie:** ANT
 
 **Rang:** **mittel**, Aufwand groß — dieselbe Ursache und Entscheidung wie `UMFANGSREGLER-BINDET-NICHT`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: wie `UMFANGSREGLER-BINDET-NICHT` — die Länge bleibt eine **Tendenz im Prompt**; nach dem Modellaufruf wird nichts erzwungen. ~~In Sätzen und Absätzen statt Zeichen.~~ → Die Bauform ist am selben Tag neu entschieden (*„Wir nehmen c“*): erst die Messung Satzform gegen Zeichenkorridor an Länge und Stil, bis dahin Zeichen — Einzelheiten dort.
 
 **Zustand:** offen, unbelegt — gegen HEAD `9bcd214` gehalten am 24.08.2026. Die halbierten Korridore sind gebaut und im Betrieb ungemessen.
 
@@ -325,7 +329,9 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 #### RESPONDER-LEERE-ANTWORT-STILL — eine Antwort ohne Zeichen passiert vier Stufen als Erfolg 🔧 Riegel gebaut 01.08.2026, Ursache offen
 **Kategorie:** ANT
 
-**Rang:** **mittel** — laut seit der Ausfallmeldung (`turn_gescheitert`); **wartet auf eine Absicht**: bei `text_len == 0` einmal wiederholen (mit Vermerk im Zustand) oder bei der Meldung an den Menschen bleiben? Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+**Rang:** **mittel** — laut seit der Ausfallmeldung (`turn_gescheitert`); ~~wartet auf eine Absicht: bei `text_len == 0` einmal wiederholen (mit Vermerk im Zustand) oder bei der Meldung an den Menschen bleiben?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Bei `text_len == 0` wird **einmal wiederholt**, mit Vermerk im Zustand, damit die Häufigkeit zählbar bleibt. Die Ursache liegt beim Anbieter und kam in Schüben.
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert. Der Riegel meldet den Ausfall, die Ursache ist nicht ermittelt. Der juengste Stand steht im **Nachtrag vom 19.08.2026** weiter oben; dieser Abschnitt ist der Eintrag.
 
@@ -429,7 +435,9 @@ Er fügt der Tabelle nichts Neues hinzu, sondern **bestätigt ihre Trennung**: g
 #### RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM — ohne Material aus dem Verfasser greift der Responder auf den Kontext
 **Kategorie:** ANT
 
-**Rang:** **hoch** — still, eine flüssige Antwort ohne Material sieht richtig aus; **wartet auf eine Absicht**: abbrechen oder als *ohne Material* kennzeichnen? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/graph/nodes/responder.py:622-630` lässt nur den Block weg.
+**Rang:** **hoch** — still, eine flüssige Antwort ohne Material sieht richtig aus; ~~wartet auf eine Absicht: abbrechen oder als *ohne Material* kennzeichnen?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/graph/nodes/responder.py:622-630` lässt nur den Block weg.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Fehlt der Inhalt des Verfassers, **bricht der Turn ab und meldet den Ausfall**, statt ohne Material zu antworten. Eine flüssige Antwort ohne Material sieht richtig aus und übertönt den Ausfall, den der Verfasser schon laut meldet.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: der Befund beschreibt, was der Responder **sagt**, wenn ein Agent nichts liefert. Kein Codeort trennt das von einer richtigen Antwort.
 Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unverändert weiter und baut eine Antwort aus dem **Gedächtniskontext** — im belegten Fall 23.824 Zeichen.
@@ -551,6 +559,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 **Rang:** **niedrig** — Modellverhalten. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). Gezählt am 05.10.2026 (`turn_roh`, Muster *ich verstehe, dass* / *das klingt nach*, nur ein Hinweis): bis 30.07.2026 0 von 200 Antworten, August 15 von 758, ab September 2 von 665.
 
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Block `[REGELN]` bleibt ausgesetzt; eine einzelne Regel kommt nur zurück, wo eine Zählung sie verlangt. Die Abhilfe dieses Eintrags ist damit zuerst eine Zählung seines Musters im Betrieb — erst ein gezählter Rückfall holt seine Regel zurück.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Modell-Compliance. Der Eintrag nennt selbst *Modell-Limit, kein Architektur-Problem* — nur ein Lauf ueber mehrere Turns zeigt, ob der Ton noch auftritt.
 **Entdeckt:** Chat 30, Smoke-Test (#7, #8, #9, #11)
 **Symptom:** "Ich verstehe, dass...", "Es ist verständlich, dass...", "Lass uns gemeinsam..." — trotz Anti-Therapeut-Baustein (EI-MIKRO) und explizitem Verbot ([REGELN]).
@@ -564,6 +574,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 **Rang:** **niedrig** — Modellverhalten. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). `server/prompts/default/verfasser.auftrag.txt` trägt kein Butler-Verbot. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
 
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Block `[REGELN]` bleibt ausgesetzt; eine einzelne Regel kommt nur zurück, wo eine Zählung sie verlangt. Die Abhilfe dieses Eintrags ist damit zuerst eine Zählung seines Musters im Betrieb — erst ein gezählter Rückfall holt seine Regel zurück.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Modell-Compliance. Das Butler-Verbot steht im Prompt; ob es greift, entscheidet das Modell, nicht der Code.
 **Entdeckt:** Chat 30, Smoke-Test (#3, #13)
 **Symptom:** "Ich kann auch gleich eine Feier organisieren", "Lass uns morgen weiterreden. Gute Nacht.", "Welcher Fonds ist als nächstes dran?"
@@ -576,6 +588,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 **Kategorie:** ANT
 
 **Rang:** **niedrig** — Modellverhalten, ohne Code-Ursache; der Befund stammt aus der Zeit vor Verfasser und Responder und ist nicht wiederholt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Block `[REGELN]` bleibt ausgesetzt; eine einzelne Regel kommt nur zurück, wo eine Zählung sie verlangt. Die Abhilfe dieses Eintrags ist damit zuerst eine Zählung seines Musters im Betrieb — erst ein gezählter Rückfall holt seine Regel zurück.
 
 **Entdeckt:** Chat 31, Smoke-Test Formell (#9, #11, #12 vs. #8, #13)
 **Symptom:** Renate siezt durchgängig, Nova springt zwischen Sie und Du. Persona-Anweisung "Siezt und erwartet dasselbe" wird nicht konsistent befolgt.
@@ -602,6 +616,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 **Rang:** **mittel** — still, Aufwand groß. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der Resume-Anteil ist behoben, zwei von drei Formen haben keine Abhilfe; **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). Die Klebrigkeit im KZG hat keine Dimension *bereits mitgeteilt*.
 
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Block `[REGELN]` bleibt ausgesetzt; eine einzelne Regel kommt nur zurück, wo eine Zählung sie verlangt. Die Abhilfe dieses Eintrags ist damit zuerst eine Zählung seines Musters im Betrieb — erst ein gezählter Rückfall holt seine Regel zurück.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: halluzinierte Bestaetigung ohne Agent-Lauf. Der Eintrag traegt drei Updates aus drei Chats und zuletzt eine ganz andere Manifestation (KZG-Klebrigkeit) — welche davon heute gilt, sagt kein Grep.
 **Entdeckt:** Chat 39, Claude API-Test
 **Symptom:** Nova sagt "Termin ist auf 10:00 Uhr — jetzt stimmt's" ohne dass ein TimelineAgent lief. Keine Agent-Dispatch im Log. Der Responder halluziniert eine erfolgreiche Aktion.
@@ -616,6 +632,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 **Kategorie:** ANT
 
 **Rang:** **niedrig** — laut. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). Ein Filter der Antwort fehlt (`server/graph/nodes/responder.py:179-184` streift nur den Verlauf). Gezählt am 05.10.2026: Antworten mit `[klein_geschrieben]`-Marke bis 30.07. 0 von 200, August 1 von 758, ab September 0 von 665.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Block `[REGELN]` bleibt ausgesetzt; eine einzelne Regel kommt nur zurück, wo eine Zählung sie verlangt. Die Abhilfe dieses Eintrags ist damit zuerst eine Zählung seines Musters im Betrieb — erst ein gezählter Rückfall holt seine Regel zurück.
 
 **Entdeckt:** Chat 44, Live-Konversation
 **Symptom:** Nova antwortet mit `[emotionaler_ausdruck]` am Ende des Texts. Internes Block-Tag wird nicht gestrippt.
@@ -643,7 +661,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### ROUTE3 — Router löst Kontext-Bezüge semantisch statt per Recency ⚠️
 **Kategorie:** ANT
 
-**Rang:** **mittel**; **wartet auf eine Absicht**: Gewinnt bei einem Rückbezug das zuletzt Genannte oder das semantisch beste Objekt, und was gilt bei Gleichstand? Trägt den Anteil von `AGT4`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/agents/notizen/klassifikation.py:63-80` mischt beides im Prompt.
+**Rang:** **mittel**; ~~wartet auf eine Absicht: Gewinnt bei einem Rückbezug das zuletzt Genannte oder das semantisch beste Objekt, und was gilt bei Gleichstand?~~ → **entschieden am 06.10.2026** (unten). Trägt den Anteil von `AGT4`. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/agents/notizen/klassifikation.py:63-80` mischt beides im Prompt.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Bei einem Rückbezug gewinnt das **semantisch beste Objekt**; bei Gleichstand das zuletzt Genannte.
 
 **Zustand:** unbelegt — braucht Messturn. Gesichtet am 25.08.2026: Der Eintrag vermerkt `AGT6` als Teilloesung und nennt als Rest *Recency vs. Semantik* — eine Frage der Aufloesungsreihenfolge, die sich an einem Bezugs-Turn zeigt, nicht im Code. Traegt zugleich den offenen Anteil von `AGT4`.
 **Entdeckt:** Chat 24
@@ -655,6 +675,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 **Kategorie:** ANT
 
 **Rang:** **niedrig** — Modellverhalten. **Die Abhilfe, die der Eintrag nennt, ist am HEAD nicht aktiv:** Der Block `[REGELN]` (`server/prompts/default/responder.rules.txt`) ist seit `1fde3b7` (31.07.2026) *„zur Probe ausgesetzt“* (`server/graph/nodes/responder.py:632-646`). `verfasser.auftrag.txt` deckt Rückfragen jetzt, statt sie zu verbieten. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Block `[REGELN]` bleibt ausgesetzt; eine einzelne Regel kommt nur zurück, wo eine Zählung sie verlangt. Die Abhilfe dieses Eintrags ist damit zuerst eine Zählung seines Musters im Betrieb — erst ein gezählter Rückfall holt seine Regel zurück.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: halluzinierte Pflicht-Rueckfrage. Der Eintrag vermerkt ein Verbot im REGELN-Block als Abhilfe; ob es traegt, ist eine Beobachtung.
 **Entdeckt:** Chat 25
@@ -1076,7 +1098,9 @@ tut es nicht.
 #### GV-SKIP-BEGRUESSUNG-TOT — zwei von drei Skip-Gründen können nicht eintreten ⚠️
 **Kategorie:** ANT
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: überspringt eine reine Begrüßung den Gesprächsvektor, oder werden die toten Marken gestrichen? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/graph/nodes/gespraechsvektor.py:106` prüft Intents, die die Perzeption nie liefert.
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: überspringt eine reine Begrüßung den Gesprächsvektor, oder werden die toten Marken gestrichen?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/graph/nodes/gespraechsvektor.py:106` prüft Intents, die die Perzeption nie liefert.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Die **toten Marken werden gestrichen**; Nova denkt auch bei einer Begrüßung voraus.
 
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `graph/nodes/gespraechsvektor.py:102` prueft weiterhin `("begruessung", "meta", "system")`, waehrend der Perzeptions-Prompt nur `smalltalk|knowledge|personal|task|creative|meta` zulaesst. Schreiber fuer die beiden anderen: keiner — nur zwei Leser und ein Zeuge.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio niedrig.**
@@ -1089,4 +1113,4 @@ darf laut Prompt nur `smalltalk|knowledge|personal|task|creative|meta` liefern. 
 **Auswirkung:** Konzept §10.1 Schritt 1 lautet *„Skip-Check: Begrüßung/Meta"*. Der
 Begrüßungs-Zweig greift nie; Begrüßungen laufen durch den vollen Node samt LLM-Call.
 Ob das ein Verlust ist, ist eine Entscheidung — der Node kann auch bei einer Begrüßung
-sinnvoll vorausdenken.
+sinnvoll vorausdenken. → **Am 06.10.2026 entschieden: kein Verlust**; die toten Marken werden gestrichen (oben).

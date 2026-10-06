@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 18 Eintraege, je mit `**Kategorie:** HGR`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 17 Eintraege, je mit `**Kategorie:** HGR`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -67,7 +67,9 @@ Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdi
 ### `FEHLVERSUCHSPFAD-LOESCHT-HART` — zur Haelfte behoben am 23.08.2026
 **Kategorie:** HGR
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: ob ein Auftrag mit Fehlversuchen in der Auswahl zurücksteht. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die erste Hälfte ist behoben (`6c3f33b`: stilllegen mit Grund statt löschen), die Auswahl zieht weiter den Salienzstärksten zuerst (`server/memory/repositories/shadow_auftrag_repository.py:394`).
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: ob ein Auftrag mit Fehlversuchen in der Auswahl zurücksteht.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die erste Hälfte ist behoben (`6c3f33b`: stilllegen mit Grund statt löschen), die Auswahl zieht weiter den Salienzstärksten zuerst (`server/memory/repositories/shadow_auftrag_repository.py:394`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Rang eines Auftrags **sinkt mit jedem Fehlversuch**.
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert. **Die erste Haelfte ist gebaut, die zweite ausdruecklich nicht.** `versuch_zaehlen` legt an der Grenze still statt zu loeschen: `aktiv = FALSE, grund = 'fehlversuch'`. Der Verfallspfad schreibt `grund = 'verfall'` — zwei Ausgaenge, zwei Werte, sonst traegt die Spalte keine Unterscheidung. DDL angekuendigt und angelegt am 23.08.2026 (`F-DDL-1`): `shadow_auftrag.grund VARCHAR(20) NOT NULL DEFAULT ''`. Zeugen: `tests/test_queue_verfall.py` (i, i2, i3) und `tests/test_shadow_auftrag_schema.py`, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2188 tests — OK`.
 
@@ -81,7 +83,7 @@ Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdi
 >
 > **Der bestehende Weck-Zeuge deckte den Pfad ab und pruefte die Stelle nicht** — er ruft `verfall_lauf` und danach `einreihen`, erzeugt also seit heute genau den Zustand `aktiv=TRUE, grund='verfall'`, und assertete `aktiv` und `salienz_decay`. Ein Zeuge, der den Weg laeuft, belegt nicht, dass er jedes Feld ansieht.
 
-**Befund (16.08.2026), aus der Fundliste uebernommen.** **Der Fehlversuchspfad löscht hart, und er wählt nach hoher Salienz aus.** `versuch_zaehlen` führt nach drei Läufen ein `DELETE FROM shadow_auftrag` aus; `novaberg-convention-verfall.md` §6 hat hartes Löschen für den **Verfallspfad** ausdrücklich verworfen (*„Ein Gedanke wäre unwiederbringlich weg"*) und der Docstring grenzt den Fehlversuch davon ab — *„ein Ausführungsfehler, kein Verfall"*. Formal also kein Verstoß. **Gemessen am 16.08.2026 steht die Grenze aber unter Druck:** Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der Zahl der Versuche (0,867 · 0,947 · 0,990), weil der Wichtigste zuerst gezogen wird und das meiste Material hat. Der Verfall entfernt weich, was niemanden interessiert; der Fehlversuch entfernt hart, was am meisten interessiert. Ob die Ausnahme so gemeint war, ist eine Absicht und nicht entschieden.
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **Der Fehlversuchspfad löscht hart, und er wählt nach hoher Salienz aus.** `versuch_zaehlen` führt nach drei Läufen ein `DELETE FROM shadow_auftrag` aus; `novaberg-convention-verfall.md` §6 hat hartes Löschen für den **Verfallspfad** ausdrücklich verworfen (*„Ein Gedanke wäre unwiederbringlich weg"*) und der Docstring grenzt den Fehlversuch davon ab — *„ein Ausführungsfehler, kein Verfall"*. Formal also kein Verstoß. **Gemessen am 16.08.2026 steht die Grenze aber unter Druck:** Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der Zahl der Versuche (0,867 · 0,947 · 0,990), weil der Wichtigste zuerst gezogen wird und das meiste Material hat. Der Verfall entfernt weich, was niemanden interessiert; der Fehlversuch entfernt hart, was am meisten interessiert. ~~Ob die Ausnahme so gemeint war, ist eine Absicht und nicht entschieden.~~ → **Am 06.10.2026 entschieden:** Der Rang sinkt mit jedem Fehlversuch (oben).
 
 **Geschlossen, wenn** Der Fehlversuchspfad legt still statt zu loeschen und waehlt nicht nach hoher Salienz.
 
@@ -97,19 +99,6 @@ Eine Kennung aus der Entscheidung vom 15.09.2026: **Der Ausgang eines Empfangsdi
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **Zwei Fristen von 7200 s bedeuten Verschiedenes und sind jetzt auseinandergelaufen.** `SESSION_TTL` steht seit heute auf 14400 s, weil die Session die Verfallskurve überdauern muss. Der Schlüssel `last_activity:{user_id}` trägt seine 7200 s **hartkodiert** in `services/prompt_consumer.py` und steuert die Idle-Erkennung des Pixie — ein anderer Zweck, dieselbe Zahl. Ob die beiden je gekoppelt gedacht waren, ist unbelegt; `novaberg-pixie.md` §150 nennt die 7200 s als Eigenschaft dieses Schlüssels. **Nicht mitgeändert:** Der Zweck ist ein anderer, und eine Reparatur im Zug eines fremden Auftrags vermischt zwei Ursachen.
 
 **Geschlossen, wenn** Die beiden Fristen tragen verschiedene Namen und eine Begruendung je Wert.
-
----
-
-### `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG` — die Aenderung erreicht den Stapel nicht
-**Kategorie:** HGR
-
-**Rang:** **niedrig**; **wartet auf eine Absicht**: ob Altbestand über 1200 Zeichen auf dem Stapel verworfen, neu verdichtet oder liegen gelassen wird. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Aufräumweg im Code (`server/services/pixie/stack.py:30-101`).
-
-**Zustand:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. braucht die Altersverteilung des Stapels gegen den Korridor.
-
-**Befund (15.08.2026), aus der Fundliste uebernommen.** **Eine Prompt-Aenderung wirkt nicht auf den Stapel.** Der Zeichenkorridor von 600 bis 1200 gilt fuer Destillate, die ab jetzt geschrieben werden. Der Bestand haelt 107 Eintraege unter dem alten Auftrag, Median 1748 Zeichen — gemessen am 14.08.2026 um 21:23, 21:35 und 21:49 mit 1847, 2586 und 2261 Zeichen zugestellt. Wie lange die alte Ernte reicht, ist ungemessen. **Kein Aufraeum-Auftrag:** Ob Altbestand ueber der Obergrenze verworfen wird, ist eine Entscheidung.
-
-**Geschlossen, wenn** Eine Prompt-Aenderung wirkt auf den Stapel, oder der Grund steht am Code.
 
 ---
 
@@ -328,9 +317,11 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 #### IMPULS-BEZIEHUNGSRECHERCHE — Vertiefung kann die Beziehung selbst zum Gedächtnisinhalt machen ⚠️
 **Kategorie:** HGR
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: ob die Beziehung zwischen Nutzer und Figur Gegenstand einer Recherche sein darf. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Ausschluss im Code.
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: ob die Beziehung zwischen Nutzer und Figur Gegenstand einer Recherche sein darf.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Ausschluss im Code.
 
-**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: **Entscheidung ausstehend, kein Defekt** — ob die Beziehung selbst Gegenstand der Vertiefung sein darf, ist keine Messung, sondern eine Festlegung.
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Die Beziehung zwischen Nutzer und Figur ist **kein Gegenstand einer Recherche** und wird ausgeschlossen; eine Websuche über die eigene Beziehung hat keinen Gegenstand außerhalb des Gesprächs.
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ~~**Entscheidung ausstehend, kein Defekt**~~ → **am 06.10.2026 entschieden: ausgeschlossen** (oben); seither ist der fehlende Ausschluss im Code der Defekt — ob die Beziehung selbst Gegenstand der Vertiefung sein darf, ist keine Messung, sondern eine Festlegung.
 **Entdeckt:** Chat 110, beim Lesen der Impuls-Inhalte über die Brücke.
 
 **Klasse:** Inhaltliche Rückkopplung, Datenschutz-relevant. Severity **mittel** — kein technischer Defekt, aber eine Wirkung, die niemand entschieden hat.
@@ -341,7 +332,7 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 **Zu entscheiden:** Themen-Ausschluss im Shadow-Stack, oder bewusst zulassen (Nova denkt über ihre Beziehung nach — das kann gewollt sein), oder auf eine eigene Partition legen.
 
-**Status:** Offen, Entscheidung ausstehend.
+**Status:** Offen, ~~Entscheidung ausstehend~~ → entschieden am 06.10.2026, nicht gebaut.
 
 ---
 

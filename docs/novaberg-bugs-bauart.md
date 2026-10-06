@@ -48,7 +48,9 @@
 ### `RELOAD-GREIFT-NICHT-AM-EINGEHAENGTEN-CODE` — 24 Stunden Betrieb auf altem Stand
 **Kategorie:** BAU
 
-**Rang:** **hoch** — still, jede Betriebsmessung bleibt zweideutig, und ein Neustart bricht laufende Turns ab; **wartet auf eine Absicht**: läuft der Dienst im Betrieb mit `--reload` oder ohne, mit Neustart als festem Bauschritt? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/Dockerfile:21` startet weiter mit `--reload` auf dem eingehängten Code. Möglicherweise dieselbe Ursache wie die drei Turns ohne `turn_roh` (`TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT`).
+**Rang:** **hoch** — still, jede Betriebsmessung bleibt zweideutig, und ein Neustart bricht laufende Turns ab; ~~wartet auf eine Absicht: läuft der Dienst im Betrieb mit `--reload` oder ohne, mit Neustart als festem Bauschritt?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/Dockerfile:21` startet weiter mit `--reload` auf dem eingehängten Code. Möglicherweise dieselbe Ursache wie die drei Turns ohne `turn_roh` (`TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Dienst läuft im Betrieb **ohne** `--reload`; der Neustart ist ein fester Bauschritt nach dem Commit. Gebaut wird ohnehin außerhalb des eingehängten Baums, und ein Neustart wird damit eine Handlung statt ein Nebeneffekt.
 
 **Zustand:** offen — gemessen am 17.09.2026 im Betrieb. **Nachtrag 18.09.2026:** Im Prozess, der seit dem Neustart vom 17.09.2026 läuft, **greift der Reload** — das Serverlog meldet um 07:45 UTC *„WatchFiles detected changes in 'config.py', 'utils/offers.py'. Reloading…"*. Der Defekt ist also nicht der Mount an sich; warum der Prozess vom 16.09. einen Tag lang nicht neu lud, ist ungeklärt. **Und die Kehrseite ist jetzt belegt:** Jede gespeicherte Datei unter `server/` startet den Dienst neu und **bricht einen laufenden Turn ab** — ein Messturn der zweiten Sitzung endete so mitten in der Sachlage. Wer baut, während im Betrieb gesprochen wird, beendet das Gespräch.
 
@@ -56,7 +58,7 @@
 
 **Wirkung.** Alles, was zwischen dem 16.09. abends und dem 17.09. gebaut wurde — Objekt-Merkmal, Nähe, Planner-Reihenfolge, `[LAGE]`, Objektbezug, die Notizen-Regel —, war im Betrieb unwirksam, ohne dass etwas fehlschlug. Eine Betriebsmessung hätte den alten Stand gemessen und für den neuen gehalten.
 
-**Was fertig wäre.** Entweder greift der Reload (Dateiereignisse über den Bind-Mount), oder er wird abgeschaltet und der Neustart gehört zum Bauablauf. Beides ist eine Entscheidung über den Betrieb; solange sie nicht getroffen ist, gilt: **vor jeder Betriebsmessung Prozessalter gegen den jüngsten Commit prüfen.**
+**Was fertig wäre.** Entweder greift der Reload (Dateiereignisse über den Bind-Mount), oder er wird abgeschaltet und der Neustart gehört zum Bauablauf. Beides ist eine Entscheidung über den Betrieb; solange sie nicht getroffen ist, gilt: **vor jeder Betriebsmessung Prozessalter gegen den jüngsten Commit prüfen.** → **Am 06.10.2026 entschieden: abgeschaltet**, der Neustart gehört zum Bauablauf (oben). Bis das gebaut ist, gilt die Prüfung weiter.
 
 **Priorität:** hoch — er macht jede Betriebsmessung zweideutig.
 
@@ -259,11 +261,13 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 ### `LOESCHREGELN-DREIGETEILT` — drei Regeln fuer dasselbe
 **Kategorie:** BAU
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: welche Löschregel für Fremdschlüssel im Normalfall gilt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gewachsen auf 10 CASCADE, 11 SET NULL, 3 RESTRICT, 4 ohne Klausel.
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: welche Löschregel für Fremdschlüssel im Normalfall gilt.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gewachsen auf 10 CASCADE, 11 SET NULL, 3 RESTRICT, 4 ohne Klausel.
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. heute **4x CASCADE, 3x SET NULL, 2x NO ACTION** ueber alle Schemadateien — `autonomous_wissen_thema.wissen_id` ist am 19.08.2026 als vierter CASCADE dazugekommen; die Politik ist weiter nicht entschieden.
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Normalfall ist **`RESTRICT`**; `CASCADE` nur für reine Kindtabellen, mit Begründung am Schlüssel. Jede Änderung eines bestehenden Schlüssels ist DDL und wird vor dem Bau angekündigt.
 
-**Befund (16.08.2026), aus der Fundliste uebernommen.** **Die Löschregeln der Fremdschlüssel sind dreigeteilt.** 3× `CASCADE` (`delegations_seiten.akte_id`, `lzg_kanten.knoten_a_id`, `lzg_kanten.knoten_b_id`), 3× `SET NULL` (`lzg_knoten.timeline_id`, `notizen.timeline_id`, `verbindung.lzg_id`), 2× `NO ACTION` (`fakten.subjekt_id`, `fakten.objekt_id`). Kein Defekt, solange die Politik nicht entschieden ist — die Zahl ist die Grundlage dafür.
+**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. heute **4x CASCADE, 3x SET NULL, 2x NO ACTION** ueber alle Schemadateien — `autonomous_wissen_thema.wissen_id` ist am 19.08.2026 als vierter CASCADE dazugekommen; ~~die Politik ist weiter nicht entschieden~~ → seit dem 06.10.2026 entschieden (oben).
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **Die Löschregeln der Fremdschlüssel sind dreigeteilt.** 3× `CASCADE` (`delegations_seiten.akte_id`, `lzg_kanten.knoten_a_id`, `lzg_kanten.knoten_b_id`), 3× `SET NULL` (`lzg_knoten.timeline_id`, `notizen.timeline_id`, `verbindung.lzg_id`), 2× `NO ACTION` (`fakten.subjekt_id`, `fakten.objekt_id`). Kein Defekt, solange die Politik nicht entschieden ist — die Zahl ist die Grundlage dafür. → **Seit dem 06.10.2026 ist sie entschieden** (oben); ein Schlüssel außerhalb der Politik ist damit ein Befund.
 
 **Geschlossen, wenn** Die Loeschregeln der Fremdschluessel folgen einer Regel, und die Abweichung ist begruendet.
 

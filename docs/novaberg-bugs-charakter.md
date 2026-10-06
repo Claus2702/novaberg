@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 28 Eintraege, je mit `**Kategorie:** CHA`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 27 Eintraege, je mit `**Kategorie:** CHA`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -17,7 +17,9 @@ was da ist, und nicht mehr behaupten, als sie gesehen hat.
 ### `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE` — das Modell erkennt die Sache und verfehlt das Feld
 **Kategorie:** CHA
 
-**Rang:** **mittel** — still; **wartet auf eine Entscheidung**: Behebung im Prompt (Dimensionen trennen) oder im Code (Synonymkarte je Dimension), und ab welcher Ausreißerquote der Eintrag geschlossen ist. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gebaut ist nur die Messung (`kanon_ausreisser`); `_kanonisch` gibt bei Nichttreffer den Rohwert zurück (`server/graph/nodes/perzeption.py:147`).
+**Rang:** **mittel** — still; ~~wartet auf eine Absicht: Behebung im Prompt (Dimensionen trennen) oder im Code (Synonymkarte je Dimension), und ab welcher Ausreißerquote der Eintrag geschlossen ist.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gebaut ist nur die Messung (`kanon_ausreisser`); `_kanonisch` gibt bei Nichttreffer den Rohwert zurück (`server/graph/nodes/perzeption.py:147`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Behebung **im Code**, mit einer Synonymkarte je Dimension — Code ist prüfbar, ein Prompt nicht. Geschlossen ist der Eintrag bei einer Ausreißerquote unter 2 % über 100 Turns.
 
 **Zustand:** offen — gemessen am 10.09.2026 ueber **2694 Perzeptionen** (Nutzer und Nova).
 
@@ -215,7 +217,9 @@ nicht aus einer Erhebung.
 ### `RADSPEICHEN-MESSEN-PROFILTEXT` — Text statt Verhalten, zwei Speichen doppelt
 **Kategorie:** CHA
 
-**Rang:** **mittel**; **wartet auf eine Absicht**: ob das Rad Verhalten (Turn-Wortlaut) statt Profiltext bewertet, und ob `assoziationsdrang` und `lenkungsdrang` eine Eigenschaft sind oder zwei. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert (`server/agents/charakter/destillation.py:1634-1682`, `:347`, `:349`).
+**Rang:** **mittel**; ~~wartet auf eine Absicht: ob das Rad Verhalten (Turn-Wortlaut) statt Profiltext bewertet, und ob `assoziationsdrang` und `lenkungsdrang` eine Eigenschaft sind oder zwei.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert (`server/agents/charakter/destillation.py:1634-1682`, `:347`, `:349`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Das Rad bewertet **Verhalten, den Wortlaut der Turns**, nicht den Profiltext; `assoziationsdrang` und `lenkungsdrang` werden **eine** Speiche. Das Profil ist selbst gemessen ungenau, und das Rad erbt es.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. unveraendert; die Speichen bewerten weiter den destillierten Text.
 
@@ -276,7 +280,9 @@ nicht aus einer Erhebung.
 ### `SPRACHSTIL-ZWEI-VERFAHREN-UNEINIG` — 71 % Uneinigkeit, und der Zufall entscheidet
 **Kategorie:** CHA
 
-**Rang:** **mittel**; **wartet auf eine Absicht**: welches Verfahren den Sprachstil bestimmt, Perzeption oder regelbasiert, oder wie beide gewichtet werden. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert, `_stil_plausibilitaet` (`server/ei/berechnung.py:928`, Rangfolge `:971-974`).
+**Rang:** **mittel**; ~~wartet auf eine Absicht: welches Verfahren den Sprachstil bestimmt, Perzeption oder regelbasiert, oder wie beide gewichtet werden.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: unverändert, `_stil_plausibilitaet` (`server/ei/berechnung.py:928`, Rangfolge `:971-974`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: **Die Perzeption bestimmt den Sprachstil**; das regelbasierte Verfahren bleibt als Plausibilitätsprüfung und protokolliert jede Abweichung. So ist es heute fast gebaut, nur ohne Spur.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `_stil_plausibilitaet` (`ei/berechnung.py:899`) haelt die Rangfolge unveraendert.
 
@@ -367,7 +373,9 @@ nicht aus einer Erhebung.
 ### `ZUG-ZWISCHEN-090-097-ABGESCHALTET` — praktisch wirkungslos
 **Kategorie:** CHA
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: ob der Zug erst oberhalb von etwa 0,95 spürbar wird (heutige, im Code begründete Form) oder über den ganzen Bereich 0,9 bis 1,0. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/ei/haltung.py:297`, `:322`, `:567-591`; der Exponent ist ungemessen.
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: ob der Zug erst oberhalb von etwa 0,95 spürbar wird (heutige, im Code begründete Form) oder über den ganzen Bereich 0,9 bis 1,0.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `server/ei/haltung.py:297`, `:322`, `:567-591`; der Exponent ist ungemessen.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Zug **bleibt in der heutigen Form**, spürbar erst ab etwa 0,95; der Exponent wird gemessen.
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `ei/haltung.py:309` haelt den Exponenten bei 2.0; die Schwelle liegt jetzt bei 0.9, der tote Bereich wandert damit mit.
 
@@ -491,17 +499,6 @@ Derselbe Fehlertyp hat in diesem Register bereits eine Spur: `CHAR-HASH-FILTER` 
 
 Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselbe Bauplan:** ein Vorgabewert an einer Stelle, an der ein Ausfall gehoert — beim Queue-Push, beim Dispatch, am Spalten-Default des Rades, bei zwei Kanon-Feldern, in der fehlenden Klemme und beim Suchdienst, dessen Ausfall wie ein leeres Ergebnis aussieht.
 
-#### RAD-WERT-AUF-SPALTEN-DEFAULT 🔧 offen
-**Kategorie:** CHA
-
-**Rang:** **niedrig** — entschärft durch das Herkunftsfeld (`server/agents/charakter/agent.py:1224-1226`, `server/memory/charakter.py:98`); **wartet auf eine Entscheidung**: Genügt das Herkunftsfeld (dann schließen), oder wird der Spalten-Default `0.9` (`db/init.sql:1022`, gleich `RAD_NABE`) zu NULL? Letzteres wäre DDL. Durchsicht 05.10.2026, gegen HEAD `17bf86e`.
-
-**Befund (2026-07-30).** Ein gerechneter Rad-Wert kann **exakt auf dem Spalten-Default landen**, und dann ist er von „nie erhoben" nur noch am Herkunftsfeld zu unterscheiden. Gemessen am 30.07.2026, 20:07 UTC: Novas `nutzer_gewichtung` stand auf **0.90** — dem Wert der Nabe und zugleich dem Default der Spalte —, entstanden aus `+0.12` Zuwendung gegen `−0.12` Abwendung, die sich exakt aufhoben. Fünf von zwölf Speichen waren belegt, die Fläche im Diagramm deutlich schief. Ohne `nutzer_gewichtung_quelle` wäre das ein Ausfall gewesen, der wie ein Messergebnis aussieht; mit ihm und der Speichen-Anzeige ist es auf einen Blick als Messung lesbar. Der Fund ist nicht der Wert — bei der nächsten Destillation um 22:00 UTC stand er auf 1.06 —, sondern der Beleg, dass der vorhergesagte Kollisionsfall im Bestand tatsächlich eintritt (`novaberg-lesson_l_default-wie-fehlschlag.md`, `novaberg-gv-initiative_k.md` §6.4).
-
-**Was fertig waere.** Ein gerechneter Wert ist ohne Blick aufs Herkunftsfeld von einem nie erhobenen unterscheidbar.
-
-**Prioritaet:** mittel.
-
 #### KANON-FELDER-NEHMEN-FREMDWERTE 🔧 offen
 **Kategorie:** CHA
 
@@ -534,7 +531,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### LANDSCHAFT-SCHLAGSEITE-HEITER 🔧 offen
 **Kategorie:** CHA
 
-**Rang:** **mittel** — still; **wartet auf eine Absicht**: ob eine reine Sachfrage in `beichte` landen darf. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der Mechanismus steht (`server/ei/dreischicht.py:83-123`, `:443`, `:483`), der Beleg des Eintrags ist nach eigener Angabe verfallen.
+**Rang:** **mittel** — still; ~~wartet auf eine Absicht: ob eine reine Sachfrage in `beichte` landen darf.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der Mechanismus steht (`server/ei/dreischicht.py:83-123`, `:443`, `:483`), der Beleg des Eintrags ist nach eigener Angabe verfallen.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Eine reine Sachfrage gehört **nicht** in eine Nähe-Landschaft. Vor dem Bau wird an der Messreihe nachgezählt, weil der Beleg dieses Eintrags verfallen ist.
 
 **Zustand:** offen, **unbelegt** — der Beleg ist am 25.08.2026 verfallen. Ueber 374 Laeufe der letzten 14 Tage gezaehlt: `kissenschlacht` steht mit **75** auf Platz zwei, `beichte` fuehrt mit **97**. Von *„in allen sechs Laeufen"* ist keine Dominanz mehr uebrig. **Das widerlegt den Befund nicht** — die sechs Laeufe waren eine Messreihe mit gesetzten Personas, die 374 sind Betrieb, und zwei verschiedene Eingangsverteilungen ergeben zwei verschiedene Ausgaenge. Wer den Befund halten will, misst ihn an der Messreihe nach, nicht am Betrieb.
 
@@ -553,7 +552,9 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 #### PERZEPTION-EMOTION-AUSSER-KANON — die Perzeption liefert Emotionen, die es nicht geben darf 🔧 offen
 **Kategorie:** CHA
 
-**Rang:** **niedrig** — laut, selten (2 von 3317 Knoten am 03.09.2026). **Wartet auf eine Setzung:** wohin `zuversicht` gezogen wird und ob ein unbekannter Wert verworfen oder `neutral` wird. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: Umlautform, `mitgefuehl` und `nachdenklich` sind behoben (`87dd657`, `server/config.py:1826`, `:1835`).
+**Rang:** **niedrig** — laut, selten (2 von 3317 Knoten am 03.09.2026). ~~wartet auf eine Absicht: wohin `zuversicht` gezogen wird und ob ein unbekannter Wert verworfen oder `neutral` wird.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: Umlautform, `mitgefuehl` und `nachdenklich` sind behoben (`87dd657`, `server/config.py:1826`, `:1835`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: `zuversicht` wird auf **`zufriedenheit`** gezogen (Sektor 2 heißt im Kanon *Zuversicht*, `server/config.py:1709`); ein unbekannter Wert wird **`neutral`** und hinterlässt eine Fehlerzeile.
 
 **Zustand:** offen, **die inhaltliche Luecke ist seit dem 06.09.2026 geschlossen** — `mitgefuehl` steht in `EMOTION_SYNONYM_MAP` und faerbt wie `traurigkeit` (Sektor 5, Faktor 1,5). **Setzung des Eigentuemers:** *„naeher an Traurigkeit, geteilter Schmerz"*; die Gegenkandidatin `zufriedenheit` haette eine positive Valenz behauptet. **Die Zeile allein reichte nicht** `[gemessen 06.09.2026]`: `sektor_faktor` schlug direkt in `EMOTION_SEKTOR_MAP` nach, die nur die 16 Kanonwerte traegt — der Wert war gueltig und trotzdem sektorlos, `(1.0, None)` samt Warnung. Die Aufloesung sitzt seither an dieser Naht **und** im Strang-Histogramm, wo ein Synonym zuvor in `unbekannt` fiel statt mitzufaerben. Zeugen `tests/test_praegung_einfaerbung.py` (3), Gegenprobe 2 rot, Suite 3159. **Offen bleiben `zuversicht` (ein Sektorname, kein Emotionswert) und der Riegel** — die Perzeption darf weiterhin unbekannte Werte liefern. Davor: **die Klasse *Schreibvariante* ist seit dem 05.09.2026 geschlossen** — `utils/canon.py::to_canonical` zieht einen Modellwert an der **Naht** (`_wahrnehmung_lesen` in der Perzeption) auf seine kanonische Form: erst gegen den Kanon, bei einem Fehlschlag mit aufgeloesten Umlauten und in Kleinschreibung noch einmal, sonst unveraendert weiter und gemeldet. **Die Aenderung ist additiv** — ein unbekannter Wert wird nicht zum Vorgabewert, damit die Meldung stromabwaerts erhalten bleibt. **Am Bestand gemessen (05.09.2026, 3391 Knoten): 12 der 18 Ausreisser waeren damit gerettet** — die 12 Knoten `ueberrascht` in Umlautform. **Sechs bleiben, und beide Gruende sind inhaltlich:** `mitgefuehl` (4) steht **weder im Kanon noch in der Synonymkarte**, die Aufloesung findet also kein Ziel; `zuversicht` (2) ist ein Sektorname und kein Emotionswert. 16 Zeugen `tests/test_kanon_zug.py`, Gegenprobe 8 vorhergesagt / 8 gezaehlt. Der Bestand selbst ist **nicht** umgeschrieben — der Zug wirkt ab jetzt, nicht rueckwirkend. Davor: gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Das *„ohne dass etwas meldet"* gilt nicht mehr: `ei/berechnung.py` fasst drei Stufen — Kanon, Synonymkarte, und fuer alles andere eine **Fehlerzeile**, die sagt, was in der Konfiguration fehlt. Offen bleibt, dass der unbekannte Wert danach **unveraendert zurueckgegeben** wird und stromabwaerts weiter aus der Sektorkarte faellt. Der Melder steht, der Riegel nicht.
 
@@ -586,7 +587,9 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 #### CRUD-REACTIVATE-COEXIST — Reactivate deaktiviert nicht den aktuellen Charakter (Spec-konform, aber unerwünscht) ℹ️
 **Kategorie:** CHA
 
-**Rang:** **mittel**; **wartet auf eine Absicht**: ersetzt Reactivate die aktive Anweisung, oder bleibt die Koexistenz bis drei gewollt? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `_reactivate` setzt nur `aktiv = TRUE` (`server/agents/charakter_identitaet/crud.py:464`), wie spezifiziert.
+**Rang:** **mittel**; ~~wartet auf eine Absicht: ersetzt Reactivate die aktive Anweisung, oder bleibt die Koexistenz bis drei gewollt?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: `_reactivate` setzt nur `aktiv = TRUE` (`server/agents/charakter_identitaet/crud.py:464`), wie spezifiziert.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Reactivate **ersetzt** die aktive Anweisung; wer eine alte Fassung zurückholt, meint sie statt der heutigen.
 
 **Zustand:** offen — **am Bestand belegt am 25.08.2026.** `charakter_anweisungen` fuehrt fuer dasselbe Paar zwei Zeilen mit `aktiv = TRUE` (`id 8` und `id 15`). Der Zustand, den der Eintrag als spec-konform, aber unerwuenscht beschreibt, liegt damit im Betrieb vor. **Der Schwesterbefund `CRUD-REACTIVATE-STAMP` ist dagegen gegenstandslos geworden** — die Spalte, um die es dort geht, gibt es nicht mehr.
 **Entdeckt:** Chat 49, Test "Replace → Butler, dann Reactivate ID 8 Mädel"

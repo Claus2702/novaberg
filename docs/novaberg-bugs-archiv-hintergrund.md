@@ -1,9 +1,32 @@
 # Novaberg — Bugs, Archiv: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 22 Eintraege, je mit `HGR` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 23 Eintraege, je mit `HGR` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.10.2026 — geschlossen durch Entscheidung
+
+**Diese Einträge waren offen, weil eine Absicht fehlte, und die Entscheidung vom 06.10.2026 verlangt keinen Bau.** Der Befund ist damit hingenommen, nicht behoben; die Zustandszeile je Eintrag sagt, was gilt.
+
+---
+
+### `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG` — die Aenderung erreicht den Stapel nicht
+**Kategorie:** HGR
+
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: ob Altbestand über 1200 Zeichen auf dem Stapel verworfen, neu verdichtet oder liegen gelassen wird.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: kein Aufräumweg im Code (`server/services/pixie/stack.py:30-101`).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Der Altbestand über 1200 Zeichen **bleibt liegen, bis er verbraucht ist**. Eine Aufräumregel wäre Bau für einen Übergang; damit verlangt der Eintrag keinen Bau mehr und ist geschlossen.
+
+**Zustand:** geschlossen am 06.10.2026 durch Entscheidung, nicht behoben — der Altbestand bleibt liegen, bis er verbraucht ist; es gibt nichts zu bauen.
+
+**Zustand bis 06.10.2026:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. braucht die Altersverteilung des Stapels gegen den Korridor.
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Eine Prompt-Aenderung wirkt nicht auf den Stapel.** Der Zeichenkorridor von 600 bis 1200 gilt fuer Destillate, die ab jetzt geschrieben werden. Der Bestand haelt 107 Eintraege unter dem alten Auftrag, Median 1748 Zeichen — gemessen am 14.08.2026 um 21:23, 21:35 und 21:49 mit 1847, 2586 und 2261 Zeichen zugestellt. Wie lange die alte Ernte reicht, ist ungemessen. **Kein Aufraeum-Auftrag:** Ob Altbestand ueber der Obergrenze verworfen wird, ist eine Entscheidung. → **Am 06.10.2026 entschieden: nicht verworfen**, er bleibt liegen, bis er verbraucht ist (oben).
+
+**Geschlossen, wenn** Eine Prompt-Aenderung wirkt auf den Stapel, oder der Grund steht am Code.
 
 ---
 

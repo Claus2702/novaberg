@@ -125,7 +125,9 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### ENTITAETEN-OHNE-EMBEDDING 🔧 offen — Symptom am 16.08.2026 nicht mehr auffindbar
 **Kategorie:** GED
 
-**Rang:** **mittel** — still; **wartet auf eine Absicht**: woher die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Zusammenfassung fehlt weiter (`server/agents/kzg/magnete.py:153-158` und `server/plugins/fakten_manager/manager.py:449-454` rufen ohne sie; `update_zusammenfassung` hat keinen Aufrufer außerhalb der Tests).
+**Rang:** **mittel** — still; ~~wartet auf eine Absicht: woher die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommt.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Zusammenfassung fehlt weiter (`server/agents/kzg/magnete.py:153-158` und `server/plugins/fakten_manager/manager.py:449-454` rufen ohne sie; `update_zusammenfassung` hat keinen Aufrufer außerhalb der Tests).
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: Ein **Nachlauf im Hintergrund** füllt fehlende Zusammenfassungen; das Anlegen im KZG-Pfad bleibt ohne Modellaufruf. Der Magnet-Pfad bleibt schnell, und der Nachlauf hat den Kontext mehrerer Erwähnungen.
 
 **Zustand:** offen, **zur Haelfte erledigt** — gegen HEAD `b8e9543` und den Bestand nachgemessen am 25.08.2026. **Das Embedding ist gebaut:** `create_new_entity` erzeugt es immer, das Feature-Flag ist entkernt; im Bestand **0 von 817** Entitaeten ohne Embedding. **Die Zusammenfassung ist es nicht:** `zusammenfassung` ist zwar Parameter, aber **802 von 817** Entitaeten tragen keine. Der Eintrag nennt beide Felder; er ist nach der Regel, dass ein Eintrag mit mehreren Stellen erst geschlossen ist, wenn jede steht, deshalb offen.
 
@@ -315,7 +317,9 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 #### IMPULS-DOPPELTE-SPUR — ein eigener Gedanke wird zweimal ins Gedächtnis geschrieben ⚠️
 **Kategorie:** GED
 
-**Rang:** **mittel** — still; **wartet auf eine Absicht**: eine oder zwei Spuren je Impuls, und wenn zwei, welches Feld sie unterscheidet. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; beide Graphen rufen `dispatch_kzg`, der KZG-Hash trägt kein unterscheidendes Feld.
+**Rang:** **mittel** — still; ~~wartet auf eine Absicht: eine oder zwei Spuren je Impuls, und wenn zwei, welches Feld sie unterscheidet.~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; beide Graphen rufen `dispatch_kzg`, der KZG-Hash trägt kein unterscheidendes Feld.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: **Beide Spuren bleiben**, und ein Feld unterscheidet sie — Einfall und Aussprechen sind zwei Ereignisse. Das Feld ist eine Schemaänderung und wird vor dem Bau angekündigt.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Impuls schreibt ueber beide Graphen unter derselben `turn_id`. Zaehlbar, aber nur an einem Impuls-Turn, den es zu erzeugen gilt.
 **Entdeckt:** Chat 110, nach der Umverdrahtung des Impuls-Pfads.
@@ -326,9 +330,9 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 **Beleg:** Impuls-Turn `57b6e84c…` — sechs Einträge, **alle** `beobachter='assistant'`, **kein** `user`-Eintrag (richtig, es gab keinen Nutzer-Reiz). Zeitlich zwei Blöcke: `…16738` bis `…16773` (AgentGraph, 18:47) und `…17977` bis `…18006` (CharacterGraph, 18:49). Zum Vergleich der Nutzer-Turn: ein `user`-Eintrag aus dem HumanGraph, `assistant`-Einträge aus dem CharacterGraph.
 
-**Offene Frage, nicht entschieden:** Soll ein Impuls beide Spuren tragen? Dafür spricht, dass Entstehen und Aussprechen verschiedene Ereignisse sind — der Mensch erinnert den Einfall anders als das Gesagte. Dagegen spricht, dass beide unter demselben Beobachter stehen und für jeden Leser ununterscheidbar sind. **Wenn beide bleiben, brauchen sie ein unterscheidendes Feld.**
+~~**Offene Frage, nicht entschieden:**~~ → **entschieden am 06.10.2026: beide Spuren, mit einem unterscheidenden Feld** (oben). Soll ein Impuls beide Spuren tragen? Dafür spricht, dass Entstehen und Aussprechen verschiedene Ereignisse sind — der Mensch erinnert den Einfall anders als das Gesagte. Dagegen spricht, dass beide unter demselben Beobachter stehen und für jeden Leser ununterscheidbar sind. **Wenn beide bleiben, brauchen sie ein unterscheidendes Feld.**
 
-**Status:** Offen, Entscheidung ausstehend. **Verwandt:** KZG-SEGMENT-DUPLIKAT.
+**Status:** Offen, ~~Entscheidung ausstehend~~ → entschieden am 06.10.2026, nicht gebaut. **Verwandt:** KZG-SEGMENT-DUPLIKAT.
 
 ---
 

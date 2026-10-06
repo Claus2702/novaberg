@@ -321,7 +321,9 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 #### FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `character_id` ⚠️
 **Kategorie:** WIS
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: bleibt `fakten` ein lebender Speicher (dann Paar-Schema), oder wird er stillgelegt? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Tabelle ist leer und hat keinen Erzeuger; das Repository nennt `character_id` nicht.
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: bleibt `fakten` ein lebender Speicher (dann Paar-Schema), oder wird er stillgelegt?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Tabelle ist leer und hat keinen Erzeuger; das Repository nennt `character_id` nicht.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: `fakten` wird **stillgelegt**, bis ein Fakten-Agent gebaut wird; das Paar-Schema entfällt bis dahin. Ein Entfernen der Tabelle wäre DDL und wird vorher angekündigt.
 
 **Zustand:** offen im Code, **Begruendungszahl verfallen** — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. Die Spalte `character_id` steht in `fakten`; `fakten_repository.py` nennt sie **0 mal**, der Befund gilt also unveraendert. Die *171 Live-Eintraege*, die ihn als Severity Hoch begruendeten, sind **0 Zeilen** — die Tabelle ist leer. Was bleibt, ist die Repository-Luecke ohne Datenmigration.
 **Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
@@ -359,7 +361,9 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 #### NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweigert ⚠️
 **Kategorie:** WIS
 
-**Rang:** **niedrig**; **wartet auf eine Absicht**: ist der Typ einer Notiz nachträglich änderbar (Text → Liste)? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: keine Codestelle verbietet es; die Verweigerung kam vom Modell.
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: ist der Typ einer Notiz nachträglich änderbar (Text → Liste)?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: keine Codestelle verbietet es; die Verweigerung kam vom Modell.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: **Ja** — der Typ einer Notiz ist nachträglich änderbar, als eigene Aktion des Notizdienstes.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: die Verweigerung eines Notiz-zu-Liste-Wechsels ist eine Antwort, keine Codezeile.
 **Entdeckt:** Chat 80, Live-Test B
