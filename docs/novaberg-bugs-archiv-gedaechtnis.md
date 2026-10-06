@@ -1,9 +1,125 @@
 # Novaberg — Bugs, Archiv: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 24 Eintraege, je mit `GED` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 28 Eintraege, je mit `GED` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 05.10.2026 — geschlossen bei der Durchsicht der offenen Eintraege
+
+**Diese Eintraege standen als offen im Register und waren es nicht mehr.** Am 05.10.2026 ist jeder offene Eintrag gegen den Code am HEAD `17bf86e` gehalten worden; die Zustandszeile je Eintrag nennt den Beleg. *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Die Stelle, an der der Befund galt, gibt es nicht mehr.
+
+---
+
+### `PROMOTION-LOG-ALTE-SKALA` — die Logzeile nannte die alte Salienz-Skala
+**Kategorie:** GED
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Die Logzeile liest die Skala aus der Konstante: `kzg_salienz={salienz:.3f} (0-{KZG_SALIENZ_CAP:g})` (`server/agents/synapsen_promotion/agent.py:483`), Commit `00473d7` vom 20.09.2026.
+
+**Zustand bis 05.10.2026:** offen — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die Logzeile nennt weiterhin `(0-10)`. **Die Zeilenangabe des Befundes ist veraltet:** Sie steht heute bei `:362`, nicht bei `:256`. Der Befund selbst ist unveraendert.
+
+**Befund (2026-07-29).** Die Gewinner-Log-Zeile der Synapsen-Promotion nennt die alte Salienz-Skala: `agents/synapsen_promotion/agent.py:256` schreibt `kzg_salienz={salienz:.3f} (0-10)`. Derselbe Commit, der die Skala auf 0–1 umgestellt hat, korrigierte den Modul-Docstring (Zeile 16) und den Kommentar an der Lesestelle (Zeile 235) — die Log-Zeile blieb stehen. Wer das Log liest, ordnet einen Wert von 0.95 auf einer Skala bis 10 ein und hält ihn für niedrig.
+
+**Was fertig waere.** Die Logzeile nennt die geltende Skala.
+
+**Prioritaet:** niedrig.
+
+---
+
+### `PFAD2-EMO-MIX` — Pfad-2-KZG-Eintrag mischt User- und Nova-Emotion
+**Kategorie:** GED
+
+**Zustand:** behoben — gegen HEAD `17bf86e` am Code nachgesehen am 05.10.2026, alle vier genannten Stellen. Der KZG-Dispatch nimmt Arousal, Emotionsvektor und Sprachstil für `beobachter=assistant` aus `internal` (`server/agents/kzg/dispatch.py:158-169`, Commit `39329f3` vom 17.05.2026); die Salienz bewertet im CharacterGraph die Antwort, nicht die Eingabe (`server/graph/nodes/salience.py:451-486`, Weiche nach `graph_rolle` seit `38b8640` vom 26.07.2026); der Dispatcher liest den Vektor aus der Quelle des Turns (`server/graph/nodes/dispatcher.py:369`). Im Betrieb nicht nachgemessen.
+
+**Zustand bis 05.10.2026:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Vermischung zweier Emotionsquellen im zweiten Pfad. Braucht einen Turn mit beiden.
+**Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
+
+**Symptom:** Im CharacterGraph schreibt der KZG-Pfad einen `beobachter=assistant`-Eintrag, aber die Emotion-Felder sind inkonsistent:
+
+- `salienz_obj.emotion` kommt aus LLM-Klassifikation des `user_prompt` → User-Emotion
+- `arousal` kommt aus `perzeption_assistant` → Nova-Emotion
+- `emotions_vektor` bleibt leer, weil `_ei_calc_character` nur `nova_emotions_vektor` setzt, der Dispatcher aber `state.emotions_vektor` liest
+
+**Konkrete Stellen:**
+
+- [graph/nodes/salience.py:147-153](graph/nodes/salience.py#L147-L153) — Salience-Node analysiert weiterhin `state.user_prompt`
+- [graph/nodes/ei_calc.py:124-198](graph/nodes/ei_calc.py#L124-L198) — `_ei_calc_character` setzt nur `nova_emotions_vektor`
+- [graph/nodes/dispatcher.py:48](graph/nodes/dispatcher.py#L48) und [graph/nodes/dispatcher.py:238](graph/nodes/dispatcher.py#L238) — liest `state.emotions_vektor` (User-Vektor), nicht den Nova-Vektor
+- [agents/kzg/dispatch.py:67-71](agents/kzg/dispatch.py#L67-L71) — übernimmt User-`emotions_vektor` ins Nova-KZG
+
+**Konsequenz:** KZG-Einträge mit `beobachter=assistant` haben keinen kohärenten Emotionsstand. Konzeptuelle Folge: spätere Analysen über Nova-Emotionen (Cluster, Trends, Selbst-Reflexion) arbeiten auf inkonsistenten Daten.
+
+**Soll-Verhalten:** Im Pfad-2-KZG-Schreibvorgang wird Novas eigene Emotion gespeichert. Salience-Node berücksichtigt `ei_calc_rolle`, Dispatcher nutzt `nova_emotions_vektor` wenn `beobachter=assistant`.
+
+**Verwandt:** Dual-Emotion-Architektur (Chat 60+).
+
+**Prio:** Mittel — schreibt heute schon korrupte Daten in jeden Pfad-2-Eintrag, aber Auswertungen darauf existieren noch nicht. Vor erster Nova-Selbst-Reflexion fixen.
+
+---
+
+### `CLUSTER-THEMEN-DEDUP` — Semantisch redundante Themen-Strings in Cluster-Promotion
+**Kategorie:** GED
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. `_lzg_eintrag_schreiben` und die Vereinigung der Cluster-Themen gibt es nicht mehr; der alte LZG-Pfad ist mit `8a0e5c2` (02.08.2026) entfernt. Die Synapsen-Promotion legt je KZG-Eintrag einen Knoten mit eingefrorenen Themen an. Semantisch nahe Themen über verschiedene Knoten sind ein anderer Gegenstand.
+
+**Zustand bis 05.10.2026:** offen, **ueberholt** — nachgesehen am 25.08.2026. Der genannte Schreiber `_lzg_eintrag_schreiben` existiert nicht mehr; die Cluster-Promotion ist von der Synapsen-Promotion abgeloest. Im heutigen Bestand stehen keine wortgleichen Dubletten der beschriebenen Art mehr, wohl aber semantisch nahe Themen ueber verschiedene Knoten hinweg — das ist ein anderer Gegenstand und braucht ein Aehnlichkeitsmass, keine Zeichenkette.
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 86 (Cluster-Qualitäts-Diagnose im LZG)
+
+**Symptom:** Cluster-promovierte LZG-Einträge enthalten Themen-Listen mit semantisch redundanten Strings. Beispiele aus dem aktuellen LZG:
+- ID 67: `{"Annas Geburtstag", "Geburtstag", "Geburtstag von Anna", "Geburtstag von Rosa", ...}` — vier Strings, die im Kern dasselbe Konzept ("Geburtstag") fassen.
+- ID 66: `{Datenbanken, PostgreSQL, "PostgreSQL Architektur", Datenbank-Performance, Software-Performance, ...}` — drei Granularitätsstufen desselben Konzepts plus ein Phrasen-Paar mit gemeinsamem Wortstamm.
+
+**Ursache:** Die Cluster-Aggregation in `_lzg_eintrag_schreiben` führt eine Mengen-Vereinigung über alle Cluster-Mitglieds-Themen durch (`sorted(set().union(*[m.themen]))`). Diese Vereinigung dedupliziert nur **String-identische** Themen. Semantische Duplikate ("Geburtstag" vs. "Annas Geburtstag") werden als zwei verschiedene Set-Einträge behandelt.
+
+**Auswirkung:** Mittel. Themen-Listen wachsen aufgebläht, was die Themen-basierte Retrieval-Logik (Themen-Tabelle, Themen-Salienz-Erweiterung) verzerrt. Aufgeblähte Themen-Listen erzeugen Pseudo-Vielfalt — derselbe Inhalt zählt mehrfach als "verschiedenes Thema". Folgen treten bei der Retrieval-Erweiterung im Enricher auf (siehe `novaberg-memory.md` §11).
+
+**Lösung:** Drei Ansätze, von einfach zu robust:
+1. **Lexikalische Normalisierung** vor der Mengen-Vereinigung (Lowercase, Lemma, Stopword-Entfernung). Fängt offensichtliche Duplikate, aber nicht "Annas Geburtstag" vs. "Geburtstag von Anna".
+2. **Embedding-Cluster auf den Themen-Strings**: Themen-Embeddings rechnen, Cosine ≥ Schwellwert → derselbe Cluster, repräsentativster String gewinnt. Analog zur Cluster-Promotion selbst.
+3. **LLM-Konsolidierungs-Call** in der Cluster-Destillation: Mini-Call reduziert die Themen-Liste auf den semantischen Kern. Höchste Recall-Garantie, höhere LLM-Kosten.
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel.
+
+**Status-Update Chat 86:** Beide Bugs werden voraussichtlich durch den Synapsen-Umbau (siehe `novaberg-memory-synapsen_k.md`) strukturell obsolet, weil keine Themen-Aggregation mehr stattfindet. Themen bleiben pro Knoten eingefroren, geteilte Themen werden zur Kanten-Charakterisierung. Bis zur Umsetzung des Umbaus bleibt der Bug-Eintrag bestehen — aktive Mitigation wird zurückgestellt.
+
+---
+
+### `PROMO-FAKT-LEER` — Fakt-klassifizierte Einträge ohne Fakten fallen aus dem LZG-Schreib-Pfad
+**Kategorie:** GED
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Die Klassifikation `fakt`/`erinnerung`/`gemischt` und der Schreibpfad, der bei null Tripeln verwarf, gibt es nicht mehr (`agents/promotion/` mit `8a0e5c2` entfernt). Die Synapsen-Promotion macht ohne Modellaufruf aus jedem Eintrag mit Inhalt einen Knoten (`server/agents/synapsen_promotion/agent.py`, Modul-Docstring); verworfen wird nur an vier benannten Vorbedingungen, mit Fehlerzeile.
+
+**Zustand bis 05.10.2026:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Promotionsergebnis ohne Faktinhalt. Die Bedingung entsteht im Lauf, nicht in einer Zeile.
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 85 (durch EVA-Audit-Logging nach Pixie-EVA-Härtung sichtbar geworden)
+
+**Symptom:** KZG-Einträge werden in Call 1 als `klassifikation="fakt"` klassifiziert. Call 2 extrahiert anschließend 0 Fakten-Tripel (weil der Inhalt keine extrahierbaren Tripel enthält — typisch für Beobachtungen über Interaktionsstil, Selbstdarstellung, abstrakte Eigenschaften). Da der LZG-Schreib-Pfad an die Bedingung `klassifikation in ("erinnerung", "gemischt")` gebunden ist, wird weder ein LZG-Eintrag noch ein Knowledge-Graph-Eintrag geschrieben. Der KZG-Eintrag geht verloren.
+
+**Beispiele (Chat 85, 11.05.26, Audit-Logs):**
+
+- `kzg:meister:nova:1778440554756` — themen=`Selbstbewusstsein, Intelligenz`, salienz=0.7, klassifikation=fakt, 0 Fakten
+- `kzg:meister:nova:1778440555618` — themen=`Schwertkampf, Strategie, Angriff und Verteidigung, Taktik des Lockens`, salienz=0.8, klassifikation=fakt, 0 Fakten
+- `kzg:meister:nova:1778440588602` — themen=`Selbstdarstellung, Spielerische Interaktion`, salienz=0.7, klassifikation=fakt, 0 Fakten
+
+**Ursache:** Der Klassifikator stuft Inhalte mit allgemeinen Beobachtungen als `fakt` ein, obwohl sie keine extrahierbaren Tripel enthalten. Der Promotion-Code hat keinen Auffang-Pfad für diesen Fall: `fakt` schaltet auf Tripel-Extraktion, und wenn diese leer ist, passiert gar nichts mehr.
+
+**Auswirkung:** Mittel. Substanzielle KZG-Einträge mit Salienz 0.7-0.8 gehen verloren, ohne dass sie als Erinnerung im LZG landen. Vor der EVA-Härtung war der Verlust komplett unsichtbar; jetzt wird er als Audit-Eintrag `status='erledigt'` mit `lzg_eintrag_geschrieben=false` protokolliert, aber der Verlust selbst bleibt.
+
+**Lösungsoptionen (eine oder mehrere):**
+
+- (a) Klassifikator: bei Inhalten ohne konkrete Tripel auf `erinnerung` statt `fakt` fallen (Anpassung des Klassifikator-Prompts, sodass abstrakte Beobachtungen explizit als Erinnerung erkannt werden)
+- (b) Promotion-Pfad: bei `klassifikation="fakt"` und 0 extrahierten Fakten automatisch auf `gemischt` umschalten, damit der Erinnerungs-Pfad greift
+- (c) Eigener Auffang-Pfad: Audit-Eintrag `status='fehler'` mit Begründung "Klassifikation 'fakt' ohne extrahierbare Tripel", statt silent Erfolgs-Meldung
+
+**Empfehlung:** (b) als pragmatischer Fix, (a) als nachhaltige Lösung. Reihenfolge: erst (c) für Sichtbarkeit, dann (a) oder (b) für Datenrettung.
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel — kein Datenverlust ohne Audit-Trail mehr (durch EVA-Härtung), aber Datenverlust persistiert bis Fix.
 
 ---
 

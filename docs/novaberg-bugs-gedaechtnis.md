@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 17 Eintraege, je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 13 Eintraege, je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -13,6 +13,8 @@ Drei Kennungen aus einer Frage des Eigentuemers: *„EI-Calc ist lesend. Lesend 
 
 ### `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` — der Eintrag verstaerkt seinen eigenen Knoten
 **Kategorie:** GED
+
+**Rang:** **hoch** — still, verfälscht den Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Modul-Docstring sagt weiter *„NICHT geloescht“* (`server/agents/synapsen_promotion/agent.py:29`), im Agenten steht kein Löschen des KZG-Hash. Zusammen mit `KZG-THEMA-VERSTAERKT-NACHBARN` eine Schleife.
 
 **Zustand:** offen — am Bestand gemessen am 04.09.2026.
 
@@ -39,6 +41,8 @@ Ein Knoten steht bei `haeufigkeit` 92 aus **einem einzigen** Turn; sein `gewicht
 
 ### `KZG-THEMA-VERSTAERKT-NACHBARN` — ein geteiltes Thema genuegt
 **Kategorie:** GED
+
+**Rang:** **hoch** — still, verfälscht den Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Wegen, `_thematisch_verstaerken` (`server/agents/kzg/speicher.py:152-264`) und der ältere in `server/memory/kzg.py:486-560`; gebaut ist nur die LZG-Seite von §7.1a.
 
 **Zustand:** offen — am Bestand gemessen am 04.09.2026.
 
@@ -67,6 +71,8 @@ Ein Knoten steht bei `haeufigkeit` 92 aus **einem einzigen** Turn; sein `gewicht
 ### `ENTITAETIDS-MIT-DUBLETTEN` — Dubletten in der Liste
 **Kategorie:** GED
 
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `server/agents/kzg/magnete.py:171` hängt ohne Prüfung an, Schreiber und Leser deduplizieren nicht.
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. keine Deduplizierung auf dem Schreibweg; die Zahl im Bestand braucht einen Messlauf.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **`entitaet_ids` trägt Dubletten.** In 3 von 84 belegten KZG-Arrays steht dieselbe Entitäts-ID mehrfach, etwa `193,269,871,196,870,193,194`. Die Achse ist nach `novaberg-convention-magneten.md` §2.1 **referenziell und n:m** — eine Erinnerung betrifft eine Entität oder nicht; ein zweites Vorkommen bedeutet nichts. **Die Enthaltenseins-Suche bleibt richtig** (`entitaet_ids @> ARRAY[x]` trifft weiterhin), aber jede Zählung über die Achse ist verzerrt, und §4 nennt für die Cluster-Aggregation ausdrücklich die *Vereinigung* der `entitaet_ids` — eine Vereinigung, die Dubletten mitschleppt, ist keine. Gefunden beim Halten der Magneten-Konvention gegen den Bestand. **Nicht mitgeändert:** Ob dedupliziert wird und wo — beim Auflösen, beim Schreiben oder beim Lesen — ist eine Entscheidung.
@@ -83,6 +89,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 ### `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`
 **Kategorie:** GED
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt als Rest. Punkt 1 und 2 der Entscheidung vom 16.09.2026 sind gebaut (Korrektursatz `2eb77ed`, Ausgang am Turn `f0e3d53`, beide 18.09.2026); offen sind Punkt 3, der Nachtrag am Gedächtnisknoten beim Audit, und die Messung des scharfen Falls im Betrieb.
 
 **Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert seit `62560cf`. **Die zweite Haelfte ist gebaut:** Die Verdichtung sieht den Ausgang. `agents/kzg/dispatch.py::abgelehnte_ausgaenge` zieht die abgelehnten Dienste samt Befund aus `agent_results`, und `agents/kzg/verdichtung.py` setzt daraus den Block `[TATSAECHLICHER AUSGANG]` **vor** das Bewertungsobjekt — als Tatsache, nicht als Regel. Elf Zeugen (`tests/test_kzg_ausgang_im_kern.py`), Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2067 tests — OK`. Im Betrieb belegt am 22.08.2026, 00:16 UTC: `timeline` lehnte ab, `Ausgangsblock gesetzt — 1 abgelehnte(r) Dienst(e)`, der Kern trug reinen Inhalt.
 
@@ -117,6 +125,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### ENTITAETEN-OHNE-EMBEDDING 🔧 offen — Symptom am 16.08.2026 nicht mehr auffindbar
 **Kategorie:** GED
 
+**Rang:** **mittel** — still; **wartet auf eine Absicht**: woher die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Zusammenfassung fehlt weiter (`server/agents/kzg/magnete.py:153-158` und `server/plugins/fakten_manager/manager.py:449-454` rufen ohne sie; `update_zusammenfassung` hat keinen Aufrufer außerhalb der Tests).
+
 **Zustand:** offen, **zur Haelfte erledigt** — gegen HEAD `b8e9543` und den Bestand nachgemessen am 25.08.2026. **Das Embedding ist gebaut:** `create_new_entity` erzeugt es immer, das Feature-Flag ist entkernt; im Bestand **0 von 817** Entitaeten ohne Embedding. **Die Zusammenfassung ist es nicht:** `zusammenfassung` ist zwar Parameter, aber **802 von 817** Entitaeten tragen keine. Der Eintrag nennt beide Felder; er ist nach der Regel, dass ein Eintrag mit mehreren Stellen erst geschlossen ist, wenn jede steht, deshalb offen.
 
 **Nachgemessen am 16.08.2026: 0 von 704 Entitaeten ohne Embedding.** Das Symptom ist weg. **Ungeprueft bleibt das Warum** — ob der Erzeuger nachgezogen wurde oder ein Nachlauf gefuellt hat; ohne diese Antwort ist nicht entscheidbar, ob neue Entitaeten weiterhin leer entstehen und nur nachtraeglich gefuellt werden. Der Eintrag bleibt bis dahin offen.
@@ -127,19 +137,10 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 **Prioritaet:** hoch.
 
-#### PROMOTION-LOG-ALTE-SKALA 🔧 offen
-**Kategorie:** GED
-
-**Zustand:** offen — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die Logzeile nennt weiterhin `(0-10)`. **Die Zeilenangabe des Befundes ist veraltet:** Sie steht heute bei `:362`, nicht bei `:256`. Der Befund selbst ist unveraendert.
-
-**Befund (2026-07-29).** Die Gewinner-Log-Zeile der Synapsen-Promotion nennt die alte Salienz-Skala: `agents/synapsen_promotion/agent.py:256` schreibt `kzg_salienz={salienz:.3f} (0-10)`. Derselbe Commit, der die Skala auf 0–1 umgestellt hat, korrigierte den Modul-Docstring (Zeile 16) und den Kommentar an der Lesestelle (Zeile 235) — die Log-Zeile blieb stehen. Wer das Log liest, ordnet einen Wert von 0.95 auf einer Skala bis 10 ein und hält ihn für niedrig.
-
-**Was fertig waere.** Die Logzeile nennt die geltende Skala.
-
-**Prioritaet:** niedrig.
-
 #### GRAVITATION-KLEMME-FEHLT 🔧 offen
 **Kategorie:** GED
+
+**Rang:** **niedrig** — still, heute nicht beobachtbar: Seit dem Skalenumbau entstehen nur Werte in [0, CAP]. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt, `server/ei/gravitation.py:732-738` übernimmt ungeklemmt, Vorgabe 0.5 bei unlesbarem Feld.
 
 **Befund (2026-07-29).** Die Klemme in `ei/gravitation.py` fehlt weiterhin: Zeile 336 übernimmt `salienz` ungeklemmt als `gewicht` in den Lesepfad. Der Backlog führt sie als Sofortfix (`KZG-SALIENZ-KONSUMENTEN-DISSENS`, Entscheidung aus Chat 109) und hält im selben Eintrag fest, dass sie nach dem Neubau zwar rechnerisch wirkungslos, aber **als Zusicherung des Lesers an sich selbst** richtig bleibt. Seit dem Salienz-Neubau vom 28.07. kann kein Wert über 1.0 mehr entstehen; die Zusicherung ist damit nicht erfüllt, sondern nur unbeobachtbar geworden.
 
@@ -155,6 +156,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 
 #### SALIENZ-ZEITFELD-FAELLT-AM-LIMIT-ZUERST 🔧 offen
 **Kategorie:** GED
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `repair_truncated_json` schließt eine abgeschnittene Antwort (`server/services/postprocess.py`), `server/graph/nodes/salience.py:710-711` macht aus dem fehlenden Feld `""` ohne Kennzeichnung.
 
 **Befund (2026-07-31).** **`zeitausdruck_roh` ist das letzte Feld des Salienz-Antwortschemas**, und die Salienz läuft mit `max_output_tokens: 1024`. Läuft eine Antwort ans Limit, fehlt dieses Feld als erstes — und ein fehlendes Feld ist von „kein Zeitbezug erkannt" nicht zu unterscheiden. Ob es im Betrieb zuschlägt, ist **nicht gemessen**; die Beobachtung stammt aus dem Lesen des Schemas, nicht aus einem Ausfall. Dieselbe Klasse wie `lesson_l_default-wie-fehlschlag`: Der Ausfall sieht aus wie ein Ergebnis. Wer es prüft, zählt abgeschnittene Antworten im Salienz-Pfad; wer es entschärfen will, zieht das Feld im Schema nach vorn.
 
@@ -173,6 +176,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### SALIENZ-JSON-BRICHT-AN-LATEX 🔧 offen
 **Kategorie:** GED
 
+**Rang:** **mittel** — laut (Fehlerzeile, Segment verworfen), aber die Erinnerung geht verloren. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `parse_json_strict` kennt keine Reparatur von Backslash-Folgen, die Salienz-Prompts verbieten LaTeX nicht.
+
 **Zustand:** offen, **unbelegt** — nachgesehen am 25.08.2026. Der juengste JSON-Fehler im Salienz-Pfad stammt vom **12.08.2026**; in den 13 Tagen danach steht keiner mehr im Protokoll. Von vier Fehlerzeilen des Knotens in 14 Tagen nennt genau eine das Parsen. **Ob die Ursache weg ist oder nur nicht getroffen wurde, ist nicht entschieden:** Der Defekt braucht Formeln in der Modellantwort, und das haengt am Gegenstand des Gespraechs, nicht am Code.
 
 **Befund (2026-08-02).** **Die Salienz-Bewertung scheitert an LaTeX in der Modellantwort.** Belegt beim Abnahme-Turn zu P9 (19:15:01 UTC): `ChatWorker 'chat': JSON-Parsing fehlgeschlagen (caller=salienz/segment, fehler=Invalid \escape)`. Das Modell antwortet mit Formeln — `$T_H$`, `\propto`, `\n\n` im Fließtext —, und `parse_json_strict` bricht am Backslash ab. **Das erklärt vermutlich die 6 `salienz`-Fehler**, die im Pipeline-Log der letzten sieben Tage stehen (von insgesamt 11): Der Korpus ist Physik, und Physik schreibt sich in LaTeX. Der Turn selbst lief durch, nur seine Bewertung fiel aus — der Eintrag bekommt damit keine Salienz und wird nicht promotet.
@@ -189,6 +194,9 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 #### BUG3 — "Bruder" als Verwandtschaft statt Anrede-Slang ⬜
 **Kategorie:** GED
+
+**Rang:** **niedrig** — der Eintrag nennt weder Stelle noch Beispiel und ist nicht gegen den Code prüfbar (Durchsicht 05.10.2026, gegen HEAD `17bf86e`). Eine Regel *„Bruder als Anrede“* gibt es in den Prompts nicht.
+
 **Entdeckt:** Chat 19
 **Prio:** Niedrig — kosmetisch, nur bei jugendlichem Stil.
 
@@ -198,36 +206,12 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Gegenstaenden; hier stehen die von **Gedächtnis**, die uebrigen in [Hintergrund](novaberg-bugs-hintergrund.md), [Charakter](novaberg-bugs-charakter.md), [Bauart](novaberg-bugs-bauart.md). Ueberschrift und Text stehen in jedem empfangenden Teil.
 
-#### CLUSTER-THEMEN-DEDUP — Semantisch redundante Themen-Strings in Cluster-Promotion
-**Kategorie:** GED
-
-**Zustand:** offen, **ueberholt** — nachgesehen am 25.08.2026. Der genannte Schreiber `_lzg_eintrag_schreiben` existiert nicht mehr; die Cluster-Promotion ist von der Synapsen-Promotion abgeloest. Im heutigen Bestand stehen keine wortgleichen Dubletten der beschriebenen Art mehr, wohl aber semantisch nahe Themen ueber verschiedene Knoten hinweg — das ist ein anderer Gegenstand und braucht ein Aehnlichkeitsmass, keine Zeichenkette.
-
-**Status:** ⬜ Offen
-**Entdeckt:** Chat 86 (Cluster-Qualitäts-Diagnose im LZG)
-
-**Symptom:** Cluster-promovierte LZG-Einträge enthalten Themen-Listen mit semantisch redundanten Strings. Beispiele aus dem aktuellen LZG:
-- ID 67: `{"Annas Geburtstag", "Geburtstag", "Geburtstag von Anna", "Geburtstag von Rosa", ...}` — vier Strings, die im Kern dasselbe Konzept ("Geburtstag") fassen.
-- ID 66: `{Datenbanken, PostgreSQL, "PostgreSQL Architektur", Datenbank-Performance, Software-Performance, ...}` — drei Granularitätsstufen desselben Konzepts plus ein Phrasen-Paar mit gemeinsamem Wortstamm.
-
-**Ursache:** Die Cluster-Aggregation in `_lzg_eintrag_schreiben` führt eine Mengen-Vereinigung über alle Cluster-Mitglieds-Themen durch (`sorted(set().union(*[m.themen]))`). Diese Vereinigung dedupliziert nur **String-identische** Themen. Semantische Duplikate ("Geburtstag" vs. "Annas Geburtstag") werden als zwei verschiedene Set-Einträge behandelt.
-
-**Auswirkung:** Mittel. Themen-Listen wachsen aufgebläht, was die Themen-basierte Retrieval-Logik (Themen-Tabelle, Themen-Salienz-Erweiterung) verzerrt. Aufgeblähte Themen-Listen erzeugen Pseudo-Vielfalt — derselbe Inhalt zählt mehrfach als "verschiedenes Thema". Folgen treten bei der Retrieval-Erweiterung im Enricher auf (siehe `novaberg-memory.md` §11).
-
-**Lösung:** Drei Ansätze, von einfach zu robust:
-1. **Lexikalische Normalisierung** vor der Mengen-Vereinigung (Lowercase, Lemma, Stopword-Entfernung). Fängt offensichtliche Duplikate, aber nicht "Annas Geburtstag" vs. "Geburtstag von Anna".
-2. **Embedding-Cluster auf den Themen-Strings**: Themen-Embeddings rechnen, Cosine ≥ Schwellwert → derselbe Cluster, repräsentativster String gewinnt. Analog zur Cluster-Promotion selbst.
-3. **LLM-Konsolidierungs-Call** in der Cluster-Destillation: Mini-Call reduziert die Themen-Liste auf den semantischen Kern. Höchste Recall-Garantie, höhere LLM-Kosten.
-
-**Vorbedingung:** Keine.
-**Prio:** Mittel.
-
-**Status-Update Chat 86:** Beide Bugs werden voraussichtlich durch den Synapsen-Umbau (siehe `novaberg-memory-synapsen_k.md`) strukturell obsolet, weil keine Themen-Aggregation mehr stattfindet. Themen bleiben pro Knoten eingefroren, geteilte Themen werden zur Kanten-Charakterisierung. Bis zur Umsetzung des Umbaus bleibt der Bug-Eintrag bestehen — aktive Mitigation wird zurückgestellt.
-
 ---
 
 #### CLUSTER-META-CONTAMINATION — Pipeline-Meta-Begriffe als Themen-Tags
 **Kategorie:** GED
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an der Ursache; der Cluster-Pfad ist weg (`8a0e5c2`), aber die Themenextraktion (`server/prompts/default/salienz.dimensionen.txt:4-6`) nennt keine Meta-Begriffe als Ausschluss, und `SALIENZ_THEMEN_STOPWORDS` gibt es nicht.
 
 **Zustand:** offen — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. **Der Beleg ist verfallen, der Befund gewachsen:** Die Knoten `id 50` und `id 67` gibt es nicht mehr; ueber `lzg_knoten` gezaehlt tragen aber **113 von 3047** einen der genannten Meta-Begriffe im Themenfeld (3,7 %). Von den zwei Loesungsansaetzen ist keiner gebaut — `SALIENZ_THEMEN_STOPWORDS` kommt in `config.py` nicht vor.
 **Status:** ⬜ Offen
@@ -252,66 +236,7 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 ---
 
-#### PROMO-FAKT-LEER — Fakt-klassifizierte Einträge ohne Fakten fallen aus dem LZG-Schreib-Pfad
-**Kategorie:** GED
-
-**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Promotionsergebnis ohne Faktinhalt. Die Bedingung entsteht im Lauf, nicht in einer Zeile.
-**Status:** ⬜ Offen
-**Entdeckt:** Chat 85 (durch EVA-Audit-Logging nach Pixie-EVA-Härtung sichtbar geworden)
-
-**Symptom:** KZG-Einträge werden in Call 1 als `klassifikation="fakt"` klassifiziert. Call 2 extrahiert anschließend 0 Fakten-Tripel (weil der Inhalt keine extrahierbaren Tripel enthält — typisch für Beobachtungen über Interaktionsstil, Selbstdarstellung, abstrakte Eigenschaften). Da der LZG-Schreib-Pfad an die Bedingung `klassifikation in ("erinnerung", "gemischt")` gebunden ist, wird weder ein LZG-Eintrag noch ein Knowledge-Graph-Eintrag geschrieben. Der KZG-Eintrag geht verloren.
-
-**Beispiele (Chat 85, 11.05.26, Audit-Logs):**
-
-- `kzg:meister:nova:1778440554756` — themen=`Selbstbewusstsein, Intelligenz`, salienz=0.7, klassifikation=fakt, 0 Fakten
-- `kzg:meister:nova:1778440555618` — themen=`Schwertkampf, Strategie, Angriff und Verteidigung, Taktik des Lockens`, salienz=0.8, klassifikation=fakt, 0 Fakten
-- `kzg:meister:nova:1778440588602` — themen=`Selbstdarstellung, Spielerische Interaktion`, salienz=0.7, klassifikation=fakt, 0 Fakten
-
-**Ursache:** Der Klassifikator stuft Inhalte mit allgemeinen Beobachtungen als `fakt` ein, obwohl sie keine extrahierbaren Tripel enthalten. Der Promotion-Code hat keinen Auffang-Pfad für diesen Fall: `fakt` schaltet auf Tripel-Extraktion, und wenn diese leer ist, passiert gar nichts mehr.
-
-**Auswirkung:** Mittel. Substanzielle KZG-Einträge mit Salienz 0.7-0.8 gehen verloren, ohne dass sie als Erinnerung im LZG landen. Vor der EVA-Härtung war der Verlust komplett unsichtbar; jetzt wird er als Audit-Eintrag `status='erledigt'` mit `lzg_eintrag_geschrieben=false` protokolliert, aber der Verlust selbst bleibt.
-
-**Lösungsoptionen (eine oder mehrere):**
-
-- (a) Klassifikator: bei Inhalten ohne konkrete Tripel auf `erinnerung` statt `fakt` fallen (Anpassung des Klassifikator-Prompts, sodass abstrakte Beobachtungen explizit als Erinnerung erkannt werden)
-- (b) Promotion-Pfad: bei `klassifikation="fakt"` und 0 extrahierten Fakten automatisch auf `gemischt` umschalten, damit der Erinnerungs-Pfad greift
-- (c) Eigener Auffang-Pfad: Audit-Eintrag `status='fehler'` mit Begründung "Klassifikation 'fakt' ohne extrahierbare Tripel", statt silent Erfolgs-Meldung
-
-**Empfehlung:** (b) als pragmatischer Fix, (a) als nachhaltige Lösung. Reihenfolge: erst (c) für Sichtbarkeit, dann (a) oder (b) für Datenrettung.
-
-**Vorbedingung:** Keine.
-**Prio:** Mittel — kein Datenverlust ohne Audit-Trail mehr (durch EVA-Härtung), aber Datenverlust persistiert bis Fix.
-
----
-
 ### Chat 78 — TimelineAgent-Audit + Thinker-Findings
-
-#### PFAD2-EMO-MIX — Pfad-2-KZG-Eintrag mischt User- und Nova-Emotion ⚠️
-**Kategorie:** GED
-
-**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Vermischung zweier Emotionsquellen im zweiten Pfad. Braucht einen Turn mit beiden.
-**Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
-
-**Symptom:** Im CharacterGraph schreibt der KZG-Pfad einen `beobachter=assistant`-Eintrag, aber die Emotion-Felder sind inkonsistent:
-
-- `salienz_obj.emotion` kommt aus LLM-Klassifikation des `user_prompt` → User-Emotion
-- `arousal` kommt aus `perzeption_assistant` → Nova-Emotion
-- `emotions_vektor` bleibt leer, weil `_ei_calc_character` nur `nova_emotions_vektor` setzt, der Dispatcher aber `state.emotions_vektor` liest
-
-**Konkrete Stellen:**
-
-- [graph/nodes/salience.py:147-153](graph/nodes/salience.py#L147-L153) — Salience-Node analysiert weiterhin `state.user_prompt`
-- [graph/nodes/ei_calc.py:124-198](graph/nodes/ei_calc.py#L124-L198) — `_ei_calc_character` setzt nur `nova_emotions_vektor`
-- [graph/nodes/dispatcher.py:48](graph/nodes/dispatcher.py#L48) und [graph/nodes/dispatcher.py:238](graph/nodes/dispatcher.py#L238) — liest `state.emotions_vektor` (User-Vektor), nicht den Nova-Vektor
-- [agents/kzg/dispatch.py:67-71](agents/kzg/dispatch.py#L67-L71) — übernimmt User-`emotions_vektor` ins Nova-KZG
-
-**Konsequenz:** KZG-Einträge mit `beobachter=assistant` haben keinen kohärenten Emotionsstand. Konzeptuelle Folge: spätere Analysen über Nova-Emotionen (Cluster, Trends, Selbst-Reflexion) arbeiten auf inkonsistenten Daten.
-
-**Soll-Verhalten:** Im Pfad-2-KZG-Schreibvorgang wird Novas eigene Emotion gespeichert. Salience-Node berücksichtigt `ei_calc_rolle`, Dispatcher nutzt `nova_emotions_vektor` wenn `beobachter=assistant`.
-
-**Verwandt:** Dual-Emotion-Architektur (Chat 60+).
-
-**Prio:** Mittel — schreibt heute schon korrupte Daten in jeden Pfad-2-Eintrag, aber Auswertungen darauf existieren noch nicht. Vor erster Nova-Selbst-Reflexion fixen.
 
 ---
 
@@ -337,6 +262,8 @@ propagiert Fehler vorbildlich — das Muster sitzt in den Zustell- und Batch-Pfa
 
 #### BATCH-ZAEHLER-ZAEHLEN-AUFRUFE — „N promotet" zählt Verworfene mit ⚠️
 **Kategorie:** GED
+
+**Rang:** **niedrig** — still, nur die Summenzeile des Laufs. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an der aktiven Stelle (`server/agents/synapsen_promotion/agent.py:350`); die *dormant* genannte Stelle gibt es nicht mehr. **Dieselbe Ursache wie `PROMO-LAUF-ZAEHLT-VERWORFENE`** — eine Änderung schließt beide.
 
 **Zustand:** offen, **Beleg zur Haelfte gegenstandslos** — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `agents/promotion/agent.py` (der als *dormant* genannte Pfad) **existiert nicht mehr**. Im aktiven Pfad gilt der Befund unveraendert, an neuer Stelle: `agents/synapsen_promotion/agent.py:234` zaehlt `promotet += 1` nach jedem exceptionfreien Aufruf, waehrend die Verwurfsfaelle (`:300` TTL abgelaufen, `:316` Inhalt leer) per normalem `return` zurueckkehren.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio mittel.**
@@ -388,6 +315,8 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 #### IMPULS-DOPPELTE-SPUR — ein eigener Gedanke wird zweimal ins Gedächtnis geschrieben ⚠️
 **Kategorie:** GED
 
+**Rang:** **mittel** — still; **wartet auf eine Absicht**: eine oder zwei Spuren je Impuls, und wenn zwei, welches Feld sie unterscheidet. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; beide Graphen rufen `dispatch_kzg`, der KZG-Hash trägt kein unterscheidendes Feld.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Impuls schreibt ueber beide Graphen unter derselben `turn_id`. Zaehlbar, aber nur an einem Impuls-Turn, den es zu erzeugen gilt.
 **Entdeckt:** Chat 110, nach der Umverdrahtung des Impuls-Pfads.
 
@@ -409,6 +338,8 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 #### PROMO-LAUF-ZAEHLT-VERWORFENE — der Lauf der Synapsen-Promotion zählt einen verworfenen Eintrag als promotet
 **Kategorie:** GED
+
+**Rang:** **niedrig** — still, nur die Laufzeile. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`server/agents/synapsen_promotion/agent.py:350`, Verwurf an `:409-449`). Dieselbe Ursache wie `BATCH-ZAEHLER-ZAEHLEN-AUFRUFE`.
 
 **Zustand:** offen — am Code gelesen am 19.09.2026, nicht gemessen.
 
