@@ -1,9 +1,116 @@
 # Novaberg — Bugs, Archiv: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 22 Eintraege, je mit `CHA` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 28 Eintraege, je mit `CHA` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 05.10.2026 — geschlossen bei der Durchsicht der offenen Eintraege
+
+**Diese Eintraege standen als offen im Register und waren es nicht mehr.** Am 05.10.2026 ist jeder offene Eintrag gegen den Code am HEAD `17bf86e` gehalten worden; die Zustandszeile je Eintrag nennt den Beleg. *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Die Stelle, an der der Befund galt, gibt es nicht mehr.
+
+---
+
+### `UEBERSTEUERUNG-GREIFT-NICHT` — 0 von 14 Landschaften
+**Kategorie:** CHA
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. **Behoben schon am 12.08.2026** (`5484ef6`, *„the override never reached a landscape, and now it pulls“*): Die Übersteuerung ist nicht mehr auf Grenzzellen beschränkt, `_uebersteuerer` zieht an jeder Größe, auch an `naehe` (`server/ei/haltung.py:810-852`). Der Zustand vom 20.08.2026 hielt den Eintrag gegen `CLUSTER_GRENZE` statt gegen die Verrechnung; `CLUSTER_GRENZE` ist unverändert und hier nicht mehr die Ursache. Dass sie greift, zeigt `ZUG-ZWISCHEN-090-097-ABGESCHALTET` (Nähe 0,82 gegen 0,00).
+
+**Zustand bis 05.10.2026:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `CLUSTER_GRENZE` (`ei/haltung.py:113`) fuehrt weiter ausschliesslich `draengen` und `fragen`.
+
+**Befund (11.08.2026), aus der Fundliste uebernommen.** Die Übersteuerung `distanz → naehe` greift in **0 von 14** Landschaften, auch bei voller Ausprägung 1.0 und unabhängig von der Schwelle. Eine Übersteuerung wirkt nur, wo die Größe eine **Grenze** ist; `CLUSTER_GRENZE` führt über alle Landschaften ausschließlich `draengen` und `fragen`, `naehe` in keiner. Sie war damit seit dem Bau am 31.07.2026 wirkungslos. `wissbegier → fragen` greift dagegen in 3 von 14 (`nebel`, `gewitter`, `paradox`). `novaberg-haltungsraum_k.md` §2 sagt das Gegenteil — *„`distanz` bei 1.0 übersteuert die Nähe, gleich wie warm die Landschaft ist"* —, das Konzept ist also die Absicht und der Code bleibt dahinter zurück.
+
+**Geschlossen, wenn** Die Uebersteuerung greift dort, wo die Groesse eine Grenze ist — oder sie entfaellt.
+
+---
+
+### `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE`
+**Kategorie:** CHA
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. **Der zweite Zweig der Schließbedingung ist erfüllt, der Kern ist stabilisiert:** Seit `3ef6e1b` (27.08.2026) destilliert der Knoten `charakter_hash` mit Temperatur 0,0, und die Kerne aus identischem Material sind zeichengleich (`server/config.py:3118-3140`, gemessen gegen `OllamaProvider/qwen36-cpu`, benannt in `9eb3ecc`). Der Hintergrund läuft weiter auf `qwen36-cpu` (`server/config.py:323`). **Die Bedingung hängt am Aufbau:** Wechselt der Knoten Modell oder Backend, ist die Zeichengleichheit neu zu messen, und der Eintrag lebt wieder auf. Dass die drei Rad-Läufe nach `F-RAD-2` bei 0,0 zeichengleich und damit ein Leerlauf zu dreifachen Kosten sind, ist bekannt und eigens zu behandeln.
+
+**Zustand bis 05.10.2026:** offen — gemessen am 26.08.2026 gegen den Produktivbestand. → **Der naheliegende Griff ist am selben Tag gebaut, gemessen und verworfen** (Konzept §3.1e): Der **Kern-Medoid** aus drei Laeufen senkt die Spanne des Zuwendungsfaktors von **0,2908 auf 0,2615** bei **dreifacher** Rechenzeit — bei vier Punkten je Reihe nicht von Rauschen zu unterscheiden. `PIXIE_CHARAKTER_KERN_LAEUFE` steht deshalb auf **1**; der Mechanismus und die Senke (`kern_erhebung` im `pipeline_log`) bleiben gebaut. **Was das ausschliesst, ist mehr wert als das, was es liefert:** Die Mehrfacherhebung des Kerns ist als Weg geprueft und zu teuer fuer ihre Wirkung — der Medoid waehlt den zentralsten aus **drei** Ziehungen einer sehr breiten Verteilung, und der ist immer noch fast eine Ziehung. **Die Streuung muss dort kleiner werden, wo sie entsteht: bei der Ableitung selbst.** → **Und dort ist sie am 26.08.2026 gefunden.** Der Knoten `charakter_hash` lief mit `temperature = 0.2`, ohne belegte Herleitung. Vier Laeufe auf demselben Material: bei **0.2** eine Ueberdeckung von **32,9 %**, bei **0.0** **zeichengleiche** Fassungen (viermal 4798 Zeichen). **Die Temperatur erklaert die Breite vollstaendig**, und sie steht seither auf 0.0. **Damit faellt die Ursache dieses Eintrags weg** — ob der Faktor jetzt stabil ist, ist die naechste Messung; ob ein Kern bei 0.0 auch *besser* ist, ist eine andere Frage und ungemessen. **Nebenwirkung, gemessen statt vermutet:** Drei Rad-Laeufe auf demselben Eingang liefern bei 0.0 **1,2977 · 1,2977 · 1,2977** — Spanne 0,0000. Die Mehrfacherhebung aus `F-RAD-2` ist damit ein Leerlauf mit dreifachen Kosten.
+
+**Befund.** **`F-RAD-2` verlangt drei Rad-Laeufe und den Median, aber alle drei lesen denselben Kern-Hash — und dessen eigene Ziehung bewegt den Faktor fuenfmal staerker.** Gemessen mit **festgehaltenem** Turn-Material und **festgehaltenem** Beziehungsprofil; variiert wurde allein der Kern, viermal frisch destilliert, auf jedem ein Zuwendungs-Rad mit den vorgeschriebenen drei Laeufen und Median:
+
+| | Spanne des Faktors |
+|---|---|
+| Innerhalb eines Kerns, drei Laeufe | **0,0550** im Mittel (groesste 0,1041) |
+| Ueber vier Kerne, je Median aus drei | **0,2908** |
+
+Die vier Mediane: 1,2088 · 1,1426 · 1,0695 · 0,9180. **Bei einer Faktorspanne von 0,5 bis 1,5 sind das 29 % des gesamten Bereichs** — allein daraus, welche Ziehung des Kerns das Rad gerade gelesen hat. Die Streuung ueber Kerne ist das **5,3-fache** der Streuung innerhalb eines Kerns.
+
+**Die Begruendung von `F-RAD-2` bleibt richtig und trifft die kleinere Quelle.** Sie lautet: Ein Wert, der bei der Destillation einmal geschrieben wird und bis zur naechsten stehenbleibt, darf nicht von einem unglueklichen Lauf fuer Tage festgelegt werden. Genau das gilt eine Stufe frueher auch — und dort ist es fuenfmal so gross.
+
+> **Es trifft ausgerechnet den Faktor, mit dem die Festlegung sich selbst begruendet:** Er geht in die Salienz **jedes** Nutzerbeitrags ein.
+
+**Die Ursache ist bekannt und heute gemessen:** Zwei Destillationen des Kerns aus **identischem** Material teilen nur **27–32 %** ihres Inhaltswortschatzes (`novaberg-pixie-character-hash.md` §3.1c). Das Rad liest also eine Quelle, die selbst nur zu rund einem Drittel wiederholbar ist. **Ein Zusammenhang mit der Kernlaenge besteht nicht** — der laengste Kern (4850 Zeichen) liefert 1,0695, der kuerzeste (3987) 0,9180.
+
+**Und der Befund beantwortet eine seit dem 30.07.2026 offene Frage.** `novaberg-charakter-rad-messreihe_k.md` hielt fest, die Drift zwischen zwei Erhebungen erreiche das Dreissigfache der Streuung innerhalb einer, und liess offen, *„ob sich der zugrundeliegende Profiltext zwischen den beiden Laeufen geaendert hat"*. **Er muss sich nicht aendern.**
+
+**Geschlossen, wenn** die gespeicherte Unsicherheitsangabe die Bewegung erfasst, die den Faktor tatsaechlich bestimmt — oder der Kern so weit stabilisiert ist, dass sie es nicht mehr muss.
+
+**Prioritaet:** hoch. Der Faktor ist eine kalibrierte Eingangsgroesse der Salienz, und seine einzige Verlaesslichkeitsangabe ist um den Faktor fuenf zu klein.
+
+---
+
+### `RAD-GESPEICHERT-NICHT-REPRODUZIERBAR`
+**Kategorie:** CHA
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Die verglichene Größe gibt es nicht mehr: Der gespeicherte Wert ist das Mittel der Reihe (`server/agents/charakter/agent.py:994`, `server/agents/charakter/rad_messreihe.py:89`), und der Knoten läuft auf Temperatur 0,0 (`server/config.py:3137`). Die neu gefasste Bedingung ist für `nova → meister` am 12.08.2026 erfüllt; was den Wert vor dem 01.08. schrieb, ist nicht mehr feststellbar.
+
+**Zustand bis 05.10.2026:** offen, **ueberholt** — nachgesehen am 25.08.2026, und am 27.08.2026 ein zweites Mal ueberholt: Der Eintrag laesst offen, *„ob die gespeicherte Null aus einer anderen Temperatur stammt"* — **der Knoten steht seit dem 26.08.2026 auf `temperature = 0.0`**, und drei Rad-Laeufe auf demselben Eingang sind zeichengleich (Spanne 0,0000). Eine Nichtreproduzierbarkeit **derselben** Eingabe kann es damit nicht mehr geben; bleibt allein die Frage, ob die gespeicherte Eingabe die war, die man glaubt. Der Befund misst eine **einzelne** Destillation gegen einen **einzelnen** gespeicherten Wert. Seither ist der Median aus drei Laeufen gebaut (`speichenweise_mediane`, `speichen_median` in `agents/charakter/`), und damit misst die alte Anordnung nicht mehr dasselbe. **Die Frage bleibt und die Zahl nicht:** Ob ein gespeichertes Rad reproduzierbar ist, ist gegen das heutige Verfahren neu zu messen.
+
+**Befund (2026-08-01).** **Das gespeicherte Zuwendungs-Rad ist nicht reproduzierbar.** Die Destillation mit exakt der Produktions-Eingabe (`kern` + `beziehungsprofil`, 1371 Zeichen, unverändert seit 20:18 UTC) liefert zweimal deterministisch `distanz 0.5`; gespeichert steht `distanz 0.0`. Mit `kern` + `adaptive_hash` statt des Beziehungsprofils antwortet dasselbe Modell `distanz 1.0`. **Genau diese Speiche trägt die größten negativen Beiträge des Haltungsraums** (Umfang −0.3, Nähe −0.5, Wärme −0.2) — sie entscheidet, ob die Modifikation überhaupt subtrahieren kann. Ob die gespeicherte Null aus einer anderen Temperatur, einem anderen Aufrufweg oder einem dritten Eingabetext stammt, ist offen.
+
+**Nachtrag desselben Tages, ein geprueftes Nein.** Die gesamte **Abwendungsseite** des gespeicherten Rades steht auf 0.0, die Zuwendungsseite trägt 5 von 6 Speichen (zwei davon auf 1.0). Der Verdacht, das Ausgabeschema im Prompt zeige alle zwölf Werte als `0.0` und verankere damit die Null, ist **geprüft und widerlegt**: Mit einem Platzhalter statt der Nullen ändert sich die Abwendungssumme nur von 1.5 auf 2.0.
+
+**Nachtrag 12.08.2026 — die Abnahmebedingung ist heute unerreichbar, und das ist kein Defekt.** Der gespeicherte Wert ist seit dem 01.08. **kein Einzelmessergebnis mehr**, sondern das gewichtete Mittel der Reihe über die letzten fünf Erhebungen (`novaberg-charakter-rad-messreihe_k.md` §4). Eine einzelne Destillation kann ihn deshalb **konstruktionsbedingt** nicht reproduzieren — gemessen an `nova → meister` am 12.08.: frische Erhebung 1,3582, gespeichert 1,2099, weil 58,7 % des Wertes aus vier älteren Erhebungen kamen.
+
+Zum Befund selbst: Das Archiv (`charakter_rad_messung_archiv_20260812`) trägt für den 01.08. genau **eine** Reihenzeile je Richtung — `meister → nova` mit `distanz 0.5` um 13:20. Der damals gespeicherte Wert 0,0 war damit **älter als die erste Reihenzeile**; verglichen wurde eine frische Destillation gegen einen Wert aus dem vorigen Stand, nicht gegen dieselbe Rechnung.
+
+**Was fertig waere — neu gefasst.** ~~Die Eingabe, aus der das gespeicherte Rad entstand, ist benannt und reproduziert es~~ → Die **Reihenrechnung** ist aus ihren Zeilen nachgerechnet und trifft den gespeicherten Wert; ein Einzellauf wird dabei ausdrücklich **nicht** erwartet. Für `nova → meister` ist das am 12.08. geschehen: `reihe_laden` + `rad_zusammenfassen` reproduzieren die 1,2099 auf vier Stellen.
+
+**Prioritaet:** ~~hoch~~ → **niedrig.** Die ursprüngliche Sorge — ein Wert, der jede abgeleitete Zahl mitträgt — bleibt richtig; sie richtet sich aber gegen die **Reihe**, und die ist nachrechenbar. Offen bleibt allein, was den Wert vor dem 01.08. geschrieben hat, und das ist nicht mehr feststellbar.
+
+---
+
+### `KERN-HASH-USER-STATT-NOVA` — kern_hash beschreibt User statt Nova
+**Kategorie:** CHA
+
+**Zustand:** behoben an der Wurzel — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Die Wurzel war die Datenquelle (Novas Stimme nirgends dauerhaft); seit `c36fc74` (10.08.2026) liest der Kern den Wortlaut aus `pipeline_log` (`turn_roh`, `server/agents/charakter/agent.py:594` `_turns_laden`), seit `37f9e47` (17.08.2026) je Perspektive die eigene Seite. Was der Kern heute falsch beschreibt, führen `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` und `KERNHASH-TRAEGT-KEINE-PERSON`.
+
+**Entdeckt:** Chat 27
+**Prio:** Niedrig — Destillations-Thema.
+→ Chat 103: Wurzel ist nicht die Destillation, sondern die Datenquelle — Novas Stimme wird nirgends persistent gespeichert (Redis-Turns 2h TTL, gespraech_archiv verwaist). Siehe Backlog NOVA-STIMME-NICHT-PERSISTENT.
+
+---
+
+### `HASH1` — Character Hash Recency-Bias
+**Kategorie:** CHA
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der Eintrag nennt keine Ursache; ein Recency-Bias der Auswahl ist heute nicht mehr gebaut: Die Destillation wählt die LZG-Knoten nach `gewicht_absolut` und `haeufigkeit`, ohne Zeitanteil (`server/agents/charakter/agent.py:728-735`, seit `1ed498f`, 08.07.2026), und der Kern liest zusätzlich den Wortlaut der Turns. Der Bestand, an dem *„alle Top-20 negativ“* galt, ist am 12.07.2026 zurückgesetzt. Eine Schlagseite der Valenz nach Gewicht wäre ein neuer Befund.
+
+**Symptom:** Alle Top-20 LZG-Einträge negativ, positive Wendung fehlt.
+
+---
+
+### `MODUS-KALIBRIERUNG` — Perzeption klassifiziert spielerische Inhalte als "emotional"
+**Kategorie:** CHA
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der Lösungsansatz steht: Beide Perzeptions-Prompts erklären seit `0b1b9bc` (12.09.2026) jeden Modus mit seinem Kriterium, `spielerisch` = *„Unernst, Neckerei, Wortspiel“*, `emotional` = *„Gefühle sind der Gegenstand, nicht nur der Rahmen“* (`server/prompts/default/perzeption.task.txt:48-62`). Der Fall des Eintrags ist nicht nachgemessen.
+
+**Entdeckt:** Chat 72, 01. Mai 2026
+
+**Symptom:** Perzeption stuft 😍-Katzen-Chat als `gespraechs_modus="emotional"` statt `"spielerisch"` ein. Beeinflusst die Tiefe-Achse der Dreischicht-Architektur und damit die Sektor-Berechnung im GV.
+
+**Status:** Kein Bug, sondern Kalibrierungsfrage. Der Perzeption-Prompt unterscheidet die Modi nicht trennscharf genug.
+
+**Lösungsansatz:** Modus-Beispiele im Perzeption-Prompt schärfen. Spielerisch (Tier-Niedlichkeit, Quatschen, leichte Themen) klar von emotional (Beziehungsthemen, Sorgen, Tiefe) abgrenzen.
+
+**Prio:** Niedrig — kosmetisch, beeinflusst die Sektor-Verteilung leicht, aber bricht keine Funktion.
 
 ---
 
