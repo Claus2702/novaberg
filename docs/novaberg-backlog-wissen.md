@@ -936,6 +936,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 **Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: Die Spalte ist da, das Repository liest sie nicht — und die Tabelle traegt **0 Zeilen**, die im Befund genannten 171 gibt es nicht mehr. **Dieselbe Kennung steht auch im Defektregister.**
 
+**Neu bewertet am 06.10.2026:** Die Absicht ist entschieden — `fakten` wird **stillgelegt**, bis ein Fakten-Agent gebaut wird (Entscheidung des Eigentümers, Wortlaut am Eintrag in [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)). **Die *Lösung* unten — Konzept für die Migration, dann Sprint — entfällt damit**; das Paar-Schema kommt erst mit dem Agenten. Ein Entfernen der Tabelle wäre DDL und wird vorher angekündigt.
+
 **Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
 **Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte
 **Severity:** Hoch — 171 Live-Einträge unter `user_id='nova'` betroffen
@@ -1001,6 +1003,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 **Kategorie:** [WIS] WISSEN
 
 **Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
+**Entblockt am 06.10.2026:** Die Absicht ist entschieden — **der Typ einer Notiz ist nachträglich änderbar, als eigene Aktion des Notizdienstes** (Entscheidung des Eigentümers, Wortlaut am Eintrag in [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)). Damit ist der Eintrag baubar.
 
 **Entdeckt:** Chat 80 (Live-Test B)
 **Klasse:** Architektur-Strenge zu hoch — Container-Typ als unveränderliche Klasse

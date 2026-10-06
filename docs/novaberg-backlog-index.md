@@ -679,13 +679,13 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 883 | offen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
 | WIS | 914 | offen | `NOTIZEN-PAIR-MISSING` | [Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `ch](novaberg-backlog-wissen.md) |
 | WIS | 933 | offen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
-| WIS | 952 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
-| WIS | 971 | offen | `NOTIZEN-KONTEXT-REKONSTRUKTION` | [Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Re](novaberg-backlog-wissen.md) |
-| WIS | 999 | offen | `NOTIZEN-CONTAINER-WECHSEL` | [Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel](novaberg-backlog-wissen.md) |
-| WIS | 1024 | offen | `NOTIZEN-SKILL-MANIFEST` | [Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähi](novaberg-backlog-wissen.md) |
-| GED | 1045 | offen | `NOTIZEN-UPDATE-TARGET-LEER` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
-| WIS | 1083 | offen | `FAKTEN-TABELLE-ENTITY-MERGE` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
-| WIS | 1084 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 954 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
+| WIS | 973 | offen | `NOTIZEN-KONTEXT-REKONSTRUKTION` | [Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Re](novaberg-backlog-wissen.md) |
+| WIS | 1001 | offen | `NOTIZEN-CONTAINER-WECHSEL` | [Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel](novaberg-backlog-wissen.md) |
+| WIS | 1028 | offen | `NOTIZEN-SKILL-MANIFEST` | [Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähi](novaberg-backlog-wissen.md) |
+| GED | 1049 | offen | `NOTIZEN-UPDATE-TARGET-LEER` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 1087 | offen | `FAKTEN-TABELLE-ENTITY-MERGE` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 1088 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
 | BAU | 25 | offen | `NMCP-KONVENTION-MCP-2026-07-28` | [Block 19.09.2026 — die NMCP-Konvention gegen die Pro](novaberg-backlog-bauart.md) |
 | BAU | 35 | unlesbar | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
 | BAU | 48 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |
