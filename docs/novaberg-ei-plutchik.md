@@ -148,7 +148,7 @@ Drei Stufen:
 
 1. **Kanonisch:** Emotion ist eine der 16 — direkt verwenden.
 2. **Synonym:** Emotion steht im Synonym-Mapping — auf kanonische Form mappen.
-3. **Unbekannt:** Emotion ist weder kanonisch noch Synonym — **Error-Log** werfen, damit sie ergänzt werden kann. Fallback auf Exponent 1.0 (sektorlos).
+3. **Unbekannt:** Emotion ist weder kanonisch noch Synonym — **Error-Log** werfen, damit sie ergänzt werden kann. Fallback auf Exponent 1.0 (sektorlos). → **Am 06.10.2026 entschieden:** Der unbekannte Wert wird durch `neutral` ersetzt, statt roh weiterzulaufen — in dieser Rechnung dieselbe Wirkung (§6.4), aber kein Wert außerhalb des Kanons mehr im Verlauf; die Fehlerzeile bleibt. `zuversicht` wird auf `zufriedenheit` gezogen (`PERZEPTION-EMOTION-AUSSER-KANON` in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md)).
 
 ```python
 sektor = EMOTION_SEKTOR_MAP.get(emotion)
@@ -387,7 +387,7 @@ Die Matrix ist symmetrisch. Gegenpaare (Distanz 4, fett): Freude↔Trauer, Zuver
 
 `neutral` hat keinen Sektor. Liefert Perzeption `neutral`, wird die Emotion in den Verlauf aufgenommen, aber mit Exponent 1.0 zu allen Sektoren behandelt — wie bisher. In der Praxis filtert der bestehende Code neutrale Emotionen bereits vor der Verlaufsberechnung heraus (Zeile „emotion != neutral" im Enricher).
 
-Unbekannte Emotionen (nicht in EMOTION_SEKTOR_MAP, nicht in EMOTION_SYNONYM_MAP, nicht `neutral`) erzeugen einen Error-Log und werden mit Exponent 1.0 behandelt.
+Unbekannte Emotionen (nicht in EMOTION_SEKTOR_MAP, nicht in EMOTION_SYNONYM_MAP, nicht `neutral`) erzeugen einen Error-Log und werden mit Exponent 1.0 behandelt. → **Seit dem 06.10.2026 entschieden:** Sie werden zu `neutral` (§3.2, Punkt 3).
 
 ---
 

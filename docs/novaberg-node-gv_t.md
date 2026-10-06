@@ -156,7 +156,7 @@ Die Einleitung von §10 mit der Tabelle der Schritte GV1 bis GV6 steht in [`nova
 **Node:** `graph/nodes/gespraechsvektor.py` — Node im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph. Beide Wege zum Responder (Management und Nicht-Management) laufen durch den GV-Node.
 
 **Sequentieller Ablauf:**
-1. [Python] Skip-Check: Begrüßung/Meta → Durchreichen (Länge 0). **Ein eigener Impuls wird nie übersprungen** — siehe §10.1a.
+1. [Python] ~~Skip-Check: Begrüßung/Meta → Durchreichen (Länge 0).~~ → **Am 06.10.2026 entschieden: Begrüßung und Meta werden nicht übersprungen**, der Node denkt auch dort voraus; die beiden Marken prüften Intents, die die Perzeption nie liefert, und werden gestrichen (`GV-SKIP-BEGRUESSUNG-TOT` in [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md)). **Ein eigener Impuls wird nie übersprungen** — siehe §10.1a.
 2. [Python] Max-Länge aus 8 EI-Dimensionen berechnen (0–3 Schritte)
 3. [Python] Zweite Wissensquelle: 2-Stufen-Traversierung. ~~über `fakten`-Tabelle~~ → **seit Chat 115 über den Erinnerungsgraphen** (`lzg_knoten` + `lzg_kanten`, gelesen aus `state["lzg_resonanz"]`). Die zwei Stufen bleiben, der Graph wechselt — siehe unten.
 4. [LLM] Hypothese destillieren (Session + Emotion + Charakter + Fakten + KZG)

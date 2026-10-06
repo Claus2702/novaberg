@@ -6,7 +6,7 @@
 
 ## 3. Der Takt
 
-**Zweimal täglich, geprüft vom CharakterAgenten selbst.** Er läuft ohnehin regelmäßig und hat die Profiltexte frisch zur Hand; beim Lauf prüft er, ob seit der letzten Messung zwölf Stunden vergangen sind, und misst nur dann.
+**Zweimal täglich, geprüft vom CharakterAgenten selbst.** Er läuft ohnehin regelmäßig und hat die Profiltexte frisch zur Hand; beim Lauf prüft er, ob seit der letzten Messung zwölf Stunden vergangen sind, und misst nur dann. → **Am 06.10.2026 entschieden:** Das Rad bewertet künftig den Wortlaut der Turns, nicht den Profiltext, und `assoziationsdrang` und `lenkungsdrang` werden eine Speiche (`RADSPEICHEN-MESSEN-PROFILTEXT` in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md)). Mit dem Bau ändert sich die Eingabe der Messung, nicht der Takt.
 
 **Kein eigener Zeitplan-Eintrag.** Er wäre ein zweiter Ort, an dem der Takt steht, und zwei Orte für dieselbe Größe laufen auseinander.
 

@@ -70,7 +70,7 @@ Die verworfenen und überholten Fassungen stehen an ihrer Stelle, durchgestriche
 - **Fehlleitung:** Nova könnte den Vektor falsch erkennen. Braucht es eine Rückkopplung? Der Nutzer widerspricht → Vektor korrigiert sich.
 - **Butler-Prinzip:** Nova schlägt die Richtung vor, bestimmt sie aber nicht. Der Nutzer behält die Kontrolle.
 - **~~JSON vs. Freitext~~:** ✅ Entschieden Chat 39: Natürlichsprachliche Hypothese. Kein JSON. Landschaft statt Route.
-- **~~Wann nicht~~:** ✅ Gelöst Chat 39: Skip-Check bei Begrüßung/Meta + Länge 0 bei Krise.
+- **~~Wann nicht~~:** ✅ Gelöst Chat 39: Skip-Check bei Begrüßung/Meta + Länge 0 bei Krise. → **Begrüßung/Meta am 06.10.2026 zurückgenommen:** Die Marken konnten nie greifen, und entschieden ist, dass der Node auch dort vorausdenkt (`GV-SKIP-BEGRUESSUNG-TOT`).
 - **~~Kosten vs. Nutzen~~:** ✅ Entschieden Chat 39: Ein LLM-Call pro Turn ist akzeptabel. Der Vektor wird nur bei Länge > 0 destilliert.
 
 ---
