@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 23 Eintraege, je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 21 Eintraege, je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -16,6 +16,8 @@
 ### `SETEXT-UNTERSCHRIFT-IM-BLOCK` — die Unterstreichung steht im Inhalt
 **Kategorie:** WIS
 
+**Rang:** **niedrig** — still, Markdown betrifft keine Datei, RST jede Überschrift. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`server/tools/dateien/operationen.py:587`); die Reparatur ändert einen Vertrag mit fünf Aufrufern.
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `block_lesen` liest weiter ab `start` der Ueberschriftenzeile (`tools/dateien/operationen.py:587`).
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Bei einer Setext-Überschrift steht ihre Unterstreichung in der ersten Zeile des Blockinhalts.** `struktur_analysieren` setzt `start` auf die Textzeile der Überschrift, und `block_lesen` liefert ab `start + 1` — bei einer Rautenüberschrift ist das die erste Inhaltszeile, bei einer Setext-Überschrift die Reihe aus `=` oder `-`. Gefunden von der zweiten Kontrolle am 20.08.2026, indem die neue Karte durch ihren nachgelagerten Verbraucher geschickt wurde: `block_lesen(...)` auf einen Setext-Block gibt `'===================\n\nInhalt…'` zurück. **Der Parser weiß es besser, als der Vertrag hergibt:** `token.map` hält den Bereich der *ganzen* Überschrift, bei Setext also zwei Zeilen; das Erkenner-Tupel trägt nur den Anfang. **Nicht behoben, weil die Reparatur einen Vertrag mit fünf Aufrufern ändert.** **Nachtrag vom selben Tag, ~13:55 UTC: Der Fall ist nicht mehr latent.** Mit dem reStructuredText-Erkenner ist die Unterstreichung nicht der Sonderfall, sondern **die Regel** — in RST trägt *jede* Überschrift eine, und `block_lesen` liefert sie bei jeder als erste Inhaltszeile mit. In Markdown betrifft es weiterhin keine der 174 Dateien; sobald eine `.rst`-Datei indiziert wird, betrifft es sie vollständig.
@@ -26,6 +28,8 @@
 
 ### `BIBLIOTHEK-FINDET-SICH-SELBST` — Kosinus 1,000 in 44 von 46 Trefferzeilen
 **Kategorie:** WIS
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `Bibliotheksfrage` hat kein Ausschlussfeld (`server/memory/repositories/autonomous_wissen_repository.py:160-190`), ausgeschlossen wird nur im Rückweg (`7d22db1`).
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. der Lesepfad schliesst die eigene Ausarbeitung nicht aus; die Trefferzahl braucht einen Messlauf.
 
@@ -38,6 +42,8 @@
 ### `ZUORDNUNG-NENNT-LISTENPOSITION` — Listenposition statt Datenbank-Nummer
 **Kategorie:** WIS
 
+**Rang:** **mittel** — laut, aber der Auftrag geht verloren. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; eine fremde Nummer wird verworfen (`server/agents/wissen_rueckweg/zuordnung.py:240-246`), ohne zweiten Versuch (`agent.py:243-248`).
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `agents/wissen_rueckweg/zuordnung.py:240-244` verwirft mit `return None`, ohne zweiten Versuch und ohne Rueckstellung. Der Riegel selbst ist intakt — drei Rueckgabepfade melden je einen eigenen Grund (Nummer nicht in der Vorlage · `ziel` keine Nummer · `kern` leer) —, aber alle drei enden gleich, und keiner ist von *„keine Datei passt"* zu unterscheiden.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Das Zuordnungsmodell nennt eine Listenposition statt der Datenbank-Nummer, und der Riegel verwirft zu Recht — aber der Auftrag ist danach weg.** Im Betriebslog: *„Rueckweg-Zuordnung: Nummer 3 steht nicht in der Vorlage [587, 2022, 3058, 5592, 6869, 6871, 7972, 8817] — verworfen"*, danach `keine_zuordnung (Aufruf unbrauchbar)`. Der Zeuge dafuer steht seit dem 18.08. und hat gehalten; **gemessen ist damit erstmals, dass der Fall im Betrieb wirklich vorkommt** — 1 von 4 echten Laeufen. Offen ist nicht der Riegel, sondern die **Behandlung danach**: Ein unbrauchbarer Modellaufruf ist von *„keine Datei passt"* nicht zu unterscheiden, obwohl das eine ein Ausfall und das andere ein Ergebnis ist. Ein zweiter Versuch waere billiger als der verlorene Auftrag.
@@ -49,6 +55,8 @@
 ### `ERSCHLIESSUNG-VERSTUEMMELT-STICHWORT` — der scharfe Kanal haengt an verstuemmelten Woertern
 **Kategorie:** WIS
 
+**Rang:** **mittel** — still, die Datei fällt aus dem lexikalischen Kanal. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; Stichwörter werden nur gestrippt (`server/agents/dateien_index/indizieren.py:272-282`).
+
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. keine Pruefung der erhobenen Stichwoerter im Indexweg.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Das Erschließungsmodell verstümmelt Stichwörter, und der scharfe Kanal hängt daran.** Beim Indizieren von `kzg-salienz.md` erhob das Modell unter anderem `DAEMPFUNGSEEXPONENT` (doppeltes E) und `Figureseite` statt *Dämpfungsexponent* und *Figurenseite*. **Gemessen:** Die Frage nach dem Dämpfungsexponenten fiel deshalb aus dem lexikalischen Kanal und wurde nur vom dense Kanal getragen (0,4904). Der Ausfall war folgenlos, **weil es zwei Kanäle gibt** — mit einem allein wäre er ein stiller Treffer weniger gewesen. **Die Klasse ist größer als der Fall:** Der scharfe Kanal setzt voraus, dass die erhobenen Stichwörter die Schreibweise treffen, in der ein Mensch fragt; niemand prüft das heute. Ungezählt ist, wie viele der Stichwörter im Bestand solche Fehler tragen.
@@ -59,6 +67,8 @@
 
 ### `FUNDSTELLE-MIT-BEHAELTERPFAD` — der absolute Pfad steht im Prompt
 **Kategorie:** WIS
+
+**Rang:** **niedrig** — still, der volle Pfad der Wurzel erscheint als Ort. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt (`server/agents/dateien_index/aufzeichnungen.py:120`). Vorgehen entscheidbar ohne neue Absicht; Empfehlung: Rückfall auf den Basisnamen der Wurzel.
 
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. `_fundstelle_bauen` fällt weiter auf den vollen Wurzelpfad zurück (`ort = bezeichnung.strip() or wurzel.strip()`, `aufzeichnungen.py:120`). **Die Zahl, die den Befund billig machte, gilt nicht mehr:** Es ist nicht mehr eine Wurzel, es sind **drei**, und die dritte hat die offene Frage von damals bereits in eine Richtung beantwortet.
 
@@ -80,6 +90,8 @@ id | pfad                               | bezeichnung
 ### `FAKTENPLUGIN-OHNE-KAPPUNG` — weder Kappung noch Schwelle
 **Kategorie:** WIS
 
+**Rang:** **niedrig** — heute ohne Wirkung, das Plugin ist abgeschaltet (`server/graph/nodes/enricher.py:1074`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt bei Reaktivierung (`server/plugins/fakten_manager/manager.py:163-175`, Abfragen ohne LIMIT).
+
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert und im Kontextpfad nachgesehen: `enrich_entries` (`plugins/fakten_manager/manager.py:130`) laeuft ueber `EntitaetenRepository.find_by_user` und je Entitaet ueber `FaktenRepository.find_by_subjekt` — **kein `LIMIT`, keine Schwelle, kein Aehnlichkeitsvergleich** an einer der beiden Stellen. Die Menge ist weiterhin allein durch den Bestand begrenzt.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Fakten-Plugin hat weder Kappung noch Schwelle — das ist der Grund für seine 130+ Einträge, nicht die Datenqualität.** `enricher.py` schaltet ihn seit Chat 71 ab mit dem Vermerk *„Fakten-Enrichment produziert 130+ Rausch-Eintraege — wird reaktiviert nach Fakten-Bereinigung"*. Gezählt über die sieben Kontextquellen: `wissen_manager`, `notizen_manager` und `timeline_manager` tragen ein `LIMIT`, **`fakten_manager` trägt keins** — und auch keinen Ähnlichkeitsvergleich. Die Diagnose lautete *Bereinigung*, aber eine Quelle ohne Obergrenze liefert unabhängig von der Datenqualität so viele Einträge, wie der Bestand hergibt. **Die Abhilfe ist eine Zeile und wurde nie versucht**; solange sie fehlt, ist die Wiederinbetriebnahme an eine Bedingung geknüpft, die nicht die wirksame ist. Aufgefallen beim Entwurf des Dateien-Plugins, das dieselbe Stelle besetzt und dieselbe Falle hätte.
@@ -88,59 +100,10 @@ id | pfad                               | bezeichnung
 
 ---
 
-### `NEUGIER-VEKTOR-OHNE-LESER` — gerechnet, gespeichert, von niemandem gelesen
-**Kategorie:** WIS
-
-**Zustand:** offen — gemessen am 08.09.2026 gegen HEAD `cb7e899`.
-
-**Befund.** `neugier_vektor` wird je Kandidat aus `NOVA_NEUGIER × Resonanz × Neuheit` gerechnet und in `wissensluecken` geschrieben — **1762 Zeilen im Bestand**. Außerhalb von `agents/wissensluecken/` liest ihn **niemand**: kein Knoten, kein Agent, keine Auswahl, keine Schwelle. Er ist eine gespeicherte Zahl ohne Verbraucher.
-
-**Dieselbe Klasse wie `HALTUNG-OHNE-LESER`**, dort zwei Wochen unbemerkt, hier **sechs**. Und dieselbe Krankheit, die am 07.09.2026 an drei Gegenständen nebeneinander gemessen wurde: *Eine Größe wird sauber gerechnet, gespeichert — und bewegt nichts.*
-
-**Die Skala ist gegen eine Beispieltabelle geeicht, nicht gegen Messwerte.** Über 1762 Zeilen reicht der Wert von **0,0102 bis 0,1148**, Mittel **0,0640** — **23 %** der Spanne [0 … 0,5]. Das Konzept rechnet in §3.3 mit *Resonanz 0,8 × Neuheit 0,9* und kommt auf 0,58; echte Cosine-Ähnlichkeiten liegen weit darunter, und ein Produkt zweier Werte unter Eins ist strukturell klein.
-
-> **Die im Konzept genannte Schwelle hätte den Mechanismus stillgelegt.** `TRAUM_NEUGIER_SCHWELLE` (§3.4, Default 0,25) ist **nicht gebaut** — und über 1762 Zeilen wäre sie **kein einziges Mal** überschritten worden. Dass sie fehlt, ist der Grund, warum überhaupt Lücken entstehen.
-
-#### Welcher der beiden Faktoren die Skala drückt — nachgemessen am 08.09.2026
-
-**Die Frage war, ob das Material zu dünn ist oder die Argumente falsch geeicht sind.** Die Faktoren einzeln beantworten sie:
-
-| Faktor | min | Mittel | **max** | σ | Skala genutzt |
-|---|---:|---:|---:|---:|---:|
-| `resonanz` | 0,0319 | 0,2239 | **0,4322** | 0,0616 | **43 %** |
-| `neuheit` | 0,1771 | 0,5821 | **0,8343** | 0,0804 | **83 %** |
-| Zug | 0,0102 | 0,0640 | 0,1148 | 0,0158 | 23 % |
-
-**Es ist die Eichung, nicht das Material — und die Stelle ist die Resonanz.** Die Neuheit schöpft ihre Skala zu 83 % aus; sie arbeitet. Die Resonanz kommt über 1762 Zeilen **nie über 0,4322**.
-
-**Der Grund ist strukturell und kein Defekt der Daten.** Resonanz ist eine Cosine-Similarity zwischen Fragment- und Charakter-Embedding. Zwischen zwei unabhängig entstandenen Texten liegt die bei 0,2 bis 0,5; **1,0 heißt identischer Text**. Die Formel behandelt sie als Faktor in [0 … 1] und unterstellt damit eine Obergrenze, die nur ein Selbstvergleich erreicht.
-
-> **Selbst die beobachteten Maxima reichen nicht an die Konzeptschwelle.** 0,5 × 0,4322 × 0,8343 = **0,180** — und die beiden Höchstwerte treten nie am selben Kandidaten auf, weshalb der höchste gemessene Zug bei 0,1148 liegt. Gegen eine Schwelle von 0,25 ist der Mechanismus **konstruktiv** nicht auslösbar, nicht nur empirisch.
-
-**Damit ist es ein Fall von `F-NAHT-1`, und die Festlegung ist hier nicht eingelöst.** Sie verlangt zwischen zwei Skalen einen **benannten, abgeleiteten** Abbildungsfaktor, *„aus der Quelltabelle berechnet, nicht gesetzt, damit er mit ihr mitwandert"*. `NOVA_NEUGIER × resonanz × neuheit` führt drei Skalen roh zusammen: einen gesetzten Regler in [0 … 1] und zwei Cosine-Größen mit je eigener, nirgends benannter Spanne.
-
-**Was das für den Bau bedeutet — und was daran eine Absichtsfrage ist.** Die Rechnung ist ableitbar: Die Spanne der Resonanz ist über 1762 Zeilen gemessen und könnte den Faktor tragen, wie `speichen_spanne` es im Haltungsraum tut. **Ob** die Skala ausgeschöpft werden soll, ist es nicht — eine Größe, die ihren Deckel erreicht, sagt etwas anderes über die Welt als eine, die es nie tut. Vorgabe des Eigentümers am 08.09.2026: Die Kalibrierung soll die volle Skala erreichbar machen; was das im Einzelnen heißt, ist eine Justierung nach dem Bau des Lesers.
-
-**Warum das zusammengehört und nicht zwei Einträge sind:** Solange die Größe keinen Leser hat, ist ihre Skala folgenlos — eine Eichung ohne Verbraucher bewegt so wenig wie die Größe selbst. Wer den Leser baut, muss beides zugleich entscheiden.
-
-**Verwandt und getrennt zu führen:** `LUECKEN-WERDEN-NIE-GESCHLOSSEN` (Band A3) betrifft den **Status** der Zeilen, dieser Eintrag ihren **Wert**.
-
-**Am 08.09.2026 hat er einen Leser bekommen** — `staerkste_luecken` in `memory/repositories/wissensluecken_repository.py`, gerufen im Gespraechsvektor, mit eigenem Prompt-Block `[OFFENE FRAGEN]`. **Eine Anzahl statt einer Schwelle**, weil eine Schwelle gegen eine Skala gesetzt waere, die 20 % ihres Bereichs nutzt: Genau daran waere `TRAUM_NEUGIER_SCHWELLE` gescheitert, die mit 0,25 kein einziges Mal ausgeloest haette.
-
-**Der Betriebsbeleg steht zur Haelfte.** `[gemessen 09.09.2026]` Ab Turn 3 einer Gespraechsreihe erscheinen alle drei Zeilen zusammen — Repository, Knoten und `[OFFENE FRAGEN]` im gerenderten Prompt. **Ueber 119 ausgewertete Turns geschah das dreimal.**
-
-> **Der Leser haengt an einer Bedingung, die etwas anderes misst, als beim Bau unterstellt.** `strategie_aktiv` prueft `max_laenge`, und `_vektor_laenge_berechnen` misst **weder Reizlaenge noch Gespraechslaenge**, sondern die Zahl erlaubter Gedankenspruenge aus Emotion, Arousal, Beziehungsdynamik, Modus und Sprachstil — *„entscheidet ueber das Vorausdenken und ueber nichts sonst"*. Nuechterne Sachfragen erzeugen dort 1; ueber 119 Turns stand `laenge` **116-mal** auf 1.
-
-**Damit ist der Eintrag nicht geschlossen, sondern verschoben:** Die Skala bleibt ungeeicht, und die Bedingung ist neu zu waehlen. Das ist eine Absichtsfrage — soll Nova ihre offenen Fragen nur einbringen, wenn sie ohnehin weit denkt, oder wann immer sie aufnahmebereit ist?
-
-**Geschlossen, wenn** `neugier_vektor` einen Leser hat, **der regelmaessig greift**, und seine Skala an gemessenen Werten geeicht ist — nicht an der Beispieltabelle des Konzepts.
-
-**Nachtrag 12.09.2026 — der Leser waehlt jetzt nach Naehe zum Reiz, und die Bedingungsfrage ist zur Haelfte beantwortet.** Entscheidung des Eigentuemers (`F-GV-2`): offene Fragen nur, wenn sie dem Turn nah sind, unter den nahen der staerkste Zug, oder keine. Vorher standen in 15 Betriebsturns dieselben drei in jedem Turn, und keine wurde aufgegriffen. `[gemessen]` Mit der Grenze 0,49 (`OFFENE_FRAGEN_MIN_NAEHE`): **0 Fragen in 11 Nutzerturns** eines Abends aus Neckerei und Filmbitte, **4 passende** in den Impulsen; auf einer unabhaengigen Stichprobe von 60 Nutzerturns **17 Turns mit Fragen, 33 von 38 passend** nach Lesung. **Offen bleibt:** Die Skala von `neugier_vektor` ist weiter ungeeicht — sie ordnet nur noch unter den nahen Themen, und dort ist ihr Beitrag gering. Die Frage *nur bei weitem Denken oder immer bei Bereitschaft* ist unberuehrt; der Leser haengt weiter an `strategie_aktiv`.
-
----
-
 ### `TIMELINE-SCHREIBT-OHNE-AUFTRAG` — die beilaeufige Erwaehnung legt an, der Auftrag scheitert
 **Kategorie:** WIS
+
+**Rang:** **niedrig** — die schwerere Hälfte ist erfüllt (`c6c0e98`, 14.09.2026: nur ein ausdrücklicher Auftrag schreibt). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: offen nur, ob ein Auftrag mit Wochentagsnamen schreibt; ungemessen.
 
 **Zustand:** offen — gefunden am 01.09.2026 gegen HEAD `79aaaa6`, aus der Fundliste uebernommen. **Ein Eintrag dieser Klasse ist am 16.09.2026 aus dem Bestand genommen:** Zeile 507 der Timeline, am 13.09.2026 aus einer Aussage statt aus einem Auftrag angelegt, steht auf `aktiv = false` (Entscheidung des Eigentuemers, kein Fremdschluessel zeigte darauf). **Der Defekt selbst bleibt offen** — der schreibende Weg ist unveraendert.
 
@@ -158,6 +121,8 @@ id | pfad                               | bezeichnung
 
 ### `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` — dreizehn Tage alt, als morgig ausgegeben
 **Kategorie:** WIS
+
+**Rang:** **hoch** — still, eine falsche Zeitangabe wird geglaubt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: keine Prüfung der Antwort gegen `event_time`; `server/utils/datum_pruefung.py` prüft nur Wochentag gegen Datum. Ungemessen.
 
 **Zustand:** offen — gefunden am 01.09.2026 gegen HEAD `79aaaa6`, aus der Fundliste uebernommen.
 
@@ -190,6 +155,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 #### UNBEKANNTE-AKTION-FAELLT-DURCH 🔧 offen
 **Kategorie:** WIS
 
+**Rang:** **niedrig** — still, als Verhalten gepinnt (`server/tests/test_notizen_execute.py:191`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Stellen (`server/plugins/notizen_manager/manager.py:493-522`).
+
 **Zustand:** offen, **zur Haelfte erledigt** — gegen HEAD `b8e9543` nachgesehen am 25.08.2026. Die unbekannte Aktion faellt nicht mehr stillschweigend durch: `execute()` gibt `erfolg=False` mit dem Text *„Unbekannte Aktion: …"* zurueck. **Laut ist sie damit noch nicht** — es entsteht keine Logzeile, und *„Eine unbekannte Aktion scheitert laut"* ist genau das, was fertig waere. Die zweite Haelfte des Befundes — `verarbeitet` bedeutet je Pfad etwas anderes — ist nicht nachgeprueft.
 
 **Befund (2026-07-30).** `plugins/notizen_manager/manager.py` `execute()`: Eine **unbekannte Aktion** faellt stillschweigend durch — keine Zaehlung, keine Log-Zeile. Der stille Uebersprung, den der Standard verbietet. Zusaetzlich zaehlt der alte Update-Pfad **unbedingt**, der M6-Pfad nur bei gemeldetem Erfolg: `verarbeitet` bedeutet je Pfad etwas anderes. Beides mit `assertNoLogs` bzw. einem Vergleichstest gepinnt.
@@ -207,6 +174,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 #### ZEIT-EXTRAKTION-UNSCHARF 🔧 offen
 **Kategorie:** WIS
 
+**Rang:** **niedrig** — still, der Parser verwirft nachgelagert. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `zeitausdruck_roh` geht ungeprüft weiter (`server/graph/nodes/salience.py:710-711`).
+
 **Befund (2026-07-31).** **Die Zeit-Extraktion ist über den Richtungsverlust hinaus unscharf.** Im Gespräch, aus dem `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` stammt, trug `zeitausdruck_roh` auch `'trockenen Sommer'` und `'Tageslicht'` — Zeichenketten, die keine Zeitangaben sind. Die Anweisung schließt allgemeine Bemerkungen ohne konkreten Anker zwar aus, nennt aber nur drei Beispiele dafür. Nicht nachgemessen nach der Prompt-Änderung vom 31.07.
 
 **Was fertig waere.** Was als Zeitausdruck geliefert wird, ist einer — oder das Feld traegt eine Marke, dass es ungeprueft ist.
@@ -217,6 +186,8 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 
 #### PARSER-NACKTE-UHRZEIT-FALSCHER-TAG — eine Uhrzeit ohne Tagesangabe landet im Vormonat 🔧 Umgangen, Ursache extern
 **Kategorie:** WIS
+
+**Rang:** **niedrig** — umgangen (Pfad 1c, `server/utils/zeitparser.py:1422-1470`), Riegel mit Verfallsdatum (`f2052c6`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: offen nur, weil die Ursache in der Bibliothek liegt; `dateparser` ist ungepinnt (`server/requirements.txt:24`).
 
 **Umgangen am 31.07.2026** durch Pfad 1c: Ein Ausdruck, der nach der Normalisierung nur noch aus `HH:MM` besteht, bekommt seinen Tag selbst gerechnet, statt ihn bei `dateparser` zu erfragen. **Die Ursache liegt in der Bibliothek und ist nicht behoben.**
 
@@ -277,6 +248,9 @@ if self.now > dateobj - tz_offset:
 
 #### `READ-NACH-UPDATE-ALTER-WERT` — Read nach Update zeigt alten Wert ⬜
 **Kategorie:** WIS
+
+**Rang:** **niedrig** — der Eintrag nennt weder Datei noch Bezeichner und ist nicht gegen den Code prüfbar (Durchsicht 05.10.2026, gegen HEAD `17bf86e`); der Agentweg hat sich seither verändert.
+
 **Entdeckt:** Chat 27
 **Prio:** Mittel — architektonische Frage: Sollen Reads generell über den Agent gehen?
 
@@ -284,6 +258,8 @@ if self.now > dateobj - tz_offset:
 
 #### NOTIZ-BEFEHL-ALS-TITEL — Meta-Befehl wird als Notiz-Name gespeichert ⬜ Chat 103
 **Kategorie:** WIS
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Prompt verlangt für `name` den exakten Wortlaut (`server/agents/notizen/crud.py:93-157`), die Fachsprache lehrt Normalisierungen ohne Namen.
 
 **Zustand:** offen, **unbelegt** — am Bestand nachgesehen am 25.08.2026. Die Tabelle `notizen` traegt **eine** Zeile; die beiden Notizen, die den Befund belegten, gibt es nicht mehr. Der Klassifikator ist damit nicht geprueft, sondern nur der Beleg verfallen.
 
@@ -304,19 +280,14 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Gegenstaenden; hier stehen die von **Wissen**, die uebrigen in [Antwortpfad](novaberg-bugs-antwortpfad.md). Ueberschrift und Text stehen in jedem empfangenden Teil.
 
-#### TIMELINE-SEARCH1 — Timeline-Agent findet irrelevanten alten Termin ⬜
-**Kategorie:** WIS
-**Entdeckt:** Chat 54, Live-Test
-**Symptom:** "Kannst du das mit in den Termin schreiben?" → Timeline-Agent sucht, findet alten IT-Termin "Abschalten zweier Server" (möglicherweise aktiv=false), kommt mit `status=fehler` zurück. Statt einer Disambiguierungs-Rückfrage ("Meinst du den IT-Termin vom ...?") gibt der Agent einen Fehler.
-**Ursache:** Embedding-Suche matcht zu breit. Kein Scope-Filter (aktiv/inaktiv), keine Disambiguierung bei uneindeutigem Treffer.
-**Prio:** Mittel — funktionale Einschränkung, kein Datenverlust (Pipeline hat den Fehler korrekt kommuniziert).
-
 ---
 
 ### Chat 80 — character_id-Inventur (M2.5a-Folge)
 
 #### TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `character_id` ⚠️
 **Kategorie:** WIS
+
+**Rang:** **mittel** — still beim zweiten Charakter, Aufwand groß (DDL). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `timeline` hat keine `character_id` (`server/agents/timeline/init.sql:7-26`).
 
 **Zustand:** offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `timeline` fuehrt `user_id` und kein `character_id`.
 **Entdeckt:** Chat 80, im Zuge der M2.5a-Phase-2-Implementierung (Magnet-Spalten-Befüllung beim Timeline-Schreiben)
@@ -334,6 +305,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 #### NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_id` ⚠️
 **Kategorie:** WIS
 
+**Rang:** **mittel** — still beim zweiten Charakter (DDL). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `notizen` hat keine `character_id` (`db/init.sql:471-488`).
+
 **Zustand:** offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `notizen` fuehrt `user_id` und kein `character_id`.
 **Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
 
@@ -347,6 +320,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 #### FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `character_id` ⚠️
 **Kategorie:** WIS
+
+**Rang:** **niedrig**; **wartet auf eine Absicht**: bleibt `fakten` ein lebender Speicher (dann Paar-Schema), oder wird er stillgelegt? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Tabelle ist leer und hat keinen Erzeuger; das Repository nennt `character_id` nicht.
 
 **Zustand:** offen im Code, **Begruendungszahl verfallen** — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. Die Spalte `character_id` steht in `fakten`; `fakten_repository.py` nennt sie **0 mal**, der Befund gilt also unveraendert. Die *171 Live-Eintraege*, die ihn als Severity Hoch begruendeten, sind **0 Zeilen** — die Tabelle ist leer. Was bleibt, ist die Repository-Luecke ohne Datenmigration.
 **Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
@@ -366,6 +341,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 #### NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruktion fehlt ⚠️
 **Kategorie:** WIS
 
+**Rang:** **mittel** — laut, Aufwand groß. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: eine Auflösung über mehr als einen Turn ist nicht gebaut (`server/agents/notizen/klassifikation.py:63-78`); der Frame-Auflöser befragt Notizen nicht.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Bezugsaufloesung ueber mehr als einen Vor-Turn. Der Eintrag verweist auf das Frame-Konzept als Loesung; sein Symptom ist eine Turnfolge.
 **Entdeckt:** Chat 80, Live-Test B des NOTIZEN-VOR-TURN-BEZUG-Sprints
 
@@ -382,6 +359,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 #### NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweigert ⚠️
 **Kategorie:** WIS
 
+**Rang:** **niedrig**; **wartet auf eine Absicht**: ist der Typ einer Notiz nachträglich änderbar (Text → Liste)? Durchsicht 05.10.2026, gegen HEAD `17bf86e`: keine Codestelle verbietet es; die Verweigerung kam vom Modell.
+
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: die Verweigerung eines Notiz-zu-Liste-Wechsels ist eine Antwort, keine Codezeile.
 **Entdeckt:** Chat 80, Live-Test B
 
@@ -397,6 +376,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 #### NOTIZEN-SKILL-MANIFEST — Skills nicht in Sprach-Schicht repräsentiert ⚠️
 **Kategorie:** WIS
+
+**Rang:** **mittel** — still, die Selbstauskunft bleibt Zufall. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `AgentRegistry.beschreibungen()` (`server/agents/__init__.py:47`) hat keinen Aufrufer außerhalb der Tests.
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: falsche Selbstauskunft ueber die eigenen Faehigkeiten. Der Nachtrag vom 16.08.2026 im Rumpf nennt mit `SELBSTAUSKUNFT-OHNE-LESER` die messbare Haelfte derselben Ursache.
 **Entdeckt:** Chat 80, Live-Test B (durch Meister thematisiert)
@@ -415,6 +396,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 #### NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE crashen ⚠️
 **Kategorie:** WIS
+
+**Rang:** **mittel** — laut (`status=fehler`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: ein leeres `target` läuft ungeprüft in die Suche (`server/agents/notizen/suche.py:77-125`).
 
 **Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Crash bei leerem `target` im UPDATE-Pfad. Verwandt mit `NOTIZ-RESUME-TARGET-VERLUST`, wo der leere String inzwischen einen Vorgabewert hat — ob dieser Pfad denselben traegt, zeigt erst der Aufruf.
 **Entdeckt:** Chat 80, Live-Test B
@@ -437,6 +420,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 #### NOTIZ-RESUME-TARGET-VERLUST — Rückfrage verarmt bei jedem Resume ⚠️
 **Kategorie:** WIS
+
+**Rang:** **niedrig** — laut, Abhilfe eine Zeile. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `.get("target", "Notiz")` (`server/agents/notizen/resume.py:212`) fängt den leeren String nicht, den `dispatch.py:56-60` immer setzt.
 
 **Zustand:** offen, **entschaerft** — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `agents/notizen/resume.py:206` liest heute `state["parameter"].get("target", "Notiz")` — der leere String aus dem Symptom ist abgefangen, die Rueckfrage lautet nicht mehr *„Notiz ''"*. Die Ursache steht: `target` wird weiterhin nicht aus den Vor-Turns aufgeloest, der Vorgabewert verdeckt das nur.
 **Entdeckt:** Chat 106, Nebenbefund der AGENT-RUECKFRAGE-LOOP-Abnahme. **Prio mittel.**

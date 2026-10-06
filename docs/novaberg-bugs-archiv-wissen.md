@@ -1,9 +1,80 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 24 Eintraege, je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 26 Eintraege, je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 05.10.2026 — geschlossen bei der Durchsicht der offenen Eintraege
+
+**Diese Eintraege standen als offen im Register und waren es nicht mehr.** Am 05.10.2026 ist jeder offene Eintrag gegen den Code am HEAD `17bf86e` gehalten worden; die Zustandszeile je Eintrag nennt den Beleg. *Behoben* heisst: Die Abhilfe steht im Code. *Gegenstandslos* heisst: Die Stelle, an der der Befund galt, gibt es nicht mehr.
+
+---
+
+### `NEUGIER-VEKTOR-OHNE-LESER` — gerechnet, gespeichert, von niemandem gelesen
+**Kategorie:** WIS
+
+**Zustand:** behoben — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Der Wert hat seit `3c9bc56` (09.09.2026, *„the gap table gets its first reader“*) einen Leser: `staerkste_luecken` mit `OFFENE_FRAGEN_MIN_NAEHE` (`server/memory/repositories/wissensluecken_repository.py:62-65`), aufgerufen vom Gesprächsvektor (`server/graph/nodes/gespraechsvektor.py:1352`, `:1369`); seit `ac0db5d` (12.09.2026) nur nahe am Reiz. Die Skala ist weiter ungeeicht und ordnet nur noch unter nahen Themen; das ist eine eigene Frage, kein fehlender Leser.
+
+**Zustand bis 05.10.2026:** offen — gemessen am 08.09.2026 gegen HEAD `cb7e899`.
+
+**Befund.** `neugier_vektor` wird je Kandidat aus `NOVA_NEUGIER × Resonanz × Neuheit` gerechnet und in `wissensluecken` geschrieben — **1762 Zeilen im Bestand**. Außerhalb von `agents/wissensluecken/` liest ihn **niemand**: kein Knoten, kein Agent, keine Auswahl, keine Schwelle. Er ist eine gespeicherte Zahl ohne Verbraucher.
+
+**Dieselbe Klasse wie `HALTUNG-OHNE-LESER`**, dort zwei Wochen unbemerkt, hier **sechs**. Und dieselbe Krankheit, die am 07.09.2026 an drei Gegenständen nebeneinander gemessen wurde: *Eine Größe wird sauber gerechnet, gespeichert — und bewegt nichts.*
+
+**Die Skala ist gegen eine Beispieltabelle geeicht, nicht gegen Messwerte.** Über 1762 Zeilen reicht der Wert von **0,0102 bis 0,1148**, Mittel **0,0640** — **23 %** der Spanne [0 … 0,5]. Das Konzept rechnet in §3.3 mit *Resonanz 0,8 × Neuheit 0,9* und kommt auf 0,58; echte Cosine-Ähnlichkeiten liegen weit darunter, und ein Produkt zweier Werte unter Eins ist strukturell klein.
+
+> **Die im Konzept genannte Schwelle hätte den Mechanismus stillgelegt.** `TRAUM_NEUGIER_SCHWELLE` (§3.4, Default 0,25) ist **nicht gebaut** — und über 1762 Zeilen wäre sie **kein einziges Mal** überschritten worden. Dass sie fehlt, ist der Grund, warum überhaupt Lücken entstehen.
+
+#### Welcher der beiden Faktoren die Skala drückt — nachgemessen am 08.09.2026
+
+**Die Frage war, ob das Material zu dünn ist oder die Argumente falsch geeicht sind.** Die Faktoren einzeln beantworten sie:
+
+| Faktor | min | Mittel | **max** | σ | Skala genutzt |
+|---|---:|---:|---:|---:|---:|
+| `resonanz` | 0,0319 | 0,2239 | **0,4322** | 0,0616 | **43 %** |
+| `neuheit` | 0,1771 | 0,5821 | **0,8343** | 0,0804 | **83 %** |
+| Zug | 0,0102 | 0,0640 | 0,1148 | 0,0158 | 23 % |
+
+**Es ist die Eichung, nicht das Material — und die Stelle ist die Resonanz.** Die Neuheit schöpft ihre Skala zu 83 % aus; sie arbeitet. Die Resonanz kommt über 1762 Zeilen **nie über 0,4322**.
+
+**Der Grund ist strukturell und kein Defekt der Daten.** Resonanz ist eine Cosine-Similarity zwischen Fragment- und Charakter-Embedding. Zwischen zwei unabhängig entstandenen Texten liegt die bei 0,2 bis 0,5; **1,0 heißt identischer Text**. Die Formel behandelt sie als Faktor in [0 … 1] und unterstellt damit eine Obergrenze, die nur ein Selbstvergleich erreicht.
+
+> **Selbst die beobachteten Maxima reichen nicht an die Konzeptschwelle.** 0,5 × 0,4322 × 0,8343 = **0,180** — und die beiden Höchstwerte treten nie am selben Kandidaten auf, weshalb der höchste gemessene Zug bei 0,1148 liegt. Gegen eine Schwelle von 0,25 ist der Mechanismus **konstruktiv** nicht auslösbar, nicht nur empirisch.
+
+**Damit ist es ein Fall von `F-NAHT-1`, und die Festlegung ist hier nicht eingelöst.** Sie verlangt zwischen zwei Skalen einen **benannten, abgeleiteten** Abbildungsfaktor, *„aus der Quelltabelle berechnet, nicht gesetzt, damit er mit ihr mitwandert"*. `NOVA_NEUGIER × resonanz × neuheit` führt drei Skalen roh zusammen: einen gesetzten Regler in [0 … 1] und zwei Cosine-Größen mit je eigener, nirgends benannter Spanne.
+
+**Was das für den Bau bedeutet — und was daran eine Absichtsfrage ist.** Die Rechnung ist ableitbar: Die Spanne der Resonanz ist über 1762 Zeilen gemessen und könnte den Faktor tragen, wie `speichen_spanne` es im Haltungsraum tut. **Ob** die Skala ausgeschöpft werden soll, ist es nicht — eine Größe, die ihren Deckel erreicht, sagt etwas anderes über die Welt als eine, die es nie tut. Vorgabe des Eigentümers am 08.09.2026: Die Kalibrierung soll die volle Skala erreichbar machen; was das im Einzelnen heißt, ist eine Justierung nach dem Bau des Lesers.
+
+**Warum das zusammengehört und nicht zwei Einträge sind:** Solange die Größe keinen Leser hat, ist ihre Skala folgenlos — eine Eichung ohne Verbraucher bewegt so wenig wie die Größe selbst. Wer den Leser baut, muss beides zugleich entscheiden.
+
+**Verwandt und getrennt zu führen:** `LUECKEN-WERDEN-NIE-GESCHLOSSEN` (Band A3) betrifft den **Status** der Zeilen, dieser Eintrag ihren **Wert**.
+
+**Am 08.09.2026 hat er einen Leser bekommen** — `staerkste_luecken` in `memory/repositories/wissensluecken_repository.py`, gerufen im Gespraechsvektor, mit eigenem Prompt-Block `[OFFENE FRAGEN]`. **Eine Anzahl statt einer Schwelle**, weil eine Schwelle gegen eine Skala gesetzt waere, die 20 % ihres Bereichs nutzt: Genau daran waere `TRAUM_NEUGIER_SCHWELLE` gescheitert, die mit 0,25 kein einziges Mal ausgeloest haette.
+
+**Der Betriebsbeleg steht zur Haelfte.** `[gemessen 09.09.2026]` Ab Turn 3 einer Gespraechsreihe erscheinen alle drei Zeilen zusammen — Repository, Knoten und `[OFFENE FRAGEN]` im gerenderten Prompt. **Ueber 119 ausgewertete Turns geschah das dreimal.**
+
+> **Der Leser haengt an einer Bedingung, die etwas anderes misst, als beim Bau unterstellt.** `strategie_aktiv` prueft `max_laenge`, und `_vektor_laenge_berechnen` misst **weder Reizlaenge noch Gespraechslaenge**, sondern die Zahl erlaubter Gedankenspruenge aus Emotion, Arousal, Beziehungsdynamik, Modus und Sprachstil — *„entscheidet ueber das Vorausdenken und ueber nichts sonst"*. Nuechterne Sachfragen erzeugen dort 1; ueber 119 Turns stand `laenge` **116-mal** auf 1.
+
+**Damit ist der Eintrag nicht geschlossen, sondern verschoben:** Die Skala bleibt ungeeicht, und die Bedingung ist neu zu waehlen. Das ist eine Absichtsfrage — soll Nova ihre offenen Fragen nur einbringen, wenn sie ohnehin weit denkt, oder wann immer sie aufnahmebereit ist?
+
+**Geschlossen, wenn** `neugier_vektor` einen Leser hat, **der regelmaessig greift**, und seine Skala an gemessenen Werten geeicht ist — nicht an der Beispieltabelle des Konzepts.
+
+**Nachtrag 12.09.2026 — der Leser waehlt jetzt nach Naehe zum Reiz, und die Bedingungsfrage ist zur Haelfte beantwortet.** Entscheidung des Eigentuemers (`F-GV-2`): offene Fragen nur, wenn sie dem Turn nah sind, unter den nahen der staerkste Zug, oder keine. Vorher standen in 15 Betriebsturns dieselben drei in jedem Turn, und keine wurde aufgegriffen. `[gemessen]` Mit der Grenze 0,49 (`OFFENE_FRAGEN_MIN_NAEHE`): **0 Fragen in 11 Nutzerturns** eines Abends aus Neckerei und Filmbitte, **4 passende** in den Impulsen; auf einer unabhaengigen Stichprobe von 60 Nutzerturns **17 Turns mit Fragen, 33 von 38 passend** nach Lesung. **Offen bleibt:** Die Skala von `neugier_vektor` ist weiter ungeeicht — sie ordnet nur noch unter den nahen Themen, und dort ist ihr Beitrag gering. Die Frage *nur bei weitem Denken oder immer bei Bereitschaft* ist unberuehrt; der Leser haengt weiter an `strategie_aktiv`.
+
+---
+
+### `TIMELINE-SEARCH1` — Timeline-Agent findet irrelevanten alten Termin
+**Kategorie:** WIS
+
+**Zustand:** gegenstandslos — gegen HEAD `17bf86e` nachgesehen am 05.10.2026. Die benannte Ursache (Embedding-Suche ohne Scope-Filter) steht nicht mehr im Code: Die Suche ist `find_by_keyword` mit `ILIKE` auf den Titel und `aktiv = TRUE` (`server/memory/repositories/timeline_repository.py:372-389`), mit Disambiguierung bei mehreren Treffern (`server/agents/timeline/suche.py:160-195`). Ein Update ohne Treffer endet weiter mit `status=fehler` statt einer Rückfrage (`suche.py:130-140`); das ist ein anderer Befund.
+
+**Entdeckt:** Chat 54, Live-Test
+**Symptom:** "Kannst du das mit in den Termin schreiben?" → Timeline-Agent sucht, findet alten IT-Termin "Abschalten zweier Server" (möglicherweise aktiv=false), kommt mit `status=fehler` zurück. Statt einer Disambiguierungs-Rückfrage ("Meinst du den IT-Termin vom ...?") gibt der Agent einen Fehler.
+**Ursache:** Embedding-Suche matcht zu breit. Kein Scope-Filter (aktiv/inaktiv), keine Disambiguierung bei uneindeutigem Treffer.
+**Prio:** Mittel — funktionale Einschränkung, kein Datenverlust (Pipeline hat den Fehler korrekt kommuniziert).
 
 ---
 
