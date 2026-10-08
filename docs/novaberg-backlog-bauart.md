@@ -1663,3 +1663,21 @@ Aufgefallen beim Ergänzen eines Symbols im Reiter „Charakter": Die Änderung 
 **Zusammenhang:** ALLOWLIST-DRIFT (andere Form von Drift) · `novaberg-lesson_l_gelesen-ist-nicht-wirksam.md` (Fall 3 der Klasse).
 
 ---
+
+## Befund: SERVER-SUITE-TESTDATENBANK — Die Server-Suite läuft gegen Datenbank und Redis des Betriebs (08.10.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Zustand:** ⬜ offen — entschieden, nicht gebaut. Gebaut wird vor der ersten Änderung am Server, deren Prüfung die Daten des Betriebs nicht berühren darf.
+
+Für eine Änderung am Server läuft die Suite unter `server/tests` in einem Wegwerf-Container aus dem Image des Servers: der Code schreibgeschützt als `/app`, `/knowledge` als Wegwerf-Kopie, keine API-Schlüssel, kein Neuladen der laufenden Nova. **Datenbank und Redis sind die des Betriebs.** Ein Zeuge, der schreibt, schreibt damit in Novas Gedächtnis — still und nicht rückholbar. Nulllinie dieser Anordnung am 04.10.2026: `Ran 4094 tests` / `OK`.
+
+**Was fertig wäre:** eine eigene Testdatenbank, angelegt aus `db/init.sql` und den `init.sql` der Agenten (`server/agents/*/init.sql`), dazu eine eigene Redis-Datenbanknummer; die Suite bekommt nur diese beiden Verbindungen. Jede Störung der Anlage — Datenbank fehlt, Schema unvollständig, Frist — endet mit Ausgang ≠ 0 und Grund, nie mit `OK`. Die Verbindungszeichenkette trägt ein Kennwort und wird nie gedruckt.
+
+**Vorhergesagt, nicht gemessen:** dieselbe Zahl an Tests; Zeugen, die Bestandsdaten erwarten, werden rot. Ihre Zahl ist offen und ist die erste Messung.
+
+**Entschieden vom Eigentümer am 08.10.2026:** Die Testdatenbank kommt ins Backlog und wird vor der ersten Server-Änderung gebaut, die sie braucht. Sie anzulegen ist DDL und wird vorher angekündigt.
+
+**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql`
+
+---

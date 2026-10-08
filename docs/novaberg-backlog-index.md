@@ -1,9 +1,9 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 456 Eintraege mit Kennung — 371 offen, 82 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 457 Eintraege mit Kennung — 372 offen, 82 abgeschlossen, **3 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 454 von 456 Eintraegen zugeordnet.
+**Kategorie:** 455 von 457 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
@@ -12,7 +12,7 @@
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 74 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 66 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 98 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 99 |
 
 ---
 
@@ -315,7 +315,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `CHA` | CHARAKTER | 73 |
 | `ANT` | ANTWORTPFAD | 66 |
 | `WIS` | WISSEN | 71 |
-| `BAU` | BAUART | 98 |
+| `BAU` | BAUART | 99 |
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
@@ -324,7 +324,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 456 Eintraege
+## Alle 457 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -784,3 +784,4 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 1587 | offen | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | [Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()](novaberg-backlog-bauart.md) |
 | BAU | 1606 | offen | `PUB-ROLLENNAMEN-IM-BESTAND` | [Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt d](novaberg-backlog-bauart.md) |
 | BAU | 1645 | offen | `REGISTER-SPIEGEL-DURCHGANG` | [Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sons](novaberg-backlog-bauart.md) |
+| BAU | 1667 | offen | `SERVER-SUITE-TESTDATENBANK` | [Befund: SERVER-SUITE-TESTDATENBANK — Die Server-Suit](novaberg-backlog-bauart.md) |
