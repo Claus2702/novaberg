@@ -1,7 +1,7 @@
 # Novaberg — Emotions-Avatar: Diskussion und Ergänzungen
 
 **Teil von:** `novaberg-avatar_k.md` — dort Absicht, Kopfblock und die Tabelle „§ → Datei“
-**Stand:** 05.10.2026 (O12 entschieden). Davor 02.10.2026
+**Stand:** 08.10.2026 (O13 entschieden). Davor 05.10.2026 (O12 entschieden). Davor 02.10.2026
 **Inhalt:** Entscheidungen, offene Punkte (§11), Annahmen (§12), die Änderungen der Fassungen 0.1 bis 0.5, der Kopf der übernommenen Fassung 0.10 und die Befunde der Aufteilung und die Abweichungen zwischen Prototyp und Konzept (P1–P17).
 
 ---
@@ -21,12 +21,13 @@
 | 02.10.2026 | Ort der Bilder: *„Der Ort für Bilder wäre gut bei client/avatar/ in der Nähe.“* — `client/avatar/images/`, genannt von einer Konstante in `client/config.py` | `_t` §15.2, `_b` §16 B5 |
 | 05.10.2026 | Regieanweisungen: *„Die soll sie ja nicht sagen. Sie sind ja nett, aber können wir sie beim Sprechen herausfiltern?“* — was der Chat kursiv setzt, spricht der Avatar nicht; im Chat bleibt es (O12) | `_t` §14.5, `_b` §16 |
 | 02.10.2026 | Referenzwerte: *„Punkt 4 nehme ich auch an.“* — die Werte des Prototyps als erzeugte JSON-Dateien bei den Client-Tests, ihr Erzeuger im Labor neben dem Prototyp | `_b` §16 B3, B4 |
+| 08.10.2026 | O13, die Bilder der Figur: *„Warum ist Client Avatar Images ungetrackt? Das brauchen wir auch.“* — und auf die Frage nach der Herkunft: *„Ohne echte Person. Committen.“* Die neun PNG unter `client/avatar/images/` (Grundbild, Gesichts- und Halsebene, je drei Varianten) stehen im öffentlichen Repositorium; die Figur hat keine echte Person zum Vorbild, die Dateien tragen keine Metadaten | `_b` §16 B5 |
 
 Die Feinabstimmungen nach Sichtprüfung (*Hinweis Meister*) stehen an ihrer Stelle in `_b` §13.8, §13.10, §13.11 und `_t` §13.12.
 
 ## Offen beim Meister
 
-O6, O7, O8, O9, der Rest von O10, ~~O12~~ (entschieden 05.10.2026) und O13 (§11), dazu aus `_m` §13.16: ob die Öffnung bei Konsonanten ein Persönlichkeitsparameter Novas wird statt eines festen Tabellenwerts.
+O6, O7, O8, O9, der Rest von O10, ~~O12~~ (entschieden 05.10.2026) und ~~O13~~ (entschieden 08.10.2026) (§11), dazu aus `_m` §13.16: ob die Öffnung bei Konsonanten ein Persönlichkeitsparameter Novas wird statt eines festen Tabellenwerts.
 
 ---
 
@@ -58,7 +59,7 @@ mit geprüft werden.
 | O9 | Quelle für die Sprechschicht: existiert TTS mit Pegel oder Visemen? ~~Falls nicht, entfällt Schicht 3 in v1.~~ → Der Prototyp spricht ohne TTS, mit Lautzeiten aus dem Text (`_t` §13.12, §13.14); mit TTS startet der Mund 0,10–0,14 s vor dem Ton (`_m` §13.15, §13.16). Offen bleibt, ob v1 ohne Tonausgabe spricht (W4). → **belegt am 02.10.2026:** keine Sprachausgabe im Repositorium (`_t` §14.5) |
 | O10 | ~~Figurendesign~~ — teilweise beantwortet: Figur aus Bleistiftvorlage, siehe Abschnitt 13. Offen bleibt, ob die Merkmale in Stil und Detailgrad weiter an die Vorlage angeglichen werden müssen (Sichtprüfung). |
 | O12 | ~~Wird Text in Sternchen — Regieanweisung, Geste — gesprochen oder übersprungen? (`_t` §14.5)~~ → **entschieden am 05.10.2026:** übersprungen; im Chat bleibt er (Entscheidungen oben) |
-| O13 | Dürfen die Bilder der Figur (Grundbild, Gesichts- und Halsebene) ins öffentliche Repositorium, oder liegen sie außerhalb und werden über einen Pfad geladen? (`_b` §16, B5) → **Ort entschieden am 02.10.2026:** `client/avatar/images/`; offen bleibt, ob sie committet werden |
+| O13 | Dürfen die Bilder der Figur (Grundbild, Gesichts- und Halsebene) ins öffentliche Repositorium, oder liegen sie außerhalb und werden über einen Pfad geladen? (`_b` §16, B5) → **Ort entschieden am 02.10.2026:** `client/avatar/images/`; ~~offen bleibt, ob sie committet werden~~ → **entschieden am 08.10.2026:** ins Repositorium, ohne echte Person als Vorbild (Entscheidungen oben) |
 | O14 | ~~Ablage im Client und Aufteilung in Module (`_t` §15.2)~~ → **entschieden am 02.10.2026** (Entscheidungen oben, `_t` §15.2) |
 
 ---
