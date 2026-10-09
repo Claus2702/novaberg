@@ -18,6 +18,7 @@ from avatar.idle import (
     Mood,
     PixieJob,
     TurnBegins,
+    _build_status,
 )
 from avatar.idle_catalog import FORMS, IdleState
 from avatar.idle_status import (
@@ -302,9 +303,35 @@ class SpanTest(unittest.TestCase):
             stored = logic._plan.span
             status = logic.status(float(t))
             self.assertIsNotNone(stored)
-            self.assertEqual(status.span, StatusSpan(stored.xc, stored.lo, stored.hi, stored.count))
-        self.assertIn(status.span.count, (4, 5))
+            self.assertEqual(status.span, StatusSpan(stored.xc, stored.lo, stored.hi,
+                                                     len(logic._plan.drawn)))
+        self.assertIn(status.span.drawn, (4, 5))
         self.assertLessEqual(status.span.lo, status.span.hi)
+
+    def test_n_is_the_number_drawn_in_every_cycle(self) -> None:
+        logic = IdleLogic(7)
+        plans = []  # die Pläne bleiben referenziert, damit keine Kennung wiederkehrt
+        for t in range(STEP_MS, 120001, STEP_MS):
+            logic.step(float(t), 0.0, 0.0)
+            status = logic.status(float(t))
+            if status.span is not None:
+                self.assertEqual(status.span.drawn, len(logic._plan.drawn))
+                if not plans or plans[-1] is not logic._plan:
+                    plans.append(logic._plan)
+        self.assertGreater(len(plans), 3)
+
+    def test_n_follows_the_drawn_forms_when_fewer_than_the_target_were_drawn(self) -> None:
+        logic = IdleLogic(3)
+        logic.step(float(STEP_MS), 0.0, 0.0)
+        plan = logic._plan
+        self.assertGreaterEqual(plan.span.count, len(plan.drawn))
+        fewer = dataclasses.replace(plan, drawn=frozenset(sorted(plan.drawn)[:2]))
+        now = float(STEP_MS)
+        status = _build_status(now, logic._situation, fewer, logic._index, logic._inputs(now))
+        self.assertEqual(status.span.drawn, 2)
+        self.assertNotEqual(status.span.drawn, plan.span.count)
+        whole = _build_status(now, logic._situation, plan, logic._index, logic._inputs(now))
+        self.assertEqual(whole.span.drawn, len(plan.drawn))
 
     def test_an_answer_plan_has_no_span(self) -> None:
         status = _status_at(_answered(), 3000)

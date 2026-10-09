@@ -50,12 +50,17 @@ class BandItem:
 
 @dataclass(frozen=True)
 class StatusSpan:
-    """Die Spanne, mit der ein Zyklus geplant wurde: x_c, Grenzen und Zahl der Formen."""
+    """Die Spanne, mit der ein Zyklus geplant wurde: x_c, Grenzen und Zahl der gezogenen Formen.
+
+    `drawn` ist die Zahl der Formen, die der Zyklus nach Ziehung und Nachbesserung gezogen hat,
+    nicht die Sollzahl der Spanne: Die Nachbesserung kann eine Form ohne Ersatz streichen, und
+    ein kleiner Vorrat liefert weniger als die Sollzahl.
+    """
 
     xc: float
     lo: float
     hi: float
-    count: int
+    drawn: int
 
 
 @dataclass(frozen=True)

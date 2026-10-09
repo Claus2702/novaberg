@@ -1176,7 +1176,7 @@ def _build_status(now: float, situation: _Situation, plan: _Plan, index: int,
         form=_status_form(plan.forms[index], now), next_form=_status_next(plan, index, now),
         band=tuple(BandItem(f.form_id, f.duration / 1000) for f in plan.forms), position=index,
         plan_kind=plan.kind,
-        span=None if span is None else StatusSpan(span.xc, span.lo, span.hi, span.count))
+        span=None if span is None else StatusSpan(span.xc, span.lo, span.hi, len(plan.drawn)))
 
 
 def _modifiers(inputs: _Inputs) -> tuple[tuple[frozenset[str], float], ...]:

@@ -155,7 +155,7 @@ def _span_line(status: IdleStatus) -> str:
     if span is not None:
         drawn = " · ".join(f"{item.form_id} {fmt(item.duration_s)}" for item in status.band)
         return (f"x_c {fmt(span.xc)} s · Spanne {fmt(span.lo)}–{fmt(span.hi)} s"
-                f" · n {span.count} · gezogen: {drawn}")
+                f" · n {span.drawn} · gezogen: {drawn}")
     if status.plan_kind == _PLAN_ANSWER:
         return f"Antwort: Wechsel nach Sprecherregel · {count} Aktionen"
     if status.plan_kind == _PLAN_INHALE:

@@ -140,6 +140,13 @@ class LineTest(unittest.TestCase):
             status_lines(_status()).span,
             "x_c 3,9 s · Spanne 2,5–5,3 s · n 4 · gezogen: F3 4,2 · F14 3,6 · F5 3,5 · F9 3,9")
 
+    def test_n_is_the_number_drawn_not_the_target(self) -> None:
+        status = _status(span=StatusSpan(3.9, 2.5, 5.3, 3))
+        self.assertEqual(
+            status_lines(status).span,
+            "x_c 3,9 s · Spanne 2,5–5,3 s · n 3 · gezogen: F3 4,2 · F14 3,6 · F5 3,5 · F9 3,9")
+        self.assertNotIn(" n 5 ", status_lines(status).span)
+
     def test_an_answer_plan_shows_its_kind_instead_of_a_span(self) -> None:
         status = _status(plan_kind="answer", span=None)
         self.assertEqual(status_lines(status).span,
