@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 457 Eintraege mit Kennung — 372 offen, 82 abgeschlossen, **3 ohne lesbaren Zustand**.
+**Umfang:** 457 Eintraege mit Kennung — 375 offen, 82 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 455 von 457 Eintraegen zugeordnet.
 
@@ -43,15 +43,12 @@
 
 ---
 
-## Ohne lesbaren Zustand — 3 Eintraege
+## Ohne lesbaren Zustand — 0 Eintraege
 
 **Die Arbeitsliste.** Jede Zeile braucht eine `**Zustand:**`-Angabe an genau einer Stelle, aus geschlossener Wertemenge.
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
-| 68 | Tabellenzeile | `FASZINATION-PRAEGUNG` | Block 30.08.2026 — aus dem Faszinationskonzept |
-| 229 | Ueberschrift #### | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 35 | Tabellenzeile | `PROTOKOLLPFLICHT-OHNE-GATE` | Block 25.08.2026 — das Gate, das die Protokollpflicht bewach |
 ## Die Rangordnung
 
 **Eingezogen aus [`novaberg-backlog-rangordnung.md`](novaberg-backlog-rangordnung.md) — dort wird sie gepflegt, hier steht sie, weil sie quer zu allen Kategorien liegt.**
@@ -480,7 +477,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | CHA | 47 | abgeschlossen | `FALTUNG-OHNE-PERIODISCHEN-LAUF` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
 | CHA | 48 | offen | `PERZEPTION-SEKTOR-4-AUF-GEGENPOL` | [Block 01.09.2026 — aus der isolierten Perzeptions-Me](novaberg-backlog-charakter.md) |
 | CHA | 58 | offen | `SCHWELLEN-AUF-TESTMATERIAL-KALIBRIERT` | [Block 31.08.2026 — aus der Reizstaerke-Kalibrierung](novaberg-backlog-charakter.md) |
-| — | 68 | unlesbar | `FASZINATION-PRAEGUNG` | [Block 30.08.2026 — aus dem Faszinationskonzept](novaberg-backlog-charakter.md) |
+| — | 68 | offen | `FASZINATION-PRAEGUNG` | [Block 30.08.2026 — aus dem Faszinationskonzept](novaberg-backlog-charakter.md) |
 | CHA | 80 | offen | `RAD-LAEUFE-BEI-DETERMINISTISCHER-ABLEITUNG` | [Block 27.08.2026 — aus dem Temperaturwechsel](novaberg-backlog-charakter.md) |
 | CHA | 91 | offen | `KERNVERGLEICH-KONTROLLE-STEHT-STILL` | [Block 26.08.2026 — aus dem Umbau der Kern-Auswahl](novaberg-backlog-charakter.md) |
 | CHA | 102 | abgeschlossen | `KERNAUSWAHL-KRITERIUM-OFFEN` | [Block 25.08.2026 — aus der Vermessung des Kern-Hash](novaberg-backlog-charakter.md) |
@@ -562,7 +559,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 178 | offen | `PROMPT-DOPPELTE-FORMULIERUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 200 | offen | `CLUSTERZAHL-13-GEGEN-14` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 213 | offen | `GV-DETAIL-LAENGE-IRREFUEHREND` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
-| ANT | 229 | unlesbar | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 229 | offen | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
 | ANT | 249 | offen | `GRAPH-SACKGASSE-UNGEPRUEFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-antwortpfad.md) |
 | ANT | 316 | offen | `META-KOGNITION` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
 | ANT | 356 | abgeschlossen | `CLIENT-RENDER` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
@@ -687,7 +684,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 1087 | offen | `FAKTEN-TABELLE-ENTITY-MERGE` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
 | WIS | 1088 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
 | BAU | 25 | offen | `NMCP-KONVENTION-MCP-2026-07-28` | [Block 19.09.2026 — die NMCP-Konvention gegen die Pro](novaberg-backlog-bauart.md) |
-| BAU | 35 | unlesbar | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
+| BAU | 35 | offen | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
 | BAU | 48 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |
 | BAU | 59 | abgeschlossen | `OLLAMA-VERSION-VIER-MONATE-ALT` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-bauart.md) |
 | BAU | 60 | offen | `ANBIETER-FELDER-UNGELESEN` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-bauart.md) |
