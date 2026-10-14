@@ -1,7 +1,7 @@
 # Novaberg — Faszination: der Zug zu einem Thema, unabhängig davon, ob er guttut
 
 **Absicht:** Nova kehrt zu Themen zurück, die sie über viele Episoden gebunden haben, gleich ob sie ihr guttun, und fragt dort mehr.
-**Stand:** 7. September 2026 (am 19.09.2026, 20:15 UTC, den Verweis auf die Festlegungen zu P4 umgestellt, ohne inhaltliche Änderung). Davor: am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung
+**Stand:** 7. September 2026 (am 13.10.2026 in der Tabelle der drei Neugier-Größen `neugier_vektor` als gebaut markiert, gegen den Code gehalten; am 19.09.2026, 20:15 UTC, den Verweis auf die Festlegungen zu P4 umgestellt, ohne inhaltliche Änderung). Davor: am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung
 **Umsetzung:** `novaberg-featureliste.md` — ⏫ **Faszination** 🟠 · **Praegungsschicht — Faeden** (Scheibe 1) 🟠 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md) · [`novaberg-thinking-faszination_b.md`](novaberg-thinking-faszination_b.md) · [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md) · [`novaberg-thinking-faszination_m.md`](novaberg-thinking-faszination_m.md)
 **Entschieden:** 9 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md))
@@ -129,7 +129,7 @@ Stunden aus der Sache heraus entwickelt und **danach** gegen die Literatur gehal
 |---|---|---|---|
 | `wissensluecken` | ein Turn | *„Kuchen? Was für ein Kuchen?"* — die akute Lücke | gebaut (`ei/wissensluecken.py`) |
 | `aufnahmebereitschaft` | ein Turn | ob **jetzt** der Moment für Neugier ist | gebaut (`ei/neugier.py`) |
-| `neugier_vektor` | über den Turn hinaus | wohin sie will | **nicht gebaut** |
+| `neugier_vektor` | über den Turn hinaus | wohin sie will | ~~**nicht gebaut**~~ → gebaut (`agents/wissensluecken/berechnung.py::neugier_vektor_berechnen`, seit 27.07.2026), gelesen seit dem 09.09.2026 (`staerkste_luecken` → `[OFFENE FRAGEN]`) — berichtigt am 13.10.2026 |
 
 Die Trennung stammt aus Chat 111 und ging auf eine Unterscheidung des Meisters zurück, die drei
 Größen auseinanderhielt, welche im Code alle *Neugier* hießen:

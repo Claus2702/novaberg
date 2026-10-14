@@ -241,7 +241,7 @@ Dazu in der Doku: die Zeugen der falschen Datei zugeordnet, vier statt fünf Dur
 
 ### Scheibe 12 — der Empfang liest die Lage (Entwurf, 14.09.2026)
 
-**Status: Absicht entschieden, Bauweise entworfen.** ~~nicht gebaut~~ → **Teil A ist gebaut am 15.09.2026** (unten, *Teil A — gebaut*); ~~B bis F sind nicht gebaut~~ → **Teil B am 16.09.2026, Teil C am selben Tag — die Anmeldung (C1) und die Nähe im Schatten (C2)**; D bis F sind nicht gebaut.
+**Status: Absicht entschieden, Bauweise entworfen.** ~~nicht gebaut~~ → **Teil A ist gebaut am 15.09.2026** (unten, *Teil A — gebaut*); ~~B bis F sind nicht gebaut~~ → **Teil B am 16.09.2026, Teil C am selben Tag — die Anmeldung (C1) und die Nähe im Schatten (C2)**; ~~D bis F sind nicht gebaut~~ → **gegen den Code gehalten am 13.10.2026:** D am 17.09.2026 (`45c068a` Router liest die Lage, `a56a911` Planner fragt nach dem Objekt), E ab dem 17.09.2026 (`207f14d`, `utils/offers.py`), F für die Timeline am 18.09.2026 (`5b3ff8e`, `agents/timeline/suche.py::find_duplicates`); offen bleiben in A der Bestandsabgleich und der Nachtrag, in F die Notizen.
 
 **Der Anlass, gemessen.** Ein Termin mit Tag, Uhrzeit und Dauer entstand über mehrere Turns im Gesprächskontext — als akutes Objekt mit gedeckten Eigenschaften, im Eigenschaftsgedächtnis abgelegt (Scheibe 11). Angelegt wurde er nicht, und die Antworten sagten in 4 von 4 Turns, er sei *„notiert"* oder *„fest verankert"* (Fundliste 13. und 14.09.2026). Drei Stellen tragen das:
 
