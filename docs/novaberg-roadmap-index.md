@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 951 Abschnitte in 7 Dateien — 439 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 952 Abschnitte in 7 Dateien — 440 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 33 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 34 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 951 Marken, 951 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 952 Marken, 952 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-15 | laufend | ## | [15.10.2026, 16:52 UTC — Die Kette ist im Betrieb, und sie ist dort gemessen](novaberg-roadmap.md#15102026-1652-utc--die-kette-ist-im-betrieb-und-sie-ist-dort-gemessen) |
 | 2026-10-15 | laufend | ## | [15.10.2026, 01:34 UTC — Acht Teile an den laufenden Strängen: Faszination geprüft, Bestandsabgleich, Verstärkung der Ziele, Aufgriff messbar, Neugier-Boost je Thema, die Pause wird laut, die Intentionstabelle schreibt den Kanon, der Strangzug im Turn](novaberg-roadmap.md#15102026-0134-utc--acht-teile-an-den-laufenden-strängen-faszination-geprüft-bestandsabgleich-verstärkung-der-ziele-aufgriff-messbar-neugier-boost-je-thema-die-pause-wird-laut-die-intentionstabelle-schreibt-den-kanon-der-strangzug-im-turn) |
 | 2026-10-13 | laufend | ## | [13.10.2026, 22:42 UTC — Die laufenden Stränge gegen den Code gehalten](novaberg-roadmap.md#13102026-2242-utc--die-laufenden-stränge-gegen-den-code-gehalten) |
 | 2026-10-09 | laufend | ## | [09.10.2026, 14:41 UTC — Die Phasenanzeige des Avatars nennt bei `n` die gezogene Zahl](novaberg-roadmap.md#09102026-1441-utc--die-phasenanzeige-des-avatars-nennt-bei-n-die-gezogene-zahl) |

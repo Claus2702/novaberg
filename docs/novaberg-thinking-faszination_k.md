@@ -969,8 +969,10 @@ Bauart wie die Rechnung über alle 14 Landschaften, die im Haltungsraum die Stic
 >   Ladung eines Strangs ist blind für das Vorzeichen seiner Fäden; die negative Uhr aus §8.4 erreicht
 >   weder Zug noch Wert, sie wirkt nur in der Einfärbung. Ein Zeuge hält daneben einen Befund fest: Ein
 >   Strang aus der Awe-Dyade (Furcht und Überraschung) **lädt schwächer** als ein reiner Freude-Strang
->   gleicher Größe, weil die Ladung den Betrag der Valenz mittelt und die Überraschung wenig trägt. Ob
->   §12.1 auch dort gleiche Werte verlangt, ist offen.
+>   gleicher Größe, weil die Ladung den Betrag der Valenz mittelt und die Überraschung wenig trägt. ~~Ob
+>   §12.1 auch dort gleiche Werte verlangt, ist offen.~~ → keine offene Frage (14.10.2026): §12.1 verlangt
+>   Blindheit gegen das **Vorzeichen**, nicht gegen den Betrag; der Docstring von `strang_staerke` hält die
+>   Vorgabe des Eigentümers fest (*„Salienz, Valenz, Anzahl Fäden“*) und *„die Absicht ist bestätigt“*.
 > - **§12.2 hält.** Nach einer Recherche (zehn Berührungen) behält ein Träger, der nicht auf
 >   `ungewissheit` steht, seinen Wert; ein Träger auf `ungewissheit` sinkt; ein Mischprofil behält
 >   seine dominante Dimension und mindestens 90 % seines Merkmalszugs (gerechnet rund 99 %). Nur

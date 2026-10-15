@@ -153,7 +153,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 >
 > **Seit dem 15.10.2026 steht im Nachlauf ein Knoten mehr: `aufgriff`, zwischen Praegung und Dispatcher** (`graph/nodes/aufgriff.py`; im Bild oben nachgetragen, vorher fuehrte die Kante von Praegung direkt zum Dispatcher). Er urteilt, ob die freigegebene Antwort eine der angebotenen offenen Fragen aufgreift, und schreibt je Turn einen Eintrag `offene_fragen_aufgriff` (`novaberg-wissensluecken_t.md` §5). Er steht hinter der Auslieferung der Antwort, damit sein Einbettungsaufruf nicht in die Wartezeit des Menschen faellt; die Antwort ist ab `evaluate` fertig, er liest also die nach der letzten Korrekturrunde.
 >
-> **Entscheidung des Eigentuemers vom 15.10.2026:** Der Knoten bleibt vorerst und wird beobachtet; danach wird beurteilt, ob er bleibt oder sein Urteil an einen anderen Ort wandert. Er ist ein Messinstrument ohne Wirkung auf die Antwort.
+> **Entscheidung des Eigentuemers vom 15.10.2026:** Der Knoten bleibt vorerst und wird beobachtet; danach wird beurteilt, ob er weg muss oder bleiben darf. Er ist ein Messinstrument ohne Wirkung auf die Antwort.
 
 
 **Datei:** `graph/character_graph.py`
