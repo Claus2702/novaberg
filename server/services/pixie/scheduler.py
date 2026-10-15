@@ -41,6 +41,7 @@ from config import (
 from services.model_services.spur import SPUR_LLM, spur_setzen, spur_zuruecksetzen
 from services.pixie.dispatch import abschluss, agent_ausfuehren
 from services.pixie.kandidaten import kandidaten_sammeln
+from services.pixie.pause import check_pauses
 from services.pixie.router import route
 from services.work_events import pixie_job_events
 
@@ -90,8 +91,11 @@ async def pixie_heartbeat(app_state, spur: str = SPUR_LLM) -> None:
     # und Zustellung an; der Teilschalter nur die Agenten. Wer eine Reihe mit
     # zugestellten Impulsen, aber ohne frische Recherchen fahren will, setzt
     # den zweiten (11.09.2026).
-    if (redis_client.exists(PIXIE_PAUSE_SCHLUESSEL)
-            or redis_client.exists(PIXIE_AGENTEN_PAUSE_SCHLUESSEL)):
+    #
+    # **Ein stehender Schalter steht auf `warning`** (gedrosselt, mit Zeitpunkt;
+    # `services/pixie/pause.py`) — die `debug`-Zeile je Zyklus bleibt daneben.
+    if check_pauses(redis_client,
+                      (PIXIE_PAUSE_SCHLUESSEL, PIXIE_AGENTEN_PAUSE_SCHLUESSEL)):
         logger.debug(f"Pixie[{spur}]: Pausiert — Heartbeat verworfen")
         return
 

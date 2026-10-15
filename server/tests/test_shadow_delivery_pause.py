@@ -53,6 +53,10 @@ class _Redis:
             return 1
         return 1 if (self.pausiert and key == PIXIE_PAUSE_SCHLUESSEL) else 0
 
+    def set(self, key: str, value: str, nx: bool = False, ex: int | None = None) -> bool:
+        """Die Drossel der Pausenmeldung — dieser Zeuge liest sie nicht."""
+        return True
+
     def llen(self, key: str) -> int:
         self.gefragt.append(key)
         return 3          # der Stapel ist nicht leer

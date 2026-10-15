@@ -613,6 +613,15 @@ VERFASSER_IMPULS_NAHE: float = 0.55
 PIXIE_AGENTEN_PAUSE_SCHLUESSEL:  str = "pixie:agenten_paused"
 PIXIE_DELIVERY_PAUSE_SCHLUESSEL: str = "pixie:delivery_paused"
 
+# **Wie oft ein stehender Pausenschalter im Log auf `warning` erscheint:** je
+# Schalter einmal je Intervall, nicht je Zyklus. Der Heartbeat laeuft alle 120 s
+# und die Zustellschleife noch dichter; je Zyklus waeren das Hunderte Zeilen am
+# Tag, die niemand liest. 900 s (15 Minuten) sind dicht genug, dass ein
+# vergessener Schalter in einer Sitzung auffaellt, und selten genug, dass die
+# Zeile nicht zum Rauschen wird (der Schalter fuer die Regie meldet je Turn —
+# dort ist ein Turn der Takt). Per Umgebung aenderbar wie die Nachbarwerte.
+PIXIE_PAUSE_WARNUNG_SEKUNDEN: int = int(os.getenv("PIXIE_PAUSE_WARNUNG_SEKUNDEN", "900"))
+
 # --- Pixie Aging (Verhungerungsschutz, Chat 113) ---
 # Eine faellige periodische Aufgabe steigt in der Prioritaet, solange sie nicht
 # laeuft. Ohne das gewinnt eine dauerhaft gefuellte Shadow-Queue (Eintraege bis

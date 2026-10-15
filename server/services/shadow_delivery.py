@@ -48,6 +48,7 @@ from memory.pipeline_log import log_berechnung
 from memory.session import session_turns_retrieve
 from services.events import event_erzeugen
 from services.model_services import EmbedRequest, model_service
+from services.pixie.pause import check_pauses
 from services.pixie.riegel import (
     Riegelkette,
     initiative_pruefen,
@@ -965,8 +966,11 @@ async def shadow_delivery_loop(
             # Wer den Hintergrund arbeiten lassen will, ohne dass seine
             # Ergebnisse mitten in eine Reihe fallen, setzt den zweiten
             # (11.09.2026).
-            if (redis_client.exists(PIXIE_PAUSE_SCHLUESSEL)
-                    or redis_client.exists(PIXIE_DELIVERY_PAUSE_SCHLUESSEL)):
+            #
+            # Ein stehender Schalter steht auf `warning`, gedrosselt und mit
+            # Zeitpunkt (`services/pixie/pause.py`).
+            if check_pauses(redis_client,
+                              (PIXIE_PAUSE_SCHLUESSEL, PIXIE_DELIVERY_PAUSE_SCHLUESSEL)):
                 logger.debug(
                     "Shadow Delivery: Pausiert — Zustellung verworfen"
                 )

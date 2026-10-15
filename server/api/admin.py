@@ -13,6 +13,7 @@ from config import (
 )
 from memory.quality_profile import profil_lauf
 from services.model_services.spur import SPUR_CPU, SPUR_LLM
+from services.pixie.pause import clear_pause, set_pause
 
 logger = logging.getLogger("ki_server.admin")
 
@@ -32,7 +33,7 @@ def pixie_pausieren():
     fuenf Zustellungen durch und ein vollstaendiger Fremdturn mitten in einer
     Messreihe.
     """
-    redis_client.set(PIXIE_PAUSE_SCHLUESSEL, "1")
+    set_pause(redis_client, PIXIE_PAUSE_SCHLUESSEL)
     logger.info("Admin: Pixie pausiert")
     return {"status": "paused"}
 
@@ -40,7 +41,7 @@ def pixie_pausieren():
 @router.post("/pixie/resume")
 def pixie_fortsetzen():
     """Setzt Pixie fort."""
-    redis_client.delete(PIXIE_PAUSE_SCHLUESSEL)
+    clear_pause(redis_client, PIXIE_PAUSE_SCHLUESSEL)
     logger.info("Admin: Pixie fortgesetzt")
     return {"status": "resumed"}
 
@@ -62,7 +63,7 @@ def pixie_agenten_pausieren():
         über `bereit_fuer_messung`.
     Fehlerfälle: Keine eigenen; ein Redis-Ausfall schlägt durch.
     """
-    redis_client.set(PIXIE_AGENTEN_PAUSE_SCHLUESSEL, "1")
+    set_pause(redis_client, PIXIE_AGENTEN_PAUSE_SCHLUESSEL)
     logger.info("Admin: Pixie-Agenten pausiert (Zustellung laeuft weiter)")
     return {"status": "agenten_paused"}
 
@@ -76,7 +77,7 @@ def pixie_agenten_fortsetzen():
         unberührt**: Steht er, laufen die Agenten weiterhin nicht.
     Fehlerfälle: Keine eigenen.
     """
-    redis_client.delete(PIXIE_AGENTEN_PAUSE_SCHLUESSEL)
+    clear_pause(redis_client, PIXIE_AGENTEN_PAUSE_SCHLUESSEL)
     logger.info("Admin: Pixie-Agenten fortgesetzt")
     return {"status": "agenten_resumed"}
 
@@ -94,7 +95,7 @@ def pixie_delivery_pausieren():
         liegen und gehen nicht verloren.
     Fehlerfälle: Keine eigenen.
     """
-    redis_client.set(PIXIE_DELIVERY_PAUSE_SCHLUESSEL, "1")
+    set_pause(redis_client, PIXIE_DELIVERY_PAUSE_SCHLUESSEL)
     logger.info("Admin: Shadow-Delivery pausiert (Agenten laufen weiter)")
     return {"status": "delivery_paused"}
 
@@ -108,7 +109,7 @@ def pixie_delivery_fortsetzen():
         unberührt.
     Fehlerfälle: Keine eigenen.
     """
-    redis_client.delete(PIXIE_DELIVERY_PAUSE_SCHLUESSEL)
+    clear_pause(redis_client, PIXIE_DELIVERY_PAUSE_SCHLUESSEL)
     logger.info("Admin: Shadow-Delivery fortgesetzt")
     return {"status": "delivery_resumed"}
 
