@@ -1378,6 +1378,14 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
                 "nicht nach Naehe gewaehlt werden, dieser Turn laeuft ohne sie",
             )
 
+    # Die Kennungen der angebotenen Fragen reisen im Zustand bis hinter die
+    # endgueltige Antwort; dort urteilt `graph/nodes/aufgriff.py`, ob eine
+    # aufgegriffen wurde. Immer gesetzt, auch leer: Ein Turn ohne Angebot
+    # und ein Turn, in dem die Kennungen verloren gingen, wuerden sonst gleich
+    # aussehen.
+    offene_fragen_ids: list[int] = [int(f["id"]) for f in offene_fragen]
+    state["offene_fragen_ids"] = offene_fragen_ids
+
     # **Das Tor der Strategie hinterlaesst eine Spur** (10.09.2026). Beide
     # Bedingungen entschieden bis heute ueber den Wissensluecken- und den
     # Fragen-Block, und **keine von beiden war dauerhaft ablesbar**:
@@ -1402,6 +1410,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             "aufnahmebereitschaft": round(lage.aufnahmebereitschaft, 4),
             "wissensluecken":       len(wissensluecken),
             "offene_fragen":        len(offene_fragen),
+            "offene_fragen_ids":    offene_fragen_ids,
         },
         user_id      = state.get("user_id", ""),
         character_id = state.get("character_id", ""),

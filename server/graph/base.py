@@ -192,6 +192,7 @@ class GraphBase(ABC):
 
             # Gesprächsvektor (Epic 9)
             gespraechsvektor = "",
+            offene_fragen_ids = [],
 
             # Interne Anmerkungen
             node_annotations = [],
@@ -243,6 +244,10 @@ class GraphBase(ABC):
 
     def _node_correct(self, state: ConversationState) -> ConversationState:
         return correct(state)
+
+    def _node_aufgriff(self, state: ConversationState) -> ConversationState:
+        from graph.nodes.aufgriff import offene_fragen_aufgriff
+        return offene_fragen_aufgriff(state)
 
     def _node_salience(self, state: ConversationState) -> ConversationState:
         return analyze(state, self.redis_client, state["user_id"], self.postgres_url)

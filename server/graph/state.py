@@ -278,6 +278,11 @@ class ConversationState(TypedDict):
     suchtext:          str
     suchtext_herkunft: str
 
+    # Kennungen (`wissensluecken.id`) der offenen Fragen, die der Gespraechsvektor
+    # diesem Turn angeboten hat; leer, wenn keine. Gesetzt vom GV-Node, gelesen
+    # hinter der endgueltigen Antwort (`graph/nodes/aufgriff.py`).
+    offene_fragen_ids: list[int]
+
     # ── Interne Anmerkungen (Node-übergreifend) ──
     node_annotations: list[str]
 

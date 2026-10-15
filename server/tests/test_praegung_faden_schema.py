@@ -231,10 +231,12 @@ class DasTorHaengtImGraphenTest(unittest.TestCase):
         self.assertIn('graph.add_edge("salience",            "praegung")', quelle)
 
     def test_das_tor_liegt_vor_dem_dispatcher(self) -> None:
-        """Danach ist der Turn vorbei."""
+        """Danach ist der Turn vorbei — der Aufgriffs-Knoten liegt dazwischen."""
         from graph import character_graph as modul
         quelle: str = open(modul.__file__, encoding="utf-8").read()
-        self.assertIn('graph.add_edge("praegung",            "dispatcher")', quelle)
+        self.assertIn('graph.add_edge("praegung",            "aufgriff")', quelle)
+        self.assertIn('graph.add_edge("aufgriff",            "dispatcher")', quelle)
+        self.assertNotIn('graph.add_edge("praegung",            "dispatcher")', quelle)
 
     def test_die_alte_kante_steht_nicht_mehr_daneben(self) -> None:
         """Gegenprobe: Bliebe sie, liefe der Turn am Tor vorbei."""

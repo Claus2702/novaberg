@@ -96,8 +96,10 @@ def staerkste_luecken(
         min_naehe: Untergrenze der Cosinus-Naehe zwischen Thema und Reiz.
 
     Returns:
-        Je Zeile `thema`, `neugier_vektor`, `neuheit`, `resonanz`,
-        `herkunft`, das Alter in Tagen und die `naehe` zum Reiz.
+        Je Zeile die `id` der Luecke, `thema`, `neugier_vektor`, `neuheit`,
+        `resonanz`, `herkunft`, das Alter in Tagen und die `naehe` zum Reiz.
+        Die `id` dient der Spur: Sie macht ablesbar, welche Frage angeboten
+        war, ohne dass Gespraechsinhalt ins Protokoll geht.
 
     Raises:
         ValueError: bei leerem Paar, leerem oder ungueltigem Vektor, nicht
@@ -129,7 +131,7 @@ def staerkste_luecken(
     try:
         zeilen: list[dict] = db_manager.select(
             """
-            SELECT thema, neugier_vektor, neuheit, resonanz, herkunft,
+            SELECT id, thema, neugier_vektor, neuheit, resonanz, herkunft,
                    EXTRACT(DAY FROM NOW() - erstellt_am)::int AS alter_tage,
                    1 - (embedding <=> %s::vector) AS naehe
               FROM wissensluecken
@@ -169,3 +171,69 @@ def staerkste_luecken(
         ", ".join(f"{float(z['naehe']):.3f}" for z in zeilen) or "—",
     )
     return zeilen
+
+
+def gap_proximities(
+    user_id: str,
+    character_id: str,
+    gap_ids: list[int],
+    text_embedding: list[float],
+) -> dict[int, float]:
+    """Die Cosinus-Naehe je genannter Luecke zu einem Text, nach Kennung.
+
+    Dient dem Urteil, ob eine angebotene Frage aufgegriffen wurde: Der Text ist
+    die endgueltige Antwort, die Luecken sind die Kennungen aus dem Angebot.
+
+    Vorbedingung: Paar gesetzt; `gap_ids` nicht leer und nur ganze Zahlen;
+        `text_embedding` nicht leer und nur endliche Zahlen.
+    Nachbedingung: Je gefundener Luecke ein Eintrag `id -> naehe`; kein
+        Eintrag fuer eine Kennung, die es im Paar nicht (mehr) gibt. Der Status
+        bleibt unbeachtet — auch eine inzwischen geschlossene Frage war
+        angeboten.
+    Fehlerfaelle: Anders als `staerkste_luecken` wird ein Datenbankfehler
+        **nicht** zu einer leeren Antwort: Er wird geworfen, damit der Aufrufer
+        *nicht beurteilbar* melden kann und kein Lesefehler als *nicht
+        aufgegriffen* durchgeht.
+
+    Raises:
+        ValueError: bei leerem Paar, leeren oder ungueltigen Kennungen oder
+            einem leeren oder ungueltigen Vektor.
+        RuntimeError: wenn die Abfrage eine Kennung liefert, die nicht gefragt war.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        raise ValueError(
+            f"gap_proximities: Paar unvollstaendig "
+            f"(user_id={user_id!r}, character_id={character_id!r})"
+        )
+    if not gap_ids or any(isinstance(i, bool) or not isinstance(i, int) for i in gap_ids):
+        raise ValueError(f"gap_proximities: Kennungen leer oder keine ganzen Zahlen: {gap_ids!r}")
+    if not text_embedding or any(
+        isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x)
+        for x in text_embedding
+    ):
+        raise ValueError(
+            f"gap_proximities: Vektor leer oder ungueltig "
+            f"(Laenge {len(text_embedding) if text_embedding else 0})"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    vector: str = "[" + ",".join(str(float(x)) for x in text_embedding) + "]"
+    rows: list[dict] = db_manager.select(
+        """
+        SELECT id, 1 - (embedding <=> %s::vector) AS naehe
+          FROM wissensluecken
+         WHERE user_id = %s AND character_id = %s AND id = ANY(%s)
+        """,
+        (vector, user_id, character_id, list(gap_ids)),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    result: dict[int, float] = {int(r["id"]): float(r["naehe"]) for r in rows}
+    unasked: list[int] = [i for i in result if i not in gap_ids]
+    if unasked:
+        raise RuntimeError(
+            f"gap_proximities: Kennung(en) {unasked} geliefert, die nicht gefragt waren — "
+            "der Filter hat nicht gegriffen"
+        )
+    return result

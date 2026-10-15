@@ -8,7 +8,7 @@ Flow (PFAD2-PERZEPTION-FIX Phase 2):
   db_zugriff → EI-Calc → Enricher → Reducer → Router → [Planner ⇄ Agent]* →
   GV-Node → Haltungsraum → [Verfasser]* → Responder → Thinker → Tribunal →
   Evaluate → [Corrector]* → perzeption_assistant → ei_calc_persist → Salienz →
-  Dispatcher → END
+  Prägung → Aufgriff → Dispatcher → END
 
   Haltungsraum rechnet die fuenf Verhaltensgroessen aus der Landschaft des
   GV-Nodes und Novas Zuwendungsrad. Sie steht vor der Verzweigung, weil der
@@ -80,6 +80,7 @@ class CharacterGraph(GraphBase):
         graph.add_node("tribunal",        self._node_judge)
         graph.add_node("evaluate",        self._node_evaluate)
         graph.add_node("corrector",          self._node_correct)
+        graph.add_node("aufgriff",           self._node_aufgriff)
         graph.add_node("perzeption_assistant", self._node_perceive)
         graph.add_node("ei_calc_persist",    self._node_ei_calc_persist)
         graph.add_node("salience",           self._node_salience)
@@ -178,7 +179,12 @@ class CharacterGraph(GraphBase):
         # Das Faden-Tor steht hinter der Salienz, weil sie eine seiner beiden
         # Bedingungen ist — frueher gaebe es sie noch nicht (Konzept §7.3).
         graph.add_edge("salience",            "praegung")
-        graph.add_edge("praegung",            "dispatcher")
+        # Der Aufgriff steht hinter der Freigabe und hinter der Wahrnehmung: Die
+        # Antwort ist entschieden, die letzte Korrekturrunde gelaufen, und die
+        # Auslieferung wartet (`_KNOTEN_NACH_FREIGABE`) nicht auf einen
+        # Embed-Aufruf, der nur ein Messinstrument bedient. Er aendert nichts.
+        graph.add_edge("praegung",            "aufgriff")
+        graph.add_edge("aufgriff",            "dispatcher")
         graph.add_edge("dispatcher",          END)
 
         # ── Kompilieren ────────────────────────
