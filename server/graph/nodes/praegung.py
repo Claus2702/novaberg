@@ -21,9 +21,10 @@ from ei.fascination import (
     faszination,
     merkmalszug,
     modulatoren_aus_turn,
+    strangzug,
 )
 from graph.state import ConversationState, pipeline_quelle
-from memory.fascination_store import traegerdaten_lesen
+from memory.fascination_store import traeger_strangnaehe, traegerdaten_lesen
 from memory.pipeline_log import log_berechnung
 from memory.praegung import (
     faden_anlegen,
@@ -289,6 +290,14 @@ def _faszination_protokollieren(
     konnte**, mit dem Grund. Ein Turn ohne Zeile waere von einem Turn ohne
     Traeger nicht zu unterscheiden — dieselbe Lehre wie beim Faden-Tor.
 
+    **Der Strangzug rechnet je Traeger** (§10.3a) und steht in der Zeile.
+    Wirft das Lesen der Strangnaehe, wird der Traeger mit 1.0 gerechnet, der
+    Fehler geloggt, und die Zeile traegt `None` statt 1.0 sowie den Fehlertyp
+    in `strang_ausfall`. **`strang_ausfall` steht nur bei einer geworfenen
+    Ausnahme:** Einen Lesefehler, den `traeger_strangnaehe` selbst abfaengt
+    und als `{}` zurueckgibt, sieht der Knoten nicht — er zaehlt dann wie
+    „kein Strangbezug" (Strangzug 1.0, in der Zeile als Zahl).
+
     Vorbedingung: keine — ein Turn ohne gelesene Erinnerungen ist der
         Normalfall.
     Nachbedingung: genau eine `pipeline_log`-Zeile `faszination`.
@@ -325,8 +334,22 @@ def _faszination_protokollieren(
     )
 
     daten: dict[int, dict] = traegerdaten_lesen(POSTGRES_URL, knoten_ids)
+    # **Der Strangzug je Traeger** (§10.3a) — dieselbe Groesse wie auf der
+    # Traegerseite. Ohne ihn stuende ein Traeger im Zentrum eines Strangs in
+    # der Spur gleich da wie einer am Rand.
+    naehen: dict[int, dict] = {}
+    strang_ausfall: str | None = None
+    try:
+        naehen = traeger_strangnaehe(POSTGRES_URL, knoten_ids)
+    except Exception as fehler:  # noqa: BLE001 — kompensiert: neutral rechnen, laut melden
+        logger.exception(
+            f"Praegung: Strangnaehe-Lesen warf {type(fehler).__name__}; "
+            f"die Traeger werden mit Strangzug 1.0 gerechnet"
+        )
+        strang_ausfall = type(fehler).__name__
     werte: dict[str, float] = {}
     rohe:  dict[str, float] = {}
+    strangzuege: dict[str, float | None] = {}
     ohne_profil: list[int] = []
     for knoten_id in knoten_ids:
         eintrag: dict = daten.get(knoten_id) or {}
@@ -341,9 +364,22 @@ def _faszination_protokollieren(
             eintrag.get("turns", 0),
             eintrag.get("eigenimpuls"),
         )
-        wert, roh = faszination(bindung, merkmalszug(profil), zug, modulatoren)
+        strang: dict = naehen.get(knoten_id) or {}
+        zug_des_traegers: float = strangzug(
+            strang.get("naehe"), int(strang.get("faden_zahl", 0)),
+        )
+        wert, roh = faszination(
+            bindung, merkmalszug(profil), zug,
+            modulatoren | {"strangzug": zug_des_traegers},
+        )
         werte[str(knoten_id)] = round(wert, 4)
         rohe[str(knoten_id)] = round(roh, 4)
+        # Warf das Lesen der Strangnaehe, war der Strangzug nicht 1.0, sondern
+        # unbekannt. (Ein von `traeger_strangnaehe` selbst abgefangener Fehler
+        # erreicht den Knoten nicht und steht hier als 1.0.)
+        strangzuege[str(knoten_id)] = (
+            None if strang_ausfall else round(zug_des_traegers, 4)
+        )
 
     # ── Ausgabe ────────────────────────────────
     inhalt |= {
@@ -362,6 +398,12 @@ def _faszination_protokollieren(
         # und die Frage, ob der Turn oder der Traeger ihn getragen hat, waere
         # aus der Zeile nicht zu beantworten.
         "modulatoren":  {k: round(v, 4) for k, v in modulatoren.items()},
+        # Der Strangzug je Traeger neben den Turn-Modulatoren; `None` heisst
+        # "Lesen warf" (dann steht der Fehlertyp in `strang_ausfall`). Ohne
+        # Wurf steht die Zahl — auch wenn die Store-Funktion einen Fehler
+        # selbst abfing und `{}` lieferte.
+        "strangzug":    strangzuege,
+        "strang_ausfall": strang_ausfall,
     }
     _log_faszination(state, user_id, character_id, inhalt)
 

@@ -19,6 +19,13 @@ from unittest.mock import MagicMock, patch
 NODE: str = "graph.nodes.praegung"
 
 
+def setUpModule() -> None:
+    """Die Strangnaehe kommt aus der Datenbank — hier ohne Strangbezug ersetzt."""
+    ersatz = patch(f"{NODE}.traeger_strangnaehe", return_value={})
+    ersatz.start()
+    unittest.addModuleCleanup(ersatz.stop)
+
+
 def _emotion(**werte) -> MagicMock:
     """Ein Emotionsobjekt mit den Feldern, die die Modulatoren lesen."""
     e = MagicMock()
