@@ -1,7 +1,7 @@
 # Novaberg — Wissenslücken: der Zug zu einem Thema
 
 **Absicht:** Nova führt eine dauerhafte Tabelle von Themen am Rand ihres Wissens — Themen, die sie angehen und die sie noch nicht kennt —, jedes bewertet mit Resonanz, Neuheit und dem Produkt daraus (`neugier_vektor`), gefüllt von einem eigenen Agenten; eine Lücke wird nie gelöscht, nur geschlossen oder ausgeschlossen.
-**Stand:** 18. September 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 15. Oktober 2026, 01:21 UTC (`date -u`; `_t` §5: der Aufgriff angebotener offener Fragen ist je Turn messbar, Nulllinie dazu). Davor 18. September 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *Wissenslücken-Speicher* 🔴 · *WissensluecketAgent* 🔴 · *Neugier (Resonanz, Neuheit, Register)* 🔴 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-wissensluecken_t.md`](novaberg-wissensluecken_t.md) · [`novaberg-wissensluecken_b.md`](novaberg-wissensluecken_b.md) · [`novaberg-wissensluecken_e.md`](novaberg-wissensluecken_e.md) · `_m`: keiner
 **Entschieden:** 2 · **Offen beim Meister:** 1 (Liste in [`novaberg-wissensluecken_e.md`](novaberg-wissensluecken_e.md))

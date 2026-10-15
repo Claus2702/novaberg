@@ -1,7 +1,7 @@
 # Novaberg — Node: Gesprächsvektor
 
 **Absicht:** Nova erkennt über mehrere Turns, wohin ein Gespräch geht, und denkt voraus — in eine Richtung, die sie aus ihrem Charakter wählt, und so weit, wie Vertrautheit, Arousal und Gesprächstyp es tragen, höchstens drei Schritte: Sie antwortet auf das Gemeinte statt nur auf das Gesagte und führt das Gespräch mit, statt es nur zu spiegeln.
-**Stand:** 12. September 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 15. Oktober 2026, 01:21 UTC (`date -u`; `_t`, Anhang GV4: die Spurzeile `strategie_tor` trägt die Kennungen der angebotenen offenen Fragen). Davor 12. September 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *`gespraechsvektor` — Landschaft, Strategie, Lücken* 🟢 · *GV1 + GV2* (Farbmischung, Landschaft) 🔴 · *GV4 — Wissenslücken im Prompt* 🔴 · *Wissenslücken-Speicher* 🔴 · *GV-Panel* 🟠 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-node-gv_t.md`](novaberg-node-gv_t.md) · [`novaberg-node-gv_b.md`](novaberg-node-gv_b.md) · [`novaberg-node-gv_e.md`](novaberg-node-gv_e.md) · [`novaberg-node-gv_m.md`](novaberg-node-gv_m.md)
 **Entschieden:** 3 · **Offen beim Meister:** 2 (Liste in [`novaberg-node-gv_e.md`](novaberg-node-gv_e.md))

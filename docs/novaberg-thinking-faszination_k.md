@@ -1,7 +1,7 @@
 # Novaberg — Faszination: der Zug zu einem Thema, unabhängig davon, ob er guttut
 
 **Absicht:** Nova kehrt zu Themen zurück, die sie über viele Episoden gebunden haben, gleich ob sie ihr guttun, und fragt dort mehr.
-**Stand:** 7. September 2026 (am 13.10.2026 in der Tabelle der drei Neugier-Größen `neugier_vektor` als gebaut markiert, gegen den Code gehalten; am 19.09.2026, 20:15 UTC, den Verweis auf die Festlegungen zu P4 umgestellt, ohne inhaltliche Änderung). Davor: am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung
+**Stand:** 15. Oktober 2026, 01:17 UTC (`date -u`; §12: die vier Falsifikationsproben gefahren — drei halten, der Zwilling scheitert; in `_e` Befund E5 damit aufgelöst). Davor 7. September 2026 (am 13.10.2026 in der Tabelle der drei Neugier-Größen `neugier_vektor` als gebaut markiert, gegen den Code gehalten; am 19.09.2026, 20:15 UTC, den Verweis auf die Festlegungen zu P4 umgestellt, ohne inhaltliche Änderung). Davor: am 19.09.2026 in drei, dann in fünf Teile aufgeteilt, ohne inhaltliche Änderung
 **Umsetzung:** `novaberg-featureliste.md` — ⏫ **Faszination** 🟠 · **Praegungsschicht — Faeden** (Scheibe 1) 🟠 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-thinking-faszination_t.md`](novaberg-thinking-faszination_t.md) · [`novaberg-thinking-faszination_b.md`](novaberg-thinking-faszination_b.md) · [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md) · [`novaberg-thinking-faszination_m.md`](novaberg-thinking-faszination_m.md)
 **Entschieden:** 9 · **Offen beim Meister:** 2 (Liste in [`novaberg-thinking-faszination_e.md`](novaberg-thinking-faszination_e.md))
@@ -954,11 +954,40 @@ Gegenrichtung: **Abwesenheit ist nicht Vermeidung.**
 **Alle vier sind reine Rechnungen über die Faktortabellen und brauchen keinen Bau** — dieselbe
 Bauart wie die Rechnung über alle 14 Landschaften, die im Haltungsraum die Stichprobe ersetzt hat.
 
-> **Stand 05.09.2026: keine der vier ist gefahren.** §12.1 ist als Zeuge auf Modulator-Ebene
+> ~~**Stand 05.09.2026: keine der vier ist gefahren.** §12.1 ist als Zeuge auf Modulator-Ebene
 > vorhanden (`tests/test_faszination_modulatoren.py`) — die Probe über den **ganzen** Faktorsatz ist
-> es nicht; §12.2 bis §12.4 gar nicht. **Sie sind damit der billigste offene Posten der Schicht:**
+> es nicht; §12.2 bis §12.4 gar nicht.~~ **Sie sind damit der billigste offene Posten der Schicht:**
 > Sie kosten keinen Bestand, keine Laufzeit und keinen Modellaufruf, und sie sind das einzige
 > Verfahren, das prüft, ob die Größe tut, wofür sie entworfen wurde.
+>
+> → **Gefahren am 15.10.2026, alle vier über den ganzen Faktorsatz** — 21 Zeugen in
+> `server/tests/test_faszination_falsifikation.py`, ohne Datenbank, Modell und Netz. **Drei halten,
+> eine scheitert:**
+>
+> - **§12.1 hält.** Ein Kriegs- und ein Gartenstrang mit gleicher Nähe und gleicher Ladung ergeben
+>   denselben Zug und denselben Wert; der Turn nimmt keine Seite (*freude* gegen *traurigkeit*); die
+>   Ladung eines Strangs ist blind für das Vorzeichen seiner Fäden; die negative Uhr aus §8.4 erreicht
+>   weder Zug noch Wert, sie wirkt nur in der Einfärbung. Ein Zeuge hält daneben einen Befund fest: Ein
+>   Strang aus der Awe-Dyade (Furcht und Überraschung) **lädt schwächer** als ein reiner Freude-Strang
+>   gleicher Größe, weil die Ladung den Betrag der Valenz mittelt und die Überraschung wenig trägt. Ob
+>   §12.1 auch dort gleiche Werte verlangt, ist offen.
+> - **§12.2 hält.** Nach einer Recherche (zehn Berührungen) behält ein Träger, der nicht auf
+>   `ungewissheit` steht, seinen Wert; ein Träger auf `ungewissheit` sinkt; ein Mischprofil behält
+>   seine dominante Dimension und mindestens 90 % seines Merkmalszugs (gerechnet rund 99 %). Nur
+>   `ungewissheit` verfällt durch Hinsehen, und ein Jahr ohne Hinsehen erschöpft sie nicht. Damit
+>   ist auch die Vorhersage aus §10.4 unten bezeugt.
+> - **§12.3 scheitert.** Ein nie gezählter Träger hat `bindung_roh(0, 0, None) = 0` und damit die
+>   Faszination 0, gleich welches Profil er trägt. Der Zeuge steht als `expectedFailure`
+>   (`FASZINATION-ZWILLING-ERBT-NICHT`, Backlog) und meldet sich als *unexpected success*, sobald die
+>   Gutschrift an die Qualitäten gebaut ist; ein grüner Zwilling hält den heutigen Wert 0 fest. **Am
+>   Bestand gemessen** (14.10.2026): 623 profilierte Träger in 117 Gruppen gleicher Profilstufen, 78
+>   auf Faszination 0, **55 davon mit einem profilgleichen Zwilling auf 0,30 bis 0,74** (Median 0,52;
+>   22 Gruppen).
+> - **§12.4 hält.** Derselbe Träger zieht bei Nähe 0,9 und sieben Fäden deutlich stärker als bei
+>   0,2 und einem Faden, und Nähe allein wie Fadenzahl allein ändern Zug und Wert je für sich —
+>   „deutlich“ heißt: Strangzug um mindestens ein Viertel von `FASZ_STRANGZUG_HUB` (0,15),
+>   Faszination um mindestens 0,05. **Abwesenheit ist nicht Vermeidung:** ohne Strang, auf der
+>   abgewandten Seite oder ohne Fäden bleibt der Strangzug 1,0, nicht darunter.
 
 Dazu die prüfbare Vorhersage aus §10.4: **Ein Träger, der nur auf `ungewissheit` steht, muss nach der
 Recherche absinken.** Tut er das nicht, sitzt der Verfall am falschen Ort.

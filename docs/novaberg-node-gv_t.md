@@ -279,6 +279,11 @@ und sie ist rein (State-Lesen, Lookups, Arithmetik).
 > *Tor zu* von *Tor offen, nichts gefunden* nicht zu trennen — zwei Fälle mit derselben leeren
 > Antwort.
 >
+> **Seit dem 15.10.2026 trägt sie dazu `offene_fragen_ids`** — die Kennungen der angebotenen
+> offenen Fragen, nur Zahlen, kein Thema; der Knoten setzt sie auch in den Zustand. Ob Nova eine
+> davon aufgreift, urteilt der Knoten `aufgriff` hinter der Auslieferung
+> (`novaberg-wissensluecken_t.md` §5).
+>
 > *Die beiden `[gemessen 10.09.2026]`-Absätze, die hier folgten — was die erste Messung am Tor ergab und dass die Aufnahmebereitschaft dabei nie die Hürde ist —, stehen in [`novaberg-node-gv_m.md`](novaberg-node-gv_m.md), unter „Aus dem Anhang GV4“.*
 
 **Erweitert am 08.08.2026 — dieselbe Regel, zwei Tore weiter vorn.** Chat 116 zog die

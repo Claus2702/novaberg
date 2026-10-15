@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Moduldokument — `graph/nodes/praegung.py` (Tor, scharfes Embedding, Prägungszug) und `memory/praegung.py` (Formkurve, Auffrischung, Faltung, Strangzuordnung, Zug); die Auffrischung wird von `graph/nodes/emotionale_gravitation.py` gerufen
-**Stand:** 13. Oktober 2026, 22:41 UTC (`date -u`; §4: die Torschwelle der Salienz steht seit dem 01.09. auf 0,60, berichtigt). Davor 6. September 2026, 16:30 UTC (**die Träger ohne Profil stehen einzeln in der Faszinationszeile** — `ohne_profil_ids`, §6c; dazu der gemessene Stand der Abdeckung: 72 von 3430 Knoten, im Bestand rechnet sie, im Turn bleibt sie leer). Davor 6. September 2026, 09:45 UTC (**die Sektorfrage löst Synonyme auf** — `mitgefuehl` war gültig und trotzdem sektorlos; dieselbe Lücke saß ein zweites Mal im Strang-Histogramm). Davor 5. September 2026, 10:20 UTC (**§6c — der Knoten rechnet die Faszination**: je Turn über die gelesenen Erinnerungen, mit `strangzug` je Träger; **der Zug misst seit heute das stärkste Segment statt des gemittelten Turns** — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben. Dabei fand ein Verdrahtungszeuge, dass der Knoten sein *„immer eine Zeile `praegung_zug`"* **nicht hielt**: Bei fehlender Salienz kehrte er zurück, bevor er schrieb.). Davor 3. September 2026, 20:35 UTC (**§6b — die zweite Kontrolle hebt den Befund der Messreihe auf**: Novas negatives Register existiert (35 von 2825 Knoten im echten Paar), und der Nullbefund war der Erwartungswert 0,27). Davor 3. September 2026, 20:25 UTC (**§6b — der Betriebsbeleg der Scheiben 5 und 6**: vier Messturns, kein Faden, aber die ersten vier `praegung_zug`-Zeilen; dazu **woher die Emotion eines Fadens kommt** — aus Novas Antwort, nicht aus dem Reiz, und das stand nirgends). Davor 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
+**Stand:** 15. Oktober 2026, 01:32 UTC (`date -u`; §6c: die Zeile `faszination` rechnet und trägt den Strangzug je Träger, die Berichtigung vom 14.10. ist insoweit überholt; `f_anlage` bleibt neutral). Davor 15. Oktober 2026, 01:23 UTC (`date -u`; §2: hinter der Prägung steht der Knoten `aufgriff`). Davor 14. Oktober 2026, 23:11 UTC (`date -u`; §6c: die Zeile `faszination` trägt keinen Strangzug, berichtigt). Davor 13. Oktober 2026, 22:41 UTC (`date -u`; §4: die Torschwelle der Salienz steht seit dem 01.09. auf 0,60, berichtigt). Davor 6. September 2026, 16:30 UTC (**die Träger ohne Profil stehen einzeln in der Faszinationszeile** — `ohne_profil_ids`, §6c; dazu der gemessene Stand der Abdeckung: 72 von 3430 Knoten, im Bestand rechnet sie, im Turn bleibt sie leer). Davor 6. September 2026, 09:45 UTC (**die Sektorfrage löst Synonyme auf** — `mitgefuehl` war gültig und trotzdem sektorlos; dieselbe Lücke saß ein zweites Mal im Strang-Histogramm). Davor 5. September 2026, 10:20 UTC (**§6c — der Knoten rechnet die Faszination**: je Turn über die gelesenen Erinnerungen, mit `strangzug` je Träger; **der Zug misst seit heute das stärkste Segment statt des gemittelten Turns** — derselbe Defekt wie `FADEN-EMBEDDING-VERDUENNT`, an einer zweiten Stelle stehengeblieben. Dabei fand ein Verdrahtungszeuge, dass der Knoten sein *„immer eine Zeile `praegung_zug`"* **nicht hielt**: Bei fehlender Salienz kehrte er zurück, bevor er schrieb.). Davor 3. September 2026, 20:35 UTC (**§6b — die zweite Kontrolle hebt den Befund der Messreihe auf**: Novas negatives Register existiert (35 von 2825 Knoten im echten Paar), und der Nullbefund war der Erwartungswert 0,27). Davor 3. September 2026, 20:25 UTC (**§6b — der Betriebsbeleg der Scheiben 5 und 6**: vier Messturns, kein Faden, aber die ersten vier `praegung_zug`-Zeilen; dazu **woher die Emotion eines Fadens kommt** — aus Novas Antwort, nicht aus dem Reiz, und das stand nirgends). Davor 3. September 2026, 19:30 UTC (**§6b — Scheibe 6, die Einfärbung**: dieselbe Faltung mit `t × sektor_faktor`, siebter Schritt des Tageslaufs; im Bestand **ohne Wirkung**, weil kein Faden negativ ist). Davor 3. September 2026, 18:57 UTC (**§6b — Scheibe 5, der Prägungszug**: er rechnet je Turn aus Nähe, Richtung und Ladung und protokolliert als `praegung_zug`; im Betrieb an fünf Fäden belegt, Kreuzprobe 1,0693 gegen 1,3087. Die Gegenprobe fand toten Code, den kein Zeuge hielt). Davor 2. September 2026, 19:25 UTC (**§6a — der erste Faden eines echten Paares**: Faden 1282 gruendete Strang 16 in einem normalen Turn; zwei Straenge, zwei Ladungen, zwei Richtungsregeln). Davor 19:15 UTC (**§6a — die Beweiskette um Scheibe 3 und 4 erweitert**: 15 Zeilen mit Zahl, Datum und Werkzeug, dazu was sie **nicht** decken). Davor: 2. September 2026, 14:30 UTC (§6b — Zuordnung, Histogramm, Richtung, Ladung). Davor: 1. September 2026 (**§6a — die Beweiskette**: jede Größe der Schicht mit ihrer Zahl, ihrem Datum und dem Werkzeug, das sie erzeugt hat). Davor: 31. August 2026
 **Pfad:** novaberg/docs/novaberg-node-praegung.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §7 (die Prägungsschicht), §7.3 (das Tor)
 **Zustand:** 🟠 Scheibe 1, 2, **3a–3c, 4, 5 und 6** gebaut (§6a, §6b) — Fäden entstehen, die Auffrischung läuft, die Berührungen sind da und falten, Fäden finden ihren Strang, der Strang trägt sein Sektor-Histogramm, seine Richtung und seine Ladung, und der **Prägungszug** hebt daraus je Turn eine Zahl auf [1,0 … 1,6]. ~~**Der Zug hat noch keinen Leser**~~ → **seit dem 05.09.2026 liest ihn die Faszination** (§6c): Sie rechnet je Turn über die gelesenen Erinnerungen und nimmt den Zug als einen ihrer Faktoren. **Die Einfärbung hat weiterhin keinen Verbraucher und im Bestand keine Eingabe**
@@ -21,8 +21,12 @@ Prägungszug, nicht im Turn ihrer Entstehung.
 ## 2. Position
 
 ```
-… → perzeption_assistant → ei_calc_persist → salience → praegung → dispatcher → END
+… → perzeption_assistant → ei_calc_persist → salience → praegung → aufgriff → dispatcher → END
 ```
+
+Seit dem 15.10.2026 steht zwischen Prägung und Dispatcher der Knoten `aufgriff` (vorher führte die
+Kante direkt zum Dispatcher; `novaberg-graph.md`). Für die Prägung ändert das nichts: Sie steht
+weiter hinter der Salienz und vor dem Ende des Turns.
 
 **Die Position ist erzwungen, nicht gewählt.** Die effektive Salienz ist eine der beiden
 Torbedingungen und wird erst im Salienz-Knoten gerechnet; nach dem Dispatcher ist der Turn
@@ -381,9 +385,30 @@ Faktoren der Faszination (`novaberg-thinking-faszination_k.md` §10.6) und liegt
 eine Größe *im Turn*, und ein Knoten, den der Lesepfad nie angeboten hat, war an diesem Turn nicht
 beteiligt.
 
-Die Zeile `faszination` trägt Werte, **Rohwerte**, die sechs Turn-Modulatoren, den Prägungszug und
-den **Strangzug je Träger** — genug, um die Zahl nachzurechnen statt sie zu glauben. Der Rohwert
+Die Zeile `faszination` trägt Werte, **Rohwerte**, die sechs Turn-Modulatoren, den Prägungszug ~~und
+den **Strangzug je Träger**~~ — genug, um die Zahl nachzurechnen statt sie zu glauben. **[Widerlegt
+14.10.2026, am Code: ~~`_faszination_protokollieren` rechnet und schreibt keinen Strangzug — der Knoten
+ruft `faszination` ohne ihn, und~~ `f_anlage` steht fest auf `wissbegier=None`. ~~Den Strangzug rechnet
+nur die Trägerseite (`memory/fascination_store.py`, Bestandslauf und Leser des Haltungsraums).~~ Bug
+`FASZINATION-TURN-SIEBEN-VON-NEUN`.]** → **Überholt am 15.10.2026, soweit es den Strangzug betrifft:**
+Seit dem Bau dieses Tages trägt die Zeile den **Strangzug je Träger** wieder, und diesmal rechnet
+der Knoten ihn auch (unten). Was von der Berichtigung bleibt, ist `f_anlage`. Der Rohwert
 steht neben dem geglätteten, weil die Glättung über dem Deckel nicht umkehrbar ist.
+
+**Der Strangzug im Turn — gebaut am 15.10.2026.** `_faszination_protokollieren` liest die
+Strangnähe der gelesenen Träger (`memory/fascination_store.py::traeger_strangnaehe`) und gibt den
+Strangzug je Träger (§10.3a des Konzepts) als Modulator in `faszination` — dieselbe Größe wie auf
+der Trägerseite. Ein Träger im Zentrum eines Strangs steht damit über einem gleichen ohne
+Strangbezug; ohne Strang ist der Zug 1,0. Die Zeile trägt ihn je Träger (`strangzug`) und dazu
+`strang_ausfall`. **Wirft** das Lesen der Strangnähe, rechnet der Knoten die Träger neutral
+(1,0), loggt den Fehler, und die Zeile trägt `None` statt der Zahl sowie den Fehlertyp in
+`strang_ausfall`. **`strang_ausfall` steht nur bei einer geworfenen Ausnahme:** Einen Lesefehler,
+den `traeger_strangnaehe` selbst abfängt und als leere Antwort zurückgibt, sieht der Knoten nicht —
+er zählt dann wie *kein Strangbezug* (Strangzug 1,0, als Zahl). **`f_anlage` bleibt neutral**
+(`wissbegier=None`): Die Rückkopplung `wissbegier` → Faszination → Haltung ist bewusst halbseitig
+und wird nur mit einer Messung über mehrere Turns geschlossen. Im Turn rechnet die Faszination damit
+mit acht von neun Faktoren. 9 Zeugen in `server/tests/test_faszination_strangzug_im_turn.py`;
+im Betrieb noch nicht gemessen.
 
 **Seit dem 06.09.2026 nennt sie auch die Träger *ohne* Profil einzeln** (`ohne_profil_ids`), nicht
 nur ihre Zahl. Der Anlass war eine Frage, die das Protokoll nicht beantworten konnte: Der

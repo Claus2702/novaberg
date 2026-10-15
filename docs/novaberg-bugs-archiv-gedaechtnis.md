@@ -1,9 +1,35 @@
 # Novaberg — Bugs, Archiv: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 28 Eintraege, je mit `GED` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 29 Eintraege, je mit `GED` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 15.10.2026 — behoben im Bau
+
+**Diese Eintraege sind mit einem Bau geschlossen.** Die Abhilfe steht im Code und ist durch Zeugen belegt; die Zustandszeile je Eintrag nennt Ort, Zeugen und was im Betrieb noch zu messen ist. *Behoben* heisst hier: gebaut und bezeugt, im Betrieb noch nicht gemessen.
+
+---
+
+### `INTENTION-BESTAETIGUNG-ZWEI-SCHREIBWEISEN` — Die doppelte Intentionstabelle der KZG schreibt `bestätigung`, der Kanon `bestaetigung`
+
+**Kategorie:** GED
+
+**Rang:** niedrig — der Fehler steht im Code und hat bisher nicht gewirkt (`[gemessen 13.10.2026]` 0 von 2.733 Zeilen in `shadow_auftrag` mit `bestaetigung` als erster Intention). Still, falls er wirkt.
+
+**Zustand:** behoben am 15.10.2026 — im Code und durch Zeugen belegt, im Betrieb noch nicht gemessen. `memory/kzg.py::_INTENTION_AUFGABE_MAP` führt `"bestaetigung"` wie der Kanon und `agents/kzg/queues.py`; eine Bestätigung über einer hohen Salienz erzeugt damit keine Hintergrundaufgabe mehr statt `recherche`. Sieben Zeugen in `server/tests/test_intention_tables.py`, ohne Datenbank: Die Schlüssel jeder der beiden Tabellen sind genau der Kanon `INTENT_KANON`, in beide Richtungen; eine Bestätigung ergibt in beiden *keine Aufgabe*; beide Tabellen sind gleich (die Tabelle in `agents/kzg/queues.py` wird aus dem Quelltext gelesen, weil der Import des Pakets `agents` den Verbindungspool öffnet). Server-Suite danach `Ran 4235 tests` / `OK (expected failures=1)`. **Die Bedingung *eine Tabelle* ist nicht erfüllt, sondern ersetzt:** Beide Tabellen bleiben; statt einer gemeinsamen Quelle binden die Zeugen sie an den Kanon und aneinander — eine gemeinsame Quelle müsste in `memory/` oder `config.py` liegen, ein größerer Umbau. Ein unbekannter Schlüssel fällt in beiden weiter still auf `recherche`. **Zu messen:** Zeilen in `shadow_auftrag` mit `bestaetigung` als erster Intention (Nulllinie 13.10.2026: 0 von 2.733).
+
+**Zustand bis 15.10.2026:** offen — gelesen am Code, am Bestand gezählt.
+
+**Symptom.** `memory/kzg.py::_INTENTION_AUFGABE_MAP` führt `"bestätigung"`, `agents/kzg/queues.py` und der Kanon (`config.py` um Z. 1638) `"bestaetigung"`. In `kzg_store` fiele eine Bestätigung über einer hohen Salienz damit auf den Vorgabewert `recherche` statt auf *kein Auftrag*.
+
+**Wirkung.** Eine Bestätigung des Nutzers löste eine Recherche aus, die niemand wollte.
+
+**Was fertig wäre.** Eine Tabelle, eine Schreibweise aus dem Kanon; ein Zeuge, dass jede Intention des Kanons in der Tabelle steht.
+
+**Herkunft:** Fundliste, 13.10.2026.
 
 ---
 

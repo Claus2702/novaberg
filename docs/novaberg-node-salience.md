@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 9. September 2026, 18:45 UTC (**der HumanGraph-Boost fuellt auf statt zu addieren** — `neu = basis + term x (1 - basis)`; die Bewertung des Modells wird verschoben statt ausgeloescht, gerechnet 5 statt 307 exakte Einsen. `GRAVITATIONSTERM-OHNE-OBERGRENZE` behoben). Davor 1. September 2026, 16:50 UTC (`zielsog_roh` als Eingang, §6: Novas eigener Zielsog zieht die Salienz ihrer Aeusserung, statt im `max()` zu konkurrieren). Davor 23. August 2026 (`salienz.rules` und `salienz_segment.rules` haben einen Override; er lud bis zum 23.08.2026 nicht, weil nach Connector statt nach Modell geschluesselt wurde). Davor: 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
+**Stand:** 15. Oktober 2026, 01:33 UTC (`date -u`; Intentionstabelle: `bestaetigung` in der Schreibweise des Kanons). Davor 9. September 2026, 18:45 UTC (**der HumanGraph-Boost fuellt auf statt zu addieren** — `neu = basis + term x (1 - basis)`; die Bewertung des Modells wird verschoben statt ausgeloescht, gerechnet 5 statt 307 exakte Einsen. `GRAVITATIONSTERM-OHNE-OBERGRENZE` behoben). Davor 1. September 2026, 16:50 UTC (`zielsog_roh` als Eingang, §6: Novas eigener Zielsog zieht die Salienz ihrer Aeusserung, statt im `max()` zu konkurrieren). Davor 23. August 2026 (`salienz.rules` und `salienz_segment.rules` haben einen Override; er lud bis zum 23.08.2026 nicht, weil nach Connector statt nach Modell geschluesselt wurde). Davor: 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -159,7 +159,7 @@ Die Salienz extrahiert nicht nur den Score, sondern auch Intentionen. Die primä
 | `information_teilen` | `vertiefen` | Gezielt tief, Lücken füllen |
 | `information_erfragen` | `recherche` | Antwort vorbereiten |
 | `emotionaler_ausdruck`, `hilferuf` | `nachfragen` | Einfühlsame Rückfrage |
-| `smalltalk`, `bestätigung`, `abschluss`, `humor`, ... | — | Keine Shadow-Aufgabe |
+| `smalltalk`, ~~`bestätigung`~~ `bestaetigung` (Schreibweise des Kanons, in `memory/kzg.py` berichtigt am 15.10.2026), `abschluss`, `humor`, ... | — | Keine Shadow-Aufgabe |
 
 ---
 

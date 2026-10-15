@@ -1,7 +1,7 @@
 # Novaberg — Antrieb (Konzept)
 
 **Absicht:** Nova trägt eigene Ziele auf drei Zeithorizonten, die wie Gravitation wirken — sie heben zielnahe Turns in der Salienz, geben dem Gesprächsvektor Richtung und färben Novas eigene, vom Nutzer getrennte Emotion.
-**Stand:** 9. September 2026 (am 19.09.2026 in drei Teile aufgeteilt, am selben Tag in fünf nachgeteilt, ohne inhaltliche Änderung)
+**Stand:** 15. Oktober 2026, 01:22 UTC (`date -u`; §3.2 und `_t` §7.1: die Verstärkung bei Begegnung gebaut, `ziel_motivation_anpassen` setzt auch `aktualisiert_am`). Davor 9. September 2026 (am 19.09.2026 in drei Teile aufgeteilt, am selben Tag in fünf nachgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste ⏫ *Antrieb / Ziele* 🟠 · *Dual-Emotion Phase 2* 🟠 · *Dual-Emotion Phase 3* 🟠 · *Emotionale Gravitation* 🟠 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-thinking-drive_t.md`](novaberg-thinking-drive_t.md) · [`novaberg-thinking-drive_b.md`](novaberg-thinking-drive_b.md) · [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md) · [`novaberg-thinking-drive_m.md`](novaberg-thinking-drive_m.md)
 **Entschieden:** 2 · **Offen beim Meister:** 0 (Liste in [`novaberg-thinking-drive_e.md`](novaberg-thinking-drive_e.md))
@@ -115,7 +115,7 @@ Mittelfristige Ziele entstehen, wenn Nova recherchiert, vertieft oder träumt un
 | **Quelle** | Pixie-Agenten (Recherche, Vertiefen, Träumen) |
 | **Anzahl** | 2–5 |
 | **Taktung** | Nach jeder Pixie-Aktivität |
-| **Decay** | Ja — verblassen über Zeit, verstärkt durch wiederholte Begegnung |
+| **Decay** | Ja — verblassen über Zeit, verstärkt durch wiederholte Begegnung (gebaut am 15.10.2026: Zieht ein Turn das Ziel über die Gravitationsschwelle, beginnt die Vergessenskurve neu, der Anker bleibt — `_t` §7.1) |
 | **Speicherort** | `ziele` (PostgreSQL, `ziel_typ = 'mittelfristig'`) |
 
 ### 3.3 Kurzfristige Ziele — aus dem Gespräch

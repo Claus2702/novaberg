@@ -1,7 +1,7 @@
 # Novaberg — Gesprächslandschaft (Konzept)
 
 **Absicht:** Aus dem Gesprächszustand — sechs Achsen, 64 Sektoren, benannte Gesprächslandschaften — folgt Novas Antwortgestaltung als drei unabhängige Wahlen: eine Strategie (WAS), eine Absicht (WARUM) und ein Vehikel (WIE, Aussage, Frage oder Schweigen); die Landschaft bestimmt das Repertoire, der Charakter gewichtet darin, abgeleitet und nicht konfiguriert.
-**Stand:** 12. September 2026, 21:47 UTC (in den Stand-Kopf nachgetragen am 13.09.2026; am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 15. Oktober 2026, 01:20 UTC (`date -u`; `_t` Anhang A.1/A.2: `neugier_boost` je Thema statt über den Turn). Davor 12. September 2026, 21:47 UTC (in den Stand-Kopf nachgetragen am 13.09.2026; am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *14 Gesprächslandschaften* 🟢 · *GV1 + GV2 (Farbmischung, Landschaft)* 🔴 · *GV4 — Wissenslücken im Prompt* 🔴 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-gv-strategie_t.md`](novaberg-gv-strategie_t.md) · [`novaberg-gv-strategie_b.md`](novaberg-gv-strategie_b.md) · [`novaberg-gv-strategie_e.md`](novaberg-gv-strategie_e.md) · [`novaberg-gv-strategie_m.md`](novaberg-gv-strategie_m.md)
 **Entschieden:** 6 · **Offen beim Meister:** 3 (Liste in [`novaberg-gv-strategie_e.md`](novaberg-gv-strategie_e.md))

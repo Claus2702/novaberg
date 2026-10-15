@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 71 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 72 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1088,5 +1088,23 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 | TIMELINE-FK-DOKU-DRIFT | Konzept §4.1 listet `timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL`, Live `init.sql` hat bare INTEGER ohne FK (FK lebt in `agents/timeline/init.sql`). Funktional gleichwertig, dokumentarisch abweichend. | [WIS] Doku-Sync mit TIMELINE-IN-KERN — ⬜ **offen** — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen. |
 
 **Empfehlung:** Liste als Beobachtungs-Anker erhalten. Sechs der sieben Punkte sind entweder mit P9-Löschung erledigt oder in Folge-Sprints (P5, Faktengedächtnis, TIMELINE-IN-KERN) integriert. `REFAC-MAGNETE-AUDIT` als eigenständiger kleiner Sprint übrig.
+
+---
+
+## Befund: AUFGRIFF-SCHWELLE-UNGEEICHT — Die Schwelle des Aufgriffs offener Fragen ist gesetzt, nicht geeicht (15.10.2026)
+
+**Kategorie:** [WIS] WISSEN
+
+**Rang:** mittel — der Aufgriff ist seit dem 15.10.2026 je Turn messbar, aber was als *aufgegriffen* zählt, hängt an einer Zahl, die niemand gemessen hat. Jede Aussage über den Aufgriff erbt diese Unsicherheit, auch die Absichtsfrage, wonach eine Lücke zu schließen wäre.
+
+**Zustand:** ⬜ offen — gesetzt, nicht geeicht.
+
+**Befund, am Code:** `graph/nodes/aufgriff.py::TAKE_UP_MIN_PROXIMITY` = 0,55 entscheidet, ob die Nähe der eingebetteten Antwort (erste 1200 Zeichen) zum Thema einer angebotenen Lücke als Aufgriff gilt. Die Zahl ist ein Anfangswert, keine Messung: Angeboten werden nur Fragen, die dem Reiz schon nah liegen (`OFFENE_FRAGEN_MIN_NAEHE` 0,49; Eichung vom 12.09.2026: ab 0,52 rund 12 von 12 passend), und eine Antwort auf den Reiz liegt ihnen deshalb oft von selbst nah. 0,55 sitzt knapp über diesem Band. *Aufgegriffen* kann damit auch eine Antwort sein, die das Thema nur streift. Jeder Eintrag `offene_fragen_aufgriff` trägt die Nähe je Kennung, die Schwelle lässt sich also an den Einträgen nachträglich verschieben.
+
+**Was fertig wäre:** Die Schwelle ist an einer Messreihe geeicht — Einträge mit angebotenen Fragen, je Antwort von Hand beurteilt (aufgegriffen ja oder nein), die Schwelle dort, wo die Nähen die Urteile trennen; oder die begründete Feststellung, dass die Nähe allein nicht trennt und ein zweites Maß gebraucht wird.
+
+**Offen, bevor geeicht wird:** Angeboten wird selten — Nulllinie `[gemessen 15.10.2026]`: 35 von 321 Turns ab dem 10.09.2026, danach 2 von 142. Eine Messreihe braucht Turns mit Angebot.
+
+**Zusammenhang:** `novaberg-wissensluecken_t.md` §5 · `novaberg-graph-rechenkette.md` S40 · die Absichtsfrage in `novaberg-wissensluecken_t.md` §5, wonach eine Lücke ohne wörtlichen Knotentreffer zu schließen wäre
 
 ---

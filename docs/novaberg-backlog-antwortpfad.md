@@ -974,6 +974,8 @@ Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis 
 
 **Neu bewertet am 12.09.2026 — die Spanne ist enger geworden, offen bleibt der Eintrag.** Das Gewicht im Produkt ist seit heute der Rang in der eigenen Quelle ([0, 1]) statt des rohen LZG-Gewichts (bis 10). Die Relevanz liegt damit bei `similarity × rang × 0,6 × (1 + neugier_boost) × aufnahmebereitschaft × register` — bei der Similarity-Obergrenze 0,92 und dem größten Registerfaktor 1,2 ohne anliegende Gravitation höchstens 0,66, mit ihr bis 1,32. **Über 1,0 geht sie also weiterhin, nur seltener.** Die Zeilennummern oben sind veraltet; die Leser sind am 12.09.2026 neu gezählt: vier — `_qualifizieren` (Untergrenze), der Prompt, `gv_detail` und das Panel (reine Anzeige).
 
+**Nachtrag 15.10.2026 — der Sachverhalt, keine Neubewertung.** Seit dem 15.10.2026 kann `neugier_boost` über 0 liegen: Er rechnet je Kandidat `max(cosine(Thema, Ziel) × motivation)` über die aktivierten Ziele, ab `GV_NEUGIER_BOOST_SCHWELLE` (0,30), sonst 0 (`ei/wissensluecken.py::_neugier_boosts`). Bis dahin war er in jedem Turn 0, weil das Ziel-Embedding den Zustand nicht erreichte (`NEUGIER-BOOST-AUS-ZIELEN-IMMER-NULL`, Archiv Wissen). Der Faktor `1 + neugier_boost` in der Relevanz wirkt damit erst seit diesem Tag; im Betrieb ist er noch nicht gemessen.
+
 **Zusammenhang:** KZG-SALIENZ-KONSUMENTEN-DISSENS (drei Leser, drei Annahmen über dieselbe Zahl — dieselbe Familie).
 
 ---

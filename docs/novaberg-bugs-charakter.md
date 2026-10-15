@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 27 Eintraege, je mit `**Kategorie:** CHA`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 28 Eintraege, je mit `**Kategorie:** CHA`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -301,6 +301,8 @@ nicht aus einer Erhebung.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Drei Felder der Perzeption haben keinen Kanon-Riegel, und der Vorgabewert des Intent ist der höchste Wert seiner Tabelle.** `emotion` bekommt bei einem unbekannten Wert einen Error-Log (`enricher`), `modus` läuft durch `modus_pruefen` — **`sprach_stil`, `intent` und `tone` haben nichts davon.** Alle drei werden über `.get(wert, 1.0)` gelesen, und beim Intent ist 1.0 zugleich der **Maximalwert** der Tabelle (`EI_INTENT_FAKTOREN`: personal 1.0 … knowledge/meta/task 0.3): Ein Wert außerhalb des Kanons wird damit nicht gedämpft, sondern maximal verstärkt — genau die Klasse aus `22_STILLE_FEHLER.md` §7, nur ohne Begleitfeld. Beim Tone liegt der Vorgabewert 1.0 zwischen `sachlich` 0.3 und `empathisch` 1.3, also ebenfalls im oberen Drittel. **Belegt an einem Perzeptionslauf über 49 Turns eines echten Dialogs (16.08.2026, Produktivmodell, gemessen 18.08.2026):** 8 Feldwerte in 7 Turns (14,3 %) liegen außerhalb ihres Kanons — `tone` 5 mal (`nachdenklich` 3×, `spielerisch`, `locker`), `intent` 2 mal, und beide Male mit **`philosophischer_austausch`, einem Wert aus der Modus-Liste**, die im selben Prompt direkt darüber steht; `sprach_stil` einmal (`nachdenklich`). Wirkung auf das EI-Gate, je Turn nachgerechnet: `ei_arousal` liegt um **+0,070 bis +0,122** höher, als der niedrigste kanonische Wert ergäbe. **Warum es niemandem auffiel:** Der Wert ist plausibel — `nachdenklich` als Tonfall liest sich richtig —, und die Rechnung liefert eine Zahl, die niemand als Vorgabewert erkennt. Verwandt mit `PERZEPTION-EMOTION-AUSSER-KANON`, aber eigenständig: Dort gibt es die Meldung und sie wird überhört, hier gibt es sie nicht.
 
+**Entschieden am 15.10.2026, vor dem Bau:** Der Riegel sitzt an der **Verwendungsstelle**, nicht in der Perzeption — sie zieht weiter Schreibvarianten auf den Kanon und lässt einen unbekannten Wert durch, damit er stromabwärts gemeldet wird (Docstring von `_kanonisch`). Die EI-Rechnung nimmt für einen unbekannten Wert einen **neutralen** Faktor, nie den höchsten, mit Fehlerzeile. Gemeinsam mit `KANON-FELDER-NEHMEN-FREMDWERTE`.
+
 **Geschlossen, wenn** Jedes Perzeptionsfeld hat einen Kanon-Riegel, und kein Vorgabewert ist der hoechste Wert seiner Tabelle.
 
 ---
@@ -509,6 +511,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 **Befund (2026-07-29).** Zwei Kanon-Felder nehmen Werte außerhalb ihres Kanons stillschweigend an, und die Lücke sitzt **nur auf Novas Seite**. Gemessen über 493 KZG-Einträge: Beim `modus` liefert der Nutzer-Pfad **94 von 94** Kanon-Werten, der Assistant-Pfad **365 von 399** — **34 Einträge (9 %) tragen LLM-Freitext** statt eines der zehn Labels, darunter `'Kein Modus etabliert'`, `'theoretische_spezifikation'`, `'Wissensabfrage und fachliche Aufklärung'`; 32 verschiedene Werte insgesamt. Bei `intentionen` dasselbe Muster, kleiner: 2 von 874 Nennungen außerhalb des 16er-Kanons (`philosophischer_austausch`, `spielerisch_interagieren` — beides Modus-Werte im Intentionsfeld, beide von Nova). Die Asymmetrie ist lokalisierbar: `perzeption.task.txt` bindet, `perzeption.assistant_task.txt` nicht. `modus_pruefen` wurde in Chat 114 genau dafür gebaut und meldet `error` — sitzt aber im GV-Pfad; der KZG-Verdichtungs-Pfad, aus dem diese Einträge stammen, ruft es nicht. Der Chat-114-Fund ist damit halb geschlossen. **Verzerrung beachten:** Die Freitexte beschreiben überwiegend Registerwechsel in Prosa — also genau die Fälle, die eine Messung des Registerwegs braucht.
 
 **Was fertig waere.** Ein Wert ausserhalb des Kanons wird laut abgelehnt, auf beiden Seiten.
+
+**Entschieden am 15.10.2026, vor dem Bau:** abgelehnt wird an der **Verwendungsstelle** — ein `modus` ausserhalb von `MODUS_KANON` geht leer in den KZG, eine Intention ausserhalb von `INTENT_KANON` wird verworfen, beides mit Fehlerzeile; nie Freitext in den Bestand. Die Perzeption bleibt durchlaessig und meldet. Gemeinsam mit `PERZEPTIONSFELDER-OHNE-KANON`.
 
 **Prioritaet:** hoch.
 
@@ -937,5 +941,29 @@ redis-cli --scan --pattern "hash_dirty*"   ->  12 Keys, alle Form {user}:nova
 **Symptom:** `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter. Entweder fehlt der Block, oder die Überschrift ist ein Rest.
 
 **Status:** Offen, Prio niedrig. Gegen HEAD `9bcd214` gemessen am 24.08.2026: unverändert, die Überschrift steht heute in **Zeile 336** und trägt weiterhin nichts — zwischen ihr und dem nächsten Abschnitt (`Hilfsfunktionen`, `:340`) liegen zwei Leerzeilen.
+
+---
+
+## Aus der Fundliste klassifiziert — 14.10.2026
+
+### `FASZINATION-TURN-SIEBEN-VON-NEUN` — Im Turn rechnet die Faszination mit sieben von neun Faktoren
+
+**Kategorie:** CHA
+
+**Rang:** niedrig — still, aber nur in der Spur: Der Wert, der im Turn **wirkt**, ist ein anderer (unten, *Wirkung*), und die Faszination hat keine Tabelle. Gegen HEAD `c7fb6c9` am Code gelesen; am 14.10.2026 von mittel auf niedrig berichtigt, nachdem der Leser im Haltungsraum nachgelesen war. **Seit dem 15.10.2026 offen nur noch zur Hälfte:** Der Strangzug ist behoben (Nachtrag unten); offen bleibt `f_anlage`, und das bewusst — gebaut wird es nur mit einer Messung der Schleife über mehrere Turns.
+
+**Zustand:** offen — gelesen am Code.
+
+**Symptom.** `graph/nodes/praegung.py` ruft `modulatoren_aus_turn(…, wissbegier=None)` fest auf; `ei/fascination.py::f_anlage(None)` liefert den neutralen Faktor 1,0, gedacht für ein Paar *ohne* Radmessung — der Turn nimmt ihn auch für Paare mit Messung. ~~`strangzug` rechnet nur der Bestandslauf (`memory/fascination_store.py`), der Turn nicht.~~ → **behoben am 15.10.2026** (Nachtrag unten). Konzept (`novaberg-thinking-faszination_t.md` §10.6) und Featureliste sagen *„alle neun Faktoren“*.
+
+**Wirkung.** Die volle Faszination des Prägungsknotens wird nur **protokolliert** (`pipeline_log`, Schritt `faszination`): Sie steht als ~~vorletzter Knoten~~ Knoten hinter der Antwort (seit dem 15.10.2026 vor `aufgriff` und Dispatcher). Was im selben Turn wirkt, rechnet der Haltungsraum über `memory/fascination_store.py::faszination_der_gelesenen` — die Trägerseite **mit** Strangzug, ohne Turn-Modulatoren. Falsch ist damit die Spur: Wer sie liest, ~~sieht einen Träger im Zentrum eines Strangs gleich bewertet wie einen am Rand, und~~ sieht die Anlage des Paares nie (der Strangzug steht seit dem 15.10.2026 darin).
+
+**Was fertig wäre.** Der Turn gibt `wissbegier` aus der Radmessung des Paares und den Strangzug des Trägers in die Rechnung; ohne Radmessung bleibt `f_anlage` neutral.
+
+**Die eine Hälfte ist bewusst offen** (nachgelesen am 14.10.2026): Der Kommentar an `FASZINATION_SPEICHE` (`ei/haltung.py`) nennt die Rückkopplung `wissbegier` → Faszination → Haltung *„beabsichtigt und heute halbseitig“* — *„Wer das schliesst, schliesst eine Schleife und muss sie messen.“* Für `f_anlage` ist der Defekt also die Auskunft von Konzept und Featureliste, nicht der Code; gebaut wird die Schleife nur mit einer Messung, die sie über mehrere Turns beobachtet. Der Strangzug im Turn trägt diese Einschränkung nicht.
+
+**Nachtrag 15.10.2026 — der Strangzug im Turn ist gebaut, `f_anlage` bleibt offen.** `graph/nodes/praegung.py::_faszination_protokollieren` liest je Turn die Strangnähe der gelesenen Träger (`traeger_strangnaehe`) und rechnet den Strangzug je Träger (§10.3a) als Modulator in die volle Faszination; die Spur `faszination` trägt ihn je Träger als Zahl (`strangzug`). Ein Träger im Zentrum eines Strangs steht damit über einem gleichen ohne Strangbezug. **Wirft** das Lesen der Strangnähe, rechnet der Knoten neutral (1,0), loggt den Fehler, und die Spur trägt `None` statt der Zahl sowie den Fehlertyp in `strang_ausfall`. **`strang_ausfall` steht nur bei einer geworfenen Ausnahme:** Einen Lesefehler, den `traeger_strangnaehe` selbst abfängt und als leere Antwort zurückgibt, sieht der Knoten nicht — er zählt dann wie *kein Strangbezug* (Strangzug 1,0, als Zahl). `f_anlage` ist unverändert (`wissbegier=None`): Die Rückkopplung bleibt bewusst halbseitig, wie oben beschrieben. 9 Zeugen in `server/tests/test_faszination_strangzug_im_turn.py`, ohne Datenbank; die Zeugen des Erzeugers ersetzen das Lesen der Strangnähe. Server-Suite danach `Ran 4244 tests` / `OK (expected failures=1)`. Im Betrieb noch nicht gemessen — zu lesen ist in der Spur der nächsten Turns, dass `strangzug` je Träger als Zahl steht und `strang_ausfall` leer ist. **Der Eintrag bleibt offen** für `f_anlage`.
+
+**Herkunft:** Fundliste, 13.10.2026.
 
 ---

@@ -494,6 +494,8 @@ naehe_thema:        cosine(Thema, Turn)   seit 12.09.2026 abends — vorher der 
 charakter_filter:   cosine(Thema, Kern) ≥ 0.15   (GV_CHARAKTER_RESONANZ_SCHWELLE; 0.30 galt für Sätze)
 ```
 
+**`neugier_boost` je Thema, seit dem 15.10.2026.** Die Zeile oben gilt jetzt so, wie sie dasteht: `ziel_sim` ist `cosine(Thema, Ziel)` — **je Kandidat**, über die aktivierten Ziele, das stärkste gewinnt; unter `GV_NEUGIER_BOOST_SCHWELLE` (0,30) ist der Boost 0 (`ei/wissensluecken.py::_neugier_boosts`). Bis dahin rechnete der Code einen Wert für den ganzen Turn, mit dem Turn-Embedding als Stellvertreter der Lücke — und auch dieser Wert war in jedem Turn 0, weil das Ziel-Embedding den Zustand nie erreichte (`NEUGIER-BOOST-AUS-ZIELEN-IMMER-NULL`, behoben). Die Vektoren der Ziele reisen seither unter eigenem Schlüssel `ziel_vektoren`; ein Ziel ohne Vektor oder ohne Motivation wird gezählt und gemeldet, die Spurzeile `gv4_neugier_boost` trägt Schwelle, Zahl der Ziele, unbrauchbare, beitragende und den höchsten Boost. Im Betrieb noch nicht gemessen.
+
 **Wo der Filter sitzt:** `_qualifizieren(kandidaten, resonanz_pruefbar)` in `ei/wissensluecken.py` — Tor 3 des Lückenpfades. Es prüft `relevanz ≥ GV_LUECKEN_MIN_RELEVANZ` **und** die Resonanz, zählt beide Abweisungsgründe getrennt und schreibt seine Zahl **auch bei null** (seit dem 12.09.2026; davor war es eine Listen-Komprehension ohne Ausgabe, und ein geschlossenes Tor war von *„offen, nichts gefunden"* nicht zu unterscheiden).
 
 > **Diese eine Zahl steht vor sieben verschiedenen Verteilungen** (`[gemessen 12.09.2026]`, 378 Turns über alle Paare mit Nova-Kern). Die Resonanz ist `cosine(turn, kern)` und damit paarweise; die Mediane liegen zwischen **0,097 und 0,282**. Bei zwei Paaren lässt 0,30 **keinen einzigen** Turn durch, bei den beiden oberen 23 und 27 %. Der Filter ist damit je Paar ein anderer — und der Bezug wandert mit jeder Kern-Destillation. Verteilung, Vorbehalt und die offene Absichtsfrage (absolut gegen Perzentil je Paar) in `novaberg-kalibrierung_k.md` §3.3a.
@@ -506,7 +508,7 @@ charakter_filter:   cosine(Thema, Kern) ≥ 0.15   (GV_CHARAKTER_RESONANZ_SCHWEL
 |--------|-----|--------|
 | 1. Gedächtnis | Wo liegt das Wissen? | LZG (pgvector), KZG (RediSearch) |
 | 2. Aktualität | Wie frisch? | Session-Decay sin^0.5 |
-| 3. Drive | Will Nova das wissen? | Ziel-Gravitation |
+| 3. Drive | Will Nova das wissen? | Ziel-Gravitation — seit dem 15.10.2026 je Thema (`cosine(Thema, Ziel) × motivation`), vorher ein Wert für den ganzen Turn und strukturell 0 |
 | 4. Neugier | Ist sie empfänglich? | 6 Säulen × NOVA_NEUGIER |
 | 5. Register | Welche Art Lücke passt? | Sachlich vs. offen × gap_arousal |
 | 6. Charakter | Passt es zu ihr? | ~~kern_hash Cosine ≥ 0.40~~ → Thema gegen Kern ≥ 0.15 (seit 12.09.2026) |

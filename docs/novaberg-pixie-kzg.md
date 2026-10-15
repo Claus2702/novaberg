@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 19. September 2026, 13:12 UTC (eine Ablehnung als Nicht-Auftrag geht nicht in `[TATSAECHLICHER AUSGANG]`, `968c56b`). Davor 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
+**Stand:** 15. Oktober 2026, 01:33 UTC (`date -u`; Intentionstabelle: `bestaetigung` in der Schreibweise des Kanons). Davor 19. September 2026, 13:12 UTC (eine Ablehnung als Nicht-Auftrag geht nicht in `[TATSAECHLICHER AUSGANG]`, `968c56b`). Davor 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -161,7 +161,7 @@ Intention aus der Salienz wird auf eine Pixie-Aufgabe gemappt:
 | `recherche_vertiefen`, `reflexion`, `gemeinsam_eruieren`, `information_erfragen` | `recherche` |
 | `information_teilen` | `vertiefen` |
 | `emotionaler_ausdruck`, `hilferuf` | `nachfragen` |
-| `smalltalk`, `bestätigung`, `abschluss`, `humor`, ... | Keine Aufgabe |
+| `smalltalk`, ~~`bestätigung`~~ `bestaetigung` (Schreibweise des Kanons, in `memory/kzg.py` berichtigt am 15.10.2026), `abschluss`, `humor`, ... | Keine Aufgabe |
 
 Bei Verstärkung mit Häufigkeit >= 3 und Salienz >= 0.7 → `vertiefen`.
 

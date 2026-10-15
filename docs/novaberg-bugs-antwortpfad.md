@@ -1075,7 +1075,7 @@ Gewichtung zeigt sieben Striche, während der Prompt desselben Turns sieben Mal
 #### GV4-SYSTEM-2-TOT — von sechs Systemen der Relevanzformel differenzieren drei ⚠️
 **Kategorie:** ANT
 
-**Rang:** **niedrig** — lässt Differenzierung ungenutzt, verfälscht nichts. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: System 6 ist behoben, System 2 (`session_aktualitaet`, `server/ei/neugier.py:167`, kein Aufrufer) und System 3 stehen.
+**Rang:** **niedrig** — lässt Differenzierung ungenutzt, verfälscht nichts. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: System 6 ist behoben, System 2 (`session_aktualitaet`, `server/ei/neugier.py:167`, kein Aufrufer) ~~und System 3 stehen~~ steht. → **System 3 ist am 15.10.2026 behoben** (Nachtrag unten).
 
 **Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `session_aktualitaet` hat im ganzen Serverbaum **genau einen** Treffer, ihre eigene Definition in `ei/neugier.py:166`. Kein Aufrufer. System 3 und 6 sind dabei nicht nachgemessen — sie brauchen einen Lauf, keinen Grep.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
@@ -1084,8 +1084,9 @@ Gewichtung zeigt sieben Striche, während der Prompt desselben Turns sieben Mal
 
 - **System 2 (Aktualität):** `session_aktualitaet()` in `ei/neugier.py` hat keinen
   Aufrufer. Alle Kandidaten stammen aus LZG und KZG, für die der Faktor 1.0 ist.
-- **System 3 (Drive):** Der Neugier-Boost nutzt das **Turn**-Embedding als Proxy für die
-  Lücke — der Wert ist für alle Kandidaten identisch und skaliert die Liste nur global.
+- ~~**System 3 (Drive):** Der Neugier-Boost nutzt das **Turn**-Embedding als Proxy für die
+  Lücke — der Wert ist für alle Kandidaten identisch und skaliert die Liste nur global.~~
+  → **behoben am 15.10.2026**, je Kandidat (Nachtrag unten).
 - **System 6 (Charakter):** Dieselbe Konstruktion. `charakter_resonanz` hängt nicht vom
   Kandidaten ab; der Filter lässt alle durch oder keinen.
 
@@ -1094,6 +1095,8 @@ Neugier (4) und Register (5). Der Code benennt den Proxy in einem Kommentar; das
 tut es nicht.
 
 **Nachtrag 12.09.2026 — System 6 differenziert jetzt, und zwar auf dem Thema.** Die Charakter-Resonanz entstand zuerst je Kandidat in der Suche (auf dem Gedaechtnissatz, trennte dort nach Sprecher) und seit dem Abend je **Thema** gegen den Kern, Schwelle 0,15. System 2 (Aktualitaet) und System 3 (Drive als Turn-Proxy) sind unveraendert; der Eintrag bleibt offen.
+
+**Nachtrag 15.10.2026 — System 3 differenziert jetzt, je Kandidat.** Der Neugier-Boost aus den Zielen rechnet nicht mehr einen Wert für den ganzen Turn, sondern je Thema: `max(cosine(Thema, Ziel) × motivation)` über die aktivierten Ziele, ab `GV_NEUGIER_BOOST_SCHWELLE` (0,30), sonst 0 (`ei/wissensluecken.py::_neugier_boosts`; die Vektoren der Ziele reisen unter eigenem Schlüssel `state["ziel_vektoren"]`). Behoben zusammen mit `NEUGIER-BOOST-AUS-ZIELEN-IMMER-NULL` (Archiv, Wissen) — bis dahin war der Boost nicht nur global, sondern in jedem Turn 0, weil das Ziel-Embedding im Zustand fehlte. 23 Zeugen in `server/tests/test_neugier_boost_ziele.py`; im Betrieb noch nicht gemessen. **System 2 (Aktualität) ist unverändert** — `session_aktualitaet` hat weiter keinen Aufrufer; der Eintrag bleibt offen.
 
 #### GV-SKIP-BEGRUESSUNG-TOT — zwei von drei Skip-Gründen können nicht eintreten ⚠️
 **Kategorie:** ANT

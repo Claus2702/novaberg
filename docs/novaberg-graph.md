@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 13. September 2026, 15:11 UTC (Knoten 4a Sachlage: Formpruefung jedes Objektfelds und das Eigenschaftsgedaechtnis, Scheibe 11 — der Knoten schreibt seither in drei weitere Tabellen). Davor 9. September 2026, 18:45 UTC (der State-Kanal `gravitationsterm` traegt seither einen Wert in **[0, 1]** — vorher eine unbeschraenkte Summe bis 5,9955, `GRAVITATIONSTERM-OHNE-OBERGRENZE`). Davor 1. September 2026, 16:50 UTC (`zielsog_roh` neu — der ungetorte Zielsog zieht die Salienz von Novas Aeusserung; getrennt vom Gravitationsterm, damit eine Zahl nicht zwei Wirkungen hat). Davor 1. September 2026, 14:30 UTC (**19 State-Kanaele nachgetragen**, die die Kanaltabelle nie kannte — Verfasser (`antwort_inhalt`, `einwandsurteil`, `node_annotations`), Haltungsraum (`haltung`), Tribunal und Korrektur-Loop (§4.7a, funf Kanaele), Enricher-Suche (`such_vektor`, `suchtext`, `suchtext_herkunft`, `aufzeichnungen`), Router (`management_target_typ`, `timeline_query`), GV (`gv_detail`), Responder (`model`, `token_total`), Salienz (`salienz_human`). Gefunden von `C18`, nicht vom Nachzug). Davor 30. August 2026 (`memory_context_verfasser` als State-Kanal, der Reducer schreibt zwei Fassungen). Davor 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 15. Oktober 2026, 06:54 UTC (`date -u`; der Knoten `aufgriff` bleibt vorerst, unter Beobachtung). Davor 15. Oktober 2026, 01:23 UTC (`date -u`; CharacterGraph: der Knoten `aufgriff` zwischen Praegung und Dispatcher; Enricher: `ziel_vektoren` neben `aktivierte_ziele`). Davor 13. September 2026, 15:11 UTC (Knoten 4a Sachlage: Formpruefung jedes Objektfelds und das Eigenschaftsgedaechtnis, Scheibe 11 — der Knoten schreibt seither in drei weitere Tabellen). Davor 9. September 2026, 18:45 UTC (der State-Kanal `gravitationsterm` traegt seither einen Wert in **[0, 1]** — vorher eine unbeschraenkte Summe bis 5,9955, `GRAVITATIONSTERM-OHNE-OBERGRENZE`). Davor 1. September 2026, 16:50 UTC (`zielsog_roh` neu — der ungetorte Zielsog zieht die Salienz von Novas Aeusserung; getrennt vom Gravitationsterm, damit eine Zahl nicht zwei Wirkungen hat). Davor 1. September 2026, 14:30 UTC (**19 State-Kanaele nachgetragen**, die die Kanaltabelle nie kannte — Verfasser (`antwort_inhalt`, `einwandsurteil`, `node_annotations`), Haltungsraum (`haltung`), Tribunal und Korrektur-Loop (§4.7a, funf Kanaele), Enricher-Suche (`such_vektor`, `suchtext`, `suchtext_herkunft`, `aufzeichnungen`), Router (`management_target_typ`, `timeline_query`), GV (`gv_detail`), Responder (`model`, `token_total`), Salienz (`salienz_human`). Gefunden von `C18`, nicht vom Nachzug). Davor 30. August 2026 (`memory_context_verfasser` als State-Kanal, der Reducer schreibt zwei Fassungen). Davor 28. August 2026 (`sachlage_node` als 4a in der CG-Knotentabelle, `sachlage` und `sachlage_bruecke` als State-Kanaele — der Knoten war seit dem Morgen gebaut und stand hier nicht). Davor: 15. August 2026 (`reiz_level` als dritter Zugang in `graph/reiz.py`); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
@@ -140,7 +140,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
                                                                                     |
             +───────────────────────────────────────────────────────────────────────+
             |
-            +── ok / fallback → perzeption_assistant → ei_calc_persist → Salienz → Praegung → Dispatcher → END
+            +── ok / fallback → perzeption_assistant → ei_calc_persist → Salienz → Praegung → Aufgriff → Dispatcher → END
                                  ↑
                                  hier geht die Antwort raus (seit 25.08.2026)
             |
@@ -150,6 +150,10 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 > **Die Auslieferung haengt an der Freigabe, nicht am Ende des Laufs.** Bis zum 25.08.2026 wurde die Antwort erst bei `END` gesendet — also hinter Perzeption, EI-Persistenz, Salienz und Dispatcher. Am 25.08. kostete das eine fertige, vom Tribunal angenommene Antwort: Ein Fehler in der Salienz riss den Graphen, und der Mensch sah nichts (`AUSLIEFERUNG-HINTER-DEM-NACHLAUF`).
 >
 > **Das Signal ist `perzeption_assistant`, nicht die Weiche selbst.** Die Entscheidung faellt in einer Kante, und Kanten erscheinen nicht im Stream; ueber `ok` **und** `fallback` fuehrt der Weg zu diesem Knoten — also genau auf den beiden Wegen, auf denen ausgegeben werden soll. **Der Nachlauf laeuft unveraendert weiter:** Er schreibt Novas Zustand, die Salienz und das Gedaechtnis. Nur wartet niemand mehr darauf.
+>
+> **Seit dem 15.10.2026 steht im Nachlauf ein Knoten mehr: `aufgriff`, zwischen Praegung und Dispatcher** (`graph/nodes/aufgriff.py`; im Bild oben nachgetragen, vorher fuehrte die Kante von Praegung direkt zum Dispatcher). Er urteilt, ob die freigegebene Antwort eine der angebotenen offenen Fragen aufgreift, und schreibt je Turn einen Eintrag `offene_fragen_aufgriff` (`novaberg-wissensluecken_t.md` §5). Er steht hinter der Auslieferung der Antwort, damit sein Einbettungsaufruf nicht in die Wartezeit des Menschen faellt; die Antwort ist ab `evaluate` fertig, er liest also die nach der letzten Korrekturrunde.
+>
+> **Entscheidung des Eigentuemers vom 15.10.2026:** Der Knoten bleibt vorerst und wird beobachtet; danach wird beurteilt, ob er bleibt oder sein Urteil an einen anderen Ort wandert. Er ist ein Messinstrument ohne Wirkung auf die Antwort.
 
 
 **Datei:** `graph/character_graph.py`
@@ -379,6 +383,7 @@ Methoden-Split nach `ei_calc_rolle`:
 | `user_intentionen` | `list` | Intentionen aus dem letzten User-Turn. |
 | `prompt_embedding` | `list[float]` | 768-dim Embedding des `user_prompt`. |
 | `aktivierte_ziele` | `list[dict]` | Drive-Ziele ueber Gravitationsschwelle. |
+| `ziel_vektoren` | `dict[int, list[float]]` | **Seit 15.10.2026.** Vektor je aktiviertem Ziel, unter eigenem Schluessel, damit `aktivierte_ziele` vektorfrei bleibt; Leser ist der Neugier-Boost der Wissensluecken (`novaberg-node-enricher.md`). |
 | `gravitationsterm` | `float` | Salienz-Boost aus Ziel-Gravitation, **[0, 1]** seit dem 09.09.2026 (`GRAVITATIONSTERM-OHNE-OBERGRENZE`). |
 
 Kein KZG/LZG-Read, kein Charakter-Hash, kein Reducer, kein `memory_context` (Phase 4, Chat 90).
@@ -391,6 +396,7 @@ Kein KZG/LZG-Read, kein Charakter-Hash, kein Reducer, kein `memory_context` (Pha
 | `user_intentionen` | `list` | Wie HG. |
 | `prompt_embedding` | `list[float]` | Wie HG. |
 | `aktivierte_ziele` | `list[dict]` | Wie HG. |
+| `ziel_vektoren` | `dict[int, list[float]]` | Wie HG, seit 15.10.2026. |
 | `gravitationsterm` | `float` | Wie HG. |
 | `zielsog_roh` | `float` | Die staerkste **ungetorte** Zielstaerke des Turns (`similarity x motivation`, ohne `GRAVITATIONS_SCHWELLE`). Sie zieht die Salienz von Novas Aeusserung auf die Luecke nach oben. **Getrennt vom Term, weil eine Zahl sonst zwei Wirkungen haette:** Der Term entsteht aus den *aktivierten* Zielen, und dieselben Ziele stehen im `[GEDANKEN]`-Block des GV-Prompts — wer die Schwelle fuer die Salienz senkte, aenderte zugleich, worueber Nova nachdenkt. Seit 01.09.2026 |
 | `session_turns` | `list[dict]` | Vollstaendige Turn-Dicts (Shadow-gefiltert, seit Chat 30). |

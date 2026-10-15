@@ -1,9 +1,35 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 26 Eintraege, je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 27 Eintraege, je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 15.10.2026 — behoben im Bau
+
+**Diese Eintraege sind mit einem Bau geschlossen.** Die Abhilfe steht im Code und ist durch Zeugen belegt; die Zustandszeile je Eintrag nennt Ort, Zeugen und was im Betrieb noch zu messen ist. *Behoben* heisst hier: gebaut und bezeugt, im Betrieb noch nicht gemessen.
+
+---
+
+### `NEUGIER-BOOST-AUS-ZIELEN-IMMER-NULL` — Der Neugier-Boost aus den aktivierten Zielen ist für jeden Kandidaten und jeden Turn 0, und nichts meldet es
+
+**Kategorie:** WIS
+
+**Rang:** hoch — still, und er trifft eine der drei Größen, an denen der Umbau der Recherche hängt: Nach dem Kriterium vom 14.10.2026 (ein Strang steht, wenn Erzeuger und Leser am Bestand messbar über 0 liegen) kann die Neugier mit diesem Teil nicht stehen. Gegen HEAD `c7fb6c9` am Code gelesen.
+
+**Zustand:** behoben am 15.10.2026 — im Code und durch Zeugen belegt, im Betrieb noch nicht gemessen. `ei/wissensluecken.py::_neugier_boosts` rechnet den Boost **je Kandidat** als `max(cosine(Thema, Ziel) × motivation)` über die aktivierten Ziele, ab `GV_NEUGIER_BOOST_SCHWELLE` (0,30), sonst 0 — nicht mehr ein Wert für den ganzen Turn. Die Vektoren der Ziele reisen unter eigenem Schlüssel `state["ziel_vektoren"]` (`graph/nodes/enricher.py::_ziel_vektoren`, in beiden Enricher-Pfaden), nicht in `aktivierte_ziele`; die Ablage dieser Liste in Redis bleibt ohne Vektoren. Ein Ziel ohne Vektor, mit leerem Vektor oder ohne Motivation wird gezählt, als Fehler geloggt und in der Spurzeile `gv4_neugier_boost` gemeldet (Knoten `wissensluecken`; Schwelle, Ziele, unbrauchbar, beitragend, höchster — nur Zahlen). 23 Zeugen in `server/tests/test_neugier_boost_ziele.py`, ohne Datenbank, Redis und Modell; Server-Suite nach dem ganzen Bau des Tages `Ran 4228 tests` / `OK (expected failures=1)`. Derselbe Bau schließt *System 3* von `GV4-SYSTEM-2-TOT` (Antwortpfad); System 2 bleibt dort offen. **Zu messen:** Messturns mit aktivierten Zielen — die Spurzeile trägt `hoechster` > 0; davor war `neugier_boost` in jedem Turn 0,0.
+
+**Zustand bis 15.10.2026:** offen — gelesen am Code, im Betrieb nicht gezählt.
+
+**Symptom.** `ei/wissensluecken.py` (Schritt *Drive*, um Z. 621–634) liest `ziel.get("embedding")` aus `state["aktivierte_ziele"]`; `graph/nodes/enricher.py::_ziele_als_dicts` lässt das Embedding absichtlich weg (Docstring: *„hat im State keinen Leser“*). Das `continue` bei fehlendem Embedding überspringt jedes Ziel, ohne es zu zählen — `neugier_boost` bleibt 0,0.
+
+**Wirkung.** Die Ziele ziehen die Neugier nie zu ihren Themen, obwohl der Code es vorsieht; im Log sieht die Rechnung aus wie eine, die nichts Passendes fand.
+
+**Was fertig wäre.** Ein aktiviertes Ziel mit einem Thema nah am Kandidaten hebt dessen Neugier messbar über 0, und ein Ziel ohne Vektor wird gezählt und gemeldet statt übersprungen. Ein Zeuge mit einem aktivierten Ziel im Zustand ist heute rot.
+
+**Herkunft:** Fundliste, 13.10.2026.
 
 ---
 

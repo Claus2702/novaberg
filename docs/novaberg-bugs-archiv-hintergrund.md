@@ -1,9 +1,35 @@
 # Novaberg — Bugs, Archiv: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 23 Eintraege, je mit `HGR` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 24 Eintraege, je mit `HGR` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 15.10.2026 — behoben im Bau
+
+**Diese Eintraege sind mit einem Bau geschlossen.** Die Abhilfe steht im Code und ist durch Zeugen belegt; die Zustandszeile je Eintrag nennt Ort, Zeugen und was im Betrieb noch zu messen ist. *Behoben* heisst hier: gebaut und bezeugt, im Betrieb noch nicht gemessen.
+
+---
+
+### `PIXIE-PAUSE-STILL` — Ein pausierter Hintergrundlauf sagt es nur auf `debug`
+
+**Kategorie:** HGR
+
+**Rang:** mittel — still, und er hat zehn Tage Messung am Bestand gekostet, bevor er auffiel; der Hintergrundlauf bleibt nach der Entscheidung des Eigentümers vom 14.10.2026 pausiert, die Pause selbst ist also kein Defekt — nur dass der Betrieb sie verschweigt. Gegen HEAD `c7fb6c9` am Code gelesen.
+
+**Zustand:** behoben am 15.10.2026 — im Code und durch Zeugen belegt, im Betrieb noch nicht gemessen. Jeder der drei Pausenschalter (`pixie:paused`, `pixie:agenten_paused`, `pixie:delivery_paused`) erscheint im Log von Heartbeat und Zustellschleife auf `warning`, mit Schalter, Wirkung und dem Zeitpunkt, seit dem er steht — höchstens eine Zeile je Schalter und `PIXIE_PAUSE_WARNUNG_SEKUNDEN` (900 s), nicht je Zyklus. Die Drossel liegt in Redis (`<schalter>:warnung`, `SET NX EX`): Beide Spuren und die Zustellschleife teilen sie, und sie übersteht einen Neustart. Den Zeitpunkt merkt `set_pause` beim Setzen im Nebenschlüssel `<schalter>:seit` (ISO 8601, UTC); die drei Endpunkte zum Fortsetzen räumen Schalter, Zeitpunkt und Drossel ab (`services/pixie/pause.py`, gerufen in `services/pixie/scheduler.py`, `services/shadow_delivery.py` und `api/admin.py`). Ein Schalter ohne gemerkten Zeitpunkt — so der seit dem 03.10.2026 stehende — erscheint als *„seit unbekannt“*, nie als *jetzt*. Die Pause selbst ist unverändert. 19 Zeugen in `server/tests/test_pixie_pause_laut.py`; Server-Suite nach dem ganzen Bau des Tages `Ran 4228 tests` / `OK (expected failures=1)`. **Zu messen:** nach dem Neustart des Dienstes innerhalb von 900 s genau eine Zeile *„Pausenschalter pixie:paused steht seit unbekannt“* auf `WARNING` (Logger `ki_server.pixie`).
+
+**Zustand bis 15.10.2026:** offen — am Code gelesen, am Bestand gemessen.
+
+**Symptom.** `pixie:paused` ist seit dem 03.10.2026, 12:26 UTC, gesetzt, ohne Ablaufzeit (`POST /admin/pixie/pause`, eine `INFO`-Zeile). Der Heartbeat verwirft danach jeden Zyklus mit einer `debug`-Zeile (`services/pixie/scheduler.py`, Guard *Pause*); `mess:regie_aus` dagegen warnt bei jedem Turn, *„ein vergessener Schalter soll im Log schreien“* (`api/admin.py`). `[gemessen 13.10.2026]` In `hintergrund_log` ab dem 04.10. nur noch `prompt_block` und `recherche_bibliothek` (60 Zeilen), seit dem 08.10. keine; kein Tageslauf seit dem 03.10.
+
+**Wirkung.** Jede Messung an Profilen, Prägung, Lücken, Zielen und Synapsen sieht einen stehenden Bestand, ohne dass etwas darauf hinweist.
+
+**Was fertig wäre.** Ein gesetzter Pausenschalter steht im Log auf `warning`, gedrosselt (nicht je Zyklus), mit dem Zeitpunkt, seit dem er steht.
+
+**Herkunft:** Fundliste, 13.10.2026.
 
 ---
 

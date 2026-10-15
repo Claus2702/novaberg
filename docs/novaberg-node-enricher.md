@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 14. September 2026, 19:52 UTC (die Kürzung der Verlaufsform für Perzeption und Router beziffert: 100 Zeichen je Beitrag). Davor 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
+**Stand:** 15. Oktober 2026, 01:23 UTC (`date -u`; der Enricher verstärkt aktivierte mittelfristige Ziele und legt ihre Vektoren unter `ziel_vektoren` in den Zustand). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 14. September 2026, 19:52 UTC (die Kürzung der Verlaufsform für Perzeption und Router beziffert: 100 Zeichen je Beitrag). Davor 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -317,7 +317,8 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["raw_turns"]` | list[dict] | n.a. (Brücken-Datenstruktur, kein Personality-Wert) | Ungefilterte Session-Turns |
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor aus `user_prompt` |
-| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle. Feld je Ziel seit Chat 126 `aktivierungs_staerke` (vorher `gravitation`); das Ziel-Embedding bleibt **draußen** — es trägt die Verschiebung und hat im State keinen Leser |
+| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle. Feld je Ziel seit Chat 126 `aktivierungs_staerke` (vorher `gravitation`); das Ziel-Embedding bleibt **draußen** — es trägt die Verschiebung ~~und hat im State keinen Leser~~ → seit dem 15.10.2026 reist es unter eigenem Schlüssel (nächste Zeile); diese Liste bleibt vektorfrei, auch in ihrer Ablage in Redis |
+| `state["ziel_vektoren"]` | dict[int, list[float]] | n.a. | **Seit 15.10.2026.** Vektor je `ziel_id` der aktivierten Ziele, aus den schon geladenen Zielen gebaut (`_ziel_vektoren`, kein Datenbankzugriff). Leser: der Neugier-Boost der Wissenslücken je Kandidat (`ei/wissensluecken.py::_neugier_boosts`). Ein aktiviertes Ziel ohne Embedding fehlt hier und wird als Fehler gemeldet |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term, **normiert auf [0, 1]** seit dem 09.09.2026 |
 
 **CharacterGraph (`_enrich_character`):**
@@ -329,6 +330,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor |
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle, Feld `aktivierungs_staerke` (siehe HG-Tabelle) |
+| `state["ziel_vektoren"]` | dict[int, list[float]] | n.a. | Wie HG, seit 15.10.2026 |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term, **normiert auf [0, 1]** seit dem 09.09.2026 |
 | `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | Scan ueber **KZG und LZG** auf Eintraege mit Emotion (`ei/gravitation.py`). ~~hoch-arousal~~ — **einen Arousal-Filter gibt es nicht:** §5.7 des Konzepts verlangt „Emotion ≠ neutral und Arousal ueber Schwelle", der Code liest `arousal`, fuehrt es mit und loggt es, vergleicht es aber nie. Offener Punkt, kein Defekt (Backlog-Epic). Verbraucher: Node `emotionale_gravitation` |
 | `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
@@ -346,7 +348,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 
 **Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call). Das macht ihn schnell, reproduzierbar und testbar.
 
-**Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt Session-Turns aus Redis, erzeugt Embeddings via Ollama-Embed-Modell, liest aktivierte Ziele aus Postgres (`ziele`-Tabelle). Punkt.
+**Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt Session-Turns aus Redis, erzeugt Embeddings via Ollama-Embed-Modell, liest aktivierte Ziele aus Postgres (`ziele`-Tabelle). Punkt. → **Seit dem 15.10.2026 schreibt er an einer Stelle zurück:** Ein aktiviertes mittelfristiges Ziel beginnt seine Vergessenskurve neu, der Anker bleibt (`_ziele_verstaerken_und_melden` → `memory/ziele.py::ziele_bei_begegnung_verstaerken`). Der Ort ist der Enricher, weil nur er die geladenen Zeilen samt Anker hält; der Dispatcher sieht nur die vektor- und ankerfreien Dicts. Ein gescheiterter Schreibvorgang wird mit Spur geloggt und reißt den Turn nicht; je Turn mit Verstärkung ein Eintrag `ziele_verstaerkung` im `pipeline_log`. Der Ausgabe-Eintrag des Knotens im `pipeline_log` trägt in beiden Pfaden neben `aktivierte_ziele_count` die Aktivierungen je Horizont (`aktiviert_je_horizont`, `ueber_schwelle_je_horizont`). Beschrieben in `novaberg-thinking-drive_t.md` §7.1.
 
 **Das gilt auch nach P10.** Die Wahrnehmungs-Gravitation (§3.3a) rechnet in `ei/gravitation.py`; im Node steht der Aufruf und die Entscheidung, welchen Schlüssel die Suche bekommt.
 

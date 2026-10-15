@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 11. September 2026, 16:00 UTC (**Agenten und Zustellung sind getrennt pausierbar**, und der Status meldet nicht nur *pausiert*, sondern auch *still* — eine Pause bricht keinen laufenden Agenten ab, und ein Recherche-Lauf lief zehn Minuten ueber sie hinweg. Dazu `POST /admin/delivery/jetzt` als Ausloeser fuer Messreihen). Davor 11. September 2026 (**die Pause haelt seither auch die Zustellung an** — sie galt nur fuer den Scheduler, waehrend fertige Impulse weiter zugestellt wurden; gemessen ein Fremdturn mitten in einer Messreihe bei bestaetigtem `paused: true`, danach 0 in 20). Davor 28. August 2026 (`ausloeser_turn_id` im Stapel-Eintrag, `build_impulse_embed_text` — Scheibe 4 des Lage-Konzepts). Davor: 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 15. Oktober 2026, 01:24 UTC (`date -u`; **ein stehender Pausenschalter meldet sich** gedrosselt auf `warning`, mit dem Zeitpunkt, seit dem er steht). Davor 11. September 2026, 16:00 UTC (**Agenten und Zustellung sind getrennt pausierbar**, und der Status meldet nicht nur *pausiert*, sondern auch *still* — eine Pause bricht keinen laufenden Agenten ab, und ein Recherche-Lauf lief zehn Minuten ueber sie hinweg. Dazu `POST /admin/delivery/jetzt` als Ausloeser fuer Messreihen). Davor 11. September 2026 (**die Pause haelt seither auch die Zustellung an** — sie galt nur fuer den Scheduler, waehrend fertige Impulse weiter zugestellt wurden; gemessen ein Fremdturn mitten in einer Messreihe bei bestaetigtem `paused: true`, danach 0 in 20). Davor 28. August 2026 (`ausloeser_turn_id` im Stapel-Eintrag, `build_impulse_embed_text` — Scheibe 4 des Lage-Konzepts). Davor: 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -180,6 +180,24 @@ Promotion-Queue Eintragsformat:
 > **`bereit_fuer_messung`** — pausiert **und** still. Die Verknuepfung steht
 > im Endpunkt und nicht beim Aufrufer: Sonst zieht sie jeder selbst, und einer
 > vergisst sie.
+
+> **Seit dem 15.10.2026 sagt ein stehender Schalter es laut.** Bis dahin verwarf der
+> Heartbeat jeden Zyklus mit einer `debug`-Zeile, und sonst stand nirgends, dass der Hintergrund
+> ruht: Ein Vollschalter stand seit dem 03.10.2026, und zehn Tage lang sah jede Messung an
+> Profilen, Prägung, Lücken und Zielen einen stehenden Bestand, ohne dass etwas darauf hinwies
+> (`PIXIE-PAUSE-STILL`, Archiv).
+>
+> Jetzt erscheint jeder der drei Schalter im Log von Heartbeat und Zustellschleife auf
+> `warning`, mit Schalter, Wirkung und dem Zeitpunkt, seit dem er steht — höchstens einmal je
+> Schalter und `PIXIE_PAUSE_WARNUNG_SEKUNDEN` (900 s), nicht je Zyklus. **Die Drossel liegt in
+> Redis** (`<schalter>:warnung`, gesetzt mit `NX` und Ablaufzeit): Beide Spuren und die
+> Zustellschleife teilen sie, und ein Neustart setzt sie nicht zurück. **Den Zeitpunkt merkt
+> sich der Endpunkt beim Setzen** in einem Nebenschlüssel `<schalter>:seit` (ISO 8601, UTC); der
+> Wert des Schalters bleibt `"1"`, die Leser fragen weiter nur, ob er steht. Fortsetzen räumt
+> Schalter, Zeitpunkt und Drossel zusammen ab. **Ein Schalter ohne gemerkten Zeitpunkt** — so
+> jeder, der vor dem 15.10.2026 gesetzt wurde — erscheint als *„seit unbekannt“*, nie als
+> *jetzt*. Die Pause selbst wirkt unverändert (`services/pixie/pause.py`; 19 Zeugen in
+> `server/tests/test_pixie_pause_laut.py`; im Betrieb noch nicht gemessen).
 
 > **`POST /admin/delivery/jetzt` loest eine Zustellung sofort aus**, statt auf
 > die Inaktivitaetsgrenze zu warten — derselbe Pfad, dieselbe Auswahl,

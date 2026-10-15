@@ -1,7 +1,7 @@
 # Novaberg — NachfragenAgent: die einfühlsame Rückfrage
 
 **Absicht:** Erkennt die EI einen Druck auf dem Nutzer, legt ein Hintergrund-Agent einen Reiz zur Zuwendung auf den Stapel — keinen vorformulierten Satz, sondern die Lage, die der CharacterGraph in Novas Stimme ausformt; bei negativer Stimmung ist diese Zuwendung das Einzige, was ungefragt zugestellt wird, bei Stress schweigt auch sie.
-**Stand:** 15. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 15. Oktober 2026, 01:33 UTC (`date -u`; die doppelte Zuordnungstabelle ist nicht mehr auseinandergelaufen). Davor 15. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *NachfragenAgent* 🔴 · *Stapel + Zustellung (Shadow Delivery)* 🔴 · `PIX-STAPEL-RADFAKTOR` ohne eigene Zeile — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-pixie-nachfragen_t.md`](novaberg-pixie-nachfragen_t.md) · [`novaberg-pixie-nachfragen_b.md`](novaberg-pixie-nachfragen_b.md) · [`novaberg-pixie-nachfragen_e.md`](novaberg-pixie-nachfragen_e.md) · [`novaberg-pixie-nachfragen_m.md`](novaberg-pixie-nachfragen_m.md)
 **Entschieden:** 8 · **Offen beim Meister:** 0 (Liste in [`novaberg-pixie-nachfragen_e.md`](novaberg-pixie-nachfragen_e.md))
@@ -94,4 +94,4 @@ Die beiden Rollen sind wirklich zwei Dinge und bekommen zwei Aufgabennamen:
 
 Der Ersatzwert ist `""` — kein Auftrag. Jede andere Zuordnung erfände eine Absicht, die niemand genannt hat; eine rein gefühlsmäßige Äußerung ohne Druck ist kein Hintergrundauftrag, genau wie `smalltalk` und `feedback_geben` schon heute keinen erzeugen.
 
-**Die Zuordnungstabelle steht doppelt** — `memory/kzg.py` und `agents/kzg/queues.py` führen `_INTENTION_AUFGABE_MAP` je einmal, und sie sind bereits auseinandergelaufen (`bestätigung` gegen `bestaetigung`). Beide sind zu ändern; dass es zwei sind, steht in der Fundliste.
+**Die Zuordnungstabelle steht doppelt** — `memory/kzg.py` und `agents/kzg/queues.py` führen `_INTENTION_AUFGABE_MAP` je einmal, ~~und sie sind bereits auseinandergelaufen (`bestätigung` gegen `bestaetigung`)~~ → seit dem 15.10.2026 gleich: `memory/kzg.py` schreibt `bestaetigung` wie der Kanon, und Zeugen binden beide Tabellen an den Kanon und aneinander (`server/tests/test_intention_tables.py`); doppelt stehen sie weiter. Beide sind zu ändern; dass es zwei sind, steht in der Fundliste.
