@@ -252,6 +252,11 @@ class ConversationState(TypedDict):
     aktivierte_ziele: list[
         dict
     ]  # Ziele über Gravitationsschwelle [{zielsatz, motivation, aktivierungs_staerke, ...}]
+    # Ziel-Embeddings der aktivierten Ziele, `ziel_id` -> Vektor. Nur der Weg vom
+    # Enricher zu den Wissensluecken (Neugier-Boost je Thema); **bewusst neben
+    # `aktivierte_ziele`**, weil der Dispatcher diese Liste in Redis ablegt und
+    # sieben Vektoren je Turn dort Ballast waeren.
+    ziel_vektoren: dict[int, list[float]]
     gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
     # Die staerkste **ungetorte** Zielstaerke dieses Turns
     # (`similarity x motivation`, ohne `GRAVITATIONS_SCHWELLE`). Der Salienz-

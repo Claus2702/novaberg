@@ -488,10 +488,10 @@ def _aktivierungen_je_horizont(aktiviert: list) -> dict:
 def _ziele_als_dicts(aktiviert: list) -> list[dict]:
     """Bildet die aktivierten Ziele auf die State-Darstellung ab.
 
-    **Das Ziel-Embedding bleibt draussen.** Es traegt die Verschiebungs-Rechnung
-    im Enricher und hat im State keinen Leser; der Dispatcher legt
+    **Das Ziel-Embedding bleibt draussen.** Der Dispatcher legt
     `aktivierte_ziele` in Redis ab, und sieben Ziele mal 768 Werte je Turn waeren
-    Ballast, den niemand liest.
+    Ballast. Den einen Leser im State, den Neugier-Boost der Wissensluecken,
+    bedient `_ziel_vektoren` ueber einen eigenen Schluessel.
 
     Vorbedingung: `aktiviert` enthaelt `ActivatedGoal`-Objekte (kann leer sein).
     Nachbedingung: Eine Liste gleicher Laenge mit acht flachen Feldern je Ziel.
@@ -509,6 +509,35 @@ def _ziele_als_dicts(aktiviert: list) -> list[dict]:
         }
         for g in aktiviert
     ]
+
+
+def _ziel_vektoren(aktiviert: list) -> dict[int, list[float]]:
+    """Bildet `ziel_id` auf das Embedding der aktivierten Ziele ab.
+
+    Der Weg des Vektors zum Neugier-Boost der Wissensluecken, ohne Datenbankzugriff
+    im Turn: Die Gravitation hat ihn schon geladen. Er liegt in einem eigenen
+    State-Schluessel, damit `aktivierte_ziele` frei von Vektoren bleibt.
+
+    Vorbedingung: `aktiviert` enthaelt `ActivatedGoal`-Objekte (kann leer sein).
+    Nachbedingung: Ein Eintrag je Ziel mit Vektor; ein Ziel ohne Vektor fehlt und
+        ist im Log (der Boost zaehlt es danach noch einmal als unbrauchbar).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    vektoren: dict[int, list[float]] = {}
+    ohne_vektor: int = 0
+
+    # ── Verarbeitung ────────────────────────────
+    for g in aktiviert:
+        if not g.embedding:
+            logger.error(f"Enricher: aktiviertes Ziel id={g.ziel_id} ohne Embedding")
+            ohne_vektor += 1
+            continue
+        vektoren[g.ziel_id] = list(g.embedding)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(vektoren) + ohne_vektor < len(aktiviert):
+        logger.error("Enricher: doppelte ziel_id unter den aktivierten Zielen")
+    return vektoren
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -612,6 +641,7 @@ def _enrich_human(
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
+    state["ziel_vektoren"]    = _ziel_vektoren(aktiviert)
     state["gravitationsterm"] = gravitationsterm.normiert
     state["zielsog_roh"]      = zielsog_roh
 
@@ -950,6 +980,7 @@ def _enrich_character(
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
+    state["ziel_vektoren"]    = _ziel_vektoren(aktiviert)
     state["gravitationsterm"] = gravitationsterm.normiert
     state["zielsog_roh"]      = zielsog_roh
 

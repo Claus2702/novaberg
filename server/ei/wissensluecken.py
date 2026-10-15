@@ -473,6 +473,102 @@ def _topic_candidates(nodes: list[dict], state: ConversationState) -> list[dict]
     return kandidaten
 
 
+def _neugier_boosts(
+    themen_vektoren: list[list[float]],
+    ziele:           list[dict],
+    ziel_vektoren:   dict,
+) -> tuple[list[float], dict]:
+    """Rechnet den Neugier-Boost je Kandidat: Nähe des Themas zum Ziel mal Motivation.
+
+    Der Boost eines Kandidaten ist das Maximum über die aktivierten Ziele von
+    `cosine(Thema, Ziel) × motivation`, wenn es `GV_NEUGIER_BOOST_SCHWELLE`
+    erreicht, sonst 0. Kurzfristige Ziele zählen mit: Sie sind per Bauart
+    aktiviert, und die Formel unterscheidet die Horizonte nicht.
+    Vorbedingung: `themen_vektoren` hat einen Vektor je Kandidat; `ziele` sind die
+        State-Dicts mit `ziel_id` und `motivation`; `ziel_vektoren` bildet
+        `ziel_id` auf den Vektor ab.
+    Nachbedingung: Eine Liste gleicher Länge wie `themen_vektoren`, jeder Wert 0
+        oder mindestens die Schwelle; dazu ein Bericht mit `ziele`, `unbrauchbar`
+        (ohne Vektor oder ohne Motivation, nicht gerechnet), `beitragend` (Ziele,
+        die bei mindestens einem Kandidaten die Schwelle erreichten) und `hoechster`.
+    Fehlerfälle: Ein Ziel ohne Vektor oder Motivation wird gezählt und im
+        Bericht gemeldet, die übrigen Ziele rechnen weiter.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    brauchbar: list[tuple[int, list[float], float]] = []
+    unbrauchbar: int = 0
+    for ziel in ziele:
+        vektor = ziel_vektoren.get(ziel.get("ziel_id"))
+        motivation = ziel.get("motivation")
+        if not vektor or not isinstance(motivation, (int, float)):
+            unbrauchbar += 1
+            continue
+        brauchbar.append((ziel["ziel_id"], vektor, float(motivation)))
+
+    # ── Verarbeitung ────────────────────────────
+    boosts: list[float] = []
+    beitragende: set[int] = set()
+    for thema in themen_vektoren:
+        bester: float = 0.0
+        for ziel_id, vektor, motivation in brauchbar:
+            grav: float = cosine_similarity(thema, vektor) * motivation
+            if grav >= GV_NEUGIER_BOOST_SCHWELLE:
+                beitragende.add(ziel_id)
+            bester = max(bester, grav)
+        boosts.append(bester if bester >= GV_NEUGIER_BOOST_SCHWELLE else 0.0)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    ungueltig: list[float] = [
+        b for b in boosts if b != 0.0 and b < GV_NEUGIER_BOOST_SCHWELLE
+    ]
+    if ungueltig:
+        logger.error(
+            "GV4: Neugier-Boost: %d Werte weder 0 noch mindestens die Schwelle", len(ungueltig),
+        )
+    bericht: dict = {
+        "ziele":       len(ziele),
+        "unbrauchbar": unbrauchbar,
+        "beitragend":  len(beitragende),
+        "hoechster":   round(max(boosts, default=0.0), 4),
+    }
+    return boosts, bericht
+
+
+def _neugier_boost_melden(
+    bericht:      dict,
+    state:        ConversationState,
+    user_id:      str,
+    character_id: str,
+) -> None:
+    """Schreibt die Zahlen des Neugier-Boosts in die Spur und meldet Ziele ohne Vektor.
+
+    Vorbedingung: `bericht` stammt aus `_neugier_boosts`.
+    Nachbedingung: Bei mindestens einem aktivierten Ziel steht eine Zeile
+        `gv4_neugier_boost` in der Spur; sind Ziele unbrauchbar, steht dazu ein Fehler im Log.
+    Fehlerfälle: keine; ohne aktivierte Ziele wird nichts geschrieben.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not bericht["ziele"]:
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    if bericht["unbrauchbar"]:
+        logger.error(
+            "GV4: %d von %d aktivierten Zielen ohne Vektor oder Motivation — "
+            "sie tragen zum Neugier-Boost nicht bei (user=%s)",
+            bericht["unbrauchbar"], bericht["ziele"], user_id,
+        )
+    log_berechnung(
+        turn_id      = state.get("turn_id", "unbekannt"),
+        node         = "wissensluecken",
+        quelle       = pipeline_quelle(state),
+        inhalt       = {"schritt": "gv4_neugier_boost", "schwelle": GV_NEUGIER_BOOST_SCHWELLE,
+                        **bericht},
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
+
 def wissensluecken_finden(
     state:             ConversationState,
     aufnahmebereitschaft: float,
@@ -612,26 +708,20 @@ def wissensluecken_finden(
         return []
 
     # ── 4. Relevanz berechnen ──
+    # Der Boost ist je Kandidat: das **Thema** gegen die Ziele, nicht der Turn
+    # (`F-GV-2`, Anhang A.2 System 3: *„Will Nova das wissen?"*).
     aktivierte_ziele: list[dict] = state.get("aktivierte_ziele", [])
+    boosts, boost_bericht = _neugier_boosts(
+        [vektoren[k["konzept"]] for k in gefiltert],
+        aktivierte_ziele,
+        state.get("ziel_vektoren") or {},
+    )
+    _neugier_boost_melden(boost_bericht, state, user_id, character_id)
 
-    for k in gefiltert:
+    # `strict`: Je Kandidat genau ein Boost; eine Abweichung der Längen bricht
+    # laut ab (`ValueError`), statt still abgeschnitten zu werden.
+    for k, neugier_boost in zip(gefiltert, boosts, strict=True):
         basis: float = k["similarity"] * k["gewicht_rang"] * GV_QUELLEN_FAKTOR
-
-        # Neugier-Boost aus Ziel-Gravitation (Turn-Embedding als Proxy)
-        neugier_boost: float = 0.0
-        if aktivierte_ziele:
-            max_grav: float = 0.0
-            for ziel in aktivierte_ziele:
-                ziel_embedding = ziel.get("embedding")
-                if not ziel_embedding:
-                    continue
-                ziel_sim: float = cosine_similarity(
-                    turn_embedding, ziel_embedding
-                )
-                grav: float = ziel_sim * ziel.get("motivation", 0.5)
-                max_grav = max(max_grav, grav)
-            if max_grav >= GV_NEUGIER_BOOST_SCHWELLE:
-                neugier_boost = max_grav
 
         register: float = register_kompatibilitaet(
             k["gap_arousal"], modus, dynamik
