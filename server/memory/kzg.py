@@ -93,7 +93,7 @@ _INTENTION_AUFGABE_MAP: dict[str, str] = {
     "feedback_geben":       "",
     "feedback_erfragen":    "",
     "smalltalk":            "",
-    "bestätigung":          "",
+    "bestaetigung":         "",
     "abschluss":            "",
     "anweisung":            "",
     "planung":              "",
