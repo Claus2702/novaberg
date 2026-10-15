@@ -16,6 +16,7 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 
 import json
 import logging
+from dataclasses import replace
 from datetime import datetime
 
 from config import (
@@ -34,6 +35,7 @@ from graph.antwort_spur import antwort_setzen
 from graph.reiz import reiz_text
 from graph.state import ConversationState, TribunalVote
 from memory.pipeline_log import log_berechnung
+from memory.timeline_inventory import find_at_moment
 from services.model_services import ChatRequest, model_service
 from utils.datum_pruefung import (
     bestaetigung_pruefen,
@@ -42,13 +44,16 @@ from utils.datum_pruefung import (
     widersprueche_finden,
 )
 from utils.storage_claims import (
+    INVENTORY_FAILED,
     ORDER_HEADER,
     RULE_VERSION,
     ClaimCheck,
+    InventoryCheck,
     append_correction,
     correction_order,
     uncovered_claims,
 )
+from utils.storage_inventory import check_inventory
 
 logger = logging.getLogger("ki_server.tribunal")
 
@@ -280,28 +285,61 @@ def _storage_claim_step(
     sagten *„notiert"* oder *„fest verankert"*. Wie die Datumspruefung ist das
     in Python entscheidbar und kein vierter Modellaufruf.
 
+    **Vor der Korrektur fragt der Riegel den Bestand** (Scheibe 12 A,
+    entschieden am 15.09.2026): Eine Behauptung ohne abgeschlossenen Dienst
+    kann eine fruehere, echte Schreibung wiederholen. Steht zu Tag und Uhrzeit
+    des akuten Objekts der Lage ein aktiver Termin in der Timeline, ist sie
+    eine Wiederholung und wird nicht korrigiert (`check_inventory`).
+
     Vorbedingung: `state["tribunal_verdict"]` ist gesetzt; `critical_feedback`
     ist die Liste, aus der die Zusammenfassung entsteht.
-    Nachbedingung: Bei einer nicht belegten Behauptung steht das Urteil auf
-    mindestens `warnung` — ein `ablehnen` bleibt — und der Korrekturauftrag an
-    erster Stelle von `critical_feedback`, weil der Corrector ausschliesslich
-    die Zusammenfassung liest. In jedem Fall ist genau ein dauerhafter Eintrag
-    geschrieben.
-    Fehlerfaelle: keine eigenen; eine defekte Eingabe meldet `uncovered_claims`.
+    Nachbedingung: Bei einer nicht belegten Behauptung, die auch der Bestand
+    nicht deckt, steht das Urteil auf mindestens `warnung` — ein `ablehnen`
+    bleibt — und der Korrekturauftrag an erster Stelle von `critical_feedback`,
+    weil der Corrector ausschliesslich die Zusammenfassung liest. Deckt der
+    Bestand sie, bleibt das Urteil, wie es ist. In jedem Fall ist genau ein
+    dauerhafter Eintrag geschrieben, mit dem Ausgang des Abgleichs.
+    Fehlerfaelle: eine defekte Eingabe meldet `uncovered_claims`. Scheitert der
+    Abgleich — Lesefehler des Bestands, Fehler des Zeitparsers —, wird
+    korrigiert wie ohne ihn und der Ausgang `abfrage_gescheitert` vermerkt, nie
+    `gefunden`.
     """
     # ── Verarbeitung ────────────────────────────
     check: ClaimCheck = uncovered_claims(
         state.get("response") or "", state.get("agent_results")
     )
     if check.uncovered:
+        try:
+            abgleich: InventoryCheck = check_inventory(
+                state.get("sachlage"), str(state.get("user_id") or ""), find_at_moment
+            )
+        except Exception as fehler:  # noqa: BLE001 — kompensiert wird mit der Korrektur
+            # Breit gefangen an der Grenze des Knotens: Was den Abgleich reissen
+            # kann (Datenbank, Zeitparser), ist von hier aus nicht aufzaehlbar,
+            # und die Kompensation ist fuer alle dieselbe — korrigieren wie
+            # ohne Abgleich.
+            logger.exception(
+                "Tribunal: Bestandsabgleich gescheitert (%s) — korrigiert wie ohne ihn",
+                type(fehler).__name__,
+            )
+            abgleich = InventoryCheck(outcome=INVENTORY_FAILED, error=type(fehler).__name__)
+        check = replace(check, inventory=abgleich)
+        if not check.uncovered:
+            logger.warning(
+                "Tribunal: %d Speicherbehauptung(en) ohne Dienst, aber im Bestand "
+                "(%d Zeitpunkt(e)) — Wiederholung, keine Korrektur. %s",
+                len(check.claims), abgleich.moments,
+                "; ".join(c.line() for c in check.claims),
+            )
+    if check.uncovered:
         if state["tribunal_verdict"] == "ok":
             state["tribunal_verdict"] = "warnung"
         critical_feedback.insert(0, correction_order(check.claims))
         logger.error(
             "Tribunal: %d Speicherbehauptung(en) ohne abgeschlossenen Dienst "
-            "(Ausgaenge: %s) — Urteil auf '%s' gehoben. %s",
+            "(Ausgaenge: %s, Bestand: %s) — Urteil auf '%s' gehoben. %s",
             len(check.claims), ", ".join(check.outcomes) or "keine",
-            state["tribunal_verdict"],
+            check.inventory.outcome, state["tribunal_verdict"],
             "; ".join(c.line() for c in check.claims),
         )
 
@@ -393,6 +431,11 @@ def _storage_check_record(state: ConversationState, check: ClaimCheck) -> None:
         "abgeschlossen":    list(check.completed),
         "ausgaenge":        list(check.outcomes),
         "regelfassung":     RULE_VERSION,
+        # Scheibe 12 A: der Ausgang des Bestandsabgleichs, `nicht_gefragt`
+        # ohne Behauptung oder mit abgeschlossenem Dienst.
+        "bestandsabgleich": check.inventory.outcome,
+        "abgleich_zeitpunkte": check.inventory.moments,
+        "abgleich_fehler":  check.inventory.error,
     }
 
     # ── Ausgabe-Verifikation ────────────────────

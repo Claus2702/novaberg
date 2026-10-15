@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 logger = logging.getLogger("ki_server.storage_claims")
 
@@ -714,18 +714,50 @@ def find_storage_claims(text: str) -> list[StorageClaim]:
     return claims
 
 
+#: Die Ausgaenge des Bestandsabgleichs (Scheibe 12 A, entschieden am 15.09.2026).
+#: Sie stehen im dauerhaften Eintrag, damit die Nachmessung sie zaehlen kann.
+INVENTORY_NOT_ASKED: str = "nicht_gefragt"
+INVENTORY_FOUND: str = "gefunden"
+INVENTORY_NOT_FOUND: str = "nicht_gefunden"
+INVENTORY_NO_MOMENT: str = "kein_akutes_objekt_mit_zeit"
+INVENTORY_FAILED: str = "abfrage_gescheitert"
+
+
+@dataclass(frozen=True)
+class InventoryCheck:
+    """Der Ausgang des Abgleichs einer Behauptung gegen den Bestand."""
+
+    outcome: str = INVENTORY_NOT_ASKED   # einer der INVENTORY_*-Werte
+    moments: int = 0                     # gefragte Zeitpunkte
+    error: str = ""                      # Art des Fehlers, nur bei INVENTORY_FAILED
+
+
 @dataclass(frozen=True)
 class ClaimCheck:
-    """Das Ergebnis der Pruefung gegen die Dienste eines Turns."""
+    """Das Ergebnis der Pruefung gegen die Dienste eines Turns.
+
+    `inventory` traegt den Abgleich gegen den Bestand. Ihn fragt erst die
+    Auswertung des Tribunals, und nur bei einer Behauptung ohne abgeschlossenen
+    Dienst; bis dahin steht er auf `nicht_gefragt`.
+    """
 
     claims: tuple[StorageClaim, ...]     # alle Behauptungen der Antwort
     completed: tuple[str, ...]           # Dienste mit Ausgang `abgeschlossen`
     outcomes: tuple[str, ...]            # alle Ausgaenge als `dienst:status`
+    inventory: InventoryCheck = field(default_factory=InventoryCheck)
 
     @property
     def uncovered(self) -> bool:
-        """Behauptet die Antwort etwas, das kein Dienst dieses Turns deckt?"""
-        return bool(self.claims) and not self.completed
+        """Behauptet die Antwort etwas, das weder ein Dienst noch der Bestand deckt?
+
+        Nur der Ausgang `gefunden` deckt aus dem Bestand: Eine Wiederholung
+        einer frueheren, echten Schreibung braucht keine Korrektur. Jeder andere
+        Ausgang — auch eine gescheiterte Abfrage — laesst die Behauptung offen.
+        """
+        return (
+            bool(self.claims) and not self.completed
+            and self.inventory.outcome != INVENTORY_FOUND
+        )
 
     @property
     def result(self) -> str:
