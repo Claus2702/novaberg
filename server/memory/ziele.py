@@ -495,6 +495,93 @@ def ziel_motivation_anpassen(
         return False
 
 
+def ziele_bei_begegnung_verstaerken(
+    postgres_url:    str,
+    ziele:           list[dict],
+    aktivierte_ids:  list[int],
+) -> dict:
+    """Laesst ein mittelfristiges Ziel, das einen Turn zieht, von vorn vergessen.
+
+    Die Stelle, an der `ziel_motivation_anpassen` einen Aufrufer bekommt
+    (`novaberg-thinking-drive_k.md` §3.2, *verstaerkt durch wiederholte
+    Begegnung*): Der Ankerzeitpunkt wird jetzt, der Anker bleibt, was er war.
+    Ein Anheben des Ankers ist hier nicht gemeint. Nur mittelfristige Ziele
+    verfallen und werden wieder aufgegriffen — das kurzfristige ist per
+    Bauart aktiviert, das langfristige verfaellt nicht.
+
+    Vorbedingung: `ziele` sind die geladenen Ziel-Dicts (`ziele_aktive_laden`,
+        mit `id`, `ziel_typ`, `motivation_basis`, `motivation_basis_am`);
+        `aktivierte_ids` sind die Kennungen, die die Gravitation aktiviert hat —
+        das Tor ist `GRAVITATIONS_SCHWELLE`, es steht dort und nicht hier.
+    Nachbedingung: Jedes aktivierte mittelfristige Ziel mit Anker ist
+        genau einmal geschrieben. Die Rueckgabe benennt die geschriebenen
+        (`verstaerkt`: Kennung, Anker, alter Ankerzeitpunkt), die gescheiterten
+        (`fehlgeschlagen`) und die ohne Anker uebersprungenen (`ohne_anker`).
+    Fehlerfaelle: Ein Ziel ohne Anker kann nicht verstaerkt werden und wird
+        laut gemeldet. Ein gescheiterter Schreibvorgang wird gemeldet
+        (`logger.error`, die Ursache steht bei `ziel_motivation_anpassen`);
+        die uebrigen Ziele werden trotzdem geschrieben.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not postgres_url:
+        logger.error("ziele_bei_begegnung_verstaerken: ohne Datenbank-URL — nichts geschrieben")
+        return {"verstaerkt": [], "fehlgeschlagen": [], "ohne_anker": []}
+
+    bericht: dict = {"verstaerkt": [], "fehlgeschlagen": [], "ohne_anker": []}
+    aktiv: set = set(aktivierte_ids)
+
+    # ── Verarbeitung ────────────────────────────
+    for ziel in ziele:
+        if ziel.get("ziel_typ") != "mittelfristig" or ziel.get("id") not in aktiv:
+            continue
+
+        ziel_id: int = ziel["id"]
+        anker: float | None = ziel.get("motivation_basis")
+        anker_am: datetime | None = ziel.get("motivation_basis_am")
+        if anker is None:
+            logger.error(
+                f"ziele_bei_begegnung_verstaerken: Ziel id={ziel_id} ohne Anker — "
+                f"nicht verstaerkt, die Kurve laeuft weiter"
+            )
+            bericht["ohne_anker"].append(ziel_id)
+            continue
+
+        if not ziel_motivation_anpassen(postgres_url, ziel_id, float(anker)):
+            logger.error(
+                f"ziele_bei_begegnung_verstaerken: Ziel id={ziel_id} nicht verstaerkt — "
+                f"Schreibvorgang gescheitert"
+            )
+            bericht["fehlgeschlagen"].append(ziel_id)
+            continue
+
+        bericht["verstaerkt"].append({
+            "ziel_id":      ziel_id,
+            "anker":        float(anker),
+            "anker_am_alt": anker_am.isoformat() if anker_am is not None else None,
+        })
+
+    # ── Ausgabe-Verifikation ────────────────────
+    erledigt: int = (
+        len(bericht["verstaerkt"]) + len(bericht["fehlgeschlagen"]) + len(bericht["ohne_anker"])
+    )
+    erwartet: int = sum(
+        1 for z in ziele if z.get("ziel_typ") == "mittelfristig" and z.get("id") in aktiv
+    )
+    if erledigt != erwartet:
+        logger.error(
+            f"ziele_bei_begegnung_verstaerken: {erwartet} Ziele waeren zu verstaerken, "
+            f"{erledigt} gebucht — der Bericht ist unvollstaendig"
+        )
+    if bericht["verstaerkt"]:
+        logger.info(
+            "Ziele verstaerkt (Verfallsuhr auf jetzt, Anker bleibt): "
+            + ", ".join(
+                f"id={v['ziel_id']} (Anker {v['anker']:.3f})" for v in bericht["verstaerkt"]
+            )
+        )
+    return bericht
+
+
 def ziel_decay_lauf(
     postgres_url:       str,
     ziel_typ:           str = "mittelfristig",

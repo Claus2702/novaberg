@@ -30,6 +30,7 @@ Datenzugriff und Embedding-Erzeugung.
 
 import json
 import logging
+import uuid
 
 import psycopg2
 import redis
@@ -39,6 +40,7 @@ from agents.dateien_index.aufzeichnungen import (
     aufzeichnungen_suchen,
 )
 from config import (
+    GRAVITATIONS_SCHWELLE,
     PROMPTS,
     QUERY_REWRITE_AKTIV,
     QUERY_REWRITE_FRIST_S,
@@ -77,7 +79,11 @@ from memory.session import (
     sprecher_bezeichnen,
 )
 from memory.utils import embedding_zu_pgvector_str
-from memory.ziele import ziel_paar_bestimmen, ziele_aktive_laden
+from memory.ziele import (
+    ziel_paar_bestimmen,
+    ziele_aktive_laden,
+    ziele_bei_begegnung_verstaerken,
+)
 from plugins import get_registry
 from services.model_services import ChatRequest, EmbedRequest, model_service
 
@@ -332,6 +338,7 @@ def _compute_ziele_und_gravitation(
     postgres_url: str,
     user_id:      str,
     character_id: str,
+    spur:         tuple[str | None, uuid.UUID | None] = (None, None),
 ) -> tuple[list, Gravitationsterm, float]:
     """Laedt die aktiven Ziele DIESES Paares, berechnet Aktivierung, Term und Sog.
 
@@ -354,6 +361,9 @@ def _compute_ziele_und_gravitation(
     Zielstaerke ohne `GRAVITATIONS_SCHWELLE` — die Salienz braucht ein Mass,
     die Aktivierung eine Entscheidung, und beide aus derselben Zahl zu ziehen
     hiesse, mit einem Regler zwei Dinge zu stellen (`zielsog_staerkster`).
+
+    `spur` ist das Paar `(turn_id, span_id)` fuer den Eintrag der Verstaerkung;
+    ohne `turn_id` bleibt es beim Protokoll.
     """
     # ── Eingabe-Validierung ─────────────────────
     ziel_subjekt, ziel_gegenueber = ziel_paar_bestimmen(user_id, character_id)
@@ -369,9 +379,110 @@ def _compute_ziele_und_gravitation(
     aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
     grav = gravitationsterm_berechnen(aktiviert)
     sog:  float = zielsog_staerkster(embedding, ziele)
+    _ziele_verstaerken_und_melden(
+        postgres_url, ziele, aktiviert, spur, (user_id, character_id),
+    )
 
     # ── Ausgabe ─────────────────────────────────
     return aktiviert, grav, sog
+
+
+def _ziele_verstaerken_und_melden(
+    postgres_url: str,
+    ziele:        list[dict],
+    aktiviert:    list,
+    spur:         tuple[str | None, uuid.UUID | None],
+    paar:         tuple[str, str],
+) -> None:
+    """Laesst die aktivierten mittelfristigen Ziele von vorn vergessen und meldet es.
+
+    **Warum hier und nicht im Dispatcher:** Nur diese Stelle hat die geladenen
+    Zeilen mit ihrem Anker. Der Dispatcher sieht die State-Dicts
+    (`_ziele_als_dicts`), die ihn nicht tragen, und er laeuft nach der
+    Antwort — ein Ziel wuerde erst nach dem Turn verstaerkt, an dem es
+    gezogen hat. Die Aktivierung dieses Turns bleibt unberuehrt: Sie ist
+    vor dem Schreiben gerechnet.
+
+    **Der Turn reisst nicht.** Jeder Fehler des Schreibwegs wird mit Spur
+    gemeldet (`logger.exception`), der Turn laeuft weiter. Ein Ziel, das ein
+    zweites Mal in demselben Turn gezogen wird (HG- und CG-Pfad), wird
+    erneut auf jetzt gesetzt — dasselbe Ergebnis, kein Zaehler.
+
+    Vorbedingung: `aktiviert` sind die `ActivatedGoal` aus `ziele`; `spur` ist
+        `(turn_id, span_id)`, `paar` ist `(user_id, character_id)`.
+    Nachbedingung: Wo etwas verstaerkt wurde oder scheiterte, steht ein
+        `berechnung`-Eintrag `ziele_verstaerkung` im `pipeline_log` (nicht,
+        wo nichts zu sagen ist); ohne `turn_id` bleibt es beim Protokoll.
+    Fehlerfaelle: siehe oben; es wird nichts geworfen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not aktiviert:
+        return
+    turn_id, span_id = spur
+    user_id, character_id = paar
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        bericht: dict = ziele_bei_begegnung_verstaerken(
+            postgres_url, ziele, [g.ziel_id for g in aktiviert],
+        )
+    except Exception:
+        logger.exception("Enricher: Ziele verstaerken fehlgeschlagen — der Turn laeuft weiter")
+        return
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not (bericht["verstaerkt"] or bericht["fehlgeschlagen"] or bericht["ohne_anker"]):
+        return
+    if turn_id is None:
+        logger.warning(
+            "Enricher: Ziele verstaerkt, aber ohne turn_id — kein pipeline_log-Eintrag"
+        )
+        return
+    log_berechnung(
+        turn_id      = turn_id,
+        node         = "enricher",
+        quelle       = "ziele_verstaerkung",
+        inhalt       = bericht,
+        span_id      = span_id,
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
+
+def _aktivierungen_je_horizont(aktiviert: list) -> dict:
+    """Zaehlt die aktivierten Ziele je Horizont — und getrennt die ueber der Schwelle.
+
+    `aktivierte_ziele_count` ist die Laenge der Liste, die die Gravitation
+    zurueckgibt: jedes lang- und mittelfristige Ziel mit
+    `aktivierungs_staerke` >= `GRAVITATIONS_SCHWELLE` **und jedes lebende
+    kurzfristige**, dessen Tor die Schwelle nicht ist (`ziel_gravitation_berechnen`).
+    Die Zahl mischt damit zwei Tore; erst die Trennung hier macht aus ihr eine
+    Aussage ueber die Schwelle.
+
+    Vorbedingung: `aktiviert` enthaelt `ActivatedGoal` (kann leer sein).
+    Nachbedingung: Zwei Woerterbuecher mit den drei Horizonten als Schluessel;
+        ueber der Schwelle ist nie mehr als aktiviert.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    horizonte: tuple = ("langfristig", "mittelfristig", "kurzfristig")
+
+    # ── Verarbeitung ────────────────────────────
+    aktiv:   dict[str, int] = {h: 0 for h in horizonte}
+    ueber:   dict[str, int] = {h: 0 for h in horizonte}
+    for g in aktiviert:
+        if g.ziel_typ not in aktiv:
+            logger.error(
+                f"Enricher: aktiviertes Ziel id={g.ziel_id} mit fremdem Typ {g.ziel_typ!r}"
+            )
+            continue
+        aktiv[g.ziel_typ] += 1
+        if g.aktivierungs_staerke >= GRAVITATIONS_SCHWELLE:
+            ueber[g.ziel_typ] += 1
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(ueber[h] > aktiv[h] for h in horizonte):
+        logger.error(f"Enricher: mehr Ziele ueber der Schwelle als aktiviert: {ueber} / {aktiv}")
+    return {"aktiviert_je_horizont": aktiv, "ueber_schwelle_je_horizont": ueber}
 
 
 def _ziele_als_dicts(aktiviert: list) -> list[dict]:
@@ -497,6 +608,7 @@ def _enrich_human(
     # Vektorsuche, es gibt keinen Suchschluessel zu verschieben.
     aktiviert, gravitationsterm, zielsog_roh = _compute_ziele_und_gravitation(
         embedding, postgres_url, user_id, character_id,
+        spur=(turn_id_log, span_id),
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
@@ -520,6 +632,7 @@ def _enrich_human(
             "user_intentionen_count": len(state.get("user_intentionen", [])),
             "embedding_dim":          len(state.get("prompt_embedding") or []),
             "aktivierte_ziele_count": len(state.get("aktivierte_ziele", [])),
+            **_aktivierungen_je_horizont(aktiviert),
             "gravitationsterm":       state.get("gravitationsterm", 0.0),
             # **Die Rohsumme neben dem Ergebnis** — ohne sie ist die Spanne,
             # aus der `GRAVITATIONSTERM_CAP` abgeleitet ist, nach dem Umbau
@@ -833,6 +946,7 @@ def _enrich_character(
     # ─────────────────────────────────────────
     aktiviert, gravitationsterm, zielsog_roh = _compute_ziele_und_gravitation(
         embedding, postgres_url, user_id, character_id,
+        spur=(turn_id_log, span_id),
     )
     aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
@@ -1198,6 +1312,7 @@ def _enrich_character(
         inhalt  = {
             "memory_entries_count":              len(state.get("memory_entries", [])),
             "aktivierte_ziele_count":            len(state.get("aktivierte_ziele", [])),
+            **_aktivierungen_je_horizont(aktiviert),
             "gravitationsterm":                  state.get("gravitationsterm", 0.0),
             "gravitationsterm_roh":              gravitationsterm.roh,
             "gravitationsterm_cap":              gravitationsterm.cap,
