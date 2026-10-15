@@ -27,7 +27,6 @@ Konzept: novaberg-node-verfasser_k.md
 
 import logging
 import random
-from datetime import datetime
 
 from config import (
     ANGEBOT_PFLICHT_BODEN,
@@ -59,6 +58,7 @@ from memory.session import (
     verlauf_gruppieren,
 )
 from services.model_services import ChatRequest, model_service
+from utils.local_time import now_local, weekday_name
 from utils.offers import OfferCandidate, draw_record, draw_recorded, offer_candidate
 
 #: Wieviele Wortwechsel der Verfasser im Verlauf sieht. Vorher sah er den
@@ -456,7 +456,7 @@ def _build_system_prompt(state: ConversationState) -> str:
         Der System-Prompt.
     """
     # ── Verarbeitung ────────────────────────────
-    jetzt = datetime.now()
+    now = now_local()
 
     # Die drei Saetze stammen woertlich aus dem [IDENTITAET]-Block des
     # Responders. Sie sprechen ueber Gedaechtnis, Kontext und Web-Zugriff —
@@ -496,7 +496,8 @@ def _build_system_prompt(state: ConversationState) -> str:
         # deinen" — ein zweites Namenssystem im selben Prompt. Genau daran ist
         # der Responder am 13.08.2026 gemessen worden: In sieben von dreizehn
         # Bloecken wurde geduzt, und "du" meinte drei verschiedene Personen.
-        f"Heute ist {jetzt.strftime('%A, %d.%m.%Y')}, es ist {jetzt.strftime('%H:%M')} Uhr.\n"
+        f"Heute ist {weekday_name(now)}, {now.strftime('%d.%m.%Y')}, "
+        f"es ist {now.strftime('%H:%M')} Uhr.\n"
         "Der Charakter-Kontext im Gedaechtnis beschreibt PERSON B — verwechsle\n"
         "seine Eigenschaften nicht mit denen von Person A.\n"
         "Erwaehne nur Informationen die im Kontext stehen. Erfinde keine Details.\n"

@@ -17,7 +17,6 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 import json
 import logging
 from dataclasses import replace
-from datetime import datetime
 
 from config import (
     PROMPTS,
@@ -43,6 +42,7 @@ from utils.datum_pruefung import (
     korrekturauftrag,
     widersprueche_finden,
 )
+from utils.local_time import now_local
 from utils.storage_claims import (
     INVENTORY_FAILED,
     ORDER_HEADER,
@@ -493,7 +493,7 @@ def evaluate(state: ConversationState) -> ConversationState:
     # die Korrekturrunde ausloest. Er kann ein `ablehnen` nicht abschwaechen:
     # Ein falsches Datum ist ein Grund mehr zur Korrektur, nie einer weniger.
     zeit_befunde = widersprueche_finden(
-        state.get("response") or "", datetime.now().date()
+        state.get("response") or "", now_local().date()
     )
     if zeit_befunde:
         if state["tribunal_verdict"] == "ok":
@@ -519,7 +519,7 @@ def evaluate(state: ConversationState) -> ConversationState:
         and getattr(r, "ergebnis", None) is not None
     ]
     datum_abweichungen = bestaetigung_pruefen(
-        state.get("response") or "", quellen, datetime.now().date()
+        state.get("response") or "", quellen, now_local().date()
     )
     if datum_abweichungen:
         if state["tribunal_verdict"] == "ok":

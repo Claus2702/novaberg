@@ -21,7 +21,6 @@ Phase-3-Output-Switch (PFAD2-PERZEPTION-FIX):
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
 
 from config import (
     BEZIEHUNGS_DYNAMIK_KANON,
@@ -43,6 +42,7 @@ from memory.pipeline_log import log_berechnung, log_decision
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
 from utils.canon import fremdes_feld, strip_umlauts, to_canonical
+from utils.local_time import now_local
 
 logger = logging.getLogger("ki_server.perzeption")
 
@@ -511,7 +511,7 @@ def perceive(
         {"rolle": rolle, "kontext_zeichen": len(kontext or "")},
     )
     system_prompt: str = _build_system_prompt(
-        datetime.now().strftime("%d.%m.%Y, %H:%M Uhr"),
+        now_local().strftime("%d.%m.%Y, %H:%M Uhr"),
         kontext,
         rolle = rolle,
     )

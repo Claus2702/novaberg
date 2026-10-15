@@ -20,7 +20,6 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 import hashlib
 import json
 import logging
-from datetime import datetime
 from typing import Annotated
 
 import redis
@@ -40,6 +39,7 @@ from services.model_services import ChatRequest, EmbedRequest, model_service
 from tools.thinking_normalizer import get_thinking_normalizer
 from tools.web.fetch import page_fetch
 from tools.web.search import web_search_manager
+from utils.local_time import now_local
 
 logger = logging.getLogger("ki_server.thinker")
 
@@ -623,8 +623,8 @@ def think(
     Denkt über die Antwort nach.
     Nutzt ReAct-Pattern: Denken → Tool aufrufen → Beobachten → Weiterdenken.
     """
-    jetzt = datetime.now()
-    today: str = jetzt.strftime("%d.%m.%Y, %H:%M Uhr")
+    now = now_local()
+    today: str = now.strftime("%d.%m.%Y, %H:%M Uhr")
 
     # ── Schnell-Check: Braucht es überhaupt Nachdenken? ──
     response: str = state["response"]

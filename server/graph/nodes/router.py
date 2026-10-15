@@ -13,7 +13,6 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 
 import json
 import logging
-from datetime import datetime
 
 from agents.nmcp import aushaenge_sammeln
 from agents.nmcp_quote import REGISTER
@@ -24,6 +23,7 @@ from graph.state import ConversationState, pipeline_quelle
 from memory.pipeline_log import log_decision
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
+from utils.local_time import now_local
 from utils.offers import (
     Offer,
     carries_own_request,
@@ -50,7 +50,7 @@ def _build_router_prompt(
     external = state.get("external")
     bloecke: list[str] = [
         PROMPTS["router.identity"].format(
-            today              = datetime.now().strftime("%d.%m.%Y, %H:%M Uhr"),
+            today              = now_local().strftime("%d.%m.%Y, %H:%M Uhr"),
             intent             = external.emotion.intent               if external else "smalltalk",
             emotion            = external.emotion.emotion              if external else "neutral",
             arousal            = external.emotion.arousal              if external else 0.5,
