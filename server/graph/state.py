@@ -10,6 +10,7 @@ Erweiterungen A1:
 from typing import TypedDict
 
 from ei.haltung import Haltung
+from graph.appointments import AppointmentReading
 from graph.context_entry import ContextEntry
 from graph.einwand import Einwandsurteil
 from graph.personality import InternalPersonality, Personality
@@ -173,6 +174,18 @@ class ConversationState(TypedDict):
     # nach der Knotengrenze weg
     # (novaberg-lesson_l_stategraph-channel-zwang.md).
     haltung: Haltung | None
+
+    # ── Termine (hinter dem Router) ──────────
+    # Was dieser Turn aus der Timeline gelesen hat — fuer den gefragten
+    # Zeitraum, sonst das proaktive Fenster. Geschrieben hinter dem Router
+    # (`graph/base.py::_node_route`), weil erst dort `needs_timeline` und
+    # `timeline_query` feststehen; gelesen vom Verfasser (`[TERMINE]`).
+    #
+    # **Nicht vorbelegt, wie `haltung`:** Fehlt der Schluessel, ist der
+    # Leseweg nicht gelaufen — ein leeres Ergebnis waere davon nicht zu
+    # unterscheiden. Ein Kanal, der hier fehlt, verliert den Wert still an
+    # der Knotengrenze (novaberg-lesson_l_stategraph-channel-zwang.md).
+    appointment_reading: AppointmentReading | None
 
     # ── Responder ────────────────────────────
     response:    str

@@ -31,10 +31,13 @@ Timeline-Query:
   "morgen" = morgen 00:00 bis 23:59. "im August" = 01.08. bis 31.08.
   "Nachmittag" = heute 12:00 bis 18:00. "naechste Woche" = Montag bis Sonntag.
 - "search": Keyword-Suche in Titeln/Personen.
-  "direction": "forward" bei Zukunft (naechster, kommender, bald)
+  "limit": 1 bei "naechster/letzter", 5-10 bei "alle"
+- "direction" gilt fuer "range" und "search" gleich:
+  "direction": "forward" bei Zukunft (naechster, kommender, bald) und wenn
+    nach Kommendem gefragt wird ("was steht an", "was habe ich noch",
+    "diese Woche noch") — abgelaufene Termine fehlen dann
   "direction": "backward" bei Vergangenheit (letzter, vorheriger, damals)
   "direction": "both" wenn kein Zeitbezug klar
-  "limit": 1 bei "naechster/letzter", 5-10 bei "alle"
   Erkenne die Zeitrichtung aus der deutschen Grammatik:
   Praesens/Futur -> forward, Imperfekt/Perfekt/Plusquamperfekt -> backward
 

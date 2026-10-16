@@ -39,6 +39,7 @@ from config import (
 from config import redis_client as cfg_redis_client
 from ei.haltungssprache import stoffzeilen
 from graph.einwand import kopf_anweisung, urteil_lesen
+from graph.format.appointments import appointments_body
 
 # Die Marke gehoert zum Vertrag von `gv_detail` und hat genau eine Quelle.
 # Sie hier als Literal zu wiederholen waere der zweite Ort fuer denselben
@@ -297,6 +298,45 @@ def _aufzeichnungen_block(state: ConversationState) -> str:
     return "\n\n".join(bloecke)
 
 
+def _appointments_block(state: ConversationState) -> str:
+    """Baut den `[TERMINE]`-Block aus dem Leseergebnis dieses Turns.
+
+    **Der Block steht in jedem Turn, auch ohne Termin.** Ein leerer Zeitraum
+    sagt *keine Termine vom ... bis ...*; fehlte der Block, waere das von
+    einem Turn ohne Leseweg nicht zu unterscheiden, und die Antwort fuellte
+    die Luecke aus dem Gedaechtnis oder einer Web-Recherche.
+
+    Vorbedingung: `state["appointment_reading"]` traegt das Leseergebnis,
+        gesetzt hinter dem Router (`graph/base.py::_node_route`).
+    Nachbedingung: der Block mit Kopfzeile und Terminen, *keine Termine* oder
+        dem Ausfallsatz. Leer nur, wenn das Leseergebnis fehlt.
+    Fehlerfaelle: ein fehlendes Leseergebnis wird laut gemeldet und ergibt
+        `""` — der Router-Knoten ist dann nicht gelaufen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    reading = state.get("appointment_reading")
+    if reading is None:
+        logger.error(
+            "Verfasser: kein Leseergebnis der Termine im Zustand — der "
+            "Router-Knoten ist nicht gelaufen. Dieser Turn bekommt KEINEN "
+            "[TERMINE]-Block."
+        )
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    block: str = PROMPTS["verfasser.termine"].format(termine=appointments_body(reading))
+    logger.info(
+        f"Verfasser: [TERMINE] art={reading.window.kind}, "
+        f"termine={len(reading.appointments)}, ausfall={reading.failed}"
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not block.startswith("[TERMINE]"):
+        msg: str = "Verfasser: Termine-Block ohne Kopf [TERMINE]"
+        raise RuntimeError(msg)
+    return block
+
+
 def _question_target(sachlage: dict, state: dict) -> tuple[str | None, bool]:
     """Der Rueckfrage-Gegenstand der Lage und ob er Novas eigener Zug ist.
 
@@ -445,7 +485,8 @@ def _build_system_prompt(state: ConversationState) -> str:
     und keine Direktiven — die gehoeren zur Form und damit zum Responder.
 
     Vorbedingung: `state` traegt `memory_context`, `web_context` und
-    `aufzeichnungen` (jedes moeglich leer).
+    `aufzeichnungen` (jedes moeglich leer) und `appointment_reading` aus dem
+    Router-Knoten (fehlt es, faellt `[TERMINE]` laut aus).
     Nachbedingung: Der Auftragsblock steht immer, die Wissensbloecke nur, wenn
     sie Inhalt haben. **[GEDAECHTNIS] und [AUFZEICHNUNGEN] bleiben zwei
     Bloecke** — die Trennung ist eine Aussage ueber die Herkunft und keine
@@ -624,6 +665,14 @@ def _build_system_prompt(state: ConversationState) -> str:
     aufzeichnungen_block: str = _aufzeichnungen_block(state)
     if aufzeichnungen_block:
         teile.append(aufzeichnungen_block)
+
+    # Die Termine stehen in einem eigenen Block und nicht als Zeilen im
+    # Gedaechtnis: Nur hier tragen sie den gelesenen Zeitraum und den Bezug
+    # zu heute, und nur hier sagt ein leerer Zeitraum ausdruecklich *keine*.
+    # Vor der Web-Recherche, damit kein gefundener Termin sie ersetzt.
+    termine_block: str = _appointments_block(state)
+    if termine_block:
+        teile.append(termine_block)
 
     if state.get("web_context"):
         teile.append(

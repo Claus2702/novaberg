@@ -323,9 +323,14 @@ class DerVerfasserBekommtDenBlockTest(unittest.TestCase):
 
     def test_ohne_bruecke_kein_block(self) -> None:
         """Die Gegenprobe: leere Bruecke, kein Block — und keine Fehlerzeile."""
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+
         from ei.haltung import haltung_berechnen
+        from graph.appointments import AppointmentReading, proactive_window
         from graph.nodes import verfasser
 
+        jetzt: datetime = datetime(2026, 10, 15, 18, 0, tzinfo=ZoneInfo("Europe/Berlin"))
         zustand: dict = {
             "user_prompt": "x", "user_id": "u", "character_id": "c",
             "turn_id": "t", "memory_context": "", "web_context": "",
@@ -334,6 +339,11 @@ class DerVerfasserBekommtDenBlockTest(unittest.TestCase):
             "sachlage": {**AKTUELL, "herkunft": HERKUNFT_FRISCH},
             "sachlage_bruecke": {},
             "haltung": haltung_berechnen("werkstatt", {}),
+            # Das Leseergebnis des Router-Knotens — ohne es meldet der
+            # Verfasser den fehlenden [TERMINE]-Block laut.
+            "appointment_reading": AppointmentReading(
+                window=proactive_window(jetzt), now=jetzt,
+            ),
         }
         with self.assertNoLogs("ki_server.verfasser", level="ERROR"):
             prompt: str = verfasser._build_system_prompt(zustand)

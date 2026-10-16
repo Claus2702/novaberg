@@ -10,21 +10,33 @@ M2.5a: plan/execute/termin_verarbeiten und CRUD-Helper wurden entfernt.
 Der Planner short-circuitet timeline_management ueber Agent-Discovery,
 und kein Producer schreibt mehr ziel="timeline"-Writes. Sollte trotzdem
 ein Write hier landen, schlaegt execute() lauf fehl — Absicht.
+
+**Der gezielte Lesevorgang steht hinter dem Router**
+(`memory/timeline_reading.py`, gerufen in `graph/base.py::_node_route`).
+Der Enricher laeuft vor dem Router; `needs_timeline` und `timeline_query`
+sind hier noch nicht gesetzt, und ein gezielter Zweig an dieser Stelle war
+nie erreichbar. Was dieser Manager liefert, ist das proaktive Fenster fuer
+die Analyse-Leser von `memory_context`. Der Verfasser liest die Termine aus
+dem `[TERMINE]`-Block, nicht aus diesen Eintraegen.
 """
 
 import logging
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+from datetime import datetime
 
 import redis
 
-from agents.timeline.event_time import precision_has_time
-from config import TIMEZONE
+from graph.appointments import proactive_window
 from graph.context_entry import ContextEntry
-from memory.repositories.timeline_repository import TimelineRepository
+from graph.format.appointments import appointment_line
+from memory.timeline_reading import read_appointments
 from plugins.base import BaseManager
+from utils.local_time import now_local
 
 logger = logging.getLogger("ki_server.plugins.timeline")
+
+#: Die Quelle der Eintraege dieses Managers — der Formatter laesst sie fuer
+#: den Verfasser weg, der die Termine im `[TERMINE]`-Block bekommt.
+TIMELINE_SOURCE: str = "plugin_timeline"
 
 
 class TimelineManager(BaseManager):
@@ -77,153 +89,88 @@ BEISPIELE (alle → management_action = "agent"):
     # Enricher-Hook
     # ─────────────────────────────────────────
     def enrich_entries(self, state: dict, postgres_url: str) -> list[ContextEntry]:
-        """Liefert Timeline-Kontext als strukturierte ContextEntry-Liste.
+        """Liefert das proaktive Fenster als ContextEntry-Liste, ohne Erinnerungs-Anker.
 
-        Drei Zweige:
-          - range: Router-Query mit Datum-Bereich (timeline_query.type == "range")
-          - search: Router-Query per Keyword (timeline_query.type == "search")
-          - proaktiv: Zeitfenster heute -3 bis +14 Tage
+        Gelesen wird ueber denselben Weg wie der `[TERMINE]`-Block
+        (`read_appointments`): drei Tage zurueck, vierzehn voraus, ein
+        Erinnerungs-Anker ist kein Termin.
 
         Mapping pro Termin (ein Entry pro Termin):
           quelle  = "plugin_timeline"
-          subtyp  = (range/search) Spalte event_type
-                    (proaktiv)     "anstehend" / "vergangen"
-          inhalt  = "{datum}: {titel}{detail_str}" — datum mit Uhrzeit, falls
-                    precision != "day"; detail_str = " — {details}" oder ""
+          subtyp  = "vergangen" / "anstehend"
+          inhalt  = die Zeile des Blocks ohne Spiegelstrich — Wochentag, Datum,
+                    Uhrzeit in Ortszeit, Titel und der Bezug zu heute
           gewicht = 1.0
-          meta    = {
-              "praefix":    "Timeline/{subtyp}",
-              "datum":      Formatiertes Datum/Uhrzeit,
-              "titel":      Termin-Titel,
-              "details":    detail_str (mit fuehrendem " — " oder ""),
-              "termin_id":  Datenbank-ID (wenn vorhanden),
-          }
+          meta    = {"praefix": "Timeline/{subtyp}", "datum": TT.MM.JJJJ,
+                     "titel": Titel}
+
+        Vorbedingung: `state` traegt `user_id`.
+        Nachbedingung: je Termin des Fensters ein Eintrag; keiner davon ein
+            Erinnerungs-Anker.
+        Fehlerfaelle: ohne `user_id` und bei einem Lesefehler wird laut
+            gemeldet und `[]` geliefert — der Turn laeuft weiter.
         """
-        user_id: str = state.get("user_id", "")
+        # ── Eingabe-Validierung ─────────────────────
+        user_id: str = str(state.get("user_id") or "")
         if not user_id:
+            logger.error("TimelineManager.enrich_entries: Zustand ohne user_id — keine Termine")
             return []
 
-        external = state.get("external")
-        intent:   str               = external.emotion.intent if external else ""
-        tl_query: dict              = state.get("timeline_query", {})
-        entries:  list[ContextEntry] = []
-
-        logger.info(f"TimelineManager.enrich_entries: intent={intent}")
-
-        # Gezielter Query vom Router
-        if state.get("needs_timeline") and tl_query:
-            query_type: str = tl_query.get("type", "")
-
-            if query_type == "range":
-                try:
-                    von_str: str = tl_query.get("from", "")
-                    bis_str: str = tl_query.get("to", "")
-                    tz = ZoneInfo(TIMEZONE)
-                    von_dt = datetime.fromisoformat(von_str) if von_str else datetime.now(tz)
-                    bis_dt = datetime.fromisoformat(bis_str) if bis_str else datetime.now(tz)
-                    rows = TimelineRepository.find_by_date_range(
-                        postgres_url, user_id, von_dt, bis_dt
-                    )
-                    logger.info(
-                        f"TimelineManager.enrich_entries: branch=range, treffer={len(rows)}"
-                    )
-                    for r in rows:
-                        entries.append(self._termin_zu_entry(r, subtyp_quelle="event_type"))
-                except Exception as fehler:
-                    logger.warning(f"TimelineManager enrich range: {fehler}")
-
-                self._log_entries(entries)
-                return entries
-
-            elif query_type == "search":
-                rows = TimelineRepository.find_by_keyword(
-                    postgres_url, user_id,
-                    tl_query.get("keyword", ""),
-                    tl_query.get("direction", "forward"),
-                    tl_query.get("limit", 5),
-                )
-                logger.info(
-                    f"TimelineManager.enrich_entries: branch=search, treffer={len(rows)}"
-                )
-                for r in rows:
-                    entries.append(self._termin_zu_entry(r, subtyp_quelle="event_type"))
-
-                self._log_entries(entries)
-                return entries
-
-        # Neuer Pfad: Repository mit erweitertem Zeitfenster
+        # ── Verarbeitung ────────────────────────────
+        now = now_local()
         try:
-            jetzt: datetime = datetime.now(ZoneInfo(TIMEZONE))
-            von:   datetime = jetzt - timedelta(days=3)
-            bis:   datetime = jetzt + timedelta(days=14)
-
-            termine: list[dict] = TimelineRepository.find_by_date_range(
-                postgres_url, user_id, von, bis
+            reading = read_appointments(proactive_window(now), user_id, postgres_url, now)
+        except Exception:
+            logger.exception(
+                "TimelineManager.enrich_entries: Timeline nicht gelesen — "
+                "die Analyse-Leser bekommen keine Termine"
             )
+            return []
+        entries: list[ContextEntry] = [
+            self._appointment_entry(appointment_line(a, now)[2:], a.past, a.moment, a.title)
+            for a in reading.appointments
+        ]
 
-            logger.info(
-                f"TimelineManager.enrich_entries: branch=proaktiv, treffer={len(termine)}"
-            )
-
-            for t in termine:
-                entries.append(
-                    self._termin_zu_entry(t, subtyp_quelle="status", jetzt=jetzt)
-                )
-
-        except Exception as fehler:
-            logger.warning(f"TimelineManager enrich (neu) fehlgeschlagen: {fehler}")
-
-        self._log_entries(entries)
+        # ── Ausgabe-Verifikation ────────────────────
+        if len(entries) != len(reading.appointments):
+            msg: str = "TimelineManager.enrich_entries: Eintraege und Termine verschieden viele"
+            raise RuntimeError(msg)
+        logger.info(f"TimelineManager.enrich_entries: {len(entries)} Eintraege geliefert")
         return entries
 
     @staticmethod
-    def _termin_zu_entry(
-        termin:        dict,
-        subtyp_quelle: str,
-        jetzt:         datetime | None = None,
-    ) -> ContextEntry:
-        """Baut einen ContextEntry aus einer Timeline-Repository-Zeile.
+    def _appointment_entry(line: str, past: bool, moment: datetime, title: str) -> ContextEntry:
+        """Baut einen ContextEntry aus der fertigen Zeile eines Termins.
 
-        subtyp_quelle="event_type": subtyp = termin["event_type"] (range/search).
-        subtyp_quelle="status":     subtyp = "vergangen"/"anstehend" (proaktiv).
+        Vorbedingung: `line` ist nicht leer; `moment` ist ein Zeitpunkt.
+        Nachbedingung: ein Eintrag der Quelle `plugin_timeline` mit dem
+            Praefix `Timeline/vergangen` oder `Timeline/anstehend`.
+        Fehlerfaelle: eine leere Zeile wirft `ValueError`.
         """
-        zeitpunkt: str = termin["event_time"].strftime("%d.%m.%Y")
-        if precision_has_time(termin.get("precision", "day")):
-            zeitpunkt += f" {termin['event_time'].strftime('%H:%M')}"
+        # ── Eingabe-Validierung ─────────────────────
+        if not line:
+            msg: str = "TimelineManager: Termin ohne Zeile"
+            raise ValueError(msg)
 
-        if subtyp_quelle == "status":
-            subtyp: str = "vergangen" if termin["event_time"] < jetzt else "anstehend"
-        else:
-            subtyp = termin.get("event_type", "")
-
-        detail_str: str = f" — {termin['details']}" if termin.get("details") else ""
-        titel:      str = termin.get("title", "")
-        inhalt:     str = f"{zeitpunkt}: {titel}{detail_str}"
-
-        logger.debug(
-            f"Timeline-Entry: subtyp={subtyp}, datum={zeitpunkt}, "
-            f"titel={titel[:40]}"
-        )
-
-        return {
-            "quelle":  "plugin_timeline",
-            "subtyp":  subtyp,
-            "inhalt":  inhalt,
+        # ── Verarbeitung ────────────────────────────
+        subtype: str = "vergangen" if past else "anstehend"
+        entry: ContextEntry = {
+            "quelle":  TIMELINE_SOURCE,
+            "subtyp":  subtype,
+            "inhalt":  line,
             "gewicht": 1.0,
             "meta": {
-                "praefix":   f"Timeline/{subtyp}",
-                "datum":     zeitpunkt,
-                "titel":     titel,
-                "details":   detail_str,
-                "termin_id": termin.get("id"),
+                "praefix": f"Timeline/{subtype}",
+                "datum":   moment.strftime("%d.%m.%Y"),
+                "titel":   title,
             },
         }
 
-    @staticmethod
-    def _log_entries(entries: list[ContextEntry]) -> None:
-        logger.info(
-            f"TimelineManager.enrich_entries: {len(entries)} Eintraege geliefert"
-        )
+        # ── Ausgabe-Verifikation ────────────────────
+        if not entry["meta"]["praefix"].endswith(subtype):
+            msg = f"TimelineManager: Praefix ohne Subtyp: {entry['meta']['praefix']!r}"
+            raise RuntimeError(msg)
+        return entry
 
     # ─────────────────────────────────────────
     # Ausfuehrung — Loud-Failure-Stub

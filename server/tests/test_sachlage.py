@@ -533,9 +533,14 @@ class DieVerdrahtungStehtTest(unittest.TestCase):
         """Fund der zweiten Kontrolle: Der Verfasser diagnostizierte
         »nicht gelaufen«, obwohl der Knoten lief und regulaer nichts trug
         (Impuls nach Verfall). Gelaufen-und-leer ist info, nicht error."""
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+
         from ei.haltung import haltung_berechnen
+        from graph.appointments import AppointmentReading, proactive_window
         from graph.nodes import verfasser
 
+        jetzt: datetime = datetime(2026, 10, 15, 18, 0, tzinfo=ZoneInfo("Europe/Berlin"))
         zustand: dict = {
             "user_prompt": "x", "user_id": "u", "character_id": "c",
             "turn_id": "t", "memory_context": "", "web_context": "",
@@ -545,6 +550,10 @@ class DieVerdrahtungStehtTest(unittest.TestCase):
             # Eine echte Haltung, damit nur die Sachlage-Diagnose gemessen
             # wird — ohne sie feuert der (richtige) Haltungs-Error.
             "haltung": haltung_berechnen("werkstatt", {}),
+            # Ebenso das Leseergebnis der Termine aus dem Router-Knoten.
+            "appointment_reading": AppointmentReading(
+                window=proactive_window(jetzt), now=jetzt,
+            ),
         }
         with self.assertNoLogs("ki_server.verfasser", level="ERROR"):
             verfasser._build_system_prompt(zustand)

@@ -36,7 +36,9 @@ from graph.nodes.verfasser import verfassen
 from graph.personality import InternalPersonality, Personality
 from graph.state import ConversationState
 from memory.kzg import kzg_index_create
+from memory.timeline_reading import read_for_turn
 from plugins import discover_managers
+from utils.local_time import now_local
 
 logger = logging.getLogger("ki_server.graph.base")
 
@@ -210,7 +212,32 @@ class GraphBase(ABC):
         return perceive(state)
 
     def _node_route(self, state: ConversationState) -> ConversationState:
-        return route(state)
+        """Router, danach im selben Knoten das Lesen der Termine.
+
+        Gelesen wird hier und nicht im Enricher, weil erst der Router
+        `needs_timeline` und `timeline_query` setzt — davor ist der gezielte
+        Zweig nie erreichbar. Und hier und nicht in `route()`, damit dessen
+        Zeugen keinen Leseweg erben. Kein eigener Knoten im Graphen.
+
+        Vorbedingung: `state` ist der Zustand vor dem Router.
+        Nachbedingung: der Zustand nach dem Router, mit `appointment_reading`.
+        Fehlerfaelle: ein Lesefehler wird in `read_for_turn` gemeldet und
+            ergibt ein Ergebnis mit `failed` — der Turn laeuft weiter.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if not isinstance(state, dict):
+            msg: str = f"_node_route: Zustand ist kein dict ({type(state).__name__})"
+            raise TypeError(msg)
+
+        # ── Verarbeitung ────────────────────────────
+        routed: ConversationState = route(state)
+        routed["appointment_reading"] = read_for_turn(routed, self.postgres_url, now_local())
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if routed.get("appointment_reading") is None:
+            msg = "_node_route: kein Leseergebnis der Termine im Zustand"
+            raise RuntimeError(msg)
+        return routed
 
     def _node_enrich(self, state: ConversationState) -> ConversationState:
         return enrich(state, self.redis_client, self.postgres_url, state["user_id"])

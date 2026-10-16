@@ -53,6 +53,46 @@ def reader_names(leser: str, aufrufer: str) -> dict[str, str]:
     return _NAMES[leser]
 
 
+#: Die Quellen, die der Verfasser nicht im Gedaechtnisblock liest, weil er
+#: sie in einem eigenen Block bekommt: Die Termine stehen in `[TERMINE]`, mit
+#: gelesenem Zeitraum und dem Satz *keine Termine*, wenn keiner da ist.
+_NOT_FOR_VERFASSER: frozenset[str] = frozenset({"plugin_timeline"})
+
+
+def entries_for_reader(entries: list[ContextEntry], reader: str) -> list[ContextEntry]:
+    """Die Eintraege, die ein Leser im Gedaechtnisblock sieht.
+
+    Die Analyse-Leser sehen alle. Der Verfasser sieht die Termine nicht hier,
+    sondern im `[TERMINE]`-Block — zweimal dieselben Termine, einmal ohne
+    Zeitraum und ohne *keine*, gaeben der Antwort zwei Quellen.
+
+    Vorbedingung: `reader` ist LESER_ANALYSE oder LESER_VERFASSER.
+    Nachbedingung: die Eintraege in Eingangsreihenfolge, fuer den Verfasser
+        ohne die Quellen aus `_NOT_FOR_VERFASSER`.
+    Fehlerfaelle: ein unbekannter Leser wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    reader_names(reader, "entries_for_reader")
+    if reader != LESER_VERFASSER:
+        return list(entries)
+
+    # ── Verarbeitung ────────────────────────────
+    kept: list[ContextEntry] = [
+        e for e in entries if e.get("quelle", "") not in _NOT_FOR_VERFASSER
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(e.get("quelle", "") in _NOT_FOR_VERFASSER for e in kept):
+        msg: str = "entries_for_reader: Termin-Eintrag im Gedaechtnis des Verfassers"
+        raise RuntimeError(msg)
+    if len(kept) != len(entries):
+        logger.info(
+            f"format_memory_entries: {len(entries) - len(kept)} Termin-Eintraege "
+            f"nicht im Gedaechtnis des Verfassers — sie stehen in [TERMINE]"
+        )
+    return kept
+
+
 def format_memory_entries(
     entries: list[ContextEntry],
     lzg_resonanz: dict | None = None,
@@ -90,6 +130,7 @@ def format_memory_entries(
     """
     names: dict[str, str] = reader_names(leser, "format_memory_entries")
     logger.info(f"format_memory_entries: {len(entries)} Eintraege erhalten (Leser {leser})")
+    entries = entries_for_reader(entries, leser)
 
     hat_resonanz: bool = bool(lzg_resonanz and lzg_resonanz.get("erinnerungen"))
     if not entries and not hat_resonanz:

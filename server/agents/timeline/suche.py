@@ -28,6 +28,7 @@ def suchen(state: AgentState) -> dict:
     """Sucht Termine in der Datenbank."""
     from config import POSTGRES_URL
     from memory.repositories.timeline_repository import TimelineRepository
+    from memory.timeline_reading import EXCLUDED_EVENT_TYPES
     from utils.zeitparser import zeit_parsen
 
     target = state["parameter"].get("target", "")
@@ -35,6 +36,11 @@ def suchen(state: AgentState) -> dict:
     action = state["parameter"].get("action", "")
     user_id = state["kontext"].get("user_id", "")
     tz = ZoneInfo(TIMEZONE)
+
+    # Eine Leseabfrage liefert Termine, und ein Erinnerungs-Anker ist keiner —
+    # ausgeschlossen in der Abfrage, damit er keinen Platz der Obergrenze
+    # belegt. Aendern und Loeschen sehen den ganzen Bestand (Schreibweg).
+    excluded: tuple[str, ...] = EXCLUDED_EVENT_TYPES if action == "read" else ()
 
     logger.debug(f"suchen: Einstieg — action='{action}', target='{target}', "
                  f"zeit='{zeitausdruck}', user_id='{user_id}'")
@@ -44,7 +50,8 @@ def suchen(state: AgentState) -> dict:
     # ── Modus 1: Keyword-Suche (target vorhanden) ──
     if target:
         treffer = TimelineRepository.find_by_keyword(
-            POSTGRES_URL, user_id, target, "both", TIMELINE_SUCHE_LIMIT
+            POSTGRES_URL, user_id, target, "both", TIMELINE_SUCHE_LIMIT,
+            exclude_event_types=excluded,
         )
         treffer = [t for t in treffer if t.get("aktiv", True)]
         logger.debug(f"suchen: Keyword-Suche '{target}' — {len(treffer)} Treffer")
@@ -74,7 +81,7 @@ def suchen(state: AgentState) -> dict:
                     bis = von.replace(month=von.month + 1) - timedelta(seconds=1)
 
             treffer = TimelineRepository.find_by_date_range(
-                POSTGRES_URL, user_id, von, bis
+                POSTGRES_URL, user_id, von, bis, exclude_event_types=excluded,
             )
             logger.debug(f"suchen: Zeitraum {von.strftime('%d.%m.')}–{bis.strftime('%d.%m.')} "
                          f"— {len(treffer)} Treffer")
@@ -87,7 +94,7 @@ def suchen(state: AgentState) -> dict:
         von = jetzt - timedelta(days=TIMELINE_UEBERSICHT_TAGE_ZURUECK)
         bis = jetzt + timedelta(days=TIMELINE_UEBERSICHT_TAGE_VORAUS)
         treffer = TimelineRepository.find_by_date_range(
-            POSTGRES_URL, user_id, von, bis
+            POSTGRES_URL, user_id, von, bis, exclude_event_types=excluded,
         )
         logger.debug(f"suchen: Uebersicht (±14 Tage) — {len(treffer)} Treffer")
 

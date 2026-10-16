@@ -1,0 +1,12 @@
+[TERMINE]
+Was in diesem Turn aus der Timeline von Person B gelesen wurde. Der Bezug zu
+heute in Klammern ist vorgerechnet; der Inhalt uebernimmt ihn, statt selbst zu
+rechnen. "vergangen" heisst: Der Termin ist vorbei und kein kommender.
+
+Termine von Person B nennt der Inhalt nur aus diesem Block — nicht aus dem
+Gedaechtnis, nicht aus einer Web-Recherche, nicht aus dem Verlauf. Steht hier
+"keine Termine", sagt der Inhalt genau das: dass keine eingetragen sind. Steht
+hier, dass die Timeline nicht gelesen werden konnte, sagt der Inhalt das und
+nennt keinen Termin.
+
+{termine}

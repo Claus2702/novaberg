@@ -52,6 +52,104 @@ def _row_to_local(row: dict) -> dict:
     return row
 
 
+def _excluded_types(exclude_event_types: tuple[str, ...]) -> list[str]:
+    """Die auszuschliessenden Typen als Parameter einer Abfrage.
+
+    Die Klausel `COALESCE(event_type, '') <> ALL(%s::text[])` laesst bei einer
+    leeren Liste alles durch. Das `COALESCE` haelt eine Zeile ohne Typ im
+    Ergebnis, falls ein Altbestand sie traegt — `NULL <> 'x'` waere unbekannt
+    und schloesse sie still aus (das Schema sagt `NOT NULL`,
+    `agents/timeline/init.sql`; die Klausel verlaesst sich nicht darauf).
+
+    Vorbedingung: ein Tupel von Texten, moeglicherweise leer.
+    Nachbedingung: dieselben Texte als Liste (psycopg2 bildet sie auf ein
+        Array ab).
+    Fehlerfaelle: ein anderer Typ als Tupel oder ein Element, das kein
+        nicht leerer Text ist, wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(exclude_event_types, tuple):
+        msg: str = f"exclude_event_types ist kein tuple: {type(exclude_event_types).__name__}"
+        raise TypeError(msg)
+    if not all(isinstance(t, str) and t for t in exclude_event_types):
+        msg = f"exclude_event_types traegt einen leeren oder fremden Wert: {exclude_event_types!r}"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    excluded: list[str] = list(exclude_event_types)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(excluded) != len(exclude_event_types):
+        msg = "exclude_event_types: Laenge nach der Umwandlung verschieden"
+        raise RuntimeError(msg)
+    return excluded
+
+
+#: Die Suche mit der Grenze *vergangen*, wie `memory/timeline_reading.py::
+#: to_appointment` sie zieht: mit Uhrzeit vor dem Zeitpunkt, ohne Uhrzeit vor
+#: dem Beginn des Tages. Beide Abfragen tragen dieselbe `CASE`-Klausel, einmal
+#: verneint; ihre Parameter liefert `_past_bounds`.
+_KEYWORD_COMING_SQL: str = """
+    SELECT * FROM timeline
+    WHERE user_id = %s AND aktiv = TRUE
+      AND title ILIKE %s
+      AND NOT (CASE WHEN COALESCE(precision, '') = ANY(%s::text[])
+                    THEN event_time < %s ELSE event_time < %s END)
+      AND COALESCE(event_type, '') <> ALL(%s::text[])
+    ORDER BY event_time ASC
+    LIMIT %s
+"""
+
+_KEYWORD_PAST_SQL: str = """
+    SELECT * FROM timeline
+    WHERE user_id = %s AND aktiv = TRUE
+      AND title ILIKE %s
+      AND (CASE WHEN COALESCE(precision, '') = ANY(%s::text[])
+                THEN event_time < %s ELSE event_time < %s END)
+      AND COALESCE(event_type, '') <> ALL(%s::text[])
+    ORDER BY event_time DESC
+    LIMIT %s
+"""
+
+
+def _past_bounds(
+    now: datetime, timed_precisions: frozenset[str],
+) -> tuple[list[str], datetime, datetime]:
+    """Die Parameter der Grenze *vergangen* in `_KEYWORD_COMING_SQL` und `_KEYWORD_PAST_SQL`.
+
+    Der Tagesbeginn liegt in der Zone von `now`, denn `to_appointment`
+    vergleicht das Datum in Ortszeit. Ein Termin ohne Uhrzeit von heute ist
+    damit weder vergangen noch faellt er aus einer Suche nach Kommendem.
+
+    Vorbedingung: `now` zeitzonenbewusst; `timed_precisions` ein nicht leeres
+        frozenset nicht leerer Texte.
+    Nachbedingung: (Genauigkeiten als Liste, `now` in UTC, Tagesbeginn in
+        UTC), der Tagesbeginn nicht nach `now`.
+    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`; eine leere oder
+        fremde Menge wirft `TypeError` — beides vor der Verbindung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if now.tzinfo is None:
+        msg: str = "_past_bounds: Zeitpunkt ohne Zeitzone"
+        raise ValueError(msg)
+    valid: bool = isinstance(timed_precisions, frozenset) and bool(timed_precisions)
+    if not valid or not all(isinstance(p, str) and p for p in timed_precisions):
+        msg = f"timed_precisions ist kein nicht leeres frozenset von Texten: {timed_precisions!r}"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    day_start: datetime = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    bounds: tuple[list[str], datetime, datetime] = (
+        sorted(timed_precisions), now.astimezone(_TZ_UTC), day_start.astimezone(_TZ_UTC),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if bounds[2] > bounds[1]:
+        msg = f"_past_bounds: Tagesbeginn {bounds[2]} nach dem Zeitpunkt {bounds[1]}"
+        raise RuntimeError(msg)
+    return bounds
+
+
 class TimelineRepository:
     """Datenzugriffsschicht für die timeline-Tabelle. Keine Business-Logik."""
 
@@ -151,11 +249,25 @@ class TimelineRepository:
         user_id:      str,
         von:          datetime,
         bis:          datetime,
+        exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         """
         Termine in einem Zeitraum laden (aktive).
         Für Enricher-Kontext und Konflikt-Check.
+
+        `exclude_event_types` schliesst Typen in der Abfrage aus (etwa den
+        Erinnerungs-Anker) — leer laesst alles durch.
+
+        Vorbedingung: `von` und `bis` sind Zeitpunkte, ohne Zone gelten sie
+            als Ortszeit; `exclude_event_types` ein Tupel nicht leerer Texte.
+        Nachbedingung: alle aktiven Zeilen von `user_id` mit `event_time`
+            zwischen `von` und `bis` (beide eingeschlossen), deren Typ nicht
+            ausgeschlossen ist, aufsteigend nach Zeit, `event_time` in Ortszeit.
+        Fehlerfaelle: ein falscher `exclude_event_types` wirft `TypeError`
+            vor der Verbindung; ein Fehler der Datenbank steigt unveraendert
+            auf, die Verbindung wird geschlossen.
         """
+        excluded: list[str] = _excluded_types(exclude_event_types)
         von_utc = _to_utc(von)
         bis_utc = _to_utc(bis)
 
@@ -167,8 +279,9 @@ class TimelineRepository:
                 WHERE user_id = %s
                   AND aktiv = TRUE
                   AND event_time BETWEEN %s AND %s
+                  AND COALESCE(event_type, '') <> ALL(%s::text[])
                 ORDER BY event_time
-            """, (user_id, von_utc, bis_utc))
+            """, (user_id, von_utc, bis_utc, excluded))
             return _rows_to_local([dict(row) for row in cursor.fetchall()])
         finally:
             conn.close()
@@ -349,47 +462,80 @@ class TimelineRepository:
             conn.close()
 
     @staticmethod
-    def find_by_keyword(
+    def find_by_keyword(  # noqa: PLR0913 — der Typausschluss gehoert in dieselbe Abfrage vor LIMIT
         postgres_url: str,
         user_id:      str,
         keyword:      str,
         direction:    str = "forward",
         limit:        int = 5,
+        *,
+        exclude_event_types: tuple[str, ...] = (),
+        now:                 datetime | None = None,
+        timed_precisions:    frozenset[str] = frozenset(),
     ) -> list[dict]:
         """
         Keyword-Suche (ILIKE auf title) mit Zeitrichtung.
         direction: forward | backward | both
         Nur aktive Einträge.
+
+        `exclude_event_types` schliesst Typen in der Abfrage aus, vor dem
+        LIMIT — ein Ausschluss dahinter vergaebe Plaetze an Verworfenes.
+        Aus demselben Grund grenzt `now` *vergangen* in der Abfrage so ab wie
+        der Leser dahinter: mit Uhrzeit (`timed_precisions`) vor `now`, ohne
+        Uhrzeit vor dem Beginn des Tages von `now`. Ohne `now` gilt `NOW()`.
+
+        Vorbedingung: `keyword` ist der Suchtext ohne Platzhalter; `direction`
+            ist `forward`, `backward` oder `both` — jeder andere Wert sucht wie
+            `both`; `exclude_event_types` ein Tupel nicht leerer Texte; ist
+            `now` gesetzt, ist es zeitzonenbewusst und `timed_precisions`
+            nicht leer.
+        Nachbedingung: hoechstens `limit` aktive Zeilen von `user_id`, deren
+            Titel `keyword` enthaelt und deren Typ nicht ausgeschlossen ist,
+            `event_time` in Ortszeit; bei `forward` aufsteigend, nicht
+            vergangen, bei `backward` absteigend, vergangen, sonst aufsteigend.
+            Ohne `now` heisst vergangen: `event_time` vor bzw. bis `NOW()`.
+        Fehlerfaelle: ein falscher `exclude_event_types` oder
+            `timed_precisions` wirft `TypeError`, ein naives `now`
+            `ValueError` — beides vor der Verbindung; ein Fehler der
+            Datenbank steigt unveraendert auf, die Verbindung wird geschlossen.
         """
+        excluded: list[str] = _excluded_types(exclude_event_types)
+        bounds: tuple | None = None if now is None else _past_bounds(now, timed_precisions)
         conn = psycopg2.connect(postgres_url)
         try:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             search: str = f"%{keyword}%"
 
-            if direction == "forward":
+            if bounds is not None and direction in ("forward", "backward"):
+                query: str = _KEYWORD_COMING_SQL if direction == "forward" else _KEYWORD_PAST_SQL
+                cursor.execute(query, (user_id, search, *bounds, excluded, limit))
+            elif direction == "forward":
                 cursor.execute("""
                     SELECT * FROM timeline
                     WHERE user_id = %s AND aktiv = TRUE
                       AND title ILIKE %s AND event_time >= NOW()
+                      AND COALESCE(event_type, '') <> ALL(%s::text[])
                     ORDER BY event_time ASC
                     LIMIT %s
-                """, (user_id, search, limit))
+                """, (user_id, search, excluded, limit))
             elif direction == "backward":
                 cursor.execute("""
                     SELECT * FROM timeline
                     WHERE user_id = %s AND aktiv = TRUE
                       AND title ILIKE %s AND event_time <= NOW()
+                      AND COALESCE(event_type, '') <> ALL(%s::text[])
                     ORDER BY event_time DESC
                     LIMIT %s
-                """, (user_id, search, limit))
+                """, (user_id, search, excluded, limit))
             else:
                 cursor.execute("""
                     SELECT * FROM timeline
                     WHERE user_id = %s AND aktiv = TRUE
                       AND title ILIKE %s
+                      AND COALESCE(event_type, '') <> ALL(%s::text[])
                     ORDER BY event_time
                     LIMIT %s
-                """, (user_id, search, limit))
+                """, (user_id, search, excluded, limit))
 
             return _rows_to_local([dict(row) for row in cursor.fetchall()])
         finally:
