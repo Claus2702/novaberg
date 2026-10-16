@@ -10,13 +10,19 @@ einen neuen an. Kein Ueberschreiben — die Historie bleibt erhalten.
 """
 
 import logging
-from datetime import datetime
+from dataclasses import replace
+from datetime import date, datetime, time, timedelta
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from agents.base import AgentState
 from agents.timeline.event_time import precision_has_time
 from agents.write_outcome import verified_outcome
 from config import TIMEZONE
+from utils.local_time import weekday_name
+
+if TYPE_CHECKING:
+    from utils.zeitparser import RawTimeForm, TimeReading, ZeitVektor
 
 logger = logging.getLogger("ki_server.agents.timeline.crud")
 
@@ -190,6 +196,9 @@ def _update(state: AgentState) -> dict:
     """Termin verschieben — bi-temporales Modell.
 
     Wird sowohl fuer action='update' als auch action='reschedule' aufgerufen.
+    Geschrieben wird nur, wenn die Lesung und die Positivform des Rohtexts
+    dieselbe neue Uhrzeit ergeben (`_raw_form_agrees`); sonst endet der
+    Auftrag mit der Rueckfrage, ohne `invalidate` und ohne `insert`.
     """
     from agents.timeline.magneten import (
         themen_aus_event_type,
@@ -197,17 +206,17 @@ def _update(state: AgentState) -> dict:
     )
     from config import POSTGRES_URL
     from memory.repositories.timeline_repository import TimelineRepository
-    from utils.zeitparser import ZeitVektor, zeit_parsen_vektor
+    from utils.zeitparser import ZeitVektor, dotted_clock_times, zeit_parsen_vektor
 
     termin = state["parameter"].get("termin", {})
     termin_id = termin.get("id")
-    zeitausdruck = state["parameter"].get("zeitausdruck", "")
-    prompt = state["aufgabe"]
+    raw_expression: str = state["parameter"].get("zeitausdruck") or ""
+    raw_prompt: str = state["aufgabe"]
     tz = ZoneInfo(TIMEZONE)
 
     event_type_alt: str = termin.get("event_type", "termin")
     logger.debug(f"_update: Einstieg — termin_id={termin_id}, title='{termin.get('title')}', "
-                 f"neuer zeit='{zeitausdruck}', event_type='{event_type_alt}'")
+                 f"neuer zeit='{raw_expression}', event_type='{event_type_alt}'")
 
     themen = themen_aus_event_type(event_type_alt)
     binding, remind, conflict_check = verhaltens_flags_aus_event_type(event_type_alt)
@@ -223,14 +232,13 @@ def _update(state: AgentState) -> dict:
             "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "kein_termin"}],
         }
 
-    vektor: ZeitVektor = zeit_parsen_vektor(zeitausdruck) if zeitausdruck else ZeitVektor(
-        datum=None, tag_erkannt=False, uhrzeit_erkannt=False, referenz_modus="relativ"
-    )
+    # "auf 11.30." am Satzende liest die Normalisierung als Datum; die
+    # Positivform unten liest weiter den Rohtext.
+    zeitausdruck: str = dotted_clock_times(raw_expression)
+    prompt: str = dotted_clock_times(raw_prompt)
+    vektor, source_text, reading = _choose_vector(zeitausdruck, prompt)
 
-    if vektor.datum is None:
-        vektor = zeit_parsen_vektor(prompt)
-
-    if vektor.datum is None:
+    if _no_new_time(vektor, reading):
         return {
             "status": "fehler",
             "fehler": f"Konnte das neue Datum nicht erkennen. Wann soll '{termin.get('title', '')}' stattfinden?",
@@ -240,12 +248,29 @@ def _update(state: AgentState) -> dict:
     alte_zeit: datetime = termin["event_time"]
     if not alte_zeit.tzinfo:
         alte_zeit = alte_zeit.replace(tzinfo=tz)
+    # Tag und Uhrzeit des Termins gelten in Ortszeit: "11 Uhr" ist 11 Uhr
+    # hier, und der Tag eines Termins um 00:30 ist nicht der Vortag in UTC.
+    alte_zeit = alte_zeit.astimezone(tz)
+    clock_time: time | None = reading.clock_time()
+    decided: bool = _decided_by_reading(vektor, reading)
 
-    if vektor.referenz_modus == "absolut":
+    if decided:
+        # Die Lesung entscheidet: eine Uhrzeit ohne Tag ("bitte auf 11 Uhr")
+        # oder ein Tag des Monats ("auf den 20."); was fehlt, kommt vom Termin.
+        # Ohne diesen Zweig endete "bitte auf 11 Uhr" in der Rueckfrage nach
+        # dem Datum. Ein Datum, das der Parser dazu gerechnet hat, zaehlt
+        # nicht: Bei "von 10 Uhr auf 11 Uhr" traegt es die erste Uhrzeit.
+        vektor = replace(vektor, datum=_on_day_of(reading, alte_zeit))
+        logger.info(f"_update: Lesung entscheidet ({vektor.datum.strftime('%d.%m.%Y %H:%M')}), "
+                    f"Rest vom alten Termin ({alte_zeit.strftime('%d.%m.%Y %H:%M')})")
+
+    elif vektor.referenz_modus == "absolut":
         logger.info("_update: Referenz-Modus 'absolut' — Referenz ist heute")
 
     elif vektor.referenz_modus == "relativ":
-        vektor_neu: ZeitVektor = zeit_parsen_vektor(zeitausdruck, referenz=alte_zeit)
+        # Ohne Zeitausdruck der Text des Vektors: Ein Tagesausdruck aus dem Satz
+        # rechnet dann vom Termin aus wie derselbe als Zeitausdruck.
+        vektor_neu: ZeitVektor = zeit_parsen_vektor(zeitausdruck or source_text, referenz=alte_zeit)
         if vektor_neu.datum is None:
             vektor_neu = zeit_parsen_vektor(prompt, referenz=alte_zeit)
         if vektor_neu.datum is not None:
@@ -254,7 +279,9 @@ def _update(state: AgentState) -> dict:
                     f"({alte_zeit.strftime('%d.%m.%Y %H:%M')})")
 
     elif vektor.referenz_modus == "relativ_rueckwaerts":
-        vektor_neu = zeit_parsen_vektor(zeitausdruck, referenz=alte_zeit, zukunft_bevorzugt=False)
+        vektor_neu = zeit_parsen_vektor(
+            zeitausdruck or source_text, referenz=alte_zeit, zukunft_bevorzugt=False,
+        )
         if vektor_neu.datum is None:
             vektor_neu = zeit_parsen_vektor(prompt, referenz=alte_zeit, zukunft_bevorzugt=False)
         if vektor_neu.datum is not None:
@@ -262,26 +289,47 @@ def _update(state: AgentState) -> dict:
         logger.info(f"_update: Referenz-Modus 'relativ_rueckwaerts' — Referenz ist alter Termin "
                     f"({alte_zeit.strftime('%d.%m.%Y %H:%M')}), Vergangenheit bevorzugt")
 
-    neues_datum: datetime = vektor.datum
+    neues_datum: datetime = vektor.datum.astimezone(tz)
 
-    if vektor.tag_erkannt and not vektor.uhrzeit_erkannt:
+    if vektor.tag_erkannt and not decided and clock_time is None:
         neues_datum = neues_datum.replace(
             hour=alte_zeit.hour, minute=alte_zeit.minute,
             second=0, microsecond=0,
         )
         logger.info(f"_update: Tag neu, Uhrzeit vom alten Termin ({alte_zeit.strftime('%H:%M')})")
+        neues_datum = _own_weekday_means_next_week(neues_datum, alte_zeit, source_text)
 
-    elif not vektor.tag_erkannt and vektor.uhrzeit_erkannt:
-        neues_datum = alte_zeit.replace(
-            hour=neues_datum.hour, minute=neues_datum.minute,
-            second=0, microsecond=0,
+    elif vektor.tag_erkannt and not decided:
+        # Tag vom Parser, Uhrzeit aus der Lesung: Bei "Freitag von 10 auf 11"
+        # nimmt der Parser die erste Uhrzeit, die neue ist die hinter "auf".
+        neues_datum = neues_datum.replace(
+            hour=clock_time.hour, minute=clock_time.minute, second=0, microsecond=0,
         )
         logger.info(
-            f"_update: Uhrzeit neu, Tag vom alten Termin ({alte_zeit.strftime('%d.%m.%Y')})"
+            f"_update: Tag vom Parser, Uhrzeit aus der Lesung ({clock_time.strftime('%H:%M')})"
         )
 
+    # Ohne Titel ist kein Wort als Bezug zugelassen: nur mehr Rueckfragen.
+    title: str = termin.get("title") or ""
+    if not _raw_form_agrees(
+        (raw_expression, raw_prompt), title, clock_time, neues_datum, alte_zeit,
+    ):
+        logger.info(f"_update: Lesung und Positivform des Rohtexts uneins "
+                    f"({neues_datum.strftime('%d.%m.%Y %H:%M')}) — Rueckfrage")
+        return {
+            "status": "fehler",
+            "fehler": (f"Konnte die neue Uhrzeit nicht eindeutig erkennen. "
+                       f"Wann soll '{termin.get('title', '')}' stattfinden?"),
+            "schritte": state["schritte"] + [
+                {"node": "ausfuehren", "ergebnis": "keine_eindeutige_zeit"},
+            ],
+        }
+
     precision = (
-        "minute" if vektor.uhrzeit_erkannt or alte_zeit.hour > 0 or alte_zeit.minute > 0 else "day"
+        "minute"
+        if clock_time is not None or vektor.uhrzeit_erkannt
+        or alte_zeit.hour > 0 or alte_zeit.minute > 0
+        else "day"
     )
 
     TimelineRepository.invalidate(POSTGRES_URL, termin_id)
@@ -326,6 +374,289 @@ def _update(state: AgentState) -> dict:
             "verifiziert": verifiziert,
         }],
     }, verifiziert)
+
+
+def _choose_vector(
+    time_expression: str | None, prompt: str,
+) -> tuple["ZeitVektor", str, "TimeReading"]:
+    """Waehlt den Zeitvektor eines Verschiebeauftrags, seinen Text und die Lesung beider Texte.
+
+    Der Vektor: zuerst der des Zeitausdrucks der Klassifikation; ergibt er
+    kein Datum, der der ganzen Aeusserung. Erkennt der einen Tag, aber kein
+    Datum — dateparser liest keinen Satz ("Verschieb den Zahnarzt auf
+    Freitag.") —, gilt der Vektor des Tagesausdrucks allein (`day_phrase`,
+    zuerst aus dem Zeitausdruck, dann aus der Aeusserung), wenn er ein Datum
+    ergibt; steht ein weiteres Wort am Tag, gibt es keinen, und der Vektor
+    ohne Datum bleibt. Die Lesung (`read_time`) liest Zeitausdruck und
+    Aeusserung je fuer sich — welche Stunde ein Text als neue nennt, Lage (a)
+    oder die Form "von X auf Y" — und fuehrt beide zusammen: Ist einer
+    unentschieden oder nennen beide verschiedene, gibt es keine neue Uhrzeit;
+    eine Uhrzeit des Zeitausdrucks geht nicht verloren, wenn der Vektor der
+    Aeusserung gilt.
+
+    Vorbedingung: `prompt` ist die Aeusserung des Auftrags; `time_expression`
+        darf leer oder None sein (die Klassifikation fand keinen).
+    Nachbedingung: ein Vektor, der Text, aus dem er gelesen ist (Zeitausdruck,
+        Aeusserung oder Tagesausdruck), und die Lesung beider Texte; traegt der
+        Vektor ein Datum, hat es eine Zeitzone.
+    Fehlerfaelle: eine Aeusserung, die kein Text ist, wirft `TypeError`; ein
+        Datum ohne Zeitzone aus dem Parser wirft `ValueError` — der Tag des
+        Termins waere sonst in der Zone des Behaelters gelesen.
+    """
+    from utils.zeitparser import (
+        TimeReading,
+        ZeitVektor,
+        day_phrase,
+        read_time,
+        zeit_parsen_vektor,
+    )
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(prompt, str):
+        msg: str = f"_choose_vector: Aeusserung ist kein Text ({type(prompt).__name__})"
+        raise TypeError(msg)
+    expression: str = time_expression or ""
+
+    # ── Verarbeitung ────────────────────────────
+    vector: ZeitVektor = zeit_parsen_vektor(expression) if expression else ZeitVektor(
+        datum=None, tag_erkannt=False, uhrzeit_erkannt=False, referenz_modus="relativ"
+    )
+    source_text: str = expression
+    if vector.datum is None:
+        vector, source_text = zeit_parsen_vektor(prompt), prompt
+    phrase: str = ""
+    if vector.datum is None and vector.tag_erkannt:
+        phrase = day_phrase(expression) or day_phrase(prompt)
+    phrase_vector: ZeitVektor | None = zeit_parsen_vektor(phrase) if phrase else None
+    if phrase_vector is not None and phrase_vector.datum is not None:
+        logger.info(f"_choose_vector: Satz ohne Datum, Tag aus '{phrase}'")
+        vector, source_text = phrase_vector, phrase
+    reading: TimeReading = read_time(expression).merged(read_time(prompt))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if vector.datum is not None and vector.datum.tzinfo is None:
+        msg = f"_choose_vector: Datum ohne Zeitzone ({vector.datum}) aus '{source_text}'"
+        raise ValueError(msg)
+    return vector, source_text, reading
+
+
+def _no_new_time(vector: "ZeitVektor", reading: "TimeReading") -> bool:
+    """Ob Vektor und Lesung keinen neuen Zeitpunkt hergeben, ohne zu raten.
+
+    Wahr — also die Rueckfrage, kein Schreiben — in drei Lagen:
+    1. Die Lesung ist unklar (`TimeReading.unclear`): Stunden ohne neue
+       Uhrzeit. Neu ist eine Stunde nur, wenn ein Text genau eine traegt oder
+       genau zwei in der Form "von X auf Y" / "von X nach Y" (`_stated_hour`
+       im Zeitparser) und Satz und Zeitausdruck nicht zwei verschiedene
+       nennen. Jede andere Lage mit Stunden ist unklar: zwei Stunden ohne
+       diese Form ("auf 10 oder 11 Uhr", "auf 11, nicht auf 10 Uhr", "auf 11
+       Uhr und den Friseur auf 14 Uhr", "von 10 bis 12 Uhr", "zwischen 10 und
+       11 Uhr"), drei Stunden ("von 10 auf 11 oder 12 Uhr"), eine nackte Zahl
+       allein nicht hinter "auf"/"nach" ("Meeting 2"), eine unmoegliche ("25
+       Uhr"). Eine Stunde ist auch ein Zahlwort ("auf zehn, nicht auf elf
+       Uhr", "auf elf oder zwoelf Uhr"), eine Ordinalzahl nicht ("den
+       zehnten"; `_read_time` im Zeitparser). Dazu eine Zahl im Zweifel ("auf
+       11.", "viertel nach 11", "elf Uhr dreissig") und mehr als ein Tag des
+       Monats. Ebenso, wenn der Parser eine Uhrzeit erkennt und die Lesung
+       keine neue hergibt.
+    2. Der Parser erkennt einen Tag, aber kein Datum — auch nicht aus dem
+       Tagesausdruck allein (`_choose_vector`): ein Widerspruch wie "heute
+       Freitag" an einem Donnerstag, oder ein weiteres Wort am Tag ("Freitag
+       naechste Woche"). Oder sein Datum liegt an einem anderen Tag als dem
+       genannten Tag des Monats.
+    3. Kein Datum, und die Lesung entscheidet nicht (`_decided_by_reading`).
+
+    Vorbedingung: `vector` und `reading` stammen aus `_choose_vector`.
+    Nachbedingung: wahr genau dann, wenn `_update` mit der Rueckfrage enden
+        muss; ist es falsch, traegt der Vektor ein Datum mit Zone oder die
+        Lesung entscheidet.
+    Fehlerfaelle: ein Datum ohne Zone wirft `ValueError`, keine Lesung
+        `TypeError` (`_decided_by_reading`).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if vector.datum is not None and vector.datum.tzinfo is None:
+        msg: str = f"_no_new_time: Datum ohne Zone ({vector.datum})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    decided: bool = _decided_by_reading(vector, reading)
+    named_day: date | None = reading.day()
+    unclear: bool = reading.unclear() or (
+        vector.uhrzeit_erkannt and reading.clock_time() is None
+    )
+    day_disagrees: bool = vector.tag_erkannt and (
+        vector.datum is None
+        or (named_day is not None
+            and vector.datum.astimezone(ZoneInfo(TIMEZONE)).date() != named_day)
+    )
+    no_time: bool = unclear or day_disagrees or (vector.datum is None and not decided)
+
+    # ── Ausgabe ─────────────────────────────────
+    return no_time
+
+
+def _decided_by_reading(vector: "ZeitVektor", reading: "TimeReading") -> bool:
+    """Ob die Lesung den neuen Zeitpunkt bestimmt statt des Datums aus dem Parser.
+
+    So ist es, wenn die Lesung einen Tag des Monats nennt ("auf den 20."), den
+    der Parser nicht kennt, oder eine neue Uhrzeit ohne Tag ("auf 11 Uhr"). Ein
+    Datum, das der Parser fuer eine Uhrzeit ohne Tag rechnet, zaehlt nicht: Es
+    liegt heute oder morgen und traegt bei zwei Uhrzeiten die erste ("von 10
+    Uhr auf 11 Uhr" -> 10:00).
+
+    Vorbedingung: `reading` stammt aus `read_time`.
+    Nachbedingung: wahr genau dann, wenn `reading.day()` gesetzt ist oder der
+        Parser keinen Tag erkennt und `reading.clock_time()` gesetzt ist.
+    Fehlerfaelle: etwas anderes als eine `TimeReading` ist ein
+        Programmierfehler und wirft `TypeError`.
+    """
+    from utils.zeitparser import TimeReading
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(reading, TimeReading):
+        msg: str = f"_decided_by_reading: keine TimeReading ({type(reading).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    decided: bool = reading.day() is not None or (
+        not vector.tag_erkannt and reading.clock_time() is not None
+    )
+
+    # ── Ausgabe ─────────────────────────────────
+    return decided
+
+
+def _raw_form_agrees(
+    texts: tuple[str, ...], title: str, reading_clock: time | None,
+    new_time: datetime, old_time: datetime,
+) -> bool:
+    """Ob die Positivform des Rohtexts dieselbe neue Uhrzeit ergibt, die geschrieben wuerde.
+
+    Die zweite, unabhaengige Pruefung vor jedem Schreiben: `raw_time_form`
+    liest Zeitausdruck und Aeusserung, wie sie ankamen, vor jeder
+    Normalisierung; ein leerer Text zaehlt nicht. Ausserhalb der Form laesst
+    sie nur das Verb, Fuellwoerter und ganze Inhaltswoerter von `title`, dem
+    Titel des Termins, zu, dazu Inhaltswort + ["s"] + "termin". Wahr nur in
+    zwei Lagen:
+    1. Kein Text liegt ausserhalb der Formen, die Formen nennen zusammen
+       genau eine Uhrzeit, und sie ist die Uhrzeit der Lesung und die von
+       `new_time` ("auf 11 Uhr", "von 10 auf 11:30", "auf Freitag um 11").
+    2. Kein Text liegt ausserhalb der Formen und keine Form nennt eine
+       Uhrzeit ("auf Freitag", "Freitag"): Dann nennt auch die Lesung keine,
+       und `new_time` traegt die Uhrzeit von `old_time`.
+    Sonst falsch, also die Rueckfrage: ein Text ausserhalb der Formen ("auf
+    11h", "vom Vormittag auf den Nachmittag", "auf halb elf", "auf Fr. um 11
+    Uhr", ein unbekanntes Wort), zwei
+    verschiedene Uhrzeiten in Zeitausdruck und Aeusserung, oder Form und
+    Lesung uneins. Den Tag vergleicht die Pruefung nicht.
+
+    Vorbedingung: `texts` sind die Rohtexte, `title` ein Text (leer erlaubt);
+        `new_time` und `old_time` in Ortszeit mit Zone.
+    Nachbedingung: wahr genau in den zwei Lagen oben, verglichen auf die Minute.
+    Fehlerfaelle: ein Text oder Titel, der keiner ist, wirft `TypeError`;
+        eine Zeit ohne Zone `ValueError`.
+    """
+    from utils.zeitparser import raw_time_form
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not all(isinstance(text, str) for text in (*texts, title)):
+        msg: str = f"_raw_form_agrees: kein Text unter {texts!r}, {title!r}"
+        raise TypeError(msg)
+    if new_time.tzinfo is None or old_time.tzinfo is None:
+        msg = f"_raw_form_agrees: Zeit ohne Zone ({new_time}, {old_time})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    forms: list["RawTimeForm | None"] = [
+        raw_time_form(text, title) for text in texts if text.strip()
+    ]
+    written: time = time(new_time.hour, new_time.minute)
+    if any(form is None for form in forms):
+        agrees: bool = False
+    else:
+        named: set[time] = {form.clock for form in forms if form.clock is not None}
+        agrees = (
+            named == {written} and reading_clock == written
+            if named
+            else reading_clock is None and written == time(old_time.hour, old_time.minute)
+        )
+
+    # ── Ausgabe ─────────────────────────────────
+    return agrees
+
+
+def _on_day_of(reading: "TimeReading", old_time: datetime) -> datetime:
+    """Der neue Zeitpunkt aus der Lesung; was sie nicht nennt, kommt vom Termin.
+
+    Der Tag ist `reading.day()`, sonst der Tag von `old_time`; die Uhrzeit ist
+    `reading.clock_time()`, sonst die Uhrzeit von `old_time` auf die Minute.
+
+    Vorbedingung: `old_time` traegt eine Zeitzone (Ortszeit), die Lesung
+        nennt einen Tag oder eine Uhrzeit.
+    Nachbedingung: ein Zeitpunkt in der Zone von `old_time` am Ziel-Tag.
+    Fehlerfaelle: keine Lesung wirft `TypeError`; eine Zeit ohne Zone oder
+        eine Lesung ohne Tag und ohne Uhrzeit ist ein Programmierfehler und
+        wirft `ValueError`.
+    """
+    from utils.zeitparser import TimeReading
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(reading, TimeReading):
+        msg: str = f"_on_day_of: keine TimeReading ({type(reading).__name__})"
+        raise TypeError(msg)
+    named_day: date | None = reading.day()
+    clock_time: time | None = reading.clock_time()
+    if old_time.tzinfo is None or (named_day is None and clock_time is None):
+        msg = f"_on_day_of: Zeit ohne Zone oder Lesung ohne Tag und Uhrzeit ({reading}, {old_time})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    target_day: date = named_day if named_day is not None else old_time.date()
+    target_clock: time = (
+        clock_time if clock_time is not None else time(old_time.hour, old_time.minute)
+    )
+    new_time: datetime = datetime.combine(target_day, target_clock, tzinfo=old_time.tzinfo)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if new_time.date() != target_day:
+        msg = f"_on_day_of: Tag gewechselt ({target_day} -> {new_time})"
+        raise ValueError(msg)
+    return new_time
+
+
+def _own_weekday_means_next_week(
+    new_time: datetime, old_time: datetime, source_text: str,
+) -> datetime:
+    """Ein genannter Wochentag, der auf den Tag des Termins selbst faellt, meint den naechsten.
+
+    "Verschieb den Zahnarzt auf Freitag" bei einem Termin am Freitag ist
+    keine Verschiebung auf denselben Tag.
+
+    Vorbedingung: beide Zeitpunkte in Ortszeit; `source_text` ist der Text,
+        aus dem der neue Tag gelesen wurde.
+    Nachbedingung: `new_time` unveraendert, ausser es liegt am Tag von
+        `old_time` und der Text nennt dessen Wochentag — dann sieben Tage spaeter.
+    Fehlerfaelle: eine Zeit ohne Zone wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if new_time.tzinfo is None or old_time.tzinfo is None:
+        msg: str = f"_own_weekday_means_next_week: Zeit ohne Zone ({new_time}, {old_time})"
+        raise ValueError(msg)
+    if new_time.date() != old_time.date():
+        return new_time
+
+    # ── Verarbeitung ────────────────────────────
+    if weekday_name(old_time).lower() not in (source_text or "").lower():
+        return new_time
+    moved: datetime = new_time + timedelta(days=7)
+    logger.info(f"_update: Wochentag des Termins selbst genannt — naechster "
+                f"({moved.strftime('%d.%m.%Y')})")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if moved.date() <= old_time.date():
+        msg = f"_own_weekday_means_next_week: {moved} liegt nicht nach {old_time}"
+        raise ValueError(msg)
+    return moved
 
 
 def _delete(state: AgentState) -> dict:

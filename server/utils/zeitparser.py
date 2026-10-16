@@ -14,7 +14,7 @@ import calendar
 import logging
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from typing import ClassVar, Optional
 from zoneinfo import ZoneInfo
 
@@ -33,6 +33,127 @@ class ZeitVektor:
     tag_erkannt: bool
     uhrzeit_erkannt: bool
     referenz_modus: str  # "absolut" | "relativ" | "relativ_rueckwaerts"
+
+
+@dataclass(frozen=True)
+class TimeReading:
+    """Welche Stunden und welche Tage des Monats ein Auftrag nennt.
+
+    Gelesen fuer das Verschieben eines Termins (`read_time`): Dort wird eine
+    neue Uhrzeit nur geschrieben, wenn sie nicht geraten ist. Der Vektor
+    liefert dafuer zu wenig — er nimmt bei zwei Uhrzeiten die erste, zaehlt
+    eine nackte Stunde nicht ("zwischen 10 und 11 Uhr") und kennt "den 20."
+    nicht als Tag.
+
+    `hours`: jede Stunde als (Stunde, Minute), geschrieben ("11:30"), als
+    nackte Zahl 0..24 oder als Zahlwort ("elf"); `stated`: die Stunde, die
+    ein Text als neue nennt (`_read_time`, Lage (a) oder (b)); `undecided`:
+    ein Text nennt Stunden, aber keine davon als neue; `days`: die genannten
+    Tage des Monats, auch als Ordinalzahl ("den zehnten"); `doubtful`: eine
+    Zahl mit Punkt, die Tag oder Stunde sein kann ("auf 11."), eine
+    Ordinalzahl ohne Artikel und Monat ("zehnten 11:00"), ein Tag, den es
+    nicht gibt ("den 31." vor einem Monat mit 30 Tagen), eine Stunde hinter
+    "halb"/"viertel", die nicht umgerechnet ist, oder Minuten als Zahlwort
+    ("elf Uhr dreissig").
+    """
+
+    hours: frozenset[tuple[int, int]] = frozenset()
+    stated: frozenset[tuple[int, int]] = frozenset()
+    undecided: bool = False
+    days: frozenset[date] = frozenset()
+    doubtful: bool = False
+
+    def merged(self, other: "TimeReading") -> "TimeReading":
+        """Beide Lesungen zusammen — Aeusserung und Zeitausdruck desselben Auftrags.
+
+        Vorbedingung: `other` ist eine `TimeReading`.
+        Nachbedingung: jede Menge ist die Vereinigung, jede Marke das Oder.
+        Fehlerfaelle: etwas anderes als eine `TimeReading` wirft `TypeError`.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if not isinstance(other, TimeReading):
+            msg: str = f"TimeReading.merged: keine TimeReading ({type(other).__name__})"
+            raise TypeError(msg)
+
+        # ── Verarbeitung ────────────────────────────
+        both: TimeReading = TimeReading(
+            hours=self.hours | other.hours,
+            stated=self.stated | other.stated,
+            undecided=self.undecided or other.undecided,
+            days=self.days | other.days,
+            doubtful=self.doubtful or other.doubtful,
+        )
+
+        # ── Ausgabe ─────────────────────────────────
+        return both
+
+    def clock_time(self) -> Optional[time]:
+        """Die neue Uhrzeit, wenn sie nicht geraten ist — sonst None.
+
+        Die Lage liest `_read_time` je Text und legt die neue Stunde in
+        `stated`: (a) der Text traegt genau eine Stunde; (b) er traegt genau
+        zwei in der Form "von X auf Y" oder "von X nach Y". Hier gilt sie nur,
+        wenn alle Texte zusammen genau eine nennen und keiner unentschieden ist.
+
+        Vorbedingung: keine.
+        Nachbedingung: die eine Stunde aus `stated` als gueltige Uhrzeit;
+            sonst None.
+        Fehlerfaelle: None geben ein Text mit Stunden, aber ohne Lage (a) oder
+            (b) (`undecided`: "auf 10 oder 11 Uhr", "von 10 bis 12 Uhr", "auf
+            11 Uhr und den Friseur auf 14 Uhr"), zwei verschiedene neue
+            Stunden aus Satz und Zeitausdruck, eine Zahl im Zweifel und eine
+            unmoegliche Uhrzeit ("25 Uhr").
+        """
+        # ── Verarbeitung ────────────────────────────
+        if self.doubtful or self.undecided or len(self.stated) != 1:
+            return None
+        ((hour, minute),) = self.stated
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if hour > 23 or minute > 59:
+            return None
+        return time(hour, minute)
+
+    def day(self) -> Optional[date]:
+        """Der eine genannte Tag des Monats, oder None, wenn keiner oder mehrere.
+
+        Vorbedingung: keine.
+        Nachbedingung: ein Tag aus `days`, wenn es genau einer ist.
+        """
+        # ── Verarbeitung ────────────────────────────
+        named: Optional[date] = next(iter(self.days)) if len(self.days) == 1 else None
+
+        # ── Ausgabe ─────────────────────────────────
+        return named
+
+    def unclear(self) -> bool:
+        """Ob der Auftrag eine Zeit oder einen Tag nennt, ohne dass klar ist, welche.
+
+        Vorbedingung: keine.
+        Nachbedingung: wahr bei Zweifel, bei mehr als einem Tag und bei
+            Stunden ohne `clock_time` — der Aufrufer fragt dann zurueck.
+        """
+        # ── Verarbeitung ────────────────────────────
+        is_unclear: bool = (
+            self.doubtful or len(self.days) > 1 or (bool(self.hours) and self.clock_time() is None)
+        )
+
+        # ── Ausgabe ─────────────────────────────────
+        return is_unclear
+
+
+@dataclass(frozen=True)
+class RawTimeForm:
+    """Die Positivform eines Verschiebeauftrags, gelesen auf dem Rohtext (`raw_time_form`).
+
+    Die zweite Pruefung neben der Lesung (`read_time`): Sie liest den Text vor
+    jeder Normalisierung und kennt nur wenige Formen. `clock` ist die neue
+    Uhrzeit der Form ("auf 11 Uhr" -> 11:00, "von 10 auf 11:30" -> 11:30);
+    None, wenn die Form keine nennt ("auf Freitag") oder der Text keinen
+    Zeitteil hat.
+    """
+
+    clock: Optional[time] = None
 
 
 @dataclass(frozen=True)
@@ -598,8 +719,326 @@ _DATE_DMY = re.compile(r"(?<![\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)")
 _DATE_ISO = re.compile(r"(?<![\d.-])(\d{4})-(\d{2})-(\d{2})(?![\d-])")
 _CLOCK_TIME = re.compile(r"(\d{1,2}):(\d{2})")
 
+#: Die Muster von `_read_time`. Gelesen wird der Text, wie die Normalisierung
+#: ihn schreibt: Ihr Schritt 2 nimmt das Leerzeichen hinter "Uhr" mit, aus
+#: "10 Uhr auf 11 Uhr" wird "10:00auf 11:00". Deshalb gilt ein Wort auch direkt
+#: hinter einer Ziffer, mitten in einem Wort ("Ablauf") nicht.
+#:
+#: Ein Datum aus Ziffern: ISO (auch angeklebt, "10:002026-10-16") und
+#: Tag.Monat. mit oder ohne Jahr. Seine Zahlen sind keine Stunden.
+_DATE_DIGITS = re.compile(r"\d{4}-\d{2}-\d{2}|(?<![\d.])\d{1,2}\.\d{1,2}\.(?:\d{4})?(?!\d)")
+
+#: Ein Tag des Monats: eine Zahl mit Punkt ("den 20.") oder vor einem Monat
+#: ("20. Oktober", "20 Okt"). Gruppe 2 ist der Monat, wenn einer folgt.
+_DAY_OF_MONTH = re.compile(
+    r"(?<![\d.,:])(\d{1,2})(?:\.(?!\d)\s*|\s+(?=(?:" + _MONTHS_AFTER_UM + r")\b))"
+    r"(?:(" + _MONTHS_AFTER_UM + r")\b\.?)?",
+    re.IGNORECASE,
+)
+
+#: Das Wort vor einem Tag des Monats, das ihn zum Tag macht: "auf den 20.".
+_ARTICLE_BEFORE = re.compile(r"\b(?:den|dem|zum|vom|am)\s+$", re.IGNORECASE)
+
+#: Eine nackte Zahl, die eine Stunde sein kann: nicht Teil eines Wortes, einer
+#: Uhrzeit oder einer Kommazahl, keine Menge ("3 Tage", "10 Euro") — dieselben
+#: Wortlisten wie `_HOUR_AFTER_UM`. Den Bereich 0..24 prueft der Leser.
+_BARE_NUMBER = re.compile(
+    r"(?<![\w.,:])(\d{1,2})(?![\w:]|[.,]\d)"
+    r"(?!\s*(?:" + _QUANTITIES_AFTER_UM + r")\b)(?!\s*[%€°])",
+    re.IGNORECASE,
+)
+
+#: Die Form "von X auf Y" / "von X nach Y" (Lage (b) von `_read_time`), in
+#: drei Stuecken: "von" unmittelbar vor X; zwischen X und Y nichts als "auf"
+#: oder "nach" — auch an X geklebt ("10:00auf 11:00"); hinter Y kein Wort,
+#: das eine weitere Zeit, eine Wahl oder eine Verneinung anschliesst.
+_FROM_BEFORE = re.compile(r"\bvon\s+$", re.IGNORECASE)
+_TO_BETWEEN = re.compile(r"\s*(?:auf|nach)\s+", re.IGNORECASE)
+_AFTER_TO_BREAK = re.compile(
+    r"(?:(?<=\d)|\b)(?:auf|nach|oder|bzw|beziehungsweise|statt|anstatt|nicht|sonst|und)\b",
+    re.IGNORECASE,
+)
+
+#: "auf" oder "nach" unmittelbar vor einer nackten Zahl: Sie ist die neue
+#: Stunde ("auf 11"); allein ohne das Wort waere sie geraten ("Meeting 2").
+_NEW_TIME_WORD_BEFORE = re.compile(r"\b(?:auf|nach)\s+$", re.IGNORECASE)
+
+#: Die Einer der Zahlwoerter, fuer "einundzwanzig" bis "neunundzwanzig".
+_UNIT_WORDS: tuple[str, ...] = (
+    "ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun",
+)
+
+#: Eine Stunde als Zahlwort, null bis vierundzwanzig, je mit ASCII-Umschrift
+#: ("zwoelf", "fuenfzehn"). Ohne "ein": Allein ist es ein Artikel ("ein
+#: Termin"), und "ein Uhr" schreibt die Normalisierung schon als "1:00".
+_HOUR_WORDS: dict[str, int] = {
+    form: value
+    for word, value in (
+        ("null", 0), ("eins", 1), ("zwei", 2), ("zwo", 2), ("drei", 3), ("vier", 4),
+        ("fünf", 5), ("sechs", 6), ("sieben", 7), ("acht", 8), ("neun", 9), ("zehn", 10),
+        ("elf", 11), ("zwölf", 12), ("dreizehn", 13), ("vierzehn", 14), ("fünfzehn", 15),
+        ("sechzehn", 16), ("siebzehn", 17), ("achtzehn", 18), ("neunzehn", 19),
+        ("zwanzig", 20),
+        *((f"{unit}undzwanzig", 21 + i) for i, unit in enumerate(_UNIT_WORDS[:4])),
+    )
+    for form in (word, _ascii_umschrift(word))
+}
+
+#: Ein Tag des Monats als Ordinalzahl ("den zehnten", "der erste"), mit jeder
+#: Endung und ASCII-Umschrift. Keine Stunde: Die Grenze hinter dem Zahlwort
+#: trennt "zehnten" von "zehn".
+_ORDINAL_DAYS: dict[str, int] = {
+    form + ending: value
+    for stem, value in (
+        ("erst", 1), ("zweit", 2), ("dritt", 3), ("viert", 4), ("fünft", 5), ("sechst", 6),
+        ("siebt", 7), ("siebent", 7), ("acht", 8), ("neunt", 9), ("zehnt", 10), ("elft", 11),
+        ("zwölft", 12), ("dreizehnt", 13), ("vierzehnt", 14), ("fünfzehnt", 15),
+        ("sechzehnt", 16), ("siebzehnt", 17), ("achtzehnt", 18), ("neunzehnt", 19),
+        ("zwanzigst", 20), ("dreißigst", 30), ("einunddreißigst", 31),
+        *((f"{unit}undzwanzigst", 21 + i) for i, unit in enumerate(_UNIT_WORDS)),
+    )
+    for form in (stem, _ascii_umschrift(stem))
+    for ending in ("e", "en", "er", "es", "em")
+}
+
+#: Ein Zahlwort, das eine Stunde sein kann: nicht Teil eines Wortes ("elfte",
+#: "vierzehn" ist nicht "vier"), keine Menge ("zwei Stunden", "drei Tage").
+_HOUR_WORD = re.compile(
+    r"(?<![\w.,:])(" + _wortgruppe(*_HOUR_WORDS) + r")\b"
+    r"(?!\s*(?:" + _QUANTITIES_AFTER_UM + r")\b)",
+    re.IGNORECASE,
+)
+
+#: Minuten als Zahlwort ("dreissig", "fuenfzehn"), die keine Form der
+#: Normalisierung aufnimmt: "elf Uhr dreissig" wird "11:00dreissig".
+_MINUTE_WORD: str = r"(?:\w*(?:zig|ßig|ssig)|" + _wortgruppe(*_HOUR_WORDS) + r")\b"
+
+#: Hinter einer geschriebenen Uhrzeit, auch angeklebt: Minuten als Zahlwort.
+_MINUTES_AFTER_CLOCK = re.compile(r"\s*" + _MINUTE_WORD, re.IGNORECASE)
+
+#: Hinter einer Stunde als Zahlwort: "Uhr" ("dreizehn Uhr"), Gruppe 1 sind
+#: Minuten dahinter, als Ziffer oder Zahlwort ("dreizehn Uhr 30").
+_UHR_AFTER_WORD = re.compile(r"\s+uhr\b(\s+(?:\d|" + _MINUTE_WORD + r"))?", re.IGNORECASE)
+
+#: "halb", "viertel", "dreiviertel" (auch mit "vor"/"nach") vor einer Stunde,
+#: die die Normalisierung nicht umgerechnet hat ("viertel nach 11", "halb
+#: dreizehn"): Die Stunde allein waere eine andere Uhrzeit.
+_FRACTION_BEFORE = re.compile(
+    r"\b(?:halb|viertel|dreiviertel)(?:\s+(?:vor|nach))?\s+$", re.IGNORECASE,
+)
+
+#: Ein Tag des Monats als Ordinalzahl, dahinter ein Monat (Gruppe 2) oder das
+#: Ende, ein Satzzeichen oder eine Ziffer ("den zehnten 11:00"). Folgt ein
+#: anderes Wort, ist es ein Beiwort ("den ersten Termin") und kein Tag.
+_ORDINAL_DAY = re.compile(
+    r"\b(" + _wortgruppe(*_ORDINAL_DAYS) + r")"
+    r"(?:\s+(" + _MONTHS_AFTER_UM + r")\b\.?|(?=\s*(?:$|[.,;!?)]|\d)))",
+    re.IGNORECASE,
+)
+
 #: Ein Wochentag als Wort, fuer die Pruefung gegen ein Datum aus einem Tageswort.
 _WEEKDAY_WORD = re.compile(r"\b(" + "|".join(_WOCHENTAGE) + r")\b", re.IGNORECASE)
+
+#: Die Muster von `day_phrase`, aus denselben Listen wie die Fuzzy-Korrektur
+#: und die Marker, je mit ASCII-Umschrift ("naechsten"). Ein Tag als Wort mit
+#: seinen relativen Praefixen davor ("naechsten Freitag", "morgen").
+_DAY_PHRASE = re.compile(
+    r"\b(?:(?:" + _wortgruppe(*_RELATIVE_PRAEFIXE, *map(_ascii_umschrift, _RELATIVE_PRAEFIXE))
+    + r")\s+)*(?:" + _wortgruppe(*_WOCHENTAGE, *_RELATIVE) + r")\b",
+    re.IGNORECASE,
+)
+
+#: Jedes andere Wort, das an einem Tag mitrechnet: Tag, Monat, Einheit,
+#: Praefix, Tageszeit ("Freitag naechste Woche", "Freitag abends") — und ein
+#: Datum aus Ziffern.
+_OTHER_DAY_WORD = re.compile(
+    r"\b(?:" + _wortgruppe(*{
+        form
+        for word in (*_WOCHENTAGE, *_RELATIVE, *_MONATE, *_ZEITEINHEITEN,
+                     *_RELATIVE_PRAEFIXE, *_TAGESZEITEN, "nacht")
+        for form in (word, _ascii_umschrift(word))
+    }) + r")\b|\d{1,2}\.\d{1,2}\.|\d{4}-\d{2}-\d{2}",
+    re.IGNORECASE,
+)
+
+#: Die Muster von `raw_time_form`, auf dem Rohtext vor jeder Normalisierung.
+#: Eine Stunde T: Ziffern ("11", "11:30", "11.30") oder ein Zahlwort "eins" bis
+#: "vierundzwanzig", je wahlweise mit "Uhr". "ein" nur vor "Uhr" — allein ist
+#: es ein Artikel ("ein Treffen"). Keine Ziffer mit Buchstaben dahinter ("11h").
+#: `{n}` ist der Name der Gruppen; T steht in der Form an mehreren Stellen.
+_RAW_HOUR: str = (
+    r"(?:(?<![\w.,:])(?P<{n}_h>\d{{1,2}})(?:[:.](?P<{n}_m>\d{{2}}))?(?!\w|[.,:]\d)"
+    r"|\b(?P<{n}_w>ein(?=\s+uhr\b)|" + _wortgruppe(*_HOUR_WORDS) + r")\b)(?:\s+uhr\b)?"
+)
+
+#: Ein Tag <Tag>: ein Wochentag, wahlweise mit relativem Praefix ("naechsten
+#: Freitag" — `tag_erkannt` liest den Wochentag), "heute", "morgen",
+#: "uebermorgen", ein Datum mit Punkt ("20.", "20.10.", "20.10.2026") oder eine
+#: Ordinalzahl, die beiden letzten wahlweise mit "den". "11.30." ist kein Datum:
+#: Es gibt keinen 30. Monat. "naechste Woche" ist kein Tag: Kein Wochentag.
+_RAW_DAY: str = (
+    r"(?:\bauf\s+)?(?:(?:\bden\s+)?(?:(?<![\w.,:])\d{1,2}\."
+    r"(?:(?:0?[1-9]|1[0-2])\.(?:\d{4})?(?!\d)|(?!\d))"
+    r"|\b(?:" + _wortgruppe(*_ORDINAL_DAYS) + r")\b)"
+    r"|\b(?:(?:" + _wortgruppe(*_RELATIVE_PRAEFIXE, *map(_ascii_umschrift, _RELATIVE_PRAEFIXE))
+    + r")\s+)?(?:" + _wortgruppe(*_WOCHENTAGE) + r")\b"
+    r"|\b(?:heute|morgen|übermorgen|uebermorgen)\b)"
+)
+
+#: Die Positivform, genau eine der fuenf Formen: "[auf|um|nach|gegen] T",
+#: "von T auf|nach T", "auf <Tag>", "auf <Tag> [um] T", "auf <Tag> von T
+#: auf|nach T". Die neue Stunde steht in der Gruppe y2, t2, y1 oder t1.
+_RAW_TIME_FORM = re.compile(
+    r"(?P<day>" + _RAW_DAY + r")"
+    r"(?:\s+(?:von\s+" + _RAW_HOUR.format(n="x2") + r"\s+(?:auf|nach)\s+"
+    + _RAW_HOUR.format(n="y2") + r"|(?:um\s+)?" + _RAW_HOUR.format(n="t2") + r"))?"
+    r"|\bvon\s+" + _RAW_HOUR.format(n="x1") + r"\s+(?:auf|nach)\s+" + _RAW_HOUR.format(n="y1")
+    + r"|(?:\b(?:auf|um|nach|gegen)\s+)?" + _RAW_HOUR.format(n="t1"),
+    re.IGNORECASE,
+)
+
+#: Die Gruppen der neuen Stunde, je Form genau eine gesetzt.
+_RAW_NEW_HOUR_GROUPS: tuple[str, ...] = ("y2", "t2", "y1", "t1")
+
+#: Der Wert einer Stunde als Zahlwort in der Positivform, "ein" eingeschlossen.
+_RAW_HOUR_VALUES: dict[str, int] = {"ein": 1, **_HOUR_WORDS}
+
+#: Woerter aus `_GESCHUETZTE_WOERTER` und `_ZAHLWOERTER`, die allein keinen
+#: Zeitbezug tragen: Praepositionen ("nach" gehoert zur Form "von T nach T")
+#: und "ein", meist ein Artikel ("ein Treffen"). Die Zeit, auf die sie zeigen,
+#: ist selbst ein Wort der Menge unten ("vor 11", "in einer Woche").
+_RAW_NO_TIME_WORDS: frozenset[str] = frozenset({"vor", "nach", "um", "am", "in", "an", "ein"})
+
+#: Jedes Wort, das der Zeitparser als Zeitbezug fuehrt — abgeleitet aus seinen
+#: Listen, nicht abgeschrieben: Wochentage, Monate und ihre Kurzformen,
+#: Tageswoerter, Tageszeiten (auch die der Rueckfall-Uhrzeiten), Zeiteinheiten,
+#: relative Praefixe, die geschuetzten Woerter der Fuzzy-Korrektur, Zahlwoerter,
+#: Stunden als Zahlwort und Ordinaltage, je mit ASCII-Umschrift; dazu "mittag"
+#: und "nacht" wie in `_OTHER_DAY_WORD`. Aendert sich eine Liste, aendert sich
+#: die Menge mit.
+_RAW_PARSER_WORD_LIST: tuple[str, ...] = (
+    *_WOCHENTAGE, *_MONATE, *_MONTHS_AFTER_UM.split("|"), *_RELATIVE, *_RELATIVE_DAYS,
+    *_TAGESZEITEN, *_TAGESZEIT_UHRZEITEN, *_ZEITEINHEITEN, *_RELATIVE_PRAEFIXE,
+    *_GESCHUETZTE_WOERTER, *_ZAHLWOERTER, *_HOUR_WORDS, *_ORDINAL_DAYS, "mittag", "nacht",
+)
+_RAW_TIME_WORDS: frozenset[str] = frozenset(
+    form.lower()
+    for word in _RAW_PARSER_WORD_LIST
+    for form in (word, _ascii_umschrift(word))
+    if word not in _RAW_NO_TIME_WORDS
+)
+
+#: Jedes Wort der Listen oben, kleingeschrieben, auch mit ASCII-Umschrift —
+#: einschliesslich `_RAW_NO_TIME_WORDS` ("nach", "vor"). Ein solches Wort und
+#: jeder seiner Anfaenge ("nachm", "vorm", "fr") ist nie ein Inhaltswort des
+#: Titels.
+_RAW_PARSER_WORDS: frozenset[str] = frozenset(
+    form.lower() for word in _RAW_PARSER_WORD_LIST for form in (word, _ascii_umschrift(word))
+)
+
+#: Alles Zeitartige, das ausserhalb der Positivform nicht stehen darf: jedes
+#: Wort aus `_RAW_TIME_WORDS`, jede Ziffer, die Zehner "zwanzig" bis "fuenfzig" auch mit Einer
+#: ("dreissig", "fuenfundzwanzig"), jedes Wort, das mit "halb", "viertel" oder "dreiviertel"
+#: beginnt ("halbe", "Viertelstunde") oder auf "stunde", "tag", "woche", "monat"
+#: oder "jahr" endet, auch gebeugt ("Stunden", "Geburtstag", "Wochen"), dazu
+#: "Uhr", "oder", "bzw.", "bis", "zwischen", "statt", "nicht", "sonst" und der
+#: Gedankenstrich. Ganze Woerter: "Mittagessen" ist kein "Mittag".
+_RAW_OTHER_TIME = re.compile(
+    r"\d|[–—]|\b(?:\w+und)?(?:zwanzig|dreißig|dreissig|vierzig|fünfzig|fuenfzig)\b"
+    r"|\b(?:halb|viertel|dreiviertel)\w*"
+    r"|\b\w*(?:stunde|tag|woche|monat|jahr)(?:e|en|n|s|es)?\b"
+    r"|\b(?:" + _wortgruppe(*_RAW_TIME_WORDS, *{
+        form
+        for word in (
+            "uhr", "oder", "bzw", "beziehungsweise", "bis", "zwischen", "statt", "anstatt",
+            "nicht", "sonst",
+        )
+        for form in (word, _ascii_umschrift(word))
+    }) + r")\b",
+    re.IGNORECASE,
+)
+
+#: Das Verb des Verschiebens in seinen Formen ("verschieb", "verschiebe",
+#: "verschieben", "legst", "aendert"), auf dem kleingeschriebenen Wort in
+#: ASCII-Umschrift. Zugelassen ausserhalb der Positivform.
+_RAW_ADMITTED_VERB = re.compile(
+    r"(?:verschieb|verleg|leg|setz|aender|pack|mach)(?:e|en|n|st|est|t|et)?"
+)
+
+#: Die Fuellwoerter einer Bitte und eines Bezugs, kleingeschrieben in
+#: ASCII-Umschrift: Artikel, Pronomen, Demonstrativa, "mein..."/"dein..."/
+#: "unser...", die Bitte ("bitte", "mal", "kannst", "wuerdest"), "Termin" und
+#: "Uhrzeit" und die Praepositionen eines Bezugs ("der Termin beim Zahnarzt",
+#: "mit Anna", "zum Friseur"). Zugelassen, weil keines eine Zeit traegt; die
+#: Praepositionen einer Zeit ("um", "am", "vor", "in", "bis", "von") fehlen mit
+#: Absicht, ebenso "und", "oder" und "auf" ausserhalb der Form.
+_RAW_ADMITTED_WORDS: frozenset[str] = frozenset({
+    "der", "die", "das", "den", "dem", "des",
+    "ein", "eine", "einen", "einem", "einer", "eines",
+    "ich", "du", "er", "sie", "es", "wir", "ihr", "mir", "mich", "dir", "dich", "ihm", "ihn",
+    "uns", "euch", "ihnen",
+    *(stem + ending for stem in ("mein", "dein", "unser", "dies")
+      for ending in ("", "e", "en", "em", "er", "es")),
+    "bitte", "mal", "doch", "noch", "gern", "gerne",
+    "kannst", "kann", "koenntest", "koennte", "wuerdest", "wuerde", "magst",
+    "termin", "uhrzeit", "bei", "beim", "mit", "fuer", "zum", "zur",
+})
+
+#: Ein Wort des Termintitels: nur Buchstaben. Als Bezug zaehlt es nur, wenn es
+#: ein Inhaltswort ist (`_RAW_TITLE_MIN_LETTERS`, `_RAW_FUNCTION_WORDS`,
+#: `_RAW_PARSER_WORDS`).
+_RAW_TITLE_WORD = re.compile(r"[^\W\d_]+")
+
+#: Ein Titelwort mit weniger Buchstaben ist kein Inhaltswort ("Dr", "Ort", "A").
+_RAW_TITLE_MIN_LETTERS: int = 4
+
+#: Das Kompositum aus einem Titelwort, das ausserhalb der Form als Bezug
+#: zaehlt: Titelwort vorn, "termin" hinten ("Zahnarzttermin").
+_RAW_TITLE_COMPOUND_END: str = "termin"
+
+#: Was zwischen Titelwort und "termin" stehen darf: nichts oder das Fugen-s
+#: ("Zahnarztstermin"). Eine freie Mitte liesse jedes Wort ein, auch ein
+#: Zeitwort ("Zahnarztnachmittagstermin").
+_RAW_TITLE_COMPOUND_JOINTS: tuple[str, ...] = ("", "s")
+
+#: Funktionswoerter, kleingeschrieben in ASCII-Umschrift: Praepositionen,
+#: Artikel, Pronomen und Konjunktionen. Ein Titelwort aus dieser Menge ist kein
+#: Bezug — der Titel "Fahrt nach Hause" liess sonst "nach" und ueber das
+#: Teilwort "nachm." zu, und "auf 3 Uhr nachm." schrieb 03:00 statt 15:00.
+#: Kuerzere Woerter als `_RAW_TITLE_MIN_LETTERS` stehen hier der Vollstaendigkeit
+#: halber; sie scheiden schon an der Laenge aus.
+_RAW_FUNCTION_WORDS: frozenset[str] = frozenset({
+    # Praepositionen
+    "ab", "an", "am", "auf", "aus", "bei", "beim", "bis", "durch", "fuer", "gegen", "hinter",
+    "im", "in", "ins", "mit", "nach", "neben", "ohne", "seit", "statt", "anstatt", "ueber",
+    "um", "unter", "vom", "von", "vor", "waehrend", "wegen", "zu", "zum", "zur", "zwischen",
+    "gegenueber", "innerhalb", "ausserhalb", "binnen", "laut", "trotz", "samt", "mitsamt",
+    # Artikel
+    "der", "die", "das", "den", "dem", "des",
+    "ein", "eine", "einen", "einem", "einer", "eines",
+    "kein", "keine", "keinen", "keinem", "keiner", "keines",
+    # Pronomen
+    "ich", "du", "er", "sie", "es", "wir", "ihr", "mir", "mich", "dir", "dich", "ihm", "ihn",
+    "uns", "euch", "ihnen", "sich", "man", "wer", "was", "wen", "wem", "wessen",
+    *(stem + ending
+      for stem in ("mein", "dein", "sein", "ihr", "unser", "euer", "eur", "dies", "jen",
+                   "welch", "jed", "manch", "solch")
+      for ending in ("", "e", "en", "em", "er", "es")),
+    # Konjunktionen
+    "und", "oder", "aber", "sondern", "denn", "doch", "sowie", "sowohl", "als", "wie",
+    "dass", "weil", "wenn", "falls", "ob", "obwohl", "damit", "bevor", "nachdem", "bzw",
+    "beziehungsweise", "noch", "weder", "entweder",
+})
+
+#: Eine Uhrzeit mit Punkt, die kein Datum sein kann: Minuten 13..59, also kein
+#: Monat ("11.30", "11.30." am Satzende). Nicht vor einer Menge oder einem Monat
+#: ("2.50 Euro"), nicht als Teil einer laengeren Zahl ("11.30.2026") oder eines
+#: Wortes ("11.30h"). "20.10." und "11.10" bleiben: Sie koennen ein Datum sein.
+_DOTTED_CLOCK_TIME = re.compile(
+    r"(?<![\w.,:])([01]?\d|2[0-3])\.(1[3-9]|[2-5]\d)(?!\w|[.,:]\d)"
+    r"(?!\s*(?:" + _QUANTITIES_AFTER_UM + "|" + _MONTHS_AFTER_UM + r")\b)(?!\s*[%€°])",
+    re.IGNORECASE,
+)
 
 
 class _HourReadingError(ValueError):
@@ -751,6 +1190,467 @@ def _impossible_values(normalized: str) -> list[str]:
 
     # ── Ausgabe ──────────────────────────────────────────────────────
     return found
+
+
+def _day_of_month(day: int, month_word: Optional[str], today: date) -> Optional[date]:
+    """Der Tag, den "den 20." oder "20. Oktober" meint — der naechste ab heute.
+
+    Ohne Monat: dieser Monat, wenn der Tag noch kommt, sonst der naechste.
+    Mit Monat: dieses Jahr, wenn der Tag noch kommt, sonst das naechste.
+
+    Vorbedingung: `month_word` ist leer oder ein Treffer aus `_MONTHS_AFTER_UM`.
+    Nachbedingung: ein Kalendertag ab `today`, oder None.
+    Fehlerfaelle: None fuer einen Tag, den es nicht gibt ("den 31." vor einem
+        Monat mit 30 Tagen, "den 0.") — der Aufrufer zaehlt ihn als Zweifel.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not 1 <= day <= 31:
+        return None
+    month: int = 0
+    if month_word:
+        month = 1 + [name[:3] for name in _MONATE].index(month_word.lower()[:3])
+
+    # ── Verarbeitung ────────────────────────────
+    year: int = today.year
+    if not month:
+        month = today.month if day >= today.day else today.month % 12 + 1
+        year += 1 if month < today.month else 0
+    elif (month, day) < (today.month, today.day):
+        year += 1
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if day > calendar.monthrange(year, month)[1]:
+        return None
+    return date(year, month, day)
+
+
+def _spelled_hours(rest: str) -> tuple[list[tuple[int, int, tuple[int, int], bool]], bool]:
+    """Die Stunden als Zahlwort im Rest der Lesung ("auf elf", "dreizehn Uhr").
+
+    Gezaehlt wird jedes Zahlwort null bis vierundzwanzig aus `_HOUR_WORD`:
+    nicht Teil eines Wortes, also keine Ordinalzahl ("zehnten"), und keine
+    Menge ("zwei Stunden"). "ein" zaehlt nicht. Steht "Uhr" dahinter, ist die
+    Stunde geschrieben, und ihre Stelle reicht bis hinter "Uhr" ("von dreizehn
+    Uhr auf vierzehn Uhr" ist dann die Form "von X auf Y"). Bis "zwoelf Uhr"
+    hat die Normalisierung das schon als Uhrzeit geschrieben.
+
+    Vorbedingung: `rest` ist der normalisierte Text mit ausgeblendeten
+        Uhrzeiten, Daten und Tagen des Monats.
+    Nachbedingung: je Zahlwort (Anfang, Ende, (Stunde, 0), geschrieben) mit
+        Stellen in `rest`; dazu wahr, wenn hinter "Uhr" Minuten stehen, die
+        keine Uhrzeit aufgenommen hat ("dreizehn Uhr dreissig") — ein Zweifel.
+    Fehlerfaelle: kein Text wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(rest, str):
+        msg: str = f"_spelled_hours: kein Text ({type(rest).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    found: list[tuple[int, int, tuple[int, int], bool]] = []
+    doubt: bool = False
+    for match in _HOUR_WORD.finditer(rest):
+        uhr: Optional[re.Match] = _UHR_AFTER_WORD.match(rest, match.end())
+        end: int = match.end()
+        if uhr:
+            end = uhr.start(1) if uhr.group(1) else uhr.end()
+            doubt = doubt or bool(uhr.group(1))
+        found.append((match.start(), end, (_HOUR_WORDS[match.group(1).lower()], 0), bool(uhr)))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(not 0 <= start < end <= len(rest) for start, end, _, _ in found):
+        msg = f"_spelled_hours: Stelle ausserhalb des Textes ({found}, {rest!r})"
+        raise ValueError(msg)
+    return found, doubt
+
+
+def _ordinal_days(normalized: str, today: date) -> list[Optional[date]]:
+    """Die Tage des Monats als Ordinalzahl ("auf den zehnten", "zehnten Oktober").
+
+    Ein Tag ist die Ordinalzahl aus `_ORDINAL_DAY`, wenn ein Monat folgt oder
+    ein Artikel davor steht ("den", "zum"); steht keiner davor ("zehnten
+    11:00", aus "am zehnten um 11 Uhr" — die Normalisierung nimmt "am"
+    heraus), ist sie ein Zweifel. Folgt ein anderes Wort, ist sie ein Beiwort
+    ("den ersten Termin") und zaehlt nicht.
+
+    Vorbedingung: `normalized` ist das Ergebnis von `_text_normalisieren`.
+    Nachbedingung: je Ordinalzahl ein Tag ab `today` (`_day_of_month`), oder
+        None fuer einen Zweifel und einen Tag, den es nicht gibt.
+    Fehlerfaelle: kein Text wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(normalized, str):
+        msg: str = f"_ordinal_days: kein Text ({type(normalized).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    named: list[Optional[date]] = [
+        _day_of_month(_ORDINAL_DAYS[m.group(1).lower()], m.group(2), today)
+        if m.group(2) or _ARTICLE_BEFORE.search(normalized[:m.start()]) else None
+        for m in _ORDINAL_DAY.finditer(normalized)
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(day is not None and day < today for day in named):
+        msg = f"_ordinal_days: Tag vor heute ({named}, {today})"
+        raise ValueError(msg)
+    return named
+
+
+def _stated_hour(
+    normalized: str, found: list[tuple[int, int, tuple[int, int], bool]],
+) -> frozenset[tuple[int, int]]:
+    """Die Stunde, die ein Text als neue nennt — leer, wenn er keine so nennt.
+
+    Zwei Lagen, keine weitere:
+    (a) Der Text traegt genau eine Stunde; dieselbe zweimal ist eine. Sie ist
+        die neue, wenn sie geschrieben ist ("11 Uhr", "um 11", "11:30") oder
+        als nackte Zahl unmittelbar hinter "auf"/"nach" steht ("auf 11"). Eine
+        nackte Zahl sonst ("Meeting 2") nennt keine.
+    (b) Der Text traegt genau zwei Stunden in der Form "von X auf Y" oder "von
+        X nach Y": "von" unmittelbar vor X, zwischen X und Y nichts als "auf"
+        oder "nach", hinter Y kein "auf", "nach", "oder", "bzw.", "statt",
+        "nicht", "sonst" oder "und". Y ist die neue. Was vor "von" steht,
+        zaehlt nicht ("auf Freitag von 10 auf 11 Uhr").
+    Jede andere Lage mit Stunden nennt keine — auch eine Form, die hier nicht
+    steht ("auf 10 oder 11 Uhr", "auf 11, nicht auf 10 Uhr", "von 10 bis 12").
+
+    Vorbedingung: `found` sind die Stunden aus `_read_time` als (Anfang, Ende,
+        (Stunde, Minute), geschrieben), mit Stellen in `normalized`.
+    Nachbedingung: leer oder genau eine Stunde aus `found`.
+    Fehlerfaelle: eine Stelle ausserhalb des Textes wirft `ValueError` — die
+        Woerter um die Stunde waeren sonst falsch gelesen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if any(not 0 <= start < end <= len(normalized) for start, end, _, _ in found):
+        msg: str = f"_stated_hour: Stelle ausserhalb des Textes ({found}, {normalized!r})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    ordered: list[tuple[int, int, tuple[int, int], bool]] = sorted(found)
+    values: frozenset[tuple[int, int]] = frozenset(hour for _, _, hour, _ in ordered)
+    stated: frozenset[tuple[int, int]] = frozenset()
+    if len(values) == 1 and any(
+        written or _NEW_TIME_WORD_BEFORE.search(normalized[:start])
+        for start, _, _, written in ordered
+    ):
+        stated = values
+    elif len(ordered) == 2:
+        (x_start, x_end, _, _), (y_start, y_end, y_hour, _) = ordered
+        if (
+            _FROM_BEFORE.search(normalized[:x_start])
+            and _TO_BETWEEN.fullmatch(normalized[x_end:y_start])
+            and not _AFTER_TO_BREAK.search(normalized[y_end:])
+        ):
+            stated = frozenset({y_hour})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(stated) > 1 or not stated <= values:
+        msg = f"_stated_hour: keine Stunde des Textes ({stated}, {values})"
+        raise ValueError(msg)
+    return stated
+
+
+def _read_time(normalized: str, today: date) -> TimeReading:
+    """Liest Stunden und Tage des Monats aus dem normalisierten Text.
+
+    Als Stunde zaehlt jede Form:
+    - jede geschriebene Uhrzeit (`H:MM` — die Normalisierung macht daraus
+      "11 Uhr", "um 11", "elf Uhr", "halb elf", "viertel nach elf",
+      "dreiviertel elf");
+    - jede nackte Zahl 0..24, die kein Datum, keine Menge und nicht Teil eines
+      Wortes ist ("von 10 bis 12 Uhr", "zwischen 10 und 11 Uhr", "10–12 Uhr");
+    - jedes Zahlwort "null" bis "vierundzwanzig" (ausser "ein"), das keine
+      Menge und nicht Teil eines Wortes ist ("auf zehn, nicht auf elf Uhr",
+      "dreizehn Uhr") — `_spelled_hours`.
+    Keine Stunde sind: "20.10.", ein ISO-Datum, eine Zahl mit Punkt oder vor
+    einem Monat, und eine Ordinalzahl ("den zehnten", `_ordinal_days`). Sie
+    sind ein Tag ("auf den 20.", "20. Oktober", "auf den zehnten"), wenn ein
+    Artikel davor oder ein Monat danach steht, sonst ein Zweifel ("auf 11.").
+    Ein Zweifel ist auch: eine Stunde hinter "halb", "viertel" oder
+    "dreiviertel", die die Normalisierung nicht umgerechnet hat ("viertel nach
+    11"), und Minuten als Zahlwort hinter einer Uhrzeit ("elf Uhr dreissig").
+
+    Welche Stunde der Text als neue nennt, entscheidet `_stated_hour` an den
+    Stellen der Stunden: Lage (a) genau eine, Lage (b) genau zwei in der Form
+    "von X auf Y". Nennt der Text Stunden, aber keine davon so, ist er
+    unentschieden.
+
+    Vorbedingung: `normalized` ist das Ergebnis von `_text_normalisieren`.
+    Nachbedingung: eine `TimeReading`; `stated` ist leer oder traegt eine
+        Stunde aus `hours`; `undecided` ist wahr genau dann, wenn `hours`
+        nicht leer und `stated` leer ist.
+    Fehlerfaelle: kein Text wirft `TypeError`. Ein Ausblenden, das die Laenge
+        aendert, wirft `ValueError` — die Stellen der Stunden zeigten sonst
+        neben "von", "auf" und "nach".
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(normalized, str):
+        msg: str = f"_read_time: kein Text ({type(normalized).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    dates_blanked: str = _DATE_DIGITS.sub(lambda m: " " * len(m.group(0)), normalized)
+    written_at: list[tuple[int, int, tuple[int, int], bool]] = [
+        (m.start(), m.end(), (int(m.group(1)), int(m.group(2))), True)
+        for m in _CLOCK_TIME.finditer(dates_blanked)
+    ]
+    rest: str = _CLOCK_TIME.sub(lambda m: " " * len(m.group(0)), dates_blanked)
+    named: list[Optional[date]] = [
+        _day_of_month(int(m.group(1)), m.group(2), today)
+        if m.group(2) or _ARTICLE_BEFORE.search(rest[:m.start()]) else None
+        for m in _DAY_OF_MONTH.finditer(rest)
+    ]
+    rest = _DAY_OF_MONTH.sub(lambda m: " " * len(m.group(0)), rest)
+    spelled, minutes_doubt = _spelled_hours(rest)
+    every: list[tuple[int, int, tuple[int, int], bool]] = written_at + spelled + [
+        (m.start(1), m.end(1), (int(m.group(1)), 0), False)
+        for m in _BARE_NUMBER.finditer(rest) if int(m.group(1)) <= 24
+    ]
+    named += _ordinal_days(normalized, today)
+    doubt: bool = (
+        None in named or minutes_doubt
+        or any(_MINUTES_AFTER_CLOCK.match(dates_blanked, end) for _, end, _, _ in written_at)
+        or any(_FRACTION_BEFORE.search(normalized[:start]) for start, _, _, _ in every)
+    )
+    stated: frozenset[tuple[int, int]] = _stated_hour(normalized, every)
+    reading: TimeReading = TimeReading(
+        hours=frozenset(hour for _, _, hour, _ in every),
+        stated=stated,
+        undecided=bool(every) and not stated,
+        days=frozenset(day for day in named if day is not None),
+        doubtful=doubt,
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(rest) != len(normalized):
+        msg = f"_read_time: Ausblenden aenderte die Laenge ({normalized!r} -> {rest!r})"
+        raise ValueError(msg)
+    return reading
+
+
+def read_time(text: str, today: Optional[date] = None) -> TimeReading:
+    """Welche Stunden und Tage des Monats ein Auftrag nennt — fuer das Verschieben.
+
+    Gelesen wird der Text ohne Fuzzy-Korrektur: Die zieht "und" auf Distanz 2
+    zu "juni", und aus "zwischen 10 und 11 Uhr" wuerde ein Datum mit einer
+    Uhrzeit. Die Umlaute werden wie dort hergestellt ("zwoelf Uhr").
+
+    Vorbedingung: `text` ist ein Text, leer erlaubt.
+    Nachbedingung: die `TimeReading` von `_read_time`; leer fuer leeren Text.
+    Fehlerfaelle: kein Text wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(text, str):
+        msg: str = f"read_time: kein Text ({type(text).__name__})"
+        raise TypeError(msg)
+    if not text.strip():
+        return TimeReading()
+
+    # ── Verarbeitung ────────────────────────────
+    day: date = today or _heute_lokal()
+    reading: TimeReading = _read_time(
+        _text_normalisieren(_umlaute_herstellen(text), heute=day), day,
+    )
+
+    # ── Ausgabe ─────────────────────────────────
+    return reading
+
+
+def day_phrase(text: str) -> str:
+    """Der Tagesausdruck eines Satzes allein ("Freitag"), wenn er der einzige Zeitbezug ist.
+
+    dateparser liest nur einen Zeitausdruck, keinen Satz: Fuer "Verschieb den
+    Zahnarzt auf Freitag." gibt `zeit_parsen_vektor` einen erkannten Tag ohne
+    Datum. Der Tagesausdruck allein ist das, was die Klassifikation sonst als
+    Zeitausdruck liefert. Herausgeschnitten wird er nur, wenn ausserhalb kein
+    weiteres Wort am Tag mitrechnet — sonst waere der Tag geraten ("Freitag
+    naechste Woche", "heute Freitag"). Uhrzeiten zaehlen nicht mit: Die liest
+    `read_time`.
+
+    Vorbedingung: `text` ist ein Text, leer erlaubt.
+    Nachbedingung: ein Wochentag oder Tageswort mit seinen relativen Praefixen,
+        so wie er im Text steht; leer, wenn es keinen gibt oder ausserhalb ein
+        weiteres Tageswort, eine Einheit, ein Monat, eine Tageszeit oder ein
+        Datum aus Ziffern steht.
+    Fehlerfaelle: kein Text wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(text, str):
+        msg: str = f"day_phrase: kein Text ({type(text).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    found: Optional[re.Match[str]] = _DAY_PHRASE.search(text)
+    rest: str = f"{text[:found.start()]} {text[found.end():]}" if found else ""
+    phrase: str = found.group(0) if found and not _OTHER_DAY_WORD.search(rest) else ""
+
+    # ── Ausgabe ─────────────────────────────────
+    return phrase
+
+
+def raw_time_form(text: str, title: str) -> Optional[RawTimeForm]:
+    """Die Positivform eines Verschiebeauftrags auf dem Rohtext — oder None.
+
+    Unabhaengig von der Normalisierung: Gelesen wird der Text, wie er kommt.
+    Der Zeitteil muss genau eine dieser Formen sein (`_RAW_TIME_FORM`):
+    "[auf|um|nach|gegen] T", "von T auf|nach T", "auf <Tag>", "auf <Tag> [um]
+    T" oder "auf <Tag> von T auf|nach T". T ist eine Ziffernstunde ("11",
+    "11:30", "11.30") oder ein Zahlwort "eins" bis "vierundzwanzig" ("ein" nur
+    vor "Uhr"), je wahlweise mit "Uhr"; <Tag> ein Wochentag (auch mit
+    relativem Praefix, "naechsten Freitag"), "heute", "morgen", "uebermorgen",
+    ein Datum mit Punkt oder eine Ordinalzahl — "naechste Woche" nicht. Das
+    "auf" vor <Tag> ist wahlweise: Der Zeitausdruck der Klassifikation lautet
+    "Freitag". Ausserhalb der Form darf nur stehen, was zugelassen ist
+    (`_raw_outside_admitted`): das Verb des Verschiebens, ein Fuellwort, ein
+    Wort gleich einem Inhaltswort von `title` (mindestens vier Buchstaben,
+    kein Funktionswort, kein Wort der Parser-Listen und kein Anfang eines
+    solchen, also nicht "nachm") oder genau das Kompositum aus einem solchen
+    und "termin", wahlweise mit Fugen-s ("Zahnarzttermin", "Zahnarztstermin").
+    Zusaetzlich darf dort kein
+    Wort stehen, das der Zeitparser als Zeitbezug fuehrt (`_RAW_OTHER_TIME`)
+    — auch kein Wort des Titels.
+
+    Vorbedingung: `text` und `title` sind Texte, leer erlaubt.
+    Nachbedingung: eine `RawTimeForm` mit der neuen Uhrzeit der Form (Lage
+        "von T auf T": die zweite), oder ohne Uhrzeit fuer "auf <Tag>" und
+        einen Text ohne Zeitteil.
+    Fehlerfaelle: kein Text wirft `TypeError`. None — also die Rueckfrage —
+        ergibt ausserhalb der Form jedes Wort, das nicht zugelassen ist,
+        auch ein unbekanntes ("Fr.", "vorm.", "flimmerig"), jede Ziffer und
+        jedes Wort aus `_RAW_OTHER_TIME`; ebenso eine Stunde ueber 23 oder
+        Minuten ueber 59.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(text, str) or not isinstance(title, str):
+        msg: str = f"raw_time_form: kein Text ({type(text).__name__}, {type(title).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    found: Optional[re.Match[str]] = _RAW_TIME_FORM.search(text)
+    outside: str = f"{text[:found.start()]} {text[found.end():]}" if found else text
+    if _RAW_OTHER_TIME.search(outside) or not _raw_outside_admitted(outside, title):
+        return None
+    hour: Optional[tuple[int, int]] = _raw_new_hour(found) if found else None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if hour is not None and (hour[0] > 23 or hour[1] > 59):
+        return None
+    return RawTimeForm(clock=time(*hour) if hour is not None else None)
+
+
+def _raw_outside_admitted(outside: str, title: str) -> bool:
+    """Ob jedes Wort ausserhalb der Positivform ausdruecklich zugelassen ist.
+
+    Zugelassen ist, kleingeschrieben in ASCII-Umschrift: das Verb des
+    Verschiebens (`_RAW_ADMITTED_VERB`), ein Fuellwort einer Bitte oder eines
+    Bezugs (`_RAW_ADMITTED_WORDS`) und ueber den Titel nur zweierlei: ein
+    Wort, das einem Inhaltswort des Titels gleich ist ("Fahrt" zu "Fahrt nach
+    Hause"), oder genau das Kompositum Inhaltswort + "termin" oder
+    Inhaltswort + "s" + "termin" ("Zahnarzttermin", "Zahnarztstermin"), ohne
+    weitere Mitte ("Zahnarztnachmittagstermin" nicht). Inhaltswort ist ein
+    Titelwort nur aus Buchstaben, mit mindestens `_RAW_TITLE_MIN_LETTERS`
+    Buchstaben, das nicht in `_RAW_FUNCTION_WORDS` steht und kein Anfang
+    eines Worts aus `_RAW_PARSER_WORDS` ist, auch kein ganzes — "Dr", "nach",
+    "vor", "Freitag" und "nachm" (Anfang von "nachmittag") sind keine. Ein
+    Teilwort zaehlt nicht: "nachm." ist kein Bezug, auch nicht zu "Fahrt nach
+    Hause" oder "Kaffee nachm.". Jedes andere Wort ist nicht zugelassen, auch
+    ein unbekanntes. Satzzeichen sind keine Woerter.
+
+    Vorbedingung: `outside` ist der Rohtext ohne die Form, `title` der Titel
+        des Termins; beide Texte, leer erlaubt.
+    Nachbedingung: wahr genau dann, wenn kein Wort ausserhalb der Form nicht
+        zugelassen ist; ein Text ohne Woerter ist zugelassen.
+    Fehlerfaelle: kein Text wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(outside, str) or not isinstance(title, str):
+        msg: str = f"_raw_outside_admitted: kein Text ({outside!r}, {title!r})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    content_words: set[str] = {
+        part for part in _RAW_TITLE_WORD.findall(_ascii_umschrift(title.lower()))
+        if len(part) >= _RAW_TITLE_MIN_LETTERS
+        and part not in _RAW_FUNCTION_WORDS
+        and not any(parser_word.startswith(part) for parser_word in _RAW_PARSER_WORDS)
+    }
+    title_words: set[str] = content_words | {
+        part + joint + _RAW_TITLE_COMPOUND_END
+        for part in content_words for joint in _RAW_TITLE_COMPOUND_JOINTS
+    }
+    refused: list[str] = [
+        word for word in re.findall(r"\w+", _ascii_umschrift(outside.lower()))
+        if word not in _RAW_ADMITTED_WORDS
+        and not _RAW_ADMITTED_VERB.fullmatch(word)
+        and word not in title_words
+    ]
+
+    # ── Ausgabe ─────────────────────────────────
+    return not refused
+
+
+def _raw_new_hour(found: re.Match[str]) -> Optional[tuple[int, int]]:
+    """Die neue Stunde eines Treffers von `_RAW_TIME_FORM` als (Stunde, Minute).
+
+    Vorbedingung: `found` ist ein Treffer von `_RAW_TIME_FORM`.
+    Nachbedingung: die Stunde der gesetzten Gruppe aus `_RAW_NEW_HOUR_GROUPS`
+        ("von 10 auf 11" -> die 11), als Zahlwort ihr Wert ("ein" ist 1);
+        None fuer "auf <Tag>" ohne Stunde. Den Bereich prueft der Aufrufer.
+    Fehlerfaelle: kein Treffer, oder einer mit mehr als einer neuen Stunde,
+        wirft `ValueError` — das Muster haette seine Formen vermischt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(found, re.Match) or "t1_h" not in found.re.groupindex:
+        msg: str = f"_raw_new_hour: kein Treffer der Positivform ({found!r})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    hours: list[tuple[int, int]] = []
+    for name in _RAW_NEW_HOUR_GROUPS:
+        digits: Optional[str] = found.group(f"{name}_h")
+        word: Optional[str] = found.group(f"{name}_w")
+        if digits:
+            hours.append((int(digits), int(found.group(f"{name}_m") or 0)))
+        elif word:
+            hours.append((_RAW_HOUR_VALUES[word.lower()], 0))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(hours) > 1:
+        msg = f"_raw_new_hour: mehr als eine neue Stunde ({hours}, {found.group(0)!r})"
+        raise ValueError(msg)
+    return hours[0] if hours else None
+
+
+def dotted_clock_times(text: str) -> str:
+    """Schreibt eine Uhrzeit mit Punkt, die kein Datum sein kann, mit Doppelpunkt.
+
+    Fuer das Verschieben: Aus "auf 11.30." am Satzende macht die
+    Normalisierung das Datum "11.30.2026", und der Parser meldet einen Tag,
+    den es nicht gibt. Umgeschrieben wird nur `_DOTTED_CLOCK_TIME`: Stunde
+    0..23, Minuten 13..59, also nie ein Monat. "20.10." und "11.10" bleiben,
+    sie koennen ein Datum sein. Die Positivform (`raw_time_form`) liest den
+    Text davor.
+
+    Vorbedingung: `text` ist ein Text, leer erlaubt.
+    Nachbedingung: jede solche Form steht als `H:MM`, sonst ist der Text gleich.
+    Fehlerfaelle: kein Text wirft `TypeError`; weicht die Zahl der neuen
+        Uhrzeiten von der der Treffer ab, wirft es `_HourReadingError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(text, str):
+        msg: str = f"dotted_clock_times: kein Text ({type(text).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    count: int = len(_DOTTED_CLOCK_TIME.findall(text))
+    result: str = _DOTTED_CLOCK_TIME.sub(r"\1:\2", text)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    added: int = len(_WRITTEN_CLOCK_TIME.findall(result)) - len(_WRITTEN_CLOCK_TIME.findall(text))
+    if added != count:
+        raise _HourReadingError("count_mismatch", (count, added, text, result))
+    return result
 
 
 def _iso_dates_as_dmy(text: str) -> str:
