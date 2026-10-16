@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 954 Abschnitte in 7 Dateien — 442 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 955 Abschnitte in 7 Dateien — 443 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 36 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 37 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 954 Marken, 954 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 955 Marken, 955 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-16 | laufend | ## | [16.10.2026, 20:12 UTC — Die zweite Simulation: Notizen 5 von 6, keine falsche Bestätigung; die Nennung im Bestandsabgleich ist schärfer — gemessen, und gebaut, noch nicht im Betrieb](novaberg-roadmap.md#16102026-2012-utc--die-zweite-simulation-notizen-5-von-6-keine-falsche-bestätigung-die-nennung-im-bestandsabgleich-ist-schärfer--gemessen-und-gebaut-noch-nicht-im-betrieb) |
 | 2026-10-16 | laufend | ## | [16.10.2026, 16:02 UTC — Ein Notizauftrag erreicht die Notizen zuerst, und ein gefundener Termin deckt nur den Satz, der ihn nennt — gebaut, noch nicht im Betrieb](novaberg-roadmap.md#16102026-1602-utc--ein-notizauftrag-erreicht-die-notizen-zuerst-und-ein-gefundener-termin-deckt-nur-den-satz-der-ihn-nennt--gebaut-noch-nicht-im-betrieb) |
 | 2026-10-15 | laufend | ## | [15.10.2026, 21:33 UTC — Termine im Turn gelesen, keine Websuche nach dem eigenen Bestand, Verschieben mit einer Uhrzeit allein — gebaut, noch nicht im Betrieb](novaberg-roadmap.md#15102026-2133-utc--termine-im-turn-gelesen-keine-websuche-nach-dem-eigenen-bestand-verschieben-mit-einer-uhrzeit-allein--gebaut-noch-nicht-im-betrieb) |
 | 2026-10-15 | laufend | ## | [15.10.2026, 16:52 UTC — Die Kette ist im Betrieb, und sie ist dort gemessen](novaberg-roadmap.md#15102026-1652-utc--die-kette-ist-im-betrieb-und-sie-ist-dort-gemessen) |

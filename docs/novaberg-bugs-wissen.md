@@ -274,7 +274,15 @@ if self.now > dateobj - tz_offset:
 
 **Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Prompt verlangt für `name` den exakten Wortlaut (`server/agents/notizen/crud.py:93-157`), die Fachsprache lehrt Normalisierungen ohne Namen.
 
-**Zustand:** offen, **unbelegt** — am Bestand nachgesehen am 25.08.2026. Die Tabelle `notizen` traegt **eine** Zeile; die beiden Notizen, die den Befund belegten, gibt es nicht mehr. Der Klassifikator ist damit nicht geprueft, sondern nur der Beleg verfallen.
+**Zustand:** **offen, belegt am 16.10.2026; eine Abhilfe ist im Bau.** ~~offen, **unbelegt** — am Bestand nachgesehen am 25.08.2026. Die Tabelle `notizen` traegt **eine** Zeile; die beiden Notizen, die den Befund belegten, gibt es nicht mehr. Der Klassifikator ist damit nicht geprueft, sondern nur der Beleg verfallen.~~
+
+**Wieder belegt in zwei Simulationen an Prüf-Nutzern** (`labor/2026-10-15_sim_timeline_notizen/`): Am 15.10.2026 (`simvorher1`) und am 16.10.2026 (`simnachher2`) hieß die Notiz zu einem Notizauftrag ohne genannten Namen *„Neue Notiz“*. In der zweiten Simulation endete der nächste Notizauftrag deshalb in einer Rückfrage — es gebe bereits eine Notiz *„Neue Notiz“*, ob sie aktualisiert oder eine neue angelegt werden solle — und legte nichts an. Damit hält dieser Defekt auch `NOTIZAUFTRAG-GEHT-AN-TIMELINE` offen, denn dessen Schließbedingung verlangt eine angelegte Notiz.
+
+**Der Mechanismus, am Code gelesen (16.10.2026):**
+
+- Die Fachsprache des Notizen-Klassifikators (`server/prompts/default/classify_notizen.fachsprache.txt`) lehrt für *„Notiere dir: …“* die Form *„create: Neue Notiz anlegen mit Inhalt: …“* — ohne Namen.
+- `server/agents/notizen/crud.py::_create` verlangt im Prompt für `name` den exakten Wortlaut des Users oder der Anweisung; so wird *„Neue Notiz“* zum Namen.
+- Die Duplikatprüfung (`find_by_stichwort`) findet beim zweiten Mal denselben Namen und fragt nach.
 
 Der Notiz-Klassifikator speichert die Meta-Formulierung des Befehls als Name
 (Spalte `name`, nicht `titel`) statt sie als Anweisung aufzulösen. Belegt
