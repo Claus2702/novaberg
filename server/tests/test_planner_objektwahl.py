@@ -15,6 +15,16 @@ Zeugen dieser Datei:
   * **Ein Dienst ohne Merkmal** (`dateien`) wird von der Naehe nicht verdraengt:
     Zeigt der Router auf ihn, steht er vorn.
   * **Der Aufgabenblock:** Ablehnung des ersten, Erfolg des zweiten → der Erfolg.
+  * **Der Router-Treffer fuehrt** (`NOTIZAUFTRAG-GEHT-AN-TIMELINE`): Nennt der
+    Router die Notizen und erreicht ein akutes Objekt sie, stehen sie vorn —
+    auch wenn ein aelterer Termin der Timeline naeher steht. Ohne Naehe zum
+    genannten Dienst bleibt die Ordnung nach dem Objekt; der Auffang der
+    Prioritaet 4 fuehrt nie; nach einem Ausfall der Sachlage ordnet die Naehe
+    auch ueber diesen Weg nicht.
+
+Die Objekte und Naehewerte der Faelle des Router-Treffers sind einer Simulation
+an einem Pruef-Nutzer nachgebildet, nicht dem Bestand eines echten Nutzers;
+Naehewerte, die die Spur nicht nennt, sind gesetzt (unter der Untergrenze).
 
 Gefahren wird `plan()` selbst, mit Stellvertretern fuer die Registries.
 
@@ -201,6 +211,102 @@ class AufgabenblockTest(unittest.TestCase):
         with patch.object(planner, "_build_task_ablehnung", return_value="ABLEHNUNG"):
             block, _ = planner._build_task_block([_ergebnis("timeline", "abgelehnt")])
         self.assertEqual(block, "ABLEHNUNG")
+
+
+def _order(state: dict, fallback: SimpleNamespace | None) -> list[str]:
+    """Die Reihenfolge aus `service_order_for`, mit den Stellvertretern der Registries."""
+    with patch.object(planner.AgentRegistry, "finden", side_effect=lambda n: AGENTEN.get(n)):
+        return planner.service_order_for(state, REGISTRY, fallback)
+
+
+def _sentence_11() -> dict:
+    """Drei akute Objekte: die Notiz, zwei Termine (einer an beiden, die Timeline naeher)."""
+    return _urteil(("Ersatzschluessel", {"notizen": 0.4391, "timeline": 0.31}),
+                   ("Termin beim Zahnarzt", {"notizen": 0.4381, "timeline": 0.5282}),
+                   ("Termin beim Steuerberater", {"timeline": 0.4881, "notizen": 0.29}))
+
+
+class RouterTargetLeadsTest(unittest.TestCase):
+    """Der vom Router genannte Dienst fuehrt, wenn ein akutes Objekt ihn erreicht."""
+
+    def test_sentence_11_notes_lead_despite_nearer_appointment(self) -> None:
+        # die Lage des Defekts: nach der Naehe allein stuende die Timeline vorn
+        self.assertEqual(service_order(_sentence_11()), ["timeline", "notizen"])
+        state = _state(_sentence_11(), management_target="notizen")
+        self.assertEqual(_order(state, REGISTRY["notizen"]), ["notizen", "timeline"])
+
+    def test_sentence_12_notes_asked_first(self) -> None:
+        verdict = _urteil(("Druckerpapier", {"notizen": 0.44, "timeline": 0.2}),
+                          ("Termin beim Zahnarzt", {"timeline": 0.5416, "notizen": 0.4356}))
+        self.assertEqual(service_order(verdict), ["timeline", "notizen"])
+        result = _planen(_state(verdict, management_target="notizen"))
+        self.assertEqual(result["agent_name"], "notizen")
+
+    def test_after_decline_the_nearer_follows(self) -> None:
+        state = _state(_sentence_11(), management_target="notizen",
+                       agent_results=[_ergebnis("notizen", "abgelehnt")])
+        self.assertEqual(_planen(state)["agent_name"], "timeline")
+
+    def test_object_only_at_notes_keeps_order_by_object(self) -> None:
+        """Der Fall von a56a911: Router nennt die Timeline, das Objekt erreicht nur die Notizen."""
+        verdict = _urteil(("Mehl", {"notizen": 0.61, "timeline": 0.2}))
+        state = _state(verdict, management_target="timeline")
+        self.assertEqual(_order(state, REGISTRY["timeline"]), ["notizen", "timeline"])
+
+    def test_catch_all_does_not_lead_object_only_at_timeline(self) -> None:
+        verdict = _urteil(("Termin", {"timeline": 0.53, "notizen": 0.2}))
+        state = _state(verdict, management_target="")
+        self.assertEqual(_order(state, REGISTRY["notizen"]), ["timeline", "notizen"])
+
+    def test_catch_all_does_not_lead_when_nearness_reaches_it(self) -> None:
+        """Der Auffang erreicht die Notizen ueber die Naehe — und fuehrt trotzdem nicht."""
+        verdict = _urteil(("Termin", {"timeline": 0.53, "notizen": 0.44}))
+        state = _state(verdict, management_target="")
+        self.assertEqual(_order(state, REGISTRY["notizen"]), ["timeline", "notizen"])
+        self.assertEqual(_planen(_state(verdict, management_target=""))["agent_name"], "timeline")
+
+    def test_after_outage_nearness_does_not_order_via_router_target(self) -> None:
+        for target in ("timeline", "notizen"):
+            with self.subTest(target=target):
+                verdict = _sentence_11()
+                verdict["herkunft"] = "ausfall_uebernommen"
+                state = _state(verdict, management_target=target)
+                self.assertEqual(_order(state, REGISTRY[target]), [target])
+
+    def test_full_path_logs_ask_notes_with_order(self) -> None:
+        state = _state(_sentence_11(), management_target="notizen")
+        with patch.object(planner, "log_decision") as log:
+            result = _planen(state)
+        self.assertEqual(result["agent_name"], "notizen")
+        entries = [call.kwargs for call in log.call_args_list
+                   if call.kwargs.get("decision") == "planner.dienstwahl"]
+        self.assertEqual([e["outcome"] for e in entries], ["frage:notizen"])
+        self.assertEqual(entries[0]["inputs"]["reihenfolge"], ["notizen", "timeline"])
+
+
+class RouterTargetLogTest(unittest.TestCase):
+    """Die Zeile `Planner-Weiche` nennt, ob der Router-Treffer vorgezogen wurde und warum."""
+
+    def _line(self, state: dict, fallback: SimpleNamespace | None) -> str:
+        with self.assertLogs("ki_server.planner", level="INFO") as logs:
+            _order(state, fallback)
+        lines = [m for m in logs.output if "Planner-Weiche: naehe=" in m]
+        self.assertEqual(len(lines), 1, logs.output)
+        return lines[0]
+
+    def test_preferred_named_with_reason(self) -> None:
+        line = self._line(_state(_sentence_11(), management_target="notizen"), REGISTRY["notizen"])
+        self.assertIn("router_vorzug=ja (ein akutes Objekt erreicht 'notizen')", line)
+        self.assertIn("naehe=['timeline', 'notizen']", line)
+
+    def test_not_preferred_named_with_reason(self) -> None:
+        verdict = _urteil(("Mehl", {"notizen": 0.61, "timeline": 0.2}))
+        line = self._line(_state(verdict, management_target="timeline"), REGISTRY["timeline"])
+        self.assertIn("router_vorzug=nein (kein akutes Objekt erreicht 'timeline')", line)
+
+    def test_no_router_target_named(self) -> None:
+        line = self._line(_state(_sentence_11(), management_target=""), REGISTRY["notizen"])
+        self.assertIn("router_vorzug=nein (kein Router-Ziel)", line)
 
 
 if __name__ == "__main__":

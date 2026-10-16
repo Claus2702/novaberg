@@ -399,9 +399,20 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
         Treffer der Prioritaeten 2 bis 4 oder None.
     Nachbedingung: zuerst die Dienste, deren Merkmal ein akutes Objekt erreicht
         (nach Naehe), dann der Fallback — ausser der Fallback traegt selbst kein
-        Merkmal, dann steht er vorn. Jeder hoechstens einmal; nur Namen, fuer
-        die es einen Manager oder Agenten gibt.
+        Merkmal, dann steht er vorn. Unter den nahen Diensten steht der vom
+        Router genannte (`management_target`) vorn, wenn ein akutes Objekt ihn
+        erreicht; die uebrigen folgen in ihrer Ordnung. Jeder hoechstens einmal;
+        nur Namen, fuer die es einen Manager oder Agenten gibt.
     Fehlerfaelle: keine Ausnahme; ein Name ohne Dienst wird laut verworfen.
+
+    **Warum der Router-Treffer nur mit Naehe vorn steht:** Die Bitte nennt ihr
+    Objekt; ein aelterer Termin, nach dem in diesem Turn niemand fragt, ist
+    nicht ihr Objekt — er darf eine Notiz nicht an die Timeline ziehen, nur
+    weil er ihr naeher steht. Erreicht dagegen kein akutes Objekt den
+    genannten Dienst, entscheidet weiter das Objekt ("Merk dir, dass ich
+    morgen Mehl brauche" geht an die Notizen, auch wenn der Router die
+    Timeline nennt). Der Auffang der Prioritaet 4 ist keine Nennung des
+    Routers und fuehrt nie.
 
     Protokolliert die Groessen der Weiche, bevor sie entscheidet (F-LOG-3).
     """
@@ -418,6 +429,26 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
         aus_naehe = []
 
     # ── Verarbeitung ────────────────────────────
+    # Der vom Router genannte Dienst fuehrt unter den nahen (Teil D: zugestellt
+    # wird, worum der Nutzer bittet). Genannt heisst: `management_target` trifft
+    # einen Manager — dieselbe Zuordnung wie Prioritaet 3. Der Auffang der
+    # Prioritaet 4 und ein Intent-Treffer setzen das Feld nicht.
+    target_lower: str = str(state.get("management_target") or "").lower()
+    router_named: BaseManager | None = (
+        _manager_zu_target(registry, target_lower) if target_lower else None
+    )
+    router_name: str | None = getattr(router_named, "ziel", None)
+    nearness_first: list[str] = list(aus_naehe)
+    if not target_lower:
+        router_reason: str = "nein (kein Router-Ziel)"
+    elif router_name is None:
+        router_reason = f"nein (Ziel '{target_lower}' trifft keinen Dienst)"
+    elif router_name in aus_naehe:
+        router_reason = f"ja (ein akutes Objekt erreicht '{router_name}')"
+        nearness_first = [router_name, *[name for name in aus_naehe if name != router_name]]
+    else:
+        router_reason = f"nein (kein akutes Objekt erreicht '{router_name}')"
+
     # Die Naehe ordnet nur unter Diensten, die ein Objekt-Merkmal tragen. Ein
     # Dienst ohne Merkmal kann an ihr nicht teilnehmen — zeigt der Router auf
     # ihn (`dateien`, `wissen`, ...), steht er vorn, und die nahen Dienste
@@ -427,7 +458,8 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
     fallback_agent = AgentRegistry.finden(fallback_name) if fallback_name else None
     ohne_merkmal: bool = bool(fallback_name) and not (getattr(fallback_agent, "objekt_merkmal", "") or "").strip()
     kandidaten: list[str] = (
-        [fallback_name, *aus_naehe] if ohne_merkmal else [*aus_naehe, *([fallback_name] if fallback_name else [])]
+        [fallback_name, *nearness_first] if ohne_merkmal
+        else [*nearness_first, *([fallback_name] if fallback_name else [])]
     )
 
     reihenfolge: list[str] = []
@@ -444,7 +476,8 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
     logger.info(
         f"Planner-Weiche: naehe={aus_naehe} (urteil={getattr(urteil, 'get', lambda _k: None)('ergebnis')}), "
         f"fallback={getattr(fallback, 'ziel', None)}, target='{state.get('management_target', '')}', "
-        f"needs_timeline={state.get('needs_timeline')}, fallback_ohne_merkmal={ohne_merkmal} → {reihenfolge}"
+        f"needs_timeline={state.get('needs_timeline')}, fallback_ohne_merkmal={ohne_merkmal}, "
+        f"router_vorzug={router_reason} → {reihenfolge}"
     )
     return reihenfolge
 
