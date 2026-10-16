@@ -57,7 +57,9 @@ Eigenschaft traegt, wer sie kennen kann — `nutzer`, `welt` oder
 Verstehens). Nur eine `nutzer`-Eigenschaft ist ein Rueckfrage-Gegenstand;
 die anderen sind Antwortstoff fuer den Verfasser (`answer_targets`), und
 fuer die erste `nachschlagen`-Eigenschaft ohne Deckung laeuft eine Websuche
-(`graph/nodes/sachlage_research.py`). Ohne Traeger gilt `nutzer`.
+(`graph/nodes/sachlage_research.py`) — nicht, wenn die Aeusserung nach dem
+eigenen Bestand des Nutzers fragt (Termine, Vorhaben, Notizen); das steht
+dann im Log. Ohne Traeger gilt `nutzer`.
 
 **Das Gewicht einer Luecke** (Konzept §4, Scheibe 10, 30.08.2026): Jede
 offene Eigenschaft traegt neben ihrem Traeger, ob eine Antwort ohne sie
@@ -103,7 +105,11 @@ from graph.nodes.sachlage_plausibility import (
     assess_plausibility,
     has_acute_object,
 )
-from graph.nodes.sachlage_research import research_open_property
+from graph.nodes.sachlage_research import (
+    own_records_cue,
+    research_open_property,
+    withhold_research,
+)
 from graph.nodes.sachlage_resolver import (
     SOURCE_LABELS,
     MemoryHit,
@@ -903,7 +909,12 @@ def _derive(
     )
     artefakt = apply_plausibility(artefakt, befunde)
     # Scheibe 8: die erste offene Eigenschaft, die Nachschlagen verlangt und
-    # die das Gedaechtnis nicht deckt — eine Websuche je Turn.
+    # die das Gedaechtnis nicht deckt — eine Websuche je Turn. Nicht, wenn
+    # der Turn nach dem eigenen Bestand des Nutzers fragt: Seine Termine
+    # kennt keine Websuche, und ein Treffer stuende im Prompt wie einer.
+    own_cue: str | None = own_records_cue(aeusserung)
+    if own_cue is not None:
+        return withhold_research(artefakt, own_cue)
     return research_open_property(artefakt)
 
 

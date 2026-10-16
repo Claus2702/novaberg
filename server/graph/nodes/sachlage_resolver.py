@@ -51,6 +51,7 @@ from config import (
 from graph.nodes.sachlage_form import covered_value
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.sachlage_properties import active_properties, text_key
+from memory.timeline_reading import EXCLUDED_EVENT_TYPES
 from services.model_services import model_service
 from services.model_services.types import ChatRequest
 
@@ -131,16 +132,31 @@ def _field(record: object, name: str) -> object:
 def _calendar_hits(state: dict, previous: dict | None) -> list[tuple[str, str, str]]:
     """Kalendereintraege zu den akuten Objekten der vorigen Blase.
 
+    **Ein Erinnerungs-Anker ist kein Termin** — auch hier nicht, wo er als
+    Zeile »Kalender TT.MM.JJJJ: …« im Angebot stuende und von dort als
+    Deckung in den Block des Verfassers gelangen koennte. Er wird in der
+    Abfrage ausgeschlossen, vor dem LIMIT (sonst vergaebe die Suche ihre
+    Plaetze an Anker), und eine Zeile, die trotzdem ankommt, wird laut
+    verworfen — dieselbe Regel wie im Leseweg der Termine
+    (`memory/timeline_reading.py`).
+
     Vorbedingung: `previous` ist ein Artefakt oder None.
     Nachbedingung: Tripel (Quelle, Herkunft, Text), hoechstens
-        `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt; ohne akute Objekte leer.
+        `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt, keines aus einer Zeile
+        eines Typs aus `EXCLUDED_EVENT_TYPES`; ohne akute Objekte leer.
     Fehlerfaelle: Ein Datenbankfehler ist laut und liefert keine
-        Kalendereintraege — der Turn geht vor.
+        Kalendereintraege — der Turn geht vor. Ein Anker trotz Ausschluss
+        ist ein Fehler im Log und faellt heraus. Mehr Zeilen als
+        `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt wirft `ValueError` — das
+        Repositorium hat sein LIMIT nicht gehalten.
     """
+    # ── Eingabe-Validierung ─────────────────────
     if not previous:
         return []
     user_id: str = str(state.get("user_id", ""))
     hits: list[tuple[str, str, str]] = []
+
+    # ── Verarbeitung ────────────────────────────
     for objekt in previous.get("objekte") or []:
         name: str = str(objekt.get("name", "")).strip()
         if not objekt.get("akut") or not name:
@@ -148,6 +164,7 @@ def _calendar_hits(state: dict, previous: dict | None) -> list[tuple[str, str, s
         try:
             rows: list[dict] = TimelineRepository.find_by_keyword(
                 POSTGRES_URL, user_id, name, "both", SACHLAGE_BESTAND_KALENDER_LIMIT,
+                exclude_event_types=EXCLUDED_EVENT_TYPES,
             )
         except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
             logger.warning(
@@ -156,6 +173,12 @@ def _calendar_hits(state: dict, previous: dict | None) -> list[tuple[str, str, s
             )
             return hits
         for row in rows:
+            if row.get("event_type") in EXCLUDED_EVENT_TYPES:
+                logger.error(
+                    f"Sachlage-Aufloeser: Erinnerungs-Anker id={row.get('id')} kam trotz "
+                    f"Ausschluss in der Abfrage an — verworfen, er ist kein Termin"
+                )
+                continue
             zeit = row.get("event_time")
             datum: str = (
                 zeit.strftime("%d.%m.%Y") if isinstance(zeit, datetime) else str(zeit or "")
@@ -164,6 +187,14 @@ def _calendar_hits(state: dict, previous: dict | None) -> list[tuple[str, str, s
             if row.get("details"):
                 text += f" — {row['details']}"
             hits.append((SOURCE_CALENDAR, f"timeline#{row.get('id', '')}", text))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(hits) > SACHLAGE_BESTAND_KALENDER_LIMIT * len(previous.get("objekte") or []):
+        msg: str = (
+            f"Sachlage-Aufloeser: {len(hits)} Kalenderzeilen ueber der Obergrenze "
+            f"von {SACHLAGE_BESTAND_KALENDER_LIMIT} je Objekt"
+        )
+        raise ValueError(msg)
     return hits
 
 
