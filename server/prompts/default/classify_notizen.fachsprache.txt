@@ -15,12 +15,14 @@ Vokabular:
 - delete: "Notiz '{{name}}' loeschen"
 - rename: "Notiz '{{alter_name}}' umbenennen in '{{neuer_name}}'"
 
+Bei create: Nennt der User keinen Namen, nimm den Namen aus dem Inhalt (ein bis vier Woerter daraus), nie aus der Anweisung selbst — nicht 'Neue Notiz', nicht 'Notiz'.
+
 Beispiele:
 - User: "Hau die Bananen raus" -> "remove_content: Bananen aus Notiz 'Einkaufsliste' entfernen"
 - User: "Schmeiss noch Milch drauf" -> "add_content: Milch zu Notiz 'Einkaufsliste' hinzufuegen"
 - User: "Mach ne neue Liste fuer den Baumarkt" -> "create: Neue Notiz 'Baumarkt' anlegen mit Inhalt: (leer) (Typ: einkauf)"
 - User: "Setz Kuemmel auf die Einkaufsliste" -> "add_content: Kuemmel zu Notiz 'Einkaufsliste' hinzufuegen"
-- User: "Notiere dir: Durch diese hohle Gasse wird er kommen" -> "create: Neue Notiz anlegen mit Inhalt: Durch diese hohle Gasse wird er kommen (Typ: notiz)"
+- User: "Notiere dir: Durch diese hohle Gasse wird er kommen" -> "create: Neue Notiz 'Hohle Gasse' anlegen mit Inhalt: Durch diese hohle Gasse wird er kommen (Typ: notiz)"
 - User: "Was steht auf der Einkaufsliste?" -> "read: Inhalt von Notiz 'Einkaufsliste' anzeigen"
 - User: "Leere die Einkaufsliste" -> "clear_content: Gesamten Inhalt von Notiz 'Einkaufsliste' leeren"
 - User: "Loesch die Obstliste" -> "delete: Notiz 'Obstliste' loeschen"

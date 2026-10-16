@@ -9,12 +9,26 @@ Erweitert in Chat 42 (CRUD-Haertung):
 
 import json
 import logging
+import re
 
 from agents.base import AgentState
+from agents.object_nearness import consent_fields
 from agents.write_outcome import verified_outcome
 from config import NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER
 
 logger = logging.getLogger("ki_server.agents.notizen.crud")
+
+# Ein Wort ab vier Zeichen gilt als Inhaltswort. Kuerzere sind fast immer
+# Funktionswoerter ('der', 'das', 'mit'), und ein geteiltes 'das' belegt nicht,
+# dass ein Name aus dem Inhalt stammt ('das festhalten' gegen 'Das Auto ...').
+_CONTENT_WORD_MIN_LEN: int = 4
+# Ein Ersatzname ist der Anfang des Inhalts, hoechstens so viele Woerter.
+_DERIVED_NAME_MAX_WORDS: int = 5
+# Ein genannter Name steht in der normalisierten Anweisung in Apostrophen:
+# "create: Neue Notiz 'Baumarkt' anlegen ..." (Fachsprache der Notizen).
+_NAMED_IN_INSTRUCTION = re.compile(r"'([^']+)'")
+_WORD = re.compile(r"\w+")
+_UMLAUT_FOLD = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue"})
 
 
 def _zusammenfassung_generieren(
@@ -89,6 +103,187 @@ def ausfuehren(state: AgentState) -> dict:
     }
 
 
+def _fold_words(text: str) -> list[str]:
+    """Woerter eines Textes in Vergleichsform.
+
+    Zweck: Name, Inhalt und genannte Namen werden unabhaengig von Gross- und
+    Kleinschreibung, Umlaut-Schreibweise ('Schluessel' gegen 'Schlüssel') und
+    Satzzeichen verglichen.
+    Vorbedingung: text ist eine Zeichenkette, auch leer.
+    Nachbedingung: die Woerter in ihrer Reihenfolge, klein, Umlaute als
+        ae/oe/ue, ß als ss; kein Wort enthaelt mehr ein ä, ö oder ü.
+    Fehlerfaelle: kein str oder ein Umlaut nach der Faltung -> ERROR im Log und
+        leere Liste; ein Name ohne Woerter ist dann unbelegt, nie belegt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(text, str):
+        logger.error(f"_fold_words: Text erwartet, erhalten {type(text).__name__}")
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    words: list[str] = _WORD.findall(text.casefold().translate(_UMLAUT_FOLD))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(umlaut in word for word in words for umlaut in "äöü"):
+        logger.error(f"_fold_words: Umlaut nach der Faltung uebrig: {words}")
+        return []
+    return words
+
+
+def _named_names(normalized: str, context: dict) -> set[str]:
+    """Die Namen, die der Mensch fuer die Notiz genannt hat.
+
+    Zweck: Ein genannter Name steht in der normalisierten Anweisung in
+    Apostrophen ("Neue Notiz 'Baumarkt' anlegen"); bei einer Zustimmung ist es
+    der Name der angebotenen Sache, der der Mensch zugestimmt hat.
+    Vorbedingung: normalized ist die Anweisung des Klassifikators (leer, wenn er
+    keine lieferte); context ist der Kontext des AgentState.
+    Nachbedingung: Menge der genannten Namen, jeder ohne Rand-Leerzeichen und
+        mit mindestens einem Wort; leer, wenn keiner genannt ist.
+    Fehlerfaelle: normalized kein str oder context kein dict -> ERROR im Log und
+        leere Menge; dann gilt nur noch ein Name aus dem Inhalt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(normalized, str) or not isinstance(context, dict):
+        logger.error(
+            f"_named_names: Anweisung als str und Kontext als dict erwartet, erhalten "
+            f"{type(normalized).__name__} und {type(context).__name__}"
+        )
+        return set()
+
+    # ── Verarbeitung ────────────────────────────
+    names: set[str] = {found.strip() for found in _NAMED_IN_INSTRUCTION.findall(normalized)}
+    if context.get("angebot_satz"):
+        consented, _ = consent_fields(list(context.get("objekt_bezug") or []))
+        names.add(consented.strip())
+    names.discard("")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not all(_fold_words(name) for name in names):
+        logger.error(f"_named_names: genannter Name ohne Wort verworfen: {names}")
+        names = {name for name in names if _fold_words(name)}
+    return names
+
+
+def _name_grounds(name: str, text: str, named: set[str]) -> str:
+    """Der Beleg, dass ein Name kein Name aus der Anweisung ist.
+
+    Zweck: Ein Name gilt nur, wenn der Mensch ihn genannt hat oder wenn er aus
+    dem Inhalt der Notiz stammt. Zugelassen wird, was positiv belegt ist —
+    keine Liste verbotener Wendungen, denn die erreicht den Wortschatz der
+    Modelle nie. Belege, in dieser Reihenfolge: der Name ist genannt; er ist
+    der Anfang des Inhalts; er teilt ein Inhaltswort (ab
+    _CONTENT_WORD_MIN_LEN Zeichen) mit dem Inhalt.
+    Vorbedingung: name, text sind Zeichenketten; named aus _named_names().
+    Nachbedingung: 'genannt', 'Anfang des Inhalts' oder "Inhaltswort '<wort>'";
+        leere Zeichenkette, wenn nichts belegt ist — dann ist der Name keiner.
+    Fehlerfaelle: kein Name mit Woertern, auch bei falschem Typ (ERROR aus
+        _fold_words()) -> leere Zeichenkette.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    name_words: list[str] = _fold_words(name)
+    text_words: list[str] = _fold_words(text)
+    if not name_words:
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    grounds: str = ""
+    shared: list[str] = [
+        word for word in name_words
+        if len(word) >= _CONTENT_WORD_MIN_LEN and word in text_words
+    ]
+    if any(name_words == _fold_words(named_name) for named_name in named):
+        grounds = "genannt"
+    elif text_words[: len(name_words)] == name_words:
+        grounds = "Anfang des Inhalts"
+    elif shared:
+        grounds = f"Inhaltswort '{shared[0]}'"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Ein Inhaltswort als Beleg muss im Inhalt stehen, nicht nur im Namen.
+    if grounds.startswith("Inhaltswort") and shared[0] not in text_words:
+        logger.error(f"_name_grounds: Beleg '{shared[0]}' steht nicht im Inhalt")
+        return ""
+    return grounds
+
+
+def _derive_name(text: str) -> str:
+    """Ein Name aus dem Inhalt: dessen Anfang, hoechstens _DERIVED_NAME_MAX_WORDS Woerter.
+
+    Zweck: Ersatz fuer einen Namen, der durch _name_grounds() faellt. Eine
+    Regel statt eines zweiten Modellaufrufs: Sie ist ohne Latenz, gleich bei
+    gleichem Inhalt und kann keinen Namen aus der Anweisung bilden, weil sie
+    nur den Inhalt liest.
+    Vorbedingung: text ist der Inhalt der Notiz.
+    Nachbedingung: die ersten Woerter des Inhalts ohne Satzzeichen am Rand;
+        der Name besteht _name_grounds() als 'Anfang des Inhalts'.
+    Fehlerfaelle: Inhalt ohne Wort -> leere Zeichenkette, der Aufrufer verwirft.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not _fold_words(text):
+        logger.error(f"_derive_name: Inhalt ohne Wort, kein Name ableitbar: {text!r}")
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    derived: str = " ".join(text.split()[:_DERIVED_NAME_MAX_WORDS])
+    derived = derived.strip(" .,;:!?…-–—\"'„“”«»()")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not _name_grounds(derived, text, set()):
+        logger.error(f"_derive_name: abgeleiteter Name '{derived}' stammt nicht aus dem Inhalt")
+        return ""
+    return derived
+
+
+def _resolve_name(candidates: list[str], text: str, named: set[str]) -> str:
+    """Der Name einer neuen Notiz: der erste belegte Kandidat, sonst einer aus dem Inhalt.
+
+    Zweck: Die Anweisung selbst ('Neue Notiz', 'das festhalten') wird kein
+    Name. Ohne Beleg wird der Name aus dem Inhalt gebildet, damit zwei
+    Notizen nicht durch denselben Meta-Namen gleichnamig werden und die
+    Duplikat-Pruefung nachfragt.
+    Vorbedingung: candidates in Rangfolge (Ziel des Klassifikators, dann der
+        Name des Modells), leere erlaubt; text ist der Inhalt; named aus
+        _named_names().
+    Nachbedingung: ein Name, der _name_grounds() besteht; jeder verworfene
+        Kandidat steht mit dem Ersatz in genau einer Info-Zeile — ein
+        erwarteter Weg, keine Warnung.
+    Fehlerfaelle: leerer oder kein Inhalt -> leere Zeichenkette, der Aufrufer
+        verwirft.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    offered: list[str] = [c.strip() for c in candidates if isinstance(c, str) and c.strip()]
+    if not isinstance(text, str) or not text.strip():
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    rejected: list[str] = []
+    chosen: str = ""
+    for candidate in offered:
+        if _name_grounds(candidate, text, named):
+            chosen = candidate
+            break
+        rejected.append(candidate)
+    if not chosen:
+        chosen = _derive_name(text)
+        reason: str = f"Name verworfen {rejected}" if rejected else "kein Name geliefert"
+        logger.info(
+            f"NotizenAgent: {reason} — weder genannt noch aus dem Inhalt; "
+            f"Ersatz aus dem Inhalt '{chosen}'"
+        )
+    elif rejected:
+        logger.info(
+            f"NotizenAgent: Name verworfen {rejected} — weder genannt noch aus dem Inhalt; "
+            f"Ersatz '{chosen}'"
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if chosen and not _name_grounds(chosen, text, named):
+        logger.error(f"_resolve_name: gewaehlter Name '{chosen}' ist nicht belegt")
+        return ""
+    return chosen
+
+
 def _create(state: AgentState) -> dict:
     """Neue Notiz anlegen -- LLM extrahiert Name, Typ, Text, Themen."""
     from config import POSTGRES_URL, get_node_config
@@ -137,8 +332,11 @@ def _create(state: AgentState) -> dict:
             "'Notiere dir: Durch diese hohle Gasse wird er kommen' -> text = 'Durch diese hohle "
             "Gasse wird er "
             "kommen'.\n\n"
-            "WICHTIG fuer 'name': Verwende den EXAKTEN Wortlaut des Users oder der Anweisung. "
-            "Kuerze nicht, optimiere nicht, interpretiere nicht."
+            "WICHTIG fuer 'name': Nennt der User einen Namen (in der Anweisung in Apostrophen), "
+            "verwende ihn EXAKT — kuerze nicht, optimiere nicht, interpretiere nicht. "
+            "Nennt er keinen, bilde den Namen aus dem INHALT, nie aus der Anweisung selbst: "
+            "'Notiere dir: Durch diese hohle Gasse wird er kommen' -> name = 'Hohle Gasse', "
+            "NICHT 'Neue Notiz'."
         ),
         temperature       = get_node_config("planner").get("temperature", 0.2),
         expect_json       = True,
@@ -158,8 +356,14 @@ def _create(state: AgentState) -> dict:
         }
 
     target_name = state["parameter"].get("target", "")
-    name = target_name if target_name else notiz_daten.get("name", "")
     text = notiz_daten.get("text", "")
+    # Ein Name aus der Anweisung ('Neue Notiz') wird keiner: Er machte jede
+    # namenlose Notiz gleichnamig, und die Duplikat-Pruefung fragte nach.
+    name = _resolve_name(
+        [target_name, notiz_daten.get("name", "")],
+        text,
+        _named_names(normalisiert or "", state["kontext"]),
+    )
     typ = notiz_daten.get("typ", "notiz")
     themen = notiz_daten.get("themen", [])
 
