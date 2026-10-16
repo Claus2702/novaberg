@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 19. September 2026, 13:08 UTC (eine Ablehnung als Nicht-Auftrag bildet keinen Aufgabenblock und keinen Kontext-Schnitt, `968c56b`). Davor 18. September 2026, 21:14 UTC (die Dienstwahl steht im Pipeline-Log, und bei einer Zustimmung reisen die Sachen des Angebots). Davor 17. September 2026, 14:27 UTC (**Scheibe 12 D2b** — der Objektbezug: der gefragte Dienst bekommt die akuten Objekte an seinem Zettel als `objekt_bezug`). Davor 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
+**Stand:** 16. Oktober 2026, 16:02 UTC (`date -u`; der vom Router genannte Dienst führt unter den nahen, wenn ein akutes Objekt ihn erreicht, und die Zeile `Planner-Weiche` trägt `router_vorzug=` — *Der Router-Vorzug*; gebaut, im Betrieb nicht gemessen). Davor 19. September 2026, 13:08 UTC (eine Ablehnung als Nicht-Auftrag bildet keinen Aufgabenblock und keinen Kontext-Schnitt, `968c56b`). Davor 18. September 2026, 21:14 UTC (die Dienstwahl steht im Pipeline-Log, und bei einer Zustimmung reisen die Sachen des Angebots). Davor 17. September 2026, 14:27 UTC (**Scheibe 12 D2b** — der Objektbezug: der gefragte Dienst bekommt die akuten Objekte an seinem Zettel als `objekt_bezug`). Davor 17. September 2026, 10:58 UTC (**Scheibe 12 D1** — Priorität 1 entfernt, die Dienste werden nach der Objekt-Nähe gefragt, nach einer Ablehnung der nächste; der Aufgabenblock lässt einen späteren Erfolg oder Fehler vor der Ablehnung stehen — §3.2 und letzter Abschnitt). Davor 2. September 2026 (§4.3 — der Fehler-Block trägt die Tatsache; dabei zwei Altlücken der Helfer-Tabelle geschlossen). Davor: 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -238,8 +238,9 @@ Regelwerk: `novaberg-convention-nmcp.md` §6.7, §6.8.
 
 | Schritt | Was geschieht |
 |---|---|
-| Reihenfolge | Dienste, deren Objekt-Merkmal ein akutes Objekt erreicht (`objekt_urteil`, nach Nähe absteigend), dann der Treffer der Stufen 2–4 — **steht dort ein Dienst ohne eigenes Merkmal** (`dateien`, `wissen`, `fakten` …), kommt er zuerst |
-| nach einem Ausfall der Sachlage | die Nähe ordnet nicht (`herkunft = ausfall_uebernommen`: die Objekte sind die des Vorturns); nach einem Impuls ordnet sie weiter |
+| Reihenfolge | Dienste, deren Objekt-Merkmal ein akutes Objekt erreicht (`objekt_urteil`, nach Nähe absteigend — **seit dem 16.10.2026 steht unter ihnen der vom Router genannte vorn**, Zeile darunter), dann der Treffer der Stufen 2–4 — **steht dort ein Dienst ohne eigenes Merkmal** (`dateien`, `wissen`, `fakten` …), kommt er zuerst |
+| **Router-Vorzug** (seit 16.10.2026) | Nennt der Router einen Dienst (`management_target`, aufgelöst wie Stufe 3: exakt vor unscharf, mehrdeutig ergibt keinen) **und erreicht ihn ein akutes Objekt**, steht er unter den nahen vorn; die übrigen nahen folgen in ihrer Ordnung. **Erreicht ihn keines, gilt die Ordnung nach dem Objekt** — *„Merk dir, dass ich morgen Mehl brauche"* geht an die Notizen, auch wenn der Router die Timeline nennt (Fall `a56a911`). **Der Auffang der Stufe 4 ist keine Nennung** und führt nie; er setzt `management_target` nicht, ebenso wenig ein Intent-Treffer der Stufe 2 |
+| nach einem Ausfall der Sachlage | die Nähe ordnet nicht (`herkunft = ausfall_uebernommen`: die Objekte sind die des Vorturns); nach einem Impuls ordnet sie weiter. **Auch der Router-Vorzug holt sie nicht zurück** (seit 16.10.2026): er liest die Nähe erst nach dem Verwerfen, und nach einem Ausfall ist sie leer |
 | Abfrage | der erste Dienst, der in diesem Turn noch nicht lief, wird gefragt (`agent_name`); die Schleife `agent_dispatch → planner` bringt den Planner zurück |
 | nach `abgelehnt` oder `rejected` | der nächste — entschieden am 16.09.2026: *„für die Grenzfälle beide ansprechen, wenn der eine nicht will, soll der andere auch gefragt werden"* |
 | nach jedem anderen Ausgang | Schluss, Aufgabenblock |
@@ -249,7 +250,33 @@ Regelwerk: `novaberg-convention-nmcp.md` §6.7, §6.8.
 
 **Gemessen** (`labor/2026-09-17_planner_d1/`): 60 Äußerungen, echter Router und Planner, keine Agenten — Notizen-Fälle zuerst richtig 7 → 13 von 13, Termine 4 → 4. **Nicht gemessen:** die Kette *Ablehnung → nächster Dienst* mit echten Agenten; bezeugt in `tests/test_planner_objektwahl.py`.
 
-**Bekannt, nicht geändert:** Ein Treffer der Stufe 2 (Intent) verdrängt das Router-Ziel aus der Reihenfolge — älteres Verhalten, im Betrieb 0 Treffer (Fundliste 17.09.2026).
+**Bekannt, nicht geändert:** Ein Treffer der Stufe 2 (Intent) verdrängt das Router-Ziel ~~aus der Reihenfolge~~ → **als Treffer** — älteres Verhalten, im Betrieb 0 Treffer (Fundliste 17.09.2026). **Seit dem 16.10.2026 gilt das nur noch zum Teil:** Erreicht ein akutes Objekt den vom Router genannten Dienst, führt er unter den nahen trotzdem, denn der Vorzug liest `management_target` selbst und nicht den Treffer. Verdrängt bleibt er, wenn ihn keine Nähe erreicht. Und ist der Intent-Treffer ein Dienst ohne eigenes Merkmal, steht dieser weiter vor allen nahen — die Zeile `Planner-Weiche` meldet dann `router_vorzug=ja`, obwohl der Dienst ohne Merkmal davor steht. Die Reihenfolge ist in diesem Fall richtig, der Grund im Log ungenau (`graph/nodes/planner.py:459-462`).
+
+### Der Router-Vorzug (16.10.2026)
+
+**Der Anlass, gemessen** in einer Simulation an einem Prüf-Nutzer am 16.10.2026 (`labor/2026-10-15_sim_timeline_notizen/simnachher1/`, Spur aus dem Pipeline-Log): Zwei Notizaufträge ohne Zeitangabe erreichten den Notizen-Dienst nicht (`NOTIZAUFTRAG-GEHT-AN-TIMELINE`, 2 von 2). Der Router nannte `notizen`. Die Sachlage trug aber einen älteren Termin als akut, nach dem im Turn niemand fragte; seine Nähe zur Timeline (0,5282) schlug die des Objekts der Bitte zu den Notizen (0,4391), und die Ordnung nach der größten Nähe stellte die Timeline vorn. Die Timeline endete mit `fehler` (*kein Datum*), nicht mit `abgelehnt` — also keine Weitergabe, keine Zeile in `notizen`. Die Absicht stand schon: zugestellt wird, worum der Nutzer bittet (`novaberg-thinking-lage_b.md`, Teil D); ein Termin, nach dem niemand fragt, ist nicht das Objekt der Bitte.
+
+**Ort:** `service_order_for` (`graph/nodes/planner.py:395` ff.; der Vorzug `:432-450`). Die reine Nähe-Ordnung bleibt als `aus_naehe` erhalten; umgestellt wird eine Kopie.
+
+**Laut:** Die Zeile `Planner-Weiche` trägt das Feld `router_vorzug=` mit Grund (`:476-481`):
+
+| Wert | Wann |
+|---|---|
+| `ja (ein akutes Objekt erreicht '<dienst>')` | der genannte Dienst steht unter den nahen und wird vorgezogen |
+| `nein (kein akutes Objekt erreicht '<dienst>')` | genannt, aber nicht nah — es gilt die Ordnung nach dem Objekt |
+| `nein (kein Router-Ziel)` | `management_target` leer |
+| `nein (Ziel '<ziel>' trifft keinen Dienst)` | das Ziel trifft keinen Manager oder mehrere |
+
+`naehe=` in derselben Zeile zeigt weiter die reine Nähe-Ordnung, sodass beide nebeneinander stehen.
+
+**Belegt:** 11 neue Zeugen in `tests/test_planner_objektwahl.py` (19 → 30), keiner der bestehenden geändert — die beiden Notizaufträge nachgebildet, der Fall `a56a911`, der Auffang mit und ohne Nähe, der Ausfall, der ganze Weg über `plan` mit dem Eintrag `planner.dienstwahl` (`frage:notizen`, Reihenfolge `["notizen", "timeline"]`) und drei der vier Formen der Log-Zeile. Server-Suite 4411 → 4422, grün. Gegenprobe: Vorzug zurückgenommen, Log behalten → 3 rot; Vorzug auch ohne Nähe → 4 rot, darunter zwei bestehende Zeugen, in denen der Router die Timeline nennt und das Objekt nur die Notizen erreicht — je wie vorhergesagt. **Im Betrieb nicht gemessen.**
+
+**Benannte Grenzen:**
+
+- **Der Vorzug hängt daran, dass *irgendein* akutes Objekt den genannten Dienst erreicht, nicht das Objekt dieser Bitte.** Nennt der Router fälschlich die Timeline für eine Merk-Bitte, während ein älterer Termin akut ist, steht die Timeline vorn — das Spiegelbild des behobenen Falls. Nicht belegt: Im Fall `a56a911` nannte der Router die Notizen richtig, überstimmt hatte damals das Zeitwort. Sichtbar würde es in der Messung an den Terminsätzen.
+- **Die Info-Zeile `Planner: Match via target …` steht je Durchgang zweimal**, weil `service_order_for` das Ziel ein zweites Mal auflöst; bei mehrdeutigem Ziel ebenso die Fehlerzeile. Am Ergebnis ändert das nichts; vermeiden ließe es sich nur, indem `plan` die Auflösung durchreicht.
+- **Der Zweig `nein (Ziel … trifft keinen Dienst)` hat keinen eigenen Zeugen**; sein Verhalten — die Ordnung nach dem Objekt — ist am Code gelesen.
+- **Die gemeinsame Wurzel ist nicht geändert:** Wie lange die Sachlage ein Objekt akut hält, nach dem niemand mehr fragt, ist eine Frage an den Sachlage-Prompt und braucht eine Absicht.
 
 ## Seit dem 18.09.2026
 
