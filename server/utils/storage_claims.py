@@ -721,6 +721,10 @@ INVENTORY_FOUND: str = "gefunden"
 INVENTORY_NOT_FOUND: str = "nicht_gefunden"
 INVENTORY_NO_MOMENT: str = "kein_akutes_objekt_mit_zeit"
 INVENTORY_FAILED: str = "abfrage_gescheitert"
+#: Jeder Zeitpunkt der Lage steht im Bestand, aber mindestens ein behauptender
+#: Satz nennt keinen der gefundenen Termine — weder Uhrzeit noch Tag noch ein
+#: Wort des Titels. Er wiederholt keine Schreibung und wird korrigiert.
+INVENTORY_NOT_NAMED: str = "gefunden_nicht_genannt"
 
 
 @dataclass(frozen=True)

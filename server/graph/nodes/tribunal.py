@@ -288,8 +288,10 @@ def _storage_claim_step(
     **Vor der Korrektur fragt der Riegel den Bestand** (Scheibe 12 A,
     entschieden am 15.09.2026): Eine Behauptung ohne abgeschlossenen Dienst
     kann eine fruehere, echte Schreibung wiederholen. Steht zu Tag und Uhrzeit
-    des akuten Objekts der Lage ein aktiver Termin in der Timeline, ist sie
-    eine Wiederholung und wird nicht korrigiert (`check_inventory`).
+    des akuten Objekts der Lage ein aktiver Termin in der Timeline und nennt
+    jeder behauptende Satz einen solchen Termin — Uhrzeit, Tag oder ein Wort
+    des Titels —, ist sie eine Wiederholung und wird nicht korrigiert
+    (`check_inventory`). Ein Satz, der keinen nennt, wiederholt nichts.
 
     Vorbedingung: `state["tribunal_verdict"]` ist gesetzt; `critical_feedback`
     ist die Liste, aus der die Zusammenfassung entsteht.
@@ -311,7 +313,8 @@ def _storage_claim_step(
     if check.uncovered:
         try:
             abgleich: InventoryCheck = check_inventory(
-                state.get("sachlage"), str(state.get("user_id") or ""), find_at_moment
+                state.get("sachlage"), str(state.get("user_id") or ""), find_at_moment,
+                check.claims, now_local().date(),
             )
         except Exception as fehler:  # noqa: BLE001 — kompensiert wird mit der Korrektur
             # Breit gefangen an der Grenze des Knotens: Was den Abgleich reissen
