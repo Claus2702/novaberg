@@ -15,11 +15,15 @@ Uhrzeit, oder die Abfrage scheitert: Korrektur wie ohne Abgleich.
 **Ein gefundener Termin deckt nur die Behauptung, die ihn nennt.** Die Lage
 traegt das akute Objekt des Turns, nicht den Gegenstand jedes Satzes: Ein
 *„notiert, dass der Ersatzschluessel beim Nachbarn liegt"* wiederholt keinen
-Zahnarzttermin, auch wenn der im Bestand steht. Als Wiederholung gilt ein
-Satz deshalb nur, wenn er einen gefundenen Termin nennt — seine Uhrzeit,
-seinen Tag oder ein Inhaltswort seines Titels (`names_appointment`). Nennt
-ein behauptender Satz keinen, wird korrigiert wie ohne Abgleich, und der
-Ausgang `gefunden_nicht_genannt` steht im dauerhaften Eintrag.
+Zahnarzttermin, auch wenn der im Bestand steht (ein nachgebildetes Beispiel).
+Als Wiederholung gilt ein Satz deshalb nur, wenn er einen gefundenen Termin
+unterscheidend nennt — seine Uhrzeit oder ein Inhaltswort seines Titels, das
+mehr sagt als die Art des Eintrags (`names_appointment`). Ein Tag allein
+unterscheidet nicht, auch nicht als Wort des Titels: *heute* und *morgen*
+stehen in vielen Behauptungen, und
+der akute Termin liegt meist auf heute oder morgen. Nennt ein behauptender
+Satz keinen, wird korrigiert wie ohne Abgleich, und der Ausgang
+`gefunden_nicht_genannt` steht im dauerhaften Eintrag.
 
 Diese Datei liest die Zeitpunkte aus der Lage und bildet den Ausgang. Die
 Abfrage selbst bekommt sie vom Aufrufer (`lookup`), damit die Rechenschicht
@@ -35,6 +39,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from config import TIMEZONE
+from utils.datum_pruefung import NAMEN
 from utils.local_time import weekday_name
 from utils.storage_claims import (
     INVENTORY_FOUND,
@@ -55,6 +60,18 @@ logger = logging.getLogger("ki_server.storage_inventory")
 #: und der behauptende Satz.
 _CONTENT_WORD = re.compile(r"\b[A-ZÄÖÜ]\w{3,}")
 
+#: Was von einem Titelwort ohne die Art des Eintrags bleiben muss, damit es
+#: unterscheidet — dieselbe Mindestlaenge wie bei `_CONTENT_WORD`. *Termine*
+#: ohne *termin* laesst *e*, und das nennt keinen Termin.
+_STEM_MIN: int = 4
+
+#: Ab dieser Laenge traegt ein Satzwort, mit dem ein Titelwort nur beginnt
+#: (*Zahnarzt* gegen *Zahnarzttermin*). Kuerzere tragen so nicht: *Klar*,
+#: *Alles*, *Gerne*, *Sicher* am Satzanfang haben weniger als sieben
+#: Buchstaben und truegen sonst gegen *Klarinettenunterricht*. Ein Tageswort
+#: traegt unabhaengig von seiner Laenge in keiner Richtung (`_DAY_WORDS`).
+_REVERSE_PREFIX_MIN: int = 7
+
 #: Ein Tag in Ziffern, *„17.10."* oder *„17.10.2026"*. `read_time` blendet diese
 #: Form als Datum aus und zaehlt sie nicht unter seinen Tagen.
 _NUMERIC_DAY = re.compile(r"\b(\d{1,2})\.\s?(\d{1,2})\.")
@@ -65,6 +82,21 @@ _DEICTIC_DAYS: dict[int, tuple[str, ...]] = {
     1: ("morgen",),
     2: ("übermorgen", "uebermorgen"),
 }
+
+#: Jedes Wort, das `names_appointment` als Tag liest, kleingeschrieben: die
+#: Wochentage aus der Tabelle, aus der `weekday_name` liest, und die Tagesworte
+#: oben. Ein Satzwort dieser Menge sagt nur einen Tag und traegt `titel` nicht —
+#: sonst naennte *Mittwoch* den Titel *„Yoga Mittwoch"* und *Sonntag* den Titel
+#: *„Sonntagsbrunch"*, und der Tag allein kaeme ueber den Titel zurueck.
+_DAY_WORDS: frozenset[str] = frozenset(
+    {name.lower() for name in NAMEN}
+    | {word for words in _DEICTIC_DAYS.values() for word in words}
+)
+
+#: Die Woerter eines Titels fuer `names_appointment`: die unterscheidenden
+#: Woerter ohne die Art (beide Richtungen des Praefixvergleichs) und die ganzen
+#: Woerter, von denen die Art gekuerzt ist (nur vorwaerts).
+TitleWords = tuple[frozenset[str], frozenset[str]]
 
 #: Die Wege, auf denen ein Satz einen Termin nennt — ihre Namen stehen im Log.
 NAMED_BY: tuple[str, ...] = ("uhrzeit", "tag", "titel")
@@ -175,47 +207,75 @@ def acute_moments(sachlage: object) -> list[datetime]:
     return moments
 
 
-def title_words(rows: list[dict]) -> frozenset[str]:
-    """Die Inhaltswoerter der Titel gefundener Termine, kleingeschrieben.
+def title_words(rows: list[dict]) -> TitleWords:
+    """Die unterscheidenden Woerter der Titel gefundener Termine, kleingeschrieben.
 
     Gelesen wird der Titel aus dem Bestand, nicht der Name des Objekts der
     Lage: Den Namen vergibt das Modell, der Titel ist, was geschrieben wurde.
 
-    Vorbedingung: `rows` sind Zeilen von `lookup` — dicts mit `title`.
-    Nachbedingung: jedes Wort von `_CONTENT_WORD` aus jedem Titel; leer, wenn
-        kein Titel eines traegt. Dann nennt ein Satz den Termin nur ueber
-        Uhrzeit oder Tag.
-    Fehlerfaelle: ein Titel, der kein Text ist, wird laut gemeldet und
-        uebergangen — er traegt kein Wort, ein Satz kann ihn nicht nennen.
+    **Die Art des Eintrags unterscheidet nicht.** *Termin* aus *„Termin beim
+    Zahnarzt"* nennt jeden Termin, auch den beim Friseur. Die Art liest die
+    Funktion aus derselben Zeile (`event_type`), nicht aus einer Liste: Sie
+    ist, was der Eintrag selbst ueber sich sagt. Ein Titelwort, das mit ihr
+    beginnt oder endet, verliert diesen Teil (*Zahnarzttermin* → *zahnarzt*),
+    samt einem Fugen-s zwischen Art und Rest (*Geburtstagsfeier* mit der Art
+    `geburtstag` → *feier*), wenn danach noch `_STEM_MIN` Buchstaben bleiben.
+    Bleibt weniger als `_STEM_MIN`, faellt das Wort weg. Bleibt genug, steht
+    das ganze Wort zusaetzlich in der zweiten Menge (*terminabsprache*).
+
+    Vorbedingung: `rows` sind Zeilen von `lookup` — dicts mit `title` und
+        `event_type`.
+    Nachbedingung: zuerst jedes Wort von `_CONTENT_WORD` aus jedem Titel, ohne
+        die Art seiner Zeile; dann die ganzen Woerter, von denen die Art
+        gekuerzt ist. Beide leer, wenn keines bleibt — dann nennt ein Satz den
+        Termin nur ueber die Uhrzeit.
+    Fehlerfaelle: ein Titel, der kein Text ist, oder eine Zeile ohne Art
+        wird laut gemeldet und uebergangen — sie traegt kein Wort, ein Satz
+        kann sie nur ueber die Uhrzeit nennen.
     """
     # ── Eingabe-Validierung ─────────────────────
-    titles: list[str] = []
+    entries: list[tuple[str, str]] = []
     for row in rows:
         title: object = row.get("title")
-        if not isinstance(title, str):
+        kind: object = row.get("event_type")
+        if not isinstance(title, str) or not isinstance(kind, str) or not kind:
             logger.error(
-                f"Bestandsabgleich: Titel der Timeline-Zeile id={row.get('id')} ist "
-                f"{type(title).__name__} statt str — kein Titelwort"
+                f"Bestandsabgleich: Timeline-Zeile id={row.get('id')} traegt Titel "
+                f"{type(title).__name__} und Art {kind!r} — kein Titelwort"
             )
             continue
-        titles.append(title)
+        entries.append((title, kind.lower()))
 
     # ── Verarbeitung ────────────────────────────
-    words: frozenset[str] = frozenset(
-        word.lower() for title in titles for word in _CONTENT_WORD.findall(title)
-    )
+    stems: set[str] = set()
+    whole: set[str] = set()
+    for title, kind in entries:
+        for word in (w.lower() for w in _CONTENT_WORD.findall(title)):
+            stem: str = word
+            if word.startswith(kind):
+                stem = word[len(kind):]
+                stem = stem[1:] if stem.startswith("s") and len(stem) > _STEM_MIN else stem
+            elif word.endswith(kind):
+                stem = word[:-len(kind)]
+                stem = stem[:-1] if stem.endswith("s") and len(stem) > _STEM_MIN else stem
+            if len(stem) < _STEM_MIN:
+                continue
+            stems.add(stem)
+            if stem != word:
+                whole.add(word)
+    words: TitleWords = (frozenset(stems), frozenset(whole))
 
     # ── Ausgabe-Verifikation ────────────────────
-    if titles and not words:
+    if entries and not stems:
         logger.info(
-            f"Bestandsabgleich: {len(titles)} Titel ohne Inhaltswort — "
-            f"genannt nur ueber Uhrzeit oder Tag"
+            f"Bestandsabgleich: {len(entries)} Titel ohne unterscheidendes Wort — "
+            f"genannt nur ueber die Uhrzeit"
         )
     return words
 
 
 def names_appointment(
-    sentence: str, moment: datetime, words: frozenset[str], today: date,
+    sentence: str, moment: datetime, words: TitleWords, today: date,
 ) -> tuple[str, ...]:
     """Auf welchen Wegen ein Satz einen gefundenen Termin nennt.
 
@@ -223,17 +283,26 @@ def names_appointment(
     was ihn nicht meint — der Wortschatz der Antworten ist offen:
     - `uhrzeit`: eine Stunde des Satzes nach `read_time` (*„um 11 Uhr"*,
       *„um elf"*, *„11:00"*) ist Stunde und Minute des Termins;
+    - `titel`: ein Inhaltswort des Satzes beginnt mit einem Wort aus
+      `title_words` (*Zahnarztes*, *Zahnarzttermin*, *Bergers*). Ein Name
+      traegt wie der Gegenstand des Termins: Antworten nennen oft den Namen.
+      Umgekehrt, wenn das Titelwort mit dem Satzwort beginnt (*Zahnarzt*
+      gegen *zahnarzttermin*), traegt es erst ab `_REVERSE_PREFIX_MIN`
+      Buchstaben. Ein ganzes Wort, von dem die Art gekuerzt ist, traegt nur
+      in der ersten Richtung (*Terminabsprache* nennt *terminabsprache*),
+      denn umgekehrt naennte das Wort fuer die Art (*Geburtstag* gegen
+      *geburtstagsfeier*). Ein Satzwort aus `_DAY_WORDS` traegt in keiner
+      Richtung;
     - `tag`: der Satz nennt seinen Tag in Ziffern (*„17.10."*), als Tag des
       Monats (*„den 17."*, *„17. Oktober"*), als Wochentag oder als
-      *heute*, *morgen*, *uebermorgen* vom heutigen Tag aus;
-    - `titel`: ein Inhaltswort des Satzes beginnt mit einem des Titels oder
-      umgekehrt (*Zahnarztes*, *Zahnarzttermin*, *Bergers*). Ein Name traegt
-      wie die Art des Termins: Antworten nennen oft den Namen.
+      *heute*, *morgen*, *uebermorgen* vom heutigen Tag aus — **nur
+      zusammen mit `uhrzeit` oder `titel`**. Ein Tag allein unterscheidet
+      den Termin nicht von allem anderen an diesem Tag.
 
     Vorbedingung: `moment` zeitzonenbewusst, `words` aus `title_words`,
         `today` der lokale Tag des Turns.
     Nachbedingung: die zutreffenden Wege in der Reihenfolge von `NAMED_BY`;
-        leer heisst, der Satz nennt den Termin nicht.
+        leer heisst, der Satz nennt den Termin nicht. `tag` steht nie allein.
     Fehlerfaelle: ein naiver `moment` wirft `ValueError`; ein Fehler des
         Zeitparsers wird nicht gefangen — ihn faengt der Knoten.
     """
@@ -251,7 +320,16 @@ def names_appointment(
         *_DEICTIC_DAYS.get((local.date() - today).days, ()),
     )
     by_clock: bool = (local.hour, local.minute) in reading.hours
-    by_day: bool = (
+    stems, whole = words
+    sentence_words: list[str] = [
+        w for w in (word.lower() for word in _CONTENT_WORD.findall(sentence))
+        if w not in _DAY_WORDS
+    ]
+    by_title: bool = any(
+        s.startswith(t) or (len(s) >= _REVERSE_PREFIX_MIN and t.startswith(s))
+        for s in sentence_words for t in stems
+    ) or any(s.startswith(t) for s in sentence_words for t in whole)
+    names_day: bool = (
         any((d.month, d.day) == (local.month, local.day) for d in reading.days)
         or any(
             (int(m.group(2)), int(m.group(1))) == (local.month, local.day)
@@ -259,10 +337,7 @@ def names_appointment(
         )
         or any(re.search(rf"\b{w}\b", lowered) for w in day_words)
     )
-    sentence_words: list[str] = [w.lower() for w in _CONTENT_WORD.findall(sentence)]
-    by_title: bool = any(
-        s.startswith(t) or t.startswith(s) for s in sentence_words for t in words
-    )
+    by_day: bool = names_day and (by_clock or by_title)
 
     # ── Ausgabe-Verifikation ────────────────────
     ways: tuple[str, ...] = tuple(
@@ -319,7 +394,7 @@ def check_inventory(
     missing: list[datetime] = [m for m, rows in found.items() if not rows]
     unnamed: list[StorageClaim] = []
     if not missing:
-        words_at: dict[datetime, frozenset[str]] = {
+        words_at: dict[datetime, TitleWords] = {
             m: title_words(rows) for m, rows in found.items()
         }
         unnamed = [
