@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Web-Infrastruktur — Suchanbieter, WebSearchManager, PageFetcher
-**Stand:** 30. August 2026 (Serper als erster Anbieter, SearXNG als Rueckfall; die Sperren der uebrigen Engines gemessen); davor 29. August 2026 (Konsumententabelle: der Thinker sucht einmal je Turn, die Sachlage-Recherche als zweiter Konsument nachgetragen); davor 19. April 2026, Chat 57 (DRY-Prinzip explizit)
+**Stand:** 15. Oktober 2026, 21:37 UTC (`date -u`; die Sachlage-Recherche sucht nicht, wenn die Äußerung nach dem eigenen Bestand des Nutzers fragt — gebaut). Davor 30. August 2026 (Serper als erster Anbieter, SearXNG als Rueckfall; die Sperren der uebrigen Engines gemessen); davor 29. August 2026 (Konsumententabelle: der Thinker sucht einmal je Turn, die Sachlage-Recherche als zweiter Konsument nachgetragen); davor 19. April 2026, Chat 57 (DRY-Prinzip explizit)
 **Pfad:** `novaberg/docs/novaberg-tool-web.md`
 **Quellen:** nova-07-a.md, Codestand
 
@@ -96,7 +96,7 @@ Web-Suche und Page-Fetch sind bewusst als allgemeine Tools positioniert, nicht a
 | Graph | Konsument | Nutzung |
 |-------|-----------|---------|
 | **Character Graph** (seit Chat 60; hier stand ~~Human Graph~~) | Thinker | `web_search` als Tool bei Wissensfragen (Auto-Fetch auf Top-URL) — **seit 29.08.2026 einmal je Turn** (`THINKER_WEBSUCHE_MAX_JE_TURN`), und hat die Sachlage-Recherche im selben Turn Treffer, bedienen sie die erste Suche ohne zweiten Aufruf der Maschine (`novaberg-node-thinker.md` §4.4) |
-| **Character Graph** | Sachlage-Recherche (`graph/nodes/sachlage_research.py`, seit 29.08.2026) | `web_search_manager.suchen()` einmal je Turn fuer die erste offene `nachschlagen`-Eigenschaft, Wortlaut-Filter, kein Fetch (`novaberg-thinking-lage_k.md` §4 Scheibe 8) |
+| **Character Graph** | Sachlage-Recherche (`graph/nodes/sachlage_research.py`, seit 29.08.2026) | `web_search_manager.suchen()` einmal je Turn fuer die erste offene `nachschlagen`-Eigenschaft, Wortlaut-Filter, kein Fetch (`novaberg-thinking-lage_k.md` §4 Scheibe 8) — **seit 15.10.2026 nicht, wenn die Äußerung nach den eigenen Terminen, Vorhaben oder Notizen des Nutzers fragt** (`own_records_cue`, laut im Log) |
 | **Pixie Graph** | RechercheAgent | `web_search_manager.suchen()` + `page_fetch()` iterativ fuer mehrstufige Recherchen |
 | **Pixie Graph** | VertiefungsAgent | Gleiche Web-Infrastruktur wie RechercheAgent |
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 18. September 2026, 21:14 UTC (eine blanke Zustimmung setzt Ziel und Zeitangabe der angebotenen Sache — mit Uhrzeit, auch wenn Tag und Uhrzeit in einem Feld stehen; relative Tage gelten dem Tag, an dem sie fielen). Davor 18. September 2026, 08:31 UTC (**Spannen:** ein Termin mit *»von … bis …«* bekommt `event_ende` — `utils/time_span.py`; der Anfang wird ohne den Endteil geparst, weil der Zeitparser Spannen nicht auflöst. **Duplikat vor dem Anlegen** nur noch bei selbem Tag und ähnlichem Titel, nie ein Erinnerungs-Anker — `suche.py::find_duplicates`). Davor 17. September 2026, 20:10 UTC (**im Betrieb belegt:** Auf eine Zustimmung legt die Timeline den Termin aus dem Objekt der Lage an — Titel und Zeitpunkt aus dem `[OBJEKT]`-Block, 2 von 2; die Äußerung war nur *»Gerne«*. Zwei Befunde dazu in der Fundliste: eine Zustimmung schreibt auch ohne Angebot, und eine Antwort nannte einen falschen Tag). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block: aus einem »Gerne« wird ein Auftrag mit dem Tag aus der Lage — Scheibe 12 D2b). Davor 17. September 2026, 10:58 UTC (die Zeitangabe wählt die Timeline nicht mehr allein — der Planner fragt nach dem Objekt, nach einer Ablehnung den nächsten Dienst, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (§3a: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 15. September 2026, 19:13 UTC (§3a: auch der Punkt als Trenner ist behoben, und der Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum). Davor 15. September 2026, 15:56 UTC (§3a: die falsche Zeit des Betriebsfalls ist behoben, der Punkt als Trenner nicht). Davor 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
+**Stand:** 16. Oktober 2026, 00:56 UTC (`date -u`; §5.2, §6 auf den Endstand des Baus zum Verschieben, gebaut und getestet, noch nicht committet: Geschrieben wird nur, was die Lesung und die Positivform des Rohtexts gleich ergeben, außerhalb der Form steht nur Zugelassenes, sonst die Rückfrage; das Feld `ZeitVektor.clock_time` und `_single_clock_time` gibt es nicht, `ZeitVektor` ist unverändert; die Grenzen sind benannt; Zeugen 75, Server-Suite 4411). Davor 15. Oktober 2026, 21:34 UTC (`date -u`; **gebaut und getestet:** der Turn liest die gefragten Termine hinter dem Router und gibt sie dem Verfasser im Block `[TERMINE]` mit Bezug zu heute — §4a; kein Erinnerungs-Anker ist in einem Leseweg ein Termin — §4, §8; Verschieben mit einer Uhrzeit allein — §5.2, §6). Davor 18. September 2026, 21:14 UTC (eine blanke Zustimmung setzt Ziel und Zeitangabe der angebotenen Sache — mit Uhrzeit, auch wenn Tag und Uhrzeit in einem Feld stehen; relative Tage gelten dem Tag, an dem sie fielen). Davor 18. September 2026, 08:31 UTC (**Spannen:** ein Termin mit *»von … bis …«* bekommt `event_ende` — `utils/time_span.py`; der Anfang wird ohne den Endteil geparst, weil der Zeitparser Spannen nicht auflöst. **Duplikat vor dem Anlegen** nur noch bei selbem Tag und ähnlichem Titel, nie ein Erinnerungs-Anker — `suche.py::find_duplicates`). Davor 17. September 2026, 20:10 UTC (**im Betrieb belegt:** Auf eine Zustimmung legt die Timeline den Termin aus dem Objekt der Lage an — Titel und Zeitpunkt aus dem `[OBJEKT]`-Block, 2 von 2; die Äußerung war nur *»Gerne«*. Zwei Befunde dazu in der Fundliste: eine Zustimmung schreibt auch ohne Angebot, und eine Antwort nannte einen falschen Tag). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block: aus einem »Gerne« wird ein Auftrag mit dem Tag aus der Lage — Scheibe 12 D2b). Davor 17. September 2026, 10:58 UTC (die Zeitangabe wählt die Timeline nicht mehr allein — der Planner fragt nach dem Objekt, nach einer Ablehnung den nächsten Dienst, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (§3a: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 15. September 2026, 19:13 UTC (§3a: auch der Punkt als Trenner ist behoben, und der Widerspruch zwischen Tageswort und Wochentag ergibt kein Datum). Davor 15. September 2026, 15:56 UTC (§3a: die falsche Zeit des Betriebsfalls ist behoben, der Punkt als Trenner nicht). Davor 14. September 2026, 19:52 UTC (eingetragen wird nur auf ausdrücklichen Auftrag — Aushang, Negativfall und Vorprüfung der Klassifikation, gemessen §3a; `update` kann keine Details ändern und `event_ende` hat keinen Schreiber, §5.2 und §7.1 markiert). Davor 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -10,7 +10,7 @@
 
 ## 1. Aufgabe
 
-Der TimelineAgent verwaltet Novas Zeitachse -- Termine, Geburtstage, Deadlines, Jahrestage, Erinnerungen. Er unterstuetzt CRUD ueber den Agent-Pfad (Router erkennt Domaene, Agent klassifiziert Aktion), erkennt temporale Fakten aus der Salienz (implizit ueber den alten Pfad) und liefert zeitbezogenen Kontext ueber den Enricher-Hook im TimelineManager.
+Der TimelineAgent verwaltet Novas Zeitachse -- Termine, Geburtstage, Deadlines, Jahrestage, Erinnerungen. Er unterstuetzt CRUD ueber den Agent-Pfad (Router erkennt Domaene, Agent klassifiziert Aktion), erkennt temporale Fakten aus der Salienz (implizit ueber den alten Pfad) und liefert zeitbezogenen Kontext ~~ueber den Enricher-Hook im TimelineManager~~ → **seit dem 15.10.2026 im Turn hinter dem Router** (§4a); der Enricher-Hook im TimelineManager liefert nur noch das proaktive Fenster für die Analyse-Knoten (§10).
 
 Alle Zeitoperationen nutzen den Zeitparser fuer natuerlichsprachliche deutsche Eingaben und das TimelineRepository fuer timezone-sichere Persistenz.
 
@@ -119,6 +119,8 @@ Der Classify-Node des TimelineAgent enthält dasselbe Verbot, das im NotizenAgen
 
 ## 4. Suche -- 3 Modi
 
+**Bei `read` ohne Erinnerungs-Anker (15.10.2026).** Alle drei Modi schließen bei einer Leseabfrage `erinnerungs_anker` in der Abfrage aus, vor der Obergrenze (`exclude_event_types=EXCLUDED_EVENT_TYPES`, `agents/timeline/suche.py`); Ändern und Löschen sehen den ganzen Bestand. **Die Lesezeilen des Agenten tragen keinen Bezug zu heute** (`[typ] TT.MM.JJJJ HH:MM: Titel`) — anders als der Block `[TERMINE]` (§4a).
+
 ### 4.1 Keyword-Suche (target vorhanden)
 
 `TimelineRepository.find_by_keyword()` mit ILIKE und aktiv-Filter. Bei update/delete: Disambiguierung wenn mehrere Treffer.
@@ -136,6 +138,36 @@ Anstehende Termine: heute -3 bis +14 Tage. Fuer "Was steht an?" ohne konkreten Z
 ### 4.4 Duplikat-Pruefung bei Create
 
 Validierung prueft vor dem Anlegen, ob ein aktiver Eintrag mit aehnlichem Inhalt existiert. Bei Treffer: Rueckfrage "Existiert bereits. Aktualisieren?"
+
+## 4a. Lesen im Turn — der Block `[TERMINE]` (15.10.2026)
+
+**Gebaut und getestet, im Betrieb nicht gemessen.** Dieser Leseweg gehört nicht zum Agenten, sondern zum Turn; er steht hier, weil er dieselbe Tabelle liest.
+
+**Warum er neu ist.** Bis zum 15.10.2026 lag der gezielte Lesevorgang im TimelineManager, gerufen vom Enricher. Der Enricher läuft im CharacterGraph aber **vor** dem Router, und `needs_timeline` und `timeline_query` setzt erst der Router — der gezielte Zweig (`range`, `search`) war im Turn nie erreichbar. Im Serverlog seit dem 18.09.2026: 109 Router-Zeilen mit `timeline=True`, 0 gezielte Lesungen. Übrig blieb das proaktive Fenster ohne Typfilter, als unerklärte Zeilen `[Timeline/vergangen|anstehend]` im `[GEDAECHTNIS]` des Verfassers (`TIMELINE-LESEPFAD-INSTABIL`).
+
+| Teil | Ort | Was er tut |
+|---|---|---|
+| **Ort des Lesens** | `graph/base.py::_node_route` | ruft nach `route()` `memory/timeline_reading.py::read_for_turn` und legt das Ergebnis in den Kanal `appointment_reading` (`graph/state.py`, nicht vorbelegt). Kein neuer Knoten; nicht in `route()` selbst, damit dessen Zeugen keinen Leseweg erben |
+| **Fenster** | `graph/appointments.py::appointment_window` | `range` mit `from`/`to`, relativ zu `now_local()`; `search` mit `keyword`, `direction`, `limit` (Vorgabe 5, höchstens 10); ohne `needs_timeline` oder ohne Anfrage das proaktive Fenster (drei Tage zurück, vierzehn voraus). Eine Anfrage anderer Art oder ohne lesbare Felder ist laut (ERROR) und ergibt das proaktive Fenster mit dem Vermerk, dass sie sich keinem Zeitraum zuordnen ließ |
+| **Lesen** | `memory/timeline_reading.py::read_appointments` | ohne `erinnerungs_anker`, ausgeschlossen in der Abfrage vor dem `LIMIT` (`find_by_date_range`, `find_by_keyword` mit `exclude_event_types`); ein Anker, der trotzdem ankommt, wird laut verworfen. `forward` lässt abgelaufene weg, `backward` kommende. Eine Titelsuche mit Richtung grenzt *vergangen* in der Abfrage so ab wie der Leser — mit Uhrzeit vor jetzt, ohne Uhrzeit vor heute 00:00 Ortszeit —, mit der Uhr des Turns statt `NOW()`. Eine Zeile außerhalb des Fensters oder mehr Zeilen als `limit` machen das Lesen zum Ausfall |
+| **Block** | `graph/format/appointments.py`, `graph/nodes/verfasser.py::_appointments_block`, `prompts/default/verfasser.termine.txt` | im Prompt des Verfassers hinter `[AUFZEICHNUNGEN]`, vor `[WEB-RECHERCHE]`, in jedem Turn. Kopfzeile mit dem Gelesenen (*„Gelesen: Zeitraum Montag, 12.10.2026 bis Sonntag, 18.10.2026 — nur kommende Termine.“*, oder die Suche, oder *„Nach Terminen wurde nicht gezielt gefragt.“*); je Termin Wochentag, Datum, Uhrzeit in Ortszeit (oder *ohne Uhrzeit*), Titel und der Bezug zu heute in Klammern (*heute*, *morgen*, *in 3 Tagen*, *vergangen, vor 1 Tag*). Leer: *„keine Termine vom … bis …“*. Lesefehler: *„Die Timeline konnte in diesem Turn nicht gelesen werden — ueber die Termine von Person B ist nichts bekannt.“* — nie *keine* |
+| **Prompt-Satz** | `prompts/default/verfasser.termine.txt` | *„Termine von Person B nennt der Inhalt nur aus diesem Block — nicht aus dem Gedaechtnis, nicht aus einer Web-Recherche, nicht aus dem Verlauf.“* Dazu, dass *keine* als *keine* gesagt wird und ein Ausfall als Ausfall |
+| **Gedächtnis** | `graph/format/memory_context.py::entries_for_reader` | die Einträge `plugin_timeline` fehlen im `[GEDAECHTNIS]` des Verfassers; Thinker, Tribunal und Korrektor behalten sie (§10) |
+
+**`direction` gilt für `range` und `search` gleich** (`prompts/default/router.task.txt`): `forward` auch bei Fragen nach Kommendem (*„was steht an“*, *„was habe ich noch“*, *„diese Woche noch“*) — dann fehlen abgelaufene Termine. Das ist Fassung c der Entscheidung in `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN`. Die Grammatikregel *Präsens → forward* gilt damit auch für einen Zeitraum; ob eine Frage ohne *noch* so gelesen werden soll, zeigt die Messung.
+
+**Im Log je Turn:** `Termine: art=…, richtung=…, gelesen=…, geliefert=…, verworfen=…` und `Verfasser: [TERMINE] art=…, termine=…, ausfall=…` — daran ist ohne Prompt-Abzug zu sehen, ob gezielt gelesen wurde (`art=range` oder `art=search`).
+
+**Zeugen:** `tests/test_timeline_reading.py` (29, darunter die Verdrahtung über einen echten `StateGraph` aus `_node_route` und dem Prompt des Verfassers, Tagesgrenzen über das Monatsende und kurz nach Mitternacht Ortszeit) und `tests/test_timeline_anchor_exclusion.py` (20, am mitgeschriebenen SQL); ohne Datenbank, die Uhr eingefroren.
+
+**Grenzen, am Code gelesen:**
+
+- **Ob gezielt gelesen wird, entscheidet weiter der Router.** Setzt er keine Anfrage, steht das proaktive Fenster da — mit seinem Zeitraum in der Kopfzeile, also nicht mehr ununterscheidbar von einer Auskunft.
+- **Auf dem Aufgabenpfad erreicht der Block die Antwort nicht.** Stellt der Router eine Lesefrage dem Agenten zu und meldet der Agent `abgeschlossen`, schneidet der Planner den Kontext, und der Verfasser läuft nicht (`novaberg-graph-rechenkette.md` S15). Dann gelten die Lesezeilen des Agenten (§4): ohne Anker, aber ohne Bezug zu heute. Ob eine Lesefrage diesen Weg nimmt, ist nicht gemessen.
+- **Ein `to` um 00:00** beendet den Zeitraum vor den Terminen dieses Tages; nur eine reine Datumsangabe wird auf 23:59:59 gedehnt (`parse_local_moment`).
+- **Die übrigen Aufrufer der Titelsuche** (Thinker, Sachlage, Agent) übergeben die Uhr des Turns nicht; sie fragen heute alle mit `both` und sind von der Grenze *vergangen* deshalb nicht betroffen. Ein künftiger Aufruf mit `forward` ohne `now` grenzte mit `NOW()` der Datenbank ab und verlöre einen Termin ohne Uhrzeit von heute.
+
+**Nulllinie am Code vor dem Bau** `[gemessen 15.10.2026]` (Simulation an einem Prüf-Nutzer mit gesäten Terminen, `labor/2026-10-15_sim_timeline_notizen.py`): Termine lesen 6 von 7 (ein Termin im November lag außerhalb des proaktiven Fensters), Lesefragen ohne Merkmal 1 von 3. Gemessen wird nach dem Commit an einem frischen Prüf-Nutzer: ob der Block mit den richtigen Terminen im Prompt stand, ob die Antwort sie nennt, ob sie einen fremden nennt.
 
 ---
 
@@ -156,6 +188,37 @@ Validierung prueft vor dem Anlegen, ob ein aktiver Eintrag mit aehnlichem Inhalt
 `reschedule` ist seit Chat 42 eine eigene Aktion (statt update+zeitausdruck). Bei reschedule wird der ZeitVektor fuer die Kombination von altem und neuem Zeitpunkt verwendet.
 
 > ⚠ **`update` ändert keine Details — es verschiebt.** `crud.py::ausfuehren` führt `update` und `reschedule` auf dieselbe Funktion `_update`, und die verlangt ein neues Datum. `[gemessen 13.09.2026]` Zweimal richtig zugestellt, klassifiziert (*„Dauer auf 1,5 Stunden setzen"*) und gefunden (Einzeltreffer) — dann *„Konnte das neue Datum nicht erkennen"*, `status=fehler`. **`event_ende` hat im ganzen Server keinen Schreiber**; eine Dauer oder ein Zeitraum lässt sich nicht speichern. Fundliste 13.09.2026.
+
+**Verschieben mit einer Uhrzeit allein (15.10.2026, gebaut und getestet; ~~Bauzustand 15.10.2026, 21:34 UTC~~ → Endstand des Baus, nachgezogen 16.10.2026, 00:55 UTC, noch nicht committet).** *„Verschieb den Zahnarzt auf 11 Uhr“* endete bis dahin in *„Konnte das neue Datum nicht erkennen“*: Der Zeitparser las die Uhrzeit, gab aber kein Datum zurück, und `_update` brach vor seinem eigenen Zweig *Uhrzeit neu, Tag vom alten Termin* ab — gemessen 0 von 1 in der Simulation am Code vor dem Bau, *„auf Freitag“* 1 von 1. Seither:
+
+| Der Text nennt | Ergebnis | Ort |
+|---|---|---|
+| nur eine Uhrzeit (*„auf 11 Uhr“*, *„auf elf Uhr“*, *„auf 11.30“*) | der Tag des Termins bleibt, die Uhrzeit wird die genannte, Genauigkeit Minute — auch wenn der Parser aus der Uhrzeit ein Datum geschätzt hat | ~~`_clock_time_only`, `_on_day_of` mit `ZeitVektor.clock_time`~~ → `_decided_by_reading`, `_on_day_of` mit `TimeReading.clock_time()` aus der Lesung (`utils/zeitparser.py::read_time`) |
+| zwei Uhrzeiten, ~~eine hinter *auf*/*nach*~~ → in der Form *„von X auf Y“* oder *„von X nach Y“* (*„von 10 Uhr auf 11 Uhr“*, *„von 10 auf 11:30“*) | ~~die hinter *auf*/*nach*~~ → Y | ~~`utils/zeitparser.py::_single_clock_time`, `_NEW_CLOCK_TIME`~~ → `utils/zeitparser.py::_stated_hour` (Lesung), `raw_time_form` (Positivform) |
+| zwei Uhrzeiten ~~ohne *auf*/*nach*~~ → in jeder anderen Form (*„zwischen 10 und 11 Uhr“*, *„von 10 bis 12 Uhr“*, *„auf 10 oder 11 Uhr“*, *„auf 11, nicht auf 10 Uhr“*) | die Rückfrage — bisher schrieb `_update` still die Uhrzeit, die der Parser gewählt hatte | `_no_new_time` |
+| nur einen Tag (*„auf Freitag“*) | die Uhrzeit des Termins bleibt; nennt der Text den eigenen Wochentag des Termins, gilt die nächste Woche | `_own_weekday_means_next_week` |
+| einen Tag und eine Uhrzeit (*„auf Freitag um 11“*, *„auf Freitag von 10 auf 11 Uhr“*, *„auf den 20. um 11 Uhr“*) — **neu im Endstand** | der genannte Tag, die Uhrzeit aus der Lesung — bei *„von X auf Y“* also Y | `_update` (Zweig *Tag vom Parser, Uhrzeit aus der Lesung*), `_on_day_of` |
+| eine Zeit außerhalb der fünf Formen oder ein nicht zugelassenes Wort außerhalb der Form (*„auf halb elf“*, *„auf 11h“*, *„auf Fr. um 11 Uhr“*, *„um 11 Uhr vorm.“*, *„auf Freitag nachmittag“*, *„auf nächste Woche um 11 Uhr“*) — **neu im Endstand** | die Rückfrage *„Konnte die neue Uhrzeit nicht eindeutig erkennen. Wann soll '…' stattfinden?“*, ohne `invalidate` und ohne `insert` | `_raw_form_agrees` → `utils/zeitparser.py::raw_time_form` |
+| weder Tag noch Uhrzeit, eine unmögliche Uhrzeit, ein Tag, der sich widerspricht | der Fehler mit Rückfrage, unverändert | `_update` |
+
+**Geschrieben wird nur, was zwei unabhängige Prüfungen ergeben** (Endstand, 16.10.2026). Warum zwei, und warum eine Zulassung statt einer Verbotsliste: In Zwischenfassungen des Baus ergab jede Schreibweise, die die Normalisierung umsetzt, verschluckt oder stehen lässt oder die keine Liste kannte, still eine geratene Zeit — *„auf Fr. um 11 Uhr“* schrieb den alten Tag um 11:00 (*Fr.* stammt aus dem Wortschatz von dateparser und stand in keiner Liste), *„auf 3 Uhr nachm.“* bei einem Titel *„Kaffee nachm.“* schrieb 03:00. Im Betrieb lief keine dieser Fassungen. Jetzt:
+
+1. **Die Lesung** (`utils/zeitparser.py::read_time` → `TimeReading`) auf dem normalisierten Text, je für Zeitausdruck und Äußerung, zusammengeführt in `_choose_vector`. Eine Stunde ist eine geschriebene Uhrzeit, eine nackte Zahl 0..24 oder ein Zahlwort *null* bis *vierundzwanzig*; ein Datum und eine Ordinalzahl sind Tage. Als neue gilt eine Stunde nur in zwei Lagen: Der Text trägt genau eine (eine nackte Zahl nur hinter *auf*/*nach*), oder genau zwei in der Form *„von X auf/nach Y“* — dann Y. Jede andere Lage mit Stunden, ein Zweifel (*„auf 11.“*, *„viertel nach 11“*, *„elf Uhr dreißig“*), mehr als ein Tag des Monats oder zwei verschiedene neue Stunden in Zeitausdruck und Äußerung ergeben die Rückfrage (`_no_new_time`).
+2. **Die Positivform** (`utils/zeitparser.py::raw_time_form(text, title)`) auf dem Rohtext, vor jeder Normalisierung. Der Zeitteil muss genau eine von fünf Formen sein: *[auf/um/nach/gegen] T*, *von T auf/nach T*, *auf ‹Tag›*, *auf ‹Tag› [um] T*, *auf ‹Tag› von T auf/nach T* — T eine Ziffernstunde (*11*, *11:30*, *11.30*) oder ein Zahlwort, wahlweise mit *Uhr*; ‹Tag› ein Wochentag (auch *nächsten Freitag*), *heute*, *morgen*, *übermorgen*, ein Datum mit Punkt oder eine Ordinalzahl. **Außerhalb der Form darf nur Zugelassenes stehen** (`_raw_outside_admitted`): das Verb des Verschiebens (*verschieb*, *verleg*, *leg*, *setz*, *änder*, *pack*, *mach* mit Endungen), Füllwörter einer Bitte oder eines Bezugs (Artikel, Pronomen, *bitte*, *mal*, *Termin*, *beim*, *mit* …) und über den Titel des Termins ein ganzes Inhaltswort oder genau *Inhaltswort + termin* bzw. *Inhaltswort + s + termin* (*„Zahnarzttermin“*, *„Zahnarztstermin“*). Ein Inhaltswort hat mindestens vier Buchstaben, ist kein Funktionswort und weder ein Wort der Listen des Zeitparsers noch der Anfang eines solchen (*nachm* beginnt *nachmittag*, *Mont* beginnt *montag*). Dazu darf außerhalb der Form kein Zeitwort, keine Ziffer und kein *oder*, *bis*, *zwischen*, *statt*, *nicht* stehen — auch nicht aus dem Titel. Jedes andere Wort, auch ein unbekanntes, ergibt die Rückfrage.
+
+Beide müssen dieselbe Uhrzeit nennen, und es muss die sein, die geschrieben würde (`crud.py::_raw_form_agrees`); nennt keine Form eine Uhrzeit (*„auf Freitag“*), darf auch die Lesung keine nennen, und die alte Uhrzeit bleibt. Den Tag vergleicht die Positivform nicht. *„11.30“* mit Minuten 13..59 (nie ein Monat) wird vor der Lesung als `11:30` geschrieben (`dotted_clock_times`), weil die Normalisierung *„auf 11.30.“* am Satzende als Datum las; die Positivform liest den Text davor. *„auf halb elf“* ergibt die Rückfrage: Die Lesung käme auf 10:30, die Positivform kennt *halb* nicht. `ZeitVektor` und `zeit_parsen_vektor` sind unverändert; die neuen Namen liest nur `crud.py`.
+
+**Grenzen des Endstands** (Beispiele synthetisch):
+
+- **Eine nackte Stunde wird wörtlich gelesen, ohne Tageshälfte:** *„Verschieb den Nachmittagskaffee auf 4 Uhr“* bei einem Termin um 15:30 schreibt 04:00 — Form und Lesung sind sich einig. Ob eine Stunde bis 12 bei einem Termin am Nachmittag zur Rückfrage führen soll, ist offen.
+- **Zeitwörter im Titel:** Ein Titelwort, das ein Zeitwort ist oder ein Wort der Parser-Listen beginnt, zählt nicht als Bezug — *„Verschieb den Geburtstag auf 15 Uhr“* (endet auf *tag*), *„Verschieb den Dienst auf 14 Uhr“* bei einem Titel *„Dienst“* (*dienstag*) und *„Verschieb den Kaffee mit Mona auf 15 Uhr“* (*monat*) enden in der Rückfrage, nie in einer geratenen Zeit; *„Mittagessen“* ist kein *Mittag* und zählt. Umgekehrt wird ein Titelwort nur gegen die Listen des Zeitparsers gehalten, nicht gegen den Wortschatz von dateparser: Ein Zeitwort, das in keiner Liste steht und selbst im Titel vorkommt, wäre außerhalb der Form zugelassen — konstruiert, ein Beispiel ist nicht bekannt.
+- **Der Preis der Zulassung:** Jedes Wort außerhalb von Verb, Füllwort und Titel ergibt die Rückfrage — auch eine Zahl im Titel, ein gebeugtes Kompositum (*„Zahnarzttermine“*, *„Zahnarztestermin“*), ein Titel, der nur mit einem Funktionswort oder einem Wort unter vier Buchstaben wiederholt wird, *„10 nach 11“*, *„vom 16. auf den 20.“*, *„Verschieb die zwei Termine auf Freitag“* und ein Tageszeitwort (*„auf Freitag nachmittag“*).
+- **Was die Positivform als Tag liest:** *„auf 11.“* am Satzende (die Lesung fängt es als Zweifel ab) und *„letzten Freitag“*.
+- **Die Normalisierung klebt eine Uhrzeit an das folgende Wort** (*„10 Uhr auf“* → `10:00auf`); die Lesung liest *auf*/*nach* auch dort, behoben ist das Kleben nicht.
+
+**Tag und Uhrzeit in Ortszeit:** Der alte Termin wird vor der Rechnung in Ortszeit gedreht — ein in UTC geliefertes *„11 Uhr“* wäre sonst 11:00Z, ein Termin ohne Uhrzeit (00:00 Ortszeit) läge in UTC auf dem Vortag. Das gilt auch für die bestehenden Zweige *nur Tag* und *nur Uhrzeit*. Zeugen: `tests/test_timeline_reschedule.py` (~~31~~ → 75 in acht Klassen, ohne Datenbank; Server-Suite 4411, grün). **Bleibt so:** ~~Ein Tag mit zwei Uhrzeiten (*„auf Freitag von 10 auf 11“*) nimmt die erste~~ → im Endstand nimmt er die neue, Y (bezeugt); eine Dauer mit Uhrzeit (*„in drei Tagen um 10 Uhr“*) ~~gilt als *nur Uhrzeit* am alten Tag~~ → ergibt beim Verschieben die Rückfrage (*drei* und *Tagen* stehen außerhalb der Form) — ~~beides am Code gelesen, ohne Zeugen~~ → die Dauer am Code gelesen, ohne eigenen Zeugen; dass `zeit_parsen_vektor` die Dauer neben einer Uhrzeit verliert, gilt weiter für die anderen Aufrufer.
+
+**Ein gescheiterter Auftrag erreicht die Antwort** über den Aufgabenblock (`planner.py::_build_task_error`, `responder.aufgabe_fehler.txt`: *„nichts eingetragen, nichts geaendert“* und die Rückfrage), schon vor diesem Bau; seither bezeugt (`ErrorReachesTheAnswerTest`). Dass die Antwort ihn in der Simulation vor dem Bau überging, ist ein Befund über das Modell (Fundliste 15.10.2026).
 
 ### 5.3 Delete (Invalidieren)
 
@@ -179,13 +242,14 @@ TimelineAgent.handle()
 
 ## 6. ZeitVektor
 
-`zeit_parsen_vektor()` liefert drei Steuerungsfelder:
+`zeit_parsen_vektor()` liefert ~~drei~~ → ~~vier Steuerungsfelder (seit 15.10.2026 `clock_time`)~~ → **drei Steuerungsfelder, unverändert** (berichtigt 16.10.2026: Im Endstand des Baus gibt es das Feld `clock_time` nicht, `ZeitVektor` ist unverändert; die neue Uhrzeit beim Verschieben liest die Lesung `utils/zeitparser.py::read_time` neben dem Vektor, §5.2):
 
 | Feld | Werte | Beschreibung |
 |------|-------|-------------|
 | `tag_erkannt` | Boolean | Wurde ein Tag im Zeitausdruck erkannt? |
 | `uhrzeit_erkannt` | Boolean | Wurde eine Uhrzeit erkannt? |
 | `referenz_modus` | absolut / relativ / relativ_rueckwaerts | Wie ist der Zeitbezug zu interpretieren? |
+| ~~`clock_time`~~ | ~~`time` oder leer~~ | ~~Die gelesene Uhrzeit, auch ohne Datum; bei mehreren die hinter *auf*/*nach*, sonst leer (seit 15.10.2026; §5.2)~~ → **kein Feld des Vektors** (16.10.2026): Die Uhrzeit gibt `TimeReading.clock_time()` aus der Lesung — nur wenn genau eine Stunde als neue genannt ist, bei zwei die aus *„von X auf/nach Y“*, sonst leer (§5.2) |
 
 ### 6.1 Zwei-Phasen-Parsing
 
@@ -199,7 +263,7 @@ TimelineAgent.handle()
 | User sagt | tag_erkannt | uhrzeit_erkannt | Ergebnis |
 |-----------|------------|----------------|----------|
 | "Freitag" | ja | nein | Tag -> neu, Uhrzeit -> vom alten Termin |
-| "15 Uhr" | nein | ja | Tag -> vom alten Termin, Uhrzeit -> neu |
+| "15 Uhr" | nein | ja | Tag -> vom alten Termin, Uhrzeit -> neu — **bis zum 15.10.2026 nicht so ausgeführt:** ohne Datum brach `_update` mit *„Konnte das neue Datum nicht erkennen“* ab; seither über ~~`clock_time`~~ → die Lesung (`read_time`) und die Positivform des Rohtexts (`raw_time_form`), die dieselbe Uhrzeit ergeben müssen (§5.2) |
 | "Freitag um 10 Uhr" | ja | ja | Komplett neu |
 
 ### 6.3 Referenz-Modus
@@ -258,7 +322,7 @@ Nach jedem Write ein DB-Read. Ergebnis gegen Erwartung pruefen. ~~Bei Fehler: `C
 | `deadline` | Abgabetermine, Fristen | Fristgebunden |
 | `jahrestag` | Wiederkehrende jaehrliche Ereignisse | Jaehrlich wiederkehrend |
 | `erinnerung` | Allgemeine Erinnerungen | Ohne festen Termin-Charakter |
-| `erinnerungs_anker` | "Wetter heiß heute", "erstes Quartal schlecht" | Klasse Bezug (Synapsen P3) — still aus dem KZG-Schreibpfad angelegt, nicht user-erzeugt. Flags (False, False, False). Wird vom `magnete_aufloesen`-Node im KzgAgent-Subgraph gesetzt; siehe `novaberg-convention-magneten.md` §5. |
+| `erinnerungs_anker` | "Wetter heiß heute", "erstes Quartal schlecht" | Klasse Bezug (Synapsen P3) — still aus dem KZG-Schreibpfad angelegt, nicht user-erzeugt. Flags (False, False, False). Wird vom `magnete_aufloesen`-Node im KzgAgent-Subgraph gesetzt; siehe `novaberg-convention-magneten.md` §5. **Kein Termin und keine Erinnerung:** Seit dem 15.10.2026 gibt kein Leseweg ihn als Termin aus (§4, §4a); `remind` hat keinen Leser — eine Erinnerung gibt es im System nicht. |
 
 Der Typ wird vom Classify-Node bestimmt -- nicht vom Nutzer explizit angegeben. Ausnahme `erinnerungs_anker`: setzt der KzgAgent ohne User-Intent, allein anhand des Salience-Roh-Zeitausdrucks.
 
@@ -302,7 +366,7 @@ CREATE TABLE IF NOT EXISTS timeline (
 
 **Plugin TimelineManager** (`plugins/timeline_manager/manager.py`) ist seit M2.5a (Chat 80) reine Lese-Schicht:
 
-- `enrich_entries()` und `_termin_zu_entry()` — Enricher-Hook für proaktiven Kontext (heute -3 bis +14 Tage), `_log_entries()` als Trace-Helper.
+- ~~`enrich_entries()` und `_termin_zu_entry()` — Enricher-Hook für proaktiven Kontext (heute -3 bis +14 Tage), `_log_entries()` als Trace-Helper.~~ → **seit dem 15.10.2026:** `enrich_entries()` liest nur das proaktive Fenster (heute −3 bis +14 Tage) über `memory/timeline_reading.py::read_appointments` — ohne Erinnerungs-Anker, je Eintrag mit Wochentag und Bezug zu heute (`_appointment_entry`). Die Einträge lesen Thinker, Tribunal und Korrektor; der Verfasser bekommt die Termine in `[TERMINE]` (§4a). Der gezielte Zweig für `needs_timeline`/`timeline_query` ist entfernt — er war hinter dem Enricher nie erreichbar.
 - Schreibpfade leben ausschließlich im TimelineAgent (`agents/timeline/`, siehe §5.4).
 - `execute()` existiert nur als Loud-Failure-Stub für die `BaseManager.execute()`-Abstraktheit. Falls jemals ein `ziel="timeline"`-Write den Dispatcher erreicht, wirft er `NotImplementedError` mit voller Diagnose.
 

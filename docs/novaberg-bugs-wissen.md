@@ -124,7 +124,16 @@ id | pfad                               | bezeichnung
 
 **Rang:** **hoch** — still, eine falsche Zeitangabe wird geglaubt. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: keine Prüfung der Antwort gegen `event_time`; `server/utils/datum_pruefung.py` prüft nur Wochentag gegen Datum. Ungemessen.
 
-**Zustand:** offen — gefunden am 01.09.2026 gegen HEAD `79aaaa6`, aus der Fundliste uebernommen.
+**Zustand:** **im Code behoben am 15.10.2026; Messung im Betrieb ausstehend.** ~~offen — gefunden am 01.09.2026 gegen HEAD `79aaaa6`, aus der Fundliste uebernommen.~~
+
+**Gebaut am 15.10.2026 — Fassung c der Entscheidung unten, an der Stelle, an der ein Termin in den Prompt der Antwort kommt** (getestet, im Betrieb nicht gemessen):
+
+- **Der Bezug zu heute ist vorgerechnet.** Der Block `[TERMINE]` des Verfassers trägt je Termin Wochentag, Datum und Uhrzeit in Ortszeit und in Klammern den Bezug zu heute — *heute*, *morgen*, *in 3 Tagen*, *vor 9 Tagen* —, gerechnet nach Kalendertagen in Ortszeit (`graph/format/appointments.py::relative_day`). Der Prompt sagt, dass der Inhalt ihn übernimmt, statt selbst zu rechnen.
+- **Abgelaufen heißt gekennzeichnet oder weggelassen.** Ein Termin vor jetzt (mit Uhrzeit) oder vor heute (ohne Uhrzeit) steht als *„vergangen, vor N Tagen“* da; bei `direction: forward` fehlt er, und die Kopfzeile sagt *„nur kommende Termine“*. `direction` gilt jetzt auch für einen Zeitraum (`range`), nicht nur für die Titelsuche; der Router-Prompt setzt `forward` auch bei Fragen nach Kommendem (*„was steht an“*, *„was habe ich noch“*, *„diese Woche noch“*).
+- **Eine Titelsuche grenzt *vergangen* in der Abfrage so ab wie der Leser**, mit der Uhr des Turns statt `NOW()` der Datenbank — kein Platz der Obergrenze geht an einen Termin, der danach wegfällt (`memory/repositories/timeline_repository.py::find_by_keyword`, Schlüsselwörter `now` und `timed_precisions`).
+- Zeugen in `tests/test_timeline_reading.py` (`DirectionTest`, `RelationToTodayTest`, `SearchBoundaryTest` — über das Monatsende und kurz nach Mitternacht Ortszeit) und `tests/test_timeline_anchor_exclusion.py`.
+
+**Nicht gebaut:** eine Prüfung hinter der Antwort, die ein genanntes Datum gegen `event_time` hält. Die Lesezeilen des Timeline-Agenten (`agents/timeline/suche.py`) tragen weiter keinen Bezug zu heute — und auf dem Aufgabenpfad sind sie das, was die Antwort bekommt. **Geschlossen wird erst nach der Messung** — die Schließbedingung unten fragt nach der Auskunft, nicht nach dem Prompt.
 
 **Diagnose am Code, 15.10.2026 — die Ursache ist kein einzelner Fehler, sondern das Fehlen jeder Zeitbeziehung entlang des Weges.** Die Lesewege der Timeline (Suche, Zeitraum, Repository) liefern abgelaufene, noch aktive Termine ohne Kennzeichen *vergangen*; die Prompts der Antwort tragen den Termin als absolutes Datum ohne Bezug zu heute; keine Prüfung hinter der Antwort hält ein genanntes Datum gegen `event_time`. Nur der proaktive Zweig des Timeline-Managers setzt den Bezug — mit einem Fenster ab heute minus drei Tagen, das einen dreizehn Tage alten Termin nicht aufnimmt. Welcher Weg im ursprünglichen Fall lief, ist ungemessen. ~~**Vor dem Bau steht eine Absichtsfrage beim Eigentümer:**~~ → entschieden am 15.10.2026 (unten): ob ein abgelaufener Termin bei einer Frage nach kommenden weggelassen, sonst als *vergangen* gekennzeichnet und mit vorgerechnetem Bezug zu heute gegeben wird (beides zusammen erfüllt die Schließbedingung unten).
 

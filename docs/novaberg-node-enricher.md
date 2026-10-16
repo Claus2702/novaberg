@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 15. Oktober 2026, 01:23 UTC (`date -u`; der Enricher verstärkt aktivierte mittelfristige Ziele und legt ihre Vektoren unter `ziel_vektoren` in den Zustand). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 14. September 2026, 19:52 UTC (die Kürzung der Verlaufsform für Perzeption und Router beziffert: 100 Zeichen je Beitrag). Davor 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
+**Stand:** 15. Oktober 2026, 21:35 UTC (`date -u`; die Termine liest der Turn seit heute hinter dem Router, der Hook des TimelineManagers liefert nur noch das proaktive Fenster und nicht mehr in den Gedächtnisblock des Verfassers — gebaut). Davor 15. Oktober 2026, 01:23 UTC (`date -u`; der Enricher verstärkt aktivierte mittelfristige Ziele und legt ihre Vektoren unter `ziel_vektoren` in den Zustand). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 14. September 2026, 19:52 UTC (die Kürzung der Verlaufsform für Perzeption und Router beziffert: 100 Zeichen je Beitrag). Davor 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -39,7 +39,7 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 **Reihenfolge-Logik (Phase 2):** EI-Calc läuft im CG **vor** dem Enricher, weil das Empathie-Update gegen Novas persistierten Vorzustand berechnet wird, bevor Memory-Resonanz hinzukommt.
 
-**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus). Router-Flags (`needs_memory`, `needs_timeline`) spielen hier keine Rolle mehr, weil der Enricher jetzt vor dem Router läuft — er lädt alles, was später gebraucht werden könnte.
+**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus). Router-Flags (`needs_memory`, `needs_timeline`) spielen hier keine Rolle mehr, weil der Enricher jetzt vor dem Router läuft — er lädt alles, was später gebraucht werden könnte. **Für die Timeline hieß das bis zum 15.10.2026: Der gezielte Zweig wurde nie erreicht.** Der TimelineManager hatte einen Zweig für `needs_timeline` mit `timeline_query` (`range`, `search`) — hier, vor dem Router, waren beide nie gesetzt (seit dem 18.09.2026 109 Router-Zeilen mit `timeline=True`, 0 gezielte Lesungen). Seit dem Bau vom 15.10.2026 liest der Turn die gefragten Termine hinter dem Router (`graph/base.py::_node_route`, `novaberg-agent-timeline.md` §4a); der Zweig hier ist entfernt.
 
 **Output:**
 
@@ -194,7 +194,7 @@ Der Enricher iteriert über alle registrierten Manager-Plugins und ruft den Hook
 | Manager | Liefert |
 |---------|---------|
 | FaktenManager | **Deaktiviert seit Chat 71** (`enricher.py:416-419`) — Hook wird übersprungen |
-| TimelineManager | Anstehende Termine, heutige Ereignisse |
+| TimelineManager | ~~Anstehende Termine, heutige Ereignisse~~ → **seit 15.10.2026:** das proaktive Fenster (drei Tage zurück, vierzehn voraus) über `memory/timeline_reading.py::read_appointments`, ohne Erinnerungs-Anker, je Termin mit Wochentag und Bezug zu heute. Die Einträge (`plugin_timeline`) lesen Thinker, Tribunal und Korrektor; im `[GEDAECHTNIS]` des Verfassers fehlen sie (`graph/format/memory_context.py::entries_for_reader`) — er bekommt die Termine in `[TERMINE]` |
 | NotizenManager | Betroffene Notiz bei Management-Intent |
 | **WissenManager** | **Novas erarbeitete Bibliothek** (seit 04.08.2026) — Metadaten-Treffer über Embedding-Nähe |
 | KzgManager | (kein enrich-Hook, KZG wird direkt geladen) |

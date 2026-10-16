@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 18. September 2026, 21:14 UTC (die Zustimmung auf ein offenes Angebot stellt der Router selbst zu, wenn das Modell es nicht tut; ein eigener Auftrag verwirft eine offene Rückfrage; beide Weichen im Pipeline-Log). Davor 17. September 2026, 20:38 UTC (**E1: der `[LAGE]`-Block trägt den Zustimmungssatz nur bei offenem Angebot**, dazu ein Riegel gegen die blanke Zustimmung ohne Angebot — `utils/offers.py`; im Betrieb gemessen). Davor: 17. September 2026, 14:27 UTC (**der `[LAGE]`-Block** — akute Objekte mit Bekanntem und Diensten vor den Aushängen; eine Zustimmung auf ein Angebot ist ein Auftrag; nicht auf Impuls-Turns, nicht nach einem Sachlage-Ausfall — Scheibe 12 D2a). Davor 17. September 2026, 10:58 UTC (das Urteil der Objekt-Nähe wird als `objekt_urteil` geschrieben und vom Planner gelesen — Scheibe 12 D1). Davor 16. September 2026, 20:58 UTC (die Objekt-Nähe urteilt **je Zettel für sich** — jeder Dienst über der Untergrenze ist Empfänger, der Abstand entscheidet nichts mehr). Davor 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
+**Stand:** 15. Oktober 2026, 21:36 UTC (`date -u`; §3.2: die Timeline-Anfrage liest seit heute derselbe Knoten hinter dem Router, `direction` gilt auch für `range` — gebaut). Davor 18. September 2026, 21:14 UTC (die Zustimmung auf ein offenes Angebot stellt der Router selbst zu, wenn das Modell es nicht tut; ein eigener Auftrag verwirft eine offene Rückfrage; beide Weichen im Pipeline-Log). Davor 17. September 2026, 20:38 UTC (**E1: der `[LAGE]`-Block trägt den Zustimmungssatz nur bei offenem Angebot**, dazu ein Riegel gegen die blanke Zustimmung ohne Angebot — `utils/offers.py`; im Betrieb gemessen). Davor: 17. September 2026, 14:27 UTC (**der `[LAGE]`-Block** — akute Objekte mit Bekanntem und Diensten vor den Aushängen; eine Zustimmung auf ein Angebot ist ein Auftrag; nicht auf Impuls-Turns, nicht nach einem Sachlage-Ausfall — Scheibe 12 D2a). Davor 17. September 2026, 10:58 UTC (das Urteil der Objekt-Nähe wird als `objekt_urteil` geschrieben und vom Planner gelesen — Scheibe 12 D1). Davor 16. September 2026, 20:58 UTC (die Objekt-Nähe urteilt **je Zettel für sich** — jeder Dienst über der Untergrenze ist Empfänger, der Abstand entscheidet nichts mehr). Davor 16. September 2026, 20:18 UTC (**die Objekt-Nähe im Schatten** — vor jeder Entscheidung rechnet der Knoten, welchem Dienst ein akutes Objekt der Lage nahe ist, protokolliert es und benutzt es nicht; letzter Abschnitt). Davor 14. September 2026, 19:52 UTC (der Timeline-Aushang verlangt einen Auftrag; unter `gemma4-a4b-gpu` gemessen, was der Empfang zustellt; die Position im Graphen berichtigt; der Verlauf in 100 Zeichen je Beitrag als Gefahr markiert — §2, §4.2, letzter Abschnitt). Davor: 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -41,15 +41,15 @@ Nur im CharacterGraph. Im HumanGraph (Pfad 1) gibt es keinen Router — der User
 
 ### 3.2 Timeline-Query
 
-Strukturierte Abfrage für den TimelineManager:
+Strukturierte Abfrage ~~für den TimelineManager~~ → **für den Leseweg hinter dem Router** (15.10.2026): `graph/base.py::_node_route` ruft nach `route()` `memory/timeline_reading.py::read_for_turn`, und der Verfasser bekommt das Ergebnis als `[TERMINE]` (`novaberg-agent-timeline.md` §4a). Der TimelineManager las die Anfrage im Enricher, der vor dem Router läuft — sein gezielter Zweig war nie erreichbar (seit dem 18.09.2026 109 Router-Zeilen mit `timeline=True`, 0 gezielte Lesungen).
 
 | Typ | Zweck | Felder |
 |-----|-------|--------|
 | `range` | Zeitraum-Abfrage | `from`, `to` als absolutes Datum. „morgen" = morgen 00:00–23:59. |
 | `search` | Keyword-Suche | `keyword`, `direction` (forward/backward/both), `limit` |
-| `store` | Neuen Termin speichern | `date` (berechnet), `title` |
+| `store` | Neuen Termin speichern | `date` (berechnet), `title` — **der Router-Prompt nennt die Art nicht** (`type: range\|search`, gelesen am 15.10.2026); beim Lesen gilt eine solche Anfrage als unlesbar: ERROR und das proaktive Fenster |
 
-Der Router berechnet relative Datumsangaben: „in 3 Wochen" = heute + 21 Tage. Die Zeitrichtung wird aus der deutschen Grammatik erkannt: Präsens/Futur → forward, Imperfekt/Perfekt → backward.
+Der Router berechnet relative Datumsangaben: „in 3 Wochen" = heute + 21 Tage. Die Zeitrichtung wird aus der deutschen Grammatik erkannt: Präsens/Futur → forward, Imperfekt/Perfekt → backward. **Seit dem 15.10.2026 gilt `direction` für `range` und `search` gleich** (`prompts/default/router.task.txt`), und `forward` auch bei Fragen nach Kommendem (*„was steht an“*, *„was habe ich noch“*, *„diese Woche noch“*) — dann fehlen abgelaufene Termine. Das ist Fassung c der Entscheidung in `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN`. Kein Zeuge prüft den Text des Router-Prompts; wirken kann der Satz nur in der Messung.
 
 ### 3.3 Momentum
 
@@ -189,13 +189,14 @@ Neue Fähigkeiten werden automatisch erkannt — ohne Änderung am Router. Die e
 |------|-----|-------------|
 | `needs_memory` | `bool` | Gedächtnis laden? |
 | `needs_web` | `bool` | Web-Suche nötig? |
-| `needs_timeline` | `bool` | Timeline-Daten laden? |
+| `needs_timeline` | `bool` | Timeline-Daten laden? — gelesen seit dem 15.10.2026 hinter dem Router im selben Knoten (§3.2) |
 | `timeline_query` | `dict` | Strukturierte Timeline-Abfrage |
 | `momentum` | `str` | Gesprächsdynamik (low/mid/high) |
 | `management_action` | `str` | `"agent"` (Plugin-gesteuert), `"resume"` (Pending-Agent), oder `""` |
 | `management_target` | `str` | Agent-Name — von Plugin-Prompt gesetzt (seit Chat 40) |
 | `management_target_typ` | `str` | Leer — wird vom Agent-Classify-Node bestimmt |
 | `objekt_urteil` | `dict` | Urteil der Objekt-Nähe (`shadow_nearness`), seit 17.09.2026 — der Planner ordnet damit die Dienste |
+| `appointment_reading` | `AppointmentReading` | **Nicht von `route()`, sondern vom Knoten dahinter** (`GraphBase._node_route`, seit 15.10.2026): die Termine dieses Turns für den Block `[TERMINE]` des Verfassers (§3.2) |
 
 ---
 
