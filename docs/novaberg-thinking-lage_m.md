@@ -253,3 +253,19 @@ Gemessen mit 15 erfundenen Dialogen, alte gegen neue Fassung, Regel vor dem Lauf
 | 3 | derselbe, der Riegel um die zwei unsichtbaren Formen aus Lauf 2 nachgezogen | 21 / 25 von 27 | **20** | **0** |
 
 **Der Riegel allein misst nach der Korrektur eine Sauberkeit, die es nicht gibt.** In Lauf 1 meldete er 24 von 27, gelesen waren 12 von 24 sauber: Der Auftrag nannte die Wörter, die nicht vorkommen sollten, und das Modell wich auf andere aus — *gelistet, angesetzt, erfasst, geöffnet*. Die sauberen Fassungen hatten fast alle eine Form, die Wiedergabe des Wunsches; die gibt der Auftrag seit Lauf 2 vor. **Ein Verbot im Auftrag an ein Modell erzeugt Synonyme** — dieselbe Erfahrung wie beim Prompt der Figur, hier an einem Korrekturauftrag gemessen.
+
+### Scheibe 13 — die Lage und das Faktengedächtnis (entworfen am 17.10.2026)
+
+#### Teil H — die Termine über den gemeinsamen Leseweg, gemessen am 17.10.2026
+
+**Gemessen im Betrieb, 20:52–21:14 UTC** (`labor/2026-10-17_messung_a2_leseweg.py`, Ausgabe daneben): ein frischer Prüf-Nutzer mit sieben gesäten Zeilen, synthetisch — drei Termine im November, ein Erinnerungs-Anker darin, ein Termin am 31.10. und einer am 01.12., derselbe Titel einmal vergangen und einmal kommend. Drei Turns: eine Frage nach dem November, eine nach einem Termin-Titel, ein Nachsatz ohne neuen Gegenstand. Der Nachsatz ist nötig, weil der Auflöser zu den Objekten der **vorigen** Blase liest. Je Turn drei Zugriffe: die inhaltsfreien Zählzeilen der Logger im Zeitfenster des Turns, das Angebot für den nächsten Turn, im Container aus der gespeicherten Sachlage nachgerechnet (`memory_offer`), und der Bestand per SQL.
+
+| Turn | `[TERMINE]` des Turns | Objekt der Sachlage | Angebot im nächsten Turn |
+|---|---|---|---|
+| nach dem November | Zeitraum, vorwärts, 3 Termine — richtig | *Novemberereignisse* | Titelsuche, 0 |
+| nach dem Titel | Titelsuche, **rückwärts**, 1 Termin: nur der vergangene | *Zahnarzttermin* | Titelsuche, 0 |
+| Nachsatz | Titelsuche, rückwärts, 0 | *Zahnarzttermin* | 0 |
+
+**Das Angebot blieb in 3 von 3 Turns leer**, im echten Turn gezählt (*„Angebot aus Kalender 0“*). Der Grund ist der Name des Objekts, nicht der Leseweg (`SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN`). **Derselbe Leseweg mit passendem Namen**, am selben Bestand: *November* liefert genau die drei Novembertermine, dieselbe Menge wie per SQL und dieselbe Zahl wie `[TERMINE]`, ohne den Anker und ohne die Randtermine; *Zahnarzt* liefert beide Termine, den vergangenen als *(vergangen, vor 7 Tagen)*, zeilengleich mit dem Weg hinter dem Router. **Die Teile des Ziels *kein vergangener als kommend* und *kein Anker* hält der Leseweg also, im Betrieb sind sie mangels Angebot nicht belegt.**
+
+**Nebenbei:** Der Router las auf die Frage nach dem kommenden Zahnarzttermin rückwärts, und der Block trug nur den vergangenen, gekennzeichnet; die Antwort nannte den kommenden richtig, aus dem Verlauf (Fundliste 17.10.2026). Seiteneffekt: ein neuer Erinnerungs-Anker am 01.11. um 00:00, keine Notiz, kein Fakt.

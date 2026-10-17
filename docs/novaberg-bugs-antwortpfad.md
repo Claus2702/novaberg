@@ -1,9 +1,30 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 45 Eintraege, je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 46 Eintraege, je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — aus der Messung des gemeinsamen Lesewegs der Termine
+
+### `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN` — das Angebot der Sachlage liest zu einem frei benannten Objekt keinen Termin
+**Kategorie:** ANT
+
+**Rang:** **mittel** — still: Das Serverlog zählt *„Angebot aus Kalender 0“*, aber nichts sagt, dass es Termine gegeben hätte. Die Antwort bekommt die Termine trotzdem über den Block `[TERMINE]`; was ausfällt, ist die Deckung offener Eigenschaften aus dem Kalender und damit der Weg, auf dem Scheibe 13 Termine in die Sachlage holt. Vergeben am 17.10.2026 gegen HEAD `5009f47`.
+
+**Zustand:** offen — gemessen am 17.10.2026, 20:52–21:14 UTC, gegen HEAD `5009f47`.
+
+**Befund** `[gemessen]`: Der Frame-Auflöser liest Termine je akutem Objekt der vorigen Blase. Das Fenster bildet er aus dem **Namen** des Objekts: Nennt der Name einen Zeitraum, ist es dieser Zeitraum, sonst eine Titelsuche (`graph/nodes/sachlage_resolver.py::_calendar_window`). Den Namen vergibt der Sachlage-Call frei. An einem frischen Prüf-Nutzer mit sieben gesäten Zeilen (synthetisch, Titel und Zeiten vom Messwerkzeug) hieß das Objekt nach *„Was steht im November an?“* **Novemberereignisse** und nach *„Wann muss ich zum Zahnarzt?“* **Zahnarzttermin**. Der erste Name nennt für `utils/zeitparser.py::named_period` keinen Zeitraum, der zweite steht in keinem Titel (*Zahnarzt Dr. Berger*). Das Angebot war in **3 von 3** Turns leer; das Serverlog zählte im echten Turn *„Angebot aus Kalender 0“*. Derselbe Leseweg mit dem Namen *November* liefert genau die drei Novembertermine, mit *Zahnarzt* beide Zahnarzttermine, den vergangenen gekennzeichnet — er ist richtig, nur der Name trifft ihn nicht (`labor/2026-10-17_messung_a2_leseweg.py`, Ausgabe daneben).
+
+**Älter als der Leseweg:** Vor dem 17.10.2026 suchte der Auflöser mit demselben Namen über `find_by_keyword` und fand ebenso nichts. Der gemeinsame Leseweg hat das nicht verursacht, aber auch nicht behoben.
+
+**Wirkung.** Eine offene Eigenschaft wie *Uhrzeit* an einem Termin-Objekt bleibt offen, obwohl der Termin im Bestand steht, und die Sachlage weiß von ihren Terminen nur, was das Gespräch sagt. Jeder Leser der Sachlage nach dem Auflöser erbt das, auch das geplante Faktengedächtnis (`novaberg-memory-fakten_b.md`, F1).
+
+**Reproduktion.** Einem Prüf-Nutzer Termine im November säen und *„Was steht im November an?“* fragen; danach im nächsten Turn die Zählzeile *„Sachlage-Aufloeser: Angebot aus Kalender N“* lesen.
+
+**Geschlossen, wenn** an einem frischen Prüf-Nutzer eine Frage nach einem Zeitraum und eine nach einem Termin-Titel im Folgeturn ein Angebot mit genau den Terminen ergibt, die der Block `[TERMINE]` nennt. Wie das Fenster statt aus dem freien Namen entstehen soll (aus dem Wortlaut des Turns, einem Zeitbezug am Objekt oder einem gelernten Kanon), ist nicht entschieden.
 
 ---
 
