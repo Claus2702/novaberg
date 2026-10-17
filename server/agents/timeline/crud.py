@@ -22,7 +22,8 @@ from config import TIMEZONE
 from utils.local_time import weekday_name
 
 if TYPE_CHECKING:
-    from utils.zeitparser import RawTimeForm, TimeReading, ZeitVektor
+    from agents.timeline.positive_form import RawTimeForm
+    from utils.zeitparser import TimeReading, ZeitVektor
 
 logger = logging.getLogger("ki_server.agents.timeline.crud")
 
@@ -556,7 +557,7 @@ def _raw_form_agrees(
     Fehlerfaelle: ein Text oder Titel, der keiner ist, wirft `TypeError`;
         eine Zeit ohne Zone `ValueError`.
     """
-    from utils.zeitparser import raw_time_form
+    from agents.timeline.positive_form import raw_time_form
 
     # ── Eingabe-Validierung ─────────────────────
     if not all(isinstance(text, str) for text in (*texts, title)):

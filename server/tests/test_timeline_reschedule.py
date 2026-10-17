@@ -27,6 +27,7 @@ from zoneinfo import ZoneInfo
 
 from agents.base import AgentResult
 from agents.timeline import crud as timeline_crud
+from agents.timeline import positive_form
 from graph.nodes import planner as planner_mod
 from graph.nodes.responder import _build_system_prompt
 from utils import zeitparser
@@ -940,7 +941,7 @@ class RawFormTest(_RescheduleCase):
 
     def test_raw_time_form(self) -> None:
         """Die Form auf dem Rohtext: Uhrzeit, keine Uhrzeit, oder None — je mit Zwilling."""
-        no_clock = zeitparser.RawTimeForm()
+        no_clock = positive_form.RawTimeForm()
         for text, expected in (
             ("Verschieb den Zahnarzt auf 11 Uhr.", time(11, 0)),
             ("Verschieb den Zahnarzt auf 11h.", None),
@@ -965,18 +966,18 @@ class RawFormTest(_RescheduleCase):
             ("auf halb elf", None),
         ):
             with self.subTest(text=text):
-                form = zeitparser.raw_time_form(text, "Zahnarzt")
+                form = positive_form.raw_time_form(text, "Zahnarzt")
                 if expected is None:
                     self.assertIsNone(form)
                 else:
-                    self.assertEqual(form, zeitparser.RawTimeForm(clock=expected))
+                    self.assertEqual(form, positive_form.RawTimeForm(clock=expected))
         for text in ("Verschieb den Zahnarzt auf Freitag.", "Freitag", "auf morgen", "", "bitte"):
             with self.subTest(text=text):
-                self.assertEqual(zeitparser.raw_time_form(text, "Zahnarzt"), no_clock)
+                self.assertEqual(positive_form.raw_time_form(text, "Zahnarzt"), no_clock)
         with self.assertRaises(TypeError):
-            zeitparser.raw_time_form(None, "Zahnarzt")
+            positive_form.raw_time_form(None, "Zahnarzt")
         with self.assertRaises(TypeError):
-            zeitparser.raw_time_form("auf 11 Uhr", None)
+            positive_form.raw_time_form("auf 11 Uhr", None)
 
     def test_only_what_is_admitted_stands_outside_the_form(self) -> None:
         """Ausserhalb der Form nur Verb, Fuellwort und Titel — jedes andere Wort: None.
@@ -984,11 +985,11 @@ class RawFormTest(_RescheduleCase):
         Bisher verbot die Pruefung, was zeitartig ist; "Fr." und "vorm." kannte
         keine Liste, und "auf Fr. um 11 Uhr" schrieb den alten Tag mit 11:00.
         """
-        eleven = zeitparser.RawTimeForm(clock=time(11, 0))
+        eleven = positive_form.RawTimeForm(clock=time(11, 0))
         for text, title, expected in (
             ("Verschieb ein Treffen auf 11 Uhr.", "Treffen", eleven),
             ("Verschieb ein Treffen auf 11 Uhr.", "Zahnarzt", None),
-            ("Mittagessen auf 13 Uhr", "Mittagessen", zeitparser.RawTimeForm(clock=time(13, 0))),
+            ("Mittagessen auf 13 Uhr", "Mittagessen", positive_form.RawTimeForm(clock=time(13, 0))),
             ("Mittagessen auf 13 Uhr", "", None),
             ("Verschieb meinen Zahnarzttermin auf 11 Uhr.", "Zahnarzt Dr. Berger", eleven),
             # "Dr" hat keine vier Buchstaben, ist also kein Inhaltswort des Titels.
@@ -1007,7 +1008,7 @@ class RawFormTest(_RescheduleCase):
             ("Verschieb den Zahnarzt auf 11 Uhr 2", "Zahnarzt 2", None),
         ):
             with self.subTest(text=text, titel=title):
-                self.assertEqual(zeitparser.raw_time_form(text, title), expected)
+                self.assertEqual(positive_form.raw_time_form(text, title), expected)
 
     def test_raw_outside_admitted(self) -> None:
         """Die Zulassung je Wortart, mit Zwilling; Satzzeichen sind keine Woerter."""
@@ -1053,26 +1054,26 @@ class RawFormTest(_RescheduleCase):
             (" , . ? –", "", True),
         ):
             with self.subTest(ausserhalb=outside, titel=title):
-                self.assertIs(zeitparser._raw_outside_admitted(outside, title), expected)
-        self.assertIn("beim", zeitparser._RAW_ADMITTED_WORDS)
-        self.assertNotIn("um", zeitparser._RAW_ADMITTED_WORDS)
-        self.assertIsNotNone(zeitparser._RAW_ADMITTED_VERB.fullmatch("verschieben"))
-        self.assertEqual(zeitparser._RAW_TITLE_WORD.findall("Dr. Berger 2"), ["Dr", "Berger"])
-        self.assertEqual(zeitparser._RAW_TITLE_MIN_LETTERS, 4)
-        self.assertEqual(zeitparser._RAW_TITLE_COMPOUND_END, "termin")
-        self.assertEqual(zeitparser._RAW_TITLE_COMPOUND_JOINTS, ("", "s"))
-        self.assertIn("nachmittag", zeitparser._RAW_PARSER_WORDS)
-        self.assertIn("vormittag", zeitparser._RAW_PARSER_WORDS)
+                self.assertIs(positive_form._raw_outside_admitted(outside, title), expected)
+        self.assertIn("beim", positive_form._RAW_ADMITTED_WORDS)
+        self.assertNotIn("um", positive_form._RAW_ADMITTED_WORDS)
+        self.assertIsNotNone(positive_form._RAW_ADMITTED_VERB.fullmatch("verschieben"))
+        self.assertEqual(positive_form._RAW_TITLE_WORD.findall("Dr. Berger 2"), ["Dr", "Berger"])
+        self.assertEqual(positive_form._RAW_TITLE_MIN_LETTERS, 4)
+        self.assertEqual(positive_form._RAW_TITLE_COMPOUND_END, "termin")
+        self.assertEqual(positive_form._RAW_TITLE_COMPOUND_JOINTS, ("", "s"))
+        self.assertIn("nachmittag", positive_form._RAW_PARSER_WORDS)
+        self.assertIn("vormittag", positive_form._RAW_PARSER_WORDS)
         for word in ("nach", "vor", "oder", "ueber", "zwischen", "meinem"):
             with self.subTest(funktionswort=word):
-                self.assertIn(word, zeitparser._RAW_FUNCTION_WORDS)
-        self.assertIn("nach", zeitparser._RAW_PARSER_WORDS)
-        self.assertIn("freitag", zeitparser._RAW_PARSER_WORDS)
-        self.assertTrue(zeitparser._RAW_TIME_WORDS < zeitparser._RAW_PARSER_WORDS)
-        self.assertTrue(all(word.lower() in zeitparser._RAW_PARSER_WORDS
-                            for word in zeitparser._RAW_PARSER_WORD_LIST))
+                self.assertIn(word, positive_form._RAW_FUNCTION_WORDS)
+        self.assertIn("nach", positive_form._RAW_PARSER_WORDS)
+        self.assertIn("freitag", positive_form._RAW_PARSER_WORDS)
+        self.assertTrue(positive_form._RAW_TIME_WORDS < positive_form._RAW_PARSER_WORDS)
+        self.assertTrue(all(word.lower() in positive_form._RAW_PARSER_WORDS
+                            for word in zeitparser.TIME_VOCABULARY.words))
         with self.assertRaises(TypeError):
-            zeitparser._raw_outside_admitted(None, "")
+            positive_form._raw_outside_admitted(None, "")
 
     def test_a_unit_or_a_relative_word_outside_the_form_asks_back(self) -> None:
         """Zeiteinheit, relatives Praefix, "halbe", "Viertelstunde" — bisher alter Tag, 11:00."""
@@ -1219,9 +1220,9 @@ class RawFormTest(_RescheduleCase):
             "_ORDINAL_DAYS": zeitparser._ORDINAL_DAYS,
             "_MONTHS_AFTER_UM": zeitparser._MONTHS_AFTER_UM.split("|"),
         }
-        eleven = zeitparser.RawTimeForm(clock=time(11, 0))
+        eleven = positive_form.RawTimeForm(clock=time(11, 0))
         self.assertEqual(
-            zeitparser.raw_time_form("Verschieb den Zahnarzt auf 11 Uhr", "Zahnarzt"), eleven
+            positive_form.raw_time_form("Verschieb den Zahnarzt auf 11 Uhr", "Zahnarzt"), eleven
         )
         cases: list[tuple[str, str, str]] = [
             (name, word, form)
@@ -1232,32 +1233,32 @@ class RawFormTest(_RescheduleCase):
         for name, word, form in cases:
             text: str = f"Verschieb den Zahnarzt auf 11 Uhr {form}"
             with self.subTest(liste=name, wort=form):
-                if form.lower() in zeitparser._RAW_ADMITTED_WORDS:
+                if form.lower() in positive_form._RAW_ADMITTED_WORDS:
                     # Nur der Artikel "ein": zugelassen, und keine Zeit.
-                    self.assertIn(word, zeitparser._RAW_NO_TIME_WORDS)
-                    self.assertEqual(zeitparser.raw_time_form(text, "Zahnarzt"), eleven)
+                    self.assertIn(word, positive_form._RAW_NO_TIME_WORDS)
+                    self.assertEqual(positive_form.raw_time_form(text, "Zahnarzt"), eleven)
                 else:
-                    self.assertIsNone(zeitparser.raw_time_form(text, "Zahnarzt"))
-                    self.assertTrue(word in zeitparser._RAW_NO_TIME_WORDS
-                                    or form.lower() in zeitparser._RAW_TIME_WORDS)
+                    self.assertIsNone(positive_form.raw_time_form(text, "Zahnarzt"))
+                    self.assertTrue(word in positive_form._RAW_NO_TIME_WORDS
+                                    or form.lower() in positive_form._RAW_TIME_WORDS)
 
     def test_a_prefixed_weekday_is_a_day_a_week_is_not(self) -> None:
         """Ein Wochentag mit Praefix ist ein <Tag> der Form, "naechste Woche" nicht."""
         for text, expected in (
-            ("auf nächsten Freitag", zeitparser.RawTimeForm()),
-            ("auf naechsten Freitag um 11", zeitparser.RawTimeForm(clock=time(11, 0))),
+            ("auf nächsten Freitag", positive_form.RawTimeForm()),
+            ("auf naechsten Freitag um 11", positive_form.RawTimeForm(clock=time(11, 0))),
             ("auf nächste Woche", None),
             ("auf Freitag in drei Tagen", None),
             ("auf 11 Uhr, Geburtstag", None),
         ):
             with self.subTest(text=text):
-                self.assertEqual(zeitparser.raw_time_form(text, "Zahnarzt"), expected)
+                self.assertEqual(positive_form.raw_time_form(text, "Zahnarzt"), expected)
 
     def test_raw_new_hour_rejects_what_is_no_match_of_the_form(self) -> None:
         with self.assertRaises(ValueError):
-            zeitparser._raw_new_hour(None)
+            positive_form._raw_new_hour(None)
         with self.assertRaises(ValueError):
-            zeitparser._raw_new_hour(zeitparser._BARE_NUMBER.search("auf 11"))
+            positive_form._raw_new_hour(zeitparser._BARE_NUMBER.search("auf 11"))
 
     def test_dotted_clock_times(self) -> None:
         """Nur eine Uhrzeit mit Punkt, die kein Datum sein kann, bekommt den Doppelpunkt."""
