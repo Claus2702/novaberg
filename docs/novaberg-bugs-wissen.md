@@ -26,7 +26,7 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 
 **Reproduktion.** Einen Termin anlegen, auf den eine Eigenschaft der Sachlage oder ein Knoten verweist, ihn verschieben und danach `timeline.aktiv` der verwiesenen Zeile lesen.
 
-**Geschlossen, wenn** ein Verweis nach dem Verschieben zur aktiven Zeile führt, für alle drei Spalten. Vorgeschlagen ist eine Spalte `timeline.nachfolger_id`, der ein Leser bis zur aktiven Zeile folgt. Entschieden ist die Bauart nicht; eine neue Spalte ist DDL und wird vorher angekündigt.
+**Geschlossen, wenn** ein Verweis nach dem Verschieben zur aktiven Zeile führt, für alle drei Spalten. Vorgeschlagen ist eine Spalte `timeline.nachfolger_id`, der ein Leser bis zur aktiven Zeile folgt. ~~Entschieden ist die Bauart nicht;~~ → **Im Grundsatz entschieden am 17.10.2026, nicht gebaut**, als Schemaänderung S5 des Faktengedächtnisses ([`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A, Nr. 20; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6); geschlossen ist der Eintrag erst, wenn jeder der drei Verweise der Kette folgt. Eine neue Spalte ist DDL und wird vor ihrem Bau einzeln angekündigt.
 
 ### `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` — drei Lesefunktionen des Fakten-Repositorys schreiben
 **Kategorie:** WIS
@@ -112,7 +112,7 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 
 **Befund** `[Code]`: Der Weg mit Titel grenzt mehrere gleichnamige Treffer nicht nach dem Tag des Termins ein. Stehen zwei Zahnarzttermine im Bestand, trifft *„Verschieb den Zahnarzt am 9. auf 11 Uhr“* beide — beim Verschieben ist der Zeitausdruck die neue Zeit, nicht der Tag des Termins. Gibt es keinen einzigen kommenden unter ihnen, kommt die Auswahl, und keine Antwort auf sie schreibt (`novaberg-agent-timeline.md` §4.5). Gleichnamige Termine ohne einen einzigen kommenden lassen sich damit über den Agenten weder einzeln ändern noch löschen noch verschieben (Beispiel synthetisch).
 
-**Warum es so steht:** Eine Wahl aus einer freien Antwort traf auf diesem Weg den ersten Kandidaten gleichen Titels und schrieb still am falschen Termin; deshalb schreibt keine Antwort mehr. Das Eingrenzen nach dem Tag kommt mit der Auswahl der Klärfälle — als feste, nummerierte Liste, entschieden am 17.10.2026 (`KLA-KLAERFALL-AM-OBJEKT`, Schritt 3).
+**Warum es so steht:** Eine Wahl aus einer freien Antwort traf auf diesem Weg den ersten Kandidaten gleichen Titels und schrieb still am falschen Termin; deshalb schreibt keine Antwort mehr. Das Eingrenzen nach dem Tag kommt mit der Auswahl der Klärfälle — als feste, nummerierte Liste, entschieden am 17.10.2026 (`KLA-KLAERFALL-AM-OBJEKT`, ~~Schritt 3~~ → Schritt 2 der Bauart, angenommen am selben Abend).
 
 **Reproduktion.** Zwei gleichnamige Termine, beide vergangen oder beide kommend, und ein Auftrag mit Titel und dem Tag eines von ihnen.
 
@@ -440,7 +440,7 @@ if self.now > dateobj - tz_offset:
 
 **Symptom:** `fakten` hat die Spalte `character_id` mit Default `'nova'`. INSERTs in `fakten_repository.py` setzen die Spalte nicht (DB-Default greift). SELECTs filtern nur `WHERE user_id = %s`, ignorieren `character_id` komplett.
 
-**Weitere Stellen, gegen HEAD `7b65297` gelesen am 17.10.2026.** Am Repository vorbei lesen zwei Stellen `fakten` mit eigenem SQL, und auch sie filtern nur `user_id`, nie `character_id`: `api/gedaechtnis.py::fakten_abrufen` (Endpunkt `GET /fakten/{user_id}`, Z. 373–379) und `graph/nodes/gespraechsvektor.py::_entity_kontext_laden` (Z. 435 und 454; diese Funktion hat keinen Aufrufer). Geschlossen ist der Eintrag erst, wenn jede Stelle nach dem Paar liest oder über die eine Lesefunktion des Faktengedächtnisses (Bauteil F1, `novaberg-memory-fakten_b.md`).
+**Weitere Stellen, gegen HEAD `7b65297` gelesen am 17.10.2026.** Am Repository vorbei lesen zwei Stellen `fakten` mit eigenem SQL, und auch sie filtern nur `user_id`, nie `character_id`: `api/gedaechtnis.py::fakten_abrufen` (Endpunkt `GET /fakten/{user_id}`, Z. 373–379) und `graph/nodes/gespraechsvektor.py::_entity_kontext_laden` (Z. 435 und 454; diese Funktion hat keinen Aufrufer). Geschlossen ist der Eintrag erst, wenn jede Stelle nach dem Paar liest oder über die eine Lesefunktion des Faktengedächtnisses (Bauteil F1, `novaberg-memory-fakten_b.md`). → **Die Bauart dazu ist am 17.10.2026 angenommen, nicht gebaut:** Das Repository nimmt das Paar in jede Abfrage, `fakten_abrufen` liest über die Mappe, und `_entity_kontext_laden` entfällt, weil es keinen Aufrufer hat (`novaberg-memory-fakten_b.md` §6, *Die angenommene Bauart*, F1 und F2).
 
 **Komplikation:** 171 Bestandseinträge unter `user_id='nova'` (Pre-Paar-Schema-Logik) repräsentieren *"Nova-Sicht auf Meister"* und gehören semantisch zu `(user_id='meister', character_id='nova', beobachter='assistant')` — nicht trivial pauschal umsattelbar.
 

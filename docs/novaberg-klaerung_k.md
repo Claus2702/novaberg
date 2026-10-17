@@ -1,10 +1,10 @@
 # Novaberg — Klärung: Abweichung und Lücke sind derselbe Vorgang
 
 **Absicht:** Weicht eine Eigenschaft eines Objekts von der gespeicherten ab oder fehlt eine notwendige, erkennt Nova das als denselben ungeklärten Objektzustand, baut nicht darauf und überschreibt nichts — ob sie nachfragt, entscheidet ~~allein~~ ihr Charakter; hängt ein klarer Auftrag daran, wird immer gefragt (entschieden am 17.10.2026, §2.1).
-**Stand:** 17. Oktober 2026, 15:40 UTC (`date -u`; neu §2.3: wer gemeint ist — die Bestimmung einer Entität über den vorhandenen Erzeuger der Mehrdeutigkeit, und ein Ereignis mit unklarem Zeitraum; entschieden am 17.10.2026, `_e` A, M4 und M5; dazu §6, das Faktengedächtnis). Davor 17. Oktober 2026, 14:36 UTC (`date -u`; die Fragen zu den Klärfällen am Objekt entschieden, `_e` A; damit sind B.3 und B.4 beantwortet; am Konzept selbst nichts geändert). Davor 5. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 17. Oktober 2026, 21:50 UTC (`date -u`; die Bauart der Klärfälle am Objekt angenommen, `_e` A, *Bauart*; nachgezogen in §2.3 — die Bestimmung einer Entität in der Sachlage, das Ereignis sofort mit der Genauigkeit *Monat* — und in §6, ein- und mehrwertige Beziehungen; nichts gebaut). Davor 17. Oktober 2026, 15:40 UTC (`date -u`; neu §2.3: wer gemeint ist — die Bestimmung einer Entität über den vorhandenen Erzeuger der Mehrdeutigkeit, und ein Ereignis mit unklarem Zeitraum; entschieden am 17.10.2026, `_e` A, M4 und M5; dazu §6, das Faktengedächtnis). Davor 17. Oktober 2026, 14:36 UTC (`date -u`; die Fragen zu den Klärfällen am Objekt entschieden, `_e` A; damit sind B.3 und B.4 beantwortet; am Konzept selbst nichts geändert). Davor 5. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *Klärung* ⚫ — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-klaerung_t.md`](novaberg-klaerung_t.md) · [`novaberg-klaerung_b.md`](novaberg-klaerung_b.md) · [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md) · [`novaberg-klaerung_m.md`](novaberg-klaerung_m.md)
-**Entschieden:** ~~0~~ → ~~6~~ → 8 (17.10.2026, zu den Klärfällen am Objekt; M2 folgt aus M1; M4 und M5 zur Bestimmung einer Entität und zum Zeitraum eines Ereignisses) · **Offen beim Meister:** ~~4~~ → 2 (Liste in [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md))
+**Entschieden:** ~~0~~ → ~~6~~ → ~~8~~ → 9 (17.10.2026, zu den Klärfällen am Objekt; M2 folgt aus M1; M4 und M5 zur Bestimmung einer Entität und zum Zeitraum eines Ereignisses; am Abend die Bauart der Klärfälle angenommen) · **Offen beim Meister:** ~~4~~ → 2 (Liste in [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md))
 
 **§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-klaerung_k.md §2.1` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-klaerung_t.md`](novaberg-klaerung_t.md), `_b` ist [`novaberg-klaerung_b.md`](novaberg-klaerung_b.md), `_e` ist [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md), `_m` ist [`novaberg-klaerung_m.md`](novaberg-klaerung_m.md).
 
@@ -107,13 +107,14 @@ Und umgekehrt: Der Schaden aus dem Sykophanz-Befund — die Verhandlungsempfehlu
 - **Ohne Auftrag ist die Frage Neugier.** Stimmung, Nähe und Pflichtbewusstsein entscheiden, ob Nova fragt (M1), bei hoher Salienz eher ja.
 - **Geht der Mensch darüber hinweg**, bleibt der Punkt offen und darf noch einmal angesprochen werden. Verfällt die Sachlage, gilt das als kein Interesse (M3).
 - **Nach der Antwort** ist das Objekt an genau eine Entität gebunden. Gebaut wird das als Bauteil F3 des Faktengedächtnisses ([`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6), am Klärfall am Objekt (Backlog `KLA-KLAERFALL-AM-OBJEKT`).
+- **Die Bauart, angenommen am 17.10.2026, nicht gebaut** (`_e` A, *Bauart*): Den Klärfall erzeugt die Sachlage selbst, im selben Turn. Bleibt ein Objekt der Klasse `person` ungebunden, sucht sie die Entitäten nur über den Namen, ohne Rückfall auf Embeddings; passt der Name auf zwei oder mehr, hängt sie einen Klärfall der Art `bestimmung` mit den Kandidaten an das Objekt. Die Antwort bindet das Objekt an die gewählte Entität, mit einer eigenen Herkunft der Bindung.
 
 **Ein Ereignis mit unklarem Zeitraum** (entschieden am 17.10.2026, `_e` A, M5). Beispiel, synthetisch: *Lena zieht im November nach Kassel.*
 
 - Der genaue Zeitraum fehlt, und das ist eine Lücke. Die Sachlage klärt sie aus dem Weltwissen: Ein privater Umzug dauert ein bis zwei Tage und fällt vermutlich auf ein Wochenende.
 - **Diese Annahme ist kein Wert, sondern eine offene Eigenschaft**, bis sie geklärt ist. Es gilt Stufe 2: Nova baut nicht darauf.
 - **Die Frage *„Welches Wochenende?“* ist Neugier, keine Pflicht-Rückfrage**, denn an ihr hängt kein Auftrag. Ob Nova fragt, entscheiden Pflichtbewusstsein und Nähe, bei hoher Salienz eher ja.
-- Das Ereignis selbst gehört in die Timeline. Der Fakt, der daraus folgt, gilt ab dem Ereignis ([`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §2.3).
+- Das Ereignis selbst gehört in die Timeline. Der Fakt, der daraus folgt, gilt ab dem Ereignis ([`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §2.3). → **Entschieden am 17.10.2026, nicht gebaut** ([`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A, Nr. 15 und 19): Das Ereignis wird nicht erst nach der Klärung eingetragen, sondern sofort, mit der Genauigkeit *Monat*, und nach der Klärung verschoben. Über der Grenze der Salienz geschieht das ohne Auftrag; darunter fragt Nova je nach Willen und Pflichtbewusstsein.
 
 ---
 
@@ -125,7 +126,7 @@ Und umgekehrt: Der Schaden aus dem Sykophanz-Befund — die Verhandlungsempfehlu
 
 **GV4** findet akute Lücken bereits, aber turn-flüchtig und ohne Ausgang. K2 ist der Ort, an dem so ein Fund eine Folge bekommt.
 
-**`novaberg-memory-fakten_k.md`**, das Faktengedächtnis, ist der Speicher, für den dieses Konzept geschrieben wurde (§1: *„ein System … das Fakten über die Zeit hält“*). Dort löst ein neuer Wert den alten bi-temporal ab, ohne Rückfrage (entschieden am 17.10.2026). Das erfüllt Stufe 3, denn der alte Wert bleibt in der Historie. Ob Nova bei einer Abweichung fragt, bleibt Stufe 4. Den Schreibpfad selbst prüft K5 (`_b`).
+**`novaberg-memory-fakten_k.md`**, das Faktengedächtnis, ist der Speicher, für den dieses Konzept geschrieben wurde (§1: *„ein System … das Fakten über die Zeit hält“*). Dort löst ein neuer Wert den alten bi-temporal ab, ohne Rückfrage (entschieden am 17.10.2026) — → bei einer einwertigen Beziehung; bei einer mehrwertigen kommt der neue Wert dazu (entschieden am selben Tag, [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A, Nr. 17). Das erfüllt Stufe 3, denn der alte Wert bleibt in der Historie. Ob Nova bei einer Abweichung fragt, bleibt Stufe 4. Den Schreibpfad selbst prüft K5 (`_b`).
 
 ---
 

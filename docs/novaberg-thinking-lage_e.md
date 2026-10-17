@@ -6,14 +6,14 @@
 
 ## A. Entschieden — das Register
 
-Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → ~~31~~ → 32 (17.10.2026).
+Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → ~~31~~ → ~~32~~ → 35 (17.10.2026).
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|
 | 1 | 28.08.2026 | `sachlage_verlauf` verfällt nicht, weil Turns auch keinen Verfall haben — im Text: *„so entschieden bei der Freigabe“* der DDL | umschrieben | `_b` §4 Scheibe 4, DDL |
 | 2 | 13.09.2026 | `gedeckt` ist die Angabe selbst; ohne Wert ist eine Eigenschaft offen | umschrieben | `_k` §3, Nachtrag am Artefakt; beantwortet die Absichtsfrage in `_t` §3 |
 | 3 | 13.09.2026 | die Absicht des Eigenschaftsgedächtnisses: ablegen, später binden, ablösen statt überschreiben | umschrieben | `_k` §4 Scheibe 11 |
-| 4 | 13./14.09.2026 | nur ein ausdrücklicher Auftrag legt einen Termin an | wörtlich | unten, §4 Scheibe 12 |
+| 4 | 13./14.09.2026 | nur ein ausdrücklicher Auftrag legt einen Termin an — → gilt weiter für die eigenen Termine des Menschen; für ein Ereignis einer anderen Person über der Grenze der Salienz gilt seit dem 17.10.2026 Nr. 35 | wörtlich | unten, §4 Scheibe 12 |
 | 5 | 13./14.09.2026 | die Zustimmung zu Novas Angebot ist ein ausdrücklicher Auftrag; aus Pflichtbewusstsein bietet sie an | wörtlich | unten, §4 Scheibe 12 |
 | 6 | 13./14.09.2026 | Gesprächskontext, Pflichtbewusstsein und Nachfrage als Mechanik; nie eine Speicherung behaupten, die nicht stattfand | wörtlich | unten, §4 Scheibe 12 |
 | 7 | 13./14.09.2026 | der Router erkennt, worauf sich ein *„Gern“* bezieht, sofern ein registrierter Dienst mit dem Objekt umgehen kann | wörtlich | unten, §4 Scheibe 12 |
@@ -42,6 +42,9 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 30 | 17.10.2026 | Weltwissen kommt aus dem Modell, sonst aus einer Recherche im Internet; ein Monat ist kein Objekt mit Mappe, ein Ereignis darin gehört der Timeline; ein Ereignis mit unklarem Zeitraum klärt die Sachlage, die Annahme bleibt offen, und die Frage danach ist Neugier ohne Auftrag (gefolgert aus Nr. 26) | umschrieben | `_k` *Aus §4*, Scheibe 13, *Hinein*, *Klären*, *Die Neugier*; `novaberg-memory-fakten_e.md` A, Nr. 9 und 10 |
 | 31 | 17.10.2026 | die Mappe einer Entität der Sachlage stößt eine gezielte Suche im Erinnerungsgedächtnis an; sie reicht bis zum zweiten Grad in beide Richtungen, der Grad ist zu messen | umschrieben | `_k` *Aus §4*, Scheibe 13; `novaberg-memory-fakten_e.md` A, Nr. 12 |
 | 32 | 17.10.2026 | Sachlage und Turn lesen Termine über einen gemeinsamen Leseweg, mit Datum und Uhrzeit — die Bauart C1 des Faktengedächtnisses, angenommen | wörtlich | `_b` §4 Scheibe 6, *Nachgezogen am 17.10.2026*; `novaberg-memory-fakten_e.md` C1 |
+| 33 | 17.10.2026 | die Eigenschaft der Sachlage und der Fakt bleiben getrennt, *„Zwei verschiedene Silos, zwei verschiedene Blickpunkte.“*; eine von der Mappe gedeckte Eigenschaft trägt den Fakt als Quelle, und im Angebot geht bei einem gebundenen Objekt die Mappe vor — die Bauart C2 des Faktengedächtnisses | wörtlich | `_k` *Aus §4*, Scheibe 13; `_b` §4 Scheibe 13, Teil H; `novaberg-memory-fakten_e.md` A, Nr. 13 |
+| 34 | 17.10.2026 | die gezielte Erinnerungssuche mit der Mappe läuft in einem eigenen Knoten zwischen Sachlage und Router, dem Erinnerungsanker — die Bauart C5, angenommen | wörtlich | `_k` *Aus §4*, Scheibe 13; `_b` §4 Scheibe 13, Teil A; `novaberg-memory-fakten_e.md` A, Nr. 16 |
+| 35 | 17.10.2026 | ein Ereignis einer anderen Person geht über der Grenze der Salienz ohne Auftrag in die Timeline, als Typ `ereignis`, eingetragen vom Timeline-Agenten vor dem Fakt; darunter fragt Nova je nach Willen und Pflichtbewusstsein; für die eigenen Termine des Menschen bleibt Nr. 4 | wörtlich | `_k` *Aus §4*, Scheibe 13, *Heraus*; `_b` §4 Scheibe 13, Teil R; `novaberg-memory-fakten_e.md` A, Nr. 15 |
 
 **Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_b` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_b` §4 Scheibe 12, *Die Objektwahl der Lage*).
 
@@ -66,11 +69,11 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 - `_b` §4 Scheibe 5 — ob aus der Wiederaufnahme ein Stapel wird, *„entscheidet der Betrieb“*.
 - `_k` §5 — ob zwei Drittel fragender Schlüsse zu viel sind, *„ist eine Haltungsfrage und kein Befund“*.
 
-**Offen in der Bauart, für Scheibe 13** (17.10.2026). Das sind keine Fragen an den Meister, denn die Absicht ist entschieden (A, Nr. 27–31). Sie sind vor dem Bau zu entwerfen und stehen mit ihrem Anlass in [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) C:
+**~~Offen~~ → Entschieden in der Bauart, für Scheibe 13** (17.10.2026). Das sind keine Fragen an den Meister, denn die Absicht ist entschieden (A, Nr. 27–31). ~~Sie sind vor dem Bau zu entwerfen~~ → Sie waren vor dem Bau zu entwerfen, sind am 17.10.2026 alle entschieden (A, Nr. 32–34) und stehen mit ihrem Anlass in [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) C:
 
 - ~~**Lesen ohne Router, und zwei Lesewege der Timeline** (dort C1). Der Frame-Auflöser liest Kalenderzeilen selbst (Scheibe 6), der Turn liest Termine hinter dem Router. Offen ist, wie das Fenster aus dem Objekt der Sachlage entsteht und ob beide Wege in einem aufgehen.~~ → **Entschieden und gebaut am 17.10.2026** (A, Nr. 32): Der Kalenderweg des Auflösers geht im gemeinsamen Leseweg auf; das Fenster entsteht je Objekt aus `time_window` (ein Zeitraum) oder `search_window` (ein Titel) — `_b` §4 Scheibe 6, *Nachgezogen am 17.10.2026*.
-- **Die gezielte Erinnerungssuche nach der Sachlage** (dort C5). Das Erinnerungsgedächtnis wird im Enricher gelesen, vor der Sachlage; die Mappe gibt es erst danach.
-- **Eigenschaftsgedächtnis und Fakt** (dort C2). Eine Eigenschaft aus Scheibe 11 verfällt nicht, die Kante eines Fakts verfällt. Offen ist, ob beide zusammengelegt werden oder getrennt bleiben.
+- ~~**Die gezielte Erinnerungssuche nach der Sachlage** (dort C5). Das Erinnerungsgedächtnis wird im Enricher gelesen, vor der Sachlage; die Mappe gibt es erst danach.~~ → **Entschieden am 17.10.2026, nicht gebaut** (A, Nr. 34): Ein eigener Knoten zwischen Sachlage und Router, der Erinnerungsanker, holt die Mappe der gebundenen Entitäten, sucht mit ihnen im Erinnerungsgedächtnis und legt beides in den Prompt desselben Turns — `_b` §4 Scheibe 13, Teil A.
+- ~~**Eigenschaftsgedächtnis und Fakt** (dort C2). Eine Eigenschaft aus Scheibe 11 verfällt nicht, die Kante eines Fakts verfällt. Offen ist, ob beide zusammengelegt werden oder getrennt bleiben.~~ → **Entschieden am 17.10.2026, nicht gebaut** (A, Nr. 33): Beide bleiben getrennt. Eine Eigenschaft aus Scheibe 11 verfällt weiter nicht, die Kante eines Fakts verfällt; eine von der Mappe gedeckte Eigenschaft trägt den Fakt als Quelle und wird nicht angeboten — `_b` §4 Scheibe 13, Teil H.
 
 ---
 
