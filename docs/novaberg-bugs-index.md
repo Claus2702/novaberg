@@ -10,7 +10,7 @@
 | [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md) | Hintergrund (`HGR`) | 17 | 38 |
 | [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md) | Charakter (`CHA`) | 28 | 112 |
 | [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md) | Antwortpfad (`ANT`) | 45 | 120 |
-| [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md) | Wissen (`WIS`) | 27 | 58 |
+| [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md) | Wissen (`WIS`) | 27 | 59 |
 | [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md) | Bauart (`BAU`) | 21 | 45 |
 | [`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md) | Gedächtnis (`GED`) | 29 | 84 |
 | [`novaberg-bugs-archiv-hintergrund.md`](novaberg-bugs-archiv-hintergrund.md) | Hintergrund (`HGR`) | 24 | 53 |
@@ -117,7 +117,7 @@
 | `FAK1` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:764](novaberg-bugs-archiv-wissen.md) |
 | `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` | WIS | offen | [novaberg-bugs-wissen.md:44](novaberg-bugs-wissen.md) |
 | `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` | WIS | offen | [novaberg-bugs-wissen.md:31](novaberg-bugs-wissen.md) |
-| `FAKTEN-PAIR-IGNORED` | WIS | offen | [novaberg-bugs-wissen.md:427](novaberg-bugs-wissen.md) |
+| `FAKTEN-PAIR-IGNORED` | WIS | offen | [novaberg-bugs-wissen.md:429](novaberg-bugs-wissen.md) |
 | `FAKTEN-RAUSCH` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:792](novaberg-bugs-archiv-wissen.md) |
 | `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` | WIS | offen | [novaberg-bugs-wissen.md:57](novaberg-bugs-wissen.md) |
 | `FAKTENPLUGIN-OHNE-KAPPUNG` | WIS | offen | [novaberg-bugs-wissen.md:203](novaberg-bugs-wissen.md) |
@@ -223,13 +223,13 @@
 | `NEUGIER-VEKTOR-OHNE-LESER` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:86](novaberg-bugs-archiv-wissen.md) |
 | `NORMALIZER-CONNECTOR-NOOP` | — | abgeschlossen | [novaberg-bugs-archiv.md:150](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `NOTIZ-BEFEHL-ALS-TITEL` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:16](novaberg-bugs-archiv-wissen.md) |
-| `NOTIZ-RESUME-TARGET-VERLUST` | WIS | offen | [novaberg-bugs-wissen.md:533](novaberg-bugs-wissen.md) |
+| `NOTIZ-RESUME-TARGET-VERLUST` | WIS | offen | [novaberg-bugs-wissen.md:535](novaberg-bugs-wissen.md) |
 | `NOTIZAUFTRAG-GEHT-AN-TIMELINE` | ANT | offen | [novaberg-bugs-antwortpfad.md:298](novaberg-bugs-antwortpfad.md) |
-| `NOTIZEN-CONTAINER-WECHSEL` | WIS | offen | [novaberg-bugs-wissen.md:469](novaberg-bugs-wissen.md) |
-| `NOTIZEN-KONTEXT-REKONSTRUKTION` | WIS | offen | [novaberg-bugs-wissen.md:451](novaberg-bugs-wissen.md) |
-| `NOTIZEN-PAIR-MISSING` | WIS | offen | [novaberg-bugs-wissen.md:411](novaberg-bugs-wissen.md) |
-| `NOTIZEN-SKILL-MANIFEST` | WIS | offen | [novaberg-bugs-wissen.md:489](novaberg-bugs-wissen.md) |
-| `NOTIZEN-UPDATE-TARGET-LEER` | WIS | offen | [novaberg-bugs-wissen.md:509](novaberg-bugs-wissen.md) |
+| `NOTIZEN-CONTAINER-WECHSEL` | WIS | offen | [novaberg-bugs-wissen.md:471](novaberg-bugs-wissen.md) |
+| `NOTIZEN-KONTEXT-REKONSTRUKTION` | WIS | offen | [novaberg-bugs-wissen.md:453](novaberg-bugs-wissen.md) |
+| `NOTIZEN-PAIR-MISSING` | WIS | offen | [novaberg-bugs-wissen.md:413](novaberg-bugs-wissen.md) |
+| `NOTIZEN-SKILL-MANIFEST` | WIS | offen | [novaberg-bugs-wissen.md:491](novaberg-bugs-wissen.md) |
+| `NOTIZEN-UPDATE-TARGET-LEER` | WIS | offen | [novaberg-bugs-wissen.md:511](novaberg-bugs-wissen.md) |
 | `NOVA-SPRICHT-VON-FACHABTEILUNG` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:29](novaberg-bugs-archiv-antwortpfad.md) |
 | `NOVA-SYKOPHANZ-BESTAETIGT` | CHA | offen | [novaberg-bugs-charakter.md:642](novaberg-bugs-charakter.md) |
 | `NOVA-UEBERNIMMT-BIOGRAFIE` | ANT | offen | [novaberg-bugs-antwortpfad.md:568](novaberg-bugs-antwortpfad.md) |
@@ -246,7 +246,7 @@
 | `PAPAGEI1` | — | abgeschlossen | [novaberg-bugs-archiv.md:110](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `PARSER-EINSTELLIGE-STUNDE-STUERZT-AB` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:555](novaberg-bugs-archiv-wissen.md) |
 | `PARSER-MAERZ-FAELLT-DURCH` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:582](novaberg-bugs-archiv-wissen.md) |
-| `PARSER-NACKTE-UHRZEIT-FALSCHER-TAG` | WIS | offen | [novaberg-bugs-wissen.md:313](novaberg-bugs-wissen.md) |
+| `PARSER-NACKTE-UHRZEIT-FALSCHER-TAG` | WIS | offen | [novaberg-bugs-wissen.md:315](novaberg-bugs-wissen.md) |
 | `PARSER-ZWEI-UHREN` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:610](novaberg-bugs-archiv-wissen.md) |
 | `PATH1-LATENZ` | BAU | offen | [novaberg-bugs-bauart.md:445](novaberg-bugs-bauart.md) |
 | `PENDING-RELEVANZ` | ANT | offen | [novaberg-bugs-antwortpfad.md:811](novaberg-bugs-antwortpfad.md) |
@@ -296,7 +296,7 @@
 | `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:52](novaberg-bugs-archiv-charakter.md) |
 | `RAD-WERT-AUF-SPALTEN-DEFAULT` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:16](novaberg-bugs-archiv-charakter.md) |
 | `RADSPEICHEN-MESSEN-PROFILTEXT` | CHA | offen | [novaberg-bugs-charakter.md:217](novaberg-bugs-charakter.md) |
-| `READ-NACH-UPDATE-ALTER-WERT` | WIS | offen | [novaberg-bugs-wissen.md:375](novaberg-bugs-wissen.md) |
+| `READ-NACH-UPDATE-ALTER-WERT` | WIS | offen | [novaberg-bugs-wissen.md:377](novaberg-bugs-wissen.md) |
 | `RECH1` | — | abgeschlossen | [novaberg-bugs-archiv.md:112](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `RECH2` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:336](novaberg-bugs-archiv-hintergrund.md) |
 | `RECHERCHE-KZG-INHALT-LEER` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:436](novaberg-bugs-archiv-hintergrund.md) |
@@ -373,7 +373,7 @@
 | `THINKING-NULL-FALLE-LATENT` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:16](novaberg-bugs-archiv-bauart.md) |
 | `TIMELINE-LESEPFAD-INSTABIL` | ANT | offen | [novaberg-bugs-antwortpfad.md:133](novaberg-bugs-antwortpfad.md) |
 | `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` | WIS | offen | [novaberg-bugs-wissen.md:235](novaberg-bugs-wissen.md) |
-| `TIMELINE-PAIR-MISSING` | WIS | offen | [novaberg-bugs-wissen.md:393](novaberg-bugs-wissen.md) |
+| `TIMELINE-PAIR-MISSING` | WIS | offen | [novaberg-bugs-wissen.md:395](novaberg-bugs-wissen.md) |
 | `TIMELINE-SCHREIBT-OHNE-AUFTRAG` | WIS | offen | [novaberg-bugs-wissen.md:216](novaberg-bugs-wissen.md) |
 | `TIMELINE-SEARCH1` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:139](novaberg-bugs-archiv-wissen.md) |
 | `TIMELINE-TITEL-MEHRERE-TREFFER-OHNE-TAG` | WIS | offen | [novaberg-bugs-wissen.md:106](novaberg-bugs-wissen.md) |
@@ -386,7 +386,7 @@
 | `UEBERSTEUERUNG-AB-FUER-DREIERSKALA` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:412](novaberg-bugs-archiv-charakter.md) |
 | `UEBERSTEUERUNG-GREIFT-NICHT` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:39](novaberg-bugs-archiv-charakter.md) |
 | `UMFANGSREGLER-BINDET-NICHT` | ANT | offen | [novaberg-bugs-antwortpfad.md:69](novaberg-bugs-antwortpfad.md) |
-| `UNBEKANNTE-AKTION-FAELLT-DURCH` | WIS | offen | [novaberg-bugs-wissen.md:281](novaberg-bugs-wissen.md) |
+| `UNBEKANNTE-AKTION-FAELLT-DURCH` | WIS | offen | [novaberg-bugs-wissen.md:283](novaberg-bugs-wissen.md) |
 | `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` | BAU | offen | [novaberg-bugs-bauart.md:83](novaberg-bugs-bauart.md) |
 | `UNREGISTRIERTER-AGENT-GEWINNT` | HGR | offen | [novaberg-bugs-hintergrund.md:115](novaberg-bugs-hintergrund.md) |
 | `urllib3-RETRY` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:786](novaberg-bugs-archiv-antwortpfad.md) · auch Kurzeintrag [novaberg-bugs-archiv.md:142](novaberg-bugs-archiv.md) |
@@ -413,7 +413,7 @@
 | `WISSENSLUECKEN-FELDER-LEER` | ANT | offen | [novaberg-bugs-antwortpfad.md:487](novaberg-bugs-antwortpfad.md) |
 | `WS-SINGLE` | — | abgeschlossen | [novaberg-bugs-archiv.md:134](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `ZEIT-EINZAHL-GREIFT-DANEBEN` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:176](novaberg-bugs-archiv-wissen.md) |
-| `ZEIT-EXTRAKTION-UNSCHARF` | WIS | offen | [novaberg-bugs-wissen.md:300](novaberg-bugs-wissen.md) |
+| `ZEIT-EXTRAKTION-UNSCHARF` | WIS | offen | [novaberg-bugs-wissen.md:302](novaberg-bugs-wissen.md) |
 | `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:495](novaberg-bugs-archiv-wissen.md) |
 | `ZEIT1` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:640](novaberg-bugs-archiv-wissen.md) · auch Kurzeintrag [novaberg-bugs-archiv.md:115](novaberg-bugs-archiv.md) |
 | `ZEIT2` | — | abgeschlossen | [novaberg-bugs-archiv.md:116](novaberg-bugs-archiv.md) (Kurzeintrag) |

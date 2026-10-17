@@ -6,7 +6,7 @@
 
 ## A. Entschieden — das Register
 
-Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → 31 (17.10.2026).
+Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → ~~31~~ → 32 (17.10.2026).
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|
@@ -41,6 +41,7 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 29 | 17.10.2026 | ohne ausdrücklichen Auftrag entscheiden Salienz und Themennähe: darüber stellt Nova dem Fakten-Agenten zu, je wichtiger desto öfter; darunter bietet sie nach Pflichtbewusstsein und Nähe an oder fragt; die Salienz von Aussagen über nahe Menschen ist vorher zu messen | umschrieben | `_k` *Aus §4*, Scheibe 13, *Heraus*; `novaberg-memory-fakten_e.md` A, Nr. 7 |
 | 30 | 17.10.2026 | Weltwissen kommt aus dem Modell, sonst aus einer Recherche im Internet; ein Monat ist kein Objekt mit Mappe, ein Ereignis darin gehört der Timeline; ein Ereignis mit unklarem Zeitraum klärt die Sachlage, die Annahme bleibt offen, und die Frage danach ist Neugier ohne Auftrag (gefolgert aus Nr. 26) | umschrieben | `_k` *Aus §4*, Scheibe 13, *Hinein*, *Klären*, *Die Neugier*; `novaberg-memory-fakten_e.md` A, Nr. 9 und 10 |
 | 31 | 17.10.2026 | die Mappe einer Entität der Sachlage stößt eine gezielte Suche im Erinnerungsgedächtnis an; sie reicht bis zum zweiten Grad in beide Richtungen, der Grad ist zu messen | umschrieben | `_k` *Aus §4*, Scheibe 13; `novaberg-memory-fakten_e.md` A, Nr. 12 |
+| 32 | 17.10.2026 | Sachlage und Turn lesen Termine über einen gemeinsamen Leseweg, mit Datum und Uhrzeit — die Bauart C1 des Faktengedächtnisses, angenommen | wörtlich | `_b` §4 Scheibe 6, *Nachgezogen am 17.10.2026*; `novaberg-memory-fakten_e.md` C1 |
 
 **Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_b` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_b` §4 Scheibe 12, *Die Objektwahl der Lage*).
 
@@ -67,7 +68,7 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 
 **Offen in der Bauart, für Scheibe 13** (17.10.2026). Das sind keine Fragen an den Meister, denn die Absicht ist entschieden (A, Nr. 27–31). Sie sind vor dem Bau zu entwerfen und stehen mit ihrem Anlass in [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) C:
 
-- **Lesen ohne Router, und zwei Lesewege der Timeline** (dort C1). Der Frame-Auflöser liest Kalenderzeilen selbst (Scheibe 6), der Turn liest Termine hinter dem Router. Offen ist, wie das Fenster aus dem Objekt der Sachlage entsteht und ob beide Wege in einem aufgehen.
+- ~~**Lesen ohne Router, und zwei Lesewege der Timeline** (dort C1). Der Frame-Auflöser liest Kalenderzeilen selbst (Scheibe 6), der Turn liest Termine hinter dem Router. Offen ist, wie das Fenster aus dem Objekt der Sachlage entsteht und ob beide Wege in einem aufgehen.~~ → **Entschieden und gebaut am 17.10.2026** (A, Nr. 32): Der Kalenderweg des Auflösers geht im gemeinsamen Leseweg auf; das Fenster entsteht je Objekt aus `time_window` (ein Zeitraum) oder `search_window` (ein Titel) — `_b` §4 Scheibe 6, *Nachgezogen am 17.10.2026*.
 - **Die gezielte Erinnerungssuche nach der Sachlage** (dort C5). Das Erinnerungsgedächtnis wird im Enricher gelesen, vor der Sachlage; die Mappe gibt es erst danach.
 - **Eigenschaftsgedächtnis und Fakt** (dort C2). Eine Eigenschaft aus Scheibe 11 verfällt nicht, die Kante eines Fakts verfällt. Offen ist, ob beide zusammengelegt werden oder getrennt bleiben.
 
