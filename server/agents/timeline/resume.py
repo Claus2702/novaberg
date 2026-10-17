@@ -1,6 +1,11 @@
 """Resume-Node — Loest User-Antworten auf Rueckfragen auf.
 
-Ein Szenario: Disambiguierung (User waehlt einen von mehreren Termin-Kandidaten).
+Zwei Szenarien, beide schreiben nie:
+  1. Disambiguierung (mehrere Termin-Kandidaten auf dem Weg mit Titel): Die
+     Antwort waehlt nicht, sie fuehrt zu einer Klaerung, die die Kandidaten
+     mit Datum nennt und sagt, dass zwischen ihnen noch nicht gewaehlt wird.
+  2. Klaerung (`clarification`): Aendern, Loeschen oder Verschieben ohne
+     Titel fand im Zeitraum keinen, einen oder mehrere Termine.
 Kein Duplikat-Szenario wie bei Notizen — gleiche Titel sind bei Terminen normal.
 """
 
@@ -12,6 +17,72 @@ from agents.base import AgentState
 logger = logging.getLogger("ki_server.agents.timeline.resume")
 
 
+def resume_clarification(state: AgentState) -> dict:
+    """Die Antwort auf die Klaerung *„… Sag mir mit seinem Namen, ob ich ihn loeschen soll.“*.
+
+    Die Klaerung folgt auf Aendern, Loeschen oder Verschieben ohne Titel, bei
+    keinem, einem oder mehreren Treffern im Zeitraum. Auch ein *„Ja“* oder
+    *„den zweiten“* darauf schreibt nicht: Eine Antwort, die nur zustimmt oder
+    waehlt, liest sich nicht sicher genug. Der Auftrag endet ohne Schreiben und
+    sagt, wie er gegeben werden muss; ein neuer Auftrag mit Titel geht den Weg
+    mit Titel.
+
+    Vorbedingung: `parameter["clarification"]` ist gesetzt.
+    Nachbedingung: `status` `abgeschlossen` ohne `termin` — nichts wird
+        geschrieben.
+    Fehlerfaelle: ein Zustand ohne `clarification` wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    parameter: dict = state["parameter"]
+    if not parameter.get("clarification"):
+        msg: str = "resume_clarification: keine Klaerung offen"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    answer: str = str(parameter.get("user_answer", ""))
+    sentence: str = (
+        "Ich habe nichts geändert. Nenn mir den Termin mit seinem Namen, "
+        "dann suche ich ihn."
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if "termin" in parameter:
+        msg = f"resume_clarification: Klaerung traegt einen Termin {parameter['termin']!r}"
+        raise RuntimeError(msg)
+    logger.info(f"resume: Antwort auf die Klaerung — nichts geschrieben ('{answer[:60]}')")
+    return {
+        "status": "abgeschlossen",
+        "ergebnis": sentence,
+        "schritte": state["schritte"] + [{"node": "resume", "ergebnis": "klaerung_beantwortet"}],
+    }
+
+
+def _failed(state: AgentState, text: str, outcome: str) -> dict:
+    """Ein `fehler` des Resume-Knotens mit Schritt im Audit-Trail.
+
+    Vorbedingung: `text` und `outcome` sind nicht leer.
+    Nachbedingung: `status` `fehler`, `fehler` ist `text`.
+    Fehlerfaelle: ein leerer Text wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not text or not outcome:
+        msg: str = "_failed: leerer Fehlertext oder Ausgang"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    result: dict = {
+        "status": "fehler",
+        "fehler": text,
+        "schritte": state["schritte"] + [{"node": "resume", "ergebnis": outcome}],
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if result["fehler"] != text:
+        msg = "_failed: Fehlertext nicht uebernommen"
+        raise RuntimeError(msg)
+    return result
+
+
 def resume(state: AgentState) -> dict:
     """Loest die User-Antwort auf eine Rueckfrage auf."""
     user_answer = state["parameter"].get("user_answer", "")
@@ -20,6 +91,11 @@ def resume(state: AgentState) -> dict:
 
     logger.debug(f"resume: Einstieg — action='{action}', user_answer='{user_answer[:80]}', "
                  f"rueckfrage='{rueckfrage[:80]}'")
+
+    # Aendern, Loeschen und Verschieben ohne Titel: die Klaerung schreibt nie,
+    # gestellt wird sie von period_question in suche.py
+    if state["parameter"].get("clarification"):
+        return resume_clarification(state)
 
     # Disambiguierung-JSON parsen
     try:
@@ -39,83 +115,51 @@ def resume(state: AgentState) -> dict:
 
 
 def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -> dict:
-    """User hat einen Kandidaten aus der Disambiguierung gewaehlt."""
-    kandidaten = disamb.get("kandidaten", [])
-    action = disamb.get("aktion", state["parameter"].get("action", ""))
+    """Die Antwort auf eine Auswahl: eine Klaerung, nie ein Schreiben.
 
-    logger.debug(f"_resume_disambiguierung: {len(kandidaten)} Kandidaten, action='{action}', "
-                 f"user_answer='{user_answer}'")
+    ~~Die Antwort waehlte einen Kandidaten und schrieb~~ → seit dem 17.10.2026
+    klaert sie. Bei der Auswahl mit Titel tragen alle Kandidaten denselben
+    Titel; *„den Zahnarzt am 9.“* traf so den ersten Kandidaten, dessen Titel
+    in der Antwort stand, und Ziffern wurden als Teilzeichenkette gelesen.
+    Geschrieben wurde still am falschen Termin. Die Klaerung nennt jeden
+    Kandidaten mit Datum und sagt, dass Nova zwischen ihnen noch nicht waehlen
+    kann. Sie verspricht keinen Weg: Ein Datum im neuen Auftrag grenzt die
+    Suche nach dem Titel nicht ein, und beim Verschieben ist es die neue Zeit.
 
-    if not kandidaten:
-        return {
-            "status": "fehler",
-            "fehler": "Keine Kandidaten in der Disambiguierung.",
-            "schritte": state["schritte"] + [{"node": "resume", "ergebnis": "keine_kandidaten"}],
-        }
+    Vorbedingung: `disamb["kandidaten"]` ist eine nicht leere Liste, jeder
+        Kandidat traegt `title` und `datum`.
+    Nachbedingung: `status` `abgeschlossen` ohne `parameter` — nichts wird
+        gelesen oder geschrieben; sonst `fehler` ohne `parameter`.
+    Fehlerfaelle: keine Kandidaten oder ein Kandidat ohne Titel oder Datum
+        ergeben `fehler` mit ERROR; ein Text, der einen Kandidaten nicht nennt,
+        wirft `RuntimeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    candidates: object = disamb.get("kandidaten")
+    if not isinstance(candidates, list) or not candidates:
+        logger.error(f"resume: Auswahl ohne Kandidaten — nichts geschrieben, {disamb}")
+        return _failed(state, "Keine Kandidaten in der Disambiguierung.", "keine_kandidaten")
+    if any(not c.get("title") or not c.get("datum") for c in candidates):
+        logger.error(f"resume: Kandidat ohne Titel oder Datum — nichts geschrieben, {candidates}")
+        return _failed(state, "Die Auswahl laesst sich keinem Termin zuordnen.", "defekt")
 
-    # Zuordnung: Pruefe ob die User-Antwort einen Kandidaten-Titel enthaelt
-    user_lower = user_answer.lower()
-    match = None
-
-    for k in kandidaten:
-        if k["title"].lower() in user_lower:
-            match = k
-            logger.debug(f"_resume_disambiguierung: Match via Titel — '{k['title']}'")
-            break
-
-    # Fallback: Pruefe auf Datum-Angabe im Kandidaten
-    if not match:
-        for k in kandidaten:
-            datum = k.get("datum", "")
-            if datum and datum in user_answer:
-                match = k
-                logger.debug(f"_resume_disambiguierung: Match via Datum — '{datum}'")
-                break
-
-    # Fallback: Pruefe auf ID oder Position ("die erste", "Nummer 2")
-    if not match:
-        for i, k in enumerate(kandidaten):
-            if str(i + 1) in user_answer or str(k.get("id", "")) in user_answer:
-                match = k
-                logger.debug(f"_resume_disambiguierung: Match via Index/ID — '{k['title']}'")
-                break
-
-    # Fallback: Bei genau 2 Kandidaten und "erste"/"zweite"
-    if not match and len(kandidaten) == 2:
-        if any(w in user_lower for w in ["erste", "ersten", "obere", "1"]):
-            match = kandidaten[0]
-            logger.debug(f"_resume_disambiguierung: Match via 'erste' — '{match['title']}'")
-        elif any(w in user_lower for w in ["zweite", "zweiten", "untere", "2", "andere"]):
-            match = kandidaten[1]
-            logger.debug(f"_resume_disambiguierung: Match via 'zweite' — '{match['title']}'")
-
-    if not match:
-        # User-Antwort zu ungenau — erneute Rueckfrage
-        logger.info("_resume_disambiguierung: Kein Match — erneute Rueckfrage")
-        return {
-            "status": "rueckfrage",
-            "rueckfrage": json.dumps({
-                "typ": "disambiguierung",
-                "agent": "timeline",
-                "aktion": action,
-                "kandidaten": kandidaten,
-            }, ensure_ascii=False),
-            "schritte": state["schritte"] + [{"node": "resume", "ergebnis": "kein_match"}],
-        }
-
-    logger.info(
-        f"_resume_disambiguierung: Kandidat gewaehlt — id={match.get('id')}, "
-        f"title='{match['title']}'"
+    # ── Verarbeitung ────────────────────────────
+    lines: str = "\n".join(f"- {c['title']} am {c['datum']}" for c in candidates)
+    sentence: str = (
+        f"Ich habe nichts geändert. Gefunden hatte ich diese Termine:\n{lines}\n"
+        "Zwischen ihnen kann ich noch nicht wählen, auch nicht über ein Datum im Auftrag."
     )
 
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(f"{c['title']} am {c['datum']}" not in sentence for c in candidates):
+        msg: str = f"_resume_disambiguierung: {sentence!r} nennt nicht jeden Kandidaten"
+        raise RuntimeError(msg)
+    logger.info(
+        f"resume: Antwort auf die Auswahl ({len(candidates)} Kandidaten) — nichts geschrieben "
+        f"('{user_answer[:60]}')"
+    )
     return {
-        "parameter": {
-            **state["parameter"],
-            "action": action,
-            "termin": match,
-            "resume": False,
-        },
-        "status": "laufend",
-        "schritte": state["schritte"]
-        + [{"node": "resume", "ergebnis": f"gewaehlt: {match['title']}"}],
+        "status": "abgeschlossen",
+        "ergebnis": sentence,
+        "schritte": state["schritte"] + [{"node": "resume", "ergebnis": "auswahl_beantwortet"}],
     }

@@ -1219,8 +1219,8 @@ NOTIZEN_ZUSAMMENFASSUNG_MAX_WOERTER: int = int(
 
 # ─── Timeline-Suche ────────────────────────────
 TIMELINE_SUCHE_LIMIT:              int = int(os.getenv("TIMELINE_SUCHE_LIMIT", "10"))
-TIMELINE_UEBERSICHT_TAGE_ZURUECK:  int = int(os.getenv("TIMELINE_UEBERSICHT_TAGE_ZURUECK", "3"))
-TIMELINE_UEBERSICHT_TAGE_VORAUS:   int = int(os.getenv("TIMELINE_UEBERSICHT_TAGE_VORAUS", "14"))
+# Die Uebersicht des Timeline-Agenten liest das proaktive Fenster
+# (`graph/appointments.py`, `PROACTIVE_DAYS_*`) — eine Quelle fuer beide Lesewege.
 
 # ─────────────────────────────────────────────
 # Web-Suche (Serper zuerst, SearXNG als Rueckfall)

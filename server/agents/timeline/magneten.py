@@ -8,11 +8,14 @@ Mapping nach Magneten-Convention §5.
 
 import logging
 
+from memory.timeline_inventory import ANCHOR_TYPE
+
 logger = logging.getLogger("ki_server.agents.timeline.magneten")
 
 EVENT_TYPES_TERMIN            = frozenset({"termin", "deadline"})
 EVENT_TYPES_WIEDERVORLAGE     = frozenset({"geburtstag", "jahrestag", "erinnerung"})
-EVENT_TYPES_ERINNERUNGS_ANKER = frozenset({"erinnerungs_anker"})
+# Der Anker-Typ hat eine Quelle; ein zweites Literal liefe auseinander.
+EVENT_TYPES_ERINNERUNGS_ANKER = frozenset({ANCHOR_TYPE})
 
 
 def themen_aus_event_type(event_type: str) -> list[str]:

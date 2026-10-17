@@ -1489,6 +1489,278 @@ def day_phrase(text: str) -> str:
     return phrase
 
 
+#: Der Versatz je Stamm eines relativen Praefixes, in Zeitraeumen. Die
+#: Schluessel sind die Staemme aus `_RELATIVE_PRAEFIX_STAEMME`; ein Stamm, der
+#: dort hinzukommt und hier fehlt, haelt den Import an (unten).
+_PERIOD_STEM_OFFSETS: dict[str, int] = {
+    "übernächste": 2, "nächste": 1, "kommende": 1,
+    "letzte": -1, "vorige": -1, "vergangene": -1,
+}
+if set(_PERIOD_STEM_OFFSETS) != set(_RELATIVE_PRAEFIX_STAEMME):
+    _msg: str = (
+        "zeitparser: _PERIOD_STEM_OFFSETS und _RELATIVE_PRAEFIX_STAEMME nennen "
+        "verschiedene Staemme"
+    )
+    raise RuntimeError(_msg)
+
+#: Jede Form eines relativen Praefixes in ASCII-Umschrift mit ihrem Versatz,
+#: abgeleitet aus den Staemmen und Endungen, nicht abgeschrieben.
+_PERIOD_PREFIX_OFFSETS: dict[str, int] = {
+    _ascii_umschrift(stem + ending): offset
+    for stem, offset in _PERIOD_STEM_OFFSETS.items()
+    for ending in _PRAEFIX_ENDUNGEN
+}
+
+#: Worte, die einen Zeitraum begleiten, ohne ihn zu verschieben.
+_PERIOD_FILLERS: frozenset[str] = frozenset({
+    "im", "in", "am", "an", "fuer", "ueber", "uebers", "den", "die", "das", "der", "dem",
+    "des", "diese", "diesen", "dieser", "dieses", "diesem",
+    "ganze", "ganzen", "ganzer", "ganzes", "ganzem",
+})
+
+#: Zahlwoerter eines Abstands ("in zwei Wochen"), abgeleitet aus `_ZAHLWOERTER`.
+_PERIOD_COUNTS: dict[str, int] = {
+    **{_ascii_umschrift(word): value for word, value in _ZAHLWOERTER.items()},
+    "eine": 1, "einer": 1, "einem": 1,
+}
+
+#: Die Monatsnamen in ASCII-Umschrift mit ihrer Nummer, abgeleitet aus `_MONATE`.
+_PERIOD_MONTHS: dict[str, int] = {
+    _ascii_umschrift(name): number for number, name in enumerate(_MONATE, start=1)
+}
+
+_PERIOD_WEEK: frozenset[str] = frozenset({"woche", "wochen"})
+_PERIOD_MONTH: frozenset[str] = frozenset({"monat", "monate", "monaten"})
+_PERIOD_PLURALS: frozenset[str] = frozenset({"wochen", "monate", "monaten"})
+_PERIOD_WEEKEND: str = "wochenende"
+_PERIOD_NOUNS: frozenset[str] = (
+    _PERIOD_WEEK | _PERIOD_MONTH | {_PERIOD_WEEKEND} | frozenset(_PERIOD_MONTHS)
+)
+
+#: Ein Jahr hinter einem Monatsnamen ("November 2026").
+_PERIOD_YEAR_LENGTH: int = 4
+
+
+def _shift_month(year: int, month: int, offset: int) -> tuple[int, int]:
+    """Jahr und Monat, um `offset` Monate verschoben, ueber Jahresgrenzen.
+
+    Vorbedingung: `month` liegt in 1 bis 12.
+    Nachbedingung: `(jahr, monat)` mit `monat` in 1 bis 12.
+    Fehlerfaelle: ein Monat ausserhalb von 1 bis 12 wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not 1 <= month <= 12:
+        msg: str = f"_shift_month: Monat {month} ausserhalb von 1 bis 12"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    index: int = year * 12 + (month - 1) + offset
+    shifted: tuple[int, int] = (index // 12, index % 12 + 1)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not 1 <= shifted[1] <= 12:
+        msg = f"_shift_month: Ergebnis {shifted} ohne gueltigen Monat"
+        raise RuntimeError(msg)
+    return shifted
+
+
+def _period_offset(words: list[str]) -> Optional[tuple[int, bool]]:
+    """Der Versatz der Worte vor dem Zeitraum, und ob er ein Abstand ist.
+
+    Vorbedingung: `words` sind die Worte vor dem Zeitraum, klein, in
+        ASCII-Umschrift.
+    Nachbedingung: `(versatz, abstand)` — `abstand` ist wahr bei "in zwei
+        Wochen"; `None`, wenn ein Wort weder Fuellwort noch Praefix noch Zahl
+        ist, wenn zwei verschieben oder eine Zahl ohne "in" steht.
+    Fehlerfaelle: keine — ein unbekanntes Wort heisst *kein Zeitraum*.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    unknown: list[str] = [
+        w for w in words
+        if w not in _PERIOD_FILLERS and w not in _PERIOD_PREFIX_OFFSETS
+        and w not in _PERIOD_COUNTS and not w.isdigit()
+    ]
+    if unknown:
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    offsets: list[int] = [_PERIOD_PREFIX_OFFSETS[w] for w in words if w in _PERIOD_PREFIX_OFFSETS]
+    counts: list[int] = [
+        _PERIOD_COUNTS[w] if w in _PERIOD_COUNTS else int(w)
+        for w in words if w in _PERIOD_COUNTS or w.isdigit()
+    ]
+    if len(offsets) + len(counts) > 1 or (counts and "in" not in words):
+        return None
+    result: tuple[int, bool] = (counts[0], True) if counts else (sum(offsets), False)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if result[1] and result[0] < 1:
+        msg: str = f"_period_offset: Abstand {result[0]} aus {words}"
+        raise RuntimeError(msg)
+    return result
+
+
+def _period_request(words: list[str], year: Optional[int]) -> Optional[tuple[str, int]]:
+    """Welcher Zeitraum mit welchem Versatz gemeint ist — oder keiner.
+
+    Das letzte Wort ist der Zeitraum (ein verschriebener Monatsname wird
+    korrigiert), die Worte davor verschieben ihn (`_period_offset`). Ein
+    Abstand ("in zwei Wochen") gilt nur fuer Woche und Monat, eine Mehrzahl
+    ("Wochen") nur mit Abstand, ein Jahr nur hinter einem Monatsnamen ohne
+    Praefix.
+
+    Vorbedingung: `words` klein, in ASCII-Umschrift, ohne das Jahr.
+    Nachbedingung: `(zeitraum, versatz)` mit `zeitraum` aus `_PERIOD_NOUNS`;
+        `None`, wenn die Worte keinen Zeitraum nennen.
+    Fehlerfaelle: keine — was nicht passt, ist *kein Zeitraum*.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not words:
+        return None
+    noun: str = words[-1]
+    if noun not in _PERIOD_NOUNS:
+        noun = _ascii_umschrift(_fuzzy_korrektur(noun).lower())
+    shift: Optional[tuple[int, bool]] = _period_offset(words[:-1])
+    if noun not in _PERIOD_NOUNS or shift is None:
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    offset, is_distance = shift
+    fits: bool = (
+        (not is_distance or noun in _PERIOD_WEEK | _PERIOD_MONTH)
+        and (is_distance or noun not in _PERIOD_PLURALS)
+        and (year is None or (noun in _PERIOD_MONTHS and offset == 0))
+        and (noun not in _PERIOD_MONTHS or abs(offset) <= 1)
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not fits:
+        return None
+    if noun not in _PERIOD_NOUNS:
+        msg: str = f"_period_request: {noun!r} ist kein Zeitraum"
+        raise RuntimeError(msg)
+    return noun, offset
+
+
+def _month_name_year(month: int, offset: int, year: Optional[int], today: date) -> int:
+    """Das Jahr eines Monatsnamens, gelesen in der Richtung seines Praefixes.
+
+    Vorbedingung: `month` liegt in 1 bis 12, `offset` in -1 bis 1
+        (`_period_request`).
+    Nachbedingung: ohne Praefix `year` oder das laufende Jahr; mit *naechsten*
+        das Jahr des naechsten Vorkommens nach dem laufenden Monat, mit
+        *letzten* das des letzten davor.
+    Fehlerfaelle: ein `month` oder `offset` ausserhalb wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not 1 <= month <= 12 or abs(offset) > 1:
+        msg: str = f"_month_name_year: Monat {month} oder Versatz {offset} ausserhalb"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    base_year: int = year if year is not None else today.year
+    period_year: int = base_year
+    if offset == 1 and month <= today.month:
+        period_year += 1
+    elif offset == -1 and month >= today.month:
+        period_year -= 1
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if abs(period_year - base_year) > 1:
+        msg = f"_month_name_year: Jahr {period_year} zu weit von {base_year}"
+        raise RuntimeError(msg)
+    return period_year
+
+
+def _period_dates(
+    noun: str, offset: int, year: Optional[int], today: date,
+) -> tuple[date, date]:
+    """Erster und letzter Tag eines Zeitraums, gezaehlt von `today`.
+
+    Vorbedingung: `noun` und `offset` kommen aus `_period_request`.
+    Nachbedingung: `(erster, letzter)`, beide eingeschlossen, `erster <= letzter`.
+    Fehlerfaelle: ein `noun` ausserhalb von `_PERIOD_NOUNS` wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if noun not in _PERIOD_NOUNS:
+        msg: str = f"_period_dates: {noun!r} ist kein Zeitraum"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    week_start: date = today - timedelta(days=today.weekday()) + timedelta(weeks=offset)
+    if noun in _PERIOD_WEEK:
+        period: tuple[date, date] = (week_start, week_start + timedelta(days=6))
+    elif noun == _PERIOD_WEEKEND:
+        period = (week_start + timedelta(days=5), week_start + timedelta(days=6))
+    else:
+        if noun in _PERIOD_MONTH:
+            period_year, month = _shift_month(today.year, today.month, offset)
+        else:
+            month = _PERIOD_MONTHS[noun]
+            period_year = _month_name_year(month, offset, year, today)
+        period = (date(period_year, month, 1),
+                  date(period_year, month, calendar.monthrange(period_year, month)[1]))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if period[1] < period[0]:
+        msg = f"_period_dates: {period[0]} nach {period[1]}"
+        raise RuntimeError(msg)
+    return period
+
+
+def named_period(text: str, today: date) -> Optional[tuple[date, date]]:
+    """Der Zeitraum, den ein Ausdruck nennt: Woche, Wochenende, Monat, Monatsname.
+
+    Ein Zeitraum ist kein Tag: *im November* sind alle Tage des Novembers,
+    *diese Woche* Montag bis Sonntag, *am Wochenende* Samstag und Sonntag. Ein
+    Ausdruck, der einen Tag nennt (*morgen*, *am Freitag*, *am 17.10.*,
+    *6. November*), nennt hier keinen — den liest `zeit_parsen`. Gelesen wird
+    der ganze Ausdruck: Steht ein Wort darin, das weder Zeitraum noch Praefix
+    noch Fuellwort ist, nennt er keinen Zeitraum.
+
+    Die Richtung: Ohne Praefix gilt der laufende Zeitraum, bei einem
+    Monatsnamen der des laufenden Jahres — auch wenn er vorbei ist (*im
+    September*, gefragt im Oktober, ist dieser September). *naechste*,
+    *kommende* schieben einen Zeitraum vor, *uebernaechste* zwei, *letzte*,
+    *vorige*, *vergangene* einen zurueck. Ein Monatsname mit *naechsten* ist
+    sein naechstes Vorkommen nach dem laufenden Monat, mit *letzten* das
+    letzte davor. *in zwei Wochen* ist die Woche, *in drei Monaten* der
+    Monat, in die der Abstand faellt. Das Wochenende ist das der Woche, in
+    der `today` liegt, *naechstes Wochenende* das der naechsten Woche.
+
+    Vorbedingung: `text` ist ein Text; `today` ist der heutige Tag in Ortszeit.
+    Nachbedingung: `(erster, letzter)` mit `erster <= letzter`, beide
+        eingeschlossen, hoechstens 31 Tage; `None`, wenn der Ausdruck keinen
+        Zeitraum nennt.
+    Fehlerfaelle: ein `text`, der kein Text ist, oder ein `today`, das kein
+        `date` ist, wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(text, str):
+        msg: str = f"named_period: kein Text ({type(text).__name__})"
+        raise TypeError(msg)
+    if not isinstance(today, date):
+        msg = f"named_period: kein Datum ({type(today).__name__})"
+        raise TypeError(msg)
+    words: list[str] = re.findall(r"[a-z0-9]+", _ascii_umschrift(text.lower()))
+    year: Optional[int] = None
+    if words and len(words[-1]) == _PERIOD_YEAR_LENGTH and words[-1].isdigit():
+        year = int(words.pop())
+    request: Optional[tuple[str, int]] = _period_request(words, year)
+    if request is None:
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    period: tuple[date, date] = _period_dates(request[0], request[1], year, today)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not 0 <= (period[1] - period[0]).days <= 30:
+        msg = f"named_period: Zeitraum {period[0]} bis {period[1]} aus {text!r}"
+        raise RuntimeError(msg)
+    logger.debug(f"Zeitparser: '{text}' nennt den Zeitraum {period[0]} bis {period[1]}")
+    return period
+
+
 def raw_time_form(text: str, title: str) -> Optional[RawTimeForm]:
     """Die Positivform eines Verschiebeauftrags auf dem Rohtext — oder None.
 
