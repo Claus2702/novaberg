@@ -2,7 +2,8 @@
 
 Drei Such-Modi:
   1. Keyword: target vorhanden → Suche nach Titel
-  2. Zeitraum: zeitausdruck vorhanden → `time_window` → Zeitraum oder Tag
+  2. Zeitraum: zeitausdruck vorhanden → `time_window` (`graph/appointments.py`)
+     → Zeitraum oder Tag
   3. Uebersicht: weder target noch zeitausdruck → das proaktive Fenster
 
 **Lesen geht ueber den gemeinsamen Leseweg** (`read_answer`): dasselbe Lesen
@@ -31,13 +32,12 @@ from config import (
     TIMEZONE,
 )
 from graph.appointments import (
-    KIND_RANGE,
     SEARCH_LIMIT_MAX,
     Appointment,
     AppointmentWindow,
     proactive_window,
-    range_window,
     search_window,
+    time_window,
 )
 from memory.timeline_inventory import ANCHOR_TYPE
 from utils.local_time import now_local
@@ -52,53 +52,6 @@ PERIOD_WRITE_ACTIONS: frozenset[str] = frozenset({"update", "delete", "reschedul
 ACTION_VERBS: dict[str, str] = {
     "update": "ändern", "delete": "löschen", "reschedule": "verschieben",
 }
-
-
-def time_window(zeitausdruck: str, now: datetime) -> AppointmentWindow | None:
-    """Das Fenster eines Zeitausdrucks: der ganze Zeitraum, den er nennt, oder ein Tag.
-
-    Nennt der Ausdruck einen Zeitraum (`named_period`: Woche, Wochenende,
-    Monat, Monatsname), ist das Fenster der ganze Zeitraum; sonst der Tag, den
-    `zeit_parsen` liest. Gebaut wird es mit `range_window`, derselben
-    Fensterlogik wie hinter dem Router. Lesen und Aendern nehmen dasselbe
-    Fenster — eine Dekodierung, keine zweite Liste von Zeitraumworten.
-
-    Vorbedingung: `zeitausdruck` ist nicht leer; `now` ist zeitzonenbewusst
-        in Ortszeit.
-    Nachbedingung: ein Fenster der Art `range`, Richtung `both`, von 00:00
-        des ersten bis 23:59:59 des letzten Tages; `None`, wenn sich der
-        Ausdruck nicht lesen laesst — laut im Log.
-    Fehlerfaelle: ein leerer Ausdruck oder ein naiver Zeitpunkt wirft
-        `ValueError`.
-    """
-    from utils.zeitparser import named_period, zeit_parsen
-
-    # ── Eingabe-Validierung ─────────────────────
-    if not zeitausdruck.strip():
-        msg: str = "time_window: leerer Zeitausdruck"
-        raise ValueError(msg)
-    if now.tzinfo is None:
-        msg = "time_window: Zeitpunkt ohne Zeitzone"
-        raise ValueError(msg)
-
-    # ── Verarbeitung ────────────────────────────
-    period = named_period(zeitausdruck, now.date())
-    if period is not None:
-        query: dict = {"from": period[0].isoformat(), "to": period[1].isoformat()}
-    else:
-        parsed: datetime | None = zeit_parsen(zeitausdruck, referenz=now, sprechzeitpunkt=now)
-        if parsed is None:
-            logger.error(f"suchen: Zeitparser konnte '{zeitausdruck}' nicht lesen — kein Fenster")
-            return None
-        query = {"date": parsed.astimezone(now.tzinfo).date().isoformat()}
-    window: AppointmentWindow = range_window(query, now)
-
-    # ── Ausgabe-Verifikation ────────────────────
-    if window.kind != KIND_RANGE or window.start.time() != datetime.min.time():
-        msg = f"time_window: Fenster {window} aus '{zeitausdruck}' beginnt nicht um 00:00"
-        raise RuntimeError(msg)
-    logger.debug(f"suchen: '{zeitausdruck}' → {window.start:%d.%m.%Y} bis {window.end:%d.%m.%Y}")
-    return window
 
 
 def read_answer(state: AgentState, now: datetime) -> dict:

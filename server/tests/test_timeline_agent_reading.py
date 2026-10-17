@@ -38,6 +38,7 @@ from langgraph.graph import END
 import config
 from agents.timeline import magneten, resume, suche
 from agents.timeline.agent import TimelineAgent
+from graph import appointments
 from memory import timeline_inventory, timeline_reading
 from memory.timeline_inventory import ANCHOR_TYPE
 from utils.zeitparser import named_period
@@ -190,7 +191,7 @@ class SingleDayTest(unittest.TestCase):
     """Ein Ausdruck, der einen Tag nennt, liest einen Tag."""
 
     def test_tomorrow_is_one_day(self) -> None:
-        window = suche.time_window("morgen", WEDNESDAY)
+        window = appointments.time_window("morgen", WEDNESDAY)
 
         self.assertEqual(
             (window.start, window.end),
@@ -199,7 +200,7 @@ class SingleDayTest(unittest.TestCase):
         )
 
     def test_on_friday_is_one_day(self) -> None:
-        window = suche.time_window("am Freitag", WEDNESDAY)
+        window = appointments.time_window("am Freitag", WEDNESDAY)
 
         self.assertEqual(
             (window.start, window.end),
@@ -323,7 +324,7 @@ class SharedReadingPathTest(unittest.TestCase):
     def test_unreadable_time_says_nothing_was_read(self) -> None:
         """Ein unlesbarer Ausdruck ist kein leerer Zeitraum."""
         timeline = _Timeline(NOVEMBER_STOCK)
-        with self.assertLogs("ki_server.agents.timeline.suche", level="ERROR"):
+        with self.assertLogs("ki_server.graph.appointments", level="ERROR"):
             result: dict = _run(_state("read", "xyzzy"), timeline, SATURDAY)
 
         self.assertTrue(
@@ -693,14 +694,14 @@ class TimeWindowGuardTest(unittest.TestCase):
 
     def test_naive_now_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
-            suche.time_window("im November", datetime(2026, 10, 17, 12, 0))
+            appointments.time_window("im November", datetime(2026, 10, 17, 12, 0))
 
     def test_empty_expression_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
-            suche.time_window("  ", SATURDAY)
+            appointments.time_window("  ", SATURDAY)
 
     def test_twin_period_window_spans_whole_days(self) -> None:
-        window = suche.time_window("im November", SATURDAY)
+        window = appointments.time_window("im November", SATURDAY)
 
         self.assertEqual(window.end - window.start, timedelta(days=30) - timedelta(seconds=1))
 

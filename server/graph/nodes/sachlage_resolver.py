@@ -28,7 +28,8 @@ fuer das Paar 0 Zeilen (28.08.2026); Notizen nicht, weil der einzige Leser
 mit Treffersemantik `last_touched` schreibt.
 
 **Die Reihenfolge des Angebots ist je Quelle fest, nicht ueber Quellen
-sortiert:** Kalender (Namenstreffer), dann der Pool nach Gewicht, dann die
+sortiert:** Kalender (Namenstreffer oder ein Zeitraum wie *November*, gelesen
+ueber den Leseweg der Termine), dann der Pool nach Gewicht, dann die
 Aufzeichnungen nach Kosinus. Eine Rangfolge ueber drei Skalen waere eine
 Rangfolge aus Skalen statt aus Bedeutungen (`plugins/wissen_manager`).
 
@@ -48,12 +49,23 @@ from config import (
     SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX,
     get_node_config,
 )
+from graph.appointments import (
+    KIND_RANGE,
+    KIND_SEARCH,
+    Appointment,
+    AppointmentReading,
+    AppointmentWindow,
+    search_window,
+    time_window,
+)
+from graph.format.appointments import appointment_line
 from graph.nodes.sachlage_form import covered_value
-from memory.repositories.timeline_repository import TimelineRepository
 from memory.sachlage_properties import active_properties, text_key
-from memory.timeline_reading import EXCLUDED_EVENT_TYPES
+from memory.timeline_reading import read_appointments
 from services.model_services import model_service
 from services.model_services.types import ChatRequest
+from utils.local_time import now_local
+from utils.zeitparser import named_period
 
 logger = logging.getLogger("ki_server.sachlage.resolver")
 
@@ -129,72 +141,127 @@ def _field(record: object, name: str) -> object:
     return getattr(record, name, None)
 
 
-def _calendar_hits(state: dict, previous: dict | None) -> list[tuple[str, str, str]]:
-    """Kalendereintraege zu den akuten Objekten der vorigen Blase.
+def _calendar_window(name: str, now: datetime) -> AppointmentWindow | None:
+    """Das Lesefenster zu einem akuten Objekt: ein Zeitraum oder eine Suche nach Titel.
 
-    **Ein Erinnerungs-Anker ist kein Termin** — auch hier nicht, wo er als
-    Zeile »Kalender TT.MM.JJJJ: …« im Angebot stuende und von dort als
-    Deckung in den Block des Verfassers gelangen koennte. Er wird in der
-    Abfrage ausgeschlossen, vor dem LIMIT (sonst vergaebe die Suche ihre
-    Plaetze an Anker), und eine Zeile, die trotzdem ankommt, wird laut
-    verworfen — dieselbe Regel wie im Leseweg der Termine
-    (`memory/timeline_reading.py`).
+    Nennt der Name einen Zeitraum (`named_period`: *November*, *naechste
+    Woche*, *Wochenende*), ist das Fenster dieser Zeitraum (`time_window`,
+    dasselbe Fenster wie im Timeline-Agenten). Sonst ist es eine Suche nach
+    dem Namen als Titel (`search_window`) in beide Richtungen, mit
+    `SACHLAGE_BESTAND_KALENDER_LIMIT` Treffern. Ein Tag wie *morgen* ist kein
+    Zeitraum und wird als Titel gesucht.
 
-    Vorbedingung: `previous` ist ein Artefakt oder None.
-    Nachbedingung: Tripel (Quelle, Herkunft, Text), hoechstens
-        `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt, keines aus einer Zeile
-        eines Typs aus `EXCLUDED_EVENT_TYPES`; ohne akute Objekte leer.
-    Fehlerfaelle: Ein Datenbankfehler ist laut und liefert keine
-        Kalendereintraege — der Turn geht vor. Ein Anker trotz Ausschluss
-        ist ein Fehler im Log und faellt heraus. Mehr Zeilen als
-        `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt wirft `ValueError` — das
-        Repositorium hat sein LIMIT nicht gehalten.
+    Vorbedingung: `name` ist nicht leer; `now` ist zeitzonenbewusst in Ortszeit.
+    Nachbedingung: ein Fenster der Art `range` oder `search`, oder `None`,
+        wenn `time_window` den Zeitraum nicht lesen kann (laut im Log).
+    Fehlerfaelle: ein leerer Name wirft `ValueError`; eine Trefferzahl
+        ausserhalb von 1 bis 10 in der Konfiguration wirft `ValueError` aus
+        `search_window`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not name.strip():
+        msg: str = "Sachlage-Aufloeser: Kalenderfenster ohne Namen"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    window: AppointmentWindow | None
+    if named_period(name, now.date()) is not None:
+        window = time_window(name, now)
+    else:
+        window = search_window({"keyword": name, "limit": SACHLAGE_BESTAND_KALENDER_LIMIT})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if window is not None and window.kind not in (KIND_RANGE, KIND_SEARCH):
+        msg = f"Sachlage-Aufloeser: Kalenderfenster der Art {window.kind!r} zu '{name[:40]}'"
+        raise RuntimeError(msg)
+    return window
+
+
+def _offer_line(appointment: Appointment, now: datetime) -> tuple[str, str, str]:
+    """Die Angebotszeile eines Termins: (Quelle, Herkunft, Text).
+
+    Der Text ist die Zeile des Termin-Blocks (`appointment_line`) mit
+    »Kalender« statt des Spiegelstrichs — derselbe Wortlaut, derselbe Bezug zu
+    heute, ein vergangener Termin traegt *vergangen*. Die Herkunft ist
+    `timeline#<id>`.
+
+    Vorbedingung: `appointment` kommt aus `read_appointments`; `now` ist
+        dieselbe Uhr wie beim Lesen.
+    Nachbedingung: Quelle `SOURCE_CALENDAR`, Herkunft `timeline#<id>`, Text
+        beginnt mit »Kalender «.
+    Fehlerfaelle: eine Zeile ohne Spiegelstrich wirft `RuntimeError` — die
+        Form des Blocks hat sich geaendert.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    line: str = appointment_line(appointment, now)
+    if not line.startswith("- "):
+        msg: str = f"Sachlage-Aufloeser: Terminzeile ohne Spiegelstrich: {line!r}"
+        raise RuntimeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    text: str = f"Kalender {line.removeprefix('- ')}"
+    origin: str = f"timeline#{appointment.timeline_id}"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not text.endswith(")"):
+        msg = f"Sachlage-Aufloeser: Angebotszeile ohne Bezug zu heute: {text!r}"
+        raise RuntimeError(msg)
+    return SOURCE_CALENDAR, origin, text
+
+
+def _calendar_hits(state: dict, previous: dict | None, now: datetime) -> list[tuple[str, str, str]]:
+    """Die Termine zu den akuten Objekten der vorigen Blase, ueber den Leseweg der Termine.
+
+    Je Objekt ein Fenster (`_calendar_window`) und `read_appointments` —
+    derselbe Leseweg wie hinter dem Router: ohne Erinnerungs-Anker (in der
+    Abfrage ausgeschlossen, ein angekommener laut verworfen), mit derselben
+    Abgrenzung vergangener Termine. Hier bleibt nur die Umformung in eine
+    Angebotszeile (`_offer_line`).
+
+    Vorbedingung: `previous` ist ein Artefakt oder None; `now` ist
+        zeitzonenbewusst in Ortszeit.
+    Nachbedingung: Tripel (Quelle, Herkunft, Text) mit Herkunft
+        `timeline#<id>`; bei einer Suche hoechstens
+        `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt, bei einem Zeitraum jeder
+        Termin darin; ohne akute Objekte leer.
+    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`. Ein Lesefehler ist
+        laut (mit Stacktrace) und beendet die Kalendersuche — der Turn geht
+        vor, das Angebot traegt, was bis dahin gelesen ist. Eine Herkunft,
+        die nicht `timeline#<id>` ist, wirft `RuntimeError`.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not previous:
         return []
+    if now.tzinfo is None:
+        msg: str = "Sachlage-Aufloeser: Kalendersuche mit Zeitpunkt ohne Zeitzone"
+        raise ValueError(msg)
     user_id: str = str(state.get("user_id", ""))
+    names: list[str] = [
+        str(objekt.get("name", "")).strip()
+        for objekt in previous.get("objekte") or [] if objekt.get("akut")
+    ]
     hits: list[tuple[str, str, str]] = []
 
     # ── Verarbeitung ────────────────────────────
-    for objekt in previous.get("objekte") or []:
-        name: str = str(objekt.get("name", "")).strip()
-        if not objekt.get("akut") or not name:
+    for name in (n for n in names if n):
+        window: AppointmentWindow | None = _calendar_window(name, now)
+        if window is None:
             continue
         try:
-            rows: list[dict] = TimelineRepository.find_by_keyword(
-                POSTGRES_URL, user_id, name, "both", SACHLAGE_BESTAND_KALENDER_LIMIT,
-                exclude_event_types=EXCLUDED_EVENT_TYPES,
-            )
-        except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
-            logger.warning(
-                f"Sachlage-Aufloeser: Kalendersuche zu '{name[:40]}' ausgefallen "
-                f"({type(fehler).__name__}: {fehler}) — ohne Kalender"
+            reading: AppointmentReading = read_appointments(window, user_id, POSTGRES_URL, now)
+        except Exception:
+            logger.exception(
+                f"Sachlage-Aufloeser: Kalender zu '{name[:40]}' nicht gelesen "
+                f"(art={window.kind}) — das Angebot bleibt ohne weitere Termine"
             )
             return hits
-        for row in rows:
-            if row.get("event_type") in EXCLUDED_EVENT_TYPES:
-                logger.error(
-                    f"Sachlage-Aufloeser: Erinnerungs-Anker id={row.get('id')} kam trotz "
-                    f"Ausschluss in der Abfrage an — verworfen, er ist kein Termin"
-                )
-                continue
-            zeit = row.get("event_time")
-            datum: str = (
-                zeit.strftime("%d.%m.%Y") if isinstance(zeit, datetime) else str(zeit or "")
-            )
-            text: str = f"Kalender {datum}: {row.get('title', '')}"
-            if row.get("details"):
-                text += f" — {row['details']}"
-            hits.append((SOURCE_CALENDAR, f"timeline#{row.get('id', '')}", text))
+        hits.extend(_offer_line(appointment, now) for appointment in reading.appointments)
 
     # ── Ausgabe-Verifikation ────────────────────
-    if len(hits) > SACHLAGE_BESTAND_KALENDER_LIMIT * len(previous.get("objekte") or []):
-        msg: str = (
-            f"Sachlage-Aufloeser: {len(hits)} Kalenderzeilen ueber der Obergrenze "
-            f"von {SACHLAGE_BESTAND_KALENDER_LIMIT} je Objekt"
-        )
-        raise ValueError(msg)
+    foreign: list[str] = [o for _, o, _ in hits if not o.removeprefix("timeline#").isdigit()]
+    if foreign:
+        msg = f"Sachlage-Aufloeser: Kalenderzeilen ohne Kennung der Zeile: {foreign}"
+        raise RuntimeError(msg)
     return hits
 
 
@@ -215,7 +282,7 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     records: list = state.get("aufzeichnungen") or []
 
     # ── Verarbeitung ────────────────────────────
-    candidates: list[tuple[str, str, str]] = _calendar_hits(state, previous)
+    candidates: list[tuple[str, str, str]] = _calendar_hits(state, previous, now_local())
     kalender: int = len(candidates)
 
     pool: list[tuple[float, str, str, str]] = []

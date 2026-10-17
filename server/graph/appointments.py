@@ -3,7 +3,9 @@
 **Warum ein eigenes Modul ohne Datenbank.** Der Zustand eines Turns traegt
 das Leseergebnis als Kanal (`graph/state.py`), und der Zustand wird ueberall
 importiert. Was hier steht, sind Datencontainer und die Rechnung des
-Zeitraums aus der Anfrage des Routers — beides ohne Verbindung bezeugbar.
+Zeitraums aus der Anfrage des Routers oder aus einem Zeitausdruck
+(`time_window`, fuer Timeline-Agent und Sachlage) — beides ohne Verbindung
+bezeugbar.
 Gelesen wird in `memory/timeline_reading.py`, gesetzt wird der Block in
 `graph/format/appointments.py`.
 
@@ -71,6 +73,8 @@ class Appointment:
     `moment` ist zeitzonenbewusst in Ortszeit. `has_time` ist falsch fuer
     einen Termin, der nur einen Tag traegt. `past` ist vorgerechnet: mit
     Uhrzeit vor dem Zeitpunkt des Turns, ohne Uhrzeit vor dem heutigen Tag.
+    `timeline_id` ist die Kennung der Zeile: Ein Angebot, das den Termin
+    nennt, bleibt damit bis zur Zeile rueckverfolgbar (`timeline#<id>`).
     """
 
     moment: datetime
@@ -78,6 +82,7 @@ class Appointment:
     title: str
     details: str
     past: bool
+    timeline_id: int
 
 
 @dataclass(frozen=True)
@@ -260,6 +265,56 @@ def search_window(query: dict) -> AppointmentWindow:
     if not 1 <= window.limit <= SEARCH_LIMIT_MAX:
         msg = f"Suche mit Trefferzahl ausserhalb von 1 bis {SEARCH_LIMIT_MAX}: {limit}"
         raise ValueError(msg)
+    return window
+
+
+def time_window(zeitausdruck: str, now: datetime) -> AppointmentWindow | None:
+    """Das Fenster eines Zeitausdrucks: der ganze Zeitraum, den er nennt, oder ein Tag.
+
+    Nennt der Ausdruck einen Zeitraum (`named_period`: Woche, Wochenende,
+    Monat, Monatsname), ist das Fenster der ganze Zeitraum; sonst der Tag, den
+    `zeit_parsen` liest. Gebaut wird es mit `range_window`, derselben
+    Fensterlogik wie hinter dem Router. Lesen und Aendern im Timeline-Agenten
+    und das Angebot der Sachlage nehmen dasselbe Fenster — eine Dekodierung,
+    keine zweite Liste von Zeitraumworten.
+
+    Vorbedingung: `zeitausdruck` ist nicht leer; `now` ist zeitzonenbewusst
+        in Ortszeit.
+    Nachbedingung: ein Fenster der Art `range`, Richtung `both`, von 00:00
+        des ersten bis 23:59:59 des letzten Tages; `None`, wenn sich der
+        Ausdruck nicht lesen laesst — laut im Log.
+    Fehlerfaelle: ein leerer Ausdruck oder ein naiver Zeitpunkt wirft
+        `ValueError`.
+    """
+    # Erst hier importiert: Dieses Modul liest der Zustand jedes Turns, der
+    # Zeitparser zieht `dateparser` nach.
+    from utils.zeitparser import named_period, zeit_parsen
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not zeitausdruck.strip():
+        msg: str = "time_window: leerer Zeitausdruck"
+        raise ValueError(msg)
+    if now.tzinfo is None:
+        msg = "time_window: Zeitpunkt ohne Zeitzone"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    period = named_period(zeitausdruck, now.date())
+    if period is not None:
+        query: dict = {"from": period[0].isoformat(), "to": period[1].isoformat()}
+    else:
+        parsed: datetime | None = zeit_parsen(zeitausdruck, referenz=now, sprechzeitpunkt=now)
+        if parsed is None:
+            logger.error(f"Termine: Zeitparser konnte '{zeitausdruck}' nicht lesen — kein Fenster")
+            return None
+        query = {"date": parsed.astimezone(now.tzinfo).date().isoformat()}
+    window: AppointmentWindow = range_window(query, now)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if window.kind != KIND_RANGE or window.start.time() != datetime.min.time():
+        msg = f"time_window: Fenster {window} aus '{zeitausdruck}' beginnt nicht um 00:00"
+        raise RuntimeError(msg)
+    logger.debug(f"Termine: '{zeitausdruck}' → {window.start:%d.%m.%Y} bis {window.end:%d.%m.%Y}")
     return window
 
 

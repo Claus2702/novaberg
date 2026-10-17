@@ -1,8 +1,10 @@
-"""Lesen eines Termin-Fensters aus der Timeline.
+"""Lesen eines Termin-Fensters aus der Timeline — der eine Leseweg der Termine.
 
 Gerufen hinter dem Router (`graph/nodes/route_reading.py::read_after_route`),
 der das Fenster aus der Anfrage des Routers bildet, den Lesefehler
-kompensiert und das Ergebnis als `appointment_reading` in den Zustand setzt.
+kompensiert und das Ergebnis als `appointment_reading` in den Zustand setzt;
+ebenso vom Timeline-Agenten und vom Angebot der Sachlage
+(`graph/nodes/sachlage_resolver.py`), je mit eigenem Fenster.
 Dieses Modul kennt den Zustand des Graphen nicht: Aus `graph/` liest es nur
 Typen und Konstanten.
 
@@ -83,13 +85,17 @@ def to_appointment(row: object, now: datetime) -> Appointment | None:
     Nachbedingung: ein `Appointment` mit Ortszeit und vorgerechnetem `past`
         — mit Uhrzeit (`precision` minute oder hour) vor `now`, ohne Uhrzeit
         vor dem heutigen Tag. `None` fuer eine verworfene Zeile.
-    Fehlerfaelle: eine Zeile, die kein dict ist, ein Erinnerungs-Anker, eine
-        `event_time` ohne Zeitzone oder ein Titel, der kein Text ist — je
-        laut gemeldet und verworfen.
+    Fehlerfaelle: eine Zeile, die kein dict ist, eine ohne ganzzahlige `id`,
+        ein Erinnerungs-Anker, eine `event_time` ohne Zeitzone oder ein Titel,
+        der kein Text ist — je laut gemeldet und verworfen.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(row, dict):
         logger.error(f"Termine: Timeline-Zeile ohne dict-Form verworfen ({type(row).__name__})")
+        return None
+    row_id: object = row.get("id")
+    if isinstance(row_id, bool) or not isinstance(row_id, int):
+        logger.error(f"Termine: Timeline-Zeile ohne ganzzahlige id ({row_id!r}) — verworfen")
         return None
     if row.get("event_type") in EXCLUDED_EVENT_TYPES:
         logger.error(
@@ -119,6 +125,7 @@ def to_appointment(row: object, now: datetime) -> Appointment | None:
     appointment = Appointment(
         moment=moment, has_time=has_time, title=title.strip(),
         details=details.strip() if isinstance(details, str) else "", past=past,
+        timeline_id=row_id,
     )
     if appointment.moment.tzinfo is None:
         msg: str = "to_appointment: Termin ohne Zeitzone nach der Umrechnung"

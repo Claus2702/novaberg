@@ -34,6 +34,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 from config import SACHLAGE_BESTAND_MAX_EINTRAEGE
@@ -58,6 +59,9 @@ from graph.nodes.sachlage_resolver import (
     render_memory_section,
     resolve_open_properties,
 )
+
+#: Der Aufloeser liest Termine ueber den gemeinsamen Leseweg; ersetzt wird dort.
+_FIND: str = "memory.timeline_reading.TimelineRepository.find_by_keyword"
 
 
 def _entry(quelle: str, inhalt: str, gewicht: float = 0.5, **meta: object) -> dict:
@@ -112,8 +116,7 @@ class DasAngebotKommtAusDemPoolTest(unittest.TestCase):
             _entry("lzg", "LZG-Treffer", 0.9, dimension="themen"),
             _entry("plugin_wissen", "Wissen: Pulsare", 0.6, dateipfad="wissen/p.md"),
         ]}
-        with patch("graph.nodes.sachlage_resolver.TimelineRepository.find_by_keyword",
-                   return_value=[]):
+        with patch(_FIND, return_value=[]):
             hits: list[MemoryHit] = memory_offer(state, None)
         self.assertEqual([h.content for h in hits],
                          ["LZG-Treffer", "Wissen: Pulsare", "KZG-Treffer"])
@@ -150,9 +153,10 @@ class DasAngebotKommtAusDemPoolTest(unittest.TestCase):
             {"name": "Rasen", "akut": False, "offen": []},
         ]}
         state: dict = {"user_id": "u", "memory_entries": [_entry("lzg", "Pool")]}
-        with patch("graph.nodes.sachlage_resolver.TimelineRepository.find_by_keyword",
-                   return_value=[{"id": 7, "title": "Zahnarzt", "details": "Kontrolle",
-                                  "event_time": None}]) as suche:
+        with patch(_FIND, return_value=[{
+            "id": 7, "title": "Zahnarzt", "details": "Kontrolle",
+            "event_time": datetime(2030, 1, 2, 9, 0, tzinfo=timezone.utc),
+        }]) as suche:
             hits: list[MemoryHit] = memory_offer(state, vorige)
         self.assertEqual(suche.call_count, 1)
         self.assertEqual(suche.call_args.args[2], "Zahnarzt")
@@ -162,9 +166,7 @@ class DasAngebotKommtAusDemPoolTest(unittest.TestCase):
         self.assertEqual(hits[1].content, "Pool")
 
     def test_ohne_vorige_blase_keine_kalendersuche(self) -> None:
-        with patch(
-            "graph.nodes.sachlage_resolver.TimelineRepository.find_by_keyword",
-        ) as suche:
+        with patch(_FIND) as suche:
             self.assertEqual(memory_offer({"memory_entries": []}, None), [])
         suche.assert_not_called()
 
