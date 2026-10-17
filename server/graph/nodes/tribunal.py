@@ -280,13 +280,14 @@ def _storage_claim_step(
     """Haelt die Speicherbehauptungen der Antwort gegen die Dienste des Turns.
 
     Behauptet die Antwort, etwas sei notiert, eingetragen oder geaendert, muss
-    in diesem Turn ein Dienst `abgeschlossen` gemeldet haben. Gemessen am
+    in diesem Turn ein Dienst `abgeschlossen` gemeldet und dabei geschrieben
+    haben — ein Lesevorgang deckt nichts (`write_evidence`). Gemessen am
     14.09.2026: vier Termin-Turns ohne Zustellung, und alle vier Antworten
     sagten *„notiert"* oder *„fest verankert"*. Wie die Datumspruefung ist das
     in Python entscheidbar und kein vierter Modellaufruf.
 
     **Vor der Korrektur fragt der Riegel den Bestand** (Scheibe 12 A,
-    entschieden am 15.09.2026): Eine Behauptung ohne abgeschlossenen Dienst
+    entschieden am 15.09.2026): Eine Behauptung ohne schreibenden Dienst
     kann eine fruehere, echte Schreibung wiederholen. Steht zu Tag und Uhrzeit
     des akuten Objekts der Lage ein aktiver Termin in der Timeline und nennt
     jeder behauptende Satz einen solchen Termin — Uhrzeit, Tag oder ein Wort
@@ -329,7 +330,7 @@ def _storage_claim_step(
         check = replace(check, inventory=abgleich)
         if not check.uncovered:
             logger.warning(
-                "Tribunal: %d Speicherbehauptung(en) ohne Dienst, aber im Bestand "
+                "Tribunal: %d Speicherbehauptung(en) ohne schreibenden Dienst, aber im Bestand "
                 "(%d Zeitpunkt(e)) — Wiederholung, keine Korrektur. %s",
                 len(check.claims), abgleich.moments,
                 "; ".join(c.line() for c in check.claims),
@@ -339,7 +340,7 @@ def _storage_claim_step(
             state["tribunal_verdict"] = "warnung"
         critical_feedback.insert(0, correction_order(check.claims))
         logger.error(
-            "Tribunal: %d Speicherbehauptung(en) ohne abgeschlossenen Dienst "
+            "Tribunal: %d Speicherbehauptung(en) ohne schreibenden Dienst "
             "(Ausgaenge: %s, Bestand: %s) — Urteil auf '%s' gehoben. %s",
             len(check.claims), ", ".join(check.outcomes) or "keine",
             check.inventory.outcome, state["tribunal_verdict"],
@@ -432,10 +433,15 @@ def _storage_check_record(state: ConversationState, check: ClaimCheck) -> None:
         "grenze":           state.get("max_corrections", 0),
         "befunde":          [{"form": c.form, "wort": c.word} for c in check.claims],
         "abgeschlossen":    list(check.completed),
+        # Getrennt von `abgeschlossen`: wer davon geschrieben hat, und wer
+        # nicht erkennen laesst, ob er schrieb — beide decken. Ein Dienst, der
+        # nur in `abgeschlossen` steht, hat gelesen und deckt nichts.
+        "geschrieben":      list(check.written),
+        "nicht_erkennbar":  list(check.unrecognized),
         "ausgaenge":        list(check.outcomes),
         "regelfassung":     RULE_VERSION,
         # Scheibe 12 A: der Ausgang des Bestandsabgleichs, `nicht_gefragt`
-        # ohne Behauptung oder mit abgeschlossenem Dienst.
+        # ohne Behauptung oder mit deckendem Dienst.
         "bestandsabgleich": check.inventory.outcome,
         "abgleich_zeitpunkte": check.inventory.moments,
         "abgleich_fehler":  check.inventory.error,

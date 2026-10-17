@@ -726,6 +726,52 @@ INVENTORY_FAILED: str = "abfrage_gescheitert"
 #: Wort des Titels. Er wiederholt keine Schreibung und wird korrigiert.
 INVENTORY_NOT_NAMED: str = "gefunden_nicht_genannt"
 
+#: Die Einordnung eines abgeschlossenen Dienstes (`write_evidence`).
+WRITE_DONE: str = "geschrieben"
+WRITE_NONE: str = "nicht_geschrieben"
+WRITE_UNKNOWN: str = "nicht_erkennbar"
+
+#: Die Dienste, die jede Schreibung erst nach ihrer Verifikation abschliessen und
+#: dabei einen Schritt `verifiziert` melden — beim Anlegen, Aendern,
+#: Verschieben, Loeschen, Ergaenzen. Lesen, Auflisten und ein erkanntes Duplikat
+#: tragen ihn nicht. Bei diesen Diensten heisst ein Verlauf ohne den Schritt
+#: deshalb: nichts geschrieben. Bei jedem anderen Dienst sagt sein Fehlen nichts.
+WRITE_REPORTING_AGENTS: frozenset[str] = frozenset({"timeline", "notizen"})
+
+
+def write_evidence(result: object) -> str:
+    """Ordnet ein abgeschlossenes Dienst-Ergebnis ein: geschrieben, nicht, nicht erkennbar.
+
+    **Zugelassen wird, was eine Schreibung positiv belegt:** ein Schritt mit
+    `verifiziert` gleich `True` — den setzt ein Schreibweg erst, nachdem er die
+    geschriebene Zeile wieder gelesen hat. Lese-Woerter werden nicht gezaehlt;
+    ein Leseergebnis wie *„ist bereits eingetragen“* traegt das Wort einer
+    Schreibung und hat doch nichts geschrieben.
+
+    Vorbedingung: `result` hat `agent_name` und `schritte`, wie ein
+    `AgentResult`; geprueft wird es hier.
+    Nachbedingung: `WRITE_DONE`, wenn ein Schritt die Schreibung belegt;
+    `WRITE_NONE`, wenn ein Dienst aus `WRITE_REPORTING_AGENTS` einen Verlauf
+    ohne einen solchen Schritt meldet; sonst `WRITE_UNKNOWN`.
+    Fehlerfaelle: Ein Verlauf, der fehlt, leer oder keine Liste ist, laesst
+    nichts erkennen — `WRITE_UNKNOWN`, auch bei den Diensten oben.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    steps: object = getattr(result, "schritte", None)
+    if not isinstance(steps, list) or not steps:
+        return WRITE_UNKNOWN
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    wrote: bool = any(isinstance(s, dict) and s.get("verifiziert") is True for s in steps)
+    reports_writes: bool = str(getattr(result, "agent_name", "")) in WRITE_REPORTING_AGENTS
+    kind: str = WRITE_DONE if wrote else (WRITE_NONE if reports_writes else WRITE_UNKNOWN)
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    if kind == WRITE_NONE and wrote:  # pragma: no cover — per Konstruktion
+        logger.error("Speicherbehauptung: belegte Schreibung als ungeschrieben eingeordnet")
+        return WRITE_DONE
+    return kind
+
 
 @dataclass(frozen=True)
 class InventoryCheck:
@@ -741,14 +787,24 @@ class ClaimCheck:
     """Das Ergebnis der Pruefung gegen die Dienste eines Turns.
 
     `inventory` traegt den Abgleich gegen den Bestand. Ihn fragt erst die
-    Auswertung des Tribunals, und nur bei einer Behauptung ohne abgeschlossenen
+    Auswertung des Tribunals, und nur bei einer Behauptung ohne deckenden
     Dienst; bis dahin steht er auf `nicht_gefragt`.
+
+    Es decken `written` und `unrecognized`, nicht `completed`: Ein Dienst, der
+    abgeschlossen und erkennbar nur gelesen hat, deckt keine Schreibbehauptung.
     """
 
     claims: tuple[StorageClaim, ...]     # alle Behauptungen der Antwort
     completed: tuple[str, ...]           # Dienste mit Ausgang `abgeschlossen`
     outcomes: tuple[str, ...]            # alle Ausgaenge als `dienst:status`
+    written: tuple[str, ...]             # abgeschlossen und Schreibung belegt
+    unrecognized: tuple[str, ...]        # abgeschlossen, Schreibung nicht erkennbar
     inventory: InventoryCheck = field(default_factory=InventoryCheck)
+
+    @property
+    def covering(self) -> tuple[str, ...]:
+        """Die Dienste, die eine Behauptung decken: geschrieben oder nicht erkennbar."""
+        return self.written + self.unrecognized
 
     @property
     def uncovered(self) -> bool:
@@ -759,7 +815,7 @@ class ClaimCheck:
         Ausgang — auch eine gescheiterte Abfrage — laesst die Behauptung offen.
         """
         return (
-            bool(self.claims) and not self.completed
+            bool(self.claims) and not self.covering
             and self.inventory.outcome != INVENTORY_FOUND
         )
 
@@ -768,7 +824,7 @@ class ClaimCheck:
         """Der Name des Ausgangs fuer den dauerhaften Eintrag."""
         if not self.claims:
             return "keine_behauptung"
-        return "gedeckt" if self.completed else "nicht_belegt"
+        return "gedeckt" if self.covering else "nicht_belegt"
 
 
 def uncovered_claims(response: str, agent_results: list | None) -> ClaimCheck:
@@ -777,10 +833,18 @@ def uncovered_claims(response: str, agent_results: list | None) -> ClaimCheck:
     **Nur `abgeschlossen` deckt.** Was ein Dienst abgelehnt, mit Fehler beendet
     oder als Rueckfrage zurueckgegeben hat, wurde nicht geschrieben.
 
-    **Die Deckung ist grob, und das ist benannt:** Jeder abgeschlossene Dienst
-    deckt jede Behauptung — auch ein abgeschlossener *Lesevorgang* eine
-    behauptete Schreibung. Eine feinere Zuordnung braucht die Art der Aktion
-    im Ergebnis, die heute nicht jeder Dienst meldet. Umgekehrt meldet die
+    **Und nur ein Dienst, der in diesem Turn geschrieben hat** (`write_evidence`).
+    ~~Jeder abgeschlossene Dienst deckte jede Behauptung — auch ein
+    abgeschlossener Lesevorgang eine behauptete Schreibung.~~ → Auf die
+    Lesefrage *„Hab ich morgen was vor?“* las die Timeline eine Terminzeile, die
+    Antwort sagte *„Hab's gerade fuer dich eingetragen“*, und die Pruefung
+    meldete `gedeckt` — in zwei von drei Simulationen an einem Pruef-Nutzer.
+    Ein Lesevorgang deckt jetzt nichts; ob die Behauptung eine fruehere
+    Schreibung wiederholt, fragt der Bestandsabgleich.
+
+    **Die Deckung bleibt grob, wo ein Dienst nicht erkennen laesst, ob er
+    schrieb:** Er deckt wie zuvor jede Behauptung, und das steht als Info im
+    Log, einmal je Pruefung mit Behauptung. Umgekehrt meldet die
     Pruefung die **Wiederholung** einer frueheren, echten Schreibung (*„10 Uhr
     ist fixiert"* einen Turn nach dem Anlegen) als nicht belegt — sie sieht nur
     diesen Turn. Der Korrekturauftrag ist darauf zugeschnitten
@@ -789,10 +853,11 @@ def uncovered_claims(response: str, agent_results: list | None) -> ClaimCheck:
     schlaegt an wie eine Behauptung.
 
     Vorbedingung: `agent_results` ist eine Liste von Ergebnisobjekten mit
-    `agent_name` und `status`, leer oder None. Ein anderer Typ wird laut
-    gemeldet und als leer behandelt.
+    `agent_name`, `status` und `schritte`, leer oder None. Ein anderer Typ wird
+    laut gemeldet und als leer behandelt.
     Nachbedingung: ein `ClaimCheck`; `uncovered` ist genau dann wahr, wenn die
-    Antwort mindestens eine Behauptung traegt und kein Dienst abgeschlossen hat.
+    Antwort mindestens eine Behauptung traegt und kein abgeschlossener Dienst
+    geschrieben hat oder nicht erkennen laesst, ob er schrieb.
     """
     # ── Eingabe-Validierung ──────────────────────────────────────────
     results: list = []
@@ -807,22 +872,33 @@ def uncovered_claims(response: str, agent_results: list | None) -> ClaimCheck:
 
     # ── Verarbeitung ─────────────────────────────────────────────────
     claims: tuple[StorageClaim, ...] = tuple(find_storage_claims(response or ""))
-    completed: tuple[str, ...] = tuple(
-        str(getattr(r, "agent_name", "unbekannt")) for r in results
-        if getattr(r, "status", "") == "abgeschlossen"
-    )
+    finished: list = [r for r in results if getattr(r, "status", "") == "abgeschlossen"]
+    named: list[tuple[str, str]] = [
+        (str(getattr(r, "agent_name", "unbekannt")), write_evidence(r)) for r in finished
+    ]
+    completed: tuple[str, ...] = tuple(n for n, _ in named)
+    written: tuple[str, ...] = tuple(n for n, k in named if k == WRITE_DONE)
+    unrecognized: tuple[str, ...] = tuple(n for n, k in named if k == WRITE_UNKNOWN)
     outcomes: tuple[str, ...] = tuple(
         f"{getattr(r, 'agent_name', 'unbekannt')}:{getattr(r, 'status', 'unbekannt')}"
         for r in results
     )
 
     # ── Ausgabe-Verifikation ─────────────────────────────────────────
-    if len(completed) > len(outcomes):  # pragma: no cover — per Konstruktion
+    if len(written) + len(unrecognized) > len(completed):  # pragma: no cover
         logger.error(
-            "Speicherbehauptung: %d abgeschlossene bei %d Ausgaengen — "
-            "unmoeglich", len(completed), len(outcomes),
+            "Speicherbehauptung: %d deckende bei %d abgeschlossenen Diensten — "
+            "unmoeglich", len(written) + len(unrecognized), len(completed),
         )
-    return ClaimCheck(claims=claims, completed=completed, outcomes=outcomes)
+    if claims and unrecognized:
+        logger.info(
+            "Speicherbehauptung: %s melden nicht erkennbar, ob sie schrieben — "
+            "sie decken wie bisher", ", ".join(unrecognized),
+        )
+    return ClaimCheck(
+        claims=claims, completed=completed, outcomes=outcomes,
+        written=written, unrecognized=unrecognized,
+    )
 
 
 def correction_order(claims: list[StorageClaim] | tuple[StorageClaim, ...]) -> str:
