@@ -28,6 +28,7 @@ from graph.nodes.perzeption import perceive
 from graph.nodes.planner import plan
 from graph.nodes.reducer import reduce_memory
 from graph.nodes.responder import respond
+from graph.nodes.route_reading import read_after_route
 from graph.nodes.router import route
 from graph.nodes.salience import analyze
 from graph.nodes.thinker import think
@@ -36,7 +37,6 @@ from graph.nodes.verfasser import verfassen
 from graph.personality import InternalPersonality, Personality
 from graph.state import ConversationState
 from memory.kzg import kzg_index_create
-from memory.timeline_reading import read_for_turn
 from plugins import discover_managers
 from utils.local_time import now_local
 
@@ -217,11 +217,12 @@ class GraphBase(ABC):
         Gelesen wird hier und nicht im Enricher, weil erst der Router
         `needs_timeline` und `timeline_query` setzt — davor ist der gezielte
         Zweig nie erreichbar. Und hier und nicht in `route()`, damit dessen
-        Zeugen keinen Leseweg erben. Kein eigener Knoten im Graphen.
+        Zeugen keinen Leseweg erben. Kein eigener Knoten im Graphen; der
+        Leseschritt steht in `graph/nodes/route_reading.py`.
 
         Vorbedingung: `state` ist der Zustand vor dem Router.
         Nachbedingung: der Zustand nach dem Router, mit `appointment_reading`.
-        Fehlerfaelle: ein Lesefehler wird in `read_for_turn` gemeldet und
+        Fehlerfaelle: ein Lesefehler wird in `read_after_route` gemeldet und
             ergibt ein Ergebnis mit `failed` — der Turn laeuft weiter.
         """
         # ── Eingabe-Validierung ─────────────────────
@@ -230,8 +231,7 @@ class GraphBase(ABC):
             raise TypeError(msg)
 
         # ── Verarbeitung ────────────────────────────
-        routed: ConversationState = route(state)
-        routed["appointment_reading"] = read_for_turn(routed, self.postgres_url, now_local())
+        routed: ConversationState = read_after_route(route(state), self.postgres_url, now_local())
 
         # ── Ausgabe-Verifikation ────────────────────
         if routed.get("appointment_reading") is None:

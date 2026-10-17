@@ -3,7 +3,8 @@
 Der gezielte Leseweg stand im Enricher, und der laeuft vor dem Router. Erst
 der Router setzt `needs_timeline` und `timeline_query` — der gezielte Zweig
 war deshalb nie erreichbar. Gelesen wird jetzt hinter dem Router
-(`graph/base.py::_node_route`), der Verfasser setzt daraus den
+(`graph/base.py::_node_route` ruft `graph/nodes/route_reading.py`), der
+Verfasser setzt daraus den
 `[TERMINE]`-Block.
 
 Zeugen dieser Datei:
@@ -39,8 +40,9 @@ from graph.format.appointments import (
     relative_day,
 )
 from graph.nodes import verfasser
+from graph.nodes.route_reading import read_after_route
 from graph.state import ConversationState
-from memory.timeline_reading import read_for_turn, to_appointment
+from memory.timeline_reading import to_appointment
 
 BERLIN: ZoneInfo = ZoneInfo("Europe/Berlin")
 
@@ -48,6 +50,10 @@ BERLIN: ZoneInfo = ZoneInfo("Europe/Berlin")
 NOW: datetime = datetime(2026, 10, 15, 18, 0, tzinfo=BERLIN)
 
 URL: str = "postgresql://attrappe"
+
+#: Der Logger der Kompensation: Ein Lesefehler wird im Leseschritt hinter dem
+#: Router gemeldet, nicht im Gedaechtnis.
+COMPENSATION_LOGGER: str = "ki_server.graph.route_reading"
 ANCHOR_TITLE: str = "Erinnerungs-Anker 17.10.2026 Rufus"
 
 #: Die Woche, nach der gefragt wird: Montag bis Sonntag.
@@ -193,9 +199,10 @@ def _prompt_of_turn(router_fields: dict, timeline: FakeTimeline) -> str:
 def _read(query: dict, timeline: FakeTimeline, now: datetime = NOW) -> AppointmentReading:
     """Das Leseergebnis eines Turns mit gezielter Anfrage, ohne Graph."""
     with patch("memory.timeline_reading.TimelineRepository", timeline):
-        return read_for_turn(
+        state: dict = read_after_route(
             {"user_id": "pruefer", "needs_timeline": True, "timeline_query": query}, URL, now,
         )
+    return state["appointment_reading"]
 
 
 def _raised(records: list[logging.LogRecord]) -> str:
@@ -300,7 +307,7 @@ class EmptyAndFailedTest(unittest.TestCase):
     def test_a_read_failure_is_no_empty_range(self) -> None:
         timeline = FakeTimeline(_stock(), failure=RuntimeError("Verbindung getrennt"))
 
-        with self.assertLogs("ki_server.memory.timeline_reading", level="ERROR"):
+        with self.assertLogs(COMPENSATION_LOGGER, level="ERROR"):
             reading = _read(WEEK_QUERY, timeline)
         body: str = appointments_body(reading)
 
@@ -411,7 +418,7 @@ class OutputAgainstTheWindowTest(unittest.TestCase):
         timeline = FakeTimeline(_stock())
         timeline.find_by_date_range = lambda *a, **k: [dict(r) for r in _stock()]
 
-        with self.assertLogs("ki_server.memory.timeline_reading", level="ERROR") as logs:
+        with self.assertLogs(COMPENSATION_LOGGER, level="ERROR") as logs:
             reading: AppointmentReading = _read(WEEK_QUERY, timeline)
 
         self.assertTrue(reading.failed)
@@ -442,7 +449,7 @@ class OutputAgainstTheWindowTest(unittest.TestCase):
         timeline.find_by_keyword = lambda *a, **k: [dict(r) for r in rows]
         query: dict = {"type": "search", "keyword": "Zahnarzt", "direction": "both", "limit": 1}
 
-        with self.assertLogs("ki_server.memory.timeline_reading", level="ERROR") as logs:
+        with self.assertLogs(COMPENSATION_LOGGER, level="ERROR") as logs:
             reading: AppointmentReading = _read(query, timeline)
 
         self.assertTrue(reading.failed)

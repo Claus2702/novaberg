@@ -13,6 +13,8 @@ Zeugen dieser Datei, je Leseweg:
   * **Timeline-Agent** (`agents/timeline/suche.py`) — eine Leseabfrage
     schliesst den Anker aus, Aendern und Loeschen sehen den ganzen Bestand.
   * **TimelineManager** — das proaktive Fenster fuer die Analyse-Leser.
+  * **Werkzeuge des Thinkers** — `timeline_check` und `timeline_search`
+    schliessen den Anker in der Abfrage aus und geben ihn nicht aus.
   * **Gedaechtnis des Verfassers** — die Termin-Zeilen stehen dort nicht
     mehr; der Verfasser liest sie im `[TERMINE]`-Block.
   * Die Beispiele sind synthetisch.
@@ -28,6 +30,8 @@ from zoneinfo import ZoneInfo
 
 from agents.timeline import suche
 from graph.format.memory_context import LESER_ANALYSE, LESER_VERFASSER, format_memory_entries
+from graph.nodes.thinker import create_tools
+from graph.nodes.thinker_cache import ThinkerToolCache
 from memory.repositories.timeline_repository import (
     TimelineRepository,
     _excluded_types,
@@ -274,6 +278,78 @@ class TimelineManagerTest(unittest.TestCase):
     def test_entry_helper_rejects_an_empty_line(self) -> None:
         with self.assertRaises(ValueError):
             TimelineManager._appointment_entry("", False, NOW, "Zahnarzt")
+
+
+class _ThinkerTimeline:
+    """Doppel des Repositorys fuer die Werkzeuge des Thinkers: ein Eintrag am 17.10.2026.
+
+    Filtert nach Typausschluss und Suchbegriff wie die Abfrage und schreibt
+    jeden Ausschluss mit. Ohne Mitschrift saehe der Zeuge nur, dass der Anker
+    fehlt — nicht, dass er in der Abfrage fehlt.
+    """
+
+    def __init__(self, event_type: str) -> None:
+        self.excluded: list[tuple[str, ...]] = []
+        self.rows: list[dict] = [
+            {"id": 1, "event_time": datetime(2026, 10, 17, 9, 0, tzinfo=BERLIN),
+             "title": "Erinnerungs-Anker Rufus", "event_type": event_type,
+             "precision": "minute", "details": None},
+        ]
+
+    def find_by_date_range(
+        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+        exclude_event_types: tuple[str, ...] = (),
+    ) -> list[dict]:
+        self.excluded.append(exclude_event_types)
+        return [dict(r) for r in self.rows if r["event_type"] not in exclude_event_types]
+
+    def find_by_keyword(  # noqa: PLR0913 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, keyword: str,
+        direction: str = "forward", limit: int = 5, *,
+        exclude_event_types: tuple[str, ...] = (),
+        now: datetime | None = None, timed_precisions: frozenset[str] = frozenset(),
+    ) -> list[dict]:
+        self.excluded.append(exclude_event_types)
+        return [
+            dict(r) for r in self.rows
+            if keyword.lower() in r["title"].lower() and r["event_type"] not in exclude_event_types
+        ]
+
+
+class ThinkerToolsExcludeTheAnchorTest(unittest.TestCase):
+    """`timeline_check` und `timeline_search` geben keinen Anker als Termin aus."""
+
+    @staticmethod
+    def _call(tool_name: str, arguments: dict, event_type: str) -> tuple[str, _ThinkerTimeline]:
+        timeline = _ThinkerTimeline(event_type)
+        with patch("graph.nodes.thinker.TimelineRepository", timeline):
+            tools: dict = {t.name: t for t in create_tools(URL, "pruefer", "c", ThinkerToolCache())}
+            text: str = tools[tool_name].invoke(arguments)
+        return text, timeline
+
+    def test_check_leaves_out_the_anchor_in_the_query(self) -> None:
+        text, timeline = self._call("timeline_check", {"datum": "2026-10-17"}, "erinnerungs_anker")
+
+        self.assertNotIn("Rufus", text)
+        self.assertEqual(timeline.excluded, [ANCHOR])
+
+    def test_twin_check_shows_the_same_entry_as_appointment(self) -> None:
+        """Der Zwilling: Derselbe Eintrag als Termin steht da — das Doppel traegt ihn."""
+        text, _ = self._call("timeline_check", {"datum": "2026-10-17"}, "termin")
+
+        self.assertIn("[termin] 09:00 Erinnerungs-Anker Rufus", text)
+
+    def test_search_leaves_out_the_anchor_in_the_query(self) -> None:
+        text, timeline = self._call("timeline_search", {"keyword": "Rufus"}, "erinnerungs_anker")
+
+        self.assertNotIn("Erinnerungs-Anker", text)
+        self.assertEqual(timeline.excluded, [ANCHOR])
+
+    def test_twin_search_shows_the_same_entry_as_appointment(self) -> None:
+        """Der Zwilling: Derselbe Eintrag als Termin wird gefunden."""
+        text, _ = self._call("timeline_search", {"keyword": "Rufus"}, "termin")
+
+        self.assertIn("[termin] 17.10.2026 09:00: Erinnerungs-Anker Rufus", text)
 
 
 class WriterMemoryWithoutAppointmentsTest(unittest.TestCase):

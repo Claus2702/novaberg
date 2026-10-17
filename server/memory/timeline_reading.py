@@ -1,17 +1,18 @@
-"""Leseweg der Termine eines Turns: das Fenster des Routers gegen die Timeline.
+"""Lesen eines Termin-Fensters aus der Timeline.
 
-Gerufen hinter dem Router (`graph/base.py::_node_route`), weil erst dort
-`needs_timeline` und `timeline_query` feststehen. Das Ergebnis traegt der
-Zustand als `appointment_reading`; der Verfasser setzt daraus den
-`[TERMINE]`-Block.
+Gerufen hinter dem Router (`graph/nodes/route_reading.py::read_after_route`),
+der das Fenster aus der Anfrage des Routers bildet, den Lesefehler
+kompensiert und das Ergebnis als `appointment_reading` in den Zustand setzt.
+Dieses Modul kennt den Zustand des Graphen nicht: Aus `graph/` liest es nur
+Typen und Konstanten.
 
 **Ein Erinnerungs-Anker ist kein Termin.** Er wird in der Abfrage
 ausgeschlossen und nicht dahinter: Eine Suche mit Obergrenze vergaebe ihre
 Plaetze sonst an Anker, und uebrig bliebe weniger als gefragt. Die
 Ausgabe-Verifikation verwirft trotzdem jeden Anker, der ankommt — laut.
 
-**Ein Lesefehler ist kein leerer Zeitraum.** Er ergibt ein Ergebnis mit
-`failed`, und der Block sagt, dass nichts bekannt ist.
+**Ein Lesefehler geht an den Aufrufer.** Kompensiert wird er im Leseschritt
+hinter dem Router; ein leerer Zeitraum wird er nie.
 """
 
 from __future__ import annotations
@@ -26,7 +27,6 @@ from graph.appointments import (
     Appointment,
     AppointmentReading,
     AppointmentWindow,
-    appointment_window,
 )
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.timeline_inventory import ANCHOR_TYPE, TIME_PRECISIONS
@@ -140,7 +140,7 @@ def read_appointments(
     Nachbedingung: ein `AppointmentReading` mit `failed=False`, das nur
         Termine traegt, keine Erinnerungs-Anker.
     Fehlerfaelle: naiver Zeitpunkt → `ValueError`; ein Lesefehler geht an den
-        Aufrufer (`read_for_turn` macht daraus `failed`). Liefert die Abfrage
+        Aufrufer (`read_after_route` macht daraus `failed`). Liefert die Abfrage
         mehr Zeilen als `limit` oder einen Termin ausserhalb von `start` bis
         `end`, ist das ein Defekt der Abfrage: `RuntimeError`, beim Aufrufer
         wie ein Lesefehler. Jede gelesene Zeile,
@@ -195,39 +195,4 @@ def read_appointments(
         f"Termine: art={window.kind}, richtung={window.direction}, gelesen={len(rows)}, "
         f"geliefert={len(reading.appointments)}, verworfen={discarded}"
     )
-    return reading
-
-
-def read_for_turn(state: dict, postgres_url: str, now: datetime) -> AppointmentReading:
-    """Das Leseergebnis dieses Turns, aus der Anfrage des Routers.
-
-    Hier wird gefangen, weil hier kompensiert wird: Ein Lesefehler wird zum
-    Ergebnis mit `failed`, und der Block sagt, dass ueber die Termine nichts
-    bekannt ist — statt den Turn abzubrechen oder *keine Termine* zu sagen.
-
-    Vorbedingung: `state` ist der Zustand nach dem Router; `now`
-        zeitzonenbewusst in Ortszeit.
-    Nachbedingung: ein `AppointmentReading` — nie `None`.
-    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError` (Programmierfehler).
-        Jeder Fehler beim Lesen wird mit Stacktrace gemeldet und ergibt
-        `failed=True`.
-    """
-    # ── Eingabe-Validierung ─────────────────────
-    window: AppointmentWindow = appointment_window(state, now)
-    user_id: str = str(state.get("user_id") or "")
-
-    # ── Verarbeitung ────────────────────────────
-    try:
-        reading: AppointmentReading = read_appointments(window, user_id, postgres_url, now)
-    except Exception:
-        logger.exception(
-            f"Termine: Timeline nicht gelesen (art={window.kind}) — der Block sagt, "
-            f"dass ueber die Termine nichts bekannt ist"
-        )
-        return AppointmentReading(window=window, now=now, failed=True)
-
-    # ── Ausgabe-Verifikation ────────────────────
-    if reading.window is not window:
-        msg: str = "read_for_turn: Leseergebnis zu einem anderen Fenster"
-        raise RuntimeError(msg)
     return reading

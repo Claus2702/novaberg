@@ -34,6 +34,7 @@ from graph.state import ConversationState, pipeline_quelle
 from memory.lzg_knoten import anker_retrieval
 from memory.pipeline_log import log_decision
 from memory.repositories.timeline_repository import TimelineRepository
+from memory.timeline_reading import EXCLUDED_EVENT_TYPES
 from memory.utils import embedding_zu_pgvector_str
 from services.model_services import ChatRequest, EmbedRequest, model_service
 from tools.thinking_normalizer import get_thinking_normalizer
@@ -167,8 +168,9 @@ def create_tools(
         von = tag.replace(hour=0, minute=0, second=0, tzinfo=tz)
         bis = tag.replace(hour=23, minute=59, second=59, tzinfo=tz)
 
+        # Ein Erinnerungs-Anker ist kein Termin: ausgeschlossen in der Abfrage.
         rows: list[dict] = TimelineRepository.find_by_date_range(
-            postgres_url, user_id, von, bis
+            postgres_url, user_id, von, bis, exclude_event_types=EXCLUDED_EVENT_TYPES,
         )
 
         if not rows:
@@ -194,8 +196,9 @@ def create_tools(
         """
         logger.info(f"Thinker-Tool: timeline_search({keyword})")
 
+        # Ausgeschlossen vor dem LIMIT — sonst belegt ein Anker einen der fuenf Plaetze.
         rows: list[dict] = TimelineRepository.find_by_keyword(
-            postgres_url, user_id, keyword, "both", 5
+            postgres_url, user_id, keyword, "both", 5, exclude_event_types=EXCLUDED_EVENT_TYPES,
         )
 
         if not rows:
