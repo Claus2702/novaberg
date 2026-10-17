@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Gedaechtnis — KZG, LZG, Promotion, Entitaeten, Salienz, Verfall
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 77 Eintraege (19.09.2026: `SYNAPSEN-K8-SKALA` neu).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → 80 Eintraege (19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -2146,5 +2146,29 @@ Vier Konzepte ohne Code. Sie standen bis Chat 114 nur in der Sitzungsübergabe; 
 Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfragen` auf einen Agenten ab, den es nicht gibt — siehe die Fundliste vom 27.07.2026. Der Bau schließt diesen Befund mit; die Reihenfolge ist dort beschrieben.
 
 **Nachtrag 05.08.2026 — der Befund ist latent, nicht aktiv.** Gemessen gewinnt heute kein agentenloser Auftrag den Heartbeat: Die 390 `recherche`-Aufträge stehen in der Listenreihenfolge vor ihnen, und `_queue_peek` nimmt den **ersten** Eintrag mit echt größerer Priorität. Er feuert wieder, sobald sie abfließen. Was den Heartbeat heute blockiert, ist der besetzte Slot — 249 von 270 Auslösungen fielen in 2,25 Stunden aus (Fundliste 05.08.).
+
+---
+
+## Befund: SALIENZ-TRAEGT-NAEHE-NICHT — Die Salienz trägt die Nähe eines Menschen nicht (17.10.2026)
+
+**Kategorie:** [GED] GEDAECHTNIS
+
+**Rang:** mittel — Vorbedingung für das Bauteil F4 des Faktengedächtnisses (lernen ohne Auftrag): Dessen Grenze soll Aussagen über nahe Menschen durchlassen, und die Salienz liefert die Nähe heute nicht. Im Betrieb ohne Wirkung, solange F4 nicht gebaut ist.
+
+**Zustand:** ⬜ offen — gemessen am 17.10.2026, nichts gebaut.
+
+**Befund, am Code:** Der Aufgaben-Block der Salienz (`server/prompts/default/salienz.task.txt`, Z. 11–12) gibt jeder neuen Information über konkrete Personen, Orte, Beziehungen, Wohnorte, Arbeitsplätze oder Familienmitglieder *„mindestens 0.70, auch wenn sachlich und ohne Emotion formuliert“*. Familie und Fremde stehen in derselben Zeile, auf derselben Stufe. Einen Teilwert für Nähe oder Bindung hat die Salienz nicht.
+
+**Gemessen am 17.10.2026** (Messpunkt M1, `novaberg-memory-fakten_b.md`): gelesen wurde `salienz_human` aus dem Pipeline-Log, nur Zahlen; die Gruppen *nah*, *fremd* und *Sache* bildete eine feste Wortliste im SQL, ohne dass ein Text gelesen wurde. **Person gegen Sache trennt die Salienz deutlich:** am echten Paar Median 0,70 gegen 0,30 (AUC 0,78). **Nah gegen fremd trennt sie nicht:** an synthetischen Sätzen Δ Median 0,00, AUC 0,47. 26 von 28 Läufen naher Aussagen bekamen genau 0,70, die Untergrenze des Prompts.
+
+**Die n sind klein.** Am echten Bestand trägt eine einzige Äußerung ein Wort der Liste *nah*. Synthetisch stehen 5 gegen 6 verschiedene Sätze, alle sachlich formuliert. Die emotionale Aussage über einen nahen Menschen ist nicht gemessen; Emotionssignale haben im Prompt eigene, höhere Stufen (Stress, Angst: 0,8–1,0), unabhängig davon, um wen es geht.
+
+**Warum es ein Befund ist:** Das Konzept des Faktengedächtnisses verlangt, dass Aussagen über Menschen, die dem Menschen nahestehen, durch die emotionale Bindung als wichtig erkannt werden (`novaberg-memory-fakten_k.md` §3.2). Eine Grenze bei 0,70 ließe jede Personenaussage durch, eine darüber schlösse fast alle nahen aus. Dazwischen gibt es keine Stelle, die *nah* von *fremd* trennt.
+
+**Was fertig wäre:** Die Nähe hat einen Eingang in die Salienz oder neben ihr, etwa eine eigene Stufe im Prompt oder eine Bindung aus Entität oder Fakt, und eine Messung zeigt einen Abstand *nah* gegen *fremd*. Wie die Nähe hineinkommt, ist offen.
+
+**Vorgeschlagen, nicht entschieden:** kontrollierte Satzpaare mit gleichem Satzbau, in denen nur die Person getauscht ist — nah, fremd und Sache als Nulllinie —, je sachlich und emotional. Bewertet werden sie vom selben Salienz-Prompt und Modell im Labor, ohne ins Gedächtnis zu schreiben. Mit der heutigen Prompt-Zeile ist das Ergebnis absehbar (dieselbe Stufe für beide); lohnend wird die Messung, sobald eine Bauart für die Nähe feststeht.
+
+**Zusammenhang:** `novaberg-memory-fakten_b.md` (M1, F4) · `novaberg-memory-fakten_k.md` §3.2 · `server/graph/nodes/salience.py`
 
 ---

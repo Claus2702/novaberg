@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 99 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~99~~ → 100 Eintraege (17.10.2026: `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` neu).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1679,5 +1679,23 @@ Für eine Änderung am Server läuft die Suite unter `server/tests` in einem Weg
 **Entschieden vom Eigentümer am 08.10.2026:** Die Testdatenbank kommt ins Backlog und wird vor der ersten Server-Änderung gebaut, die sie braucht. Sie anzulegen ist DDL und wird vorher angekündigt.
 
 **Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql`
+
+---
+
+## Befund: THINKER-IMPORTIERT-AUS-TIMELINE-AGENT — Der Graph holt eine allgemeine Hilfsfunktion aus dem Timeline-Agenten (17.10.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** niedrig — ohne Wirkung im Betrieb. Eine Abhängigkeit des Graphen vom Paket eines Agenten hält eine allgemeine Funktion an der falschen Stelle fest.
+
+**Zustand:** ⬜ offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`, nichts gebaut.
+
+**Befund, am Code:** `graph/nodes/thinker.py:28` importiert `agents.timeline.event_time.precision_has_time` und benutzt sie zweimal (Z. 183, 210). Die Funktion sagt, ob eine Genauigkeit eine Uhrzeit trägt. Sie ergibt außerhalb des Agenten Sinn, gehört also nicht in ihn. Im Agenten benutzen sie `crud.py` und `suche.py`. Es ist der einzige Import von `graph/` aus dem Paket des Timeline- oder des Notizen-Agenten.
+
+**Nicht der einzige aus `agents/` überhaupt** (gezählt mit `git grep -nE "^\s*(from|import) agents" -- server/graph`): `graph/` importiert an 14 Zeilen aus `agents/`. Die meisten gelten gemeinsamen Modulen (`agents`, `agents.base`, `agents.nmcp`, `agents.nmcp_quote`, `agents.object_nearness`) und den Dispatch-Einstiegen in `graph/nodes/dispatcher.py`. Aus dem Paket eines einzelnen Agenten importieren daneben `graph/nodes/enricher.py` (`agents.dateien_index.aufzeichnungen`) und `graph/nodes/praegung.py` (`agents.charakter.rad_messreihe`). Ob für diese beiden dasselbe gilt, ist nicht geprüft.
+
+**Was fertig wäre:** `precision_has_time` liegt außerhalb des Agenten an einer Stelle, die Graph und Agent beide benutzen, und `graph/` importiert nichts mehr aus `agents.timeline`. Wohin sie zieht, wählt der Bau.
+
+**Zusammenhang:** `novaberg-agent-timeline.md` · `TIMELINE-TYPEN-AN-DREI-STELLEN` (Wissen)
 
 ---

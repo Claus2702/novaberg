@@ -2,7 +2,7 @@
 
 **Teil 3 von 5 — Bauplan.** Absicht und Kopfblock: [`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) · Diskussion und Ergänzungen: [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) · Ausarbeitung und Messungen: keine (`_k`, Kopfblock). Die Abschnittsnummer §6 ist die des Konzepts.
 
-**Stand:** 17. Oktober 2026, 15:40 UTC (`date -u`; angelegt, nichts gebaut).
+**Stand:** 17. Oktober 2026, 17:05 UTC (`date -u`; M1 gemessen, M2 hinter F1 gestellt, weil er einen Bau braucht; nichts gebaut). Davor 17. Oktober 2026, 15:40 UTC (`date -u`; angelegt, nichts gebaut).
 
 ---
 
@@ -26,8 +26,12 @@ Jedes Bauteil ist eine Zeile der Featureliste mit ⚫ (§3.1, *Faktengedächtnis
 
 **M1 — die Salienz von Aussagen über nahe Menschen.** Die Grenze aus F4 wird erst gesetzt, wenn gemessen ist, ob Aussagen über Menschen, die dem Menschen nahestehen (Familie, enge Bindung), heute eine hohe Salienz bekommen. Gemessen wird an der bestehenden Salienz im Pipeline-Log (`salienz`), ohne neuen Bau. Gezählt werden die Werte je Gruppe, ohne Inhalte zu lesen. Die Nulllinie bilden Aussagen über fremde Menschen und über Sachen. Das Ergebnis ist ein Abstand zwischen den Gruppen, kein einzelner Wert. Trennt die Salienz die Gruppen nicht, ist das ein Befund über die Salienz und keiner über die Grenze.
 
+**Gemessen am 17.10.2026.** Die Salienz trennt Aussagen über Personen deutlich von Aussagen über Sachen (am echten Paar Median 0,70 gegen 0,30, AUC 0,78), nahe Menschen aber nicht von fremden (an synthetischen Sätzen Δ Median 0,00, AUC 0,47), denn der Prompt gibt jeder Information über eine Person mindestens 0,70. Die n sind klein: Am echten Bestand trägt eine einzige Äußerung ein Wort für einen nahen Menschen, synthetisch stehen 5 gegen 6 verschiedene, sachlich formulierte Sätze. Es ist damit ein Befund über die Salienz und keiner über die Grenze; er steht als Backlog `SALIENZ-TRAEGT-NAEHE-NICHT` ([`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md)) und ist Vorbedingung für F4.
+
 **M2 — die Tiefe der Mappe.** Reicht der zweite Grad? Gemessen an Fragen zu Entitäten mit Fakten im ersten, zweiten und dritten Grad: Welcher Grad war für die richtige Antwort nötig, und wie viele Zeichen trägt die Mappe je Grad? Der zweite Grad ist der Ausgangswert und wird nur mit diesem Ergebnis geändert.
+
+~~M2 vor dem Bau, ohne Bau~~ → **M2 nach F1** (berichtigt am 17.10.2026). Gemessen wird, welcher Grad nötig war, und das geht nur mit der Lesefunktion aus F1 mit einstellbarer Tiefe und mit gesäten Fakten: Die Tabelle `fakten` hat heute keinen Erzeuger (`FaktenManager` hat kein `plan`, der Planner fällt auf das leere aus `plugins/base.py` zurück).
 
 ### Reihenfolge
 
-**M1 und M2 zuerst**: Sie brauchen keinen Bau, und ohne sie stehen die Grenze und die Tiefe auf geratenen Zahlen. Dann **F2**, weil nur der Agent schreiben darf. Mit ihm **F5**, das Ablösen gehört in seinen Schreibweg. Dann **F1**, die Lesefunktion. Danach **F3**, das an den Klärfall am Objekt der Sachlage anschließt (Backlog `KLA-KLAERFALL-AM-OBJEKT`). **F4** folgt nach M1 und Scheibe 13 der Lage, weil das Lernen über den Empfang läuft. **F6** folgt, sobald die Timeline das Ereignis einer dritten Person kennt (`_k` §5, Punkt 4). **F7** steht zuletzt, nach der Frage nach dem Typsystem.
+~~**M1 und M2 zuerst**: Sie brauchen keinen Bau, und ohne sie stehen die Grenze und die Tiefe auf geratenen Zahlen.~~ → **M1 zuerst**, ohne Bau, gemessen am 17.10.2026 (oben). **M2 nach F1**, weil er die Mappe mit einstellbarer Tiefe und gesäte Fakten braucht (berichtigt am 17.10.2026). Ohne die beiden stehen die Grenze und die Tiefe auf geratenen Zahlen. Dann **F2**, weil nur der Agent schreiben darf. Mit ihm **F5**, das Ablösen gehört in seinen Schreibweg. Dann **F1**, die Lesefunktion. Danach **F3**, das an den Klärfall am Objekt der Sachlage anschließt (Backlog `KLA-KLAERFALL-AM-OBJEKT`). **F4** folgt nach M1 und Scheibe 13 der Lage, weil das Lernen über den Empfang läuft. **F6** folgt, sobald die Timeline das Ereignis einer dritten Person kennt (`_k` §5, Punkt 4). **F7** steht zuletzt, nach der Frage nach dem Typsystem.

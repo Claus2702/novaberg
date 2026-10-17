@@ -1,9 +1,71 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → 23 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → 27 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — aus dem Entwurf der Bauart des Faktengedächtnisses
+
+Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen und gegen HEAD `7b65297` nachgeprüft. Einer wirkt im Betrieb (die Timeline), drei sind latent, weil die Tabelle `fakten` stillgelegt ist (entschieden am 06.10.2026) und keinen Erzeuger hat.
+
+### `TIMELINE-VERWEIS-VERALTET-BEIM-VERSCHIEBEN` — ein Verweis auf einen Termin bleibt beim Verschieben an der alten Zeile
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still: Wer dem Verweis folgt, landet auf der inaktiven Zeile mit der alten Zeit; der Weg läuft im Betrieb bei jedem Verschieben. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`. Im Bestand zeigte zu diesem Zeitpunkt noch kein Verweis auf eine inaktive Zeile (unten).
+
+**Befund** `[Code]`: Verschieben heißt in der Timeline invalidieren und neu anlegen (`novaberg-agent-timeline.md` §5.2). `agents/timeline/crud.py::_update` setzt die alte Zeile mit `TimelineRepository.invalidate` auf `aktiv = FALSE` (Z. 336) und legt mit `TimelineRepository.insert` eine neue Zeile mit neuer `id` an (Z. 341). Drei Spalten verweisen per Fremdschlüssel auf `timeline(id)`, je mit `ON DELETE SET NULL` (`agents/timeline/init.sql`): `lzg_knoten.timeline_id`, `sachlage_eigenschaft.timeline_id` und `notizen.timeline_id`. Keine wird beim Verschieben nachgezogen. `memory/sachlage_properties.py::bind_timeline` setzt den Zeitanker einer Eigenschaft nur, solange sie noch keinen hat (`WHERE … timeline_id IS NULL`). Nach dem Verschieben zeigt der Verweis also auf die inaktive Zeile. `ON DELETE SET NULL` greift nie, weil eine Zeile der Timeline nie gelöscht, nur invalidiert wird (§5.3; in `server/` steht außerhalb der Tests kein `DELETE` auf `timeline`).
+
+**Wirkung.** Eine Erinnerung, die an einem Termin hängt, und der Zeitanker einer Eigenschaft der Sachlage verlieren den Termin beim ersten Verschieben. Wer dem Verweis folgt, findet die alte Zeit oder, beim Filter auf `aktiv`, nichts. Jeder künftige Verweis erbt das, auch der geplante vom Fakt auf sein Ereignis (`novaberg-memory-fakten_b.md`, F6).
+
+**Bestand** `[gemessen 17.10.2026, 16:57 UTC]`, nur gezählt: 177 Knoten in `lzg_knoten` und 66 Eigenschaften in `sachlage_eigenschaft` tragen einen Verweis, keiner davon zeigt auf eine inaktive Zeile; in `notizen` trägt keine Zeile einen. Der Defekt sitzt im Code und wird sichtbar, sobald ein Termin verschoben wird, auf den etwas verweist.
+
+**Reproduktion.** Einen Termin anlegen, auf den eine Eigenschaft der Sachlage oder ein Knoten verweist, ihn verschieben und danach `timeline.aktiv` der verwiesenen Zeile lesen.
+
+**Geschlossen, wenn** ein Verweis nach dem Verschieben zur aktiven Zeile führt, für alle drei Spalten. Vorgeschlagen ist eine Spalte `timeline.nachfolger_id`, der ein Leser bis zur aktiven Zeile folgt. Entschieden ist die Bauart nicht; eine neue Spalte ist DDL und wird vorher angekündigt.
+
+### `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` — drei Lesefunktionen des Fakten-Repositorys schreiben
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — latent: Die Tabelle `fakten` ist stillgelegt und trägt 0 Zeilen `[gemessen 17.10.2026, 16:57 UTC]`, und keiner der drei Wege läuft im Betrieb. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
+
+**Befund** `[Code]`: In `memory/repositories/fakten_repository.py` lesen `find_by_id`, `find_by_subjekt` und `find_aktiv` über `UPDATE fakten SET last_touched = NOW() … RETURNING *` und committen dabei (Z. 100, 124, 151). Ihre Docstrings sagen das. Jedes Lesen ist damit ein Schreiben mit eigenem Commit. `find_historie` und `find_wiedervorlage_faellig` lesen, ohne zu schreiben. Aufrufer: `find_by_id` hat keinen, `find_by_subjekt` und `find_aktiv` stehen nur im Plugin `plugins/fakten_manager/manager.py` (Z. 172, 498, 605, 610). Dessen Anreicherung ist abgeschaltet, und sein Schreibweg bekommt keinen Auftrag.
+
+**Wirkung.** Wird die Tabelle wieder benutzt, setzt jedes Lesen den Zeitpunkt der letzten Berührung, auch für einen Treffer, den der Aufrufer danach verwirft. Die Spalte trägt dann Nachfrage statt Verwendung. Dazu braucht jedes Lesen eine Zeilensperre und einen Commit.
+
+**Geschlossen, wenn** kein Lesen im Repository `last_touched` schreibt. Das kommt mit dem Umbau des Repositorys für den Fakten-Agenten; der Zeuge dafür: Ein Lesen schreibt nie `last_touched`.
+
+### `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` — Invalidieren und Neuanlegen laufen in zwei Commits
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — latent wie `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED`. Mit dem Fakten-Agenten würde es still: Scheitert das Neuanlegen, ist der alte Wert weg und kein neuer da. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
+
+**Befund** `[Code]`: `FaktenRepository.insert` und `FaktenRepository.invalidate` öffnen je eine eigene Verbindung und committen je für sich (`memory/repositories/fakten_repository.py`, Z. 64/76 und 202/210). Keine der beiden nimmt eine Verbindung oder einen Cursor entgegen. Die Ablösung eines Werts besteht aus beiden Schritten (`novaberg-memory-fakten_k.md` §2.4) und ist damit nicht atomar. Der einzige heutige Ablöseweg, `plugins/fakten_manager/manager.py::fakten_verarbeiten`, invalidiert zuerst (Z. 511) und legt danach an (Z. 544); dazwischen läuft das Embedding.
+
+**Wirkung.** Scheitert das Anlegen, etwa an einem Datenbankfehler, ist der alte Fakt invalidiert und der neue fehlt: Für die Beziehung steht kein aktiver Wert mehr, ohne dass jemand das gewollt hat. Ein Leser zwischen den beiden Commits sieht ebenfalls keinen aktiven Wert.
+
+**Geschlossen, wenn** Invalidieren und Anlegen in einer Transaktion laufen. Zeuge: Scheitert das Anlegen, bleibt der alte Wert aktiv.
+
+### `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` — ein ungeklärtes Objekt wird still ein Wert
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — latent im abgeschalteten Plugin: `fakten_verarbeiten` bekommt keinen Auftrag. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
+
+**Befund** `[Code]`: Lässt sich in `plugins/fakten_manager/manager.py::fakten_verarbeiten` das Objekt eines Fakts nicht zu einer Entität auflösen, wird sein Name ohne Meldung als Wert gespeichert (Z. 493–495, Kommentar *„Objekt nicht aufgelöst → als Wert behandeln“*). Aus einer Beziehung zwischen zwei Entitäten wird so eine Beziehung zu einer Zeichenkette. Kein Log und kein Ausgang sagt es; ein nicht aufgelöstes Subjekt dagegen wird gemeldet und übersprungen (Z. 481–485). Einziger Aufrufer ist `FaktenManager.execute` (Z. 318, 342). Ihm liefert der Planner keinen Schreibauftrag, denn `FaktenManager` hat kein `plan` und erbt das leere aus `plugins/base.py`.
+
+**Wirkung.** Würde der Weg wieder benutzt, verschwänden Beziehungen zwischen Entitäten still in Wert-Fakten. Eine Mappe, die über Entitäten geht, fände sie in der Objekt-Richtung nicht, und der zweite Grad bräche an ihnen ab.
+
+**Geschlossen, wenn** ein nicht aufgelöstes Objekt zu einer Klärung oder einem lauten Ausgang führt statt zu einem Wert. Der Eintrag entfällt mit dem Umbau des Plugins zum Fakten-Agenten, sobald `fakten_verarbeiten` nicht mehr existiert.
 
 ---
 
@@ -375,6 +437,8 @@ if self.now > dateobj - tz_offset:
 **Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte, Severity Hoch — 171 Live-Einträge betroffen
 
 **Symptom:** `fakten` hat die Spalte `character_id` mit Default `'nova'`. INSERTs in `fakten_repository.py` setzen die Spalte nicht (DB-Default greift). SELECTs filtern nur `WHERE user_id = %s`, ignorieren `character_id` komplett.
+
+**Weitere Stellen, gegen HEAD `7b65297` gelesen am 17.10.2026.** Am Repository vorbei lesen zwei Stellen `fakten` mit eigenem SQL, und auch sie filtern nur `user_id`, nie `character_id`: `api/gedaechtnis.py::fakten_abrufen` (Endpunkt `GET /fakten/{user_id}`, Z. 373–379) und `graph/nodes/gespraechsvektor.py::_entity_kontext_laden` (Z. 435 und 454; diese Funktion hat keinen Aufrufer). Geschlossen ist der Eintrag erst, wenn jede Stelle nach dem Paar liest oder über die eine Lesefunktion des Faktengedächtnisses (Bauteil F1, `novaberg-memory-fakten_b.md`).
 
 **Komplikation:** 171 Bestandseinträge unter `user_id='nova'` (Pre-Paar-Schema-Logik) repräsentieren *"Nova-Sicht auf Meister"* und gehören semantisch zu `(user_id='meister', character_id='nova', beobachter='assistant')` — nicht trivial pauschal umsattelbar.
 
