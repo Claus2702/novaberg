@@ -40,7 +40,7 @@ Keine. Das Konzept stellt keine Frage an den Meister.
 - `_m`, *Aus §8.5* (§8.5.6): ob die Wahrnehmungs-Gravitation die Trefferliste je ändert — *„Das ist die offene Frage von P10“*, entscheidbar erst an der Charakterbildungs-Messreihe.
 - `_t` §7.1a: eine echte Nulllinie über nachweislich fremde Knoten fehlt; die Segmentzahl ist neu zu messen, wenn die Antworten länger und mehrteilig werden.
 - `_m`, *Bisheriger Kopf*: ob Entitäts- und Zeitschicht greifen, wenn es etwas zu greifen gibt — ebenfalls an der Charakterbildungs-Messreihe.
-- `_k` §3.2: das Faktengedächtnis als eigenes Konzeptpapier, *„sobald der LZG-Kern dieses Konzepts steht“*.
+- ~~`_k` §3.2: das Faktengedächtnis als eigenes Konzeptpapier, *„sobald der LZG-Kern dieses Konzepts steht“*.~~ → **Erledigt am 17.10.2026:** [`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md). Die Voraussetzung ist am selben Tag als erfüllt entschieden; die Sequenz im Enricher (`_k` §3.2) ist im Ort überholt.
 - ~~Abschnitt G, K8 (E4): ob das Anfangsgewicht neuer Knoten umgerechnet wird — entscheidbar erst nach der Messung der Anfangsgewichte aus der Datenbank.~~ **Gemessen und entschieden am 20.09.2026 (E6), siehe K8.**
 
 ---

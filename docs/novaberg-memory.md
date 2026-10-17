@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gedächtnis-System (Übersicht)
-**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe)
+**Stand:** 17. Oktober 2026, 15:40 UTC (`date -u`; §10.3 und §13.2 für die Fakten überholt markiert: Die Kante verfällt, und die Fakten liest die Sachlage, nicht der Enricher, `novaberg-memory-fakten_k.md`). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe)
 **Pfad:** novaberg/docs/novaberg-memory.md
 **Quellen:** nova-02-k.md (Gedächtnis-Konzept)
 
@@ -225,8 +225,10 @@ Stattdessen erben Container-Einträge Salienz **beim Retrieval** über ihre Verw
 | Themen-Tabelle | nein, existiert nicht | offen, Konzept dieses Dokuments | Backlog |
 | Timeline | nein, alle aktiven Termine gleichgewichtet | bewusst — erben über Themen | Soll-Zustand |
 | Notizen | nein, manuelle Verwaltung | bewusst — erben über Themen | Soll-Zustand |
-| Fakten | nein, atemporal | bewusst — erben über Themen | Soll-Zustand |
+| Fakten | nein, ~~atemporal~~ → die Kante verfällt (unten) | bewusst — erben über Themen | Soll-Zustand |
 | Dateien | (nicht implementiert) | bewusst — erben über Themen | Soll-Zustand |
+
+> **Überholt am 17.10.2026 für die Fakten — und die Zeile *Knowledge Graph* darüber gleich mit.** Die Zeilen *„Triples sind statisch“* und *„atemporal“* stehen gegen die Verfallsregel vom 16.08.2026 ([`novaberg-convention-verfall.md`](novaberg-convention-verfall.md) §1.1). Dort sitzt der Verfall im Faktengedächtnis an der Kante, die Bindung verfällt, die Entität nicht. Ein Fakt ist bi-temporal und damit nicht zeitlos: Er gilt ab einem Zeitpunkt und wird abgelöst, nicht überschrieben. Das Konzept des Faktengedächtnisses übernimmt beides ([`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §2.4, §2.5). Ob die Kante des Fakts und das Eigenschaftsgedächtnis der Sachlage, das nicht verfällt, zusammengehen, ist eine offene Frage der Bauart (ebd. §5, Punkt 2). Gebaut ist der Verfall nicht (`FAKTEN-BINDUNG-OHNE-VERFALL`).
 
 ### 10.4 Konzept: Themen-Salienz-Tabelle
 
@@ -505,10 +507,10 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 |-----------|--------|--------|-------|
 | Enricher | KZG `kzg:{user}:{nova}:*` | beide Beobachter, gewichtet | Akte-Quelle 1: semantische Nähe |
 | Enricher | LZG | beide Beobachter, gewichtet | Akte-Quelle 1: Langzeit-Erinnerung |
-| Enricher | Knowledge Graph | Spreading Activation von Anfrage-Entitäten | Akte-Quelle 2: strukturelle Nähe |
+| ~~Enricher~~ → Sachlage (17.10.2026, unten) | Knowledge Graph | ~~Spreading Activation von Anfrage-Entitäten~~ → die Mappe der Entitäten der Lage | Akte-Quelle 2: strukturelle Nähe |
 | Enricher | Timeline | zeitliche + thematische Achse | Akte-Quelle 3: relevante Termine |
 | Enricher | Notizen | thematische + Embedding-Achse | Akte-Quelle: relevante Notizen |
-| Enricher | Fakten (KG) | über Subject/Object-Hops | Akte-Quelle: relevante Wissens-Verknüpfungen |
+| ~~Enricher~~ → Sachlage (17.10.2026, unten) | Fakten (KG) | über Subject/Object-Hops, bis zum zweiten Grad in beide Richtungen | Akte-Quelle: relevante Wissens-Verknüpfungen |
 | Enricher | Themen-Salienz-Tabelle | Anker-Themen mit Salienz | Gewichtungs-Quelle für Akte |
 | Enricher | Drive-System | aktivierte Ziele | Gravitation für Embedding-Verschiebung |
 | CharakterAgent | KZG | `beobachter=user` für User-Profil | Adaptive-Hash, Beziehungsprofil |
@@ -518,6 +520,8 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 | RechercheAgent | KZG/LZG | beobachter-übergreifend | Kontext für Recherche-Themen |
 | Responder | Akte (vom Enricher) | n/a | Antwort-Generierung |
 | Thinker | Akte + Tools | n/a | Faktenprüfung, Verarbeitungs-Block |
+
+> **Überholt am 17.10.2026 — wer die Fakten liest.** Die beiden Zeilen *Enricher → Knowledge Graph* und *Enricher → Fakten (KG)* gelten nicht mehr: Die Fakten liest die Sachlage. Zu jeder Entität der Lage holt sie die Mappe ihrer Fakten, bis zum zweiten Grad in beide Richtungen, als Quelle des Frame-Auflösers. Die Mappe stößt dann eine gezielte Suche im Erinnerungsgedächtnis an (Scheibe 13 in [`novaberg-thinking-lage_k.md`](novaberg-thinking-lage_k.md); [`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §3.1). Entworfen, nicht gebaut. Die Anreicherung des alten Fakten-Plugins im Enricher ist abgeschaltet; der Enricher liest heute keine Fakten.
 
 ### 13.3 Wann was passiert
 

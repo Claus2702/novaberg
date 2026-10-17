@@ -1,7 +1,7 @@
 # Novaberg — Memory-Kern: Synapsen-Modell
 
 **Absicht:** Novas Langzeitgedächtnis ist ein assoziatives Netz — jede promotete Erinnerung bleibt ein eigener Knoten mit Stärke, Verfall und Reaktivierung, Kanten sind abgeleitete Assoziationen über Entität, Zeit, Thema und Embedding, der Abruf geht von Embedding-Ankern entlang der Kanten, und verstärkt wird nur, was eine Antwort tatsächlich verwendet.
-**Stand:** 19. September 2026, 20:15 UTC (die Notiz zu P4 aufgenommen: Festlegungen K1–K10 nach `_e` Abschnitt G, Bauplan nach `_b` §13.6, verwandte Dokumente nach §15). Davor 18. September 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 17. Oktober 2026, 15:40 UTC (`date -u`; §3.2: die Sequenz im Enricher im Ort überholt — die Mappe kommt in die Sachlage und stößt von dort die Erinnerung an; das Faktengedächtnis-Konzept steht, `novaberg-memory-fakten_k.md`). Davor 19. September 2026, 20:15 UTC (die Notiz zu P4 aufgenommen: Festlegungen K1–K10 nach `_e` Abschnitt G, Bauplan nach `_b` §13.6, verwandte Dokumente nach §15). Davor 18. September 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *Synapsen-Modell* 🟠 · *Zwei-Call-Promotion* 🟢 · *Ebbinghaus-Decay + Soft-Delete* 🟢 · *Halbreaktivierung* 🟠 · *KZG-Magnetfelder* 🔴 · *Pipeline-Log* 🔴 · *Wahrnehmungs-Gravitation* 🟠 · *Langzeitgedächtnis alt* 🟢 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) · [`novaberg-memory-synapsen_b.md`](novaberg-memory-synapsen_b.md) · [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md) · [`novaberg-memory-synapsen_m.md`](novaberg-memory-synapsen_m.md)
 **Entschieden:** 5 · **Offen beim Meister:** 0 (Liste in [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md))
@@ -141,17 +141,25 @@ Daneben existiert eine zweite, fundamental andere Gedächtnis-Modalität, die im
 
 Die beiden Modalitäten sind über `entitaet_ids` und `timeline_id` verschränkt. Ein LZG-Knoten referenziert die Entitäten, die in ihm vorkommen; eine Entität im Faktengedächtnis erscheint in vielen LZG-Knoten als Referenz. Beide Systeme bleiben mechanisch getrennt, aber sie lesen einander.
 
-**Sequenz im späteren Enricher** (nach Fertigstellung beider Kern-Systeme):
+**Sequenz ~~im späteren Enricher~~** (nach Fertigstellung beider Kern-Systeme) — → **im Ort überholt am 17.10.2026**, siehe den Kasten unter der Liste:
 
-Der Enricher wird zum Orchestrator zweier Gedächtnis-Modalitäten. Eine User-Anfrage wie „Wann hat Anna Geburtstag?" durchläuft dann grob:
+~~Der Enricher wird zum Orchestrator zweier Gedächtnis-Modalitäten.~~ Eine User-Anfrage wie „Wann hat Anna Geburtstag?" durchläuft dann grob:
 
 1. **Faktengedächtnis** liefert die Akte zu Anna — wer oder was ist das, welche Beziehungen sind bekannt, prägnante Fakten mit hoher Stärke.
 2. **Synapsen-LZG** wird mit der Akte als Kontext-Anker konsultiert — welche Erinnerungen und Assoziationen sind mit Anna verbunden, welche emotionale Färbung, welche Resonanz?
 3. **Responder** bekommt die kombinierte Sicht: faktische Antwort plus erinnernder Kontext. Nicht „Anna hat am 1. Juni Geburtstag" als nackte Auskunft, sondern eingebettet in das Bild dessen, *wer* Anna für den User ist.
 
+> **Überholt am 17.10.2026 im Ort, nicht im Gedanken.** Entschieden ist:
+>
+> - **Die Akte heißt Mappe**, und sie kommt **in die Sachlage, nicht in den Enricher** (Scheibe 13 in [`novaberg-thinking-lage_k.md`](novaberg-thinking-lage_k.md), *Aus §4*).
+> - Geschrieben wird sie allein vom Fakten-Agenten ([`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §3.2).
+> - **Schritt 2 bleibt:** Die Mappe einer Entität der Sachlage stößt eine gezielte Suche im Erinnerungsgedächtnis an, mit ihr als Anker. Die Mappe reicht dabei bis zum zweiten Grad in beide Richtungen der Kanten (ebd. §3.1).
+>
+> Die Erinnerungssuche läuft heute im Enricher, vor der Sachlage. Die gezielte Suche mit der Mappe braucht deshalb einen Schritt danach, und wo er sitzt, ist eine Frage der Bauart ([`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) C5).
+
 Phänomenologisch genau so, wie ein Mensch über eine vertraute Person spricht: Fakten *und* Resonanz, nicht das eine ohne das andere. Reine Fakten wären ein Polizeibericht. Reine Resonanz wäre ein Gefühl ohne Anker.
 
-Das Faktengedächtnis-Konzept entsteht als eigenes Konzeptpapier, sobald der LZG-Kern dieses Konzepts steht. Im aktuellen Konzept ist es nur Ausblick — keine Designentscheidungen, keine Schemata, keine Pixie-Logik für Fakten werden hier festgelegt.
+Das Faktengedächtnis-Konzept entsteht als eigenes Konzeptpapier, sobald der LZG-Kern dieses Konzepts steht. → **Seit dem 17.10.2026 steht es:** [`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md). Die Voraussetzung ist am selben Tag als erfüllt entschieden. Im aktuellen Konzept ist es nur Ausblick — keine Designentscheidungen, keine Schemata, keine Pixie-Logik für Fakten werden hier festgelegt.
 
 ---
 

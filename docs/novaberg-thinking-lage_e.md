@@ -6,7 +6,7 @@
 
 ## A. Entschieden — das Register
 
-Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → 26 (17.10.2026).
+Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → 31 (17.10.2026).
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|
@@ -36,6 +36,11 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 24 | 19.09.2026 | ein Erinnerungs-Anker verknüpft einen vorhandenen Timeline-Eintrag zur selben Sache; nur ohne ihn entsteht ein neuer | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 | 25 | 17.10.2026 | ein erwähnter **kommender** Termin mit Tag und Uhrzeit führt zur Nachfrage, ob Nova ihn eintragen soll; ungefragt wird nichts geschrieben | umschrieben | `_b` §4 Scheibe 12, Entwurf, Zeile E; `novaberg-agent-timeline.md` §3a |
 | 26 | 17.10.2026 | ein klarer Auftrag wird immer geklärt und ausgeführt; Stimmung, Nähe und Pflichtbewusstsein tragen nur bei einer Aussage ohne klaren Auftrag — daher bleibt bei einem erwähnten Termin (Nr. 25) der Würfel des Pflichtbewusstseins; der Würfel folgt aus der Entscheidung, nicht eigens beantwortet | umschrieben | `novaberg-klaerung_e.md` A, M1 und M2; `_b` §4 Scheibe 12, Entwurf, Zeile E |
+| 27 | 17.10.2026 | die Sachlage klärt ihre Objekte und nimmt auf, was über sie bekannt ist: Weltwissen, Termine aus der Timeline und Fakten fließen in sie; was neu und dauerhaft ist, wird ein Fakt; gelesen wird über die ausgelagerten Lesewerkzeuge oder den Dienst, ohne den Router | umschrieben | `_k` *Aus §4*, Scheibe 13; `novaberg-memory-fakten_e.md` A, Nr. 3 und 4 |
+| 28 | 17.10.2026 | die Sachlage schreibt keine Fakten; geschrieben wird allein vom Fakten-Agenten, und das Speichern läuft über den Empfang | umschrieben | `_k` *Aus §4*, Scheibe 13, *Heraus*; `_b` §4 Scheibe 12, Reihenfolge; `novaberg-memory-fakten_e.md` A, Nr. 6 |
+| 29 | 17.10.2026 | ohne ausdrücklichen Auftrag entscheiden Salienz und Themennähe: darüber stellt Nova dem Fakten-Agenten zu, je wichtiger desto öfter; darunter bietet sie nach Pflichtbewusstsein und Nähe an oder fragt; die Salienz von Aussagen über nahe Menschen ist vorher zu messen | umschrieben | `_k` *Aus §4*, Scheibe 13, *Heraus*; `novaberg-memory-fakten_e.md` A, Nr. 7 |
+| 30 | 17.10.2026 | Weltwissen kommt aus dem Modell, sonst aus einer Recherche im Internet; ein Monat ist kein Objekt mit Mappe, ein Ereignis darin gehört der Timeline; ein Ereignis mit unklarem Zeitraum klärt die Sachlage, die Annahme bleibt offen, und die Frage danach ist Neugier ohne Auftrag (gefolgert aus Nr. 26) | umschrieben | `_k` *Aus §4*, Scheibe 13, *Hinein*, *Klären*, *Die Neugier*; `novaberg-memory-fakten_e.md` A, Nr. 9 und 10 |
+| 31 | 17.10.2026 | die Mappe einer Entität der Sachlage stößt eine gezielte Suche im Erinnerungsgedächtnis an; sie reicht bis zum zweiten Grad in beide Richtungen, der Grad ist zu messen | umschrieben | `_k` *Aus §4*, Scheibe 13; `novaberg-memory-fakten_e.md` A, Nr. 12 |
 
 **Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_b` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_b` §4 Scheibe 12, *Die Objektwahl der Lage*).
 
@@ -59,6 +64,12 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 - `_m` §4 Scheibe 12: der Schluss von Teil D2 (*Offen bleiben die halbe Zustimmungsquote …*), Teil D1 (*Nicht gemessen*); `_m` §4 Scheibe 10, *Was der Betrieb nicht belegt*.
 - `_b` §4 Scheibe 5 — ob aus der Wiederaufnahme ein Stapel wird, *„entscheidet der Betrieb“*.
 - `_k` §5 — ob zwei Drittel fragender Schlüsse zu viel sind, *„ist eine Haltungsfrage und kein Befund“*.
+
+**Offen in der Bauart, für Scheibe 13** (17.10.2026). Das sind keine Fragen an den Meister, denn die Absicht ist entschieden (A, Nr. 27–31). Sie sind vor dem Bau zu entwerfen und stehen mit ihrem Anlass in [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) C:
+
+- **Lesen ohne Router, und zwei Lesewege der Timeline** (dort C1). Der Frame-Auflöser liest Kalenderzeilen selbst (Scheibe 6), der Turn liest Termine hinter dem Router. Offen ist, wie das Fenster aus dem Objekt der Sachlage entsteht und ob beide Wege in einem aufgehen.
+- **Die gezielte Erinnerungssuche nach der Sachlage** (dort C5). Das Erinnerungsgedächtnis wird im Enricher gelesen, vor der Sachlage; die Mappe gibt es erst danach.
+- **Eigenschaftsgedächtnis und Fakt** (dort C2). Eine Eigenschaft aus Scheibe 11 verfällt nicht, die Kante eines Fakts verfällt. Offen ist, ob beide zusammengelegt werden oder getrennt bleiben.
 
 ---
 
