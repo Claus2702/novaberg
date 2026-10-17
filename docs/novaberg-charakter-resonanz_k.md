@@ -1,10 +1,10 @@
 # Novaberg — Charakter-Resonanz (Konzept)
 
 **Absicht:** Novas Charakter entsteht aus dem Umgang — aus Paaren von Reiz und Reaktion ihrer eigenen Turns, Wortlaut und beide Emotionen, dauerhaft als Rohturn gehalten, über eine Brücke an die erinnerungswürdigen Gedächtniseinträge geknüpft und erschöpfend zu gezählten Verhaltensweisen verdichtet, und nicht aus Fakten über den Nutzer.
-**Stand:** 15. August 2026 (am 19.09.2026 Herkunftsvermerke an drei Beispielen ergänzt und in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 17. Oktober 2026, 14:36 UTC (`date -u`; `_t` §4.2: `verbindung` trägt keine Fakten, bestätigt am 17.10.2026). Davor 15. August 2026 (am 19.09.2026 Herkunftsvermerke an drei Beispielen ergänzt und in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *Verbindungstabelle (Turn ↔ KZG ↔ LZG)* 🟢 · *Charakter-Resonanz — Bauteil 1a/1b (Brücke)* 🟢 · *— Bauteil 2 (Backfill)* ⚫ · *— Bauteil 3 (`verhaltensweisen` + Verdichter)* ⚫ · *— Bauteil 4 (Lesepfad)* 🟠 · *— Bauteil 5 (Doku)* ⚫ — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-charakter-resonanz_t.md`](novaberg-charakter-resonanz_t.md) · [`novaberg-charakter-resonanz_b.md`](novaberg-charakter-resonanz_b.md) · [`novaberg-charakter-resonanz_e.md`](novaberg-charakter-resonanz_e.md) · [`novaberg-charakter-resonanz_m.md`](novaberg-charakter-resonanz_m.md)
-**Entschieden:** 2 · **Offen beim Meister:** 5 (Liste in [`novaberg-charakter-resonanz_e.md`](novaberg-charakter-resonanz_e.md))
+**Entschieden:** ~~2~~ → 3 (17.10.2026) · **Offen beim Meister:** 5 (Liste in [`novaberg-charakter-resonanz_e.md`](novaberg-charakter-resonanz_e.md))
 
 **§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-charakter-resonanz_k.md §11` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-charakter-resonanz_t.md`](novaberg-charakter-resonanz_t.md), `_b` ist [`novaberg-charakter-resonanz_b.md`](novaberg-charakter-resonanz_b.md), `_e` ist [`novaberg-charakter-resonanz_e.md`](novaberg-charakter-resonanz_e.md), `_m` ist [`novaberg-charakter-resonanz_m.md`](novaberg-charakter-resonanz_m.md).
 

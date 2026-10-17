@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 18. September 2026 (**§2a überholt: der Thinker belegt seine Weichen im `pipeline_log`** — `thinker.schnellcheck` und `thinker.ergebnis`, im Betrieb am selben Tag gesehen). Davor 14. September 2026, 19:52 UTC (der Doppel-Fehlschlag hat live gefeuert, die Wiederholung wiederholt die erste Antwort, §3.5). Davor 5. September 2026, 17:06 UTC (die Wahl des Split-Aufraeumers schluesselt auf das **antwortende** Modell statt auf `OLLAMA_MODEL` — §5.2 nachgezogen und die Bezeichnung *Connector-Factory* an zwei Stellen berichtigt); davor 30. August 2026 (der Suchanbieter: Serper zuerst, SearXNG als Rueckfall — §4.4); davor 29. August 2026 (die Suchdisziplin: eine Suche je Turn, die Sachlage-Treffer bedienen die erste — §4.4); davor 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
+**Stand:** 17. Oktober 2026, 13:13 UTC (`date -u`; §4.1 und §4.2: `timeline_check` und `timeline_search` schließen Erinnerungs-Anker in der Abfrage aus — gebaut, noch nicht committet). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 18. September 2026 (**§2a überholt: der Thinker belegt seine Weichen im `pipeline_log`** — `thinker.schnellcheck` und `thinker.ergebnis`, im Betrieb am selben Tag gesehen). Davor 14. September 2026, 19:52 UTC (der Doppel-Fehlschlag hat live gefeuert, die Wiederholung wiederholt die erste Antwort, §3.5). Davor 5. September 2026, 17:06 UTC (die Wahl des Split-Aufraeumers schluesselt auf das **antwortende** Modell statt auf `OLLAMA_MODEL` — §5.2 nachgezogen und die Bezeichnung *Connector-Factory* an zwei Stellen berichtigt); davor 30. August 2026 (der Suchanbieter: Serper zuerst, SearXNG als Rueckfall — §4.4); davor 29. August 2026 (die Suchdisziplin: eine Suche je Turn, die Sachlage-Treffer bedienen die erste — §4.4); davor 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
@@ -140,7 +140,7 @@ timeline_check("2026-03-26")
 → "Termine am 2026-03-26: [termin] 14:00 Zahnarzt"
 ```
 
-Prüft welche Termine an einem Datum existieren. Nutzt `TimelineRepository.find_by_date_range()` mit korrekter Timezone-Konvertierung (lokal → UTC). Erkennt zeitliche Konflikte.
+Prüft welche Termine an einem Datum existieren. Nutzt `TimelineRepository.find_by_date_range()` mit korrekter Timezone-Konvertierung (lokal → UTC). Erkennt zeitliche Konflikte. **Seit dem 17.10.2026** (gebaut und getestet, noch nicht committet) **ohne Erinnerungs-Anker, ausgeschlossen in der Abfrage** (`exclude_event_types=EXCLUDED_EVENT_TYPES`); vorher stand ein Anker als `[erinnerungs_anker] …` unter den Terminen (Fundliste 14.09.2026).
 
 ### 4.2 timeline_search
 
@@ -149,7 +149,7 @@ timeline_search("Zahnarzt")
 → "[termin] 26.03.2026 14:00: Zahnarzt"
 ```
 
-Keyword-Suche in Titeln und Personen. Richtung (`both`) und Limit (5) fest konfiguriert.
+Keyword-Suche in Titeln und Personen. Richtung (`both`) und Limit (5) fest konfiguriert. **Seit dem 17.10.2026 ohne Erinnerungs-Anker, ausgeschlossen in der Abfrage vor dem Limit** — ein Filter dahinter gäbe Plätze der fünf her. Zeugen: `tests/test_timeline_anchor_exclusion.py::ThinkerToolsExcludeTheAnchorTest` (4).
 
 ### 4.3 memory_search
 

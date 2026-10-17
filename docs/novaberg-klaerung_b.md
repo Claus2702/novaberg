@@ -56,7 +56,7 @@ Der Schutz sitzt nicht in der Frage, sondern in den Stufen davor (§2.1). Eine w
 
 Der Rückfrage-Fluss samt Pending und Resume existiert, hängt aber am Agentenpfad. Hier wird er für den Gesprächspfad verfügbar gemacht.
 
-**Preis:** Eine zurückgestellte Schreibung, die nie aufgelöst wird, ist ein Verlust. Es braucht einen Verfall oder eine Auflösung nach n Turns — sonst sammeln sich Schwebezustände.
+**Preis:** Eine zurückgestellte Schreibung, die nie aufgelöst wird, ist ein Verlust. Es braucht einen Verfall oder eine Auflösung nach n Turns — sonst sammeln sich Schwebezustände. → **Entschieden am 17.10.2026** für die Klärfälle der Agenten (`_e` A, M3): Sie verfällt mit der Sachlage und gilt dann als *kein Interesse*; bis dahin bleibt sie offen.
 
 ### K5 — Der Faktenpfad liest das Urteil
 

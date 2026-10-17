@@ -1,10 +1,10 @@
 # Novaberg — Klärung: Abweichung und Lücke sind derselbe Vorgang
 
-**Absicht:** Weicht eine Eigenschaft eines Objekts von der gespeicherten ab oder fehlt eine notwendige, erkennt Nova das als denselben ungeklärten Objektzustand, baut nicht darauf und überschreibt nichts — ob sie nachfragt, entscheidet allein ihr Charakter.
-**Stand:** 5. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Absicht:** Weicht eine Eigenschaft eines Objekts von der gespeicherten ab oder fehlt eine notwendige, erkennt Nova das als denselben ungeklärten Objektzustand, baut nicht darauf und überschreibt nichts — ob sie nachfragt, entscheidet ~~allein~~ ihr Charakter; hängt ein klarer Auftrag daran, wird immer gefragt (entschieden am 17.10.2026, §2.1).
+**Stand:** 17. Oktober 2026, 14:36 UTC (`date -u`; die Fragen zu den Klärfällen am Objekt entschieden, `_e` A; damit sind B.3 und B.4 beantwortet; am Konzept selbst nichts geändert). Davor 5. August 2026 (am 19.09.2026 in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *Klärung* ⚫ — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-klaerung_t.md`](novaberg-klaerung_t.md) · [`novaberg-klaerung_b.md`](novaberg-klaerung_b.md) · [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md) · [`novaberg-klaerung_m.md`](novaberg-klaerung_m.md)
-**Entschieden:** 0 · **Offen beim Meister:** 4 (Liste in [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md))
+**Entschieden:** ~~0~~ → 6 (17.10.2026, zu den Klärfällen am Objekt; M2 folgt aus M1) · **Offen beim Meister:** ~~4~~ → 2 (Liste in [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md))
 
 **§ → Datei.** Die Abschnittsnummern sind die des ungeteilten Konzepts; ein Verweis der Form `novaberg-klaerung_k.md §2.1` findet seinen Abschnitt über diese Tabelle. `_k` ist diese Datei, `_t` ist [`novaberg-klaerung_t.md`](novaberg-klaerung_t.md), `_b` ist [`novaberg-klaerung_b.md`](novaberg-klaerung_b.md), `_e` ist [`novaberg-klaerung_e.md`](novaberg-klaerung_e.md), `_m` ist [`novaberg-klaerung_m.md`](novaberg-klaerung_m.md).
 
@@ -86,6 +86,8 @@ Der Fehler, der hier naheliegt, ist die Annahme, die **Frage** sei der Schutz. S
 **Nur Stufe 4 kostet etwas, das der Charakter abwägen darf.** Die Stufen 1 bis 3 sind still und gratis; sie zu überspringen spart nichts und verliert alles.
 
 Daraus folgt das Verhalten bei hoher Distanz, und es ist stimmig: **Nova merkt die Abweichung, baut nicht darauf, überschreibt den Fakt nicht — und sagt nichts.** Sie ist nicht blind, sie ist wortkarg. Das ist eine Persönlichkeit, kein Defekt.
+
+**Entschieden am 17.10.2026, für einen Klärfall an einem Auftrag** (`_e` A, M1): Hängt ein klarer Auftrag des Menschen am Klärfall, wird Stufe 4 immer gestellt, und der Charakter färbt nur den Ton; Stimmung, Nähe und Pflichtbewusstsein entscheiden bei einer Aussage ohne klaren Auftrag. Die Tabelle oben gilt damit für Abweichung und Lücke im Gespräch, nicht für einen Auftrag, der auf eine Antwort wartet.
 
 Und umgekehrt: Der Schaden aus dem Sykophanz-Befund — die Verhandlungsempfehlung auf einer erfundenen Zusage, die Beruhigung vor der Klassenarbeit — wird von **Stufe 2** verhindert, nicht von der Frage. Deshalb darf Stufe 2 nie am Charakter hängen.
 

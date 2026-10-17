@@ -1,9 +1,53 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 27 Eintraege, je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → 28 Eintraege (17.10.2026), je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — behoben und gemessen
+
+**Diese Eintraege sind mit einem Bau geschlossen und im Betrieb gemessen** — an einem Prüf-Nutzer in einer Simulation; die Zustandszeile je Eintrag nennt Ort, Zeugen und Messung.
+
+---
+
+### `NOTIZ-BEFEHL-ALS-TITEL` — Meta-Befehl wird als Notiz-Name gespeichert
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Prompt verlangt für `name` den exakten Wortlaut (`server/agents/notizen/crud.py:93-157`), die Fachsprache lehrt Normalisierungen ohne Namen.
+
+**Zustand:** **geschlossen am 17.10.2026 — behoben mit `914217c` (16.10.2026), gemessen am 17.10.2026.** Eine Notiz ohne genannten Namen heißt nach ihrem Inhalt. ~~**offen, belegt am 16.10.2026; eine Abhilfe ist im Bau.**~~
+
+**Gebaut** (`server/agents/notizen/crud.py::_create`, `_resolve_name`, `_name_grounds`, `_derive_name`; dazu der Lehrsatz der Fachsprache und der Prompt von `_create`): **Ein Name gilt nur mit Beleg** — er ist genannt (in der Anweisung in Apostrophen, oder bei einer Zustimmung der Name der angebotenen Sache), er ist der Anfang des Inhalts, oder er teilt mit dem Inhalt ein Wort ab 4 Zeichen; verglichen wird mit gefalteten Umlauten (*Ersatzschluessel* belegt *Ersatzschlüssel*). Eine Verbotsliste gibt es nicht. **Fehlt der Beleg, bekommt die Notiz die ersten höchstens 5 Wörter ihres Inhalts** — eine Regel, kein zweiter Modellaufruf. Ein verworfener Name steht mit dem Ersatz in einer Info-Zeile im Log. Die Duplikatprüfung ist unverändert: Echte Gleichnamigkeit fragt weiter nach. 21 Zeugen in `server/tests/test_note_name_from_content.py`.
+
+**Gemessen** `[gemessen 17.10.2026]` in einer Simulation an einem frischen Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher3/`, 24 Sätze): **Notizen 8 von 8**; die vier neuen Notizen heißen *Ersatzschlüssel*, *Druckerpapier*, *Zweitschlüssel fürs Auto* und *Die Gießkanne*. Keine *„Neue Notiz“*, keine Rückfrage wegen Gleichnamigkeit, keine erfundene Notiz.
+
+**Warum geschlossen:** Der Eintrag nennt keine eigene Schließbedingung; seine Fix-Richtung lautet, den Namen aus dem Sach-Inhalt zu bilden statt aus dem Meta-Befehl. Das ist gebaut, und der Befund — ein Meta-Befehl als Name, daraus Duplikate und Rückfragen — trat in 4 von 4 neuen Notizen nicht auf. Gemessen ist ein Lauf.
+
+**Benannte Grenzen, offen ohne eigene Kennung:** Ein Meta-Wort ab 4 Zeichen, das auch im Inhalt steht (*„Neue Notiz“* zu einem Inhalt mit *Notiz*), gilt als belegt. Was der Klassifikator selbst in Apostrophe setzt, gilt als genannt. Ein umschriebener oder zusammengesetzter Modellname fällt durch, und zwei Notizen mit denselben fünf Anfangswörtern werden gleichnamig und fragen nach. Ein zweiter Anlageweg im NotizenManager (`plugins/notizen_manager/manager.py::_notiz_create`) nimmt den Namen ungeprüft; ob er im Betrieb erreicht wird, ist ungeprüft — der Planner stellt Notizen dem Agenten zu.
+
+*Zustand bis 17.10.2026:* offen, belegt am 16.10.2026. ~~offen, **unbelegt** — am Bestand nachgesehen am 25.08.2026. Die Tabelle `notizen` traegt **eine** Zeile; die beiden Notizen, die den Befund belegten, gibt es nicht mehr. Der Klassifikator ist damit nicht geprueft, sondern nur der Beleg verfallen.~~
+
+**Wieder belegt in zwei Simulationen an Prüf-Nutzern** (`labor/2026-10-15_sim_timeline_notizen/`): Am 15.10.2026 (`simvorher1`) und am 16.10.2026 (`simnachher2`) hieß die Notiz zu einem Notizauftrag ohne genannten Namen *„Neue Notiz“*. In der zweiten Simulation endete der nächste Notizauftrag deshalb in einer Rückfrage — es gebe bereits eine Notiz *„Neue Notiz“*, ob sie aktualisiert oder eine neue angelegt werden solle — und legte nichts an. Damit hält dieser Defekt auch `NOTIZAUFTRAG-GEHT-AN-TIMELINE` offen, denn dessen Schließbedingung verlangt eine angelegte Notiz.
+
+**Der Mechanismus, am Code gelesen (16.10.2026):**
+
+- Die Fachsprache des Notizen-Klassifikators (`server/prompts/default/classify_notizen.fachsprache.txt`) lehrt für *„Notiere dir: …“* die Form *„create: Neue Notiz anlegen mit Inhalt: …“* — ohne Namen.
+- `server/agents/notizen/crud.py::_create` verlangt im Prompt für `name` den exakten Wortlaut des Users oder der Anweisung; so wird *„Neue Notiz“* zum Namen.
+- Die Duplikatprüfung (`find_by_stichwort`) findet beim zweiten Mal denselben Namen und fragt nach.
+
+Der Notiz-Klassifikator speichert die Meta-Formulierung des Befehls als Name
+(Spalte `name`, nicht `titel`) statt sie als Anweisung aufzulösen. Belegt
+Chat 103: notizen `id 3` und `id 4` tragen den Namen „Neue Notiz anlegen"
+(id 4 enthält den kompletten P1–P10-Migrationsplan als Inhalt), zwei weitere
+„Neue Notiz". Folge: viele Namens-Duplikate → Disambiguierungs-Rückfragen →
+Auslöser für AGENT-RUECKFRAGE-LOOP. Verwandt mit
+REFERENZ-AUFLOESUNG-VOR-RETRIEVAL / NOTIZEN-VOR-TURN-BEZUG (anaphorische
+Auflösung vor dem Retrieval fehlt). Fix-Richtung: Klassifikator muss
+Meta-Befehle („neue Notiz anlegen", „das festhalten") vom Namens-Inhalt
+trennen; Name aus dem Sach-Inhalt ableiten.
 
 ---
 

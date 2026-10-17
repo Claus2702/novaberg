@@ -6,7 +6,7 @@
 
 ## A. Entschieden — das Register
 
-Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: 24.
+Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → 26 (17.10.2026).
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|
@@ -34,6 +34,8 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 22 | 19.09.2026 | das Angebot gilt pro Sache, nicht pro Turn | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 | 23 | 19.09.2026 | ein späterer Nachtrag am Gedächtnisknoten steht in einem eigenen Feld | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 | 24 | 19.09.2026 | ein Erinnerungs-Anker verknüpft einen vorhandenen Timeline-Eintrag zur selben Sache; nur ohne ihn entsteht ein neuer | wörtlich | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+| 25 | 17.10.2026 | ein erwähnter **kommender** Termin mit Tag und Uhrzeit führt zur Nachfrage, ob Nova ihn eintragen soll; ungefragt wird nichts geschrieben | umschrieben | `_b` §4 Scheibe 12, Entwurf, Zeile E; `novaberg-agent-timeline.md` §3a |
+| 26 | 17.10.2026 | ein klarer Auftrag wird immer geklärt und ausgeführt; Stimmung, Nähe und Pflichtbewusstsein tragen nur bei einer Aussage ohne klaren Auftrag — daher bleibt bei einem erwähnten Termin (Nr. 25) der Würfel des Pflichtbewusstseins; der Würfel folgt aus der Entscheidung, nicht eigens beantwortet | umschrieben | `novaberg-klaerung_e.md` A, M1 und M2; `_b` §4 Scheibe 12, Entwurf, Zeile E |
 
 **Nicht gezählt:** die Auskunft *„Der Fakten-Agent ist deaktiviert …“* (13./14.09.2026, unten) — eine Feststellung über den Bestand, keine Entscheidung; und drei Freigaben, die einen Bau erlaubten, ohne das Soll zu ändern: die DDL von Scheibe 4 (28.08.2026, `_b` §4 Scheibe 4), die DDL von Scheibe 11 (13.09.2026, `_t` §4 Scheibe 11) und die Bereinigung der Objektnamen mit Sternchen (17.09.2026, `_b` §4 Scheibe 12, *Die Objektwahl der Lage*).
 
@@ -47,6 +49,7 @@ Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der St
 | 2 | Soll der Verfasser die kritische Lücke vor den unkritischen Antwortstoff ziehen? Der Text: *„ist nicht entschieden“* — einen Adressaten nennt er nicht; hier geführt, weil die Frage das Soll betrifft. | `_m` §4 Scheibe 10, *Nebenbefund* |
 | 3 | Entsteht der Erinnerungs-Anker vor dem Termin: soll der Termin den Anker übernehmen (dieselbe ID)? Vorgelegt 19.09.2026. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
 | 4 | Den Nachtrag am Gedächtnisknoten (Nr. 23) zurückstellen, bis ein echter Fall auftritt? Vorgelegt 19.09.2026 mit der Empfehlung *zurückstellen*: Von 96 Turns mit geprüfter Speicherbehauptung seit dem 15.09.2026 überstand **eine** beide Korrekturrunden (Prüf-Nutzer), im Paar des Eigentümers 0 (`labor/2026-09-19_nachtrag_vorher.py`). Der Bau bräuchte eine Schemaänderung, einen Audit-Lauf und einen Leser. | unten, §4 Scheibe 12 — die Entscheidungen vom 19.09.2026 |
+| 5 | ~~Bleibt bei einem erwähnten kommenden Termin (Nr. 25) der Würfel des Angebots — unter Pflichtbewusstsein 0,33 keines, darüber mit steigender Wahrscheinlichkeit —, oder wird dann immer nachgefragt? Vorgelegt 17.10.2026 mit der Empfehlung, den Würfel zu behalten: Die Entscheidung vom 17.10.2026 trennte Schreiben von Nicht-Schreiben, nicht über den Würfel, und an der Nachfrage hängt kein Auftrag.~~ → **beantwortet am 17.10.2026** (unten A, Nr. 26): Der Würfel bleibt. | `_b` §4 Scheibe 12, Entwurf, Zeile E |
 
 **Offen ohne Frage** — Punkte, die das Konzept selbst als offen führt, ohne einen Adressaten zu nennen:
 

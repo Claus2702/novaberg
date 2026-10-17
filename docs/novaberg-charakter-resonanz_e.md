@@ -6,14 +6,15 @@
 
 ## A. Entschieden
 
-Beide Entscheidungen stehen in dem Abschnitt, den sie tragen, und bleiben dort. Hier stehen Verweis, Wortlaut und Datum. Sie tragen Buchstaben, weil E1 bis E8 in diesem Konzept die Zeilen der Tabelle in §14 sind.
+~~Beide~~ → Die drei Entscheidungen (seit 17.10.2026) stehen in dem Abschnitt, den sie tragen, und bleiben dort. Hier stehen Verweis, Wortlaut und Datum. Sie tragen Buchstaben, weil E1 bis E8 in diesem Konzept die Zeilen der Tabelle in §14 sind.
 
 | | Stelle | Gegenstand und Wortlaut | Datum |
 |---|---|---|---|
 | **a** | §14 unten, Zeile **E8** | Ein thematisch *verstärkter* Nachbar-Key bekommt keine `verbindung`-Zeile: *„Nur **erzeugte** Einträge. Keine `art`-Spalte, keine zweite Tabelle für Verstärkungen.“* Begründung wörtlich in der Zeile: `verbindung` ist *„das Nachschlagen im Tagebuch, wo alle Einträge hinterlegt sind“*. Daraus die vier Folgeeigenschaften unter der Tabelle | 26.07.2026 |
 | **b** | `_t` §5, Absatz *„Vorgesehener Schreibort (Entwurf …, unter Audit-Vorbehalt)“* | Die `verbindung`-Zeile entsteht im Dispatcher, dort wo der Rohturn geschrieben wird: *„Ein Schreibpunkt statt zwei.“* Der Audit-Vorbehalt ist aufgelöst (`_b` §7, A1 und A2 in `_b` §15) | Juli 2026 — der Absatz nennt eine Sitzung, kein Datum |
+| **c** | `_t` §4.2, Absatz *„Nur die Gedächtnis-Achse“* | `verbindung` trägt keine Fakten; sie bleibt Turn → KZG → LZG, Fakten hängen über die Entität als Mappe, die Abfrage aller Verbindungen einer Entität ist ein späterer Schritt — umschrieben, bestätigt vom Eigentümer | 17.10.2026 |
 
-Beide nennen den Urheber im Text.
+~~Beide nennen den Urheber im Text.~~ → Alle drei nennen den Urheber im Text; die dritte ist umschrieben.
 
 **Im Text als entschieden geführt, ohne dass ein Urheber genannt ist — nicht gezählt:**
 

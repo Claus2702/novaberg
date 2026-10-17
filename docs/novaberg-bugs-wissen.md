@@ -1,9 +1,60 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 21 Eintraege, je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → 23 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — aus den Simulationen an Prüf-Nutzern und den Entscheidungen zur Timeline
+
+### `ZEITRAUM-LIEST-EINEN-TAG` — „im November“ liest einen Tag im November
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, die Antwort sagt *keine Termine*, und der Mensch handelt danach; auf dem Aufgabenpfad, also nur wenn der Router eine Lesefrage dem Timeline-Agenten zustellt. Vergeben am 17.10.2026 gegen HEAD `914217c`.
+
+**Zustand:** **gebaut am 17.10.2026** (getestet, noch nicht committet); **offen bis zur Messung** an einem frischen Prüf-Nutzer mit derselben Frage und einer Frage nach dem Wochenende.
+
+**Befund** `[gemessen 17.10.2026]`, Simulation an einem Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher3/`): Auf die Frage, ob im November schon Termine stehen, stellte der Router dem Timeline-Agenten zu. Der meldete, für *„im November“* keine Termine gefunden zu haben, und die Antwort sagte, im November sei nichts eingetragen. Im Bestand stand ein Termin am 06.11.2026. In den beiden Simulationen davor lief derselbe Satz ohne den Agenten — über den Block `[TERMINE]` — und war richtig.
+
+**Mechanismus, am Code gelesen:** `agents/timeline/suche.py::suchen` machte aus dem Zeitausdruck ein Fenster von **einem Tag**; nur die Wörter *woche* und *monat* im Text weiteten es. *„im November“* ergab einen Tag im November, *„am Wochenende“* Montag bis Sonntag.
+
+**Gebaut:** Ein genannter Zeitraum ist ein Fenster über den ganzen Zeitraum — Monat und Monatsname, Woche, Wochenende als Samstag und Sonntag, Abstände —, dekodiert an einer Stelle (`utils/zeitparser.py::named_period`); ein einzelner Tag bleibt ein Tag. Ein Monatsname ohne Präfix ist der des laufenden Jahres. Der Leseast liest über `read_appointments`, ohne Anker, in den Zeilen von `appointment_line`. Zeugen: `tests/test_timeline_agent_reading.py` (48), darunter die Frage nach dem November mit einem Termin am 06.11. — vor dem Bau rot. Bauart: `novaberg-agent-timeline.md` §4.2, `novaberg-tool-timeparser.md` §10.7.
+
+**Reproduktion.** Eine Lesefrage nach einem Monat, die der Router dem Timeline-Agenten zustellt, mit einem Termin im Monat, der nicht auf dem gelesenen Tag liegt.
+
+**Geschlossen, wenn** dieselbe Frage an einem frischen Prüf-Nutzer den Termin im Monat nennt und eine Frage nach dem Wochenende Samstag und Sonntag liest.
+
+### `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` — „auf 4 Uhr“ schreibt still 04:00
+**Kategorie:** WIS
+
+**Rang:** **hoch** — still: eine geratene Zeit steht im Kalender, und der Mensch verlässt sich darauf. Vergeben am 17.10.2026 gegen HEAD `914217c`.
+
+**Zustand:** offen — **entschieden am 17.10.2026, nicht gebaut.**
+
+**Befund** `[Code]`, beschrieben in `novaberg-agent-timeline.md` §5.2, *Grenzen des Endstands*: Beim Verschieben wird eine nackte Stunde wörtlich gelesen, ohne Tageshälfte. *„Verschieb den Nachmittagskaffee auf 4 Uhr“* bei einem Termin um 15:30 schreibt 04:00 — Lesung und Positivform sind sich einig, also wird geschrieben (Beispiel synthetisch).
+
+**Warum es ein Defekt ist:** Entschieden am 17.10.2026: Eine Stunde von 1 bis 12 ohne Tageszeit führt beim Verschieben zur Rückfrage (*„4 Uhr morgens oder nachmittags?“*), außer der Satz nennt die Tageszeit selbst (*„um 4 Uhr nachmittags“*). Bis dahin war es eine offene Deutungsfrage (Backlog `ZEIT-ZWOELF-STUNDEN-DEUTUNG`); seit sie entschieden ist, weicht der Code davon ab.
+
+**Reproduktion.** Einen Termin am Nachmittag mit *„auf 4 Uhr“* verschieben.
+
+**Geschlossen, wenn** *„auf 4 Uhr“* zur Rückfrage führt, *„auf 4 Uhr nachmittags“* auf 16:00 verschiebt und *„auf 16 Uhr“* ohne Rückfrage schreibt.
+
+### `TIMELINE-TITEL-MEHRERE-TREFFER-OHNE-TAG` — gleichnamige Termine lassen sich nicht einzeln ändern
+**Kategorie:** WIS
+
+**Rang:** **mittel** — laut und sicher: Es wird nie am falschen Termin geschrieben, aber ein Auftrag bleibt unausgeführt, und die Klärung sagt das. Vergeben am 17.10.2026 gegen den Stand des Umbaus der Timeline (noch nicht committet).
+
+**Zustand:** offen — bekannt seit dem Bau vom 17.10.2026; ein erwarteter Fehlschlag trägt die Kennung (`tests/test_timeline_agent_reading.py::test_a_new_order_with_title_and_date_moves_that_one`).
+
+**Befund** `[Code]`: Der Weg mit Titel grenzt mehrere gleichnamige Treffer nicht nach dem Tag des Termins ein. Stehen zwei Zahnarzttermine im Bestand, trifft *„Verschieb den Zahnarzt am 9. auf 11 Uhr“* beide — beim Verschieben ist der Zeitausdruck die neue Zeit, nicht der Tag des Termins. Gibt es keinen einzigen kommenden unter ihnen, kommt die Auswahl, und keine Antwort auf sie schreibt (`novaberg-agent-timeline.md` §4.5). Gleichnamige Termine ohne einen einzigen kommenden lassen sich damit über den Agenten weder einzeln ändern noch löschen noch verschieben (Beispiel synthetisch).
+
+**Warum es so steht:** Eine Wahl aus einer freien Antwort traf auf diesem Weg den ersten Kandidaten gleichen Titels und schrieb still am falschen Termin; deshalb schreibt keine Antwort mehr. Das Eingrenzen nach dem Tag kommt mit der Auswahl der Klärfälle — als feste, nummerierte Liste, entschieden am 17.10.2026 (`KLA-KLAERFALL-AM-OBJEKT`, Schritt 3).
+
+**Reproduktion.** Zwei gleichnamige Termine, beide vergangen oder beide kommend, und ein Auftrag mit Titel und dem Tag eines von ihnen.
+
+**Geschlossen, wenn** der erwartete Fehlschlag grün wird — *„Verschieb den Zahnarzt am 9. auf 11 Uhr“* verschiebt bei zwei Zahnarztterminen genau den am 9. — und eine Auswahl mit Titel zu einer Wahl führt, die den gewählten Termin schreibt.
 
 ---
 
@@ -133,7 +184,7 @@ id | pfad                               | bezeichnung
 - **Eine Titelsuche grenzt *vergangen* in der Abfrage so ab wie der Leser**, mit der Uhr des Turns statt `NOW()` der Datenbank — kein Platz der Obergrenze geht an einen Termin, der danach wegfällt (`memory/repositories/timeline_repository.py::find_by_keyword`, Schlüsselwörter `now` und `timed_precisions`).
 - Zeugen in `tests/test_timeline_reading.py` (`DirectionTest`, `RelationToTodayTest`, `SearchBoundaryTest` — über das Monatsende und kurz nach Mitternacht Ortszeit) und `tests/test_timeline_anchor_exclusion.py`.
 
-**Nicht gebaut:** eine Prüfung hinter der Antwort, die ein genanntes Datum gegen `event_time` hält. Die Lesezeilen des Timeline-Agenten (`agents/timeline/suche.py`) tragen weiter keinen Bezug zu heute — und auf dem Aufgabenpfad sind sie das, was die Antwort bekommt. **Geschlossen wird erst nach der Messung** — die Schließbedingung unten fragt nach der Auskunft, nicht nach dem Prompt.
+**Nicht gebaut:** eine Prüfung hinter der Antwort, die ein genanntes Datum gegen `event_time` hält. Die Lesezeilen des Timeline-Agenten (`agents/timeline/suche.py`) ~~tragen weiter keinen Bezug zu heute~~ → **tragen seit dem 17.10.2026 den Bezug zu heute** (gebaut und getestet, noch nicht committet): Der Leseast liest über `read_appointments` und schreibt die Zeilen von `appointment_line`, dieselben wie der Block `[TERMINE]` — und auf dem Aufgabenpfad sind sie das, was die Antwort bekommt. **Geschlossen wird erst nach der Messung** — die Schließbedingung unten fragt nach der Auskunft, nicht nach dem Prompt.
 
 **Diagnose am Code, 15.10.2026 — die Ursache ist kein einzelner Fehler, sondern das Fehlen jeder Zeitbeziehung entlang des Weges.** Die Lesewege der Timeline (Suche, Zeitraum, Repository) liefern abgelaufene, noch aktive Termine ohne Kennzeichen *vergangen*; die Prompts der Antwort tragen den Termin als absolutes Datum ohne Bezug zu heute; keine Prüfung hinter der Antwort hält ein genanntes Datum gegen `event_time`. Nur der proaktive Zweig des Timeline-Managers setzt den Bezug — mit einem Fenster ab heute minus drei Tagen, das einen dreizehn Tage alten Termin nicht aufnimmt. Welcher Weg im ursprünglichen Fall lief, ist ungemessen. ~~**Vor dem Bau steht eine Absichtsfrage beim Eigentümer:**~~ → entschieden am 15.10.2026 (unten): ob ein abgelaufener Termin bei einer Frage nach kommenden weggelassen, sonst als *vergangen* gekennzeichnet und mit vorgerechnetem Bezug zu heute gegeben wird (beides zusammen erfüllt die Schließbedingung unten).
 
@@ -266,34 +317,6 @@ if self.now > dateobj - tz_offset:
 
 **Entdeckt:** Chat 27
 **Prio:** Mittel — architektonische Frage: Sollen Reads generell über den Agent gehen?
-
----
-
-#### NOTIZ-BEFEHL-ALS-TITEL — Meta-Befehl wird als Notiz-Name gespeichert ⬜ Chat 103
-**Kategorie:** WIS
-
-**Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; der Prompt verlangt für `name` den exakten Wortlaut (`server/agents/notizen/crud.py:93-157`), die Fachsprache lehrt Normalisierungen ohne Namen.
-
-**Zustand:** **offen, belegt am 16.10.2026; eine Abhilfe ist im Bau.** ~~offen, **unbelegt** — am Bestand nachgesehen am 25.08.2026. Die Tabelle `notizen` traegt **eine** Zeile; die beiden Notizen, die den Befund belegten, gibt es nicht mehr. Der Klassifikator ist damit nicht geprueft, sondern nur der Beleg verfallen.~~
-
-**Wieder belegt in zwei Simulationen an Prüf-Nutzern** (`labor/2026-10-15_sim_timeline_notizen/`): Am 15.10.2026 (`simvorher1`) und am 16.10.2026 (`simnachher2`) hieß die Notiz zu einem Notizauftrag ohne genannten Namen *„Neue Notiz“*. In der zweiten Simulation endete der nächste Notizauftrag deshalb in einer Rückfrage — es gebe bereits eine Notiz *„Neue Notiz“*, ob sie aktualisiert oder eine neue angelegt werden solle — und legte nichts an. Damit hält dieser Defekt auch `NOTIZAUFTRAG-GEHT-AN-TIMELINE` offen, denn dessen Schließbedingung verlangt eine angelegte Notiz.
-
-**Der Mechanismus, am Code gelesen (16.10.2026):**
-
-- Die Fachsprache des Notizen-Klassifikators (`server/prompts/default/classify_notizen.fachsprache.txt`) lehrt für *„Notiere dir: …“* die Form *„create: Neue Notiz anlegen mit Inhalt: …“* — ohne Namen.
-- `server/agents/notizen/crud.py::_create` verlangt im Prompt für `name` den exakten Wortlaut des Users oder der Anweisung; so wird *„Neue Notiz“* zum Namen.
-- Die Duplikatprüfung (`find_by_stichwort`) findet beim zweiten Mal denselben Namen und fragt nach.
-
-Der Notiz-Klassifikator speichert die Meta-Formulierung des Befehls als Name
-(Spalte `name`, nicht `titel`) statt sie als Anweisung aufzulösen. Belegt
-Chat 103: notizen `id 3` und `id 4` tragen den Namen „Neue Notiz anlegen"
-(id 4 enthält den kompletten P1–P10-Migrationsplan als Inhalt), zwei weitere
-„Neue Notiz". Folge: viele Namens-Duplikate → Disambiguierungs-Rückfragen →
-Auslöser für AGENT-RUECKFRAGE-LOOP. Verwandt mit
-REFERENZ-AUFLOESUNG-VOR-RETRIEVAL / NOTIZEN-VOR-TURN-BEZUG (anaphorische
-Auflösung vor dem Retrieval fehlt). Fix-Richtung: Klassifikator muss
-Meta-Befehle („neue Notiz anlegen", „das festhalten") vom Namens-Inhalt
-trennen; Name aus dem Sach-Inhalt ableiten.
 
 ---
 

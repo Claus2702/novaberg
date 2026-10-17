@@ -43,7 +43,7 @@ verbindung
   erstellt_am
 ```
 
-**Nur die Gedächtnis-Achse** *(korrigiert Chat 108)*. Die Zeile hält Turn → KZG → LZG, nichts weiter. Die **Beleg-Achse** (welcher Turn bezeugt welches Verhaltensmuster) ist aus `verbindung` herausgelöst und liegt in der eigenen Tabelle `verhaltens_beleg` (§12) — Begründung dort.
+**Nur die Gedächtnis-Achse** *(korrigiert Chat 108)*. Die Zeile hält Turn → KZG → LZG, nichts weiter. **Bestätigt am 17.10.2026**, auf die Frage, ob `verbindung` auch Fakten tragen soll: Sie bleibt die Gedächtnis-Achse Turn → KZG → LZG, ohne neue Spalte. Fakten hängen über die Entität — zu einer Entität wird eine Mappe ihrer Fakten geholt (`fakten.subjekt_id`, `fakten.objekt_id`). Die Verbindungen einer Entität insgesamt abzufragen, Erinnerungen, Termine und Fakten, ist ein späterer Schritt. Die **Beleg-Achse** (welcher Turn bezeugt welches Verhaltensmuster) ist aus `verbindung` herausgelöst und liegt in der eigenen Tabelle `verhaltens_beleg` (§12) — Begründung dort.
 
 **Kern-Einsicht:** Die Turn-Referenz gehört *nur* hierher, nie in den verdichteten Eintrag. Ein KZG-Eintrag verdichtet n Turns — also zeigen n `verbindung`-Zeilen (je eine turn_id) auf dieselbe `kzg_id`. Beim Zusammenführen eines neuen ähnlichen Turns wird das KZG-Gewicht erhöht **und** eine neue `verbindung`-Zeile (turn_id + kzg_id) ergänzt.
 

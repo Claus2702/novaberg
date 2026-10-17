@@ -6,18 +6,27 @@
 
 ## A. Entschieden
 
-Keine. Das Konzept führt keine Entscheidung; `_b` §4 sagt ausdrücklich *„Keines ist beschlossen.“*
+~~Keine. Das Konzept führt keine Entscheidung; `_b` §4 sagt ausdrücklich *„Keines ist beschlossen.“*~~ → **Seit dem 17.10.2026 sechs Antworten, alle zu den Klärfällen der Agenten am Objekt der Sachlage** — fünf entschieden, eine folgt daraus; zu den Bauteilen des Konzepts selbst bleibt es dabei, dass keines beschlossen ist (`_b` §4). Anlass waren das Ändern und Löschen über einen Zeitraum (`novaberg-agent-timeline.md` §4.5) und der Wunsch, Klärfälle im Kontext des Gesprächs an den Objekten der Sachlage zu führen und dort Werkzeuge für sie bereitzustellen. Ein Entwurf vom selben Tag schlug die Bauart vor; die Fragen daraus sind hier beantwortet. Backlog: `KLA-KLAERFALL-AM-OBJEKT` (`novaberg-backlog-wissen.md`, EPIC-KLAERUNG). Alle am 17.10.2026, umschrieben:
+
+| Nr. | Frage | Antwort |
+|---|---|---|
+| M0 | Wo liegt ein Klärfall? | **In der Sachlage am Objekt.** Ein Wille, einen Termin zu löschen, über den gerade gesprochen wird, ist ein Vorhaben mit diesem Objekt; solange die Klärung aussteht, ist sie eine offene, beschreibende Eigenschaft, die die Sachlage anreichert. Für den Bau folgt: ein Feld am Objekt, das nur der Server schreibt und Turn für Turn weiterträgt — das Modell, das die Sachlage jeden Turn neu schreibt, überschreibt es nicht. Die eigene Ablage je Paar, die der Entwurf empfahl, entfällt. |
+| M1 | Wird ein Klärfall an einem Auftrag immer gestellt? | **Ja.** Einen klaren Auftrag hat Nova auszuführen; hängt ein Klärfall daran, wird er gestellt, und die Haltung färbt nur den Ton. Stimmung, Nähe und Pflichtbewusstsein tragen bei einer Aussage ohne klaren Auftrag — auf *„Ich muss im Mai nach Musterstadt“* fragt eine pflichtbewusste Nova, ob es ein Termin ist und ob sie ihn sich merken soll, eine ohne Pflichtbewusstsein sagt, das sei ja noch etwas hin (Beispiel mit erfundenem Ort). Das beantwortet B, Punkt 3: Der Aufgabenpfad braucht kein eigenes Urteil, er wird ausgeführt. |
+| M2 | Bleibt bei einem erwähnten kommenden Termin der Würfel des Angebots? | **Ja — folgt aus M1**, nicht eigens beantwortet: Eine solche Erwähnung ist eine Aussage ohne klaren Auftrag, und ob Nova anbietet, entscheidet das Pflichtbewusstsein (`novaberg-thinking-lage_e.md` A, Nr. 26). |
+| M3 | Wann verfällt ein Klärfall? | **Mit der Sachlage.** Geht der Mensch über die Frage hinweg, bleibt der Punkt offen und soll noch einmal angesprochen werden; verfällt die Sachlage (vier Stunden ohne Turn), gilt das als *kein Interesse* — der Klärfall verfällt, geschrieben wird nichts. Ein neuer Auftrag zum selben Objekt ersetzt den offenen Klärfall; ein Auftrag zu einem anderen Objekt lässt ihn stehen. Wann ein umgangener Klärfall wieder angesprochen wird, entscheidet die Bauart. Das beantwortet B, Punkt 4. |
+| F1 | Wie wird eine Auswahl gestellt? | **Als feste, nummerierte Liste:** Nova schreibt die Einleitung, der Code hängt die Kandidaten in fester Form an — Titel, Wochentag, Datum, Uhrzeit —, damit Position und Ordnungszahl (*„den zweiten“*) gesichert sind. |
+| F2 | Braucht ein Auftrag mit genanntem Titel und genau einem Treffer eine Bestätigung? | **Nein:** Nova handelt ohne Bestätigung; bei mehreren Treffern gilt die Auswahl (F1). |
 
 ---
 
 ## B. Offen beim Meister
 
-**Vier** — die Punkte aus §8 (Abschnitt D unten). §8 nennt keinen Adressaten; gezählt sind sie, weil es offene Entwurfsentscheidungen sind und keine Messungen:
+~~**Vier**~~ → **Zwei** (17.10.2026) — die Punkte aus §8 (Abschnitt D unten); Punkt 3 und 4 sind mit M1 und M3 beantwortet (A). §8 nennt keinen Adressaten; gezählt sind sie, weil es offene Entwurfsentscheidungen sind und keine Messungen:
 
 1. Wie viele Fragen zu viele sind — nur der stärkste Bedarf oder mehrere gebündelt.
 2. Wo das Erwartungsschema liegt — eigene Tabelle, Feld an der Entität oder abgeleitet aus vorhandenen Tripeln.
-3. Ob der Aufgabenpfad ein eigenes Urteil braucht — *„Das ist eine Entwurfsentscheidung.“*
-4. Ob eine zurückgestellte Schreibung verfällt, und nach welcher Frist (dazu `_b` K4, *Preis*).
+3. ~~Ob der Aufgabenpfad ein eigenes Urteil braucht — *„Das ist eine Entwurfsentscheidung.“*~~ → **beantwortet am 17.10.2026** (A, M1): Er braucht keines; ein klarer Auftrag wird geklärt und ausgeführt.
+4. ~~Ob eine zurückgestellte Schreibung verfällt, und nach welcher Frist (dazu `_b` K4, *Preis*).~~ → **beantwortet am 17.10.2026** (A, M3): Sie verfällt mit der Sachlage, als *kein Interesse*, und bis dahin bleibt sie offen.
 
 **Offen, ohne eine Entscheidung zu verlangen:**
 
@@ -48,9 +57,9 @@ Der Abschnitt, in dem das Konzept seine offenen Punkte führt, ungekürzt.
 
 **Wo das Erwartungsschema liegt.** Eine eigene Tabelle, ein Feld an der Entität, oder abgeleitet aus vorhandenen Tripeln desselben Typs — die dritte Variante braucht keinen Modellaufruf, aber einen Bestand.
 
-**Ob der Aufgabenpfad ein eigenes Urteil braucht.** Dort läuft der Verfasser nicht. Entweder bekommt er ein reduziertes Urteil, oder es wird ausdrücklich festgehalten, dass von dort ungeprüft geschrieben wird. Das ist eine Entwurfsentscheidung.
+**Ob der Aufgabenpfad ein eigenes Urteil braucht.** Dort läuft der Verfasser nicht. Entweder bekommt er ein reduziertes Urteil, oder es wird ausdrücklich festgehalten, dass von dort ungeprüft geschrieben wird. Das ist eine Entwurfsentscheidung. → **Beantwortet am 17.10.2026** (A, M1): Ein klarer Auftrag wird geklärt und ausgeführt; ein eigenes Urteil braucht der Aufgabenpfad nicht. Geschrieben wird dort trotzdem nicht ungeprüft — vor dem Schreiben stehen die Prüfungen des Klärfalls (`KLA-KLAERFALL-AM-OBJEKT`).
 
-**Ob eine zurückgestellte Schreibung verfällt.** Und nach welcher Frist.
+**Ob eine zurückgestellte Schreibung verfällt.** Und nach welcher Frist. → **Beantwortet am 17.10.2026** (A, M3): mit der Sachlage, als *kein Interesse*; bis dahin bleibt sie offen und darf wieder angesprochen werden.
 
 ---
 

@@ -921,3 +921,20 @@ Der Eigentümer, 03.10.2026: *„der Start Pixies mit Auftrag und Emotion kann a
 
 **Zusammenhang:** `AVATAR-PIXIE-LEERLAUF` (`novaberg-backlog-antwortpfad.md`) · `novaberg-avatar_k.md` §3
 
+---
+
+## Feature: PIXIE-OFFENE-PUNKTE — Pixie nimmt offene Punkte von sich aus auf: die Erinnerung vor einem Termin, der Abschluss danach (17.10.2026)
+
+**Kategorie:** [HIN] HINTERGRUND
+
+**Zustand:** ⬜ offen — entschieden am 17.10.2026 als geplantes Feature, nicht gebaut.
+
+**Entschieden am 17.10.2026:** Erinnerungen sind ein geplantes Feature. Pixie soll später *offene Punkte* von sich aus aufnehmen und ansprechen. Eine Art offener Punkte sind Erinnerungen — als gute Assistentin hinreichend früh an einen Termin erinnern. Eine andere ist der Abschluss: nach einem abgelaufenen Termin zu angemessener Zeit nachfragen, um ihn ordentlich zu schließen.
+
+**Bis dahin sagt Nova keine Erinnerung zu.** Eine Zusage wäre eine Behauptung ohne Beleg im Sinne von Scheibe 12 A (`novaberg-thinking-lage_k.md`); eine eigene Prüfung gegen sie ist nicht gebaut.
+
+**Am Code** `[Code, gelesen 17.10.2026]`: Die Spalte `timeline.remind` wird beim Anlegen aus dem Typ gesetzt (`agents/timeline/magneten.py`), aber von keinem Weg gelesen; kein Lauf löst zu einer Zeit eine Nachricht aus. Ein `erinnerungs_anker` ist ein Bezugspunkt der Lage, keine Erinnerung (`novaberg-agent-timeline.md` §8).
+
+**Zu klären vor dem Bau:** wie lange vorher erinnert wird, und wann nach einem Termin der Abschluss gefragt wird; die Zustellung läuft über Pixie.
+
+**Zusammenhang:** `novaberg-agent-timeline.md` §8 (Erinnerungen) und §3a (ein erwähnter Termin führt zur Nachfrage).
