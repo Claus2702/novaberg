@@ -2,7 +2,7 @@
 
 **Teil 3 von 5 — Bauplan.** Absicht und Kopfblock: [`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) · Diskussion und Ergänzungen: [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) · Ausarbeitung und Messungen: keine (`_k`, Kopfblock). Die Abschnittsnummer §6 ist die des Konzepts.
 
-**Stand:** 17. Oktober 2026, 21:50 UTC (`date -u`; die Bauart angenommen und je Bauteil beschrieben, *Die angenommene Bauart*; die Schemaänderungen S1 bis S6 im Grundsatz freigegeben, nicht gebaut; F5 und F7 nach den Entscheidungen berichtigt; die Reihenfolge in elf Schritten; nichts gebaut außer dem gemeinsamen Leseweg der Termine). Davor 17. Oktober 2026, 17:05 UTC (`date -u`; M1 gemessen, M2 hinter F1 gestellt, weil er einen Bau braucht; nichts gebaut). Davor 17. Oktober 2026, 15:40 UTC (`date -u`; angelegt, nichts gebaut).
+**Stand:** 18. Oktober 2026, 14:58 UTC (`date -u`; §6 *Reihenfolge*: Schritt 3, das Schema S1 bis S4 und das Repository, gebaut). Davor 17. Oktober 2026, 21:50 UTC (`date -u`; die Bauart angenommen und je Bauteil beschrieben, *Die angenommene Bauart*; die Schemaänderungen S1 bis S6 im Grundsatz freigegeben, nicht gebaut; F5 und F7 nach den Entscheidungen berichtigt; die Reihenfolge in elf Schritten; nichts gebaut außer dem gemeinsamen Leseweg der Termine). Davor 17. Oktober 2026, 17:05 UTC (`date -u`; M1 gemessen, M2 hinter F1 gestellt, weil er einen Bau braucht; nichts gebaut). Davor 17. Oktober 2026, 15:40 UTC (`date -u`; angelegt, nichts gebaut).
 
 ---
 
@@ -70,7 +70,7 @@ Jedes Bauteil ist eine Zeile der Featureliste mit ⚫ (§3.1, *Faktengedächtnis
 
 #### Die Schemaänderungen
 
-**Im Grundsatz freigegeben am 17.10.2026, nicht gebaut.** Jede DDL wird vor ihrem Bau einzeln angekündigt und wirkt erst nach dem Neustart des Dienstes (`_e` A, Nr. 20).
+**Im Grundsatz freigegeben am 17.10.2026, ~~nicht gebaut~~ → S1 bis S4 gebaut am 18.10.2026** (Tree `00c7b4c`, Schritt 3 der *Reihenfolge* unten); S5 und S6 nicht gebaut. Jede DDL wird vor ihrem Bau einzeln angekündigt und wirkt erst nach dem Neustart des Dienstes (`_e` A, Nr. 20).
 
 | Nr. | Änderung | Für |
 |---|---|---|
@@ -108,7 +108,7 @@ Jedes Bauteil ist eine Zeile der Featureliste mit ⚫ (§3.1, *Faktengedächtnis
 
 1. **M1** — gemessen am 17.10.2026 (unten).
 2. **C1**, der gemeinsame Leseweg der Termine — gebaut am 17.10.2026 (Scheibe 6 der Lage).
-3. **Das Schema S1 bis S4 und das Repository:** das Paar in jeder Abfrage, Lesen ohne Schreiben, Ablösen in einer Transaktion, der Lauf des Verfalls.
+3. **Das Schema S1 bis S4 und das Repository:** das Paar in jeder Abfrage, Lesen ohne Schreiben, Ablösen in einer Transaktion, der Lauf des Verfalls. — **gebaut am 18.10.2026** (Tree `00c7b4c`): `herkunft`, `einwertig` und `staerke_decay` als Pflicht ohne Vorgabewert, `chk_fakten_herkunft`, der eindeutige Teilindex über Paar, Subjekt und Beziehung jedes aktiven einwertigen Fakts, `timeline_id` mit `ON DELETE SET NULL`, `staerke_decay` und `decay_am`; `FaktenRepository.abloesen` auf dem Cursor des Aufrufers, `run_fakten_decay` als Schritt des Tageslaufs mit eigenem Audit. 47 Zeugen gegen die Testdatenbank der Suite; der Verfall gemessen an Kanten von 0, 30 und 365 Tagen. Die Rate ist der Startwert des Knotenverfalls und nicht gemessen; wer `last_touched` bei einer Bestätigung setzt, entscheidet Schritt 4, ob eine schwache Kante ruht, Schritt 5.
 4. **F2 mit F5:** der Agent mit Kanon, Aushang und Verifikation; das Plugin auf die Empfangsfläche zurückgebaut. Nach 3.
 5. **F1:** die Mappe, die Leser umgestellt, `_entity_kontext_laden` entfernt; danach **M2** im Labor. Nach 3.
 6. **Scheibe 13, Teil H:** die Quelle `fakten` im Angebot der Sachlage, mit den Regeln (b) und (c) aus C2. Nach 2 und 5.

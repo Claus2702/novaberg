@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 466 Eintraege mit Kennung — 384 offen, 82 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 466 Eintraege mit Kennung — 383 offen, 83 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 463 von 466 Eintraegen zugeordnet.
 
@@ -635,7 +635,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 82 | offen | `EMBED-RUECKWEG-UNGEMESSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
 | WIS | 106 | offen | `SELBSTAUSKUNFT-OHNE-LESER` | [Block 16.08.2026 — die Gegenrichtung der Doku-Pruefu](novaberg-backlog-wissen.md) |
 | WIS | 138 | offen | `FACHSPEICHER-AGENTEN` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
-| WIS | 139 | offen | `FAKTEN-BINDUNG-OHNE-VERFALL` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 139 | abgeschlossen | `FAKTEN-BINDUNG-OHNE-VERFALL` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
 | WIS | 140 | offen | `REEMBED-WISSENSSPEICHER` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
 | WIS | 151 | offen | `AUFZEICHNUNGEN-QUANTIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
 | WIS | 152 | offen | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |

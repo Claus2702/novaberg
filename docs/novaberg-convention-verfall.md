@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Verfall vorgehaltener Daten
-**Stand:** 3. September 2026 (§5 — die Prägungsschicht aufgenommen; sie bringt eine **dritte Bauart** mit: der Verfall ohne Spalte, bei jedem Lesen gerechnet. Davor 16. August 2026)
+**Stand:** 18. Oktober 2026 (Tabelle: `fakten` verfällt — `staerke_decay`, täglicher Sweep, `aktiv` heißt dort *abgelöst*, nie *verblasst*). Davor 3. September 2026 (§5 — die Prägungsschicht aufgenommen; sie bringt eine **dritte Bauart** mit: der Verfall ohne Spalte, bei jedem Lesen gerechnet. Davor 16. August 2026)
 **Pfad:** novaberg/docs/novaberg-convention-verfall.md
 **Typ:** Convention
 
@@ -104,7 +104,7 @@ GROUP BY c.table_name ORDER BY 4 DESC, 2 DESC, 1;
 | `timeline` | Fakten-Entität, FK-Ziel | ❌ | — | **konform** — §2 |
 | `pipeline_log` · `hintergrund_log` | Forensik, Audit | ❌ | — | **konform** — §2 |
 | `verbindung` | Brücke | ❌ | — | **konform** — §2, ausdrücklich |
-| `fakten` | **Bindung** zwischen zwei `entitaeten` | ❌ | — | **offen** → `FAKTEN-BINDUNG-OHNE-VERFALL` |
+| `fakten` | **Bindung** zwischen zwei `entitaeten` | ✅ `staerke_decay` (seit 18.10.2026) | ✅ Sweep, täglich — nur aktive Kanten, `aktiv` bleibt unberührt | konform (seit 18.10.2026; ~~**offen** → `FAKTEN-BINDUNG-OHNE-VERFALL`~~) |
 | `notizen` | freier Gedächtnisinhalt, kein FK zeigt darauf | ❌ | — | **offen** → `FACHSPEICHER-AGENTEN` |
 | `praegung_faden` | Gedächtnis, Suchort | ✅ `ausschlag_aktuell` | ✅ Sweep, täglich | konform (seit 01.09.2026) |
 | `praegung_beruehrung` | Ereignis, Eingang der Faltung | ❌ | — | **konform** — der Faden trägt ihn, §1.1 |

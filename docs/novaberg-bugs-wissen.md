@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → 28 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → 26 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -55,32 +55,6 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 **Reproduktion.** Einen Termin anlegen, auf den eine Eigenschaft der Sachlage oder ein Knoten verweist, ihn verschieben und danach `timeline.aktiv` der verwiesenen Zeile lesen.
 
 **Geschlossen, wenn** ein Verweis nach dem Verschieben zur aktiven Zeile führt, für alle drei Spalten. Vorgeschlagen ist eine Spalte `timeline.nachfolger_id`, der ein Leser bis zur aktiven Zeile folgt. ~~Entschieden ist die Bauart nicht;~~ → **Im Grundsatz entschieden am 17.10.2026, nicht gebaut**, als Schemaänderung S5 des Faktengedächtnisses ([`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A, Nr. 20; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6); geschlossen ist der Eintrag erst, wenn jeder der drei Verweise der Kette folgt. Eine neue Spalte ist DDL und wird vor ihrem Bau einzeln angekündigt.
-
-### `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` — drei Lesefunktionen des Fakten-Repositorys schreiben
-**Kategorie:** WIS
-
-**Rang:** **niedrig** — latent: Die Tabelle `fakten` ist stillgelegt und trägt 0 Zeilen `[gemessen 17.10.2026, 16:57 UTC]`, und keiner der drei Wege läuft im Betrieb. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
-
-**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
-
-**Befund** `[Code]`: In `memory/repositories/fakten_repository.py` lesen `find_by_id`, `find_by_subjekt` und `find_aktiv` über `UPDATE fakten SET last_touched = NOW() … RETURNING *` und committen dabei (Z. 100, 124, 151). Ihre Docstrings sagen das. Jedes Lesen ist damit ein Schreiben mit eigenem Commit. `find_historie` und `find_wiedervorlage_faellig` lesen, ohne zu schreiben. Aufrufer: `find_by_id` hat keinen, `find_by_subjekt` und `find_aktiv` stehen nur im Plugin `plugins/fakten_manager/manager.py` (Z. 172, 498, 605, 610). Dessen Anreicherung ist abgeschaltet, und sein Schreibweg bekommt keinen Auftrag.
-
-**Wirkung.** Wird die Tabelle wieder benutzt, setzt jedes Lesen den Zeitpunkt der letzten Berührung, auch für einen Treffer, den der Aufrufer danach verwirft. Die Spalte trägt dann Nachfrage statt Verwendung. Dazu braucht jedes Lesen eine Zeilensperre und einen Commit.
-
-**Geschlossen, wenn** kein Lesen im Repository `last_touched` schreibt. Das kommt mit dem Umbau des Repositorys für den Fakten-Agenten; der Zeuge dafür: Ein Lesen schreibt nie `last_touched`.
-
-### `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` — Invalidieren und Neuanlegen laufen in zwei Commits
-**Kategorie:** WIS
-
-**Rang:** **niedrig** — latent wie `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED`. Mit dem Fakten-Agenten würde es still: Scheitert das Neuanlegen, ist der alte Wert weg und kein neuer da. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
-
-**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
-
-**Befund** `[Code]`: `FaktenRepository.insert` und `FaktenRepository.invalidate` öffnen je eine eigene Verbindung und committen je für sich (`memory/repositories/fakten_repository.py`, Z. 64/76 und 202/210). Keine der beiden nimmt eine Verbindung oder einen Cursor entgegen. Die Ablösung eines Werts besteht aus beiden Schritten (`novaberg-memory-fakten_k.md` §2.4) und ist damit nicht atomar. Der einzige heutige Ablöseweg, `plugins/fakten_manager/manager.py::fakten_verarbeiten`, invalidiert zuerst (Z. 511) und legt danach an (Z. 544); dazwischen läuft das Embedding.
-
-**Wirkung.** Scheitert das Anlegen, etwa an einem Datenbankfehler, ist der alte Fakt invalidiert und der neue fehlt: Für die Beziehung steht kein aktiver Wert mehr, ohne dass jemand das gewollt hat. Ein Leser zwischen den beiden Commits sieht ebenfalls keinen aktiven Wert.
-
-**Geschlossen, wenn** Invalidieren und Anlegen in einer Transaktion laufen. Zeuge: Scheitert das Anlegen, bleibt der alte Wert aktiv.
 
 ### `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` — ein ungeklärtes Objekt wird still ein Wert
 **Kategorie:** WIS
@@ -473,6 +447,8 @@ if self.now > dateobj - tz_offset:
 **Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte, Severity Hoch — 171 Live-Einträge betroffen
 
 **Symptom:** `fakten` hat die Spalte `character_id` mit Default `'nova'`. INSERTs in `fakten_repository.py` setzen die Spalte nicht (DB-Default greift). SELECTs filtern nur `WHERE user_id = %s`, ignorieren `character_id` komplett.
+
+**Im Repository geschlossen am 18.10.2026** (Tree `00c7b4c`, Schema und Repository des Faktengedächtnisses): Jede Abfrage von `memory/repositories/fakten_repository.py` filtert nach `user_id` und `character_id`, `insert` schreibt `character_id` ausdrücklich, ein unvollständiges Paar wird abgewiesen. Das Plugin nimmt das Gegenüber aus dem Write (`daten["character_id"]`) und aus dem State und verwirft einen Write ohne es mit einer Fehlerzeile; die Wiedervorlage liest im Paar (`user_id`, `ASSISTANT_USER_ID`). Zeuge: `server/tests/test_fakten_repository.py::EveryQueryFiltersByThePairTest`. **Offen bleiben die zwei Stellen am Repository vorbei** (unten) — der Eintrag bleibt deshalb hier.
 
 **Weitere Stellen, gegen HEAD `7b65297` gelesen am 17.10.2026.** Am Repository vorbei lesen zwei Stellen `fakten` mit eigenem SQL, und auch sie filtern nur `user_id`, nie `character_id`: `api/gedaechtnis.py::fakten_abrufen` (Endpunkt `GET /fakten/{user_id}`, Z. 373–379) und `graph/nodes/gespraechsvektor.py::_entity_kontext_laden` (Z. 435 und 454; diese Funktion hat keinen Aufrufer). Geschlossen ist der Eintrag erst, wenn jede Stelle nach dem Paar liest oder über die eine Lesefunktion des Faktengedächtnisses (Bauteil F1, `novaberg-memory-fakten_b.md`). → **Die Bauart dazu ist am 17.10.2026 angenommen, nicht gebaut:** Das Repository nimmt das Paar in jede Abfrage, `fakten_abrufen` liest über die Mappe, und `_entity_kontext_laden` entfällt, weil es keinen Aufrufer hat (`novaberg-memory-fakten_b.md` §6, *Die angenommene Bauart*, F1 und F2).
 

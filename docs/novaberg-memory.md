@@ -225,7 +225,7 @@ Stattdessen erben Container-Einträge Salienz **beim Retrieval** über ihre Verw
 | Themen-Tabelle | nein, existiert nicht | offen, Konzept dieses Dokuments | Backlog |
 | Timeline | nein, alle aktiven Termine gleichgewichtet | bewusst — erben über Themen | Soll-Zustand |
 | Notizen | nein, manuelle Verwaltung | bewusst — erben über Themen | Soll-Zustand |
-| Fakten | nein, ~~atemporal~~ → die Kante verfällt (unten) | bewusst — erben über Themen | Soll-Zustand |
+| Fakten | nein, ~~atemporal~~ → die Kante verfällt (unten; gebaut am 18.10.2026: `staerke_decay`, täglich gepflegt) | bewusst — erben über Themen | Soll-Zustand |
 | Dateien | (nicht implementiert) | bewusst — erben über Themen | Soll-Zustand |
 
 > **Überholt am 17.10.2026 für die Fakten — und die Zeile *Knowledge Graph* darüber gleich mit.** Die Zeilen *„Triples sind statisch“* und *„atemporal“* stehen gegen die Verfallsregel vom 16.08.2026 ([`novaberg-convention-verfall.md`](novaberg-convention-verfall.md) §1.1). Dort sitzt der Verfall im Faktengedächtnis an der Kante, die Bindung verfällt, die Entität nicht. Ein Fakt ist bi-temporal und damit nicht zeitlos: Er gilt ab einem Zeitpunkt und wird abgelöst, nicht überschrieben. Das Konzept des Faktengedächtnisses übernimmt beides ([`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §2.4, §2.5). Ob die Kante des Fakts und das Eigenschaftsgedächtnis der Sachlage, das nicht verfällt, zusammengehen, ist eine offene Frage der Bauart (ebd. §5, Punkt 2). Gebaut ist der Verfall nicht (`FAKTEN-BINDUNG-OHNE-VERFALL`).

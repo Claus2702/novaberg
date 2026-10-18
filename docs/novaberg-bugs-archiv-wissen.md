@@ -1,11 +1,46 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → 28 Eintraege (17.10.2026), je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → 30 Eintraege (17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses), je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 ---
+
+## 18.10.2026 — behoben im Bau
+
+**Diese Einträge sind mit dem Bau von Schema und Repository des Faktengedächtnisses geschlossen** — bezeugt gegen die Testdatenbank der Suite; im Betrieb ist die Tabelle `fakten` stillgelegt und leer, gemessen ist dort nur das Schema.
+
+---
+
+### `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` — drei Lesefunktionen des Fakten-Repositorys schreiben
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — latent: Die Tabelle `fakten` ist stillgelegt und trägt 0 Zeilen `[gemessen 17.10.2026, 16:57 UTC]`, und keiner der drei Wege läuft im Betrieb. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** **geschlossen am 18.10.2026 — behoben mit Tree `00c7b4c`** (Schema und Repository des Faktengedächtnisses, Schritt 3 von `novaberg-memory-fakten_b.md` §6). `find_by_id`, `find_by_subjekt` und `find_aktiv` lesen mit `SELECT`, ohne `last_touched` und ohne Commit; auch die Bestätigung bei gleichem Wert im Plugin schreibt nichts mehr. Zeuge: `server/tests/test_fakten_repository.py::NoReadWritesTest` — nach jeder der sechs Lesefunktionen sind `last_touched` und `aktiv` unverändert; Gegenprobe: das `UPDATE … SET last_touched` in `find_by_subjekt` zurückgeholt → dieser Zeuge rot (vorhergesagt). ~~offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.~~
+
+**Befund** `[Code]`: In `memory/repositories/fakten_repository.py` lesen `find_by_id`, `find_by_subjekt` und `find_aktiv` über `UPDATE fakten SET last_touched = NOW() … RETURNING *` und committen dabei (Z. 100, 124, 151). Ihre Docstrings sagen das. Jedes Lesen ist damit ein Schreiben mit eigenem Commit. `find_historie` und `find_wiedervorlage_faellig` lesen, ohne zu schreiben. Aufrufer: `find_by_id` hat keinen, `find_by_subjekt` und `find_aktiv` stehen nur im Plugin `plugins/fakten_manager/manager.py` (Z. 172, 498, 605, 610). Dessen Anreicherung ist abgeschaltet, und sein Schreibweg bekommt keinen Auftrag.
+
+**Wirkung.** Wird die Tabelle wieder benutzt, setzt jedes Lesen den Zeitpunkt der letzten Berührung, auch für einen Treffer, den der Aufrufer danach verwirft. Die Spalte trägt dann Nachfrage statt Verwendung. Dazu braucht jedes Lesen eine Zeilensperre und einen Commit.
+
+**Geschlossen, wenn** kein Lesen im Repository `last_touched` schreibt. Das kommt mit dem Umbau des Repositorys für den Fakten-Agenten; der Zeuge dafür: Ein Lesen schreibt nie `last_touched`.
+
+### `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` — Invalidieren und Neuanlegen laufen in zwei Commits
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — latent wie `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED`. Mit dem Fakten-Agenten würde es still: Scheitert das Neuanlegen, ist der alte Wert weg und kein neuer da. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** **geschlossen am 18.10.2026 — behoben mit Tree `00c7b4c`.** `FaktenRepository.abloesen` invalidiert den aktiven Wert und legt den neuen auf dem Cursor des Aufrufers an; das Plugin committet je Fakt erst danach und nimmt sonst alles zurück. Zeuge: `ASingleValueIsReplacedWhollyTest.test_a_failed_insert_keeps_kassel_active` — scheitert das Anlegen (an der Herkunft oder am Fremdschlüssel), ist nach dem Rollback der alte Wert aktiv und die einzige Zeile; Gegenprobe: ein Commit zwischen Invalidieren und Anlegen → dieser Zeuge rot (vorhergesagt). Die Datenbank erzwingt dazu höchstens einen aktiven Wert je Paar, Subjekt und einwertiger Beziehung (eindeutiger Teilindex; Gegenprobe des PM: ohne `UNIQUE` 2 von 20 Zeugen rot). ~~offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.~~
+
+**Befund** `[Code]`: `FaktenRepository.insert` und `FaktenRepository.invalidate` öffnen je eine eigene Verbindung und committen je für sich (`memory/repositories/fakten_repository.py`, Z. 64/76 und 202/210). Keine der beiden nimmt eine Verbindung oder einen Cursor entgegen. Die Ablösung eines Werts besteht aus beiden Schritten (`novaberg-memory-fakten_k.md` §2.4) und ist damit nicht atomar. Der einzige heutige Ablöseweg, `plugins/fakten_manager/manager.py::fakten_verarbeiten`, invalidiert zuerst (Z. 511) und legt danach an (Z. 544); dazwischen läuft das Embedding.
+
+**Wirkung.** Scheitert das Anlegen, etwa an einem Datenbankfehler, ist der alte Fakt invalidiert und der neue fehlt: Für die Beziehung steht kein aktiver Wert mehr, ohne dass jemand das gewollt hat. Ein Leser zwischen den beiden Commits sieht ebenfalls keinen aktiven Wert.
+
+**Geschlossen, wenn** Invalidieren und Anlegen in einer Transaktion laufen. Zeuge: Scheitert das Anlegen, bleibt der alte Wert aktiv.
+
+---
+
 
 ## 17.10.2026 — behoben und gemessen
 
