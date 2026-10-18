@@ -41,40 +41,28 @@ from memory.pipeline_log import (
     writer_loop as pipeline_log_writer,
 )
 from memory.ziele import ziele_embeddings_sicherstellen
+from schema_bootstrap import apply_agent_schemas
 from services.event_consumer import event_consumer_loop
 from services.prompt_consumer import prompt_consumer_loop
 from services.shadow_delivery import shadow_delivery_loop
+from tools.core_schema import (
+    CORE_SCHEMA_PATH,
+    LOCK_TIMEOUT_MS,
+    SchemaBootstrapError,
+    SchemaFileMissingError,
+    SchemaLockTimeoutError,
+    apply_core_schema,
+    redact_connection,
+)
 
 logger    = logging.getLogger("ki_server")
 scheduler = AsyncIOScheduler()
 
 
-def _sql_init_pfad_finden() -> Path:
-    """Findet db/init.sql relativ zu dieser Datei.
-
-    Container-Layout: /app/main.py mit Mount /app/db/init.sql.
-    Host-Layout: novaberg/server/main.py mit ../db/init.sql.
-    """
-    hier: Path = Path(__file__).resolve().parent
-    for kandidat in (hier / "db" / "init.sql", hier.parent / "db" / "init.sql"):
-        if kandidat.exists():
-            return kandidat
-    return hier / "db" / "init.sql"  # Default fuers Logging im Fehlerfall
-
-
-SQL_INIT_PFAD: Path = _sql_init_pfad_finden()
-
-# Wie lange die Migration auf eine Tabellensperre wartet, bevor sie aufgibt.
-# **Ohne Frist wartete sie unbegrenzt**, und ein `ALTER TABLE` stellt sich in
-# die Sperrschlange vor jeden spaeteren Leser und Schreiber derselben Tabelle.
-# `[gemessen]` 18.09.2026: Ein Reload waehrend eines Suite-Laufs startete die
-# Migration, waehrend ein Zeuge eine Lesetransaktion auf `ziele` offen hielt;
-# die Migration wartete auf den Zeugen, der naechste Schreibzugriff des Zeugen
-# auf die Migration. Der Serverstart hing **89 Minuten** (06:04 bis 07:33 UTC),
-# bis Postgres den Deadlock sah, nachdem die Transaktion von Hand beendet war.
-# Zehn Sekunden sind weit ueber der Dauer eines Laufs ohne Wettbewerb
-# (gemessen 20 bis 50 ms) und kurz genug, dass ein Neustart nicht haengt.
-MIGRATION_SPERRFRIST_MS: int = 10_000
+# Pfad und Sperrfrist der Migration stehen beim Kernschema, das der Start mit
+# dem Aufbau von null teilt; die Begruendung der Frist steht dort an der Konstante.
+SQL_INIT_PFAD: Path = CORE_SCHEMA_PATH
+MIGRATION_SPERRFRIST_MS: int = LOCK_TIMEOUT_MS
 
 
 def schema_migrieren(postgres_url: str) -> None:
@@ -84,49 +72,49 @@ def schema_migrieren(postgres_url: str) -> None:
     alle Statements idempotent (CREATE ... IF NOT EXISTS, ALTER ... IF NOT
     EXISTS, INSERT ... WHERE NOT EXISTS, DO-Blöcke mit pg_constraint-Check).
 
+    Den Rumpf traegt `tools.core_schema.apply_core_schema`, der bei jeder
+    Stoerung wirft; diese Huelle schluckt fuer den Start, damit ein Neuladen
+    nicht an der Migration scheitert.
+
     EVA
     ---
     E: postgres_url muss erreichbar sein. db/init.sql muss am erwarteten Pfad
        (server/../db/init.sql) liegen.
-    V: SQL-Inhalt einmalig laden und gegen Postgres mit autocommit=True
-       ausführen, damit DO-Blöcke und unabhängige Statements korrekt
-       transaktioniert werden — mit `lock_timeout` (`MIGRATION_SPERRFRIST_MS`),
-       damit eine fremde Sperre den Start nicht unbegrenzt anhält.
+    V: `apply_core_schema` — autocommit=True, damit DO-Blöcke und unabhängige
+       Statements korrekt transaktioniert werden, und `lock_timeout`
+       (`MIGRATION_SPERRFRIST_MS`), damit eine fremde Sperre den Start nicht
+       unbegrenzt anhält.
     A: info-Log mit Pfad und einer groben Statement-Zahl (Semikolon-Zählung).
        Bei Fehler warning-Log und Rückkehr ohne Re-Raise — Fail-Mode wie
        bisher in P0. Eine abgelaufene Sperrfrist ist ein `error`: Das Schema
-       ist dann nicht migriert, und die Zeile nennt den Grund.
+       ist dann nicht migriert, und die Zeile nennt den Grund. Kein Grund
+       traegt die Verbindungszeichenkette.
     """
-    if not SQL_INIT_PFAD.exists():
+    try:
+        apply_core_schema(postgres_url)
+        anzahl_stmts: int = SQL_INIT_PFAD.read_text(encoding="utf-8").count(";")
+    except SchemaFileMissingError:
         logger.warning(f"Migration: db/init.sql nicht gefunden unter {SQL_INIT_PFAD}")
         return
-
-    sql_inhalt: str = SQL_INIT_PFAD.read_text(encoding="utf-8")
-    anzahl_stmts: int = sql_inhalt.count(";")
-
-    import psycopg2
-
-    try:
-        conn = psycopg2.connect(
-            postgres_url, options=f"-c lock_timeout={MIGRATION_SPERRFRIST_MS}",
-        )
-        conn.autocommit = True
-        cursor = conn.cursor()
-        cursor.execute(sql_inhalt)
-        conn.close()
-        logger.info(
-            f"Migration: db/init.sql ausgeführt "
-            f"({anzahl_stmts} Statements geparst, Pfad {SQL_INIT_PFAD})."
-        )
-    except psycopg2.errors.LockNotAvailable as fehler:
+    except SchemaLockTimeoutError as fehler:
         logger.error(
             f"Migration: db/init.sql NICHT ausgeführt — nach "
-            f"{MIGRATION_SPERRFRIST_MS} ms keine Tabellensperre ({fehler}). "
+            f"{MIGRATION_SPERRFRIST_MS} ms keine Tabellensperre ({fehler.reason}). "
             f"Eine andere Verbindung haelt eine Transaktion offen; das Schema "
             f"bleibt auf dem vorigen Stand bis zum naechsten Start."
         )
+        return
+    except SchemaBootstrapError as fehler:
+        logger.warning(f"Migration: db/init.sql fehlgeschlagen — {fehler.reason}")
+        return
     except Exception as fehler:
-        logger.warning(f"Migration: db/init.sql fehlgeschlagen — {fehler}")
+        grund: str = redact_connection(str(fehler), postgres_url)
+        logger.warning(f"Migration: db/init.sql fehlgeschlagen — {grund}")
+        return
+    logger.info(
+        f"Migration: db/init.sql ausgeführt "
+        f"({anzahl_stmts} Statements geparst, Pfad {SQL_INIT_PFAD})."
+    )
 
 
 # ─────────────────────────────────────────────
@@ -187,11 +175,11 @@ async def lifespan(app: FastAPI):
         await entitaeten_embeddings_sicherstellen()
         await ziele_embeddings_sicherstellen(POSTGRES_URL)
 
-    # Epic 11: Agent-Discovery
-    from agents import AgentRegistry, discover_agents
-    discover_agents()
-    for agent in AgentRegistry.alle().values():
-        agent.setup(POSTGRES_URL)
+    # Epic 11: Agent-Discovery — derselbe Weg wie der Aufbau von null:
+    # discover_agents, dann setup je Agent der Registry; ein werfendes setup
+    # bricht den Start ab.
+    from agents import AgentRegistry
+    apply_agent_schemas()
     logger.info(f"Agent-Discovery: {len(AgentRegistry.alle())} Agenten registriert")
 
     # NMCP-Handshake: Naht herstellen und Kompatibilitaet pruefen.
