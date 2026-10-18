@@ -1,9 +1,80 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 21 Eintraege, je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 26 Eintraege, je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — aus dem Entwurf einer Testdatenbank für die Server-Suite
+
+Fünf Befunde zum Anlegen des Schemas, beim Entwurf einer eigenen Datenbank für die Server-Suite am Code gelesen gegen HEAD `ae05667`; der erste ist gemessen. Alle betreffen den Weg, auf dem der Server beim Start `db/init.sql` und die `init.sql` der Agenten anwendet (`main.py::lifespan`, `agents/__init__.py::discover_agents`, `agents/base.py::setup`).
+
+### `SCHEMA-VON-NULL-SCHEITERT` — ein frischer Server legt das Schema von `dateien_index` nicht an
+**Kategorie:** BAU
+
+**Rang:** **mittel** — im laufenden Betrieb ohne Wirkung, weil alle Tabellen schon stehen; ein frischer Behälter startet aber nicht, und `F-SCHEMA-2` (*frischer Behälter plus Schemadatei ergibt ein lauffähiges System*) ist verletzt. Blockiert jede Testdatenbank, die aus den Schemadateien gebaut wird. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — gemessen am 17.10.2026, 22:51 UTC.
+
+**Befund** `[gemessen]`: Der Server wendet die `init.sql` der Agenten in der Reihenfolge der Ordnernamen an (`agents/__init__.py::discover_agents`, `sorted(agents_dir.iterdir())`, Z. 66; danach `main.py`, Z. 193–194: `setup` je Agent der Registry). `dateien_index` kommt damit vor `dateien_wurzeln`, und `agents/dateien_index/init.sql` legt `wurzel_id … REFERENCES dateien_wurzeln(id)` an (Z. 22). Gemessen in einem leeren Postgres aus dem Image des Betriebs, ohne Netz: `db/init.sql` und sieben der acht `init.sql` der Agenten laufen durch; `agents/dateien_index/init.sql` endet mit `ERROR: relation "dateien_wurzeln" does not exist`. Es ist über alle Schemadateien die einzige Abhängigkeit zwischen zwei Agenten (Suche nach `REFERENCES`, `ALTER TABLE` und `CREATE INDEX … ON`). `BaseAgent.setup` rollt zurück und wirft (`tools/db_manager.py::execute_script`), und `main.py` fängt das nicht ab: Der Start bricht ab. **Über den Startweg des Servers bestätigt** am 17.10.2026, 23:06 UTC — `schema_migrieren`, `discover_agents` und `setup` je Agent der Registry gegen einen leeren Postgres, der Code aus dem Image des Servers: Der Kern läuft durch (*„197 Statements geparst“*), danach `charakter` und `charakter_identitaet`; beim Agenten `dateien` endet der Lauf mit `UndefinedTable: relation "dateien_wurzeln" does not exist`. Danach stehen 27 Tabellen; der Betrieb trägt 39, davon 5 Altbestand, den keine Schemadatei mehr anlegt (`charakter_hash_vor_pp0`, `charakter_rad_messung_archiv`, `charakter_rad_messung_archiv_20260812`, `charakter_rad_messung_vor_pp0`, `lzg_migration_review`).
+
+**Wirkung.** Ein Aufbau von null — ein neuer Behälter, eine Testdatenbank, eine Wiederherstellung — kommt nicht bis zum ersten Turn. Im Betrieb fällt es nicht auf, weil `dateien_wurzeln` seit seiner Anlage besteht.
+
+**Geschlossen, wenn** ein leerer Postgres aus dem Image des Betriebs über den Startweg des Servers ein vollständiges Schema bekommt — gemessen, nicht nur am Code gelesen.
+
+### `AGENT-SCHEMA-STILL-VERLOREN` — ein Agent, dessen Import scheitert, verliert still sein Schema und sich selbst
+**Kategorie:** BAU
+
+**Rang:** **mittel** — still: Der Agent fehlt in der Registry, sein Schema wird nie angewandt, und die einzige Spur ist eine Zeile auf `debug`. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `ae05667`.
+
+**Befund** `[Code]`: `agents/__init__.py::discover_agents` fängt beim Import eines Agenten `ImportError` und `AttributeError`, schreibt `logger.debug(f"Kein Agent in {ordner.name}: {e}")` und geht zum nächsten Ordner (Z. 80–82). Ein Ordner ohne Agent und ein Agent mit kaputtem Import sind darin nicht unterscheidbar.
+
+**Wirkung.** Ein Fehler beim Import eines Agenten schaltet seine Fachabteilung ab und lässt sein Schema aus, ohne dass Start oder Log es auf einer sichtbaren Stufe melden.
+
+**Geschlossen, wenn** ein Ordner, der eine `agent.py` trägt und nicht importiert werden kann, laut gemeldet wird; ein Ordner ohne `agent.py` darf leise bleiben.
+
+### `AGENT-SCHEMA-OHNE-SPERRFRIST` — das Schema der Agenten wartet beim Start unbegrenzt auf seine Sperre
+**Kategorie:** BAU
+
+**Rang:** **mittel** — ein Start kann ohne Meldung hängen; derselbe Mechanismus hielt am 18.09.2026 den Start 89 Minuten an, damals an der Migration des Kerns, die seither eine Sperrfrist trägt. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `ae05667`.
+
+**Befund** `[Code]`: Der Kern läuft mit `lock_timeout` (`main.py::schema_migrieren`, Z. 110–111, `MIGRATION_SPERRFRIST_MS`). Die `init.sql` der Agenten laufen über `BaseAgent.setup` → `tools/db_manager.py::execute_script` auf einer Verbindung des Pools, die keine Sperrfrist trägt; `lock_timeout` steht außerhalb der Zeugen nur in `main.py`. `agents/timeline/init.sql` ändert dabei Kerntabellen (`notizen`, `lzg_knoten`, `sachlage_eigenschaft`).
+
+**Wirkung.** Hält irgendeine Verbindung eine Transaktion auf einer dieser Tabellen offen, wartet der Start auf sie und alle anderen auf den Start.
+
+**Geschlossen, wenn** jede DDL, die der Server beim Start ausführt, mit einer Sperrfrist läuft und eine abgelaufene Frist eine Zeile mit Grund ergibt.
+
+### `AGENT-SETUP-IGNORIERT-URL` — `setup(postgres_url)` benutzt seinen Parameter nicht
+**Kategorie:** BAU
+
+**Rang:** **niedrig** — latent: Alle heutigen Aufrufer übergeben `config.POSTGRES_URL`. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `ae05667`.
+
+**Befund** `[Code]`: `agents/base.py::BaseAgent.setup(self, postgres_url)` führt das Skript über `db_manager.execute_script` aus (Z. 489–495); `db_manager` ist beim Import an `config.POSTGRES_URL` gebunden (`tools/db_manager.py`, Z. 9 und am Ende `db_manager = DBManager(postgres_url=POSTGRES_URL)`).
+
+**Wirkung.** Wer `setup` mit einer anderen Datenbank aufruft, etwa einer Testdatenbank, schreibt das Schema in die Datenbank aus der Konfiguration.
+
+**Geschlossen, wenn** `setup` gegen die übergebene Datenbank arbeitet oder keinen Parameter mehr nimmt.
+
+### `ZEUGE-NENNT-URL-DES-BETRIEBS` — ein Zeuge trägt die Verbindung des Betriebs als Literal
+**Kategorie:** BAU
+
+**Rang:** **niedrig** — heute ohne Wirkung: Jede Benutzung steht unter `patch`. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — am Code gelesen am 17.10.2026 gegen HEAD `ae05667`.
+
+**Befund** `[Code]`: `tests/test_node_stance.py`, Z. 24: `URL = "postgresql://ki:ki@postgres:5432/gedaechtnis"`. Die übrigen Zeugen öffnen ihre Verbindungen über `config.POSTGRES_URL` oder `config.REDIS_URL`.
+
+**Wirkung.** Fehlt bei einer künftigen Benutzung der `patch`, trifft der Zeuge die Datenbank des Betriebs, auch wenn die Suite auf eine Testdatenbank umgelenkt ist.
+
+**Geschlossen, wenn** kein Zeuge eine Verbindung des Betriebs als Literal trägt.
 
 ---
 

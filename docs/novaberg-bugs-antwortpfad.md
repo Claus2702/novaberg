@@ -1,9 +1,93 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 46 Eintraege, je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → 48 Eintraege (17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — aus der Simulation `simnachher4` an einem Prüf-Nutzer
+
+Drei Befunde aus einer Simulation an einem frischen Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, Samstag, 17.10.2026, 14:49–18:07 UTC, auf `a26b2cd`; dieselben 24 Sätze wie im Vorlauf `simnachher3`), von Hand gegen den Bestand im Augenblick der Frage bewertet. Die Spur im Pipeline-Log ist nur nach `turn_id` gelesen, das Serverlog nur nach Logger und Zeitfenster. Am Code gehalten gegen HEAD `ae05667`. Ein vierter Befund desselben Laufs steht in [Wissen](novaberg-bugs-wissen.md) (`TIMELINE-LESEN-SUCHT-MIT-FUELLWORT`).
+
+### `PRUEFER-OHNE-LESESTAND` — die Prüfer hinter dem Verfasser prüfen gegen ein Fenster ohne den Lesestand des Turns
+**Kategorie:** ANT
+
+**Rang:** **hoch** — still: Eine richtige Auskunft über gelesene Termine wird zu einer falschen geändert oder mit einem falschen Korrektursatz versehen, und der Mensch glaubt sie. Bei derselben Frage in 2 von 2 Läufen (`simnachher3`, `simnachher4`). Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — gemessen am 17.10.2026 in einer Simulation auf `a26b2cd`, am Code gehalten gegen HEAD `ae05667`.
+
+**Befund** `[Code]`: Den Lesestand des Turns — das Ergebnis des Lesens hinter dem Router im Kanal `appointment_reading`, im Prompt der Block `[TERMINE]` — liest als einziger Knoten der Verfasser (`graph/nodes/verfasser.py`). Thinker, Speicherprüfung des Tribunals und Korrektor sehen ihn nicht. Sie kennen nur die Zeilen `[Timeline/…]` des proaktiven Fensters, drei Tage zurück und vierzehn voraus (`TIMELINE-LESEPFAD-INSTABIL`, *Gebaut am 15.10.2026*). Liegt ein gelesener Termin außerhalb dieses Fensters, prüfen sie die Antwort gegen einen Bestand, in dem er fehlt. Für die Speicherprüfung ist die Grenze benannt: *„Bestand, den der Turn ohne Dienst gelesen hat, deckt nichts … Nicht gemessen, ohne Zeugen.“* (`novaberg-node-tribunal.md`, *Was die Prüfung nicht kann*). Hier ist sie gemessen, und dieselbe Lücke hat der Thinker.
+
+**Erste Erscheinung — der Thinker „korrigiert“ ein richtiges Datum zu einem falschen** `[gemessen]` (Satz 5, die Frage nach dem letzten Friseurbesuch; im Bestand Donnerstag, 08.10.2026, 15:00, neun Tage zurück):
+
+- Der Router suchte `search` *Friseur* `backward`, und der Leseweg im Turn fand den Termin. Der Entwurf nannte einen Donnerstag mit Uhrzeit (`treffer_antwort`).
+- Der Thinker meldete: *„Der Wochentag für den genannten Termin ist falsch berechnet (Wenn der Sonntag der 18.10.2026 ist, dann war Donnerstag tatsächlich der 15.10.2026)“*. Hinaus ging *„Donnerstag, den 15.10.2026“*. Entwurf und Endfassung sind beide 135 Zeichen lang; getauscht wurde also wohl nur das Datum.
+- **In `simnachher3` derselbe Mechanismus:** Der Entwurf nannte richtig *„Mittwoch, 07.10., um 15 Uhr“*. Der Thinker fand mit `memory_search(Friseur)` nichts, und hinaus ging *„keinen früheren Termin gefunden“* (Serverlog vom 16.10.2026, 21:21 UTC).
+- Umgekehrt rettete der Thinker in `simnachher4` Satz 3 und 19, weil der Termin in seinem Fenster lag.
+
+**Zweite Erscheinung — die Speicherprüfung beanstandet eine wahre Auskunft über gelesenen Bestand** `[gemessen]` (Satz 6, die Frage nach Terminen im November; im Bestand der Elternabend am Samstag, 07.11.2026, 19:00):
+
+- Der Router stellte nicht zu; der Leseweg im Turn las `range` 01.11.–30.11. und fand 1 Termin. Der Thinker prüfte mit `timeline_check(2026-11-07)` und urteilte *„Antwort ist korrekt“*.
+- Die Speicherprüfung fand *eingetragen* in der Form `zustand`, ohne schreibenden Dienst. Der Bestandsabgleich half nicht (`kein_akutes_objekt_mit_zeit`), denn das Objekt *Termine im November* trägt keine Zeit.
+- Drei Runden ergaben `nicht_belegt`. Die zwei Korrekturen behielten den Satz und stellten nur *„Du möchtest wissen, ob du im November schon Termine hast:“* voran.
+- Nach dem Code (`graph/nodes/tribunal.py:364`) ging die Antwort mit dem Korrektursatz hinaus: *„(Korrektur: Dafür wurde kein Eintrag angelegt — gespeichert ist davon nichts.)“* In der Spur fehlt sie, weil der Graph danach an der Rekursionsgrenze abbrach (`TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT`, novaberg-bugs-charakter.md).
+- Der Mensch liest also, der Elternabend sei eingetragen, und im selben Atemzug, es sei nichts gespeichert. **In `simnachher3` dieselbe Lage in Satz 21.**
+
+**Eine Wurzel, zwei Erscheinungen:** Beide Prüfer urteilen über eine Auskunft, deren Grundlage sie nicht sehen. Der Thinker ersetzt sie durch das, was sein Fenster hergibt; die Speicherprüfung hält die Wiedergabe gelesenen Bestands für eine Speicherbehauptung.
+
+**Wirkung.** Der Lesestand macht Auskünfte außerhalb des proaktiven Fensters erst möglich — der letzte Friseurbesuch, ein Monat, ein ferner Termin —, und genau dort prüfen Thinker und Speicherprüfung gegen einen Bestand, in dem der Termin fehlt. Was danach hinausgeht, ist die Endfassung: ein falsches Datum, ein *keiner* statt des Termins oder eine wahre Auskunft mit dem Satz, es sei nichts gespeichert. Der Mensch hat keinen Anlass, ihr zu misstrauen. Innerhalb des Fensters wirkt dieselbe Prüfung als Rettung (Satz 3 und 19).
+
+**Verwandt:** Die Vermutung in `TIMELINE-LESEPFAD-INSTABIL` zur Friseurfrage (*nur das proaktive Fenster gelesen*) ist damit widerlegt; gelesen wurde. `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` (novaberg-bugs-wissen.md) steht in der Sache nahe. Dieselbe Korrekturrunde trägt einen zweiten Fehler, `KORREKTUR-ERFINDET-WUNSCH` (unten).
+
+**Reproduktion.** Einem Prüf-Nutzer einen Termin säen, der außerhalb des proaktiven Fensters liegt (mehr als drei Tage zurück oder mehr als vierzehn voraus), und nach ihm fragen; im Pipeline-Log die Zeilen `Problem` des Thinkers und die Runden der Speicherprüfung lesen.
+
+**Geschlossen, wenn** eine Auskunft über Termine, die der Turn gelesen hat, von keinem Prüfer gegen ein Fenster ohne diesen Lesestand geändert oder als unbelegt beanstandet wird — gemessen an einem Prüf-Nutzer mit einem Termin außerhalb des proaktiven Fensters.
+
+### `KORREKTUR-ERFINDET-WUNSCH` — die Korrektur einer Speicherbehauptung legt dem Menschen auf eine Lesefrage einen Wunsch in den Mund
+**Kategorie:** ANT
+
+**Rang:** **mittel** — still, aber ohne Schaden im Kalender: Geschrieben wird nichts, aber die Antwort schreibt dem Menschen einen Wunsch oder Auftrag zu, den er nicht geäußert hat. 2 von 4 Korrekturen in `simnachher4`. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — gemessen am 17.10.2026 in einer Simulation auf `a26b2cd`, am Code gehalten gegen HEAD `ae05667`.
+
+**Befund** `[Code]`: Der Korrekturauftrag der Speicherprüfung verlangt, jeden beanstandeten Satz *„als Wiedergabe dessen, was der Nutzer gesagt oder sich gewuenscht hat — in der Form „Du moechtest …" oder „Du hast … genannt"“* zu schreiben (`utils/storage_claims.py`, um Z. 945). Das stimmt, wenn der Mensch etwas beauftragt oder genannt hat. Satz 8 des Laufs ist so ein Fall: *„Du hast Physiotherapie am Mittwoch um 16 Uhr genannt!“* Auf eine Lesefrage gibt es aber keinen Wunsch, und die Form erfindet einen.
+
+**Gemessen** `[gemessen]`:
+
+- **Satz 2** (*„Hab ich morgen was vor?“*): Der Entwurf schrieb *„Ich hab den Termin schon fix für dich eingetragen, damit du ihn nicht vergisst.“* Der lesende Agent deckt das nicht mehr (Runde 0 `nicht_belegt`, `abgeschlossen: [timeline]`, `geschrieben: []`). Die Korrektur machte daraus *„Du möchtest, dass ich ihn für dich fix eintrage, damit du ihn nicht vergisst.“* Der Mensch hat nur gefragt.
+- **Satz 21:** Die Floskel *„Damit haben wir jetzt auch die letzten anstehenden Termine für das Wochenende erledigt und alles ist geklärt.“* traf den Bestandsabgleich mit `gefunden_nicht_genannt`, sein erster Lauf im Betrieb. Daraus wurde *„Du möchtest, dass alle anstehenden Termine für das Wochenende erledigt und geklärt sind sowie alles in der Liste steht …“*.
+- **`simnachher3`, Satz 19:** *„Du möchtest am Sonntag einen Termin beim Steuerberater …“*, aus dem wahren Satz *„Für Sonntag ist der Termin beim Steuerberater Hoffmann um 14:30 Uhr eingetragen“*.
+
+Von den vier Korrekturen in `simnachher4` legten zwei einen Wunsch in den Mund (Satz 2 und 21). Die dritte (Satz 6) behielt den Satz und stellte eine Wiedergabe der Frage voran (`PRUEFER-OHNE-LESESTAND`, oben), die vierte (Satz 8) war richtig.
+
+**Seit `57e9eb9` (17.10.2026) trifft es öfter.** Ein Lesevorgang deckt keine Schreibbehauptung mehr (`novaberg-node-tribunal.md`, *Ein Lesevorgang deckt nicht*). Jede Lesefrage, deren Entwurf eine Schreibung behauptet, geht deshalb jetzt in diese Form. Vorher deckte der Lesevorgang sie, und sie ging als falsche Bestätigung hinaus (`FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`, novaberg-bugs-gedaechtnis.md); in `simnachher4` gingen 0 Schreibbehauptungen auf Lesefragen hinaus.
+
+**Abgrenzung:** `novaberg-node-tribunal.md` benennt, dass die Wiedergabe-Form dem Nutzer etwas in den Mund legt, nur für den Fall *gelesener Bestand*. Für eine erfundene Behauptung nimmt es die Form als wahr an; gemessen ist hier das Gegenteil.
+
+**Wirkung.** Der Mensch liest, er habe etwas gewünscht oder beauftragt, das er nicht gesagt hat. Im Kalender entsteht nichts, aber die Antwort ist an dieser Stelle falsch über ihn selbst, und sie geht als Endfassung hinaus.
+
+**Reproduktion.** Eine Lesefrage stellen, deren Entwurf eine Schreibung behauptet (*„Hab ich morgen was vor?“*), und die Endfassung nach der Korrekturrunde lesen.
+
+**Geschlossen, wenn** auf eine Lesefrage keine Korrektur dem Menschen einen Wunsch oder Auftrag in den Mund legt.
+
+### `SACHLAGE-OBJEKT-OHNE-NAMEN` — ein Objekt ohne Namen verwirft die ganze Sachlage des Turns
+**Kategorie:** ANT
+
+**Rang:** **niedrig** — laut, mit festgelegtem Rückfall: Jeder Ausfall steht als Fehlerzeile im Serverlog, und die Sachlage des Vorturns gilt weiter; der Planner verwirft dann die Nähe und folgt dem Router. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — gemessen am 17.10.2026 in einer Simulation auf `a26b2cd` und im Serverlog (nur gezählt), am Code gehalten gegen HEAD `ae05667`.
+
+**Befund** `[gemessen]`: In Satz 20 (Reifenwechsel auf Freitag) schrieb das Modell der Sachlage einen verstümmelten Schlüssel. Serverlog, 17:37:01 UTC: `Sachlage: Objekt ohne Namen: {'name: ': ' , '} — verworfen`. Am Code: `graph/nodes/sachlage.py::_validate_objects` gibt schon bei einem einzigen Objekt ohne Namen `None` zurück, und die Sachlage des Vorturns gilt weiter (`lage=ausfall_uebernommen`). Der Planner verwarf darauf die Nähe (*„Sachlage vom Vorturn uebernommen (Ausfall)“*) und folgte dem Router; hier blieb das ohne Schaden. In `simnachher3` fiel die Sachlage in Satz 3 und 9 ebenso aus.
+
+**Menge** `[gemessen]`, nur gezählt: Im Serverlog stehen vom 15. bis 17.10.2026 11 solche Ausfälle, 8 *Objekt ohne Namen* und 3 `JSONDecodeError`. Ein älterer Anteil steht als Kommentar im Planner (`graph/nodes/planner.py`, *114 von 542 Sachlagen in 14 Tagen*, gemessen am 17.09.2026), nicht nach Grund getrennt.
+
+**Wirkung.** Der Turn verliert seine eigene Sachlage: Die Leser dahinter (Router, Planner, Speicherprüfung) arbeiten auf dem Stand des Vorturns, und ein einziges verstümmeltes Objekt verwirft alle übrigen mit. Der Rückfall ist laut und festgelegt; teuer wird er erst, wenn er häufig ist, und wie häufig er an der Form liegt, ist nicht gezählt.
+
+**Reproduktion.** Nicht gezielt herstellbar; im Serverlog die Fehlerzeilen des Sachlage-Knotens zählen, *Objekt ohne Namen* getrennt von `JSONDecodeError`.
+
+**Geschlossen, wenn** der Anteil der Turns mit `lage=ausfall_uebernommen` wegen Form gezählt und eine Abhilfe gemessen ist.
 
 ---
 
@@ -170,7 +254,9 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 **Nulllinie am Code vor dem Bau** `[gemessen 15.10.2026]` (Simulation an einem Prüf-Nutzer mit gesäten Terminen, `labor/2026-10-15_sim_timeline_notizen.py`): ausdrückliche Lesefragen 6 von 7 — es fehlte ein Termin im November, außerhalb des proaktiven Fensters —, Lesefragen ohne Merkmal 1 von 3. Am Bestand der letzten 60 Tage las der Turn die Timeline in 7 von 23 Nutzer-Turns mit *Termin*.
 
-**Gemessen nach dem Commit, in Simulationen an Prüf-Nutzern** (`labor/2026-10-15_sim_timeline_notizen/`): Die Frage, wann der Mensch zuletzt beim Friseur war (ein Termin zehn Tage zurück, außerhalb des proaktiven Fensters), war am 16.10.2026 zweimal richtig und am 17.10.2026 (`simnachher3`) falsch — der Router stellte nichts zu, und die Antwort sagte, sie finde keinen früheren Termin. Ob der Router dabei eine gezielte Anfrage setzte, steht nicht in der Reihe; das Bild passt zu einem Turn, der nur das proaktive Fenster las. Am selben Tag las eine Frage nach den Terminen eines Monats über den Agenten nur einen Tag (`ZEITRAUM-LIEST-EINEN-TAG`, novaberg-bugs-wissen.md, gebaut). **Der Eintrag bleibt offen:** Ob gezielt gelesen wird, hängt weiter am Router.
+**Gemessen nach dem Commit, in Simulationen an Prüf-Nutzern** (`labor/2026-10-15_sim_timeline_notizen/`): Die Frage, wann der Mensch zuletzt beim Friseur war (ein Termin zehn Tage zurück, außerhalb des proaktiven Fensters), war am 16.10.2026 zweimal richtig und am 17.10.2026 (`simnachher3`) falsch — der Router stellte nichts zu, und die Antwort sagte, sie finde keinen früheren Termin. ~~Ob der Router dabei eine gezielte Anfrage setzte, steht nicht in der Reihe; das Bild passt zu einem Turn, der nur das proaktive Fenster las.~~ → widerlegt am 17.10.2026 (Nachtrag unten): Gelesen wurde; verdorben hat es die Prüfung danach (`PRUEFER-OHNE-LESESTAND`). Am selben Tag las eine Frage nach den Terminen eines Monats über den Agenten nur einen Tag (`ZEITRAUM-LIEST-EINEN-TAG`, novaberg-bugs-wissen.md, gebaut). **Der Eintrag bleibt offen:** Ob gezielt gelesen wird, hängt weiter am Router.
+
+**Nachtrag, 17.10.2026 — Simulation `simnachher4`:** An einem frischen Prüf-Nutzer mit denselben 24 Sätzen (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, auf `a26b2cd`) lief der Leseschritt hinter dem Router in 24 von 24 Turns. Der Router setzte in **16 von 16** Terminsätzen eine gezielte Anfrage (`range` oder `search`), in den 8 Notizsätzen keine; in `simnachher3` war es ebenso. In der Friseurfrage suchte er `search` *Friseur* `backward`, der Leseweg im Turn fand den Termin, und der Entwurf nannte ihn richtig. Falsch wurde die Auskunft erst im Thinker, der den Lesestand des Turns nicht sieht — in `simnachher3` zu *„keinen früheren Termin gefunden“*, in `simnachher4` zu einem falschen Datum. **Die Vermutung oben ist damit widerlegt:** Gelesen wurde; verdorben hat es die Prüfung danach, jetzt geführt als `PRUEFER-OHNE-LESESTAND` (oben in dieser Datei). Die Instabilität sitzt damit hinter dem Router, nicht in ihm. Rang und Zustand bleiben, wie sie stehen.
 
 **Was die Messung nach dem Commit zeigen muss:** ob der Router bei einer Terminfrage eine gezielte Anfrage setzt — ob gezielt gelesen wird, hängt weiter an seinem Urteil; ohne Anfrage steht das proaktive Fenster da, mit seinem Zeitraum in der Kopfzeile. Und auf dem Aufgabenpfad — der Router stellt die Frage dem Timeline-Agenten zu — läuft der Verfasser nicht; dann erreicht `[TERMINE]` die Antwort nicht, und es gelten die Lesezeilen des Agenten (ohne Anker, ~~ohne Bezug zu heute~~ → seit dem 17.10.2026 dieselben Zeilen wie der Block, mit Bezug zu heute — gebaut, noch nicht committet). Ob eine Lesefrage diesen Weg nimmt, ist nicht gemessen. → **In der Simulation an einem Prüf-Nutzer vom 17.10.2026 nahm ihn eine Frage nach den Terminen eines Monats** — und der Agent las nur einen Tag (`ZEITRAUM-LIEST-EINEN-TAG`, novaberg-bugs-wissen.md).
 
@@ -315,31 +401,6 @@ elif response:                              …
 > **Geteilter Abschnitt.** Seine Eintraege liegen in mehreren Gegenstaenden; hier stehen die von **Antwortpfad**, die uebrigen in [Gedächtnis](novaberg-bugs-gedaechtnis.md). Ueberschrift und Text stehen in jedem empfangenden Teil.
 
 Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angehaltenem Pixie gefahren. Die Reihe liegt in `labor/bogen/bogen_vera_werkzeuge.yaml`, das Ergebnis in `labor/ergebnis/`.
-
-### `NOTIZAUFTRAG-GEHT-AN-TIMELINE`
-**Kategorie:** ANT
-
-**Rang:** ~~**niedrig**~~ → **hoch** (16.10.2026) — still: Die Antwort sagt *notiert*, geschrieben ist nichts, und der Mensch handelt danach; zusammen mit `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` geht die falsche Bestätigung ins Gedächtnis und erzeugt dort Notizen, die es nicht gibt. **Gemessen 2 von 2** an Notizaufträgen ohne Zeitangabe, sobald ein älterer Termin akut ist — kein Randfall, sondern die Lage jedes Gesprächs, in dem kurz vorher von einem Termin die Rede war. ~~der vermutete Mechanismus ist entfernt: Seit `a56a911` (17.09.2026) wählt der Planner nach Objektnähe statt nach Zeitwort (Notizen zuerst richtig 7 → 13 von 13), und eine Ablehnung reicht an den nächsten Dienst weiter (`server/graph/nodes/planner.py:392`, `:649-655`).~~ → Entfernt war nur der Mechanismus des Zeitworts; die Ordnung nach der größten Nähe öffnete einen zweiten (Zustand). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: offen bis zum Turn der Schließbedingung, der eine echte Schreibung erzeugt.
-
-**Zustand:** **Mechanismus belegt am 16.10.2026, gebaut am 16.10.2026; offen bis zur Messung** an einem frischen Prüf-Nutzer — **in der Lage des Defekts**: ein älterer Termin akut, dann ein Notizauftrag. Die zweite Simulation am 16.10.2026 erzeugte diese Lage nicht (unten); in ihr scheiterte außerdem der zweite Notizauftrag an `NOTIZ-BEFEHL-ALS-TITEL` (novaberg-bugs-wissen.md) → seit dem 17.10.2026 behoben und gemessen, im Archiv (`novaberg-bugs-archiv-wissen.md`).
-
-**Die dritte Simulation, 17.10.2026** — an einem frischen Prüf-Nutzer, mit dem Bau im Dienst (`labor/2026-10-15_sim_timeline_notizen/simnachher3/`, 24 Sätze): **Notizen 8 von 8**; alle vier Notizaufträge gingen an die Notizen und legten je eine Notiz mit einem Namen aus ihrem Inhalt an. **Die Lage des Defekts trat wieder nicht auf:** Die Sätze 21 bis 24 sollten sie erzeugen — eine Terminfrage unmittelbar vor einem Notizauftrag —, aber die Sachlage hielt den Termin nicht akut. Der Vorzug ist in der Lage des Defekts damit weiter im Betrieb ungemessen; der Eintrag bleibt offen.
-
-**Die zweite Simulation, 16.10.2026, 16:42–19:40 UTC** — an einem frischen Prüf-Nutzer, mit dem Bau im Dienst (`labor/2026-10-15_sim_timeline_notizen/simnachher2/`, 20 Sätze): Notizen **5 von 6** (in der ersten Simulation 2 von 6), Timeline 13 von 14 wie vorher. Beide Notizaufträge ohne Zeitangabe gingen an die Notizen, keiner an die Timeline. In diesem Lauf war in keinem der vier Notizsätze ein älterer Termin akut: Jeder trug nur sein eigenes Objekt, mit der Nähe zu den Notizen 0,4438 / 0,3592 / 0,4417 / 0,3978 gegen 0,3224 / 0,2828 / 0,3358 / 0,3255 zur Timeline (zweimal `zugeordnet`, zweimal `still_untergrenze`), und die Reihenfolge war je `["notizen"]` (Pipeline-Log, Router-Eintrag `berechnung` und Planner `frage:`). Der Router-Vorzug wurde nicht gebraucht; im ersten Notizauftrag nannte der Router als Ziel ohnehin den Inhalt der Bitte statt eines Dienstes (`nein (Ziel … trifft keinen Dienst)`). Die `router_vorzug=ja`-Zeilen im Log stammen aus anderen Turns. **Dass beide Notizaufträge diesmal an die Notizen gingen, liegt an der Sachlage dieses Laufs, nicht nachweislich am Bau; in der Lage des Defekts ist der Vorzug im Betrieb ungemessen**, belegt nur durch die Zeugen. Der erste Notizauftrag legte eine Notiz an, aber unter dem Namen *„Neue Notiz“*; der zweite endete in einer Rückfrage wegen der gleichnamigen Notiz und legte nichts an. **Offen bis:** Eine Simulation erzeugt die Lage gezielt — eine Terminfrage unmittelbar vor einem Notizauftrag — und der Notizauftrag legt eine Notiz an; das Anlegen hängt zusätzlich an `NOTIZ-BEFEHL-ALS-TITEL`.
-
-**Der Mechanismus, gemessen** in einer Simulation an einem Prüf-Nutzer am 16.10.2026 (`labor/2026-10-15_sim_timeline_notizen/simnachher1/`, Spur aus dem Pipeline-Log): Zwei Notizaufträge **ohne** Zeitangabe gingen an die Timeline, keiner erreichte die Notizen (Notizen 2 von 6, vor den Timeline-Bauten 6 von 6). Der Router nannte `notizen`. **Die Nähe eines älteren akuten Termins schlug das Objekt der Bitte:** Die Sachlage trug einen Termin als akut, nach dem im Turn niemand fragte; seine Nähe zur Timeline lag über der des Objekts der Bitte zu den Notizen (0,5282 gegen 0,4391; im zweiten Fall stand der Termin mit 0,5416 an der Timeline), und `service_order_for` ordnete nach der größten Nähe irgendeines akuten Objekts — `["timeline", "notizen"]`. **Die Timeline endete mit `fehler` statt `abgelehnt`** (*kein Datum*), und nur nach einer Ablehnung wird weitergegeben; keine Zeile in `notizen`. Vorher ging es nur zufällig gut: einmal war die Sachlage ausgefallen und die Nähe ordnete nicht, einmal lag der Termin mit 0,379 unter der Untergrenze von 0,4. Die Antwort bestätigte trotzdem — der zweite Defekt dieses Turns steht unter `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`.
-
-**Gebaut am 16.10.2026** (getestet, im Betrieb nicht gemessen): Nennt der Router einen Dienst (`management_target`) und erreicht ihn ein akutes Objekt, steht er unter den nahen vorn (`server/graph/nodes/planner.py::service_order_for`, `:432-450`); erreicht ihn keines, gilt die Ordnung nach dem Objekt (Fall `a56a911`), der Auffang der Priorität 4 ist keine Nennung. Die Zeile `Planner-Weiche` trägt `router_vorzug=`. 11 Zeugen in `server/tests/test_planner_objektwahl.py`, beide Fälle nachgebildet; Server-Suite 4422, grün. Bauart und benannte Grenze: `novaberg-node-planner.md`, *Der Router-Vorzug*. **Nicht geändert:** der Ausgang `fehler` der Timeline bei fehlendem Datum (ein echter Termin ohne Zeit braucht die Frage *„Wann?"*, keine Ablehnung) und die Sachlage, die den älteren Termin akut hält — beides bleibt eine Lücke, durch die ein falsch zugestellter Notizauftrag verloren geht.
-
-*Der Zustand davor:* ~~offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Kein Commit seit dem 18.08.2026 beruehrt die Dienstwahl fuer Notizen.~~ → überholt durch `a56a911` (17.09.2026) und den Bau vom 16.10.2026. Die Schlussbedingung verlangt einen echten Turn, und der ist nicht nebenbei zu fahren: Ein Notizauftrag gegen das Produktivsystem erzeugt eine echte Schreibung.
-
-**Befund.** *„Notier mir bitte: Gasvertrag kuendigen, Frist laeuft Ende September."* wurde an `timeline` zugestellt, nicht an `notizen`. Der Timeline-Dienst lehnte ab: *„Kein konkreter Auftrag erkennbar; lediglich eine Feststellung/Befindlichkeit."* **Null Zeilen in `notizen`.**
-
-**Warum es ein Defekt ist.** Der Notizen-Dienst existiert, ist im Nutzergraphen zugelassen (`graph_eignung == ["user"]`), führt `notiz_anlegen` unter seinen Fähigkeiten und nennt als Grenze ausdrücklich *„keine Termine — Zeitgebundenes gehoert nicht hierher"*. Er wurde nicht gewählt. Vermutlich zog *„Frist laeuft Ende September"* die Wahl zur Timeline — das ist eine Vermutung, belegt ist nur die Zustellung.
-
-**Reproduktion.** Ein Notizauftrag mit einer beiläufigen Zeitangabe im Text. **Seit dem 16.10.2026 auch:** ein Notizauftrag ohne Zeitangabe, während ein älterer Termin in der Sachlage akut ist und der Timeline näher steht als das Objekt der Bitte den Notizen.
-
-**Geschlossen, wenn.** Derselbe Satz erzeugt eine Zeile in `notizen`. **Dazu seit dem 16.10.2026:** Die beiden Notizaufträge der Simulation erzeugen an einem frischen Prüf-Nutzer je eine Zeile in `notizen`, und die Zeile `Planner-Weiche` trägt `router_vorzug=ja`.
 
 ### `TRIBUNAL-ERKENNT-ABBRUCH-OHNE-FOLGE`
 **Kategorie:** ANT

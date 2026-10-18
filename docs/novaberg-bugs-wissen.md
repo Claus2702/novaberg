@@ -1,9 +1,37 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → 27 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → 28 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — aus der Simulation `simnachher4` an einem Prüf-Nutzer
+
+Ein Befund aus einer Simulation an einem frischen Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, Samstag, 17.10.2026, 14:49–18:07 UTC, auf `a26b2cd`; dieselben 24 Sätze wie im Vorlauf `simnachher3`), von Hand gegen den Bestand im Augenblick der Frage bewertet und am Code gehalten gegen HEAD `ae05667`. Die übrigen Befunde des Laufs stehen in [Antwortpfad](novaberg-bugs-antwortpfad.md).
+
+### `TIMELINE-LESEN-SUCHT-MIT-FUELLWORT` — der Timeline-Agent sucht das Ziel einer Lesefrage wörtlich, mit Füllwörtern
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still: Der Agent meldet *keine Termine*, obwohl einer im Bestand steht. Bisher berichtigte der Thinker aus seinem Fenster; läge der Termin außerhalb davon, bliebe *kein Termin* stehen (vorhergesagt, nicht gemessen). Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — gemessen am 17.10.2026 in einer Simulation auf `a26b2cd`, am Code gehalten gegen HEAD `ae05667`.
+
+**Befund** `[gemessen]` (Satz 3, die Frage nach dem Termin beim Steuerberater; im Bestand *Steuerberater Hoffmann*, Montag, 19.10.2026, 14:30):
+
+- Die Klassifikation liefert `target='Termin beim Steuerberater'`, normalisiert dagegen *„Termin 'Steuerberater' anzeigen“*.
+- Die Suche nimmt das Ziel wörtlich — `agents/timeline/suche.py::raw_matches` gibt `target` als Suchwort an `TimelineRepository.find_by_keyword` — und meldet *„keine Termine zu "Termin beim Steuerberater"“*.
+- Der Entwurf folgte dem Agenten, der Thinker berichtigte aus seinem Fenster (vierzehn Tage voraus).
+- In `simnachher3` war es genauso: **2 von 2 Läufen.**
+
+**Dieselbe Klasse auf einem anderen Weg:** Ein freier Name wird wörtlich gesucht — wie bei `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN` (novaberg-bugs-antwortpfad.md), dort im Angebot der Sachlage, hier in der Suche des Timeline-Agenten.
+
+**Wirkung.** Eine Lesefrage nach einem Termin, die der Router dem Agenten zustellt, findet ihn nur, wenn das Ziel ohne Füllwörter im Titel steht. Innerhalb des Fensters des Thinkers wird das berichtigt; ein Termin weiter als vierzehn Tage voraus fehlt auch dort, und die Antwort sagte dann *kein Termin* (vorhergesagt, nicht gemessen).
+
+**Reproduktion.** Einen Termin mit einem Titel wie *Steuerberater Hoffmann* säen und nach dem *„Termin beim Steuerberater“* fragen; im Pipeline-Log das `target` der Klassifikation und die Meldung des Agenten lesen.
+
+**Geschlossen, wenn** eine Lesefrage mit Füllwörtern im Ziel den Termin findet, dessen Titel den Kern des Ziels trägt.
 
 ---
 
@@ -76,13 +104,15 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 
 **Rang:** **mittel** — still, die Antwort sagt *keine Termine*, und der Mensch handelt danach; auf dem Aufgabenpfad, also nur wenn der Router eine Lesefrage dem Timeline-Agenten zustellt. Vergeben am 17.10.2026 gegen HEAD `914217c`.
 
-**Zustand:** **gebaut am 17.10.2026** (getestet, noch nicht committet); **offen bis zur Messung** an einem frischen Prüf-Nutzer mit derselben Frage und einer Frage nach dem Wochenende.
+**Zustand:** **gebaut am 17.10.2026** (getestet, ~~noch nicht committet~~ → committet als `c0eecbb`); **offen bis zur Messung** an einem frischen Prüf-Nutzer mit derselben Frage und einer Frage nach dem Wochenende.
 
 **Befund** `[gemessen 17.10.2026]`, Simulation an einem Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher3/`): Auf die Frage, ob im November schon Termine stehen, stellte der Router dem Timeline-Agenten zu. Der meldete, für *„im November“* keine Termine gefunden zu haben, und die Antwort sagte, im November sei nichts eingetragen. Im Bestand stand ein Termin am 06.11.2026. In den beiden Simulationen davor lief derselbe Satz ohne den Agenten — über den Block `[TERMINE]` — und war richtig.
 
 **Mechanismus, am Code gelesen:** `agents/timeline/suche.py::suchen` machte aus dem Zeitausdruck ein Fenster von **einem Tag**; nur die Wörter *woche* und *monat* im Text weiteten es. *„im November“* ergab einen Tag im November, *„am Wochenende“* Montag bis Sonntag.
 
 **Gebaut:** Ein genannter Zeitraum ist ein Fenster über den ganzen Zeitraum — Monat und Monatsname, Woche, Wochenende als Samstag und Sonntag, Abstände —, dekodiert an einer Stelle (`utils/zeitparser.py::named_period`); ein einzelner Tag bleibt ein Tag. Ein Monatsname ohne Präfix ist der des laufenden Jahres. Der Leseast liest über `read_appointments`, ohne Anker, in den Zeilen von `appointment_line`. Zeugen: `tests/test_timeline_agent_reading.py` (48), darunter die Frage nach dem November mit einem Termin am 06.11. — vor dem Bau rot. Bauart: `novaberg-agent-timeline.md` §4.2, `novaberg-tool-timeparser.md` §10.7.
+
+**Nachtrag, 17.10.2026 — Simulation `simnachher4`:** An einem frischen Prüf-Nutzer, mit dem Bau im Dienst (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, auf `a26b2cd`), ist der Wortlaut der Schließbedingung erfüllt: Die Antwort auf die Frage nach dem November nannte den Elternabend am Samstag, 07.11.2026, und die Frage nach dem Wochenende (am Samstag, 17.10.2026) las Samstag und Sonntag. **Beide Fragen liefen aber am Agenten vorbei, also nicht auf dem Weg des Defekts:** Der Router stellte nicht zu, gelesen hat der Leseweg im Turn — für den November `range` 01.11.–30.11., für das Wochenende `range` vom 17.10. bis zum 18.10., 23:59. Am Agenten lief nur *nächste Woche*, als ganze Kalenderwoche gelesen, und *morgen* blieb ein Tag. Die November-Antwort trug zudem einen falschen Korrektursatz (`PRUEFER-OHNE-LESESTAND`, novaberg-bugs-antwortpfad.md). **Der Eintrag bleibt offen, bis der Router dem Agenten eine Monatsfrage zustellt.**
 
 **Reproduktion.** Eine Lesefrage nach einem Monat, die der Router dem Timeline-Agenten zustellt, mit einem Termin im Monat, der nicht auf dem gelesenen Tag liegt.
 
@@ -249,6 +279,10 @@ id | pfad                               | bezeichnung
 **Nicht gebaut:** eine Prüfung hinter der Antwort, die ein genanntes Datum gegen `event_time` hält. Die Lesezeilen des Timeline-Agenten (`agents/timeline/suche.py`) ~~tragen weiter keinen Bezug zu heute~~ → **tragen seit dem 17.10.2026 den Bezug zu heute** (gebaut und getestet, noch nicht committet): Der Leseast liest über `read_appointments` und schreibt die Zeilen von `appointment_line`, dieselben wie der Block `[TERMINE]` — und auf dem Aufgabenpfad sind sie das, was die Antwort bekommt. **Geschlossen wird erst nach der Messung** — die Schließbedingung unten fragt nach der Auskunft, nicht nach dem Prompt.
 
 **Nachgezogen am 17.10.2026, abends — auch das Angebot der Sachlage** (gebaut und getestet, ~~im Betrieb nicht gemessen~~ → im Betrieb gemessen am selben Abend: Der Leseweg kennzeichnet den vergangenen Termin, das Angebot blieb aber leer, weil die Objektnamen ihn nicht treffen — `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN`, `novaberg-thinking-lage_m.md` Scheibe 13; für diesen Eintrag kein Beleg in die eine oder andere Richtung). Ein weiterer Weg, auf dem ein Termin die Antwort erreicht, war das Angebot des Frame-Auflösers: Er las Kalenderzeilen selbst, über `find_by_keyword` ohne die Uhr des Turns, und bot sie als *Kalender TT.MM.JJJJ: Titel* an — ohne *vergangen* und ohne Bezug zu heute; aus diesem Angebot deckt der Auflöser offene Eigenschaften, und eine Deckung steht dem Verfasser im `[SACHLAGE]`-Block. Jetzt liest er über `read_appointments` mit der Uhr des Turns, und die Angebotszeile ist die von `appointment_line`: ein abgelaufener Termin trägt *(vergangen, vor N Tagen)* (`graph/nodes/sachlage_resolver.py::_offer_line`; Zeugen `tests/test_sachlage_calendar_reading.py`, `PastBoundaryTest`; `novaberg-thinking-lage_b.md` §4 Scheibe 6). Die Schließbedingung bleibt dieselbe.
+
+**Nachtrag, 17.10.2026 — Simulation `simnachher4`:** Ein Datenpunkt für die Schließbedingung, an einem frischen Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, auf `a26b2cd`): Der Zahnarzt (Sonntag, 18.10.2026) hieß in **6 von 6** Antworten richtig *morgen* (Satz 2, 10, 17, 18, 19 und 21) — mehrere Auskünfte über denselben Eintrag im selben Gespräch trugen dieselbe Relativangabe. Kein abgelaufener Termin wurde als kommender genannt. Gemessen ist ein Lauf; der Eintrag bleibt offen. In der Sache nahe steht `PRUEFER-OHNE-LESESTAND` (novaberg-bugs-antwortpfad.md): Dort verdirbt ein Prüfer hinter dem Verfasser ein richtig gelesenes Datum.
+
+**Gegenpunkt aus `simnachher3`** (`labor/2026-10-15_sim_timeline_notizen/simnachher3/`, Satz 18, *„Was ist morgen bei mir los?“*): Dort nannte die Antwort denselben, noch bevorstehenden Zahnarzt *„heute hattest du bereits“* — die umgekehrte Richtung (Kommendes als vergangen), derselbe falsche Bezug zu heute. Für die Schließbedingung zählt der Fall nicht, er gehört aber zur Klasse.
 
 **Diagnose am Code, 15.10.2026 — die Ursache ist kein einzelner Fehler, sondern das Fehlen jeder Zeitbeziehung entlang des Weges.** Die Lesewege der Timeline (Suche, Zeitraum, Repository) liefern abgelaufene, noch aktive Termine ohne Kennzeichen *vergangen*; die Prompts der Antwort tragen den Termin als absolutes Datum ohne Bezug zu heute; keine Prüfung hinter der Antwort hält ein genanntes Datum gegen `event_time`. Nur der proaktive Zweig des Timeline-Managers setzt den Bezug — mit einem Fenster ab heute minus drei Tagen, das einen dreizehn Tage alten Termin nicht aufnimmt. Welcher Weg im ursprünglichen Fall lief, ist ungemessen. ~~**Vor dem Bau steht eine Absichtsfrage beim Eigentümer:**~~ → entschieden am 15.10.2026 (unten): ob ein abgelaufener Termin bei einer Frage nach kommenden weggelassen, sonst als *vergangen* gekennzeichnet und mit vorgerechnetem Bezug zu heute gegeben wird (beides zusammen erfüllt die Schließbedingung unten).
 

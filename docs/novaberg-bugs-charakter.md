@@ -326,6 +326,16 @@ nicht aus einer Erhebung.
 
 **Warum der Eintrag trotzdem offen bleibt.** Ob die 14 Faelle **alle** ueber den fruehen Rueckkehrpfad liefen, ist nicht mehr feststellbar: Zum Zeitpunkt ihres Auftretens gab es die Spur nicht, und HumanGraph wie CharacterGraph teilen dieselbe `turn_id`. Ein zweiter Weg ist offen — ein Knoten hinter dem Responder, der eine Ausnahme wirft und den Graphen abbricht, sodass der Dispatcher gar nicht laeuft. **Erst die naechste Messung an der neuen Spur trennt die beiden.**
 
+**Nachtrag, 17.10.2026 — Simulation `simnachher4`: Der zweite Weg ist gefunden.** An einem frischen Prüf-Nutzer (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, auf `a26b2cd`) brach der Graph in Satz 6 nach zwei Korrekturrunden an der Rekursionsgrenze ab. Serverlog, 15:38:09 UTC: `GraphRecursionError: Graph-Lauf abgebrochen — der Stand bis hierher wird ausgeliefert` (LangGraph, *Recursion limit of 25*).
+
+- Der Event-Consumer liefert die Antwort aus (`services/event_consumer.py`, um Z. 400), aber der Dispatcher lief nicht. Es fehlen `turn_roh`, die Zeile des Dispatchers für die Figur, der KZG-Eintrag der Antwort und der Ausgang am Turn.
+- Die Grenze hängt an der Zahl der Schritte. In Satz 2 (Agent und eine Korrekturrunde) riss sie gleich **nach** dem Dispatcher, um 15:00:54 UTC, ohne Folge; in Satz 6 (zwei Runden) **davor**. In `simnachher3` waren Satz 19 und 21 dieselben Abbrüche, um 23:29 und 23:44 UTC.
+- **Zusammen verloren 3 von 3 Turns mit zwei Korrekturrunden ihren Dispatcher.**
+- Im Serverlog stehen seit dem 15.10.2026 neun solche Abbrüche, nur gezählt: einer in einem Gespräch des Eigentümers, `simvorher1` 1, `simnachher1` 2, `simnachher2` 1, `simnachher3` 2, `simnachher4` 2.
+- **Mitbetroffen:** Ohne Dispatcher geht der vermerkte Ausgang am Turn nicht ans Gedächtnis — Punkt 2 der Entscheidung in `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` (novaberg-bugs-gedaechtnis.md).
+
+Der Rang bleibt **mittel**, der Zustand bleibt **offen**: Die Schließbedingung unten verlangt, dass ein Turn mit erzeugter Antwort seine `turn_roh`-Zeile auch dann bekommt, wenn hinter dem Responder etwas ausfällt.
+
 **Der urspruengliche Befund, unveraendert:**
 
 **Befund.** Ein Turn erzeugte eine Antwort von **1722 Zeichen** (`Responder: Antwort generiert`, 20:43:00). Der `salienz`-Agent scheiterte danach an seinem eigenen JSON (`Expecting ',' delimiter`), die Praegung fiel aus, und der Dispatcher meldete drei Minuten spaeter: **`Dispatcher: turn_roh uebersprungen — keine Nova-Antwort (response leer)`**. In `pipeline_log` steht fuer diesen Turn **keine `turn_roh`-Zeile**.
