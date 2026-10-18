@@ -1672,7 +1672,7 @@ Aufgefallen beim Ergänzen eines Symbols im Reiter „Charakter": Die Änderung 
 
 **Kategorie:** [BAU] BAUART
 
-**Zustand:** ~~⬜ offen — entschieden, nicht gebaut.~~ → ⬜ offen — Schritt 1 (der laute Einstieg) gebaut am 18.10.2026, Schritt 2 (das Werkzeug mit den Behältern) nicht. Gebaut wird vor der ersten Änderung am Server, deren Prüfung die Daten des Betriebs nicht berühren darf.
+**Zustand:** ✅ erledigt am 18.10.2026 — beide Schritte gebaut und gemessen (Nachträge unten); der Rest, fünf Zeugen, die Bestand erwarten, steht als `ZEUGEN-ERWARTEN-BESTAND`. Bis dahin offen: ~~entschieden, nicht gebaut~~ (08.10.2026) → ~~Schritt 1 (der laute Einstieg) gebaut am 18.10.2026, Schritt 2 (das Werkzeug mit den Behältern) nicht~~. Gebaut wird vor der ersten Änderung am Server, deren Prüfung die Daten des Betriebs nicht berühren darf.
 
 Für eine Änderung am Server läuft die Suite unter `server/tests` in einem Wegwerf-Container aus dem Image des Servers: der Code schreibgeschützt als `/app`, `/knowledge` als Wegwerf-Kopie, keine API-Schlüssel, kein Neuladen der laufenden Nova. **Datenbank und Redis sind die des Betriebs.** Ein Zeuge, der schreibt, schreibt damit in Novas Gedächtnis — still und nicht rückholbar. Nulllinie dieser Anordnung am 04.10.2026: `Ran 4094 tests` / `OK`.
 
@@ -1694,7 +1694,32 @@ Gebaut wird in zwei Schritten: zuerst der Einstieg in diesem Repositorium, danac
 
 **Nachtrag, 18.10.2026 — Schritt 1 gebaut** (Tree `6f23a80`): `python -m schema_bootstrap` legt das Schema von null an und endet mit Ausgang 0 oder mit 1 und genau einer Zeile mit Datei und Grund; der Start nimmt denselben Weg und schluckt weiter. Gemessen an je eigenen Wegwerf-Behältern (`labor/2026-10-18_schema_bootstrap.sh`): 34 Tabellen wie über den Startweg, drei Störfälle laut, die Verbindungszeichenkette 0-mal in den Ausgaben; Server-Suite 4647 → 4692, `OK (expected failures=2)`. Beschrieben in der Chronik vom 18.10.2026 und in `novaberg-architecture.md` §10. **Für Schritt 2, beim Bau gefunden** `[Code]`: Der Import von `config` legt einen Datei-Handler auf `/logs/server.log` an (`server/config.py:54`) — im Behälter des Betriebs schriebe auch der Einstieg dorthin; und jeder Zeuge, der `main` oder `tools.db_manager` importiert, öffnet beim Import einen Pool zur Datenbank der Konfiguration (`tools/db_manager.py:21–26`). Dazu scheitert eine URL, die schon libpq ablehnt, beim Import von `schema_bootstrap` an diesem Pool, vor der Bereinigung, mit einem Traceback, dessen Meldung die URL nennen kann. Alles drei ist harmlos, solange die Suite nur die Verbindungen der Wegwerf-Behälter bekommt — und genau das muss Schritt 2 sichern. **Zustand:** offen, Schritt 2.
 
-**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql` · `server/schema_bootstrap.py` und `server/tools/core_schema.py` (seit 18.10.2026) · `SCHEMA-VON-NULL-SCHEITERT` (Archiv) · `AGENT-SETUP-IGNORIERT-URL` · `ZEUGE-NENNT-URL-DES-BETRIEBS`
+**Nachtrag, 18.10.2026 — Schritt 2 gebaut und gemessen:** Das Werkzeug, das die Suite fährt, liegt außerhalb dieses Repositoriums; hier ändert sich kein Code. Jeder Lauf legt ein eigenes internes Netz ohne Ausgang an, einen leeren Postgres und einen Redis aus den Images des Betriebs (Rolle `suite`, Datenbank `novaberg_suite`, Hosts `suite-pg` und `suite-redis`), baut das Schema mit `python -m schema_bootstrap` aus dem Arbeitsbaum und startet erst dann die Zeugen; danach entfernt er Behälter und Netz nach der Kennung des Laufs, auch nach Fehler und Signal, und prüft, dass nichts stehen blieb. Jede Störung endet mit Ausgang ≠ 0 und einer Zeile, bevor ein Zeuge läuft. `db/` hängt als `/db`, ein frischer Arbeitsbaum braucht keinen Einhängepunkt `server/db`. Der Weg gegen den Betrieb bleibt als ausdrücklicher Schalter mit Warnzeile, als Vergleichslauf. **Gemessen** gegen einen frischen Arbeitsbaum am HEAD `d2dfd50` (`labor/2026-10-18_suite_testdatenbank.sh`, Zahlen in `labor/2026-10-18_suite_testdatenbank_ergebnis.md`): in 21 Proben keine Verbindung aus dem Lauf zu Postgres oder Redis des Betriebs, die Behälter des Laufs nur in dessen Netz, die Schreibzähler des Betriebs unverändert. **Die erste Zahl:** `Ran 4692 tests` · `FAILED (failures=2, errors=1, skipped=2, expected failures=2)` gegen den Vergleichslauf `OK (expected failures=2)` — dieselbe Zahl an Tests wie vorhergesagt, fünf Zeugen erwarten Bestand (`ZEUGEN-ERWARTEN-BESTAND`). Eine kaputte Anweisung in `db/init.sql` endet mit Ausgang 4 ohne einen Zeugen; nach einem Abbruch durch `TERM` und nach zwei gleichzeitigen Läufen bleibt kein Behälter und kein Netz; der Arbeitsbaum ist danach unverändert. Die drei Hinweise aus Schritt 1 sind damit harmlos: Die Suite bekommt nur die Verbindungen der Wegwerf-Behälter und kein Log-Verzeichnis. **Zustand:** erledigt.
+
+**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql` · `server/schema_bootstrap.py` und `server/tools/core_schema.py` (seit 18.10.2026) · `SCHEMA-VON-NULL-SCHEITERT` (Archiv) · `AGENT-SETUP-IGNORIERT-URL` · `ZEUGE-NENNT-URL-DES-BETRIEBS` · `ZEUGEN-ERWARTEN-BESTAND`
+
+---
+
+## Befund: ZEUGEN-ERWARTEN-BESTAND — Fünf Zeugen der Server-Suite brauchen Bestandsdaten des Betriebs (18.10.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** mittel — die Suite ist in den Wegwerf-Behältern damit rot, und jede Änderung am Server misst gegen eine rote Nulllinie oder braucht den Vergleichslauf gegen den Betrieb, den die Testdatenbank ablösen soll.
+
+**Zustand:** ⬜ offen — gemessen am 18.10.2026, nichts gebaut.
+
+**Befund** `[gemessen]`: In den Wegwerf-Behältern — Schema von null, keine Zeile Bestand — werden drei Zeugen rot und zwei übersprungen; im Vergleichslauf gegen den Betrieb am selben HEAD (`d2dfd50`) sind alle grün:
+
+- `server/tests/test_sachlage_properties_schema.py`, `TheEntityIsBoundLaterTest.test_an_object_waits_unbound_and_is_bound_once` — `ValueError: not enough values to unpack (expected 2, got 0)` (Z. 259);
+- `server/tests/test_memory_context_speaker.py`, `DetailLoaderReadsSpeakerTest.test_active_node_carries_speaker` — *„kein aktiver Knoten im Bestand — der Zeuge braucht einen“*;
+- `server/tests/test_quality_profile_schema.py`, `DieQualitaetsKanteStehtTest.test_die_auspraegung_ist_vorzeichenlos` — *„Kein LZG-Knoten im Bestand — Zeuge untauglich“*;
+- `server/tests/test_quality_profile.py`, zwei `skipTest` — *„kein offener Kandidat im Bestand“* und *„zu wenige Kandidaten fuer einen Vergleich“* (gemessen mit dem Muster `test_quality_profile.py`: 52 Tests, 2 übersprungen).
+
+Ein Zeuge, der den Bestand liest, prüft das Gedächtnis von heute, nicht den Code; ein Übersprung mangels Bestand fällt in der Bilanz als Zahl auf, nicht als Fehler.
+
+**Was fertig wäre:** Jeder der fünf legt die Zeilen, die er braucht, selbst an und räumt sie ab; die Suite ist in den Wegwerf-Behältern grün und ohne Übersprung. Danach entfällt der Vergleichslauf gegen den Betrieb.
+
+**Zusammenhang:** `SERVER-SUITE-TESTDATENBANK`
 
 ---
 

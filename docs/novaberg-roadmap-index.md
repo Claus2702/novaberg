@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 961 Abschnitte in 7 Dateien — 449 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 962 Abschnitte in 7 Dateien — 450 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 43 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 44 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 961 Marken, 961 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 962 Marken, 962 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-18 | laufend | ## | [18.10.2026, 13:02 UTC — Die Server-Suite läuft in eigenen Wegwerf-Behältern und baut ihr Schema von null](novaberg-roadmap.md#18102026-1302-utc--die-server-suite-läuft-in-eigenen-wegwerf-behältern-und-baut-ihr-schema-von-null) |
 | 2026-10-18 | laufend | ## | [18.10.2026, 11:16 UTC — Ein lauter Einstieg baut das ganze Schema von null: `python -m schema_bootstrap`](novaberg-roadmap.md#18102026-1116-utc--ein-lauter-einstieg-baut-das-ganze-schema-von-null-python--m-schemabootstrap) |
 | 2026-10-18 | laufend | ## | [18.10.2026, 01:01 UTC — Die Pflicht-Rückfragen lesen ein Nein vor dem Ja: die Ja/Nein-Deutung in `charakter_identitaet` und `notizen` — gebaut und gemessen](novaberg-roadmap.md#18102026-0101-utc--die-pflicht-rückfragen-lesen-ein-nein-vor-dem-ja-die-janein-deutung-in-charakteridentitaet-und-notizen--gebaut-und-gemessen) |
 | 2026-10-17 | laufend | ## | [17.10.2026, 23:45 UTC — Ein frischer Server legt das Schema jedes Agenten an: der Aufbau von null scheiterte an der Reihenfolge der Agentenschemata — gebaut und gemessen](novaberg-roadmap.md#17102026-2345-utc--ein-frischer-server-legt-das-schema-jedes-agenten-an-der-aufbau-von-null-scheiterte-an-der-reihenfolge-der-agentenschemata--gebaut-und-gemessen) |
