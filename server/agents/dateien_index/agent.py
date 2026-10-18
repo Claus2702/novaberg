@@ -39,9 +39,11 @@ from agents.dateien_index.wandern import (
     Wanderung,
     wandern,
 )
+from agents.dateien_wurzeln import agent as dateien_wurzeln_agent
 from agents.dateien_wurzeln.aussenrand import wurzel_pruefen
 from config import DATEIEN_INDEX_MAX_PRO_LAUF, DEFAULT_USER_ID
 from memory.background_audit import write_audit
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.dateien_index")
 
@@ -97,6 +99,52 @@ class DateienIndexAgent(BaseAgent):
         riefe sonst `build_graph().invoke(state)` auf None auf.
         """
         return None
+
+    def setup(self, postgres_url: str) -> None:
+        """Legt erst das Schema der Wurzeln an, dann das eigene.
+
+        Die Indextabelle verweist mit `wurzel_id` auf `dateien_wurzeln(id)`.
+        Der Start ruft `setup` in der Reihenfolge der Ordnernamen, und
+        `dateien_index` kommt vor `dateien_wurzeln`: In einer leeren
+        Datenbank bricht das eigene Schema deshalb ab. Die Vorbedingung
+        steht hier, beim Abhaengigen, und nicht in der Reihenfolge des
+        Starts. Das Schema der Wurzeln ist idempotent; dass es beim Start
+        ein zweites Mal laeuft, aendert nichts.
+
+        Vorbedingung: `postgres_url` ist ein nicht leerer Text; beide
+        Schemadateien liegen neben ihrem Agenten.
+        Nachbedingung: `dateien_wurzeln` und `dateien_index` bestehen.
+        Fehlerfaelle: leere URL oder fehlende Schemadatei (ValueError,
+        FileNotFoundError); ein Fehler im Skript wirft weiter; fehlt
+        danach eine der beiden Tabellen, RuntimeError. Jeder Fehler steht
+        zuerst im Log, dann in der Ausnahme.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if not isinstance(postgres_url, str) or not postgres_url:
+            meldung = f"dateien_index: setup ohne Datenbank-URL: {postgres_url!r}"
+            logger.error(meldung)
+            raise ValueError(meldung)
+        for agent_datei in (dateien_wurzeln_agent.__file__, __file__):
+            sql_pfad = Path(agent_datei).parent / "init.sql"
+            if not sql_pfad.is_file():
+                # BaseAgent.setup ueberginge die fehlende Datei still.
+                meldung = f"dateien_index: Schemadatei fehlt: {sql_pfad}"
+                logger.error(meldung)
+                raise FileNotFoundError(meldung)
+
+        # ── Verarbeitung ────────────────────────────
+        dateien_wurzeln_agent.DateienWurzelnAgent().setup(postgres_url)
+        super().setup(postgres_url)
+
+        # ── Ausgabe-Verifikation ────────────────────
+        bestand: dict | None = db_manager.select_one(
+            "SELECT to_regclass('dateien_wurzeln') IS NOT NULL AS wurzeln_da, "
+            "to_regclass('dateien_index') IS NOT NULL AS index_da"
+        )
+        if not bestand or not bestand["wurzeln_da"] or not bestand["index_da"]:
+            meldung = f"dateien_index: Schema nach setup unvollstaendig: {bestand}"
+            logger.error(meldung)
+            raise RuntimeError(meldung)
 
     def periodic_task(self) -> PeriodicTask | None:
         """Kein Zeitplan, solange die Aenderungsrate nicht gemessen ist.
