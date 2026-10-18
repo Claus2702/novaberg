@@ -1,0 +1,1 @@
+"""Zeugen des Notizen-Dienstes."""
