@@ -135,3 +135,19 @@ DO $$ BEGIN
             FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
     END IF;
 END $$;
+
+-- ── fakten ↔ timeline FK ──────
+-- Dasselbe Uebergangs-Konstrukt: Die Spalte steht nackt im Kern
+-- (db/init.sql), der Fremdschluessel gehoert dem Timeline-Plugin. Ein Fakt
+-- ueberlebt seinen Termin; nur der Verweis verschwindet.
+
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE  conname = 'fakten_timeline_id_fkey'
+    ) THEN
+        ALTER TABLE fakten
+            ADD CONSTRAINT fakten_timeline_id_fkey
+            FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
+    END IF;
+END $$;

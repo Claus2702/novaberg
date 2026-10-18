@@ -453,9 +453,26 @@ CREATE TABLE IF NOT EXISTS fakten (
     last_touched        TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     wiedervorlage_am    TIMESTAMPTZ,
 
+    -- Woher der Fakt stammt. Pflicht und ohne Vorgabewert: Ein Vorgabewert
+    -- saehe aus wie eine echte Herkunft.
+    herkunft            VARCHAR(20)     NOT NULL,
+    -- Ob die Beziehung hoechstens einen aktiven Wert hat (wohnt in) oder
+    -- mehrere (hat Haustier). Pflicht und ohne Vorgabewert, aus demselben Grund.
+    einwertig           BOOLEAN         NOT NULL,
+    -- Nackte Spalte; den Fremdschluessel setzt server/agents/timeline/init.sql.
+    timeline_id         INTEGER,
+    -- Materialisierte Staerke der Kante, geschrieben vom taeglichen Verfallslauf.
+    -- Pflicht und ohne Vorgabewert: Ein Vorgabewert saehe aus wie ein Messwert
+    -- des Laufs. Eine neue Kante setzt ihr Schreiber.
+    staerke_decay       DOUBLE PRECISION NOT NULL,
+    decay_am            TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+
     CONSTRAINT chk_fakten_objekt CHECK (
         (objekt_id IS NOT NULL AND objekt_wert IS NULL) OR
         (objekt_id IS NULL AND objekt_wert IS NOT NULL)
+    ),
+    CONSTRAINT chk_fakten_herkunft CHECK (
+        herkunft IN ('mensch', 'nova', 'modell', 'recherche')
     )
 );
 
@@ -1097,6 +1114,27 @@ ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS verarbeitet_am TIMESTAMPTZ;
 
 -- ── fakten ─────────────────────────────────────
 ALTER TABLE fakten ADD COLUMN IF NOT EXISTS character_id VARCHAR(50) NOT NULL DEFAULT 'nova';
+-- herkunft und einwertig sind Pflicht ohne Vorgabewert. Im Bestand lassen sie
+-- sich nur an eine leere Tabelle anfuegen; traegt fakten Zeilen, bricht die
+-- Migration hier laut ab, statt ihnen eine erfundene Herkunft zu geben.
+ALTER TABLE fakten ADD COLUMN IF NOT EXISTS herkunft VARCHAR(20) NOT NULL
+    CONSTRAINT chk_fakten_herkunft
+    CHECK (herkunft IN ('mensch', 'nova', 'modell', 'recherche'));
+ALTER TABLE fakten ADD COLUMN IF NOT EXISTS einwertig     BOOLEAN NOT NULL;
+-- timeline_id: nackte Spalte; FK setzt server/agents/timeline/init.sql.
+ALTER TABLE fakten ADD COLUMN IF NOT EXISTS timeline_id   INTEGER;
+-- staerke_decay ist Pflicht ohne Vorgabewert, wie herkunft. Ein Bestand, der
+-- die Spalte schon mit Vorgabewert traegt, verliert ihn hier; ein zweiter Lauf
+-- aendert nichts.
+ALTER TABLE fakten ADD COLUMN IF NOT EXISTS staerke_decay DOUBLE PRECISION NOT NULL;
+ALTER TABLE fakten ALTER COLUMN staerke_decay DROP DEFAULT;
+ALTER TABLE fakten ADD COLUMN IF NOT EXISTS decay_am      TIMESTAMPTZ NOT NULL DEFAULT NOW();
+-- Hoechstens ein aktiver Wert je Paar, Subjekt und einwertiger Beziehung —
+-- erzwungen von der Datenbank, nicht nur vom Code. Steht hinter den ALTERs,
+-- weil der Bestand die Spalte einwertig erst dort bekommt.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_fakten_einwertig_aktiv
+    ON fakten (user_id, character_id, subjekt_id, attribut)
+    WHERE aktiv AND einwertig;
 
 -- ── notizen ────────────────────────────────────
 ALTER TABLE notizen ADD COLUMN IF NOT EXISTS zusammenfassung  VARCHAR(200);

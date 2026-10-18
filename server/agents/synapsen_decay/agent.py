@@ -20,6 +20,11 @@ synapsen_k §9, P6; queue-verfall_k §11; faszination_k §7.4, §7.7):
                            Stärke aus Salienz, Valenz, Anzahl und Präsenz, und
                            schreibt beides in **eine** Protokollzeile. Kein
                            Bestand: beide hängen am Zustand.
+ 11. run_fakten_decay    — materialisiert staerke_decay je aktiver Kante in
+                           `fakten` (exponentiell ab last_touched), mit eigener
+                           Rate und eigenem Audit-Eintrag. Er löst nie eine
+                           Kante ab: `aktiv` heißt dort *abgelöst*, nicht
+                           *verblasst*.
 
 **Der dritte Schritt steht hier und nicht in einem eigenen Agenten**, weil er
 so keinen zusätzlichen Platz im Heartbeat kostet — bei einem einzigen
@@ -61,6 +66,7 @@ from memory import (
     quality_profile,
 )
 from memory.background_audit import write_audit
+from memory.repositories.fakten_repository import FaktenRepository
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from services import price_watch
 from tools.db_manager import db_manager
@@ -204,6 +210,58 @@ class SynapsenDecayAgent(BaseAgent):
                 f"{stand} Faeden nachgefuehrt",
             )
         logger.info(f"Synapsen-Decay: {stand} Praegungsfaeden nachgefuehrt")
+        return ergebnis
+
+    def _fakten_verfall(self, run_id: str) -> dict:
+        """Materialisiert die Stärke jeder aktiven Fakten-Kante auf heute.
+
+        **Eigener Audit-Eintrag wie beim Queue-Verfall:** Ohne ihn wäre
+        hinterher nicht zu unterscheiden, ob der Lauf über einen leeren
+        Bestand ging oder gar nicht lief — und `fakten` ist heute leer.
+
+        **Eine Ausnahme wird hier zum Fehler im Ergebnis.** Der Lauf fängt
+        Datenbankfehler selbst, aber nicht den Verbindungsaufbau; ohne den
+        Fang fiele der ganze Tageslauf in seinen äußeren Zweig, und die
+        Ergebnisse der übrigen Schritte gingen verloren.
+
+        Vorbedingung: keine.
+        Nachbedingung: Das Ergebnis trägt `verarbeitet`, `stichtag` und
+            `error`; der Audit trägt `erledigt` oder `fehler`.
+        Fehlerfälle: Keine eigenen — jeder Fehler steht in `error`.
+
+        Args:
+            run_id: Die Korrelation dieses Tageslaufs.
+
+        Returns:
+            Das Ergebnis von `FaktenRepository.run_fakten_decay`.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        self._audit_log(
+            DEFAULT_USER_ID, "fakten_verfall", "gestartet", f"run_id={run_id}",
+        )
+
+        # ── Verarbeitung ────────────────────────────
+        try:
+            ergebnis: dict = FaktenRepository.run_fakten_decay(POSTGRES_URL)
+        except Exception as ex:  # noqa: BLE001
+            logger.exception("Synapsen-Decay: Fakten-Verfall geworfen")
+            ergebnis = {
+                "verarbeitet": 0,
+                "stichtag": None,
+                "error": f"fakten_verfall: {type(ex).__name__}: {ex}",
+            }
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if ergebnis["error"]:
+            self._audit_log(
+                DEFAULT_USER_ID, "fakten_verfall", "fehler", ergebnis["error"],
+            )
+        else:
+            self._audit_log(
+                DEFAULT_USER_ID, "fakten_verfall", "erledigt",
+                f"{ergebnis['verarbeitet']} aktive Kanten",
+            )
+        logger.info(f"Synapsen-Decay: {ergebnis['verarbeitet']} Fakten-Kanten verfallen")
         return ergebnis
 
     def _richtungen_protokollieren(self, run_id: str) -> int:
@@ -485,6 +543,11 @@ class SynapsenDecayAgent(BaseAgent):
                 "werte":        faszination_result["werte"],
             })
 
+            # 11. Der Verfall der Fakten-Kanten. Er steht vor dem
+            #     Preiswaechter, weil sein Fehler in die Fehlerliste darunter
+            #     gehoert; die Nummer folgt der Reihenfolge des Einbaus.
+            fakten_result: dict = self._fakten_verfall(run_id)
+
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
                 e
@@ -493,6 +556,7 @@ class SynapsenDecayAgent(BaseAgent):
                     queue_result["error"], faltung_result["error"],
                     einfaerbung_result["error"],
                     faszination_result["error"],
+                    fakten_result["error"],
                 )
                 if e is not None
             ]
@@ -553,6 +617,7 @@ class SynapsenDecayAgent(BaseAgent):
                 "praegung_faltung": faltung_result,
                 "praegung_einfaerbung": einfaerbung_result,
                 "faszination_bestand": faszination_result,
+                "fakten_verfall": fakten_result,
             }
 
             ende_inhalt = {
@@ -568,6 +633,7 @@ class SynapsenDecayAgent(BaseAgent):
                 "einfaerbung_abstand_max": einfaerbung_result["abstand_max"],
                 "faszination_gerechnet": faszination_result["gerechnet"],
                 "faszination_roh_median": faszination_result["roh_median"],
+                "fakten_verarbeitet": fakten_result["verarbeitet"],
             }
 
             if fehler:

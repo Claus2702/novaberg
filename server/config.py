@@ -3968,6 +3968,19 @@ QUEUE_SCHWELLE: float = float(os.getenv("QUEUE_SCHWELLE", "0.3"))
 # schenkt. Wer die Haltedauer aendern will, dreht an QUEUE_DECAY_RATE.
 QUEUE_VERSTAERKUNG_BOOST: float = float(os.getenv("QUEUE_VERSTAERKUNG_BOOST", "0.03"))
 
+# ─────────────────────────────────────────────
+# Faktengedaechtnis: Verfall der Kanten
+# ─────────────────────────────────────────────
+# Taegliche exponentielle Verfallsrate von fakten.staerke_decay, gerechnet ab
+# last_touched. **Eigene Konstante**, aus demselben Grund wie bei der Queue:
+# Eine Kalibrierung der Knoten soll die Fakten nicht still mitverschieben.
+# Startwert ist der des Knotenverfalls (LZG_KNOTEN_DECAY_RATE).
+# ⚠ Wachposten: nicht gemessen — begruendeter Startwert.
+#
+# Der Verfall setzt nie aktiv = FALSE: Dort heisst FALSE "abgeloest", nicht
+# "verblasst". Eine Schwelle ist Sache des Lesers.
+FAKTEN_DECAY_RATE: float = float(os.getenv("FAKTEN_DECAY_RATE", "0.0015"))
+
 # Cosine-Schwelle, ab der ein neuer KZG-Eintrag als Quasi-Dublette eines
 # bestehenden Knotens gilt und diesen verstaerkt, statt einen neuen Knoten
 # anzulegen. Bewusst hoch — Standardfall ist Knoten-Erhalt, nur echte

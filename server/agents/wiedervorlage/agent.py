@@ -189,11 +189,15 @@ class WiedervorlageAgent(BaseAgent):
                 f"WiedervorlageAgent: Entitaeten-Wiedervorlage fehlgeschlagen — {fehler}"
             )
 
-        # Fakten
+        # Fakten — im Paar mit der Identität dieses Agenten (ASSISTANT_USER_ID):
+        # Die Erinnerung spricht die Assistentin, also gilt ihre Beziehung.
         try:
-            for row in FaktenRepository.find_wiedervorlage_faellig(POSTGRES_URL, user_id):
+            for row in FaktenRepository.find_wiedervorlage_faellig(
+                POSTGRES_URL, user_id, ASSISTANT_USER_ID
+            ):
                 faellige.append({
                     "tabelle": "fakten",
+                    "user_id": user_id,
                     "id":      row["id"],
                     "titel":   row.get("attribut", ""),
                     "details": row.get("fakt_text", "") or row.get("attribut", ""),
@@ -285,7 +289,9 @@ Nenne den konkreten Inhalt. Formuliere NUR die Erinnerung, kein weiterer Text.""
             if tabelle == "entitaeten":
                 EntitaetenRepository.set_wiedervorlage(POSTGRES_URL, entry_id, neues_datum)
             elif tabelle == "fakten":
-                FaktenRepository.set_wiedervorlage(POSTGRES_URL, entry_id, neues_datum)
+                FaktenRepository.set_wiedervorlage(
+                    POSTGRES_URL, eintrag["user_id"], ASSISTANT_USER_ID, entry_id, neues_datum
+                )
             elif tabelle == "timeline":
                 TimelineRepository.set_wiedervorlage(POSTGRES_URL, entry_id, neues_datum)
             elif tabelle == "notizen":

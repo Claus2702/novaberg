@@ -11,11 +11,12 @@ Erweitert um:
 
 import logging
 
+import psycopg2
 import redis
 
 from graph.context_entry import ContextEntry
 from memory.repositories.entitaeten_repository import EntitaetenRepository
-from memory.repositories.fakten_repository import FaktenRepository
+from memory.repositories.fakten_repository import FaktenRepository, NewFact
 from memory.services.entity_resolution import (
     EntityResolutionService,
     ResolutionResult,
@@ -156,6 +157,13 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         user_id: str = state.get("user_id", "")
         if not user_id:
             return []
+        character_id: str = state.get("character_id", "")
+        if not character_id:
+            logger.error(
+                "FaktenManager.enrich_entries: kein character_id im State — "
+                "ohne Paar keine Fakten"
+            )
+            return []
 
         entries: list[ContextEntry] = []
 
@@ -170,7 +178,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
 
             for ent in entitaeten:
                 fakten: list[dict] = FaktenRepository.find_by_subjekt(
-                    postgres_url, ent["id"]
+                    postgres_url, user_id, character_id, ent["id"]
                 )
                 if not fakten:
                     continue
@@ -306,12 +314,24 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         """
         Verarbeitet pending_writes für Fakten.
         Unterstützt altes Format (facts aus Salienz) und neues M2-Format.
+
+        Das Gegenüber des Paares steht in `daten["character_id"]`; die
+        Schnittstelle der Manager übergibt nur `user_id`. Ein Write ohne
+        Gegenüber wird verworfen und protokolliert — ein Vorgabewert legte
+        den Fakt still in eine fremde Beziehung.
         """
         verarbeitet: int = 0
 
         for write in writes:
             aktion: str  = write.get("aktion", "")
             daten:  dict = write.get("daten", {})
+            character_id: str = daten.get("character_id", "")
+            if not character_id:
+                logger.error(
+                    f"FaktenManager: Write '{aktion}' ohne character_id verworfen "
+                    f"(user_id={user_id})"
+                )
+                continue
 
             # ── Neuer M2-Pfad: entitaeten + fakten vorhanden ──────
             if "entitaeten" in daten and "fakten" in daten:
@@ -320,6 +340,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                     entitaeten=daten["entitaeten"],
                     fakten=daten["fakten"],
                     user_id=user_id,
+                    character_id=character_id,
                     postgres_url=postgres_url,
                     redis_client=redis_client,
                     turn_id=daten.get("turn_id"),
@@ -344,6 +365,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                         entitaeten   = entitaeten,
                         fakten       = fakten,
                         user_id      = user_id,
+                        character_id = character_id,
                         postgres_url = postgres_url,
                         redis_client = redis_client,
                     )
@@ -370,6 +392,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                     attribut=daten.get("attribut"),
                     postgres_url=postgres_url,
                     user_id=user_id,
+                    character_id=character_id,
                     redis_client=redis_client,
                     turn_id=daten.get("turn_id"),
                 )
@@ -379,8 +402,9 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
             # ── Delete-Aktion (Invalidierung) ──────
             if aktion == "delete":
                 fakt_id: int | None = daten.get("fakt_id")
-                if fakt_id:
-                    FaktenRepository.invalidate(postgres_url, fakt_id)
+                if fakt_id and FaktenRepository.invalidate(
+                    postgres_url, user_id, character_id, fakt_id
+                ):
                     logger.info(f"FaktenManager: Fakt {fakt_id} invalidiert")
                     verarbeitet += 1
                 continue
@@ -399,12 +423,18 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         entitaeten:     list[dict],
         fakten:         list[dict],
         user_id:        str,
+        character_id:   str,
         postgres_url:   str,
         redis_client:   "redis.Redis",
         turn_id:        str | None = None,
     ) -> dict:
         """
         Verarbeitet Fakten aus der Promotion-Klassifikation.
+
+        Jeder Fakt gilt als vom Menschen gesagt (`herkunft='mensch'`) und als
+        einwertig: Ein neuer Wert löst jeden aktiven Wert zu Subjekt und
+        Beziehung ab. Die Ablösung läuft je Fakt in einer Transaktion über
+        `FaktenRepository.abloesen`.
 
         Returns:
             dict mit erfolg, aktion, details, braucht_klärung, klärungsfrage, agent_state
@@ -496,7 +526,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
 
             # ── Edge Invalidation Check ──────
             existing: dict | None = FaktenRepository.find_aktiv(
-                postgres_url, subjekt_id, attribut
+                postgres_url, user_id, character_id, subjekt_id, attribut
             )
 
             if existing:
@@ -507,15 +537,16 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                 neuer_wert: str = objekt_wert or str(objekt_id or "")
 
                 if alter_wert != neuer_wert:
-                    # Widerspruch → alten Fakt invalidieren
-                    FaktenRepository.invalidate(postgres_url, existing["id"])
+                    # Widerspruch → der alte Fakt wird unten in derselben
+                    # Transaktion abgelöst, in der der neue entsteht.
                     logger.info(
-                        f"FaktenManager: Fakt invalidiert (id={existing['id']}, "
+                        f"FaktenManager: Fakt wird abgelöst (id={existing['id']}, "
                         f"'{attribut}': '{alter_wert}' → '{neuer_wert}')"
                     )
                     ergebnisse.append(f"{attribut} aktualisiert: {fakt_text}")
                 else:
-                    # Gleicher Wert → nur last_touched wurde aktualisiert (via find_aktiv)
+                    # Gleicher Wert → nichts wird geschrieben, auch nicht
+                    # last_touched: Ein Lesen schreibt nicht.
                     logger.info(
                         f"FaktenManager: Fakt bestätigt (id={existing['id']})"
                     )
@@ -540,17 +571,27 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                 except Exception as fehler:
                     logger.warning(f"Fakt-Embedding fehlgeschlagen: {fehler}")
 
-            # ── INSERT neuer Fakt ──────
-            FaktenRepository.insert(
-                postgres_url=postgres_url,
-                user_id=user_id,
-                subjekt_id=subjekt_id,
-                attribut=attribut,
+            # ── Ablösen und anlegen, ganz oder gar nicht ──────
+            neu: NewFact = NewFact(
                 fakt_text=fakt_text,
+                herkunft="mensch",
+                einwertig=True,
                 objekt_id=objekt_id,
                 objekt_wert=objekt_wert,
                 embedding=embedding,
             )
+            conn = psycopg2.connect(postgres_url)
+            try:
+                with conn.cursor() as cur:
+                    FaktenRepository.abloesen(
+                        cur, user_id, character_id, subjekt_id, attribut, neu,
+                    )
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
 
         return {
             "erfolg": True,
@@ -570,11 +611,12 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         attribut:       str | None,
         postgres_url:   str,
         user_id:        str,
+        character_id:   str,
         redis_client:   "redis.Redis",
         turn_id:        str | None = None,
     ) -> dict:
         """
-        Fragt Fakten zu einer Entität ab.
+        Fragt Fakten des Paares zu einer Entität ab.
 
         Returns:
             dict mit erfolg, fakten, braucht_klärung, klärungsfrage
@@ -603,12 +645,12 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
 
         if attribut:
             fakt: dict | None = FaktenRepository.find_aktiv(
-                postgres_url, resolved.bekannte_id, attribut
+                postgres_url, user_id, character_id, resolved.bekannte_id, attribut
             )
             gefundene_fakten: list[dict] = [fakt] if fakt else []
         else:
             gefundene_fakten = FaktenRepository.find_by_subjekt(
-                postgres_url, resolved.bekannte_id
+                postgres_url, user_id, character_id, resolved.bekannte_id
             )
 
         return {
@@ -627,11 +669,12 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         attribut:       str,
         postgres_url:   str,
         user_id:        str,
+        character_id:   str,
         redis_client:   "redis.Redis",
         turn_id:        str | None = None,
     ) -> dict:
         """
-        Fragt die Historie eines Fakts ab (aktive + inaktive).
+        Fragt die Historie eines Fakts des Paares ab (aktive + inaktive).
         "Wo hat Michael früher gewohnt?".
 
         Returns:
@@ -660,7 +703,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
             }
 
         historie: list[dict] = FaktenRepository.find_historie(
-            postgres_url, resolved.bekannte_id, attribut
+            postgres_url, user_id, character_id, resolved.bekannte_id, attribut
         )
 
         return {
