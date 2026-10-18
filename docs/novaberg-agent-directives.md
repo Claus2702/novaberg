@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** DirektivenAgent (Verhaltensanweisungen, Arbeitsvertrag)
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 18. Oktober 2026, 01:01 UTC (`date -u`; §3 und §6.1: die Antwort auf die Pflicht-Rückfrage wird nicht gedeutet, auch ein Nein führt aus — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, am Code gelesen). Davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-agent-directives.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -67,6 +67,8 @@ validieren --+--> ausfuehren (bei resume=True)
 ```
 
 `validieren` routet nach drei Kriterien: bei `resume=True` → direkt `ausfuehren` (kein eigener Resume-Node wie beim CharakterIdentitaetAgent — der Direktiven-Agent rehydriert die Aktion aus Redis-Pending und spielt die Ausfuehrung sofort ab); bei bereits gueltiger `action` → `db_validieren`; sonst → `klassifizieren`. Verifikation und Confirm liegen inline in `ausfuehren` (kein eigener Node).
+
+> **Die Antwort wird dabei nicht gedeutet** — am Code gelesen am 18.10.2026, HEAD `ae05667`: `_nach_validierung` geht mit `resume` nach `ausfuehren` (`agent.py`, Z. 109–110), und `ausfuehren` liest `user_answer` nicht. **Auch ein Nein führt aus:** Wer *„Soll ich das ausfuehren? …“* verneint, löst die Aktion aus, nach der gefragt wurde. Offen als `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` (`novaberg-bugs-charakter.md`, Rang hoch).
 
 Der Classify-Node kann zusaetzlich zur Tabelle in §4 den Output `rejected` liefern (z.B. bei Kompliment/rhetorischer Frage statt echtem Direktiven-Auftrag) — dann bricht der Agent mit `status="rejected"` ab, ohne DB-Zugriff.
 
@@ -156,6 +158,8 @@ Nova: "Ich soll die Direktive 'Den Nutzer nicht Schatz nennen'
 User: "Ja"
 Nova: [fuehrt aus]
 ```
+
+**Auf ein „Nein“ führt der Dienst ebenso aus** (am Code gelesen am 18.10.2026, §3): Die Rückfrage stellt er, ihre Antwort liest er nicht — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, offen. Dasselbe gilt für *„… Trotzdem anlegen?“* (§6.2) und für die Frage nach dem Wiederherstellen (§6.3).
 
 Technisch ueber den bestehenden `interrupt()`/Resume-Flow. Ziel: Pflicht-Rueckfrage wieder entfernen, sobald die Validierung stabil genug ist.
 

@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 26 Eintraege, je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → 25 Eintraege (17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -9,20 +9,7 @@
 
 ## 17.10.2026 — aus dem Entwurf einer Testdatenbank für die Server-Suite
 
-Fünf Befunde zum Anlegen des Schemas, beim Entwurf einer eigenen Datenbank für die Server-Suite am Code gelesen gegen HEAD `ae05667`; der erste ist gemessen. Alle betreffen den Weg, auf dem der Server beim Start `db/init.sql` und die `init.sql` der Agenten anwendet (`main.py::lifespan`, `agents/__init__.py::discover_agents`, `agents/base.py::setup`).
-
-### `SCHEMA-VON-NULL-SCHEITERT` — ein frischer Server legt das Schema von `dateien_index` nicht an
-**Kategorie:** BAU
-
-**Rang:** **mittel** — im laufenden Betrieb ohne Wirkung, weil alle Tabellen schon stehen; ein frischer Behälter startet aber nicht, und `F-SCHEMA-2` (*frischer Behälter plus Schemadatei ergibt ein lauffähiges System*) ist verletzt. Blockiert jede Testdatenbank, die aus den Schemadateien gebaut wird. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
-
-**Zustand:** offen — gemessen am 17.10.2026, 22:51 UTC.
-
-**Befund** `[gemessen]`: Der Server wendet die `init.sql` der Agenten in der Reihenfolge der Ordnernamen an (`agents/__init__.py::discover_agents`, `sorted(agents_dir.iterdir())`, Z. 66; danach `main.py`, Z. 193–194: `setup` je Agent der Registry). `dateien_index` kommt damit vor `dateien_wurzeln`, und `agents/dateien_index/init.sql` legt `wurzel_id … REFERENCES dateien_wurzeln(id)` an (Z. 22). Gemessen in einem leeren Postgres aus dem Image des Betriebs, ohne Netz: `db/init.sql` und sieben der acht `init.sql` der Agenten laufen durch; `agents/dateien_index/init.sql` endet mit `ERROR: relation "dateien_wurzeln" does not exist`. Es ist über alle Schemadateien die einzige Abhängigkeit zwischen zwei Agenten (Suche nach `REFERENCES`, `ALTER TABLE` und `CREATE INDEX … ON`). `BaseAgent.setup` rollt zurück und wirft (`tools/db_manager.py::execute_script`), und `main.py` fängt das nicht ab: Der Start bricht ab. **Über den Startweg des Servers bestätigt** am 17.10.2026, 23:06 UTC — `schema_migrieren`, `discover_agents` und `setup` je Agent der Registry gegen einen leeren Postgres, der Code aus dem Image des Servers: Der Kern läuft durch (*„197 Statements geparst“*), danach `charakter` und `charakter_identitaet`; beim Agenten `dateien` endet der Lauf mit `UndefinedTable: relation "dateien_wurzeln" does not exist`. Danach stehen 27 Tabellen; der Betrieb trägt 39, davon 5 Altbestand, den keine Schemadatei mehr anlegt (`charakter_hash_vor_pp0`, `charakter_rad_messung_archiv`, `charakter_rad_messung_archiv_20260812`, `charakter_rad_messung_vor_pp0`, `lzg_migration_review`).
-
-**Wirkung.** Ein Aufbau von null — ein neuer Behälter, eine Testdatenbank, eine Wiederherstellung — kommt nicht bis zum ersten Turn. Im Betrieb fällt es nicht auf, weil `dateien_wurzeln` seit seiner Anlage besteht.
-
-**Geschlossen, wenn** ein leerer Postgres aus dem Image des Betriebs über den Startweg des Servers ein vollständiges Schema bekommt — gemessen, nicht nur am Code gelesen.
+Fünf Befunde zum Anlegen des Schemas, beim Entwurf einer eigenen Datenbank für die Server-Suite am Code gelesen gegen HEAD `ae05667`; der erste ist gemessen. Alle betreffen den Weg, auf dem der Server beim Start `db/init.sql` und die `init.sql` der Agenten anwendet (`main.py::lifespan`, `agents/__init__.py::discover_agents`, `agents/base.py::setup`). **Der erste, `SCHEMA-VON-NULL-SCHEITERT`, ist am 17.10.2026 behoben** (Tree `dbf9063`, am Aufbau von null gemessen) **und steht im Archiv** ([`novaberg-bugs-archiv-bauart.md`](novaberg-bugs-archiv-bauart.md)); hier stehen die übrigen vier.
 
 ### `AGENT-SCHEMA-STILL-VERLOREN` — ein Agent, dessen Import scheitert, verliert still sein Schema und sich selbst
 **Kategorie:** BAU
@@ -35,7 +22,9 @@ Fünf Befunde zum Anlegen des Schemas, beim Entwurf einer eigenen Datenbank für
 
 **Wirkung.** Ein Fehler beim Import eines Agenten schaltet seine Fachabteilung ab und lässt sein Schema aus, ohne dass Start oder Log es auf einer sichtbaren Stufe melden.
 
-**Geschlossen, wenn** ein Ordner, der eine `agent.py` trägt und nicht importiert werden kann, laut gemeldet wird; ein Ordner ohne `agent.py` darf leise bleiben.
+**Nachtrag, 17.10.2026 — ein zweiter stiller Weg derselben Klasse, gefunden beim Bau zu `SCHEMA-VON-NULL-SCHEITERT`** `[Code]`: `BaseAgent.setup` wendet die Schemadatei nur an, wenn sie daliegt — `if sql_pfad.exists():` ohne `else` (`server/agents/base.py`, Z. 488–495, die Bedingung in Z. 491; Docstring *„Schema anlegen via init.sql, falls vorhanden“*). Eine fehlende `init.sql` — umbenannt, gelöscht, nicht ins Image gekommen — ist darin nicht von einem Agenten ohne eigenes Schema zu unterscheiden: keine Zeile im Log, keine Ausnahme, der Start läuft weiter. Der Agent bleibt registriert; es fehlt nur sein Schema. **Für `dateien_index` und `dateien_wurzeln` fängt das seit dem Tree `dbf9063` die neue Vorbedingung ab:** `DateienIndexAgent.setup` prüft beide Schemadateien, bevor es eine anwendet, und wirft mit Log (`FileNotFoundError`). **Für die übrigen sechs Agenten mit Schemadatei nicht** (`charakter`, `charakter_identitaet`, `delegation`, `direktiven`, `timeline`, `wissensluecken`). Der Zeuge `test_jedes_andere_schema_laeuft_genau_einmal` in `server/tests/test_agent_schema_reihenfolge.py` erwartet jede `init.sql` unter `agents/`, die da ist — eine verschwundene sieht er nicht.
+
+**Geschlossen, wenn** ~~ein Ordner, der eine `agent.py` trägt und nicht importiert werden kann, laut gemeldet wird; ein Ordner ohne `agent.py` darf leise bleiben.~~ → ein Ordner, der eine `agent.py` trägt und nicht importiert werden kann, laut gemeldet wird (ein Ordner ohne `agent.py` darf leise bleiben), **und** die fehlende Schemadatei eines Agenten, der eine hat, den Start laut abbricht, statt still übergangen zu werden — wie ein Agent sein Schema anmeldet, wählt der Bau (ergänzt am 17.10.2026).
 
 ### `AGENT-SCHEMA-OHNE-SPERRFRIST` — das Schema der Agenten wartet beim Start unbegrenzt auf seine Sperre
 **Kategorie:** BAU

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 17. Oktober 2026, 14:36 UTC (`date -u`; §5 *Create*: ein Name nur mit Beleg, sonst aus dem Inhalt — committet `914217c`, gemessen 8 von 8). Davor 16. Oktober 2026, 16:02 UTC (`date -u`; die Grenze zur Timeline: ein Notizauftrag, den der Router den Notizen zustellt, erreicht sie zuerst, auch neben einem akuten älteren Termin — gebaut im Planner). Davor 19. September 2026, 13:08 UTC (Regel A der Vorprüfung durch eine Ausnahme für die laufende Liste ersetzt, `b31f2f5`; eine Ablehnung der Klassifikation trägt `kein_auftrag`, `968c56b`). Davor 18. September 2026, 21:14 UTC (eine blanke Zustimmung bindet an die angebotene Sache, ein Nein bleibt am Objekt, und jede Schreibung meldet ihre Verifikation — auch das Umbenennen). Davor 17. September 2026, 17:52 UTC (Notizen nur auf ausdrücklichen Auftrag: die Vorprüfung der Klassifikation lehnt Aussagen ab — Aussagen geschrieben 12 → 8 von 12; die Sperre am Empfang gemessen und zurückgenommen). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
+**Stand:** 18. Oktober 2026, 01:01 UTC (`date -u`; §7: die Antwort auf eine Rückfrage wird an Wortgrenzen gelesen, die Ablehnung zuerst — Tree `9153022`, gemessen an 41 Antwortformen). Davor 17. Oktober 2026, 14:36 UTC (`date -u`; §5 *Create*: ein Name nur mit Beleg, sonst aus dem Inhalt — committet `914217c`, gemessen 8 von 8). Davor 16. Oktober 2026, 16:02 UTC (`date -u`; die Grenze zur Timeline: ein Notizauftrag, den der Router den Notizen zustellt, erreicht sie zuerst, auch neben einem akuten älteren Termin — gebaut im Planner). Davor 19. September 2026, 13:08 UTC (Regel A der Vorprüfung durch eine Ausnahme für die laufende Liste ersetzt, `b31f2f5`; eine Ablehnung der Klassifikation trägt `kein_auftrag`, `968c56b`). Davor 18. September 2026, 21:14 UTC (eine blanke Zustimmung bindet an die angebotene Sache, ein Nein bleibt am Objekt, und jede Schreibung meldet ihre Verifikation — auch das Umbenennen). Davor 17. September 2026, 17:52 UTC (Notizen nur auf ausdrücklichen Auftrag: die Vorprüfung der Klassifikation lehnt Aussagen ab — Aussagen geschrieben 12 → 8 von 12; die Sperre am Empfang gemessen und zurückgenommen). Davor 17. September 2026, 14:27 UTC (die Klassifikation bekommt den Objektbezug als `[OBJEKT]`-Block — Scheibe 12 D2b; eine Aussage über einen Bedarf wird trotzdem geschrieben, Fundliste). Davor 17. September 2026, 10:58 UTC (**Merk-Bitten mit Zeitbezug erreichen die Notizen** — der Planner fragt nach dem Objekt, nicht nach der Zeitangabe, Scheibe 12 D1). Davor 16. September 2026, 19:43 UTC (Grenze zur Timeline: die Anmeldung trägt ein Objekt-Merkmal, geeicht und eingebettet, noch ohne Leser). Davor 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -54,7 +54,7 @@ validieren
 |-------|--------|--------|
 | `agent.py` | Klasse, Properties, build_graph(), Routing, _validieren | ~120 |
 | `klassifikation.py` | Classify-Node (LLM-Prompt, Session-Kontext) | ~110 |
-| `resume.py` | resume(), Disambiguierung, Duplikat-Aufloesung | ~145 |
+| `resume.py` | resume(), Disambiguierung, Duplikat-Aufloesung, die Deutung der Antwort | ~~~145~~ → ~390 (18.10.2026) |
 | `suche.py` | suchen(), SUCH_GEWICHTE, Score-Gap | ~180 |
 | `crud.py` | ausfuehren(), _create, _update, _delete, _append | ~270 |
 | `bestaetigung.py` | bestaetigen() | ~20 |
@@ -307,6 +307,18 @@ NotizenAgent erfordert Rueckfrage nur bei niedriger Konfidenz oder Konflikt (and
 | Disambiguierung | Mehrere Treffer, User waehlt | Matching auf Kandidaten, gewaehlte Notiz verarbeiten |
 | Duplikat | Notiz existiert bereits | User entscheidet: aktualisieren oder neu anlegen |
 | nicht_gefunden | add_content/remove_content + Notiz fehlt | `original_aufgabe` bewahrt, bei "ja" wird Notiz angelegt mit korrektem Inhalt |
+
+### Die Deutung der Antwort (seit 18.10.2026, Tree `9153022`)
+
+Bis dahin verglich `resume.py` Teilzeichenketten, und `_resume_nicht_gefunden` prüfte die Zustimmung **vor** der Ablehnung: *„nein, bitte nicht“* trägt `bitte` und legte die Notiz an (`ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`, im Archiv). Seither gilt:
+
+- **nicht_gefunden** (`_resume_nicht_gefunden`): Die Ablehnung wird zuerst geprüft und gewinnt. Sie sucht die Stämme aus `REFUSAL_STEMS` (`nein`, `ne`, `nee`, `nicht`, `kein`, `lass`, `abbruch`, `abbrech`, `stopp`, `stop`) als Teilzeichenkette, aber im Text ohne die Zustimmungswörter (`CONSENT_WORDS`, herausgenommen als ganze Wörter über `_without_words`): *gerne* und *meinetwegen* stimmen zu, jedes andere `ne` lehnt ab, auch *„ja, leg ne neue an“* — die sichere Richtung, der Mensch gibt den Auftrag dann noch einmal. Die Zustimmung zählt nur ganze Wörter (*ja* trifft *Jahr* nicht).
+- **Disambiguierung** (`_resume_disambiguierung`): Ein Name wählt nur als ganzes Wort, ein leerer Name zählt nicht. Danach Position oder ID als ganzes Wort (`_candidate_keys`): *„11 Uhr“* wählt nicht mehr den ersten Kandidaten, und eine fehlende ID zählt nicht mit — ihr leerer Text stand früher in jeder Antwort und wählte den ersten. Bei zwei Kandidaten *erste*/*zweite* (auch *oberen*, *unteren*, *anderen*) als ganze Wörter.
+- **Duplikat** (`_resume_duplikat`): *aktualisieren* und *neu* als ganze Wörter, die Formen einzeln (*neu* trifft *erneut* nicht).
+
+**Nicht gelesen wird eine Verneinung** bei Duplikat und Wahl: *„nein, keine neue“* legt eine neue Notiz an, *„nicht die erste, die zweite“* wählt die erste. Und Ablehnungswörter ohne Stamm in der Liste (*„vergiss es“*, *nö*, *niemals*) bestätigen neben einem Zustimmungswort. Beides steht in der Fundliste (18.10.2026).
+
+**Belege:** `server/tests/agents/notizen/test_resume.py`, 29 Testmethoden, darunter ein Klassen-Zeuge, der die alte Teilzeichenketten-Deutung aus `REFUSAL_STEMS` nachrechnet. Gemessen mit `labor/2026-10-18_zustimmung/deutung.py` an 41 Antwortformen, am Code vor und nach dem Bau: 20 gehen von Anlegen zu Ablehnung, *meinetwegen* von Ablehnung zu Anlegen. Ein Turn im Betrieb ist nicht gemessen.
 
 ### Kette
 

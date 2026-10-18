@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 958 Abschnitte in 7 Dateien — 446 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 960 Abschnitte in 7 Dateien — 448 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 40 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 42 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 958 Marken, 958 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 960 Marken, 960 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,8 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-18 | laufend | ## | [18.10.2026, 01:01 UTC — Die Pflicht-Rückfragen lesen ein Nein vor dem Ja: die Ja/Nein-Deutung in `charakter_identitaet` und `notizen` — gebaut und gemessen](novaberg-roadmap.md#18102026-0101-utc--die-pflicht-rückfragen-lesen-ein-nein-vor-dem-ja-die-janein-deutung-in-charakteridentitaet-und-notizen--gebaut-und-gemessen) |
+| 2026-10-17 | laufend | ## | [17.10.2026, 23:45 UTC — Ein frischer Server legt das Schema jedes Agenten an: der Aufbau von null scheiterte an der Reihenfolge der Agentenschemata — gebaut und gemessen](novaberg-roadmap.md#17102026-2345-utc--ein-frischer-server-legt-das-schema-jedes-agenten-an-der-aufbau-von-null-scheiterte-an-der-reihenfolge-der-agentenschemata--gebaut-und-gemessen) |
 | 2026-10-17 | laufend | ## | [17.10.2026, 20:29 UTC — Sachlage und Turn lesen Termine über einen Leseweg — gebaut, noch nicht committet](novaberg-roadmap.md#17102026-2029-utc--sachlage-und-turn-lesen-termine-über-einen-leseweg--gebaut-noch-nicht-committet) |
 | 2026-10-17 | laufend | ## | [17.10.2026, 14:36 UTC — Eine Notiz ohne genannten Namen heißt nach ihrem Inhalt — committet, und in der dritten Simulation gemessen: Notizen 8 von 8; dazu die Entscheidungen zu den Klärfällen](novaberg-roadmap.md#17102026-1436-utc--eine-notiz-ohne-genannten-namen-heißt-nach-ihrem-inhalt--committet-und-in-der-dritten-simulation-gemessen-notizen-8-von-8-dazu-die-entscheidungen-zu-den-klärfällen) |
 | 2026-10-17 | laufend | ## | [17.10.2026, 13:13 UTC — Der Umbau der Timeline: ein Zeitraum ist ein Fenster, ohne Titel wird über einen Zeitraum nie geschrieben, ein Lesevorgang deckt keine Schreibbehauptung — gebaut, noch nicht committet](novaberg-roadmap.md#17102026-1313-utc--der-umbau-der-timeline-ein-zeitraum-ist-ein-fenster-ohne-titel-wird-über-einen-zeitraum-nie-geschrieben-ein-lesevorgang-deckt-keine-schreibbehauptung--gebaut-noch-nicht-committet) |

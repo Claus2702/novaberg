@@ -1,9 +1,54 @@
 # Novaberg — Bugs, Archiv: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 29 Eintraege, je mit `CHA` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~29~~ → 30 Eintraege (18.10.2026: `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` aus dem offenen Teil), je mit `CHA` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 18.10.2026 — behoben und an den Funktionen der Deutung gemessen
+
+**Dieser Eintrag ist mit einem Bau geschlossen und gemessen** — an den Deutungsfunktionen beider Dienste, am Code vor und nach dem Bau, in einem Wegwerf-Behälter ohne Netz; nicht in einem Turn des Betriebs. Die Zustandszeile nennt Ort, Zeugen und Messung.
+
+---
+
+### `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` — die Ja/Nein-Deutung am Tor las Teilzeichenketten
+**Kategorie:** CHA
+
+**Rang:** **mittel** — still: *„ja, gerne“* ergibt `ABLEHNUNG`, weil `"ne"` als Teilzeichenkette in *gerne* steht und die Ablehnung zuerst geprüft wird (`server/agents/charakter_identitaet/resume.py:88-98`, am 05.10.2026 nachgerechnet). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; dieselbe Deutung steht in `server/agents/notizen/resume.py:135-154`, behoben ist nur `dateien_wurzeln`.
+
+**Zustand:** ✅ **behoben am 18.10.2026** im Tree `9153022` (der geprüfte Diff `ae05667..c990549`, fünf Dateien) — In `charakter_identitaet` (`_standard_interpretieren`) und `notizen` (`_resume_nicht_gefunden`) wird die Ablehnung zuerst geprüft und gewinnt; sie sucht ihre Wortstämme (`REFUSAL_STEMS`, auch `ne`) weiter als Teilzeichenkette, aber im Text ohne die Zustimmungswörter des Moduls (`CONSENT_WORDS`, herausgenommen über `_without_words`). Die Zustimmung zählt nur ganze Wörter, und in `notizen` wählt eine Ziffer, eine ID oder ein Name einen Kandidaten nur als ganzes Wort (`_candidate_keys`; *„11 Uhr“* wählt nicht mehr den ersten). **Zeugen:** `server/tests/agents/charakter_identitaet/test_resume.py` und neu `server/tests/agents/notizen/test_resume.py`, 7 → 58 Testmethoden, darunter je ein Klassen-Zeuge, der die alte Teilzeichenketten-Deutung aus den Stämmen des Moduls nachrechnet; die Gegenprobe ist vorhergesagt, nicht gelaufen. Server-Suite am geprüften Tree `c990549` (der Bau allein auf `ae05667`) `Ran 4635 tests` / `OK (expected failures=2)`, am `HEAD` `ae05667` `Ran 4584` / `OK (expected failures=2)`; Client-Suite `Ran 561` / `OK`. **Gemessen** mit `labor/2026-10-18_zustimmung/deutung.py` — 41 Antwortformen (synthetisch), beide Deutungen, am Code von `ae05667` gegen den geprüften Tree, in einem Wegwerf-Behälter ohne Netz: 23 Zeilen ändern sich. Von Ablehnung zu Zustimmung gehen genau vier (`charakter_identitaet` *„ja, gerne“*, *gerne*, *meinetwegen*; `notizen` *meinetwegen*), von Zustimmung zu Ablehnung 20, alle in `notizen`, darunter *„nein, bitte nicht“*, *„bitte nichts anlegen“*, *„mach das nicht“*. *„ja, leg ne neue an“* lehnt ab — die sichere Richtung, bewusst so.
+
+*Zustand bis 18.10.2026:* offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `server/agents/charakter_identitaet/resume.py:92` prueft weiter `any(kw in text for kw in ablehnungs_keywords)` mit `"ne"` in der Liste — und da Zeile 92 vor Zeile 99 steht, faellt `gerne` in die Ablehnung. **Ueber alle vier `resume.py` gegengeprueft:** Wortgrenzen kennt genau eine Stelle, `dateien_wurzeln/resume.py:114` (`re.search(rf"\b{re.escape(wort)}\b", text)`); ~~`notizen` und `timeline` tragen gar keine eigene Ja/Nein-Deutung mehr, der Satz zur uebernommenen Bauart im Befund ist damit ueberholt. Es bleibt **eine** defekte Deutung, nicht vier.~~ → **widerlegt am 18.10.2026, am Code von `9bcd214` und von `ae05667`:** `notizen/resume.py::_resume_nicht_gefunden` deutete selbst, mit Teilzeichenketten und **die Zustimmung zuerst** (Z. 131 vor Z. 148 bzw. Z. 135 vor Z. 154) — *„nein, bitte nicht“* trägt `bitte` und legte die Notiz an. Nur `timeline` deutet kein Ja oder Nein; seine Antworten schreiben nie. Es waren **zwei** defekte Deutungen, und die zweite fiel in die unsichere Richtung.
+
+**Befund.** Die Ja/Nein-Deutung der Torwächter vergleicht **Teilzeichenketten**. `_standard_interpretieren` in `agents/charakter_identitaet/resume.py` prüft `any(kw in text for kw in ...)` gegen eine Liste, die `ne` enthält — und `ne` steckt in `gerne`. Am laufenden Bestand gemessen:
+
+| Antwort | gedeutet als |
+|---|---|
+| `gerne` | **abgelehnt** |
+| `meinetwegen` | **abgelehnt** |
+| `ja, gerne` | **abgelehnt** |
+| `ja bitte` · `na klar` · `ok` | bestätigt |
+
+**Warum es ein Defekt ist.** *„Ja, gerne"* ist keine Randformulierung, sondern eine der häufigsten Zustimmungen im Deutschen. Der Mensch bestätigt am Tor, die Änderung unterbleibt, und die Meldung sagt ihm, **er habe abgelehnt**. Der Ausfall ist stumm: Es gibt keinen Fehler, keinen Log-Eintrag auf Fehlerniveau und kein Symptom außer der ausgebliebenen Wirkung.
+
+**Die Richtung ist die sichere, und das ist der Grund, warum es niemand gemerkt hat.** Eine fälschlich unterbliebene Änderung kostet eine Nachfrage; sie richtet keinen Schaden an und fällt deshalb nicht auf. Der Preis ist ein Tor, das der Mensch nicht bedienen kann, ohne die zulässigen Wörter zu kennen.
+
+**Reproduktion.** Drei Zeilen:
+
+```python
+from agents.charakter_identitaet.resume import _standard_interpretieren
+_standard_interpretieren("ja, gerne")   # -> 'abgelehnt'
+```
+
+**Herkunft des Fundes.** Nicht am Bestandscode gefunden, sondern an einem **Neubau derselben Bauart**: Der Wurzeln-Dienst hatte die Wortliste übernommen, und ein echter Turn mit `Ja, gerne.` endete ohne Schreibung. Dort ist es am 18.08.2026 auf Wortgrenzen (`\b…\b`) umgestellt und mit zwei Zeugen abgesichert; die Bestandsstelle blieb unberührt — **keine Reparatur im Vorbeigehen**.
+
+**Betroffen.** `charakter_identitaet` sicher. `notizen/resume.py` trägt laut Kommentar dieselbe Bauart und ist ~~**nicht nachgemessen** — das gehört zur Behebung, nicht zum Befund.~~ → **mit der Behebung gemessen** (18.10.2026): dieselbe Teilzeichenkette, und dort wurde die Zustimmung zuerst geprüft (oben).
+
+**Warum geschlossen:** Die Schließbedingung ist für die Dienste erfüllt, die ein Ja oder Nein deuten. Ein Zeuge je Dienst hält *„ja, gerne“* gegen Zustimmung und *ne* allein gegen Ablehnung (`test_consent_with_ne_inside_a_word_confirms` bzw. `test_consent_creates`, `test_every_ne_refuses_also_as_article`); `dateien_wurzeln` deutet seit dem 18.08.2026 an Wortgrenzen, `timeline` schreibt auf keine Antwort. **An Wortgrenzen gelesen wird nur die Zustimmung:** Die Ablehnung bleibt ein Stamm als Teilzeichenkette, bewusst weiter als die Bedingung, in der sicheren Richtung. Gemessen ist ein Lauf an den Deutungsfunktionen, am Tree, nicht am Commit und nicht in einem Turn des Betriebs. **Benannte Grenzen:** Der Direktiven-Dienst deutet seine Antwort gar nicht und führt auch ein Nein aus (`DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md)). Ablehnungswörter ohne Stamm in der Liste (*„vergiss es“*, *nö*, *niemals*) bestätigen neben einem Zustimmungswort, und die Verneinung bei *neu*, *aktualisieren* und bei der Wahl wird nicht gelesen (Fundliste, 18.10.2026).
+
+**Geschlossen, wenn.** Alle Torwächter deuten an Wortgrenzen, und ein Zeuge je Dienst hält `ja, gerne` gegen `bestaetigt` sowie `ne` allein gegen `abgelehnt`.
 
 ---
 

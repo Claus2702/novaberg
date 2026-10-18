@@ -1,9 +1,28 @@
 # Novaberg — Bugs: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 28 Eintraege, je mit `**Kategorie:** CHA`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, 28 Eintraege (18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 18.10.2026 — beim Abschluss der Ja/Nein-Deutung am Code gefunden
+
+### `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` — auf die Pflicht-Rückfrage der Direktiven führt auch ein Nein aus
+**Kategorie:** CHA
+
+**Rang:** **hoch** — still, gegen den Willen des Menschen, und es schreibt: Wer die Rückfrage verneint, löst die Aktion aus, nach der gefragt wurde. Vergeben am 18.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** offen — am Code gelesen am 18.10.2026 gegen HEAD `ae05667`, nicht gemessen.
+
+**Befund** `[Code]`: Der Direktiven-Dienst fragt vor jeder Schreiboperation nach (`server/agents/direktiven/crud.py::validieren_gegen_db`): *„Soll ich das ausfuehren? …“* für `create`, `update`, `delete` und `reactivate` (Z. 167–180, der Text in Z. 179), dazu *„… Trotzdem anlegen?“* neben einer ähnlichen aktiven Direktive (Z. 117) und *„… Soll ich die wiederherstellen statt eine neue anzulegen?“* neben einer gelöschten (Z. 128). Die Antwort kommt über den Rückweg zurück: `dispatch.py::_handle_resume` setzt `resume: True` und `user_answer`, und der Graph geht mit `resume` ohne jede Deutung nach `ausfuehren` (`server/agents/direktiven/agent.py::_nach_validierung`, Z. 109–110). Einen Resume-Knoten hat der Dienst nicht; `user_answer` steht im Ordner `agents/direktiven/` nur im Dispatch.
+
+**Wirkung.** *„Nein“* auf *„Soll ich das ausfuehren? Direktive loeschen (ID …)“* löscht die Direktive. Auf *„Trotzdem anlegen?“* legt ein Nein die ähnliche Direktive an, auf die Frage nach dem Wiederherstellen stellt es die gelöschte wieder her. Das Ergebnis meldet die Ausführung wie nach einem Ja: Die Rückfrage bietet eine Wahl an, die es im Code nicht gibt.
+
+**Herkunft.** Die Featureliste hielt am 21.08.2026 fest, dass der Dienst keine Wortliste trägt, und las das als Entwarnung für `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`. Ohne Deutung gibt es aber auch kein Nein. Gefunden am 18.10.2026 beim Abschluss jenes Eintrags.
+
+**Geschlossen, wenn** eine Antwort am Tor der Direktiven gedeutet wird und eine Ablehnung nichts ausführt.
 
 ---
 
@@ -412,38 +431,7 @@ Der Rang bleibt **mittel**, der Zustand bleibt **offen**: Die Schließbedingung 
 
 ## Chat 149 (18.08.2026) — beim Bau des Wurzeln-Dienstes am Bestand gefunden
 
-### `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`
-**Kategorie:** CHA
-
-**Rang:** **mittel** — still: *„ja, gerne“* ergibt `ABLEHNUNG`, weil `"ne"` als Teilzeichenkette in *gerne* steht und die Ablehnung zuerst geprüft wird (`server/agents/charakter_identitaet/resume.py:88-98`, am 05.10.2026 nachgerechnet). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; dieselbe Deutung steht in `server/agents/notizen/resume.py:135-154`, behoben ist nur `dateien_wurzeln`.
-
-**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `server/agents/charakter_identitaet/resume.py:92` prueft weiter `any(kw in text for kw in ablehnungs_keywords)` mit `"ne"` in der Liste — und da Zeile 92 vor Zeile 99 steht, faellt `gerne` in die Ablehnung. **Ueber alle vier `resume.py` gegengeprueft:** Wortgrenzen kennt genau eine Stelle, `dateien_wurzeln/resume.py:114` (`re.search(rf"\b{re.escape(wort)}\b", text)`); `notizen` und `timeline` tragen gar keine eigene Ja/Nein-Deutung mehr, der Satz zur uebernommenen Bauart im Befund ist damit ueberholt. Es bleibt **eine** defekte Deutung, nicht vier.
-
-**Befund.** Die Ja/Nein-Deutung der Torwächter vergleicht **Teilzeichenketten**. `_standard_interpretieren` in `agents/charakter_identitaet/resume.py` prüft `any(kw in text for kw in ...)` gegen eine Liste, die `ne` enthält — und `ne` steckt in `gerne`. Am laufenden Bestand gemessen:
-
-| Antwort | gedeutet als |
-|---|---|
-| `gerne` | **abgelehnt** |
-| `meinetwegen` | **abgelehnt** |
-| `ja, gerne` | **abgelehnt** |
-| `ja bitte` · `na klar` · `ok` | bestätigt |
-
-**Warum es ein Defekt ist.** *„Ja, gerne"* ist keine Randformulierung, sondern eine der häufigsten Zustimmungen im Deutschen. Der Mensch bestätigt am Tor, die Änderung unterbleibt, und die Meldung sagt ihm, **er habe abgelehnt**. Der Ausfall ist stumm: Es gibt keinen Fehler, keinen Log-Eintrag auf Fehlerniveau und kein Symptom außer der ausgebliebenen Wirkung.
-
-**Die Richtung ist die sichere, und das ist der Grund, warum es niemand gemerkt hat.** Eine fälschlich unterbliebene Änderung kostet eine Nachfrage; sie richtet keinen Schaden an und fällt deshalb nicht auf. Der Preis ist ein Tor, das der Mensch nicht bedienen kann, ohne die zulässigen Wörter zu kennen.
-
-**Reproduktion.** Drei Zeilen:
-
-```python
-from agents.charakter_identitaet.resume import _standard_interpretieren
-_standard_interpretieren("ja, gerne")   # -> 'abgelehnt'
-```
-
-**Herkunft des Fundes.** Nicht am Bestandscode gefunden, sondern an einem **Neubau derselben Bauart**: Der Wurzeln-Dienst hatte die Wortliste übernommen, und ein echter Turn mit `Ja, gerne.` endete ohne Schreibung. Dort ist es am 18.08.2026 auf Wortgrenzen (`\b…\b`) umgestellt und mit zwei Zeugen abgesichert; die Bestandsstelle blieb unberührt — **keine Reparatur im Vorbeigehen**.
-
-**Betroffen.** `charakter_identitaet` sicher. `notizen/resume.py` trägt laut Kommentar dieselbe Bauart und ist **nicht nachgemessen** — das gehört zur Behebung, nicht zum Befund.
-
-**Geschlossen, wenn.** Alle Torwächter deuten an Wortgrenzen, und ein Zeuge je Dienst hält `ja, gerne` gegen `bestaetigt` sowie `ne` allein gegen `abgelehnt`.
+`ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` ist am 18.10.2026 behoben (Tree `9153022`) und ins Archiv umgezogen: [`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md), Abschnitt *18.10.2026*.
 
 ## Offene Bugs
 

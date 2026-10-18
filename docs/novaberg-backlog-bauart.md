@@ -256,6 +256,8 @@ nicht ist, ist teurer als eine, die als Schaetzung kenntlich bleibt.
 
 **Was fertig waere:** Die Wirkung der Aufstellung steht in einer Datei, die jemand findet — der Aufbau von null erzeugt dieselbe Freigabe, die die Doku beschreibt.
 
+**Nachtrag, 17.10.2026:** ~~Ein Aufbau von null ist seither nicht gefahren worden~~ → Am 17.10.2026 ist ein Aufbau von null **der Datenbank** gefahren worden — ein leerer Postgres über den Startweg des Servers (`labor/2026-10-17_aufbau_von_null.sh`, `SCHEMA-VON-NULL-SCHEITERT`, novaberg-bugs-archiv-bauart.md). Die Aufstellung war darin nicht enthalten: Der Lauf hängt kein Verzeichnis ein und setzt keinen Außenrand. Die Lücke dieses Eintrags ist damit unverändert.
+
 **Prioritaet:** hoch
 
 
@@ -1500,6 +1502,8 @@ Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert
 
 `lzg_migration_review` existiert live (17 Spalten, genutzt von `tools/migrate_lzg_synapsen.py`), steht aber in keiner init.sql. Frisches Setup ⇒ Migrationstool bricht. Bricht die Handbuch-Zusage „frischer Container + init.sql = lauffähiges System". ⬜ Prio mittel
 
+**Nachtrag, 17.10.2026** `[gemessen]`: Nach einem Aufbau von null über den Startweg des Servers (`labor/2026-10-17_aufbau_von_null.sh`, mit dem Tree `dbf9063`) fehlt `lzg_migration_review` — eine von fünf Tabellen des Betriebs, die keine Schemadatei anlegt; die übrigen vier tragen `_vor_pp0` oder `_archiv` im Namen (`charakter_hash_vor_pp0`, `charakter_rad_messung_archiv`, `charakter_rad_messung_archiv_20260812`, `charakter_rad_messung_vor_pp0`). Die Aussage des Zustands ist damit gemessen.
+
 
 ## Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Definition im Repo (Chat 107)
 
@@ -1678,7 +1682,9 @@ Für eine Änderung am Server läuft die Suite unter `server/tests` in einem Weg
 
 **Entschieden vom Eigentümer am 08.10.2026:** Die Testdatenbank kommt ins Backlog und wird vor der ersten Server-Änderung gebaut, die sie braucht. Sie anzulegen ist DDL und wird vorher angekündigt.
 
-**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql`
+**Nachtrag, 17.10.2026 — der Entwurf der Bauart und der Aufbau von null:** Die Testdatenbank setzt einen Aufbau von null voraus — `db/init.sql` und die `init.sql` der Agenten auf dem Startweg des Servers in einen leeren Postgres. Der scheiterte bis zum Tree `dbf9063` an `dateien_index`, dessen Schema auf `dateien_wurzeln` verweist, das der Start erst danach anlegt (`SCHEMA-VON-NULL-SCHEITERT`, behoben und gemessen; [`novaberg-bugs-archiv-bauart.md`](novaberg-bugs-archiv-bauart.md)). Mit dem Tree bekommt ein leerer Postgres aus dem Image des Betriebs über den Startweg alle 34 Tabellen, die eine Schemadatei anlegt (`labor/2026-10-17_aufbau_von_null.sh`). **Offen als Fragen an den Eigentümer, nicht entschieden:** die Bauart der Isolation — eine eigene Datenbank in der Instanz des Betriebs oder eigene Wegwerf-Behälter für Postgres und Redis in einem internen Netz — und ob der Aufbau von null einen lauten Einstieg in `server/tools/` bekommt. Beim Entwurf am Code gefunden und eingetragen ([`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md)): `AGENT-SCHEMA-STILL-VERLOREN`, `AGENT-SCHEMA-OHNE-SPERRFRIST`, `AGENT-SETUP-IGNORIERT-URL` (`setup` schreibt in die Datenbank der Konfiguration, nicht in die übergebene) und `ZEUGE-NENNT-URL-DES-BETRIEBS`; dazu in der Fundliste: Der Import von `tools.db_manager` öffnet zwei Verbindungen zur Datenbank der Konfiguration. Der Zustand bleibt offen.
+
+**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql` · `SCHEMA-VON-NULL-SCHEITERT` (Archiv) · `AGENT-SETUP-IGNORIERT-URL` · `ZEUGE-NENNT-URL-DES-BETRIEBS`
 
 ---
 

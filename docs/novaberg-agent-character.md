@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterIdentitaetAgent (Persoenlichkeits-Saatgut)
-**Stand:** 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Boden-Warnung: Destillation rechnete bis zum Reset auf Zufallsgewichten, siehe §2)
+**Stand:** 18. Oktober 2026, 01:01 UTC (`date -u`; §3: die Deutung der Antwort auf die Pflicht-Rückfrage — die Ablehnung als Wortstamm im Text ohne die Zustimmungswörter, die Zustimmung als ganzes Wort, Tree `9153022`; die Namen der Rückgabe-Status berichtigt). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 12. Juli 2026, Chat 107 (Boden-Warnung: Destillation rechnete bis zum Reset auf Zufallsgewichten, siehe §2)
 **Pfad:** novaberg/docs/novaberg-agent-character.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -72,8 +72,8 @@ validieren --+--> resume ------+
 `validieren` routet nach drei Kriterien: bei `resume=True` → `resume`-Node (User-Antwort auf Pflicht-Rueckfrage); bei bereits gueltiger `action` direkt → `db_validieren`; sonst → `klassifizieren`. Verifikation und Confirm liegen inline in `ausfuehren` (kein eigener Node).
 
 **Resume-Node Rückgabe-Status (seit Chat 54):**
-- `status="running"` → User hat bestätigt, weiter zu CRUD-Ausführung
-- `status="inquiry"` → Antwort unklar, erneute Rückfrage
+- ~~`status="running"`~~ → `status="laufend"` → User hat bestätigt, weiter zu CRUD-Ausführung
+- ~~`status="inquiry"`~~ → `status="rueckfrage"` → Antwort unklar, erneute Rückfrage
 - `status="dismissed"` → User hat abgelehnt, keine Änderung. Ergebnis-Text: "Benutzer hat die Aktion abgelehnt. Keine Aenderung vorgenommen."
 
 Routing in `_nach_resume`:
@@ -81,6 +81,10 @@ Routing in `_nach_resume`:
 if status in ("fehler", "rueckfrage", "abgeschlossen", "dismissed"):
     return END
 ```
+
+*Berichtigt am 18.10.2026:* Hier standen `running` und `inquiry`; `resume.py` gibt am `HEAD` `ae05667` wie im Tree `9153022` `laufend` und `rueckfrage` zurück.
+
+**Die Deutung der Antwort** (`resume.py::_standard_interpretieren`, seit 18.10.2026, Tree `9153022`): Die Ablehnung wird zuerst geprüft und gewinnt. Sie sucht die Stämme aus `REFUSAL_STEMS` (`nein`, `ne`, `nee`, `nicht`, `kein`, `lass`, `abbruch`, `abbrech`, `stopp`, `stop`) als Teilzeichenkette, aber im Text ohne die Zustimmungswörter des Moduls (`CONSENT_WORDS`, herausgenommen als ganze Wörter über `_without_words`); die Zustimmung zählt nur ganze Wörter. Bis dahin lehnten *„ja, gerne“*, *gerne* und *meinetwegen* ab, weil `ne` darin steckt (`ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`, im Archiv). Die sichere Richtung hat einen Preis in der Bedienung: Auf *„… Soll ich die wiederherstellen statt eine neue anzulegen?“* lehnt *„ja, lieber eine neue“* ab — es wird weder wiederhergestellt noch angelegt. Ablehnungswörter ohne Stamm in der Liste (*„vergiss es“*, *nö*, *niemals*) bestätigen neben einem Zustimmungswort (Fundliste 18.10.2026). Belege: `server/tests/agents/charakter_identitaet/test_resume.py`, 29 Testmethoden; gemessen mit `labor/2026-10-18_zustimmung/deutung.py` an 41 Antwortformen.
 
 ```
 agents/charakter_identitaet/
@@ -295,7 +299,7 @@ Kein Embedding noetig -- wenige Eintraege pro User, komplett laden. Kein Decay, 
 
 ## 12. Konfiguration
 
-**Dateien:** `agents/charakter_identitaet/agent.py`, `agents/charakter_identitaet/klassifikation.py`, `agents/charakter_identitaet/crud.py` (enthaelt `validieren_gegen_db`), `agents/charakter_identitaet/dispatch.py`, `agents/charakter_identitaet/init.sql`, `agents/charakter_identitaet/AGENT.md`
+**Dateien:** `agents/charakter_identitaet/agent.py`, `agents/charakter_identitaet/resume.py` (die Deutung der Antwort, ergänzt am 18.10.2026), `agents/charakter_identitaet/klassifikation.py`, `agents/charakter_identitaet/crud.py` (enthaelt `validieren_gegen_db`), `agents/charakter_identitaet/dispatch.py`, `agents/charakter_identitaet/init.sql`, `agents/charakter_identitaet/AGENT.md`
 
 **Plugin:** `plugins/charakter_identitaet_manager/` (liefert Router-Prompt; das Laden der aktiven Anweisungen erfolgt im db_zugriff-Node am CG-Eingang, der Einbau in den Prompt im Responder)
 

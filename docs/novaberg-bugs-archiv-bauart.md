@@ -1,9 +1,36 @@
 # Novaberg — Bugs, Archiv: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 17 Eintraege, je mit `BAU` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~17~~ → 18 Eintraege (17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` aus dem offenen Teil), je mit `BAU` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 17.10.2026 — behoben und am Aufbau von null gemessen
+
+**Diese Eintraege sind mit einem Bau geschlossen und gemessen** — an einem leeren Postgres aus dem Image des Betriebs, über den Startweg des Servers; die Zustandszeile je Eintrag nennt Ort, Zeugen und Messung.
+
+---
+
+### `SCHEMA-VON-NULL-SCHEITERT` — ein frischer Server legt das Schema von `dateien_index` nicht an
+**Kategorie:** BAU
+
+**Rang:** **mittel** — im laufenden Betrieb ohne Wirkung, weil alle Tabellen schon stehen; ein frischer Behälter startet aber nicht, und `F-SCHEMA-2` (*frischer Behälter plus Schemadatei ergibt ein lauffähiges System*) ist verletzt. Blockiert jede Testdatenbank, die aus den Schemadateien gebaut wird. Vergeben am 17.10.2026 gegen HEAD `ae05667`.
+
+**Zustand:** ✅ **behoben am 17.10.2026** im Tree `dbf9063` (auf `ae05667`) — `DateienIndexAgent.setup` wendet zuerst das Schema von `dateien_wurzeln` an, über `DateienWurzelnAgent().setup`, dann das eigene, und prüft danach mit `to_regclass`, dass beide Tabellen bestehen (`server/agents/dateien_index/agent.py`). **Gemessen** mit `labor/2026-10-17_aufbau_von_null.sh` — ein leerer Postgres aus dem Image des Betriebs in einem internen Netz, der Startweg des Servers: am `HEAD` um 23:06 UTC Abbruch mit `UndefinedTable: relation "dateien_wurzeln" does not exist`, 27 Tabellen; mit dem Tree um 23:15 UTC alle 21 Agenten, `rc=0`, 34 Tabellen, gegen den Betrieb fehlen nur die fünf Alttabellen, die keine Schemadatei mehr anlegt (unten). **Zeugen:** 12 in `server/tests/test_agent_schema_reihenfolge.py`; Gegenprobe: die Vorbedingung entfernt → 3 von 12 rot (`test_wurzeln_laufen_vor_dem_index`, `test_jede_tabelle_besteht_vor_ihrem_bezug`, `test_wurzeln_vor_dem_eigenen_schema`). Server-Suite auf dem Tree im Wegwerf-Behälter `Ran 4596 tests` / `OK (expected failures=2)`, Nulllinie am Code von `ae05667` `Ran 4584 tests` / `OK (expected failures=2)`; Client-Suite `Ran 561 tests` / `OK`.
+
+*Zustand bis 17.10.2026, 23:15 UTC:* offen — gemessen am 17.10.2026, 22:51 UTC.
+
+**Der Bau, 17.10.2026** (Tree `dbf9063`, zwei Dateien): Die Vorbedingung steht beim Abhängigen und nicht in der Reihenfolge des Starts — die Reihenfolge der Ordnernamen bleibt. `DateienIndexAgent.setup` prüft vorher, dass die URL nicht leer ist und beide Schemadateien daliegen (`ValueError`, `FileNotFoundError`, je mit Log); das Schema der Wurzeln ist idempotent und läuft beim Start damit zweimal. Der Wurzel-Agent wird als Modul importiert (`from agents.dateien_wurzeln import agent as dateien_wurzeln_agent`), nicht als Klasse: `discover_agents` registriert jede `BaseAgent`-Unterklasse im Namensraum einer `agent.py` und fände ihn sonst beim Ordner `dateien_index` ein zweites Mal. Der neue Zeuge `server/tests/test_agent_schema_reihenfolge.py` fährt den Startweg (`discover_agents`, `setup` je Agent der Registry; ersetzt sind nur die Ausführung eines Skripts und die Nachfrage nach dem Bestand) und prüft die Reihenfolge, **die Klasse** — jede Tabelle, auf die eine Schemadatei sich bezieht (`REFERENCES`, `ALTER TABLE`, `CREATE … INDEX … ON`), besteht vor ihr, in `db/init.sql` oder in einem früher laufenden Skript —, die Gegenprobe dieses Messgeräts an synthetischen Skripten und die Vorbedingung für sich.
+
+**Befund** `[gemessen]`: Der Server wendet die `init.sql` der Agenten in der Reihenfolge der Ordnernamen an (`agents/__init__.py::discover_agents`, `sorted(agents_dir.iterdir())`, Z. 66; danach `main.py`, Z. 193–194: `setup` je Agent der Registry). `dateien_index` kommt damit vor `dateien_wurzeln`, und `agents/dateien_index/init.sql` legt `wurzel_id … REFERENCES dateien_wurzeln(id)` an (Z. 22). Gemessen in einem leeren Postgres aus dem Image des Betriebs, ohne Netz: `db/init.sql` und sieben der acht `init.sql` der Agenten laufen durch; `agents/dateien_index/init.sql` endet mit `ERROR: relation "dateien_wurzeln" does not exist`. Es ist über alle Schemadateien die einzige Abhängigkeit zwischen zwei Agenten (Suche nach `REFERENCES`, `ALTER TABLE` und `CREATE INDEX … ON`). `BaseAgent.setup` rollt zurück und wirft (`tools/db_manager.py::execute_script`), und `main.py` fängt das nicht ab: Der Start bricht ab. **Über den Startweg des Servers bestätigt** am 17.10.2026, 23:06 UTC — `schema_migrieren`, `discover_agents` und `setup` je Agent der Registry gegen einen leeren Postgres, der Code aus dem Image des Servers: Der Kern läuft durch (*„197 Statements geparst“*), danach `charakter` und `charakter_identitaet`; ~~beim Agenten `dateien`~~ → beim nächsten, `dateien_index`, endet der Lauf mit `UndefinedTable: relation "dateien_wurzeln" does not exist` (berichtigt am 17.10.2026: Das Messwerkzeug nennt einen Agenten erst nach seinem gelungenen `setup`; `dateien` war der letzte, der durchlief, und trägt keine Schemadatei). Danach stehen 27 Tabellen; der Betrieb trägt 39, davon 5 Altbestand, den keine Schemadatei mehr anlegt (`charakter_hash_vor_pp0`, `charakter_rad_messung_archiv`, `charakter_rad_messung_archiv_20260812`, `charakter_rad_messung_vor_pp0`, `lzg_migration_review`).
+
+**Wirkung.** Ein Aufbau von null — ein neuer Behälter, eine Testdatenbank, eine Wiederherstellung — kommt nicht bis zum ersten Turn. Im Betrieb fällt es nicht auf, weil `dateien_wurzeln` seit seiner Anlage besteht.
+
+**Warum geschlossen:** Die Schließbedingung ist erfüllt — ein leerer Postgres aus dem Image des Betriebs bekommt über den Startweg des Servers alle Tabellen, die eine Schemadatei anlegt, gemessen am 17.10.2026 um 23:15 UTC. Die fünf Tabellen, die gegen den Betrieb fehlen, sind der oben genannte Altbestand; für `lzg_migration_review` steht das als `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` im Backlog (`novaberg-backlog-bauart.md`). Gemessen ist ein Lauf, am Tree, nicht am Commit. **Benannte Grenzen, offen unter eigener Kennung** (alle drei in [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md)): Ein Agent mit kaputtem Import oder ohne seine `init.sql` verliert sein Schema weiter still (`AGENT-SCHEMA-STILL-VERLOREN`, mit Nachtrag vom 17.10.2026); die DDL der Agenten läuft ohne Sperrfrist (`AGENT-SCHEMA-OHNE-SPERRFRIST`); `setup` schreibt in die Datenbank der Konfiguration, nicht in die übergebene (`AGENT-SETUP-IGNORIERT-URL`).
+
+**Geschlossen, wenn** ein leerer Postgres aus dem Image des Betriebs über den Startweg des Servers ein vollständiges Schema bekommt — gemessen, nicht nur am Code gelesen.
 
 ---
 

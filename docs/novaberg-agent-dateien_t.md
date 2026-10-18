@@ -475,6 +475,8 @@ Der Werkzeugsatz trägt damit zwei Hälften mit verschiedenen Rechten, und die T
 | `suchtext` | `tsvector` | **der lexikalische Kanal** — bei 234 Dateien der stärkere |
 | `zuletzt_gelernt_hash` | der `inhalt_hash`, als zuletzt daraus gelernt wurde | ⬜ **ohne Schreiber** — §5.2a; sonst wäre „geändert seit dem Lernen" nicht von „nie gelernt" zu unterscheiden |
 
+**Die Indextabelle braucht die Wurzeltabelle schon beim Anlegen** (nachgetragen am 17.10.2026). `agents/dateien_index/init.sql` legt `wurzel_id` mit `REFERENCES dateien_wurzeln(id)` an, und der Start wendet die Schemata der Agenten in der Reihenfolge der Ordnernamen an — `dateien_index` vor `dateien_wurzeln`. In einer leeren Datenbank brach das Schema des Index deshalb ab (`SCHEMA-VON-NULL-SCHEITERT`, `novaberg-bugs-archiv-bauart.md`); im Betrieb fiel es nicht auf, weil die Wurzeltabelle seit ihrer Anlage besteht. **Seit dem Tree `dbf9063`** wendet `DateienIndexAgent.setup` zuerst das Schema der Wurzeln an, dann das eigene, und prüft danach, dass beide Tabellen bestehen; fehlt eine der beiden Schemadateien, wirft es, bevor es eine anwendet. Zeugen in `server/tests/test_agent_schema_reihenfolge.py`; die Regel dahinter steht in `novaberg-architecture.md` §10.
+
 ### 4.1 Dieselben vier Spalten fehlen der Bibliothek
 
 `autonomous_wissen` trägt heute **nur** `themen_embedding`. Die drei Kanäle aus §6.1 sind dort nicht vorhanden, obwohl `notizen` und `lzg_knoten` sie führen:
