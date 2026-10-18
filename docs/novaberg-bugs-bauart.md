@@ -26,6 +26,8 @@ Fünf Befunde zum Anlegen des Schemas, beim Entwurf einer eigenen Datenbank für
 
 **Geschlossen, wenn** ~~ein Ordner, der eine `agent.py` trägt und nicht importiert werden kann, laut gemeldet wird; ein Ordner ohne `agent.py` darf leise bleiben.~~ → ein Ordner, der eine `agent.py` trägt und nicht importiert werden kann, laut gemeldet wird (ein Ordner ohne `agent.py` darf leise bleiben), **und** die fehlende Schemadatei eines Agenten, der eine hat, den Start laut abbricht, statt still übergangen zu werden — wie ein Agent sein Schema anmeldet, wählt der Bau (ergänzt am 17.10.2026).
 
+**Nachtrag, 18.10.2026 — der Aufbau von null fängt einen der beiden Wege laut, der Start keinen** `[gemessen]`: `python -m schema_bootstrap` hält die angewandten Schemadateien gegen jede `init.sql` unter `server/` (`server/schema_bootstrap.py::unapplied_schemas`) und endet mit Ausgang 1 und einer Zeile, wenn eine davon von keinem registrierten Agenten erreicht wird — gemessen mit einem Ordner, der nur eine `init.sql` trägt (`labor/2026-10-18_schema_bootstrap.sh`, Fall *ordner_ohne*). Das fängt einen Agenten mit kaputtem Import, sofern sein Ordner eine `init.sql` trägt. Eine **fehlende** `init.sql` findet die Prüfung nicht, weil sie im Baum nicht steht; und der Start schweigt bei beiden Wegen weiter. Der Zustand bleibt offen.
+
 ### `AGENT-SCHEMA-OHNE-SPERRFRIST` — das Schema der Agenten wartet beim Start unbegrenzt auf seine Sperre
 **Kategorie:** BAU
 

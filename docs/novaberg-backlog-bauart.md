@@ -1672,7 +1672,7 @@ Aufgefallen beim Ergänzen eines Symbols im Reiter „Charakter": Die Änderung 
 
 **Kategorie:** [BAU] BAUART
 
-**Zustand:** ⬜ offen — entschieden, nicht gebaut. Gebaut wird vor der ersten Änderung am Server, deren Prüfung die Daten des Betriebs nicht berühren darf.
+**Zustand:** ~~⬜ offen — entschieden, nicht gebaut.~~ → ⬜ offen — Schritt 1 (der laute Einstieg) gebaut am 18.10.2026, Schritt 2 (das Werkzeug mit den Behältern) nicht. Gebaut wird vor der ersten Änderung am Server, deren Prüfung die Daten des Betriebs nicht berühren darf.
 
 Für eine Änderung am Server läuft die Suite unter `server/tests` in einem Wegwerf-Container aus dem Image des Servers: der Code schreibgeschützt als `/app`, `/knowledge` als Wegwerf-Kopie, keine API-Schlüssel, kein Neuladen der laufenden Nova. **Datenbank und Redis sind die des Betriebs.** Ein Zeuge, der schreibt, schreibt damit in Novas Gedächtnis — still und nicht rückholbar. Nulllinie dieser Anordnung am 04.10.2026: `Ran 4094 tests` / `OK`.
 
@@ -1692,7 +1692,25 @@ Für eine Änderung am Server läuft die Suite unter `server/tests` in einem Weg
 
 Gebaut wird in zwei Schritten: zuerst der Einstieg in diesem Repositorium, danach das Werkzeug, das die Behälter je Lauf anlegt und den Einstieg darin aufruft. **Zustand:** offen.
 
-**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql` · `server/schema_bootstrap.py` und `server/tools/core_schema.py` (geplant) · `SCHEMA-VON-NULL-SCHEITERT` (Archiv) · `AGENT-SETUP-IGNORIERT-URL` · `ZEUGE-NENNT-URL-DES-BETRIEBS`
+**Nachtrag, 18.10.2026 — Schritt 1 gebaut** (Tree `6f23a80`): `python -m schema_bootstrap` legt das Schema von null an und endet mit Ausgang 0 oder mit 1 und genau einer Zeile mit Datei und Grund; der Start nimmt denselben Weg und schluckt weiter. Gemessen an je eigenen Wegwerf-Behältern (`labor/2026-10-18_schema_bootstrap.sh`): 34 Tabellen wie über den Startweg, drei Störfälle laut, die Verbindungszeichenkette 0-mal in den Ausgaben; Server-Suite 4647 → 4692, `OK (expected failures=2)`. Beschrieben in der Chronik vom 18.10.2026 und in `novaberg-architecture.md` §10. **Für Schritt 2, beim Bau gefunden** `[Code]`: Der Import von `config` legt einen Datei-Handler auf `/logs/server.log` an (`server/config.py:54`) — im Behälter des Betriebs schriebe auch der Einstieg dorthin; und jeder Zeuge, der `main` oder `tools.db_manager` importiert, öffnet beim Import einen Pool zur Datenbank der Konfiguration (`tools/db_manager.py:21–26`). Dazu scheitert eine URL, die schon libpq ablehnt, beim Import von `schema_bootstrap` an diesem Pool, vor der Bereinigung, mit einem Traceback, dessen Meldung die URL nennen kann. Alles drei ist harmlos, solange die Suite nur die Verbindungen der Wegwerf-Behälter bekommt — und genau das muss Schritt 2 sichern. **Zustand:** offen, Schritt 2.
+
+**Zusammenhang:** `db/init.sql` · `server/agents/*/init.sql` · `server/schema_bootstrap.py` und `server/tools/core_schema.py` (seit 18.10.2026) · `SCHEMA-VON-NULL-SCHEITERT` (Archiv) · `AGENT-SETUP-IGNORIERT-URL` · `ZEUGE-NENNT-URL-DES-BETRIEBS`
+
+---
+
+## Befund: BEREINIGUNG-KENNWORT-AUSSERHALB-USERINFO — Ein Kennwort außerhalb der Userinfo der URL wird nur mit der ganzen URL bereinigt (18.10.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** niedrig — die Vorgabe `config.POSTGRES_URL` trägt das Kennwort in der Userinfo (`server/config.py:126`), dort greift die Bereinigung ganz.
+
+**Zustand:** ⬜ offen — am Code gelesen am 18.10.2026 gegen Tree `6f23a80`, nichts gebaut.
+
+**Befund** `[Code]`: `server/tools/core_schema.py::_url_password` liest das Kennwort nur aus der Userinfo (`postgresql://nutzer:kennwort@…`). libpq nimmt es auch als Query-Parameter (`postgresql://nutzer@db/x?password=…`) und in Schlüssel-Wert-Form (`host=… password=…`); dann gibt `_url_password` einen leeren Text zurück. `redact_connection` ersetzt in diesen Formen die ganze URL und `password=…`, nicht aber das Kennwort, wenn es allein in einem Text steht — und ihre Ausgabe-Verifikation sieht das nicht, weil sie nur die gefundenen Geheimnisse prüft. Der Docstring sagt mehr, als der Code tut (*„gelesen wie libpq es liest“*). Gefunden im Review des Einstiegs `schema_bootstrap`; dieselbe Lücke hatte die Lesart über `urlsplit` davor.
+
+**Was fertig wäre:** Ein Kennwort, das libpq aus der URL liest, wird in jeder ihrer Formen erkannt und ersetzt — oder der Docstring grenzt die Bereinigung ausdrücklich auf die Userinfo ein und der Einstieg weist die anderen Formen laut ab. Welches von beiden, ist eine Frage an den Eigentümer.
+
+**Zusammenhang:** `server/tools/core_schema.py::redact_connection` · `SERVER-SUITE-TESTDATENBANK`
 
 ---
 

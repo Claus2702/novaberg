@@ -1,9 +1,9 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 464 Eintraege mit Kennung — 383 offen, 81 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 465 Eintraege mit Kennung — 384 offen, 81 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 461 von 464 Eintraegen zugeordnet.
+**Kategorie:** 462 von 465 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
@@ -12,7 +12,7 @@
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 66 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 74 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 100 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 101 |
 
 ---
 
@@ -322,7 +322,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `CHA` | CHARAKTER | 74 |
 | `ANT` | ANTWORTPFAD | 66 |
 | `WIS` | WISSEN | 74 |
-| `BAU` | BAUART | 100 |
+| `BAU` | BAUART | 101 |
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 464 Eintraege
+## Alle 465 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -799,4 +799,5 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 1610 | offen | `PUB-ROLLENNAMEN-IM-BESTAND` | [Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt d](novaberg-backlog-bauart.md) |
 | BAU | 1649 | offen | `REGISTER-SPIEGEL-DURCHGANG` | [Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sons](novaberg-backlog-bauart.md) |
 | BAU | 1671 | offen | `SERVER-SUITE-TESTDATENBANK` | [Befund: SERVER-SUITE-TESTDATENBANK — Die Server-Suit](novaberg-backlog-bauart.md) |
-| BAU | 1699 | offen | `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` | [Befund: THINKER-IMPORTIERT-AUS-TIMELINE-AGENT — Der ](novaberg-backlog-bauart.md) |
+| BAU | 1701 | offen | `BEREINIGUNG-KENNWORT-AUSSERHALB-USERINFO` | [Befund: BEREINIGUNG-KENNWORT-AUSSERHALB-USERINFO — E](novaberg-backlog-bauart.md) |
+| BAU | 1717 | offen | `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` | [Befund: THINKER-IMPORTIERT-AUS-TIMELINE-AGENT — Der ](novaberg-backlog-bauart.md) |
