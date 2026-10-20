@@ -26,7 +26,10 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import re
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
+import plugins
 from agents import AgentRegistry, discover_agents
 from agents.nmcp import aushaenge_sammeln
 from plugins import discover_managers, get_combined_router_prompt, get_registry
@@ -69,26 +72,29 @@ class AbdeckungTest(unittest.TestCase):
     def test_manager_ohne_dienst_bleibt_erreichbar(self) -> None:
         """Ein Manager ohne gleichnamigen Dienst muss weiter im Brett stehen.
 
-        Im Bestand ist das `fakten`. Faellt er weg, ist das Faktengedaechtnis
-        vom Empfang nicht mehr erreichbar — und kein Fehler meldet es, weil
-        der Router einfach nie dorthin routet.
+        Der Bestand hat keinen solchen Manager mehr; der Zeuge bringt deshalb
+        einen synthetischen mit. Faellt sein Zweig weg, ist ein Manager ohne
+        Dienst vom Empfang nicht mehr erreichbar — und kein Fehler meldet es,
+        weil der Router einfach nie dorthin routet.
         """
-        agenten = set(AgentRegistry.alle())
-        ohne_dienst = [
-            ziel for ziel, m in get_registry().items()
-            if ziel not in agenten and (m.router_prompt or "").strip()
-        ]
-        self.assertTrue(
-            ohne_dienst,
-            "Der Bestand hat einen Manager ohne Dienst — sonst misst nichts",
-        )
-        brett = aushaenge_sammeln("user")
-        for ziel in ohne_dienst:
-            marke = _marken(get_registry()[ziel].router_prompt)
-            self.assertTrue(
-                marke <= _marken(brett),
-                f"Manager '{ziel}' fehlt im Brett",
+        attrappe = SimpleNamespace(router_prompt="ATTRAPPE-ERKENNUNG:\nnur fuer diesen Zeugen\n")
+        with patch.dict(plugins._registry, {"attrappe_ohne_dienst": attrappe}):
+            agenten = set(AgentRegistry.alle())
+            ohne_dienst = [
+                ziel for ziel, m in get_registry().items()
+                if ziel not in agenten and (m.router_prompt or "").strip()
+            ]
+            self.assertIn(
+                "attrappe_ohne_dienst", ohne_dienst,
+                "Die Attrappe ist ein Manager ohne Dienst — sonst misst nichts",
             )
+            brett = aushaenge_sammeln("user")
+            for ziel in ohne_dienst:
+                marke = _marken(get_registry()[ziel].router_prompt)
+                self.assertTrue(
+                    marke <= _marken(brett),
+                    f"Manager '{ziel}' fehlt im Brett",
+                )
 
 
 class DoppelungTest(unittest.TestCase):

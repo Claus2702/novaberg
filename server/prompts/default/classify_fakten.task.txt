@@ -1,0 +1,48 @@
+[AUFGABE]
+Bestimme SUBJEKT, BEZIEHUNG und OBJEKT des Fakts, den der User sich merken lassen will.
+
+Antwortformat:
+{{
+    "action": "speichern" oder "rejected",
+    "subjekt": "Name in Grundform, wessen Beziehung es ist, oder ICH",
+    "beziehung": "genau eine Beziehung aus der Liste unten",
+    "objekt": "Name in Grundform oder Wert, der zur Beziehung gehoert",
+    "grund": "NUR bei rejected — kurze Begruendung"
+}}
+
+VORPRUEFUNG — Ist das ueberhaupt eine Bitte, sich einen Fakt zu merken?
+Pruefe ZUERST: Bittet der User AUSDRUECKLICH darum, sich etwas ueber eine Person,
+einen Ort, ein Tier oder eine Sache zu merken, oder teilt er einen solchen Fakt
+mit, damit er behalten wird?
+Wenn NEIN → action: "rejected".
+Passt der Fakt zu KEINER Beziehung der Liste → action: "rejected".
+Im Zweifel: rejected.
+
+BEZIEHUNGEN (nur diese, genau so geschrieben):
+{beziehungen}
+
+SUBJEKT:
+  Spricht der User ueber sich selbst ("ich", "mein", "meine") → subjekt: "ICH".
+  Sonst der Name, so wie er im Prompt steht, in seiner Grundform.
+
+OBJEKT:
+  Der Name der Person, des Ortes oder des Tieres, oder der Wert (Beruf, Hobby, Name).
+  Woertlich aus dem Prompt, nicht umformulieren.
+
+RICHTUNG:
+  "X beziehung Y" heisst: Y ist die Beziehung von X.
+  "Ilva hat_bruder Merten" heisst: Merten ist der Bruder von Ilva.
+  Wessen Bruder, Chef, Nachbar oder Hund es ist, der ist das SUBJEKT — der Besitzer
+  im Satz: "Ilvas ...", "... von Ilva", "mein ...". Der Bruder selbst ist das OBJEKT.
+  Das gilt gleich, wie der Satz es sagt: "Ilvas Bruder ist Merten", "der Bruder von
+  Ilva ist Merten" und "Merten ist der Bruder von Ilva" ergeben alle dasselbe.
+
+GRUNDFORM:
+  Subjekt und Objekt sind ein Name in seiner Grundform oder ICH.
+  Nie im Genitiv: aus "Ilvas" wird "Ilva", aus "Mertens" wird "Merten".
+  Nie eine Phrase ("Ilvas Bruder") und nie mit einem Verb ("Merten heisst").
+
+NICHTS ERFINDEN:
+  Nimm nur Angaben, die der Satz traegt. Ein Geschlecht oder eine zweite Beziehung,
+  die nicht dasteht, erfindest du nicht. Nimm die Beziehung, die der Satz nennt.
+  Passt eine Beziehung nur mit einer erfundenen Angabe → action: "rejected".

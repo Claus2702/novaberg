@@ -752,7 +752,8 @@ def aushaenge_sammeln(graph_typ: str) -> str:
     Modell dieselbe Regel doppelt vorzulegen — und zwei Regeln, die
     dasselbe sagen, heben sich in der Wirkung auf. Deshalb gewinnt der
     Dienst, und der Manager kommt nur zum Zug, wenn kein Dienst seinen
-    Namen traegt (im Bestand ist das `fakten`).
+    Namen traegt (im Bestand ist das keiner mehr; der Zweig bleibt fuer
+    einen Manager, der ohne Dienst hinzukommt).
 
     **Die Negativfaelle sind der Zugewinn dieses Aggregators.** Auf der
     Manager-Flaeche stehen sie als Prosa mitten im Aushang und nur bei

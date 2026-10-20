@@ -331,7 +331,12 @@ class FaktenRepository:
 
         Die aktiven Zeilen werden mit `FOR UPDATE` gelesen, damit ein zweiter
         Schreiber derselben Kante wartet, statt zwischen Prüfen und Schreiben
-        einen Wert abzulösen.
+        einen Wert abzulösen. **Das gilt nur, wenn schon eine aktive Zeile da
+        ist:** `FOR UPDATE` sperrt vorhandene Zeilen, keine fehlenden. Auf eine
+        noch leere Kante schreiben zwei gleichzeitige Schreiber ohne zu warten.
+        Bei einer einwertigen Beziehung weist `uq_fakten_einwertig_aktiv` den
+        zweiten ab; bei einer mehrwertigen legen beide denselben Wert an — ein
+        sichtbares Duplikat, kein abgelöster Wert.
 
         Herkunft, Text und Einwertigkeit prüft `insert` — erst nach dem
         Invalidieren. Ein Fehler dort nimmt deshalb auch das Invalidieren
