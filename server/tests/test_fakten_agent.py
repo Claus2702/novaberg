@@ -4,15 +4,15 @@ Was diese Datei zusichert:
   * **Eine Beziehung des Kanons wird genau ein Fakt** mit Paar und Herkunft
     `mensch`; eine einwertige löst ab, eine mehrwertige fügt hinzu, derselbe
     Wert schreibt nichts.
-  * **Ohne Beziehung im Kanon lehnt der Dienst ab**, mit Korrektur, und
+  * **Ohne Beziehung im Kanon lehnt der Dienst ab** (`rejected`) und
     schreibt nichts.
   * **Zwei gleichnamige Entitäten ergeben eine Rückfrage**, nie eine
     Ablehnung, und es wird nichts geschrieben und nichts angelegt.
   * **Ein Fehler der Namenssuche ist `fehler`** und legt keine Entität an.
   * **`abgeschlossen` nur nach bestandener Verifikation.**
-  * **Anmeldung und Brett:** `fakten` ist ein Dienst am Empfang, ohne
-    Objekt-Merkmal, und sein Block trägt die Negativfälle statt der
-    Rücknahme der Zweifelsregel.
+  * **Anmeldung und Brett:** `fakten` ist ein Dienst der Queue, ohne
+    Objekt-Merkmal und ohne Dispatch des Planners; das Brett trägt keinen
+    Zettel für ihn, und das Plugin hat weder Text noch Intent.
   * **Die Wand:** Unter `agents/fakten/` kein Import aus `tools.` und kein
     `psycopg2`.
 
@@ -33,20 +33,19 @@ import psycopg2.extras
 from langgraph.graph import END
 
 import agents.fakten
-import plugins
-from agents import AgentRegistry, discover_agents
-from agents.fakten import dispatch as fakten_dispatch
+from agents import AgentRegistry, discover_agents, get_dispatch
 from agents.fakten.agent import FactsAgent
 from agents.fakten.bestaetigung import confirm
 from agents.fakten.beziehungen import KANON
-from agents.fakten.dispatch import dispatch_fakten
 from agents.fakten.klassifikation import build_classify_prompt, check_answer, classify
 from agents.fakten.suche import UNTERSCHEIDUNG_BITTE
-from agents.nmcp import _OHNE_ZWEIFEL, anmelden, aushaenge_sammeln
+from agents.nmcp import anmelden, aushaenge_sammeln
 from config import POSTGRES_URL
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.repositories.fakten_repository import FaktenRepository
 from plugins import discover_managers
+from plugins.fakten_manager.manager import FaktenManager
+from plugins.notizen_manager.manager import NotizenManager
 
 VEKTOR: list[float] = [1.0] + [0.0] * 767
 _MARKE: re.Pattern[str] = re.compile(r"^[A-Z][A-Z-]+-ERKENNUNG:", re.M)
@@ -130,15 +129,16 @@ class AgentWritesAFactTest(unittest.TestCase):
             "SELECT id, name, typ FROM entitaeten WHERE user_id = %s ORDER BY id", (self.user,),
         )
 
-    def _laufen(self, antwort: dict, bitte: str) -> tuple[dict, object]:
+    def _laufen(self, antwort: dict, bitte: str) -> tuple[dict, SimpleNamespace]:
         # Die Bitte trägt die Namen der Antwort: Die Klassifikation hält beide
         # gegeneinander und verwirft eine Antwort, deren Namen nicht dastehen.
+        # Der Auftrag geht direkt an den Subgraphen: Der Dispatcher ist nicht Teil
+        # dieses Baus.
         self.modell.chat.submit_sync.return_value.parsed = antwort
-        aus: dict = dispatch_fakten({
-            "user_prompt": bitte, "user_id": self.user, "character_id": self.char,
-            "agent_results": [],
-        })
-        return aus, aus["agent_results"][-1]
+        zustand: dict = _zustand(bitte)
+        zustand["kontext"] = {"user_id": self.user, "character_id": self.char}
+        aus: dict = AgentRegistry.finden("fakten").invoke(zustand)
+        return aus, SimpleNamespace(**aus)
 
     def test_a_relation_of_the_canon_writes_one_fact_with_pair_and_origin(self) -> None:
         ilva = self._entitaet("Ilva")
@@ -192,40 +192,38 @@ class AgentWritesAFactTest(unittest.TestCase):
             {"action": "speichern", "subjekt": "ICH", "beziehung": "braucht", "objekt": "Mehl"},
             bitte="merk dir, dass wir Mehl brauchen",
         )
-        self.assertEqual(ergebnis.status, "abgelehnt")
-        self.assertTrue(ergebnis.korrektur.kein_auftrag)
-        self.assertIn("braucht", ergebnis.korrektur.beleg)
-        self.assertIsNone(aus["agent_name"])
+        self.assertEqual(ergebnis.status, "rejected")
+        self.assertIn("braucht", aus["schritte"][-1]["ergebnis"])
         self.assertEqual(self._fakten(), [])
         self.assertEqual(self._entitaeten(), [])
 
     def test_a_rejection_by_the_model_is_a_refusal(self) -> None:
-        _, ergebnis = self._laufen({"action": "rejected", "grund": "Einkaufsliste"},
-                                   bitte="merk dir, dass wir Mehl brauchen")
-        self.assertEqual(ergebnis.status, "abgelehnt")
-        self.assertIn("Einkaufsliste", ergebnis.korrektur.beleg)
+        aus, ergebnis = self._laufen({"action": "rejected", "grund": "Einkaufsliste"},
+                                     bitte="merk dir, dass wir Mehl brauchen")
+        self.assertEqual(ergebnis.status, "rejected")
+        self.assertIn("Einkaufsliste", aus["schritte"][-1]["ergebnis"])
         self.assertEqual(self._fakten(), [])
 
     def test_two_lenas_ask_back_and_write_nothing(self) -> None:
         self._entitaet("Lena")
         self._entitaet("Lena")
         vorher = self._entitaeten()
-        aus, ergebnis = self._laufen(
+        _, ergebnis = self._laufen(
             {"subjekt": "Lena", "beziehung": "hat_haustier", "objekt": "Rufus"},
             bitte="merk dir, dass Lena einen Hund namens Rufus hat",
         )
         self.assertEqual(ergebnis.status, "rueckfrage")
         self.assertIn("Lena", ergebnis.rueckfrage)
         self.assertTrue(ergebnis.rueckfrage.endswith(UNTERSCHEIDUNG_BITTE))
-        self.assertEqual(aus["management_result"], ergebnis.rueckfrage)
         self.assertEqual(self._fakten(), [])
         self.assertEqual(self._entitaeten(), vorher)
 
     def test_a_question_back_leaves_no_waiting_state(self) -> None:
-        # Ohne Wartezustand kennt der Dispatch keinen Speicher, in dem ein
+        # Ohne Wartezustand kennt kein Modul des Dienstes einen Speicher, in dem ein
         # `pending_agent:*` entstehen könnte; das Muster mit Wartezustand schon.
         from agents.notizen import dispatch as notizen_dispatch
-        self.assertFalse(hasattr(fakten_dispatch, "redis_manager"))
+        for quelle in Path(agents.fakten.__file__).parent.glob("*.py"):
+            self.assertNotIn("redis_manager", quelle.read_text(encoding="utf-8"), quelle.name)
         self.assertTrue(hasattr(notizen_dispatch, "redis_manager"))
 
     def test_a_failed_name_search_is_an_error_and_creates_nothing(self) -> None:
@@ -407,33 +405,54 @@ class AnswerCheckTest(unittest.TestCase):
 
 
 class RegistrationAndBoardTest(unittest.TestCase):
-    """`fakten` ist ein Dienst am Empfang; das Brett trägt seinen Block einmal."""
+    """`fakten` ist in der Registry, aber kein Dienst am Empfang und ohne Zettel am Brett."""
 
     @classmethod
     def setUpClass(cls) -> None:
         discover_managers()
         discover_agents()
 
-    def test_the_registry_knows_fakten_without_an_object_feature(self) -> None:
+    def test_the_registry_knows_fakten_as_a_queue_service_without_an_object_feature(self) -> None:
         agent = AgentRegistry.finden("fakten")
         self.assertIsInstance(agent, FactsAgent)
+        self.assertEqual(agent.zustellart, "queue")
         self.assertEqual(agent.objekt_merkmal, "")
-        befund = anmelden(agent)
-        self.assertTrue(befund.eingebunden, befund.maengel)
-        self.assertTrue(befund.zweifel_erlaubt)
+        # Zwilling: die Nachbarn behalten ihre Zustellart.
+        self.assertEqual(AgentRegistry.finden("kzg").zustellart, "queue")
+        self.assertEqual(AgentRegistry.finden("notizen").zustellart, "empfang")
 
-    def test_the_board_carries_one_block_with_negatives_and_without_the_doubt_rule(self) -> None:
-        attrappe = SimpleNamespace(router_prompt="ATTRAPPE-ERKENNUNG:\nnur fuer diesen Zeugen\n")
-        with patch.dict(plugins._registry, {"attrappe_ohne_dienst": attrappe}):
-            brett = aushaenge_sammeln("user")
-        self.assertEqual(brett.count("FAKTEN-ERKENNUNG:"), 1)
-        block = _block(brett, "FAKTEN-ERKENNUNG:")
-        self.assertIn("NICHT zustellen bei:", block)
+    def test_the_handshake_reports_no_defect_for_fakten(self) -> None:
+        befund = anmelden(AgentRegistry.finden("fakten"))
+        self.assertTrue(befund.eingebunden, befund.maengel)
+        self.assertEqual(list(befund.maengel), [])
+
+    def test_the_board_carries_no_slip_for_fakten_but_still_the_one_for_notizen(self) -> None:
+        brett = aushaenge_sammeln("user")
+        self.assertNotIn("FAKTEN-ERKENNUNG:", brett)
         for negativ in FactsAgent().negativfaelle:
-            self.assertIn(negativ, block)
-        self.assertNotIn(_OHNE_ZWEIFEL, block)
-        # Zwilling: Ein Manager ohne Dienst trägt die Rücknahme im selben Brett.
-        self.assertIn(_OHNE_ZWEIFEL, _block(brett, "ATTRAPPE-ERKENNUNG:"))
+            self.assertNotIn(negativ, brett)
+        # Zwilling: Der Block der Notizen steht unverändert am Brett.
+        self.assertIn("NOTIZEN-ERKENNUNG:", brett)
+        self.assertIn("NICHT zustellen bei:", _block(brett, "NOTIZEN-ERKENNUNG:"))
+
+    def test_the_planner_has_no_dispatch_for_fakten(self) -> None:
+        self.assertIsNone(get_dispatch("fakten"))
+        # Zwilling: Ein Dienst am Empfang behält seinen Dispatch.
+        self.assertIsNotNone(get_dispatch("notizen"))
+
+
+class PluginHasNoSlipTest(unittest.TestCase):
+    """Das Plugin `fakten_manager` hat keinen Platz mehr am Brett des Routers."""
+
+    def test_the_plugin_has_neither_a_prompt_nor_an_intent(self) -> None:
+        manager = FaktenManager()
+        self.assertEqual(manager.router_prompt.strip(), "")
+        self.assertEqual(manager.router_intents, [])
+
+    def test_the_twin_plugin_of_the_notes_keeps_both(self) -> None:
+        manager = NotizenManager()
+        self.assertIn("NOTIZEN-ERKENNUNG:", manager.router_prompt)
+        self.assertNotEqual(manager.router_intents, [])
 
 
 class TheWallTest(unittest.TestCase):

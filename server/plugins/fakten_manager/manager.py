@@ -110,20 +110,13 @@ class FaktenManager(BaseManager):
     # ─────────────────────────────────────────
     @property
     def router_intents(self) -> list[str]:
-        return ["fakten_management"]
+        """Keiner: Der Router stellt nichts mehr an `fakten` zu."""
+        return []
 
     @property
     def router_prompt(self) -> str:
-        return """
-FAKTEN-ERKENNUNG:
-Wenn der User explizit Fakten korrigieren, löschen oder abfragen möchte, setze:
-  intent = "fakten_management"
-  management_action = "update|delete|read"
-  management_target = "Name der Entität oder des Fakts"
-
-Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
-"was weißt du über", "was hast du dir gemerkt über"
-"""
+        """Leer: Das Plugin hat keinen Platz mehr am Brett des Routers."""
+        return ""
 
     # ─────────────────────────────────────────
     # Enricher-Hook

@@ -42,7 +42,11 @@ class FactsAgent(BaseAgent):
 
     @property
     def graph_eignung(self) -> list[str]:
-        """Nur im Gespräch: Ein Fakt entsteht auf Bitte des Menschen."""
+        """Nur im Gespräch: Ein Fakt entsteht auf Bitte des Menschen.
+
+        Bleibt `["user"]`, auch ohne Platz am Empfang: Der Dispatcher bedient
+        den Dienst im Nutzergraphen.
+        """
         return ["user"]
 
     @property
@@ -71,17 +75,21 @@ class FactsAgent(BaseAgent):
         ]
 
     @property
-    def quote(self) -> dict[str, int]:
-        """Geschätzter Anteil: Eine Bitte, sich etwas zu merken, ist selten."""
-        return {"user": 0}
+    def zustellart(self) -> str:
+        """Läuft auf Auftrag des Dispatchers, ohne Zustellentscheidung.
+
+        Der Auftrag kommt vom Dispatcher, nie vom Router oder Planner: Es
+        gibt keine Entscheidung, ob der Dienst gewählt wird. Damit hat er
+        auch keinen Aushang und keine Quote — ein Abgleich hätte nichts zu
+        vergleichen.
+        """
+        return "queue"
 
     @property
     def ausgaenge(self) -> frozenset[str]:
         """Bedient alle vier Ausgänge, einschließlich der Ablehnung.
 
-        Ohne Beziehung im Kanon lehnt die Klassifikation ab; der Dispatch macht
-        daraus eine Ablehnung mit Korrektur, und der Planner fragt den
-        nächsten Dienst.
+        Ohne Beziehung im Kanon lehnt die Klassifikation ab.
         """
         return frozenset({"abgeschlossen", "fehler", "rueckfrage", "abgelehnt"})
 
