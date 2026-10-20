@@ -803,6 +803,16 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 **Symptom:** "Planner: Resume-Flow aber kein pending Agent in Redis" — Warning nach jedem Resume. Der Dispatch löscht den pending Key, danach prüft der Planner nochmal.
 **Prio:** Niedrig — harmlos, nur störend im Log. WARNING → DEBUG.
 
+#### PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG — ein Ziel des Routers erreicht den Fakten-Agenten, der nicht mehr am Empfang steht ⬜
+**Kategorie:** ANT
+
+**Rang:** **mittel** — laut, aber die Bitte geht verloren. Seit dem 20.10.2026 steht der Fakten-Agent nicht mehr am Empfang (`agents/fakten/agent.py::FactsAgent.zustellart = "queue"`) und hat keinen Dispatch des Planners.
+
+**Entdeckt:** 20.10.2026, bei der Prüfung des Baus, der den Agenten vom Brett nahm.
+**Symptom:** Ein `management_target`, das `fakten` exakt oder unscharf trifft (`graph/nodes/planner.py::_manager_zu_target`; unscharf auch `"akte" in "fakten"`), wählt den `FaktenManager`. Weil der Agent kein Objekt-Merkmal trägt, steht `fakten` in der Reihenfolge vorn (`service_order_for`); der Planner setzt `agent_name = "fakten"`, und `agent_dispatch_node` endet mit `fehler` (*„Kein Dispatch für Agent 'fakten'“*). `fehler` zählt nicht als Ablehnung — die Reihe endet, eine Merk-Bitte auf diesem Weg erreicht die Notizen nicht. Vorher lehnte der Agent ab, und der nächste Dienst wurde gefragt.
+**Gemessen:** Router und Planner am Modell des Betriebs, 27 Äußerungen: 0 Ziele `fakten` — kein Brett nennt den Dienst mehr.
+**Schließbedingung:** Der Planner nimmt Dienste, die nicht am Empfang stehen, aus der Wahl über das Ziel und aus der Reihenfolge, mit einer Zeile im Log; ein Zeuge mit `management_target = "fakten"` bei einer Merk-Bitte fragt die Notizen.
+
 ---
 
 ### Classify & Router (Chat 48)
