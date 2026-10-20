@@ -383,6 +383,74 @@ class EntityResolutionService:
             f"Kannst du genauer beschreiben, wen oder was du meinst?"
         )
 
+    @staticmethod
+    def resolve_by_name(
+        postgres_url: str,
+        user_id:      str,
+        name:         str,
+    ) -> list[dict]:
+        """Löst einen Namen nur über den Namen auf — ohne Rückfall, ohne Schlucken.
+
+        Für Schreiber, die aus null Treffern eine neue Entität machen: Ein
+        Embedding-Rückfall bände dort einen ähnlichen Namen still an eine
+        fremde Entität (*Lena* an *Lea*), und ein verschluckter Fehler der
+        Suche sähe aus wie null Treffer und legte ein Duplikat an. Deshalb
+        fragt diese Funktion nur `EntitaetenRepository.find_by_name` und lässt
+        jeden Fehler durch.
+
+        *ICH* (ohne Rücksicht auf Groß- und Kleinschreibung) ergibt die
+        Entität des Menschen, wie in `resolve_batch`.
+
+        Vorbedingung: user_id und name sind nicht leer.
+        Nachbedingung: Jede gelieferte Zeile gehört zu user_id und trägt den
+            Namen ohne Rücksicht auf Groß- und Kleinschreibung — bei *ICH* ist
+            es genau die erste Entität vom Typ `user`. Eine leere Liste heißt:
+            die Suche lief und fand nichts.
+        Fehlerfälle: ValueError bei leerer Eingabe; LookupError, wenn zu *ICH*
+            keine Entität des Menschen besteht (sonst entstünde eine Entität
+            namens „ICH“); RuntimeError, wenn eine Zeile die Nachbedingung
+            verletzt; jeder Fehler der Datenbank.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if not user_id:
+            raise ValueError("resolve_by_name: user_id ist leer")
+        if not name or not name.strip():
+            raise ValueError("resolve_by_name: name ist leer")
+        gesucht: str = name.strip()
+
+        # ── Verarbeitung ────────────────────────────
+        if gesucht.upper() == "ICH":
+            menschen: list[dict] = EntitaetenRepository.find_by_type(
+                postgres_url, user_id, "user",
+            )
+            if not menschen:
+                raise LookupError(
+                    f"resolve_by_name: 'ICH' — keine Entität vom Typ 'user' für {user_id!r}"
+                )
+            treffer: list[dict] = [menschen[0]]
+        else:
+            treffer = EntitaetenRepository.find_by_name(postgres_url, user_id, gesucht)
+
+        # ── Ausgabe-Verifikation ────────────────────
+        for zeile in treffer:
+            if zeile.get("user_id") != user_id:
+                raise RuntimeError(
+                    f"resolve_by_name: Entität id={zeile.get('id')} gehört "
+                    f"{zeile.get('user_id')!r}, erwartet {user_id!r}"
+                )
+            passt: bool = (
+                str(zeile.get("typ", "")).lower() == "user"
+                if gesucht.upper() == "ICH"
+                else str(zeile.get("name", "")).lower() == gesucht.lower()
+            )
+            if not passt:
+                raise RuntimeError(
+                    f"resolve_by_name: Entität id={zeile.get('id')} "
+                    f"({zeile.get('name')!r}) passt nicht zu {gesucht!r}"
+                )
+        logger.info("resolve_by_name: %r → %d Treffer", gesucht, len(treffer))
+        return treffer
+
     # ──────────────────────────────────────────
     # Entität anlegen + State aktualisieren
     # ──────────────────────────────────────────

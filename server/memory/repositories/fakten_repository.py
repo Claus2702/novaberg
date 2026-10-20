@@ -11,7 +11,8 @@ Drei Regeln gelten für jede Funktion dieser Datei:
   Verfalls nachzieht, hielte jeden gelesenen Fakt künstlich frisch.
 - **Geschrieben wird auf dem Cursor des Aufrufers**, wo mehr als eine Zeile
   zusammengehört (`insert`, `abloesen`). Commit und Rollback hat der Aufrufer;
-  eine Ablösung gilt ganz oder gar nicht.
+  eine Ablösung gilt ganz oder gar nicht. `schreiben` ist dieser Aufrufer für
+  einen einzelnen Fakt: eine Verbindung, eine Transaktion.
 """
 
 import logging
@@ -53,6 +54,36 @@ class NewFact:
     embedding:   list[float] | None = None
     t_valid:     datetime | None = None
     timeline_id: int | None = None
+
+
+# Was `schreiben` getan hat. Eine geschlossene Menge, damit ein Aufrufer jeden
+# Fall benennen muss und kein vierter still durchrutscht.
+SCHREIBUNG_ARTEN: frozenset[str] = frozenset({"identisch", "angelegt", "abgeloest"})
+
+
+@dataclass(frozen=True)
+class Schreibung:
+    """Das Ergebnis von `FaktenRepository.schreiben`.
+
+    `fakt_id` ist die Zeile, die nach dem Schreiben gilt; bei `identisch` die
+    schon vorhandene. `art` ist eines aus `SCHREIBUNG_ARTEN`.
+    """
+
+    fakt_id: int
+    art:     str
+
+    def __post_init__(self) -> None:
+        """Weist eine Art außerhalb von `SCHREIBUNG_ARTEN` ab.
+
+        Vorbedingung: keine.
+        Nachbedingung: `art` ist eine bekannte Art, `fakt_id` eine positive Zahl.
+        Fehlerfälle: ValueError sonst.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if self.art not in SCHREIBUNG_ARTEN:
+            raise ValueError(f"Schreibung: unbekannte Art {self.art!r}")
+        if not isinstance(self.fakt_id, int) or self.fakt_id <= 0:
+            raise ValueError(f"Schreibung: ungültige fakt_id {self.fakt_id!r}")
 
 
 def _check_pair(user_id: str, character_id: str) -> None:
@@ -277,6 +308,123 @@ class FaktenRepository:
             "fakten.abloesen: %s abgelöst durch id=%s (%s)", abgeloest, neue_id, attribut,
         )
         return neue_id
+
+    @staticmethod
+    def schreiben(
+        postgres_url: str,
+        user_id:      str,
+        character_id: str,
+        subjekt_id:   int,
+        attribut:     str,
+        neu:          NewFact,
+    ) -> Schreibung:
+        """Schreibt einen Fakt in einer eigenen Transaktion und sagt, was geschah.
+
+        Ist derselbe Wert zu Paar, Subjekt und Beziehung schon aktiv, wird nur
+        dessen `last_touched` nachgezogen (*identisch*). Verglichen wird gegen
+        **jeden** aktiven Wert, nicht nur den jüngsten: Bei einer mehrwertigen
+        Beziehung kann der genannte Wert ein älterer sein. Eine Objekt-Entität
+        gilt als derselbe Wert bei derselben ID, ein Wert bei gleichem Text
+        ohne Rücksicht auf Groß- und Kleinschreibung und Rand. Sonst löst eine
+        einwertige Beziehung den alten Wert ab (`abloesen`), eine mehrwertige
+        fügt hinzu (`insert`).
+
+        Die aktiven Zeilen werden mit `FOR UPDATE` gelesen, damit ein zweiter
+        Schreiber derselben Kante wartet, statt zwischen Prüfen und Schreiben
+        einen Wert abzulösen.
+
+        Herkunft, Text und Einwertigkeit prüft `insert` — erst nach dem
+        Invalidieren. Ein Fehler dort nimmt deshalb auch das Invalidieren
+        zurück; das ist der Zweck des Rollbacks.
+
+        Vorbedingung: Das Paar ist vollständig, die Beziehung nicht leer, und
+            genau eines von objekt_id und objekt_wert ist gesetzt.
+        Nachbedingung: Nach dem Commit ist die Zeile `fakt_id` aktiv und gehört
+            zu Paar, Subjekt und Beziehung. Bei `identisch` ist keine Zeile neu.
+        Fehlerfälle: ValueError bei verletzter Vorbedingung und aus `insert`;
+            RuntimeError, wenn die geltende Zeile die Nachbedingung verletzt;
+            jeder Fehler der Datenbank. Bei jedem Fehler wird die ganze
+            Transaktion zurückgenommen und der Fehler geworfen.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        _check_pair(user_id, character_id)
+        if not attribut:
+            raise ValueError("fakten.schreiben: attribut ist leer")
+        if (neu.objekt_id is None) == (neu.objekt_wert is None):
+            raise ValueError(
+                "fakten.schreiben: genau einer von objekt_id oder objekt_wert muss gesetzt sein"
+            )
+
+        # ── Verarbeitung ────────────────────────────
+        wert: str | None = (
+            neu.objekt_wert.strip().casefold() if neu.objekt_wert is not None else None
+        )
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, objekt_id, objekt_wert, einwertig FROM fakten
+                    WHERE user_id = %s AND character_id = %s
+                      AND subjekt_id = %s AND attribut = %s AND aktiv
+                    ORDER BY id
+                    FOR UPDATE
+                    """,
+                    (user_id, character_id, subjekt_id, attribut),
+                )
+                aktive: list[tuple] = cur.fetchall()
+                gleich: list[int] = [
+                    int(z[0]) for z in aktive
+                    if (neu.objekt_id is not None and z[1] == neu.objekt_id)
+                    or (wert is not None and z[2] is not None
+                        and z[2].strip().casefold() == wert)
+                ]
+                if gleich:
+                    fakt_id: int = gleich[0]
+                    art: str = "identisch"
+                    cur.execute(
+                        "UPDATE fakten SET last_touched = NOW() WHERE id = %s", (fakt_id,),
+                    )
+                elif neu.einwertig is True:
+                    fakt_id = FaktenRepository.abloesen(
+                        cur, user_id, character_id, subjekt_id, attribut, neu,
+                    )
+                    art = "abgeloest" if any(z[3] for z in aktive) else "angelegt"
+                else:
+                    fakt_id = FaktenRepository.insert(
+                        cur, user_id, character_id, subjekt_id, attribut, neu,
+                    )
+                    art = "angelegt"
+
+                # ── Ausgabe-Verifikation ────────────────────
+                # In derselben Transaktion: Eine geltende Zeile, die nicht zu
+                # Paar, Subjekt und Beziehung gehört, nimmt alles zurück.
+                cur.execute(
+                    """
+                    SELECT user_id, character_id, subjekt_id, attribut, aktiv
+                    FROM fakten WHERE id = %s
+                    """,
+                    (fakt_id,),
+                )
+                geltend: tuple | None = cur.fetchone()
+                erwartet: tuple = (user_id, character_id, subjekt_id, attribut, True)
+                if geltend != erwartet:
+                    raise RuntimeError(
+                        f"fakten.schreiben: Zeile id={fakt_id} trägt {geltend!r}, "
+                        f"erwartet {erwartet!r}"
+                    )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            logger.exception(
+                "fakten.schreiben: %s zu Subjekt %s zurückgenommen", attribut, subjekt_id,
+            )
+            raise
+        finally:
+            conn.close()
+
+        logger.info("fakten.schreiben: id=%s %s (%s)", fakt_id, art, attribut)
+        return Schreibung(fakt_id=fakt_id, art=art)
 
     @staticmethod
     def find_by_id(
