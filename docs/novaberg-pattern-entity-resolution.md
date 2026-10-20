@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Entity Resolution (Entitäten auflösen und disambiguieren)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 20. Oktober 2026, 05:32 UTC (`date -u`; §4.3 `resolve_by_name`). Davor 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-pattern-entity-resolution.md
 **Quellen:** nova-03-t-a.md
 **Datei:** `memory/services/entity_resolution.py`
@@ -74,6 +74,10 @@ Löst eine Liste von Entitäten auf — typisch nach der Salienz-Extraktion oder
 ### 4.2 resolve_single
 
 Löst eine einzelne Entität auf — typisch bei Fakten-Abfragen oder Timeline-Queries.
+
+### 4.3 resolve_by_name — nur über den Namen (seit 20.10.2026)
+
+`EntityResolutionService.resolve_by_name(postgres_url, user_id, name) -> list[dict]` fragt nur `EntitaetenRepository.find_by_name`, **ohne den Embedding-Rückfall aus §2.2 und ohne einen Fehler zu schlucken.** Für Schreiber, die aus null Treffern eine neue Entität machen: Der Rückfall bände dort einen ähnlichen Namen still an eine fremde Entität (*Lena* an *Lea*), und ein verschluckter Fehler der Suche sähe aus wie null Treffer und legte ein Duplikat an. *ICH* ergibt die Entität des Menschen wie in §3; fehlt sie, wird geworfen statt eine Entität namens *ICH* anzulegen. Jede gelieferte Zeile wird gegen `user_id` und den Namen geprüft. Erster Aufrufer ist der Schreibweg des Fakten-Agenten (`agents/fakten/suche.py`); `resolve_batch` und `resolve_single` bleiben, wie sie sind.
 
 ---
 

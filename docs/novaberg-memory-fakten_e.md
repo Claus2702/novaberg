@@ -2,13 +2,13 @@
 
 **Teil 4 von 5 — Diskussion und Ergänzungen:** Entscheidungen, offene Fragen, verworfene Fassungen, Befunde. Absicht und Kopfblock: [`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) · Bauplan: [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) · Ausarbeitung und Messungen: keine (`_k`, Kopfblock). Die Abschnitte dieser Datei tragen Buchstaben, damit sie nicht mit den Abschnittsnummern des Konzepts verwechselt werden.
 
-**Stand:** 17. Oktober 2026, 21:50 UTC (`date -u`; die Bauart angenommen: C2 bis C5 und die fünf Fragen ihres Entwurfs entschieden, A Nr. 13–21, dazu eine Umsetzungsentscheidung, Nr. 22; C nachgezogen, E um B8 ergänzt; nichts gebaut). Davor 17. Oktober 2026, 21:19 UTC (`date -u`; C1 im Betrieb gemessen: der Leseweg richtig, das Angebot leer, weil die Objektnamen ihn nicht treffen). Davor 17. Oktober 2026, 20:29 UTC (`date -u`; C1 entschieden und gebaut: ein Leseweg der Termine für Turn und Sachlage). Davor 17. Oktober 2026, 15:40 UTC (`date -u`; angelegt).
+**Stand:** 20. Oktober 2026, 05:32 UTC (`date -u`; A Nr. 23 kein Objekt-Merkmal, Nr. 24 der Fakten-Agent ist passiv; B: der Weg des Referenzwissens offen). Davor 17. Oktober 2026, 21:50 UTC (`date -u`; die Bauart angenommen: C2 bis C5 und die fünf Fragen ihres Entwurfs entschieden, A Nr. 13–21, dazu eine Umsetzungsentscheidung, Nr. 22; C nachgezogen, E um B8 ergänzt; nichts gebaut). Davor 17. Oktober 2026, 21:19 UTC (`date -u`; C1 im Betrieb gemessen: der Leseweg richtig, das Angebot leer, weil die Objektnamen ihn nicht treffen). Davor 17. Oktober 2026, 20:29 UTC (`date -u`; C1 entschieden und gebaut: ein Leseweg der Termine für Turn und Sachlage). Davor 17. Oktober 2026, 15:40 UTC (`date -u`; angelegt).
 
 ---
 
 ## A. Entschieden
 
-~~**Zwölf Antworten, alle am 17.10.2026, umschrieben.**~~ → **Einundzwanzig Antworten und eine Umsetzungsentscheidung, alle vom 17.10.2026.** Nr. 1 bis 4 gingen den Fragen voraus und setzen die Absicht. Nr. 5 bis 12 beantworten die Fragen, die eine Prüfung der Erstfassung dieses Konzepts gegen die bestehenden Konzepte aufgeworfen hat; sie sind umschrieben. **Nr. 13 bis 21 nehmen die Bauart an** (C2 bis C5, unten C) und beantworten die fünf Fragen, die ihr Entwurf aufwarf. Sie stehen im Wortlaut, unverändert auch dort, wo er sich vertippt. Nr. 22 ist eine Umsetzungsentscheidung, keine des Meisters. C1 steht entschieden in C. Wie die Bauart je Bauteil aussieht, steht in `_b` §6. Die Beispiele sind synthetisch; die Namen *Lena*, *Kassel* und *Hamburg* sind frei erfunden.
+~~**Zwölf Antworten, alle am 17.10.2026, umschrieben.**~~ → **Einundzwanzig Antworten und eine Umsetzungsentscheidung, alle vom 17.10.2026.** → Dazu Nr. 23 (19.10.2026) und Nr. 24 (20.10.2026). Nr. 1 bis 4 gingen den Fragen voraus und setzen die Absicht. Nr. 5 bis 12 beantworten die Fragen, die eine Prüfung der Erstfassung dieses Konzepts gegen die bestehenden Konzepte aufgeworfen hat; sie sind umschrieben. **Nr. 13 bis 21 nehmen die Bauart an** (C2 bis C5, unten C) und beantworten die fünf Fragen, die ihr Entwurf aufwarf. Sie stehen im Wortlaut, unverändert auch dort, wo er sich vertippt. Nr. 22 ist eine Umsetzungsentscheidung, keine des Meisters. C1 steht entschieden in C. Wie die Bauart je Bauteil aussieht, steht in `_b` §6. Die Beispiele sind synthetisch; die Namen *Lena*, *Kassel* und *Hamburg* sind frei erfunden.
 
 | Nr. | Frage | Antwort | Steht in |
 |---|---|---|---|
@@ -35,11 +35,14 @@
 | 21 | Wird die Bauart des Fakten-Agenten und der Mappe angenommen? | **Ja.** Wortlaut: *„Angenommen“*. Der Fakten-Agent ist der einzige Schreiber der Fakten (Nr. 6), gegliedert nach dem Muster des Timeline-Agenten, mit einem Kanon der Beziehungen. Die Mappe ist die eine Lesefunktion für alle Leser. Vom Plugin bleibt nur die Empfangsfläche. Dazu gehört die Reihenfolge des Baus | `_b` §6 |
 | 22 | Gilt ein Fakt schon, wenn sein Ereignis noch kommt? | **Umsetzungsentscheidung, keine Entscheidung des Meisters:** Der Fakt wird sofort geschrieben; seine Gültigkeit beginnt mit dem Ereignis, über den Verweis auf dessen Eintrag. Die Mappe zeigt beide Werte mit *bis* und *ab* (*„Hamburg bis Umzug, Kassel ab Umzug“*, synthetisch). Ein Lauf, der erst nach dem Ereignis schreibt, entfällt damit | `_k` §2.3; `_b` F6 |
 
+| 23 | Meldet sich der Fakten-Agent mit einem Objekt-Merkmal an? | **Nein, vorerst ohne.** Wortlaut: *„Ja, darf er, wir nehmen (A)“* (19.10.2026). Ein Dienst mit Merkmal steht im Planner nur vorn, wenn ein akutes Objekt ihn erreicht; ein Merkmal ist geeicht, nicht formuliert, und die Eichreihe trug keinen Fall über Personen. Ein Merkmal kommt erst nach einer Eichung an einer Reihe mit Bitten über Personen und nur, wenn es die Zustellung messbar verbessert | `_b` §6, F2 |
+| 24 | Wie erreicht Referenzwissen den Fakten-Agenten? | **Der Fakten-Agent ist passiv, und es gibt kein Entweder-oder** (20.10.2026). Wortlaut: *„Der Faktenagent hingegen ist jedoch eine passive Institution. Er verarbeitet alles, untersucht, ob Fakten aus einem Weltwissen in ein Referenzwissen übergehen. Und wenn dies der Fall ist, bildet er Trippel und speichert diese. Hier darf es also keine Entweder-oder-Situationen geben, sondern wann immer in der Sachlage Referenzwissen entsteht, muss dieses über den Faktenagent laufen.“* Eine Merk-Bitte geht weiter an die Notizen (aktiv). Gemessen vorher: Mit einem Zettel des Agenten am Empfang des Routers bekamen drei Notiz-Bitten mit Zeitangabe keinen Auftrag mehr, in vier Fassungen des Aushangs — der Router nennt genau ein Ziel. **Offen ist der Weg** (B) | `_k` §3.2; `_b` §6, F2, F4 |
+
 ---
 
 ## B. Offen beim Meister
 
-Keine.
+- **Der Weg des Referenzwissens zum Fakten-Agenten** (Nr. 24): über den Schreibauftrag, den der Dispatcher am Ende jedes Turns verteilt, statt über den Router? Wortlaut der Frage: *„Ist der Dispatcher, der immer einen Schreibauftrag hat, nicht besser? Ich möchte nicht sagen, dass der Dispatcher immer schreibt. Dies entscheidet ja im Endeffekt auch die Salienz oder gegebenenfalls andere Faktoren. Aber der Schreibauftrag ist zumindest immer vorhanden.“* Berührt Nr. 6, 7 und 21 (*über den Empfang*) und `_b` §6, F2 und F4. In Ausarbeitung.
 
 ---
 

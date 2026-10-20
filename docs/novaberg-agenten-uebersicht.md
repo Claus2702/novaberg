@@ -117,11 +117,11 @@ Bei allen zehn steht genau **ein** Mangel: der fehlende vierte Ausgang. Aushang,
 
 ---
 
-## 5. Die zwei Anbieter ohne Dienst
+## 5. ~~Die zwei Anbieter ohne Dienst~~ → Der Anbieter ohne Dienst (seit 20.10.2026 nur noch `wissen`)
 
 | Anbieter | Aushang | Lage |
 |---|---|---|
-| **fakten** | 346 Zeichen | über den Empfang erreichbar, **ohne** vier Ausgänge. Bekommt keine Zweifelsfälle; die Zweifelsregel ist an seinem Zettel zurückgenommen |
+| ~~**fakten**~~ | ~~346 Zeichen~~ | ~~über den Empfang erreichbar, **ohne** vier Ausgänge. Bekommt keine Zweifelsfälle; die Zweifelsregel ist an seinem Zettel zurückgenommen~~ → **seit dem 20.10.2026 ein Dienst** (`agents/fakten/`, vier Ausgänge, ohne Objekt-Merkmal); sein Zettel trägt die Negativfälle des Agenten, die Zweifelsregel ist nicht mehr zurückgenommen. Erreichbar ist er über den Empfang noch nicht: der Aushang setzt als Ziel den Namen der Entität, nicht `fakten` (`novaberg-memory-fakten_b.md` §6, Schritt 4) |
 | **wissen** | keiner | kein Dispatch-Ziel, sondern Kontextquelle des Enrichers (§4) |
 
 **`fakten` ist der Kandidat, an dem die nächste Umstellung am meisten brächte.** Er trägt das Faktengedächtnis, wird über den Empfang gewählt, und kann einen unsinnigen Auftrag weder prüfen noch begründet ablehnen — er führt ihn aus.
