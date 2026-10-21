@@ -24,6 +24,7 @@ from agents.crud_validation import (
 from agents.object_nearness import consent_fields, render_object_reference
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
+from memory.timeline_types import CLASSIFIABLE, EVENT_TYPES
 from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.timeline.klassifikation")
@@ -31,7 +32,43 @@ logger = logging.getLogger("ki_server.agents.timeline.klassifikation")
 
 GUELTIGE_AKTIONEN: set[str] = {"create", "read", "update", "delete", "reschedule", "rejected"}
 
-GUELTIGE_TYPEN: set[str] = {"termin", "geburtstag", "deadline", "jahrestag", "erinnerung"}
+# Die Typen, die diese Klassifikation vergibt, kommen aus der Typquelle — ohne
+# den Erinnerungs-Anker und ohne das Ereignis einer anderen Person.
+GUELTIGE_TYPEN: frozenset[str] = frozenset(CLASSIFIABLE)
+
+#: Der Typ, den ein Auftrag ohne erkennbaren Typ bekommt (Prompt: *„Im Zweifel"*).
+DEFAULT_TYPE: str = "termin"
+
+
+def _type_prompt_fields() -> dict[str, str]:
+    """Die Platzhalter der Typen im Prompt, gebaut aus der Typquelle.
+
+    Vorbedingung: jeder Typ aus `CLASSIFIABLE` traegt eine `prompt_line`.
+    Nachbedingung: `type_choices` (die Typen, durch `|` getrennt) und
+        `type_lines` (je Typ eine Zeile `"typ": Beschreibung`), beide in der
+        Reihenfolge von `CLASSIFIABLE`.
+    Fehlerfaelle: ein klassifizierbarer Typ ohne Zeile wirft `ValueError` —
+        das Modell kennte ihn sonst nur dem Namen nach.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    missing: list[str] = [name for name in CLASSIFIABLE if not EVENT_TYPES[name].prompt_line]
+    if missing:
+        msg: str = f"Klassifizierbare Typen ohne Zeile im Prompt: {missing}"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    fields: dict[str, str] = {
+        "type_choices": "|".join(CLASSIFIABLE),
+        "type_lines": "\n".join(
+            f'  "{name}": {EVENT_TYPES[name].prompt_line}' for name in CLASSIFIABLE
+        ),
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if fields["type_lines"].count("\n") != len(CLASSIFIABLE) - 1:
+        msg = "Zeilen der Typen: eine Beschreibung traegt einen Zeilenumbruch"
+        raise ValueError(msg)
+    return fields
 
 
 def _build_classify_prompt(
@@ -45,7 +82,9 @@ def _build_classify_prompt(
 
     bloecke: list[str] = [
         PROMPTS["classify_timeline.identity"].format(),
-        PROMPTS["classify_timeline.task"].format(aktionen_text=aktionen_text),
+        PROMPTS["classify_timeline.task"].format(
+            aktionen_text=aktionen_text, **_type_prompt_fields(),
+        ),
     ]
 
     if erkennungshilfe:
@@ -149,7 +188,7 @@ def klassifizieren(state: AgentState) -> dict:
 
         target = ergebnis.get("target", "")
         zeitausdruck = ergebnis.get("zeitausdruck", "")
-        event_type = ergebnis.get("event_type", "termin")
+        event_type = ergebnis.get("event_type", DEFAULT_TYPE)
         normalisiert = ergebnis.get("normalisiert", "")
 
         # Die Zustimmung bindet — deterministisch (E1c): Was der Mensch
@@ -174,7 +213,11 @@ def klassifizieren(state: AgentState) -> dict:
             action = "read"
 
         if event_type not in GUELTIGE_TYPEN:
-            event_type = "termin"
+            # Laut: bis hierher wurde ein fremder Typ still zum Termin.
+            logger.warning(
+                f"klassifizieren: Ungueltiger Typ '{event_type}' — Fallback '{DEFAULT_TYPE}'"
+            )
+            event_type = DEFAULT_TYPE
 
         # --- Konfidenz berechnen ---
         alle_hints = kw_hints + vm_hints

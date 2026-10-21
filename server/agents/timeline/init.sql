@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS timeline (
     aktiv            BOOLEAN      NOT NULL DEFAULT TRUE,
     last_touched     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     wiedervorlage_am TIMESTAMPTZ,
-    entitaet_ids     INTEGER[]
+    entitaet_ids     INTEGER[],
+    nachfolger_id    INTEGER
 );
 
 -- Die Primaer-Indexes gehen ueber das Paar; sie stehen hinter der Migration
@@ -68,6 +69,30 @@ DROP INDEX IF EXISTS idx_timeline_user_time;
 DROP INDEX IF EXISTS idx_timeline_user_type;
 -- Steht nur im Betrieb, nie in dieser Datei; er ging allein ueber den Typ.
 DROP INDEX IF EXISTS idx_timeline_type;
+
+-- ── Der Nachfolger eines verschobenen Termins ────────────
+-- Ein verschobener Termin wird nicht ueberschrieben: Die alte Zeile wird
+-- inaktiv und zeigt auf die neue, damit ein Verweis auf die alte die aktive
+-- findet. Der Bestand bleibt NULL — fuer eine alte inaktive Zeile ist kein
+-- Nachfolger bekannt. Verschwindet der Nachfolger, faellt nur der Verweis.
+-- Die Suche nach dem Fremdschluessel geht ueber die Tabelle selbst, nicht nur
+-- ueber den Namen: Ein gleichnamiger in einem anderen Schema deckt ihn nicht.
+ALTER TABLE timeline ADD COLUMN IF NOT EXISTS nachfolger_id INTEGER;
+
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE  conname = 'timeline_nachfolger_id_fkey'
+          AND  conrelid = 'timeline'::regclass
+    ) THEN
+        ALTER TABLE timeline
+            ADD CONSTRAINT timeline_nachfolger_id_fkey
+            FOREIGN KEY (nachfolger_id) REFERENCES timeline(id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_timeline_nachfolger
+    ON timeline (nachfolger_id) WHERE nachfolger_id IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_timeline_event_ende ON timeline (event_ende);
 CREATE INDEX IF NOT EXISTS idx_timeline_themen     ON timeline USING GIN (themen);

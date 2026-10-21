@@ -94,13 +94,19 @@ class _RescheduleCase(unittest.TestCase):
     """Friert die Uhr des Zeitparsers ein und ersetzt Repository und Verifikation."""
 
     def setUp(self) -> None:
-        self.insert: MagicMock = MagicMock(return_value=4712)
+        # Verschoben wird in einem Aufruf (`verschieben`); `insert` und
+        # `invalidate` bleiben ersetzt, damit ein Rueckfall auf den alten Weg
+        # nicht in die Datenbank schreibt, sondern hier auffaellt.
+        self.move: MagicMock = MagicMock(return_value=4712)
+        self.insert: MagicMock = MagicMock(return_value=4713)
         self.invalidate: MagicMock = MagicMock()
         for p in (
             patch.object(zeitparser, "datetime", _frozen(FROZEN_UTC)),
             patch.object(zeitparser, "TIMEZONE", "Europe/Berlin"),
             patch.object(timeline_crud, "TIMEZONE", "Europe/Berlin"),
             patch.object(timeline_crud, "_verifizieren_termin", return_value=True),
+            patch("memory.repositories.timeline_repository.TimelineRepository.verschieben",
+                  self.move),
             patch("memory.repositories.timeline_repository.TimelineRepository.insert",
                   self.insert),
             patch("memory.repositories.timeline_repository.TimelineRepository.invalidate",
@@ -113,13 +119,16 @@ class _RescheduleCase(unittest.TestCase):
         """Faehrt `_update` und liefert die Zeit, mit der der neue Termin entsteht."""
         result: dict = timeline_crud._update(state)
         self.assertEqual(result["status"], "abgeschlossen", result)
-        self.insert.assert_called_once()
-        return self.insert.call_args.kwargs["event_time"]
+        self.move.assert_called_once()
+        self.insert.assert_not_called()
+        self.invalidate.assert_not_called()
+        return self.move.call_args.kwargs["event_time"]
 
     def _assert_error(self, state: dict) -> dict:
         """Faehrt `_update` und prueft: Fehler, kein Schreiben."""
         result: dict = timeline_crud._update(state)
         self.assertEqual(result["status"], "fehler", result)
+        self.move.assert_not_called()
         self.insert.assert_not_called()
         self.invalidate.assert_not_called()
         return result
@@ -129,7 +138,7 @@ class ThePairStaysTest(_RescheduleCase):
     """Der verschobene Termin gehoert demselben Paar; ohne Figur wird nichts angefasst."""
 
     def test_without_a_character_nothing_is_invalidated(self) -> None:
-        """Geprueft vor `invalidate` — sonst waere der alte Termin weg und kein neuer da."""
+        """Geprueft vor `verschieben` — ohne Figur wird nichts angefasst."""
         state: dict = _state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10)
         state["kontext"]["character_id"] = ""
 
@@ -138,10 +147,14 @@ class ThePairStaysTest(_RescheduleCase):
         self.assertEqual(result["schritte"][-1]["ergebnis"], "ohne_character_id")
 
     def test_twin_the_new_appointment_is_written_in_the_pair(self) -> None:
+        """Die Figur kommt aus der alten Zeile; hier: welche Zeile verschoben wird.
+
+        Dass `verschieben` die Figur der alten Zeile uebernimmt, bezeugt
+        `test_timeline_successor.py` an der Datenbank.
+        """
         self._new_time(_state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10))
 
-        self.assertEqual(self.insert.call_args.kwargs["character_id"], "nova")
-        self.invalidate.assert_called_once()
+        self.assertEqual(self.move.call_args.args[1], 41)
 
 
 class ClockTimeOnlyTest(_RescheduleCase):
@@ -152,14 +165,13 @@ class ClockTimeOnlyTest(_RescheduleCase):
         new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10))
 
         self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
-        self.assertEqual(self.insert.call_args.kwargs["precision"], "minute")
-        self.invalidate.assert_called_once()
+        self.assertEqual(self.move.call_args.kwargs["precision"], "minute")
 
     def test_every_form_of_the_time_expression_gives_the_same_time(self) -> None:
         """Mit Zeitausdruck lief schon ein anderer Zweig — er muss dasselbe ergeben."""
         for expression in ("", "11 Uhr", "auf 11 Uhr"):
             with self.subTest(zeitausdruck=expression):
-                self.insert.reset_mock()
+                self.move.reset_mock()
                 new_time: datetime = self._new_time(
                     _state(SENTENCE_CLOCK_ONLY, expression, FRIDAY_10)
                 )
@@ -181,7 +193,7 @@ class ClockTimeOnlyTest(_RescheduleCase):
         new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY, "", midnight_utc))
 
         self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
-        self.assertEqual(self.insert.call_args.kwargs["precision"], "minute")
+        self.assertEqual(self.move.call_args.kwargs["precision"], "minute")
 
 
 class DayOnlyTest(_RescheduleCase):
@@ -223,7 +235,7 @@ class DayOnlyTest(_RescheduleCase):
         moved: dict = {}
         for expression in ("", "Freitag"):
             with self.subTest(zeitausdruck=expression):
-                self.insert.reset_mock()
+                self.move.reset_mock()
                 moved[expression] = self._new_time(
                     _state("Verschieb den Zahnarzt auf Freitag.", expression, monday_26)
                 ).astimezone(TZ)
@@ -271,7 +283,7 @@ class FromToTest(_RescheduleCase):
             ("Verschieb den Zahnarzt von 10 Uhr nach 11 Uhr.", ""),
         ):
             with self.subTest(satz=sentence, zeitausdruck=expression):
-                self.insert.reset_mock()
+                self.move.reset_mock()
                 new_time: datetime = self._new_time(_state(sentence, expression, FRIDAY_10))
                 self.assertEqual(new_time.astimezone(TZ),
                                  datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
@@ -319,7 +331,7 @@ class FromToTest(_RescheduleCase):
         ):
             for given in ("", expression):
                 with self.subTest(satz=phrase, zeitausdruck=given):
-                    self.insert.reset_mock()
+                    self.move.reset_mock()
                     new_time: datetime = self._new_time(
                         _state(f"Verschieb den Zahnarzt {phrase}.", given, FRIDAY_10)
                     )
@@ -387,7 +399,7 @@ class FromToTest(_RescheduleCase):
         ):
             for expression in ("", phrase):
                 with self.subTest(satz=phrase, zeitausdruck=expression):
-                    self.insert.reset_mock()
+                    self.move.reset_mock()
                     new_time: datetime = self._new_time(
                         _state(f"Verschieb den Zahnarzt {phrase}.", expression, FRIDAY_10)
                     )
@@ -420,7 +432,7 @@ class FromToTest(_RescheduleCase):
             ("auf Freitag", datetime(2026, 10, 23, 10, 0, tzinfo=TZ)),
         ):
             with self.subTest(satz=phrase):
-                self.insert.reset_mock()
+                self.move.reset_mock()
                 new_time: datetime = self._new_time(
                     _state(f"Verschieb den Zahnarzt {phrase}.", "", FRIDAY_10)
                 )
@@ -952,7 +964,7 @@ class RawFormTest(_RescheduleCase):
         ):
             for given in ("", expression):
                 with self.subTest(satz=phrase, zeitausdruck=given):
-                    self.insert.reset_mock()
+                    self.move.reset_mock()
                     new_time: datetime = self._new_time(
                         _state(f"Verschieb den Zahnarzt {phrase}.", given, old_time)
                     )
@@ -1148,7 +1160,7 @@ class RawFormTest(_RescheduleCase):
         ):
             for given in ("", expression):
                 with self.subTest(satz=sentence, zeitausdruck=given):
-                    self.insert.reset_mock()
+                    self.move.reset_mock()
                     new_time: datetime = self._new_time(_state(sentence, given, old_time))
                     self.assertEqual(new_time.astimezone(TZ), expected)
 
@@ -1182,7 +1194,7 @@ class RawFormTest(_RescheduleCase):
         ):
             for given in ("", expression):
                 with self.subTest(titel=title, satz=sentence, zeitausdruck=given):
-                    self.insert.reset_mock()
+                    self.move.reset_mock()
                     state: dict = _state(sentence, given, FRIDAY_10)
                     state["parameter"]["termin"]["title"] = title
                     new_time: datetime = self._new_time(state)
@@ -1219,7 +1231,7 @@ class RawFormTest(_RescheduleCase):
         ):
             for given in ("", expression):
                 with self.subTest(titel=title, satz=sentence, zeitausdruck=given):
-                    self.insert.reset_mock()
+                    self.move.reset_mock()
                     state: dict = _state(sentence, given, FRIDAY_10)
                     state["parameter"]["termin"]["title"] = title
                     new_time: datetime = self._new_time(state)

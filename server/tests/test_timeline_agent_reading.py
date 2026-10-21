@@ -36,10 +36,11 @@ from zoneinfo import ZoneInfo
 from langgraph.graph import END
 
 import config
+from agents.kzg import magnete as kzg_magnete
 from agents.timeline import magneten, resume, suche
 from agents.timeline.agent import TimelineAgent
 from graph import appointments
-from memory import timeline_inventory, timeline_reading
+from memory import timeline_inventory, timeline_reading, timeline_types
 from memory.timeline_inventory import ANCHOR_TYPE
 from utils.zeitparser import named_period
 
@@ -669,13 +670,18 @@ class OneSourceTest(unittest.TestCase):
     """Der Anker-Typ und das proaktive Fenster stehen je an einer Stelle."""
 
     def test_no_anchor_literal_in_suche_and_magneten(self) -> None:
-        for module in (suche, magneten):
+        """Seit der Typquelle lesen auch Bestandsabgleich und KZG-Anker den Typ nur."""
+        for module in (suche, magneten, kzg_magnete, timeline_inventory):
             with self.subTest(module=module.__name__):
                 self.assertEqual(_anchor_literals(module.__file__), 0)
 
     def test_twin_the_source_carries_the_literal_once(self) -> None:
-        """Die Zaehlung findet das Literal, wo es steht — sonst bewiese die Null nichts."""
-        self.assertEqual(_anchor_literals(timeline_inventory.__file__), 1)
+        """Die Zaehlung findet das Literal, wo es steht — sonst bewiese die Null nichts.
+
+        Die Quelle ist seit der Typquelle `memory/timeline_types.py`, nicht mehr
+        `timeline_inventory`; die Zusicherung bleibt dieselbe.
+        """
+        self.assertEqual(_anchor_literals(timeline_types.__file__), 1)
 
     def test_magneten_reads_the_anchor_type(self) -> None:
         self.assertEqual(magneten.EVENT_TYPES_ERINNERUNGS_ANKER, frozenset({ANCHOR_TYPE}))

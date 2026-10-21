@@ -173,6 +173,133 @@ def _past_bounds(
     return bounds
 
 
+#: Die Spalten, die ein neuer Eintrag traegt; `last_touched` setzt die Abfrage.
+_INSERT_COLUMNS: tuple[str, ...] = (
+    "user_id", "character_id", "event_time", "event_type", "title", "details",
+    "recurring", "precision", "entitaet_ids", "wiedervorlage_am",
+    "themen", "binding", "remind", "conflict_check", "event_ende",
+)
+
+_COLUMN_LIST: str = ", ".join(_INSERT_COLUMNS)
+_PLACEHOLDERS: str = ", ".join(["%s"] * len(_INSERT_COLUMNS))
+# Eingesetzt werden nur die Konstanten oben; die Werte gehen als Parameter.
+_INSERT_SQL: str = (
+    f"INSERT INTO timeline ({_COLUMN_LIST}, last_touched) "  # noqa: S608
+    f"VALUES ({_PLACEHOLDERS}, NOW()) RETURNING id"
+)
+
+#: Wie viele Nachfolger `aktive_zeile` hoechstens verfolgt. Eine laengere
+#: Kette entsteht durch zehn Verschiebungen desselben Termins nicht — sie ist
+#: ein Defekt, kein Bestand.
+MAX_SUCCESSOR_DEPTH: int = 10
+
+#: Die Kette der Nachfolger ab einer Zeile, eine Stufe ueber die Grenze hinaus,
+#: damit eine zu lange Kette sichtbar wird. `cycle` markiert eine Zeile, die
+#: schon im Pfad steht; dort endet die Rekursion.
+_CHAIN_SQL: str = """
+    WITH RECURSIVE chain (id, nachfolger_id, depth, path, cycle) AS (
+        SELECT id, nachfolger_id, 0, ARRAY[id], FALSE
+        FROM timeline WHERE id = %s
+      UNION ALL
+        SELECT t.id, t.nachfolger_id, c.depth + 1, c.path || t.id, t.id = ANY(c.path)
+        FROM timeline t JOIN chain c ON t.id = c.nachfolger_id
+        WHERE NOT c.cycle AND c.depth <= %s
+    )
+    SELECT id, nachfolger_id, depth, cycle FROM chain ORDER BY depth DESC LIMIT 1
+"""
+
+
+def _insert_row(cursor: "psycopg2.extensions.cursor", values: dict) -> int:
+    """Schreibt eine Zeile in `timeline`, ohne zu committen.
+
+    Geteilt von `insert` und `verschieben`: Das Commit gehoert dem Aufrufer,
+    damit `verschieben` die neue Zeile und das Ablegen der alten in einer
+    Transaktion haelt.
+
+    Vorbedingung: `values` traegt genau die Schluessel `_INSERT_COLUMNS`,
+        Zeitpunkte schon in UTC.
+    Nachbedingung: die Zeile steht in der offenen Transaktion; zurueck kommt
+        ihre `id`.
+    Fehlerfaelle: fehlende oder fremde Schluessel werfen `KeyError` vor der
+        Abfrage; eine Abfrage ohne `id` wirft `RuntimeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if set(values) != set(_INSERT_COLUMNS):
+        msg: str = (
+            f"_insert_row: Spalten passen nicht — fehlend "
+            f"{sorted(set(_INSERT_COLUMNS) - set(values))}, fremd "
+            f"{sorted(set(values) - set(_INSERT_COLUMNS))}"
+        )
+        raise KeyError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    cursor.execute(_INSERT_SQL, tuple(values[column] for column in _INSERT_COLUMNS))
+    row: tuple | None = cursor.fetchone()
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if row is None or not isinstance(row[0], int):
+        msg = f"_insert_row: INSERT lieferte keine id ({row!r})"
+        raise RuntimeError(msg)
+    return row[0]
+
+
+def _lock_active_row(cursor: "psycopg2.extensions.cursor", termin_id: int) -> dict:
+    """Liest eine aktive Zeile und sperrt sie bis zum Ende der Transaktion.
+
+    Die Sperre haelt ein zweites Verschieben derselben Zeile an, bis das
+    erste committet ist; danach findet es sie inaktiv.
+
+    Vorbedingung: `cursor` liefert Zeilen als Woerterbuch (`RealDictCursor`).
+    Nachbedingung: die Zeile als `dict`, `aktiv` ist wahr.
+    Fehlerfaelle: eine unbekannte oder inaktive Zeile wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(cursor, psycopg2.extras.RealDictCursor):
+        msg: str = f"_lock_active_row: kein RealDictCursor ({type(cursor).__name__})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    cursor.execute("SELECT * FROM timeline WHERE id = %s FOR UPDATE", (termin_id,))
+    row: dict | None = cursor.fetchone()
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if row is None:
+        msg = f"Termin {termin_id} gibt es nicht"
+        raise ValueError(msg)
+    if not row["aktiv"]:
+        msg = f"Termin {termin_id} ist nicht aktiv (Nachfolger {row['nachfolger_id']})"
+        raise ValueError(msg)
+    return dict(row)
+
+
+def _retire_row(cursor: "psycopg2.extensions.cursor", old_id: int, new_id: int) -> None:
+    """Legt die alte Zeile ab und laesst sie auf ihren Nachfolger zeigen, ohne zu committen.
+
+    Vorbedingung: beide Zeilen stehen in der offenen Transaktion, die alte ist
+        gesperrt und aktiv.
+    Nachbedingung: die alte Zeile ist inaktiv, `nachfolger_id = new_id`.
+    Fehlerfaelle: trifft das UPDATE nicht genau eine Zeile, wirft es
+        `RuntimeError` — der Aufrufer rollt dann beide Schritte zurueck.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if old_id == new_id:
+        msg: str = f"_retire_row: Termin {old_id} kann nicht sein eigener Nachfolger sein"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    cursor.execute(
+        """UPDATE timeline
+           SET aktiv = FALSE, nachfolger_id = %s, last_touched = NOW()
+           WHERE id = %s AND aktiv = TRUE""",
+        (new_id, old_id),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if cursor.rowcount != 1:
+        msg = f"_retire_row: Termin {old_id} nicht abgelegt (rowcount={cursor.rowcount})"
+        raise RuntimeError(msg)
+
+
 class TimelineRepository:
     """Datenzugriffsschicht für die timeline-Tabelle. Keine Business-Logik."""
 
@@ -198,7 +325,10 @@ class TimelineRepository:
         """
         Neuen Termin anlegen. Gibt die neue ID zurück.
         Setzt last_touched auf NOW().
-        Wenn wiedervorlage_am nicht gesetzt: automatisch event_time + 7 Tage.
+        `wiedervorlage_am` schreibt die Methode, wie sie ihn bekommt — `None`
+        bleibt `NULL`. Die Vorgabe gibt der Aufrufer aus dem Typ
+        (`memory/timeline_types.py::resubmission_at`): Ein Eintrag, der nicht
+        erinnert, bekaeme sonst still eine Wiedervorlage.
         event_time kann ein datetime oder ein ISO-String sein.
 
         Magnet-Spalten (M2.5a):
@@ -219,9 +349,6 @@ class TimelineRepository:
         if isinstance(event_time, str):
             event_time = datetime.fromisoformat(event_time)
 
-        if wiedervorlage_am is None and event_time:
-            wiedervorlage_am = event_time + timedelta(days=7)
-
         # Lokale Zeit → UTC für DB
         event_time_utc = _to_utc(event_time)
         wiedervorlage_utc = _to_utc(wiedervorlage_am) if wiedervorlage_am else None
@@ -230,19 +357,14 @@ class TimelineRepository:
 
         conn = psycopg2.connect(postgres_url)
         try:
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO timeline
-                    (user_id, character_id, event_time, event_type, title, details,
-                     recurring, precision, entitaet_ids, wiedervorlage_am,
-                     themen, binding, remind, conflict_check, event_ende,
-                     last_touched)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-                RETURNING id
-            """, (user_id, character_id, event_time_utc, event_type, title, details,
-                  recurring, precision, entitaet_ids, wiedervorlage_utc,
-                  themen, binding, remind, conflict_check, ende_utc))
-            termin_id: int = cursor.fetchone()[0]
+            termin_id: int = _insert_row(conn.cursor(), {
+                "user_id": user_id, "character_id": character_id,
+                "event_time": event_time_utc, "event_type": event_type, "title": title,
+                "details": details, "recurring": recurring, "precision": precision,
+                "entitaet_ids": entitaet_ids, "wiedervorlage_am": wiedervorlage_utc,
+                "themen": themen, "binding": binding, "remind": remind,
+                "conflict_check": conflict_check, "event_ende": ende_utc,
+            })
             conn.commit()
             logger.info(
                 f"TimelineRepository.insert: id={termin_id}, event_type='{event_type}', "
@@ -462,6 +584,142 @@ class TimelineRepository:
             conn.commit()
         finally:
             conn.close()
+
+    @staticmethod
+    def verschieben(
+        postgres_url:     str,
+        alte_id:          int,
+        *,
+        event_time:       datetime,
+        precision:        str,
+        wiedervorlage_am: datetime | None,
+    ) -> int:
+        """Verschiebt einen Termin: neue Zeile, die alte zeigt auf sie.
+
+        Die neue Zeile uebernimmt von der alten Paar (`user_id`,
+        `character_id`), Typ, Titel, Details, Merkmale, Themen und
+        `entitaet_ids`; neu sind Zeitpunkt, Genauigkeit und Wiedervorlage. Ein
+        Ende der alten Zeile wandert mit, um denselben Abstand wie der Beginn
+        — die Dauer bleibt, und das Ende liegt nie vor dem neuen Beginn. Danach
+        wird die alte Zeile inaktiv mit `nachfolger_id` auf die neue.
+
+        Beide Schritte stehen in **einer** Transaktion: Scheitert einer,
+        bleibt die alte Zeile aktiv und die neue entsteht nicht. Die
+        Wiedervorlage gibt der Aufrufer vor (`resubmission_at`), wie bei
+        `insert`.
+
+        Vorbedingung: `alte_id` eine positive Ganzzahl; `event_time` ein
+            Zeitpunkt (ohne Zone: Ortszeit); `precision` ein nicht leerer Text.
+        Nachbedingung: die neue Zeile ist aktiv und committet, die alte
+            inaktiv mit `nachfolger_id` = neue `id`; zurueck kommt die neue `id`.
+        Fehlerfaelle: eine falsche Eingabe wirft `TypeError`/`ValueError`
+            vor der Verbindung; eine unbekannte oder schon inaktive alte Zeile
+            wirft `ValueError`; jeder Fehler danach rollt beide Schritte
+            zurueck und wird weitergeworfen.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if isinstance(alte_id, bool) or not isinstance(alte_id, int) or alte_id <= 0:
+            msg: str = f"verschieben: alte_id ist keine positive Ganzzahl ({alte_id!r})"
+            raise ValueError(msg)
+        if not isinstance(event_time, datetime):
+            msg = f"verschieben: event_time ist kein datetime ({type(event_time).__name__})"
+            raise TypeError(msg)
+        if not isinstance(precision, str) or not precision:
+            msg = f"verschieben: precision leer oder kein Text ({precision!r})"
+            raise ValueError(msg)
+        if wiedervorlage_am is not None and not isinstance(wiedervorlage_am, datetime):
+            msg = f"verschieben: wiedervorlage_am ist kein datetime ({wiedervorlage_am!r})"
+            raise TypeError(msg)
+
+        # ── Verarbeitung ────────────────────────────
+        start_utc: datetime = _to_utc(event_time)
+        conn = psycopg2.connect(postgres_url)
+        try:
+            old: dict = _lock_active_row(
+                conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor), alte_id,
+            )
+            _check_pair("verschieben", old["user_id"], old["character_id"])
+            duration: timedelta | None = (
+                old["event_ende"] - old["event_time"] if old["event_ende"] else None
+            )
+            cursor = conn.cursor()
+            neue_id: int = _insert_row(cursor, {
+                **{column: old[column] for column in _INSERT_COLUMNS},
+                "event_time": start_utc, "precision": precision,
+                "wiedervorlage_am": _to_utc(wiedervorlage_am) if wiedervorlage_am else None,
+                "event_ende": start_utc + duration if duration is not None else None,
+            })
+            _retire_row(cursor, alte_id, neue_id)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            logger.exception(f"TimelineRepository.verschieben: Termin {alte_id} unveraendert")
+            raise
+        finally:
+            conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if neue_id == alte_id:
+            msg = f"verschieben: neue id {neue_id} gleich der alten"
+            raise RuntimeError(msg)
+        logger.info(
+            f"TimelineRepository.verschieben: alt={alte_id} -> neu={neue_id}, "
+            f"character_id='{old['character_id']}', event_type='{old['event_type']}'"
+        )
+        return neue_id
+
+    @staticmethod
+    def aktive_zeile(postgres_url: str, termin_id: int) -> dict | None:
+        """Die aktive Zeile, auf die ein Verweis auf `termin_id` heute zeigt.
+
+        Folgt `nachfolger_id` ab `termin_id` bis zur letzten Zeile der Kette,
+        hoechstens `MAX_SUCCESSOR_DEPTH` Schritte. Eine Zeile ohne Nachfolger
+        ist ihre eigene aktive Zeile.
+
+        Vorbedingung: `termin_id` eine positive Ganzzahl.
+        Nachbedingung: die letzte Zeile der Kette (Zeit in Ortszeit), wenn sie
+            aktiv ist; `None`, wenn es `termin_id` nicht gibt oder das Ende
+            der Kette inaktiv ist (ein geloeschter Termin).
+        Fehlerfaelle: ein Zyklus, eine Kette ueber `MAX_SUCCESSOR_DEPTH` oder
+            ein Nachfolger, den es nicht gibt, wirft `RuntimeError` — ein
+            Verweis darf nie still auf einer Zwischenzeile stehen bleiben.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if isinstance(termin_id, bool) or not isinstance(termin_id, int) or termin_id <= 0:
+            msg: str = f"aktive_zeile: termin_id ist keine positive Ganzzahl ({termin_id!r})"
+            raise ValueError(msg)
+
+        # ── Verarbeitung ────────────────────────────
+        conn = psycopg2.connect(postgres_url)
+        try:
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cursor.execute(_CHAIN_SQL, (termin_id, MAX_SUCCESSOR_DEPTH))
+            end: dict | None = cursor.fetchone()
+            row: dict | None = None
+            if end is not None:
+                cursor.execute(
+                    "SELECT * FROM timeline WHERE id = %s AND aktiv = TRUE", (end["id"],),
+                )
+                row = cursor.fetchone()
+            conn.commit()
+        finally:
+            conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if end is None:
+            return None
+        if end["cycle"]:
+            msg = f"aktive_zeile: Zyklus in der Kette ab Termin {termin_id} (bei {end['id']})"
+            logger.error(msg)
+            raise RuntimeError(msg)
+        if end["depth"] > MAX_SUCCESSOR_DEPTH or end["nachfolger_id"] is not None:
+            msg = (
+                f"aktive_zeile: Kette ab Termin {termin_id} endet nicht nach "
+                f"{MAX_SUCCESSOR_DEPTH} Schritten (Tiefe {end['depth']}, bei {end['id']})"
+            )
+            logger.error(msg)
+            raise RuntimeError(msg)
+        return _row_to_local(dict(row)) if row else None
 
     @staticmethod
     def set_wiedervorlage(

@@ -39,7 +39,7 @@ from graph.appointments import (
     search_window,
     time_window,
 )
-from memory.timeline_inventory import ANCHOR_TYPE
+from memory.timeline_types import ANCHOR_TYPE, NOT_APPOINTMENTS
 from utils.local_time import now_local
 
 logger = logging.getLogger("ki_server.agents.timeline.suche")
@@ -547,8 +547,11 @@ def find_duplicates(
     Vorbedingung: `target` ist der Titel des neuen Termins; `zeitausdruck` oder
         die Aufgabe tragen seinen Tag; das Paar ist vollstaendig.
     Nachbedingung: aktive Termine des Paares **am selben Tag**, deren Titel mindestens ein
-        tragendes Wort mit dem neuen teilt — ohne Erinnerungs-Anker (die legt
-        die KZG an, sie sind kein Termin des Menschen). **Ohne Titel oder ohne
+        tragendes Wort mit dem neuen teilt — ohne die Typen aus
+        `NOT_APPOINTMENTS`: den Erinnerungs-Anker (den legt die KZG an) und
+        das Ereignis einer anderen Person; beide sind kein Termin des
+        Menschen, und *„Umzug helfen"* doppelt nicht *„Umzug"* der
+        Schwester. **Ohne Titel oder ohne
         erkennbaren Tag: keine Duplikate** — dann entscheidet das Anlegen
         selbst (es meldet den fehlenden Titel oder Tag), statt dass ein
         beliebiger Eintrag als Duplikat gilt.
@@ -586,6 +589,6 @@ def find_duplicates(
     return [
         t for t in am_tag
         if t.get("aktiv", True)
-        and t.get("event_type") != ANCHOR_TYPE
+        and t.get("event_type") not in NOT_APPOINTMENTS
         and worte & _title_words(t.get("title", ""))
     ]

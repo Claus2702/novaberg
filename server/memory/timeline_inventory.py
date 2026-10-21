@@ -24,6 +24,7 @@ from zoneinfo import ZoneInfo
 
 from config import POSTGRES_URL, TIMEZONE
 from memory.repositories.timeline_repository import TimelineRepository
+from memory.timeline_types import ANCHOR_TYPE, NOT_APPOINTMENTS
 
 logger = logging.getLogger("ki_server.memory.timeline_inventory")
 
@@ -33,10 +34,10 @@ logger = logging.getLogger("ki_server.memory.timeline_inventory")
 #: (`tests/test_storage_inventory.py`, `CopiesBoundToSourceTest`).
 TIME_PRECISIONS: frozenset[str] = frozenset({"minute", "hour"})
 
-#: Der Typ, den die KZG einem Erinnerungs-Anker gibt
-#: (`agents/kzg/magnete.py::EVENT_TYPE_ERINNERUNGS_ANKER`, gebunden wie oben).
-#: Ein Anker ist kein Termin des Menschen (Scheibe 12 F, `suche.py::find_duplicates`).
-ANCHOR_TYPE: str = "erinnerungs_anker"
+#: Der Typ des Erinnerungs-Ankers kommt aus der Typquelle
+#: (`memory/timeline_types.py`) und wird hier fuer die bestehenden Leser
+#: weitergereicht.
+__all__: list[str] = ["ANCHOR_TYPE", "TIME_PRECISIONS", "find_at_moment", "is_appointment_at"]
 
 
 def is_appointment_at(row: dict, moment: datetime) -> bool:
@@ -50,9 +51,11 @@ def is_appointment_at(row: dict, moment: datetime) -> bool:
 
     Vorbedingung: `row` ist eine Zeile von `TimelineRepository` (lokale,
         zeitzonenbewusste `event_time`), `moment` zeitzonenbewusst.
-    Nachbedingung: wahr genau dann, wenn die Zeile aktiv ist, kein
-        Erinnerungs-Anker, ihre Zeit eine Uhrzeit traegt (`precision` minute
-        oder hour) und Tag, Stunde und Minute mit `moment` uebereinstimmen.
+    Nachbedingung: wahr genau dann, wenn die Zeile aktiv ist, ein Termin des
+        Menschen (kein Typ aus `NOT_APPOINTMENTS` — weder Erinnerungs-Anker
+        noch Ereignis einer anderen Person), ihre Zeit eine Uhrzeit traegt
+        (`precision` minute oder hour) und Tag, Stunde und Minute mit
+        `moment` uebereinstimmen.
     Fehlerfaelle: eine Zeile ohne zeitzonenbewusste `event_time` ist defekt —
         laut gemeldet, kein Treffer.
     """
@@ -78,7 +81,7 @@ def is_appointment_at(row: dict, moment: datetime) -> bool:
     # liefert immer eine zeitzonenbewusste Zeit — es gibt nichts, was erst hier zu pruefen waere.
     return (
         row.get("aktiv") is True
-        and row.get("event_type") != ANCHOR_TYPE
+        and row.get("event_type") not in NOT_APPOINTMENTS
         and str(row.get("precision") or "") in TIME_PRECISIONS
         and same_minute
     )

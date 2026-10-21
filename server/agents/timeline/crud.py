@@ -84,6 +84,34 @@ def ausfuehren(state: AgentState) -> dict:
     }
 
 
+def _unknown_type(state: AgentState, name: str) -> dict:
+    """Das Ergebnis eines Auftrags, dessen Typ die Typquelle nicht kennt.
+
+    Vorbedingung: `name` ist der Typ des Auftrags; `memory/timeline_types.py::
+        event_type` hat ihn schon als `ERROR` protokolliert.
+    Nachbedingung: ein Fehler mit `ergebnis: unbekannter_typ`; nichts ist
+        geschrieben.
+    Fehlerfaelle: keine — die Funktion baut nur das Ergebnis.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(state.get("schritte"), list):
+        msg: str = f"_unknown_type: schritte ist keine Liste ({state.get('schritte')!r})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    result: dict = {
+        "status": "fehler",
+        "fehler": f"Unbekannter Termintyp '{name}' — nichts eingetragen.",
+        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "unbekannter_typ"}],
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if result["schritte"][-1]["ergebnis"] != "unbekannter_typ":
+        msg = "_unknown_type: letzter Schritt traegt nicht den Ausgang"
+        raise RuntimeError(msg)
+    return result
+
+
 def _create(state: AgentState) -> dict:
     """Neuen Termin anlegen — Zeitparser fuer Datumsaufloesung."""
     from agents.timeline.magneten import (
@@ -92,6 +120,7 @@ def _create(state: AgentState) -> dict:
     )
     from config import POSTGRES_URL
     from memory.repositories.timeline_repository import TimelineRepository
+    from memory.timeline_types import resubmission_at
     from utils.zeitparser import ZeitVektor, zeit_parsen_vektor
 
     user_id = state["kontext"].get("user_id", "")
@@ -103,8 +132,13 @@ def _create(state: AgentState) -> dict:
 
     logger.debug(f"_create: Einstieg — title='{title}', zeit='{zeitausdruck}', typ='{event_type}'")
 
+    # Ein unbekannter Typ bekaeme Merkmale, die niemand fuer ihn entschieden
+    # hat; `event_type` hat ihn schon laut protokolliert, geschrieben wird nichts.
+    try:
+        binding, remind, conflict_check = verhaltens_flags_aus_event_type(event_type)
+    except ValueError:
+        return _unknown_type(state, event_type)
     themen = themen_aus_event_type(event_type)
-    binding, remind, conflict_check = verhaltens_flags_aus_event_type(event_type)
     logger.debug(
         f"_create: Magneten abgeleitet — themen={themen}, "
         f"binding={binding}, remind={remind}, conflict_check={conflict_check}"
@@ -161,6 +195,7 @@ def _create(state: AgentState) -> dict:
         recurring=False,
         precision=precision,
         entitaet_ids=entitaet_ids if entitaet_ids else None,
+        wiedervorlage_am=resubmission_at(remind, event_time),
         themen=themen,
         binding=binding,
         remind=remind,
@@ -200,14 +235,16 @@ def _update(state: AgentState) -> dict:
     Wird sowohl fuer action='update' als auch action='reschedule' aufgerufen.
     Geschrieben wird nur, wenn die Lesung und die Positivform des Rohtexts
     dieselbe neue Uhrzeit ergeben (`_raw_form_agrees`); sonst endet der
-    Auftrag mit der Rueckfrage, ohne `invalidate` und ohne `insert`.
+    Auftrag mit der Rueckfrage, ohne `verschieben`.
+
+    Das Schreiben ist ein Aufruf: `TimelineRepository.verschieben` legt die
+    neue Zeile mit Paar, Typ, Merkmalen und `entitaet_ids` der alten an und
+    legt die alte mit Verweis auf sie ab, in einer Transaktion.
     """
-    from agents.timeline.magneten import (
-        themen_aus_event_type,
-        verhaltens_flags_aus_event_type,
-    )
+    from agents.timeline.magneten import verhaltens_flags_aus_event_type
     from config import POSTGRES_URL
     from memory.repositories.timeline_repository import TimelineRepository
+    from memory.timeline_types import resubmission_at
     from utils.zeitparser import ZeitVektor, dotted_clock_times, zeit_parsen_vektor
 
     termin = state["parameter"].get("termin", {})
@@ -220,12 +257,10 @@ def _update(state: AgentState) -> dict:
     logger.debug(f"_update: Einstieg — termin_id={termin_id}, title='{termin.get('title')}', "
                  f"neuer zeit='{raw_expression}', event_type='{event_type_alt}'")
 
-    themen = themen_aus_event_type(event_type_alt)
-    binding, remind, conflict_check = verhaltens_flags_aus_event_type(event_type_alt)
-    logger.debug(
-        f"_update: Magneten abgeleitet — themen={themen}, "
-        f"binding={binding}, remind={remind}, conflict_check={conflict_check}"
-    )
+    try:
+        remind: bool = verhaltens_flags_aus_event_type(event_type_alt)[1]
+    except ValueError:
+        return _unknown_type(state, event_type_alt)
 
     if not termin_id:
         return {
@@ -234,8 +269,8 @@ def _update(state: AgentState) -> dict:
             "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "kein_termin"}],
         }
 
-    # Der neue Termin gehoert demselben Paar. Geprueft wird vor `invalidate`:
-    # Scheiterte erst das Anlegen, waere der alte Termin weg und kein neuer da.
+    # Der neue Termin gehoert demselben Paar; `verschieben` uebernimmt es aus
+    # der alten Zeile. Ohne Figur im Kontext wird gar nichts angefasst.
     character_id: str = state["kontext"].get("character_id", "")
     if not character_id:
         logger.error(f"_update: Termin {termin_id} ohne character_id — nichts verschoben")
@@ -347,28 +382,25 @@ def _update(state: AgentState) -> dict:
         else "day"
     )
 
-    TimelineRepository.invalidate(POSTGRES_URL, termin_id)
-    logger.debug(f"_update: Alter Termin {termin_id} invalidiert")
+    try:
+        neuer_id: int = TimelineRepository.verschieben(
+            POSTGRES_URL, termin_id,
+            event_time=neues_datum,
+            precision=precision,
+            wiedervorlage_am=resubmission_at(remind, neues_datum),
+        )
+    except ValueError as exc:
+        # Die alte Zeile ist schon abgelegt oder fehlt; `verschieben` hat
+        # zurueckgerollt und den Traceback protokolliert.
+        logger.error(f"_update: Termin {termin_id} nicht verschoben — {exc}")  # noqa: TRY400
+        return {
+            "status": "fehler",
+            "fehler": f"Der Termin '{termin.get('title', '')}' ist nicht mehr aktiv.",
+            "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "nicht_aktiv"}],
+        }
+    logger.debug(f"_update: Termin {termin_id} verschoben auf {neuer_id}")
 
     verifiziert_alt = _verifizieren_termin(termin_id, {"invalidiert": True})
-
-    neuer_id: int = TimelineRepository.insert(
-        postgres_url=POSTGRES_URL,
-        user_id=state["kontext"].get("user_id", ""),
-        character_id=character_id,
-        event_time=neues_datum,
-        event_type=event_type_alt,
-        title=termin.get("title", ""),
-        details=termin.get("details"),
-        recurring=termin.get("recurring", False),
-        precision=precision,
-        entitaet_ids=None,
-        themen=themen,
-        binding=binding,
-        remind=remind,
-        conflict_check=conflict_check,
-    )
-
     verifiziert_neu = _verifizieren_termin(neuer_id, {"aktiv": True})
     verifiziert = verifiziert_alt and verifiziert_neu
 

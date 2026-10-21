@@ -6,7 +6,7 @@ Antwortformat:
     "action": "{aktionen_text}",
     "target": "Titel oder Beschreibung des Ereignisses",
     "zeitausdruck": "Natuerlichsprachlicher Zeitausdruck oder leer",
-    "event_type": "termin|geburtstag|deadline|jahrestag|erinnerung",
+    "event_type": "{type_choices}",
     "normalisiert": "Anweisung in Fachsprache (siehe [FACHSPRACHE])",
     "grund": "NUR bei rejected — kurze Begruendung"
 }}}}
@@ -69,11 +69,7 @@ Nicht interpretieren, nicht umrechnen — nur extrahieren.
   "Verschieb den Zahnarzt von Donnerstag auf Freitag" -> zeitausdruck: "Freitag"
 
 EVENT-TYP:
-  "termin": Arzttermin, Meeting, Verabredung (Standard)
-  "geburtstag": Geburtstage
-  "deadline": Abgabetermine, Fristen
-  "jahrestag": Wiederkehrende jaehrliche Ereignisse
-  "erinnerung": Allgemeine Erinnerungen
+{type_lines}
   Im Zweifel: "termin"
 
 TARGET-AUFLOESUNG:

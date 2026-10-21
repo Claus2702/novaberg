@@ -42,6 +42,7 @@ from config import POSTGRES_URL
 from memory.pipeline_log import log_fehler
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.services.entity_resolution import EntityResolutionService
+from memory.timeline_types import ANCHOR_TYPE, EventType, event_type, resubmission_at
 from utils.zeitparser import ZeitVektor, zeit_parsen_vektor
 
 logger = logging.getLogger("ki_server.agents.kzg.magnete")
@@ -50,7 +51,9 @@ logger = logging.getLogger("ki_server.agents.kzg.magnete")
 # Konvention: KZG-Schreibpfad legt zeitbezogene Anker (keine bindenden Termine)
 # als event_type "erinnerungs_anker" in der Timeline ab. Klasse: Bezug
 # nach docs/novaberg-convention-magneten.md §5 (Flags False/False/False).
-EVENT_TYPE_ERINNERUNGS_ANKER: str = "erinnerungs_anker"
+# Der Typ und seine Merkmale stehen in der Typquelle; der Name hier bleibt fuer
+# die bestehenden Leser.
+EVENT_TYPE_ERINNERUNGS_ANKER: str = ANCHOR_TYPE
 
 
 def magnete_aufloesen(state: AgentState) -> dict:
@@ -352,20 +355,23 @@ def _timeline_aufloesen(
         )
         return existing_id
 
-    # Anlage neuer Anker
+    # Anlage neuer Anker — Merkmale und Wiedervorlage aus der Typquelle: Ein
+    # Anker erinnert nicht, also bekommt er keine Wiedervorlage.
     precision: str = "minute" if vektor.uhrzeit_erkannt else "day"
+    anchor: EventType = event_type(EVENT_TYPE_ERINNERUNGS_ANKER)
     try:
         neue_id: int = TimelineRepository.insert(
-            postgres_url   = POSTGRES_URL,
-            user_id        = user_id,
-            character_id   = character_id,
-            event_time     = vektor.datum,
-            event_type     = EVENT_TYPE_ERINNERUNGS_ANKER,
-            title          = f"Erinnerungs-Anker {vektor.datum:%d.%m.%Y}",
-            precision      = precision,
-            binding        = False,
-            remind         = False,
-            conflict_check = False,
+            postgres_url     = POSTGRES_URL,
+            user_id          = user_id,
+            character_id     = character_id,
+            event_time       = vektor.datum,
+            event_type       = EVENT_TYPE_ERINNERUNGS_ANKER,
+            title            = f"Erinnerungs-Anker {vektor.datum:%d.%m.%Y}",
+            precision        = precision,
+            wiedervorlage_am = resubmission_at(anchor.remind, vektor.datum),
+            binding          = anchor.binding,
+            remind           = anchor.remind,
+            conflict_check   = anchor.conflict_check,
         )
         logger.info(
             f"magnete_aufloesen: Neuer Erinnerungs-Anker angelegt "
