@@ -1676,7 +1676,7 @@ In `memory/kzg.py` (`kzg_store`, Z.~343) und `agents/kzg/speicher.py` (`_neu_anl
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Der Suchpfad bettet weiterhin anders ein als der Schreibpfad.
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Suchpfad bettet weiterhin anders ein als der Schreibpfad. **Ruht seit dem 21.10.2026:** Der Suchpfad über Embeddings (`_search_by_embedding`) hat im Betrieb keinen Aufrufer mehr, seit der Magnet-Pfad nur über den Namen auflöst; der Eintrag wird wieder wirksam, wenn ein neuer Leser der Ähnlichkeit kommt (etwa `ENTITAETEN-ZUSAMMENLEGEN` oder der Graphkanal des Dateiindex).
 
 **Entdeckt:** Chat 107, Bau-Audit für die `embed_text_bauen`-Vereinheitlichung. TODO-Kommentar mit diesem Bug-Namen steht an der Fundstelle.
 

@@ -1158,4 +1158,6 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 **Was fertig wäre:** Jede der sechs hat einen Aufrufer oder ist samt ihren Zeugen entfernt.
 
-**Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (F1, F6) · `novaberg-memory-fakten_e.md` A Nr. 28
+**Nachtrag 21.10.2026, mit dem Magnet-Pfad ohne Rückfall:** Seit der Magnet-Pfad nur `resolve_by_name` fragt (`MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN`), haben im Betrieb auch `EntityResolutionService.resolve_batch`, `_check_agent_state`, `_search_by_embedding`, `_name_ist_plausibel`, `_build_klärungsfrage`, `EntitaetenRepository.find_similar`, `ResolutionResult` und `AGENT_STATE_TTL` keinen Aufrufer mehr; die Spalte `entitaeten.embedding` hat keinen Leser (der Modellaufruf je neuer Entität in `create_new_entity` bleibt, entschieden in `novaberg-memory-fakten_e.md` A Nr. 39), die Schlüssel `agent_state:*` im Redis keinen Schreiber. `resolve_batch` samt Rückfall ist für den Graphkanal des Dateiindex vorgesehen, der vor seinem Bau über den Rückfall entscheidet (`DATEIINDEX-GRAPHKANAL`). Gezählt am Code beim Entwurf des Baus.
+
+**Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (F1, F6) · `novaberg-memory-fakten_e.md` A Nr. 28, 35, 39
