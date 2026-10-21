@@ -16,6 +16,9 @@ Zeugen dieser Datei:
     bleibt aktiv.
   * **Hoechstens ein aktiver Wert je Objekt und Eigenschaft** — die Datenbank
     erzwingt es, nicht nur der Code.
+  * **Die Kandidaten eines Turns** sind seine neuen und abgeloesten Werte am
+    Paar, mit Sprecher, Klasse und gebundener Entitaet; eine Bestaetigung und
+    derselbe Turn an einem anderen Paar sind keine, ein DB-Fehler wirft.
 
 Die Suite laeuft gegen die Produktiv-Datenbank: Das Fixture bringt ein eigenes
 Paar mit und raeumt in tearDown ab.
@@ -25,6 +28,7 @@ Kein skipUnless, kein skipIf: Fehlt eine Tabelle, wird dieser Test rot.
 
 import unittest
 import uuid
+from unittest.mock import patch
 
 import psycopg2
 
@@ -37,6 +41,7 @@ from memory.sachlage_properties import (
     property_history,
     record_turn_objects,
     text_key,
+    turn_candidates,
     unbound_objects,
 )
 
@@ -263,6 +268,105 @@ class TheEntityIsBoundLaterTest(_PairFixture):
         self.assertTrue(bind_entity(POSTGRES_URL, objekt_id, eins, BINDING_TURN_MAGNET))
         self.assertFalse(bind_entity(POSTGRES_URL, objekt_id, zwei, BINDING_TURN_MAGNET))
         self.assertEqual(unbound_objects(POSTGRES_URL, self.user, self.char, ["geburtstag"], 5), [])
+
+
+class TheCandidatesOfATurnTest(_PairFixture):
+    """Kandidat ist, was der Turn neu setzte oder abloeste — nicht, was er bestaetigte."""
+
+    def _entity(self) -> int:
+        """Eine eigene Entitaet des Paares, nach dem Fixture abgeraeumt."""
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO entitaeten (user_id, name, typ)
+                       VALUES (%s, 'Geburtstag', 'sonstiges') RETURNING id""",
+                    (self.user,),
+                )
+                entitaet_id: int = cur.fetchone()[0]
+            conn.commit()
+        finally:
+            conn.close()
+        self.addCleanup(self._drop_entities)
+        return entitaet_id
+
+    def _drop_entities(self) -> None:
+        """Raeumt die Entitaeten des Paares nach dem Fixture ab."""
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM entitaeten WHERE user_id = %s", (self.user,))
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _candidates(self, turn: int, character_id: str | None = None) -> list[dict]:
+        return turn_candidates(POSTGRES_URL, self.user, character_id or self.char,
+                               f"{self.user}-t{turn}")
+
+    def test_new_and_replaced_are_candidates_with_speaker_class_and_entity(self) -> None:
+        erst = self._record(0, {"wann": "1. Juli"}, sprecher={"wann": "nutzer"})
+        entitaet_id: int = self._entity()
+        self.assertTrue(bind_entity(POSTGRES_URL, erst.object_ids["geburtstag"], entitaet_id,
+                                    BINDING_TURN_MAGNET))
+        dann = self._record(1, {"wann": "1. August", "ort": "im Garten"},
+                            sprecher={"wann": "nutzer", "ort": "nova"})
+        self.assertEqual((dann.new, dann.replaced), (1, 1))
+        self.assertEqual(
+            [{k: c[k] for k in ("objekt", "klasse", "entitaet_id", "entitaet_bindung",
+                                "eigenschaft", "wert", "sprecher")}
+             for c in self._candidates(1)],
+            [{"objekt": "Geburtstag", "klasse": "vorgang", "entitaet_id": entitaet_id,
+              "entitaet_bindung": "turn_magnet", "eigenschaft": "wann", "wert": "1. August",
+              "sprecher": "nutzer"},
+             {"objekt": "Geburtstag", "klasse": "vorgang", "entitaet_id": entitaet_id,
+              "entitaet_bindung": "turn_magnet", "eigenschaft": "ort", "wert": "im Garten",
+              "sprecher": "nova"}],
+        )
+
+    def test_a_confirmed_property_is_no_candidate(self) -> None:
+        self._record(0, {"wann": "1. Juli", "anlass": "zehnter"})
+        dann = self._record(1, {"wann": "1. Juli", "anlass": "elfter"})
+        self.assertEqual((dann.confirmed, dann.replaced), (1, 1))
+        # Zwilling im selben Turn: die abgeloeste steht, die bestaetigte nicht.
+        self.assertEqual([c["eigenschaft"] for c in self._candidates(1)], ["anlass"])
+
+    def test_the_same_turn_at_another_pair_is_no_candidate(self) -> None:
+        anderer: str = "nova-test-b"
+        vid = history_write(
+            POSTGRES_URL, turn_id=f"{self.user}-t0", user_id=self.user, character_id=anderer,
+            sachlage={"thema": "Geburtstag", "gegenstand": "Ein Geburtstag",
+                      "nutzerziel": "Planung", "ausdrucksweise": "erzaehlend",
+                      "objekte": [], "herkunft": "frisch"},
+            embedding=None,
+        )
+        self.assertIsNotNone(record_turn_objects(
+            POSTGRES_URL, user_id=self.user, character_id=anderer, turn_id=f"{self.user}-t0",
+            verlauf_id=vid, sachlage={"objekte": [{"name": "Teleskop", "akut": True,
+                                                   "gedeckt": {"brennweite": "1200 mm"},
+                                                   "offen": []}]},
+        ))
+        self._record(0, {"wann": "1. Juli"})
+        self.assertEqual([c["objekt"] for c in self._candidates(0)], ["Geburtstag"])
+        self.assertEqual([c["objekt"] for c in self._candidates(0, anderer)], ["Teleskop"])
+
+    def test_a_turn_without_new_values_has_none(self) -> None:
+        self._record(0, {"wann": "1. Juli"})
+        self._record(1, {"wann": "1. Juli"})
+        self.assertEqual(self._candidates(1), [])
+
+    def test_a_database_error_is_raised_not_an_empty_list(self) -> None:
+        self._record(0, {"wann": "1. Juli"})
+        with patch("memory.sachlage_properties.psycopg2.connect",
+                   side_effect=psycopg2.OperationalError("weg")), \
+             self.assertRaises(psycopg2.OperationalError):
+            self._candidates(0)
+        # Zwilling: derselbe Aufruf ohne Ausfall liefert den Kandidaten.
+        self.assertEqual(len(self._candidates(0)), 1)
+
+    def test_an_incomplete_key_is_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            turn_candidates(POSTGRES_URL, self.user, self.char, "")
 
 
 class TextKeyTest(unittest.TestCase):

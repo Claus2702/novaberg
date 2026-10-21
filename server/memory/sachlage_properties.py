@@ -292,6 +292,70 @@ def record_turn_objects(
     return ergebnis
 
 
+def turn_candidates(
+    postgres_url: str,
+    user_id:      str,
+    character_id: str,
+    turn_id:      str,
+) -> list[dict]:
+    """Was dieser Turn am Paar neu gesetzt oder abgeloest hat — die Kandidaten fuer Fakten.
+
+    Ein Kandidat ist eine Eigenschaft, deren Zeile in diesem Turn entstand
+    (`turn_id`): Ausgang *neu* oder *abgeloest* von `_property_write`. Eine
+    Bestaetigung setzt nur `bestaetigt_turn_id` und ist keiner — sie sagt
+    nichts, was nicht schon stand. **Klasse und Sprecher werden nicht
+    vorgefiltert**; was davon ein Fakt ist, entscheidet der Leser.
+
+    Vorbedingung: Paar und `turn_id` sind nicht leer.
+    Nachbedingung: Je Kandidat ein dict mit id, objekt_id, objekt (Name),
+        klasse, entitaet_id, entitaet_bindung, eigenschaft, wert, sprecher —
+        in der Reihenfolge der Zeilen; leer, wenn der Turn nichts neu setzte.
+    Fehlerfaelle: Unvollstaendige Kennung — ValueError. DB-Fehler —
+        `logger.exception` und weitergeworfen: Ein Lesefehler ist kein Turn
+        ohne Kandidaten, und als leere Liste saehe er genau so aus.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id or not turn_id:
+        raise ValueError(  # noqa: TRY003 — die Kennung gehoert in die Meldung
+            f"Kandidaten: unvollstaendige Kennung (turn={turn_id!r}, "
+            f"paar={user_id!r}/{character_id!r})"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(
+                    f"""
+                    SELECT e.id, e.objekt_id, o.name AS objekt, o.klasse,
+                           o.entitaet_id, o.entitaet_bindung,
+                           e.eigenschaft, e.wert, e.sprecher
+                    FROM {PROPERTY_TABLE} e
+                    JOIN {OBJECT_TABLE} o ON o.id = e.objekt_id
+                    WHERE o.user_id = %s AND o.character_id = %s AND e.turn_id = %s
+                    ORDER BY e.id
+                    """,  # noqa: S608 — Tabellennamen sind Konstanten
+                    (user_id, character_id, turn_id),
+                )
+                kandidaten: list[dict] = [dict(z) for z in cur.fetchall()]
+        finally:
+            conn.close()
+    except psycopg2.Error:
+        logger.exception("Kandidaten: turn=%s nicht lesbar — weitergeworfen", turn_id)
+        raise
+
+    # ── Ausgabe-Verifikation ────────────────────
+    fremd: list[object] = [k["sprecher"] for k in kandidaten
+                           if k["sprecher"] is not None and k["sprecher"] not in SPEAKERS]
+    if fremd:
+        logger.error(
+            "Kandidaten: turn=%s — %d Eigenschaft(en) mit unbekanntem Sprecher %s",
+            turn_id, len(fremd), sorted({str(s) for s in fremd}),
+        )
+    return kandidaten
+
+
 def active_properties(
     postgres_url: str,
     user_id:      str,
