@@ -126,9 +126,18 @@ class DieQualitaetsKanteStehtTest(unittest.TestCase):
         `lzg_knoten_haltung` steht daneben und laesst genau das zu.
         """
         with psycopg2.connect(POSTGRES_URL) as conn, conn.cursor() as cur:
-            cur.execute("SELECT id FROM lzg_knoten LIMIT 1")
+            # Der Traeger entsteht in derselben Transaktion und verschwindet mit ihr:
+            # das rollback() unten und der Austritt aus `with` bei Rot raeumen ihn ab,
+            # es wird nie etwas festgeschrieben.
+            cur.execute(
+                "INSERT INTO lzg_knoten (kzg_quell_key, user_id, inhalt, dimension, "
+                "gewicht_roh, gewicht_absolut, gewicht_decay, kzg_erstellt_am) "
+                "VALUES ('test-qualitaet-traeger', 'test-qualitaet-user', "
+                "'Fixture fuer die vorzeichenlose Auspraegung.', 'test', "
+                "0.0, 0.0, 0.0, NOW()) RETURNING id"
+            )
             zeile = cur.fetchone()
-            self.assertIsNotNone(zeile, "Kein LZG-Knoten im Bestand — Zeuge untauglich")
+            self.assertIsNotNone(zeile, "Traeger-Knoten konnte nicht angelegt werden")
             cur.execute(
                 "SELECT id FROM abstrakt_knoten WHERE art = 'qualitaet' LIMIT 1"
             )

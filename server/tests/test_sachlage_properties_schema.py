@@ -253,17 +253,42 @@ class AValueIsReplacedNotOverwrittenTest(_PairFixture):
 
 
 class TheEntityIsBoundLaterTest(_PairFixture):
+    """Ein Objekt wartet ungebunden und wird genau einmal an eine Entitaet gebunden."""
+
+    def _two_entities(self) -> tuple[int, int]:
+        """Zwei eigene Entitaeten des Paares; abgeraeumt nach dem Fixture, auch bei Rot."""
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                ids: list[int] = []
+                for name in ("Geburtstag", "Feier"):
+                    cur.execute(
+                        """INSERT INTO entitaeten (user_id, name, typ)
+                           VALUES (%s, %s, 'sonstiges') RETURNING id""",
+                        (self.user, name),
+                    )
+                    ids.append(cur.fetchone()[0])
+            conn.commit()
+        finally:
+            conn.close()
+        self.addCleanup(self._drop_entities)
+        return ids[0], ids[1]
+
+    def _drop_entities(self) -> None:
+        """Raeumt die Entitaeten des Paares ab."""
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM entitaeten WHERE user_id = %s", (self.user,))
+            conn.commit()
+        finally:
+            conn.close()
+
     def test_an_object_waits_unbound_and_is_bound_once(self) -> None:
         erst = self._record(0, {"wann": "1. Juli"})
         offen = unbound_objects(POSTGRES_URL, self.user, self.char, ["geburtstag"], 5)
         self.assertEqual([o["turn_ids"] for o in offen], [[f"{self.user}-t0"]])
-        conn = psycopg2.connect(POSTGRES_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id FROM entitaeten ORDER BY id LIMIT 2")
-                eins, zwei = (r[0] for r in cur.fetchall())
-        finally:
-            conn.close()
+        eins, zwei = self._two_entities()
         objekt_id = erst.object_ids["geburtstag"]
         self.assertTrue(bind_entity(POSTGRES_URL, objekt_id, eins, BINDING_TURN_MAGNET))
         self.assertFalse(bind_entity(POSTGRES_URL, objekt_id, zwei, BINDING_TURN_MAGNET))

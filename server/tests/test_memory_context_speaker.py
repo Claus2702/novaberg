@@ -123,20 +123,47 @@ class SpreadingCarriesSpeakerTest(unittest.TestCase):
 
 
 class DetailLoaderReadsSpeakerTest(unittest.TestCase):
-    """Der Detail-Lader liest `beobachter` aus dem Bestand — lesend."""
+    """Der Detail-Lader liest `beobachter` aus der Zeile des Knotens."""
 
-    def test_active_node_carries_speaker(self) -> None:
+    QUELL_KEY = "test-speaker-detail-loader"
+
+    def _delete_node(self) -> None:
+        """Raeumt den eigenen Knoten ab."""
         conn = psycopg2.connect(POSTGRES_URL)
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT id FROM lzg_knoten WHERE aktiv = TRUE ORDER BY id LIMIT 1")
-                zeile = cur.fetchone()
+                cur.execute("DELETE FROM lzg_knoten WHERE kzg_quell_key = %s", (self.QUELL_KEY,))
+            conn.commit()
         finally:
             conn.close()
-        self.assertIsNotNone(zeile, "kein aktiver Knoten im Bestand — der Zeuge braucht einen")
-        detail = _knoten_details_laden(POSTGRES_URL, int(zeile[0]))
+
+    def _create_node(self) -> int:
+        """Legt einen eigenen aktiven Knoten des Sprechers `assistant` an; Abraeumen vorgemerkt."""
+        self._delete_node()
+        self.addCleanup(self._delete_node)
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO lzg_knoten
+                           (kzg_quell_key, user_id, character_id, beobachter, inhalt, dimension,
+                            gewicht_roh, gewicht_absolut, gewicht_decay, kzg_erstellt_am, aktiv)
+                       VALUES (%s, 'test-speaker-user', 'nova-test', 'assistant',
+                               'Fixture fuer den Sprecher des Detail-Laders.', 'test',
+                               1.0, 1.0, 1.0, NOW(), TRUE)
+                       RETURNING id""",
+                    (self.QUELL_KEY,),
+                )
+                knoten_id: int = cur.fetchone()[0]
+            conn.commit()
+        finally:
+            conn.close()
+        return knoten_id
+
+    def test_active_node_carries_speaker(self) -> None:
+        detail = _knoten_details_laden(POSTGRES_URL, self._create_node())
         self.assertIsNotNone(detail)
-        self.assertIn(detail["beobachter"], ("user", "assistant"))
+        self.assertEqual(detail["beobachter"], "assistant")
 
 
 if __name__ == "__main__":

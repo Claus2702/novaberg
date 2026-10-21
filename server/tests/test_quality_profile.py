@@ -29,11 +29,14 @@ import json
 import unittest
 from unittest.mock import MagicMock, patch
 
+import psycopg2
+
 from config import (
     MERKMALSZUG_BONUS,
     POSTGRES_URL,
     QUALITAET_KANON,
     QUALITAET_LAENGE_MIN,
+    QUALITAET_WIEDERKEHR_MIN,
 )
 from ei.fascination import dominante_dimension, merkmalszug
 from memory import quality_profile
@@ -339,6 +342,54 @@ class DerSpeicherLehntEineWertAussageAbTest(unittest.TestCase):
         """
         self.assertEqual([], speicher.candidates_load(POSTGRES_URL, 0))
 
+    SCHLUESSEL: str = "test-qprofil-kandidat"
+    TURN: str = "test-qprofil-lesespur"
+
+    def _kandidaten_raeumen(self) -> None:
+        """Raeumt die eigenen Knoten und Lesespuren ab (auch die eines frueheren Abbruchs)."""
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM pipeline_log WHERE turn_id LIKE %s", (self.TURN + "%",))
+                cur.execute("DELETE FROM lzg_knoten WHERE kzg_quell_key LIKE %s",
+                            (self.SCHLUESSEL + "%",))
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _kandidaten_anlegen(self) -> None:
+        """Legt drei offene Kandidaten an: zweimal, einmal und nie frisch gelesen.
+
+        Sie erfuellen Wiederkehr- und Laengenfilter und tragen kein Profil; die
+        Lesespur steht als `enricher`-Zeilen im Protokoll. Abgeraeumt wird per
+        `addCleanup`, auch wenn der Zeuge rot wird.
+        """
+        self._kandidaten_raeumen()
+        self.addCleanup(self._kandidaten_raeumen)
+        conn = psycopg2.connect(POSTGRES_URL)
+        try:
+            with conn.cursor() as cur:
+                ids: list[int] = []
+                for i in range(3):
+                    cur.execute(
+                        "INSERT INTO lzg_knoten (kzg_quell_key, user_id, inhalt, dimension, "
+                        "gewicht_roh, gewicht_absolut, gewicht_decay, haeufigkeit, "
+                        "kzg_erstellt_am) VALUES (%s, 'test-qprofil-user', %s, 'test', "
+                        "1.0, 1.0, 1.0, %s, NOW()) RETURNING id",
+                        (f"{self.SCHLUESSEL}-{i}", "x" * (QUALITAET_LAENGE_MIN + 20),
+                         QUALITAET_WIEDERKEHR_MIN),
+                    )
+                    ids.append(cur.fetchone()[0])
+                for nr, gelesen in enumerate(([ids[0], ids[1]], [ids[0]])):
+                    cur.execute(
+                        "INSERT INTO pipeline_log (turn_id, quelle, node, art, inhalt) "
+                        "VALUES (%s, 'test', 'enricher', 'ausgabe', %s::jsonb)",
+                        (f"{self.TURN}-{nr}", json.dumps({"lzg_resonanz_ids": gelesen})),
+                    )
+            conn.commit()
+        finally:
+            conn.close()
+
     def test_die_frisch_gelesenen_stehen_vorn(self) -> None:
         """Wer zuletzt gelesen wurde, wird zuerst profiliert.
 
@@ -363,9 +414,9 @@ class DerSpeicherLehntEineWertAussageAbTest(unittest.TestCase):
         selbst liest. Dieser hier belegt, dass die Spalte ankommt und
         auswertbar ist — nicht, dass sie den Vorrang hat.
         """
+        self._kandidaten_anlegen()
         kandidaten: list = speicher.candidates_load(POSTGRES_URL, 25)
-        if not kandidaten:
-            self.skipTest("kein offener Kandidat im Bestand")
+        self.assertTrue(kandidaten, "Die eigenen Kandidaten fehlen in der Auswahl")
 
         for eintrag in kandidaten:
             self.assertIn("zuletzt_gelesen", eintrag)
@@ -386,9 +437,11 @@ class DerSpeicherLehntEineWertAussageAbTest(unittest.TestCase):
         kuerzlich gelesen wurden. Bis dahin ist er eine Beobachtung, keine
         Wand; das steht hier, damit ihn niemand fuer eine haelt.
         """
+        self._kandidaten_anlegen()
         kandidaten: list = speicher.candidates_load(POSTGRES_URL, 25)
-        if len(kandidaten) < 2:
-            self.skipTest("zu wenige Kandidaten fuer einen Vergleich")
+        self.assertGreaterEqual(
+            len(kandidaten), 2, "Die eigenen Kandidaten fehlen in der Auswahl",
+        )
 
         for vorn, hinten in zip(kandidaten, kandidaten[1:], strict=False):
             if int(vorn["zuletzt_gelesen"]) > int(hinten["zuletzt_gelesen"]):
