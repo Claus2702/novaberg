@@ -86,6 +86,79 @@ class Schreibung:
             raise ValueError(f"Schreibung: ungültige fakt_id {self.fakt_id!r}")
 
 
+@dataclass(frozen=True)
+class Surroundings:
+    """Was `find_umgebung` um eine Entität gelesen hat — geladen, nicht gerechnet.
+
+    `rows` sind die Fakten je Grad, Grad 1 vor Grad 2, je Grad nach Stärke und
+    ID absteigend; jede Zeile trägt `grad`. `row_limit_hit` sagt, dass in
+    mindestens einem Grad die Grenze der Zeilen Fakten abgeschnitten hat.
+    """
+
+    entity_name:   str
+    rows:          tuple[dict, ...]
+    row_limit_hit: bool
+
+
+class EntityNotFoundError(LookupError):
+    """Die Entität ist unbekannt, nicht aktiv oder die eines anderen Menschen.
+
+    Eine eigene Klasse, damit ein Aufrufer genau diesen Fall erkennt: Ein
+    `KeyError` oder `IndexError` aus einem Programmfehler ist ebenfalls ein
+    `LookupError` und darf nicht wie eine unbekannte Entität aussehen.
+    """
+
+
+# Die Spalten, die `find_umgebung` je Fakt liest. Paar und `aktiv` stehen
+# darin, damit `_verify_rows` sie prüfen kann.
+_SURROUNDINGS_SQL: str = """
+    SELECT f.id, f.user_id, f.character_id, f.aktiv,
+           f.subjekt_id, s.name AS subjekt_name, f.attribut,
+           f.objekt_id, o.name AS objekt_name, f.objekt_wert,
+           f.fakt_text, f.herkunft, f.staerke_decay
+    FROM fakten f
+    LEFT JOIN entitaeten s ON s.id = f.subjekt_id AND s.user_id = f.user_id
+    LEFT JOIN entitaeten o ON o.id = f.objekt_id AND o.user_id = f.user_id
+    WHERE f.user_id = %s AND f.character_id = %s AND f.aktiv = TRUE
+      AND f.staerke_decay >= %s
+      AND (f.subjekt_id = ANY(%s) OR f.objekt_id = ANY(%s))
+      AND NOT (f.id = ANY(%s))
+    ORDER BY f.staerke_decay DESC, f.id DESC
+    LIMIT %s
+"""
+
+
+def _check_surrounding_row(row: dict, front: set[int], min_strength: float) -> None:
+    """Prüft eine Zeile von `find_umgebung` gegen die Bedingungen ihres Grades.
+
+    Vorbedingung: `front` ist die Front des Grades, aus dem die Zeile kommt.
+    Nachbedingung: Die Zeile berührt die Front, ruht nicht und trägt die Namen
+        ihrer Entitäten.
+    Fehlerfälle: RuntimeError, wenn eine Bedingung verletzt ist — dann hat die
+        Abfrage ihren Filter verloren, oder eine Entität des Fakts gehört einem
+        anderen Menschen (der Name fehlt nach dem Join auf dieselbe `user_id`).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not front:
+        raise ValueError(  # noqa: TRY003 — die Funktion gehoert in die Meldung
+            "fakten.find_umgebung: leere Front zu prüfen"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    touches:     bool = row["subjekt_id"] in front or row["objekt_id"] in front
+    names_found: bool = row["subjekt_name"] is not None and (
+        row["objekt_id"] is None or row["objekt_name"] is not None
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not touches or row["staerke_decay"] < min_strength or not names_found:
+        raise RuntimeError(  # noqa: TRY003 — Zeile und Befund gehoeren in die Meldung
+            f"fakten.find_umgebung: Zeile id={row.get('id')} verletzt ihren Grad "
+            f"(berührt die Front: {touches}, Stärke {row['staerke_decay']!r}, "
+            f"Namen vollständig: {names_found})"
+        )
+
+
 def _check_pair(user_id: str, character_id: str) -> None:
     """Prüft das Paar, bevor eine Abfrage es benutzt.
 
@@ -685,6 +758,121 @@ class FaktenRepository:
         return _verify_rows("find_historie", [dict(row) for row in rows], {
             "user_id": user_id, "character_id": character_id,
         })
+
+    @staticmethod
+    def find_umgebung(  # noqa: PLR0913 — Paar, Entität und drei Stellgrößen; die drei nur benannt
+        postgres_url: str,
+        user_id:      str,
+        character_id: str,
+        entity_id:    int,
+        *,
+        depth:        int,
+        min_strength: float,
+        max_rows:     int,
+    ) -> Surroundings:
+        """Lädt die aktiven Fakten des Paares um eine Entität, Grad für Grad.
+
+        Grad 1 sind die Fakten, in denen die Entität Subjekt oder Objekt ist,
+        Referenz- wie Wert-Fakten. Die anderen Enden der Referenz-Fakten sind
+        die Front des nächsten Grades; eine Entität, die schon erreicht ist,
+        wird nicht noch einmal Front. Jeder Fakt steht einmal da, mit seinem
+        kleinsten Grad, solange die Grenze `max_rows` nicht greift: Schneidet
+        sie einen Fakt in einem Grad ab, kann er in einem höheren Grad
+        erscheinen, und `row_limit_hit` ist gesetzt. Ruhende Kanten
+        (`staerke_decay < min_strength`) und abgelöste Fakten sind ausgenommen,
+        auch als Brücke. Je Grad wird nach `staerke_decay` und `id` absteigend
+        geordnet; in derselben Ordnung
+        schneidet die Grenze `max_rows` ab, und nur die gelieferten Fakten
+        tragen zur nächsten Front bei.
+
+        Eine Verbindung, schreibgeschützt, ohne Commit.
+
+        Vorbedingung: Das Paar ist vollständig; `entity_id`, `depth` und
+            `max_rows` sind ganze Zahlen ab 1, `min_strength` liegt in [0, 1].
+        Nachbedingung: Nichts wurde geschrieben, auch nicht last_touched. Jede
+            Zeile ist aktiv, gehört zum Paar, berührt die Front ihres Grades,
+            ruht nicht und steht nur einmal da.
+        Fehlerfälle: ValueError bei ungültiger Eingabe. EntityNotFoundError
+            (ein LookupError), wenn die Entität unbekannt, nicht aktiv oder die
+            eines anderen Menschen ist.
+            RuntimeError, wenn eine Zeile die Nachbedingung verletzt. Ein
+            Fehler der Datenbank wird nicht gefangen.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        _check_pair(user_id, character_id)
+        for name, value in (("entity_id", entity_id), ("depth", depth),
+                            ("max_rows", max_rows)):
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError(  # noqa: TRY003 — der abgewiesene Wert gehoert in die Meldung
+                    f"fakten.find_umgebung: {name} ungültig ({value!r})"
+                )
+        if (isinstance(min_strength, bool) or not isinstance(min_strength, (int, float))
+                or not 0.0 <= min_strength <= 1.0):
+            raise ValueError(  # noqa: TRY003 — der abgewiesene Wert gehoert in die Meldung
+                f"fakten.find_umgebung: min_strength ungültig ({min_strength!r})"
+            )
+
+        # ── Verarbeitung ────────────────────────────
+        read_rows: list[dict] = []
+        fronts:    dict[int, set[int]] = {}
+        limit_hit: bool = False
+        conn = psycopg2.connect(postgres_url)
+        try:
+            conn.set_session(readonly=True)
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cursor.execute(
+                "SELECT name FROM entitaeten WHERE id = %s AND user_id = %s AND aktiv = TRUE",
+                (entity_id, user_id),
+            )
+            start = cursor.fetchone()
+            if start is None:
+                raise EntityNotFoundError(  # noqa: TRY003 — Entität und Mensch in die Meldung
+                    f"fakten.find_umgebung: keine aktive Entität id={entity_id} "
+                    f"für user_id={user_id!r}"
+                )
+            reached: set[int] = {entity_id}
+            front:   set[int] = {entity_id}
+            for degree in range(1, depth + 1):
+                if not front:
+                    break
+                fronts[degree] = front
+                ids: list[int] = sorted(front)
+                cursor.execute(_SURROUNDINGS_SQL, (
+                    user_id, character_id, min_strength, ids, ids,
+                    [r["id"] for r in read_rows], max_rows + 1,
+                ))
+                rows: list[dict] = [dict(r, grad=degree) for r in cursor.fetchall()]
+                limit_hit = limit_hit or len(rows) > max_rows
+                rows = rows[:max_rows]
+                read_rows.extend(rows)
+                ends: set[int] = {
+                    end for r in rows if r["objekt_id"] is not None
+                    for end in (r["subjekt_id"], r["objekt_id"])
+                }
+                front = ends - reached
+                reached |= front
+        finally:
+            conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
+        _verify_rows("find_umgebung", read_rows, {
+            "user_id": user_id, "character_id": character_id, "aktiv": True,
+        })
+        for row in read_rows:
+            _check_surrounding_row(row, fronts[row["grad"]], min_strength)
+        fact_ids: list[int] = [r["id"] for r in read_rows]
+        if len(set(fact_ids)) != len(fact_ids):
+            raise RuntimeError(  # noqa: TRY003 — die Fakten gehoeren in die Meldung
+                f"fakten.find_umgebung: ein Fakt steht doppelt da ({fact_ids})"
+            )
+        if limit_hit:
+            logger.info(
+                "fakten.find_umgebung: Grenze von %d Zeilen je Grad getroffen (Entität %s)",
+                max_rows, entity_id,
+            )
+        return Surroundings(
+            entity_name=start["name"], rows=tuple(read_rows), row_limit_hit=limit_hit,
+        )
 
     @staticmethod
     def set_wiedervorlage(

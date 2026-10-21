@@ -3981,6 +3981,37 @@ QUEUE_VERSTAERKUNG_BOOST: float = float(os.getenv("QUEUE_VERSTAERKUNG_BOOST", "0
 # "verblasst". Eine Schwelle ist Sache des Lesers.
 FAKTEN_DECAY_RATE: float = float(os.getenv("FAKTEN_DECAY_RATE", "0.0015"))
 
+# ─────────────────────────────────────────────
+# Faktengedaechtnis: die Mappe einer Entitaet (memory/fakten_mappe.py)
+# ─────────────────────────────────────────────
+# Bis zu welchem Grad die Mappe den Fakten folgt: 1 sind die Fakten der
+# Entitaet selbst, 2 die ihrer Nachbarn. Geaendert wird der Wert nur mit dem
+# Ergebnis der Messung der Tiefe (erster gegen zweiten Grad).
+# ⚠ Wachposten: nicht gemessen — begruendeter Startwert.
+FAKTEN_MAPPE_TIEFE: int = int(os.getenv("FAKTEN_MAPPE_TIEFE", "2"))
+
+# Wie viele Zeichen `fakt_text` die Mappe hoechstens traegt. Bei 20 bis 40
+# Zeichen je Fakt sind das etwa 30 bis 60 Fakten.
+# ⚠ Wachposten: nicht gemessen — begruendeter Startwert.
+FAKTEN_MAPPE_MAX_ZEICHEN: int = int(os.getenv("FAKTEN_MAPPE_MAX_ZEICHEN", "1200"))
+
+# Unter dieser Staerke ruht eine Kante: Die Mappe liest sie nicht, auch nicht
+# als Bruecke. Dieselbe Schwelle wie LZG_KNOTEN_MIN_GEWICHT, als eigene
+# Konstante. Bei FAKTEN_DECAY_RATE ist sie nach ln 10 / 0,0015 ≈ 1535 Tagen
+# ohne Schreiben erreicht.
+# ⚠ Wachposten: nicht gemessen — begruendeter Startwert.
+FAKTEN_MAPPE_MIN_STAERKE: float = float(os.getenv("FAKTEN_MAPPE_MIN_STAERKE", "0.1"))
+
+# Wie viele Fakten die Mappe je Grad hoechstens liest, in der Ordnung der
+# Kappung (Staerke, dann ID absteigend). Die Grenze haelt die Front des
+# naechsten Grades klein, wenn ein Knoten viele Nachbarn hat; sie liegt ueber
+# dem, was FAKTEN_MAPPE_MAX_ZEICHEN aus einem Grad uebrig laesst (60 Fakten
+# zu 20 Zeichen), damit im Regelfall die Kappung in Zeichen schneidet.
+# ⚠ Wachposten: nicht gemessen — begruendeter Startwert.
+FAKTEN_MAPPE_MAX_ZEILEN_JE_GRAD: int = int(
+    os.getenv("FAKTEN_MAPPE_MAX_ZEILEN_JE_GRAD", "80")
+)
+
 # Cosine-Schwelle, ab der ein neuer KZG-Eintrag als Quasi-Dublette eines
 # bestehenden Knotens gilt und diesen verstaerkt, statt einen neuen Knoten
 # anzulegen. Bewusst hoch — Standardfall ist Knoten-Erhalt, nur echte
