@@ -84,6 +84,15 @@ class EntityResolutionService:
            - 1 Treffer → aufgelöst
            - N Treffer → Disambiguierung nötig
         5. Bei Disambiguierung → Klärungsfrage formulieren
+
+        Nachbedingung: `ist_neu=True` heißt nur noch: Namens- und
+            Embedding-Suche liefen und fanden nichts. Angelegt wird hier nichts.
+        Fehlerfälle: Jeder Fehler von `find_by_type` (*ICH*), `find_by_name`,
+            vom Embedding der Suche und von `find_similar` geht durch, wie bei
+            `resolve_by_name` — ein Ausfall sähe sonst aus wie kein Treffer und
+            der Aufrufer legte ein Duplikat an. Wer weiterlaufen will, fängt je
+            Name. Ein Fehler im Redis des Agent-State fällt auf die Datenbank
+            durch (`_check_agent_state`).
         """
         result = ResolutionResult()
 
@@ -267,15 +276,28 @@ class EntityResolutionService:
         user_id:       str,
         name:          str,
     ) -> list[dict]:
-        """
-        Sucht Entitäten per Name in der DB (case-insensitive, nur aktive).
+        """Sucht Entitäten per Name in der DB (case-insensitive, nur aktive).
+
         Nutzt EntitaetenRepository.find_by_name().
+        Vorbedingung: name ist nicht leer.
+        Nachbedingung: Eine leere Liste heißt: die Suche lief und fand nichts.
+        Fehlerfälle: ValueError bei leerem Namen; jeder Fehler der Datenbank
+            geht durch — gefangen wird beim Aufrufer, der entscheidet, was der
+            Ausfall kostet.
         """
-        try:
-            return EntitaetenRepository.find_by_name(postgres_url, user_id, name)
-        except Exception as fehler:
-            logger.exception(f"{type(fehler).__name__}: DB-Namenssuche fehlgeschlagen")
-            return []
+        # ── Eingabe-Validierung ─────────────────────
+        if not name:
+            raise ValueError("_search_by_name: name ist leer")  # noqa: TRY003
+
+        # ── Verarbeitung ────────────────────────────
+        treffer: list[dict] = EntitaetenRepository.find_by_name(postgres_url, user_id, name)
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if not isinstance(treffer, list):
+            raise TypeError(  # noqa: TRY003
+                f"_search_by_name: find_by_name lieferte {type(treffer).__name__}, erwartet list"
+            )
+        return treffer
 
     @staticmethod
     def _name_ist_plausibel(such_name: str, treffer_name: str) -> bool:
@@ -313,46 +335,58 @@ class EntityResolutionService:
         # — begruendeter Startwert, nach dem Re-Embedding messen.
         threshold:      float = 0.70,
     ) -> list[dict]:
-        """
-        Sucht ähnliche Entitäten per Embedding-Similarity.
+        """Sucht ähnliche Entitäten per Embedding-Similarity.
+
         Nur als Fallback wenn find_by_name nichts liefert.
         Filtert Treffer zusätzlich per Name-Plausibilität.
+        Vorbedingung: name ist nicht leer.
+        Nachbedingung: Eine leere Liste heißt: Embedding und Suche liefen und
+            fanden nichts Plausibles.
+        Fehlerfälle: ValueError bei leerem Namen; jeder Fehler des Embeddings
+            und von `find_similar` geht durch — gefangen wird beim Aufrufer.
         """
-        try:
-            # TODO ENTITAET-EMBED-DREIFACH: Der Suchpfad embeddet nur den
-            # Namen, vergleicht aber gegen Vektoren aus
-            # EntitaetenRepository.embed_text_bauen(name, zusammenfassung).
-            # Bewusst NICHT auf die Bauer-Funktion umgestellt (Chat 107) —
-            # eine Aenderung hier veraendert das Suchverhalten und gehoert
-            # gemessen, nicht nebenbei gemacht.
-            request = EmbedRequest(text=name)
-            embed_response = model_service.embed.submit_sync(request)
-            embedding: list[float] = embed_response.embedding
-            logger.debug(
-                "Entity-Resolution: Similarity-Suche Embedding via EmbedWorker (Dim: %d, Dauer: "
-                "%.3fs)",
-                len(embedding),
-                embed_response.duration_seconds,
-            )
-            treffer: list[dict] = EntitaetenRepository.find_similar(
-                postgres_url, user_id, embedding, threshold=threshold
-            )
+        # ── Eingabe-Validierung ─────────────────────
+        if not name:
+            raise ValueError("_search_by_embedding: name ist leer")  # noqa: TRY003
 
-            # Embedding-Treffer filtern: Name muss plausibel sein
-            gefiltert: list[dict] = []
-            for t in treffer:
-                if EntityResolutionService._name_ist_plausibel(name, t.get("name", "")):
-                    gefiltert.append(t)
-                else:
-                    logger.info(
-                        f"Entity Resolution: '{name}' → Embedding-Treffer "
-                        f"'{t.get('name', '')}' verworfen (Name nicht plausibel)"
-                    )
+        # ── Verarbeitung ────────────────────────────
+        # TODO ENTITAET-EMBED-DREIFACH: Der Suchpfad embeddet nur den
+        # Namen, vergleicht aber gegen Vektoren aus
+        # EntitaetenRepository.embed_text_bauen(name, zusammenfassung).
+        # Bewusst NICHT auf die Bauer-Funktion umgestellt (Chat 107) —
+        # eine Aenderung hier veraendert das Suchverhalten und gehoert
+        # gemessen, nicht nebenbei gemacht.
+        request = EmbedRequest(text=name)
+        embed_response = model_service.embed.submit_sync(request)
+        embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Entity-Resolution: Similarity-Suche Embedding via EmbedWorker (Dim: %d, Dauer: "
+            "%.3fs)",
+            len(embedding),
+            embed_response.duration_seconds,
+        )
+        treffer: list[dict] = EntitaetenRepository.find_similar(
+            postgres_url, user_id, embedding, threshold=threshold
+        )
 
-            return gefiltert
-        except Exception as fehler:
-            logger.warning(f"Embedding-Suche fehlgeschlagen: {fehler}")
-            return []
+        # Embedding-Treffer filtern: Name muss plausibel sein
+        gefiltert: list[dict] = []
+        for t in treffer:
+            if EntityResolutionService._name_ist_plausibel(name, t.get("name", "")):
+                gefiltert.append(t)
+            else:
+                logger.info(
+                    f"Entity Resolution: '{name}' → Embedding-Treffer "
+                    f"'{t.get('name', '')}' verworfen (Name nicht plausibel)"
+                )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        ohne_id: list[dict] = [t for t in gefiltert if t.get("id") is None]
+        if ohne_id:
+            raise RuntimeError(  # noqa: TRY003
+                f"_search_by_embedding: {len(ohne_id)} Treffer ohne id für '{name}'"
+            )
+        return gefiltert
 
     @staticmethod
     def _build_klärungsfrage(
@@ -463,14 +497,29 @@ class EntityResolutionService:
         typ:             str = "sonstiges",
         zusammenfassung: str | None = None,
     ) -> int:
-        """
-        Legt eine neue Entität in der DB an.
+        """Legt eine neue Entität in der DB an.
+
         Erzeugt ein Embedding für Name + Zusammenfassung.
 
         Block 1 Cleanup-Sprint: Embedding läuft jetzt immer (Worker steht
         zentral), Feature-Flag entkernt.
+
+        Vorbedingung: name ist nicht leer.
+        Nachbedingung: Die Entität steht in `entitaeten`, ihre ID wird
+            geliefert — auch wenn das Embedding ausfällt. Dann steht die Zeile
+            mit `embedding IS NULL` (der Repair beim Start füllt sie nach), und
+            der Ausfall ist als `error` mit der ID gemeldet: Ein verlorener
+            Vektor lässt sich nachrechnen, eine verlorene Entität nicht.
+        Fehlerfälle: ValueError bei leerem Namen; ein Fehler des `insert` geht
+            durch; RuntimeError, wenn das `insert` keine ID > 0 liefert.
         """
-        embedding: list[float] | None = None
+        # ── Eingabe-Validierung ─────────────────────
+        if not name or not name.strip():
+            raise ValueError("create_new_entity: name ist leer")  # noqa: TRY003
+
+        # ── Verarbeitung ────────────────────────────
+        embedding:     list[float] | None = None
+        embed_fehler:  Exception | None   = None
 
         try:
             embed_text: str = EntitaetenRepository.embed_text_bauen(name, zusammenfassung)
@@ -482,8 +531,8 @@ class EntityResolutionService:
                 len(embedding),
                 embed_response.duration_seconds,
             )
-        except Exception as fehler:
-            logger.warning(f"Embedding-Erzeugung fehlgeschlagen: {fehler}")
+        except Exception as fehler:  # noqa: BLE001 — die Entität steht auch ohne Vektor
+            embed_fehler = fehler
 
         entitaet_id: int = EntitaetenRepository.insert(
             postgres_url=postgres_url,
@@ -493,6 +542,18 @@ class EntityResolutionService:
             zusammenfassung=zusammenfassung,
             embedding=embedding,
         )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if not isinstance(entitaet_id, int) or entitaet_id <= 0:
+            raise RuntimeError(  # noqa: TRY003
+                f"create_new_entity: insert für '{name}' lieferte keine ID > 0: {entitaet_id!r}"
+            )
+        if embed_fehler is not None:
+            logger.error(
+                "Entity Resolution: Embedding-Erzeugung für '%s' (ID %d) fehlgeschlagen — "
+                "angelegt mit embedding IS NULL: %s: %s",
+                name, entitaet_id, type(embed_fehler).__name__, embed_fehler,
+            )
 
         logger.info(
             f"Entity Resolution: '{name}'"
