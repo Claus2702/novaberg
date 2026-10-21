@@ -885,7 +885,7 @@ FaktenAgent als erste Agent-Quelle (Embedding existiert) ist Quick Win.
 
 **Kategorie:** [WIS] WISSEN
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: `timeline` traegt weiterhin **kein** `character_id`. **Dieselbe Kennung steht auch im Defektregister.**
+**Zustand:** offen — **behoben im Tree, nicht committet** (21.10.2026, Tree `2ec01b2`, Schritt S7 in `novaberg-memory-fakten_b.md` §6): `timeline.character_id` Pflicht ohne Vorgabewert, der Bestand einmal auf `nova`, die Indexe je Paar; das Repository und jeder Leser und Schreiber im Paar. Die DDL ist am Betrieb nicht angewandt; geschlossen mit ihr und ihrer Messung nach dem Commit. Beleg und Schließbedingung stehen im Defektregister ([`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)). Davor: offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: `timeline` traegt weiterhin **kein** `character_id`. **Dieselbe Kennung steht auch im Defektregister.**
 
 **Entdeckt:** Chat 80
 **Klasse:** Schema-Lücke, paar-spezifisches Wissen leakt zwischen Charakteren
@@ -1124,7 +1124,7 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 - **Die Typen stehen an drei Stellen:** `agents/timeline/klassifikation.py:34` (`GUELTIGE_TYPEN`), `agents/timeline/magneten.py:15–16` (`EVENT_TYPES_TERMIN`, `EVENT_TYPES_WIEDERVORLAGE`; der Anker-Typ in Z. 18 kommt schon aus einer Quelle) und `prompts/default/classify_timeline.task.txt:9`. Ein neuer Typ braucht drei Änderungen. Kennt `magneten.py` einen Typ nicht, bekommt er mit einer Warnung die Merkmale `(False, False, False)` (Z. 54–59).
 - **`timeline.entitaet_ids` schreibt niemand.** Die Spalte steht im Schema (`agents/timeline/init.sql:25`). `_create` übergibt eine leere Liste (`agents/timeline/crud.py:147`, als `None` in Z. 162), `_update` übergibt `None` (Z. 350), und der Erinnerungs-Anker in `agents/kzg/magnete.py` gibt die Spalte gar nicht mit.
-- **`TimelineRepository.find_by_entitaet`** (`memory/repositories/timeline_repository.py:338`) hat keinen Aufrufer. Ein Grep über `server/` findet nur die Definition.
+- **`TimelineRepository.find_by_entitaet`** (`memory/repositories/timeline_repository.py:338`) hat keinen Aufrufer. Ein Grep über `server/` findet nur die Definition. → Seit der Timeline je Paar (21.10.2026, im Tree, nicht committet) nimmt sie das Paar (`user_id, character_id`, jetzt Z. 380); aufgerufen wird sie weiter nur von einem Zeugen (`tests/test_timeline_pair.py`).
 
 **Was fertig wäre:** Die Typen haben eine Quelle, aus der Klassifikation, Verhaltensmerkmale und Prompt lesen. Ein Termin, der eine Person betrifft, trägt ihre Entität in `entitaet_ids`, und `find_by_entitaet` hat einen Leser oder entfällt. Wie die eine Quelle aussieht, wählt der Bau.
 
