@@ -933,7 +933,7 @@ Der Eigentümer, 03.10.2026: *„der Start Pixies mit Auftrag und Emotion kann a
 
 **Bis dahin sagt Nova keine Erinnerung zu.** Eine Zusage wäre eine Behauptung ohne Beleg im Sinne von Scheibe 12 A (`novaberg-thinking-lage_k.md`); eine eigene Prüfung gegen sie ist nicht gebaut.
 
-**Am Code** `[Code, gelesen 17.10.2026]`: Die Spalte `timeline.remind` wird beim Anlegen aus dem Typ gesetzt (`agents/timeline/magneten.py`), aber von keinem Weg gelesen; kein Lauf löst zu einer Zeit eine Nachricht aus. Ein `erinnerungs_anker` ist ein Bezugspunkt der Lage, keine Erinnerung (`novaberg-agent-timeline.md` §8).
+**Am Code** `[Code, gelesen 17.10.2026]`: Die Spalte `timeline.remind` wird beim Anlegen aus dem Typ gesetzt (`agents/timeline/magneten.py`), aber von keinem Weg gelesen; kein Lauf löst zu einer Zeit eine Nachricht aus. Ein `erinnerungs_anker` ist ein Bezugspunkt der Lage, keine Erinnerung (`novaberg-agent-timeline.md` §8). → Seit dem 21.10.2026 (im Tree, nicht committet) stehen die Merkmale je Typ in `memory/timeline_types.py`, und aus dem Merkmal `remind` folgt beim Anlegen die Wiedervorlage — eine Woche nach dem Zeitpunkt, sonst keine; der Anker bekommt deshalb keine mehr. Die Spalte selbst liest weiter niemand, eine Erinnerung zu einer Zeit gibt es weiter nicht.
 
 **Zu klären vor dem Bau:** wie lange vorher erinnert wird, und wann nach einem Termin der Abschluss gefragt wird; die Zustellung läuft über Pixie.
 

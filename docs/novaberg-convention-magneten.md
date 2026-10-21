@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Drei-Achsen-Modell für die Bündelung von Erinnerungen
-**Stand:** 13. September 2026 (§4: `sachlage_objekt` und `sachlage_eigenschaft` als neue Magnet-Träger; das Objekt bindet 1:1, begründet). Davor: 16. August 2026 (gegen den Code und den Bestand geprüft: die Regeln in §2, §3, §5–§8 halten; die **Befüllungstabelle in §4 war überholt** — P4 ist gelaufen). Davor: 06. Mai 2026 (Chat 78), aktualisiert 16. Mai 2026 (Chat 88, Synapsen P3)
+**Stand:** 21. Oktober 2026, 20:11 UTC (`date -u`; §4, §5: die Merkmale je Typ stehen in der Typquelle `memory/timeline_types.py`, dazu der Typ `ereignis` mit den Merkmalen der Klasse Bezug; ein unbekannter Typ ist laut — gebaut, nicht committet). Davor 13. September 2026 (§4: `sachlage_objekt` und `sachlage_eigenschaft` als neue Magnet-Träger; das Objekt bindet 1:1, begründet). Davor: 16. August 2026 (gegen den Code und den Bestand geprüft: die Regeln in §2, §3, §5–§8 halten; die **Befüllungstabelle in §4 war überholt** — P4 ist gelaufen). Davor: 06. Mai 2026 (Chat 78), aktualisiert 16. Mai 2026 (Chat 88, Synapsen P3)
 **Pfad:** novaberg/docs/novaberg-convention-magneten.md
 **Typ:** Convention
 **Voraussetzung:** M1 (Promotion-Doppelpipeline aufgelöst) ✅, M2 (Schema-Magneten ausgerollt) ✅
@@ -165,7 +165,7 @@ M5-Roadmap-Position wurde in den Synapsen-Sprint als P3 integriert. Die LZG-seit
 (`langzeitgedaechtnis.entitaet_ids` und `timeline_id`) wartet jetzt auf P4 — die neue Promotion in
 `lzg_knoten`/`lzg_kanten` wird die Übertragung übernehmen.
 
-Timeline ist die erste Schicht mit produktiv befüllten Magneten. Helper-Funktion `agents/timeline/magneten.py` ist Single Source of Truth für das `event_type → Magnete`-Mapping.
+Timeline ist die erste Schicht mit produktiv befüllten Magneten. ~~Helper-Funktion `agents/timeline/magneten.py` ist Single Source of Truth für das `event_type → Magnete`-Mapping.~~ → Seit dem 21.10.2026 (gebaut und getestet, nicht committet) stehen die Verhaltens-Flags je Typ in der Typquelle `memory/timeline_types.py::EVENT_TYPES`; `agents/timeline/magneten.py` liest sie und leitet `themen` ab ([`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §8).
 
 Befüllt werden die Felder durch:
 
@@ -206,6 +206,8 @@ manipulierbar, dienen nur als Anker für Erinnerungen. Der konkrete
 `event_type`-String der Klasse ist `erinnerungs_anker` (Synapsen P3) —
 gesetzt vom `magnete_aufloesen`-Node im KzgAgent-Subgraph. Helper-Konstante:
 `EVENT_TYPES_ERINNERUNGS_ANKER` in `agents/timeline/magneten.py`.
+
+**Seit dem 21.10.2026** (gebaut und getestet, nicht committet) **stehen Typen und Flags an einer Stelle**, `memory/timeline_types.py::EVENT_TYPES`; der Typ-String des Ankers ist dort `ANCHOR_TYPE`. Dazu kommt `ereignis` — das Ereignis einer anderen Person — mit den Flags der Klasse Bezug (— / — / —); anders als der Anker legt ihn künftig der Timeline-Agent an, geschrieben wird er heute von keinem Weg. Ein Typ, der dort nicht steht, wird nicht angelegt; bis dahin bekam er mit einer Warnung die Flags (— / — / —) und wurde angelegt. Aus `remind` folgt beim Anlegen die Wiedervorlage — eine Woche nach dem Zeitpunkt, sonst keine; der Anker bekommt deshalb seither keine ([`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §8).
 
 Drei Flags statt einer Rolle, weil Verhalten orthogonal ist — ein Bürotag
 ganztägig blockt User-Zeit (`binding=TRUE`), aber ohne Konflikt-Check
