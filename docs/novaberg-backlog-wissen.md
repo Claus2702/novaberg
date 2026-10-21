@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~72~~ → ~~74~~ → 75 Eintraege (20.10.2026: `FAKTEN-KANON-LUECKEN` neu aus der Fundliste; 17.10.2026: `TIMELINE-TYPEN-AN-DREI-STELLEN` neu — die Zahl ist die des Findemittels, das schon vorher 73 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~72~~ → ~~74~~ → ~~75~~ → 76 Eintraege (21.10.2026: `FAKTEN-LESER-OHNE-AUFRUFER` neu; 20.10.2026: `FAKTEN-KANON-LUECKEN` neu aus der Fundliste; 17.10.2026: `TIMELINE-TYPEN-AN-DREI-STELLEN` neu — die Zahl ist die des Findemittels, das schon vorher 73 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1145,3 +1145,17 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 **Was fertig wäre:** Jedes Beispiel des Konzepts (`_k` §1, §2) lässt sich als Fakt mit einer Beziehung des Kanons schreiben; welche Beziehungen dazukommen und wie sie heißen, wählt der Bau. Eine Beziehung zwischen Orten wird in M2 mitgemessen.
 
 **Zusammenhang:** `novaberg-memory-fakten_k.md` §1 · `novaberg-memory-fakten_b.md` §6 (M2) · `novaberg-memory-fakten_e.md` A, Nr. 14 (*Beziehungen bleiben exakt*)
+
+## Befund: FAKTEN-LESER-OHNE-AUFRUFER — sechs Lesefunktionen haben nach dem Löschen des Fakten-Plugins keinen Aufrufer (21.10.2026)
+
+**Kategorie:** [WIS] WISSEN
+
+**Rang:** niedrig — ohne Aufrufer erzeugen sie keinen zweiten Leseweg im Betrieb; sie sind an das Paar gebunden und bezeugt.
+
+**Zustand:** ⬜ offen — gezählt am 21.10.2026 bei der Prüfung der Architektur zum Löschen des Plugins; nichts gebaut.
+
+**Befund:** Nach dem Löschen von `plugins/fakten_manager/` trifft eine Suche nach `FaktenRepository.find_by_subjekt`, `find_aktiv`, `find_historie`, `invalidate` und `EntityResolutionService.resolve_single`, `update_agent_state` außerhalb der Zeugen nur noch die Definition. Sie bleiben stehen, bis C5, Teil H und F6 zeigen, ob einer gebraucht wird (`find_historie` für *bis*/*ab*, `_e` A Nr. 22).
+
+**Was fertig wäre:** Jede der sechs hat einen Aufrufer oder ist samt ihren Zeugen entfernt.
+
+**Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (F1, F6) · `novaberg-memory-fakten_e.md` A Nr. 28

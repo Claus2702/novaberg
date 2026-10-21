@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Knowledge Graph — Entitaeten, Fakten, Entity Resolution, Bi-temporales Modell
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** `novaberg/docs/novaberg-mem-knowledge-graph.md`
 **Quellen:** nova-03-k.md, nova-03-t-a.md, nova-02-m-d.md
 
@@ -113,11 +113,11 @@ Nicht alles ist ein Fakt. "Meister war frustriert wegen eines Terminkonflikts" i
 
 ## 5. Fakten-Pipeline
 
-Der FaktenManager (`plugins/fakten_manager/manager.py`) verarbeitet Fakten aus zwei Quellen:
+~~Der FaktenManager (`plugins/fakten_manager/manager.py`) verarbeitet Fakten aus zwei Quellen:~~ → Das Fakten-Plugin ist am 21.10.2026 gelöscht (nicht committet); dieser Abschnitt beschreibt seinen Stand. Geschrieben wird seither vom Fakten-Agenten (`agents/fakten/`), der seine Aufträge vom Dispatcher bekommt (Schreibauftrag aus der Sachlage). Der FaktenManager verarbeitete Fakten aus zwei Quellen:
 
 ### Salienz-Pfad (implizit)
 
-Die Salienz extrahiert Fakten als Rohformat `{subjekt, schluessel, wert, typ}`. Der FaktenManager transformiert ueber Konstanten-Tabellen:
+Die Salienz extrahiert Fakten als Rohformat `{subjekt, schluessel, wert, typ}`. ~~Der FaktenManager transformiert ueber Konstanten-Tabellen:~~ → Der FaktenManager transformierte über diese Konstanten-Tabellen; sie sind mit dem Plugin gelöscht:
 
 | Tabelle | Zweck | Beispiel |
 |---------|-------|---------|
@@ -127,7 +127,7 @@ Die Salienz extrahiert Fakten als Rohformat `{subjekt, schluessel, wert, typ}`. 
 
 ### Planner-Pfad (explizit)
 
-Bei Management-Befehlen ("Was weisst du ueber Anna?") kommt der Auftrag bereits im M2-Format — Entitaeten und Fakten sind strukturiert.
+~~Bei Management-Befehlen ("Was weisst du ueber Anna?") kommt der Auftrag bereits im M2-Format — Entitaeten und Fakten sind strukturiert.~~ → Seit dem 21.10.2026 führt ein Router-Ziel `fakten` den Planner zu den Notizen; der Fakten-Agent nimmt keine Aufträge des Planners an (`zustellart = "queue"`).
 
 ### Verarbeitungsschritte
 
@@ -244,7 +244,7 @@ Alle Fakten zu einer Entitaet + Attribut — aktive UND inaktive. Beantwortet "W
 
 ### Enricher-Hook
 
-Der FaktenManager liefert Kontext ueber `enrich()`:
+~~Der FaktenManager liefert Kontext ueber `enrich()`:~~ → Das Fakten-Plugin ist am 21.10.2026 gelöscht (nicht committet); sein Hook war im Enricher abgeschaltet. Gelesen wird über die Mappe (`memory/fakten_mappe.py::load_mappe`, `FaktenRepository.find_umgebung`, Endpunkt `GET /fakten/{user_id}/{entitaet_id}`). Der Hook lieferte:
 
 ```
 [Fakten/Anna (person)]
@@ -252,7 +252,7 @@ Der FaktenManager liefert Kontext ueber `enrich()`:
   WOHNT_IN = Muenchen (seit 2026-03-24)
 ```
 
-Laedt alle Entitaeten des Users mit ihren aktiven Fakten, formatiert als hierarchische Liste mit Gueltigkeitsdatum.
+~~Laedt~~ → Lud alle Entitaeten des Users mit ihren aktiven Fakten, formatiert als hierarchische Liste mit Gueltigkeitsdatum.
 
 ---
 
@@ -265,7 +265,7 @@ User: "Meine Schwester Anna ist nach Muenchen gezogen"
 Salienz: facts = [{subjekt: "ICH", schluessel: "schwester", wert: "Anna", ...}]
     |
     v
-FaktenManager.execute()
+~~FaktenManager.execute()~~ → Plugin am 21.10.2026 gelöscht (nicht committet); der Ablauf zeigt seinen Stand
     |
     +-- _salienz_facts_transformieren()
     |     → Entitaeten: [ICH(user), Anna(person), Muenchen(ort)]

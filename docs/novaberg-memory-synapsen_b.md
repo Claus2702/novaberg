@@ -186,7 +186,7 @@ Im Synapsen-Modell wird jeder reife KZG-Eintrag zu einem LZG-Knoten, unabhängig
 Das vorherige Epic wird durch das Synapsen-Konzept ersetzt. Phasen-Status:
 - M1, M2, M3a, M4 Teil 1, M4 Teil 2, M5a — bereits erledigt, gelten weiter
 - M3b — wird Teil des Synapsen-Schreibpfads (Punkt 7 des Konzepts), wandert in die Implementierungs-Phasen
-- M5b (FaktenManager-Reaktivierung) — separat, hängt nicht direkt am Synapsen-Umbau
+- ~~M5b (FaktenManager-Reaktivierung) — separat, hängt nicht direkt am Synapsen-Umbau~~ → gegenstandslos: Das Fakten-Plugin ist am 21.10.2026 gelöscht (nicht committet); Fakten schreibt der Fakten-Agent (`agents/fakten/`)
 - M5c (Themen-Cluster-Promotion smarter) — strukturell obsolet, weil keine Themen-Cluster mehr aggregiert werden
 
 **`Kognitive Anreicherung` (Backlog Epic 8) — CEM, TE, ZE, VRE, MR.**
@@ -324,7 +324,7 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 
 1. **Salience-Erweiterung** — Prompt `prompts/default/salienz.task.txt` bekommt zwei neue Dimensionen: `entitaeten_roh` (Liste von Eigennamen, Pronomen ausgeschlossen) und `zeitausdruck_roh` (ein Zeitausdruck pro Segment). Beides als Roh-Strings, keine Resolution im Salience-Node.
 
-2. **Neuer Node `magnete_aufloesen`** in `server/agents/kzg/magnete.py` — sitzt im KzgAgent-Subgraph zwischen `schwelle_pruefen` und `verdichten` (defensiv: Resolver-Fehler verwerfen den teuren LLM-Call nicht). Entitäten-Pfad via `EntityResolutionService.resolve_batch` plus `create_new_entity` für neue Namen (analog zum bestehenden FaktenManager-Pattern). Timeline-Pfad via `zeit_parsen_vektor` und `TimelineRepository.find_by_date`/`insert` mit `event_type='erinnerungs_anker'` (Klasse Bezug nach `convention-magneten.md` §5).
+2. **Neuer Node `magnete_aufloesen`** in `server/agents/kzg/magnete.py` — sitzt im KzgAgent-Subgraph zwischen `schwelle_pruefen` und `verdichten` (defensiv: Resolver-Fehler verwerfen den teuren LLM-Call nicht). Entitäten-Pfad via `EntityResolutionService.resolve_batch` plus `create_new_entity` für neue Namen (analog zum ~~bestehenden FaktenManager-Pattern~~ → Zwei-Schritt-Muster der Entity Resolution; das Fakten-Plugin ist am 21.10.2026 gelöscht, nicht committet). Timeline-Pfad via `zeit_parsen_vektor` und `TimelineRepository.find_by_date`/`insert` mit `event_type='erinnerungs_anker'` (Klasse Bezug nach `convention-magneten.md` §5).
 
 3. **Clipboard-Pattern** (Regel seit 16.08.2026 in `novaberg-convention-planner-needs.md` §3) — der `TimelineAgent` schreibt eine im selben Turn angelegte `timeline_id` via `dispatch_timeline._build_return` flach in den `ConversationState` (`state["timeline_id"]`). Der `magnete_aufloesen`-Node übernimmt diesen Wert, wenn vorhanden, statt einen eigenen Erinnerungs-Anker für den gleichen Tag anzulegen.
 

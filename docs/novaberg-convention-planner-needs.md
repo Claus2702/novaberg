@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — wie ein Agent an einen Wert kommt, den ein anderer erzeugt
-**Stand:** 16. August 2026 (der offene Punkt ist entschieden, und er zerfiel dabei in zwei: **kein generischer Vermittler zur Laufzeit** — die Regel dafür ist das Clipboard-Prinzip in §3. Die **Selbstanmeldung** dagegen existiert zweifach: auf der Manager-Fläche verdrahtet und wirksam, auf der Agenten-Fläche vollzählig gepflegt und ohne Leser, §3.7a — mit einem bereits verrotteten Eintrag, §3.7b). Davor: 06. Mai 2026, Chat 78
+**Stand:** 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 16. August 2026 (der offene Punkt ist entschieden, und er zerfiel dabei in zwei: **kein generischer Vermittler zur Laufzeit** — die Regel dafür ist das Clipboard-Prinzip in §3. Die **Selbstanmeldung** dagegen existiert zweifach: auf der Manager-Fläche verdrahtet und wirksam, auf der Agenten-Fläche vollzählig gepflegt und ohne Leser, §3.7a — mit einem bereits verrotteten Eintrag, §3.7b). Davor: 06. Mai 2026, Chat 78
 **Pfad:** novaberg/docs/novaberg-convention-planner-needs.md
 **Typ:** Convention
 **Voraussetzung:** Agent-System (Epic 11) ✅, BaseAgent + AgentResult + Planner-Schleife (E9) ✅
@@ -31,7 +31,7 @@ Der Schreibpfad pro Turn besteht heute aus genau einem Agent: Router setzt
 ab M5 reicht das nicht mehr. Eine Erinnerung wie *„Wir gehen morgen mit Anna
 ins Tandoor"* will gleichzeitig:
 
-- aufgelöste Entitäten (Anna, Tandoor) → FaktenManager im Resolve-Modus
+- aufgelöste Entitäten (Anna, Tandoor) → ~~FaktenManager im Resolve-Modus~~ → Entity Resolution (das Fakten-Plugin ist am 21.10.2026 gelöscht, nicht committet)
 - einen Timeline-Bezug („morgen") → TimelineAgent im Create-Modus
 - einen KZG-Eintrag mit den oben aufgelösten Magneten → KZG-Salienz
 
@@ -291,7 +291,7 @@ diese eine ist falsch.**
 
 **Und eine Doppelung, die zum Preis dieser Bauart gehört:**
 `agents/kzg/magnete.py` löst Entitäten selbst auf und folgt dabei dem
-Zwei-Schritt-Muster aus `plugins/fakten_manager/manager.py` — der Docstring der
+Zwei-Schritt-Muster ~~aus `plugins/fakten_manager/manager.py`~~ → der Entity Resolution (das Fakten-Plugin ist am 21.10.2026 gelöscht, nicht committet) — der Docstring der
 Funktion sagt es selbst. Ein zweckgebauter Knoten je Kette heißt: dasselbe
 Muster ein zweites Mal. Bei einer Kette ist das billiger als ein Vermittler,
 bei fünf nicht mehr.

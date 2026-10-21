@@ -71,7 +71,7 @@ Der Rückfrage-Fluss samt Pending und Resume existiert, hängt aber am Agentenpf
 >
 > Die Erstfassung dieses Abschnitts stand auf zwei Annahmen, die beide falsch waren. Beide sind nachgemessen.
 >
-> **Die Tabelle `fakten` ist leer — null Zeilen.** Kein Aufrufer setzt jemals `ziel = "fakten"`; im ganzen Bestand kommen nur `kzg` (Salienz-Knoten) und `notizen` (Notizen-Manager) vor. Der `FaktenManager` ist registriert, seine Entscheidungslogik steht da — und wird nie erreicht. Der Zeichenketten-Vergleich, der diesen Abschnitt ausgelöst hat, ist **nie eingetreten**, weil der Pfad nicht läuft.
+> **Die Tabelle `fakten` ist leer — null Zeilen.** Kein Aufrufer setzt jemals `ziel = "fakten"`; im ganzen Bestand kommen nur `kzg` (Salienz-Knoten) und `notizen` (Notizen-Manager) vor. ~~Der `FaktenManager` ist registriert, seine Entscheidungslogik steht da — und wird nie erreicht.~~ → Das Fakten-Plugin (`FaktenManager`) ist am 21.10.2026 gelöscht (nicht committet); geschrieben wird über den Fakten-Agenten (`agents/fakten/`). Der Zeichenketten-Vergleich, der diesen Abschnitt ausgelöst hat, ist **nie eingetreten**, weil der Pfad nicht läuft.
 >
 > **Und Urteil und Schreibvorgang liegen nicht im selben Zustand.** Es sind zwei Graphen: Der HumanGraph (`perzeption → enricher → ei_calc → salience → dispatcher`) verarbeitet die Nutzeräußerung und hat **keinen Verfasser**; der CharacterGraph erzeugt das Urteil. Beide laufen als getrennte Durchläufe über denselben Turn, korreliert allein über `turn_id`. Die Klammer fehlt hier also **genauso wie bei `SYK-B8`** — der Vergleich in der Erstfassung war falsch herum.
 >

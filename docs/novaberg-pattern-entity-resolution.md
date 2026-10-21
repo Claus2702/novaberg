@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Entity Resolution (Entitäten auflösen und disambiguieren)
-**Stand:** 20. Oktober 2026, 05:32 UTC (`date -u`; §4.3 `resolve_by_name`). Davor 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 20. Oktober 2026, 05:32 UTC (`date -u`; §4.3 `resolve_by_name`). Davor 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-pattern-entity-resolution.md
 **Quellen:** nova-03-t-a.md
 **Datei:** `memory/services/entity_resolution.py`
@@ -118,7 +118,7 @@ Entity Resolution ist ein Shared Service — alle Manager nutzen ihn:
 
 | Manager | Wann? |
 |---------|-------|
-| **FaktenManager** | Bei jedem Fakten-Write: Subjekt + Objekt auflösen |
+| ~~**FaktenManager**~~ | ~~Bei jedem Fakten-Write: Subjekt + Objekt auflösen~~ → Plugin am 21.10.2026 gelöscht (nicht committet); den Fakten-Write macht der Fakten-Agent, er löst Subjekt und Objekt in `agents/fakten/suche.py` über `resolve_by_name` auf und legt neue mit `create_new_entity` an |
 | **TimelineManager** | Bei Terminen mit Personenbezug: „Mittagessen mit Anna" |
 | **NotizenManager** | (aktuell nicht, geplant für Entity-Tags auf Notizen) |
 
