@@ -113,8 +113,8 @@ class FakeTimeline:
         """Ob die Abfrage die Zeile ihres Typs wegen ausschliesst."""
         return self.honour_exclusion and row["event_type"] in exclude_event_types
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         """Die Zeilen im Zeitraum, ohne die ausgeschlossenen Typen."""
@@ -128,8 +128,8 @@ class FakeTimeline:
             if von <= r["event_time"] <= bis and not self._excluded(r, exclude_event_types)
         ]
 
-    def find_by_keyword(  # noqa: PLR0913 — dieselbe Unterschrift wie das Repository
-        self, postgres_url: str, user_id: str, keyword: str,
+    def find_by_keyword(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, keyword: str,
         direction: str = "forward", limit: int = 5, *,
         exclude_event_types: tuple[str, ...] = (),
         now: datetime | None = None, timed_precisions: frozenset[str] = frozenset(),
@@ -191,7 +191,7 @@ def _titled(name: str) -> dict:
 def _offer(objects: list[dict], timeline: FakeTimeline, entries: list | None = None) -> list:
     """Das Angebot eines Turns, dessen vorige Blase `objects` traegt."""
     previous: dict = {"objekte": objects}
-    state: dict = {"user_id": "pruefer", "memory_entries": entries or []}
+    state: dict = {"user_id": "pruefer", "character_id": "nova", "memory_entries": entries or []}
     with _repository(timeline), patch(_CLOCK, return_value=NOW):
         return memory_offer(state, previous)
 
@@ -249,7 +249,8 @@ class PastBoundaryTest(unittest.TestCase):
         }
         with _repository(FakeTimeline(DENTIST_STOCK)):
             routed: dict = read_after_route(
-                {"user_id": "pruefer", "needs_timeline": True, "timeline_query": query},
+                {"user_id": "pruefer", "character_id": "nova", "needs_timeline": True,
+                 "timeline_query": query},
                 URL, NOW,
             )
         reading: AppointmentReading = routed["appointment_reading"]
@@ -357,7 +358,8 @@ class OneReadingPathTest(unittest.TestCase):
         self.assertEqual(
             [c.args[0].kind for c in shared.call_args_list], [KIND_SEARCH, KIND_RANGE],
         )
-        self.assertEqual({c.args[3] for c in shared.call_args_list}, {NOW})
+        # (window, user_id, character_id, postgres_url, now): die Uhr an fuenfter Stelle.
+        self.assertEqual({c.args[4] for c in shared.call_args_list}, {NOW})
 
     def test_a_read_failure_is_loud_and_the_turn_goes_on(self) -> None:
         timeline = FakeTimeline(DENTIST_STOCK, failure=ConnectionError("Verbindung weg"))

@@ -45,10 +45,13 @@ def read_after_route(
         raise TypeError(msg)
     window: AppointmentWindow = appointment_window(state, now)
     user_id: str = str(state.get("user_id") or "")
+    character_id: str = str(state.get("character_id") or "")
 
     # ── Verarbeitung ────────────────────────────
     try:
-        reading: AppointmentReading = read_appointments(window, user_id, postgres_url, now)
+        reading: AppointmentReading = read_appointments(
+            window, user_id, character_id, postgres_url, now,
+        )
     except Exception:
         logger.exception(
             f"Termine: Timeline nicht gelesen (art={window.kind}) — der Block sagt, "

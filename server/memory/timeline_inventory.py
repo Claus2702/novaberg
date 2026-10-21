@@ -84,25 +84,31 @@ def is_appointment_at(row: dict, moment: datetime) -> bool:
     )
 
 
-def find_at_moment(user_id: str, moment: datetime) -> list[dict]:
-    """Die Termine des Menschen genau zu einem Zeitpunkt.
+def find_at_moment(user_id: str, character_id: str, moment: datetime) -> list[dict]:
+    """Die Termine des Paares genau zu einem Zeitpunkt.
 
     Gelesen wird der lokale Tag von `moment` ueber
     `TimelineRepository.find_by_date_range`; die Auswahl trifft
     `is_appointment_at` in Python, damit sie ohne Datenbank bezeugbar ist.
+    Ein Termin, den der Mensch bei einer anderen Figur eingetragen hat, deckt
+    keine Behauptung dieser Figur.
 
-    Vorbedingung: `user_id` nicht leer; `moment` zeitzonenbewusst.
-    Nachbedingung: die Zeilen des Tages, fuer die `is_appointment_at` gilt —
-        leer, wenn keine.
-    Fehlerfaelle: leere `user_id` oder naiver `moment` → `ValueError`; ein
-        Lesefehler des Bestands geht unveraendert an den Aufrufer; eine Antwort,
-        die keine Liste ist → `TypeError`. Gefangen wird beim Aufrufer, der mit
-        der Korrektur kompensiert. Eine Zeile, die kein dict ist, wird laut
-        gemeldet und verworfen — sie ist kein Treffer.
+    Vorbedingung: `user_id` und `character_id` nicht leer; `moment`
+        zeitzonenbewusst.
+    Nachbedingung: die Zeilen des Paares an diesem Tag, fuer die
+        `is_appointment_at` gilt — leer, wenn keine.
+    Fehlerfaelle: leere `user_id`, leere `character_id` oder naiver `moment`
+        → `ValueError`; ein Lesefehler des Bestands geht unveraendert an den
+        Aufrufer; eine Antwort, die keine Liste ist → `TypeError`. Gefangen
+        wird beim Aufrufer, der mit der Korrektur kompensiert. Eine Zeile, die
+        kein dict ist, wird laut gemeldet und verworfen — sie ist kein Treffer.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
         raise ValueError("Bestandsabgleich ohne user_id")
+    if not character_id:
+        msg: str = "Bestandsabgleich ohne character_id"
+        raise ValueError(msg)
     if moment.tzinfo is None:
         raise ValueError("Bestandsabgleich mit naivem Zeitpunkt")
 
@@ -111,7 +117,7 @@ def find_at_moment(user_id: str, moment: datetime) -> list[dict]:
     day_start: datetime = local_moment.replace(hour=0, minute=0, second=0, microsecond=0)
     day_end: datetime = day_start + timedelta(days=1) - timedelta(seconds=1)
     day_rows: object = TimelineRepository.find_by_date_range(
-        POSTGRES_URL, user_id, day_start, day_end
+        POSTGRES_URL, user_id, character_id, day_start, day_end
     )
 
     # ── Ausgabe-Verifikation ────────────────────

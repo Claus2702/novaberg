@@ -153,6 +153,7 @@ def _create(state: AgentState) -> dict:
     termin_id: int = TimelineRepository.insert(
         postgres_url=POSTGRES_URL,
         user_id=user_id,
+        character_id=state["kontext"].get("character_id", ""),
         event_time=event_time,
         event_type=event_type,
         title=title,
@@ -231,6 +232,19 @@ def _update(state: AgentState) -> dict:
             "status": "fehler",
             "fehler": "Kein Termin zum Verschieben gefunden.",
             "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "kein_termin"}],
+        }
+
+    # Der neue Termin gehoert demselben Paar. Geprueft wird vor `invalidate`:
+    # Scheiterte erst das Anlegen, waere der alte Termin weg und kein neuer da.
+    character_id: str = state["kontext"].get("character_id", "")
+    if not character_id:
+        logger.error(f"_update: Termin {termin_id} ohne character_id — nichts verschoben")
+        return {
+            "status": "fehler",
+            "fehler": "Ohne Figur laesst sich kein Termin verschieben.",
+            "schritte": state["schritte"] + [
+                {"node": "ausfuehren", "ergebnis": "ohne_character_id"},
+            ],
         }
 
     # "auf 11.30." am Satzende liest die Normalisierung als Datum; die
@@ -341,6 +355,7 @@ def _update(state: AgentState) -> dict:
     neuer_id: int = TimelineRepository.insert(
         postgres_url=POSTGRES_URL,
         user_id=state["kontext"].get("user_id", ""),
+        character_id=character_id,
         event_time=neues_datum,
         event_type=event_type_alt,
         title=termin.get("title", ""),

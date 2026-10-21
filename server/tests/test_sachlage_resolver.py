@@ -156,14 +156,17 @@ class DasAngebotKommtAusDemPoolTest(unittest.TestCase):
             {"name": "Rasen", "akut": False, "offen": [],
              "zeitbezug": {"art": "titel", "stichwort": "Rasen", "wortlaut": "Rasen"}},
         ]}
-        state: dict = {"user_id": "u", "memory_entries": [_entry("lzg", "Pool")]}
+        state: dict = {
+            "user_id": "u", "character_id": "c", "memory_entries": [_entry("lzg", "Pool")],
+        }
         with patch(_FIND, return_value=[{
             "id": 7, "title": "Zahnarzt", "details": "Kontrolle",
             "event_time": datetime(2030, 1, 2, 9, 0, tzinfo=timezone.utc),
         }]) as suche:
             hits: list[MemoryHit] = memory_offer(state, vorige)
         self.assertEqual(suche.call_count, 1)
-        self.assertEqual(suche.call_args.args[2], "Zahnarzt")
+        # Nach dem Paar (user_id, character_id) steht der Suchbegriff an vierter Stelle.
+        self.assertEqual(suche.call_args.args[1:4], ("u", "c", "Zahnarzt"))
         self.assertEqual(hits[0].source, SOURCE_CALENDAR)
         self.assertEqual(hits[0].origin, "timeline#7")
         self.assertIn("Zahnarzt — Kontrolle", hits[0].content)

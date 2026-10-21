@@ -347,10 +347,11 @@ def names_appointment(
     return ways
 
 
-def check_inventory(
+def check_inventory(  # noqa: PLR0913, PLR0917 — das Paar steht als zwei Argumente
     sachlage: object,
     user_id: str,
-    lookup: Callable[[str, datetime], list[dict]],
+    character_id: str,
+    lookup: Callable[[str, str, datetime], list[dict]],
     claims: tuple[StorageClaim, ...],
     today: date,
 ) -> InventoryCheck:
@@ -368,10 +369,11 @@ def check_inventory(
     zwei behauptenden Saetzen keinen gefundenen Termin, bleibt er eine
     moegliche falsche Behauptung, und die Antwort wird korrigiert.
 
-    Vorbedingung: `lookup(user_id, moment)` liefert die Termine zu diesem
-        Zeitpunkt, ohne Erinnerungs-Anker (`find_at_moment`), und wirft bei
-        einem Lesefehler. `claims` sind die Behauptungen der Antwort, `today`
-        der lokale Tag des Turns.
+    Vorbedingung: `lookup(user_id, character_id, moment)` liefert die Termine
+        des Paares zu diesem Zeitpunkt, ohne Erinnerungs-Anker
+        (`find_at_moment`), und wirft bei einem Lesefehler oder einem
+        unvollstaendigen Paar. `claims` sind die Behauptungen der Antwort,
+        `today` der lokale Tag des Turns.
     Nachbedingung: `gefunden`, wenn die Lage mindestens einen Zeitpunkt traegt,
         `lookup` zu jedem einen Termin liefert und jede Behauptung einen davon
         nennt; `gefunden_nicht_genannt`, wenn alles gefunden ist, aber eine
@@ -390,7 +392,7 @@ def check_inventory(
         return InventoryCheck(outcome=INVENTORY_NO_MOMENT, moments=0)
 
     # ── Verarbeitung ────────────────────────────
-    found: dict[datetime, list[dict]] = {m: lookup(user_id, m) for m in moments}
+    found: dict[datetime, list[dict]] = {m: lookup(user_id, character_id, m) for m in moments}
     missing: list[datetime] = [m for m, rows in found.items() if not rows]
     unnamed: list[StorageClaim] = []
     if not missing:

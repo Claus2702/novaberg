@@ -62,6 +62,8 @@ NOW: datetime = datetime(2026, 10, 17, 12, 0, tzinfo=BERLIN)
 TODAY: date = NOW.date()
 
 TEST_USER: str = "test_sachlage_zeitbezug"
+#: Die Figur des Paares — die Termine werden im Paar angelegt und gelesen.
+TEST_CHARACTER: str = "nova"
 SERVER_ROOT: Path = Path(__file__).resolve().parents[1]
 
 _SACHLAGE_CLOCK: str = "graph.nodes.sachlage.now_local"
@@ -119,7 +121,8 @@ def _calendar(previous: dict | None) -> list[MemoryHit]:
     """Die Kalenderzeilen im Angebot des Turns, gelesen aus der Testdatenbank."""
     with patch(_RESOLVER_CLOCK, return_value=NOW):
         hits: list[MemoryHit] = memory_offer(
-            {"user_id": TEST_USER, "memory_entries": []}, previous,
+            {"user_id": TEST_USER, "character_id": TEST_CHARACTER, "memory_entries": []},
+            previous,
         )
     return [h for h in hits if h.source == SOURCE_CALENDAR]
 
@@ -154,7 +157,7 @@ class _SeededTest(unittest.TestCase):
     def _seed(moment: datetime, title: str) -> int:
         """Ein Termin mit Uhrzeit fuer den Pruefnutzer; die Kennung der Zeile."""
         return TimelineRepository.insert(
-            POSTGRES_URL, TEST_USER, moment, "termin", title, precision="minute",
+            POSTGRES_URL, TEST_USER, TEST_CHARACTER, moment, "termin", title, precision="minute",
         )
 
     @staticmethod

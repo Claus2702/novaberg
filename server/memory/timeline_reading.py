@@ -39,35 +39,45 @@ logger = logging.getLogger("ki_server.memory.timeline_reading")
 EXCLUDED_EVENT_TYPES: tuple[str, ...] = (ANCHOR_TYPE,)
 
 
-def fetch_rows(window: AppointmentWindow, user_id: str, postgres_url: str, now: datetime) -> list:
-    """Liest die Zeilen des Fensters aus der Timeline, ohne Erinnerungs-Anker.
+def fetch_rows(
+    window: AppointmentWindow, user_id: str, character_id: str, postgres_url: str, now: datetime,
+) -> list:
+    """Liest die Zeilen des Fensters aus der Timeline des Paares, ohne Erinnerungs-Anker.
+
+    Ein Termin gehoert dem Paar, bei dem er eingetragen wurde: Gelesen wird
+    nur, was `user_id` mit `character_id` angelegt hat — eine andere Figur
+    sieht die Termine des Menschen bei Nova nicht. Eine Vorgabe-Figur gibt es
+    nicht.
 
     Eine Suche mit Richtung bekommt `now` mit: Die Abfrage grenzt
     *vergangen* dann so ab wie `to_appointment`, und kein Platz ihres `LIMIT`
     geht an einen Termin, den `read_appointments` danach verwirft.
 
     Vorbedingung: `window` ist gueltig (`graph/appointments.py`), `user_id`
-        nicht leer, `now` zeitzonenbewusst in Ortszeit.
-    Nachbedingung: die Zeilen, die das Repository liefert — Ortszeit, aktiv,
-        ohne `EXCLUDED_EVENT_TYPES`.
-    Fehlerfaelle: leere `user_id` wirft `ValueError`; ein Lesefehler geht
-        unveraendert an den Aufrufer; eine Antwort, die keine Liste ist,
-        wirft `TypeError`.
+        und `character_id` nicht leer, `now` zeitzonenbewusst in Ortszeit.
+    Nachbedingung: die Zeilen, die das Repository fuer das Paar liefert —
+        Ortszeit, aktiv, ohne `EXCLUDED_EVENT_TYPES`.
+    Fehlerfaelle: leere `user_id` oder leere `character_id` wirft
+        `ValueError`; ein Lesefehler geht unveraendert an den Aufrufer; eine
+        Antwort, die keine Liste ist, wirft `TypeError`.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
         msg: str = "Termine lesen ohne user_id"
         raise ValueError(msg)
+    if not character_id:
+        msg = "Termine lesen ohne character_id"
+        raise ValueError(msg)
 
     # ── Verarbeitung ────────────────────────────
     if window.kind == KIND_SEARCH:
         rows: object = TimelineRepository.find_by_keyword(
-            postgres_url, user_id, window.keyword, window.direction, window.limit,
+            postgres_url, user_id, character_id, window.keyword, window.direction, window.limit,
             exclude_event_types=EXCLUDED_EVENT_TYPES, now=now, timed_precisions=TIME_PRECISIONS,
         )
     else:
         rows = TimelineRepository.find_by_date_range(
-            postgres_url, user_id, window.start, window.end,
+            postgres_url, user_id, character_id, window.start, window.end,
             exclude_event_types=EXCLUDED_EVENT_TYPES,
         )
 
@@ -134,19 +144,21 @@ def to_appointment(row: object, now: datetime) -> Appointment | None:
 
 
 def read_appointments(
-    window: AppointmentWindow, user_id: str, postgres_url: str, now: datetime,
+    window: AppointmentWindow, user_id: str, character_id: str, postgres_url: str, now: datetime,
 ) -> AppointmentReading:
-    """Liest die Termine eines Fensters und bereitet sie fuer den Block auf.
+    """Liest die Termine eines Fensters im Paar und bereitet sie fuer den Block auf.
 
     Bei `direction: forward` fehlen vergangene Termine (Fassung c); sonst
     stehen sie mit `past` da. Bei `backward` fehlen die kommenden — die
     Kopfzeile sagt dann *nur vergangene Termine*, und das muss stimmen.
     Sortiert nach Zeitpunkt.
 
-    Vorbedingung: `now` zeitzonenbewusst in Ortszeit; `user_id` nicht leer.
+    Vorbedingung: `now` zeitzonenbewusst in Ortszeit; `user_id` und
+        `character_id` nicht leer.
     Nachbedingung: ein `AppointmentReading` mit `failed=False`, das nur
-        Termine traegt, keine Erinnerungs-Anker.
-    Fehlerfaelle: naiver Zeitpunkt → `ValueError`; ein Lesefehler geht an den
+        Termine des Paares traegt, keine Erinnerungs-Anker.
+    Fehlerfaelle: naiver Zeitpunkt oder ein unvollstaendiges Paar →
+        `ValueError` (aus `fetch_rows`); ein Lesefehler geht an den
         Aufrufer (`read_after_route` macht daraus `failed`). Liefert die Abfrage
         mehr Zeilen als `limit` oder einen Termin ausserhalb von `start` bis
         `end`, ist das ein Defekt der Abfrage: `RuntimeError`, beim Aufrufer
@@ -162,7 +174,7 @@ def read_appointments(
         raise ValueError(msg)
 
     # ── Verarbeitung ────────────────────────────
-    rows: list = fetch_rows(window, user_id, postgres_url, now)
+    rows: list = fetch_rows(window, user_id, character_id, postgres_url, now)
     converted: list[Appointment | None] = [to_appointment(row, now) for row in rows]
     valid: list[Appointment] = [a for a in converted if a is not None]
     kept: list[Appointment] = valid

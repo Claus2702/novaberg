@@ -58,6 +58,8 @@ SENTENCE_TWO: str = "Morgen um zehn steht Dr. Berger an. Hab's gerade für dich 
 #: Eine Behauptung, die Uhrzeit und Tag nennt — der Bestandsabgleich kann sie zuordnen.
 CLAIM_AT_TEN: str = "Morgen um 10 Uhr ist notiert."
 USER: str = "pruef-nutzer"
+#: Die Figur des Paares — jeder Leser der Timeline liest nur im Paar.
+CHARACTER: str = "nova"
 
 
 def _row(moment: datetime, title: str) -> dict:
@@ -82,8 +84,8 @@ class _ReadingTimeline:
     def __init__(self, rows: list[dict]) -> None:
         self.rows: list[dict] = rows
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         return [r for r in self.rows if von <= r["event_time"] <= bis]
@@ -93,7 +95,8 @@ def _timeline_read() -> AgentResult:
     """*„Hab ich morgen was vor?“* — der Leseweg der Timeline mit einem Termin morgen um zehn."""
     state: dict = {
         "parameter": {"action": "read", "target": "", "zeitausdruck": "morgen"},
-        "kontext": {"user_id": USER}, "aufgabe": "Hab ich morgen was vor?", "schritte": [],
+        "kontext": {"user_id": USER, "character_id": CHARACTER},
+        "aufgabe": "Hab ich morgen was vor?", "schritte": [],
     }
     reading = _ReadingTimeline([_row(TOMORROW_TEN, "Dr. Berger")])
     with patch("memory.timeline_reading.TimelineRepository", reading), \
@@ -104,7 +107,8 @@ def _timeline_read() -> AgentResult:
 def _timeline_create() -> AgentResult:
     """Ein Termin wird angelegt, die Verifikation bestaetigt ihn."""
     state: dict = {
-        "aufgabe": "Trag das Fußballtraining ein", "kontext": {"user_id": USER},
+        "aufgabe": "Trag das Fußballtraining ein",
+        "kontext": {"user_id": USER, "character_id": CHARACTER},
         "parameter": {"action": "create", "target": "Fußballtraining",
                       "zeitausdruck": "24.10.2026 18:00", "event_type": "termin"},
         "schritte": [],
@@ -120,7 +124,8 @@ def _timeline_duplicate() -> AgentResult:
     state: dict = {
         "parameter": {"action": "create", "target": "Probetraining",
                       "zeitausdruck": "17.11.2027 10 Uhr"},
-        "kontext": {"user_id": USER}, "aufgabe": "Trag das Probetraining ein", "schritte": [],
+        "kontext": {"user_id": USER, "character_id": CHARACTER},
+        "aufgabe": "Trag das Probetraining ein", "schritte": [],
     }
     with patch.object(TimelineRepository, "find_by_keyword", return_value=[existing]), \
             patch.object(TimelineRepository, "find_by_date_range", return_value=[existing]):
@@ -229,7 +234,9 @@ class _Inventory:
         self.rows: list[dict] = rows
         self.calls: list[tuple] = []
 
-    def __call__(self, url: str, user_id: str, start: datetime, end: datetime) -> list:
+    def __call__(
+        self, url: str, user_id: str, character_id: str, start: datetime, end: datetime,
+    ) -> list:
         self.calls.append((user_id, start, end))
         return [r for r in self.rows if start <= r["event_time"] <= end]
 
@@ -251,7 +258,8 @@ def _step(
     """Ruft `_storage_claim_step` mit Urteil `ok`; liefert Zustand, Auftraege und Eintrag."""
     from graph.nodes import tribunal
     state: dict = {
-        "turn_id": "zeuge", "user_id": USER, "response": CLAIM_AT_TEN, "agent_results": results,
+        "turn_id": "zeuge", "user_id": USER, "character_id": CHARACTER,
+        "response": CLAIM_AT_TEN, "agent_results": results,
         "correction_round": 0, "max_corrections": 2, "tribunal_verdict": "ok",
     }
     if situation is not None:

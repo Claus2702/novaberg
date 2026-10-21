@@ -100,6 +100,7 @@ def magnete_aufloesen(state: AgentState) -> dict:
         clipboard_id     = clipboard_tlid,
         zeitausdruck_roh = zeitausdruck_roh,
         user_id          = user_id,
+        character_id     = state["kontext"].get("character_id", ""),
     )
 
     # ── Ausgabe-Logging ─────────────────────────
@@ -284,6 +285,7 @@ def _timeline_aufloesen(
     clipboard_id:     int | None,
     zeitausdruck_roh: str,
     user_id:          str,
+    character_id:     str,
 ) -> int | None:
     """Loest einen Roh-Zeitausdruck zu einer Timeline-ID auf.
 
@@ -291,13 +293,16 @@ def _timeline_aufloesen(
       1. Clipboard: wenn der TimelineAgent in diesem Turn schon eine
          timeline_id ins State geschrieben hat, uebernehmen.
       2. Zeit-Parsing: zeit_parsen_vektor liefert datetime. Existiert
-         fuer (user_id, tag, event_type='erinnerungs_anker') bereits
-         ein Eintrag, dessen ID nehmen (Idempotenz).
+         fuer (user_id, character_id, tag, event_type='erinnerungs_anker')
+         bereits ein Eintrag, dessen ID nehmen (Idempotenz).
       3. Anlage: TimelineRepository.insert mit event_type=
-         'erinnerungs_anker', Flags (False, False, False).
+         'erinnerungs_anker', Flags (False, False, False), im Paar.
 
-    Liefert None, wenn Salience keinen Zeitausdruck erkannt hat oder
-    der Parser kein Datum extrahieren konnte.
+    Der Anker gehoert dem Paar: Ein Paar uebernimmt nie den Anker eines
+    anderen in seinen KZG-Eintrag.
+
+    Liefert None, wenn Salience keinen Zeitausdruck erkannt hat, der Parser
+    kein Datum extrahieren konnte oder — laut gemeldet — die Figur fehlt.
     """
     # Pfad 1: Clipboard-Uebernahme
     if clipboard_id is not None:
@@ -318,10 +323,17 @@ def _timeline_aufloesen(
         )
         return None
 
-    # Idempotenz: existierenden Anker am gleichen Tag wiederverwenden
+    if not character_id:
+        logger.error(
+            f"magnete_aufloesen: Zeitausdruck '{zeitausdruck_roh}' ohne character_id — "
+            f"kein Anker, ein Anker ohne Paar gehoerte niemandem"
+        )
+        return None
+
+    # Idempotenz: existierenden Anker des Paares am gleichen Tag wiederverwenden
     try:
         treffer: list[dict] = TimelineRepository.find_by_date(
-            POSTGRES_URL, user_id, vektor.datum, precision="day"
+            POSTGRES_URL, user_id, character_id, vektor.datum, precision="day"
         )
     except Exception as fehler:
         logger.exception(
@@ -346,6 +358,7 @@ def _timeline_aufloesen(
         neue_id: int = TimelineRepository.insert(
             postgres_url   = POSTGRES_URL,
             user_id        = user_id,
+            character_id   = character_id,
             event_time     = vektor.datum,
             event_type     = EVENT_TYPE_ERINNERUNGS_ANKER,
             title          = f"Erinnerungs-Anker {vektor.datum:%d.%m.%Y}",

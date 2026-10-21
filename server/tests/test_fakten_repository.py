@@ -160,9 +160,9 @@ class _PairFixture(unittest.TestCase):
                 )
                 self.subjekt: int = cur.fetchone()[0]
                 cur.execute(
-                    """INSERT INTO timeline (user_id, event_time, event_type, title)
-                       VALUES (%s, NOW(), 'termin', 'Umzug') RETURNING id""",
-                    (self.user,),
+                    """INSERT INTO timeline (user_id, character_id, event_time, event_type, title)
+                       VALUES (%s, %s, NOW(), 'termin', 'Umzug') RETURNING id""",
+                    (self.user, self.char),
                 )
                 self.termin: int = cur.fetchone()[0]
             conn.commit()

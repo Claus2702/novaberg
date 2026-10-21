@@ -75,7 +75,7 @@ def _state(prompt: str, time_expression: str, event_time: datetime) -> dict:
     """Ein Auftrag `reschedule` an den Timeline-Agenten, wie ihn `_update` liest."""
     return {
         "aufgabe": prompt,
-        "kontext": {"user_id": "pruefer"},
+        "kontext": {"user_id": "pruefer", "character_id": "nova"},
         "parameter": {
             "action": "reschedule",
             "zeitausdruck": time_expression,
@@ -123,6 +123,25 @@ class _RescheduleCase(unittest.TestCase):
         self.insert.assert_not_called()
         self.invalidate.assert_not_called()
         return result
+
+
+class ThePairStaysTest(_RescheduleCase):
+    """Der verschobene Termin gehoert demselben Paar; ohne Figur wird nichts angefasst."""
+
+    def test_without_a_character_nothing_is_invalidated(self) -> None:
+        """Geprueft vor `invalidate` — sonst waere der alte Termin weg und kein neuer da."""
+        state: dict = _state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10)
+        state["kontext"]["character_id"] = ""
+
+        result: dict = self._assert_error(state)
+
+        self.assertEqual(result["schritte"][-1]["ergebnis"], "ohne_character_id")
+
+    def test_twin_the_new_appointment_is_written_in_the_pair(self) -> None:
+        self._new_time(_state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10))
+
+        self.assertEqual(self.insert.call_args.kwargs["character_id"], "nova")
+        self.invalidate.assert_called_once()
 
 
 class ClockTimeOnlyTest(_RescheduleCase):

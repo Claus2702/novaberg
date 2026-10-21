@@ -252,7 +252,9 @@ def _calendar_hits(
             continue
         windows += 1
         try:
-            reading: AppointmentReading = read_appointments(window, user_id, POSTGRES_URL, now)
+            reading: AppointmentReading = read_appointments(
+                window, user_id, str(state.get("character_id") or ""), POSTGRES_URL, now,
+            )
         except Exception:
             logger.exception(
                 f"Sachlage-Aufloeser: Kalender zu '{str(objekt.get('name', ''))[:40]}' "

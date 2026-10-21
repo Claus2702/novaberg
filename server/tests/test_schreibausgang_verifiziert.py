@@ -52,7 +52,8 @@ class BausteinTest(unittest.TestCase):
 class TimelineDurchlaufTest(unittest.TestCase):
 
     def _anlegen(self, verifiziert: bool) -> dict:
-        state = {"aufgabe": "Trag den Zahnarzt ein", "kontext": {"user_id": "pruefer"},
+        state = {"aufgabe": "Trag den Zahnarzt ein",
+                 "kontext": {"user_id": "pruefer", "character_id": "nova"},
                  "parameter": {"action": "create", "target": "Zahnarzt",
                                "zeitausdruck": "24.09.2026 15:00", "event_type": "termin"},
                  "schritte": []}

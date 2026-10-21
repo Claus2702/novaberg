@@ -314,7 +314,8 @@ def _storage_claim_step(
     if check.uncovered:
         try:
             abgleich: InventoryCheck = check_inventory(
-                state.get("sachlage"), str(state.get("user_id") or ""), find_at_moment,
+                state.get("sachlage"), str(state.get("user_id") or ""),
+                str(state.get("character_id") or ""), find_at_moment,
                 check.claims, now_local().date(),
             )
         except Exception as fehler:  # noqa: BLE001 — kompensiert wird mit der Korrektur

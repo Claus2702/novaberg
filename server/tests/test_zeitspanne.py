@@ -81,7 +81,8 @@ class AnfangTest(unittest.TestCase):
 class AnlegenTest(unittest.TestCase):
 
     def test_das_ende_erreicht_die_tabelle(self) -> None:
-        state = {"aufgabe": "Trag den Flohmarkt ein", "kontext": {"user_id": "pruefer"},
+        state = {"aufgabe": "Trag den Flohmarkt ein",
+                 "kontext": {"user_id": "pruefer", "character_id": "nova"},
                  "parameter": {"action": "create", "target": "Flohmarkt",
                                "zeitausdruck": "19.09.2026 von 10 bis 12 Uhr", "event_type": "termin"},
                  "schritte": []}

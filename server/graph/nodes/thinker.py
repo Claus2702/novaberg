@@ -170,7 +170,8 @@ def create_tools(
 
         # Ein Erinnerungs-Anker ist kein Termin: ausgeschlossen in der Abfrage.
         rows: list[dict] = TimelineRepository.find_by_date_range(
-            postgres_url, user_id, von, bis, exclude_event_types=EXCLUDED_EVENT_TYPES,
+            postgres_url, user_id, character_id, von, bis,
+            exclude_event_types=EXCLUDED_EVENT_TYPES,
         )
 
         if not rows:
@@ -198,7 +199,8 @@ def create_tools(
 
         # Ausgeschlossen vor dem LIMIT — sonst belegt ein Anker einen der fuenf Plaetze.
         rows: list[dict] = TimelineRepository.find_by_keyword(
-            postgres_url, user_id, keyword, "both", 5, exclude_event_types=EXCLUDED_EVENT_TYPES,
+            postgres_url, user_id, character_id, keyword, "both", 5,
+            exclude_event_types=EXCLUDED_EVENT_TYPES,
         )
 
         if not rows:

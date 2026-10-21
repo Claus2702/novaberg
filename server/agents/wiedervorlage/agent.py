@@ -205,9 +205,12 @@ class WiedervorlageAgent(BaseAgent):
         except Exception as fehler:
             logger.warning(f"WiedervorlageAgent: Fakten-Wiedervorlage fehlgeschlagen — {fehler}")
 
-        # Timeline
+        # Timeline — im selben Paar wie die Fakten: Ein Termin gehoert dem
+        # Paar, bei dem er eingetragen wurde, und die Erinnerung spricht Nova.
         try:
-            for row in TimelineRepository.find_wiedervorlage_faellig(POSTGRES_URL, user_id):
+            for row in TimelineRepository.find_wiedervorlage_faellig(
+                POSTGRES_URL, user_id, ASSISTANT_USER_ID
+            ):
                 faellige.append({
                     "tabelle": "timeline",
                     "id":      row["id"],

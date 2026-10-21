@@ -44,7 +44,7 @@ _PREVIOUS: dict = {"objekte": [{
     "name": "Beispieltermin", "akut": True,
     "zeitbezug": {"art": "titel", "stichwort": "Beispieltermin", "wortlaut": "Beispieltermin"},
 }]}
-_STATE: dict = {"user_id": "u", "memory_entries": []}
+_STATE: dict = {"user_id": "u", "character_id": "c", "memory_entries": []}
 
 
 def _row(row_id: int, event_type: str) -> dict:
@@ -60,10 +60,10 @@ def _query_like(rows: list[dict]) -> Callable[..., list[dict]]:
     """Eine Attrappe der Abfrage: erst der Ausschluss, dann das LIMIT.
 
     Die Stellung der Argumente ist die von `find_by_keyword`: postgres_url,
-    user_id, keyword, direction, limit.
+    user_id, character_id, keyword, direction, limit.
     """
     def fake(*args: object, exclude_event_types: tuple[str, ...] = (), **_: object) -> list[dict]:
-        limit: int = int(args[4])
+        limit: int = int(args[5])
         return [r for r in rows if r["event_type"] not in exclude_event_types][:limit]
     return fake
 

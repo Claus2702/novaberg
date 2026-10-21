@@ -65,10 +65,11 @@ def read_answer(state: AgentState, now: datetime) -> dict:
 
     Vorbedingung: `state["parameter"]["action"]` ist `read`; `now` ist
         zeitzonenbewusst in Ortszeit.
-    Nachbedingung: `status` `abgeschlossen` mit je Termin einer Zeile, oder
-        dem Satz *Keine Termine ...*, der das Fenster nennt; `fehler` ohne
-        `user_id`. Ein unlesbarer Zeitausdruck sagt, dass nichts gelesen wurde
-        — er ist kein leerer Zeitraum.
+    Nachbedingung: `status` `abgeschlossen` mit je Termin des Paares einer
+        Zeile, oder dem Satz *Keine Termine ...*, der das Fenster nennt;
+        `fehler` ohne `user_id` oder ohne `character_id`. Ein unlesbarer
+        Zeitausdruck sagt, dass nichts gelesen wurde — er ist kein leerer
+        Zeitraum.
     Fehlerfaelle: eine andere Aktion oder ein naiver Zeitpunkt wirft
         `ValueError`; ein Lesefehler geht an den Aufrufer.
     """
@@ -92,6 +93,14 @@ def read_answer(state: AgentState, now: datetime) -> dict:
             "fehler": "Ohne Nutzerkennung lassen sich keine Termine lesen.",
             "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "ohne_user_id"}],
         }
+    character_id: str = state["kontext"].get("character_id", "")
+    if not character_id:
+        logger.error("suchen: Lesen ohne character_id — nichts gelesen")
+        return {
+            "status": "fehler",
+            "fehler": "Ohne Figur lassen sich keine Termine lesen.",
+            "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "ohne_character_id"}],
+        }
     target: str = parameter.get("target", "")
     zeitausdruck: str = parameter.get("zeitausdruck", "")
 
@@ -111,7 +120,7 @@ def read_answer(state: AgentState, now: datetime) -> dict:
             "status": "abgeschlossen",
             "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "zeit_unlesbar"}],
         }
-    reading = read_appointments(window, user_id, POSTGRES_URL, now)
+    reading = read_appointments(window, user_id, character_id, POSTGRES_URL, now)
     lines: list[str] = [appointment_line(a, now) for a in reading.appointments]
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -134,18 +143,24 @@ def read_answer(state: AgentState, now: datetime) -> dict:
     }
 
 
-def raw_matches(target: str, zeitausdruck: str, user_id: str, now: datetime) -> list[dict]:
+def raw_matches(
+    target: str, zeitausdruck: str, user_id: str, character_id: str, now: datetime,
+) -> list[dict]:
     """Die Treffer im Rohbestand fuer Anlegen und fuer Aendern und Loeschen mit Titel.
 
-    Der Schreibweg sieht den ganzen Bestand, auch den Erinnerungs-Anker
-    (`exclude_event_types=()`). Die Fenster sind dieselben wie beim Lesen:
-    Suche nach Titel, `time_window` oder das proaktive Fenster. Aendern und
-    Loeschen ohne Titel kommen nicht hierher, sondern zu `period_question`.
+    Der Schreibweg sieht den ganzen Bestand des Paares, auch den
+    Erinnerungs-Anker (`exclude_event_types=()`). Die Fenster sind dieselben
+    wie beim Lesen: Suche nach Titel, `time_window` oder das proaktive
+    Fenster. Aendern und Loeschen ohne Titel kommen nicht hierher, sondern zu
+    `period_question`.
 
-    Vorbedingung: `now` ist zeitzonenbewusst in Ortszeit.
-    Nachbedingung: eine Liste von Zeilen des Repositorys, bei der Suche nach
-        Titel nur aktive; leer, wenn sich der Zeitausdruck nicht lesen laesst.
-    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`; ein Lesefehler geht
+    Vorbedingung: `now` ist zeitzonenbewusst in Ortszeit; das Paar
+        (`user_id`, `character_id`) ist vollstaendig.
+    Nachbedingung: eine Liste von Zeilen des Paares aus dem Repository, bei
+        der Suche nach Titel nur aktive; leer, wenn sich der Zeitausdruck
+        nicht lesen laesst.
+    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`, ein
+        unvollstaendiges Paar ebenso (aus dem Repository); ein Lesefehler geht
         an den Aufrufer; eine Antwort, die keine Liste ist, wirft `TypeError`.
     """
     from config import POSTGRES_URL
@@ -160,7 +175,7 @@ def raw_matches(target: str, zeitausdruck: str, user_id: str, now: datetime) -> 
     treffer: list[dict] = []
     if target:
         treffer = TimelineRepository.find_by_keyword(
-            POSTGRES_URL, user_id, target, "both", TIMELINE_SUCHE_LIMIT,
+            POSTGRES_URL, user_id, character_id, target, "both", TIMELINE_SUCHE_LIMIT,
             exclude_event_types=(),
         )
         treffer = [t for t in treffer if t.get("aktiv", True)]
@@ -171,7 +186,8 @@ def raw_matches(target: str, zeitausdruck: str, user_id: str, now: datetime) -> 
         )
         if window is not None:
             treffer = TimelineRepository.find_by_date_range(
-                POSTGRES_URL, user_id, window.start, window.end, exclude_event_types=(),
+                POSTGRES_URL, user_id, character_id, window.start, window.end,
+                exclude_event_types=(),
             )
             logger.debug(f"suchen: Zeitraum {window.start:%d.%m.}–{window.end:%d.%m.} "
                          f"({window.kind}) — {len(treffer)} Treffer")
@@ -208,7 +224,9 @@ def _period_label(window: AppointmentWindow) -> str:
     return label
 
 
-def period_candidates(window: AppointmentWindow, user_id: str, now: datetime) -> list[dict]:
+def period_candidates(
+    window: AppointmentWindow, user_id: str, character_id: str, now: datetime,
+) -> list[dict]:
     """Die Termine eines Zeitraums als Kandidaten einer Klaerung, ohne Erinnerungs-Anker.
 
     Gelesen wird ueber den gemeinsamen Leseweg (`fetch_rows`, der Anker ist in
@@ -216,11 +234,12 @@ def period_candidates(window: AppointmentWindow, user_id: str, now: datetime) ->
     trotzdem ankommt, laut. Jeder Kandidat traegt `id`, `title`, `typ` und
     `zeile` aus `appointment_line` — die Zeile nennt die Klaerung.
 
-    Vorbedingung: `window` traegt einen Zeitraum; `user_id` nicht leer; `now`
-        zeitzonenbewusst in Ortszeit.
-    Nachbedingung: Kandidaten nach Zeitpunkt sortiert, keiner vom Typ
-        `ANCHOR_TYPE`, jeder mit einer `id`.
-    Fehlerfaelle: leere `user_id` wirft `ValueError` (aus `fetch_rows`); ein
+    Vorbedingung: `window` traegt einen Zeitraum; `user_id` und
+        `character_id` nicht leer; `now` zeitzonenbewusst in Ortszeit.
+    Nachbedingung: Kandidaten des Paares nach Zeitpunkt sortiert, keiner vom
+        Typ `ANCHOR_TYPE`, jeder mit einer `id`.
+    Fehlerfaelle: leere `user_id` oder `character_id` wirft `ValueError` (aus
+        `fetch_rows`); ein
         Lesefehler geht an den Aufrufer; ein Anker oder eine Zeile ohne `id`
         im Ergebnis wirft `RuntimeError`.
     """
@@ -234,7 +253,7 @@ def period_candidates(window: AppointmentWindow, user_id: str, now: datetime) ->
         raise ValueError(msg)
 
     # ── Verarbeitung ────────────────────────────
-    rows: list = fetch_rows(window, user_id, POSTGRES_URL, now)
+    rows: list = fetch_rows(window, user_id, character_id, POSTGRES_URL, now)
     found: list[tuple[dict, Appointment | None]] = [(row, to_appointment(row, now)) for row in rows]
     kept: list[tuple[dict, Appointment]] = sorted(
         ((row, appointment) for row, appointment in found if appointment is not None),
@@ -321,7 +340,8 @@ def period_question(state: AgentState, now: datetime) -> dict:
         zeitzonenbewusst in Ortszeit.
     Nachbedingung: `status` `rueckfrage` mit `clarification` und ohne `termin`
         im Parameter — der Graph endet, nichts wird geschrieben, und auch die
-        Antwort im naechsten Turn schreibt nicht; `fehler` ohne `user_id`.
+        Antwort im naechsten Turn schreibt nicht; `fehler` ohne `user_id`
+        oder ohne `character_id`.
     Fehlerfaelle: eine andere Aktion, ein genannter Titel oder ein naiver
         Zeitpunkt wirft `ValueError`; ein Lesefehler geht an den Aufrufer.
     """
@@ -342,13 +362,23 @@ def period_question(state: AgentState, now: datetime) -> dict:
             "fehler": "Ohne Nutzerkennung lassen sich keine Termine finden.",
             "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "ohne_user_id"}],
         }
+    character_id: str = state["kontext"].get("character_id", "")
+    if not character_id:
+        logger.error(f"suchen: {action} ohne character_id — nichts gelesen, nichts geschrieben")
+        return {
+            "status": "fehler",
+            "fehler": "Ohne Figur lassen sich keine Termine finden.",
+            "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "ohne_character_id"}],
+        }
     zeitausdruck: str = parameter.get("zeitausdruck", "")
 
     # ── Verarbeitung ────────────────────────────
     window: AppointmentWindow | None = (
         time_window(zeitausdruck, now) if zeitausdruck else proactive_window(now)
     )
-    candidates: list[dict] = [] if window is None else period_candidates(window, user_id, now)
+    candidates: list[dict] = (
+        [] if window is None else period_candidates(window, user_id, character_id, now)
+    )
     question: str = _question_text(action, zeitausdruck, window, candidates)
     pending: dict = {**parameter, "clarification": True}
 
@@ -390,8 +420,17 @@ def suchen(state: AgentState) -> dict:
     if action in PERIOD_WRITE_ACTIONS and not target:
         return period_question(state, now)
 
-    # Ab hier der Schreibweg: Aendern und Loeschen sehen den ganzen Bestand.
-    treffer: list[dict] = raw_matches(target, zeitausdruck, user_id, now)
+    # Ab hier der Schreibweg: Aendern und Loeschen sehen den ganzen Bestand
+    # des Paares. Ohne Figur wird nichts gesucht und nichts geschrieben.
+    character_id: str = state["kontext"].get("character_id", "")
+    if not character_id:
+        logger.error(f"suchen: {action} ohne character_id — nichts gesucht, nichts geschrieben")
+        return {
+            "status": "fehler",
+            "fehler": "Ohne Figur lassen sich keine Termine schreiben.",
+            "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "ohne_character_id"}],
+        }
+    treffer: list[dict] = raw_matches(target, zeitausdruck, user_id, character_id, now)
 
     # ── Create: Duplikat-Pruefung (Scheibe 12 F) ──
     # ~~Jeder Treffer der Suche oben galt als Duplikat~~ → seit dem 18.09.2026
@@ -400,7 +439,7 @@ def suchen(state: AgentState) -> dict:
     # (±14 Tage), und ein Erinnerungs-Anker der KZG galt als Duplikat: Der
     # Dienst meldete "bereits eingetragen" fuer etwas anderes und legte nichts an.
     if action == "create":
-        treffer = find_duplicates(target, zeitausdruck, state["aufgabe"], user_id)
+        treffer = find_duplicates(target, zeitausdruck, state["aufgabe"], user_id, character_id)
         if treffer:
             # Derselbe Termin steht schon da → melden, nicht doppelt anlegen
             existierend = treffer[0]
@@ -495,16 +534,19 @@ def _title_words(title: str) -> set[str]:
     return {w for w in re.findall(r"[a-zäöüß]+", str(title).casefold()) if len(w) > 2 and w not in _FUELLWORTE}
 
 
-def find_duplicates(target: str, zeitausdruck: str, aufgabe: str, user_id: str) -> list[dict]:
+def find_duplicates(
+    target: str, zeitausdruck: str, aufgabe: str, user_id: str, character_id: str,
+) -> list[dict]:
     """Die Termine, die ein neuer Eintrag doppeln wuerde — Scheibe 12 F.
 
     Die Absicht (14.09.2026): *"Ob das Objekt schon gespeichert ist, kann die
     Fachabteilung besser einschaetzen als der Empfang."* Sie prueft den Bestand
-    und meldet es mit ihrem Ausgang.
+    des Paares und meldet es mit ihrem Ausgang — ein Termin bei einer anderen
+    Figur doppelt den neuen nicht.
 
     Vorbedingung: `target` ist der Titel des neuen Termins; `zeitausdruck` oder
-        die Aufgabe tragen seinen Tag.
-    Nachbedingung: aktive Termine **am selben Tag**, deren Titel mindestens ein
+        die Aufgabe tragen seinen Tag; das Paar ist vollstaendig.
+    Nachbedingung: aktive Termine des Paares **am selben Tag**, deren Titel mindestens ein
         tragendes Wort mit dem neuen teilt — ohne Erinnerungs-Anker (die legt
         die KZG an, sie sind kein Termin des Menschen). **Ohne Titel oder ohne
         erkennbaren Tag: keine Duplikate** — dann entscheidet das Anlegen
@@ -533,7 +575,9 @@ def find_duplicates(target: str, zeitausdruck: str, aufgabe: str, user_id: str) 
     von = tag.replace(hour=0, minute=0, second=0, microsecond=0)
     bis = von + timedelta(days=1) - timedelta(seconds=1)
     try:
-        am_tag: list[dict] = TimelineRepository.find_by_date_range(POSTGRES_URL, user_id, von, bis)
+        am_tag: list[dict] = TimelineRepository.find_by_date_range(
+            POSTGRES_URL, user_id, character_id, von, bis,
+        )
     except Exception as fehler:  # noqa: BLE001 — der Anlegepfad haelt nicht an
         logger.error(f"suchen: Duplikat-Pruefung nicht moeglich ({type(fehler).__name__}: {fehler}) — keine")
         return []

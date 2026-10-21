@@ -104,22 +104,32 @@ BEISPIELE (alle → management_action = "agent"):
           meta    = {"praefix": "Timeline/{subtyp}", "datum": TT.MM.JJJJ,
                      "titel": Titel}
 
-        Vorbedingung: `state` traegt `user_id`.
+        Vorbedingung: `state` traegt `user_id` und `character_id` — gelesen
+            werden nur die Termine dieses Paares.
         Nachbedingung: je Termin des Fensters ein Eintrag; keiner davon ein
             Erinnerungs-Anker.
-        Fehlerfaelle: ohne `user_id` und bei einem Lesefehler wird laut
-            gemeldet und `[]` geliefert — der Turn laeuft weiter.
+        Fehlerfaelle: ohne `user_id`, ohne `character_id` und bei einem
+            Lesefehler wird laut gemeldet und `[]` geliefert — der Turn laeuft
+            weiter.
         """
         # ── Eingabe-Validierung ─────────────────────
         user_id: str = str(state.get("user_id") or "")
         if not user_id:
             logger.error("TimelineManager.enrich_entries: Zustand ohne user_id — keine Termine")
             return []
+        character_id: str = str(state.get("character_id") or "")
+        if not character_id:
+            logger.error(
+                "TimelineManager.enrich_entries: Zustand ohne character_id — keine Termine"
+            )
+            return []
 
         # ── Verarbeitung ────────────────────────────
         now = now_local()
         try:
-            reading = read_appointments(proactive_window(now), user_id, postgres_url, now)
+            reading = read_appointments(
+                proactive_window(now), user_id, character_id, postgres_url, now,
+            )
         except Exception:
             logger.exception(
                 "TimelineManager.enrich_entries: Timeline nicht gelesen — "

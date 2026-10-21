@@ -63,8 +63,8 @@ class _Timeline:
     def __init__(self, failure: Exception | None = None) -> None:
         self.failure: Exception | None = failure
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         """Die Zeilen im Zeitraum, aufsteigend, ohne die ausgeschlossenen Typen."""
@@ -80,7 +80,10 @@ def _turn(router_fields: dict, timeline: _Timeline) -> dict:
     """Faehrt den Router-Knoten; der Router selbst setzt nur die gegebenen Felder."""
     from graph.base import GraphBase
 
-    state: dict = {"user_id": "pruefer", "needs_timeline": False, "timeline_query": {}}
+    state: dict = {
+        "user_id": "pruefer", "character_id": "nova", "needs_timeline": False,
+        "timeline_query": {},
+    }
     with patch("graph.base.route", side_effect=lambda s: {**s, **router_fields}), \
             patch("graph.base.now_local", return_value=NOW), \
             patch("memory.timeline_reading.TimelineRepository", timeline):

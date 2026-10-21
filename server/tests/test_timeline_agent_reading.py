@@ -77,16 +77,16 @@ class _Timeline:
         hidden: tuple[str, ...] = tuple(excluded) if self.honour_exclusion else ()
         return [r for r in self.rows if r["event_type"] not in hidden]
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         self.ranges.append((von, bis, tuple(exclude_event_types)))
         return [r for r in self._visible(exclude_event_types) if von <= r["event_time"] <= bis]
 
     def find_by_keyword(self, *args: object, **options: object) -> list[dict]:
-        """Wie das Repository: URL, Nutzer, Wort, Richtung, Grenze, dann die Optionen."""
-        keyword, direction, limit = str(args[2]), str(args[3]), int(args[4])
+        """Wie das Repository: URL, Nutzer, Figur, Wort, Richtung, Grenze, dann die Optionen."""
+        keyword, direction, limit = str(args[3]), str(args[4]), int(args[5])
         excluded: tuple[str, ...] = tuple(options.get("exclude_event_types", ()))
         self.keywords.append((keyword, direction, limit, excluded))
         found: list[dict] = [
@@ -98,7 +98,7 @@ class _Timeline:
 def _state(action: str, zeitausdruck: str = "", target: str = "") -> dict:
     return {
         "parameter": {"action": action, "target": target, "zeitausdruck": zeitausdruck},
-        "kontext": {"user_id": "pruefer"}, "aufgabe": "", "schritte": [],
+        "kontext": {"user_id": "pruefer", "character_id": "nova"}, "aufgabe": "", "schritte": [],
     }
 
 
@@ -455,7 +455,8 @@ def _new_order() -> dict:
     """*„Verschieb den Zahnarzt am 9. auf 11 Uhr“*, klassifiziert; der Zeitausdruck ist neu."""
     return {
         "aufgabe": "Verschieb den Zahnarzt am 9. auf 11 Uhr", "aufgabe_typ": "workflow",
-        "agent_name": "timeline", "kontext": {"user_id": "pruefer"}, "schritte": [],
+        "agent_name": "timeline", "kontext": {"user_id": "pruefer", "character_id": "nova"},
+        "schritte": [],
         "status": "laufend", "ergebnis": None, "rueckfrage": None, "fehler": None,
         "parameter": {"action": "reschedule", "target": "Zahnarzt", "zeitausdruck": "11 Uhr"},
     }

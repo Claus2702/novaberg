@@ -36,6 +36,7 @@ from utils.storage_inventory import FALLBACK_ORIGIN, acute_moments, object_momen
 _TZ = ZoneInfo(TIMEZONE)
 _CLAIM: str = "Morgen um 10 Uhr ist notiert."
 _USER: str = "zeuge-bestandsabgleich"
+_CHARACTER: str = "nova"
 
 
 def _row(
@@ -46,6 +47,7 @@ def _row(
     return {
         "id": hour * 100 + minute,
         "user_id": _USER,
+        "character_id": _CHARACTER,
         "title": "Probetermin",
         "event_type": event_type,
         "precision": precision,
@@ -76,8 +78,10 @@ class _Inventory:
         self.error = error
         self.calls: list[tuple] = []
 
-    def __call__(self, url: str, user_id: str, start: datetime, end: datetime) -> list:
-        self.calls.append((user_id, start, end))
+    def __call__(
+        self, url: str, user_id: str, character_id: str, start: datetime, end: datetime,
+    ) -> list:
+        self.calls.append((user_id, character_id, start, end))
         if self.error is not None:
             raise self.error
         return [r for r in self.rows if not isinstance(r, dict) or start <= r["event_time"] <= end]
@@ -94,6 +98,7 @@ class InventoryInStorageStepTest(unittest.TestCase):
         state: dict = {
             "turn_id":          "zeuge",
             "user_id":          _USER,
+            "character_id":     _CHARACTER,
             "response":         _CLAIM,
             "agent_results":    [],
             "correction_round": correction_round,
@@ -119,10 +124,10 @@ class InventoryInStorageStepTest(unittest.TestCase):
         self.assertFalse(entry["urteil_gehoben"])
         # Gezaehlt wie die Nulllinie: kein Dienst hat gedeckt.
         self.assertEqual(entry["ergebnis"], "nicht_belegt")
-        # Die Abfrage fragt den Tag des Objekts fuer diesen Nutzer.
+        # Die Abfrage fragt den Tag des Objekts fuer dieses Paar.
         self.assertEqual(len(inventory.calls), 1)
-        user_id, start, end = inventory.calls[0]
-        self.assertEqual(user_id, _USER)
+        user_id, character_id, start, end = inventory.calls[0]
+        self.assertEqual((user_id, character_id), (_USER, _CHARACTER))
         self.assertEqual((start.date(), start.hour, end.date()), (datetime(2027, 11, 17).date(), 0,
                                                                   datetime(2027, 11, 17).date()))
 
@@ -226,7 +231,7 @@ class InventoryInStorageStepTest(unittest.TestCase):
         from graph.nodes import tribunal
         inventory = _Inventory([_row(10)])
         state: dict = {
-            "turn_id": "zeuge", "user_id": _USER, "response": _CLAIM,
+            "turn_id": "zeuge", "user_id": _USER, "character_id": _CHARACTER, "response": _CLAIM,
             "agent_results": [SimpleNamespace(agent_name="timeline", status="abgeschlossen")],
             "correction_round": 0, "max_corrections": 2, "tribunal_verdict": "ok",
             "sachlage": _situation(_ON_17TH_AT_10),
@@ -244,7 +249,8 @@ class InventoryInEvaluateTest(unittest.TestCase):
     def _evaluate(self, inventory: _Inventory) -> dict:
         from graph.nodes import tribunal
         state: dict = {
-            "turn_id": "zeuge", "user_id": _USER, "response": _CLAIM, "agent_results": [],
+            "turn_id": "zeuge", "user_id": _USER, "character_id": _CHARACTER,
+            "response": _CLAIM, "agent_results": [],
             "correction_round": 0, "max_corrections": 2,
             "sachlage": _situation(_ON_17TH_AT_10),
             "tribunal_votes": [
@@ -301,13 +307,13 @@ class TimelineMomentTest(unittest.TestCase):
         inventory = _Inventory([], error=RuntimeError("synthetischer Lesefehler"))
         with patch.object(TimelineRepository, "find_by_date_range", side_effect=inventory), \
                 self.assertRaises(RuntimeError):
-            find_at_moment(_USER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
+            find_at_moment(_USER, _CHARACTER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
 
     def test_found_row_is_returned(self) -> None:
         inventory = _Inventory([_row(10), _row(10, 30)])
         with patch.object(TimelineRepository, "find_by_date_range", side_effect=inventory), \
                 self.assertNoLogs("ki_server.memory.timeline_inventory", level="ERROR"):
-            matches = find_at_moment(_USER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
+            matches = find_at_moment(_USER, _CHARACTER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
         self.assertEqual([m["id"] for m in matches], [1000])
 
     def test_row_that_is_no_dict_is_loud_and_dropped(self) -> None:
@@ -315,15 +321,17 @@ class TimelineMomentTest(unittest.TestCase):
         inventory = _Inventory([_row(10), "keine Zeile"])
         with patch.object(TimelineRepository, "find_by_date_range", side_effect=inventory), \
                 self.assertLogs("ki_server.memory.timeline_inventory", level="ERROR") as logs:
-            matches = find_at_moment(_USER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
+            matches = find_at_moment(_USER, _CHARACTER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
         self.assertEqual([m["id"] for m in matches], [1000])
         self.assertTrue(any("1 Timeline-Zeile(n)" in line for line in logs.output))
 
     def test_invalid_input_raises(self) -> None:
         with self.assertRaises(ValueError):
-            find_at_moment("", datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
+            find_at_moment("", _CHARACTER, datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
         with self.assertRaises(ValueError):
-            find_at_moment(_USER, datetime(2027, 11, 17, 10, 0))
+            find_at_moment(_USER, "", datetime(2027, 11, 17, 10, 0, tzinfo=_TZ))
+        with self.assertRaises(ValueError):
+            find_at_moment(_USER, _CHARACTER, datetime(2027, 11, 17, 10, 0))
 
     def test_row_without_aware_time_is_loud_and_no_match(self) -> None:
         row = _row(10)

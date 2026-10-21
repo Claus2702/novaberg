@@ -84,39 +84,42 @@ class RepositoryExcludesInTheQueryTest(unittest.TestCase):
 
     def test_date_range_sends_the_excluded_types(self) -> None:
         (sql, params), = _queries(
-            "find_by_date_range", postgres_url=URL, user_id="u", von=NOW, bis=NOW,
-            exclude_event_types=ANCHOR,
+            "find_by_date_range", postgres_url=URL, user_id="u", character_id="c",
+            von=NOW, bis=NOW, exclude_event_types=ANCHOR,
         )
 
         self.assertIn("COALESCE(event_type, '') <> ALL(%s::text[])", sql)
-        self.assertEqual(params[3], ["erinnerungs_anker"])
+        self.assertEqual(params[4], ["erinnerungs_anker"])
 
     def test_twin_date_range_without_exclusion_sends_an_empty_list(self) -> None:
         """Der Vorgabewert laesst alles durch — die Aufrufer ausserhalb bleiben unberuehrt."""
         (_sql, params), = _queries(
-            "find_by_date_range", postgres_url=URL, user_id="u", von=NOW, bis=NOW,
+            "find_by_date_range", postgres_url=URL, user_id="u", character_id="c",
+            von=NOW, bis=NOW,
         )
 
-        self.assertEqual(params[3], [])
+        self.assertEqual(params[4], [])
 
     def test_keyword_excludes_before_the_limit_in_every_direction(self) -> None:
         for direction in ("forward", "backward", "both"):
             with self.subTest(direction=direction):
                 (sql, params), = _queries(
-                    "find_by_keyword", postgres_url=URL, user_id="u", keyword="Zahnarzt",
-                    direction=direction, limit=3, exclude_event_types=ANCHOR,
+                    "find_by_keyword", postgres_url=URL, user_id="u", character_id="c",
+                    keyword="Zahnarzt", direction=direction, limit=3,
+                    exclude_event_types=ANCHOR,
                 )
 
                 self.assertLess(sql.index("<> ALL(%s::text[])"), sql.index("LIMIT"))
-                self.assertEqual(params[2], ["erinnerungs_anker"])
-                self.assertEqual(params[3], 3)
+                self.assertEqual(params[3], ["erinnerungs_anker"])
+                self.assertEqual(params[4], 3)
 
     def test_twin_keyword_without_exclusion_sends_an_empty_list(self) -> None:
         (_sql, params), = _queries(
-            "find_by_keyword", postgres_url=URL, user_id="u", keyword="Zahnarzt",
+            "find_by_keyword", postgres_url=URL, user_id="u", character_id="c",
+            keyword="Zahnarzt",
         )
 
-        self.assertEqual(params[2], [])
+        self.assertEqual(params[3], [])
 
     def test_a_list_instead_of_a_tuple_is_rejected(self) -> None:
         with self.assertRaises(TypeError):
@@ -134,8 +137,9 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
 
     def _keyword(self, direction: str, **kwargs: object) -> tuple[str, tuple]:
         (sql, params), = _queries(
-            "find_by_keyword", postgres_url=URL, user_id="u", keyword="Zahnarzt",
-            direction=direction, limit=1, exclude_event_types=ANCHOR, **kwargs,
+            "find_by_keyword", postgres_url=URL, user_id="u", character_id="c",
+            keyword="Zahnarzt", direction=direction, limit=1, exclude_event_types=ANCHOR,
+            **kwargs,
         )
         return sql, params
 
@@ -150,7 +154,7 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
                 self.assertLess(sql.index("CASE"), sql.index("LIMIT"))
                 self.assertEqual(
                     params,
-                    ("u", "%Zahnarzt%", ["hour", "minute"], NOW.astimezone(UTC), day_start_utc,
+                    ("u", "c", "%Zahnarzt%", ["hour", "minute"], NOW.astimezone(UTC), day_start_utc,
                      ["erinnerungs_anker"], 1),
                 )
 
@@ -162,7 +166,7 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
 
                 self.assertIn("NOW()", sql)
                 self.assertNotIn("CASE", sql)
-                self.assertEqual(len(params), 4)
+                self.assertEqual(len(params), 5)
 
     def test_both_has_no_boundary_even_with_now(self) -> None:
         sql, _params = self._keyword("both", now=NOW, timed_precisions=self.TIMED)
@@ -173,7 +177,7 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
         with patch("memory.repositories.timeline_repository.psycopg2.connect") as connect, \
                 self.assertRaises(ValueError):
             TimelineRepository.find_by_keyword(
-                URL, "u", "Zahnarzt", "backward", 1,
+                URL, "u", "c", "Zahnarzt", "backward", 1,
                 now=datetime(2026, 10, 15, 18, 0), timed_precisions=self.TIMED,
             )
         connect.assert_not_called()
@@ -197,7 +201,7 @@ class AgentSearchExcludesOnReadTest(unittest.TestCase):
     def _search(action: str, target: str, method: str) -> MagicMock:
         state: dict = {
             "parameter": {"action": action, "target": target, "zeitausdruck": ""},
-            "kontext": {"user_id": "pruefer"}, "aufgabe": "", "schritte": [],
+            "kontext": {"user_id": "pruefer", "character_id": "c"}, "aufgabe": "", "schritte": [],
         }
         with patch(
             f"memory.repositories.timeline_repository.TimelineRepository.{method}", return_value=[],
@@ -228,8 +232,8 @@ class _Timeline:
     def __init__(self) -> None:
         self.excluded: list[tuple[str, ...]] = []
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         self.excluded.append(exclude_event_types)
@@ -256,7 +260,7 @@ class TimelineManagerTest(unittest.TestCase):
         return entries, timeline
 
     def test_entries_carry_relation_and_no_anchor(self) -> None:
-        entries, timeline = self._entries({"user_id": "pruefer"})
+        entries, timeline = self._entries({"user_id": "pruefer", "character_id": "c"})
 
         self.assertEqual(
             [(e["meta"]["praefix"], e["inhalt"]) for e in entries],
@@ -296,15 +300,15 @@ class _ThinkerTimeline:
              "precision": "minute", "details": None},
         ]
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         self.excluded.append(exclude_event_types)
         return [dict(r) for r in self.rows if r["event_type"] not in exclude_event_types]
 
-    def find_by_keyword(  # noqa: PLR0913 — dieselbe Unterschrift wie das Repository
-        self, postgres_url: str, user_id: str, keyword: str,
+    def find_by_keyword(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, keyword: str,
         direction: str = "forward", limit: int = 5, *,
         exclude_event_types: tuple[str, ...] = (),
         now: datetime | None = None, timed_precisions: frozenset[str] = frozenset(),

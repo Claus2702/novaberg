@@ -7,7 +7,8 @@
 CREATE TABLE IF NOT EXISTS timeline (
     id               SERIAL       PRIMARY KEY,
     user_id          TEXT         NOT NULL,
-    event_time       TIMESTAMPTZ  NOT NULL,
+    character_id     VARCHAR(50)  NOT NULL,
+    event_time      TIMESTAMPTZ  NOT NULL,
     event_ende       TIMESTAMPTZ,
     event_type       VARCHAR(50)  NOT NULL,
     title            VARCHAR(255) NOT NULL,
@@ -25,12 +26,8 @@ CREATE TABLE IF NOT EXISTS timeline (
     entitaet_ids     INTEGER[]
 );
 
--- Primaer-Indexes
-CREATE INDEX IF NOT EXISTS idx_timeline_user_time
-    ON timeline (user_id, event_time);
-
-CREATE INDEX IF NOT EXISTS idx_timeline_user_type
-    ON timeline (user_id, event_type);
+-- Die Primaer-Indexes gehen ueber das Paar; sie stehen hinter der Migration
+-- der Spalte unten, weil ein Bestand die Spalte erst dort bekommt.
 
 -- Soft-Delete + Wiedervorlage
 CREATE INDEX IF NOT EXISTS idx_timeline_aktiv
@@ -47,6 +44,30 @@ ALTER TABLE timeline ADD COLUMN IF NOT EXISTS binding        BOOLEAN NOT NULL DE
 ALTER TABLE timeline ADD COLUMN IF NOT EXISTS remind         BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE timeline ADD COLUMN IF NOT EXISTS conflict_check BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE timeline ADD COLUMN IF NOT EXISTS themen         TEXT[];
+
+-- ── Die Timeline je Paar ────────────
+-- Ein Termin gehoert dem Paar aus Mensch und Figur, wie jeder Fakt. Der
+-- Bestand stammt aus der Zeit, in der es nur Nova gab, und bekommt `nova` in
+-- einer Anweisung; danach ist die Spalte Pflicht ohne Vorgabewert — kein
+-- Schreiber kommt ohne Figur durch. Der Block laeuft einmal: Steht die Spalte,
+-- laesst jeder weitere Start ihn ohne ALTER aus.
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = 'timeline' AND column_name = 'character_id'
+    ) THEN
+        ALTER TABLE timeline ADD COLUMN character_id VARCHAR(50) NOT NULL DEFAULT 'nova';
+        ALTER TABLE timeline ALTER COLUMN character_id DROP DEFAULT;
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_timeline_paar_time ON timeline (user_id, character_id, event_time);
+CREATE INDEX IF NOT EXISTS idx_timeline_paar_type ON timeline (user_id, character_id, event_type);
+DROP INDEX IF EXISTS idx_timeline_user_time;
+DROP INDEX IF EXISTS idx_timeline_user_type;
+-- Steht nur im Betrieb, nie in dieser Datei; er ging allein ueber den Typ.
+DROP INDEX IF EXISTS idx_timeline_type;
 
 CREATE INDEX IF NOT EXISTS idx_timeline_event_ende ON timeline (event_ende);
 CREATE INDEX IF NOT EXISTS idx_timeline_themen     ON timeline USING GIN (themen);

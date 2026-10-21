@@ -29,6 +29,7 @@ from utils.storage_inventory import TitleWords, names_appointment, title_words
 
 _TZ = ZoneInfo(TIMEZONE)
 _USER: str = "zeuge-bestandsbezug"
+_CHARACTER: str = "nova"
 
 #: Der akute Termin der Lage: Mittwoch, 17.11.2027, 11:00.
 _MOMENT: datetime = datetime(2027, 11, 17, 11, 0, tzinfo=_TZ)
@@ -59,6 +60,7 @@ def _row(title: object = "Termin beim Zahnarzt", event_type: object = "termin") 
     return {
         "id": 1100,
         "user_id": _USER,
+        "character_id": _CHARACTER,
         "title": title,
         "event_type": event_type,
         "precision": "minute",
@@ -74,8 +76,10 @@ class _Inventory:
         self.rows = rows
         self.calls: list[tuple] = []
 
-    def __call__(self, url: str, user_id: str, start: datetime, end: datetime) -> list:
-        self.calls.append((user_id, start, end))
+    def __call__(
+        self, url: str, user_id: str, character_id: str, start: datetime, end: datetime,
+    ) -> list:
+        self.calls.append((user_id, character_id, start, end))
         return [r for r in self.rows if start <= r["event_time"] <= end]
 
 
@@ -89,7 +93,8 @@ class NamingInStorageStepTest(unittest.TestCase):
         """
         from graph.nodes import tribunal
         state: dict = {
-            "turn_id": "zeuge", "user_id": _USER, "response": response, "agent_results": [],
+            "turn_id": "zeuge", "user_id": _USER, "character_id": _CHARACTER,
+            "response": response, "agent_results": [],
             "correction_round": 0, "max_corrections": 2, "tribunal_verdict": "ok",
             "sachlage": _SITUATION,
         }
@@ -223,7 +228,8 @@ class NamingInEvaluateTest(unittest.TestCase):
     def test_unrelated_claim_reaches_the_summary(self) -> None:
         from graph.nodes import tribunal
         state: dict = {
-            "turn_id": "zeuge", "user_id": _USER, "response": _UNRELATED, "agent_results": [],
+            "turn_id": "zeuge", "user_id": _USER, "character_id": _CHARACTER,
+            "response": _UNRELATED, "agent_results": [],
             "correction_round": 0, "max_corrections": 2, "sachlage": _SITUATION,
             "tribunal_votes": [
                 {"agent": a, "vote": "ok", "reasoning": ""}

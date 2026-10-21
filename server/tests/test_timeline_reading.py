@@ -104,8 +104,8 @@ class FakeTimeline:
         self.failure: Exception | None = failure
         self.calls: list[tuple[str, tuple[str, ...]]] = []
 
-    def find_by_date_range(
-        self, postgres_url: str, user_id: str, von: datetime, bis: datetime,
+    def find_by_date_range(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, von: datetime, bis: datetime,
         exclude_event_types: tuple[str, ...] = (),
     ) -> list[dict]:
         """Die Zeilen im Zeitraum, ohne die ausgeschlossenen Typen."""
@@ -117,8 +117,8 @@ class FakeTimeline:
             if von <= r["event_time"] <= bis and r["event_type"] not in exclude_event_types
         ]
 
-    def find_by_keyword(  # noqa: PLR0913 — dieselbe Unterschrift wie das Repository
-        self, postgres_url: str, user_id: str, keyword: str,
+    def find_by_keyword(  # noqa: PLR0913, PLR0917 — dieselbe Unterschrift wie das Repository
+        self, postgres_url: str, user_id: str, character_id: str, keyword: str,
         direction: str = "forward", limit: int = 5, *,
         exclude_event_types: tuple[str, ...] = (),
         now: datetime | None = None, timed_precisions: frozenset[str] = frozenset(),
@@ -200,7 +200,11 @@ def _read(query: dict, timeline: FakeTimeline, now: datetime = NOW) -> Appointme
     """Das Leseergebnis eines Turns mit gezielter Anfrage, ohne Graph."""
     with patch("memory.timeline_reading.TimelineRepository", timeline):
         state: dict = read_after_route(
-            {"user_id": "pruefer", "needs_timeline": True, "timeline_query": query}, URL, now,
+            {
+                "user_id": "pruefer", "character_id": "nova",
+                "needs_timeline": True, "timeline_query": query,
+            },
+            URL, now,
         )
     return state["appointment_reading"]
 

@@ -29,8 +29,9 @@ def _eintrag(titel: str, typ: str = "termin", aktiv: bool = True) -> dict:
 def _finden(target: str, bestand: list[dict], zeit: str = "19.09.2026 10 Uhr") -> list[dict]:
     with patch("memory.repositories.timeline_repository.TimelineRepository.find_by_date_range",
                return_value=bestand) as lesen:
-        ergebnis = suche.find_duplicates(target, zeit, "", "pruefer")
+        ergebnis = suche.find_duplicates(target, zeit, "", "pruefer", "nova")
     _finden.gelesen = lesen.called
+    _finden.paar = lesen.call_args.args[1:3] if lesen.called else None
     return ergebnis
 
 
@@ -55,17 +56,38 @@ class DuplikatTest(unittest.TestCase):
         self.assertEqual(_finden("", [_eintrag("Irgendwas")]), [])
         self.assertFalse(_finden.gelesen)
 
+    def test_die_pruefung_liest_im_paar(self) -> None:
+        """Ein Termin bei einer anderen Figur doppelt den neuen nicht — gelesen wird im Paar."""
+        _finden("Zahnarzt", [])
+        self.assertEqual(_finden.paar, ("pruefer", "nova"))
+
 
 class AnlegenTest(unittest.TestCase):
 
-    def test_ohne_titel_meldet_die_suche_nicht_mehr_abgeschlossen(self) -> None:
-        """Vorher: Uebersicht → irgendein Eintrag → "bereits eingetragen", abgeschlossen."""
+    def _suchen(self, kontext: dict) -> dict:
         state = {"parameter": {"action": "create", "target": "", "zeitausdruck": ""},
-                 "kontext": {"user_id": "pruefer"}, "aufgabe": "Gerne", "schritte": []}
+                 "kontext": kontext, "aufgabe": "Gerne", "schritte": []}
         with patch("memory.repositories.timeline_repository.TimelineRepository.find_by_date_range",
                    return_value=[_eintrag("Erinnerungs-Anker 19.09.2026", "erinnerungs_anker")]):
-            ergebnis = suche.suchen(state)
+            return suche.suchen(state)
+
+    def test_ohne_titel_meldet_die_suche_nicht_mehr_abgeschlossen(self) -> None:
+        """Vorher: Uebersicht → irgendein Eintrag → "bereits eingetragen", abgeschlossen."""
+        ergebnis = self._suchen({"user_id": "pruefer", "character_id": "nova"})
         self.assertNotEqual(ergebnis["status"], "abgeschlossen")
+        self.assertNotEqual(ergebnis["schritte"][-1]["ergebnis"], "ohne_character_id")
+
+    def test_ohne_figur_wird_nichts_gesucht_und_nichts_geschrieben(self) -> None:
+        with patch.object(suche, "raw_matches", wraps=suche.raw_matches) as lesen:
+            ergebnis = self._suchen({"user_id": "pruefer"})
+        self.assertEqual(ergebnis["status"], "fehler")
+        self.assertEqual(ergebnis["schritte"][-1]["ergebnis"], "ohne_character_id")
+        lesen.assert_not_called()
+
+    def test_zwilling_mit_figur_wird_im_paar_gesucht(self) -> None:
+        with patch.object(suche, "raw_matches", wraps=suche.raw_matches) as lesen:
+            self._suchen({"user_id": "pruefer", "character_id": "nova"})
+        self.assertEqual(lesen.call_args.args[2:4], ("pruefer", "nova"))
 
 
 if __name__ == "__main__":
