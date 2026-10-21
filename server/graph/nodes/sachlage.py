@@ -165,6 +165,11 @@ TRAEGER_KANON: frozenset[str] = frozenset({TRAEGER_NUTZER, TRAEGER_WELT, TRAEGER
 KRITISCH:   str = "kritisch"
 UNKRITISCH: str = "unkritisch"
 KRITIKALITAET_KANON: frozenset[str] = frozenset({KRITISCH, UNKRITISCH})
+
+# Der Schreibauftrag an den passiven Fakten-Agenten (`build_fact_order`): je
+# gerechnetem Turn mit Verlaufszeile genau einer, ausgefuehrt vom Dispatcher.
+FACT_ORDER_TARGET: str = "fakten"
+FACT_ORDER_ACTION: str = "pruefen"
 ANTWORT_TRAEGER: frozenset[str] = frozenset({TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
 
 # Scheibe 9: wer eine gedeckte Eigenschaft gesagt hat. Der Gedanke des
@@ -1393,6 +1398,54 @@ def answer_targets(sachlage: dict) -> list[tuple[str, str, str]]:
     return ziele
 
 
+def build_fact_order(state: dict, verlauf_id: int, stored: bool) -> dict:
+    """Der Schreibauftrag an den Fakten-Agenten fuer einen gerechneten Turn.
+
+    Der Agent ist passiv: Er bekommt seinen Auftrag nicht vom Router, sondern
+    aus jeder gerechneten Sachlage, und der Dispatcher fuehrt ihn nach der
+    Antwort aus. Der Auftrag traegt keinen Inhalt — die Kandidaten liest der
+    Agent aus dem Eigenschaftsgedaechtnis. **Er traegt aber, ob das Ablegen
+    gelang:** Ohne diese Angabe saehe ein ausgefallenes Ablegen beim Agenten
+    aus wie ein Turn ohne neue Eigenschaften. Die Salienz reist nur mit; sie
+    ist kein Tor.
+
+    Vorbedingung: `verlauf_id` ist die Zeile dieses Turns in
+        `sachlage_verlauf`; `stored` ist der Ausgang von `remember_objects`.
+    Nachbedingung: ein `PendingWrite` mit `ziel="fakten"` und `daten` mit
+        turn_id, verlauf_id, salienz_human, user_intentionen und abgelegt.
+    Fehlerfaelle: Eine Verlaufs-id, die keine ganze Zahl ist, oder ein
+        `stored`, das kein bool ist — TypeError: Der Aufrufer hat den Weg
+        ohne Verlaufszeile genommen und duerfte hier nicht stehen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(verlauf_id, int) or isinstance(verlauf_id, bool):
+        raise TypeError(f"Fakten-Auftrag ohne Verlaufszeile: {verlauf_id!r}")  # noqa: TRY003
+    if not isinstance(stored, bool):
+        raise TypeError(f"Fakten-Auftrag: Ablegen kein bool: {stored!r}")  # noqa: TRY003
+
+    # ── Verarbeitung ────────────────────────────
+    order: dict = {
+        "ziel":         FACT_ORDER_TARGET,
+        "aktion":       FACT_ORDER_ACTION,
+        "daten": {
+            "turn_id":          state.get("turn_id", ""),
+            "verlauf_id":       verlauf_id,
+            "salienz_human":    state.get("salienz_human"),
+            "user_intentionen": state.get("user_intentionen"),
+            "abgelegt":         stored,
+        },
+        "beschreibung": "Neue Eigenschaften dieses Turns auf Fakten pruefen",
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not order["daten"]["turn_id"]:
+        logger.error(
+            f"Fakten-Auftrag ohne turn_id (verlauf={verlauf_id}) — der Agent wird "
+            f"ihn als unvollstaendig verwerfen"
+        )
+    return order
+
+
 def sachlage_assess(state: dict) -> dict:
     """Der Knoten: laedt, schreibt fort, protokolliert.
 
@@ -1464,15 +1517,23 @@ def sachlage_assess(state: dict) -> dict:
             # Scheibe 11: die Objekte des Turns mit ihren Werten, dauerhaft und
             # an die Magnete des Turns gebunden. Ohne Verlaufszeile kein Anker.
             if isinstance(verlauf_id, int):
+                stored: bool = False
                 try:
-                    remember_objects(
+                    stored = remember_objects(
                         user_id, character_id, state.get("turn_id", ""), verlauf_id, sachlage,
-                    )
+                    )["abgelegt"] is True
                 except Exception as fehler:  # noqa: BLE001 — der Turn geht vor
                     logger.exception(
                         f"{type(fehler).__name__}: Sachlage-Gedaechtnis ausgefallen — "
                         f"die Objekte dieses Turns fehlen im Eigenschaftsgedaechtnis"
                     )
+                # Der Schreibauftrag an den Fakten-Agenten: genau einer je
+                # gerechnetem Turn mit Verlaufszeile, auch wenn das Ablegen
+                # ausfiel — dann traegt er es, und der Agent meldet `ausgefallen`.
+                state["pending_writes"] = [
+                    *(state.get("pending_writes") or []),
+                    build_fact_order(state, verlauf_id, stored),
+                ]
             # Scheibe 2: Zeigt die Blase zum zweiten Mal auf dasselbe
             # Nutzerziel, entsteht das kurzfristige Ziel (memory/kurzziel.py).
             _track_short_goal(user_id, character_id, state.get("turn_id", ""), sachlage)

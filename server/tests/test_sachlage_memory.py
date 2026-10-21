@@ -19,10 +19,11 @@ Zeugen dieser Datei:
 
 import unittest
 import uuid
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import psycopg2
 
+from agents.fakten import dispatch as fakten_dispatch_mod
 from config import POSTGRES_URL, redis_client
 from graph.nodes import sachlage as sachlage_mod
 from graph.nodes import sachlage_memory as memory_mod
@@ -181,6 +182,98 @@ class TheNodeRemembersTest(unittest.TestCase):
         self._assess(None, impuls=True).assert_not_called()
 
 
+_DERIVED: dict = {"thema": "Pulsar", "gegenstand": "Rotation", "nutzerziel": "wissen",
+                  "ausdrucksweise": "fragend", "objekte": []}
+
+
+class TheNodeIssuesAFactOrderTest(unittest.TestCase):
+    """V1: genau ein Schreibauftrag an den Fakten-Agenten je gerechnetem Turn mit Verlaufszeile."""
+
+    def _assess(self, derived: dict | None, impuls: bool = False,
+                remembered: object = None, history_id: int | None = 42) -> dict:
+        state = {"user_id": "u", "character_id": "c", "turn_id": "t1",
+                 "user_prompt": "Wie schnell dreht sich der Vela-Pulsar?",
+                 "session_turns": [], "event_payload": {},
+                 "event_source": "pixie" if impuls else "user",
+                 "salienz_human": 0.62, "user_intentionen": ["wissen"],
+                 "pending_writes": [{"ziel": "notizen", "aktion": "create", "daten": {}}]}
+        ablage: dict = (
+            {"side_effect": remembered} if isinstance(remembered, Exception)
+            else {"return_value": remembered or {"abgelegt": True}}
+        )
+        with patch.object(sachlage_mod, "sachlage_load", return_value=(None, False)), \
+             patch.object(sachlage_mod, "reiz_ist_eigener_gedanke", return_value=impuls), \
+             patch.object(sachlage_mod, "_resume_lookup", return_value=None), \
+             patch.object(sachlage_mod, "memory_offer", return_value=[]), \
+             patch.object(sachlage_mod, "_derive", return_value=derived), \
+             patch.object(sachlage_mod, "_sachlage_store"), \
+             patch.object(sachlage_mod, "_track_short_goal"), \
+             patch.object(sachlage_mod, "sachlage_bridge_build", return_value={}), \
+             patch.object(sachlage_mod, "log_berechnung"), \
+             patch.object(sachlage_mod, "history_write", return_value=history_id), \
+             patch.object(sachlage_mod.model_service.embed, "submit_sync"), \
+             patch.object(sachlage_mod, "remember_objects", **ablage):
+            sachlage_mod.sachlage_assess(state)
+        return state
+
+    def _fact_orders(self, state: dict) -> list[dict]:
+        return [w for w in state["pending_writes"] if w.get("ziel") == "fakten"]
+
+    def _execute(self, order: dict, candidates: list[dict]) -> tuple[dict, MagicMock]:
+        state = {"user_id": "u", "character_id": "c", "turn_id": "t1"}
+        with patch.object(fakten_dispatch_mod, "turn_candidates",
+                          return_value=candidates) as read, \
+             patch.object(fakten_dispatch_mod, "log_db_write"):
+            outcome: dict = fakten_dispatch_mod.process_fact_orders(
+                state, [order], "postgresql://attrappe",
+            )[0]
+        return outcome, read
+
+    def test_a_computed_turn_carries_exactly_one_fact_order(self) -> None:
+        state = self._assess(_DERIVED)
+        orders = self._fact_orders(state)
+        self.assertEqual(len(orders), 1)
+        self.assertEqual(orders[0]["daten"], {
+            "turn_id": "t1", "verlauf_id": 42, "salienz_human": 0.62,
+            "user_intentionen": ["wissen"], "abgelegt": True,
+        })
+        # Der Auftrag haengt an, er ersetzt nichts.
+        self.assertEqual([w["ziel"] for w in state["pending_writes"]], ["notizen", "fakten"])
+
+    def test_an_impulse_and_a_failed_call_carry_none(self) -> None:
+        self.assertEqual(self._fact_orders(self._assess(None, impuls=True)), [])
+        self.assertEqual(self._fact_orders(self._assess(None)), [])
+
+    def test_a_turn_without_a_history_row_carries_none(self) -> None:
+        # Zwilling zum ersten Zeugen: derselbe gerechnete Turn, nur ohne Verlaufszeile.
+        self.assertEqual(self._fact_orders(self._assess(_DERIVED, history_id=None)), [])
+
+    def test_storing_reported_false_ends_in_not_stored(self) -> None:
+        order = self._fact_orders(self._assess(_DERIVED, remembered={"abgelegt": False}))[0]
+        self.assertIs(order["daten"]["abgelegt"], False)
+        outcome, read = self._execute(order, [])
+        self.assertEqual((outcome["ausgang"], outcome["kandidaten"]), ("ausgefallen", None))
+        read.assert_not_called()
+
+    def test_storing_that_raises_ends_in_not_stored(self) -> None:
+        order = self._fact_orders(
+            self._assess(_DERIVED, remembered=RuntimeError("Ablage verloren")),
+        )[0]
+        self.assertIs(order["daten"]["abgelegt"], False)
+        self.assertEqual(self._execute(order, [])[0]["ausgang"], "ausgefallen")
+
+    def test_a_stored_turn_ends_in_empty_or_unclassified(self) -> None:
+        order = self._fact_orders(self._assess(_DERIVED))[0]
+        self.assertEqual(self._execute(order, [])[0]["ausgang"], "leer")
+        kandidat = {"objekt": "Vela Pulsar", "eigenschaft": "periode", "sprecher": "nutzer"}
+        outcome, read = self._execute(order, [kandidat])
+        self.assertEqual(
+            (outcome["ausgang"], outcome["kandidaten"], outcome["je_sprecher"]),
+            ("nicht_klassifiziert", 1, {"nutzer": 1}),
+        )
+        self.assertEqual(read.call_args.args, ("postgresql://attrappe", "u", "c", "t1"))
+
+
 class RoundTripTest(unittest.TestCase):
     """Gegen Datenbank und Redis: vom Magneten des Turns zum gebundenen Objekt."""
 
@@ -242,6 +335,38 @@ class RoundTripTest(unittest.TestCase):
                 self.assertEqual(cur.fetchone(), (self.entitaet_id, "turn_magnet"))
         finally:
             conn.close()
+
+    def test_the_facts_agent_counts_the_property_this_turn_stored(self) -> None:
+        # V2/V3 gegen die Datenbank: abgelegt, dann gelesen — kein Doppel dazwischen.
+        summary = remember_objects(
+            self.user, self.char, self.turn, self.verlauf_id,
+            _sachlage(gedeckt={"Rotationsperiode": "89 Millisekunden"}),
+        )
+        order: dict = {"ziel": "fakten", "aktion": "pruefen", "daten": {
+            "turn_id": self.turn, "verlauf_id": self.verlauf_id,
+            "salienz_human": 0.5, "user_intentionen": [], "abgelegt": summary["abgelegt"],
+        }}
+        state: dict = {"user_id": self.user, "character_id": self.char, "turn_id": self.turn}
+        with patch.object(fakten_dispatch_mod, "log_db_write") as eintrag:
+            outcome = fakten_dispatch_mod.process_fact_orders(state, [order], POSTGRES_URL)[0]
+        self.assertEqual((outcome["ausgang"], outcome["kandidaten"]), ("nicht_klassifiziert", 1))
+        self.assertEqual(eintrag.call_args.kwargs["inhalt"]["kandidaten"], 1)
+
+    def test_another_turn_of_the_pair_has_no_candidate(self) -> None:
+        # Zwilling: derselbe Bestand, gelesen fuer einen Turn ohne neue Eigenschaft.
+        remember_objects(
+            self.user, self.char, self.turn, self.verlauf_id,
+            _sachlage(gedeckt={"Rotationsperiode": "89 Millisekunden"}),
+        )
+        order: dict = {"ziel": "fakten", "aktion": "pruefen", "daten": {
+            "turn_id": f"{self.turn}-spaeter", "verlauf_id": self.verlauf_id,
+            "salienz_human": 0.5, "user_intentionen": [], "abgelegt": True,
+        }}
+        state: dict = {"user_id": self.user, "character_id": self.char, "turn_id": self.turn}
+        with patch.object(fakten_dispatch_mod, "log_db_write") as eintrag:
+            outcome = fakten_dispatch_mod.process_fact_orders(state, [order], POSTGRES_URL)[0]
+        self.assertEqual((outcome["ausgang"], outcome["kandidaten"]), ("leer", 0))
+        eintrag.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ from typing import Any
 import redis
 
 from agents.delegation.dispatch import dispatch_delegation
+from agents.fakten.dispatch import process_fact_orders
 from agents.kzg.dispatch import dispatch_kzg
 from config import (
     ANGEBOT_VERFALL_SEKUNDEN,
@@ -712,6 +713,51 @@ def _verbindung_schreiben(
     return geschrieben
 
 
+def _run_fact_orders(
+    state:        ConversationState,
+    fact_writes:  list[dict],
+    postgres_url: str,
+) -> int:
+    """Fuehrt die Schreibauftraege an den Fakten-Agenten aus, ohne den Turn zu reissen.
+
+    Der Agent ist passiv: Sein Auftrag kommt aus der Sachlage, nie vom Planner,
+    und er geht nie an `FaktenManager.execute` — der Manager-Weg wirft dort.
+    Nichts geht in `agent_results`, `management_result` oder die Antwort.
+
+    Vorbedingung: `fact_writes` sind die Writes mit `ziel="fakten"`.
+    Nachbedingung: die Zahl der ausgefuehrten Auftraege; 0 bei einem Fehler.
+    Fehlerfaelle: Ein Fehler der Ausfuehrung geht mit `logger.exception` ins
+        Log und wird nicht weitergeworfen — der Abschluss des Turns geht vor
+        (wie im Zweig `kzg`). Liefert der Agent nicht genau einen Ausgang je
+        Auftrag, steht das mit `logger.error` im Log (0): Ein Auftrag ohne
+        Ausgang hat auch keinen Eintrag im `pipeline_log`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not fact_writes:
+        logger.error("Dispatcher: Fakten-Zweig ohne Auftrag gerufen")
+        return 0
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        outcomes: list[dict] = process_fact_orders(state, fact_writes, postgres_url)
+    except Exception as fehler:
+        logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei Fakten-Agent")
+        return 0
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(outcomes, list) or len(outcomes) != len(fact_writes):
+        logger.error(
+            f"Dispatcher: Fakten-Agent lieferte {outcomes!r:.200} fuer "
+            f"{len(fact_writes)} Auftraege — nicht jeder Auftrag hat einen Ausgang"
+        )
+        return 0
+    logger.info(
+        f"Dispatcher: 'fakten' -> Fakten-Agent, {len(outcomes)} Auftraege, "
+        f"Ausgaenge={[o.get('ausgang') for o in outcomes]}"
+    )
+    return len(outcomes)
+
+
 def dispatch(
     state:         ConversationState,
     redis_client:  redis.Redis,
@@ -749,8 +795,19 @@ def dispatch(
         character_id = state.get("character_id", ""),
     )
 
-    if not writes:
-        logger.info("Dispatcher: Keine pending_writes — Durchlauf ohne Verteilung")
+    # **Der Fakten-Auftrag allein macht keinen vollen Durchlauf.** Die Sachlage
+    # stellt ihn in fast jedem gerechneten Turn aus; ein Turn, der sonst keine
+    # Writes traegt, nimmt deshalb den kurzen Weg wie ohne Writes und fuehrt
+    # nur den Auftrag zusaetzlich aus.
+    fact_writes:  list = [w for w in writes if w.get("ziel") == "fakten"]
+    other_writes: list = [w for w in writes if w.get("ziel") != "fakten"]
+
+    if not other_writes:
+        if fact_writes:
+            logger.info("Dispatcher: nur der Fakten-Auftrag — Durchlauf ohne Verteilung")
+            _run_fact_orders(state, fact_writes, postgres_url)
+        else:
+            logger.info("Dispatcher: Keine pending_writes — Durchlauf ohne Verteilung")
         # Auch ohne Writes wollen wir den kurzfristigen Drive-Snapshot
         # persistieren, damit das Ziele-Panel z.B. nach Begruessungs-Turns
         # nicht auf veraltete Daten zeigt.
@@ -770,6 +827,8 @@ def dispatch(
         _session_turn_schreiben(state)
         _ausgang_vermerken(state)
         _turn_roh_schreiben(state)
+        if fact_writes:
+            state["pending_writes"] = []
         return state
 
     user_id:  str  = state["user_id"]
@@ -817,6 +876,11 @@ def dispatch(
                 )
             except Exception as fehler:
                 logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei KZG-Agent")
+            continue
+
+        # ── Fakten-Agent: passiv, der Auftrag kommt aus der Sachlage ──
+        if ziel == "fakten":
+            _run_fact_orders(state, ziel_writes, postgres_url)
             continue
 
         # ── Legacy: Manager-Pfad ──

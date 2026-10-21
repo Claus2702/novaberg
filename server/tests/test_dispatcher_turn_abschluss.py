@@ -34,6 +34,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
+from agents.fakten import dispatch as fakten_dispatch_mod
 from graph.nodes import dispatcher as dispatcher_mod
 
 USER:  str = "meister"
@@ -220,6 +221,185 @@ class UebersprungenMitGrundTest(unittest.TestCase):
         self.assertEqual(
             [b for b in berechnungen if b.get("schritt") == "turn_roh_uebersprungen"], [],
         )
+
+
+_FAKTEN: dict = {"ziel": "fakten", "aktion": "pruefen", "daten": {
+    "turn_id": "probe-turn", "verlauf_id": 42, "salienz_human": 0.62,
+    "user_intentionen": ["wissen"], "abgelegt": True,
+}}
+_KZG: dict = {"ziel": "kzg", "aktion": "create", "daten": {}}
+
+
+class FactOrderInTheDispatcherTest(unittest.TestCase):
+    """V2 und der fruehe Ausstieg: der Fakten-Auftrag geht an den Agenten, nie an den Manager."""
+
+    def _run(self, writes: list, facts: MagicMock | None = None) -> tuple[dict, dict, list]:
+        """Faehrt den Dispatcher mit Doppeln fuer alles, was nicht geprueft wird.
+
+        Returns:
+            (Zustand danach, die Doppel nach Namen, `turn_roh`-Aufrufe).
+        """
+        manager = MagicMock()
+        doubles: dict = {
+            "facts":     facts or MagicMock(return_value=[{"ausgang": "leer"}]),
+            "reinforce": MagicMock(),
+            "trigger":   MagicMock(return_value=""),
+            "kzg":       MagicMock(return_value={"kzg_verarbeitet": 1}),
+            "manager":   manager,
+        }
+        zustand = _zustand(writes=writes)
+        zustand["agent_results"] = ["unberuehrt"]
+        zustand["management_result"] = "unberuehrt"
+        with patch.object(dispatcher_mod, "process_fact_orders", doubles["facts"]), \
+             patch.object(dispatcher_mod, "_verwendung_verstaerken", doubles["reinforce"]), \
+             patch.object(dispatcher_mod, "_delegation_trigger_pruefen", doubles["trigger"]), \
+             patch.object(dispatcher_mod, "dispatch_kzg", doubles["kzg"]), \
+             patch.object(dispatcher_mod, "_verbindung_schreiben"), \
+             patch.object(dispatcher_mod, "get_registry", return_value={"fakten": manager}), \
+             patch.object(dispatcher_mod, "_persist_vorturn"), \
+             patch.object(dispatcher_mod, "_persist_gv_detail"):
+            _, turn_roh = _lauf(zustand)
+        return zustand, doubles, turn_roh
+
+    def test_only_a_fact_order_takes_the_short_way(self) -> None:
+        zustand, d, turn_roh = self._run([_FAKTEN])
+        d["facts"].assert_called_once()
+        self.assertEqual(d["facts"].call_args.args[1:], ([_FAKTEN], "postgresql://attrappe"))
+        d["reinforce"].assert_not_called()
+        d["trigger"].assert_not_called()
+        d["manager"].execute.assert_not_called()
+        self.assertEqual(zustand["pending_writes"], [])
+        self.assertEqual(len(turn_roh), 1)
+
+    def test_a_turn_without_writes_is_as_before(self) -> None:
+        zustand, d, turn_roh = self._run([])
+        d["facts"].assert_not_called()
+        d["reinforce"].assert_not_called()
+        d["trigger"].assert_not_called()
+        self.assertEqual(len(turn_roh), 1)
+
+    def test_kzg_and_facts_take_the_full_way(self) -> None:
+        zustand, d, turn_roh = self._run([_KZG, _FAKTEN])
+        d["kzg"].assert_called_once()
+        self.assertEqual(d["kzg"].call_args.args[1], [_KZG])
+        d["facts"].assert_called_once()
+        self.assertEqual(d["facts"].call_args.args[1], [_FAKTEN])
+        d["reinforce"].assert_called_once()
+        d["trigger"].assert_called_once()
+        d["manager"].execute.assert_not_called()
+        self.assertEqual(zustand["pending_writes"], [])
+        self.assertEqual(len(turn_roh), 1)
+
+    def test_a_failure_of_the_agent_does_not_stop_the_turn(self) -> None:
+        kaputt = MagicMock(side_effect=RuntimeError("Lesen verloren"))
+        for writes in ([_FAKTEN], [_KZG, _FAKTEN]):
+            with self.subTest(writes=[w["ziel"] for w in writes]), \
+                 self.assertLogs("ki_server.dispatcher", level="ERROR") as protokoll:
+                zustand, _, turn_roh = self._run(writes, facts=kaputt)
+            self.assertEqual(len(turn_roh), 1)
+            self.assertEqual(zustand["pending_writes"], [])
+            self.assertIn("Fakten-Agent", "\n".join(protokoll.output))
+
+    def test_nothing_reaches_the_results_or_the_answer(self) -> None:
+        for writes in ([_FAKTEN], [_KZG, _FAKTEN]):
+            zustand, _, _ = self._run(writes)
+            self.assertEqual(zustand["agent_results"], ["unberuehrt"])
+            self.assertEqual(zustand["management_result"], "unberuehrt")
+            self.assertEqual(zustand["response"], "Eine Antwort.")
+
+    def test_an_order_without_an_outcome_is_reported_loudly(self) -> None:
+        # Ein Auftrag ohne Ausgang hat keinen Eintrag; der Turn schliesst trotzdem ab.
+        with self.assertLogs("ki_server.dispatcher", level="ERROR") as protokoll:
+            zustand, _, turn_roh = self._run([_FAKTEN], facts=MagicMock(return_value=[]))
+        self.assertIn("nicht jeder Auftrag hat einen Ausgang", "\n".join(protokoll.output))
+        self.assertEqual(len(turn_roh), 1)
+        self.assertEqual(zustand["pending_writes"], [])
+
+    def test_one_outcome_per_order_is_quiet(self) -> None:
+        # Zwilling: ein Ausgang je Auftrag, keine solche Zeile.
+        with self.assertLogs("ki_server.dispatcher", level="INFO") as protokoll:
+            self._run([_FAKTEN])
+        self.assertNotIn("nicht jeder Auftrag hat einen Ausgang", "\n".join(protokoll.output))
+        self.assertIn("1 Auftraege", "\n".join(protokoll.output))
+
+
+class FactsAgentWithoutCandidatesTest(unittest.TestCase):
+    """V2 am echten Agenten: ohne Kandidaten kein Modell, Ausgang `leer`, und der Eintrag steht."""
+
+    def _run(self, candidates: list[dict]) -> tuple[MagicMock, MagicMock]:
+        with patch.object(fakten_dispatch_mod, "turn_candidates", return_value=candidates), \
+             patch.object(fakten_dispatch_mod, "log_db_write") as eintrag, \
+             patch("agents.fakten.klassifikation.model_service") as modell, \
+             patch.object(dispatcher_mod, "_verwendung_verstaerken"):
+            _lauf(_zustand(writes=[_FAKTEN]))
+        return eintrag, modell
+
+    def test_no_candidates_no_model_outcome_empty_and_logged(self) -> None:
+        eintrag, modell = self._run([])
+        self.assertEqual(modell.mock_calls, [])
+        eintrag.assert_called_once()
+        self.assertEqual(eintrag.call_args.kwargs["node"], "dispatcher")
+        self.assertEqual(eintrag.call_args.kwargs["quelle"], "fakten")
+        self.assertEqual(eintrag.call_args.kwargs["inhalt"], {
+            "ausgang": "leer", "kandidaten": 0, "je_sprecher": {},
+            "verlauf_id": 42, "salienz_human": 0.62, "user_intentionen": ["wissen"],
+        })
+
+    def test_candidates_are_counted_by_speaker(self) -> None:
+        # Zwilling: mit Kandidaten derselbe Eintrag, aber mit Zahlen.
+        kandidaten = [{"sprecher": "nutzer"}, {"sprecher": "nova"}, {"sprecher": "nutzer"},
+                      {"sprecher": None}]
+        eintrag, modell = self._run(kandidaten)
+        self.assertEqual(modell.mock_calls, [])
+        inhalt = eintrag.call_args.kwargs["inhalt"]
+        self.assertEqual((inhalt["ausgang"], inhalt["kandidaten"]), ("nicht_klassifiziert", 4))
+        self.assertEqual(inhalt["je_sprecher"], {"nutzer": 2, "nova": 1, "ohne": 1})
+
+    def test_an_order_without_the_storing_outcome_is_rejected_loudly(self) -> None:
+        unvollstaendig = {"ziel": "fakten", "daten": {"turn_id": "probe-turn", "verlauf_id": 42}}
+        with patch.object(fakten_dispatch_mod, "turn_candidates", return_value=[]) as lesen, \
+             patch.object(fakten_dispatch_mod, "log_db_write") as eintrag, \
+             self.assertLogs("ki_server.agents.fakten.dispatch", level="ERROR"):
+            ausgaenge = fakten_dispatch_mod.process_fact_orders(
+                _zustand(), [unvollstaendig, _FAKTEN], "postgresql://attrappe",
+            )
+        self.assertEqual([a["ausgang"] for a in ausgaenge], ["verworfen", "leer"])
+        self.assertEqual(ausgaenge[0]["mangel"], "Ausgang des Ablegens fehlt")
+        self.assertEqual(eintrag.call_count, 2)
+        lesen.assert_called_once()
+
+    def _process(self, zustand: dict) -> tuple[MagicMock, str]:
+        """Ein vollstaendiger Auftrag ohne Kandidaten; (Eintrag, Log der Ausfuehrung)."""
+        with patch.object(fakten_dispatch_mod, "turn_candidates", return_value=[]), \
+             patch.object(fakten_dispatch_mod, "log_db_write") as eintrag, \
+             self.assertLogs("ki_server.agents.fakten.dispatch", level="INFO") as protokoll:
+            fakten_dispatch_mod.process_fact_orders(zustand, [_FAKTEN], "postgresql://attrappe")
+        return eintrag, "\n".join(protokoll.output)
+
+    def test_an_entry_without_a_turn_stands_and_is_reported_loudly(self) -> None:
+        zustand = _zustand()
+        del zustand["turn_id"]
+        eintrag, protokoll = self._process(zustand)
+        eintrag.assert_called_once()
+        self.assertIn("ERROR", protokoll)
+        self.assertIn("Eintrag nicht zählbar", protokoll)
+
+    def test_a_candidate_without_a_speaker_field_is_an_error_not_ohne(self) -> None:
+        # Zwilling: test_candidates_are_counted_by_speaker (das Feld steht, auch als None).
+        with patch.object(fakten_dispatch_mod, "turn_candidates",
+                          return_value=[{"sprecher": "nutzer"}, {"objekt": "Vela Pulsar"}]), \
+             patch.object(fakten_dispatch_mod, "log_db_write") as eintrag, \
+             self.assertRaises(ValueError):
+            fakten_dispatch_mod.process_fact_orders(_zustand(), [_FAKTEN], "postgresql://attrappe")
+        eintrag.assert_called_once()
+        inhalt = eintrag.call_args.kwargs["inhalt"]
+        self.assertEqual((inhalt["ausgang"], inhalt["kandidaten"]), ("fehler", None))
+
+    def test_an_entry_of_its_turn_is_quiet(self) -> None:
+        # Zwilling: derselbe Auftrag mit turn_id — der Eintrag steht, keine solche Zeile.
+        eintrag, protokoll = self._process(_zustand())
+        self.assertEqual(eintrag.call_args.kwargs["turn_id"], "probe-turn")
+        self.assertNotIn("Eintrag nicht zählbar", protokoll)
 
 
 if __name__ == "__main__":
