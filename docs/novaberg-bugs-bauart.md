@@ -1,9 +1,37 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → 25 Eintraege (17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → ~~25~~ → 27 Eintraege (20.10.2026: `ZEUGE-TAGESLAUF-FAEHRT-ECHT` und `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` neu aus der Fundliste; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
+
+### `ZEUGE-TAGESLAUF-FAEHRT-ECHT` — ein Zeuge des Tageslaufs fährt Bestandslauf und Preiswächter echt
+**Kategorie:** BAU
+
+**Rang:** **niedrig** — der Zeuge bleibt grün, aber er hängt an der Datenbank des Laufs und am Netz und schreibt dabei ein Audit `fehler`. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 18.10.2026, beim Bau des Fakten-Verfalls (dort nur um dessen Ersatzzeile ergänzt).
+
+**Befund** `[Code]`: `server/tests/test_praegung_einfaerbung.py::test_der_siebte_schritt_laeuft` ersetzt in `SynapsenDecayAgent.invoke` jeden Schritt außer `fascination_store.bestandslauf` (liest die Datenbank des Laufs) und `price_watch.pruefen` (geht ins Netz; sein Fehler wird gefangen und als Audit `fehler` geschrieben).
+
+**Geschlossen, wenn** der Zeuge keinen Schritt echt fährt, der Bestand liest oder ins Netz geht.
+
+---
+
+### `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` — die Bereinigung des lauten Einstiegs ersetzt ein kurzes Kennwort mitten in jedem Wort
+**Kategorie:** BAU
+
+**Rang:** **niedrig** — laut, nur bei einem kurzen Kennwort wie dem der Entwicklung: Pfad-, Tabellen- und Modulnamen einer Fehlerzeile werden unlesbar. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 18.10.2026.
+
+**Befund** `[Code]`: `server/tools/core_schema.py::redact_connection` ersetzt das Kennwort *„auch inmitten anderer Woerter“* (Docstring); mit dem Entwicklungs-Kennwort, zwei Zeichen, wird jedes Vorkommen in einer Zeile `schema_bootstrap: …` ersetzt. Die Bereinigung der Ausgabe der Server-Suite ersetzt seit dem 18.10.2026 einen Wert nur dort, wo er als Wert steht, frei erst ab 12 Zeichen aus zwei Zeichenklassen — zwei Bereinigungen, zwei Regeln.
+
+**Geschlossen, wenn** `redact_connection` das Kennwort nur dort ersetzt, wo es als Wert steht, oder beide Bereinigungen einer Regel folgen.
 
 ---
 
@@ -289,6 +317,8 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 **Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026, weiterhin **52**, mit derselben Strukturpruefung gezaehlt, die die 39 geliefert hat (Pruefung A8b). Die Zahl steht seit dem 20.08. still; sie ist nicht zurueckgegangen und gegenueber den 39 des Befundes um ein Drittel gewachsen.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **39 Importe überspringen eine Schichtgrenze.** `agents/*` importiert `tools/db_manager` und `tools/redis_manager` direkt und umgeht damit die Repository-Schicht. Betroffen sind unter anderem `agents/base.py`, `agents/charakter/agent.py`, `agents/kalibrierung/korpus.py`.
+
+**Nachtrag 20.10.2026, aus der Fundliste vom 19.10.2026:** Zwei Fälle neu benannt. Fünf Agenten halten ihren Wartezustand `pending_agent:{user_id}` über `tools.redis_manager` (`server/agents/{timeline,notizen,dateien_wurzeln,direktiven,charakter_identitaet}/dispatch.py`) — er entfällt mit `KLA-KLAERFALL-AM-OBJEKT` Schritt 6 (Bauart angenommen am 17.10.2026, `novaberg-klaerung_e.md` A, Zeile *Bauart*, Punkt 4). `server/agents/timeline/crud.py::_verifizieren_termin` liest zur Verifikation über `tools.db_manager` (Z. 38).
 
 **Geschlossen, wenn** Kein Import ueberspringt eine Schichtgrenze, oder die Ausnahme steht als Festlegung.
 

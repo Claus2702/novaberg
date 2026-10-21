@@ -1,9 +1,24 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 13 Eintraege, je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → 14 Eintraege (20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
+
+### `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` — ein Ausfall der Suche in der Auflösung geht als *kein Treffer* weiter und legt eine neue Entität an
+**Kategorie:** GED
+
+**Rang:** **mittel** — still, und es schreibt: ein Duplikat der Entität, an das danach Magnete binden; selten, nur bei einem Ausfall der Datenbank oder des Embeddings. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 20.10.2026 gegen HEAD `b52e919`, nicht gemessen.
+
+**Befund** `[Code]`: `server/memory/services/entity_resolution.py::_search_by_name` fängt jeden Fehler der Datenbank, schreibt ihn ins Log und gibt `[]` zurück (Z. 274–278); `_search_by_embedding` tut dasselbe mit einer Warnung (Z. 352–354). `resolve_batch` liest `[]` als *kein Treffer* und geht über den Rückfall auf Embeddings bis zu *neue Entität* (Z. 161–187). Aufrufer sind `server/agents/kzg/magnete.py` (`resolve_batch`, danach `create_new_entity`) und das Plugin `fakten_manager`, das mit dem Bauteil F1 entfällt (`novaberg-memory-fakten_e.md` A, Nr. 28). Der Schreibweg des Fakten-Agenten löst seit dem 20.10.2026 über `resolve_by_name` auf und nimmt diesen Pfad nicht.
+
+**Geschlossen, wenn** kein Ausfall einer Suche dieses Pfads als *kein Treffer* weitergeht: Er wird geworfen oder als Ausfall gemeldet, und es entsteht keine Entität.
 
 ---
 
@@ -153,6 +168,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 **Nachgemessen am 16.08.2026: 0 von 704 Entitaeten ohne Embedding.** Das Symptom ist weg. **Ungeprueft bleibt das Warum** — ob der Erzeuger nachgezogen wurde oder ein Nachlauf gefuellt hat; ohne diese Antwort ist nicht entscheidbar, ob neue Entitaeten weiterhin leer entstehen und nur nachtraeglich gefuellt werden. Der Eintrag bleibt bis dahin offen.
 
 **Befund (2026-07-29).** Entitäten entstehen ohne Zusammenfassung und ohne Embedding. Einziger aktiver Erzeuger ist `agents/kzg/magnete.py`, `_entitaeten_aufloesen` → `EntityResolutionService.create_new_entity(postgres_url, user_id, name, typ)` — vier Argumente, `zusammenfassung` und `embedding` sind nicht darunter. Gemessen 28.07.2026: **88 von 89** aktiven Entitäten haben ein leeres `zusammenfassung`-Feld; nur die eine `user`-Entität trägt eines (die aus `api/chat.py` stammt, wo beide Felder gesetzt werden). Die Spalten existieren beide in `entitaeten`. Wirkung heute: Jede Suche über die Zusammenfassung ist ohne Substrat — das war Tür 2 des GV-Entity-Hop-Befunds — und eine Embedding-Suche über Entitäten ist gar nicht möglich. Wirkung morgen: M2.5b und die Entity-Resolution selbst hängen an denselben zwei Feldern. Offen ist nicht der Fix, sondern die Frage, **woher** die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommen soll — der Magnet-Pfad ist nicht-interaktiv und hat nur den Namen.
+
+**Nachtrag 20.10.2026, aus der Fundliste:** `create_new_entity` duldet einen Fehler des Embeddings mit einer Warnung und legt die Entität ohne Vektor an (`server/memory/services/entity_resolution.py`, Z. 485–486). Seit dem 20.10.2026 ruft auch der Schreibweg des Fakten-Agenten die Funktion (`server/agents/fakten/suche.py`, Z. 133). Eine Warnung im Log ist nicht *gemeldet* im Sinn der Schließbedingung unten: Kein Leser der Entität erfährt es.
 
 **Was fertig waere.** Eine Entitaet entsteht mit Zusammenfassung und Embedding, oder ihr Fehlen ist gemeldet.
 

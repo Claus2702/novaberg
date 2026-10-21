@@ -1,9 +1,37 @@
 # Novaberg — Bugs: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 28 Eintraege (18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~28~~ → 30 Eintraege (20.10.2026: `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` neu aus der Fundliste; 18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
+
+### `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` — eine Ablehnung ohne Stamm aus der Liste bestätigt neben einem Zustimmungswort
+**Kategorie:** CHA
+
+**Rang:** **mittel** — still, und es schreibt gegen den Willen; die Sätze sind selten. Vergeben am 20.10.2026 gegen HEAD `b52e919`; beide Dateien sind seit `2c64856` unverändert.
+
+**Zustand:** offen — gemessen am 18.10.2026 an den Deutungsfunktionen, aufgerufen ohne Datenbank, gefunden beim Nachzug zu `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`.
+
+**Befund** `[gemessen 18.10.2026]`: In `charakter_identitaet` (`resume.py::_standard_interpretieren`) und `notizen` (`resume.py::_resume_nicht_gefunden`) kennt die Ablehnung nur die Stämme aus `REFUSAL_STEMS` (`nein`, `ne`, `nee`, `nicht`, `kein`, `lass`, `abbruch`, `abbrech`, `stopp`, `stop`). *„vergiss es“*, *nö* und *niemals* trägt keiner davon. Allein bleiben sie unklar, und es wird erneut gefragt; neben einem Zustimmungswort bestätigen sie: *„ja, vergiss es“*, *„ok nö“* und *„bitte niemals“* ergeben Zustimmung bzw. Anlegen, in beiden Diensten.
+
+**Geschlossen, wenn** in beiden Diensten eine Ablehnung neben einem Zustimmungswort nicht als Zustimmung gelesen wird, auch ohne Stamm aus `REFUSAL_STEMS` — bezeugt mit den drei Sätzen. Mit `KLA-KLAERFALL-AM-OBJEKT` Schritt 5 und 6 löst ein geschlossener Leser im Code diese Deutung ab.
+
+---
+
+### `WURZELN-ABLEHNUNG-UNGELESEN` — am Tor der Dateien-Wurzeln lesen sich *nichts*, *keinesfalls* und *ablehnen* nicht als Ablehnung
+**Kategorie:** CHA
+
+**Rang:** **mittel** — still, an einem Tor, das Lesezugriff auf ein Verzeichnis des Menschen freigibt; die Sätze sind selten. Vergeben am 20.10.2026 gegen HEAD `b52e919`; die Datei ist seit `04491c6` unverändert.
+
+**Zustand:** offen — gemessen am 18.10.2026 an `_antwort_deuten`.
+
+**Befund** `[gemessen 18.10.2026]`: `server/agents/dateien_wurzeln/resume.py::_antwort_deuten` sucht `ABLEHNUNGS_WOERTER` als ganze Wörter (`_traegt`): *nichts* ist nicht *nicht*, *keinesfalls* nicht *kein* oder *keine*, und *ablehnen* steht nicht in der Liste. Allein bleibt die Antwort unklar; neben einem Zustimmungswort wird sie Zustimmung — *„ja, bitte nichts“*, *„ok, keinesfalls“*, *„ja, ablehnen“*. **In derselben Datei:** Der Docstring von `_traegt` nennt die Teilzeichenketten-Deutung in `charakter_identitaet/resume.py` als offenen Fund; sie ist seit dem 18.10.2026 behoben (`novaberg-bugs-archiv-charakter.md`).
+
+**Geschlossen, wenn** neben einem Zustimmungswort keine Ablehnung als Zustimmung gelesen wird, auch *nichts*, *keinesfalls* und *ablehnen*, und der Docstring von `_traegt` den heutigen Stand sagt.
 
 ---
 

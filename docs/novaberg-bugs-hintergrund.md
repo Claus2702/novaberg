@@ -1,9 +1,24 @@
 # Novaberg — Bugs: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, 17 Eintraege, je mit `**Kategorie:** HGR`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~17~~ → 18 Eintraege (20.10.2026: `TAGESLAUF-DOCSTRING-SECHS-AUFGABEN` neu aus der Fundliste), je mit `**Kategorie:** HGR`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
+
+### `TAGESLAUF-DOCSTRING-SECHS-AUFGABEN` — der Docstring des Tageslaufs zählt sechs Aufgaben, `invoke` hat mehr
+**Kategorie:** HGR
+
+**Rang:** **niedrig** — falsche Doku im Code, für jeden Leser sichtbar. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 18.10.2026 und am 20.10.2026 (Z. 3 unverändert).
+
+**Befund** `[Code]`: `server/agents/synapsen_decay/agent.py` beginnt mit *„Orchestriert einmal täglich sechs entkoppelte Wartungsaufgaben“*; `invoke` nummeriert seine Schritte 1 bis 11, die 8 als Lücke, und die Liste darunter führt seit dem Fakten-Verfall auch Schritt 11.
+
+**Geschlossen, wenn** der Docstring die Schritte nennt, die `invoke` hat.
 
 ---
 

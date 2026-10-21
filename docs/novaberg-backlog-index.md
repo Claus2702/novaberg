@@ -1,9 +1,9 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 466 Eintraege mit Kennung — 383 offen, 83 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 467 Eintraege mit Kennung — 384 offen, 83 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 463 von 466 Eintraegen zugeordnet.
+**Kategorie:** 464 von 467 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
@@ -11,7 +11,7 @@
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 66 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 74 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 75 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 102 |
 
 ---
@@ -321,7 +321,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 74 |
 | `ANT` | ANTWORTPFAD | 66 |
-| `WIS` | WISSEN | 74 |
+| `WIS` | WISSEN | 75 |
 | `BAU` | BAUART | 102 |
 
 | Zeile | Art | Kennung | Kapitel |
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 466 Eintraege
+## Alle 467 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -700,6 +700,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 1091 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
 | WIS | 1097 | offen | `AUFGRIFF-SCHWELLE-UNGEEICHT` | [Befund: AUFGRIFF-SCHWELLE-UNGEEICHT — Die Schwelle d](novaberg-backlog-wissen.md) |
 | WIS | 1115 | offen | `TIMELINE-TYPEN-AN-DREI-STELLEN` | [Befund: TIMELINE-TYPEN-AN-DREI-STELLEN — Die Typen d](novaberg-backlog-wissen.md) |
+| WIS | 1135 | offen | `FAKTEN-KANON-LUECKEN` | [Befund: FAKTEN-KANON-LUECKEN — der Kanon des Fakten-](novaberg-backlog-wissen.md) |
 | BAU | 25 | offen | `NMCP-KONVENTION-MCP-2026-07-28` | [Block 19.09.2026 — die NMCP-Konvention gegen die Pro](novaberg-backlog-bauart.md) |
 | BAU | 35 | offen | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
 | BAU | 48 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |

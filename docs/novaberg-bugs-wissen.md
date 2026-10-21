@@ -1,9 +1,63 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → 26 Eintraege (17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → 30 Eintraege (20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
+
+### `FAKTEN-HEISST-ICH-AUSGENOMMEN` — bei `heisst` lässt die Prüfung der Antwort *ICH* als Subjekt durch
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — offen, aber nicht beobachtet: am Modell 9 von 9 Sätzen dieser Form richtig klassifiziert (20.10.2026). Träte es auf, löste es still den Namen des Menschen ab, weil `heisst` einwertig ist. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 20.10.2026, beim Bau des Fakten-Agenten (Schritt 4).
+
+**Befund** `[Code]`: `server/agents/fakten/klassifikation.py::check_answer` prüft bei `heisst`, dass ein benanntes Subjekt nicht Besitzer ist, und nimmt `ICH` davon aus. Eine Antwort `ICH heisst Rufus` auf *„Mein Hund heißt Rufus“* ginge durch.
+
+**Geschlossen, wenn** eine Antwort, die bei `heisst` den Menschen statt seines Besitzes benennt, abgelehnt wird — bezeugt mit `ICH` als Subjekt.
+
+---
+
+### `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` — die Suche des Fakten-Agenten ruft eine private Methode der Auflösung, deren Text immer von zwei Personen spricht
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — laut falsch im Text, nicht still: Bei zwei Treffern zu einem Ort oder Tier fragt der Agent nach *„zwei Personen namens …“*. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 20.10.2026.
+
+**Befund** `[Code]`: `server/agents/fakten/suche.py` ruft `EntityResolutionService._build_klärungsfrage` (Z. 74), eine private Methode eines anderen Bausteins; ihr Text lautet bei zwei Kandidaten immer *„Ich kenne zwei Personen namens …“* (`server/memory/services/entity_resolution.py`, Z. 376).
+
+**Geschlossen, wenn** die Suche keine private Methode der Auflösung ruft und keine Rückfrage die Art der Entität verfälscht.
+
+---
+
+### `FAKTEN-OHNE-EMBEDDING` — die Fakten des Agenten tragen kein Embedding
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — still, aber heute ohne Leser: `FaktenRepository.find_similar` hat außerhalb der Tests keinen Aufrufer (gezählt am 20.10.2026). Ein späterer Leser über Ähnlichkeit fände die Fakten des Agenten nicht, und nichts meldete es. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** offen — am Code gelesen am 20.10.2026.
+
+**Befund** `[Code]`: `server/agents/fakten/crud.py` baut `NewFact` ohne `embedding`; die Spalte `fakten.embedding` und die Lesefunktion `server/memory/repositories/fakten_repository.py::find_similar` (Z. 555) gibt es.
+
+**Geschlossen, wenn** jeder Fakt des Agenten mit Embedding entsteht, oder `find_similar` samt Spalte entfällt — entschieden mit dem ersten Leser über Ähnlichkeit.
+
+---
+
+### `NOTIZ-VERNEINUNG-UEBERLESEN` — bei *neu*, *aktualisieren* und der Wahl einer Notiz wird die Verneinung nicht gelesen
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, und es schreibt gegen die Antwort des Menschen. Vergeben am 20.10.2026 gegen HEAD `b52e919`; die Datei ist seit `2c64856` unverändert.
+
+**Zustand:** offen — gemessen am 18.10.2026 an den Funktionen, aufgerufen ohne Datenbank, gefunden beim Nachzug zu `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`.
+
+**Befund** `[gemessen 18.10.2026]`: `server/agents/notizen/resume.py::_resume_duplikat` sucht die Wörter für *aktualisieren* und *neu* ohne Blick auf ein *nicht* oder *kein*: *„nein, keine neue“* auf *„Aktualisieren oder neu anlegen?“* legt eine neue Notiz an, *„nicht aktualisieren“* aktualisiert. `_resume_disambiguierung` wählt bei zwei Kandidaten über *erste* und *zweite*: *„nicht die erste, die zweite“* wählt die erste.
+
+**Geschlossen, wenn** an diesen drei Stellen eine verneinte Wahl nicht als diese Wahl gelesen wird, bezeugt mit den drei Sätzen. Mit `KLA-KLAERFALL-AM-OBJEKT` Schritt 5 löst ein geschlossener Leser im Code diese Deutung ab.
 
 ---
 
