@@ -12,8 +12,9 @@ from agents.base import AgentState
 
 logger = logging.getLogger("ki_server.agents.fakten.bestaetigung")
 
-# Was die Ausführung oder die Suche als Endstatus setzen darf.
-ENDSTATUS: frozenset[str] = frozenset({"abgeschlossen", "rueckfrage", "fehler"})
+# Was die Ausführung als Endstatus setzen darf. `mehrdeutig` endet schon nach
+# der Suche und erreicht diesen Knoten nie.
+ENDSTATUS: frozenset[str] = frozenset({"abgeschlossen", "fehler"})
 
 
 def confirm(state: AgentState) -> dict:

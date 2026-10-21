@@ -326,11 +326,13 @@ class FactOrderInTheDispatcherTest(unittest.TestCase):
 class FactsAgentWithoutCandidatesTest(unittest.TestCase):
     """V2 am echten Agenten: ohne Kandidaten kein Modell, Ausgang `leer`, und der Eintrag steht."""
 
-    def _run(self, candidates: list[dict]) -> tuple[MagicMock, MagicMock]:
+    def _run(self, candidates: list[dict],
+             answer: dict | None = None) -> tuple[MagicMock, MagicMock]:
         with patch.object(fakten_dispatch_mod, "turn_candidates", return_value=candidates), \
              patch.object(fakten_dispatch_mod, "log_db_write") as eintrag, \
              patch("agents.fakten.klassifikation.model_service") as modell, \
              patch.object(dispatcher_mod, "_verwendung_verstaerken"):
+            modell.chat.submit_sync.return_value.parsed = answer
             _lauf(_zustand(writes=[_FAKTEN]))
         return eintrag, modell
 
@@ -346,13 +348,19 @@ class FactsAgentWithoutCandidatesTest(unittest.TestCase):
         })
 
     def test_candidates_are_counted_by_speaker(self) -> None:
-        # Zwilling: mit Kandidaten derselbe Eintrag, aber mit Zahlen.
-        kandidaten = [{"sprecher": "nutzer"}, {"sprecher": "nova"}, {"sprecher": "nutzer"},
-                      {"sprecher": None}]
-        eintrag, modell = self._run(kandidaten)
-        self.assertEqual(modell.mock_calls, [])
+        # Zwilling: mit Kandidaten derselbe Eintrag, aber mit Zahlen. Seit der
+        # Klassifikation (FAKTEN-P4) rufen Kandidaten des Menschen genau einmal
+        # das Modell; die Frage des Turns ist keine dauerhafte Aussage.
+        def kandidat(sprecher: str | None) -> dict:
+            return {"objekt": "Rotverschiebung", "klasse": "vorgang", "entitaet_id": None,
+                    "eigenschaft": "ursache", "wert": "Expansion", "sprecher": sprecher}
+        kandidaten = [kandidat("nutzer"), kandidat("nova"), kandidat("nutzer"), kandidat(None)]
+        eintrag, modell = self._run(
+            kandidaten, {"dauerhafte_aussage": False, "grund": "eine Frage", "tripel": []},
+        )
+        self.assertEqual(modell.chat.submit_sync.call_count, 1)
         inhalt = eintrag.call_args.kwargs["inhalt"]
-        self.assertEqual((inhalt["ausgang"], inhalt["kandidaten"]), ("nicht_klassifiziert", 4))
+        self.assertEqual((inhalt["ausgang"], inhalt["kandidaten"]), ("kein_tripel", 4))
         self.assertEqual(inhalt["je_sprecher"], {"nutzer": 2, "nova": 1, "ohne": 1})
 
     def test_an_order_without_the_storing_outcome_is_rejected_loudly(self) -> None:

@@ -1,12 +1,21 @@
 [REGELN]
-Beispiele fuer ECHTE Auftraege (nicht rejected):
-- "Merk dir, dass Ilva in Ostheim wohnt" → subjekt "Ilva", beziehung "wohnt_in", objekt "Ostheim"
-- "Mein Hund heisst Rufus" → subjekt "ICH", beziehung "hat_haustier", objekt "Rufus"
-- "Merten arbeitet als Tischler, merk dir das" → subjekt "Merten", beziehung "arbeitet_als", objekt "Tischler"
-- "Ilva ist meine Schwester" → subjekt "ICH", beziehung "hat_schwester", objekt "Ilva"
+Beispiele fuer DAUERHAFTE AUSSAGEN (mit Bitte und ohne):
+- "Ilva ist uebrigens nach Ostheim gezogen", Kandidat [1] Ilva | Wohnort | Ostheim
+  → dauerhafte_aussage true, tripel [{"kandidat": 1, "subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim"}]
+- "Merk dir, dass Ilva in Ostheim wohnt", Kandidat [1] Ilva | Wohnort | Ostheim
+  → kandidat 1, subjekt "Ilva", beziehung "wohnt_in", objekt "Ostheim"
+- "Mein Hund heisst Rufus", Kandidat [1] Hund | Name | Rufus
+  → kandidat 1, subjekt "ICH", beziehung "hat_haustier", objekt "Rufus"
+  (nicht subjekt "ICH", beziehung "heisst" — Rufus ist der Name des Hundes, nicht deiner)
+- "Ich heisse Merten", Kandidat [1] Mensch | Name | Merten
+  → kandidat 1, subjekt "ICH", beziehung "heisst", objekt "Merten"
+- "Merten arbeitet als Tischler", Kandidat [2] Merten | Beruf | Tischler
+  → kandidat 2, subjekt "Merten", beziehung "arbeitet_als", objekt "Tischler"
+- "Ilva ist meine Schwester", Kandidat [1] Ilva | Verwandtschaft | Schwester
+  → kandidat 1, subjekt "ICH", beziehung "hat_schwester", objekt "Ilva"
 
 Beispiele fuer RICHTUNG und GRUNDFORM:
-- "Merk dir, Ilvas Kollege heisst Merten" → subjekt "Ilva", beziehung "hat_kollege", objekt "Merten"
+- "Ilvas Kollege heisst Merten" → subjekt "Ilva", beziehung "hat_kollege", objekt "Merten"
   (nicht subjekt "Merten", objekt "Ilva" — Merten ist der Kollege, Ilva hat ihn)
 - "Merten ist der Freund von Ilva" → subjekt "Ilva", beziehung "hat_freund", objekt "Merten"
 - "Ilvas Hund heisst Rufus" → subjekt "Ilva", beziehung "hat_haustier", objekt "Rufus"
@@ -18,12 +27,12 @@ Beispiele fuer RICHTUNG und GRUNDFORM:
 - "Ilva ist die Mutter von Merten" → subjekt "Merten", beziehung "hat_mutter", objekt "Ilva"
   (nicht "Ilva hat_sohn Merten" — ob Sohn oder Tochter, sagt der Satz nicht)
 
-Beispiele fuer rejected:
-- "Setz Mehl auf die Einkaufsliste" → eine Besorgung, kein Fakt
-- "Erinnere mich morgen an den Zahnarzt" → ein Termin, kein Fakt
-- "Sei ab jetzt etwas frecher" → eine Anweisung an dich, kein Fakt
-- "Ich bin heute ein Fels in der Brandung" → eine Metapher, kein Fakt
-- "Du bist eine Piratin und ich dein Kapitaen" → ein Rollenspiel, kein Fakt
-- "Ilva mag Kaffee" → keine Beziehung der Liste
+Beispiele OHNE Tripel:
+- "Sei ab jetzt etwas frecher, Nova" → eine Anweisung an dich: dauerhafte_aussage false
+- "Du bist eine Piratin und ich dein Kapitaen" → ein Rollenspiel: dauerhafte_aussage false
+- "Ich bin heute ein Fels in der Brandung" → eine Metapher: dauerhafte_aussage false
+- "Wir brauchen noch Mehl" → eine Besorgung: dauerhafte_aussage false
+- "Ich gehe Freitag zum Zahnarzt" → ein Vorhaben mit Zeitpunkt: dauerhafte_aussage false
+- "Ilva mag Kaffee" → dauerhafte_aussage true, aber keine Beziehung der Liste: tripel []
 
 Antworte NUR mit dem JSON-Objekt.

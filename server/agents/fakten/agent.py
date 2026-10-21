@@ -1,17 +1,18 @@
-"""FactsAgent — schreibt einen Fakt, um den der Mensch bittet.
+"""FactsAgent — schreibt ein geprüftes Tripel als Fakt.
 
-Graph: validieren → klassifizieren → suchen → ausfuehren → bestaetigen.
+Der Dienst ist passiv: Die Klassifikation läuft je Turn mit Kandidaten in
+`dispatch.py` (ein Modellaufruf, `klassifikation.py`), und jedes Tripel, das
+die Prüfung besteht, läuft einzeln durch diesen Graphen:
 
-  klassifikation.py — Subjekt, Beziehung des Kanons und Objekt per Modell,
-                      geprüft gegen den Wortlaut der Bitte
-  suche.py          — Auflösung nur über den Namen; Rückfrage bei Mehrdeutigkeit
+  validieren → suchen → ausfuehren → bestaetigen
+
+  suche.py          — Subjekt aus der Bindung des Objekts oder über den Namen;
+                      `mehrdeutig` bei zwei Treffern, ohne Text
   crud.py           — Schreiben in einer Transaktion, danach Verifikation
   bestaetigung.py   — Abschluss ohne erfundenen Erfolg
 
-**Kein Wartezustand und kein Resume.** Eine Rückfrage endet den Lauf; die
-Antwort des Menschen kommt als neue Bitte an und trägt die Unterscheidung
-selbst. **Kein Objekt-Merkmal:** Der Dienst bedient kein Objekt der Lage,
-sondern eine Bitte, sich etwas zu merken.
+**Kein Wartezustand und kein Resume.** **Kein Objekt-Merkmal:** Der Dienst
+bedient kein Objekt der Lage, sondern die Kandidaten eines Turns.
 """
 
 import logging
@@ -21,7 +22,7 @@ from langgraph.graph import END, StateGraph
 from agents.base import AgentState, BaseAgent
 from agents.fakten.bestaetigung import confirm
 from agents.fakten.crud import execute
-from agents.fakten.klassifikation import classify
+from agents.fakten.klassifikation import NEGATIVE_CASES
 from agents.fakten.suche import search
 
 logger = logging.getLogger("ki_server.agents.fakten")
@@ -42,7 +43,7 @@ class FactsAgent(BaseAgent):
 
     @property
     def graph_eignung(self) -> list[str]:
-        """Nur im Gespräch: Ein Fakt entsteht auf Bitte des Menschen.
+        """Nur im Gespräch: Ein Fakt entsteht aus den Worten des Menschen.
 
         Bleibt `["user"]`, auch ohne Platz am Empfang: Der Dispatcher bedient
         den Dienst im Nutzergraphen.
@@ -51,19 +52,11 @@ class FactsAgent(BaseAgent):
 
     @property
     def negativfaelle(self) -> list[str]:
-        """Äußerungen, die nach einem Fakt klingen und keiner sind."""
-        return [
-            "eine Anweisung an die Figur, wie sie sich verhalten oder sprechen soll "
-            "('sei ab jetzt frecher') — das ist kein Fakt über den Menschen",
-            "ein Satz im Rollenspiel oder in einer erfundenen Geschichte "
-            "('mein Drache wohnt in der Höhle') — erfunden ist nicht der Fall",
-            "eine Metapher oder Übertreibung ('mein Kopf ist ein Sieb') — "
-            "gemeint ist nicht, was dasteht",
-            "etwas, das auf eine Liste soll oder besorgt werden muss "
-            "('merk dir, dass wir Mehl brauchen') — das ist keine Beziehung",
-            "ein Vorhaben mit Zeitpunkt ('merk dir, dass ich Freitag zum Arzt gehe') "
-            "— ein Fakt trägt keine Zeit",
-        ]
+        """Äußerungen, die nach einem Fakt klingen und keiner sind.
+
+        Dieselbe Liste steht im Prompt der Klassifikation (`NEGATIVE_CASES`).
+        """
+        return list(NEGATIVE_CASES)
 
     @property
     def grenze(self) -> list[str]:
@@ -87,9 +80,11 @@ class FactsAgent(BaseAgent):
 
     @property
     def ausgaenge(self) -> frozenset[str]:
-        """Bedient alle vier Ausgänge, einschließlich der Ablehnung.
+        """Die vier Ausgänge des Handshakes (`nmcp._ausgaenge_pruefen`).
 
-        Ohne Beziehung im Kanon lehnt die Klassifikation ab.
+        Im passiven Weg setzt der Graph nur `abgeschlossen`, `fehler` und
+        `mehrdeutig`; was die Klassifikation verwirft, ist ein Ausgang des
+        Auftrags in `dispatch.py`, nicht dieses Graphen.
         """
         return frozenset({"abgeschlossen", "fehler", "rueckfrage", "abgelehnt"})
 
@@ -102,16 +97,14 @@ class FactsAgent(BaseAgent):
         """
         # ── Verarbeitung ────────────────────────────
         graph = StateGraph(AgentState)
-        graph.add_node("validieren",     self._validate)
-        graph.add_node("klassifizieren", classify)
-        graph.add_node("suchen",         search)
-        graph.add_node("ausfuehren",     execute)
-        graph.add_node("bestaetigen",    confirm)
+        graph.add_node("validieren",  self._validate)
+        graph.add_node("suchen",      search)
+        graph.add_node("ausfuehren",  execute)
+        graph.add_node("bestaetigen", confirm)
 
         graph.set_entry_point("validieren")
-        graph.add_conditional_edges("validieren",     self._after_validation)
-        graph.add_conditional_edges("klassifizieren", self._after_classification)
-        graph.add_conditional_edges("suchen",         self._after_search)
+        graph.add_conditional_edges("validieren", self._after_validation)
+        graph.add_conditional_edges("suchen",     self._after_search)
         graph.add_edge("ausfuehren",  "bestaetigen")
         graph.add_edge("bestaetigen", END)
         return graph.compile()
@@ -119,41 +112,41 @@ class FactsAgent(BaseAgent):
     # --- Routing ---
 
     def _after_validation(self, state: AgentState) -> str:
-        """Nach der Validierung: bei `fehler` zum Ende, sonst zur Klassifikation."""
+        """Nach der Validierung: bei `fehler` zum Ende, sonst zur Suche."""
         # ── Verarbeitung ────────────────────────────
-        return END if state["status"] == "fehler" else "klassifizieren"
-
-    def _after_classification(self, state: AgentState) -> str:
-        """Nach der Klassifikation: `rejected` und `fehler` enden, sonst die Suche."""
-        # ── Verarbeitung ────────────────────────────
-        return END if state["status"] in ("fehler", "rejected") else "suchen"
+        return END if state["status"] == "fehler" else "suchen"
 
     def _after_search(self, state: AgentState) -> str:
-        """Nach der Suche: `rueckfrage` und `fehler` enden, ohne zu schreiben."""
+        """Nach der Suche: `mehrdeutig` und `fehler` enden, ohne zu schreiben."""
         # ── Verarbeitung ────────────────────────────
-        return END if state["status"] in ("fehler", "rueckfrage") else "ausfuehren"
+        return END if state["status"] in ("fehler", "mehrdeutig") else "ausfuehren"
 
     # --- Validierung ---
 
     def _validate(self, state: AgentState) -> dict:
-        """Prüft, ob Aufgabe und Paar für einen Fakt vorliegen.
+        """Prüft, ob ein geprüftes Tripel und das Paar für einen Fakt vorliegen.
 
-        Vorbedingung: `state` ist ein AgentState.
-        Nachbedingung: `status = "laufend"`, wenn die Aufgabe nicht leer ist
-            und der Kontext `user_id` und `character_id` trägt.
+        Vorbedingung: `state` ist ein AgentState; die Parameter kommen aus
+            `klassifikation.vet_triple`, dazu `subjekt_entitaet_id`.
+        Nachbedingung: `status = "laufend"`, wenn die Parameter `subjekt`,
+            `beziehung`, `objekt` und `herkunft` nicht leer tragen,
+            `subjekt_entitaet_id` gesetzt ist (auch als None) und der Kontext
+            `user_id` und `character_id` trägt.
         Fehlerfälle: Sonst `status = "fehler"` — ohne Paar wüsste die
-            Schreibung nicht, wem der Fakt gehört.
+            Schreibung nicht, wem der Fakt gehört, ohne Herkunft nicht, woher.
         """
         # ── Eingabe-Validierung ─────────────────────
-        aufgabe: str = state.get("aufgabe") or ""
+        parameter: dict = state.get("parameter") or {}
         kontext: dict = state.get("kontext") or {}
         fehlend: list[str] = [
             schluessel for schluessel in ("user_id", "character_id") if not kontext.get(schluessel)
         ]
-        if not aufgabe.strip():
-            fehlend.insert(0, "aufgabe")
-
-        # ── Verarbeitung ────────────────────────────
+        fehlend += [
+            schluessel for schluessel in ("subjekt", "beziehung", "objekt", "herkunft")
+            if not str(parameter.get(schluessel) or "").strip()
+        ]
+        if "subjekt_entitaet_id" not in parameter:
+            fehlend.append("subjekt_entitaet_id")
         if fehlend:
             logger.error("validieren: Auftrag ohne %s — verworfen", fehlend)
             return {
@@ -162,6 +155,8 @@ class FactsAgent(BaseAgent):
                 "schritte": state["schritte"]
                 + [{"node": "validieren", "ergebnis": f"fehlt/{','.join(fehlend)}"}],
             }
+
+        # ── Verarbeitung ────────────────────────────
         return {
             "status": "laufend",
             "schritte": state["schritte"] + [{"node": "validieren", "ergebnis": "ok"}],

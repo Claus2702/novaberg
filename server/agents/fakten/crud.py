@@ -1,7 +1,8 @@
 """Ausführungs-Knoten — schreibt den Fakt und meldet, was die Verifikation ergab.
 
 Geschrieben wird in einer Transaktion (`FaktenRepository.schreiben`), mit der
-Herkunft `mensch`: Der Agent schreibt nur, worum der Mensch gebeten hat.
+Herkunft des Tripels: Sie kommt aus dem Sprecher seines Kandidaten
+(`klassifikation.SPEAKER_ORIGIN`), nie aus einer festen Annahme dieses Knotens.
 Danach wird die geltende Zeile frisch gelesen und gegen den Auftrag gehalten;
 `abgeschlossen` meldet der Knoten nur, wenn sie dasteht (`verified_outcome`).
 *identisch* ist ein Erfolg ohne neue Zeile.
@@ -13,11 +14,14 @@ from agents.base import AgentState
 from agents.fakten.beziehungen import KANON, Relation
 from agents.write_outcome import verified_outcome
 from config import POSTGRES_URL
-from memory.repositories.fakten_repository import FaktenRepository, NewFact, Schreibung
+from memory.repositories.fakten_repository import (
+    HERKUNFT_WERTE,
+    FaktenRepository,
+    NewFact,
+    Schreibung,
+)
 
 logger = logging.getLogger("ki_server.agents.fakten.crud")
-
-HERKUNFT_AGENT: str = "mensch"
 
 # Was der Nutzer je Art der Schreibung hört.
 MELDUNGEN: dict[str, str] = {
@@ -31,29 +35,37 @@ def execute(state: AgentState) -> dict:
     """Schreibt den aufgelösten Fakt und verifiziert ihn.
 
     Vorbedingung: Die Parameter tragen `beziehung` (im Kanon), `subjekt_id`,
-        `subjekt_name`, `objekt` und genau eines von `objekt_id` und
-        `objekt_wert`; der Kontext trägt `user_id` und `character_id`.
+        `subjekt_name`, `objekt`, `herkunft` (aus `HERKUNFT_WERTE`) und genau
+        eines von `objekt_id` und `objekt_wert`; der Kontext trägt `user_id`
+        und `character_id`.
     Nachbedingung: `status = "abgeschlossen"` nur, wenn die geltende Zeile
-        aktiv ist und Paar, Subjekt, Beziehung, Objekt und Herkunft trägt;
-        sonst `status = "fehler"`.
+        aktiv ist und Paar, Subjekt, Beziehung, Objekt und die Herkunft des
+        Auftrags trägt; sonst `status = "fehler"`.
     Fehlerfälle: Ein Fehler beim Schreiben ergibt `fehler`; die Transaktion
-        ist dann zurückgenommen.
+        ist dann zurückgenommen. Eine Herkunft außerhalb von `HERKUNFT_WERTE`
+        ergibt `fehler`, bevor geschrieben wird.
     """
     # ── Eingabe-Validierung ─────────────────────
     parameter: dict = state["parameter"]
     user_id: str = state["kontext"].get("user_id", "")
     character_id: str = state["kontext"].get("character_id", "")
     beziehung: Relation | None = KANON.get(parameter.get("beziehung", ""))
+    herkunft: object = parameter.get("herkunft")
     if beziehung is None or not user_id or not character_id or not parameter.get("subjekt_id"):
         return _with_step(state, {"status": "fehler",
                                   "fehler": "Ausführung ohne Beziehung, Paar oder Subjekt"},
+                          "ungueltig")
+    if herkunft not in HERKUNFT_WERTE:
+        logger.error("ausfuehren: Herkunft %r unbekannt — nichts geschrieben", herkunft)
+        return _with_step(state, {"status": "fehler",
+                                  "fehler": f"Ausführung ohne gültige Herkunft: {herkunft!r}"},
                           "ungueltig")
     text: str = (
         f"{parameter['subjekt_name']} {beziehung.attribut.replace('_', ' ')} "
         f"{parameter['objekt']}"
     )
     neu = NewFact(
-        fakt_text=text, herkunft=HERKUNFT_AGENT, einwertig=beziehung.einwertig,
+        fakt_text=text, herkunft=str(herkunft), einwertig=beziehung.einwertig,
         objekt_id=parameter.get("objekt_id"), objekt_wert=parameter.get("objekt_wert"),
     )
 
@@ -75,7 +87,7 @@ def execute(state: AgentState) -> dict:
     # ── Ausgabe-Verifikation ────────────────────
     erwartet: dict = {
         "subjekt_id": parameter["subjekt_id"], "attribut": beziehung.attribut,
-        "objekt_id": neu.objekt_id, "herkunft": HERKUNFT_AGENT,
+        "objekt_id": neu.objekt_id, "herkunft": neu.herkunft,
     }
     verifiziert: bool = zeile is not None and all(
         zeile.get(spalte) == wert for spalte, wert in erwartet.items()

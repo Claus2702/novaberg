@@ -1,11 +1,21 @@
-"""Klassifikations-Knoten — bestimmt Subjekt, Beziehung und Objekt per Modell.
+"""Klassifikation — welche Kandidaten eines Turns ein Fakt des Kanons sind.
 
-Die Beziehung muss im Kanon stehen (`beziehungen.KANON`). Nennt das Modell
-eine andere oder lehnt es selbst ab, endet der Knoten mit `rejected`; der
-Dispatch macht daraus die begründete Ablehnung, und der Planner fragt den
-nächsten Dienst.
+**Ein Modellaufruf je Turn mit Kandidaten** (`classify_candidates`). Die
+Eingabe ist die Äußerung des Menschen und die Kandidaten, die die Sachlage
+in diesem Turn aus seinen Worten abgelegt hat, je mit einer Nummer, die der
+Code vergibt. Die Antwort sagt zuerst, ob die Äußerung eine dauerhafte
+Aussage über den Fall ist (die Vorprüfung), und nennt dann 0…n Tripel des
+Kanons, je mit der Nummer ihres Kandidaten. Klassen werden nicht
+vorgefiltert; was kein Fakt ist, sortiert das Modell nach den Negativfällen
+im Prompt aus (`NEGATIVE_CASES`).
 
-**Die Antwort wird gegen den Wortlaut der Bitte gehalten** (`check_answer`).
+**Jedes Tripel wird geprüft, bevor es schreibt** (`vet_triple`): Seine
+Nummer zeigt auf einen Kandidaten des Turns, und zwar einen des Menschen
+— die Herkunft kommt aus dem Sprecher des Kandidaten (`SPEAKER_ORIGIN`),
+nie aus der Antwort; die Beziehung steht im Kanon; Namen und Richtung
+trägt die Äußerung. Was das verfehlt, ist `verworfen:<grund>`.
+
+**Die Antwort wird gegen den Wortlaut der Äußerung gehalten** (`check_answer`).
 `X hat_chef Y` heißt *Y ist Xs Chef*. Was das Modell an Richtung und Namen
 liefert, prüft der Code, soweit der Satz es zeigt:
 
@@ -18,9 +28,7 @@ liefert, prüft der Code, soweit der Satz es zeigt:
   * bei `heisst` ist das Subjekt nie der Besitzer — *Mertens Mutter heißt …*
     nennt nicht Mertens Namen.
 
-Eine Antwort, die das verfehlt, schreibt nichts und endet als `fehler` mit
-dem Grund — nicht als `rejected`: Die Bitte war ein Auftrag, nur die Antwort
-ist defekt, und ein anderer Dienst soll ihn nicht übernehmen.
+Ein Tripel, das das verfehlt, schreibt nichts.
 
 Prompt-Schema: [BLOCKNAME]-Format unter `prompts/default/classify_fakten.*`.
 """
@@ -29,7 +37,6 @@ import logging
 import re
 from typing import NamedTuple
 
-from agents.base import AgentState
 from agents.fakten.beziehungen import KANON, Relation, find_relation
 from config import PROMPTS, get_node_config
 from services.model_services import ChatRequest, model_service
@@ -38,6 +45,59 @@ logger = logging.getLogger("ki_server.agents.fakten.klassifikation")
 
 # Das Subjekt, wenn der Mensch über sich selbst spricht.
 SELF: str = "ICH"
+
+# Sprecher eines Kandidaten → Herkunft des Fakts. Nur die Worte des Menschen
+# werden ein Fakt; andere Sprecher gehen nicht ins Modell, und ein Tripel, das
+# auf einen ihrer Kandidaten zeigt, wird verworfen.
+SPEAKER_ORIGIN: dict[str, str] = {"nutzer": "mensch"}
+
+# Äußerungen, die nach einem Fakt klingen und keiner sind — die eine Quelle für
+# den Prompt der Klassifikation und für `FactsAgent.negativfaelle`.
+NEGATIVE_CASES: tuple[str, ...] = (
+    "eine Anweisung an die Figur, wie sie sich verhalten oder sprechen soll "
+    "('sei ab jetzt frecher') — das ist kein Fakt über den Menschen",
+    "ein Satz im Rollenspiel oder in einer erfundenen Geschichte "
+    "('mein Drache wohnt in der Höhle') — erfunden ist nicht der Fall",
+    "eine Metapher oder Übertreibung ('mein Kopf ist ein Sieb') — "
+    "gemeint ist nicht, was dasteht",
+    "etwas, das auf eine Liste soll oder besorgt werden muss "
+    "('wir brauchen noch Mehl') — das ist keine Beziehung",
+    "ein Vorhaben oder Vorgang mit Zeitpunkt ('ich gehe Freitag zum Arzt') "
+    "— ein Fakt trägt keine Zeit",
+)
+
+# Die Gründe, aus denen ein Tripel verworfen wird (`vet_triple`).
+REJECT_FORM:       str = "form"
+REJECT_CANDIDATE:  str = "kandidat_unbekannt"
+REJECT_SPEAKER:    str = "sprecher"
+REJECT_PRECHECK:   str = "vorpruefung"
+REJECT_CANON:      str = "kanon"
+REJECT_UTTERANCE:  str = "aeusserung"
+REJECT_REASONS: frozenset[str] = frozenset({
+    REJECT_FORM, REJECT_CANDIDATE, REJECT_SPEAKER, REJECT_PRECHECK, REJECT_CANON,
+    REJECT_UTTERANCE,
+})
+
+
+class ModelCallError(RuntimeError):
+    """Der Modellaufruf der Klassifikation ist ausgefallen — nie *kein Tripel*."""
+
+
+class AnswerFormError(ValueError):
+    """Die Antwort des Modells hat nicht die verlangte Form — nie *kein Tripel*."""
+
+
+class Verdict(NamedTuple):
+    """Das Urteil über ein Tripel der Antwort.
+
+    `tripel` ist das geprüfte Tripel (subjekt, beziehung, objekt, herkunft,
+    kandidat) oder None; dann nennt `grund` einen Wert aus `REJECT_REASONS`
+    und `detail` den Anlass.
+    """
+
+    tripel: dict | None
+    grund:  str
+    detail: str
 
 # Ein Wort der Bitte: Buchstaben, Ziffern, Bindestrich und Apostroph im Wort
 # (*Anna-Lena*, *Klaus'*), ohne führendes Satzzeichen.
@@ -64,51 +124,84 @@ def build_classify_prompt() -> str:
     """Baut den System-Prompt der Klassifikation aus den drei Bausteinen.
 
     Vorbedingung: Die Bausteine `classify_fakten.identity`, `.task` und
-        `.rules` sind geladen.
+        `.rules` sind geladen; `.task` trägt die Platzhalter `{beziehungen}`
+        und `{negativfaelle}`.
     Nachbedingung: Der Prompt nennt jede Beziehung des Kanons genau so, wie
-        der Kanon sie schreibt.
+        der Kanon sie schreibt, und jeden Negativfall aus `NEGATIVE_CASES`.
     Fehlerfälle: KeyError, wenn ein Baustein fehlt; RuntimeError, wenn eine
-        Beziehung im fertigen Prompt fehlt.
+        Beziehung oder ein Negativfall im fertigen Prompt fehlt.
     """
     # ── Verarbeitung ────────────────────────────
     beziehungen: str = "\n".join(f"  - {attribut}" for attribut in sorted(KANON))
+    negativfaelle: str = "\n".join(f"  - {fall}" for fall in NEGATIVE_CASES)
     prompt: str = "\n\n".join([
         PROMPTS["classify_fakten.identity"],
-        PROMPTS["classify_fakten.task"].format(beziehungen=beziehungen),
+        PROMPTS["classify_fakten.task"].format(beziehungen=beziehungen,
+                                               negativfaelle=negativfaelle),
         PROMPTS["classify_fakten.rules"],
     ])
 
     # ── Ausgabe-Verifikation ────────────────────
     fehlend: list[str] = [a for a in KANON if f"  - {a}\n" not in f"{prompt}\n"]
+    fehlend += [f for f in NEGATIVE_CASES if f"  - {f}\n" not in f"{prompt}\n"]
     if fehlend:
-        raise RuntimeError(f"Klassifikation Fakten: Prompt ohne Beziehungen {fehlend}")
+        raise RuntimeError(f"Klassifikation Fakten: Prompt ohne {fehlend}")
     return prompt
 
 
-def classify(state: AgentState) -> dict:
-    """Bestimmt Subjekt, Beziehung und Objekt der Aufgabe.
+def build_classify_input(utterance: str, numbered: dict[int, dict]) -> str:
+    """Baut die Nachricht an das Modell: die Äußerung und die nummerierten Kandidaten.
 
-    Vorbedingung: `state["aufgabe"]` ist der Text der Bitte.
-    Nachbedingung: Bei einer Beziehung des Kanons, deren Antwort
-        `check_answer` besteht, tragen die Parameter `subjekt`, `beziehung`
-        (die Beziehung des Kanons) und `objekt`, alle nicht leer. Sonst
-        `status = "rejected"` mit dem Grund im letzten Schritt.
-    Fehlerfälle: Ein Fehler des Modellaufrufs, eine Antwort ohne Objekt
-        oder ohne Subjekt ergibt `status = "fehler"` — eine Antwort, die eine
-        Beziehung nennt und kein Objekt, ist ein Defekt der Antwort, kein
-        Urteil über die Bitte. Ebenso eine Antwort, deren Namen oder Richtung
-        die Bitte nicht trägt.
+    Vorbedingung: `utterance` ist nicht leer; `numbered` ist nicht leer und
+        bildet die Nummer, die der Code vergibt, auf einen Kandidaten mit
+        `objekt`, `klasse`, `eigenschaft` und `wert` ab.
+    Nachbedingung: ein Text, der jede Nummer genau einmal als `[n]` trägt.
+    Fehlerfälle: ValueError bei leerer Äußerung oder ohne Kandidaten;
+        KeyError, wenn einem Kandidaten ein Feld fehlt.
     """
     # ── Eingabe-Validierung ─────────────────────
-    aufgabe: str = state["aufgabe"]
-    if not aufgabe or not aufgabe.strip():
-        return _with_step(state, {"status": "fehler", "fehler": "Klassifikation ohne Aufgabe"},
-                          "leere_aufgabe")
+    if not utterance.strip() or not numbered:
+        raise ValueError("Klassifikation Fakten: ohne Äußerung oder ohne Kandidaten")  # noqa: TRY003
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen: list[str] = [
+        f"[{nummer}] Objekt: {k['objekt']} (Klasse: {k['klasse']}) | "
+        f"Eigenschaft: {k['eigenschaft']} | Wert: {k['wert']}"
+        for nummer, k in sorted(numbered.items())
+    ]
+    text: str = (
+        f"AEUSSERUNG DES MENSCHEN:\n{utterance.strip()}\n\n"
+        "KANDIDATEN (was die Sachlage aus dieser Aeusserung abgelegt hat):\n"
+        + "\n".join(zeilen)
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if any(text.count(f"[{nummer}] Objekt:") != 1 for nummer in numbered):
+        raise RuntimeError("Klassifikation Fakten: Nummer eines Kandidaten nicht eindeutig")  # noqa: TRY003
+    return text
+
+
+def classify_candidates(utterance: str, numbered: dict[int, dict]) -> dict:
+    """Der eine Modellaufruf eines Turns: Vorprüfung und 0…n Tripel.
+
+    Vorbedingung: wie `build_classify_input` — nur Kandidaten des Menschen.
+    Nachbedingung: `{"dauerhaft": bool, "grund": str, "tripel": list}`; die
+        Tripel stehen, wie das Modell sie nennt, und sind ungeprüft
+        (`vet_triple`). Verneint die Vorprüfung und fehlt `tripel`, ist die
+        Liste leer.
+    Fehlerfälle: ModelCallError, wenn der Aufruf wirft; AnswerFormError,
+        wenn die Antwort kein Objekt ist, `dauerhafte_aussage` kein
+        Wahrheitswert ist oder `tripel` keine Liste — beides ist ein Ausfall
+        und darf nie wie *kein Tripel* aussehen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Wirft ValueError ohne Äußerung oder ohne Kandidaten.
+    nachricht: str = build_classify_input(utterance, numbered)
 
     # ── Verarbeitung ────────────────────────────
     node_cfg: dict = get_node_config("router")
     anfrage = ChatRequest(
-        messages          = [{"role": "user", "content": aufgabe}],
+        messages          = [{"role": "user", "content": nachricht}],
         system            = build_classify_prompt(),
         temperature       = node_cfg.get("temperature", 0.05),
         expect_json       = True,
@@ -119,62 +212,99 @@ def classify(state: AgentState) -> dict:
         antwort: object = model_service.chat.submit_sync(anfrage).parsed
     except Exception as fehler:
         logger.exception("klassifizieren: Modellaufruf fehlgeschlagen")
-        return _with_step(state, {"status": "fehler",
-                                  "fehler": f"Klassifikation fehlgeschlagen: {fehler}"},
-                          "modell_fehler")
-    if not isinstance(antwort, dict):
-        logger.error("klassifizieren: Antwort ist kein Objekt: %r", antwort)
-        return _with_step(state, {"status": "fehler",
-                                  "fehler": "Klassifikation ohne auswertbare Antwort"},
-                          "keine_antwort")
-
-    beziehung: Relation | None = find_relation(antwort.get("beziehung"))
-    if antwort.get("action") == "rejected" or beziehung is None:
-        grund: str = str(antwort.get("grund") or
-                         f"Beziehung {antwort.get('beziehung')!r} nicht im Kanon")
-        logger.info("klassifizieren: REJECTED — %s", grund)
-        return _with_step(state, {"status": "rejected"}, f"rejected/{grund}")
-
-    subjekt: str = _as_self(str(antwort.get("subjekt") or "").strip())
-    objekt: str = _as_self(str(antwort.get("objekt") or "").strip())
+        raise ModelCallError(  # noqa: TRY003 — die Art des Ausfalls gehört in den Eintrag
+            f"Modellaufruf fehlgeschlagen: {type(fehler).__name__}",
+        ) from fehler
 
     # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(antwort, dict) or not isinstance(antwort.get("dauerhafte_aussage"), bool):
+        logger.error("klassifizieren: Antwort ohne Vorprüfung: %.300r", antwort)
+        raise AnswerFormError("Antwort ohne Wahrheitswert dauerhafte_aussage")  # noqa: TRY003
+    dauerhaft: bool = antwort["dauerhafte_aussage"]
+    tripel: object = antwort.get("tripel", None if dauerhaft else [])
+    if not isinstance(tripel, list):
+        logger.error("klassifizieren: Antwort ohne Liste tripel: %.300r", antwort)
+        raise AnswerFormError("Antwort ohne Liste tripel")  # noqa: TRY003
+    grund: str = str(antwort.get("grund") or "")
+    logger.info("klassifizieren: dauerhaft=%s, %d Tripel, %d Kandidaten", dauerhaft,
+                len(tripel), len(numbered))
+    return {"dauerhaft": dauerhaft, "grund": grund, "tripel": tripel}
+
+
+def vet_triple(triple: object, candidates: dict[int, dict], utterance: str,
+               dauerhaft: bool) -> Verdict:
+    """Prüft ein Tripel der Antwort, bevor es schreiben darf.
+
+    In dieser Reihenfolge: die Form (ein Objekt mit einer Nummer); die
+    Nummer zeigt auf einen Kandidaten des Turns; sein Sprecher hat eine
+    Herkunft (`SPEAKER_ORIGIN`); die Vorprüfung bejahte eine dauerhafte
+    Aussage; die Beziehung steht im Kanon; Subjekt und Objekt sind nicht
+    leer; `check_answer` besteht gegen die Äußerung.
+
+    Vorbedingung: `candidates` sind **alle** Kandidaten des Turns, nummeriert
+        wie in der Eingabe des Modells — auch die anderer Sprecher, damit
+        eine Nummer auf sie erkannt wird und nicht als unbekannt gilt.
+    Nachbedingung: Ein Verdict mit dem Tripel (`subjekt`, `beziehung` des
+        Kanons, `objekt`, `herkunft` aus dem Kandidaten, `kandidat` als
+        Nummer) und leerem Grund — oder ohne Tripel, mit einem Grund aus
+        `REJECT_REASONS`.
+    Fehlerfälle: ValueError bei leerer Äußerung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not utterance.strip():
+        raise ValueError("vet_triple: leere Äußerung")  # noqa: TRY003
+    nummer: object = triple.get("kandidat") if isinstance(triple, dict) else None
+    if isinstance(nummer, str) and nummer.strip().isdigit():
+        nummer = int(nummer.strip())
+    if not isinstance(nummer, int) or isinstance(nummer, bool):
+        return Verdict(None, REJECT_FORM, f"keine Nummer eines Kandidaten: {triple!r:.120}")
+
+    # ── Verarbeitung ────────────────────────────
+    kandidat: dict | None = candidates.get(nummer)
+    if kandidat is None:
+        return Verdict(None, REJECT_CANDIDATE, f"Nummer {nummer} nicht im Turn")
+    herkunft: str | None = SPEAKER_ORIGIN.get(str(kandidat.get("sprecher")))
+    if herkunft is None:
+        return Verdict(None, REJECT_SPEAKER, f"Kandidat {nummer} von {kandidat.get('sprecher')!r}")
+    if not dauerhaft:
+        return Verdict(None, REJECT_PRECHECK, "die Vorprüfung verneint eine dauerhafte Aussage")
+    beziehung: Relation | None = find_relation(triple.get("beziehung"))
+    if beziehung is None:
+        return Verdict(None, REJECT_CANON, f"Beziehung {triple.get('beziehung')!r} nicht im Kanon")
+    subjekt: str = _as_self(str(triple.get("subjekt") or "").strip())
+    objekt: str = _as_self(str(triple.get("objekt") or "").strip())
     if not subjekt or not objekt:
-        logger.error("klassifizieren: Antwort ohne Subjekt oder Objekt: %r", antwort)
-        return _with_step(state, {"status": "fehler",
-                                  "fehler": "Klassifikation ohne Subjekt oder Objekt"},
-                          "unvollstaendig")
-    verfehlt: str | None = check_answer(aufgabe, subjekt, beziehung, objekt)
+        return Verdict(None, REJECT_FORM, "Subjekt oder Objekt fehlt")
+    verfehlt: str | None = check_answer(utterance, subjekt, beziehung, objekt)
+
+    # ── Ausgabe-Verifikation ────────────────────
     if verfehlt is not None:
-        logger.error("klassifizieren: Antwort verworfen — %s (%s %s %s)", verfehlt, subjekt,
+        logger.error("klassifizieren: Tripel verworfen — %s (%s %s %s)", verfehlt, subjekt,
                      beziehung.attribut, objekt)
-        return _with_step(state, {"status": "fehler",
-                                  "fehler": f"Klassifikation verworfen: {verfehlt}"},
-                          f"verworfen/{verfehlt}")
-    logger.info("klassifizieren: %s %s %s", subjekt, beziehung.attribut, objekt)
-    return _with_step(state, {"parameter": {
-        **state["parameter"],
-        "subjekt": subjekt, "beziehung": beziehung.attribut, "objekt": objekt,
-    }}, f"{subjekt}/{beziehung.attribut}/{objekt}")
+        return Verdict(None, REJECT_UTTERANCE, verfehlt)
+    return Verdict({"subjekt": subjekt, "beziehung": beziehung.attribut, "objekt": objekt,
+                    "herkunft": herkunft, "kandidat": nummer}, "", "")
 
 
 def check_answer(aufgabe: str, subjekt: str, beziehung: Relation, objekt: str) -> str | None:
-    """Hält Subjekt und Objekt der Antwort gegen den Wortlaut der Bitte.
+    """Hält Subjekt und Objekt der Antwort gegen den Wortlaut der Äußerung.
 
     Geprüft wird jeder Name, der eine Entität wird: das Subjekt immer, das
     Objekt, wenn die Beziehung eine Objekt-Entität hat. Ein Wert (Beruf,
     Hobby, Name bei `heisst`) darf umformuliert sein und wird nicht geprüft.
+    Im Code heißt die Äußerung noch `bitte`: Sie war es, bis der Agent
+    passiv wurde; geprüft wird derselbe Wortlaut.
 
-    Vorbedingung: `aufgabe`, `subjekt` und `objekt` sind nicht leer; ICH ist
-        schon als `SELF` geschrieben.
-    Nachbedingung: None, wenn jeder geprüfte Name als Name in der Bitte steht
-        und die Richtung zum Besitzer im Satz passt; sonst der Grund, warum
-        die Antwort nichts schreiben darf.
-    Fehlerfälle: ValueError bei leerer Bitte, leerem Subjekt oder Objekt.
+    Vorbedingung: `aufgabe` (die Äußerung), `subjekt` und `objekt` sind nicht
+        leer; ICH ist schon als `SELF` geschrieben.
+    Nachbedingung: None, wenn jeder geprüfte Name als Name in der Äußerung
+        steht und die Richtung zum Besitzer im Satz passt; sonst der Grund,
+        warum das Tripel nichts schreiben darf.
+    Fehlerfälle: ValueError bei leerer Äußerung, leerem Subjekt oder Objekt.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not aufgabe.strip() or not subjekt or not objekt:
-        raise ValueError("check_answer: Bitte, Subjekt und Objekt dürfen nicht leer sein")
+        raise ValueError("check_answer: Äußerung, Subjekt und Objekt dürfen nicht leer sein")
 
     # ── Verarbeitung ────────────────────────────
     woerter: list[str] = _WORD.findall(aufgabe)
@@ -362,22 +492,3 @@ def _norm(wort: str) -> str:
 
     # ── Verarbeitung ────────────────────────────
     return wort.casefold()
-
-
-def _with_step(state: AgentState, aenderung: dict, ergebnis: str) -> dict:
-    """Hängt den Schritt der Klassifikation an eine Zustandsänderung.
-
-    Vorbedingung: `aenderung` ist die Änderung des Zustands ohne `schritte`.
-    Nachbedingung: dieselbe Änderung mit einem Schritt mehr.
-    Fehlerfälle: ValueError, wenn `aenderung` selbst Schritte trägt — sie
-        gingen sonst verloren.
-    """
-    # ── Eingabe-Validierung ─────────────────────
-    if "schritte" in aenderung:
-        raise ValueError("Klassifikation Fakten: Änderung trägt schon Schritte")
-
-    # ── Verarbeitung ────────────────────────────
-    return {
-        **aenderung,
-        "schritte": state["schritte"] + [{"node": "klassifizieren", "ergebnis": ergebnis}],
-    }

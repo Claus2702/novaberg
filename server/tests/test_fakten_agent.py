@@ -1,14 +1,18 @@
-"""Zeugen für den Fakten-Agenten: vom Subgraphen bis zur Zeile in `fakten`.
+"""Zeugen für den Fakten-Agenten: vom Auftrag des Turns bis zur Zeile in `fakten`.
 
 Was diese Datei zusichert:
-  * **Eine Beziehung des Kanons wird genau ein Fakt** mit Paar und Herkunft
-    `mensch`; eine einwertige löst ab, eine mehrwertige fügt hinzu, derselbe
-    Wert schreibt nichts.
-  * **Ohne Beziehung im Kanon lehnt der Dienst ab** (`rejected`) und
-    schreibt nichts.
-  * **Zwei gleichnamige Entitäten ergeben eine Rückfrage**, nie eine
-    Ablehnung, und es wird nichts geschrieben und nichts angelegt.
-  * **Ein Fehler der Namenssuche ist `fehler`** und legt keine Entität an.
+  * **Ein Modellaufruf je Auftrag mit Kandidaten des Menschen**, und nur
+    diese Kandidaten gehen hinein; ohne sie kein Aufruf und der Ausgang
+    `nur_andere_sprecher`.
+  * **Eine dauerhafte Aussage wird ein Fakt, mit Bitte und ohne**, mit Paar
+    und der Herkunft aus dem Sprecher des Kandidaten; eine einwertige
+    Beziehung löst ab, derselbe Wert schreibt nichts (`identisch`).
+  * **Jedes Tripel hat seinen Ausgang**; was die Prüfung nicht besteht, ist
+    `verworfen:<grund>` und schreibt nichts.
+  * **Das Subjekt nimmt die Entität, an die das Objekt gebunden ist**, sonst
+    die Namenssuche; zwei gleichnamige Entitäten ergeben `mehrdeutig`,
+    ohne Text, und es wird nichts geschrieben und nichts angelegt.
+  * **Ein Ausfall des Modells ist ein Ausfall**, nie *kein Tripel*.
   * **`abgeschlossen` nur nach bestandener Verifikation.**
   * **Anmeldung und Brett:** `fakten` ist ein Dienst der Queue, ohne
     Objekt-Merkmal und ohne Dispatch des Planners; das Brett trägt keinen
@@ -17,15 +21,16 @@ Was diese Datei zusichert:
     `psycopg2`.
 
 Die Klassifikation antwortet aus einem festen Modellausgang; kein Zeuge ruft
-ein Modell. Die Datenbank ist die Wegwerf-Datenbank der Suite; jedes Fixture
-bringt ein eigenes Paar mit und räumt in tearDown ab.
+ein Modell. Die Kandidaten des Turns sind ersetzt (`turn_candidates`), der
+Eintrag `log_db_write` wird abgefangen. Die Datenbank ist die
+Wegwerf-Datenbank der Suite; jedes Fixture bringt ein eigenes Paar mit und
+räumt in tearDown ab.
 """
 
 import re
 import unittest
 import uuid
 from pathlib import Path
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import psycopg2
@@ -34,15 +39,25 @@ from langgraph.graph import END
 
 import agents.fakten
 from agents import AgentRegistry, discover_agents, get_dispatch
+from agents.fakten import dispatch as fakten_dispatch_mod
+from agents.fakten import suche as suche_mod
 from agents.fakten.agent import FactsAgent
 from agents.fakten.bestaetigung import confirm
 from agents.fakten.beziehungen import KANON
-from agents.fakten.klassifikation import build_classify_prompt, check_answer, classify
-from agents.fakten.suche import UNTERSCHEIDUNG_BITTE
+from agents.fakten.klassifikation import (
+    AnswerFormError,
+    ModelCallError,
+    build_classify_prompt,
+    check_answer,
+    classify_candidates,
+    vet_triple,
+)
+from agents.fakten.suche import binding_for
 from agents.nmcp import anmelden, aushaenge_sammeln
 from config import POSTGRES_URL
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.repositories.fakten_repository import FaktenRepository
+from memory.services import entity_resolution as entity_resolution_mod
 from plugins import discover_managers
 from plugins.fakten_manager.manager import FaktenManager
 from plugins.notizen_manager.manager import NotizenManager
@@ -53,6 +68,10 @@ _WAND: tuple[re.Pattern[str], ...] = (
     re.compile(r"^\s*(?:from|import)\s+tools\b", re.M),
     re.compile(r"\bpsycopg2\b"),
 )
+_AUFTRAG: dict = {"ziel": "fakten", "aktion": "pruefen", "daten": {
+    "turn_id": "probe-turn", "verlauf_id": 42, "salienz_human": 0.62,
+    "user_intentionen": ["mitteilen"], "abgelegt": True,
+}}
 
 
 def _ausfuehren(sql: str, params: tuple) -> list[dict]:
@@ -80,17 +99,131 @@ def _block(brett: str, marke: str) -> str:
     return brett[start:folgende[0]] if folgende else brett[start:]
 
 
-def _zustand(aufgabe: str = "merk dir, dass Ilva in Ostheim wohnt") -> dict:
+def _kandidat(objekt: str, eigenschaft: str, wert: str, **felder: object) -> dict:
+    """Ein Kandidat wie aus `turn_candidates`; `felder` setzt etwa sprecher und klasse."""
+    kandidat: dict = {"id": 1, "objekt_id": 1, "objekt": objekt, "klasse": "person",
+                      "entitaet_id": None, "entitaet_bindung": None,
+                      "eigenschaft": eigenschaft, "wert": wert, "sprecher": "nutzer"}
+    kandidat.update(felder)
+    if kandidat["entitaet_id"] is not None:
+        kandidat["entitaet_bindung"] = "turn_magnet"
+    return kandidat
+
+
+def _antwort(*tripel: tuple, dauerhaft: bool = True) -> dict:
+    """Eine Antwort des Modells: je Tripel (kandidat, subjekt, beziehung, objekt)."""
+    return {"dauerhafte_aussage": dauerhaft, "grund": "Probe", "tripel": [
+        {"kandidat": k, "subjekt": s, "beziehung": b, "objekt": o} for k, s, b, o in tripel
+    ]}
+
+
+def _zustand(parameter: dict | None = None) -> dict:
     return {
-        "aufgabe": aufgabe, "aufgabe_typ": "workflow", "agent_name": "fakten",
-        "kontext": {"user_id": "u", "character_id": "c"}, "parameter": {},
+        "aufgabe": "Ilva wohnt in Ostheim", "aufgabe_typ": "workflow", "agent_name": "fakten",
+        "kontext": {"user_id": "u", "character_id": "c"},
+        "parameter": parameter if parameter is not None else {
+            "subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim",
+            "herkunft": "mensch", "kandidat": 1, "subjekt_entitaet_id": None,
+        },
         "schritte": [], "ergebnis": None, "status": "laufend",
         "rueckfrage": None, "fehler": None,
     }
 
 
-class AgentWritesAFactTest(unittest.TestCase):
-    """Der Weg im Subgraphen: Klassifikation → Suche → Schreiben → Verifikation."""
+class _OrderRun(unittest.TestCase):
+    """Fährt einen Auftrag durch `process_fact_orders` — Kandidaten und Modell ersetzt."""
+
+    user: str = "u"
+    char: str = "c"
+
+    def setUp(self) -> None:
+        self.modell = MagicMock()
+        ersatz = patch("agents.fakten.klassifikation.model_service", self.modell)
+        ersatz.start()
+        self.addCleanup(ersatz.stop)
+
+    def _laufen(self, aeusserung: str, kandidaten: list[dict],
+                antwort: dict | None = None) -> tuple[dict, dict]:
+        """(Ausgang, Inhalt des einen Eintrags `log_db_write`)."""
+        self.modell.chat.submit_sync.return_value.parsed = antwort
+        zustand: dict = {"user_id": self.user, "character_id": self.char,
+                         "turn_id": "probe-turn", "user_prompt": aeusserung}
+        with patch.object(fakten_dispatch_mod, "turn_candidates", return_value=kandidaten), \
+             patch.object(fakten_dispatch_mod, "log_db_write") as eintrag:
+            ausgang: dict = fakten_dispatch_mod.process_fact_orders(
+                zustand, [_AUFTRAG], POSTGRES_URL,
+            )[0]
+        eintrag.assert_called_once()
+        return ausgang, eintrag.call_args.kwargs["inhalt"]
+
+    def _nachricht(self) -> str:
+        """Die Nachricht des einen Modellaufrufs."""
+        self.assertEqual(self.modell.chat.submit_sync.call_count, 1)
+        return self.modell.chat.submit_sync.call_args.args[0].messages[0]["content"]
+
+
+class OrderInputTest(_OrderRun):
+    """V4, die Eingabe: ein Aufruf je Auftrag, nur mit den Kandidaten des Menschen."""
+
+    def test_one_call_carries_exactly_the_candidate_of_the_human(self) -> None:
+        kandidaten = [_kandidat("Ilva", "Wohnort", "Ostheim"),
+                      _kandidat("Vela-Pulsar", "Periode", "89 ms", sprecher="nova",
+                                klasse="sache")]
+        ausgang, _ = self._laufen("Ilva ist übrigens nach Ostheim gezogen", kandidaten,
+                                  _antwort())
+        nachricht = self._nachricht()
+        self.assertIn("[1] Objekt: Ilva (Klasse: person) | Eigenschaft: Wohnort | Wert: Ostheim",
+                      nachricht)
+        self.assertIn("Ilva ist übrigens nach Ostheim gezogen", nachricht)
+        self.assertNotIn("Vela-Pulsar", nachricht)
+        self.assertNotIn("[2]", nachricht)
+        self.assertEqual(ausgang["ausgang"], "kein_tripel")
+
+    def test_without_a_candidate_of_the_human_no_call_and_its_own_outcome(self) -> None:
+        # Zwilling: nur Novas Kandidat und einer ohne Sprecher.
+        kandidaten = [_kandidat("Vela-Pulsar", "Periode", "89 ms", sprecher="nova"),
+                      _kandidat("Rotverschiebung", "Ursache", "Expansion", sprecher=None)]
+        ausgang, inhalt = self._laufen("Wie entsteht die Rotverschiebung?", kandidaten,
+                                       _antwort())
+        self.assertEqual(self.modell.chat.submit_sync.call_count, 0)
+        self.assertEqual(ausgang["ausgang"], "nur_andere_sprecher")
+        self.assertEqual((inhalt["ausgang"], inhalt["kandidaten"], inhalt["je_sprecher"]),
+                         ("nur_andere_sprecher", 2, {"nova": 1, "ohne": 1}))
+        self.assertEqual(inhalt["salienz_human"], 0.62)
+
+
+class ModelFailureTest(_OrderRun):
+    """V5: Ein Ausfall des Modells ist ein eigener Ausgang, nie *kein Tripel*."""
+
+    def test_a_model_that_raises_is_a_failure_and_the_entry_stands(self) -> None:
+        self.modell.chat.submit_sync.side_effect = TimeoutError("Modell antwortet nicht")
+        with patch.object(FactsAgent, "invoke") as agent:
+            ausgang, inhalt = self._laufen("Ilva ist nach Ostheim gezogen",
+                                           [_kandidat("Ilva", "Wohnort", "Ostheim")])
+        self.assertEqual(ausgang["ausgang"], "modell_ausfall")
+        self.assertEqual(inhalt["ausgang"], "modell_ausfall")
+        self.assertIn("TimeoutError", inhalt["fehler"])
+        agent.assert_not_called()
+
+    def test_an_answer_without_its_form_is_a_failure_too(self) -> None:
+        with patch.object(FactsAgent, "invoke") as agent:
+            ausgang, _ = self._laufen("Ilva ist nach Ostheim gezogen",
+                                      [_kandidat("Ilva", "Wohnort", "Ostheim")],
+                                      {"subjekt": "Ilva", "beziehung": "wohnt_in"})
+        self.assertEqual(ausgang["ausgang"], "antwort_defekt")
+        agent.assert_not_called()
+
+    def test_an_answer_without_triples_is_no_triple_not_a_failure(self) -> None:
+        # Zwilling: eine Antwort in Form, ohne Tripel.
+        ausgang, inhalt = self._laufen("Sei ab jetzt frecher, Nova",
+                                       [_kandidat("Nova", "Ton", "frecher")],
+                                       _antwort(dauerhaft=False))
+        self.assertEqual(ausgang["ausgang"], "kein_tripel")
+        self.assertEqual((inhalt["tripel_zahl"], inhalt["dauerhaft"]), (0, False))
+
+
+class AgentWritesAFactTest(_OrderRun):
+    """Gegen die Datenbank: Auftrag → Klassifikation → Suche → Schreiben → Verifikation."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -98,12 +231,9 @@ class AgentWritesAFactTest(unittest.TestCase):
         discover_agents()
 
     def setUp(self) -> None:
+        super().setUp()
         self.user = f"test-faktagent-{uuid.uuid4().hex[:8]}"
         self.char = "nova-test"
-        self.modell = MagicMock()
-        ersatz = patch("agents.fakten.klassifikation.model_service", self.modell)
-        ersatz.start()
-        self.addCleanup(ersatz.stop)
         einbettung = MagicMock()
         einbettung.embed.submit_sync.return_value.embedding = VEKTOR
         einbettung.embed.submit_sync.return_value.duration_seconds = 0.0
@@ -129,22 +259,23 @@ class AgentWritesAFactTest(unittest.TestCase):
             "SELECT id, name, typ FROM entitaeten WHERE user_id = %s ORDER BY id", (self.user,),
         )
 
-    def _laufen(self, antwort: dict, bitte: str) -> tuple[dict, SimpleNamespace]:
-        # Die Bitte trägt die Namen der Antwort: Die Klassifikation hält beide
-        # gegeneinander und verwirft eine Antwort, deren Namen nicht dastehen.
-        # Der Auftrag geht direkt an den Subgraphen.
-        self.modell.chat.submit_sync.return_value.parsed = antwort
-        zustand: dict = _zustand(bitte)
-        zustand["kontext"] = {"user_id": self.user, "character_id": self.char}
-        aus: dict = AgentRegistry.finden("fakten").invoke(zustand)
-        return aus, SimpleNamespace(**aus)
+    def _ein_tripel(self, aeusserung: str, subjekt: str, beziehung: str, objekt: str,
+                    kandidat: dict | None = None) -> dict:
+        """Ein Kandidat, ein Tripel darauf; der Eintrag des Tripels."""
+        kandidat = kandidat or _kandidat(subjekt, beziehung, objekt)
+        _, inhalt = self._laufen(aeusserung, [kandidat],
+                                 _antwort((1, subjekt, beziehung, objekt)))
+        self.assertEqual(inhalt["tripel_zahl"], 1, inhalt)
+        return inhalt["tripel"][0]
 
-    def test_a_relation_of_the_canon_writes_one_fact_with_pair_and_origin(self) -> None:
+    # --- Schreiben, mit Bitte und ohne ---
+
+    def test_a_statement_without_a_request_writes_one_fact_of_the_human(self) -> None:
         ilva = self._entitaet("Ilva")
-        _, ergebnis = self._laufen({
-            "action": "speichern", "subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim",
-        }, bitte="merk dir, dass Ilva in Ostheim wohnt")
-        self.assertEqual(ergebnis.status, "abgeschlossen", ergebnis.fehler)
+        tripel = self._ein_tripel("Ilva ist übrigens nach Ostheim gezogen",
+                                  "Ilva", "wohnt_in", "Ostheim",
+                                  _kandidat("Ilva", "Wohnort", "Ostheim"))
+        self.assertEqual(tripel["ausgang"], "angelegt")
         ostheim = [e for e in self._entitaeten() if e["name"] == "Ostheim"]
         self.assertEqual([e["typ"] for e in ostheim], ["ort"])
         zeilen = self._fakten()
@@ -157,65 +288,176 @@ class AgentWritesAFactTest(unittest.TestCase):
              "t_invalid": None},
         )
 
+    def test_a_new_place_replaces_and_the_same_place_is_identical(self) -> None:
+        # Zwilling: vorher Kassel → abgeloest; noch einmal Ostheim → identisch.
+        self._entitaet("Ilva")
+        erst = self._ein_tripel("Ilva wohnt in Kassel", "Ilva", "wohnt_in", "Kassel")
+        dann = self._ein_tripel("Ilva ist übrigens nach Ostheim gezogen",
+                                "Ilva", "wohnt_in", "Ostheim")
+        noch = self._ein_tripel("Ilva wohnt jetzt in Ostheim", "Ilva", "wohnt_in", "Ostheim")
+        self.assertEqual([erst["ausgang"], dann["ausgang"], noch["ausgang"]],
+                         ["angelegt", "abgeloest", "identisch"])
+        zeilen = self._fakten()
+        self.assertEqual([z["t_invalid"] is None for z in zeilen], [False, True])
+
+    def test_a_request_writes_the_same_fact(self) -> None:
+        self._entitaet("Ilva")
+        tripel = self._ein_tripel("merk dir, dass Ilva in Ostheim wohnt",
+                                  "Ilva", "wohnt_in", "Ostheim")
+        self.assertEqual(tripel["ausgang"], "angelegt")
+        self.assertEqual([z["herkunft"] for z in self._fakten()], ["mensch"])
+
     def test_a_single_valued_relation_replaces_the_old_value(self) -> None:
         self._entitaet("Ilva")
-        self._laufen({"subjekt": "Ilva", "beziehung": "arbeitet_als", "objekt": "Tischlerin"},
-                     bitte="merk dir, dass Ilva als Tischlerin arbeitet")
-        _, ergebnis = self._laufen(
-            {"subjekt": "Ilva", "beziehung": "arbeitet_als", "objekt": "Imkerin"},
-            bitte="merk dir, dass Ilva jetzt als Imkerin arbeitet",
-        )
-        self.assertEqual(ergebnis.status, "abgeschlossen", ergebnis.fehler)
+        self._ein_tripel("Ilva arbeitet als Tischlerin", "Ilva", "arbeitet_als", "Tischlerin")
+        tripel = self._ein_tripel("Ilva arbeitet jetzt als Imkerin",
+                                  "Ilva", "arbeitet_als", "Imkerin")
+        self.assertEqual(tripel["ausgang"], "abgeloest")
         zeilen = self._fakten()
         self.assertEqual([z["objekt_wert"] for z in zeilen], ["Tischlerin", "Imkerin"])
         self.assertEqual([z["t_invalid"] is None for z in zeilen], [False, True])
 
     def test_a_multi_valued_relation_adds_and_the_same_value_writes_nothing(self) -> None:
         self._entitaet("Ilva")
-        rufus: str = "merk dir, dass Ilva einen Hund namens Rufus hat"
-        self._laufen({"subjekt": "Ilva", "beziehung": "hat_haustier", "objekt": "Rufus"},
-                     bitte=rufus)
-        self._laufen({"subjekt": "Ilva", "beziehung": "hat_haustier", "objekt": "Merle"},
-                     bitte="merk dir, dass Ilva auch Merle hat, eine Katze")
-        _, ergebnis = self._laufen(
-            {"subjekt": "Ilva", "beziehung": "hat_haustier", "objekt": "Rufus"}, bitte=rufus,
-        )
-        self.assertEqual(ergebnis.status, "abgeschlossen", ergebnis.fehler)
-        self.assertTrue(str(ergebnis.ergebnis).startswith("Das weiß ich schon"))
+        rufus: str = "Ilva hat einen Hund namens Rufus"
+        self._ein_tripel(rufus, "Ilva", "hat_haustier", "Rufus")
+        self._ein_tripel("Ilva hat auch Merle, eine Katze", "Ilva", "hat_haustier", "Merle")
+        tripel = self._ein_tripel(rufus, "Ilva", "hat_haustier", "Rufus")
+        self.assertEqual(tripel["ausgang"], "identisch")
         zeilen = self._fakten()
         self.assertEqual(len(zeilen), 2)
         self.assertTrue(all(z["t_invalid"] is None for z in zeilen))
 
-    def test_without_a_relation_of_the_canon_it_refuses_and_writes_nothing(self) -> None:
-        aus, ergebnis = self._laufen(
-            {"action": "speichern", "subjekt": "ICH", "beziehung": "braucht", "objekt": "Mehl"},
-            bitte="merk dir, dass wir Mehl brauchen",
+    def test_two_triples_in_one_answer_write_two_rows(self) -> None:
+        self._entitaet("Ilva")
+        ausgang, inhalt = self._laufen(
+            "Ilva wohnt in Ostheim und arbeitet als Imkerin",
+            [_kandidat("Ilva", "Wohnort", "Ostheim"), _kandidat("Ilva", "Beruf", "Imkerin")],
+            _antwort((1, "Ilva", "wohnt_in", "Ostheim"), (2, "Ilva", "arbeitet_als", "Imkerin")),
         )
-        self.assertEqual(ergebnis.status, "rejected")
-        self.assertIn("braucht", aus["schritte"][-1]["ergebnis"])
+        self.assertEqual(ausgang["ausgang"], "klassifiziert")
+        self.assertEqual([t["ausgang"] for t in inhalt["tripel"]], ["angelegt", "angelegt"])
+        self.assertEqual(sorted(z["attribut"] for z in self._fakten()),
+                         ["arbeitet_als", "wohnt_in"])
+
+    # --- Verworfen ---
+
+    def test_rejected_triples_write_nothing_and_name_their_reason(self) -> None:
+        ausgang, inhalt = self._laufen(
+            "Ilvas Bruder ist Merten",
+            [_kandidat("Ilva", "Bruder", "Merten"),
+             _kandidat("Merten", "Wohnort", "Kassel", sprecher="nova")],
+            _antwort((7, "Ilva", "hat_bruder", "Merten"),
+                     (2, "Merten", "wohnt_in", "Kassel"),
+                     (1, "Merten", "hat_bruder", "Ilva")),
+        )
+        self.assertEqual([t["ausgang"] for t in inhalt["tripel"]],
+                         ["verworfen:kandidat_unbekannt", "verworfen:sprecher",
+                          "verworfen:aeusserung"])
+        self.assertIn("vertauscht", inhalt["tripel"][2]["detail"])
+        self.assertEqual(ausgang["ausgang"], "klassifiziert")
         self.assertEqual(self._fakten(), [])
         self.assertEqual(self._entitaeten(), [])
 
-    def test_a_rejection_by_the_model_is_a_refusal(self) -> None:
-        aus, ergebnis = self._laufen({"action": "rejected", "grund": "Einkaufsliste"},
-                                     bitte="merk dir, dass wir Mehl brauchen")
-        self.assertEqual(ergebnis.status, "rejected")
-        self.assertIn("Einkaufsliste", aus["schritte"][-1]["ergebnis"])
+    def test_the_right_direction_on_the_same_candidate_writes(self) -> None:
+        # Zwilling zur vertauschten Richtung: derselbe Satz, richtig gelesen.
+        tripel = self._ein_tripel("Ilvas Bruder ist Merten", "Ilva", "hat_bruder", "Merten",
+                                  _kandidat("Ilva", "Bruder", "Merten"))
+        self.assertEqual(tripel["ausgang"], "angelegt")
+        self.assertEqual([z["attribut"] for z in self._fakten()], ["hat_bruder"])
+
+    def test_without_a_relation_of_the_canon_it_writes_nothing(self) -> None:
+        tripel = self._ein_tripel("Wir brauchen noch Mehl", "ICH", "braucht", "Mehl",
+                                  _kandidat("Mehl", "Bedarf", "ja", klasse="sache"))
+        self.assertEqual(tripel["ausgang"], "verworfen:kanon")
+        self.assertEqual(self._fakten(), [])
+        self.assertEqual(self._entitaeten(), [])
+
+    def test_a_denied_precheck_writes_nothing_even_with_a_triple(self) -> None:
+        _, inhalt = self._laufen("Mein Kopf ist ein Sieb", [_kandidat("Kopf", "Zustand", "Sieb")],
+                                 _antwort((1, "ICH", "hat_haustier", "Sieb"), dauerhaft=False))
+        self.assertEqual(inhalt["tripel"][0]["ausgang"], "verworfen:vorpruefung")
         self.assertEqual(self._fakten(), [])
 
-    def test_two_lenas_ask_back_and_write_nothing(self) -> None:
+    def test_an_object_with_a_verb_writes_nothing_and_is_loud(self) -> None:
+        with self.assertLogs("ki_server.agents.fakten.klassifikation", "ERROR") as protokoll:
+            tripel = self._ein_tripel("Mein Nachbar heißt Merten.", "ICH", "hat_nachbar",
+                                      "Merten heisst", _kandidat("Nachbar", "Name", "Merten"))
+        self.assertEqual(tripel["ausgang"], "verworfen:aeusserung")
+        self.assertIn("'Merten heisst'", tripel["detail"])
+        self.assertTrue(any("verworfen" in zeile for zeile in protokoll.output), protokoll.output)
+        self.assertEqual(self._fakten(), [])
+        self.assertEqual(self._entitaeten(), [])
+
+    def test_a_name_only_in_the_genitive_writes_nothing(self) -> None:
+        vorher = [self._entitaet("Merten")]
+        tripel = self._ein_tripel("Mertens Schwester heißt Ilva.", "Mertens", "hat_schwester",
+                                  "Ilva", _kandidat("Merten", "Schwester", "Ilva"))
+        self.assertEqual(tripel["ausgang"], "verworfen:aeusserung")
+        self.assertIn("Genitiv", tripel["detail"])
+        self.assertEqual(self._fakten(), [])
+        self.assertEqual([e["id"] for e in self._entitaeten()], vorher)
+
+    def test_the_base_form_binds_the_existing_entity(self) -> None:
+        # Zwilling zur Verwerfung im Genitiv: dieselbe Äußerung, richtig gelesen.
+        merten = self._entitaet("Merten")
+        tripel = self._ein_tripel("Mertens Schwester heißt Ilva.", "Merten", "hat_schwester",
+                                  "Ilva", _kandidat("Merten", "Schwester", "Ilva"))
+        self.assertEqual(tripel["ausgang"], "angelegt")
+        zeilen = self._fakten()
+        self.assertEqual([(z["subjekt_id"], z["attribut"]) for z in zeilen],
+                         [(merten, "hat_schwester")])
+        self.assertEqual(sorted(e["name"] for e in self._entitaeten()), ["Ilva", "Merten"])
+
+    # --- Auflösung ---
+
+    def test_a_bound_object_gives_its_entity_without_a_name_search(self) -> None:
+        namensgleich = self._entitaet("Ilva")
+        gebunden = self._entitaet("Ilva Berger")
+        with patch.object(entity_resolution_mod.EntityResolutionService, "resolve_by_name",
+                          wraps=entity_resolution_mod.EntityResolutionService.resolve_by_name) \
+                as suche:
+            tripel = self._ein_tripel("Ilva ist übrigens nach Ostheim gezogen",
+                                      "Ilva", "wohnt_in", "Ostheim",
+                                      _kandidat("Ilva", "Wohnort", "Ostheim",
+                                                entitaet_id=gebunden))
+        self.assertEqual(tripel["ausgang"], "angelegt")
+        self.assertEqual([z["subjekt_id"] for z in self._fakten()], [gebunden])
+        self.assertNotEqual(gebunden, namensgleich)
+        self.assertEqual([c.args[2] for c in suche.call_args_list], ["Ostheim"])
+
+    def test_an_unbound_object_searches_the_name(self) -> None:
+        # Zwilling: derselbe Kandidat ohne Bindung nimmt den Treffer der Namenssuche.
+        namensgleich = self._entitaet("Ilva")
+        self._entitaet("Ilva Berger")
+        tripel = self._ein_tripel("Ilva ist übrigens nach Ostheim gezogen",
+                                  "Ilva", "wohnt_in", "Ostheim",
+                                  _kandidat("Ilva", "Wohnort", "Ostheim"))
+        self.assertEqual(tripel["ausgang"], "angelegt")
+        self.assertEqual([z["subjekt_id"] for z in self._fakten()], [namensgleich])
+
+    def test_two_lenas_are_ambiguous_without_text_and_write_nothing(self) -> None:
         self._entitaet("Lena")
         self._entitaet("Lena")
         vorher = self._entitaeten()
-        _, ergebnis = self._laufen(
-            {"subjekt": "Lena", "beziehung": "hat_haustier", "objekt": "Rufus"},
-            bitte="merk dir, dass Lena einen Hund namens Rufus hat",
+        ausgang, inhalt = self._laufen(
+            "Lena hat einen Hund namens Rufus", [_kandidat("Lena", "Haustier", "Rufus")],
+            _antwort((1, "Lena", "hat_haustier", "Rufus")),
         )
-        self.assertEqual(ergebnis.status, "rueckfrage")
-        self.assertIn("Lena", ergebnis.rueckfrage)
-        self.assertTrue(ergebnis.rueckfrage.endswith(UNTERSCHEIDUNG_BITTE))
+        self.assertEqual(inhalt["tripel"][0]["ausgang"], "mehrdeutig")
+        self.assertEqual(set(inhalt["tripel"][0]),
+                         {"kandidat", "subjekt", "beziehung", "objekt", "ausgang"})
+        self.assertNotIn("rueckfrage", ausgang)
         self.assertEqual(self._fakten(), [])
         self.assertEqual(self._entitaeten(), vorher)
+
+    def test_one_lena_is_not_ambiguous(self) -> None:
+        # Zwilling: eine Lena — derselbe Satz schreibt.
+        lena = self._entitaet("Lena")
+        tripel = self._ein_tripel("Lena hat einen Hund namens Rufus",
+                                  "Lena", "hat_haustier", "Rufus")
+        self.assertEqual(tripel["ausgang"], "angelegt")
+        self.assertEqual([z["subjekt_id"] for z in self._fakten()], [lena])
 
     def test_a_question_back_leaves_no_waiting_state(self) -> None:
         # Ohne Wartezustand kennt kein Modul des Dienstes einen Speicher, in dem ein
@@ -228,66 +470,18 @@ class AgentWritesAFactTest(unittest.TestCase):
     def test_a_failed_name_search_is_an_error_and_creates_nothing(self) -> None:
         fehler = psycopg2.OperationalError("Verbindung verloren")
         with patch.object(EntitaetenRepository, "find_by_name", side_effect=fehler):
-            _, ergebnis = self._laufen(
-                {"subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim"},
-                bitte="merk dir, dass Ilva in Ostheim wohnt",
-            )
-        self.assertEqual(ergebnis.status, "fehler")
-        self.assertIn("Namenssuche", ergebnis.fehler)
+            tripel = self._ein_tripel("Ilva wohnt in Ostheim", "Ilva", "wohnt_in", "Ostheim")
+        self.assertEqual(tripel["ausgang"], "fehler")
         self.assertEqual(self._entitaeten(), [])
         self.assertEqual(self._fakten(), [])
 
     def test_a_failed_verification_is_an_error_never_completed(self) -> None:
         self._entitaet("Ilva")
-        with patch.object(FaktenRepository, "find_by_id", return_value=None):
-            _, ergebnis = self._laufen(
-                {"subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim"},
-                bitte="merk dir, dass Ilva in Ostheim wohnt",
-            )
-        self.assertEqual(ergebnis.status, "fehler")
-        self.assertIn("nicht bestaetigt", ergebnis.fehler)
-        self.assertFalse(str(ergebnis.ergebnis).startswith("Gemerkt"))
-
-    def test_an_object_with_a_verb_writes_nothing_and_is_loud(self) -> None:
-        with self.assertLogs("ki_server.agents.fakten.klassifikation", "ERROR") as protokoll:
-            _, ergebnis = self._laufen(
-                {"action": "speichern", "subjekt": "ICH", "beziehung": "hat_nachbar",
-                 "objekt": "Merten heisst"},
-                bitte="Merk dir, dass mein Nachbar Merten heißt.",
-            )
-        self.assertEqual(ergebnis.status, "fehler")
-        self.assertIn("verworfen", ergebnis.fehler)
-        self.assertIn("'Merten heisst'", ergebnis.fehler)
-        self.assertTrue(any("verworfen" in zeile for zeile in protokoll.output), protokoll.output)
-        self.assertEqual(self._fakten(), [])
-        self.assertEqual(self._entitaeten(), [])
-
-    def test_a_name_only_in_the_genitive_writes_nothing(self) -> None:
-        vorher = [self._entitaet("Merten")]
-        _, ergebnis = self._laufen(
-            {"action": "speichern", "subjekt": "Mertens", "beziehung": "hat_schwester",
-             "objekt": "Ilva"},
-            bitte="Merk dir: Mertens Schwester heißt Ilva.",
-        )
-        self.assertEqual(ergebnis.status, "fehler")
-        self.assertIn("verworfen", ergebnis.fehler)
-        self.assertIn("Genitiv", ergebnis.fehler)
-        self.assertEqual(self._fakten(), [])
-        self.assertEqual([e["id"] for e in self._entitaeten()], vorher)
-
-    def test_the_base_form_binds_the_existing_entity(self) -> None:
-        # Zwilling zu den beiden Verwerfungen: dieselbe Bitte, richtig gelesen.
-        merten = self._entitaet("Merten")
-        _, ergebnis = self._laufen(
-            {"action": "speichern", "subjekt": "Merten", "beziehung": "hat_schwester",
-             "objekt": "Ilva"},
-            bitte="Merk dir: Mertens Schwester heißt Ilva.",
-        )
-        self.assertEqual(ergebnis.status, "abgeschlossen", ergebnis.fehler)
-        zeilen = self._fakten()
-        self.assertEqual([(z["subjekt_id"], z["attribut"]) for z in zeilen],
-                         [(merten, "hat_schwester")])
-        self.assertEqual(sorted(e["name"] for e in self._entitaeten()), ["Ilva", "Merten"])
+        with patch.object(FaktenRepository, "find_by_id", return_value=None), \
+             self.assertLogs("ki_server.agents.fakten.dispatch", "ERROR") as protokoll:
+            tripel = self._ein_tripel("Ilva wohnt in Ostheim", "Ilva", "wohnt_in", "Ostheim")
+        self.assertEqual(tripel["ausgang"], "fehler")
+        self.assertIn("nicht bestaetigt", "\n".join(protokoll.output))
 
 
 class FactsAgentNodesTest(unittest.TestCase):
@@ -296,27 +490,39 @@ class FactsAgentNodesTest(unittest.TestCase):
     def setUp(self) -> None:
         self.agent = FactsAgent()
 
-    def test_validation_needs_task_and_pair(self) -> None:
+    def test_validation_needs_a_vetted_triple_and_the_pair(self) -> None:
+        # Bis FAKTEN-P4 prüfte die Validierung die Bitte (`aufgabe`); der Graph
+        # bekommt jetzt ein geprüftes Tripel.
         self.assertEqual(self.agent._validate(_zustand())["status"], "laufend")
         ohne_paar = {**_zustand(), "kontext": {"user_id": "u"}}
         self.assertEqual(self.agent._validate(ohne_paar)["status"], "fehler")
-        self.assertEqual(self.agent._validate(_zustand("  "))["status"], "fehler")
+        ohne_herkunft = _zustand({**_zustand()["parameter"], "herkunft": ""})
+        self.assertEqual(self.agent._validate(ohne_herkunft)["status"], "fehler")
+        ohne_bindung = dict(_zustand()["parameter"])
+        del ohne_bindung["subjekt_entitaet_id"]
+        self.assertEqual(self.agent._validate(_zustand(ohne_bindung))["status"], "fehler")
 
-    def test_the_switches_end_on_rejection_question_and_error(self) -> None:
+    def test_the_switches_end_on_ambiguity_and_error(self) -> None:
+        # Bis FAKTEN-P4 mit Klassifikation im Graphen und `rueckfrage`.
         def mit(status: str) -> dict:
             return {**_zustand(), "status": status}
-        self.assertEqual(self.agent._after_validation(mit("laufend")), "klassifizieren")
+        self.assertEqual(self.agent._after_validation(mit("laufend")), "suchen")
         self.assertEqual(self.agent._after_validation(mit("fehler")), END)
-        self.assertEqual(self.agent._after_classification(mit("laufend")), "suchen")
-        self.assertEqual(self.agent._after_classification(mit("rejected")), END)
         self.assertEqual(self.agent._after_search(mit("laufend")), "ausfuehren")
-        self.assertEqual(self.agent._after_search(mit("rueckfrage")), END)
+        self.assertEqual(self.agent._after_search(mit("mehrdeutig")), END)
         self.assertEqual(self.agent._after_search(mit("fehler")), END)
 
     def test_the_prompt_names_every_relation_of_the_canon(self) -> None:
         prompt = build_classify_prompt()
         self.assertTrue(all(f"  - {a}\n" in prompt for a in KANON))
         self.assertNotIn("  - ist_ein\n", prompt)
+
+    def test_the_prompt_carries_every_negative_case_and_asks_for_a_lasting_statement(self) -> None:
+        prompt = build_classify_prompt()
+        for negativ in FactsAgent().negativfaelle:
+            self.assertIn(f"  - {negativ}\n", prompt)
+        self.assertIn("DAUERHAFTE AUSSAGE", prompt)
+        self.assertNotIn("AUSDRUECKLICH", prompt)
 
     def test_the_prompt_carries_direction_base_form_and_no_invention(self) -> None:
         prompt = build_classify_prompt()
@@ -331,28 +537,75 @@ class FactsAgentNodesTest(unittest.TestCase):
             with self.subTest(regel=regel):
                 self.assertIn(regel, prompt)
 
-    def test_an_answer_without_object_is_an_error_not_a_refusal(self) -> None:
+    def test_an_answer_without_its_form_is_an_error_not_no_triple(self) -> None:
+        # Bis FAKTEN-P4 über den Knoten `classify`; jetzt über den einen Aufruf.
         modell = MagicMock()
-        modell.chat.submit_sync.return_value.parsed = {"subjekt": "Ilva", "beziehung": "wohnt_in"}
+        kandidaten = {1: _kandidat("Ilva", "Wohnort", "Ostheim")}
         with patch("agents.fakten.klassifikation.model_service", modell):
-            self.assertEqual(classify(_zustand())["status"], "fehler")
-            modell.chat.submit_sync.return_value.parsed = {
-                "subjekt": "Ilva", "beziehung": "WOHNT_IN", "objekt": "Ostheim",
-            }
-            aenderung = classify(_zustand())
-        self.assertNotIn("status", aenderung)
-        self.assertEqual(aenderung["parameter"]["beziehung"], "wohnt_in")
+            for kaputt in ({"subjekt": "Ilva"}, {"dauerhafte_aussage": True},
+                           {"dauerhafte_aussage": "ja", "tripel": []}, None):
+                modell.chat.submit_sync.return_value.parsed = kaputt
+                with self.subTest(antwort=kaputt), self.assertRaises(AnswerFormError):
+                    classify_candidates("Ilva wohnt in Ostheim", kandidaten)
+            modell.chat.submit_sync.return_value.parsed = _antwort((1, "Ilva", "WOHNT_IN",
+                                                                    "Ostheim"))
+            antwort = classify_candidates("Ilva wohnt in Ostheim", kandidaten)
+        urteil = vet_triple(antwort["tripel"][0], kandidaten, "Ilva wohnt in Ostheim", True)
+        self.assertEqual(urteil.tripel["beziehung"], "wohnt_in")
+        self.assertEqual(urteil.tripel["herkunft"], "mensch")
 
-    def test_a_model_failure_is_an_error(self) -> None:
+    def test_a_model_failure_is_its_own_error(self) -> None:
         modell = MagicMock()
         modell.chat.submit_sync.side_effect = TimeoutError("Modell antwortet nicht")
-        with patch("agents.fakten.klassifikation.model_service", modell):
-            self.assertEqual(classify(_zustand())["status"], "fehler")
+        with patch("agents.fakten.klassifikation.model_service", modell), \
+                self.assertRaises(ModelCallError):
+            classify_candidates("Ilva wohnt in Ostheim",
+                                {1: _kandidat("Ilva", "Wohnort", "Ostheim")})
 
     def test_confirmation_never_invents_a_success(self) -> None:
+        # Bis FAKTEN-P4 ließ der Abschluss `rueckfrage` stehen; die Suche setzt sie nicht mehr.
         self.assertEqual(confirm({**_zustand(), "status": "laufend"})["status"], "fehler")
         self.assertNotIn("status", confirm({**_zustand(), "status": "abgeschlossen"}))
-        self.assertNotIn("status", confirm({**_zustand(), "status": "rueckfrage"}))
+        self.assertEqual(confirm({**_zustand(), "status": "rueckfrage"})["status"], "fehler")
+
+
+class BindingTest(unittest.TestCase):
+    """`binding_for`: die Bindung des Objekts gilt nur, wenn das Tripel von ihm spricht."""
+
+    def test_the_subject_in_the_name_of_the_object_takes_its_entity(self) -> None:
+        self.assertEqual(binding_for("Ilva", _kandidat("Ilva Berger", "Wohnort", "Ostheim",
+                                                       entitaet_id=7)), 7)
+
+    def test_a_subject_the_object_does_not_name_is_not_bound(self) -> None:
+        # Zwilling: *Mein Hund heißt Rufus* — der gebundene Hund ist das Objekt des Tripels.
+        self.assertIsNone(binding_for("ICH", _kandidat("Hund", "Name", "Rufus", klasse="tier",
+                                                       entitaet_id=7)))
+        self.assertIsNone(binding_for("Ilva", _kandidat("Ilva", "Wohnort", "Ostheim")))
+
+    def test_only_none_or_a_positive_whole_number_is_a_valid_binding(self) -> None:
+        self.assertTrue(suche_mod._valid_binding(None))
+        self.assertTrue(suche_mod._valid_binding(7))
+        # Zwilling: was keine mögliche Entität ist, lässt die Suche als `fehler` enden.
+        for ungueltig in (0, -1, True, "7"):
+            with self.subTest(gebunden=ungueltig):
+                self.assertFalse(suche_mod._valid_binding(ungueltig))
+
+
+class SearchCallsNoPrivateMethodTest(unittest.TestCase):
+    """FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE: die Suche baut keinen Text der Auflösung mehr."""
+
+    _PRIVAT: re.Pattern[str] = re.compile(r"\._build_kl")
+
+    def test_the_search_does_not_name_the_private_question(self) -> None:
+        quelle = Path(suche_mod.__file__).read_text(encoding="utf-8")
+        self.assertIsNone(self._PRIVAT.search(quelle))
+
+    def test_the_pattern_finds_the_private_question_where_it_lives(self) -> None:
+        # Zwilling: dasselbe Muster findet die Methode in der Auflösung.
+        quelle = Path(entity_resolution_mod.__file__).read_text(encoding="utf-8")
+        self.assertIsNone(self._PRIVAT.search("resolve_by_name(url, user, name)"))
+        self.assertIsNotNone(re.search(r"def _build_kl", quelle))
+        self.assertIsNotNone(self._PRIVAT.search("Service._build_klärungsfrage(name, treffer)"))
 
 
 class AnswerCheckTest(unittest.TestCase):

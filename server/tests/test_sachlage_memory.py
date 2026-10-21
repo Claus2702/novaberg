@@ -262,14 +262,16 @@ class TheNodeIssuesAFactOrderTest(unittest.TestCase):
         self.assertIs(order["daten"]["abgelegt"], False)
         self.assertEqual(self._execute(order, [])[0]["ausgang"], "ausgefallen")
 
-    def test_a_stored_turn_ends_in_empty_or_unclassified(self) -> None:
+    def test_a_stored_turn_ends_in_empty_or_other_speakers(self) -> None:
+        # Bis FAKTEN-P4 endete ein Kandidat in `nicht_klassifiziert`. Ein Kandidat
+        # Novas geht nicht ins Modell: Der Zeuge bleibt beim Lesen, ohne Modell.
         order = self._fact_orders(self._assess(_DERIVED))[0]
         self.assertEqual(self._execute(order, [])[0]["ausgang"], "leer")
-        kandidat = {"objekt": "Vela Pulsar", "eigenschaft": "periode", "sprecher": "nutzer"}
+        kandidat = {"objekt": "Vela Pulsar", "eigenschaft": "periode", "sprecher": "nova"}
         outcome, read = self._execute(order, [kandidat])
         self.assertEqual(
             (outcome["ausgang"], outcome["kandidaten"], outcome["je_sprecher"]),
-            ("nicht_klassifiziert", 1, {"nutzer": 1}),
+            ("nur_andere_sprecher", 1, {"nova": 1}),
         )
         self.assertEqual(read.call_args.args, ("postgresql://attrappe", "u", "c", "t1"))
 
@@ -338,6 +340,7 @@ class RoundTripTest(unittest.TestCase):
 
     def test_the_facts_agent_counts_the_property_this_turn_stored(self) -> None:
         # V2/V3 gegen die Datenbank: abgelegt, dann gelesen — kein Doppel dazwischen.
+        # Die Eigenschaft trägt keinen Sprecher: Sie geht nicht ins Modell (FAKTEN-P4).
         summary = remember_objects(
             self.user, self.char, self.turn, self.verlauf_id,
             _sachlage(gedeckt={"Rotationsperiode": "89 Millisekunden"}),
@@ -349,7 +352,7 @@ class RoundTripTest(unittest.TestCase):
         state: dict = {"user_id": self.user, "character_id": self.char, "turn_id": self.turn}
         with patch.object(fakten_dispatch_mod, "log_db_write") as eintrag:
             outcome = fakten_dispatch_mod.process_fact_orders(state, [order], POSTGRES_URL)[0]
-        self.assertEqual((outcome["ausgang"], outcome["kandidaten"]), ("nicht_klassifiziert", 1))
+        self.assertEqual((outcome["ausgang"], outcome["kandidaten"]), ("nur_andere_sprecher", 1))
         self.assertEqual(eintrag.call_args.kwargs["inhalt"]["kandidaten"], 1)
 
     def test_another_turn_of_the_pair_has_no_candidate(self) -> None:

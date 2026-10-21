@@ -1,33 +1,47 @@
 [AUFGABE]
-Bestimme SUBJEKT, BEZIEHUNG und OBJEKT des Fakts, den der User sich merken lassen will.
+Du bekommst die AEUSSERUNG des Menschen und nummerierte KANDIDATEN: Eigenschaften, die aus
+dieser Aeusserung abgelegt wurden, je mit Objekt, Klasse, Eigenschaft und Wert.
+Bestimme zu jedem Kandidaten, der einen Fakt traegt, das Tripel SUBJEKT, BEZIEHUNG, OBJEKT.
+Der Mensch muss nicht darum bitten, dass du dir etwas merkst.
 
 Antwortformat:
 {{
-    "action": "speichern" oder "rejected",
-    "subjekt": "Name in Grundform, wessen Beziehung es ist, oder ICH",
-    "beziehung": "genau eine Beziehung aus der Liste unten",
-    "objekt": "Name in Grundform oder Wert, der zur Beziehung gehoert",
-    "grund": "NUR bei rejected — kurze Begruendung"
+    "dauerhafte_aussage": true oder false,
+    "grund": "kurze Begruendung der Vorpruefung",
+    "tripel": [
+        {{
+            "kandidat": Nummer des Kandidaten, aus dem das Tripel stammt,
+            "subjekt": "Name in Grundform, wessen Beziehung es ist, oder ICH",
+            "beziehung": "genau eine Beziehung aus der Liste unten",
+            "objekt": "Name in Grundform oder Wert, der zur Beziehung gehoert"
+        }}
+    ]
 }}
+Gib "tripel" immer an, auch als leere Liste [].
 
-VORPRUEFUNG — Ist das ueberhaupt eine Bitte, sich einen Fakt zu merken?
-Pruefe ZUERST: Bittet der User AUSDRUECKLICH darum, sich etwas ueber eine Person,
-einen Ort, ein Tier oder eine Sache zu merken, oder teilt er einen solchen Fakt
-mit, damit er behalten wird?
-Wenn NEIN → action: "rejected".
-Passt der Fakt zu KEINER Beziehung der Liste → action: "rejected".
-Im Zweifel: rejected.
+VORPRUEFUNG — Ist die Aeusserung eine DAUERHAFTE AUSSAGE ueber den Fall?
+Pruefe ZUERST: Sagt der Mensch etwas, das ueber diesen Moment hinaus gilt, ueber eine
+Person, einen Ort, ein Tier oder eine Sache — sich selbst eingeschlossen?
+Wenn NEIN → dauerhafte_aussage: false, tripel: [].
+Keine dauerhafte Aussage sind:
+{negativfaelle}
+
+TRIPEL:
+  Nur aus den Kandidaten der Liste, je mit ihrer Nummer. Ein Kandidat kann ein Tripel
+  ergeben oder keines; mehrere Kandidaten koennen mehrere Tripel ergeben.
+  Passt ein Kandidat zu KEINER Beziehung der Liste → kein Tripel fuer ihn.
+  Im Zweifel: kein Tripel.
 
 BEZIEHUNGEN (nur diese, genau so geschrieben):
 {beziehungen}
 
 SUBJEKT:
-  Spricht der User ueber sich selbst ("ich", "mein", "meine") → subjekt: "ICH".
-  Sonst der Name, so wie er im Prompt steht, in seiner Grundform.
+  Spricht der Mensch ueber sich selbst ("ich", "mein", "meine") → subjekt: "ICH".
+  Sonst der Name, so wie er in der Aeusserung steht, in seiner Grundform.
 
 OBJEKT:
   Der Name der Person, des Ortes oder des Tieres, oder der Wert (Beruf, Hobby, Name).
-  Woertlich aus dem Prompt, nicht umformulieren.
+  Woertlich aus der Aeusserung, nicht umformulieren.
 
 RICHTUNG:
   "X beziehung Y" heisst: Y ist die Beziehung von X.
@@ -36,6 +50,7 @@ RICHTUNG:
   im Satz: "Ilvas ...", "... von Ilva", "mein ...". Der Bruder selbst ist das OBJEKT.
   Das gilt gleich, wie der Satz es sagt: "Ilvas Bruder ist Merten", "der Bruder von
   Ilva ist Merten" und "Merten ist der Bruder von Ilva" ergeben alle dasselbe.
+  Bei "heisst" ist das SUBJEKT der, dessen Name es ist — nie sein Besitzer.
 
 GRUNDFORM:
   Subjekt und Objekt sind ein Name in seiner Grundform oder ICH.
@@ -45,4 +60,4 @@ GRUNDFORM:
 NICHTS ERFINDEN:
   Nimm nur Angaben, die der Satz traegt. Ein Geschlecht oder eine zweite Beziehung,
   die nicht dasteht, erfindest du nicht. Nimm die Beziehung, die der Satz nennt.
-  Passt eine Beziehung nur mit einer erfundenen Angabe → action: "rejected".
+  Passt eine Beziehung nur mit einer erfundenen Angabe → kein Tripel.

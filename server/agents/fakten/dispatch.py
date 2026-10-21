@@ -9,13 +9,31 @@ beteiligt.
 Funktion `dispatch_<ordner>` als Dispatch des Planners ein, und der Dienst wäre
 wieder über den Empfang erreichbar.
 
-In diesem Bau zählt der Agent seine Kandidaten und protokolliert sie; er ruft
-kein Modell und schreibt weder in `fakten` noch in `entitaeten`.
+Je Auftrag liest der Agent die Kandidaten des Turns. Trägt er Kandidaten des
+Menschen, geht **ein** Modellaufruf hinaus (`klassifikation.classify_candidates`)
+— mit der Äußerung des Turns und nur diesen Kandidaten; jedes Tripel der
+Antwort wird geprüft (`vet_triple`) und läuft einzeln durch den Graphen des
+Agenten (`FactsAgent`). Kandidaten anderer Sprecher gehen nicht ins Modell.
+
+Jeder Auftrag hat genau einen Ausgang (`OUTCOMES`) und genau einen Eintrag
+`log_db_write`; jedes Tripel darin einen eigenen (`TRIPLE_OUTCOMES`). Ein
+Ausfall des Modells ist ein eigener Ausgang, nie *kein Tripel*.
 """
 
 import logging
 from collections import Counter
 
+from agents.fakten.agent import FactsAgent
+from agents.fakten.klassifikation import (
+    SPEAKER_ORIGIN,
+    AnswerFormError,
+    ModelCallError,
+    Verdict,
+    classify_candidates,
+    vet_triple,
+)
+from agents.fakten.suche import binding_for
+from graph.reiz import reiz_text
 from memory.pipeline_log import log_db_write
 from memory.sachlage_properties import turn_candidates
 
@@ -23,12 +41,29 @@ logger = logging.getLogger("ki_server.agents.fakten.dispatch")
 
 OUTCOME_EMPTY:          str = "leer"
 OUTCOME_NOT_STORED:     str = "ausgefallen"
-OUTCOME_UNCLASSIFIED:   str = "nicht_klassifiziert"
 OUTCOME_ERROR:          str = "fehler"
 OUTCOME_REJECTED:       str = "verworfen"
+OUTCOME_OTHER_SPEAKERS: str = "nur_andere_sprecher"
+OUTCOME_MODEL_FAILED:   str = "modell_ausfall"
+OUTCOME_ANSWER_BROKEN:  str = "antwort_defekt"
+OUTCOME_NO_TRIPLE:      str = "kein_tripel"
+OUTCOME_CLASSIFIED:     str = "klassifiziert"
 NO_SPEAKER:             str = "ohne"
 OUTCOMES: frozenset[str] = frozenset({
-    OUTCOME_EMPTY, OUTCOME_NOT_STORED, OUTCOME_UNCLASSIFIED, OUTCOME_ERROR, OUTCOME_REJECTED,
+    OUTCOME_EMPTY, OUTCOME_NOT_STORED, OUTCOME_ERROR, OUTCOME_REJECTED, OUTCOME_OTHER_SPEAKERS,
+    OUTCOME_MODEL_FAILED, OUTCOME_ANSWER_BROKEN, OUTCOME_NO_TRIPLE, OUTCOME_CLASSIFIED,
+})
+
+# Die Ausgänge je Tripel; dazu `verworfen:<grund>` mit einem Grund aus
+# `klassifikation.REJECT_REASONS`.
+TRIPLE_CREATED:   str = "angelegt"
+TRIPLE_REPLACED:  str = "abgeloest"
+TRIPLE_SAME:      str = "identisch"
+TRIPLE_AMBIGUOUS: str = "mehrdeutig"
+TRIPLE_ERROR:     str = "fehler"
+TRIPLE_REJECTED:  str = "verworfen"
+TRIPLE_OUTCOMES: frozenset[str] = frozenset({
+    TRIPLE_CREATED, TRIPLE_REPLACED, TRIPLE_SAME, TRIPLE_AMBIGUOUS, TRIPLE_ERROR,
 })
 
 # Die Maengel eines Auftrags (`_order_defect`), eine geschlossene Menge.
@@ -99,10 +134,10 @@ def _record(state: dict, daten: dict, outcome: dict) -> None:
     """Der eine Eintrag `log_db_write` je Auftrag (Knoten dispatcher, Quelle fakten).
 
     Vorbedingung: `outcome` trägt `ausgang`, `kandidaten`, `je_sprecher`.
-    Nachbedingung: ein Eintrag mit Ausgang, Zahlen und der Salienz aus dem
-        Auftrag; der Agent schreibt nichts, der Eintrag steht trotzdem —
-        sonst wäre ein Turn ohne Kandidaten von einem ohne Auftrag nicht zu
-        unterscheiden.
+    Nachbedingung: ein Eintrag mit Ausgang, Zahlen, den Tripeln mit ihren
+        Ausgängen und der Salienz aus dem Auftrag (sie reist mit und ist kein
+        Tor); auch ohne Tripel steht der Eintrag — sonst wäre ein Turn ohne
+        Kandidaten von einem ohne Auftrag nicht zu unterscheiden.
     Fehlerfälle: ein Ausgang außerhalb von `OUTCOMES` wirft ValueError. Ein
         Eintrag, der nicht zählbar ist — ohne turn_id, oder Zahl und Zählung
         je Sprecher gehen nicht auf —, steht trotzdem und wird mit
@@ -146,16 +181,130 @@ def _record(state: dict, daten: dict, outcome: dict) -> None:
     logger.info(f"Fakten-Auftrag: Ausgang {outcome['ausgang']}, {total} Kandidaten {counts}")
 
 
+def _write_triple(state: dict, triple: dict, candidate: dict, utterance: str) -> str:
+    """Schreibt ein geprüftes Tripel über den Graphen des Agenten.
+
+    Vorbedingung: `triple` kommt aus `vet_triple` (mit `herkunft`);
+        `candidate` ist der Kandidat, auf den seine Nummer zeigt; `state`
+        trägt das Paar.
+    Nachbedingung: ein Ausgang aus `TRIPLE_OUTCOMES` — die Art der
+        Schreibung (`angelegt`, `abgeloest`, `identisch`) nur nach dem
+        verifizierten `abgeschlossen` des Graphen.
+    Fehlerfälle: Ein `fehler` des Graphen und ein Endstatus, den er nicht
+        setzen darf, ergeben `fehler` mit `logger.error`; eine Art der
+        Schreibung außerhalb der drei ebenso. Ein Tripel ohne Herkunft aus
+        `SPEAKER_ORIGIN` wirft ValueError — es kam nicht aus `vet_triple`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if triple.get("herkunft") not in SPEAKER_ORIGIN.values():
+        raise ValueError(f"Fakten-Auftrag: Tripel ohne Herkunft {triple!r:.120}")  # noqa: TRY003
+    gebunden: int | None = binding_for(triple["subjekt"], candidate)
+
+    # ── Verarbeitung ────────────────────────────
+    aus: dict = FactsAgent().invoke({
+        "aufgabe": utterance, "aufgabe_typ": "workflow", "agent_name": "fakten",
+        "kontext": {"user_id": state["user_id"], "character_id": state["character_id"]},
+        "parameter": {**triple, "subjekt_entitaet_id": gebunden},
+        "schritte": [], "ergebnis": None, "status": "laufend",
+        "rueckfrage": None, "fehler": None,
+    })
+    status: str = aus.get("status", "")
+    art: object = (aus.get("parameter") or {}).get("art")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if status == "abgeschlossen" and art in (TRIPLE_CREATED, TRIPLE_REPLACED, TRIPLE_SAME):
+        return str(art)
+    if status == "mehrdeutig":
+        return TRIPLE_AMBIGUOUS
+    logger.error("Fakten-Auftrag: Tripel %s %s %s nicht geschrieben — Status %r, Art %r: %s",
+                 triple["subjekt"], triple["beziehung"], triple["objekt"], status, art,
+                 aus.get("fehler"))
+    return TRIPLE_ERROR
+
+
+def _classify_and_write(state: dict, numbered: dict[int, dict]) -> dict:
+    """Der Modellaufruf eines Auftrags und das Schreiben seiner Tripel.
+
+    Vorbedingung: `numbered` sind **alle** Kandidaten des Turns, nummeriert ab
+        1 in der Reihenfolge von `turn_candidates`, mindestens einer davon
+        vom Menschen (`SPEAKER_ORIGIN`).
+    Nachbedingung: ein Teil des Ausgangs — `ausgang` aus `modell_ausfall`,
+        `antwort_defekt`, `kein_tripel` oder `klassifiziert`; bei einer
+        Antwort dazu `dauerhaft`, `grund`, `tripel_zahl` und `tripel` (je
+        Tripel `kandidat`, `subjekt`, `beziehung`, `objekt`, `ausgang`, bei
+        einer Verwerfung `detail`). Ins Modell gehen nur die Kandidaten des
+        Menschen.
+    Fehlerfälle: ValueError bei leerer Äußerung — der Aufrufer trägt sie als
+        `fehler` ein. Eine Ausnahme beim Schreiben eines Tripels ergibt für
+        dieses Tripel `fehler` mit `logger.exception`; die übrigen laufen weiter.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    utterance: str = reiz_text(state)
+    if not utterance.strip():
+        raise ValueError("Fakten-Auftrag: Kandidaten des Menschen, aber keine Äußerung")  # noqa: TRY003
+    human: dict[int, dict] = {
+        nummer: k for nummer, k in numbered.items() if k["sprecher"] in SPEAKER_ORIGIN
+    }
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        antwort: dict = classify_candidates(utterance, human)
+    except ModelCallError as fehler:
+        logger.exception("Fakten-Auftrag: Modell ausgefallen")
+        return {"ausgang": OUTCOME_MODEL_FAILED, "fehler": str(fehler)}
+    except AnswerFormError as fehler:
+        logger.exception("Fakten-Auftrag: Antwort des Modells defekt")
+        return {"ausgang": OUTCOME_ANSWER_BROKEN, "fehler": str(fehler)}
+    tripel: list[dict] = []
+    for roh in antwort["tripel"]:
+        urteil: Verdict = vet_triple(roh, numbered, utterance, antwort["dauerhaft"])
+        zeile: dict = {k: roh.get(k) for k in ("kandidat", "subjekt", "beziehung", "objekt")} \
+            if isinstance(roh, dict) else {"roh": repr(roh)[:200]}
+        if urteil.tripel is None:
+            tripel.append({**zeile, "ausgang": f"{TRIPLE_REJECTED}:{urteil.grund}",
+                           "detail": urteil.detail})
+            continue
+        try:
+            ausgang: str = _write_triple(state, urteil.tripel, numbered[urteil.tripel["kandidat"]],
+                                         utterance)
+        except Exception:
+            logger.exception("Fakten-Auftrag: Tripel %r nicht geschrieben", urteil.tripel)
+            ausgang = TRIPLE_ERROR
+        tripel.append({**zeile, **{k: urteil.tripel[k] for k in ("subjekt", "beziehung", "objekt")},
+                       "ausgang": ausgang})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(tripel) != len(antwort["tripel"]):
+        raise ValueError("Fakten-Auftrag: nicht jedes Tripel hat einen Ausgang")  # noqa: TRY003
+    fremd: list[str] = [
+        t["ausgang"] for t in tripel if t["ausgang"] not in TRIPLE_OUTCOMES
+        and not t["ausgang"].startswith(f"{TRIPLE_REJECTED}:")
+    ]
+    if fremd:
+        raise ValueError(f"Fakten-Auftrag: Tripel mit unbekanntem Ausgang {fremd}")  # noqa: TRY003
+    return {
+        "ausgang":     OUTCOME_CLASSIFIED if tripel else OUTCOME_NO_TRIPLE,
+        "dauerhaft":   antwort["dauerhaft"],
+        "grund":       antwort["grund"],
+        "tripel_zahl": len(tripel),
+        "tripel":      tripel,
+    }
+
+
 def _run_one(state: dict, daten: dict, postgres_url: str) -> dict:
     """Führt einen vollständigen Auftrag aus und gibt seinen Ausgang zurück.
 
     Vorbedingung: `_order_defect(daten)` ist leer; `state` trägt das Paar.
     Nachbedingung: Ausgang `ausgefallen` (das Ablegen fiel aus, nichts wird
-        gelesen), `leer` oder `nicht_klassifiziert`; der Eintrag ist geschrieben.
+        gelesen), `leer`, `nur_andere_sprecher` (kein Kandidat des Menschen,
+        kein Modellaufruf) oder einer aus `_classify_and_write`; der Eintrag
+        ist geschrieben.
     Fehlerfälle: Ein Fehler beim Lesen der Kandidaten wird als Ausgang
         `fehler` eingetragen und weitergeworfen — nie als `leer` gemeldet.
         Eine gelesene Zeile ohne Feld `sprecher` ebenso: Ausgang `fehler`,
-        dann ValueError — sie wäre sonst still unter `ohne` gezählt.
+        dann ValueError — sie wäre sonst still unter `ohne` gezählt. Ein
+        Fehler vor dem Modellaufruf (leere Äußerung, ein Kandidat ohne Feld)
+        ebenso: Ausgang `fehler`, dann weitergeworfen.
     """
     # ── Eingabe-Validierung ─────────────────────
     if daten["abgelegt"] is False:
@@ -189,11 +338,19 @@ def _run_one(state: dict, daten: dict, postgres_url: str) -> dict:
         raise ValueError(  # noqa: TRY003
             f"Fakten-Auftrag: {broken} von {len(candidates)} Kandidaten ohne Feld sprecher"
         )
-    outcome = {
-        "ausgang":     OUTCOME_UNCLASSIFIED if candidates else OUTCOME_EMPTY,
-        "kandidaten":  len(candidates),
-        "je_sprecher": _speaker_counts(candidates),
-    }
+    counted: dict = {"kandidaten": len(candidates), "je_sprecher": _speaker_counts(candidates)}
+    numbered: dict[int, dict] = dict(enumerate(candidates, start=1))
+    if not candidates:
+        outcome = {"ausgang": OUTCOME_EMPTY, **counted}
+    elif not any(k["sprecher"] in SPEAKER_ORIGIN for k in candidates):
+        outcome = {"ausgang": OUTCOME_OTHER_SPEAKERS, **counted}
+    else:
+        try:
+            outcome = {**_classify_and_write(state, numbered), **counted}
+        except Exception as fehler:
+            _record(state, daten, {"ausgang": OUTCOME_ERROR, **counted,
+                                   "fehler": f"{type(fehler).__name__}: {fehler}"[:300]})
+            raise
     _record(state, daten, outcome)
     return outcome
 
@@ -207,8 +364,10 @@ def process_fact_orders(state: dict, writes: list[dict], postgres_url: str) -> l
         `log_db_write`; nichts geht in `agent_results`, `management_result`
         oder die Antwort.
     Fehlerfälle: Ein unvollständiger Auftrag oder ein Turn ohne Paar wird mit
-        `logger.error` als `verworfen` eingetragen. Ein Fehler beim Lesen wirft
-        (nach seinem Eintrag) — der Dispatcher meldet ihn und schließt ab.
+        `logger.error` als `verworfen` eingetragen. Ein Fehler beim Lesen oder
+        vor dem Modellaufruf wirft (nach seinem Eintrag) — der Dispatcher
+        meldet ihn und schließt ab. Ein Ausfall des Modells wirft nicht; er
+        ist der Ausgang `modell_ausfall` oder `antwort_defekt`.
         Ein Auftrag ohne Ausgang oder ein Ausgang außerhalb von `OUTCOMES`
         wirft ValueError.
     """
