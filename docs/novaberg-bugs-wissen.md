@@ -14,7 +14,7 @@
 
 **Rang:** **niedrig** — offen, aber nicht beobachtet: am Modell 9 von 9 Sätzen dieser Form richtig klassifiziert (20.10.2026). Träte es auf, löste es still den Namen des Menschen ab, weil `heisst` einwertig ist. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
 
-**Zustand:** offen — am Code gelesen am 20.10.2026, beim Bau des Fakten-Agenten (Schritt 4).
+**Zustand:** offen — **behoben im Tree, nicht committet** (20.10.2026, der dritte Bau des passiven Fakten-Agenten; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt). Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 20.10.2026, beim Bau des Fakten-Agenten (Schritt 4).
 
 **Befund** `[Code]`: `server/agents/fakten/klassifikation.py::check_answer` prüft bei `heisst`, dass ein benanntes Subjekt nicht Besitzer ist, und nimmt `ICH` davon aus. Eine Antwort `ICH heisst Rufus` auf *„Mein Hund heißt Rufus“* ginge durch.
 
@@ -27,7 +27,7 @@
 
 **Rang:** **niedrig** — laut falsch im Text, nicht still: Bei zwei Treffern zu einem Ort oder Tier fragt der Agent nach *„zwei Personen namens …“*. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
 
-**Zustand:** offen — am Code gelesen am 20.10.2026.
+**Zustand:** offen — **behoben im Tree, nicht committet** (20.10.2026, der dritte Bau des passiven Fakten-Agenten; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt). Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 20.10.2026.
 
 **Befund** `[Code]`: `server/agents/fakten/suche.py` ruft `EntityResolutionService._build_klärungsfrage` (Z. 74), eine private Methode eines anderen Bausteins; ihr Text lautet bei zwei Kandidaten immer *„Ich kenne zwei Personen namens …“* (`server/memory/services/entity_resolution.py`, Z. 376).
 
