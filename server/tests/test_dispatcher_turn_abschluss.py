@@ -36,6 +36,7 @@ from unittest.mock import MagicMock, patch
 
 from agents.fakten import dispatch as fakten_dispatch_mod
 from graph.nodes import dispatcher as dispatcher_mod
+from plugins import discover_managers, get_registry
 
 USER:  str = "meister"
 FIGUR: str = "nova"
@@ -321,6 +322,47 @@ class FactOrderInTheDispatcherTest(unittest.TestCase):
             self._run([_FAKTEN])
         self.assertNotIn("nicht jeder Auftrag hat einen Ausgang", "\n".join(protokoll.output))
         self.assertIn("1 Auftraege", "\n".join(protokoll.output))
+
+
+class AFactOrderNeedsNoManagerTest(unittest.TestCase):
+    """An der echten Registry: ein Write `fakten` erreicht den Agenten, ohne Manager."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        discover_managers()
+
+    def _run(self, writes: list) -> tuple[MagicMock, str]:
+        """Faehrt den Dispatcher ohne Doppel fuer die Registry.
+
+        Returns:
+            (das Doppel des Fakten-Agenten, das Protokoll des Dispatchers).
+        """
+        facts = MagicMock(return_value=[{"ausgang": "leer"}])
+        with patch.object(dispatcher_mod, "process_fact_orders", facts), \
+             patch.object(dispatcher_mod, "_verwendung_verstaerken"), \
+             patch.object(dispatcher_mod, "_delegation_trigger_pruefen", return_value=""), \
+             patch.object(dispatcher_mod, "dispatch_kzg", return_value={"kzg_verarbeitet": 1}), \
+             patch.object(dispatcher_mod, "_verbindung_schreiben"), \
+             patch.object(dispatcher_mod, "_persist_vorturn"), \
+             patch.object(dispatcher_mod, "_persist_gv_detail"), \
+             self.assertLogs("ki_server.dispatcher", level="INFO") as protokoll:
+            _lauf(_zustand(writes=writes))
+        return facts, "\n".join(protokoll.output)
+
+    def test_a_fact_order_reaches_the_agent_on_both_ways(self) -> None:
+        self.assertNotIn("fakten", get_registry())
+        for writes in ([_FAKTEN], [_KZG, _FAKTEN]):
+            with self.subTest(writes=[w["ziel"] for w in writes]):
+                facts, protokoll = self._run(writes)
+                facts.assert_called_once()
+                self.assertEqual(facts.call_args.args[1], [_FAKTEN])
+                self.assertNotIn("Kein Manager fuer 'fakten'", protokoll)
+
+    def test_the_twin_an_unknown_target_is_dropped_with_a_warning(self) -> None:
+        facts, protokoll = self._run([_KZG, {"ziel": "unbekannt", "aktion": "create", "daten": {}}])
+        facts.assert_not_called()
+        self.assertIn("WARNING", protokoll)
+        self.assertIn("Kein Manager fuer 'unbekannt' registriert — 1 Writes verworfen", protokoll)
 
 
 class FactsAgentWithoutCandidatesTest(unittest.TestCase):

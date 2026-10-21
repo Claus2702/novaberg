@@ -181,10 +181,11 @@ class LegacyManagerTest(unittest.TestCase):
 
     def test_manager_ohne_agent_wird_ueber_den_zielnamen_gefunden(self) -> None:
         """Der Schluessel der Registry ist der Zielname — kein `_manager`-Suffix."""
-        fakten = SimpleNamespace(ziel="fakten", router_intents=[],
-                                 plan=lambda **kw: {"management_result": "ok", "pending_writes": []})
-        registry = {**REGISTRY, "fakten": fakten}
-        state = _state(None, management_target="fakten")
+        ergebnis_des_plans: dict = {"management_result": "ok", "pending_writes": []}
+        altdienst = SimpleNamespace(ziel="altdienst", router_intents=[],
+                                    plan=lambda **kw: ergebnis_des_plans)
+        registry = {**REGISTRY, "altdienst": altdienst}
+        state = _state(None, management_target="altdienst")
         with patch.object(planner, "get_registry", return_value=registry), \
              patch.object(planner.AgentRegistry, "finden", side_effect=lambda n: AGENTEN.get(n)):
             ergebnis = planner.plan(state, "postgres://test")

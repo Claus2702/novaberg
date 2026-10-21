@@ -8,7 +8,7 @@ dem Codeschloss P9 aus dem Repositorium entfernt.
 
 Bewusste Abweichungen vom alten PromotionAgent (Entscheidungs-Doku
 novaberg-memory-synapsen_e.md, Abschnitt G "Die Festlegungen zu P4"):
-  - Keine LLM-Calls, keine Fakten-Extraktion, kein FaktenManager (K2). Die
+  - Keine LLM-Calls, keine Fakten-Extraktion, kein Schreiben in `fakten` (K2). Die
     Magnet-Felder entitaet_ids/timeline_id liegen seit P3 (magnete_aufloesen)
     fertig im KZG-Eintrag.
   - Embedding aus dem inhalt ALLEIN, ohne Themen-Anreicherung (K9). Der alte

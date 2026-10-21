@@ -33,7 +33,7 @@ class BaseManager(ABC):
     @property
     @abstractmethod
     def ziel(self) -> str:
-        """Eindeutiger Name: 'kzg', 'fakten', 'timeline', 'notizen', ..."""
+        """Eindeutiger Name: 'kzg', 'timeline', 'notizen', 'wissen', ..."""
         pass
 
     @property
@@ -83,7 +83,7 @@ class BaseManager(ABC):
             quelle:  Beginnt mit dem Praefix "plugin_". Empfohlene
                      Form: "plugin_<sinngemaess>" im Singular, z.B.
                      "plugin_notiz", "plugin_timeline", "plugin_direktive",
-                     "plugin_fakt". Der Reducer behandelt alle plugin_*-
+                     "plugin_wissen". Der Reducer behandelt alle plugin_*-
                      Quellen gleichwertig; der Formatter (STRUCT-6) liest
                      die quelle, um den Output-Praefix zu waehlen.
 

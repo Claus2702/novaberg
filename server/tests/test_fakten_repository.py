@@ -417,49 +417,6 @@ class ASingleValueIsReplacedWhollyTest(_PairFixture):
         self.assertEqual(self._zeilen(), [])
 
 
-class ThePluginWritesTheSameRowTest(_PairFixture):
-    """Das Plugin legt über `abloesen` an — als Mensch und einwertig."""
-
-    def _verarbeiten(self, wert: str) -> dict:
-        from plugins.fakten_manager.manager import FaktenManager
-
-        with patch("plugins.fakten_manager.manager.model_service") as modell:
-            modell.embed.submit_sync.side_effect = RuntimeError("kein Embed im Zeugen")
-            return FaktenManager().fakten_verarbeiten(
-                aktion="speichern",
-                entitaeten=[{"name": "Michael", "typ": "person", "bekannte_id": self.subjekt}],
-                fakten=[{"subjekt": "Michael", "attribut": "wohnt_in",
-                         "objekt_wert": wert, "fakt_text": f"Michael wohnt in {wert}"}],
-                user_id=self.user,
-                character_id=self.char,
-                postgres_url=POSTGRES_URL,
-                redis_client=None,
-                turn_id=None,
-            )
-
-    def test_the_row_carries_pair_origin_and_valency(self) -> None:
-        self.assertTrue(self._verarbeiten("Kassel")["erfolg"])
-        zeilen = self._zeilen()
-        self.assertEqual(len(zeilen), 1)
-        z = zeilen[0]
-        self.assertEqual(
-            (z["user_id"], z["character_id"], z["subjekt_id"], z["attribut"], z["objekt_id"],
-             z["objekt_wert"], z["fakt_text"], z["herkunft"], z["einwertig"], z["aktiv"]),
-            (self.user, self.char, self.subjekt, "wohnt_in", None,
-             "Kassel", "Michael wohnt in Kassel", "mensch", True, True),
-        )
-
-    def test_a_new_value_replaces_and_the_same_value_writes_nothing(self) -> None:
-        self._verarbeiten("Kassel")
-        self._verarbeiten("Hamburg")
-        vorher = self._zeilen()
-        self._verarbeiten("Hamburg")
-        nachher = self._zeilen()
-        self.assertEqual([(z["objekt_wert"], z["aktiv"]) for z in nachher],
-                         [("Kassel", False), ("Hamburg", True)])
-        self.assertEqual(nachher, vorher)
-
-
 class EveryReadVerifiesItsRowsTest(unittest.TestCase):
     """Jede Lesefunktion weist eine Zeile ab, die ihre Abfrage nicht liefern dürfte.
 

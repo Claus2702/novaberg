@@ -116,7 +116,7 @@ def _entitaeten_aufloesen(
 ) -> list[int]:
     """Loest eine Liste von Roh-Eigennamen zu Entitaets-IDs auf.
 
-    Folgt dem Zwei-Schritt-Pattern aus plugins/fakten_manager/manager.py:
+    Folgt dem Zwei-Schritt-Pattern der Entity Resolution:
     erst resolve_batch (Lookup), dann create_new_entity fuer alle, die
     `ist_neu=True` und `ist_referenz=True` sind. Disambiguierungs-Faelle
     (`braucht_klaerung=True`) werden im nicht-interaktiven KZG-Pfad

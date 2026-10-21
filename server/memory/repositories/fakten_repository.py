@@ -231,7 +231,7 @@ class FaktenRepository:
         fakt_text vollständig rekonstruierbar.
 
         E: fakt_text muss nicht-leer sein.
-        V: Formel ist die Identität (Live-Formel des FaktenManagers).
+        V: Formel ist die Identität (auch `tools/reembed_all.py` rechnet so).
         A: der unveränderte fakt_text.
         """
         if not fakt_text or not fakt_text.strip():

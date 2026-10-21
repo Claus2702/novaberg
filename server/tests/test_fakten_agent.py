@@ -15,8 +15,11 @@ Was diese Datei zusichert:
   * **Ein Ausfall des Modells ist ein Ausfall**, nie *kein Tripel*.
   * **`abgeschlossen` nur nach bestandener Verifikation.**
   * **Anmeldung und Brett:** `fakten` ist ein Dienst der Queue, ohne
-    Objekt-Merkmal und ohne Dispatch des Planners; das Brett trägt keinen
-    Zettel für ihn, und das Plugin hat weder Text noch Intent.
+    Objekt-Merkmal, ohne Aushang und ohne Dispatch des Planners; das Brett
+    trägt keinen Zettel für ihn.
+  * **Kein Manager `fakten`:** Die Registry der Manager kennt den Namen nicht;
+    ein Router-Ziel `fakten` führt den Planner laut zu den Notizen, und der
+    Enricher ruft jeden registrierten Manager, gleich wie er heißt.
   * **Die Wand:** Unter `agents/fakten/` kein Import aus `tools.` und kein
     `psycopg2`.
 
@@ -27,9 +30,11 @@ Wegwerf-Datenbank der Suite; jedes Fixture bringt ein eigenes Paar mit und
 räumt in tearDown ab.
 """
 
+import importlib
 import re
 import unittest
 import uuid
+from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -38,6 +43,7 @@ import psycopg2.extras
 from langgraph.graph import END
 
 import agents.fakten
+import graph.nodes.enricher as enricher_mod
 from agents import AgentRegistry, discover_agents, get_dispatch
 from agents.fakten import dispatch as fakten_dispatch_mod
 from agents.fakten import suche as suche_mod
@@ -55,12 +61,12 @@ from agents.fakten.klassifikation import (
 from agents.fakten.suche import binding_for
 from agents.nmcp import anmelden, aushaenge_sammeln
 from config import POSTGRES_URL
+from ei.gravitation import Gravitationsterm
+from graph.nodes import planner
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.repositories.fakten_repository import FaktenRepository
 from memory.services import entity_resolution as entity_resolution_mod
-from plugins import discover_managers
-from plugins.fakten_manager.manager import FaktenManager
-from plugins.notizen_manager.manager import NotizenManager
+from plugins import discover_managers, get_registry
 
 VEKTOR: list[float] = [1.0] + [0.0] * 767
 _MARKE: re.Pattern[str] = re.compile(r"^[A-Z][A-Z-]+-ERKENNUNG:", re.M)
@@ -769,6 +775,13 @@ class RegistrationAndBoardTest(unittest.TestCase):
         self.assertTrue(befund.eingebunden, befund.maengel)
         self.assertEqual(list(befund.maengel), [])
 
+    def test_fakten_has_no_notice_without_a_manager_and_notizen_keeps_its_own(self) -> None:
+        # Der Aushang erbt vom gleichnamigen Manager; ohne ihn ist er leer.
+        self.assertNotIn("fakten", get_registry())
+        self.assertEqual(AgentRegistry.finden("fakten").aushang, "")
+        # Zwilling: ein Dienst am Empfang mit Manager hat seinen Aushang.
+        self.assertIn("NOTIZEN-ERKENNUNG:", AgentRegistry.finden("notizen").aushang)
+
     def test_the_board_carries_no_slip_for_fakten_but_still_the_one_for_notizen(self) -> None:
         brett = aushaenge_sammeln("user")
         self.assertNotIn("FAKTEN-ERKENNUNG:", brett)
@@ -784,18 +797,119 @@ class RegistrationAndBoardTest(unittest.TestCase):
         self.assertIsNotNone(get_dispatch("notizen"))
 
 
-class PluginHasNoSlipTest(unittest.TestCase):
-    """Das Plugin `fakten_manager` hat keinen Platz mehr am Brett des Routers."""
+class NoManagerFaktenTest(unittest.TestCase):
+    """Die Registry der Manager kennt `fakten` nicht, und sein Modul ist fort."""
 
-    def test_the_plugin_has_neither_a_prompt_nor_an_intent(self) -> None:
-        manager = FaktenManager()
-        self.assertEqual(manager.router_prompt.strip(), "")
-        self.assertEqual(manager.router_intents, [])
+    @classmethod
+    def setUpClass(cls) -> None:
+        discover_managers()
 
-    def test_the_twin_plugin_of_the_notes_keeps_both(self) -> None:
-        manager = NotizenManager()
-        self.assertIn("NOTIZEN-ERKENNUNG:", manager.router_prompt)
-        self.assertNotEqual(manager.router_intents, [])
+    def test_the_registry_has_no_fakten_and_its_module_cannot_be_imported(self) -> None:
+        self.assertNotIn("fakten", get_registry())
+        self.assertNotIn("fakten", [m.ziel for m in get_registry().values()])
+        # Das Modul, nicht das Paket: Ein Ordner, in dem nur `__pycache__` blieb,
+        # liesse sich als Namensraum-Paket importieren.
+        with self.assertRaises(ModuleNotFoundError):
+            importlib.import_module("plugins.fakten_manager.manager")
+
+    def test_the_twin_notizen_is_registered_and_importable(self) -> None:
+        self.assertEqual(get_registry()["notizen"].ziel, "notizen")
+        self.assertTrue(hasattr(importlib.import_module("plugins.notizen_manager.manager"),
+                                "NotizenManager"))
+
+
+def _merk_bitte(target: str, urteil: dict | None = None) -> dict:
+    """Der Zustand am Planner bei einer Merk-Bitte, wie in `test_planner_objektwahl`."""
+    return {"management_action": "agent", "management_target": target, "needs_timeline": False,
+            "objekt_urteil": urteil or {}, "agent_results": [], "node_annotations": [],
+            "user_id": "u", "external": None}
+
+
+class TargetFaktenReachesTheNotesTest(unittest.TestCase):
+    """Ein Router-Ziel `fakten` führt den Planner an der echten Registry laut zu den Notizen."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        discover_managers()
+        discover_agents()
+
+    def _plan(self, state: dict) -> tuple[dict, str]:
+        with patch.object(planner, "log_decision"), \
+             self.assertLogs("ki_server.planner", level="INFO") as protokoll:
+            ergebnis = planner.plan(state, "postgres://test")
+        return ergebnis, "\n".join(protokoll.output)
+
+    def test_target_fakten_asks_the_notes_and_the_switch_says_it_hits_no_service(self) -> None:
+        ergebnis, protokoll = self._plan(_merk_bitte("fakten"))
+        self.assertEqual(ergebnis["agent_name"], "notizen")
+        self.assertIn("Ziel 'fakten' trifft keinen Dienst) → ['notizen']", protokoll)
+
+    def test_a_service_without_reception_named_by_nearness_stays_out(self) -> None:
+        # Der Ausschluss haengt am Agenten: Auch ohne Manager `fakten` kommt er
+        # nicht in die Reihenfolge, wenn ein Urteil ihn nennt.
+        urteil = {"ergebnis": "gerechnet", "objekte": [
+            {"name": "Ostheim", "naehe": {"fakten": 0.70, "notizen": 0.50},
+             "empfaenger": ["fakten", "notizen"]},
+        ]}
+        ergebnis, protokoll = self._plan(_merk_bitte("", urteil))
+        self.assertEqual(ergebnis["agent_name"], "notizen")
+        self.assertIn("'fakten' hat keinen Empfang", protokoll)
+        self.assertIn("→ ['notizen']", protokoll)
+
+    def test_the_twin_target_notizen_is_unchanged(self) -> None:
+        ergebnis, protokoll = self._plan(_merk_bitte("notizen"))
+        self.assertEqual(ergebnis["agent_name"], "notizen")
+        self.assertIn("Match via target 'notizen' → notizen (exakt)", protokoll)
+        self.assertNotIn("trifft keinen Dienst", protokoll)
+
+
+class TheEnricherCallsEveryManagerTest(unittest.TestCase):
+    """Die Plugin-Schleife des Enrichers ruft jeden Manager, auch einen namens `fakten`."""
+
+    def _called(self, name: str) -> MagicMock:
+        """Fährt `_enrich_character` mit genau einer Attrappe unter `name` in der Registry.
+
+        Die Doppel sind die von `test_wissen_manager.PluginReihenfolgeTest`: kein
+        Modell, keine Datenbank, ein KZG-Schlüssel, damit die Suche läuft.
+        """
+        attrappe = MagicMock()
+        attrappe.enrich_entries.return_value = []
+        verbindung = MagicMock()
+        verbindung.cursor.return_value.fetchone.return_value = (True,)
+        psycopg2_attrappe = MagicMock()
+        psycopg2_attrappe.connect.return_value = verbindung
+        redis_attrappe = MagicMock()
+        redis_attrappe.get.return_value = None
+        redis_attrappe.keys.return_value = ["kzg:test:1"]
+        state: dict = {"turn_id": "probe-enricher", "character_id": "test_charakter",
+                       "user_prompt": "Wie entsteht Hawking-Strahlung?",
+                       "user_intentionen": [], "ei_calc_rolle": "character"}
+        with ExitStack() as stack:
+            p = stack.enter_context
+            p(patch.object(enricher_mod, "psycopg2", psycopg2_attrappe))
+            p(patch.object(enricher_mod, "get_registry", return_value={name: attrappe}))
+            p(patch.object(enricher_mod, "_load_raw_turns", return_value=[]))
+            p(patch.object(enricher_mod, "_create_prompt_embedding", return_value=VEKTOR))
+            schwere = Gravitationsterm(roh=0.0, normiert=0.0, cap=6.0)
+            p(patch.object(enricher_mod, "_compute_ziele_und_gravitation",
+                           return_value=([], schwere, 0.0)))
+            p(patch.object(enricher_mod, "_vorturn_cluster_lesen", return_value="foyer"))
+            p(patch.object(enricher_mod, "spreading_lesen", return_value=[]))
+            p(patch.object(enricher_mod, "kzg_entries_retrieve", return_value=[]))
+            p(patch.object(enricher_mod, "emotionale_gravitation_scannen", return_value=[]))
+            p(patch.object(enricher_mod, "span_start", return_value=uuid.uuid4()))
+            for protokoll in ("span_end", "log_eingang", "log_switch", "log_ausgabe",
+                              "log_berechnung"):
+                p(patch.object(enricher_mod, protokoll))
+            enricher_mod._enrich_character(state, redis_attrappe, "postgresql://test",
+                                           "test_mensch")
+        return attrappe
+
+    def test_a_manager_named_fakten_is_called(self) -> None:
+        self._called("fakten").enrich_entries.assert_called_once()
+
+    def test_the_twin_named_notizen_is_called(self) -> None:
+        self._called("notizen").enrich_entries.assert_called_once()
 
 
 class TheWallTest(unittest.TestCase):

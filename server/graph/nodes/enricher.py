@@ -14,9 +14,9 @@ Kern-Quellen im CG-Lauf:
 
 Plugin-Quellen (dynamisch, nur im CG-Lauf):
   4. Jeder registrierte Manager mit enrich()-Hook
-     z.B. FaktenManager → Fakten laden
-          TimelineManager → anstehende Termine
+     z.B. TimelineManager → anstehende Termine
           NotizenManager → betroffene Notiz bei Management-Intent
+          WissenManager → Bibliothekstreffer zum Suchschluessel
 
 Im HG-Lauf entfallen Plugin-Hooks, Memory-Search (KZG/LZG), Charakter-
 Hash-ContextEntry und emotionale Gravitation — kein HG-Konsument liest
@@ -1198,10 +1198,11 @@ def _enrich_character(
     # Prompt-Embedding ueberhaupt existierte, und ein Plugin mit
     # Embedding-Suche haette sich ein zweites rechnen lassen muessen.
     #
-    # Geprueft, was die Verschiebung anfasst: Von fuenf Managern liefern nur
+    # Geprueft am 04.08.2026, was die Verschiebung anfasst: Damals lieferten nur
     # Timeline und Notizen; beide lesen ausschliesslich Felder, die vor dem
     # Enricher feststehen (user_id, external, needs_timeline, timeline_query,
-    # management_target), und **keiner schreibt in den State**. Der Formatter
+    # management_target), und **keiner schreibt in den State**. Seither liefert
+    # auch Wissen; es liest `such_vektor`, den die Suche oben setzt. Der Formatter
     # gruppiert nach `quelle`, nicht nach Listenposition — die Plugin-Gruppe
     # steht als Block, gleich wann sie angehaengt wurde.
     #
@@ -1214,13 +1215,6 @@ def _enrich_character(
     registry: dict = get_registry()
 
     for name, manager in registry.items():
-        # DEAKTIVIERT Chat 71 — Fakten-Enrichment produziert 130+ Rausch-Eintraege
-        # Wird reaktiviert nach Fakten-Bereinigung
-        if name == "fakten":
-            # plugin_entries = manager.enrich_entries(state, postgres_url)
-            logger.info("Enricher: Fakten-Enrichment deaktiviert (Chat 71)")
-            continue
-
         try:
             plugin_entries: list[ContextEntry] = manager.enrich_entries(state, postgres_url)
 
