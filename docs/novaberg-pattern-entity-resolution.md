@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Entity Resolution (Entitäten auflösen und disambiguieren)
-**Stand:** 21. Oktober 2026, 06:09 UTC (`date -u`; §6: der Repair beim Start genügt). Davor 21. Oktober 2026, 05:02 UTC (`date -u`; §2.2: der Rückfall für Schreiber abgeschafft, entschieden). Davor 21. Oktober 2026, 00:57 UTC (`date -u`; §4.3 und §6: ein Ausfall der Suche geht durch, ein Ausfall des Embeddings beim Anlegen ist laut). Davor 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 20. Oktober 2026, 05:32 UTC (`date -u`; §4.3 `resolve_by_name`). Davor 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. Oktober 2026, 07:10 UTC (`date -u`; §2.2: *kein heutiger Schreiber*, der Graphkanal des Dateiindex offen). Davor 21. Oktober 2026, 06:09 UTC (`date -u`; §6: der Repair beim Start genügt). Davor 21. Oktober 2026, 05:02 UTC (`date -u`; §2.2: der Rückfall für Schreiber abgeschafft, entschieden). Davor 21. Oktober 2026, 00:57 UTC (`date -u`; §4.3 und §6: ein Ausfall der Suche geht durch, ein Ausfall des Embeddings beim Anlegen ist laut). Davor 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 20. Oktober 2026, 05:32 UTC (`date -u`; §4.3 `resolve_by_name`). Davor 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-pattern-entity-resolution.md
 **Quellen:** nova-03-t-a.md
 **Datei:** `memory/services/entity_resolution.py`
@@ -27,7 +27,7 @@ Exakte oder nahe Übereinstimmung des Namens in der `entitaeten`-Tabelle. Schnel
 
 Semantische Suche per pgvector wenn der Name-Match nichts findet. Das Embedding des Namens wird gegen die Embeddings aller Entitäten des Users verglichen.
 
-> **Entschieden am 21.10.2026** (`novaberg-memory-fakten_e.md` A Nr. 35): **Kein Schreiber nutzt diesen Rückfall mehr** — nach Fakten (§4.3) und Sachlage (F3) auch der Magnet-Pfad des Kurzzeitgedächtnisses nicht. Eine Schreibvariante wird eine zweite Entität; stellt sich im Gespräch heraus, dass zwei Entitäten eine sind, werden ihre Akten auf Rückfrage zusammengelegt (Backlog `ENTITAETEN-ZUSAMMENLEGEN`). Gebaut ist das noch nicht: Der Magnet-Pfad ruft `resolve_batch` mit Rückfall (`MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN`).
+> **Entschieden am 21.10.2026** (`novaberg-memory-fakten_e.md` A Nr. 35): **Kein heutiger Schreiber nutzt diesen Rückfall mehr** — nach Fakten (§4.3) und Sachlage (F3) auch der Magnet-Pfad des Kurzzeitgedächtnisses nicht. Ein neuer Schreiber entscheidet es vor seinem Bau; offen ist es für den geplanten Graphkanal des Dateiindex (`DATEIINDEX-GRAPHKANAL`), der `resolve_batch` vorsieht. Eine Schreibvariante wird eine zweite Entität; stellt sich im Gespräch heraus, dass zwei Entitäten eine sind, werden ihre Akten auf Rückfrage zusammengelegt (Backlog `ENTITAETEN-ZUSAMMENLEGEN`). Gebaut ist das noch nicht: Der Magnet-Pfad ruft `resolve_batch` mit Rückfall (`MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN`).
 
 **Name-Plausibilitäts-Check (O10):** Ein Embedding-Treffer wird nur akzeptiert wenn der Name plausibel ähnlich ist:
 

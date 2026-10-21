@@ -6,7 +6,7 @@
 
 ## A. Entschieden — das Register
 
-Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → ~~31~~ → ~~32~~ → 35 (17.10.2026).
+Jede Entscheidung des Eigentümers, die das Konzept führt, mit Datum und der Stelle, an der sie steht. **Wörtlich** heißt: im Text als Zitat; **umschrieben** heißt: der Text gibt sie nur mit eigenen Worten wieder. Gezählt: ~~24~~ → ~~26~~ → ~~31~~ → ~~32~~ → ~~35~~ (17.10.2026) → 37 (21.10.2026).
 
 | Nr. | Datum | Entscheidung | Form | Steht in |
 |---|---|---|---|---|

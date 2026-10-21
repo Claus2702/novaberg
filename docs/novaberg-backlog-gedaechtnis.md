@@ -2155,7 +2155,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 
 **Rang:** mittel — Vorbedingung für das Bauteil F4 des Faktengedächtnisses (lernen ohne Auftrag): Dessen Grenze soll Aussagen über nahe Menschen durchlassen, und die Salienz liefert die Nähe heute nicht. Im Betrieb ohne Wirkung, solange F4 nicht gebaut ist.
 
-**Zustand:** ⬜ offen — gemessen am 17.10.2026, nichts gebaut.
+**Zustand:** ⬜ offen — gemessen am 17.10.2026, nichts gebaut. → 21.10.2026: Für das Ereignis einer anderen Person ist vorerst der Prompt das Tor, mit der Grenze `KZG_SALIENZ_HIGH` (`novaberg-memory-fakten_e.md` A Nr. 37).
 
 **Befund, am Code:** Der Aufgaben-Block der Salienz (`server/prompts/default/salienz.task.txt`, Z. 11–12) gibt jeder neuen Information über konkrete Personen, Orte, Beziehungen, Wohnorte, Arbeitsplätze oder Familienmitglieder *„mindestens 0.70, auch wenn sachlich und ohne Emotion formuliert“*. Familie und Fremde stehen in derselben Zeile, auf derselben Stufe. Einen Teilwert für Nähe oder Bindung hat die Salienz nicht.
 
