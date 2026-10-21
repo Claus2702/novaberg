@@ -182,23 +182,29 @@ class TestResonanzKontextFehlerpfade(unittest.TestCase):
         self.assertIn("keine mit Inhalt", gemeinsam)
 
 
-class TestFaktenHopSchlaeft(unittest.TestCase):
-    """Der alte Entity-Hop darf nicht unbemerkt wieder in den Pfad geraten.
+class TestFaktenHopEntfaellt(unittest.TestCase):
+    """Der alte Entity-Hop ist aus dem Modul entfernt, nicht nur abgehaengt.
 
-    `_entity_kontext_laden` liegt schlafend im Modul und wartet auf M2.5b.
-    Wuerde ihn jemand wieder verdrahten, faende der GV-Node bis dahin
-    weiterhin nichts — und der Befund GV-ENTITY-HOP-FINDET-NICHTS waere
-    zurueck, ohne dass ein Test rot wird. Dieser hier wird rot.
+    `_entity_kontext_laden` las `fakten` mit eigenem SQL, ohne Paar und ohne
+    Kappung. Die Fakten einer Entitaet liest jetzt die eine Lesefunktion
+    `memory.fakten_mappe.load_mappe`; eine zweite daneben liefe auseinander.
+    Der Zwilling haelt fest, dass die zweite Wissensquelle des GV-Nodes
+    weiter da ist und gerufen wird.
     """
 
-    def test_gv_node_ruft_den_faktenpfad_nicht(self) -> None:
+    def test_der_entity_hop_fehlt_im_modul(self) -> None:
+        from graph.nodes import gespraechsvektor
+
+        self.assertFalse(hasattr(gespraechsvektor, "_entity_kontext_laden"))
+
+    def test_zwilling_die_resonanz_ist_da_und_wird_gerufen(self) -> None:
         import inspect
 
         from graph.nodes import gespraechsvektor
 
+        self.assertTrue(callable(getattr(gespraechsvektor, "_resonanz_kontext_laden", None)))
         quelle: str = inspect.getsource(gespraechsvektor.gespraechsvektor)
-        self.assertNotIn("_entity_kontext_laden", quelle)
-        self.assertIn("_resonanz_kontext_laden", quelle)
+        self.assertIn("_resonanz_kontext_laden(state)", quelle)
 
 
 class TestGvDetailVertragMitDemPanel(unittest.TestCase):

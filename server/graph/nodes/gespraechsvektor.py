@@ -6,10 +6,8 @@ Wissensquelle und assembliert den LLM-Prompt. Alle EI-Berechnungen
 (Farbton, Neugier, Wissensluecken, Dreischicht) sind in server/ei/
 ausgelagert.
 
-Zweite Wissensquelle seit Chat 115: die Spreading-Erinnerungen des
-Enrichers (`_resonanz_kontext_laden`). Davor der Entity-Hop ueber die
-`fakten`-Tabelle — der schlaeft, bis M2.5b sie wieder befuellt; die
-Begruendung steht am Block ueber `_entity_kontext_laden`.
+Zweite Wissensquelle: die Spreading-Erinnerungen des Enrichers
+(`_resonanz_kontext_laden`).
 
 Konzept: novaberg-gv-strategie_k.md
 """
@@ -18,8 +16,6 @@ import json
 import logging
 import math
 from dataclasses import dataclass
-
-import psycopg2
 
 from config import (
     GV_LAENGE_MODUS_DELTA,
@@ -50,7 +46,7 @@ from graph.format.memory_context import speaker_label
 from graph.reiz import DUTY_INTENTS, reiz_ist_eigener_gedanke, reiz_text, request_first
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden, nutzer_gewichtung_rad_laden
-from memory.pipeline_log import log_berechnung, log_fehler
+from memory.pipeline_log import log_berechnung
 from memory.repositories.wissensluecken_repository import staerkste_luecken
 from memory.session import format_session_turns_numbered
 from services.model_services import ChatRequest, EmbedRequest, model_service
@@ -231,16 +227,14 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
 
 
 # ─────────────────────────────────────────────
-# Entity-Hop ueber Fakten-Tabelle
+# Zweite Wissensquelle: Resonanz des Enrichers
 # ─────────────────────────────────────────────
 
 def _resonanz_kontext_laden(state: ConversationState) -> str:
     """Formatiert die Spreading-Erinnerungen des Enrichers fuer den GV-Prompt.
 
     Dies ist die zweite Wissensquelle des GV-Nodes — die Stelle, an der er
-    erfaehrt, was zum aktuellen Thema schon erlebt wurde. Bis Chat 115 kam
-    sie aus der `fakten`-Tabelle (`_entity_kontext_laden`, direkt darunter,
-    seither schlafend); warum sie umgehaengt wurde, steht dort.
+    erfaehrt, was zum aktuellen Thema schon erlebt wurde.
 
     Die Quelle ist `state["lzg_resonanz"]`, das der Enricher legt. Sie ist
     bereits eine Zwei-Stufen-Traversierung im Sinn des Konzepts, nur ueber
@@ -335,178 +329,6 @@ def _resonanz_kontext_laden(state: ConversationState) -> str:
         [e.get("schale") for e in erinnerungen],
     )
     return resonanz_text
-
-
-# ─────────────────────────────────────────────
-# Entity-Hop ueber die Fakten-Tabelle — SCHLAFEND seit Chat 115
-# ─────────────────────────────────────────────
-#
-# Diese Funktion hat KEINEN AUFRUFER und ist kein toter Code, den jemand
-# vergessen hat. Sie wartet auf eine Datenquelle, die es derzeit nicht gibt.
-#
-# WARUM SIE SCHLAEFT (gemessen 28.07.2026):
-#   Die `fakten`-Tabelle hat 0 Zeilen und keinen Produzenten. Die Tripel-
-#   Extraktion wurde mit Synapsen P4 aus der Promotion herausgenommen —
-#   Festlegung K2 in novaberg-memory-synapsen_e.md, Abschnitt G:
-#   "Tripel-Extraktion entfaellt komplett in P4 ... Funktionalitaets-Bruch
-#   zwischen P4 und M2.5b wird akzeptiert (keine neuen Tripel, ...,
-#   eingefrorener Fakten-Bestand)."
-#   Der eingefrorene Bestand (411 Fakten) ist beim Reset am 27.07.2026
-#   weggefallen. Aus "eingefroren" wurde "leer" — eine Folge, die in der
-#   Festlegung nicht vorgesehen war.
-#
-#   Unabhaengig davon trifft Hop 1 auch dann nicht: Der Schluessel ist eine
-#   Themenphrase (`prompt_topic`, 2-5 Woerter), die Entitaetsnamen sind
-#   Eigennamen (65 von 89 einwortig). Gemessen sind beide ILIKE-Richtungen
-#   0 Treffer. Der zweite Zweig (`zusammenfassung ILIKE`) ist zusaetzlich
-#   ohne Substrat: 88 von 89 Entitaeten haben keine Zusammenfassung, weil
-#   der Magnet-Pfad nur Name und Typ setzt.
-#
-# WANN SIE AUFWACHT:
-#   Mit M2.5b (FaktenAgent als eigenstaendige Fachabteilung, analog
-#   TimelineAgent) — im Backlog gefuehrt. Vorbedingung laut Synapsen-Konzept
-#   §3.2: der LZG-Kern steht. Wer sie reaktiviert, repariert vorher Hop 1;
-#   der Schluessel-Mismatch bleibt sonst bestehen, auch mit vollen Tabellen.
-#
-# Details und Messungen: GV-ENTITY-HOP-FINDET-NICHTS in novaberg-bugs.md.
-# ─────────────────────────────────────────────
-
-def _entity_kontext_laden(state: ConversationState) -> str:
-    """Laedt verwandte Entitaeten ueber die Fakten-Kanten. SCHLAEFT — siehe Block darueber.
-
-    Hop 1: Schluesselentitaet → deren Fakten
-    Hop 2: Verknuepfte Entitaeten → deren Fakten (Orts-/Themen-Verknuepfung)
-
-    Nur Entitaet→Entitaet-Fakten (objekt_id gesetzt): auf einen objekt_wert
-    kann nicht weitergehuepft werden, Wert-Fakten bleiben daher aussen vor.
-
-    Gibt formatierten Text zurueck fuer den LLM-Prompt. Leerfaelle (kein
-    Schluessel, keine Entitaeten, keine Fakten) sind legitim und liefern "";
-    DB-Fehler sind Programmier-/Infrastrukturfehler und krachen laut
-    (logger.error + Forensik), statt als Warning unterzugehen.
-    """
-    user_id: str = state.get("user_id", "")
-    # Schluessel: management_target (bei Tasks) oder prompt_topic (bei Chat)
-    external = state.get("external")
-    management_target: str = state.get("management_target", "")
-    prompt_thema:      str = external.emotion.prompt_topic if external else ""
-    schluessel:        str = management_target or prompt_thema
-
-    if not schluessel or not schluessel.strip():
-        logger.debug(
-            "GV-Entity-Hop: kein Schluessel (weder management_target noch prompt_topic) — "
-            "uebersprungen"
-        )
-        return ""
-
-    conn = None
-    try:
-        conn = psycopg2.connect(POSTGRES_URL)
-        cursor = conn.cursor()
-
-        # --- Hop 1: Entitaeten zum Schluessel finden ---
-        cursor.execute(
-            """
-            SELECT id, name, typ, zusammenfassung
-            FROM entitaeten
-            WHERE user_id = %s AND aktiv = TRUE
-              AND (name ILIKE %s OR zusammenfassung ILIKE %s)
-            LIMIT 5
-            """,
-            (user_id, f"%{schluessel}%", f"%{schluessel}%"),
-        )
-        hop1_entitaeten: list[tuple] = cursor.fetchall()
-
-        if not hop1_entitaeten:
-            logger.info(
-                "GV-Entity-Hop: keine Entitaeten zum Schluessel '%s' — leerer Kontext", schluessel
-            )
-            return ""
-
-        hop1_ids: list[int] = [e[0] for e in hop1_entitaeten]
-
-        # --- Fakten zu Hop-1-Entitaeten laden ---
-        cursor.execute(
-            """
-            SELECT e1.name, f.attribut, e2.name, e2.id, e2.zusammenfassung
-            FROM fakten f
-            JOIN entitaeten e1 ON f.subjekt_id = e1.id
-            JOIN entitaeten e2 ON f.objekt_id = e2.id
-            WHERE f.user_id = %s AND f.aktiv = TRUE
-              AND (f.subjekt_id = ANY(%s) OR f.objekt_id = ANY(%s))
-            LIMIT 20
-            """,
-            (user_id, hop1_ids, hop1_ids),
-        )
-        hop1_fakten: list[tuple] = cursor.fetchall()
-
-        # --- Hop 2: Verknuepfte Entitaeten → deren Fakten ---
-        hop2_ids: list[int] = list({f[3] for f in hop1_fakten} - set(hop1_ids))
-        hop2_fakten: list[tuple] = []
-
-        if hop2_ids:
-            cursor.execute(
-                """
-                SELECT e1.name, f.attribut, e2.name, e2.id, e2.zusammenfassung
-                FROM fakten f
-                JOIN entitaeten e1 ON f.subjekt_id = e1.id
-                JOIN entitaeten e2 ON f.objekt_id = e2.id
-                WHERE f.user_id = %s AND f.aktiv = TRUE
-                  AND (f.subjekt_id = ANY(%s) OR f.objekt_id = ANY(%s))
-                LIMIT 20
-                """,
-                (user_id, hop2_ids, hop2_ids),
-            )
-            hop2_fakten = cursor.fetchall()
-
-    except psycopg2.Error as fehler:
-        # Kein Laufzeitzufall: UndefinedColumn & Co. sind Programmierfehler,
-        # Verbindungsfehler Infrastrukturdefekte. Laut protokollieren
-        # (Fail loud), der Turn laeuft ohne Entity-Kontext weiter —
-        # gleiches Muster wie turn_roh im Dispatcher.
-        logger.error(
-            "GV-Entity-Hop: DB-Zugriff fehlgeschlagen (Schluessel '%s'): %s",
-            schluessel, fehler, exc_info=True,
-        )
-        log_fehler(
-            turn_id      = state.get("turn_id", ""),
-            node         = "gespraechsvektor",
-            quelle       = "fakten",
-            inhalt       = {
-                "grund":      "entity_hop_db_fehler",
-                "fehler":     str(fehler),
-                "schluessel": schluessel,
-            },
-            user_id      = user_id,
-            character_id = state.get("character_id", ""),
-        )
-        return ""
-    finally:
-        if conn is not None:
-            conn.close()
-
-    # --- Formatieren ---
-    alle_fakten: list[tuple] = hop1_fakten + hop2_fakten
-    if not alle_fakten:
-        logger.info("GV-Entity-Hop: 0 Fakten zu Schluessel '%s' — leerer Kontext", schluessel)
-        return ""
-
-    # Deduplizieren (gleiche Kante nicht doppelt)
-    gesehen: set[str] = set()
-    zeilen: list[str] = []
-    for subjekt, attribut, objekt, _, zusammenfassung in alle_fakten:
-        kante: str = f"{subjekt}|{attribut}|{objekt}"
-        if kante in gesehen:
-            continue
-        gesehen.add(kante)
-        zeile: str = f"  {subjekt} → {attribut} → {objekt}"
-        if zusammenfassung:
-            zeile += f" ({zusammenfassung})"
-        zeilen.append(zeile)
-
-    entity_text: str = "\n".join(zeilen)
-    logger.info("GV-Entity-Hop: %d Fakten geladen (Schluessel: '%s')", len(zeilen), schluessel)
-    return entity_text
 
 
 # ─────────────────────────────────────────────
@@ -1341,8 +1163,6 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         return state
 
     # 3. Zweite Wissensquelle: die Spreading-Erinnerungen des Enrichers.
-    #    Bis Chat 115 der Entity-Hop ueber `fakten` — umgehaengt, weil die
-    #    Tabelle seit Synapsen P4 keinen Produzenten mehr hat (K2).
     resonanz_kontext: str = _resonanz_kontext_laden(state)
 
     # 3d. GV4: Wissensluecken finden (DB-Queries — nur ab Strategie-Laenge,
