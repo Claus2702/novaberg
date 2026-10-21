@@ -79,7 +79,7 @@ Ein Befund aus einer Simulation an einem frischen Prüf-Nutzer (`labor/2026-10-1
 - Der Entwurf folgte dem Agenten, der Thinker berichtigte aus seinem Fenster (vierzehn Tage voraus).
 - In `simnachher3` war es genauso: **2 von 2 Läufen.**
 
-**Dieselbe Klasse auf einem anderen Weg:** Ein freier Name wird wörtlich gesucht — wie bei `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN` (novaberg-bugs-antwortpfad.md), dort im Angebot der Sachlage, hier in der Suche des Timeline-Agenten.
+**Dieselbe Klasse auf einem anderen Weg:** Ein freier Name wird wörtlich gesucht — wie bei `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN` (novaberg-bugs-antwortpfad.md), dort im Angebot der Sachlage, hier in der Suche des Timeline-Agenten. → Dort behoben im Tree am 21.10.2026, nicht committet: Das Fenster kommt aus einem Zeitbezug, den der Server aus Äußerung und Name ableitet. Die Suche des Timeline-Agenten nimmt das Ziel weiter wörtlich; der Bau hat sie nicht berührt.
 
 **Wirkung.** Eine Lesefrage nach einem Termin, die der Router dem Agenten zustellt, findet ihn nur, wenn das Ziel ohne Füllwörter im Titel steht. Innerhalb des Fensters des Thinkers wird das berichtigt; ein Termin weiter als vierzehn Tage voraus fehlt auch dort, und die Antwort sagte dann *kein Termin* (vorhergesagt, nicht gemessen).
 

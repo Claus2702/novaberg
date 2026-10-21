@@ -269,3 +269,21 @@ Gemessen mit 15 erfundenen Dialogen, alte gegen neue Fassung, Regel vor dem Lauf
 **Das Angebot blieb in 3 von 3 Turns leer**, im echten Turn gezählt (*„Angebot aus Kalender 0“*). Der Grund ist der Name des Objekts, nicht der Leseweg (`SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN`). **Derselbe Leseweg mit passendem Namen**, am selben Bestand: *November* liefert genau die drei Novembertermine, dieselbe Menge wie per SQL und dieselbe Zahl wie `[TERMINE]`, ohne den Anker und ohne die Randtermine; *Zahnarzt* liefert beide Termine, den vergangenen als *(vergangen, vor 7 Tagen)*, zeilengleich mit dem Weg hinter dem Router. **Die Teile des Ziels *kein vergangener als kommend* und *kein Anker* hält der Leseweg also, im Betrieb sind sie mangels Angebot nicht belegt.**
 
 **Nebenbei:** Der Router las auf die Frage nach dem kommenden Zahnarzttermin rückwärts, und der Block trug nur den vergangenen, gekennzeichnet; die Antwort nannte den kommenden richtig, aus dem Verlauf (Fundliste 17.10.2026). Seiteneffekt: ein neuer Erinnerungs-Anker am 01.11. um 00:00, keine Notiz, kein Fakt.
+
+#### Teil H — der Zeitbezug am Objekt, gemessen am Modell am 21.10.2026
+
+**Gemessen am Modell des Betriebs, vor dem Commit** (`_b` §4 Scheibe 6, *Nachgezogen am 21.10.2026*; `_e` Nr. 36, 37): synthetische Reihen, **ohne Turn und ohne Datenbank** — die Objekte vom Modell des Betriebs benannt, je Fall eine Äußerung und ein Folgeturn. Nicht an einem Prüf-Nutzer, wie Nr. 36 es für die Messung vor dem Bau vorsah; die Messung im Betrieb steht aus. Die Zahlen sind Zählungen an kleinen Stichproben, keine Raten.
+
+| Reihe | gezählt | Ergebnis |
+|---|---|---|
+| vor dem Bau, 16 Fälle | ein akutes Objekt trägt das Ankerwort der Äußerung im Namen | 15 von 16 |
+| | der Name kehrt im Folgeturn wörtlich wieder | 14 von 16 |
+| nach dem Bau, erste blinde Reihe | Feld richtig | 14 von 14 |
+| | Feld im Folgeturn noch da | 13 von 14 |
+| | Sätze ohne Zeitfrage, die einen Titel bekamen | **3 von 4** |
+| nach der Regel *Titel nur bei einer Zeitfrage*, zweite blinde Reihe | Feld richtig | 7 von 8 |
+| | Sätze ohne Zeitfrage mit Feld | 0 von 8 |
+
+**Was die Zahlen tragen:** Die Annahme von Nr. 36 hält an dieser Stichprobe — das Wort, nach dem gefragt wird, steht fast immer im Namen, und der Name kehrt im Folgeturn meist wörtlich wieder. **Die erste blinde Reihe widerlegte die erste Fassung:** Ein Wort der Äußerung im Namen trifft fast jedes akute Objekt, auch bei einer Aussage ohne Frage; daraus die Regel, dass nur eine Frage nach dem Zeitpunkt einen Titel setzt. Der Zeitraum braucht keine Frage, sein Wort muss ohnehin im Namen stehen.
+
+**Bekannte Grenze:** Wechselt der Name im Folgeturn — umbenannt, oder ein von Nova genannter Termin wird akut —, geht das Feld verloren: in 2 von 30 Folgeturns der Reihen.
