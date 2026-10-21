@@ -14,7 +14,8 @@ Aussage traegt: Ein Name ohne Wert wandert nach `offen`, ein Wert, der unter
 
 **Zwei Aufrufer, zwei Quellen.** Der frische Parse (`from_model=True`) darf keine
 Felder tragen, die der Server selbst schreibt — `quellen` (Scheibe 6),
-`plausibilitaet` (7), `recherche` (8): Ein Modell, das sie aus der vorigen Blase
+`plausibilitaet` (7), `recherche` (8), `zeitbezug` (das Kalenderfenster,
+`sachlage_zeitbezug.py`): Ein Modell, das sie aus der vorigen Blase
 abschreibt oder erfindet, erzeugte sonst ungepruefte Herkunft. Die vorige Blase
 aus Redis (`from_model=False`) behaelt sie, wird aber auf ihre Form gehalten —
 ein gelesener Wert ist eine externe Quelle, auch wenn dasselbe System ihn schrieb.
@@ -27,6 +28,8 @@ in `sachlage.py` und laufen **nach** dieser Pruefung, weil sie gegen `offen` und
 import logging
 import re
 
+from graph.nodes.sachlage_zeitbezug import TIME_REFERENCE_FIELD, hold_time_reference
+
 logger = logging.getLogger("ki_server.sachlage")
 
 # Die Klassen aus frames_k §3.1, wie der Sachlage-Prompt sie nennt.
@@ -34,7 +37,9 @@ OBJECT_CLASSES: frozenset[str] = frozenset({"objekt", "person", "ort", "vorgang"
 
 # Felder, die nur der Server schreibt. Kommen sie aus dem Modell, sind sie
 # abgeschrieben oder erfunden.
-SERVER_OWNED_OBJECT_FIELDS: tuple[str, ...] = ("quellen", "plausibilitaet", "recherche")
+SERVER_OWNED_OBJECT_FIELDS: tuple[str, ...] = (
+    "quellen", "plausibilitaet", "recherche", TIME_REFERENCE_FIELD,
+)
 
 # Die Woerter der drei Kanons (Traeger, Kritikalitaet, Sprecher in sachlage.py).
 # Als Wert einer gedeckten Eigenschaft sind sie keine Aussage ueber die Sache,
@@ -464,6 +469,7 @@ def normalize_object_form(objekt: dict, from_model: bool, gate: bool = True) -> 
                     f"{type(objekt[feld]).__name__} statt {typ.__name__} — verworfen"
                 )
                 del objekt[feld]
+        hold_time_reference(objekt, name)
 
     # ── Ausgabe-Verifikation ────────────────────
     doppelt: set[str] = {property_key(o) for o in objekt["offen"]} & {

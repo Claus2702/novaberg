@@ -7,9 +7,11 @@ akutem Objekt ein Fenster und liest mit `memory/timeline_reading.py::
 read_appointments` — demselben Leseweg wie hinter dem Router.
 
 Zeugen dieser Datei, gefahren ueber `memory_offer` (den Weg ins Angebot):
-  * **Zeitraum** — *November* ist ein Fenster `range` vom 01.11. bis 30.11.
-    des richtigen Jahres; die Termine darin stehen im Angebot, je mit
-    `timeline#<id>`. Zwilling: ein Titel wird gesucht, nicht als Zeitraum.
+  * **Zeitraum** — ein Zeitbezug *im November* ist ein Fenster `range` vom
+    01.11. bis 30.11. des richtigen Jahres; die Termine darin stehen im
+    Angebot, je mit `timeline#<id>`. Zwilling: ein Titel wird gesucht, nicht
+    als Zeitraum. Seit Nr. 36 kommt das Fenster aus dem Feld `zeitbezug`,
+    nicht aus dem Namen.
   * **Abgrenzung** — eine Suche nach Titel mit einem vergangenen, einem
     kommenden und einem Termin von heute ohne Uhrzeit liefert im Angebot
     dieselben Zeilen wie `read_after_route` hinter dem Router; die Abfrage
@@ -164,9 +166,31 @@ def _repository(timeline: FakeTimeline) -> ExitStack:
     return stack
 
 
-def _offer(names: list[str], timeline: FakeTimeline, entries: list | None = None) -> list:
-    """Das Angebot eines Turns, dessen vorige Blase `names` als akute Objekte traegt."""
-    previous: dict = {"objekte": [{"name": n, "akut": True} for n in names]}
+# Seit Nr. 36 oeffnet nur der Zeitbezug ein Fenster, nicht mehr der Name: Die
+# Objekte dieser Zeugen tragen das Feld so, wie der Server es ableitet
+# (`graph/nodes/sachlage_zeitbezug.py`). Ohne Feld kein Fenster bezeugt
+# `test_sachlage_zeitbezug.py`.
+_NOVEMBER_REFERENCE: dict = {
+    "art": "zeitraum", "von": "2026-11-01", "bis": "2026-11-30", "wortlaut": "im November",
+}
+
+
+def _period(name: str) -> dict:
+    """Ein akutes Objekt mit dem Zeitbezug *im November*."""
+    return {"name": name, "akut": True, "zeitbezug": dict(_NOVEMBER_REFERENCE)}
+
+
+def _titled(name: str) -> dict:
+    """Ein akutes Objekt, dessen Zeitbezug der eigene Name als Titel ist."""
+    return {
+        "name": name, "akut": True,
+        "zeitbezug": {"art": "titel", "stichwort": name, "wortlaut": name},
+    }
+
+
+def _offer(objects: list[dict], timeline: FakeTimeline, entries: list | None = None) -> list:
+    """Das Angebot eines Turns, dessen vorige Blase `objects` traegt."""
+    previous: dict = {"objekte": objects}
     state: dict = {"user_id": "pruefer", "memory_entries": entries or []}
     with _repository(timeline), patch(_CLOCK, return_value=NOW):
         return memory_offer(state, previous)
@@ -186,7 +210,7 @@ class PeriodTest(unittest.TestCase):
     """Ein Zeitraum wie *November* liest den ganzen Zeitraum."""
 
     def test_november_is_the_whole_month_of_this_year(self) -> None:
-        window = _calendar_window("November", NOW)
+        window = _calendar_window(_period("November"), NOW)
 
         self.assertEqual(window.kind, KIND_RANGE)
         self.assertEqual(
@@ -197,7 +221,7 @@ class PeriodTest(unittest.TestCase):
 
     def test_the_appointments_in_november_are_offered_with_their_origin(self) -> None:
         timeline = FakeTimeline(NOVEMBER_STOCK)
-        hits: list[MemoryHit] = _calendar(_offer(["November"], timeline))
+        hits: list[MemoryHit] = _calendar(_offer([_period("November")], timeline))
 
         self.assertEqual([h.origin for h in hits], ["timeline#3", "timeline#4"])
         self.assertEqual(
@@ -208,7 +232,7 @@ class PeriodTest(unittest.TestCase):
         self.assertEqual([c["art"] for c in timeline.calls], ["range"])
 
     def test_twin_a_title_is_searched_not_read_as_a_period(self) -> None:
-        window = _calendar_window("Elternabend", NOW)
+        window = _calendar_window(_titled("Elternabend"), NOW)
 
         self.assertEqual(window.kind, KIND_SEARCH)
         self.assertEqual(window.keyword, "Elternabend")
@@ -219,7 +243,7 @@ class PastBoundaryTest(unittest.TestCase):
 
     def test_a_title_search_gives_the_same_lines_as_behind_the_router(self) -> None:
         timeline = FakeTimeline(DENTIST_STOCK)
-        hits: list[MemoryHit] = _calendar(_offer(["Zahnarzt"], timeline))
+        hits: list[MemoryHit] = _calendar(_offer([_titled("Zahnarzt")], timeline))
         query: dict = {
             "type": "search", "keyword": "Zahnarzt", "limit": SACHLAGE_BESTAND_KALENDER_LIMIT,
         }
@@ -241,7 +265,7 @@ class PastBoundaryTest(unittest.TestCase):
 
     def test_the_query_gets_the_clock_of_the_turn(self) -> None:
         timeline = FakeTimeline(DENTIST_STOCK)
-        _offer(["Zahnarzt"], timeline)
+        _offer([_titled("Zahnarzt")], timeline)
 
         call: dict = timeline.calls[0]
         self.assertEqual(call["now"], NOW)
@@ -267,12 +291,14 @@ class AnchorTest(unittest.TestCase):
             with self.subTest(ausschluss_in_der_abfrage=honour):
                 timeline = FakeTimeline(self._stock(), honour_exclusion=honour)
                 with self.assertNoLogs(_RESOLVER_LOGGER, level="ERROR"):
-                    hits: list[MemoryHit] = _calendar(_offer(["Probe"], timeline))
+                    hits: list[MemoryHit] = _calendar(_offer([_titled("Probe")], timeline))
                 self.assertNotIn("timeline#21", [h.origin for h in hits])
                 self.assertIn(ANCHOR_TYPE, timeline.calls[0]["exclude"])
 
     def test_twin_an_appointment_on_the_same_day_is_offered(self) -> None:
-        hits: list[MemoryHit] = _calendar(_offer(["Probe"], FakeTimeline(self._stock())))
+        hits: list[MemoryHit] = _calendar(
+            _offer([_titled("Probe")], FakeTimeline(self._stock())),
+        )
 
         self.assertEqual([h.origin for h in hits], ["timeline#22"])
         self.assertEqual(
@@ -323,7 +349,10 @@ class OneReadingPathTest(unittest.TestCase):
             "graph.nodes.sachlage_resolver.read_appointments",
             wraps=timeline_reading.read_appointments,
         ) as shared:
-            _offer(["Zahnarzt", "November"], FakeTimeline(DENTIST_STOCK + NOVEMBER_STOCK))
+            _offer(
+                [_titled("Zahnarzt"), _period("November")],
+                FakeTimeline(DENTIST_STOCK + NOVEMBER_STOCK),
+            )
 
         self.assertEqual(
             [c.args[0].kind for c in shared.call_args_list], [KIND_SEARCH, KIND_RANGE],
@@ -334,7 +363,7 @@ class OneReadingPathTest(unittest.TestCase):
         timeline = FakeTimeline(DENTIST_STOCK, failure=ConnectionError("Verbindung weg"))
         with self.assertLogs(_RESOLVER_LOGGER, level="ERROR") as log:
             hits: list[MemoryHit] = _offer(
-                ["Zahnarzt"], timeline,
+                [_titled("Zahnarzt")], timeline,
                 [{"quelle": "lzg", "inhalt": "Pool", "gewicht": 0.5, "meta": {}}],
             )
 

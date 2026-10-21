@@ -28,8 +28,9 @@ fuer das Paar 0 Zeilen (28.08.2026); Notizen nicht, weil der einzige Leser
 mit Treffersemantik `last_touched` schreibt.
 
 **Die Reihenfolge des Angebots ist je Quelle fest, nicht ueber Quellen
-sortiert:** Kalender (Namenstreffer oder ein Zeitraum wie *November*, gelesen
-ueber den Leseweg der Termine), dann der Pool nach Gewicht, dann die
+sortiert:** Kalender (aus dem Zeitbezug des Objekts — ein Zeitraum wie
+*November* oder ein Termin-Titel, `sachlage_zeitbezug.py` —, gelesen ueber den
+Leseweg der Termine; ohne Zeitbezug kein Kalender), dann der Pool nach Gewicht, dann die
 Aufzeichnungen nach Kosinus. Eine Rangfolge ueber drei Skalen waere eine
 Rangfolge aus Skalen statt aus Bedeutungen (`plugins/wissen_manager`).
 
@@ -55,17 +56,15 @@ from graph.appointments import (
     Appointment,
     AppointmentReading,
     AppointmentWindow,
-    search_window,
-    time_window,
 )
 from graph.format.appointments import appointment_line
 from graph.nodes.sachlage_form import covered_value
+from graph.nodes.sachlage_zeitbezug import time_reference_window
 from memory.sachlage_properties import active_properties, text_key
 from memory.timeline_reading import read_appointments
 from services.model_services import model_service
 from services.model_services.types import ChatRequest
 from utils.local_time import now_local
-from utils.zeitparser import named_period
 
 logger = logging.getLogger("ki_server.sachlage.resolver")
 
@@ -141,38 +140,38 @@ def _field(record: object, name: str) -> object:
     return getattr(record, name, None)
 
 
-def _calendar_window(name: str, now: datetime) -> AppointmentWindow | None:
-    """Das Lesefenster zu einem akuten Objekt: ein Zeitraum oder eine Suche nach Titel.
+def _calendar_window(objekt: dict, now: datetime) -> AppointmentWindow | None:
+    """Das Lesefenster zu einem akuten Objekt — allein aus seinem Zeitbezug.
 
-    Nennt der Name einen Zeitraum (`named_period`: *November*, *naechste
-    Woche*, *Wochenende*), ist das Fenster dieser Zeitraum (`time_window`,
-    dasselbe Fenster wie im Timeline-Agenten). Sonst ist es eine Suche nach
-    dem Namen als Titel (`search_window`) in beide Richtungen, mit
-    `SACHLAGE_BESTAND_KALENDER_LIMIT` Treffern. Ein Tag wie *morgen* ist kein
-    Zeitraum und wird als Titel gesucht.
+    Das Fenster kommt aus dem Feld `zeitbezug`, das der Server am Objekt
+    fuehrt (`sachlage_zeitbezug.time_reference_window`): ein Zeitraum von
+    `von` bis `bis`, oder eine Suche nach dem Stichwort in beide Richtungen,
+    mit `SACHLAGE_BESTAND_KALENDER_LIMIT` Treffern. **Ohne Feld kein
+    Fenster** (Nr. 36): Den Namen vergibt das Modell frei, und ein Name als
+    Fenster las *Novemberereignisse* als Titel und fand nichts.
 
-    Vorbedingung: `name` ist nicht leer; `now` ist zeitzonenbewusst in Ortszeit.
+    Vorbedingung: `objekt` ist ein Objekt der vorigen Blase; `now` ist
+        zeitzonenbewusst in Ortszeit.
     Nachbedingung: ein Fenster der Art `range` oder `search`, oder `None`,
-        wenn `time_window` den Zeitraum nicht lesen kann (laut im Log).
-    Fehlerfaelle: ein leerer Name wirft `ValueError`; eine Trefferzahl
-        ausserhalb von 1 bis 10 in der Konfiguration wirft `ValueError` aus
-        `search_window`.
+        wenn das Objekt keinen Zeitbezug traegt.
+    Fehlerfaelle: ein Objekt, das kein dict ist, wirft `TypeError`; ein naiver
+        Zeitpunkt `ValueError`; eine Trefferzahl ausserhalb von 1 bis 10 in
+        der Konfiguration wirft `ValueError` aus `search_window`.
     """
     # ── Eingabe-Validierung ─────────────────────
-    if not name.strip():
-        msg: str = "Sachlage-Aufloeser: Kalenderfenster ohne Namen"
-        raise ValueError(msg)
+    if not isinstance(objekt, dict):
+        msg: str = f"Sachlage-Aufloeser: Kalenderfenster zu {type(objekt).__name__}"
+        raise TypeError(msg)
 
     # ── Verarbeitung ────────────────────────────
-    window: AppointmentWindow | None
-    if named_period(name, now.date()) is not None:
-        window = time_window(name, now)
-    else:
-        window = search_window({"keyword": name, "limit": SACHLAGE_BESTAND_KALENDER_LIMIT})
+    window: AppointmentWindow | None = time_reference_window(
+        objekt, now, SACHLAGE_BESTAND_KALENDER_LIMIT,
+    )
 
     # ── Ausgabe-Verifikation ────────────────────
     if window is not None and window.kind not in (KIND_RANGE, KIND_SEARCH):
-        msg = f"Sachlage-Aufloeser: Kalenderfenster der Art {window.kind!r} zu '{name[:40]}'"
+        name: str = str(objekt.get("name", ""))[:40]
+        msg = f"Sachlage-Aufloeser: Kalenderfenster der Art {window.kind!r} zu '{name}'"
         raise RuntimeError(msg)
     return window
 
@@ -209,10 +208,12 @@ def _offer_line(appointment: Appointment, now: datetime) -> tuple[str, str, str]
     return SOURCE_CALENDAR, origin, text
 
 
-def _calendar_hits(state: dict, previous: dict | None, now: datetime) -> list[tuple[str, str, str]]:
+def _calendar_hits(
+    state: dict, previous: dict | None, now: datetime,
+) -> tuple[list[tuple[str, str, str]], int, int]:
     """Die Termine zu den akuten Objekten der vorigen Blase, ueber den Leseweg der Termine.
 
-    Je Objekt ein Fenster (`_calendar_window`) und `read_appointments` —
+    Je Objekt mit Zeitbezug ein Fenster (`_calendar_window`) und `read_appointments` —
     derselbe Leseweg wie hinter dem Router: ohne Erinnerungs-Anker (in der
     Abfrage ausgeschlossen, ein angekommener laut verworfen), mit derselben
     Abgrenzung vergangener Termine. Hier bleibt nur die Umformung in eine
@@ -220,10 +221,11 @@ def _calendar_hits(state: dict, previous: dict | None, now: datetime) -> list[tu
 
     Vorbedingung: `previous` ist ein Artefakt oder None; `now` ist
         zeitzonenbewusst in Ortszeit.
-    Nachbedingung: Tripel (Quelle, Herkunft, Text) mit Herkunft
-        `timeline#<id>`; bei einer Suche hoechstens
+    Nachbedingung: `(treffer, fenster, akute)` — Tripel (Quelle, Herkunft,
+        Text) mit Herkunft `timeline#<id>`; bei einer Suche hoechstens
         `SACHLAGE_BESTAND_KALENDER_LIMIT` je Objekt, bei einem Zeitraum jeder
-        Termin darin; ohne akute Objekte leer.
+        Termin darin; ohne akute Objekte oder ohne Zeitbezug leer. `fenster`
+        zaehlt die Fenster aus dem Zeitbezug, `akute` die akuten Objekte.
     Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`. Ein Lesefehler ist
         laut (mit Stacktrace) und beendet die Kalendersuche — der Turn geht
         vor, das Angebot traegt, was bis dahin gelesen ist. Eine Herkunft,
@@ -231,30 +233,32 @@ def _calendar_hits(state: dict, previous: dict | None, now: datetime) -> list[tu
     """
     # ── Eingabe-Validierung ─────────────────────
     if not previous:
-        return []
+        return [], 0, 0
     if now.tzinfo is None:
         msg: str = "Sachlage-Aufloeser: Kalendersuche mit Zeitpunkt ohne Zeitzone"
         raise ValueError(msg)
     user_id: str = str(state.get("user_id", ""))
-    names: list[str] = [
-        str(objekt.get("name", "")).strip()
-        for objekt in previous.get("objekte") or [] if objekt.get("akut")
+    acute: list[dict] = [
+        objekt for objekt in previous.get("objekte") or []
+        if isinstance(objekt, dict) and objekt.get("akut")
     ]
     hits: list[tuple[str, str, str]] = []
+    windows: int = 0
 
     # ── Verarbeitung ────────────────────────────
-    for name in (n for n in names if n):
-        window: AppointmentWindow | None = _calendar_window(name, now)
+    for objekt in acute:
+        window: AppointmentWindow | None = _calendar_window(objekt, now)
         if window is None:
             continue
+        windows += 1
         try:
             reading: AppointmentReading = read_appointments(window, user_id, POSTGRES_URL, now)
         except Exception:
             logger.exception(
-                f"Sachlage-Aufloeser: Kalender zu '{name[:40]}' nicht gelesen "
-                f"(art={window.kind}) — das Angebot bleibt ohne weitere Termine"
+                f"Sachlage-Aufloeser: Kalender zu '{str(objekt.get('name', ''))[:40]}' "
+                f"nicht gelesen (art={window.kind}) — das Angebot bleibt ohne weitere Termine"
             )
-            return hits
+            return hits, windows, len(acute)
         hits.extend(_offer_line(appointment, now) for appointment in reading.appointments)
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -262,7 +266,7 @@ def _calendar_hits(state: dict, previous: dict | None, now: datetime) -> list[tu
     if foreign:
         msg = f"Sachlage-Aufloeser: Kalenderzeilen ohne Kennung der Zeile: {foreign}"
         raise RuntimeError(msg)
-    return hits
+    return hits, windows, len(acute)
 
 
 def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
@@ -282,7 +286,10 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     records: list = state.get("aufzeichnungen") or []
 
     # ── Verarbeitung ────────────────────────────
-    candidates: list[tuple[str, str, str]] = _calendar_hits(state, previous, now_local())
+    candidates: list[tuple[str, str, str]]
+    windows: int
+    acute: int
+    candidates, windows, acute = _calendar_hits(state, previous, now_local())
     kalender: int = len(candidates)
 
     pool: list[tuple[float, str, str, str]] = []
@@ -317,7 +324,8 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     candidates.extend((s, o, c) for _, s, o, c in unterlagen)
 
     logger.info(
-        f"Sachlage-Aufloeser: Angebot aus Kalender {kalender}, Pool {len(pool)} "
+        f"Sachlage-Aufloeser: Angebot aus Kalender {kalender} (Fenster aus dem "
+        f"Zeitbezug {windows} von {acute} akuten Objekten), Pool {len(pool)} "
         f"(von {len(entries)}), Aufzeichnungen {len(unterlagen)} — "
         f"gekappt auf {SACHLAGE_BESTAND_MAX_EINTRAEGE}"
     )

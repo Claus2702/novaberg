@@ -212,8 +212,9 @@ class ObjectFieldsTest(unittest.TestCase):
         objekt = _object(_validate_artifact(_artifact(
             gedeckt={"anlass": "x"}, offen=[],
             quellen={"anlass": "erfunden"}, plausibilitaet="hoch", recherche=["x"],
+            zeitbezug={"art": "titel", "stichwort": "Anlass", "wortlaut": "Anlass"},
         )))
-        for feld in ("quellen", "plausibilitaet", "recherche"):
+        for feld in ("quellen", "plausibilitaet", "recherche", "zeitbezug"):
             self.assertNotIn(feld, objekt)
 
     def test_an_unknown_class_is_removed(self) -> None:

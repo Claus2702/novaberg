@@ -121,6 +121,7 @@ from graph.nodes.sachlage_resolver import (
     property_hits,
     resolve_open_properties,
 )
+from graph.nodes.sachlage_zeitbezug import carry_time_references
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from memory.kurzziel import normalize_object_name, short_goal_track
 from memory.pipeline_log import log_berechnung
@@ -134,6 +135,7 @@ from memory.session import SESSION_HISTORY_BUDGET_CHARS, Verlaufsbeitrag, budget
 from services.model_services import EmbedRequest, model_service
 from services.model_services.types import ChatRequest
 from services.pixie.stack import build_impulse_embed_text
+from utils.local_time import now_local
 
 logger = logging.getLogger("ki_server.sachlage")
 
@@ -906,6 +908,9 @@ def _derive(
     artefakt = carry_criticality(artefakt, vorige)
     artefakt = carry_speakers(artefakt, vorige)
     artefakt = carry_resolved_dates(artefakt, vorige)
+    # Nr. 36: das Kalenderfenster des naechsten Turns kommt aus dem Zeitbezug,
+    # den der Server aus Aeusserung und Name ableitet — nicht aus dem Namen.
+    artefakt = carry_time_references(artefakt, vorige, aeusserung, now_local())
     # Scheibe 7: Behauptet der Nutzer ueber die akute Sache etwas, das die
     # Welt nicht hergibt? Ein eigener Call, nur bei akutem Objekt — die Lage
     # sagt dass und warum, die Form bleibt Sache von Haltung und Vehikel.

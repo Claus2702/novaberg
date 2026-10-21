@@ -38,7 +38,12 @@ _CLOCK: str = "graph.nodes.sachlage_resolver.now_local"
 #: Die Uhr des Turns: zwei Tage vor dem Termin der Zeilen.
 _NOW: datetime = datetime(2029, 12, 31, 12, 0, tzinfo=ZoneInfo("Europe/Berlin"))
 
-_PREVIOUS: dict = {"objekte": [{"name": "Beispieltermin", "akut": True}]}
+# Seit Nr. 36 oeffnet nur der Zeitbezug ein Fenster, nicht der Name: Das
+# akute Objekt traegt das Feld, das der Server zum Titel ableitet.
+_PREVIOUS: dict = {"objekte": [{
+    "name": "Beispieltermin", "akut": True,
+    "zeitbezug": {"art": "titel", "stichwort": "Beispieltermin", "wortlaut": "Beispieltermin"},
+}]}
 _STATE: dict = {"user_id": "u", "memory_entries": []}
 
 

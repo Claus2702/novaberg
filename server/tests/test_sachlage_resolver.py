@@ -148,9 +148,13 @@ class DasAngebotKommtAusDemPoolTest(unittest.TestCase):
         self.assertEqual(hits[1].origin, "unterlagen/b.md")
 
     def test_kalender_nur_zu_akuten_objekten_der_vorigen_blase_und_zuerst(self) -> None:
+        # Seit Nr. 36 oeffnet nur der Zeitbezug ein Fenster, nicht der Name.
+        # Auch das latente Objekt traegt einen, damit »nur akut« etwas prueft.
         vorige: dict = {"objekte": [
-            {"name": "Zahnarzt", "akut": True, "offen": ["wann"]},
-            {"name": "Rasen", "akut": False, "offen": []},
+            {"name": "Zahnarzt", "akut": True, "offen": ["wann"],
+             "zeitbezug": {"art": "titel", "stichwort": "Zahnarzt", "wortlaut": "Zahnarzt"}},
+            {"name": "Rasen", "akut": False, "offen": [],
+             "zeitbezug": {"art": "titel", "stichwort": "Rasen", "wortlaut": "Rasen"}},
         ]}
         state: dict = {"user_id": "u", "memory_entries": [_entry("lzg", "Pool")]}
         with patch(_FIND, return_value=[{
