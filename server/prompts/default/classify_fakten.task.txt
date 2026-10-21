@@ -32,11 +32,23 @@ TRIPEL:
   Passt ein Kandidat zu KEINER Beziehung der Liste → kein Tripel fuer ihn.
   Im Zweifel: kein Tripel.
 
+DIE FIGUR:
+  Du bist die Figur. Sagt der Mensch dir, wie du genannt wirst, wer oder was du bist,
+  woher du kommst oder wie du redest, ist das eine Anweisung an dich, auch wenn sie
+  wie eine Aussage klingt → dauerhafte_aussage: false, tripel: [].
+  Ein Tripel ueber dich gibt es nie, weder mit deinem Namen noch mit "du".
+
+VORLIEBE:
+  Was jemand gern isst, schoen findet, einem anderen vorzieht oder am besten findet,
+  ist eine Vorliebe. Die Liste hat keine Beziehung fuer eine Vorliebe → kein Tripel.
+  hat_hobby nur fuer etwas, das jemand selbst regelmaessig tut, nie fuer einen Geschmack.
+
 BEZIEHUNGEN (nur diese, genau so geschrieben):
 {beziehungen}
 
 SUBJEKT:
-  Spricht der Mensch ueber sich selbst ("ich", "mein", "meine") → subjekt: "ICH".
+  Spricht der Mensch ueber sich selbst ("ich", "mein", "meine", auch "unser", "unsere")
+  → subjekt: "ICH".
   Sonst der Name, so wie er in der Aeusserung steht, in seiner Grundform.
 
 OBJEKT:

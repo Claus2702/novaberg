@@ -12,8 +12,10 @@ im Prompt aus (`NEGATIVE_CASES`).
 **Jedes Tripel wird geprüft, bevor es schreibt** (`vet_triple`): Seine
 Nummer zeigt auf einen Kandidaten des Turns, und zwar einen des Menschen
 — die Herkunft kommt aus dem Sprecher des Kandidaten (`SPEAKER_ORIGIN`),
-nie aus der Antwort; die Beziehung steht im Kanon; Namen und Richtung
-trägt die Äußerung. Was das verfehlt, ist `verworfen:<grund>`.
+nie aus der Antwort; die Beziehung steht im Kanon; das Tripel spricht nicht
+über die Figur (`figur`) und legt keine Vorliebe auf ein Hobby (`vorliebe`);
+Namen und Richtung trägt die Äußerung. Was das verfehlt, ist
+`verworfen:<grund>`.
 
 **Die Antwort wird gegen den Wortlaut der Äußerung gehalten** (`check_answer`).
 `X hat_chef Y` heißt *Y ist Xs Chef*. Was das Modell an Richtung und Namen
@@ -22,11 +24,13 @@ liefert, prüft der Code, soweit der Satz es zeigt:
   * ein Name steht als Name in der Bitte — groß geschrieben, ohne Verb, in
     der Grundform; *Merten* passt auf *Mertens*, *Mertens* in der Stellung
     des Genitivs nicht;
-  * *ICH* nur, wenn die Bitte in der ersten Person spricht;
+  * *ICH* nur, wenn die Bitte in der ersten Person spricht — *unser* zählt
+    wie *mein*;
   * bei einer Beziehung `hat_…` ist der Besitzer im Satz (*Ilvas*,
     *… von Ilva*, *mein*) das Subjekt, nie das Objekt;
   * bei `heisst` ist das Subjekt nie der Besitzer — *Mertens Mutter heißt …*
-    nennt nicht Mertens Namen.
+    nennt nicht Mertens Namen, *mein Hund heißt …* nicht den Namen von ICH;
+    *mein Name* nennt ihn.
 
 Ein Tripel, das das verfehlt, schreibt nichts.
 
@@ -38,7 +42,7 @@ import re
 from typing import NamedTuple
 
 from agents.fakten.beziehungen import KANON, Relation, find_relation
-from config import PROMPTS, get_node_config
+from config import ASSISTANT_NAME, PROMPTS, get_node_config
 from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.fakten.klassifikation")
@@ -56,6 +60,11 @@ SPEAKER_ORIGIN: dict[str, str] = {"nutzer": "mensch"}
 NEGATIVE_CASES: tuple[str, ...] = (
     "eine Anweisung an die Figur, wie sie sich verhalten oder sprechen soll "
     "('sei ab jetzt frecher') — das ist kein Fakt über den Menschen",
+    "eine Anweisung an die Figur über sie selbst — wie sie genannt werden, wer "
+    "oder was sie sein, woher sie kommen soll ('ab sofort nennst du dich Ilva') — "
+    "das ist kein Fakt über die Figur und keiner über den Menschen",
+    "eine Vorliebe, ein Geschmack oder ein Vergleich ('Merten findet Jazz schöner "
+    "als Techno') — das ist kein Hobby und keine andere Beziehung der Liste",
     "ein Satz im Rollenspiel oder in einer erfundenen Geschichte "
     "('mein Drache wohnt in der Höhle') — erfunden ist nicht der Fall",
     "eine Metapher oder Übertreibung ('mein Kopf ist ein Sieb') — "
@@ -73,9 +82,11 @@ REJECT_SPEAKER:    str = "sprecher"
 REJECT_PRECHECK:   str = "vorpruefung"
 REJECT_CANON:      str = "kanon"
 REJECT_UTTERANCE:  str = "aeusserung"
+REJECT_FIGURE:     str = "figur"
+REJECT_TASTE:      str = "vorliebe"
 REJECT_REASONS: frozenset[str] = frozenset({
     REJECT_FORM, REJECT_CANDIDATE, REJECT_SPEAKER, REJECT_PRECHECK, REJECT_CANON,
-    REJECT_UTTERANCE,
+    REJECT_UTTERANCE, REJECT_FIGURE, REJECT_TASTE,
 })
 
 
@@ -103,16 +114,33 @@ class Verdict(NamedTuple):
 # (*Anna-Lena*, *Klaus'*), ohne führendes Satzzeichen.
 _WORD: re.Pattern[str] = re.compile(r"\w[\w'’-]*")
 
-# Mit einem dieser Wörter spricht die Bitte in der ersten Person.
-_FIRST_PERSON: frozenset[str] = frozenset({
-    "ich", "mich", "mir", "mein", "meine", "meinem", "meinen", "meiner", "meines",
-})
-# Mit einem dieser Wörter ist ICH der Besitzer im Satz (*mein Nachbar*).
+# Mit einem dieser Wörter ist ICH der Besitzer im Satz (*mein Nachbar*, *unser
+# Hund*): Was der Mensch mit anderen teilt, besitzt er auch.
 _FIRST_PERSON_POSSESSIVE: frozenset[str] = frozenset({
     "mein", "meine", "meinem", "meinen", "meiner", "meines",
+    "unser", "unsere", "unserem", "unseren", "unserer", "unseres",
+    "unsre", "unsrem", "unsren", "unsrer", "unsres",
 })
+# Mit einem dieser Wörter spricht die Bitte in der ersten Person.
+_FIRST_PERSON: frozenset[str] = frozenset({"ich", "mich", "mir"}) | _FIRST_PERSON_POSSESSIVE
+# Nach diesen Wörtern besitzt ICH nichts: *mein Name* ist der Name von ICH selbst.
+_OWN_NAME: frozenset[str] = frozenset({"name", "namen", "vorname", "vornamen"})
 # Endungen des Genitivs an einem Namen: *Mertens*, *Ilva's*, *Klaus'*.
 _GENITIVE_ENDINGS: tuple[str, ...] = ("s", "'s", "’s", "'", "’")
+
+# Die Figur in der Anrede: Ein Tripel über *du* ist eine Anweisung an sie, kein Fakt.
+_SECOND_PERSON: frozenset[str] = frozenset({
+    "du", "dich", "dir", "dein", "deine", "deinem", "deinen", "deiner", "deines",
+})
+# Wörter einer Vorliebe (*mögen*, *lieber*, *am liebsten*, *Lieblings…*): Der
+# Kanon hat keine Vorliebe, und ein Hobby ist etwas anderes.
+_TASTE_WORDS: frozenset[str] = frozenset({
+    "mag", "magst", "mögen", "mögt", "mochte", "mochtest", "mochten", "mochtet",
+    "möchte", "möchtest", "möchten", "möchtet", "lieber", "liebsten",
+})
+_TASTE_PREFIX: str = "lieblings"
+# Die Beziehung, auf die eine Vorliebe gelegt wird, wenn sie keine hat.
+_TASTE_TARGET: str = "hat_hobby"
 
 # Beziehungen, deren Subjekt der Besitzer ist: *Ilvas Bruder* ist Ilva hat_bruder.
 _POSSESSIVE_PREFIX: str = "hat_"
@@ -239,7 +267,9 @@ def vet_triple(triple: object, candidates: dict[int, dict], utterance: str,
     Nummer zeigt auf einen Kandidaten des Turns; sein Sprecher hat eine
     Herkunft (`SPEAKER_ORIGIN`); die Vorprüfung bejahte eine dauerhafte
     Aussage; die Beziehung steht im Kanon; Subjekt und Objekt sind nicht
-    leer; `check_answer` besteht gegen die Äußerung.
+    leer; Tripel und Kandidat sprechen nicht über die Figur, keine Vorliebe
+    liegt auf einem Hobby, und `check_answer` besteht gegen die Äußerung
+    (`_against_utterance`).
 
     Vorbedingung: `candidates` sind **alle** Kandidaten des Turns, nummeriert
         wie in der Eingabe des Modells — auch die anderer Sprecher, damit
@@ -275,15 +305,60 @@ def vet_triple(triple: object, candidates: dict[int, dict], utterance: str,
     objekt: str = _as_self(str(triple.get("objekt") or "").strip())
     if not subjekt or not objekt:
         return Verdict(None, REJECT_FORM, "Subjekt oder Objekt fehlt")
-    verfehlt: str | None = check_answer(utterance, subjekt, beziehung, objekt)
+    verfehlt: tuple[str, str] | None = _against_utterance(utterance, subjekt, beziehung,
+                                                          objekt, kandidat)
 
     # ── Ausgabe-Verifikation ────────────────────
     if verfehlt is not None:
-        logger.error("klassifizieren: Tripel verworfen — %s (%s %s %s)", verfehlt, subjekt,
+        logger.error("klassifizieren: Tripel verworfen — %s (%s %s %s)", verfehlt[1], subjekt,
                      beziehung.attribut, objekt)
-        return Verdict(None, REJECT_UTTERANCE, verfehlt)
+        return Verdict(None, *verfehlt)
     return Verdict({"subjekt": subjekt, "beziehung": beziehung.attribut, "objekt": objekt,
                     "herkunft": herkunft, "kandidat": nummer}, "", "")
+
+
+def _against_utterance(utterance: str, subjekt: str, beziehung: Relation, objekt: str,
+                       kandidat: dict) -> tuple[str, str] | None:
+    """Hält ein Tripel gegen die Äußerung: Figur, Vorliebe, dann `check_answer`.
+
+    **Die Figur:** Ist das Subjekt die Figur — ihr Name (`ASSISTANT_NAME`)
+    oder *du* in einer Form — oder ist der Kandidat ein Objekt der Figur, sagt
+    der Mensch der Figur, wer sie ist. Das ist eine Anweisung, kein Fakt.
+    **Die Vorliebe:** Ein `hat_hobby` aus einem Satz mit *mögen*, *lieber*,
+    *am liebsten* oder *Lieblings…* ist ein Geschmack, den der Kanon nicht
+    kennt; ein Hobby ist etwas, das jemand tut. Beide Klassen bestehen
+    Vorprüfung und `check_answer`, wenn das Modell sich irrt.
+
+    Vorbedingung: `utterance`, `subjekt` und `objekt` nicht leer und gestutzt,
+        `beziehung` aus dem Kanon, `kandidat` der Kandidat des Tripels.
+    Nachbedingung: (Grund aus `REJECT_REASONS`, Anlass) — `figur`,
+        `vorliebe` oder `aeusserung` (`check_answer`) —, sonst None.
+    Fehlerfälle: ValueError bei leerer Äußerung, leerem Subjekt oder Objekt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not utterance.strip() or not subjekt or not objekt:
+        raise ValueError(  # noqa: TRY003
+            "_against_utterance: Äußerung, Subjekt und Objekt dürfen nicht leer sein")
+
+    # ── Verarbeitung ────────────────────────────
+    # Ohne `- {""}` träfe ein leerer Name der Figur jeden Kandidaten ohne Objekt.
+    figur: frozenset[str] = (_SECOND_PERSON | {ASSISTANT_NAME.strip().casefold()}) - {""}
+    objekt_des_kandidaten: str = str(kandidat.get("objekt") or "").strip()
+    ueber_figur: bool = (subjekt.casefold() in figur
+                         or objekt_des_kandidaten.casefold() in figur)
+    woerter: list[str] = [_norm(w) for w in _WORD.findall(utterance)]
+    vorliebe: list[str] = [w for w in woerter
+                           if w in _TASTE_WORDS or w.startswith(_TASTE_PREFIX)]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if ueber_figur:
+        return REJECT_FIGURE, (f"das Tripel spricht über die Figur ({subjekt!r}, Kandidat "
+                               f"{objekt_des_kandidaten!r}) — eine Anweisung, kein Fakt")
+    if beziehung.attribut == _TASTE_TARGET and vorliebe:
+        return REJECT_TASTE, (f"{_TASTE_TARGET} aus einer Vorliebe ({', '.join(vorliebe)}) — "
+                              "der Kanon kennt keine Vorliebe")
+    verfehlt: str | None = check_answer(utterance, subjekt, beziehung, objekt)
+    return None if verfehlt is None else (REJECT_UTTERANCE, verfehlt)
 
 
 def check_answer(aufgabe: str, subjekt: str, beziehung: Relation, objekt: str) -> str | None:
@@ -328,8 +403,7 @@ def check_answer(aufgabe: str, subjekt: str, beziehung: Relation, objekt: str) -
     if beziehung.attribut.startswith(_POSSESSIVE_PREFIX) and besitzer.get("objekt"):
         return (f"objekt {objekt!r} ist im Satz der Besitzer — bei "
                 f"{beziehung.attribut} ist der Besitzer das Subjekt, die Richtung ist vertauscht")
-    if beziehung.attribut in _SUBJECT_NEVER_POSSESSOR and besitzer["subjekt"] \
-            and subjekt != SELF:
+    if beziehung.attribut in _SUBJECT_NEVER_POSSESSOR and besitzer["subjekt"]:
         return (f"subjekt {subjekt!r} ist im Satz der Besitzer — {beziehung.attribut} "
                 f"nennt dann den Namen eines anderen")
     return None
@@ -369,7 +443,8 @@ def _place_in_request(bitte: _Request, name: str) -> tuple[str | None, bool]:
     Vorbedingung: `bitte` ist die gelesene Bitte, `name` ein Name der Antwort.
     Nachbedingung: (None, Besitzer?), wenn der Name in der Bitte steht —
         Besitzer heißt: im Genitiv (*Ilvas*), nach *… von* (*Chef von Ilva*)
-        oder, bei ICH, mit einem Possessiv der ersten Person (*mein*). Sonst
+        oder, bei ICH, mit einem Possessiv der ersten Person (*mein Hund*),
+        auf das nicht *Name* folgt (*mein Name* besitzt nichts). Sonst
         (Grund, False).
     Fehlerfälle: ValueError bei leerem Namen.
     """
@@ -380,7 +455,11 @@ def _place_in_request(bitte: _Request, name: str) -> tuple[str | None, bool]:
     if name == SELF:
         if _FIRST_PERSON.isdisjoint(normiert):
             return "steht für dich selbst, aber die Bitte spricht nicht von dir", False
-        return None, not _FIRST_PERSON_POSSESSIVE.isdisjoint(normiert)
+        nachfolger: list[str] = [*normiert[1:], ""]
+        return None, any(
+            wort in _FIRST_PERSON_POSSESSIVE and folgt not in _OWN_NAME
+            for wort, folgt in zip(normiert, nachfolger, strict=True)
+        )
     teile: list[str] = name.split()
     if not all(_WORD.fullmatch(t) for t in teile):
         return "ist kein Name", False

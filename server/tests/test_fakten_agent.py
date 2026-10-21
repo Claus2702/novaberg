@@ -639,6 +639,17 @@ class AnswerCheckTest(unittest.TestCase):
         self.assertIn("Besitzer", self._pruefen(bitte, "Ilva", "heisst", "Rufus"))
         self.assertIsNone(self._pruefen(bitte, "Ilva", "hat_haustier", "Rufus"))
 
+    def test_the_self_as_possessor_does_not_carry_the_name_of_its_pet(self) -> None:
+        # FAKTEN-HEISST-ICH-AUSGENOMMEN: bis hierher ging ICH bei `heisst` durch.
+        self.assertIn("Besitzer", self._pruefen(
+            "Mein Hund heißt Rufus.", "ICH", "heisst", "Rufus"))
+        self.assertIsNone(self._pruefen("Mein Hund heißt Rufus.", "ICH", "hat_haustier", "Rufus"))
+
+    def test_the_own_name_of_the_self_passes(self) -> None:
+        # Zwilling: ohne Besitz und mit *mein Name* nennt der Satz den Namen von ICH.
+        self.assertIsNone(self._pruefen("Ich heiße Merten.", "ICH", "heisst", "Merten"))
+        self.assertIsNone(self._pruefen("Mein Name ist Merten.", "ICH", "heisst", "Merten"))
+
     def test_the_self_needs_the_first_person(self) -> None:
         self.assertIn("nicht von dir", self._pruefen(
             "Merk dir, dass Ilva in Ostheim wohnt.", "ICH", "wohnt_in", "Ostheim"))
@@ -654,6 +665,86 @@ class AnswerCheckTest(unittest.TestCase):
         bitte = "merk dir, dass ilva in ostheim wohnt"
         self.assertIsNone(self._pruefen(bitte, "Ilva", "wohnt_in", "Ostheim"))
         self.assertIn("steht so nicht", self._pruefen(bitte, "Merten", "wohnt_in", "Ostheim"))
+
+    def test_our_pet_is_a_pet_of_the_self(self) -> None:
+        # Bis Nachtrag 3 sprach *unser* nicht in der ersten Person: das Tripel fiel durch.
+        for bitte in ("Unser Hund ist Rufus.", "Rufus ist unsere Katze."):
+            with self.subTest(bitte=bitte):
+                self.assertIsNone(self._pruefen(bitte, "ICH", "hat_haustier", "Rufus"))
+
+    def test_our_pet_does_not_carry_the_name_of_the_self(self) -> None:
+        # Zwilling: *unser* ist ein Besitz wie *mein* — der Name ist der des Hundes.
+        self.assertIn("Besitzer", self._pruefen(
+            "Unser Hund heißt Rufus.", "ICH", "heisst", "Rufus"))
+
+
+class FigureAndTasteTest(unittest.TestCase):
+    """`vet_triple`: kein Fakt über die Figur, keine Vorliebe als Hobby — je mit Zwilling."""
+
+    def setUp(self) -> None:
+        ersatz = patch("agents.fakten.klassifikation.ASSISTANT_NAME", "Nova")
+        ersatz.start()
+        self.addCleanup(ersatz.stop)
+
+    def _urteil(self, aeusserung: str, kandidat: dict, subjekt: str, beziehung: str,
+                objekt: str) -> tuple[str, dict | None]:
+        urteil = vet_triple({"kandidat": 1, "subjekt": subjekt, "beziehung": beziehung,
+                             "objekt": objekt}, {1: kandidat}, aeusserung, True)
+        return urteil.grund, urteil.tripel
+
+    def test_a_triple_about_the_figure_is_rejected(self) -> None:
+        for aeusserung, kandidat, subjekt, beziehung, objekt in (
+            ("Ab sofort wohnst du in Ostheim, Nova.", _kandidat("Nova", "Wohnort", "Ostheim"),
+             "Nova", "wohnt_in", "Ostheim"),
+            ("Du arbeitest ab heute als Imkerin.", _kandidat("Du", "Beruf", "Imkerin"),
+             "du", "arbeitet_als", "Imkerin"),
+            # Das Subjekt ist ICH, aber der Kandidat ist die Figur.
+            ("Ich will, dass du dich ab sofort Ilva nennst.",
+             _kandidat("Nova", "Rufname", "Ilva"), "ICH", "heisst", "Ilva"),
+        ):
+            with self.subTest(aeusserung=aeusserung):
+                grund, tripel = self._urteil(aeusserung, kandidat, subjekt, beziehung, objekt)
+                self.assertEqual((grund, tripel), ("figur", None))
+
+    def test_a_triple_about_a_person_of_the_case_passes(self) -> None:
+        # Zwilling: dieselben Formen über Ilva und über ICH — auch neben *dir*.
+        for aeusserung, kandidat, subjekt, beziehung, objekt in (
+            ("Ilva wohnt ab sofort in Ostheim.", _kandidat("Ilva", "Wohnort", "Ostheim"),
+             "Ilva", "wohnt_in", "Ostheim"),
+            ("Merk dir, dass ich Merten heiße.", _kandidat("Mensch", "Name", "Merten"),
+             "ICH", "heisst", "Merten"),
+        ):
+            with self.subTest(aeusserung=aeusserung):
+                grund, tripel = self._urteil(aeusserung, kandidat, subjekt, beziehung, objekt)
+                self.assertEqual(grund, "")
+                self.assertEqual(tripel["subjekt"], subjekt)
+
+    def test_a_taste_is_no_hobby(self) -> None:
+        for aeusserung in ("Merten mag Schach.", "Merten spielt lieber Schach als Skat.",
+                           "Am liebsten spielt Merten Schach.",
+                           "Das Lieblingsspiel von Merten ist Schach."):
+            with self.subTest(aeusserung=aeusserung):
+                grund, tripel = self._urteil(aeusserung, _kandidat("Merten", "Spiel", "Schach"),
+                                             "Merten", "hat_hobby", "Schach")
+                self.assertEqual((grund, tripel), ("vorliebe", None))
+
+    def test_a_hobby_without_a_taste_and_another_relation_beside_a_taste_pass(self) -> None:
+        # Zwilling: ein Hobby ohne Vorliebe; und *mag* hält nur hat_hobby auf.
+        grund, tripel = self._urteil("Merten spielt jeden Sonntag Schach.",
+                                     _kandidat("Merten", "Spiel", "Schach"),
+                                     "Merten", "hat_hobby", "Schach")
+        self.assertEqual((grund, tripel["beziehung"]), ("", "hat_hobby"))
+        grund, tripel = self._urteil("Mein Bruder Merten mag Schach.",
+                                     _kandidat("Bruder", "Name", "Merten"),
+                                     "ICH", "hat_bruder", "Merten")
+        self.assertEqual((grund, tripel["beziehung"]), ("", "hat_bruder"))
+
+    def test_the_prompt_names_the_figure_and_the_taste_as_no_fact(self) -> None:
+        prompt = build_classify_prompt()
+        for regel in ("DIE FIGUR:", "Ein Tripel ueber dich gibt es nie", "VORLIEBE:",
+                      "nie fuer einen Geschmack", '"unser", "unsere"'):
+            with self.subTest(regel=regel):
+                self.assertIn(regel, prompt)
 
 
 class RegistrationAndBoardTest(unittest.TestCase):

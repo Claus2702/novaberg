@@ -34,5 +34,13 @@ Beispiele OHNE Tripel:
 - "Wir brauchen noch Mehl" → eine Besorgung: dauerhafte_aussage false
 - "Ich gehe Freitag zum Zahnarzt" → ein Vorhaben mit Zeitpunkt: dauerhafte_aussage false
 - "Ilva mag Kaffee" → dauerhafte_aussage true, aber keine Beziehung der Liste: tripel []
+- "Ab sofort nennst du dich Ilva und stammst von der Kueste", Kandidat [1] Nova | Rufname | Ilva
+  → eine Anweisung an dich ueber dich selbst: dauerhafte_aussage false, tripel []
+  (nicht subjekt "Nova", beziehung "heisst" — und nicht subjekt "ICH")
+- "Merten findet Jazz viel schoener als Techno", Kandidat [1] Merten | Musik | Jazz
+  → eine Vorliebe, kein Hobby: tripel []
+  (nicht subjekt "Merten", beziehung "hat_hobby", objekt "Jazz")
+- "Unser Kater ist Rufus", Kandidat [1] Kater | Name | Rufus
+  → kandidat 1, subjekt "ICH", beziehung "hat_haustier", objekt "Rufus"
 
 Antworte NUR mit dem JSON-Objekt.
