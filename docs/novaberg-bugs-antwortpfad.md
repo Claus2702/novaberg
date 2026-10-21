@@ -1,9 +1,24 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → 48 Eintraege (17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → 50 Eintraege (20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 20.10.2026 — bei der Prüfung des Schreibauftrags an den Fakten-Agenten
+
+### `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` — die Zählung der Writes in der Salienz enthält den Fakten-Auftrag
+**Kategorie:** ANT
+
+**Rang:** **niedrig** — still, aber nur in Log und Spur: Das Verhalten ändert sich nicht, und der Grund einer Verwerfung steht weiter in den Fehlereinträgen. Vergeben am 20.10.2026 gegen den Tree `0ca9da6`.
+
+**Zustand:** offen — am Code gelesen am 20.10.2026 bei der Prüfung des Baus, nicht gemessen; wirkt ab dem Commit des Schreibauftrags.
+
+**Befund** `[Code]`: Der Knoten der Salienz übernimmt `pending_writes` samt dem Fakten-Auftrag aus der Sachlage (`graph/nodes/salience.py`, um Z. 597). `span_end` meldet `pending_writes: len(pending)` (um Z. 1034), und der Kommentar darüber sagt: *„Weniger pending_writes als Segmente heisst, dass unterwegs mindestens eines verworfen wurde“*. In praktisch jedem gerechneten Turn steht jetzt ein Write mehr, und ein einzelnes verworfenes Segment ist an diesen Zahlen nicht mehr zu sehen. Ebenso ist die Zeile *„Salienz: N pending_writes angelegt“* (um Z. 941) um eins zu hoch.
+
+**Geschlossen, wenn** die Salienz in Spur und Log nur ihre eigenen Writes zählt oder den Fakten-Auftrag getrennt ausweist, und der Kommentar das sagt.
 
 ---
 
@@ -812,6 +827,7 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 **Symptom:** Ein `management_target`, das `fakten` exakt oder unscharf trifft (`graph/nodes/planner.py::_manager_zu_target`; unscharf auch `"akte" in "fakten"`), wählt den `FaktenManager`. Weil der Agent kein Objekt-Merkmal trägt, steht `fakten` in der Reihenfolge vorn (`service_order_for`); der Planner setzt `agent_name = "fakten"`, und `agent_dispatch_node` endet mit `fehler` (*„Kein Dispatch für Agent 'fakten'“*). `fehler` zählt nicht als Ablehnung — die Reihe endet, eine Merk-Bitte auf diesem Weg erreicht die Notizen nicht. Vorher lehnte der Agent ab, und der nächste Dienst wurde gefragt.
 **Gemessen:** Router und Planner am Modell des Betriebs, 27 Äußerungen: 0 Ziele `fakten` — kein Brett nennt den Dienst mehr.
 **Schließbedingung:** Der Planner nimmt Dienste, die nicht am Empfang stehen, aus der Wahl über das Ziel und aus der Reihenfolge, mit einer Zeile im Log; ein Zeuge mit `management_target = "fakten"` bei einer Merk-Bitte fragt die Notizen.
+**Zustand:** offen — **behoben im Tree, nicht committet** (20.10.2026): `graph/nodes/planner.py::_without_reception` und `_reachable_registry` — ein Dienst, dessen Agent nicht `empfang` ist, fällt aus Priorität 3, aus `router_named` und aus der Reihenfolge, mit einer Zeile im Log; Zeugen mit `fakten` exakt und unscharf fragen die Notizen, Gegenprobe rot wie vorhergesagt. Geschlossen mit dem Commit.
 
 ---
 
