@@ -1706,7 +1706,7 @@ Gebaut wird in zwei Schritten: zuerst der Einstieg in diesem Repositorium, danac
 
 **Rang:** mittel — die Suite ist in den Wegwerf-Behältern damit rot, und jede Änderung am Server misst gegen eine rote Nulllinie oder braucht den Vergleichslauf gegen den Betrieb, den die Testdatenbank ablösen soll.
 
-**Zustand:** ⬜ offen — gemessen am 18.10.2026, nichts gebaut.
+**Zustand:** ⬜ offen — **gebaut, nicht committet** (20.10.2026, Tree `a127e1f` auf dem Schreibauftrag an den Fakten-Agenten): Die fünf Zeugen legen ihre Zeilen unter eigener Kennung selbst an und räumen sie ab, die zwei `skipTest` sind Zusicherungen geworden. Server-Suite in den Wegwerf-Behältern: `Ran 4825 tests` · `OK (expected failures=2)`, kein Übersprung (vorher rot: 2 failures, 1 error, 2 skipped). Geschlossen mit dem Commit. Davor: offen — gemessen am 18.10.2026, nichts gebaut.
 
 **Befund** `[gemessen]`: In den Wegwerf-Behältern — Schema von null, keine Zeile Bestand — werden drei Zeugen rot und zwei übersprungen; im Vergleichslauf gegen den Betrieb am selben HEAD (`d2dfd50`) sind alle grün:
 
