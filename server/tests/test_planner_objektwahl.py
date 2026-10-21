@@ -191,6 +191,122 @@ class LegacyManagerTest(unittest.TestCase):
         self.assertEqual(ergebnis["management_result"], "ok")
 
 
+# Der Fakten-Agent wie angemeldet: ohne Merkmal, Zustellart `queue` (kein Empfang).
+_OHNE_EMPFANG = {**AGENTEN, "fakten": SimpleNamespace(name="fakten", objekt_merkmal="",
+                                                        zustellart="queue")}
+
+
+class NoWayToAServiceWithoutReceptionTest(unittest.TestCase):
+    """Ein Router-Ziel bringt den Planner nie zu einem Dienst, dessen Agent keinen Empfang hat."""
+
+    def _plan(self, target: str) -> tuple[dict, list[str]]:
+        state = _state(None, management_target=target)
+        with patch.object(planner, "get_registry", return_value=REGISTRY), \
+             patch.object(planner.AgentRegistry, "finden",
+                          side_effect=lambda n: _OHNE_EMPFANG.get(n)), \
+             self.assertLogs("ki_server.planner", level="INFO") as protokoll:
+            ergebnis = planner.plan(state, "postgres://test")
+        return ergebnis, protokoll.output
+
+    def _order(self, target: str) -> list[str]:
+        with patch.object(planner.AgentRegistry, "finden",
+                          side_effect=lambda n: _OHNE_EMPFANG.get(n)):
+            return planner.service_order_for(
+                _state(None, management_target=target), REGISTRY, REGISTRY["fakten"],
+            )
+
+    def test_target_fakten_asks_the_notes_and_names_the_exclusion(self) -> None:
+        for target in ("fakten", "fakt"):
+            with self.subTest(target=target):
+                ergebnis, protokoll = self._plan(target)
+                self.assertEqual(ergebnis["agent_name"], "notizen")
+                self.assertIn("ohne Empfang aus der Wahl genommen: ['fakten']",
+                              "\n".join(protokoll))
+
+    def test_target_notizen_is_unchanged(self) -> None:
+        ergebnis, protokoll = self._plan("notizen")
+        self.assertEqual(ergebnis["agent_name"], "notizen")
+        self.assertIn("Match via target 'notizen' → notizen (exakt)", "\n".join(protokoll))
+
+    def test_a_service_without_reception_never_enters_the_order(self) -> None:
+        # Auch als Fallback gereicht steht er nicht in der Reihenfolge — und das Log sagt es.
+        with self.assertLogs("ki_server.planner", level="INFO") as protokoll:
+            reihenfolge = self._order("")
+        self.assertNotIn("fakten", reihenfolge)
+        self.assertIn("'fakten' hat keinen Empfang", "\n".join(protokoll.output))
+
+    def test_a_manager_without_an_agent_stays_in_the_order(self) -> None:
+        # Zwilling: derselbe Fallback ohne Agenten (alter Manager-Weg) bleibt erreichbar.
+        with patch.object(planner.AgentRegistry, "finden", side_effect=lambda n: AGENTEN.get(n)):
+            reihenfolge = planner.service_order_for(_state(None), REGISTRY, REGISTRY["fakten"])
+        self.assertEqual(reihenfolge, ["fakten"])
+
+    def _reception(self, delivery: str) -> tuple[bool, str]:
+        agent = SimpleNamespace(name="probe", objekt_merkmal="", zustellart=delivery)
+        with patch.object(planner.AgentRegistry, "finden", return_value=agent), \
+             self.assertLogs("ki_server.planner", level="DEBUG") as protokoll:
+            planner.logger.debug("Probe")
+            ohne = planner._without_reception("probe")
+        return ohne, "\n".join(protokoll.output)
+
+    def test_an_unknown_delivery_is_loud_and_counts_as_without_reception(self) -> None:
+        ohne, protokoll = self._reception("brieftaube")
+        self.assertTrue(ohne)
+        self.assertIn("ERROR", protokoll)
+        self.assertIn("unbekannter Zustellart 'brieftaube'", protokoll)
+
+    def test_a_known_delivery_is_quiet(self) -> None:
+        # Zwilling: `empfang` ist erreichbar, `queue` nicht — beide ohne diese Zeile.
+        for delivery, erwartet in (("empfang", False), ("queue", True)):
+            with self.subTest(delivery=delivery):
+                ohne, protokoll = self._reception(delivery)
+                self.assertEqual(ohne, erwartet)
+                self.assertNotIn("unbekannter Zustellart", protokoll)
+
+    def _reachable(self, registry: dict) -> tuple[dict, str]:
+        with patch.object(planner.AgentRegistry, "finden",
+                          side_effect=lambda n: _OHNE_EMPFANG.get(n)), \
+             self.assertLogs("ki_server.planner", level="DEBUG") as protokoll:
+            planner.logger.debug("Probe")
+            erreichbar = planner._reachable_registry(registry)
+        return erreichbar, "\n".join(protokoll.output)
+
+    def test_a_registry_without_any_reception_is_reported_loudly(self) -> None:
+        erreichbar, protokoll = self._reachable({"fakten": REGISTRY["fakten"]})
+        self.assertEqual(erreichbar, {})
+        self.assertIn("ERROR", protokoll)
+        self.assertIn("kein Dienst mit Empfang", protokoll)
+
+    def test_a_registry_with_reception_left_is_not(self) -> None:
+        # Zwilling: dieselbe Ausnahme in der vollen Registry — ein INFO, kein Alarm.
+        erreichbar, protokoll = self._reachable(REGISTRY)
+        self.assertEqual(sorted(erreichbar), ["dateien", "notizen", "timeline"])
+        self.assertNotIn("kein Dienst mit Empfang", protokoll)
+        self.assertIn("ohne Empfang aus der Wahl genommen: ['fakten']", protokoll)
+
+    def _order_of_sentence_11(self) -> tuple[list[str], str]:
+        with self.assertLogs("ki_server.planner", level="INFO") as protokoll:
+            reihenfolge = _order(_state(_sentence_11(), management_target="notizen"),
+                                 REGISTRY["notizen"])
+        return reihenfolge, "\n".join(protokoll.output)
+
+    def test_an_order_the_named_service_does_not_lead_is_reported_loudly(self) -> None:
+        # Die Wahl ueber das Ziel laesst die Notizen zu, die Reihenfolge nimmt sie heraus:
+        # Die zwei Pruefungen des Empfangs widersprechen einander.
+        with patch.object(planner, "_reachable_registry", side_effect=lambda r: r), \
+             patch.object(planner, "_without_reception", side_effect=lambda n: n == "notizen"):
+            reihenfolge, protokoll = self._order_of_sentence_11()
+        self.assertEqual(reihenfolge, ["timeline"])
+        self.assertIn("ERROR", protokoll)
+        self.assertIn("verletzt die Nachbedingung", protokoll)
+
+    def test_an_order_the_named_service_leads_is_quiet(self) -> None:
+        # Zwilling: ohne Widerspruch fuehren die Notizen, keine solche Zeile.
+        reihenfolge, protokoll = self._order_of_sentence_11()
+        self.assertEqual(reihenfolge, ["notizen", "timeline"])
+        self.assertNotIn("verletzt die Nachbedingung", protokoll)
+
+
 class AufgabenblockTest(unittest.TestCase):
 
     def test_erfolg_des_zweiten_schlaegt_die_ablehnung_des_ersten(self) -> None:

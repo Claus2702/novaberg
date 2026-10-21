@@ -16,6 +16,7 @@ import json
 import logging
 
 from agents import AgentRegistry
+from agents.base import ZUSTELLART_KANON
 from agents.object_nearness import objects_for_service, service_order
 from config import PROMPTS
 from graph.format.agent_results import format_success_lines
@@ -387,6 +388,72 @@ def _manager_zu_target(registry: dict, target_lower: str) -> BaseManager | None:
     return None
 
 
+def _without_reception(name: str) -> bool:
+    """Ist `name` ein Dienst, dessen Agent keinen Empfang hat?
+
+    Vorbedingung: keine.
+    Nachbedingung: True nur, wenn es einen Agenten des Namens gibt und seine
+        `zustellart` nicht `empfang` ist. Ein Manager ohne Agent (der alte
+        Manager-Weg) ist erreichbar; ebenso ein Agent ohne das Attribut —
+        jeder Agent erbt es von `BaseAgent`, fehlen kann es nur einem Doppel.
+    Fehlerfaelle: Eine Zustellart ausserhalb von `ZUSTELLART_KANON` steht mit
+        `logger.error` im Log, und der Dienst gilt als ohne Empfang — wie
+        `nmcp` einen solchen Agenten verweigert.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not name:
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    agent = AgentRegistry.finden(name)
+    delivery: str | None = getattr(agent, "zustellart", None) if agent is not None else None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if delivery is not None and delivery not in ZUSTELLART_KANON:
+        logger.error(
+            f"Planner: Dienst '{name}' mit unbekannter Zustellart {delivery!r} — "
+            f"gilt als ohne Empfang"
+        )
+    return delivery is not None and delivery != "empfang"
+
+
+def _reachable_registry(registry: dict) -> dict:
+    """Die Manager-Registry ohne die Dienste, die der Planner nicht fragen darf.
+
+    Ein Dienst ohne Empfang bekommt seine Auftraege auf einem anderen Weg
+    (etwa vom Dispatcher); waehlt ihn der Planner ueber das Ziel des Routers,
+    endet der Agent-Dispatch mit `fehler`, und die Reihe bricht ab — eine
+    Merk-Bitte erreichte die Notizen nicht mehr.
+
+    Vorbedingung: `registry` ist die Manager-Registry (Schluessel -> Manager).
+    Nachbedingung: dieselbe Registry ohne jeden Manager, dessen Agent nicht
+        `empfang` hat; jeder Ausschluss steht als Zeile im Log.
+    Fehlerfaelle: keine Registry — TypeError. Bleibt von einer nicht leeren
+        Registry kein Dienst uebrig, steht das mit `logger.error` im Log: Der
+        Planner kann dann niemanden fragen, nicht einmal den Auffang.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(registry, dict):
+        raise TypeError(f"Manager-Registry kein dict: {type(registry).__name__}")  # noqa: TRY003
+
+    # ── Verarbeitung ────────────────────────────
+    excluded: list[str] = sorted(
+        str(m.ziel) for m in registry.values() if _without_reception(getattr(m, "ziel", ""))
+    )
+    reachable: dict = {
+        key: m for key, m in registry.items() if getattr(m, "ziel", "") not in excluded
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if registry and not reachable:
+        logger.error(
+            f"Planner: kein Dienst mit Empfang in der Registry — alle ausgenommen: {excluded}"
+        )
+    elif excluded:
+        logger.info(f"Planner: Dienste ohne Empfang aus der Wahl genommen: {excluded}")
+    return reachable
+
+
 # Ausgaenge, nach denen der naechste Dienst gefragt wird: begruendete
 # Ablehnung und die Vorform ohne Begruendung ("rejected" der Klassifikation).
 DECLINED: frozenset[str] = frozenset({"abgelehnt", "rejected"})
@@ -404,6 +471,10 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
         erreicht; die uebrigen folgen in ihrer Ordnung. Jeder hoechstens einmal;
         nur Namen, fuer die es einen Manager oder Agenten gibt.
     Fehlerfaelle: keine Ausnahme; ein Name ohne Dienst wird laut verworfen.
+        Verletzt die Reihenfolge die Nachbedingung (ein Dienst doppelt, oder
+        der genannte Dienst mit Naehe fuehrt nicht — etwa weil die Wahl ueber
+        das Ziel und die Reihenfolge den Empfang verschieden beurteilen),
+        steht das mit `logger.error` im Log.
 
     **Warum der Router-Treffer nur mit Naehe vorn steht:** Die Bitte nennt ihr
     Objekt; ein aelterer Termin, nach dem in diesem Turn niemand fragt, ist
@@ -435,7 +506,7 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
     # Prioritaet 4 und ein Intent-Treffer setzen das Feld nicht.
     target_lower: str = str(state.get("management_target") or "").lower()
     router_named: BaseManager | None = (
-        _manager_zu_target(registry, target_lower) if target_lower else None
+        _manager_zu_target(_reachable_registry(registry), target_lower) if target_lower else None
     )
     router_name: str | None = getattr(router_named, "ziel", None)
     nearness_first: list[str] = list(aus_naehe)
@@ -470,6 +541,9 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
         if not bekannt:
             logger.error(f"Planner: Dienst '{name}' aus dem Urteil ist nicht angemeldet — verworfen")
             continue
+        if _without_reception(name):
+            logger.info(f"Planner: Dienst '{name}' hat keinen Empfang — nicht in der Reihenfolge")
+            continue
         reihenfolge.append(name)
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -479,6 +553,17 @@ def service_order_for(state: ConversationState, registry: dict, fallback) -> lis
         f"needs_timeline={state.get('needs_timeline')}, fallback_ohne_merkmal={ohne_merkmal}, "
         f"router_vorzug={router_reason} → {reihenfolge}"
     )
+    # Die Nachbedingung: jeder hoechstens einmal, und der genannte Dienst mit
+    # Naehe fuehrt, ausser ein Fallback ohne Merkmal steht vor ihm.
+    ahead: str | None = fallback_name if ohne_merkmal and fallback_name != router_name else None
+    leads: list[str] = [n for n in reihenfolge if n != ahead][:1]
+    if len(set(reihenfolge)) != len(reihenfolge) or (
+        router_name in aus_naehe and leads != [router_name]
+    ):
+        logger.error(
+            f"Planner-Weiche: Reihenfolge {reihenfolge} verletzt die Nachbedingung — "
+            f"router={router_name}, naehe={aus_naehe}, fallback={fallback_name}"
+        )
     return reihenfolge
 
 
@@ -604,10 +689,14 @@ def plan(
     # ist wahr und `dateien_manager` kommt alphabetisch zuerst. Der lesende
     # Dienst schluckte damit jede Freigabe-Anfrage, und der Fehler sähe wie
     # eine falsche Klassifikation aus statt wie eine Namenskollision.
+    #
+    # **Nur Dienste mit Empfang.** Ein Dienst, dessen Auftraege ein anderer
+    # Knoten stellt (`fakten`: die Sachlage, ausgefuehrt im Dispatcher), wird
+    # hier nicht gewaehlt — sonst stuende er vorn und die Reihe braeche ab.
     if not zustaendiger:
         target_lower: str = state.get("management_target", "").lower()
         if target_lower:
-            zustaendiger = _manager_zu_target(registry, target_lower)
+            zustaendiger = _manager_zu_target(_reachable_registry(registry), target_lower)
 
     # Priorität 4: Fallback — NotizenManager als Auffangbecken
     # Timeline-Kontext allein reicht NICHT — ohne Datumsbezug im Prompt

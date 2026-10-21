@@ -1,4 +1,4 @@
-"""Zeugen für den Fakten-Agenten: vom Dispatch bis zur Zeile in `fakten`.
+"""Zeugen für den Fakten-Agenten: vom Subgraphen bis zur Zeile in `fakten`.
 
 Was diese Datei zusichert:
   * **Eine Beziehung des Kanons wird genau ein Fakt** mit Paar und Herkunft
@@ -90,7 +90,7 @@ def _zustand(aufgabe: str = "merk dir, dass Ilva in Ostheim wohnt") -> dict:
 
 
 class AgentWritesAFactTest(unittest.TestCase):
-    """Der ganze Weg: Dispatch → Klassifikation → Suche → Schreiben → Verifikation."""
+    """Der Weg im Subgraphen: Klassifikation → Suche → Schreiben → Verifikation."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -132,8 +132,7 @@ class AgentWritesAFactTest(unittest.TestCase):
     def _laufen(self, antwort: dict, bitte: str) -> tuple[dict, SimpleNamespace]:
         # Die Bitte trägt die Namen der Antwort: Die Klassifikation hält beide
         # gegeneinander und verwirft eine Antwort, deren Namen nicht dastehen.
-        # Der Auftrag geht direkt an den Subgraphen: Der Dispatcher ist nicht Teil
-        # dieses Baus.
+        # Der Auftrag geht direkt an den Subgraphen.
         self.modell.chat.submit_sync.return_value.parsed = antwort
         zustand: dict = _zustand(bitte)
         zustand["kontext"] = {"user_id": self.user, "character_id": self.char}
