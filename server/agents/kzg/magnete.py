@@ -20,8 +20,14 @@ Ausgabe (in state["parameter"]):
 EVA-Disziplin: Eingabe-Validierung (leere Roh-Felder -> leeres Ergebnis,
 kein Fehler), Verarbeitung (Resolve + ggf. Create), Ausgabe-Logging.
 
-Ausfall: Die Auflösung wirft bei einem Fehler der Datenbank oder des
-Embeddings. Hier endet er, je Name: Der Name bekommt keine ID, es wird keine
+Auflösung nur über den Namen: Ein Name, der keine eigene Entität hat, wird
+eine neue — auch wenn eine bestehende ihm nur ähnelt (*Lena*, wo nur *Lea*
+steht). Zwei Akten derselben Person werden später auf Rückfrage
+zusammengelegt, nicht hier still verbunden.
+
+Ausfall: Die Suche wirft bei einem Fehler der Datenbank und bei *ICH* ohne
+Entität des Menschen, das Anlegen bei einem Fehler des Schreibens. Hier
+endet er, je Name: Der Name bekommt keine ID, es wird keine
 Entität angelegt, der Ausfall steht als `error` und als Eintrag `fehler` im
 Pipeline-Log; die übrigen Namen werden aufgelöst, und der Eintrag des
 Kurzzeitgedächtnisses wird mit den Magneten geschrieben, die stehen.
@@ -32,10 +38,10 @@ Spezifikation: docs/novaberg-memory-synapsen_k.md §13.5.
 import logging
 
 from agents.base import AgentState
-from config import POSTGRES_URL, redis_client
+from config import POSTGRES_URL
 from memory.pipeline_log import log_fehler
 from memory.repositories.timeline_repository import TimelineRepository
-from memory.services.entity_resolution import EntityResolutionService, ResolvedEntity
+from memory.services.entity_resolution import EntityResolutionService
 from utils.zeitparser import ZeitVektor, zeit_parsen_vektor
 
 logger = logging.getLogger("ki_server.agents.kzg.magnete")
@@ -127,13 +133,13 @@ def _entitaeten_aufloesen(
 ) -> tuple[list[int], list[str]]:
     """Loest eine Liste von Roh-Eigennamen zu Entitaets-IDs auf.
 
-    Folgt dem Zwei-Schritt-Pattern der Entity Resolution, je Name:
-    erst resolve_batch (Lookup), dann create_new_entity, wenn der Name
-    `ist_neu=True` und `ist_referenz=True` ist. Disambiguierungs-Faelle
-    (`braucht_klaerung=True`) werden im nicht-interaktiven KZG-Pfad
-    uebersprungen (info) — siehe convention-magneten.md.
+    Je Name, nur über den Namen (`_namen_suchen`): Der Name wird getrimmt,
+    ein leerer übersprungen. Kein Treffer → eine neue Entität mit dem
+    getrimmten Namen und Typ `sonstiges`; ein Treffer → seine ID; mehr als
+    einer → kein Magnet, nichts angelegt, eine Zeile `info` — der KZG-Pfad ist
+    nicht interaktiv und kann nicht zurückfragen (convention-magneten.md).
 
-    Je Name, nicht je Liste, weil die Auflösung bei einem Ausfall wirft:
+    Je Name, nicht je Liste, weil Suche und Anlegen bei einem Ausfall werfen:
     Ein Aufruf für alle Namen verlöre mit dem einen Ausfall auch die übrigen.
 
     Vorbedingung: user_id ist nicht leer (geprüft im Knoten).
@@ -141,9 +147,11 @@ def _entitaeten_aufloesen(
         angelegten Namen in der Reihenfolge der Eingabe; die zweite nennt die
         Namen, deren Suche oder Anlegen ausfiel — für sie wurde keine Entität
         angelegt, und je Name stehen eine Zeile `error` und ein Eintrag
-        `fehler` im Pipeline-Log.
-    Fehlerfälle: ValueError bei leerer user_id. Ein Fehler der Auflösung
-        oder des Anlegens verlässt die Funktion nicht.
+        `fehler` im Pipeline-Log. Leere und mehrdeutige Namen stehen in
+        keiner der beiden Listen.
+    Fehlerfälle: ValueError bei leerer user_id. Ein Fehler der Suche (auch
+        *ICH* ohne Entität des Menschen) oder des Anlegens verlässt die
+        Funktion nicht.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not roh_namen:
@@ -154,29 +162,39 @@ def _entitaeten_aufloesen(
     # ── Verarbeitung ────────────────────────────
     entitaet_ids: list[int] = []
     ausgefallen:  list[str] = []
-    for name in roh_namen:
+    for roh in roh_namen:
         stufe: str = "suche"
         try:
-            ent: ResolvedEntity | None = _namen_suchen(name, user_id, turn_id)
-            if ent is not None and ent.ist_neu and ent.ist_referenz:
+            name: str = roh.strip()
+            if not name:
+                continue
+            treffer: list[dict] = _namen_suchen(name, user_id)
+            if len(treffer) > 1:
+                logger.info(
+                    f"magnete_aufloesen: '{name}' mehrdeutig ({len(treffer)} "
+                    f"Entitaeten) — im KZG-Pfad kein Magnet (nicht-interaktiv)"
+                )
+                continue
+            if treffer:
+                entitaet_id: int = treffer[0]["id"]
+            else:
                 stufe = "anlegen"
-                ent.bekannte_id = EntityResolutionService.create_new_entity(
+                entitaet_id = EntityResolutionService.create_new_entity(
                     postgres_url = POSTGRES_URL,
                     user_id      = user_id,
-                    name         = ent.name,
-                    typ          = ent.typ,
+                    name         = name,
+                    typ          = "sonstiges",
                 )
                 logger.info(
-                    f"magnete_aufloesen: Neue Entitaet '{ent.name}' "
-                    f"angelegt (id={ent.bekannte_id})"
+                    f"magnete_aufloesen: Neue Entitaet '{name}' "
+                    f"angelegt (id={entitaet_id})"
                 )
         except Exception as fehler:  # noqa: BLE001 — ein Ausfall kostet nur diesen Namen
-            _ausfall_melden(name, stufe, fehler, user_id, turn_id)
-            ausgefallen.append(name)
+            _ausfall_melden(roh, stufe, fehler, user_id, turn_id)
+            ausgefallen.append(roh)
             continue
 
-        if ent is not None and ent.bekannte_id is not None:
-            entitaet_ids.append(ent.bekannte_id)
+        entitaet_ids.append(entitaet_id)
 
     # ── Ausgabe-Verifikation ────────────────────
     if len(entitaet_ids) + len(ausgefallen) > len(roh_namen):
@@ -190,47 +208,42 @@ def _entitaeten_aufloesen(
 def _namen_suchen(
     name:    str,
     user_id: str,
-    turn_id: str,
-) -> ResolvedEntity | None:
-    """Sucht einen einzelnen Namen über resolve_batch.
+) -> list[dict]:
+    """Sucht einen einzelnen Namen nur über den Namen (resolve_by_name).
 
-    Vorbedingung: user_id ist nicht leer.
-    Nachbedingung: das eine Ergebnis der Auflösung, oder None, wenn der Name
-        leer ist (resolve_batch überspringt ihn) oder mehrdeutig (im
-        nicht-interaktiven KZG-Pfad ignoriert, info).
-    Fehlerfälle: Jeder Fehler der Auflösung geht durch — der Aufrufer fängt
-        je Name. RuntimeError, wenn die Auflösung für einen Namen mehr als ein
-        Ergebnis liefert.
+    Ohne Rückfall über Embeddings: Ein ähnlicher Name ist kein Treffer, und
+    der Aufrufer legt für ihn eine neue Entität an, statt ihn still an eine
+    fremde zu binden.
+
+    Vorbedingung: user_id und name sind nicht leer, name ist getrimmt.
+    Nachbedingung: die Treffer der Suche, jeder mit einer ID > 0 — leer
+        heißt: die Suche lief und fand nichts. *ICH* ergibt die Entität des
+        Menschen.
+    Fehlerfälle: ValueError bei leerer Eingabe. Jeder Fehler der Suche geht
+        durch, auch LookupError bei *ICH* ohne Entität des Menschen — der
+        Aufrufer fängt je Name. RuntimeError, wenn ein Treffer keine ID > 0
+        trägt.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
         raise ValueError("_namen_suchen: user_id ist leer")  # noqa: TRY003
+    if not name or name != name.strip():
+        raise ValueError(  # noqa: TRY003
+            f"_namen_suchen: name {name!r} ist leer oder nicht getrimmt"
+        )
 
     # ── Verarbeitung ────────────────────────────
-    resolution = EntityResolutionService.resolve_batch(
-        entitaeten   = [{"name": name, "typ": "sonstiges", "ist_referenz": True}],
-        postgres_url = POSTGRES_URL,
-        user_id      = user_id,
-        redis_client = redis_client,
-        turn_id      = turn_id or None,
+    treffer: list[dict] = EntityResolutionService.resolve_by_name(
+        POSTGRES_URL, user_id, name,
     )
 
     # ── Ausgabe-Verifikation ────────────────────
-    if len(resolution.aufgeloest) > 1:
-        raise RuntimeError(  # noqa: TRY003
-            f"_namen_suchen: {len(resolution.aufgeloest)} Ergebnisse für '{name}', "
-            f"erwartet höchstens 1"
-        )
-    if not resolution.aufgeloest:
-        return None
-    ent: ResolvedEntity = resolution.aufgeloest[0]
-    if ent.braucht_klärung:
-        logger.info(
-            f"magnete_aufloesen: '{name}' mehrdeutig "
-            f"({len(ent.kandidaten)} Kandidaten) — im KZG-Pfad ignoriert (nicht-interaktiv)"
-        )
-        return None
-    return ent
+    for zeile in treffer:
+        if not isinstance(zeile.get("id"), int) or zeile["id"] <= 0:
+            raise RuntimeError(  # noqa: TRY003
+                f"_namen_suchen: Treffer für '{name}' ohne ID > 0: {zeile.get('id')!r}"
+            )
+    return treffer
 
 
 def _ausfall_melden(
