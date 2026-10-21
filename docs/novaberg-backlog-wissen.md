@@ -907,7 +907,7 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 1. **Inventur-Sprint TIMELINE-PAIR-INVENTUR:** `\d` auf alle paar-skopierten Speicher, prüfen wo `character_id` fehlt. Erwarteter Aufwand: 5-10 Minuten Read-only, ein kurzer Brudi-Prompt.
 2. **Migrations-Sprint TIMELINE-PAIR-MIGRATION:** `character_id`-Spalte ergänzen wo nötig, Indexe anpassen, Repositories und Schreibpfade durchziehen, Bestand initialisieren (alle alten Einträge bekommen `character_id='nova'`).
 
-**Eingeordnet:** Inventur-Sprint nach M2.5a (jetzt). Migrations-Sprint wahrscheinlich nach M3, abhängig vom Inventur-Befund.
+**Eingeordnet:** Inventur-Sprint nach M2.5a (jetzt). ~~Migrations-Sprint wahrscheinlich nach M3, abhängig vom Inventur-Befund.~~ → Die Migration der Timeline kommt mit F6, vor dem Typ `ereignis` (S7, `novaberg-memory-fakten_b.md` §6 Schritt 10): das Ereignis gehört dem Paar (entschieden am 21.10.2026, `novaberg-memory-fakten_e.md` A Nr. 38).
 
 ---
 

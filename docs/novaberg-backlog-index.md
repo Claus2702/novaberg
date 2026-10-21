@@ -1,13 +1,13 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 468 Eintraege mit Kennung — 385 offen, 83 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 469 Eintraege mit Kennung — 386 offen, 83 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 465 von 468 Eintraegen zugeordnet.
+**Kategorie:** 466 von 469 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 80 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 81 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 66 |
@@ -317,7 +317,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 | Kuerzel | Kategorie | zugeordnet |
 |---|---|---|
-| `GED` | GEDAECHTNIS | 81 |
+| `GED` | GEDAECHTNIS | 82 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 74 |
 | `ANT` | ANTWORTPFAD | 66 |
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 468 Eintraege
+## Alle 469 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -416,6 +416,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | GED | 1987 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
 | GED | 2014 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
 | GED | 2152 | offen | `SALIENZ-TRAEGT-NAEHE-NICHT` | [Befund: SALIENZ-TRAEGT-NAEHE-NICHT — Die Salienz trä](novaberg-backlog-gedaechtnis.md) |
+| GED | 2176 | offen | `ENTITAETEN-ZUSAMMENLEGEN` | [Befund: ENTITAETEN-ZUSAMMENLEGEN — zwei Akten dersel](novaberg-backlog-gedaechtnis.md) |
 | HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
 | HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
 | HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |

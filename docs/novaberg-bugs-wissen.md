@@ -460,6 +460,9 @@ if self.now > dateobj - tz_offset:
 **Rang:** **mittel** — still beim zweiten Charakter, Aufwand groß (DDL). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `timeline` hat keine `character_id` (`server/agents/timeline/init.sql:7-26`).
 
 **Zustand:** offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `timeline` fuehrt `user_id` und kein `character_id`.
+
+**Eingeordnet am 21.10.2026:** Vorbedingung des Typs `ereignis` — das Ereignis gehört dem Paar (`novaberg-memory-fakten_e.md` A Nr. 38); behoben mit S7 vor F6 (`novaberg-memory-fakten_b.md` §6, Schritt 10).
+
 **Entdeckt:** Chat 80, im Zuge der M2.5a-Phase-2-Implementierung (Magnet-Spalten-Befüllung beim Timeline-Schreiben)
 
 **Klasse:** Schema-Lücke, Severity Mittel — Foundation-Bug, akut nur bei Multi-Charakter-Setup

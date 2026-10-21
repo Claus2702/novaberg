@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → 14 Eintraege (20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → 15 Eintraege (21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -8,6 +8,19 @@
 ---
 
 ## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
+
+### `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` — der Magnet-Pfad bindet einen ähnlichen Namen still an eine andere Entität
+**Kategorie:** GED
+
+**Rang:** **mittel** — still, und es schreibt: Erinnerungen und künftig Fakten hängen an der falschen Person; selten (7 Bindungen über den Rückfall vom 18.09. bis 21.10.2026). Vergeben am 21.10.2026 gegen HEAD `ba83730`.
+
+**Zustand:** offen — seit der Entscheidung vom 21.10.2026 ein Defekt (`novaberg-memory-fakten_e.md` A Nr. 35), nichts gebaut.
+
+**Befund** `[Code]`: `server/agents/kzg/magnete.py` löst über `EntityResolutionService.resolve_batch` auf; findet die Namenssuche nichts, bindet der Rückfall auf Embeddings einen einzelnen Treffer, wenn der Name *plausibel* ist — gleicher Anfangsbuchstabe und höchstens drei Zeichen Längenunterschied (`memory/services/entity_resolution.py::_name_ist_plausibel`): *Lena* wird *Lea*. Fakten und Sachlage lösen seit dem 20. bzw. 17.10.2026 ohne diesen Rückfall auf.
+
+**Geschlossen, wenn** der Magnet-Pfad nur über den Namen auflöst und ein Name ohne Treffer eine neue Entität wird, bezeugt mit einem ähnlichen Namen (Zwilling: der gleiche Name bindet).
+
+---
 
 ### `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` — ein Ausfall der Suche in der Auflösung geht als *kein Treffer* weiter und legt eine neue Entität an
 **Kategorie:** GED
@@ -169,7 +182,7 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 **Befund (2026-07-29).** Entitäten entstehen ohne Zusammenfassung und ohne Embedding. Einziger aktiver Erzeuger ist `agents/kzg/magnete.py`, `_entitaeten_aufloesen` → `EntityResolutionService.create_new_entity(postgres_url, user_id, name, typ)` — vier Argumente, `zusammenfassung` und `embedding` sind nicht darunter. Gemessen 28.07.2026: **88 von 89** aktiven Entitäten haben ein leeres `zusammenfassung`-Feld; nur die eine `user`-Entität trägt eines (die aus `api/chat.py` stammt, wo beide Felder gesetzt werden). Die Spalten existieren beide in `entitaeten`. Wirkung heute: Jede Suche über die Zusammenfassung ist ohne Substrat — das war Tür 2 des GV-Entity-Hop-Befunds — und eine Embedding-Suche über Entitäten ist gar nicht möglich. Wirkung morgen: M2.5b und die Entity-Resolution selbst hängen an denselben zwei Feldern. Offen ist nicht der Fix, sondern die Frage, **woher** die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommen soll — der Magnet-Pfad ist nicht-interaktiv und hat nur den Namen.
 
-**Nachtrag 20.10.2026, aus der Fundliste:** `create_new_entity` duldet einen Fehler des Embeddings mit einer Warnung und legt die Entität ohne Vektor an (`server/memory/services/entity_resolution.py`, Z. 485–486). Seit dem 20.10.2026 ruft auch der Schreibweg des Fakten-Agenten die Funktion (`server/agents/fakten/suche.py`, Z. 133). Eine Warnung im Log ist nicht *gemeldet* im Sinn der Schließbedingung unten: Kein Leser der Entität erfährt es. → **21.10.2026, behoben im Tree, nicht committet:** Der Ausfall wird mit `logger.error` und der ID gemeldet; die Zeile bleibt `embedding IS NULL` und wird vom Repair beim Start gefüllt (ob das genügt, ist eine offene Frage).
+**Nachtrag 20.10.2026, aus der Fundliste:** `create_new_entity` duldet einen Fehler des Embeddings mit einer Warnung und legt die Entität ohne Vektor an (`server/memory/services/entity_resolution.py`, Z. 485–486). Seit dem 20.10.2026 ruft auch der Schreibweg des Fakten-Agenten die Funktion (`server/agents/fakten/suche.py`, Z. 133). Eine Warnung im Log ist nicht *gemeldet* im Sinn der Schließbedingung unten: Kein Leser der Entität erfährt es. → **21.10.2026, behoben im Tree, nicht committet:** Der Ausfall wird mit `logger.error` und der ID gemeldet; die Zeile bleibt `embedding IS NULL` und wird vom Repair beim Start gefüllt ~~(ob das genügt, ist eine offene Frage)~~ → das genügt, entschieden am 21.10.2026 (`novaberg-memory-fakten_e.md` A Nr. 39): ohne den Rückfall im Magnet-Pfad hat das Embedding einer Entität keinen Leser. Für das Embedding ist die Schließbedingung damit erfüllt, sobald der Bau im Betrieb gemessen ist; offen bleibt die Zusammenfassung (Nachlauf vom 06.10.2026).
 
 **Was fertig waere.** Eine Entitaet entsteht mit Zusammenfassung und Embedding, oder ihr Fehlen ist gemeldet.
 

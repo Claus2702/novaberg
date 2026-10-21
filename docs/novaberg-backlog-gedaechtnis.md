@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Gedaechtnis — KZG, LZG, Promotion, Entitaeten, Salienz, Verfall
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → 80 Eintraege (19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → 81 Eintraege (21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -2172,3 +2172,17 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 **Zusammenhang:** `novaberg-memory-fakten_b.md` (M1, F4) · `novaberg-memory-fakten_k.md` §3.2 · `server/graph/nodes/salience.py`
 
 ---
+
+## Befund: ENTITAETEN-ZUSAMMENLEGEN — zwei Akten derselben Person auf Rückfrage zusammenlegen (21.10.2026)
+
+**Kategorie:** [GED] GEDAECHTNIS
+
+**Rang:** mittel — mit dem Wegfall des Rückfalls auf Embeddings (`novaberg-memory-fakten_e.md` A Nr. 35) entsteht aus einer Schreibvariante eine zweite Entität; ohne Zusammenlegen bleiben zwei Akten getrennt.
+
+**Zustand:** ⬜ offen — Absicht entschieden am 21.10.2026, Bauart offen, nichts gebaut.
+
+**Absicht, Wortlaut des Eigentümers:** *„Ich würde hier auch die Variante A nehmen. Ich denke, dass es durchaus akzeptabel ist, dass man eine zweite Entität mit einer Akte anlegt und wenn sich dann herausstellt, dass zwei Entitäten in Wirklichkeit eine sind, könnte man über eine Rückfrage die beiden Akten zusammenlegen zu einer. Das heißt, wenn sich im Gespräch, im Kontext herausstellt, dass Anne in Wirklichkeit Anna ist und es wurden ursprünglich zwei Entitäten angelegt, dann könnte man die Fakten von Anne zu Anna migrieren und die Triple so ändern, dass sie Anna zugeordnet werden. Das könnte man in einem Gespräch klären und vielleicht einzeln sogar abstimmen.“*
+
+**Was fertig wäre:** Stellt sich im Gespräch heraus, dass zwei Entitäten eine Person sind, fragt Nova nach; auf Zustimmung werden die Fakten der einen an die andere übertragen (Subjekt und Objekt der Tripel), ebenso Magnete und Bindungen, und die zweite Entität wird stillgelegt — womöglich je Fakt abgestimmt. Wie die Rückfrage entsteht (Klärfall am Objekt, `KLA-KLAERFALL-AM-OBJEKT`) und was beim Zusammenlegen mit widersprüchlichen einwertigen Fakten geschieht, legt die Bauart fest. **Sucht der Bau Kandidaten über die Ähnlichkeit der Embeddings**, wird er deren erster Leser und legt ihren Takt fest; bis dahin werden fehlende Embeddings nur beim Start gefüllt (21.10.2026, `novaberg-memory-fakten_e.md` A Nr. 39).
+
+**Zusammenhang:** `novaberg-memory-fakten_e.md` A Nr. 35 · `novaberg-pattern-entity-resolution.md` §2.2 · `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` · Klärfälle (`novaberg-klaerung_k.md`)

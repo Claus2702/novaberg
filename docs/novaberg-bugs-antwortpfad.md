@@ -123,7 +123,7 @@ Von den vier Korrekturen in `simnachher4` legten zwei einen Wunsch in den Mund (
 
 **Reproduktion.** Einem Prüf-Nutzer Termine im November säen und *„Was steht im November an?“* fragen; danach im nächsten Turn die Zählzeile *„Sachlage-Aufloeser: Angebot aus Kalender N“* lesen.
 
-**Geschlossen, wenn** an einem frischen Prüf-Nutzer eine Frage nach einem Zeitraum und eine nach einem Termin-Titel im Folgeturn ein Angebot mit genau den Terminen ergibt, die der Block `[TERMINE]` nennt. Wie das Fenster statt aus dem freien Namen entstehen soll (aus dem Wortlaut des Turns, einem Zeitbezug am Objekt oder einem gelernten Kanon), ist nicht entschieden.
+**Geschlossen, wenn** an einem frischen Prüf-Nutzer eine Frage nach einem Zeitraum und eine nach einem Termin-Titel im Folgeturn ein Angebot mit ~~genau den Terminen ergibt, die der Block `[TERMINE]` nennt~~ → den Terminen ergibt, die der Block `[TERMINE]` nennt — beim Zeitraum genau diese, beim Titel mindestens diese, in beide Richtungen, vergangene gekennzeichnet (21.10.2026, `novaberg-thinking-lage_e.md` Nr. 37). ~~Wie das Fenster statt aus dem freien Namen entstehen soll (aus dem Wortlaut des Turns, einem Zeitbezug am Objekt oder einem gelernten Kanon), ist nicht entschieden.~~ → **Entschieden am 21.10.2026** (`novaberg-thinking-lage_e.md` Nr. 36): ein Zeitbezug am Objekt, den der Server aus Äußerung und Objektnamen ableitet; ohne Zeitbezug bleibt die Eigenschaft offen und Nova fragt. Vor dem Bau die Messung der Annahmen über Name und Akutheit an einem Prüf-Nutzer.
 
 ---
 
