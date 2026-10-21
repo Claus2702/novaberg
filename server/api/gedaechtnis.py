@@ -15,8 +15,10 @@ from fastapi.responses import JSONResponse
 from config import (
     ASSISTANT_USER_ID,
     EMOTION_SEKTOR_MAP,
+    FAKTEN_MAPPE_TIEFE,
     INITIATIVE_RAD_NABE,
     INITIATIVE_RAD_SPANNE,
+    POSTGRES_URL,
     RAD_MAX,
     RAD_MIN,
     RAD_NABE,
@@ -24,7 +26,10 @@ from config import (
     postgres_verbinden,
     redis_client,
 )
+from memory.fakten_mappe import Mappe, load_mappe
 from memory.kzg import _kzg_prefix
+from memory.repositories.entitaeten_repository import EntitaetenRepository
+from memory.repositories.fakten_repository import EntityNotFoundError
 from memory.session import _session_key
 
 logger = logging.getLogger("ki_server.gedaechtnis")
@@ -356,61 +361,84 @@ def hash_abrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
 # ─────────────────────────────────────────────
 @router.get("/fakten/{user_id}")
 def fakten_abrufen(user_id: str):
-    """Alle Entitäten mit ihren Fakten (M2-Schema)."""
+    """Die aktiven Entitäten eines Menschen, ohne ihre Fakten.
+
+    Die Fakten einer Entität liefert ihre Mappe (`get_entity_mappe`). Gelesen
+    wird über `EntitaetenRepository.find_by_user`, das kein `last_touched`
+    schreibt.
+    Vorbedingung: `user_id` ist nicht leer.
+    Nachbedingung: Jeder Eintrag trägt genau `id`, `name` und `typ` einer
+        Entität dieses Menschen.
+    Fehlerfälle: 422 bei leerer `user_id`; 500, wenn das Lesen scheitert oder
+        eine Zeile einem anderen Menschen gehört.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id.strip():
+        return JSONResponse(status_code=422, content={"fehler": "user_id leer"})
+
+    # ── Verarbeitung ────────────────────────────
     try:
-        conn   = postgres_verbinden()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT e.id, e.name, e.typ, e.zusammenfassung
-            FROM entitaeten e
-            WHERE e.user_id = %s AND e.aktiv = TRUE
-            ORDER BY e.name
-        """, (user_id,))
-
-        entitaeten: list = []
-        for eid, name, typ, zusammenfassung in cursor.fetchall():
-            cursor.execute("""
-                SELECT attribut, objekt_wert, objekt_id, fakt_text,
-                       t_valid, t_invalid, last_touched
-                FROM fakten
-                WHERE subjekt_id = %s AND user_id = %s AND aktiv = TRUE
-                ORDER BY attribut
-            """, (eid, user_id))
-
-            relationen: list = []
-            for (
-                attribut,
-                objekt_wert,
-                objekt_id,
-                fakt_text,
-                t_valid,
-                t_invalid,
-                last_touched,
-            ) in cursor.fetchall():
-                relationen.append({
-                    "attribut":     attribut,
-                    "objekt_wert":  objekt_wert or "",
-                    "objekt_id":    objekt_id,
-                    "fakt_text":    fakt_text or "",
-                    "t_valid":      t_valid.isoformat() if t_valid else "",
-                    "t_invalid":    t_invalid.isoformat() if t_invalid else None,
-                    "last_touched": last_touched.isoformat() if last_touched else "",
-                })
-
-            entitaeten.append({
-                "id":              eid,
-                "name":            name,
-                "typ":             typ,
-                "zusammenfassung": zusammenfassung or "",
-                "fakten":          relationen,
-            })
-
-        conn.close()
-        return {"entitaeten": entitaeten, "anzahl": len(entitaeten)}
-
+        zeilen: list[dict] = EntitaetenRepository.find_by_user(POSTGRES_URL, user_id)
     except Exception as fehler:
+        logger.exception(f"fakten_abrufen: Lesen der Entitäten von {user_id} gescheitert")
         return JSONResponse(status_code=500, content={"fehler": str(fehler)})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    fremde: list = [z.get("id") for z in zeilen if z.get("user_id") != user_id]
+    if fremde:
+        logger.error(f"fakten_abrufen: Entitäten {fremde} gehören nicht {user_id}")
+        return JSONResponse(status_code=500, content={"fehler": "Entität eines anderen Menschen"})
+    entitaeten: list[dict] = [
+        {"id": z["id"], "name": z["name"], "typ": z["typ"]} for z in zeilen
+    ]
+    return {"entitaeten": entitaeten, "anzahl": len(entitaeten)}
+
+
+@router.get("/fakten/{user_id}/{entitaet_id}")
+def get_entity_mappe(
+    user_id:      str,
+    entitaet_id:  int,
+    character_id: str,
+    tiefe:        int = FAKTEN_MAPPE_TIEFE,
+):
+    """Die Mappe einer Entität des Paares (`memory.fakten_mappe.load_mappe`).
+
+    `character_id` hat keine Vorgabe: Die Mappe gehört einem Paar, und ein
+    stilles Gegenüber zeigte die Fakten eines anderen. Fehlt er, antwortet
+    FastAPI mit 422.
+    Vorbedingung: `user_id` und `character_id` sind nicht leer.
+    Nachbedingung: 200 mit der Mappe als Objekt; eine leere Mappe ist 200 mit
+        `entries == []` und `truncated == false`.
+    Fehlerfälle: 422 bei ungültiger Eingabe (etwa `tiefe < 1`), geprüft hier
+        vor dem Aufruf; 404 nur bei `EntityNotFoundError` (unbekannt oder
+        fremd); 500 mit Logzeile bei jedem anderen Fehler aus `load_mappe` —
+        auch einem ValueError oder LookupError aus dem Inneren, denn der ist
+        ein Ausfall und keine Eingabe des Aufrufers; nie als leere Mappe.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id.strip() or not character_id.strip():
+        return JSONResponse(status_code=422, content={"fehler": "user_id oder character_id leer"})
+    if entitaet_id < 1 or tiefe < 1:
+        return JSONResponse(status_code=422, content={
+            "fehler": f"entitaet_id und tiefe ab 1 (entitaet_id={entitaet_id}, tiefe={tiefe})",
+        })
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        mappe: Mappe = load_mappe(POSTGRES_URL, user_id, character_id, entitaet_id, depth=tiefe)
+    except EntityNotFoundError as fehler:
+        return JSONResponse(status_code=404, content={"fehler": str(fehler)})
+    except Exception as fehler:
+        logger.exception(
+            f"get_entity_mappe: Mappe {user_id}/{character_id}/{entitaet_id} gescheitert"
+        )
+        return JSONResponse(status_code=500, content={"fehler": str(fehler)})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if mappe.entity_id != entitaet_id:
+        logger.error(f"get_entity_mappe: Mappe von {mappe.entity_id} statt {entitaet_id}")
+        return JSONResponse(status_code=500, content={"fehler": "Mappe einer anderen Entität"})
+    return dataclasses.asdict(mappe)
 
 
 # ─────────────────────────────────────────────
