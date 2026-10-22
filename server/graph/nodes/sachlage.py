@@ -87,6 +87,7 @@ import time
 from datetime import datetime, timezone
 
 from config import (
+    KZG_SALIENZ_HIGH,
     POSTGRES_URL,
     SACHLAGE_BRUECKE_MIN_KOSINUS,
     SACHLAGE_VERFALL_SEKUNDEN,
@@ -124,6 +125,7 @@ from graph.nodes.sachlage_resolver import (
 from graph.nodes.sachlage_zeitbezug import carry_time_references
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from memory.kurzziel import normalize_object_name, short_goal_track
+from memory.kzg import salienz_berechnen
 from memory.pipeline_log import log_berechnung
 from memory.sachlage_history import (
     build_embed_text,
@@ -172,6 +174,10 @@ KRITIKALITAET_KANON: frozenset[str] = frozenset({KRITISCH, UNKRITISCH})
 # gerechnetem Turn mit Verlaufszeile genau einer, ausgefuehrt vom Dispatcher.
 FACT_ORDER_TARGET: str = "fakten"
 FACT_ORDER_ACTION: str = "pruefen"
+# Der Schreibauftrag fuer das Ereignis einer anderen Person (`build_event_order`):
+# nur ueber der Grenze, ausgefuehrt vom Dispatcher vor dem Fakten-Auftrag.
+EVENT_ORDER_TARGET: str = "timeline"
+EVENT_ORDER_ACTION: str = "ereignis"
 ANTWORT_TRAEGER: frozenset[str] = frozenset({TRAEGER_WELT, TRAEGER_NACHSCHLAGEN})
 
 # Scheibe 9: wer eine gedeckte Eigenschaft gesagt hat. Der Gedanke des
@@ -1451,6 +1457,62 @@ def build_fact_order(state: dict, verlauf_id: int, stored: bool) -> dict:
     return order
 
 
+def build_event_order(state: dict, verlauf_id: int, stored: bool) -> dict | None:
+    """Der Schreibauftrag fuer das Ereignis einer anderen Person — nur ueber der Grenze.
+
+    Ein Ereignis mit Gewicht (Umzug, Hochzeit, Operation) kommt ohne Auftrag
+    des Menschen in die Timeline des Paares. Das Tor ist die Salienz des
+    Turns auf der **gekruemmten** Skala des KZG (`salienz_berechnen` mit
+    Haeufigkeit 1 gegen `KZG_SALIENZ_HIGH`): Der rohe Wert liegt auf einer
+    anderen Skala, und `0,75 >= 0,88078` gaebe nie einen Auftrag. Die Daten
+    sind die des Fakten-Auftrags; welche Kandidaten ein Ereignis sind,
+    entscheidet der Leser (`agents.timeline.ereignis`).
+
+    Vorbedingung: wie `build_fact_order`.
+    Nachbedingung: ein `PendingWrite` mit `ziel="timeline"`,
+        `aktion="ereignis"` und den Daten des Fakten-Auftrags, wenn die
+        gekruemmte Salienz die Grenze erreicht; sonst None.
+    Fehlerfaelle: Eine Salienz, die keine Zahl in [0, 1] ist (`None`, wenn
+        der Salienz-Knoten sie nicht ermitteln konnte, ein bool, ein Text),
+        gibt mit `logger.error` keinen Auftrag — geraten wird kein Tor.
+        Verlaufs-id und `stored` wie `build_fact_order` (TypeError).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    salienz: object = state.get("salienz_human")
+    if isinstance(salienz, bool) or not isinstance(salienz, (int, float)) \
+            or not 0.0 <= salienz <= 1.0:
+        logger.error(
+            f"Ereignis-Auftrag: salienz_human={salienz!r} ist keine Zahl in [0, 1] — "
+            f"kein Auftrag (turn={state.get('turn_id', '')!r})"
+        )
+        return None
+    fact_order: dict = build_fact_order(state, verlauf_id, stored)
+
+    # ── Verarbeitung ────────────────────────────
+    gekruemmt: float = salienz_berechnen(float(salienz), 1)
+    if gekruemmt < KZG_SALIENZ_HIGH:
+        logger.info(
+            f"Ereignis-Auftrag: Salienz {salienz:.2f} (gekruemmt {gekruemmt:.5f}) unter "
+            f"der Grenze {KZG_SALIENZ_HIGH} — kein Auftrag"
+        )
+        return None
+    order: dict = {
+        "ziel":         EVENT_ORDER_TARGET,
+        "aktion":       EVENT_ORDER_ACTION,
+        "daten":        dict(fact_order["daten"]),
+        "beschreibung": "Neue Eigenschaften dieses Turns auf Ereignisse pruefen",
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if order["daten"]["salienz_human"] != salienz:
+        raise RuntimeError("Ereignis-Auftrag: die Salienz der Daten ist nicht die des Tors")  # noqa: TRY003
+    logger.info(
+        f"Ereignis-Auftrag: Salienz {salienz:.2f} (gekruemmt {gekruemmt:.5f}) ueber der "
+        f"Grenze — Auftrag gestellt (verlauf={verlauf_id})"
+    )
+    return order
+
+
 def sachlage_assess(state: dict) -> dict:
     """Der Knoten: laedt, schreibt fort, protokolliert.
 
@@ -1535,9 +1597,13 @@ def sachlage_assess(state: dict) -> dict:
                 # Der Schreibauftrag an den Fakten-Agenten: genau einer je
                 # gerechnetem Turn mit Verlaufszeile, auch wenn das Ablegen
                 # ausfiel — dann traegt er es, und der Agent meldet `ausgefallen`.
+                # Ueber der Grenze dazu der Ereignis-Auftrag; der Dispatcher
+                # fuehrt ihn vor dem Fakten-Auftrag aus.
+                event_order: dict | None = build_event_order(state, verlauf_id, stored)
                 state["pending_writes"] = [
                     *(state.get("pending_writes") or []),
                     build_fact_order(state, verlauf_id, stored),
+                    *([event_order] if event_order is not None else []),
                 ]
             # Scheibe 2: Zeigt die Blase zum zweiten Mal auf dasselbe
             # Nutzerziel, entsteht das kurzfristige Ziel (memory/kurzziel.py).

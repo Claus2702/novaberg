@@ -60,6 +60,13 @@ def execute(state: AgentState) -> dict:
         return _with_step(state, {"status": "fehler",
                                   "fehler": f"Ausführung ohne gültige Herkunft: {herkunft!r}"},
                           "ungueltig")
+    timeline_id: object = parameter.get("timeline_id")
+    if timeline_id is not None and (not isinstance(timeline_id, int)
+                                    or isinstance(timeline_id, bool) or timeline_id <= 0):
+        logger.error("ausfuehren: timeline_id %r ungültig — nichts geschrieben", timeline_id)
+        return _with_step(state, {"status": "fehler",
+                                  "fehler": f"Ausführung mit ungültiger Zeile {timeline_id!r}"},
+                          "ungueltig")
     text: str = (
         f"{parameter['subjekt_name']} {beziehung.attribut.replace('_', ' ')} "
         f"{parameter['objekt']}"
@@ -67,6 +74,7 @@ def execute(state: AgentState) -> dict:
     neu = NewFact(
         fakt_text=text, herkunft=str(herkunft), einwertig=beziehung.einwertig,
         objekt_id=parameter.get("objekt_id"), objekt_wert=parameter.get("objekt_wert"),
+        timeline_id=timeline_id,
     )
 
     # ── Verarbeitung ────────────────────────────
@@ -89,6 +97,10 @@ def execute(state: AgentState) -> dict:
         "subjekt_id": parameter["subjekt_id"], "attribut": beziehung.attribut,
         "objekt_id": neu.objekt_id, "herkunft": neu.herkunft,
     }
+    # Eine neue Zeile traegt den Verweis auf das Ereignis; *identisch* schreibt
+    # keine und laesst die bestehende, wie sie ist.
+    if schreibung.art != "identisch":
+        erwartet["timeline_id"] = neu.timeline_id
     verifiziert: bool = zeile is not None and all(
         zeile.get(spalte) == wert for spalte, wert in erwartet.items()
     ) and (neu.objekt_wert is None

@@ -84,10 +84,15 @@ REJECT_CANON:      str = "kanon"
 REJECT_UTTERANCE:  str = "aeusserung"
 REJECT_FIGURE:     str = "figur"
 REJECT_TASTE:      str = "vorliebe"
+REJECT_NO_EVENT:   str = "ereignis_fehlt"
 REJECT_REASONS: frozenset[str] = frozenset({
     REJECT_FORM, REJECT_CANDIDATE, REJECT_SPEAKER, REJECT_PRECHECK, REJECT_CANON,
-    REJECT_UTTERANCE, REJECT_FIGURE, REJECT_TASTE,
+    REJECT_UTTERANCE, REJECT_FIGURE, REJECT_TASTE, REJECT_NO_EVENT,
 })
+
+# Die Marke eines Kandidaten, dessen Ereignis in diesem Turn in der Timeline
+# eingetragen wurde: Er liefert das Tripel des Ergebnisses, obwohl er eine Zeit trägt.
+EVENT_MARK: str = "EREIGNIS EINGETRAGEN"
 
 
 class ModelCallError(RuntimeError):
@@ -177,24 +182,33 @@ def build_classify_prompt() -> str:
     return prompt
 
 
-def build_classify_input(utterance: str, numbered: dict[int, dict]) -> str:
+def build_classify_input(utterance: str, numbered: dict[int, dict],
+                         events: dict[int, int | None] | None = None) -> str:
     """Baut die Nachricht an das Modell: die Äußerung und die nummerierten Kandidaten.
 
     Vorbedingung: `utterance` ist nicht leer; `numbered` ist nicht leer und
         bildet die Nummer, die der Code vergibt, auf einen Kandidaten mit
-        `objekt`, `klasse`, `eigenschaft` und `wert` ab.
-    Nachbedingung: ein Text, der jede Nummer genau einmal als `[n]` trägt.
+        `objekt`, `klasse`, `eigenschaft` und `wert` ab. `events` bildet die
+        Nummer eines Kandidaten auf die Timeline-Zeile seines Ereignisses ab
+        (None: das Eintragen scheiterte); fehlt es, trägt kein Kandidat eines.
+    Nachbedingung: ein Text, der jede Nummer genau einmal als `[n]` trägt;
+        ein Kandidat mit eingetragenem Ereignis trägt `EVENT_MARK`, einer mit
+        gescheitertem nicht.
     Fehlerfälle: ValueError bei leerer Äußerung oder ohne Kandidaten;
         KeyError, wenn einem Kandidaten ein Feld fehlt.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not utterance.strip() or not numbered:
         raise ValueError("Klassifikation Fakten: ohne Äußerung oder ohne Kandidaten")  # noqa: TRY003
+    eingetragen: frozenset[int] = frozenset(
+        nummer for nummer, zeile in (events or {}).items() if zeile is not None
+    )
 
     # ── Verarbeitung ────────────────────────────
     zeilen: list[str] = [
         f"[{nummer}] Objekt: {k['objekt']} (Klasse: {k['klasse']}) | "
         f"Eigenschaft: {k['eigenschaft']} | Wert: {k['wert']}"
+        + (f" | {EVENT_MARK}" if nummer in eingetragen else "")
         for nummer, k in sorted(numbered.items())
     ]
     text: str = (
@@ -209,10 +223,12 @@ def build_classify_input(utterance: str, numbered: dict[int, dict]) -> str:
     return text
 
 
-def classify_candidates(utterance: str, numbered: dict[int, dict]) -> dict:
+def classify_candidates(utterance: str, numbered: dict[int, dict],
+                        events: dict[int, int | None] | None = None) -> dict:
     """Der eine Modellaufruf eines Turns: Vorprüfung und 0…n Tripel.
 
-    Vorbedingung: wie `build_classify_input` — nur Kandidaten des Menschen.
+    Vorbedingung: wie `build_classify_input` — nur Kandidaten des Menschen;
+        `events` wie dort.
     Nachbedingung: `{"dauerhaft": bool, "grund": str, "tripel": list}`; die
         Tripel stehen, wie das Modell sie nennt, und sind ungeprüft
         (`vet_triple`). Verneint die Vorprüfung und fehlt `tripel`, ist die
@@ -224,7 +240,7 @@ def classify_candidates(utterance: str, numbered: dict[int, dict]) -> dict:
     """
     # ── Eingabe-Validierung ─────────────────────
     # Wirft ValueError ohne Äußerung oder ohne Kandidaten.
-    nachricht: str = build_classify_input(utterance, numbered)
+    nachricht: str = build_classify_input(utterance, numbered, events)
 
     # ── Verarbeitung ────────────────────────────
     node_cfg: dict = get_node_config("router")
@@ -315,6 +331,38 @@ def vet_triple(triple: object, candidates: dict[int, dict], utterance: str,
         return Verdict(None, *verfehlt)
     return Verdict({"subjekt": subjekt, "beziehung": beziehung.attribut, "objekt": objekt,
                     "herkunft": herkunft, "kandidat": nummer}, "", "")
+
+
+def link_event(verdict: Verdict, events: dict[int, int | None]) -> Verdict:
+    """Hängt an ein geprüftes Tripel die Timeline-Zeile des Ereignisses seines Kandidaten.
+
+    Der Fakt eines Ereignisses verweist auf dessen Zeile (`fakten.timeline_id`).
+    Scheiterte das Eintragen, entsteht kein Fakt: Er stünde sonst ohne das
+    Ereignis, aus dem er folgt.
+
+    Vorbedingung: `verdict` kommt aus `vet_triple`; `events` bildet die
+        Nummer eines Kandidaten auf die Zeile ab, None bei gescheitertem Eintrag.
+    Nachbedingung: ein verworfenes Urteil unverändert; ein Tripel ohne
+        Ereignis unverändert; eines mit Ereignis trägt `timeline_id`; eines
+        auf einen gescheiterten Eintrag ist verworfen mit `ereignis_fehlt`.
+    Fehlerfälle: eine Zeile, die keine positive ganze Zahl ist, wirft ValueError.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if verdict.tripel is None or verdict.tripel["kandidat"] not in events:
+        return verdict
+    nummer: int = verdict.tripel["kandidat"]
+    zeile: int | None = events[nummer]
+
+    # ── Verarbeitung ────────────────────────────
+    if zeile is None:
+        logger.error("klassifizieren: Tripel auf Kandidat %d verworfen — sein Ereignis fehlt",
+                     nummer)
+        return Verdict(None, REJECT_NO_EVENT, f"Ereignis des Kandidaten {nummer} nicht eingetragen")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(zeile, int) or isinstance(zeile, bool) or zeile <= 0:
+        raise ValueError(f"link_event: Timeline-Zeile {zeile!r} ungültig")  # noqa: TRY003
+    return Verdict({**verdict.tripel, "timeline_id": zeile}, "", "")
 
 
 def _against_utterance(utterance: str, subjekt: str, beziehung: Relation, objekt: str,

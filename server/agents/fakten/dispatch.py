@@ -30,6 +30,7 @@ from agents.fakten.klassifikation import (
     ModelCallError,
     Verdict,
     classify_candidates,
+    link_event,
     vet_triple,
 )
 from agents.fakten.suche import binding_for
@@ -222,12 +223,15 @@ def _write_triple(state: dict, triple: dict, candidate: dict, utterance: str) ->
     return TRIPLE_ERROR
 
 
-def _classify_and_write(state: dict, numbered: dict[int, dict]) -> dict:
+def _classify_and_write(state: dict, numbered: dict[int, dict],
+                        events: dict[int, int | None]) -> dict:
     """Der Modellaufruf eines Auftrags und das Schreiben seiner Tripel.
 
     Vorbedingung: `numbered` sind **alle** Kandidaten des Turns, nummeriert ab
         1 in der Reihenfolge von `turn_candidates`, mindestens einer davon
-        vom Menschen (`SPEAKER_ORIGIN`).
+        vom Menschen (`SPEAKER_ORIGIN`). `events` bildet die Nummer eines
+        Kandidaten auf die Timeline-Zeile seines Ereignisses ab (None:
+        gescheitert); ein Tripel darauf trägt `timeline_id` (`link_event`).
     Nachbedingung: ein Teil des Ausgangs — `ausgang` aus `modell_ausfall`,
         `antwort_defekt`, `kein_tripel` oder `klassifiziert`; bei einer
         Antwort dazu `dauerhaft`, `grund`, `tripel_zahl` und `tripel` (je
@@ -248,7 +252,7 @@ def _classify_and_write(state: dict, numbered: dict[int, dict]) -> dict:
 
     # ── Verarbeitung ────────────────────────────
     try:
-        antwort: dict = classify_candidates(utterance, human)
+        antwort: dict = classify_candidates(utterance, human, events)
     except ModelCallError as fehler:
         logger.exception("Fakten-Auftrag: Modell ausgefallen")
         return {"ausgang": OUTCOME_MODEL_FAILED, "fehler": str(fehler)}
@@ -257,7 +261,9 @@ def _classify_and_write(state: dict, numbered: dict[int, dict]) -> dict:
         return {"ausgang": OUTCOME_ANSWER_BROKEN, "fehler": str(fehler)}
     tripel: list[dict] = []
     for roh in antwort["tripel"]:
-        urteil: Verdict = vet_triple(roh, numbered, utterance, antwort["dauerhaft"])
+        urteil: Verdict = link_event(
+            vet_triple(roh, numbered, utterance, antwort["dauerhaft"]), events,
+        )
         zeile: dict = {k: roh.get(k) for k in ("kandidat", "subjekt", "beziehung", "objekt")} \
             if isinstance(roh, dict) else {"roh": repr(roh)[:200]}
         if urteil.tripel is None:
@@ -270,8 +276,10 @@ def _classify_and_write(state: dict, numbered: dict[int, dict]) -> dict:
         except Exception:
             logger.exception("Fakten-Auftrag: Tripel %r nicht geschrieben", urteil.tripel)
             ausgang = TRIPLE_ERROR
+        # Ein Tripel auf ein eingetragenes Ereignis nennt dessen Zeile im Eintrag.
+        verweis: dict = {k: v for k, v in urteil.tripel.items() if k == "timeline_id"}
         tripel.append({**zeile, **{k: urteil.tripel[k] for k in ("subjekt", "beziehung", "objekt")},
-                       "ausgang": ausgang})
+                       **verweis, "ausgang": ausgang})
 
     # ── Ausgabe-Verifikation ────────────────────
     if len(tripel) != len(antwort["tripel"]):
@@ -289,6 +297,37 @@ def _classify_and_write(state: dict, numbered: dict[int, dict]) -> dict:
         "tripel_zahl": len(tripel),
         "tripel":      tripel,
     }
+
+
+def _events_of(daten: dict, numbered: dict[int, dict]) -> dict[int, int | None]:
+    """Die Abbildung Kandidat → Timeline-Zeile, die der Dispatcher in den Auftrag legte.
+
+    Vorbedingung: `numbered` sind die Kandidaten des Turns unter ihrer Nummer.
+    Nachbedingung: die Einträge unter `daten["ereignisse"]`, deren Nummer im
+        Turn steht und deren Zeile eine positive ganze Zahl oder None ist;
+        leer, wenn der Auftrag keine trägt (kein Ereignis-Auftrag im Turn).
+    Fehlerfälle: Ein Eintrag, der das verfehlt, fällt mit `logger.error`
+        heraus — sein Kandidat wird behandelt wie einer ohne Ereignis (P4).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    roh: object = daten.get("ereignisse")
+    if roh is None:
+        return {}
+    if not isinstance(roh, dict):
+        logger.error(f"Fakten-Auftrag: ereignisse kein dict: {roh!r:.200}")
+        return {}
+
+    # ── Verarbeitung ────────────────────────────
+    events: dict[int, int | None] = {
+        k: v for k, v in roh.items()
+        if k in numbered and (v is None or (isinstance(v, int) and not isinstance(v, bool)
+                                            and v > 0))
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(events) != len(roh):
+        logger.error(f"Fakten-Auftrag: Ereignisse ausserhalb des Turns verworfen: {roh!r:.200}")
+    return events
 
 
 def _run_one(state: dict, daten: dict, postgres_url: str) -> dict:
@@ -340,13 +379,14 @@ def _run_one(state: dict, daten: dict, postgres_url: str) -> dict:
         )
     counted: dict = {"kandidaten": len(candidates), "je_sprecher": _speaker_counts(candidates)}
     numbered: dict[int, dict] = dict(enumerate(candidates, start=1))
+    events: dict[int, int | None] = _events_of(daten, numbered)
     if not candidates:
         outcome = {"ausgang": OUTCOME_EMPTY, **counted}
     elif not any(k["sprecher"] in SPEAKER_ORIGIN for k in candidates):
         outcome = {"ausgang": OUTCOME_OTHER_SPEAKERS, **counted}
     else:
         try:
-            outcome = {**_classify_and_write(state, numbered), **counted}
+            outcome = {**_classify_and_write(state, numbered, events), **counted}
         except Exception as fehler:
             _record(state, daten, {"ausgang": OUTCOME_ERROR, **counted,
                                    "fehler": f"{type(fehler).__name__}: {fehler}"[:300]})

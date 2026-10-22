@@ -26,6 +26,15 @@ Wenn NEIN → dauerhafte_aussage: false, tripel: [].
 Keine dauerhafte Aussage sind:
 {negativfaelle}
 
+EREIGNIS EINGETRAGEN:
+  Traegt ein Kandidat die Marke "EREIGNIS EINGETRAGEN", ist sein Ereignis schon mit seiner
+  Zeit festgehalten. Dann ist die Aeusserung eine dauerhafte Aussage, auch wenn sie einen
+  Zeitpunkt nennt, und der Kandidat ergibt das Tripel des ERGEBNISSES — was nach dem
+  Ereignis gilt: ein Umzug nach Wernau ergibt "wohnt_in" Wernau, eine neue Stelle als
+  Tischlerin "arbeitet_als" Tischlerin. Passt das Ergebnis zu keiner Beziehung der Liste
+  (eine Hochzeit ohne Namen, eine Operation) → kein Tripel fuer ihn.
+  Ohne diese Marke gilt fuer ein Vorhaben mit Zeitpunkt weiter: kein Tripel.
+
 TRIPEL:
   Nur aus den Kandidaten der Liste, je mit ihrer Nummer. Ein Kandidat kann ein Tripel
   ergeben oder keines; mehrere Kandidaten koennen mehrere Tripel ergeben.

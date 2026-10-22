@@ -28,6 +28,7 @@ import redis
 from agents.delegation.dispatch import dispatch_delegation
 from agents.fakten.dispatch import process_fact_orders
 from agents.kzg.dispatch import dispatch_kzg
+from agents.timeline.ereignis import process_event_orders
 from config import (
     ANGEBOT_VERFALL_SEKUNDEN,
     ASSISTANT_USER_ID,
@@ -758,6 +759,122 @@ def _run_fact_orders(
     return len(outcomes)
 
 
+# Der passive Auftrag fuer das Ereignis einer anderen Person: ausgesondert nach
+# Ziel UND Aktion — ein Manager-Write mit `ziel="timeline"` geht an die Registry.
+EVENT_ORDER_KEY: tuple[str, str] = ("timeline", "ereignis")
+
+
+def _is_event_order(write: object) -> bool:
+    """Ob ein Write der passive Ereignis-Auftrag aus der Sachlage ist.
+
+    Vorbedingung: keine; `write` ist ein Eintrag aus `pending_writes`.
+    Nachbedingung: wahr genau fuer `(ziel, aktion) == EVENT_ORDER_KEY`.
+    Fehlerfaelle: keine — ein Write, der kein dict ist, ist kein Ereignis-Auftrag.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(write, dict):
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    # Ohne Ausgabe-Verifikation: das Ergebnis ist ein Vergleich, nichts zu pruefen.
+    key: tuple[object, object] = (write.get("ziel"), write.get("aktion"))
+    return key == EVENT_ORDER_KEY
+
+
+def _is_passive(write: object) -> bool:
+    """Ob ein Write ein passiver Auftrag ist (Fakten oder Ereignis) — nie an die Registry.
+
+    Vorbedingung: keine.
+    Nachbedingung: wahr fuer `ziel="fakten"` und fuer den Ereignis-Auftrag.
+    Fehlerfaelle: keine — ein Write, der kein dict ist, ist nicht passiv.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(write, dict):
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    # Ohne Ausgabe-Verifikation: das Ergebnis ist ein Vergleich, nichts zu pruefen.
+    return write.get("ziel") == "fakten" or _is_event_order(write)
+
+
+def _with_events(fact_writes: list[dict], events: dict[int, int | None]) -> list[dict]:
+    """Die Fakten-Auftraege mit der Abbildung Kandidat → Timeline-Zeile des Ereignisses.
+
+    Vorbedingung: `fact_writes` sind Writes mit `ziel="fakten"`; `events` ist
+        die Rueckgabe von `process_event_orders` (leer ohne Ereignis-Auftrag).
+    Nachbedingung: Kopien der Writes; jede `daten` traegt `ereignisse`. Die
+        Writes des Aufrufers bleiben unveraendert.
+    Fehlerfaelle: Ein Write ohne `daten`-dict bleibt, wie er ist — der
+        Fakten-Agent verwirft ihn laut als unvollstaendig.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(events, dict):
+        raise TypeError(f"Ereignis-Abbildung kein dict: {type(events).__name__}")  # noqa: TRY003
+
+    # ── Verarbeitung ────────────────────────────
+    out: list[dict] = [
+        {**w, "daten": {**w["daten"], "ereignisse": dict(events)}}
+        if isinstance(w.get("daten"), dict) else w
+        for w in fact_writes
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(out) != len(fact_writes):
+        raise RuntimeError("Fakten-Auftraege: Zahl veraendert")  # noqa: TRY003
+    return out
+
+
+def _run_passive_orders(
+    state:        ConversationState,
+    event_writes: list[dict],
+    fact_writes:  list[dict],
+    postgres_url: str,
+) -> int:
+    """Fuehrt die passiven Auftraege aus: erst das Ereignis, dann die Fakten.
+
+    Der Fakt eines Ereignisses verweist auf dessen Timeline-Zeile — die muss
+    stehen, bevor der Fakten-Agent klassifiziert. Gleich in welcher
+    Reihenfolge die Writes eingefuegt sind, laeuft `process_event_orders`
+    zuerst und reicht seine Abbildung `{kandidat: timeline_id}` in die
+    Fakten-Auftraege.
+
+    Vorbedingung: `event_writes` erfuellen `_is_event_order`, `fact_writes`
+        tragen `ziel="fakten"`; mindestens eine der Listen ist nicht leer.
+    Nachbedingung: die Zahl der ausgefuehrten Fakten-Auftraege plus die der
+        Ereignis-Auftraege, die gelaufen sind.
+    Fehlerfaelle: Ein Fehler der Ereignis-Seite geht mit `logger.exception`
+        ins Log; die Fakten laufen dann ohne Abbildung (kein Kandidat traegt
+        ein Ereignis). Beide Listen leer → `logger.error`, 0.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not event_writes and not fact_writes:
+        logger.error("Dispatcher: passive Auftraege ohne Auftrag gerufen")
+        return 0
+
+    # ── Verarbeitung ────────────────────────────
+    events: dict[int, int | None] = {}
+    ran: int = 0
+    if event_writes:
+        try:
+            events = process_event_orders(state, event_writes, postgres_url)
+            ran += len(event_writes)
+        except Exception as fehler:
+            logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei Ereignis-Auftrag")
+            events = {}
+    # Ohne Ereignis bleibt der Fakten-Auftrag, wie die Sachlage ihn stellte.
+    if fact_writes:
+        ran += _run_fact_orders(
+            state, _with_events(fact_writes, events) if events else fact_writes, postgres_url,
+        )
+    # Ohne Ausgabe-Verifikation: beide Agenten pruefen ihre Ausgaenge selbst
+    # (`process_event_orders`, `_run_fact_orders`).
+    logger.info(
+        f"Dispatcher: passive Auftraege — {len(event_writes)} Ereignis, "
+        f"{len(fact_writes)} Fakten, Ereignisse={events}"
+    )
+    return ran
+
+
 def dispatch(
     state:         ConversationState,
     redis_client:  redis.Redis,
@@ -795,17 +912,19 @@ def dispatch(
         character_id = state.get("character_id", ""),
     )
 
-    # **Der Fakten-Auftrag allein macht keinen vollen Durchlauf.** Die Sachlage
-    # stellt ihn in fast jedem gerechneten Turn aus; ein Turn, der sonst keine
+    # **Die passiven Auftraege allein machen keinen vollen Durchlauf.** Die
+    # Sachlage stellt den Fakten-Auftrag in fast jedem gerechneten Turn aus,
+    # ueber der Grenze dazu den Ereignis-Auftrag; ein Turn, der sonst keine
     # Writes traegt, nimmt deshalb den kurzen Weg wie ohne Writes und fuehrt
-    # nur den Auftrag zusaetzlich aus.
-    fact_writes:  list = [w for w in writes if w.get("ziel") == "fakten"]
-    other_writes: list = [w for w in writes if w.get("ziel") != "fakten"]
+    # nur sie zusaetzlich aus — das Ereignis vor den Fakten.
+    event_writes: list = [w for w in writes if _is_event_order(w)]
+    fact_writes:  list = [w for w in writes if isinstance(w, dict) and w.get("ziel") == "fakten"]
+    other_writes: list = [w for w in writes if not _is_passive(w)]
 
     if not other_writes:
-        if fact_writes:
-            logger.info("Dispatcher: nur der Fakten-Auftrag — Durchlauf ohne Verteilung")
-            _run_fact_orders(state, fact_writes, postgres_url)
+        if fact_writes or event_writes:
+            logger.info("Dispatcher: nur passive Auftraege — Durchlauf ohne Verteilung")
+            _run_passive_orders(state, event_writes, fact_writes, postgres_url)
         else:
             logger.info("Dispatcher: Keine pending_writes — Durchlauf ohne Verteilung")
         # Auch ohne Writes wollen wir den kurzfristigen Drive-Snapshot
@@ -827,16 +946,20 @@ def dispatch(
         _session_turn_schreiben(state)
         _ausgang_vermerken(state)
         _turn_roh_schreiben(state)
-        if fact_writes:
+        if fact_writes or event_writes:
             state["pending_writes"] = []
         return state
 
     user_id:  str  = state["user_id"]
     registry: dict = get_registry()
 
+    # Die passiven Auftraege vor der Verteilung — sie gehen nie an einen Manager.
+    if fact_writes or event_writes:
+        _run_passive_orders(state, event_writes, fact_writes, postgres_url)
+
     # Nach Ziel gruppieren
     nach_ziel: dict[str, list[dict]] = {}
-    for write in writes:
+    for write in other_writes:
         ziel: str = write.get("ziel", "")
         if ziel:
             nach_ziel.setdefault(ziel, []).append(write)
@@ -876,11 +999,6 @@ def dispatch(
                 )
             except Exception as fehler:
                 logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei KZG-Agent")
-            continue
-
-        # ── Fakten-Agent: passiv, der Auftrag kommt aus der Sachlage ──
-        if ziel == "fakten":
-            _run_fact_orders(state, ziel_writes, postgres_url)
             continue
 
         # ── Legacy: Manager-Pfad ──
