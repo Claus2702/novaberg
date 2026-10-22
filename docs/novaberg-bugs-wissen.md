@@ -1,34 +1,32 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → 30 Eintraege (22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → 30 Eintraege (22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 ---
 
-## 22.10.2026 — aus der Messung des Ereignis-Wegs am Modell
+## 22.10.2026 — aus der Messung des Ereignis-Jahres am Modell
 
-### `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` — ein angekündigtes Ereignis in einem Monat ohne Jahr steht in der Vergangenheit
+### `EREIGNIS-KANDIDAT-OHNE-SPRECHER` — ein Ereignis erreicht den Ereignis-Aufruf nicht, wenn die Sachlage für seine Eigenschaft keinen Sprecher nennt
 **Kategorie:** WIS
 
-**Rang:** **hoch** — still: Die Zeile steht mit richtigem Titel, richtiger Person und richtigem Monat da und gilt doch als vergangen; jeder Leser der Timeline hält das Ereignis für geschehen, und der Fakt, der mit `timeline_id` auf die Zeile verweist, liest seinen Beginn aus ihr. Gemessen trifft es 5 von 8 angekündigten Ereignissen. Vergeben am 22.10.2026 gegen den Code-Tree `04f386f`.
+**Rang:** **mittel** — still: Das Ereignis fehlt in der Timeline des Paares, ohne Fehlerzeile; nur der Protokolleintrag des Auftrags trägt den Ausgang `nur_andere_sprecher`, der dabei falsch benennt, was geschah — es gab keinen anderen Sprecher, sondern keinen. Falsches wird nicht geschrieben. Gemessen trifft es 5 von 28 erwarteten Ereignissen, vier davon berichtete. Vergeben am 22.10.2026 gegen den Code-Tree `452f786`.
 
-**Zustand:** offen — gemessen am 21.10.2026 am Modell des Betriebs, vor dem Commit des Ereignis-Wegs; die Behebung ist als eigener Bau geplant (*EREIGNIS-JAHR*, unten).
+**Zustand:** offen — gemessen am 22.10.2026 am Modell des Betriebs, vor dem Commit des Jahres aus der Zeitlage.
 
-**Symptom** `[gemessen 21.10.2026]`: Je Satz der echte Aufruf der Sachlage, die Kandidaten des Menschen, `classify_events`, die Prüfung der Felder und `event_time_of` mit dem heutigen Tag 21.10.2026 — 22 synthetische Sätze, 10 einer Aufbaureihe und 12 einer blinden Rückhaltereihe. Titel und Zeitausdruck stimmen in 9 von 9 erkannten Ereignissen, **der Zeitpunkt des Eintrags nur in 4 von 9**: Von 8 angekündigten Ereignissen stehen 5 in der Vergangenheit, alle mit einem Monatsnamen ohne Jahr (*im Mai*, *im Januar*, *im August*, *im Februar*, *im April*). Synthetisch: *„Mein Kollege Bernd heiratet im Mai“*, gesagt am 21.10.2026, wird `2026-05-01` mit der Genauigkeit `month`. Richtig ist der Zeitpunkt nur, wo der Monat im laufenden Jahr noch kommt (*im November*, *am 3. Dezember*, *nächsten Monat*) oder das Ereignis berichtet ist (*hat im Juli … bekommen*).
+**Symptom** `[gemessen 22.10.2026]`: Je Satz der echte Aufruf der Sachlage, ihre Kandidaten, `classify_events` und `event_time_of`, ohne Schreiben — 36 synthetische Sätze und ein Nachlauf mit drei weiteren. Von 28 Sätzen mit einem erwarteten Ereignis einer anderen Person erreichten **5** den Aufruf des Modells nicht, weil die Sachlage die Eigenschaft deckte, aber keinen `sprecher` dafür setzte (`None` statt `nutzer`); vier der fünf sind berichtete Sätze. Ein sechster fiel an einem Ausfall der Sachlage aus (Fundliste 22.10.2026). Die Messung des Ereignis-Wegs vom 21.10.2026 zeigte dasselbe: 9 von 11 erkannt, die zwei übrigen ohne Kandidaten des Menschen.
 
-**Ursache** `[Code]`: `server/agents/timeline/ereignis.py::event_time_of` liest einen Monatsnamen zuerst über `server/utils/zeitparser.py::named_period`, und dort gilt ein Monat ohne Jahr als der des laufenden Jahres, auch wenn er vorbei ist (Docstring von `named_period`; als Richtung beschrieben in `novaberg-tool-timeparser.md` §10.7). Ob der Satz ein Ereignis ankündigt oder von einem geschehenen berichtet, liest niemand. Die Bauart nannte `named_period` für den Monat und legte kein Jahr fest; vorhergesagt war der Fall am Code, vor der Messung.
+**Ursache** `[Code]`: `server/agents/timeline/ereignis.py::process_event_orders` gibt dem Modell nur die Kandidaten mit `sprecher == nutzer` (in `_run_one`); ohne einen solchen ist der Ausgang `nur_andere_sprecher`, und es gibt keinen Modellaufruf. Der Prompt der Sachlage (`server/graph/nodes/sachlage.py`, Abschnitt zu `"sprecher"`) lässt den Sprecher einer gedeckten Eigenschaft weg, wenn in den jüngsten Beiträgen nicht zu sehen ist, wer sie genannt hat — *„ein geratener Sprecher ist schlimmer als keiner“*. Eine Eigenschaft ohne Sprecher ist für den Ereignis-Weg damit keine des Menschen. Der Fakten-Agent wählt seine Kandidaten ebenfalls nach dem Sprecher (`server/agents/fakten/dispatch.py`, am Code gelesen); ob der Fakt in diesen Fällen auch fehlt, ist nicht gemessen.
 
-**Reproduktion:** ein Satz, der ein Ereignis einer anderen Person in einem Monat ankündigt, der im laufenden Jahr schon vorbei ist (synthetisch: *„Mein Kollege Bernd heiratet im Mai“* an einem Tag nach dem Mai), über der Grenze an eine Figur — die Zeile `ereignis` trägt den Ersten dieses Monats im laufenden Jahr. Ohne Turn, am Code gelesen: `event_time_of("im Mai", date(2026, 10, 21))` ergibt den 01.05.2026, `month`.
+**Reproduktion:** ein Satz des Menschen über ein Ereignis einer anderen Person über der Grenze, bei dem die Sachlage die Eigenschaft deckt und keinen `sprecher` nennt (am häufigsten ein berichteter Satz) — im Protokolleintrag des Ereignis-Auftrags steht `nur_andere_sprecher`, in der Timeline keine Zeile.
 
-**Wirkung.** Ein angekündigtes Ereignis steht als vergangen in der Timeline des Paares; ein Leser, der kommende Einträge sucht, findet es nicht, und eine Antwort spricht von ihm als geschehen.
+**Wirkung.** Ein Ereignis, das der Mensch erzählt hat, steht nicht in der Timeline des Paares, und kein Fakt verweist darauf; ein späterer Leser der Termine und der Mappe weiß nichts davon.
 
-**Geschlossen, wenn** ein Ereignis einer anderen Person, das der Mensch ankündigt, mit einem kommenden Datum in der Timeline steht und eines, von dem er berichtet, mit einem vergangenen — auch wenn der Satz nur einen Monat oder einen Tag ohne Jahr nennt; bezeugt mit festem heutigem Tag (*im Mai* angekündigt → Mai des nächsten Jahres, berichtet → Mai des laufenden) und gemessen am Modell an angekündigten Ereignissen in einem vergangenen Monat.
+**Geschlossen, wenn** ein Ereignis einer anderen Person, das der Mensch erzählt, den Ereignis-Aufruf auch dann erreicht, wenn die Sachlage für seine Eigenschaft keinen Sprecher nennt — ohne dass eine Eigenschaft, die Nova genannt hat, als eine des Menschen gelesen wird; bezeugt mit einem Kandidaten ohne Sprecher und einem mit `nova`, und gemessen am Modell an berichteten und angekündigten Sätzen (Soll: kein erwartetes Ereignis geht am fehlenden Sprecher verloren). Ob der Sprecher in der Sachlage gesetzt oder ein fehlender im Ereignis-Weg anders gelesen wird, entscheidet der Bau.
 
-**Geplant:** ein eigener Bau (*EREIGNIS-JAHR*) — das Jahr aus der Zeitlage des Satzes: angekündigt → das nächste solche Datum ab heute, berichtet → das letzte bis heute; ein Ausdruck mit Jahr oder relativ zu heute (*im Mai 2027*, *nächsten Monat*) bleibt, wie er gelesen wird.
-
-**Zusammenhang:** Fundliste 21.10.2026 (*Ein Monatsname ohne Präfix gilt im laufenden Jahr*), hierher umgezogen; [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5; ↳ *F6* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
+**Zusammenhang:** [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5; ↳ *F6* in [`novaberg-featureliste.md`](novaberg-featureliste.md); `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` (Archiv), dessen Messung diesen Befund fand.
 
 ---
 

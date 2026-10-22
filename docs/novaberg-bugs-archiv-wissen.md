@@ -1,9 +1,38 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → 31 Eintraege (17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen), je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → ~~31~~ → 32 Eintraege (17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen; am selben Tag `EREIGNIS-KOMMENDES-WIRD-VERGANGEN`, behoben und am Modell gemessen), je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 22.10.2026 — behoben und am Modell gemessen
+
+**Dieser Eintrag ist mit dem Bau des Jahres aus der Zeitlage geschlossen** — seine Schließbedingung verlangt Zeugen mit festem heutigem Tag und eine Messung am Modell, keine Messung im Betrieb; beides steht in der Zustandszeile.
+
+---
+
+### `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` — ein angekündigtes Ereignis in einem Monat ohne Jahr steht in der Vergangenheit ✅
+**Kategorie:** WIS
+
+**Rang:** **hoch** — still: Die Zeile steht mit richtigem Titel, richtiger Person und richtigem Monat da und gilt doch als vergangen; jeder Leser der Timeline hält das Ereignis für geschehen, und der Fakt, der mit `timeline_id` auf die Zeile verweist, liest seinen Beginn aus ihr. Gemessen trifft es 5 von 8 angekündigten Ereignissen. Vergeben am 22.10.2026 gegen den Code-Tree `04f386f`.
+
+**Zustand:** **geschlossen am 22.10.2026 — behoben mit Code-Tree `452f786`, gemessen am Modell des Betriebs vor dem Commit.** Ein Zeitausdruck eines Ereignisses ohne Jahr und nicht relativ zu heute (synthetisch *im Mai*, *am 3. März*, *am 12.2.*, *am 3. März um 10 Uhr*) bekommt sein Jahr aus der **Zeitlage**, die das Modell im neuen Feld `zeitlage` der Antwort von `classify_ereignis` nennt: angekündigt (`angekuendigt`) das nächste solche Datum ab dem laufenden Monat bzw. ab heute, berichtet (`berichtet`) das letzte bis dahin; ein Ausdruck mit Jahr oder relativ zu heute bleibt, wie er gelesen wird; ohne Zeitlage gilt *angekündigt*, laut im Log und mit der Herkunft `vorgabe` im Protokolleintrag ([`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5). Bezeugt mit festem heutigem Tag 21.10.2026 in `server/tests/test_timeline_ereignis.py` (`EventYearTest`, `EventYearServiceTest`): *im Mai* angekündigt → 01.05.2027, berichtet → 01.05.2026, je mit Zwilling, dazu Tag und Monat in Ziffern und mit Uhrzeit (*am 12.2.* angekündigt → 12.02.2027, *am 3. März um 10 Uhr* → 03.03.2027 10:00), der 29. Februar und heute selbst; Server-Suite `Ran 5104 tests` · `OK (expected failures=2)`, Gegenproben wie vorhergesagt. `[gemessen 22.10.2026]` am Modell des Betriebs, vor dem Commit, je Satz die Kette Sachlage → Kandidaten → `classify_events` → Felder → `event_time_of` mit dem heutigen Tag 22.10.2026, ohne Schreiben: dieselben Reihen wie am 21.10.2026 (Aufbau und Rückhalt) und eine neue blinde Reihe mit angekündigten und berichteten Ereignissen in vergangenen und kommenden Monaten — `zeitlage` **22 von 22** richtig, **0 von 22** aus der Vorgabe, der Eintrag (Datum und Genauigkeit) **22 von 22** wie erwartet; **angekündigt und in der Vergangenheit 0 von 16** (vorher 5 von 8), berichtet und in der Zukunft 0 von 6; das Tor 0 von 9 Fehlalarmen. Damit ist die Schließbedingung erfüllt. Was die Messung daneben fand, steht als `EREIGNIS-KANDIDAT-OHNE-SPRECHER` im offenen Register. ~~offen — gemessen am 21.10.2026 am Modell des Betriebs, vor dem Commit des Ereignis-Wegs; die Behebung ist als eigener Bau geplant (*EREIGNIS-JAHR*, unten).~~
+
+**Symptom** `[gemessen 21.10.2026]`: Je Satz der echte Aufruf der Sachlage, die Kandidaten des Menschen, `classify_events`, die Prüfung der Felder und `event_time_of` mit dem heutigen Tag 21.10.2026 — 22 synthetische Sätze, 10 einer Aufbaureihe und 12 einer blinden Rückhaltereihe. Titel und Zeitausdruck stimmen in 9 von 9 erkannten Ereignissen, **der Zeitpunkt des Eintrags nur in 4 von 9**: Von 8 angekündigten Ereignissen stehen 5 in der Vergangenheit, alle mit einem Monatsnamen ohne Jahr (*im Mai*, *im Januar*, *im August*, *im Februar*, *im April*). Synthetisch: *„Mein Kollege Bernd heiratet im Mai“*, gesagt am 21.10.2026, wird `2026-05-01` mit der Genauigkeit `month`. Richtig ist der Zeitpunkt nur, wo der Monat im laufenden Jahr noch kommt (*im November*, *am 3. Dezember*, *nächsten Monat*) oder das Ereignis berichtet ist (*hat im Juli … bekommen*).
+
+**Ursache** `[Code]`: `server/agents/timeline/ereignis.py::event_time_of` liest einen Monatsnamen zuerst über `server/utils/zeitparser.py::named_period`, und dort gilt ein Monat ohne Jahr als der des laufenden Jahres, auch wenn er vorbei ist (Docstring von `named_period`; als Richtung beschrieben in `novaberg-tool-timeparser.md` §10.7). Ob der Satz ein Ereignis ankündigt oder von einem geschehenen berichtet, liest niemand. Die Bauart nannte `named_period` für den Monat und legte kein Jahr fest; vorhergesagt war der Fall am Code, vor der Messung.
+
+**Reproduktion:** ein Satz, der ein Ereignis einer anderen Person in einem Monat ankündigt, der im laufenden Jahr schon vorbei ist (synthetisch: *„Mein Kollege Bernd heiratet im Mai“* an einem Tag nach dem Mai), über der Grenze an eine Figur — die Zeile `ereignis` trägt den Ersten dieses Monats im laufenden Jahr. Ohne Turn, am Code gelesen: `event_time_of("im Mai", date(2026, 10, 21))` ergibt den 01.05.2026, `month`.
+
+**Wirkung.** Ein angekündigtes Ereignis steht als vergangen in der Timeline des Paares; ein Leser, der kommende Einträge sucht, findet es nicht, und eine Antwort spricht von ihm als geschehen.
+
+**Geschlossen, wenn** ein Ereignis einer anderen Person, das der Mensch ankündigt, mit einem kommenden Datum in der Timeline steht und eines, von dem er berichtet, mit einem vergangenen — auch wenn der Satz nur einen Monat oder einen Tag ohne Jahr nennt; bezeugt mit festem heutigem Tag (*im Mai* angekündigt → Mai des nächsten Jahres, berichtet → Mai des laufenden) und gemessen am Modell an angekündigten Ereignissen in einem vergangenen Monat.
+
+**Geplant:** ~~ein eigener Bau (*EREIGNIS-JAHR*)~~ → gebaut am 22.10.2026 (Zustand oben) — das Jahr aus der Zeitlage des Satzes: angekündigt → das nächste solche Datum ab heute, berichtet → das letzte bis heute; ein Ausdruck mit Jahr oder relativ zu heute (*im Mai 2027*, *nächsten Monat*) bleibt, wie er gelesen wird.
+
+**Zusammenhang:** Fundliste 21.10.2026 (*Ein Monatsname ohne Präfix gilt im laufenden Jahr*), hierher umgezogen; [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5; ↳ *F6* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
 
 ---
 
