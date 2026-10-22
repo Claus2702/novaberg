@@ -13,7 +13,10 @@ auf beiden Seiten dieselbe. Ins Modell gehen nur die Kandidaten des Menschen;
 
 Je Ereignis: die Zeit aus dem Zeitausdruck — zuerst ein Kalendermonat
 (`named_period`, Genauigkeit `month`, der Erste des Monats), sonst ein Tag
-(`zeit_parsen_vektor`, `read_time`); ohne Tag oder Monat kein Eintrag. Die
+(`zeit_parsen_vektor`, `read_time`); ohne Tag oder Monat kein Eintrag. Ist
+der Ausdruck ein Datum ohne Jahr (*im Mai*, *am 3. März*, *am 12.2.*, auch mit
+Uhrzeit), gibt die Zeitlage des Modells das Jahr: angekündigt das nächste
+solche Datum ab heute, berichtet das letzte bis heute. Die
 Person über `resolve_by_name`: eindeutig → `entitaet_ids=[id]`, sonst ohne,
 der Eintrag entsteht trotzdem. Geschrieben mit dem Paar und dem Typ `ereignis`
 aus `memory.timeline_types`, ohne Wiedervorlage und ohne Duplikatprüfung.
@@ -30,6 +33,7 @@ Jeder Auftrag hat genau einen Eintrag `log_db_write` (Quelle `timeline`).
 """
 
 import logging
+import re
 from datetime import date, datetime, time, timedelta
 
 from config import PROMPTS, get_node_config
@@ -82,6 +86,39 @@ EVENT_OUTCOMES: frozenset[str] = frozenset({
 PRECISION_MINUTE: str = "minute"
 PRECISION_DAY:    str = "day"
 PRECISION_MONTH:  str = MONTH_PRECISION
+
+# Die Zeitlage eines Ereignisses, wie das Modell sie nennt.
+TENSE_ANNOUNCED: str = "angekuendigt"
+TENSE_REPORTED:  str = "berichtet"
+TENSES: frozenset[str] = frozenset({TENSE_ANNOUNCED, TENSE_REPORTED})
+
+# Woher die Zeitlage eines Ereignisses kommt: aus der Antwort oder die Vorgabe.
+TENSE_FROM_MODEL:   str = "modell"
+TENSE_FROM_DEFAULT: str = "vorgabe"
+
+# Die Monatsnamen eines Ausdrucks ohne Jahr, ausgeschrieben und kurz, mit ihrer Nummer.
+_MONTH_NUMBERS: dict[str, int] = {
+    "januar": 1, "jänner": 1, "jan": 1, "februar": 2, "feb": 2, "märz": 3, "maerz": 3,
+    "mär": 3, "april": 4, "apr": 4, "mai": 5, "juni": 6, "jun": 6, "juli": 7, "jul": 7,
+    "august": 8, "aug": 8, "september": 9, "sept": 9, "sep": 9, "oktober": 10, "okt": 10,
+    "november": 11, "nov": 11, "dezember": 12, "dez": 12,
+}
+
+# Ein Kalenderdatum ohne Jahr, sonst nichts: ein Monat ("im Mai") oder ein Tag und
+# Monat in Worten oder Ziffern ("am 3. März", "am 12.2."), dieser mit einer Uhrzeit
+# ("am 3. März um 10 Uhr", "am 12.2. um 9"). Eine Uhrzeit steht hinter "um"/"gegen"
+# oder vor "Uhr" — eine nackte Zahl dahinter ist ein Jahr ("am 12.2.27").
+_WITHOUT_YEAR: re.Pattern[str] = re.compile(
+    r"(?:(?:im|am|den|der|zum)\s+)?(?:"
+    r"(?P<day>\d{1,2})\.\s*(?:(?P<month_number>\d{1,2})\.|(?P<month_word>[a-zäöü]+)\.?)"
+    r"(?:\s*,?\s*(?=(?:um|gegen)\s|\d{1,2}(?:[:.]\d{2})?\s*uhr\b)(?:(?:um|gegen)\s+)?"
+    r"(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2}))?(?:\s*uhr)?)?"
+    r"|(?P<month_only>[a-zäöü]+)\.?)",
+)
+
+# So viele Jahre sucht die Zeitlage höchstens ab — ein 29. Februar kommt in
+# acht Jahren mindestens einmal vor.
+_YEARS_SEARCHED: int = 9
 
 
 class ModelCallError(RuntimeError):
@@ -180,27 +217,115 @@ def classify_events(utterance: str, human: dict[int, dict]) -> list[object]:
     return events
 
 
-def event_time_of(expression: str, today: date) -> tuple[datetime, str] | None:
-    """Zeitpunkt und Genauigkeit eines Ereignisses aus seinem Zeitausdruck.
+def _date_without_year(expression: str) -> tuple[int, int | None, time | None] | None:
+    """Monat, Tag und Uhrzeit eines Zeitausdrucks, der ein Datum ohne Jahr ist.
 
-    Zuerst der Zeitraum (`named_period`): Ein Kalendermonat (*im November*)
-    gibt den Ersten des Monats, 00:00 Ortszeit, mit `month`; ein anderer
-    Zeitraum (Woche, Wochenende) gibt keinen Zeitpunkt — ein Ereignis in einer
-    Woche hat keinen Tag und keinen Monat. Sonst ein Tag: `zeit_parsen_vektor`
-    mit erkanntem Tag (`minute` mit Uhrzeit, sonst `day`), oder der eine Tag
-    des Monats aus `read_time` (*am 3. Dezember*). Ein Jahr allein (*2019*)
-    nennt weder Tag noch Monat.
+    Das Kriterium: Der ganze Ausdruck ist ein Kalenderdatum ohne Jahr — ein
+    Monat oder ein Tag und Monat, in Worten oder Ziffern, dieser auch mit
+    Uhrzeit — und sonst nur eine Präposition oder ein Artikel davor. *im
+    Mai*, *am 3. März*, *am 12.2.*, *den 14.11.*, *am 3. März um 10 Uhr*: ja.
+    Nein, wenn das Jahr im Ausdruck steht (*im Mai 2027*, *am 12.2.2027*)
+    oder er relativ zu heute ist — sein Datum zählt dann von heute aus: mit
+    einer Richtung (*nächsten Mai*, *diesen März*), einem Abstand (*in drei
+    Wochen*), einem Tag, den heute festlegt (*morgen*, *am Freitag*), oder
+    ohne Monat (*am 14.*). Jedes davon trägt ein Wort mehr oder einen Monat
+    weniger, als die Form erlaubt; es bleibt, wie der Parser es liest.
 
-    Vorbedingung: `expression` ist ein Text; `today` der heutige Tag in Ortszeit.
-    Nachbedingung: `(zeitpunkt, genauigkeit)` mit einer Genauigkeit aus
-        `minute`, `day`, `month`; None ohne Tag oder Monat.
+    Vorbedingung: `expression` ist ein Text.
+    Nachbedingung: `(monat, tag, uhrzeit)` mit Monat 1–12, Tag 1–31 oder None
+        (ganzer Monat), Uhrzeit oder None; None, wenn der Ausdruck kein Datum
+        ohne Jahr ist. Ob es den Tag in diesem Monat gibt, prüft `_year_by_tense`.
+    Fehlerfälle: TypeError bei falschem Typ.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(expression, str):
+        raise TypeError("_date_without_year: Text erwartet")  # noqa: TRY003
+    match: re.Match[str] | None = _WITHOUT_YEAR.fullmatch(expression.strip().casefold())
+    if match is None:
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    parts: dict[str, str | None] = match.groupdict()
+    word: str = parts["month_word"] or parts["month_only"] or ""
+    month: int = int(parts["month_number"]) if parts["month_number"] else \
+        _MONTH_NUMBERS.get(word, 0)
+    day: int | None = int(parts["day"]) if parts["day"] else None
+    hour: int = int(parts["hour"]) if parts["hour"] else 0
+    minute: int = int(parts["minute"]) if parts["minute"] else 0
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Das Muster nimmt jedes Wort (*am Freitag*) und jede Zahl (*am 3.13.*, *um 25*);
+    # ein Datum ist es nur mit einem Monat, einem möglichen Tag und einer möglichen Uhrzeit.
+    if not 1 <= month <= 12 or (day is not None and not 1 <= day <= 31):
+        return None
+    if hour > 23 or minute > 59:
+        return None
+    clock: time | None = time(hour, minute) if parts["hour"] else None
+    return month, day, clock
+
+
+def _year_by_tense(parts: tuple[int, int | None, time | None], tense: str,
+                   today: date) -> tuple[datetime, str] | None:
+    """Zeitpunkt eines Datums ohne Jahr, das Jahr aus der Zeitlage des Satzes.
+
+    Angekündigt: das nächste solche Datum ab heute — ein Monat ab dem
+    laufenden (*im Oktober*, gesagt im Oktober, ist dieser), ein Tag ab
+    heute, auch mit Uhrzeit. Berichtet: das letzte solche Datum bis heute.
+    Monat, Tag und Uhrzeit bleiben, nur das Jahr wird gewählt.
+
+    Vorbedingung: `parts` aus `_date_without_year`; `tense` aus `TENSES`;
+        `today` der heutige Tag in Ortszeit.
+    Nachbedingung: `(zeitpunkt, genauigkeit)` — `month` ohne Tag (der Erste),
+        `minute` mit Uhrzeit, sonst `day`; angekündigt nie vor dem laufenden
+        Monat (Tag), berichtet nie danach; None, wenn es den Tag in diesem Monat
+        nicht gibt (*am 31. April*), laut im Log.
+    Fehlerfälle: ValueError bei unbekannter Zeitlage.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    month, day, clock = parts
+    if tense not in TENSES:
+        raise ValueError(f"_year_by_tense: unbekannte Zeitlage {tense!r}")  # noqa: TRY003
+    announced: bool = tense == TENSE_ANNOUNCED
+    reference: date = today if day is not None else today.replace(day=1)
+    precision: str = PRECISION_MONTH if day is None else \
+        PRECISION_MINUTE if clock is not None else PRECISION_DAY
+
+    # ── Verarbeitung ────────────────────────────
+    found: date | None = None
+    for offset in range(_YEARS_SEARCHED):
+        year: int = today.year + offset if announced else today.year - offset
+        try:
+            candidate: date = date(year, month, day or 1)
+        except ValueError:
+            continue
+        fits: bool = candidate >= reference if announced else candidate <= reference
+        if fits:
+            found = candidate
+            break
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if found is None:
+        logger.error("Ereignis: den %s.%s. gibt es nicht — keine Zeit", day, month)
+        return None
+    return datetime.combine(found, clock or time()), precision
+
+
+def _read_moment(expression: str, today: date) -> tuple[datetime, str] | None:
+    """Zeitpunkt und Genauigkeit eines Ausdrucks, wie der Parser ihn liest.
+
+    Zuerst der Zeitraum (`named_period`): Ein Kalendermonat gibt den Ersten
+    des Monats mit `month`; ein anderer Zeitraum (Woche, Wochenende) gibt
+    keinen Zeitpunkt, laut im Log. Sonst ein Tag: `zeit_parsen_vektor` mit
+    erkanntem Tag (`minute` mit Uhrzeit, sonst `day`), oder der eine Tag des
+    Monats aus `read_time`. Das Jahr ist das des Parsers.
+
+    Vorbedingung: `expression` ist ein nicht leerer Text; `today` ein Datum.
+    Nachbedingung: `(zeitpunkt, genauigkeit)` oder None ohne Tag oder Monat.
     Fehlerfälle: TypeError bei falschem Typ.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(expression, str) or not isinstance(today, date):
-        raise TypeError("event_time_of: Text und Datum erwartet")  # noqa: TRY003
-    if not expression.strip():
-        return None
+        raise TypeError("_read_moment: Text und Datum erwartet")  # noqa: TRY003
 
     # ── Verarbeitung ────────────────────────────
     found: tuple[datetime, str] | None = None
@@ -221,6 +346,48 @@ def event_time_of(expression: str, today: date) -> tuple[datetime, str] | None:
                      PRECISION_MINUTE if vector.uhrzeit_erkannt else PRECISION_DAY)
         elif day is not None:
             found = (datetime.combine(day, time()), PRECISION_DAY)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if found is not None and found[1] not in (PRECISION_MINUTE, PRECISION_DAY, PRECISION_MONTH):
+        raise RuntimeError(f"_read_moment: unbekannte Genauigkeit {found!r}")  # noqa: TRY003
+    return found
+
+
+def event_time_of(expression: str, today: date, tense: str) -> tuple[datetime, str] | None:
+    """Zeitpunkt und Genauigkeit eines Ereignisses aus seinem Zeitausdruck.
+
+    Ist der Ausdruck ein Datum ohne Jahr (`_date_without_year`: *im Mai*, *am
+    3. März*, *am 12.2.*, *am 3. März um 10 Uhr*), setzt die Zeitlage das Jahr
+    (`_year_by_tense`) — der Parser gäbe das laufende Jahr, auch für einen
+    vorbeigegangenen Monat oder Tag. Sonst liest ihn der Parser
+    (`_read_moment`): ein Kalendermonat mit `month`, ein Tag mit `day` oder
+    `minute`; ein Ausdruck mit Jahr oder relativ zu heute (*im Mai 2027*,
+    *nächsten Monat*) bleibt so, wie er gelesen wird. Eine Woche oder ein
+    Jahr allein (*2019*) nennt weder Tag noch Monat.
+
+    Vorbedingung: `expression` ist ein Text; `today` der heutige Tag in
+        Ortszeit; `tense` aus `TENSES`.
+    Nachbedingung: `(zeitpunkt, genauigkeit)` mit einer Genauigkeit aus
+        `minute`, `day`, `month`; None ohne Tag oder Monat und für einen Tag,
+        den es im Monat nicht gibt.
+    Fehlerfälle: TypeError bei falschem Typ; ValueError bei unbekannter Zeitlage.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(expression, str) or not isinstance(today, date):
+        raise TypeError("event_time_of: Text und Datum erwartet")  # noqa: TRY003
+    if tense not in TENSES:
+        raise ValueError(f"event_time_of: unbekannte Zeitlage {tense!r}")  # noqa: TRY003
+    if not expression.strip():
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    found: tuple[datetime, str] | None
+    parts: tuple[int, int | None, time | None] | None = _date_without_year(expression)
+    if parts is not None:
+        found = _year_by_tense(parts, tense, today)
+        logger.info("Ereignis: %r %s → %s", expression, tense, found[0] if found else None)
+    else:
+        found = _read_moment(expression, today)
 
     # ── Ausgabe-Verifikation ────────────────────
     if found is not None and not isinstance(found[0], datetime):
@@ -259,13 +426,42 @@ def _person_ids(postgres_url: str, user_id: str, name: str) -> list[int] | None:
     return ids
 
 
+def _tense_of(raw: dict) -> tuple[str, str]:
+    """Die Zeitlage eines Ereignisses der Antwort und woher sie kommt.
+
+    Ein Ereignis wird in der Regel gemeldet, bevor es eintritt. Fehlt die
+    Zeitlage oder ist sie keine aus `TENSES`, gilt deshalb `angekuendigt` —
+    laut im Log und mit der Herkunft `vorgabe` im Eintrag des Auftrags, damit
+    sich zählen lässt, wie oft das Modell sie nicht nennt.
+
+    Vorbedingung: `raw` ist ein Ereignis der Antwort (ein Objekt).
+    Nachbedingung: `(zeitlage, herkunft)`, die Zeitlage aus `TENSES`, die
+        Herkunft `modell` oder `vorgabe`.
+    Fehlerfälle: keine nach außen — eine fehlende Zeitlage ist die Vorgabe.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    value: object = raw.get("zeitlage")
+    stated: str = value.strip().casefold().replace("ü", "ue") if isinstance(value, str) else ""
+
+    # ── Verarbeitung ────────────────────────────
+    known: bool = stated in TENSES
+    tense: str = stated if known else TENSE_ANNOUNCED
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not known:
+        logger.error("Ereignis: Zeitlage %.40r fehlt oder unbekannt — angekündigt angenommen",
+                     value)
+    return tense, TENSE_FROM_MODEL if known else TENSE_FROM_DEFAULT
+
+
 def _event_fields(raw: object, human: dict[int, dict]) -> tuple[dict | None, str]:
     """Prüft ein Ereignis der Antwort: Nummer eines Kandidaten des Menschen und Titel.
 
     Vorbedingung: `human` sind die Kandidaten des Menschen unter ihrer Nummer.
     Nachbedingung: `(fields, "")` mit `kandidat` (int), `person`, `titel`,
-        `zeitausdruck` (Texte, `titel` nicht leer) — oder `(None, ausgang)`
-        mit `form` oder `kandidat_unbekannt`.
+        `zeitausdruck` (Texte, `titel` nicht leer), `zeitlage` und
+        `zeitlage_herkunft` (`_tense_of`) — oder `(None, ausgang)` mit
+        `form` oder `kandidat_unbekannt`.
     Fehlerfälle: keine — eine verfehlte Form ist ein Ausgang, laut im Log.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -289,6 +485,7 @@ def _event_fields(raw: object, human: dict[int, dict]) -> tuple[dict | None, str
     if not fields["titel"]:
         logger.error("Ereignis: Eintrag ohne Titel: %.200r", raw)
         return None, EVENT_FORM
+    fields["zeitlage"], fields["zeitlage_herkunft"] = _tense_of(raw)
     return fields, ""
 
 
@@ -435,7 +632,9 @@ def _handle_event(state: dict, raw: object, human: dict[int, dict], today: date,
         return {"roh": repr(raw)[:200], "ausgang": defect}, None
 
     # ── Verarbeitung ────────────────────────────
-    moment: tuple[datetime, str] | None = event_time_of(fields["zeitausdruck"], today)
+    moment: tuple[datetime, str] | None = event_time_of(
+        fields["zeitausdruck"], today, fields["zeitlage"],
+    )
     timeline_id: int | None = None
     if moment is None:
         outcome: str = EVENT_NO_TIME

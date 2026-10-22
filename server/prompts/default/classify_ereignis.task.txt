@@ -10,7 +10,8 @@ Antwortformat:
             "kandidat": Nummer des Kandidaten, der das Ereignis traegt,
             "person": "Name der Person, wie er in der Aeusserung steht",
             "titel": "kurzer Titel des Ereignisses, ohne die Person",
-            "zeitausdruck": "der Zeitausdruck woertlich aus der Aeusserung"
+            "zeitausdruck": "der Zeitausdruck woertlich aus der Aeusserung",
+            "zeitlage": "angekuendigt" oder "berichtet"
         }
     ]
 }
@@ -44,6 +45,11 @@ ZEITAUSDRUCK:
   Genau die Worte der Aeusserung, die sagen, wann ("im August", "am 12. Maerz", "2017").
   Nicht umrechnen, kein Datum erfinden.
 
+ZEITLAGE:
+  "angekuendigt", wenn das Ereignis noch bevorsteht ("zieht im August um", "heiratet im Mai",
+  "wird operiert"); "berichtet", wenn es schon geschehen ist ("hat geheiratet",
+  "ist umgezogen", "wurde operiert"). Es zaehlt die Form des Satzes, nicht der Monat.
+
 KANDIDAT:
   Die Nummer des Kandidaten, der zu dieser Person und diesem Ereignis gehoert. Nur Nummern
   aus der Liste.
@@ -51,13 +57,13 @@ KANDIDAT:
 Beispiele:
 - "Mein Nachbar Ole zieht im August nach Wernau.", Kandidat [1] Ole | Wohnort | Wernau
   → {"ereignisse": [{"kandidat": 1, "person": "Ole", "titel": "Umzug nach Wernau",
-     "zeitausdruck": "im August"}]}
+     "zeitausdruck": "im August", "zeitlage": "angekuendigt"}]}
 - "Meine Freundin Ronja hat im Maerz geheiratet.", Kandidat [1] Ronja | Familienstand | verheiratet
   → {"ereignisse": [{"kandidat": 1, "person": "Ronja", "titel": "Hochzeit",
-     "zeitausdruck": "im Maerz"}]}
+     "zeitausdruck": "im Maerz", "zeitlage": "berichtet"}]}
 - "Mein Vater wird am 12. Februar am Knie operiert.", Kandidat [1] Vater | Operation | Knie
   → {"ereignisse": [{"kandidat": 1, "person": "Vater", "titel": "Knieoperation",
-     "zeitausdruck": "am 12. Februar"}]}
+     "zeitausdruck": "am 12. Februar", "zeitlage": "angekuendigt"}]}
 - "Ole holt morgen die Brötchen.", Kandidat [1] Ole | Besorgung | Brötchen
   → {"ereignisse": []} (eine Besorgung)
 - "Ronja faehrt am Sonntag in den Zoo.", Kandidat [1] Ronja | Ausflug | Zoo

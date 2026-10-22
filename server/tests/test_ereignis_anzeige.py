@@ -306,7 +306,7 @@ class AnExactDateClarifiesTheMonthTest(_Fixture):
         """(Abbildung, Inhalt des einen Eintrags `log_db_write`)."""
         self.modell.chat.submit_sync.return_value.parsed = {"ereignisse": [{
             "kandidat": 1, "person": person, "titel": "Umzug nach Ostheim",
-            "zeitausdruck": zeitausdruck,
+            "zeitausdruck": zeitausdruck, "zeitlage": "angekuendigt",
         }]}
         zustand: dict = {"user_id": self.user, "character_id": char, "turn_id": "probe-turn",
                          "user_prompt": f"{person} zieht {zeitausdruck} nach Ostheim."}

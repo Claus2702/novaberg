@@ -19,6 +19,17 @@ Was diese Datei zusichert:
     ist `antwort_defekt`, nie *kein Ereignis*.
   * **Die Zeit:** `event_time_of` liest *im November* als Monat, *am 3.
     Dezember* als Tag, ein Jahr und eine Woche als nichts.
+  * **Das Jahr aus der Zeitlage:** Heute ist der 21.10.2026. *im Mai*
+    angekündigt ist Mai 2027, berichtet Mai 2026; *im Oktober* angekündigt
+    ist dieser Oktober; *am 3. März* angekündigt 2027, berichtet 2026;
+    ebenso Tag und Monat in Ziffern (*am 12.2.*, *am 14.11.*) und mit
+    Uhrzeit (*am 3. März um 10 Uhr*, die Uhrzeit bleibt). Der 29. Februar
+    findet das nächste oder letzte Schaltjahr, heute selbst ist in beiden
+    Zeitlagen dieses Jahr, ein Tag, den es nicht gibt, ist laut keine Zeit.
+    Ein Jahr im Ausdruck (*im Mai 2026*, *am 12.2.2027*) und *nächsten
+    Monat* bleiben, in beiden Zeitlagen. Im Dienst: die Zeitlage der Antwort
+    setzt das Jahr der Zeile; fehlt sie, gilt angekündigt, laut und mit
+    Herkunft `vorgabe`; die Klärung *am 14. Mai* findet die Zeile *im Mai* im kommenden Jahr.
 
 Das Modell antwortet aus einem festen Ausgang; die Kandidaten des Turns sind
 ersetzt, der Eintrag `log_db_write` wird abgefangen. Die Datenbank ist die
@@ -28,8 +39,9 @@ räumt in tearDown ab.
 
 import unittest
 import uuid
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import MagicMock, patch
+from zoneinfo import ZoneInfo
 
 import psycopg2
 import psycopg2.extras
@@ -66,10 +78,13 @@ def _kandidat(objekt: str, eigenschaft: str, wert: str, sprecher: str = "nutzer"
 
 
 def _ereignis(kandidat: object = 1, person: str = "Ilva", titel: str = "Umzug nach Ostheim",
-              zeitausdruck: str = "im November") -> dict:
-    """Ein Ereignis, wie das Modell es nennt."""
-    return {"kandidat": kandidat, "person": person, "titel": titel,
-            "zeitausdruck": zeitausdruck}
+              zeitausdruck: str = "im November", zeitlage: str | None = "angekuendigt") -> dict:
+    """Ein Ereignis, wie das Modell es nennt; `zeitlage=None` lässt das Feld weg."""
+    ereignis: dict = {"kandidat": kandidat, "person": person, "titel": titel,
+                      "zeitausdruck": zeitausdruck}
+    if zeitlage is not None:
+        ereignis["zeitlage"] = zeitlage
+    return ereignis
 
 
 class EventServiceTest(unittest.TestCase):
@@ -228,7 +243,7 @@ class EventTimeTest(unittest.TestCase):
     HEUTE: date = date(2026, 10, 21)
 
     def _lesen(self, ausdruck: str) -> tuple[int, int, str] | None:
-        gefunden = ereignis_mod.event_time_of(ausdruck, self.HEUTE)
+        gefunden = ereignis_mod.event_time_of(ausdruck, self.HEUTE, "angekuendigt")
         return None if gefunden is None else (gefunden[0].month, gefunden[0].day, gefunden[1])
 
     def test_a_month_is_the_first_with_precision_month(self) -> None:
@@ -241,6 +256,184 @@ class EventTimeTest(unittest.TestCase):
         self.assertIsNone(self._lesen("2019"))
         with self.assertLogs(_LOGGER, level="ERROR"):
             self.assertIsNone(self._lesen("diese Woche"))
+
+
+class EventYearTest(unittest.TestCase):
+    """`event_time_of`: das Jahr eines Monats oder Tages ohne Jahr aus der Zeitlage."""
+
+    HEUTE: date = date(2026, 10, 21)
+
+    def _lesen(self, ausdruck: str, zeitlage: str) -> tuple[int, int, int, str] | None:
+        gefunden = ereignis_mod.event_time_of(ausdruck, self.HEUTE, zeitlage)
+        if gefunden is None:
+            return None
+        return (gefunden[0].year, gefunden[0].month, gefunden[0].day, gefunden[1])
+
+    def test_may_announced_is_the_coming_may(self) -> None:
+        self.assertEqual(self._lesen("im Mai", "angekuendigt"), (2027, 5, 1, "month"))
+
+    def test_the_twin_may_reported_is_the_past_may(self) -> None:
+        self.assertEqual(self._lesen("im Mai", "berichtet"), (2026, 5, 1, "month"))
+
+    def test_november_announced_is_this_november(self) -> None:
+        self.assertEqual(self._lesen("im November", "angekuendigt"), (2026, 11, 1, "month"))
+
+    def test_the_twin_november_reported_is_last_november(self) -> None:
+        self.assertEqual(self._lesen("im November", "berichtet"), (2025, 11, 1, "month"))
+
+    def test_the_running_month_announced_is_this_month(self) -> None:
+        self.assertEqual(self._lesen("im Oktober", "angekuendigt"), (2026, 10, 1, "month"))
+
+    def test_a_day_announced_is_the_coming_day(self) -> None:
+        self.assertEqual(self._lesen("am 3. März", "angekuendigt"), (2027, 3, 3, "day"))
+
+    def test_the_twin_a_day_reported_is_the_past_day(self) -> None:
+        self.assertEqual(self._lesen("am 3. März", "berichtet"), (2026, 3, 3, "day"))
+
+    def test_a_year_in_the_expression_stays_in_both_tenses(self) -> None:
+        for zeitlage in ("angekuendigt", "berichtet"):
+            with self.subTest(zeitlage=zeitlage):
+                self.assertEqual(self._lesen("im Mai 2026", zeitlage), (2026, 5, 1, "month"))
+
+    def test_next_month_stays_in_both_tenses(self) -> None:
+        for zeitlage in ("angekuendigt", "berichtet"):
+            with self.subTest(zeitlage=zeitlage):
+                self.assertEqual(self._lesen("nächsten Monat", zeitlage), (2026, 11, 1, "month"))
+
+    def test_an_unknown_tense_is_refused(self) -> None:
+        with self.assertRaises(ValueError):
+            self._lesen("im Mai", "vielleicht")
+
+    # Tag und Monat in Ziffern: dieselbe Klasse wie *am 3. März* — ohne Jahr, nicht relativ.
+    def test_digits_announced_are_the_coming_day(self) -> None:
+        self.assertEqual(self._lesen("am 12.2.", "angekuendigt"), (2027, 2, 12, "day"))
+
+    def test_the_twin_digits_reported_are_the_past_day(self) -> None:
+        self.assertEqual(self._lesen("am 12.2.", "berichtet"), (2026, 2, 12, "day"))
+
+    def test_digits_in_november_announced_are_this_november(self) -> None:
+        self.assertEqual(self._lesen("am 14.11.", "angekuendigt"), (2026, 11, 14, "day"))
+
+    def test_the_twin_digits_in_november_reported_are_last_november(self) -> None:
+        self.assertEqual(self._lesen("am 14.11.", "berichtet"), (2025, 11, 14, "day"))
+
+    def test_a_year_in_digits_stays_in_both_tenses(self) -> None:
+        for zeitlage in ("angekuendigt", "berichtet"):
+            with self.subTest(zeitlage=zeitlage):
+                self.assertEqual(self._lesen("am 12.2.2027", zeitlage), (2027, 2, 12, "day"))
+
+    # Mit Uhrzeit: Die Uhrzeit bleibt, das Jahr kommt aus der Zeitlage.
+    def test_a_day_with_a_clock_time_announced_is_the_coming_day(self) -> None:
+        for ausdruck, erwartet in (("am 3. März um 10 Uhr", datetime(2027, 3, 3, 10, 0)),
+                                   ("am 12.2. um 9", datetime(2027, 2, 12, 9, 0))):
+            with self.subTest(ausdruck=ausdruck):
+                self.assertEqual(ereignis_mod.event_time_of(ausdruck, self.HEUTE, "angekuendigt"),
+                                 (erwartet, "minute"))
+
+    def test_the_twin_a_day_with_a_clock_time_reported_is_the_past_day(self) -> None:
+        for ausdruck, erwartet in (("am 3. März um 10 Uhr", datetime(2026, 3, 3, 10, 0)),
+                                   ("am 12.2. um 9", datetime(2026, 2, 12, 9, 0))):
+            with self.subTest(ausdruck=ausdruck):
+                self.assertEqual(ereignis_mod.event_time_of(ausdruck, self.HEUTE, "berichtet"),
+                                 (erwartet, "minute"))
+
+    # Die Grenzen: ein Tag, den es nicht jedes Jahr gibt, und heute selbst.
+    def test_the_29th_of_february_announced_is_the_next_leap_year(self) -> None:
+        self.assertEqual(self._lesen("am 29. Februar", "angekuendigt"), (2028, 2, 29, "day"))
+
+    def test_the_twin_the_29th_of_february_reported_is_the_last_leap_year(self) -> None:
+        self.assertEqual(self._lesen("am 29. Februar", "berichtet"), (2024, 2, 29, "day"))
+
+    def test_today_as_a_day_is_this_year_in_both_tenses(self) -> None:
+        for zeitlage in ("angekuendigt", "berichtet"):
+            with self.subTest(zeitlage=zeitlage):
+                self.assertEqual(self._lesen("am 21. Oktober", zeitlage), (2026, 10, 21, "day"))
+
+    def test_a_day_that_does_not_exist_is_loud_and_no_time(self) -> None:
+        with self.assertLogs(_LOGGER, level="ERROR"):
+            self.assertIsNone(self._lesen("am 31. April", "angekuendigt"))
+
+    def test_the_twin_the_last_day_of_april_is_a_time(self) -> None:
+        self.assertEqual(self._lesen("am 30. April", "angekuendigt"), (2027, 4, 30, "day"))
+
+
+class EventYearServiceTest(unittest.TestCase):
+    """Im Dienst, heute am 21.10.2026: Die Zeitlage der Antwort setzt das Jahr der Zeile."""
+
+    BERLIN: ZoneInfo = ZoneInfo("Europe/Berlin")
+    JETZT: datetime = datetime(2026, 10, 21, 10, 0, tzinfo=BERLIN)
+
+    def setUp(self) -> None:
+        self.user: str = f"test-ereignis-{uuid.uuid4().hex[:8]}"
+        self.char: str = "nova-test"
+        self.modell = MagicMock()
+        for ersatz in (patch.object(ereignis_mod, "model_service", self.modell),
+                       patch.object(ereignis_mod, "now_local", return_value=self.JETZT)):
+            ersatz.start()
+            self.addCleanup(ersatz.stop)
+
+    def tearDown(self) -> None:
+        _ausfuehren("DELETE FROM timeline WHERE user_id = %s", (self.user,))
+        _ausfuehren("DELETE FROM entitaeten WHERE user_id = %s", (self.user,))
+
+    def _laufen(self, ereignis: dict) -> tuple[dict, dict]:
+        """(Abbildung, Inhalt des einen Eintrags `log_db_write`)."""
+        self.modell.chat.submit_sync.return_value.parsed = {"ereignisse": [ereignis]}
+        zustand: dict = {"user_id": self.user, "character_id": self.char,
+                         "turn_id": "probe-turn", "user_prompt": _AEUSSERUNG}
+        with patch.object(ereignis_mod, "turn_candidates",
+                          return_value=[_kandidat("Ilva", "Wohnort", "Ostheim")]), \
+             patch.object(ereignis_mod, "log_db_write") as eintrag:
+            abbildung = ereignis_mod.process_event_orders(zustand, [_AUFTRAG], POSTGRES_URL)
+        eintrag.assert_called_once()
+        return abbildung, eintrag.call_args.kwargs["inhalt"]
+
+    def _tage(self) -> list[tuple[bool, str, int, int, int]]:
+        """Je Zeile (aktiv, Genauigkeit, Jahr, Monat, Tag) in Ortszeit, nach id."""
+        zeilen = _ausfuehren("SELECT aktiv, precision, event_time FROM timeline "
+                             "WHERE user_id = %s ORDER BY id", (self.user,))
+        tage: list[tuple[bool, str, int, int, int]] = []
+        for z in zeilen:
+            tag: datetime = z["event_time"].astimezone(self.BERLIN)
+            tage.append((z["aktiv"], z["precision"], tag.year, tag.month, tag.day))
+        return tage
+
+    @staticmethod
+    def _zeitlage(inhalt: dict) -> tuple[str, str]:
+        ereignis: dict = inhalt["ereignisse"][0]
+        return ereignis["zeitlage"], ereignis["zeitlage_herkunft"]
+
+    def test_may_announced_is_a_row_in_the_coming_year(self) -> None:
+        _, inhalt = self._laufen(_ereignis(zeitausdruck="im Mai", zeitlage="angekuendigt"))
+        self.assertEqual(self._tage(), [(True, "month", 2027, 5, 1)])
+        self.assertEqual(self._zeitlage(inhalt), ("angekuendigt", "modell"))
+
+    def test_the_twin_may_reported_is_a_row_in_this_year(self) -> None:
+        _, inhalt = self._laufen(_ereignis(zeitausdruck="im Mai", zeitlage="berichtet"))
+        self.assertEqual(self._tage(), [(True, "month", 2026, 5, 1)])
+        self.assertEqual(self._zeitlage(inhalt), ("berichtet", "modell"))
+
+    def test_without_a_tense_the_event_is_announced_loudly(self) -> None:
+        with self.assertLogs(_LOGGER, level="ERROR") as protokoll:
+            _, inhalt = self._laufen(_ereignis(zeitausdruck="im Mai", zeitlage=None))
+        self.assertIn("Zeitlage", "\n".join(protokoll.output))
+        self.assertEqual(self._tage(), [(True, "month", 2027, 5, 1)])
+        self.assertEqual(self._zeitlage(inhalt), ("angekuendigt", "vorgabe"))
+
+    def test_the_clarification_finds_the_may_row_of_the_coming_year(self) -> None:
+        erste, _ = self._laufen(_ereignis(zeitausdruck="im Mai"))
+        abbildung, inhalt = self._laufen(_ereignis(zeitausdruck="am 14. Mai"))
+        self.assertEqual([e["ausgang"] for e in inhalt["ereignisse"]], ["verschoben"])
+        self.assertEqual(abbildung, erste)
+        self.assertEqual(self._tage(),
+                         [(False, "month", 2027, 5, 1), (True, "day", 2027, 5, 14)])
+
+    def test_the_twin_a_reported_day_is_a_new_row_in_this_year(self) -> None:
+        self._laufen(_ereignis(zeitausdruck="im Mai"))
+        _, inhalt = self._laufen(_ereignis(zeitausdruck="am 14. Mai", zeitlage="berichtet"))
+        self.assertEqual([e["ausgang"] for e in inhalt["ereignisse"]], ["eingetragen"])
+        self.assertEqual(self._tage(),
+                         [(True, "month", 2027, 5, 1), (True, "day", 2026, 5, 14)])
 
 
 if __name__ == "__main__":
