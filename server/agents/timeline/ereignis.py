@@ -18,6 +18,11 @@ Person über `resolve_by_name`: eindeutig → `entitaet_ids=[id]`, sonst ohne,
 der Eintrag entsteht trotzdem. Geschrieben mit dem Paar und dem Typ `ereignis`
 aus `memory.timeline_types`, ohne Wiedervorlage und ohne Duplikatprüfung.
 
+Eine Ausnahme vom neuen Eintrag ist die Klärung: Nennt ein Ereignis einen Tag,
+und steht im Paar schon dasselbe Ereignis derselben Person mit `month` in
+diesem Monat, wird diese Zeile auf den Tag verschoben (`verschieben`), statt
+eine zweite anzulegen. Die Abbildung zeigt dann auf die erste Zeile.
+
 Die Rückgabe bildet jede Kandidaten-Nummer eines erkannten Ereignisses auf
 seine Timeline-Zeile ab — oder auf None, wenn das Schreiben scheiterte: Dann
 schreibt der Fakten-Agent für diesen Kandidaten keinen Fakt (`ereignis_fehlt`).
@@ -30,7 +35,7 @@ from datetime import date, datetime, time, timedelta
 from config import PROMPTS, get_node_config
 from graph.reiz import reiz_text
 from memory.pipeline_log import log_db_write
-from memory.repositories.timeline_repository import TimelineRepository
+from memory.repositories.timeline_repository import MONTH_PRECISION, TimelineRepository
 from memory.sachlage_properties import turn_candidates
 from memory.services.entity_resolution import EntityResolutionService
 from memory.timeline_types import OCCURRENCE_TYPE, EventType, event_type, resubmission_at
@@ -65,14 +70,18 @@ EVENT_NO_TIME:           str = "ohne_zeit"
 EVENT_UNKNOWN_CANDIDATE: str = "kandidat_unbekannt"
 EVENT_FORM:              str = "form"
 EVENT_FAILED:            str = "ereignis_fehlt"
+EVENT_MOVED:             str = "verschoben"
 EVENT_OUTCOMES: frozenset[str] = frozenset({
     EVENT_WRITTEN, EVENT_NO_TIME, EVENT_UNKNOWN_CANDIDATE, EVENT_FORM, EVENT_FAILED,
+    EVENT_MOVED,
 })
 
-# Die Genauigkeiten, die ein Ereignis tragen kann.
+# Die Genauigkeiten, die ein Ereignis tragen kann. Der Monat kommt aus der Quelle,
+# mit der die Leser (`find_by_date_range`, `[TERMINE]`, die Mappe) vergleichen:
+# Eine eigene Kopie driftete still von ihnen weg.
 PRECISION_MINUTE: str = "minute"
 PRECISION_DAY:    str = "day"
-PRECISION_MONTH:  str = "month"
+PRECISION_MONTH:  str = MONTH_PRECISION
 
 
 class ModelCallError(RuntimeError):
@@ -323,13 +332,101 @@ def _write_event(state: dict, fields: dict, moment: tuple[datetime, str],
     return timeline_id
 
 
+def _month_row_to_move(state: dict, fields: dict, moment: tuple[datetime, str],
+                       postgres_url: str) -> int | None:
+    """Die eine Monatszeile desselben Ereignisses, die eine genaue Angabe klärt.
+
+    *„Liska zieht im November um“*, dann *„am 14. November“*: Die zweite
+    Angabe ist dasselbe Ereignis, genauer. Gesucht wird im Paar ein aktives
+    `ereignis` mit `month`, dessen Monat den neuen Tag enthält und dessen
+    Person (`details`) dieselbe ist, ohne Groß- und Kleinschreibung. Eine
+    andere Figur sieht die Zeile nicht: `find_by_date_range` liest nur das
+    Paar.
+
+    Vorbedingung: `fields` aus `_event_fields`; `moment` aus `event_time_of`;
+        `state` trägt das Paar.
+    Nachbedingung: die id der einen passenden Zeile; None bei `month`, ohne
+        Person, ohne oder mit mehreren passenden Zeilen (dann entsteht eine
+        neue Zeile).
+    Fehlerfälle: ein Fehler beim Lesen geht an den Aufrufer.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    event_time, precision = moment
+    person: str = fields["person"].strip().casefold()
+    if precision == PRECISION_MONTH or not person:
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    rows: list[dict] = TimelineRepository.find_by_date_range(
+        postgres_url, state["user_id"], state["character_id"], event_time, event_time,
+    )
+    matches: list[dict] = [
+        r for r in rows
+        if r.get("event_type") == OCCURRENCE_TYPE and r.get("precision") == PRECISION_MONTH
+        and (r["event_time"].year, r["event_time"].month) == (event_time.year, event_time.month)
+        and str(r.get("details") or "").strip().casefold() == person
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(matches) > 1:
+        logger.info("Ereignis: %d Monatszeilen für %r — neue Zeile", len(matches), person)
+        return None
+    if matches and not isinstance(matches[0].get("id"), int):
+        raise RuntimeError(f"Ereignis: Monatszeile ohne id {matches[0]!r:.200}")  # noqa: TRY003
+    return matches[0]["id"] if matches else None
+
+
+def _move_event(state: dict, fields: dict, moment: tuple[datetime, str],
+                postgres_url: str) -> tuple[int | None, bool]:
+    """Verschiebt die Monatszeile desselben Ereignisses auf den genauen Tag, wenn es sie gibt.
+
+    Der Verweis eines Fakts bleibt auf der ersten Zeile; zurück kommt deshalb
+    die id der Monatszeile, nicht die der neuen — Leser folgen ihr über
+    `aktive_zeile`.
+
+    Vorbedingung: wie `_month_row_to_move`.
+    Nachbedingung: `(id, True)` nach dem Verschieben; `(None, False)`, wenn
+        es nichts zu verschieben gibt; `(None, True)`, wenn Suche oder
+        Verschieben scheiterten (laut im Log).
+    Fehlerfälle: keine nach außen — ein Fehler der Datenbank ist ein Ausgang.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    event_time, precision = moment
+    kind: EventType = event_type(OCCURRENCE_TYPE)
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        old_id: int | None = _month_row_to_move(state, fields, moment, postgres_url)
+        if old_id is None:
+            return None, False
+        new_id: int = TimelineRepository.verschieben(
+            postgres_url, old_id, event_time=event_time, precision=precision,
+            wiedervorlage_am=resubmission_at(kind.remind, event_time),
+        )
+    except Exception:
+        logger.exception("Ereignis: %r nicht verschoben", fields["titel"])
+        return None, True
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if new_id == old_id:
+        logger.error("Ereignis: Verschieben von %s lieferte dieselbe Zeile", old_id)
+        return None, True
+    logger.info("Ereignis: %s auf %s verschoben (%s, %s)", old_id, new_id, event_time, precision)
+    return old_id, True
+
+
 def _handle_event(state: dict, raw: object, human: dict[int, dict], today: date,
                   postgres_url: str) -> tuple[dict, int | None]:
-    """Ein Ereignis der Antwort: prüfen, Zeit lesen, schreiben.
+    """Ein Ereignis der Antwort: prüfen, Zeit lesen, verschieben oder schreiben.
+
+    Gibt es zu einer genauen Angabe (Tag, Uhrzeit) eine Monatszeile desselben
+    Ereignisses derselben Person im Paar, wird sie verschoben statt eine
+    zweite Zeile anzulegen (`_move_event`).
 
     Vorbedingung: wie `_event_fields` und `_write_event`.
     Nachbedingung: `(result, timeline_id)` — `result` trägt `ausgang` aus
-        `EVENT_OUTCOMES`; `timeline_id` nur bei `eingetragen`.
+        `EVENT_OUTCOMES`; `timeline_id` nur bei `eingetragen` und
+        `verschoben` (dann die erste Zeile des Ereignisses).
     Fehlerfälle: ein Ausgang außerhalb der Menge wirft ValueError.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -343,8 +440,12 @@ def _handle_event(state: dict, raw: object, human: dict[int, dict], today: date,
     if moment is None:
         outcome: str = EVENT_NO_TIME
     else:
-        timeline_id = _write_event(state, fields, moment, postgres_url)
-        outcome = EVENT_WRITTEN if timeline_id is not None else EVENT_FAILED
+        timeline_id, handled = _move_event(state, fields, moment, postgres_url)
+        if handled:
+            outcome = EVENT_MOVED if timeline_id is not None else EVENT_FAILED
+        else:
+            timeline_id = _write_event(state, fields, moment, postgres_url)
+            outcome = EVENT_WRITTEN if timeline_id is not None else EVENT_FAILED
 
     # ── Ausgabe-Verifikation ────────────────────
     if outcome not in EVENT_OUTCOMES:
@@ -360,7 +461,8 @@ def _classify_and_write(state: dict, human: dict[int, dict],
 
     Vorbedingung: `human` nicht leer.
     Nachbedingung: `(outcome, mapping)` — `mapping` trägt je Kandidat mit
-        `eingetragen` die Zeile, mit `ereignis_fehlt` None.
+        `eingetragen` die Zeile, mit `verschoben` die erste Zeile des
+        Ereignisses, mit `ereignis_fehlt` None.
     Fehlerfälle: Ein Ausfall des Modells ist `modell_ausfall` oder
         `antwort_defekt`, die Abbildung leer. ValueError bei leerer Äußerung.
     """
@@ -383,7 +485,7 @@ def _classify_and_write(state: dict, human: dict[int, dict],
     for raw in events:
         result, timeline_id = _handle_event(state, raw, human, today, postgres_url)
         results.append(result)
-        if result["ausgang"] in (EVENT_WRITTEN, EVENT_FAILED):
+        if result["ausgang"] in (EVENT_WRITTEN, EVENT_MOVED, EVENT_FAILED):
             mapping[result["kandidat"]] = timeline_id
 
     # ── Ausgabe-Verifikation ────────────────────

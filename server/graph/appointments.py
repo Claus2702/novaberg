@@ -68,13 +68,21 @@ class AppointmentWindow:
 
 @dataclass(frozen=True)
 class Appointment:
-    """Ein Termin des Menschen, so wie er im Block steht.
+    """Ein Eintrag der Timeline, so wie er im Block steht.
 
     `moment` ist zeitzonenbewusst in Ortszeit. `has_time` ist falsch fuer
     einen Termin, der nur einen Tag traegt. `past` ist vorgerechnet: mit
-    Uhrzeit vor dem Zeitpunkt des Turns, ohne Uhrzeit vor dem heutigen Tag.
-    `timeline_id` ist die Kennung der Zeile: Ein Angebot, das den Termin
-    nennt, bleibt damit bis zur Zeile rueckverfolgbar (`timeline#<id>`).
+    Uhrzeit vor dem Zeitpunkt des Turns, mit `precision` `month` vor dem
+    laufenden Monat (ein Monat gilt bis zu seinem Ende), sonst vor dem
+    heutigen Tag. `timeline_id` ist die Kennung der Zeile: Ein Angebot, das
+    den Termin nennt, bleibt damit bis zur Zeile rueckverfolgbar
+    (`timeline#<id>`).
+
+    `event_type` ist der Typ der Zeile (`memory/timeline_types.py`): Ein
+    Typ mit Kennzeichnung — das Ereignis einer anderen Person — ist kein
+    Termin des Menschen und steht im Block getrennt und gekennzeichnet.
+    `persons` nennt die Personen eines solchen Eintrags, `precision` die
+    Genauigkeit der Zeile (`minute`, `hour`, `day`, `month`).
     """
 
     moment: datetime
@@ -83,6 +91,9 @@ class Appointment:
     details: str
     past: bool
     timeline_id: int
+    event_type: str
+    precision: str
+    persons: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -91,6 +102,8 @@ class AppointmentReading:
 
     `failed` heisst: Die Timeline wurde nicht gelesen. Dann sagt
     `appointments` nichts aus — ein Ausfall ist kein leerer Zeitraum.
+    `appointments` traegt auch die gekennzeichneten Eintraege (Ereignisse
+    anderer Personen); getrennt werden sie beim Setzen des Blocks.
     `discarded` zaehlt die gelesenen Zeilen, die nicht in `appointments`
     stehen: von der Ausgabe-Verifikation oder nach der Richtung verworfen.
     """

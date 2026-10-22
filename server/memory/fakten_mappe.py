@@ -17,12 +17,22 @@ Drei Zustände, die ein Leser unterscheiden muss:
   oder `LookupError` aus dem Inneren.
 
 Die Mappe rendert keinen Text für einen Prompt; das tun ihre Leser. Kein
-Lesen schreibt: `last_touched` bleibt in `fakten` und `entitaeten` stehen.
+Lesen schreibt: `last_touched` bleibt in `fakten` und `entitaeten` stehen —
+auch nicht in `timeline`, denn der Verweis eines Fakts wird über
+`TimelineRepository.aktive_zeile` gelesen, nicht über `find_by_id`.
+
+**Ein Fakt mit Verweis auf ein Ereignis sagt, ab wann er gilt.** Der Verweis
+(`fakten.timeline_id`) bleibt auf der ersten Zeile des Ereignisses; ist es
+verschoben, folgt die Mappe `nachfolger_id` bis zur aktiven Zeile:
+*ab Umzug nach Görlitz, 14.11.2026*, oder mit dem Monat, wenn nur er bekannt
+ist. Der Wert, den der Fakt abgelöst hat, steht daneben mit *bis* und
+demselben Titel.
 """
 
 import logging
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import datetime
 
 from config import (
     FAKTEN_MAPPE_MAX_ZEICHEN,
@@ -31,6 +41,8 @@ from config import (
     FAKTEN_MAPPE_TIEFE,
 )
 from memory.repositories.fakten_repository import FaktenRepository, Surroundings
+from memory.repositories.timeline_repository import MONTH_PRECISION, TimelineRepository
+from utils.local_time import month_label
 
 logger = logging.getLogger("ki_server.memory.fakten_mappe")
 
@@ -43,6 +55,12 @@ class MappeEntry:
     Wert-Fakt sind `object_id` und `object_name` None und `object_value`
     gesetzt, bei einem Referenz-Fakt umgekehrt. `text` ist der `fakt_text` der
     Zeile, `strength` ihre `staerke_decay`.
+
+    `timeline_id` ist der Verweis des Fakts auf ein Ereignis (None ohne).
+    Mit Verweis sagt `since`, ab wann er gilt (*ab <Titel>, <Monat|Datum>*),
+    und `previous` nennt den abgelösten Wert (*<Text> — bis <Titel>*); ohne
+    Verweis, oder ohne abgelösten Wert, sind beide leer. Sie zählen nicht in
+    die Kappung in Zeichen: Die gilt dem Fakt.
     """
 
     fact_id:      int
@@ -56,6 +74,9 @@ class MappeEntry:
     text:         str
     origin:       str
     strength:     float
+    timeline_id:  int | None = None
+    since:        str = ""
+    previous:     str = ""
 
 
 @dataclass(frozen=True)
@@ -168,6 +189,7 @@ def _entry_from_row(row: dict) -> MappeEntry:
     columns: tuple[str, ...] = (
         "id", "grad", "subjekt_id", "subjekt_name", "attribut", "objekt_id",
         "objekt_name", "objekt_wert", "fakt_text", "herkunft", "staerke_decay",
+        "timeline_id",
     )
     missing: list[str] = [c for c in columns if c not in row]
     if missing:
@@ -186,6 +208,7 @@ def _entry_from_row(row: dict) -> MappeEntry:
         object_id=row["objekt_id"], object_name=row["objekt_name"],
         object_value=row["objekt_wert"], text=row["fakt_text"],
         origin=row["herkunft"], strength=float(row["staerke_decay"]),
+        timeline_id=row["timeline_id"],
     )
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -195,6 +218,119 @@ def _entry_from_row(row: dict) -> MappeEntry:
             f"Objekt und Wert ({entry.object_id!r}, {entry.object_value!r})"
         )
     return entry
+
+
+def _when_label(row: dict) -> str:
+    """Wann eine Zeile der Timeline liegt: der Monat bei `month`, sonst das Datum.
+
+    Vorbedingung: `row` ist eine Zeile aus `TimelineRepository` (Ortszeit).
+    Nachbedingung: *November 2026* oder *14.11.2026*.
+    Fehlerfälle: TypeError, wenn `event_time` kein Zeitpunkt ist.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    moment: object = row.get("event_time")
+    if not isinstance(moment, datetime):
+        raise TypeError(  # noqa: TRY003 — Zeile und Wert gehoeren in die Meldung
+            f"fakten_mappe: Timeline-Zeile id={row.get('id')} ohne Zeitpunkt ({moment!r})"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    # Beide Formen tragen das Jahr per Konstruktion — es gibt nichts, was erst
+    # hier zu pruefen waere (Nachbedingung im Docstring).
+    return (
+        month_label(moment) if row.get("precision") == MONTH_PRECISION
+        else moment.strftime("%d.%m.%Y")
+    )
+
+
+def _superseded_text(
+    postgres_url: str, user_id: str, character_id: str, entry: MappeEntry,
+) -> str:
+    """Der Text des Werts, den `entry` abgelöst hat — leer, wenn es keinen gibt.
+
+    Abgelöst ist ein einwertiger Wert desselben Subjekts und derselben
+    Beziehung, der nicht mehr aktiv ist; der neueste davon.
+
+    Vorbedingung: Das Paar ist vollständig; `entry` ist aktiv.
+    Nachbedingung: der `fakt_text` des neuesten abgelösten Werts, oder "".
+    Fehlerfälle: ein Fehler der Datenbank geht an den Aufrufer.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(entry, MappeEntry):
+        raise TypeError(  # noqa: TRY003 — der fremde Typ gehoert in die Meldung
+            f"fakten_mappe: kein MappeEntry ({type(entry).__name__})"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    history: list[dict] = FaktenRepository.find_historie(
+        postgres_url, user_id, character_id, entry.subject_id, entry.relation,
+    )
+    old: list[dict] = [
+        r for r in history
+        if r["id"] != entry.fact_id and not r["aktiv"] and r["einwertig"]
+    ]
+    text: str = str(old[0]["fakt_text"]).strip() if old else ""
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if old and not text:
+        raise RuntimeError(  # noqa: TRY003 — der Fakt gehoert in die Meldung
+            f"fakten_mappe: abgelöster Fakt id={old[0]['id']} ohne fakt_text"
+        )
+    return text
+
+
+def _with_reference(
+    postgres_url: str, user_id: str, character_id: str, entry: MappeEntry,
+) -> MappeEntry:
+    """Setzt `since` und `previous` eines Eintrags mit Verweis auf ein Ereignis.
+
+    Der Verweis zeigt auf die erste Zeile; `aktive_zeile` folgt
+    `nachfolger_id` bis zur heutigen. Ist das Ereignis gelöscht (keine aktive
+    Zeile), bleibt der Eintrag ohne *ab* und *bis* — laut im Log, denn der
+    Fakt verweist dann auf nichts. Ebenso, wenn die Zeile einem anderen Paar
+    gehört: `aktive_zeile` liest nach id, und ein Ereignis eines anderen
+    Menschen oder einer anderen Figur stünde sonst in dieser Mappe.
+
+    Vorbedingung: Das Paar ist vollständig.
+    Nachbedingung: ohne Verweis `entry` unverändert; ohne aktive Zeile oder
+        mit einer Zeile eines anderen Paares `entry` unverändert (ERROR im
+        Log); sonst `since` mit *ab <Titel>, <Monat|Datum>* und `previous`
+        mit *<Text> — bis <Titel>*, wenn es einen abgelösten Wert gibt.
+    Fehlerfälle: ein Zyklus oder eine zu lange Kette wirft `RuntimeError`
+        (aus `aktive_zeile`); ein Fehler der Datenbank geht an den Aufrufer.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if entry.timeline_id is None:
+        return entry
+
+    # ── Verarbeitung ────────────────────────────
+    row: dict | None = TimelineRepository.aktive_zeile(postgres_url, entry.timeline_id)
+    if row is None:
+        logger.error(
+            "fakten_mappe: Fakt %s verweist auf Timeline %s ohne aktive Zeile — ohne ab/bis",
+            entry.fact_id, entry.timeline_id,
+        )
+        return entry
+    if (row.get("user_id"), row.get("character_id")) != (user_id, character_id):
+        logger.error(
+            "fakten_mappe: Fakt %s verweist auf Timeline %s eines anderen Paares (%r, %r) — "
+            "ohne ab/bis",
+            entry.fact_id, row.get("id"), row.get("user_id"), row.get("character_id"),
+        )
+        return entry
+    title: str = str(row.get("title") or "").strip()
+    since: str = f"ab {title}, {_when_label(row)}"
+    old_text: str = _superseded_text(postgres_url, user_id, character_id, entry)
+    result: MappeEntry = replace(
+        entry, since=since, previous=f"{old_text} — bis {title}" if old_text else "",
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not title:
+        raise RuntimeError(  # noqa: TRY003 — Fakt und Zeile gehoeren in die Meldung
+            f"fakten_mappe: Timeline-Zeile {row.get('id')} des Fakts {entry.fact_id} ohne Titel"
+        )
+    return result
 
 
 def load_mappe(  # noqa: PLR0913 — Paar, Entität und zwei Stellgrößen; die zwei nur benannt
@@ -239,6 +375,7 @@ def load_mappe(  # noqa: PLR0913 — Paar, Entität und zwei Stellgrößen; die 
         _entry_from_row(row) for row in surroundings.rows
     )
     kept, omitted = cap_entries(all_entries, max_chars)
+    kept = tuple(_with_reference(postgres_url, user_id, character_id, e) for e in kept)
     mappe: Mappe = Mappe(
         entity_id=entity_id, entity_name=surroundings.entity_name, depth=depth,
         entries=kept, truncated=omitted > 0 or surroundings.row_limit_hit,

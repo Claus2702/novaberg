@@ -115,7 +115,7 @@ _SURROUNDINGS_SQL: str = """
     SELECT f.id, f.user_id, f.character_id, f.aktiv,
            f.subjekt_id, s.name AS subjekt_name, f.attribut,
            f.objekt_id, o.name AS objekt_name, f.objekt_wert,
-           f.fakt_text, f.herkunft, f.staerke_decay
+           f.fakt_text, f.herkunft, f.staerke_decay, f.timeline_id
     FROM fakten f
     LEFT JOIN entitaeten s ON s.id = f.subjekt_id AND s.user_id = f.user_id
     LEFT JOIN entitaeten o ON o.id = f.objekt_id AND o.user_id = f.user_id

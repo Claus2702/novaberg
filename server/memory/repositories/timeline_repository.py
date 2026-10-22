@@ -108,16 +108,49 @@ def _check_pair(method: str, user_id: object, character_id: object) -> None:
             raise ValueError(msg)
 
 
+#: Die Genauigkeit eines Eintrags, von dem nur der Monat bekannt ist. Sein
+#: `event_time` ist der Erste des Monats, 00:00 Ortszeit; er gilt bis zum
+#: Monatsende (`agents/timeline/event_time.py`, `EventTime.range_ende`).
+MONTH_PRECISION: str = "month"
+
+
+def _month_start(moment: datetime) -> datetime:
+    """Der Beginn des Monats von `moment`, in Ortszeit gerechnet.
+
+    Ein Monat beginnt in Ortszeit: Der Erste 00:00 in Berlin ist in UTC noch
+    der Vortag. Ein Zeitpunkt ohne Zone gilt als Ortszeit, wie bei `_to_utc`.
+
+    Vorbedingung: `moment` ist ein `datetime`.
+    Nachbedingung: der Erste des Monats 00:00 in Ortszeit, nicht nach `moment`.
+    Fehlerfaelle: ein anderer Typ wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(moment, datetime):
+        msg: str = f"_month_start: datetime erwartet, nicht {type(moment).__name__}"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    local: datetime = (
+        moment.replace(tzinfo=_TZ_LOCAL) if moment.tzinfo is None else moment.astimezone(_TZ_LOCAL)
+    )
+    # `replace` setzt Tag und Uhrzeit auf den Beginn, in derselben Zone — der
+    # Beginn liegt per Konstruktion nicht nach `local`; es gibt nichts, was erst
+    # hier zu pruefen waere.
+    return local.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
 #: Die Suche mit der Grenze *vergangen*, wie `memory/timeline_reading.py::
-#: to_appointment` sie zieht: mit Uhrzeit vor dem Zeitpunkt, ohne Uhrzeit vor
-#: dem Beginn des Tages. Beide Abfragen tragen dieselbe `CASE`-Klausel, einmal
+#: to_appointment` sie zieht: mit Uhrzeit vor dem Zeitpunkt, ein Monat vor dem
+#: Beginn des laufenden Monats (er gilt bis zu seinem Ende), sonst vor dem
+#: Beginn des Tages. Beide Abfragen tragen dieselbe `CASE`-Klausel, einmal
 #: verneint; ihre Parameter liefert `_past_bounds`.
 _KEYWORD_COMING_SQL: str = """
     SELECT * FROM timeline
     WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
       AND title ILIKE %s
-      AND NOT (CASE WHEN COALESCE(precision, '') = ANY(%s::text[])
-                    THEN event_time < %s ELSE event_time < %s END)
+      AND NOT (CASE WHEN COALESCE(precision, '') = ANY(%s::text[]) THEN event_time < %s
+                    WHEN COALESCE(precision, '') <> %s THEN event_time < %s
+                    ELSE event_time < %s END)
       AND COALESCE(event_type, '') <> ALL(%s::text[])
     ORDER BY event_time ASC
     LIMIT %s
@@ -127,8 +160,9 @@ _KEYWORD_PAST_SQL: str = """
     SELECT * FROM timeline
     WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
       AND title ILIKE %s
-      AND (CASE WHEN COALESCE(precision, '') = ANY(%s::text[])
-                THEN event_time < %s ELSE event_time < %s END)
+      AND (CASE WHEN COALESCE(precision, '') = ANY(%s::text[]) THEN event_time < %s
+                WHEN COALESCE(precision, '') <> %s THEN event_time < %s
+                ELSE event_time < %s END)
       AND COALESCE(event_type, '') <> ALL(%s::text[])
     ORDER BY event_time DESC
     LIMIT %s
@@ -137,17 +171,20 @@ _KEYWORD_PAST_SQL: str = """
 
 def _past_bounds(
     now: datetime, timed_precisions: frozenset[str],
-) -> tuple[list[str], datetime, datetime]:
+) -> tuple[list[str], datetime, str, datetime, datetime]:
     """Die Parameter der Grenze *vergangen* in `_KEYWORD_COMING_SQL` und `_KEYWORD_PAST_SQL`.
 
-    Der Tagesbeginn liegt in der Zone von `now`, denn `to_appointment`
-    vergleicht das Datum in Ortszeit. Ein Termin ohne Uhrzeit von heute ist
-    damit weder vergangen noch faellt er aus einer Suche nach Kommendem.
+    Tages- und Monatsbeginn liegen in Ortszeit, denn `to_appointment`
+    vergleicht Datum und Monat in Ortszeit. Ein Termin ohne Uhrzeit von heute
+    ist damit weder vergangen noch faellt er aus einer Suche nach Kommendem;
+    ein Eintrag mit `month` im laufenden Monat ebenso wenig.
 
     Vorbedingung: `now` zeitzonenbewusst; `timed_precisions` ein nicht leeres
         frozenset nicht leerer Texte.
-    Nachbedingung: (Genauigkeiten als Liste, `now` in UTC, Tagesbeginn in
-        UTC), der Tagesbeginn nicht nach `now`.
+    Nachbedingung: (Genauigkeiten als Liste, `now` in UTC,
+        `MONTH_PRECISION`, Tagesbeginn in UTC, Monatsbeginn in UTC) — in der
+        Reihenfolge der Platzhalter —, Monatsbeginn nicht nach dem
+        Tagesbeginn, der nicht nach `now`.
     Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`; eine leere oder
         fremde Menge wirft `TypeError` — beides vor der Verbindung.
     """
@@ -162,13 +199,17 @@ def _past_bounds(
 
     # ── Verarbeitung ────────────────────────────
     day_start: datetime = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    bounds: tuple[list[str], datetime, datetime] = (
-        sorted(timed_precisions), now.astimezone(_TZ_UTC), day_start.astimezone(_TZ_UTC),
+    bounds: tuple[list[str], datetime, str, datetime, datetime] = (
+        sorted(timed_precisions), now.astimezone(_TZ_UTC), MONTH_PRECISION,
+        day_start.astimezone(_TZ_UTC), _month_start(now).astimezone(_TZ_UTC),
     )
 
     # ── Ausgabe-Verifikation ────────────────────
-    if bounds[2] > bounds[1]:
-        msg = f"_past_bounds: Tagesbeginn {bounds[2]} nach dem Zeitpunkt {bounds[1]}"
+    if not bounds[4] <= bounds[3] <= bounds[1]:
+        msg = (
+            f"_past_bounds: Monatsbeginn {bounds[4]}, Tagesbeginn {bounds[3]} und "
+            f"Zeitpunkt {bounds[1]} nicht in dieser Ordnung"
+        )
         raise RuntimeError(msg)
     return bounds
 
@@ -415,12 +456,18 @@ class TimelineRepository:
         `exclude_event_types` schliesst Typen in der Abfrage aus (etwa den
         Erinnerungs-Anker) — leer laesst alles durch.
 
+        Ein Eintrag mit `MONTH_PRECISION` gilt den ganzen Monat: Er steht im
+        Ergebnis, wenn sein Monat das Fenster ueberlappt, auch wenn sein
+        `event_time` (der Erste) vor `von` liegt — sonst fehlte ein Ereignis
+        *im November* in jedem Fenster, das nicht den Ersten enthaelt.
+
         Vorbedingung: `von` und `bis` sind Zeitpunkte, ohne Zone gelten sie
             als Ortszeit; `exclude_event_types` ein Tupel nicht leerer Texte.
         Nachbedingung: alle aktiven Zeilen des Paares (`user_id`,
             `character_id`) mit `event_time` zwischen `von` und `bis` (beide
-            eingeschlossen), deren Typ nicht ausgeschlossen ist, aufsteigend
-            nach Zeit, `event_time` in Ortszeit.
+            eingeschlossen) — mit `month` zwischen dem Monatsbeginn von `von`
+            und `bis` —, deren Typ nicht ausgeschlossen ist, aufsteigend nach
+            Zeit, `event_time` in Ortszeit.
         Fehlerfaelle: ein unvollstaendiges Paar wirft `ValueError`, ein
             falscher `exclude_event_types` `TypeError` — beides vor der
             Verbindung; ein Fehler der Datenbank steigt unveraendert auf, die
@@ -430,6 +477,7 @@ class TimelineRepository:
         excluded: list[str] = _excluded_types(exclude_event_types)
         von_utc = _to_utc(von)
         bis_utc = _to_utc(bis)
+        monat_utc: datetime = _to_utc(_month_start(von))
 
         conn = psycopg2.connect(postgres_url)
         try:
@@ -440,8 +488,9 @@ class TimelineRepository:
                   AND aktiv = TRUE
                   AND event_time BETWEEN %s AND %s
                   AND COALESCE(event_type, '') <> ALL(%s::text[])
+                  AND (COALESCE(precision, '') = %s OR event_time >= %s)
                 ORDER BY event_time
-            """, (user_id, character_id, von_utc, bis_utc, excluded))
+            """, (user_id, character_id, monat_utc, bis_utc, excluded, MONTH_PRECISION, von_utc))
             return _rows_to_local([dict(row) for row in cursor.fetchall()])
         finally:
             conn.close()
@@ -788,8 +837,9 @@ class TimelineRepository:
         `exclude_event_types` schliesst Typen in der Abfrage aus, vor dem
         LIMIT — ein Ausschluss dahinter vergaebe Plaetze an Verworfenes.
         Aus demselben Grund grenzt `now` *vergangen* in der Abfrage so ab wie
-        der Leser dahinter: mit Uhrzeit (`timed_precisions`) vor `now`, ohne
-        Uhrzeit vor dem Beginn des Tages von `now`. Ohne `now` gilt `NOW()`.
+        der Leser dahinter: mit Uhrzeit (`timed_precisions`) vor `now`, mit
+        `month` vor dem Beginn des Monats von `now`, sonst vor dem Beginn des
+        Tages von `now`. Ohne `now` gilt `NOW()`.
 
         Vorbedingung: `keyword` ist der Suchtext ohne Platzhalter; `direction`
             ist `forward`, `backward` oder `both` — jeder andere Wert sucht wie

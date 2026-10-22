@@ -144,7 +144,12 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
         return sql, params
 
     def test_backward_and_forward_bound_by_precision_and_day_start(self) -> None:
+        """Mit Uhrzeit `now`, ein Monat der Monatsbeginn, sonst der Tagesbeginn.
+
+        Die Grenzen in UTC sind von Hand gerechnet.
+        """
         day_start_utc: datetime = datetime(2026, 10, 14, 22, 0, tzinfo=UTC)
+        month_start_utc: datetime = datetime(2026, 9, 30, 22, 0, tzinfo=UTC)
         for direction, clause in (("backward", "AND (CASE"), ("forward", "AND NOT (CASE")):
             with self.subTest(direction=direction):
                 sql, params = self._keyword(direction, now=NOW, timed_precisions=self.TIMED)
@@ -154,8 +159,8 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
                 self.assertLess(sql.index("CASE"), sql.index("LIMIT"))
                 self.assertEqual(
                     params,
-                    ("u", "c", "%Zahnarzt%", ["hour", "minute"], NOW.astimezone(UTC), day_start_utc,
-                     ["erinnerungs_anker"], 1),
+                    ("u", "c", "%Zahnarzt%", ["hour", "minute"], NOW.astimezone(UTC), "month",
+                     day_start_utc, month_start_utc, ["erinnerungs_anker"], 1),
                 )
 
     def test_twin_without_now_the_database_clock_stays(self) -> None:
@@ -189,8 +194,8 @@ class KeywordPastBoundaryInTheQueryTest(unittest.TestCase):
     def test_twin_past_bounds_with_precisions(self) -> None:
         self.assertEqual(
             _past_bounds(NOW, self.TIMED),
-            (["hour", "minute"], datetime(2026, 10, 15, 16, 0, tzinfo=UTC),
-             datetime(2026, 10, 14, 22, 0, tzinfo=UTC)),
+            (["hour", "minute"], datetime(2026, 10, 15, 16, 0, tzinfo=UTC), "month",
+             datetime(2026, 10, 14, 22, 0, tzinfo=UTC), datetime(2026, 9, 30, 22, 0, tzinfo=UTC)),
         )
 
 

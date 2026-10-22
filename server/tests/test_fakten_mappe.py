@@ -11,8 +11,8 @@ Was diese Datei zusichert:
   * **Gekürzt sagt sich selbst:** Kappung in Zeichen und Grenze der Zeilen
     ergeben `truncated`; *leer* ist nicht gekürzt; ein Ausfall ist eine
     Ausnahme, nie eine leere Mappe.
-  * **Die Mappe importiert nur, was sie darf:** das Repository, `config` und
-    die Standardbibliothek.
+  * **Die Mappe importiert nur, was sie darf:** die Repositorien der Fakten
+    und der Timeline, `config`, `utils.local_time` und die Standardbibliothek.
 
 Die Graphen sind Literale dieser Datei, die Erwartungen von Hand bestimmt.
 Die Suite läuft gegen eine Wegwerf-Datenbank aus den Schemadateien des Baums;
@@ -490,8 +490,17 @@ class EveryRowIsVerifiedTest(unittest.TestCase):
 
 
 def _verbotene_importe(quelltext: str) -> list[str]:
-    """Nennt jeden Import außerhalb von Repository, `config` und Standardbibliothek."""
-    erlaubt: set[str] = {"config", "memory.repositories.fakten_repository"}
+    """Nennt jeden Import außerhalb der erlaubten Module und der Standardbibliothek.
+
+    Erlaubt sind die Repositorien, `config` und `utils.local_time`. Das
+    Repository der Timeline und `utils.local_time` kamen mit dem Verweis eines
+    Fakts auf ein Ereignis dazu: Die Mappe folgt ihm über `aktive_zeile` und
+    nennt den Monat mit `month_label`.
+    """
+    erlaubt: set[str] = {
+        "config", "memory.repositories.fakten_repository",
+        "memory.repositories.timeline_repository", "utils.local_time",
+    }
     gefunden: list[str] = []
     for knoten in ast.walk(ast.parse(quelltext)):
         if isinstance(knoten, ast.Import):

@@ -16,6 +16,12 @@ from zoneinfo import ZoneInfo
 from config import TIMEZONE
 from utils.datum_pruefung import NAMEN
 
+#: Die deutschen Monatsnamen, Januar zuerst — aus der Tabelle, nicht aus `%B`.
+MONTH_NAMES: tuple[str, ...] = (
+    "Januar", "Februar", "März", "April", "Mai", "Juni",
+    "Juli", "August", "September", "Oktober", "November", "Dezember",
+)
+
 
 def now_local() -> datetime:
     """Liefert den aktuellen Zeitpunkt in der Zeitzone des Systems.
@@ -60,3 +66,25 @@ def weekday_name(moment: date) -> str:
         msg = f"weekday_name: unbekannter Name {name!r}"
         raise RuntimeError(msg)
     return name
+
+
+def month_label(moment: date) -> str:
+    """Liefert Monat und Jahr eines Datums oder Zeitpunkts, etwa *November 2026*.
+
+    Fuer einen Eintrag, von dem nur der Monat bekannt ist: Ein Tag stuende
+    dort, wo niemand einen genannt hat.
+
+    Vorbedingung: `moment` ist ein `date` oder `datetime`, bei einem Zeitpunkt
+        in der Zone, in der der Monat gilt.
+    Nachbedingung: ein Name aus `MONTH_NAMES`, ein Leerzeichen, das Jahr.
+    Fehlerfaelle: ein anderer Typ wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(moment, date):
+        msg: str = f"month_label: date erwartet, nicht {type(moment).__name__}"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    # `moment.month` liegt immer in 1–12, der Name damit in `MONTH_NAMES`, und das
+    # Jahr setzt der f-String selbst — es gibt nichts, was erst hier zu pruefen waere.
+    return f"{MONTH_NAMES[moment.month - 1]} {moment.year}"

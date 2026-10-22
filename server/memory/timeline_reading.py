@@ -15,6 +15,12 @@ Ausgabe-Verifikation verwirft trotzdem jeden Anker, der ankommt — laut.
 
 **Ein Lesefehler geht an den Aufrufer.** Kompensiert wird er im Leseschritt
 hinter dem Router; ein leerer Zeitraum wird er nie.
+
+**Ein Ereignis einer anderen Person wird gelesen, nicht ausgeschlossen.** Es
+traegt seinen Typ, seine Genauigkeit und seine Person ins `Appointment`; der
+Block setzt es getrennt und gekennzeichnet. Ein Eintrag mit `month` gilt bis
+zum Monatsende: vergangen erst im Folgemonat, im Fenster, sobald sein Monat
+das Fenster ueberlappt.
 """
 
 from __future__ import annotations
@@ -30,13 +36,86 @@ from graph.appointments import (
     AppointmentReading,
     AppointmentWindow,
 )
-from memory.repositories.timeline_repository import TimelineRepository
+from memory.repositories.timeline_repository import MONTH_PRECISION, TimelineRepository
 from memory.timeline_inventory import ANCHOR_TYPE, TIME_PRECISIONS
+from memory.timeline_types import EVENT_TYPES, EventType
 
 logger = logging.getLogger("ki_server.memory.timeline_reading")
 
 #: Die Typen, die kein Leseweg als Termin ausgibt.
 EXCLUDED_EVENT_TYPES: tuple[str, ...] = (ANCHOR_TYPE,)
+
+
+def month_span(moment: datetime) -> tuple[datetime, datetime]:
+    """Beginn des Monats von `moment` und Beginn des Folgemonats, in der Zone von `moment`.
+
+    Vorbedingung: `moment` ist zeitzonenbewusst.
+    Nachbedingung: `(beginn, folgebeginn)`, beginn ≤ `moment` < folgebeginn.
+    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(moment, datetime) or moment.tzinfo is None:
+        msg: str = f"month_span: zeitzonenbewusster Zeitpunkt erwartet ({moment!r})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    start: datetime = moment.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    following: datetime = (
+        start.replace(year=start.year + 1, month=1) if start.month == 12  # noqa: PLR2004
+        else start.replace(month=start.month + 1)
+    )
+
+    # Beide Grenzen entstehen mit `replace` aus `moment` in derselben Zone und
+    # umschliessen es per Konstruktion — es gibt nichts, was erst hier zu pruefen waere.
+    return start, following
+
+
+def _persons_of(row: dict, kind: EventType | None) -> tuple[str, ...]:
+    """Die Personen eines gekennzeichneten Eintrags — aus `details`, wo der Dienst sie ablegt.
+
+    Der Ereignis-Dienst schreibt den Namen der Person in `details`
+    (`agents/timeline/ereignis.py::_write_event`). Ein Typ ohne Kennzeichnung
+    ist ein Termin des Menschen und hat keine Personen.
+
+    Vorbedingung: `row` ist eine Zeile der Timeline.
+    Nachbedingung: `(name,)` fuer einen gekennzeichneten Eintrag mit Namen,
+        sonst `()`.
+    Fehlerfaelle: keine — ein gekennzeichneter Eintrag ohne Namen steht ohne
+        Person da (der Dienst schreibt ihn so, wenn das Modell keinen nennt).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if kind is None or not kind.label:
+        return ()
+
+    # ── Verarbeitung ────────────────────────────
+    details: object = row.get("details")
+    name: str = details.strip() if isinstance(details, str) else ""
+
+    # Ein leerer Name ergibt `()` — es gibt nichts, was erst hier zu pruefen waere.
+    return (name,) if name else ()
+
+
+def _overlaps(appointment: Appointment, start: datetime, end: datetime) -> bool:
+    """Ob ein Eintrag im Fenster `start` bis `end` liegt — ein Monat, wenn er es ueberlappt.
+
+    Vorbedingung: alle Zeitpunkte zeitzonenbewusst.
+    Nachbedingung: mit `month` wahr, wenn Monatsbeginn ≤ `end` und
+        Folgemonat > `start`; sonst wahr, wenn `start` ≤ Zeitpunkt ≤ `end`.
+    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError` (aus `month_span`).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    is_month: bool = appointment.precision == MONTH_PRECISION
+
+    # ── Verarbeitung ────────────────────────────
+    if is_month:
+        first, following = month_span(appointment.moment)
+        inside: bool = first <= end and following > start
+    else:
+        inside = start <= appointment.moment <= end
+
+    # Die Rueckgabe ist ein Vergleich und damit ein Wahrheitswert — es gibt
+    # nichts, was erst hier zu pruefen waere (Nachbedingung im Docstring).
+    return inside
 
 
 def fetch_rows(
@@ -93,11 +172,16 @@ def to_appointment(row: object, now: datetime) -> Appointment | None:
 
     Vorbedingung: `now` ist zeitzonenbewusst in Ortszeit.
     Nachbedingung: ein `Appointment` mit Ortszeit und vorgerechnetem `past`
-        — mit Uhrzeit (`precision` minute oder hour) vor `now`, ohne Uhrzeit
-        vor dem heutigen Tag. `None` fuer eine verworfene Zeile.
+        — mit Uhrzeit (`precision` minute oder hour) vor `now`, mit `month`
+        vor dem laufenden Monat, sonst vor dem heutigen Tag —, mit Typ,
+        Genauigkeit und den Personen eines gekennzeichneten Eintrags. `None`
+        fuer eine verworfene Zeile.
     Fehlerfaelle: eine Zeile, die kein dict ist, eine ohne ganzzahlige `id`,
         ein Erinnerungs-Anker, eine `event_time` ohne Zeitzone oder ein Titel,
-        der kein Text ist — je laut gemeldet und verworfen.
+        der kein Text ist — je laut gemeldet und verworfen. Ein Typ, der nicht
+        in `EVENT_TYPES` steht, wird laut gemeldet und steht ohne
+        Kennzeichnung da wie bisher: Ihn zu verwerfen liesse einen Termin
+        verschwinden.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(row, dict):
@@ -125,17 +209,32 @@ def to_appointment(row: object, now: datetime) -> Appointment | None:
         logger.error(f"Termine: Timeline-Zeile id={row.get('id')} ohne Titel — verworfen")
         return None
 
+    type_name: str = str(row.get("event_type") or "")
+    kind: EventType | None = EVENT_TYPES.get(type_name)
+    if kind is None:
+        logger.error(
+            f"Termine: Timeline-Zeile id={row_id} mit unbekanntem Typ {type_name!r} — "
+            f"steht ohne Kennzeichnung"
+        )
+
     # ── Verarbeitung ────────────────────────────
     moment: datetime = event_time.astimezone(now.tzinfo)
-    has_time: bool = str(row.get("precision") or "") in TIME_PRECISIONS
-    past: bool = moment < now if has_time else moment.date() < now.date()
+    precision: str = str(row.get("precision") or "")
+    has_time: bool = precision in TIME_PRECISIONS
+    if has_time:
+        past: bool = moment < now
+    elif precision == MONTH_PRECISION:
+        past = (moment.year, moment.month) < (now.year, now.month)
+    else:
+        past = moment.date() < now.date()
     details: object = row.get("details")
 
     # ── Ausgabe-Verifikation ────────────────────
     appointment = Appointment(
         moment=moment, has_time=has_time, title=title.strip(),
         details=details.strip() if isinstance(details, str) else "", past=past,
-        timeline_id=row_id,
+        timeline_id=row_id, event_type=type_name, precision=precision,
+        persons=_persons_of(row, kind),
     )
     if appointment.moment.tzinfo is None:
         msg: str = "to_appointment: Termin ohne Zeitzone nach der Umrechnung"
@@ -161,7 +260,8 @@ def read_appointments(
         `ValueError` (aus `fetch_rows`); ein Lesefehler geht an den
         Aufrufer (`read_after_route` macht daraus `failed`). Liefert die Abfrage
         mehr Zeilen als `limit` oder einen Termin ausserhalb von `start` bis
-        `end`, ist das ein Defekt der Abfrage: `RuntimeError`, beim Aufrufer
+        `end` (ein Eintrag mit `month`: einen, dessen Monat das Fenster nicht
+        ueberlappt), ist das ein Defekt der Abfrage: `RuntimeError`, beim Aufrufer
         wie ein Lesefehler. Jede gelesene Zeile,
         die nicht im Ergebnis steht — von der Ausgabe-Verifikation oder nach
         der Richtung verworfen —, zaehlt in `discarded` und im Log unter
@@ -202,7 +302,7 @@ def read_appointments(
     outside: list[Appointment] = [
         a for a in reading.appointments
         if window.start is not None and window.end is not None
-        and not window.start <= a.moment <= window.end
+        and not _overlaps(a, window.start, window.end)
     ]
     if outside:
         msg = (

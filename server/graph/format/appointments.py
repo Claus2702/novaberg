@@ -9,6 +9,12 @@ Wochentag, Datum und Uhrzeit in Ortszeit und der Abstand nach Kalendertagen:
 **Ein leerer Zeitraum steht ausdruecklich da.** Ein fehlender Block waere von
 einem Turn ohne Leseweg nicht zu unterscheiden; *keine Termine vom ... bis
 ...* ist eine Aussage, die das Modell weitergeben kann.
+
+**Ein Ereignis einer anderen Person ist kein Termin von Person B.** Es steht
+nach den Terminen unter einer eigenen Kopfzeile und traegt die Kennzeichnung
+seines Typs und die Person: *Ereignis (Lena): Umzug nach Kassel — November
+2026*. Ist nur der Monat bekannt, steht der Monat und kein Tag, der Bezug zu
+heute nach Monaten.
 """
 
 from __future__ import annotations
@@ -25,13 +31,19 @@ from graph.appointments import (
     Appointment,
     AppointmentReading,
 )
-from utils.local_time import weekday_name
+from memory.repositories.timeline_repository import MONTH_PRECISION
+from memory.timeline_types import EVENT_TYPES
+from utils.local_time import month_label, weekday_name
 
-#: Der Satz fuer einen Turn, in dem die Timeline nicht gelesen wurde.
+#: Der Satz fuer einen Turn, in dem die Timeline nicht gelesen wurde — er
+#: nennt Termine und Ereignisse getrennt, wie der Block sie trennt.
 FAILED_SENTENCE: str = (
     "Die Timeline konnte in diesem Turn nicht gelesen werden — ueber die Termine "
-    "von Person B ist nichts bekannt."
+    "von Person B ist nichts bekannt, ebenso wenig ueber Ereignisse in ihrem Umfeld."
 )
+
+#: Die Kopfzeile ueber den Ereignissen anderer Personen.
+EVENTS_HEADER: str = "Ereignisse im Umfeld von Person B — keine Termine von Person B:"
 
 
 def relative_day(moment: datetime, now: datetime) -> str:
@@ -95,7 +107,10 @@ def appointment_line(appointment: Appointment, now: datetime) -> str:
 
     Form: ``- Freitag, 16.10.2026, 14:30 Uhr — Titel — Details (morgen)``.
     Ohne Uhrzeit steht *ohne Uhrzeit*, ein vergangener Termin traegt
-    *(vergangen, vor 9 Tagen)*.
+    *(vergangen, vor 9 Tagen)*. Ein gekennzeichneter Eintrag — das Ereignis
+    einer anderen Person — bekommt die Zeile von `event_line`: Jeder Leser,
+    der diese Zeile setzt (Block, Suche, Angebot), nennt es so nie als Termin
+    von Person B.
 
     Vorbedingung: `appointment.moment` und `now` in Ortszeit.
     Nachbedingung: eine Zeile, die mit ``- `` beginnt und mit dem Bezug in
@@ -103,6 +118,8 @@ def appointment_line(appointment: Appointment, now: datetime) -> str:
     Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError` (aus `relative_day`).
     """
     # ── Eingabe-Validierung ─────────────────────
+    if is_marked(appointment):
+        return event_line(appointment, now)
     relation: str = relative_day(appointment.moment, now)
 
     # ── Verarbeitung ────────────────────────────
@@ -120,6 +137,110 @@ def appointment_line(appointment: Appointment, now: datetime) -> str:
         msg: str = f"appointment_line: Zeile ohne Bezug zu heute: {line!r}"
         raise RuntimeError(msg)
     return line
+
+
+def relative_month(moment: datetime, now: datetime) -> str:
+    """Der Abstand eines Monats zu heute, nach Kalendermonaten in Ortszeit.
+
+    Vorbedingung: beide Zeitpunkte zeitzonenbewusst; `now` in Ortszeit.
+    Nachbedingung: *diesen Monat*, *naechsten Monat*, *in N Monaten*,
+        *vor 1 Monat* oder *vor N Monaten*.
+    Fehlerfaelle: ein naiver Zeitpunkt wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if moment.tzinfo is None or now.tzinfo is None:
+        msg: str = "relative_month: Zeitpunkt ohne Zeitzone"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    local: datetime = moment.astimezone(now.tzinfo)
+    months: int = (local.year - now.year) * 12 + local.month - now.month
+    if months == 0:
+        text: str = "diesen Monat"
+    elif months == 1:
+        text = "naechsten Monat"
+    elif months > 1:
+        text = f"in {months} Monaten"
+    elif months == -1:
+        text = "vor 1 Monat"
+    else:
+        text = f"vor {-months} Monaten"
+
+    # Die Fallunterscheidung ist vollstaendig und jeder Zweig setzt einen Text —
+    # es gibt nichts, was erst hier zu pruefen waere (Nachbedingung im Docstring).
+    return text
+
+
+def is_marked(appointment: Appointment) -> bool:
+    """Ob ein Eintrag gekennzeichnet steht — das Ereignis einer anderen Person.
+
+    Vorbedingung: `appointment.event_type` ist ein Text.
+    Nachbedingung: wahr, wenn der Typ in `EVENT_TYPES` eine Kennzeichnung
+        traegt; ein unbekannter Typ meldet der Leser (`to_appointment`) und
+        steht hier wie ein Termin. Ein gekennzeichneter Typ ist nie ein
+        Termin des Menschen (`is_appointment` falsch).
+    Fehlerfaelle: ein Typ, der kein Text ist, wirft `TypeError`; ein Typ mit
+        Kennzeichnung, der zugleich als Termin gilt, wirft `RuntimeError` —
+        die Typquelle widerspraeche sich, und der Block wuesste nicht, ob er
+        ihn als Termin von Person B nennen darf.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(appointment.event_type, str):
+        msg: str = f"is_marked: Typ ist kein Text ({appointment.event_type!r})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    kind = EVENT_TYPES.get(appointment.event_type)
+    marked: bool = kind is not None and bool(kind.label)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if marked and kind.is_appointment:
+        msg = (
+            f"is_marked: Typ {appointment.event_type!r} traegt die Kennzeichnung "
+            f"{kind.label!r} und gilt zugleich als Termin"
+        )
+        raise RuntimeError(msg)
+    return marked
+
+
+def event_line(appointment: Appointment, now: datetime) -> str:
+    """Eine Zeile fuer das Ereignis einer anderen Person: Kennzeichnung, Person, was, wann.
+
+    Form: ``- Ereignis (Lena): Umzug nach Kassel — November 2026 (naechsten
+    Monat)``; mit Tag ``— Samstag, 14.11.2026 (in 9 Tagen)``, mit Uhrzeit
+    dahinter ``, 10:00 Uhr``. Ohne Person entfaellt die Klammer. Ein
+    vergangenes traegt *(vergangen, ...)*. `details` steht nicht da: Es traegt
+    beim Ereignis die Person.
+
+    Vorbedingung: `appointment` ist gekennzeichnet (`is_marked`); Zeitpunkte
+        in Ortszeit.
+    Nachbedingung: eine Zeile, die mit ``- <Kennzeichnung>`` beginnt und mit
+        dem Bezug in Klammern endet — beides setzt der f-String selbst, die
+        Kennzeichnung ist oben geprueft.
+    Fehlerfaelle: ein Eintrag ohne Kennzeichnung wirft `ValueError` — er
+        gehoert in `appointment_line`; ein naiver Zeitpunkt wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not is_marked(appointment):
+        msg: str = f"event_line: Eintrag ohne Kennzeichnung ({appointment.event_type!r})"
+        raise ValueError(msg)
+    label: str = EVENT_TYPES[appointment.event_type].label
+
+    # ── Verarbeitung ────────────────────────────
+    if appointment.precision == MONTH_PRECISION:
+        when: str = month_label(appointment.moment)
+        relation: str = relative_month(appointment.moment, now)
+    else:
+        when = date_label(appointment.moment)
+        if appointment.has_time:
+            when = f"{when}, {appointment.moment.strftime('%H:%M')} Uhr"
+        relation = relative_day(appointment.moment, now)
+    persons: str = f" ({', '.join(appointment.persons)})" if appointment.persons else ""
+    title: str = appointment.title or "(ohne Titel)"
+    marker: str = f"vergangen, {relation}" if appointment.past else relation
+    # Die Zeile ist die Verarbeitung selbst; Kennzeichnung und Bezug stehen per
+    # Konstruktion an Anfang und Ende — es gibt nichts, was erst hier zu pruefen waere.
+    return f"- {label}{persons}: {title} — {when} ({marker})"
 
 
 def header_line(reading: AppointmentReading) -> str:
@@ -206,26 +327,43 @@ def empty_line(reading: AppointmentReading) -> str:
 
 
 def appointments_body(reading: AppointmentReading) -> str:
-    """Der ganze Inhalt des Blocks: Kopfzeile und Termine, oder *keine*.
+    """Der ganze Inhalt des Blocks: Kopfzeile und Termine, oder *keine*; danach die Ereignisse.
+
+    Die Termine von Person B und die Ereignisse anderer Personen stehen
+    getrennt: zuerst die Termine (oder *keine Termine ...*, auch wenn es
+    Ereignisse gibt — Person B hat dann keinen Termin), danach, nur wenn es
+    welche gibt, `EVENTS_HEADER` und je Ereignis eine Zeile. Ohne Ereignis ist
+    der Block derselbe wie vor der Kennzeichnung.
 
     Vorbedingung: `reading` ist das Leseergebnis dieses Turns.
     Nachbedingung: Bei `failed` der Ausfallsatz und kein *keine Termine*.
         Sonst die Kopfzeile und je Termin eine Zeile, oder ausdruecklich
-        der Satz *keine Termine ...*.
-    Fehlerfaelle: siehe `header_line`, `empty_line`, `appointment_line`.
+        der Satz *keine Termine ...*; je Ereignis eine gekennzeichnete Zeile
+        unter eigener Kopfzeile.
+    Fehlerfaelle: siehe `header_line`, `empty_line`, `appointment_line`,
+        `event_line`.
     """
     # ── Eingabe-Validierung ─────────────────────
     if reading.failed:
         return FAILED_SENTENCE
 
     # ── Verarbeitung ────────────────────────────
+    own: list[Appointment] = [a for a in reading.appointments if not is_marked(a)]
+    events: list[Appointment] = [a for a in reading.appointments if is_marked(a)]
     lines: list[str] = [header_line(reading)]
-    lines.extend(appointment_line(a, reading.now) for a in reading.appointments)
-    if not reading.appointments:
+    lines.extend(appointment_line(a, reading.now) for a in own)
+    if not own:
         lines.append(empty_line(reading))
+    if events:
+        lines.append(EVENTS_HEADER)
+        lines.extend(event_line(a, reading.now) for a in events)
 
     # ── Ausgabe-Verifikation ────────────────────
-    if len(lines) != 1 + max(1, len(reading.appointments)):
-        msg: str = f"appointments_body: {len(lines)} Zeilen fuer {len(reading.appointments)}"
+    expected: int = 1 + max(1, len(own)) + (1 + len(events) if events else 0)
+    if len(lines) != expected:
+        msg: str = (
+            f"appointments_body: {len(lines)} Zeilen fuer {len(own)} Termine und "
+            f"{len(events)} Ereignisse"
+        )
         raise RuntimeError(msg)
     return "\n".join(lines)
