@@ -1,9 +1,34 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → 30 Eintraege (20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → 30 Eintraege (22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 22.10.2026 — aus der Messung des Ereignis-Wegs am Modell
+
+### `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` — ein angekündigtes Ereignis in einem Monat ohne Jahr steht in der Vergangenheit
+**Kategorie:** WIS
+
+**Rang:** **hoch** — still: Die Zeile steht mit richtigem Titel, richtiger Person und richtigem Monat da und gilt doch als vergangen; jeder Leser der Timeline hält das Ereignis für geschehen, und der Fakt, der mit `timeline_id` auf die Zeile verweist, liest seinen Beginn aus ihr. Gemessen trifft es 5 von 8 angekündigten Ereignissen. Vergeben am 22.10.2026 gegen den Code-Tree `04f386f`.
+
+**Zustand:** offen — gemessen am 21.10.2026 am Modell des Betriebs, vor dem Commit des Ereignis-Wegs; die Behebung ist als eigener Bau geplant (*EREIGNIS-JAHR*, unten).
+
+**Symptom** `[gemessen 21.10.2026]`: Je Satz der echte Aufruf der Sachlage, die Kandidaten des Menschen, `classify_events`, die Prüfung der Felder und `event_time_of` mit dem heutigen Tag 21.10.2026 — 22 synthetische Sätze, 10 einer Aufbaureihe und 12 einer blinden Rückhaltereihe. Titel und Zeitausdruck stimmen in 9 von 9 erkannten Ereignissen, **der Zeitpunkt des Eintrags nur in 4 von 9**: Von 8 angekündigten Ereignissen stehen 5 in der Vergangenheit, alle mit einem Monatsnamen ohne Jahr (*im Mai*, *im Januar*, *im August*, *im Februar*, *im April*). Synthetisch: *„Mein Kollege Bernd heiratet im Mai“*, gesagt am 21.10.2026, wird `2026-05-01` mit der Genauigkeit `month`. Richtig ist der Zeitpunkt nur, wo der Monat im laufenden Jahr noch kommt (*im November*, *am 3. Dezember*, *nächsten Monat*) oder das Ereignis berichtet ist (*hat im Juli … bekommen*).
+
+**Ursache** `[Code]`: `server/agents/timeline/ereignis.py::event_time_of` liest einen Monatsnamen zuerst über `server/utils/zeitparser.py::named_period`, und dort gilt ein Monat ohne Jahr als der des laufenden Jahres, auch wenn er vorbei ist (Docstring von `named_period`; als Richtung beschrieben in `novaberg-tool-timeparser.md` §10.7). Ob der Satz ein Ereignis ankündigt oder von einem geschehenen berichtet, liest niemand. Die Bauart nannte `named_period` für den Monat und legte kein Jahr fest; vorhergesagt war der Fall am Code, vor der Messung.
+
+**Reproduktion:** ein Satz, der ein Ereignis einer anderen Person in einem Monat ankündigt, der im laufenden Jahr schon vorbei ist (synthetisch: *„Mein Kollege Bernd heiratet im Mai“* an einem Tag nach dem Mai), über der Grenze an eine Figur — die Zeile `ereignis` trägt den Ersten dieses Monats im laufenden Jahr. Ohne Turn, am Code gelesen: `event_time_of("im Mai", date(2026, 10, 21))` ergibt den 01.05.2026, `month`.
+
+**Wirkung.** Ein angekündigtes Ereignis steht als vergangen in der Timeline des Paares; ein Leser, der kommende Einträge sucht, findet es nicht, und eine Antwort spricht von ihm als geschehen.
+
+**Geschlossen, wenn** ein Ereignis einer anderen Person, das der Mensch ankündigt, mit einem kommenden Datum in der Timeline steht und eines, von dem er berichtet, mit einem vergangenen — auch wenn der Satz nur einen Monat oder einen Tag ohne Jahr nennt; bezeugt mit festem heutigem Tag (*im Mai* angekündigt → Mai des nächsten Jahres, berichtet → Mai des laufenden) und gemessen am Modell an angekündigten Ereignissen in einem vergangenen Monat.
+
+**Geplant:** ein eigener Bau (*EREIGNIS-JAHR*) — das Jahr aus der Zeitlage des Satzes: angekündigt → das nächste solche Datum ab heute, berichtet → das letzte bis heute; ein Ausdruck mit Jahr oder relativ zu heute (*im Mai 2027*, *nächsten Monat*) bleibt, wie er gelesen wird.
+
+**Zusammenhang:** Fundliste 21.10.2026 (*Ein Monatsname ohne Präfix gilt im laufenden Jahr*), hierher umgezogen; [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5; ↳ *F6* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
 
 ---
 
@@ -98,7 +123,7 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 
 **Rang:** **mittel** — still: Wer dem Verweis folgt, landet auf der inaktiven Zeile mit der alten Zeit; der Weg läuft im Betrieb bei jedem Verschieben. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
 
-**Zustand:** offen — **die Grundlage gebaut im Tree, nicht committet** (21.10.2026, Tree `fed521d`, S5 in [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6): `timeline.nachfolger_id` mit dem Fremdschlüssel `ON DELETE SET NULL`; `agents/timeline/crud.py::_update` verschiebt über `TimelineRepository.verschieben` — die neue Zeile und das Ablegen der alten mit `nachfolger_id` in einer Transaktion —, und `TimelineRepository.aktive_zeile` folgt der Kette bis zur aktiven Zeile (höchstens zehn Schritte, ein Zyklus laut; `server/tests/test_timeline_successor.py`). **Kein Verweis folgt ihr bisher:** `lzg_knoten`, `sachlage_eigenschaft` und `notizen` zeigen nach dem Verschieben weiter auf die alte Zeile; die DDL ist am Betrieb nicht angewandt. Davor: offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`. Im Bestand zeigte zu diesem Zeitpunkt noch kein Verweis auf eine inaktive Zeile (unten).
+**Zustand:** offen — **die Grundlage gebaut,** ~~im Tree, nicht committet~~ → **committet mit `091a99d`, die DDL am 21.10.2026 angewandt und gemessen** (21.10.2026, Tree `fed521d`, S5 in [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6): `timeline.nachfolger_id` mit dem Fremdschlüssel `ON DELETE SET NULL`; `agents/timeline/crud.py::_update` verschiebt über `TimelineRepository.verschieben` — die neue Zeile und das Ablegen der alten mit `nachfolger_id` in einer Transaktion —, und `TimelineRepository.aktive_zeile` folgt der Kette bis zur aktiven Zeile (höchstens zehn Schritte, ein Zyklus laut; `server/tests/test_timeline_successor.py`). **Kein Verweis folgt ihr bisher:** `lzg_knoten`, `sachlage_eigenschaft` und `notizen` zeigen nach dem Verschieben weiter auf die alte Zeile → seit dem Ereignis-Weg (22.10.2026, Code-Tree `04f386f`) auch `fakten.timeline_id`, der Verweis eines Fakts auf sein Ereignis; ~~die DDL ist am Betrieb nicht angewandt~~ → die DDL ist angewandt (21.10.2026, 20:22:56 UTC), keine Zeile trägt bisher einen Nachfolger. Davor: offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`. Im Bestand zeigte zu diesem Zeitpunkt noch kein Verweis auf eine inaktive Zeile (unten).
 
 **Befund** `[Code]`: Verschieben heißt in der Timeline invalidieren und neu anlegen (`novaberg-agent-timeline.md` §5.2). `agents/timeline/crud.py::_update` setzt die alte Zeile mit `TimelineRepository.invalidate` auf `aktiv = FALSE` (Z. 336) und legt mit `TimelineRepository.insert` eine neue Zeile mit neuer `id` an (Z. 341). Drei Spalten verweisen per Fremdschlüssel auf `timeline(id)`, je mit `ON DELETE SET NULL` (`agents/timeline/init.sql`): `lzg_knoten.timeline_id`, `sachlage_eigenschaft.timeline_id` und `notizen.timeline_id`. Keine wird beim Verschieben nachgezogen. `memory/sachlage_properties.py::bind_timeline` setzt den Zeitanker einer Eigenschaft nur, solange sie noch keinen hat (`WHERE … timeline_id IS NULL`). Nach dem Verschieben zeigt der Verweis also auf die inaktive Zeile. `ON DELETE SET NULL` greift nie, weil eine Zeile der Timeline nie gelöscht, nur invalidiert wird (§5.3; in `server/` steht außerhalb der Tests kein `DELETE` auf `timeline`).
 
@@ -288,6 +313,8 @@ id | pfad                               | bezeichnung
 
 **Stand 14.09.2026 — die erste Haelfte ist erfuellt, die zweite ungemessen.** Entscheidung des Eigentuemers am 13.09.2026: *„Nur ein ausdruecklicher Auftrag"*. Aushang, Negativfall und Vorpruefung der Klassifikation verlangen seither einen Auftrag (`novaberg-agent-timeline.md` §3a). `[gemessen 14.09.2026, gemma4-a4b-gpu]` **Aussagen mit Zeitpunkt schreiben 0 von 21**, Auftraege 12 von 12 bis zur Klassifikation — darunter *„Erinnere mich am Donnerstag um 15 Uhr …"* als `create`. **Ob der Wochentagsname danach auch geparst und geschrieben wird, lief nicht** (die Messung endete vor der Ausfuehrung). Bleibt offen, bis ein Auftrag mit Wochentagsnamen im Betrieb einen Eintrag erzeugt.
 
+**Abgrenzung, 22.10.2026 — das Ereignis einer anderen Person.** Seit dem Ereignis-Weg (Code-Tree `04f386f`) schreibt ein Weg ohne Auftrag in die Timeline: Über der Grenze der Salienz trägt `agents/timeline/ereignis.py::process_event_orders` ein Ereignis einer **anderen** Person mit dauerhafter Folge oder Gewicht als `ereignis` ein ([`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5). **Das ist gewollt und kein Fall dieses Eintrags** ([`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A Nr. 37, präzisiert Nr. 15). Die Schließbedingung oben gilt den **eigenen Terminen des Menschen** — für sie bleibt es nach Nr. 15 beim ausdrücklichen Auftrag, und der Prompt des Ereignis-Wegs (`classify_ereignis.task.txt`) schließt einen eigenen Termin aus. `[gemessen 21.10.2026]` am Modell des Betriebs: In 0 von 9 Sätzen ohne Ereignis einer anderen Person nannte das Modell eines, darunter ein eigener Umzug des Menschen. Schriebe dieser Weg einen eigenen Termin des Menschen, wäre das ein Fall dieses Eintrags.
+
 ---
 
 ### `TIMELINE-NENNT-ABGELAUFENEN-TERMIN-ALS-KOMMENDEN` — dreizehn Tage alt, als morgig ausgegeben
@@ -453,27 +480,6 @@ if self.now > dateobj - tz_offset:
 ---
 
 ### Chat 80 — character_id-Inventur (M2.5a-Folge)
-
-#### TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `character_id` ⚠️
-**Kategorie:** WIS
-
-**Rang:** **mittel** — still beim zweiten Charakter, Aufwand groß (DDL). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `timeline` hat keine `character_id` (`server/agents/timeline/init.sql:7-26`).
-
-**Zustand:** offen — **behoben im Tree, nicht committet** (21.10.2026, Tree `2ec01b2`, Schritt S7 in `novaberg-memory-fakten_b.md` §6): `timeline.character_id` ist Pflicht ohne Vorgabewert, ein Bestand bekommt die Figur `nova` einmal beim Start, die Indexe gehen über das Paar (`idx_timeline_paar_time`, `idx_timeline_paar_type`); jede Methode von `TimelineRepository`, die nach dem Menschen liest oder schreibt, nimmt das Paar und wirft ohne Figur, bevor eine Verbindung entsteht; jeder Leser und Schreiber gibt die Figur weiter, keiner fällt auf eine Vorgabe zurück (`novaberg-agent-timeline.md` §9). Zeugen in `server/tests/test_timeline_pair.py` — ein Termin von (Mensch, `nova`) ist für eine andere Figur unsichtbar, im Repository, im Leseweg und im Kalender-Angebot —; Server-Suite `Ran 4993 tests` · `OK (expected failures=2)`, neun Gegenproben wie vorhergesagt. **Die DDL ist am Betrieb nicht angewandt.** Der Eintrag schließt und zieht ins Archiv, wenn sie nach dem Commit mit dem Neustart des Servers angewandt und gemessen ist: jede Zeile trägt eine Figur, die beiden Indexe je Paar stehen, `idx_timeline_user_time`, `idx_timeline_user_type` und `idx_timeline_type` sind fort. Vor der DDL am Betrieb gelesen (21.10.2026, 19:40 UTC): 181 Zeilen, keine Figur in `user_id`, die Spalte fehlt. Davor: offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `timeline` fuehrt `user_id` und kein `character_id`.
-
-**Eingeordnet am 21.10.2026:** Vorbedingung des Typs `ereignis` — das Ereignis gehört dem Paar (`novaberg-memory-fakten_e.md` A Nr. 38); behoben mit S7 vor F6 (`novaberg-memory-fakten_b.md` §6, Schritt 10).
-
-**Entdeckt:** Chat 80, im Zuge der M2.5a-Phase-2-Implementierung (Magnet-Spalten-Befüllung beim Timeline-Schreiben)
-
-**Klasse:** Schema-Lücke, Severity Mittel — Foundation-Bug, akut nur bei Multi-Charakter-Setup
-
-**Symptom:** `timeline` hat heute nur `user_id`, kein `character_id`. Verletzt `novaberg-convention-paar-schema.md` (Subjekt × Gegenüber × Beobachter) und `novaberg-convention-magneten.md` §6 (Welt-/Erlebnis-Trennung). Aria-Termine würden bei Nova auftauchen und umgekehrt — heute kein praktisches Problem (nur Nova aktiv), aber jeder neue Charakter bringt das Wissens-Leck mit.
-
-**Vermutung:** Andere paar-skopierte Speicher (`langzeitgedaechtnis`, `notizen`, `fakten`, `dateien`) ungeprüft. Sauber: KZG (Redis-Schlüssel), `charakter_hash` (Composite PK).
-
-**Lösung — zwei Sprints:** TIMELINE-PAIR-INVENTUR (Read-only-Sweep, ~10 Min) → TIMELINE-PAIR-MIGRATION (Spalte ergänzen, Indexe, Repositories, Bestand auf `character_id='nova'` initialisieren).
-
-**Ausführliche Beschreibung und Eingruppierung:** novaberg-backlog.md → Bug TIMELINE-PAIR-MISSING (Chat 80).
 
 #### NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_id` ⚠️
 **Kategorie:** WIS

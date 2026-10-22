@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 469 Eintraege mit Kennung — 386 offen, 83 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 469 Eintraege mit Kennung — 383 offen, 86 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 466 von 469 Eintraegen zugeordnet.
 
@@ -689,7 +689,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 609 | offen | `KLA-KLAERFALL-AM-OBJEKT` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
 | WIS | 806 | abgeschlossen | `SPRINT-NOTIZEN-BEZUGSAUFLOESUNG` | [SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung](novaberg-backlog-wissen.md) |
 | WIS | 841 | abgeschlossen | `SPRINT-M25A-TIMELINE-CLEANUP` | [SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent ver](novaberg-backlog-wissen.md) |
-| WIS | 884 | offen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
+| WIS | 884 | abgeschlossen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
 | WIS | 915 | offen | `NOTIZEN-PAIR-MISSING` | [Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `ch](novaberg-backlog-wissen.md) |
 | WIS | 934 | offen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
 | WIS | 957 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
@@ -755,7 +755,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 769 | offen | `SHUTDOWN-EVENT-ASYNC` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
 | BAU | 770 | offen | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
 | BAU | 771 | offen | `REFAC-UMLAUTE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
-| BAU | 772 | offen | `REFAC-DB-INDEX-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 772 | abgeschlossen | `REFAC-DB-INDEX-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
 | BAU | 773 | offen | `REFAC-SEEDS-AUSLAGERN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
 | BAU | 774 | offen | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
 | BAU | 775 | offen | `REFAC-EVENT-PAYLOAD-SEEDING` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
@@ -792,7 +792,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 1467 | offen | `DOKU-DUPLIKATE-CHAT80` | [Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in](novaberg-backlog-bauart.md) |
 | BAU | 1488 | offen | `EMBED-DIMENSIONSCHECK-FEHLT` | [Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimen](novaberg-backlog-bauart.md) |
 | BAU | 1497 | offen | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | [Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabel](novaberg-backlog-bauart.md) |
-| BAU | 1508 | offen | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | [Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index oh](novaberg-backlog-bauart.md) |
+| BAU | 1508 | abgeschlossen | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | [Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index oh](novaberg-backlog-bauart.md) |
 | BAU | 1522 | offen | `REDUCER-DOKU-DRIFT` | [Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reduc](novaberg-backlog-bauart.md) |
 | BAU | 1531 | offen | `DOKU-NOTIZEN-INIT-SQL` | [Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht exis](novaberg-backlog-bauart.md) |
 | BAU | 1540 | offen | `PERMISSION-OHNE-BODEN` | [Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only](novaberg-backlog-bauart.md) |

@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 964 Abschnitte in 7 Dateien — 452 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 977 Abschnitte in 7 Dateien — 465 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 46 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 59 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 964 Marken, 964 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 977 Marken, 977 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,19 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-22 | laufend | ## | [22.10.2026, 05:27 UTC — Das Ereignis einer anderen Person kommt über der Grenze in die Timeline des Paares, vor seinem Fakt](novaberg-roadmap.md#22102026-0527-utc--das-ereignis-einer-anderen-person-kommt-über-der-grenze-in-die-timeline-des-paares-vor-seinem-fakt) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 20:11 UTC — Ein verschobener Termin zeigt auf seinen Nachfolger, und die Typen der Timeline stehen an einer Stelle](novaberg-roadmap.md#21102026-2011-utc--ein-verschobener-termin-zeigt-auf-seinen-nachfolger-und-die-typen-der-timeline-stehen-an-einer-stelle) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 19:47 UTC — Die Timeline gehört dem Paar: jeder Leser und Schreiber nennt die Figur](novaberg-roadmap.md#21102026-1947-utc--die-timeline-gehört-dem-paar-jeder-leser-und-schreiber-nennt-die-figur) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 18:51 UTC — Das Kalender-Angebot der Sachlage liest aus einem Zeitbezug am Objekt, nicht mehr aus dem Namen](novaberg-roadmap.md#21102026-1851-utc--das-kalender-angebot-der-sachlage-liest-aus-einem-zeitbezug-am-objekt-nicht-mehr-aus-dem-namen) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 10:38 UTC — Der Magnet-Pfad bindet einen ähnlichen Namen nicht mehr an eine fremde Entität](novaberg-roadmap.md#21102026-1038-utc--der-magnet-pfad-bindet-einen-ähnlichen-namen-nicht-mehr-an-eine-fremde-entität) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 00:57 UTC — Ein Ausfall der Auflösung legt nichts mehr still an](novaberg-roadmap.md#21102026-0057-utc--ein-ausfall-der-auflösung-legt-nichts-mehr-still-an) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 00:32 UTC — Das Plugin `fakten_manager` ist gelöscht](novaberg-roadmap.md#21102026-0032-utc--das-plugin-faktenmanager-ist-gelöscht) |
+| 2026-10-21 | laufend | ## | [21.10.2026, 00:32 UTC — Die Mappe einer Entität: eine Lesefunktion für das Wissen über eine Entität](novaberg-roadmap.md#21102026-0032-utc--die-mappe-einer-entität-eine-lesefunktion-für-das-wissen-über-eine-entität) |
+| 2026-10-20 | laufend | ## | [20.10.2026, 23:47 UTC — Der Fakten-Agent klassifiziert die Kandidaten des Turns und schreibt ohne Bitte](novaberg-roadmap.md#20102026-2347-utc--der-fakten-agent-klassifiziert-die-kandidaten-des-turns-und-schreibt-ohne-bitte) |
+| 2026-10-20 | laufend | ## | [20.10.2026, 22:40 UTC — Die Server-Suite ist in den Wegwerf-Behältern grün: fünf Zeugen legen ihren Bestand selbst an](novaberg-roadmap.md#20102026-2240-utc--die-server-suite-ist-in-den-wegwerf-behältern-grün-fünf-zeugen-legen-ihren-bestand-selbst-an) |
+| 2026-10-20 | laufend | ## | [20.10.2026, 22:39 UTC — Jeder gerechnete Turn gibt dem Fakten-Agenten einen Schreibauftrag: der Weg ohne Router, noch ohne Klassifikation](novaberg-roadmap.md#20102026-2239-utc--jeder-gerechnete-turn-gibt-dem-fakten-agenten-einen-schreibauftrag-der-weg-ohne-router-noch-ohne-klassifikation) |
+| 2026-10-20 | laufend | ## | [20.10.2026, 19:34 UTC — Der Fakten-Agent verlässt das Brett: kein Router und kein Planner stellt ihm mehr zu](novaberg-roadmap.md#20102026-1934-utc--der-fakten-agent-verlässt-das-brett-kein-router-und-kein-planner-stellt-ihm-mehr-zu) |
+| 2026-10-20 | laufend | ## | [20.10.2026, 05:32 UTC — Der Fakten-Agent hat seinen Schreibweg: ein Fakt ganz oder gar nicht, Richtung und Grundform geprüft](novaberg-roadmap.md#20102026-0532-utc--der-fakten-agent-hat-seinen-schreibweg-ein-fakt-ganz-oder-gar-nicht-richtung-und-grundform-geprüft) |
 | 2026-10-18 | laufend | ## | [18.10.2026, 15:02 UTC — Das Faktengedächtnis bekommt sein Schema und ein Repository im Paar: Herkunft, Einwertigkeit, Verfall der Kante](novaberg-roadmap.md#18102026-1502-utc--das-faktengedächtnis-bekommt-sein-schema-und-ein-repository-im-paar-herkunft-einwertigkeit-verfall-der-kante) |
 | 2026-10-18 | laufend | ## | [18.10.2026, 14:20 UTC — Die Testdatenbank der Server-Suite steht: zurück zum Schema des Faktengedächtnisses](novaberg-roadmap.md#18102026-1420-utc--die-testdatenbank-der-server-suite-steht-zurück-zum-schema-des-faktengedächtnisses) |
 | 2026-10-18 | laufend | ## | [18.10.2026, 13:02 UTC — Die Server-Suite läuft in eigenen Wegwerf-Behältern und baut ihr Schema von null](novaberg-roadmap.md#18102026-1302-utc--die-server-suite-läuft-in-eigenen-wegwerf-behältern-und-baut-ihr-schema-von-null) |

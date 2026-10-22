@@ -1,9 +1,38 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → 30 Eintraege (17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses), je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → 31 Eintraege (17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen), je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 22.10.2026 — behoben und am Betrieb gemessen
+
+**Dieser Eintrag ist mit dem Commit der Timeline je Paar und der DDL am Betrieb geschlossen** — die Zustandszeile nennt Commit und Messung.
+
+---
+
+### `TIMELINE-PAIR-MISSING` — Timeline-Tabelle ohne `character_id` ✅
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still beim zweiten Charakter, Aufwand groß (DDL). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `timeline` hat keine `character_id` (`server/agents/timeline/init.sql:7-26`).
+
+**Zustand:** **geschlossen am 22.10.2026 — behoben mit `2cfe1b0`, die DDL am 21.10.2026 um 20:22:56 UTC mit dem Neustart des Servers angewandt und gemessen** (nur lesend): `timeline.character_id` steht als `NOT NULL` ohne Vorgabewert, alle 181 Zeilen tragen `nova`, 170 davon aktiv; `idx_timeline_paar_time` und `idx_timeline_paar_type` stehen, `idx_timeline_user_time`, `idx_timeline_user_type` und `idx_timeline_type` sind fort; je Nutzer dieselben Zeilen wie vor der DDL; `health` 200, seit dem Neustart kein Traceback. Damit ist die Schließbedingung erfüllt. Vor der DDL waren ~~173~~ → 170 Zeilen aktiv — die Summe war falsch gerechnet, berichtigt am 22.10.2026. Ein Turn mit einer Terminfrage nach der DDL ist nicht gemessen; er gehört zur Featureliste (↳ *S7*), nicht zu diesem Eintrag. ~~offen — **behoben im Tree, nicht committet** (21.10.2026, Tree `2ec01b2`, Schritt S7 in `novaberg-memory-fakten_b.md` §6): `timeline.character_id` ist Pflicht ohne Vorgabewert, ein Bestand bekommt die Figur `nova` einmal beim Start, die Indexe gehen über das Paar (`idx_timeline_paar_time`, `idx_timeline_paar_type`); jede Methode von `TimelineRepository`, die nach dem Menschen liest oder schreibt, nimmt das Paar und wirft ohne Figur, bevor eine Verbindung entsteht; jeder Leser und Schreiber gibt die Figur weiter, keiner fällt auf eine Vorgabe zurück (`novaberg-agent-timeline.md` §9). Zeugen in `server/tests/test_timeline_pair.py` — ein Termin von (Mensch, `nova`) ist für eine andere Figur unsichtbar, im Repository, im Leseweg und im Kalender-Angebot —; Server-Suite `Ran 4993 tests` · `OK (expected failures=2)`, neun Gegenproben wie vorhergesagt. **Die DDL ist am Betrieb nicht angewandt.** Der Eintrag schließt und zieht ins Archiv, wenn sie nach dem Commit mit dem Neustart des Servers angewandt und gemessen ist: jede Zeile trägt eine Figur, die beiden Indexe je Paar stehen, `idx_timeline_user_time`, `idx_timeline_user_type` und `idx_timeline_type` sind fort. Vor der DDL am Betrieb gelesen (21.10.2026, 19:40 UTC): 181 Zeilen, keine Figur in `user_id`, die Spalte fehlt. Davor: offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `timeline` fuehrt `user_id` und kein `character_id`.~~
+
+**Eingeordnet am 21.10.2026:** Vorbedingung des Typs `ereignis` — das Ereignis gehört dem Paar (`novaberg-memory-fakten_e.md` A Nr. 38); behoben mit S7 vor F6 (`novaberg-memory-fakten_b.md` §6, Schritt 10).
+
+**Entdeckt:** Chat 80, im Zuge der M2.5a-Phase-2-Implementierung (Magnet-Spalten-Befüllung beim Timeline-Schreiben)
+
+**Klasse:** Schema-Lücke, Severity Mittel — Foundation-Bug, akut nur bei Multi-Charakter-Setup
+
+**Symptom:** `timeline` hat heute nur `user_id`, kein `character_id`. Verletzt `novaberg-convention-paar-schema.md` (Subjekt × Gegenüber × Beobachter) und `novaberg-convention-magneten.md` §6 (Welt-/Erlebnis-Trennung). Aria-Termine würden bei Nova auftauchen und umgekehrt — heute kein praktisches Problem (nur Nova aktiv), aber jeder neue Charakter bringt das Wissens-Leck mit.
+
+**Vermutung:** Andere paar-skopierte Speicher (`langzeitgedaechtnis`, `notizen`, `fakten`, `dateien`) ungeprüft. Sauber: KZG (Redis-Schlüssel), `charakter_hash` (Composite PK).
+
+**Lösung — zwei Sprints:** TIMELINE-PAIR-INVENTUR (Read-only-Sweep, ~10 Min) → TIMELINE-PAIR-MIGRATION (Spalte ergänzen, Indexe, Repositories, Bestand auf `character_id='nova'` initialisieren).
+
+**Ausführliche Beschreibung und Eingruppierung:** novaberg-backlog.md → Bug TIMELINE-PAIR-MISSING (Chat 80).
 
 ---
 
