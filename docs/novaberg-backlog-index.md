@@ -1,18 +1,18 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 469 Eintraege mit Kennung — 383 offen, 86 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 474 Eintraege mit Kennung — 388 offen, 86 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 466 von 469 Eintraegen zugeordnet.
+**Kategorie:** 471 von 474 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 81 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 82 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 66 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 68 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 76 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 102 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 104 |
 
 ---
 
@@ -317,12 +317,12 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 | Kuerzel | Kategorie | zugeordnet |
 |---|---|---|
-| `GED` | GEDAECHTNIS | 82 |
+| `GED` | GEDAECHTNIS | 83 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 74 |
-| `ANT` | ANTWORTPFAD | 66 |
+| `ANT` | ANTWORTPFAD | 68 |
 | `WIS` | WISSEN | 76 |
-| `BAU` | BAUART | 102 |
+| `BAU` | BAUART | 104 |
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 469 Eintraege
+## Alle 474 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -417,6 +417,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | GED | 2014 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
 | GED | 2152 | offen | `SALIENZ-TRAEGT-NAEHE-NICHT` | [Befund: SALIENZ-TRAEGT-NAEHE-NICHT — Die Salienz trä](novaberg-backlog-gedaechtnis.md) |
 | GED | 2176 | offen | `ENTITAETEN-ZUSAMMENLEGEN` | [Befund: ENTITAETEN-ZUSAMMENLEGEN — zwei Akten dersel](novaberg-backlog-gedaechtnis.md) |
+| GED | 2192 | offen | `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` | [Befund: ERINNERUNGSANKER-GRENZEN-UNGEMESSEN — Die zw](novaberg-backlog-gedaechtnis.md) |
 | HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
 | HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
 | HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
@@ -627,6 +628,8 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1204 | offen | `CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL` | [Feature: CLIENT-PREISWARNUNG-NUR-AKTIVES-MODELL — ke](novaberg-backlog-antwortpfad.md) |
 | ANT | 1214 | offen | `CLIENT-STATUSZEILE-MODELLVERBINDUNG` | [Feature: CLIENT-STATUSZEILE-MODELLVERBINDUNG — die S](novaberg-backlog-antwortpfad.md) |
 | ANT | 1224 | offen | `ANTWORT-MUSTER-ECHO` | [Befund: ANTWORT-MUSTER-ECHO — Nova übernimmt Form un](novaberg-backlog-antwortpfad.md) |
+| ANT | 1253 | offen | `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` | [Befund: SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL — `prope](novaberg-backlog-antwortpfad.md) |
+| ANT | 1269 | offen | `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` | [Befund: SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN — Die Gr](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |
@@ -805,3 +808,5 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 1703 | offen | `ZEUGEN-ERWARTEN-BESTAND` | [Befund: ZEUGEN-ERWARTEN-BESTAND — Fünf Zeugen der Se](novaberg-backlog-bauart.md) |
 | BAU | 1726 | offen | `BEREINIGUNG-KENNWORT-AUSSERHALB-USERINFO` | [Befund: BEREINIGUNG-KENNWORT-AUSSERHALB-USERINFO — E](novaberg-backlog-bauart.md) |
 | BAU | 1742 | offen | `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` | [Befund: THINKER-IMPORTIERT-AUS-TIMELINE-AGENT — Der ](novaberg-backlog-bauart.md) |
+| BAU | 1761 | offen | `SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE` | [Befund: SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE — Die Z](novaberg-backlog-bauart.md) |
+| BAU | 1777 | offen | `NMCP-ZUSAGE-LZG-RESONANZ-VERALTET` | [Befund: NMCP-ZUSAGE-LZG-RESONANZ-VERALTET — Die Zusa](novaberg-backlog-bauart.md) |

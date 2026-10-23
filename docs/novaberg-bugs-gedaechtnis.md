@@ -103,7 +103,7 @@ Ein Knoten steht bei `haeufigkeit` 92 aus **einem einzigen** Turn; sein `gewicht
 
 **Rang:** **mittel** — still. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `server/agents/kzg/magnete.py:171` hängt ohne Prüfung an, Schreiber und Leser deduplizieren nicht.
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. keine Deduplizierung auf dem Schreibweg; die Zahl im Bestand braucht einen Messlauf.
+**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. keine Deduplizierung auf dem Schreibweg; die Zahl im Bestand braucht einen Messlauf. → 22.10.2026: Der neue Leseweg `memory/lzg_knoten.py::knoten_zu_entitaeten` (Code-Tree `0d5f633`, committet; der Erinnerungsanker) führt `geteilte_entitaet_ids` als Menge, jede Kennung einmal, auch wenn der Knoten sie doppelt trägt (Zeuge `test_shared_ids_carry_each_id_once`). Schreibweg, Bestand und die übrigen Leser sind unverändert.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **`entitaet_ids` trägt Dubletten.** In 3 von 84 belegten KZG-Arrays steht dieselbe Entitäts-ID mehrfach, etwa `193,269,871,196,870,193,194`. Die Achse ist nach `novaberg-convention-magneten.md` §2.1 **referenziell und n:m** — eine Erinnerung betrifft eine Entität oder nicht; ein zweites Vorkommen bedeutet nichts. **Die Enthaltenseins-Suche bleibt richtig** (`entitaet_ids @> ARRAY[x]` trifft weiterhin), aber jede Zählung über die Achse ist verzerrt, und §4 nennt für die Cluster-Aggregation ausdrücklich die *Vereinigung* der `entitaet_ids` — eine Vereinigung, die Dubletten mitschleppt, ist keine. Gefunden beim Halten der Magneten-Konvention gegen den Bestand. **Nicht mitgeändert:** Ob dedupliziert wird und wo — beim Auflösen, beim Schreiben oder beim Lesen — ist eine Entscheidung.
 

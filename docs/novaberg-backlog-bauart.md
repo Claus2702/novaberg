@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~99~~ → 100 Eintraege (17.10.2026: `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` neu).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~99~~ → ~~100~~ → 104 Eintraege (22.10.2026: `SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE` und `NMCP-ZUSAGE-LZG-RESONANZ-VERALTET` neu — die Zahl ist die des Findemittels, das schon vorher 102 nannte; 17.10.2026: `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` neu).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1754,5 +1754,38 @@ Ein Zeuge, der den Bestand liest, prüft das Gedächtnis von heute, nicht den Co
 **Was fertig wäre:** `precision_has_time` liegt außerhalb des Agenten an einer Stelle, die Graph und Agent beide benutzen, und `graph/` importiert nichts mehr aus `agents.timeline`. Wohin sie zieht, wählt der Bau.
 
 **Zusammenhang:** `novaberg-agent-timeline.md` · `TIMELINE-TYPEN-AN-DREI-STELLEN` (Wissen)
+
+---
+
+
+## Befund: SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE — Die Zeugen von Regel (c) über `_derive` sehen die Abfrage nur über ein Doppel (22.10.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** niedrig — heute halten Doppel und Abfrage dieselbe Bedingung; ein Zeuge gegen die Testdatenbank bezeugt die Abfrage selbst. Driften die beiden auseinander, merkt es nur, wer beide liest.
+
+**Zustand:** ⬜ offen — am Code gelesen am 22.10.2026, Code-Tree `d810399` (Teil H, committet), nichts gebaut.
+
+**Befund, am Code:** In `server/tests/test_sachlage_fakten_angebot.py` ersetzen die Zeugen, die Regel (c) über `graph/nodes/sachlage.py::_derive` prüfen (`AFactNotOfferedKeepsItsPropertyTest`, `FactsBeforePropertiesTest` und weitere), die Abfrage `memory/sachlage_properties.py::active_properties` durch ein Doppel (`_store`), das deren SQL-Bedingung — Objekt gebunden, Quelle `fakten`, Herkunft angeboten — in Python nachbildet. Die Abfrage selbst prüft nur `RuleCInTheSelectionTest` gegen die Testdatenbank der Suite. **Gegenprobe:** Ein Eingriff gegen Regel (c) in der Abfrage — verborgen nach *gebunden* statt nach *angeboten* — macht genau einen Zeugen rot, den gegen die Testdatenbank; die Zeugen über `_derive` bleiben grün, weil das Doppel die Abfrage ersetzt. Dieselbe Form wie eine Prüfung neben ihrem Gegenstand: Doppel und Abfrage sind zwei Fassungen einer Regel, und nur ein Zeuge hält sie zusammen.
+
+**Was fertig wäre:** Die Zeugen über `_derive` laufen gegen die Testdatenbank statt gegen das Doppel, oder ein Zeuge hält das Doppel gegen die Abfrage (dieselben Zeilen, dieselbe Auswahl), sodass ein Eingriff in die Abfrage auch die Zeugen über `_derive` rot werden lässt.
+
+**Zusammenhang:** `novaberg-memory-fakten_e.md` A Nr. 44 · `novaberg-memory-fakten_b.md` §6 (*Das Angebot der Sachlage*) · `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` (Antwortpfad)
+
+---
+
+## Befund: NMCP-ZUSAGE-LZG-RESONANZ-VERALTET — Die Zusage zu `lzg_resonanz` nennt zwei Leser, es sind mehr (22.10.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** niedrig — ohne Wirkung im Betrieb; die Zusage beschreibt den Kanal, sie steuert ihn nicht. Wer nach ihr einen Leser umbaut, übersieht die übrigen.
+
+**Zustand:** ⬜ offen — am Code gelesen am 22.10.2026, Code-Tree `04f823e` (committet), nichts gebaut.
+
+**Befund, am Code:** `server/agents/nmcp.py` sagt in der Zusage zu `lzg_resonanz` als Verbraucher *„Reducer und Gespraechsvektor, keine Agenten“*, `server/agents/base.py` (Docstring um Z. 133) ebenso *Reducer und* … . Den Kanal lesen außerdem der Haltungsraum (`graph/nodes/haltung.py`), die Prägung (`graph/nodes/praegung.py`) und der Dispatcher (`graph/nodes/dispatcher.py`) — gezählt mit `grep lzg_resonanz` über `server/` ohne die Zeugen. Seit dem Erinnerungsanker (`graph/nodes/erinnerungsanker.py`, committet, Code-Tree `04f823e`) liest ihn dazu ein Knoten **und schreibt ihn fort**: Er hängt bis zu drei Erinnerungen hinten an. Die Aussage *„keine Agenten“* gilt weiter.
+
+**Was fertig wäre:** Die Zusage nennt jeden Leser des Kanals und den zweiten Schreiber, oder sie nennt keine Leser und verweist auf eine Stelle, an der sie gerechnet werden.
+
+**Zusammenhang:** `novaberg-convention-nmcp.md` · `novaberg-memory-fakten_b.md` §6 (*Der Erinnerungsanker*)
 
 ---

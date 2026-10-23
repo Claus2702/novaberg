@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Antwortpfad — Gespraechsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 50 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~50~~ → 68 Eintraege (22.10.2026: `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` und `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` neu — die Zahl ist die des Findemittels, das schon vorher 66 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1248,3 +1248,34 @@ Der Eigentümer schrieb die Anrede fünfmal; Nova trägt sie seit Anfang Septemb
 
 **Zusammenhang:** `AVATAR-UNTERTITEL` · O12 (`novaberg-avatar_e.md`) · `server/memory/session.py`
 
+---
+
+## Befund: SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL — `property_hits` filtert eine schon gedeckte Eigenschaft erst hinter der Auswahl (22.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Rang:** niedrig — still, aber nur bei vielen gespeicherten Eigenschaften je Objekt: Dann kann das Angebot weniger Eigenschaften tragen, als offen und gespeichert sind.
+
+**Zustand:** ⬜ offen — am Code gelesen am 22.10.2026, Code-Tree `d810399` (Teil H, committet); Bestand seit Scheibe 11, mit Teil H nicht verändert, nichts gebaut.
+
+**Befund, am Code:** `graph/nodes/sachlage_resolver.py::property_hits` holt über `memory/sachlage_properties.py::active_properties` höchstens `SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX * 3` = 12 Zeilen, die jüngsten zuerst, und verwirft danach in Python jede, deren Eigenschaft im Artefakt schon gedeckt ist; erst dahinter kappt es auf 4. Tragen die zwölf jüngsten Zeilen mehr als acht gedeckte, bleiben Plätze leer, obwohl ältere offene Werte gespeichert sind. Dieselbe Form wie eine Bedingung hinter der Kappung: Die Zahl der Auswahl beschreibt, was durch die Auswahl kam, nicht, was es gab. **Regel (c)** (`novaberg-memory-fakten_e.md` A Nr. 44) steht seit Teil H **in** der Auswahl (`hidden_for`, `hidden_origins`) und belegt deshalb keinen Platz — für *gedeckt* gilt das nicht.
+
+**Was fertig wäre:** Eine gedeckte Eigenschaft belegt keinen Platz unter dem `LIMIT` — die Eigenschaften, die im Artefakt gedeckt sind, gehen als Bedingung in die Abfrage —, oder die Zählzeile nennt, wie viele gelesene Zeilen als gedeckt verworfen wurden, und eine Messung zeigt, dass der Fall nicht vorkommt. Ein Zeuge, dessen jüngste Zeilen gedeckt sind, schlägt an, wenn die Bedingung fehlt.
+
+**Zusammenhang:** `novaberg-thinking-lage_t.md` Scheibe 11 (*Der Rückweg*) · `novaberg-graph-rechenkette.md` S14a (5) · `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN`
+
+---
+
+## Befund: SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN — Die Grenzen der Fakten und des Kalenders im Angebot der Sachlage sind gesetzt, nicht gemessen (22.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Rang:** mittel — beide Grenzen entscheiden, was der Frame-Auflöser je Turn sieht, und beide sind Startwerte: zu eng, und ein Fakt oder ein Termin fehlt im Urteil; zu weit, und die Angebots-Sektion wird lang.
+
+**Zustand:** ⬜ offen — gesetzt mit Teil H am 22.10.2026 (Code-Tree `d810399`, committet); am Modell gemessen am 22.10.2026 nur die Länge bei den Fakten — mit Fakten im Mittel 409 statt 218 Zeichen, die Grenze von 8 Fakten nie erreicht (höchstens 7), der Kalender der Messreihe leer (`novaberg-thinking-lage_m.md` Scheibe 13); im Betrieb nicht gemessen.
+
+**Befund, am Code:** `config.py::SACHLAGE_FAKTEN_ANGEBOT_MAX` = 8 — so viele Fakten aus den Mappen der gebundenen, akuten Objekte stehen im Angebot, vor den gespeicherten Eigenschaften. `config.py::SACHLAGE_BESTAND_KALENDER_MAX` = 5 — so viele Kalenderzeilen, in der Ordnung des Lesewegs der Termine; die übrigen eines Zeitraums stehen nur im Block `[TERMINE]`. Beide sind als Wachposten markiert und aus der Umgebung lesbar. **Was je Turn gezählt wird:** Die Zählzeilen des Auflösers nennen gelesene und weggelassene Fakten (*„Fakten zu N Entitaeten … — G gelesen, W weggelassen …“*) und Kalenderzeilen (*„Angebot aus Kalender G gelesen, W weggelassen …“*).
+
+**Was fertig wäre:** Beide Grenzen sind an einer Messung gesetzt — am Modell des Betriebs die Länge der Angebots-Sektion mit und ohne Fakten und die Urteile des Auflösers bei voller Grenze, im Betrieb die Verteilung der gelesenen und weggelassenen Einträge über die Turns mit gebundener Person oder mit einer Frage nach einem Zeitraum —, oder die begründete Feststellung, dass die Startwerte tragen.
+
+**Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (*Das Angebot der Sachlage*) · `novaberg-thinking-lage_b.md` Scheibe 6, Scheibe 13 · `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` (Gedächtnis) · `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN`

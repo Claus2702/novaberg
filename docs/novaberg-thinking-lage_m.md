@@ -287,3 +287,46 @@ Gemessen mit 15 erfundenen Dialogen, alte gegen neue Fassung, Regel vor dem Lauf
 **Was die Zahlen tragen:** Die Annahme von Nr. 36 hält an dieser Stichprobe — das Wort, nach dem gefragt wird, steht fast immer im Namen, und der Name kehrt im Folgeturn meist wörtlich wieder. **Die erste blinde Reihe widerlegte die erste Fassung:** Ein Wort der Äußerung im Namen trifft fast jedes akute Objekt, auch bei einer Aussage ohne Frage; daraus die Regel, dass nur eine Frage nach dem Zeitpunkt einen Titel setzt. Der Zeitraum braucht keine Frage, sein Wort muss ohnehin im Namen stehen.
 
 **Bekannte Grenze:** Wechselt der Name im Folgeturn — umbenannt, oder ein von Nova genannter Termin wird akut —, geht das Feld verloren: in 2 von 30 Folgeturns der Reihen.
+
+#### Teil H und Teil A — die Fakten im Angebot und der Kanal, gemessen am Modell am 22.10.2026
+
+**Gemessen am Modell des Betriebs, vor dem Commit, 22:43–22:52 UTC** (Messreihe vom 22.10.2026; Code-Tree `04f823e`, alle drei Bauten der Teile H und A): der echte Sachlage-Call und der echte Auflöser-Call (`resolve_open_properties`), **ohne Turn und ohne Schreiben**. Bindungen (`bound_entities`), Mappe (`load_mappe`) und gespeicherte Eigenschaften (`active_properties`) sind Doppel; Regel (c) wird darin wie in der Abfrage ausgewertet. Plausibilitätsprüfung und Websuche sind abgeschaltet, der Kalender ist leer, in jeder Zählzeile geprüft. Die Reihe ist neu und dem Bau nicht gezeigt: **23 Äußerungen in fünf Gruppen, je 4 Läufe, also 92 Läufe** — G1 direkte Frage (5), G2 Beziehungsform wie *meine Schwester* (5), G3 Kosename (5), G4 Erwähnung im Vorbeigehen, mit einer Frage über Astronomie (4), G5 zwei Personen (4). Drei synthetische Personen, jede gebunden und in der vorigen Blase ein Objekt mit *Beziehung* und *Kosename*; zehn Fakten, einer davon im zweiten Grad; drei gespeicherte Eigenschaften aus einem Fakt, eine aus dem Gespräch. Gezählt sind die Felder, die Teil H und der Kanal lesen — `objekte[].name`, `akut`, `offen` und das Urteil des Auflösers —, dazu die Länge der Angebots-Sektion mit und ohne Fakten. Die Zahlen sind Zählungen an einer kleinen Reihe, keine Raten. Ausfälle: 0.
+
+| gezählt (n/N über 4 Läufe) | G1 | G2 | G3 | G4 | G5 | gesamt |
+|---|---|---|---|---|---|---|
+| Name trifft das gebundene Objekt, erfragte Person | 20/20 | 20/20 | 18/20 | — | 32/32 | **90/92** |
+| Name trifft, nur erwähnte Person | — | — | — | 16/16 | — | 16/16 |
+| erfragte Person akut | 12/20 | 4/20 | 5/20 | — | 22/32 | **43/92** |
+| nur erwähnte Person nicht akut | — | — | — | 16/16 | — | **16/16** |
+| Tor offen (Name trifft, akut, `offen` nicht leer) | 12/20 | 2/20 | 5/20 | — | 22/32 | 41/92 |
+| Auflöser wählt `fakten#…`, wenn der passende Fakt angeboten war | 4/4 | 2/2 | 1/1 | — | 11/11 | **18/18** |
+| dasselbe unbedingt, über alle Läufe mit passendem Fakt | 4/12 | 2/12 | 1/12 | — | 11/20 | 18/56 |
+| kein Anspruch, wenn Fakten angeboten waren und keiner passte | 8/8 | 0/0 | 4/4 | — | 11/11 | **23/23** |
+| Kanal `objekt_entitaeten`: erfragte Person darin | 12/20 | 4/20 | 5/20 | — | 22/32 | 43/92 |
+| Kanal: nur erwähnte Person fehlt | — | — | — | 16/16 | — | 16/16 |
+
+**Das Urteil trägt.** Steht der passende Fakt im Angebot, wählt der Auflöser ihn, 18 von 18; jeder der 18 Ansprüche deckt die erfragte Eigenschaft mit dem erwarteten Fakt, von Hand nachgeprüft. Kein Fakt wurde für eine nicht erfragte Eigenschaft gewählt, und in den 23 Fällen mit Fakten ohne passenden gab es keinen Anspruch — gefragt war dort nach dem Befinden oder nach dem letzten Kontakt. Je Lauf 4, 4, 5 und 5 Treffer: stabil. **Der Kanal folgt genau aus Name und `akut`:** Eine erfragte Person steht darin, wenn sie akut ist, eine nur erwähnte nie, ebenso wenig latente Nebenobjekte wie ein Ort oder ein Himmelskörper. Keine Ausnahme, die Nachbedingung *Kanal deckt die Bindungen* nie verletzt.
+
+**Die Annahme *„nach wem gefragt wird, der ist akut“* hält nicht.** In 49 von 92 Läufen ist die erfragte Person nicht akut — mit Beziehungsform in 16 von 20, mit Kosename in 15 von 20. Das Angebot erreicht den Auflöser deshalb seltener als angenommen: unbedingt gerechnet in 18 von 56 Läufen mit passendem Fakt. Am Urteil liegt es nicht, sondern am Sachlage-Call. Drei Muster:
+
+1. **Die erfragte Eigenschaft wandert an ein anderes Objekt** — *Gretas Geburtstag* [vorgang] mit offenem *Datum*, *Besuch bei Jonas* mit offenem *Ort*, *Paket an Lena* mit offener *Adresse*, *Lenas Beruf* [anliegen] mit offener *Berufsbezeichnung*. Das deckt die Regel des Prompts — das Objekt ist die Sache, eine Person bildet nur den Rahmen. Angeboten werden aber nur die Fakten akuter, offener Objekte, die selbst gebunden sind, und diese Objekte sind es nicht.
+2. **Die Person bleibt latent, und die Eigenschaft steht mit einem Platzhalter in `gedeckt`** — *„Geburtstag: ?“*, *„Wohnort: ?“*, *„Befinden/Zustand: unbekannt“*, *„Befinden/Gesundheit: offen“*. Damit ist sie nicht offen (`SACHLAGE-PLATZHALTER-ALS-WERT`).
+3. **Der Kosename wird Objektname:** *Lenchen*, in 2 von 4 Läufen einer Äußerung, ist ungebunden und fehlt in Kanal und Angebot.
+
+**Der Wert einer Deckung aus einem Fakt ist der Satz des Auflösers**, nicht der Wert des Fakts — in 18 von 18 Deckungen, etwa *„Sie arbeitet als Hebamme.“* statt *Hebamme* (`SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG`).
+
+**Die Länge der Angebots-Sektion**, aus demselben Rohartefakt mit und ohne Fakten gerechnet:
+
+| Anordnung | Läufe | mit Fakten: Einträge / Zeichen | ohne Fakten: Einträge / Zeichen |
+|---|---|---|---|
+| eine Person, 3 Fakten und 1 Eigenschaft aus dem Gespräch | 13 | 4 / 324 | 2 / 216 |
+| eine Person, 4 Fakten | 6 | 4 / 327 | 1 / 141 |
+| zwei Personen, 7 Fakten und 1 Eigenschaft | 7 | 8 / 582 | 3 / 288 |
+| zwei Personen, 7 Fakten | 4 | 7 / 509 | 2 / 217 |
+| keine Fakten angeboten (Tor zu) | 62 | gleich | gleich |
+
+**Im Mittel 409 gegen 218 Zeichen** bei angebotenen Fakten (30 Läufe); ohne angebotene Fakten zeichengleich, 62 von 62. Ohne Fakten kehrt eine Eigenschaft aus einem Fakt ins Angebot zurück — Regel (c) verbirgt sie nur, wenn genau ihr Fakt angeboten ist. Die Grenze von 8 Fakten wurde nie erreicht, das Maximum war 7. Das Angebot mit Fakten war in 92 von 92 Läufen gleich dem, das der echte Auflöser-Call bekam.
+
+**Am Bestand, nur lesend:** Die Tabelle `fakten` hat am 22.10.2026 **0 Zeilen**. Teil H und der Erinnerungsanker ändern im Betrieb deshalb noch nichts am Prompt, bis ein Schreiber Fakten anlegt; sie kosten je Turn die Abfrage der Bindungen. Akut und gebunden sind über alle Paare 35 Objekte an 31 Entitäten; am echten Paar sind 12 Objekte an 8 Entitäten gebunden. Die Suche des Ankers (`knoten_zu_entitaeten`) findet dort je Entität 0 bis 32 aktive Knoten, Median 3; alle acht zusammen ergeben 53, gekappt auf 50.
+
+**Nicht gemessen:** im Betrieb nichts — weder Teil H noch der Kanal noch der Knoten des Erinnerungsankers. Die echten Abfragen `bound_entities`, `load_mappe` und `active_properties` bezeugen die Zeugen gegen die Testdatenbank, nicht diese Messung. Die Kalender-Seite des Angebots ist am Modell nicht gemessen, denn der Kalender war leer. Ob der Auflöser einen Fakt für eine verwandte, aber andere Eigenschaft nähme — *neuer Job* gegen *Beruf* —, ist offen: Das Modell machte den Job nie zu einer offenen Eigenschaft.

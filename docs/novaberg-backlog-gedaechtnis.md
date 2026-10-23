@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Gedaechtnis — KZG, LZG, Promotion, Entitaeten, Salienz, Verfall
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → 81 Eintraege (21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → ~~81~~ → 82 Eintraege (22.10.2026: `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` neu; 21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -2186,3 +2186,19 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 **Was fertig wäre:** Stellt sich im Gespräch heraus, dass zwei Entitäten eine Person sind, fragt Nova nach; auf Zustimmung werden die Fakten der einen an die andere übertragen (Subjekt und Objekt der Tripel), ebenso Magnete und Bindungen, und die zweite Entität wird stillgelegt — womöglich je Fakt abgestimmt. Wie die Rückfrage entsteht (Klärfall am Objekt, `KLA-KLAERFALL-AM-OBJEKT`) und was beim Zusammenlegen mit widersprüchlichen einwertigen Fakten geschieht, legt die Bauart fest. **Sucht der Bau Kandidaten über die Ähnlichkeit der Embeddings**, wird er deren erster Leser und legt ihren Takt fest; bis dahin werden fehlende Embeddings nur beim Start gefüllt (21.10.2026, `novaberg-memory-fakten_e.md` A Nr. 39).
 
 **Zusammenhang:** `novaberg-memory-fakten_e.md` A Nr. 35 · `novaberg-pattern-entity-resolution.md` §2.2 · `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` · Klärfälle (`novaberg-klaerung_k.md`)
+
+---
+
+## Befund: ERINNERUNGSANKER-GRENZEN-UNGEMESSEN — Die zwei Grenzen des Erinnerungsankers sind gesetzt, nicht gemessen (22.10.2026)
+
+**Kategorie:** [GED] GEDAECHTNIS
+
+**Rang:** mittel — der Anker läuft in jedem Turn mit gebundener Person; seine Grenzen bestimmen, wie viel Mappe und wie viele Erinnerungen der Kontext trägt und ob ein viertes gebundenes Objekt gar nicht erst gelesen wird.
+
+**Zustand:** ⬜ offen — gesetzt mit dem Knoten am 22.10.2026 (Code-Tree `04f823e`, committet), nicht gemessen.
+
+**Befund, am Code:** `config.py::ANKER_MAX_ENTITAETEN` = 3 — für so viele gebundene Entitäten des Kanals `objekt_entitaeten` liest der Knoten `graph/nodes/erinnerungsanker.py` je Turn die Mappe und sucht, in der Ordnung der Objekte. `config.py::ANKER_MAX_ERINNERUNGEN` = 3 — so viele neue Erinnerungen hängt er höchstens an die Resonanz, gekappt wie die Resonanz des Enrichers (`novaberg-memory-fakten_e.md` A Nr. 36, *„gekappt wie die übrigen Quellen“*). Beide sind Wachposten und aus der Umgebung lesbar. Je Turn steht ein Eintrag `berechnung` mit `node = 'erinnerungsanker'` im Pipeline-Log, mit gefundenen und neuen Knoten und den Längen des Kontexts vorher und nachher.
+
+**Was fertig wäre:** Beide Grenzen sind an einer Messung im Betrieb gesetzt — wie oft mehr als drei Entitäten gebunden sind, wie viele Knoten die Suche findet und wie viele davon neu sind, wie stark die Länge des Kontexts wächst —, oder die begründete Feststellung, dass die Startwerte tragen.
+
+**Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (*Der Erinnerungsanker*) · `novaberg-graph-rechenkette.md` S14b · `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` (Antwortpfad)
