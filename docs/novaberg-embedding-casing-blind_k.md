@@ -1,7 +1,7 @@
 # EMBEDDING-CASING-BLIND
 
 **Absicht:** Im System ist kein Embedding-Modell im Einsatz, das großgeschriebene Wörter auf `[UNK]` fallen lässt — das blinde Modell wird ersetzt, alle gespeicherten Vektoren werden neu eingebettet, alle Ähnlichkeitsschwellen am echten Vektorraum neu kalibriert, und jedes künftige Modell besteht vor dem Einsatz die Casing-Eingangsprüfung.
-**Stand:** 19. September 2026 (am selben Tag in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 23. Oktober 2026, 21:18 UTC (`date -u`; `_e` B5: Der KZG-Eintrag wird seit dem Code-Tree `2d18b83` nach einer Neuanlage gelöscht, vermerkt). Davor 19. September 2026 (am selben Tag in fünf Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** keine eigene Zeile in der Featureliste; am nächsten *Embedding-Konsolidierung (ein Pfad)* 🟢 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-embedding-casing-blind_t.md`](novaberg-embedding-casing-blind_t.md) · [`novaberg-embedding-casing-blind_b.md`](novaberg-embedding-casing-blind_b.md) · [`novaberg-embedding-casing-blind_e.md`](novaberg-embedding-casing-blind_e.md) · [`novaberg-embedding-casing-blind_m.md`](novaberg-embedding-casing-blind_m.md)
 **Entschieden:** 1 · **Offen beim Meister:** 0 (Liste in [`novaberg-embedding-casing-blind_e.md`](novaberg-embedding-casing-blind_e.md))

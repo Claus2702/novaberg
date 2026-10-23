@@ -1,7 +1,7 @@
 # Novaberg — KZG-Salienz: Neubau als abgeleiteter Wert
 
 **Absicht:** Die KZG-Salienz ist ein berechneter Wert auf der Skala 0 bis 1 — eine reine Funktion aus der unveränderlichen Eingangsbewertung und der Zahl der Wiederholungen —, der Einprägsame und der Angesammelte enden am selben Tor ins Langzeitgedächtnis, und ein Eintrag, der einen neuen LZG-Knoten erzeugt hat, verlässt das Kurzzeitgedächtnis.
-**Stand:** 23. Oktober 2026, 20:11 UTC (`date -u`; `_b` Bauteil 2, `ZIEL`: ein Treffer der Promotion verstärkt nach der Entscheidung vom 23.10.2026 nicht — markiert, `novaberg-memory-synapsen_e.md` A, E7). Davor 29. Juli 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
+**Stand:** 23. Oktober 2026, 21:18 UTC (`date -u`; **Bauteil 2 gebaut, wie zugeschnitten** — die Promotion löscht den KZG-Eintrag nur nach einer Neuanlage, nach einem Treffer bleibt er bis zur TTL, Code-Tree `2d18b83`, im Betrieb nicht gemessen; vermerkt in `_t` §8, `_b` Bauteil 2 und `_e` B3, B4 und F). Davor 23. Oktober 2026, 20:11 UTC (`date -u`; `_b` Bauteil 2, `ZIEL`: ein Treffer der Promotion verstärkt nach der Entscheidung vom 23.10.2026 nicht — markiert, `novaberg-memory-synapsen_e.md` A, E7). Davor 29. Juli 2026 (am 19.09.2026 in Teile aufgeteilt, ohne inhaltliche Änderung)
 **Umsetzung:** Featureliste *KZG-Salienz-Neubau* 🟠 · *`salience` — Salienz als Entscheider* 🔴 — der Zustand steht dort, nicht hier
 **Teile:** [`novaberg-kzg-salienz_t.md`](novaberg-kzg-salienz_t.md) · [`novaberg-kzg-salienz_b.md`](novaberg-kzg-salienz_b.md) · [`novaberg-kzg-salienz_e.md`](novaberg-kzg-salienz_e.md) · `novaberg-kzg-salienz_m.md` — keiner
 **Entschieden:** 2 · **Offen beim Meister:** 0 (Liste in [`novaberg-kzg-salienz_e.md`](novaberg-kzg-salienz_e.md))

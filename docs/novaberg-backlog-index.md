@@ -401,23 +401,23 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | GED | 1675 | offen | `ENTITAET-EMBED-DREIFACH` | [Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad emb](novaberg-backlog-gedaechtnis.md) |
 | GED | 1692 | offen | `GESPRAECH-ARCHIV-LEER` | [Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohges](novaberg-backlog-gedaechtnis.md) |
 | GED | 1703 | offen | `PIPELINE-LOG-MERGE-BLIND` | [Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement](novaberg-backlog-gedaechtnis.md) |
-| GED | 1712 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
-| GED | 1721 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
-| GED | 1730 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
-| GED | 1741 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1756 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
-| GED | 1773 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
-| GED | 1788 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
-| GED | 1805 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
-| GED | 1836 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
-| GED | 1886 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
-| GED | 1911 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
-| GED | 1952 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
-| GED | 1987 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
-| GED | 2014 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
-| GED | 2152 | offen | `SALIENZ-TRAEGT-NAEHE-NICHT` | [Befund: SALIENZ-TRAEGT-NAEHE-NICHT — Die Salienz trä](novaberg-backlog-gedaechtnis.md) |
-| GED | 2176 | offen | `ENTITAETEN-ZUSAMMENLEGEN` | [Befund: ENTITAETEN-ZUSAMMENLEGEN — zwei Akten dersel](novaberg-backlog-gedaechtnis.md) |
-| GED | 2192 | offen | `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` | [Befund: ERINNERUNGSANKER-GRENZEN-UNGEMESSEN — Die zw](novaberg-backlog-gedaechtnis.md) |
+| GED | 1714 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
+| GED | 1723 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
+| GED | 1732 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
+| GED | 1743 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1758 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1775 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1790 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1807 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
+| GED | 1838 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1888 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
+| GED | 1913 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1954 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1989 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
+| GED | 2016 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
+| GED | 2154 | offen | `SALIENZ-TRAEGT-NAEHE-NICHT` | [Befund: SALIENZ-TRAEGT-NAEHE-NICHT — Die Salienz trä](novaberg-backlog-gedaechtnis.md) |
+| GED | 2178 | offen | `ENTITAETEN-ZUSAMMENLEGEN` | [Befund: ENTITAETEN-ZUSAMMENLEGEN — zwei Akten dersel](novaberg-backlog-gedaechtnis.md) |
+| GED | 2194 | offen | `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` | [Befund: ERINNERUNGSANKER-GRENZEN-UNGEMESSEN — Die zw](novaberg-backlog-gedaechtnis.md) |
 | HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
 | HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
 | HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |

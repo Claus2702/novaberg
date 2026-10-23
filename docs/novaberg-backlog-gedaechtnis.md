@@ -1708,6 +1708,8 @@ Ersetzt die alte Einschätzung GESPRAECH-ARCHIV-VERWAIST (Chat 103, „Kandidat 
 
 `synapsen_promotion` loggt bei `aktion="reinforcement"` nur `knoten_id`, `cosine`, `gewicht_roh` — NICHT den geschluckten KZG-Inhalt. Die Merge-Historie ist damit unrekonstruierbar (2910 Reinforcements, Stand Chat 107): Welcher KZG-Eintrag in welchem Knoten aufging, weiß niemand mehr. → Beim nächsten Anfassen: `kzg_key` mitloggen. Kostet nichts, rettet alles. ⬜ Prio mittel
 
+→ **23.10.2026, gegen die Code-Trees `2d18b83` und `5342a6a`:** ~~`aktion="reinforcement"`~~ gibt es nicht mehr — ein Treffer auf einen aktiven Knoten heißt `aktion="dublette"`, Info `knoten=… cosine=… unveraendert`, und ändert den Knoten nicht (`LZG-PROMOTION-TREFFER-VERSTAERKT`). Der Schlüssel des Eintrags steht als `turn_id` in jeder `pipeline_log`-Zeile des Laufs und in `verbindung`; den Inhalt trägt das Protokoll der Promotion nicht; nach einer Dublette steht er bis zur TTL im KZG, danach nirgends. Der Befund gilt damit für die Dublette weiter, in anderer Form: Welcher Eintrag in welchem Knoten aufging, ist rekonstruierbar, was er sagte, nach der TTL nicht. Prio unverändert.
+
 
 ## Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt nach zehn Seiten die Akte nicht mehr (Chat 107)
 
@@ -1887,7 +1889,7 @@ Runde Werte bei `haeufigkeit = 1`, lange Nachkommastellen ab 2: **Die Bewertung 
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. → 23.10.2026: Die Ursache `PROMOTION-ENTFERNT-KZG-NICHT` ist im Code-Tree `2d18b83` umgesetzt, im Betrieb nicht gemessen — für Einträge, die als neuer Knoten angelegt werden; ein Eintrag, der nach einem Treffer stehen bleibt, kann weiter aufgefrischt werden; vor dem Schließen nachmessen wie unten verlangt (*Erwartung*).
 
 **Einordnung korrigiert (Chat 109):** ~~Bug~~ → **kein eigenständiger Defekt, sondern eine Limitation** — und die **Folge von PROMOTION-ENTFERNT-KZG-NICHT.** Das `max()` in der Auffrischung ist für sich genommen richtig: Eine schwache Wiederholung soll einen hoch eingestuften Eintrag nicht herabstufen. Schädlich wird es erst, weil die Einträge das KZG überhaupt nie verlassen.
 
@@ -2015,7 +2017,7 @@ Braucht ein eigenes Konzeptdokument. ⬜ Prio hoch — eigener Sprint, **nicht**
 
 **Kategorie:** [GED] GEDAECHTNIS
 
-**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+**Zustand:** offen — umgesetzt im Code-Tree `2d18b83` (auf `5c00a98`; Commit-Tree `ee0cd76`), MESSUNG im Betrieb steht aus. Gebaut, getestet und gegengeprüft am 23.10.2026; gleichbedeutend mit dem Bug `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` ([`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md)), dort Bau, Zeugen und Zahlen. Nach einer gelungenen Neuanlage löscht die Promotion den KZG-Hash, nach dem Rückweg. Nach einem Treffer — Dublette oder Halbreaktivierung — bleibt er bis zu seiner TTL: Dort entsteht aus dem Eintrag kein Knoten, und ein Löschen wäre ein Datenverlust (`novaberg-kzg-salienz_t.md` §8). Ein Fehlschlag lässt ihn ebenso stehen. Einträge, die vor dem Bau promotet wurden, verfallen weiter über ihre TTL. Geschlossen mit der Messung, die dieser Eintrag verlangt — dem Vollabgleich der Partition gegen `lzg_knoten.kzg_quell_key` (`novaberg-kzg-salienz_b.md`, Bauteil 2); bis die vor dem Bau promoteten Einträge verfallen sind, trägt die Schnittmenge sie noch. Davor: offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. Der Wert existiert von da an **doppelt** — einmal als `lzg_knoten`, einmal als KZG-Hash unter demselben Schlüssel, den `lzg_knoten.kzg_quell_key` als Herkunft führt.
 
@@ -2050,7 +2052,7 @@ Bauteil 1 — die Salienz als abgeleiteter Wert statt als Akkumulator — steht 
 
 ### Bauteil 2 — die Promotion entfernt den KZG-Eintrag ⬜ Prio hoch
 
-Vorbild ist der bestehende Löschpfad im Promotions-Agenten. Betrifft **nur** den Neuanlage-Pfad, nicht die Halbreaktivierung und nicht das Reinforcement. Hängt an `PROMOTION-ENTFERNT-KZG-NICHT` (Chat 109) — dort steht der Befund, hier der Bauschritt.
+Vorbild ist der bestehende Löschpfad im Promotions-Agenten. Betrifft **nur** den Neuanlage-Pfad, nicht die Halbreaktivierung und nicht das Reinforcement. Hängt an `PROMOTION-ENTFERNT-KZG-NICHT` (Chat 109) — dort steht der Befund, hier der Bauschritt. → **Gebaut am 23.10.2026, wie hier zugeschnitten** (Code-Tree `2d18b83`, im Betrieb nicht gemessen): Gelöscht wird nur nach einer Neuanlage; nach einem Treffer — seit dem Code-Tree `5342a6a` eine Dublette ohne Verstärkung — und nach einer Halbreaktivierung bleibt der Hash bis zu seiner TTL. Der Zustand steht bei `PROMOTION-ENTFERNT-KZG-NICHT`.
 
 **Vor der Umsetzung neu messen.** Der Befund stammt aus Chat 109 und liegt vor dem Reset des Bestands und vor dem Salienz-Umbau.
 

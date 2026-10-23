@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 4. September 2026 (**die thematische Verstaerkung verstaerkt Nachbarn, nicht Verwendetes** — `kzg_store` scannt bei jedem Turn die ganze Paar-Partition und verstaerkt jeden Eintrag mit **einem geteilten Thema**, samt TTL-Neusetzung. `[gemessen]` 2.911 Eintraege, Stichprobe 400: `haeufigkeit` Mittel **8,1**, Maximum **110**, **64 %** mindestens einmal verstaerkt. Widerspricht dem neuen §7.1a. Beleg und Kennungen: `novaberg-memory-synapsen_k.md` §7.1a, `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `VERSTAERKUNG-OHNE-VERWENDUNG`.). Davor 1. September 2026, 14:30 UTC (`beziehungs_dynamik` in der Feldtabelle — stand seit jeher im Hash und nie in der Aufzaehlung; zwei Leser: Charakter-Agent und Synapsen-Promotion). Davor 30. August 2026 (`turn_id` hat zwei Leser und zwei Schreibpfade — der Recherche-Agent übergibt sie seit heute). Davor 28. August 2026 (`turn_id` als Hash-Feld — das erste Glied der Sachlage-Brücke). Davor: 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
+**Stand:** 23. Oktober 2026, 21:18 UTC (`date -u`; **§5a neu — ein als neuer Knoten promoteter Eintrag verlässt das KZG mit der Promotion:** Nach einer gelungenen Neuanlage löscht die Synapsen-Promotion seinen Hash, nach einem Treffer bleibt er bis zur TTL, gebaut im Code-Tree `2d18b83`, im Betrieb nicht gemessen; die Leser der Partition sehen ihn danach nicht mehr; §5 markiert, der Verweis auf das Moduldokument der Promotion nachgezogen). Davor 4. September 2026 (**die thematische Verstaerkung verstaerkt Nachbarn, nicht Verwendetes** — `kzg_store` scannt bei jedem Turn die ganze Paar-Partition und verstaerkt jeden Eintrag mit **einem geteilten Thema**, samt TTL-Neusetzung. `[gemessen]` 2.911 Eintraege, Stichprobe 400: `haeufigkeit` Mittel **8,1**, Maximum **110**, **64 %** mindestens einmal verstaerkt. Widerspricht dem neuen §7.1a. Beleg und Kennungen: `novaberg-memory-synapsen_k.md` §7.1a, `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `VERSTAERKUNG-OHNE-VERWENDUNG`.). Davor 1. September 2026, 14:30 UTC (`beziehungs_dynamik` in der Feldtabelle — stand seit jeher im Hash und nie in der Aufzaehlung; zwei Leser: Charakter-Agent und Synapsen-Promotion). Davor 30. August 2026 (`turn_id` hat zwei Leser und zwei Schreibpfade — der Recherche-Agent übergibt sie seit heute). Davor 28. August 2026 (`turn_id` als Hash-Feld — das erste Glied der Sachlage-Brücke). Davor: 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -229,7 +229,29 @@ Beide Schreibpfade — `kzg_store` (`memory/kzg.py`) und `_neu_anlegen` (`agents
 
 Drei Stufen je nach Salienz — die genauen Bereiche und Aktionen siehe §2a.
 
-Einträge verfallen automatisch per Redis TTL. Kein Cron-Job, kein manuelles Löschen. Bei thematischer Verstärkung wird der TTL auf `max(verbleibend, neuer_TTL)` gesetzt, sodass ein bereits hoch eingestufter Eintrag durch eine schwache Wiederholung nicht heruntergestuft wird.
+Einträge verfallen automatisch per Redis TTL. Kein Cron-Job~~, kein manuelles Löschen~~ → gelöscht wird seit dem 23.10.2026 an einer Stelle: von der Synapsen-Promotion, nach einer gelungenen Neuanlage (§5a). Bei thematischer Verstärkung wird der TTL auf `max(verbleibend, neuer_TTL)` gesetzt, sodass ein bereits hoch eingestufter Eintrag durch eine schwache Wiederholung nicht heruntergestuft wird.
+
+## 5a. Das Ende eines Eintrags — TTL oder Neuanlage (seit dem 23.10.2026)
+
+**Ein Eintrag verlässt das KZG auf einem von zwei Wegen:** Er verfällt über seine TTL (§5), oder er wird als neuer Knoten ins Langzeitgedächtnis promotet — dann löscht die Synapsen-Promotion seinen Hash als letzten Schritt ihres Laufs (`agents/synapsen_promotion/agent.py::_kzg_eintrag_loeschen`; `novaberg-node-synapsen-promotion.md` §3b). **Nur die Neuanlage löscht.** Trifft der Eintrag in der Promotion einen bestehenden Knoten — als Dublette eines aktiven oder als Wecken eines deaktivierten —, bleibt er bis zu seiner TTL stehen: Aus ihm entsteht kein Knoten, und seine eigenen Felder kämen sonst nirgends an (`novaberg-kzg-salienz_t.md` §8). Nach einem Fehlschlag bleibt er ebenso und kann im nächsten Lauf erneut promotet werden.
+
+Grundlage ist die Entscheidung *„Promotete Einträge sollen aus dem KZG entfernt werden“* — doppelte Werte werden nicht gebraucht (Backlog `PROMOTION-ENTFERNT-KZG-NICHT` in `novaberg-backlog-gedaechtnis.md`) — und das Soll in `novaberg-memory-synapsen_t.md` §7.7, Schritt 4 hinter der Anlage (§7.2). **Gebaut im Code-Tree `2d18b83`, im Betrieb nicht gemessen**; `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` bleibt offen bis zur Messung. Bis dahin blieb auch ein als Knoten angelegter Eintrag bis zu seiner TTL stehen, wurde durch die thematische Verstärkung immer wieder aufgefrischt (§4) und ging erneut in die Promotion. Einträge, die vor dem Bau promotet wurden, verfallen weiter über ihre TTL; ein Aufräumen des Bestands gab es nicht.
+
+**Was das für die Leser der Partition heißt.** Wer die Partition `kzg:{user}:{char}:*` nach dem liest, was gerade da ist, sieht einen Eintrag, der als neuer Knoten promotet wurde, danach nicht mehr. Weiter sichtbar sind die Einträge unter `KZG_SALIENZ_HIGH`, die frischen darüber, deren Promotion noch aussteht, und die, die nach einem Treffer bis zur TTL stehen bleiben:
+
+| Leser | Stelle | was er liest |
+|---|---|---|
+| Charakter-Agent | `agents/charakter/agent.py::_kzg_laden` | die stärksten Einträge für die Destillation — die als Knoten promoteten lagen gerade über `KZG_SALIENZ_HIGH` |
+| Enricher | `graph/nodes/enricher.py` (KZG-Abruf) | Einträge für den Kontext des Turns |
+| Emotionale Gravitation | `ei/gravitation.py::_kzg_emotionale_eintraege` | die emotionalen Einträge des Paares |
+| Recherche | `agents/recherche/lagebeurteilung.py` | Themen, Inhalt und Salienz der Partition |
+| Schnittstelle | `api/gedaechtnis.py` | die Anzeige des KZG |
+
+Keiner dieser Leser schlägt einen bestimmten promoteten Schlüssel nach; sie lesen, was vorhanden ist. **Die Eingabe der Destillation verschiebt sich damit** — ihr fehlen die Einträge, die schon als eigener Knoten im LZG stehen. Gemessen ist das nicht.
+
+**Ein Leser schlägt nach:** `agents/kalibrierung/korpus.py::_intentionen_laden` holt über `verbindung` den Hash eines bestimmten Turns. Nach einer Neuanlage fehlt er dort — gerade bei salienten Turns, und ab dem nächsten Promotionslauf statt nach bis zu 30 Tagen. Der Leser zählt das Fehlen als `fehlend`, nicht als Wert; sein Docstring nennt die Promotion nicht als Grund (Fundliste, 23.10.2026).
+
+**Die Brücke überlebt den Hash.** `verbindung` trägt nach der Promotion die `lzg_id` des Knotens, nachgetragen im selben Lauf vor dem Löschen; wer von einem Turn zum Gedächtnis will, findet den Knoten dort (`novaberg-memory-synapsen_t.md` §11.2).
 
 ---
 
@@ -300,6 +322,6 @@ Einträge verfallen automatisch per Redis TTL. Kein Cron-Job, kein manuelles Lö
 → KZG-Agent: novaberg-pixie-kzg.md
 → Salienz-Formel, Herleitung und Migration: novaberg-kzg-salienz_k.md
 → Wie die Salienz eines Turns überhaupt entsteht: novaberg-salienz-berechnung_k.md, novaberg-node-salience.md
-→ Promotion (KZG → LZG): novaberg-pixie-promotion.md
+→ Promotion (KZG → LZG): ~~novaberg-pixie-promotion.md~~ → novaberg-node-synapsen-promotion.md (der Vorgänger `novaberg-pixie-promotion.md` beschreibt den abgelösten `PromotionAgent`)
 → Decay (LZG): novaberg-pixie-decay.md
 → Gedächtnis-Überblick: novaberg-memory.md

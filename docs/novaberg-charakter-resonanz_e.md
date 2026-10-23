@@ -102,7 +102,7 @@ Die verworfenen und überholten Fassungen stehen an ihrer Stelle, durchgestriche
 - `_t` §5 — der Schreibort der `verbindung`-Zeile am KZG-Boost-Punkt: überholt durch den Dispatcher (Entscheidung b).
 - `_t` §4.2 und §12 — die Beleg-Achse in `verbindung`: herausgelöst in `verhaltens_beleg`.
 - `_t` §10, §12 und `_m` §A5-Befund — die gedrehte Partition als Subjekt: verworfen, weil sie nirgends existiert; das Subjekt trägt `beobachter`.
-- `_t` §11, Schritt (2) — die Begründung *„und werden bei der Promotion konsumiert“*: widerlegt (`PROMOTION-ENTFERNT-KZG-NICHT`); die Regel bleibt.
+- `_t` §11, Schritt (2) — die Begründung *„und werden bei der Promotion konsumiert“*: widerlegt (`PROMOTION-ENTFERNT-KZG-NICHT`); die Regel bleibt. → Seit dem Code-Tree `2d18b83` (23.10.2026) trifft die Begründung für neu angelegte Einträge wieder zu: Die Promotion löscht sie nach der Neuanlage; nach einem Treffer bleibt der Schlüssel bis zur TTL (`_t` §11, Vermerk).
 - `_t` §13 — der assoziative Pfad für die Charakter-Destillation: verworfen, *„ein Schnappschuss der Tagesstimmung, kein Wesen“*; er bleibt für Novas Selbstreflexion.
 - `_b` §16 — `PIXIE-TURN-ID-LEER` als Blocker für Bauteil 1b: *„war keiner“*.
 - §14 unten, E7 — die Frage, ob das Gate zu eng filtert: *„die Frage steht auf dem Kopf“*.
