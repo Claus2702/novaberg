@@ -18,9 +18,14 @@ novaberg-memory-synapsen_e.md, Abschnitt G "Die Festlegungen zu P4"):
     gelesen, NICHT aus dem Queue-Auftrag: die Salienz kann zwischen Einreihen
     und Promotion durch thematische Verstaerkung gestiegen sein. Der Auftrag
     traegt nur die Trigger-Salienz beim Einreihen.
-  - Hybrid Magnet+Vector-Match (K10): bei Cosine >= LZG_KNOTEN_MATCH_SCHWELLE
-    wird der Bestandsknoten verstaerkt (Reinforcement + Trigger 2), sonst ein
-    neuer Knoten angelegt (+ Trigger 1).
+  - Vector-Match (K10, ohne Magnet-Vorfilter): bei Cosine >=
+    LZG_KNOTEN_MATCH_SCHWELLE ist der Eintrag eine Dublette des getroffenen
+    Knotens — ein aktiver bleibt unveraendert, ein deaktivierter wird
+    halbreaktiviert (§9.3); sonst wird ein neuer Knoten angelegt (+ Trigger 1).
+    Bis zum 23.10.2026 verstaerkte der Treffer auf einen aktiven Knoten ihn
+    (Reinforcement + Trigger 2), wie K10 es vorsah. Das ist seither
+    ueberholt: Verstaerkt wird nur, was in einer Antwort verwendet wurde
+    (Konzept §7.1a), und das geschieht im Dispatcher, nicht hier.
 
 Jedes Promotion-Event wird in beide Gedaechtnis-Spuren geschrieben (K5):
 hintergrund_log (Pixie-Arbeitsgedaechtnis, via _audit_log) und pipeline_log
@@ -552,12 +557,14 @@ class SynapsenPromotionAgent(BaseAgent):
                     knoten_id, user_id, character_id,
                 )
         elif match is not None:
-            # ── Reinforcement-Pfad (K10) ──────
-            lzg_knoten.knoten_verstaerken(POSTGRES_URL, match["id"])
-            kanten_neu: int = lzg_kanten.kanten_neuberechnen_fuer_knoten(POSTGRES_URL, match["id"])
+            # ── Dubletten-Pfad (§7.1a) ──────
+            # Der Treffer verhindert nur die Dublette: kein neuer Knoten, und
+            # der getroffene bleibt, wie er ist — kein `knoten_verstaerken`,
+            # keine Neuberechnung seiner Kanten. Verstaerkt wird nur, was
+            # in einer Antwort verwendet wurde (Dispatcher).
             knoten_id: int = match["id"]
-            aktion: str = "reinforcement"
-            info: str = f"knoten={knoten_id} cosine={match['cosine']:.4f} kanten_neu={kanten_neu}"
+            aktion: str = "dublette"
+            info: str = f"knoten={knoten_id} cosine={match['cosine']:.4f} unveraendert"
         else:
             # ── Neuanlage-Pfad ──────
             neue_id = lzg_knoten.knoten_anlegen(
@@ -591,7 +598,7 @@ class SynapsenPromotionAgent(BaseAgent):
 
         # ── verbindung: lzg_id nachtragen (§11.2) ──────
         # Hinter allen drei Pfaden, weil in allen dreien derselbe Umzug
-        # stattfindet: Halbreaktivierung, Reinforcement und Neuanlage geben den
+        # stattfindet: Halbreaktivierung, Dublette und Neuanlage geben den
         # Knoten an, in den dieser KZG-Eintrag gewandert ist. Ein Schreibpunkt
         # statt drei.
         self._verbindung_lzg_id_nachtragen(kzg_key, knoten_id, user_id, character_id)

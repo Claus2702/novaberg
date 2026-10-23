@@ -23,6 +23,9 @@ candidates, node writes, edges, the bridge and the back-channel are replaced.
   5. An exception before the end -> the key is still there.
   6. A Redis error on DEL is loud and does not tear the promotion.
   7. A key without the prefix `kzg:` is not deleted, even after a new node.
+  8. A hit on an active node is a duplicate: no reinforcement, no edge
+     recomputation, no new node, no DEL.
+     Twin: a hit on a deactivated node wakes it as before.
 
 No skipUnless, no skipIf, no try/except around imports.
 """
@@ -271,6 +274,41 @@ class DeletionErrorTest(unittest.TestCase):
         done: list[str] = run.audit_rows("erledigt")
         self.assertEqual(len(done), 1, done)
         self.assertIn("kzg_geloescht=nein", done[0])
+
+
+class DuplicateHitTest(unittest.TestCase):
+    """A hit on an active node only prevents the duplicate; it does not reinforce.
+
+    Until 2026-10-23 the hit called `knoten_verstaerken` and recomputed the
+    node's edges (trigger 2). Reinforcement belongs to use in an answer
+    (concept §7.1a), not to similarity at promotion time.
+    """
+
+    def test_hit_on_active_node_does_not_reinforce(self) -> None:
+        """Case 8: no reinforcement, no edge recomputation, no new node, no DEL — a duplicate."""
+        run = _Promotion(_active_match()).run()
+        run.lzg_knoten.knoten_verstaerken.assert_not_called()
+        run.lzg_kanten.kanten_neuberechnen_fuer_knoten.assert_not_called()
+        run.lzg_knoten.knoten_anlegen.assert_not_called()
+        run.lzg_kanten.kanten_fuer_neuen_knoten_bilden.assert_not_called()
+        run.lzg_knoten.reactivate_node.assert_not_called()
+        self.assertEqual(run.redis.deleted, [], "the duplicate keeps its hash")
+        self.assertEqual(run.final_write()["aktion"], "dublette")
+        self.assertEqual(run.final_write()["knoten_id"], MATCHED_NODE)
+        done: list[str] = run.audit_rows("erledigt")
+        self.assertEqual(len(done), 1, done)
+        self.assertIn("aktion=dublette", done[0])
+        # The bridge still points the turn at the node it went into.
+        self.assertEqual(run.bridge.call_args.args[1], MATCHED_NODE)
+
+    def test_hit_on_deactivated_node_wakes_it(self) -> None:
+        """Twin: a deactivated node is woken as before, and not reinforced."""
+        run = _Promotion(_inactive_match()).run()
+        run.lzg_knoten.reactivate_node.assert_called_once()
+        self.assertEqual(run.lzg_knoten.reactivate_node.call_args.args[1], MATCHED_NODE)
+        run.lzg_knoten.knoten_verstaerken.assert_not_called()
+        run.lzg_knoten.knoten_anlegen.assert_not_called()
+        self.assertEqual(run.final_write()["aktion"], "halbreaktivierung")
 
 
 if __name__ == "__main__":
