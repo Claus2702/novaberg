@@ -250,20 +250,64 @@ def _build_return(state: dict, result: AgentResult) -> dict:
         "management_detail": management_detail,
     }
 
-    # Clipboard fuer KZG-Magnet-Aufloesung (Synapsen P3): wenn der
-    # TimelineAgent in diesem Turn einen Eintrag angelegt/gefunden hat,
-    # geben wir die ID flach in den State, damit der spaetere KzgAgent-
-    # magnete_aufloesen-Node sie uebernehmen kann statt einen eigenen
-    # Erinnerungs-Anker fuer den gleichen Tag anzulegen.
-    if result.status == "abgeschlossen" and result.schritte:
-        letzter_schritt: dict = result.schritte[-1] if isinstance(result.schritte[-1], dict) else {}
-        clipboard_id = (
-            letzter_schritt.get("termin_id")
-            or letzter_schritt.get("neuer_id")
-            or letzter_schritt.get("id")
-        )
-        if isinstance(clipboard_id, int):
+    # Clipboard fuer KZG-Magnet-Aufloesung (Synapsen P3): nur die ID einer
+    # Zeile, die der TimelineAgent in diesem Turn selbst geschrieben hat (die
+    # Zusage `timeline_id` im Katalog). Eine gefundene oder gesuchte Zeile
+    # gehoert nicht hierher, und der letzte Schritt ist immer `bestaetigen`,
+    # der keine ID traegt. Der spaetere KzgAgent-magnete_aufloesen-Node
+    # uebernimmt sie, statt einen eigenen Erinnerungs-Anker fuer den gleichen
+    # Tag anzulegen.
+    if result.status == "abgeschlossen":
+        clipboard_id: int | None = _written_row_id(result.schritte)
+        if clipboard_id is not None:
             return_dict["timeline_id"] = clipboard_id
             logger.info(f"dispatch_timeline: timeline_id={clipboard_id} ins Clipboard geschrieben")
 
     return return_dict
+
+
+#: Die Schritte, in denen `ausfuehren` eine Zeile geschrieben hat, und der
+#: Schluessel, unter dem sie ihre ID tragen. Beim Verschieben steht die neue
+#: Zeile unter `neuer_id`; `alter_id` ist abgelegt. Loeschen schreibt keine
+#: Zeile und fehlt hier.
+_WRITE_STEPS: dict[str, str] = {"erstellt": "termin_id", "verschoben": "neuer_id"}
+
+
+def _written_row_id(schritte: list[dict]) -> int | None:
+    """Die ID der Zeile, die `ausfuehren` in diesem Durchlauf geschrieben hat.
+
+    Vorbedingung: `schritte` ist die Schrittfolge eines AgentResult.
+    Nachbedingung: die ID des schreibenden Schritts (Knoten `ausfuehren`,
+        Ausgang `erstellt` oder `verschoben`); `None`, wenn kein Schritt
+        geschrieben hat — Lesen, Duplikat, Abbruch, Rueckfrage, Loeschen.
+        Die ID einer gefundenen Zeile (`id` in einem Schritt der Suche) wird
+        nie genommen.
+    Fehlerfaelle: eine Schrittfolge, die keine Liste ist, wirft `TypeError`;
+        ein schreibender Schritt ohne ganzzahlige ID wird als `ERROR`
+        protokolliert und ergibt `None`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(schritte, list):
+        msg: str = f"_written_row_id: schritte ist {type(schritte).__name__} statt list"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    row_id: object = None
+    wrote: bool = False
+    for schritt in reversed(schritte):
+        if not isinstance(schritt, dict) or schritt.get("node") != "ausfuehren":
+            continue
+        key: str | None = _WRITE_STEPS.get(schritt.get("ergebnis", ""))
+        if key is None:
+            continue
+        wrote = True
+        row_id = schritt.get(key)
+        break
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not wrote:
+        return None
+    if not isinstance(row_id, int) or isinstance(row_id, bool):
+        logger.error(f"dispatch_timeline: schreibender Schritt ohne ganzzahlige ID ({row_id!r})")
+        return None
+    return row_id
