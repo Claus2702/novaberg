@@ -32,7 +32,9 @@ Die Festlegungen K1 bis K10 für Sprint P4 stehen in Abschnitt G unten, mit dem 
 
 ## B. Offen beim Meister
 
-Keine. Das Konzept stellt keine Frage an den Meister.
+~~Keine. Das Konzept stellt keine Frage an den Meister.~~ → Eine, offen seit dem 22.10.2026 (am Code geprüft):
+
+- **§7.1a gegen K10 — verstärkt der Embedding-Treffer der Promotion einen bestehenden Knoten?** `_t` §7.1a sperrt die bloße Nachbarschaft im Schreibpfad: Verstärkt wird nur, was die Antwort hergenommen hat. K10 (Abschnitt G) sieht bei einem Treffer der Promotion (Kosinus ≥ 0,82) die Verstärkung samt Trigger 2 vor, und der Code führt sie aus (`agents/synapsen_promotion/agent.py`, Verstärkungspfad). Gebaut ist die Regel §7.1a nur am Weg der Verwendung (`memory/usage_reinforcement.py`). Bis zur Entscheidung verstärken beide Wege (Vermerke in `_t` §7.1a und unter K10).
 
 **Offen ohne Frage an den Meister** — Beobachtungen und Messungen, die das Konzept selbst als offen führt:
 
@@ -75,7 +77,7 @@ Diese Punkte sind noch nicht festgelegt und werden in den nächsten Konzept-Sess
 
 - **Container-Verhalten bei unterschiedlichen Präzisionen.** Konzert um 20:00 (Minute) liegt innerhalb eines Urlaubs vom 1.–7. August (Tag oder Zeitraum). Strikte Präzisions-Gleichheit lässt zwischen ihnen keine Timeline-Kante zu — sie verbinden sich nur über Entitäten und Themen. Beobachten, ob das in der Praxis ausreicht; falls nicht, eine Containment-Bedingung als eigenen Auslöser nachrüsten.
 - **Themen-Normalisierung.** Bestehender Bug-Cluster zur Themen-Vermischung („Annas Geburtstag" vs. „Geburtstag von Anna" vs. „Geburtstag"). Möglicher LLM-Call vor dem Knoten-Insert. Aktuell zurückgestellt, weil der zweite Promotion-Call entfällt; nachrüsten, wenn das Phänomen in der neuen Topologie sichtbar bleibt.
-- **Initialwert `LZG_EMBEDDING_SCHWELLWERT = 0.85` validieren.** Im Live-Betrieb beobachten, wie häufig die Embedding-Schicht greift. Greift sie zu selten, Schwellwert auf 0.80 oder 0.75 absenken.
+- **Initialwert `LZG_EMBEDDING_SCHWELLWERT = 0.85` validieren.** Im Live-Betrieb beobachten, wie häufig die Embedding-Schicht greift. Greift sie zu selten, Schwellwert auf 0.80 oder 0.75 absenken. → Der Code setzt `0.55`, seit dem 12.07.2026 kalibriert auf das Embedding-Modell `nomic-embed-text-v2-moe` (am Code geprüft am 22.10.2026, `server/config.py`); *Steht in* `_t` §6, Vermerk unter dem Block.
 
 ---
 
@@ -87,11 +89,11 @@ Gefunden, nicht aufgelöst. Auflösen heißt, gegen den Code oder den Meister pr
 |---|---|---|---|
 | **B1** | `_m`, *Bisheriger Kopf*, Feld **Stand** (Glied *„davor 2. August 2026“*) | Der Kopf sagt *„P1 bis P9 gebaut, P10 offen“*; `_b` §13 sagt *„Alle zehn Sprints sind gebaut“*, und `_b` §13.12 wie `_t` §8.5 führen P10 als gebaut am 02.08.2026 | `[gelesen 19.09.2026]` |
 | **B2** | Abschnitt F unten, bisherige Schlusszeile | Die Zeile nennt als Konzept-Stand eine Sitzung der Konzeptphase und beschreibt die Sprints als künftig; der Kopf trägt den Stand 18.09.2026, `_b` §13 den abgeschlossenen Bau | `[gelesen 19.09.2026]` |
-| **B3** | `_t` §6 | `LZG_KNOTEN_REINFORCEMENT_BOOST = 0.5`; `_t` §4.1 (*Was die Skala … bedeutet*) nennt `= 0.1` je Verstärkung, ebenso die Festlegungen zu P4, K10 (Abschnitt G unten) und Notiz §4 (`_b` §13.6) | `[gelesen 19.09.2026]` |
-| **B4** | `_t` §6, `_t` §7.5 (Beispiel 2), Abschnitt D (§7.11) | `LZG_EMBEDDING_SCHWELLWERT = 0.85`; `novaberg-embedding-casing-blind_k.md` führt 0.85 als alten und **0.55** als neuen Wert (p99 = 0.568) | `[gelesen 19.09.2026]` |
-| **B5** | `_t` §7.7 (dazu §7.2 Schritt 4, §8.4.2 Feld `kzg_quell_key`; `_b` §13.6) | Der KZG-Eintrag werde nach der Promotion aus Redis gelöscht; `novaberg-embedding-casing-blind_k.md` (Nachtrag 04.09.2026) und `novaberg-kzg-salienz_k.md` (`PROMOTION-ENTFERNT-KZG-NICHT`) sagen, das geschieht nicht | `[gelesen 19.09.2026]` |
-| **B6** | `_k` §3.1 | *„parallel zum bestehenden `langzeitgedaechtnis`“*; die Tabelle ist gelöscht (`_b` §11, Kasten am Kopf; `_b` §13, P9) | `[gelesen 19.09.2026]` |
-| **B7** | `_t` §7.8 | Der erste LLM-Call (Klassifikation) *„bleibt grundsätzlich erhalten“*; K1 der Festlegungen zu P4 (Abschnitt G unten) legt *„Keine LLM-Reifeprüfung im neuen Pixie-Agent“* fest, K3 lässt Call 1 und Call 2 in P4 entfallen | `[gelesen 19.09.2026]` |
+| **B3** | `_t` §6 | `LZG_KNOTEN_REINFORCEMENT_BOOST = 0.5`; `_t` §4.1 (*Was die Skala … bedeutet*) nennt `= 0.1` je Verstärkung, ebenso die Festlegungen zu P4, K10 (Abschnitt G unten) und Notiz §4 (`_b` §13.6) | `[gelesen 19.09.2026]` · → am Code aufgelöst am 22.10.2026: `0.1`; *Steht in* `_t` §6, Vermerk unter dem Block |
+| **B4** | `_t` §6, `_t` §7.5 (Beispiel 2), Abschnitt D (§7.11) | `LZG_EMBEDDING_SCHWELLWERT = 0.85`; `novaberg-embedding-casing-blind_k.md` führt 0.85 als alten und **0.55** als neuen Wert (p99 = 0.568) | `[gelesen 19.09.2026]` · → am Code aufgelöst am 22.10.2026: `0.55`; *Steht in* `_t` §6 und §7.5 (Beispiel 2 neu gerechnet), Abschnitt D |
+| **B5** | `_t` §7.7 (dazu §7.2 Schritt 4, §8.4.2 Feld `kzg_quell_key`; `_b` §13.6) | Der KZG-Eintrag werde nach der Promotion aus Redis gelöscht; `novaberg-embedding-casing-blind_k.md` (Nachtrag 04.09.2026) und `novaberg-kzg-salienz_k.md` (`PROMOTION-ENTFERNT-KZG-NICHT`) sagen, das geschieht nicht | `[gelesen 19.09.2026]` · → am Code geprüft am 22.10.2026: das Löschen ist nicht gebaut; das Soll bleibt, der Defekt ist `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`; *Steht in* `_t` §7.2, §7.7, §8.4.2 |
+| **B6** | `_k` §3.1 | *„parallel zum bestehenden `langzeitgedaechtnis`“*; die Tabelle ist gelöscht (`_b` §11, Kasten am Kopf; `_b` §13, P9) | `[gelesen 19.09.2026]` · → am Code aufgelöst am 22.10.2026, mit den übrigen veralteten Orten der Liste; *Steht in* `_k` §3.1 |
+| **B7** | `_t` §7.8 | Der erste LLM-Call (Klassifikation) *„bleibt grundsätzlich erhalten“*; K1 der Festlegungen zu P4 (Abschnitt G unten) legt *„Keine LLM-Reifeprüfung im neuen Pixie-Agent“* fest, K3 lässt Call 1 und Call 2 in P4 entfallen | `[gelesen 19.09.2026]` · → am Code aufgelöst am 22.10.2026: kein LLM-Call; *Steht in* `_t` §7.8 |
 | **B8** | `_k` §15 | `novaberg-pixie-promotion.md` und `novaberg-mem-lzg.md` *„wird durch den Umbau abgelöst“*, `novaberg-kzg-liberalisierung_k.md` als *„heutige Cluster-Promotion“*; der Umbau ist abgeschlossen und die Cluster-Promotion entfernt (`_b` §13, P9) | `[gelesen 19.09.2026]` |
 | **B9** | `_t` §10.5, *Wachstums-Schätzung* | *„der GIN-Index auf `inhalt` ist die größte Einzelposition“*; `_t` §10.1 (Absatz *Nachgezogen am 04.09.2026*) sagt, dieser Index ist nicht gebaut | `[gelesen 19.09.2026]` |
 | **B10** | `_k` §1 | *„Novas Langzeitgedächtnis ist heute eine Aggregat-Schicht …“* im Präsens; der Umbau ist seit dem 02.08.2026 abgeschlossen (`_b` §13) — die Vision liest sich, als gelte der alte Zustand | `[gelesen 19.09.2026]` |
@@ -285,6 +287,8 @@ Chronik-Konzept.
 `[gemessen am Code 19.09.2026]` **abweichend.** Einen Magnet-Vorfilter gibt es nicht: Geladen wird die ganze Partition des Paars, der Docstring begründet das als spätere Optimierung. Die Schwelle ist `0.82`, nicht `0.85` (Notiz §4 in [`novaberg-memory-synapsen_b.md`](novaberg-memory-synapsen_b.md) §13.6). Dazu kommt ein dritter Pfad, die Halbreaktivierung deaktivierter Knoten (`_t` §9.3). Reinforcement, Trigger 2 und Anlage stehen wie festgelegt. Fundstelle: `server/memory/lzg_knoten.py` `kandidaten_mit_cosine_laden` (Docstring *„Hinweis: K10 …“*), `match_pruefen`, `knoten_verstaerken`, `reactivate_node`; `server/memory/lzg_kanten.py` `kanten_neuberechnen_fuer_knoten`, `kanten_fuer_neuen_knoten_bilden`.
 
 `[entschieden 19.09.2026]` Der Code gilt, die Festlegung ist überholt — für den Vorfilter, die Schwelle und die Halbreaktivierung. Der Meister: *„Code gilt“*.
+
+→ *Steht in* `_t` §7.1a, §7.9.2 und §9.3 (Vermerke vom 22.10.2026, am Code geprüft): Die Verstärkung beim Treffer, die K10 vorsieht und der Code ausführt, widerspricht der Regel §7.1a — offen, nicht entschieden. Trigger 2 läuft nur in diesem Pfad, nicht nach einer Verstärkung über die Verwendung (`LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`). Der halbe Wert der Halbreaktivierung hält nur bis zum nächsten Tageslauf (`LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG`).
 
 ### Abschlussstand
 

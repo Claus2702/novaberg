@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 980 Abschnitte in 7 Dateien — 468 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 981 Abschnitte in 7 Dateien — 469 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 62 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 63 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 980 Marken, 980 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 981 Marken, 981 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-22 | laufend | ## | [22.10.2026, 22:47 UTC — Die Doku des Gedächtnisses ist gegen den Code geprüft und berichtigt, und fünf Defekte im Code haben eine Kennung](novaberg-roadmap.md#22102026-2247-utc--die-doku-des-gedächtnisses-ist-gegen-den-code-geprüft-und-berichtigt-und-fünf-defekte-im-code-haben-eine-kennung) |
 | 2026-10-22 | laufend | ## | [22.10.2026, 20:29 UTC — Die Fakten einer gebundenen Person stehen im Angebot der Sachlage, und der Erinnerungsanker holt sie vor dem Router in den Kontext](novaberg-roadmap.md#22102026-2029-utc--die-fakten-einer-gebundenen-person-stehen-im-angebot-der-sachlage-und-der-erinnerungsanker-holt-sie-vor-dem-router-in-den-kontext) |
 | 2026-10-22 | laufend | ## | [22.10.2026, 06:12 UTC — Das Jahr eines Ereignisses kommt aus der Zeitlage des Satzes: angekündigt das nächste, berichtet das letzte](novaberg-roadmap.md#22102026-0612-utc--das-jahr-eines-ereignisses-kommt-aus-der-zeitlage-des-satzes-angekündigt-das-nächste-berichtet-das-letzte) |
 | 2026-10-22 | laufend | ## | [22.10.2026, 06:06 UTC — Das Ereignis einer anderen Person steht gekennzeichnet unter den Terminen, ein Monat gilt bis zu seinem Ende, und eine genaue Angabe verschiebt es](novaberg-roadmap.md#22102026-0606-utc--das-ereignis-einer-anderen-person-steht-gekennzeichnet-unter-den-terminen-ein-monat-gilt-bis-zu-seinem-ende-und-eine-genaue-angabe-verschiebt-es) |

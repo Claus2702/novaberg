@@ -1,9 +1,51 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → 15 Eintraege (21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → 17 Eintraege (22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 22.10.2026 — am Code geprüft: die Doku der Synapsen gegen den Code
+
+Zwei Kennungen aus dem Abgleich von `novaberg-memory-synapsen_{k,t,b,e}.md` mit dem Code, am Code geprüft am 22.10.2026; beide am Code gelesen, nicht gelaufen. Das Soll steht in `novaberg-memory-synapsen_t.md` unverändert, mit einem Vermerk, der die Kennung nennt (§9.3, §7.9.2).
+
+### `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` — der halbe Wert eines geweckten Knotens hält nur bis zum nächsten Tageslauf
+**Kategorie:** GED
+
+**Rang:** **mittel** — still: Ein geweckter Knoten steht nach dem nächsten Verfallslauf fast wieder bei seinem vollen Anker und rückt im Lesepfad nach vorn, gegen die Absicht von §9.3; geschrieben wird dabei nur `gewicht_decay`, der Anker `gewicht_absolut` bleibt unberührt. Wie oft halbreaktiviert wird, ist nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+
+**Zustand:** offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`.
+
+**Befund** `[Code]`: `server/memory/lzg_knoten.py::reactivate_node` setzt `gewicht_decay = (gewicht_absolut + LZG_KNOTEN_MIN_GEWICHT) / 2` und dabei `verstaerkt_am = NOW()` (Z. 639–647 am `7c16bf5`). Der nächste Tageslauf `run_node_decay` (gerufen von `server/agents/synapsen_decay/agent.py`, Z. 394) rechnet für jeden aktiven Knoten `gewicht_decay = gewicht_absolut · e^(−LZG_KNOTEN_DECAY_RATE · Tage seit verstaerkt_am)` neu (Z. 733–737), mit `LZG_KNOTEN_DECAY_RATE` = 0,0015 (`server/config.py`). Der Halbwert geht in diese Rechnung nicht ein — der Lauf rechnet vom Anker. Das Soll steht in `novaberg-memory-synapsen_t.md` §9.3: Der Knoten *„braucht Zeit und weitere Anstöße, um wieder voll präsent zu werden“*; der Docstring von `reactivate_node` sagt dasselbe.
+
+**Wirkung.** Im Beispiel von §9.3 (`gewicht_absolut` 4,0) springt `gewicht_decay` auf 2,05 und steht einen Tag später bei 4,0 · e^(−0,0015) ≈ 3,99, also bei 99,85 % des Ankers. Der Schutz vor *„falschen Reaktivierungs-Spitzen“* hält bis zum nächsten Lauf; danach sortiert der Lesepfad den geweckten Knoten so, als wäre er nie verfallen.
+
+**Vorhergesagter Zeuge** (nicht gelaufen): Ein deaktivierter Knoten mit `gewicht_absolut` 4,0 wird halbreaktiviert, danach läuft `run_node_decay`; am HEAD steht `gewicht_decay` bei ≈ 4,0, nicht beim Halbwert 2,05 oder darunter. Zwilling: Ein nie deaktivierter Knoten mit demselben Anker und demselben `verstaerkt_am` verfällt nach der Formel.
+
+**Geschlossen, wenn** ein halbreaktivierter Knoten nach dem nächsten Verfallslauf nicht über seinem Halbwert steht und erst weitere echte Aktivierungen ihn seinem Anker nähern — bezeugt mit dem Zeugen oben und seinem Zwilling. Ob der Lauf vom Halbwert weiterrechnet oder die Erholung anders gespeichert wird, entscheidet der Bau.
+
+**Zusammenhang:** [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §9.3; *Halbreaktivierung* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
+
+---
+
+### `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` — nach einer Verstärkung über die Verwendung werden die Kanten des Knotens nicht neu berechnet
+**Kategorie:** GED
+
+**Rang:** **niedrig** — still, aber klein: Die Kanten eines verstärkten Knotens bleiben auf dem Anker vor der Verstärkung (je Verstärkung `LZG_KNOTEN_REINFORCEMENT_BOOST` = 0,1 auf `gewicht_roh`, danach gedämpft); im Lesepfad wählt die Kantenstärke nur die Nachbarn je Schale aus und geht nicht in die Rangfolge ein. Der Verstärkungspfad der Promotion rechnet die Kanten desselben Knotens beim nächsten Treffer nach. Nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+
+**Zustand:** offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`.
+
+**Befund** `[Code]`: Der Dispatcher ruft `server/memory/usage_reinforcement.py::reinforce_used` (`server/graph/nodes/dispatcher.py`, Z. 458); für jede verwendete Erinnerung ruft es `lzg_knoten.knoten_verstaerken` (Z. 239), das `gewicht_roh`, `gewicht_absolut` und `gewicht_decay` neu schreibt (`server/memory/lzg_knoten.py`, Z. 548–589 am `7c16bf5`). Eine Neuberechnung der Kanten folgt nicht; in `usage_reinforcement.py` steht kein Aufruf in `lzg_kanten`. `kanten_neuberechnen_fuer_knoten` (`server/memory/lzg_kanten.py`, Z. 352) rufen außerhalb der Tests nur der Verstärkungspfad der Promotion (`server/agents/synapsen_promotion/agent.py`, Z. 541) und der Wartungslauf `embedding_cosine_alle_aktualisieren` (`lzg_kanten.py`, Z. 483). Das Soll steht in `novaberg-memory-synapsen_t.md` §7.9.2, Trigger 2: Ändert sich `gewicht_absolut` eines Endknotens, werden alle seine Kanten neu berechnet; der Docstring von `knoten_verstaerken` nennt sein Ergebnis *„Eingabe fuer Trigger 2“*.
+
+**Wirkung.** Die Kantenstärke folgt der Sinus-Geometrie beider Knotenstärken (`gewicht_absolut`); nach einer Verstärkung über die Verwendung trägt jede Kante des Knotens noch die Stärke von davor. Seit dem 04.09.2026 ist die Verwendung der Weg, auf dem §7.1a verstärkt — also gerade die Verstärkung, die die Kanten nachziehen sollte. Ein Nachbar, dessen Kante mitgewachsen wäre, kann im Spreading fehlen.
+
+**Vorhergesagter Zeuge** (nicht gelaufen): `reinforce_used` mit einer Antwort, die eine Erinnerung verwendet; am HEAD sind die Kanten ihres Knotens danach unverändert, obwohl sein `gewicht_absolut` gestiegen ist. Zwilling: Derselbe Knoten, verstärkt über den Verstärkungspfad der Promotion, trägt danach neu berechnete Kanten.
+
+**Geschlossen, wenn** nach jeder Verstärkung über die Verwendung die Kanten des verstärkten Knotens auf seinem neuen `gewicht_absolut` stehen — bezeugt mit dem Zeugen oben und seinem Zwilling.
+
+**Zusammenhang:** [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.1a, §7.9.2; *Synapsen-Modell* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
 
 ---
 
@@ -72,7 +114,7 @@ Ein Knoten steht bei `haeufigkeit` 92 aus **einem einzigen** Turn; sein `gewicht
 ### `KZG-THEMA-VERSTAERKT-NACHBARN` — ein geteiltes Thema genuegt
 **Kategorie:** GED
 
-**Rang:** **hoch** — still, verfälscht den Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Wegen, `_thematisch_verstaerken` (`server/agents/kzg/speicher.py:152-264`) und der ältere in `server/memory/kzg.py:486-560`; gebaut ist nur die LZG-Seite von §7.1a.
+**Rang:** **hoch** — still, verfälscht den Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Wegen, `_thematisch_verstaerken` (`server/agents/kzg/speicher.py:152-264`) und der ältere in `server/memory/kzg.py:486-560`; ~~gebaut ist nur die LZG-Seite von §7.1a.~~ → Von der LZG-Seite von §7.1a ist nur der Weg der Verwendung gebaut (`server/memory/usage_reinforcement.py`, seit dem 04.09.2026); der Embedding-Treffer der Promotion verstärkt weiter (`server/agents/synapsen_promotion/agent.py`, Verstärkungspfad) — offen, §7.1a gegen K10 (`novaberg-memory-synapsen_e.md` B; am Code geprüft am 22.10.2026).
 
 **Zustand:** offen — am Bestand gemessen am 04.09.2026.
 

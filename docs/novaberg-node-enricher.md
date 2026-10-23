@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 15. Oktober 2026, 21:35 UTC (`date -u`; die Termine liest der Turn seit heute hinter dem Router, der Hook des TimelineManagers liefert nur noch das proaktive Fenster und nicht mehr in den Gedächtnisblock des Verfassers — gebaut). Davor 15. Oktober 2026, 01:23 UTC (`date -u`; der Enricher verstärkt aktivierte mittelfristige Ziele und legt ihre Vektoren unter `ziel_vektoren` in den Zustand). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 14. September 2026, 19:52 UTC (die Kürzung der Verlaufsform für Perzeption und Router beziffert: 100 Zeichen je Beitrag). Davor 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
+**Stand:** 22. Oktober 2026, 22:26 UTC (`date -u`; gegen den Code berichtigt: ein Modellaufruf statt keiner, 24 Knoten im CharacterGraph mit dem Enricher als drittem, die Felder in §1 und §4, der Vor-Check mit drei Gliedern und das Embedding in jedem Lauf, acht Ausgänge der Verschiebung, Schwelle der Bibliothek 0.50, sechs Leser des Suchschlüssels, das Fakten-Plugin committet; ergänzt um 22:43 UTC (`date -u`): §3.2 der NotizenManager mit seinem proaktiven Zweig, §5 der `gv_node` nur im CharacterGraph). Davor 21. Oktober 2026, 00:40 UTC (`date -u`; das Fakten-Plugin gelöscht). Davor 15. Oktober 2026, 21:35 UTC (`date -u`; die Termine liest der Turn seit heute hinter dem Router, der Hook des TimelineManagers liefert nur noch das proaktive Fenster und nicht mehr in den Gedächtnisblock des Verfassers — gebaut). Davor 15. Oktober 2026, 01:23 UTC (`date -u`; der Enricher verstärkt aktivierte mittelfristige Ziele und legt ihre Vektoren unter `ziel_vektoren` in den Zustand). Davor 19. September 2026, 21:27 UTC (Verweise auf das geteilte Bugregister umgestellt). Davor 14. September 2026, 19:52 UTC (die Kürzung der Verlaufsform für Perzeption und Router beziffert: 100 Zeichen je Beitrag). Davor 9. September 2026, 18:45 UTC (**der erzeugte `gravitationsterm` ist normiert** — der Knoten gibt ihn seither in [0, 1] weiter statt als unbeschraenkte Summe). Davor 4. September 2026 (**die Protokollzeile nennt die gelesenen Erinnerungen mit Kennung** — `lzg_resonanz_ids` neben `lzg_resonanz_count`. Bis dahin stand in 1296 Zeilen, *wie viele* gelesen wurden, und in keiner, *welche*; damit war die Verwendungsschwelle aus `novaberg-memory-synapsen_k.md` §7.1a an echten Turns nicht kalibrierbar. `tests/test_resonanz_protokoll.py`, 5 Zeugen). Davor 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -13,7 +13,7 @@
 
 Der Enricher ist Novas Gedächtnis-Schnittstelle — seit Chat 59 ein **reiner I/O-Node**. Er lädt den Memory-Kontext — Session, KZG, LZG, Plugin-Daten — und stellt ihn dem Graph zur Verfügung. Die emotionale Intelligenz wird **nicht mehr** hier berechnet, sondern im nachgelagerten EI-Calc-Node. Charakter-/Identitäts-Daten lädt seit Phase 2 (Chat 89) der `db_zugriff`-Node am CG-Eingang.
 
-**Kein LLM-Call.** Der Enricher macht ausschließlich Datenzugriffe und Embedding-Erzeugung.
+~~**Kein LLM-Call.** Der Enricher macht ausschließlich Datenzugriffe und Embedding-Erzeugung.~~ → **Ein Modellaufruf (Query Rewriting, seit 20.08.2026), sonst Datenzugriff und Embedding.** Der Aufruf formt aus dem Verlauf den Suchschlüssel (`_suchtext_bauen`, Prompt `query_rewrite.task`), nur im CharacterGraph und nur, wenn KZG, LZG oder Bibliothek Bestand haben (§3.3). Berichtigt am 22.10.2026, am Code geprüft: `graph/nodes/enricher.py`, Modulkopf und `_suchtext_bauen`; Abschnitt *Query Rewriting* unten.
 
 **Keine EI-Berechnung mehr.** Alle 12 EI-Funktionen (Verlauf, Vektor, Modus-/Stil-Plausibilität, Nova-Empathie) sind in `ei/berechnung.py` ausgelagert und werden vom neuen EI-Calc-Node aufgerufen.
 
@@ -33,9 +33,20 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
           → perzeption_assistant → ei_calc_persist → salience → dispatcher
 ```
 
+> **Berichtigt am 22.10.2026 — der CharacterGraph oben ist ein älterer Stand (*„17 Nodes“*).** Am Code geprüft am 22.10.2026 (`graph/character_graph.py::build`; `graph.add_node(` gezählt und über die Knotenfunktionen `self._node_…` gegengezählt): **24 Knoten** — 23 ohne ihn, dazu der `erinnerungsanker` (gebaut am 22.10.2026, committet, Code-Tree `04f823e`). Die Kette heute:
+>
+> ```
+> db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reducer → sachlage_node
+>           → erinnerungsanker → router → planner ⇄ agent_dispatch → gv_node → haltungsraum
+>           → [verfasser] → responder → thinker → tribunal → evaluate (⇄ corrector → tribunal)
+>           → perzeption_assistant → ei_calc_persist → salience → praegung → aufgriff → dispatcher
+> ```
+>
+> Router und Planner können direkt zum `gv_node` gehen; der `verfasser` entfällt beim Kontext-Schnitt.
+
 **HumanGraph:** Zweiter Node, nach Perzeption (unverändert seit Phase 4).
 
-**CharacterGraph:** Vierter Node, nach `db_zugriff → ei_calc`. Der Enricher liest aus `state["external"].character` (vom `db_zugriff` befüllt) und aus `state["internal"].emotion` (vom `ei_calc` aktualisiert mit Empathie-Modulation).
+**CharacterGraph:** ~~Vierter~~ → Dritter Node (berichtigt am 22.10.2026), nach `db_zugriff → ei_calc`. Der Enricher liest aus `state["external"].character` (vom `db_zugriff` befüllt) und aus `state["internal"].emotion` (vom `ei_calc` aktualisiert mit Empathie-Modulation).
 
 **Reihenfolge-Logik (Phase 2):** EI-Calc läuft im CG **vor** dem Enricher, weil das Empathie-Update gegen Novas persistierten Vorzustand berechnet wird, bevor Memory-Resonanz hinzukommt.
 
@@ -43,11 +54,13 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 **Output:**
 
-**HumanGraph (`_enrich_human`, 5 produktive Felder):**
-`raw_turns`, `user_intentionen`, `prompt_embedding`, `aktivierte_ziele`, `gravitationsterm`
+**HumanGraph (`_enrich_human`, ~~5~~ → 7 produktive Felder):**
+`raw_turns`, `user_intentionen`, `prompt_embedding`, `aktivierte_ziele`, `ziel_vektoren`, `gravitationsterm`, `zielsog_roh`
 
-**CharacterGraph (`_enrich_character`, 8 produktive Felder):**
-`raw_turns`, `session_turns` (**ungefiltert**, seit 24.08.2026), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `gravitationsterm`, `emotionale_gravitationspunkte`, `memory_entries`, `lzg_resonanz`
+**CharacterGraph (`_enrich_character`, ~~8~~ → 15 produktive Felder):**
+`raw_turns`, `session_turns` (**ungefiltert**, seit 24.08.2026), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `ziel_vektoren` + `gravitationsterm` + `zielsog_roh`, `suchtext`, `suchtext_herkunft`, `such_vektor`, `lzg_resonanz`, `aufzeichnungen`, `emotionale_gravitationspunkte`, `memory_entries`
+
+Berichtigt am 22.10.2026: Die Überschriften nannten 5 und 8 Felder; am Code geprüft (`graph/nodes/enricher.py`, jede Zuweisung `state["…"] =` je Schlüssel gezählt) schreibt der HG-Pfad 7 und der CG-Pfad 15. `suchtext`, `suchtext_herkunft` und `such_vektor` stehen nur in einem Turn mit Gedächtnissuche im Zustand, `lzg_resonanz` nur, wenn das LZG des Paares Bestand hat.
 
 → Vollständige Tabelle: §4 Geschrieben.
 
@@ -56,7 +69,9 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 ## Query Rewriting — der Schlüssel trägt den Gegenstand des Gesprächs
 
-**Seit dem 20.08.2026 ist der eingebettete Text nicht mehr die rohe Äußerung.** Ein Turn wie *„und wie weist man das nach?"* nennt seinen Gegenstand nicht, er zeigt auf ihn zurück — und der Vektor daraus suchte ohne ihn — in **fünf** Konsumenten zugleich, weil sie denselben Schlüssel benutzen: KZG, LZG, die Bibliothek über den `WissenManager`, der Dateienindex (`aufzeichnungen`) und die beiden NMCP-Dienste `wissen` und `dateien`, denen `such_vektor` als angemeldeter Bedarf mitwandert.
+**Seit dem 20.08.2026 ist der eingebettete Text nicht mehr die rohe Äußerung.** Ein Turn wie *„und wie weist man das nach?"* nennt seinen Gegenstand nicht, er zeigt auf ihn zurück — und der Vektor daraus suchte ohne ihn — in ~~**fünf**~~ → **sechs** Konsumenten zugleich, weil sie denselben Schlüssel benutzen: KZG, LZG, die Bibliothek über den `WissenManager`, der Dateienindex (`aufzeichnungen`) und die beiden NMCP-Dienste `wissen` und `dateien`, denen `such_vektor` als angemeldeter Bedarf mitwandert.
+
+> **Berichtigt am 22.10.2026 — sechs Leser, fünf Lesewege.** Die Aufzählung nennt sechs Leser, und der Code hat sechs (am Code geprüft am 22.10.2026: `such_vektor` lesen `graph/nodes/enricher.py` für KZG und LZG, `plugins/wissen_manager/manager.py`, `agents/dateien_index/aufzeichnungen.py`, `agents/wissen/` und `agents/dateien/`). Die Bibliothek und der NMCP-Dienst `wissen` teilen eine Abfrage (`AutonomousWissenRepository.suchen`); die Zahl *fünf* in diesem Abschnitt passt zu den Lesewegen, nicht zu den Lesern.
 
 **Die Zahl fünf stammt aus der zweiten Kontrolle, nicht aus dem Bau:** Der Befund, der den Umbau ausgelöst hat, nannte drei Speicher. Ein Suchlauf über die Leser des Schlüssels fand zwei weitere.
 
@@ -66,7 +81,7 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 | Konsument | Lesepfad | n | roh | Rewrite | Referenz |
 |---|---|---|---|---|---|
-| KZG | Redis-KNN, Schwelle 0,40, top_k 10 | 10 | **0** | **10** | 10 |
+| KZG | Redis-KNN, Schwelle 0,40 (bei der Messung; seit dem 21.08.2026 0,72, `KZG_RETRIEVAL_SCHWELLE`), top_k 10 | 10 | **0** | **10** | 10 |
 | LZG | Anker-Retrieval, Schwelle 0,40, 3 Anker | 9 | **0** | **7** | 7 |
 | Dateienindex (`aufzeichnungen`) | Boden 0,30, Kappung 3 | 10 | **0** | **10** | 10 |
 | NMCP `dateien` | keine Schwelle, Kappung 8 | 10 | **0** | **10** | 10 |
@@ -193,9 +208,9 @@ Der Enricher iteriert über alle registrierten Manager-Plugins und ruft den Hook
 
 | Manager | Liefert |
 |---------|---------|
-| ~~FaktenManager~~ | ~~**Deaktiviert seit Chat 71** (`enricher.py:416-419`) — Hook wird übersprungen~~ → **Plugin am 21.10.2026 gelöscht** (nicht committet); der Sonderfall `fakten` im Enricher ist entfernt, die Schleife ruft jeden registrierten Manager. Fakten liest die Mappe (`memory/fakten_mappe.py::load_mappe`), kein Enricher-Hook |
+| ~~FaktenManager~~ | ~~**Deaktiviert seit Chat 71** (`enricher.py:416-419`) — Hook wird übersprungen~~ → **Plugin am 21.10.2026 gelöscht** (~~nicht committet~~ → committet am 21.10.2026, am Code geprüft am 22.10.2026: `server/plugins/fakten_manager/` fehlt); der Sonderfall `fakten` im Enricher ist entfernt, die Schleife ruft jeden registrierten Manager. Fakten liest die Mappe (`memory/fakten_mappe.py::load_mappe`), kein Enricher-Hook |
 | TimelineManager | ~~Anstehende Termine, heutige Ereignisse~~ → **seit 15.10.2026:** das proaktive Fenster (drei Tage zurück, vierzehn voraus) über `memory/timeline_reading.py::read_appointments`, ohne Erinnerungs-Anker, je Termin mit Wochentag und Bezug zu heute. Die Einträge (`plugin_timeline`) lesen Thinker, Tribunal und Korrektor; im `[GEDAECHTNIS]` des Verfassers fehlen sie (`graph/format/memory_context.py::entries_for_reader`) — er bekommt die Termine in `[TERMINE]` |
-| NotizenManager | Betroffene Notiz bei Management-Intent |
+| NotizenManager | ~~Betroffene Notiz bei Management-Intent~~ → zwei Zweige (`plugins/notizen_manager/manager.py::enrich_entries`, am Code geprüft am 22.10.2026): **gezielt** bei Intent `notizen_management` mit Ziel die betroffene Notiz (Stichwort, dann Volltext); **sonst proaktiv** alle aktiven Notizen des Nutzers, je Notiz ein Eintrag mit Name, Kurzfassung und Themen |
 | **WissenManager** | **Novas erarbeitete Bibliothek** (seit 04.08.2026) — Metadaten-Treffer über Embedding-Nähe |
 | KzgManager | (kein enrich-Hook, KZG wird direkt geladen) |
 
@@ -217,7 +232,7 @@ Der `WissenManager` findet Novas erarbeitete Dateien **über die Datenbank, nich
 
 | Größe | Wert | Herkunft |
 |---|---|---|
-| Schwelle | 0.40 | **übernommen von `anker_retrieval`, nicht gemessen** — dort an 100 echten Prompts kalibriert. Gleicher Embedding-Raum, gleiche Art Anfrage; als Startwert vertretbar, als Ergebnis nicht. **Seit dem 17.08.2026 gemessen: sie greift nicht** — siehe unten |
+| Schwelle | ~~0.40~~ → **0.50 seit dem 19.08.2026** (`WISSEN_RETRIEVAL_SCHWELLE`, gemessen Frage gegen Bestand: der höchste Wert, bei dem keine richtige Antwort verloren geht; berichtigt am 22.10.2026). 0.40 war der Startwert, die folgende Herkunft gilt für ihn | **übernommen von `anker_retrieval`, nicht gemessen** — dort an 100 echten Prompts kalibriert. Gleicher Embedding-Raum, gleiche Art Anfrage; als Startwert vertretbar, als Ergebnis nicht. **Seit dem 17.08.2026 gemessen: sie greift nicht** — siehe unten |
 | Top-K | 3 | Der Gesprächspfad hat 32768 Token, nicht die 262144 des Hintergrunds. **Faktisch ist dies die Auswahl, nicht die Kappung** |
 
 > **Gemessen am 17.08.2026 — was hier auswählt, ist Top-K und nicht die Schwelle.** Über 42 protokollierte Aufrufe kamen **40 mal genau drei** Treffer zurück, also die Obergrenze; der Kosinus des dritten Treffers liegt bei Median **0,588** (min 0,404, max 0,691). Über den Korpus gerechnet — 217 aktive Einträge, 23.436 Paare, Median-Kosinus 0,369 — liegen **35,6 % aller Paare über 0,40**, für eine Abfrage also rund 77 von 217 Einträgen. Erst **0,55** ergibt gerechnet die drei Treffer, die tatsächlich ankommen. **Die wirksame Schwelle ist damit 0,55, und sie steht in keiner Konfiguration.**
@@ -232,11 +247,14 @@ Der `WissenManager` findet Novas erarbeitete Dateien **über die Datenbank, nich
 
 Nur wenn Einträge existieren (Vor-Check zur Kostenoptimierung):
 
-1. Prüfe ob KZG-Keys (`kzg:{user_id}:*`) in Redis existieren
-2. Prüfe ob aktive LZG-Einträge in PostgreSQL existieren
-3. Nur bei Existenz: Embedding für `user_prompt` erzeugen → semantische Suche in KZG und LZG
+1. Prüfe ob KZG-Keys (~~`kzg:{user_id}:*`~~ → `kzg:{user_id}:{character_id}:*`) in Redis existieren
+2. Prüfe ob aktive LZG-Einträge (`lzg_knoten`) in PostgreSQL existieren
+3. ~~Nur bei Existenz: Embedding für `user_prompt` erzeugen → semantische Suche in KZG und LZG~~ → Prüfe ob die Bibliothek des Paares Bestand hat (`autonomous_wissen`, Beobachter der Bibliothek, `aktiv`)
+4. → Nur wenn einer der drei Bestand hat: Query Rewriting, Verschiebung und semantische Suche in KZG und LZG
 
-> **Designentscheidung (Chat 3):** Der Vor-Check vermeidet teure Embedding-Berechnungen bei leeren Speichern. Ohne Gedächtnis: ~0ms. Mit Gedächtnis: ~1.6s (Embedding) + Suche.
+**Das Prompt-Embedding entsteht in jedem CG-Lauf**, vor dem Vor-Check und unabhängig von ihm — die Ziel-Aktivierung braucht es am rohen Reiz (berichtigt am 22.10.2026; am Code geprüft: `graph/nodes/enricher.py::_enrich_character`, `kzg_keys`, `has_lzg`, `has_wissen`, `_create_prompt_embedding`).
+
+> **Designentscheidung (Chat 3):** ~~Der Vor-Check vermeidet teure Embedding-Berechnungen bei leeren Speichern. Ohne Gedächtnis: ~0ms.~~ → Der Vor-Check spart heute nicht mehr das Embedding, sondern Rewriting, Verschiebung und Suche (berichtigt am 22.10.2026). Mit Gedächtnis: ~1.6s (Embedding) + Suche.
 
 **LZG-Lesepfad (Synapsen-Konzept §8.1–8.4, live seit P5 / Chat 100):** Kein flacher LZG-Read mehr. Der Enricher ruft `spreading_lesen` auf (Anker-Knoten via `anker_retrieval`, dann Spreading Activation entlang der Kanten; Cluster aus dem Redis-Vorturn, Novas dominante Emotion aus `nova_emotions_verlauf`) und schreibt das Ergebnis als `state["lzg_resonanz"]` — bewusst an `memory_entries` vorbei. Der Reducer reicht das Objekt unangetastet an den Formatter durch, der den `[GEDAECHTNIS]`-Block rendert; die Erinnerungen durchlaufen damit keinen Dedup (REDUCER-SIEHT-LZG-NICHT, novaberg-bugs-antwortpfad.md).
 
@@ -260,7 +278,7 @@ e_nova = e_anfrage × (1 − faktor) + Σ(e_ziel × aktivierungs_staerke) × fak
 
 **Der Imperativ-Override gilt damit für beide Schichten.** Bei der Intention `anweisung` sucht auch das Kurzzeitgedächtnis roh — sonst legte Nova zwar keinen Bratwurst-Termin aus dem Langzeitgedächtnis an, wohl aber aus dem Kurzzeitgedächtnis.
 
-**Sieben Ausgänge, jeder benannt.** Das Feld `herkunft` im Pipeline-Log (`quelle="wahrnehmungs_gravitation"`) trennt sie: `verschoben`, `anweisung` (Imperativ-Override), `keine_ziele`, `kein_ziel_embedding`, `cluster_unbekannt`, `dimension_ungleich`, `verworfen_ausser_spanne` — dazu **`keine_gedaechtnis_suche`** für den Durchlauf ohne jede Suche. Jeder Ausgang außer dem ersten sucht mit dem rohen Embedding weiter; ein Durchlauf ohne Eintrag gibt es nicht.
+**~~Sieben~~ → Acht Ausgänge, jeder benannt** (berichtigt am 22.10.2026; am Code geprüft: `ei/gravitation.py::wahrnehmung_verschieben`). Das Feld `herkunft` im Pipeline-Log (`quelle="wahrnehmungs_gravitation"`) trennt sie: `verschoben`, `kein_anfrage_embedding`, `anweisung` (Imperativ-Override), `keine_ziele`, `kein_ziel_embedding`, `cluster_unbekannt`, `dimension_ungleich`, `verworfen_ausser_spanne` — dazu **`keine_gedaechtnis_suche`** für den Durchlauf ohne jede Suche. Jeder Ausgang außer dem ersten sucht mit dem rohen Embedding weiter; ein Durchlauf ohne Eintrag gibt es nicht.
 
 > **Der Marker hieß bis zum 04.08.2026 `keine_lzg_suche`.** Umbenannt, weil seine Bedeutung mit dem Umfang gewandert ist: Solange nur das LZG den verschobenen Schlüssel bekam, war „keine LZG-Suche" dasselbe wie „nichts zu verschieben". Denselben String weiterzuverwenden hieße, Einträge von vorher und nachher gleich aussehen zu lassen, obwohl sie Verschiedenes bedeuten. **Wer Log-Einträge über den 04.08. hinweg vergleicht, muss beide Schreibweisen kennen.**
 
@@ -307,6 +325,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `graph_rolle` | str | Quelle im `pipeline_log` *(seit Chat 110)*: `"human"`→`user`, `"character"`→`character`, `"agent"`→`agent`. Vorher aus `ei_calc_rolle` abgeleitet — der AgentGraph war dadurch vom CharacterGraph nicht zu trennen |
 | `turn_id` | str | Pipeline-Log-Korrelation (Chat 88 P1.1) |
 | `state["external"].character` | Character | Charakter-Hash-Formatierung für `memory_entries` (nur CG, im HG leer) |
+| `nova_emotions_verlauf` | list[dict] | Novas dominante Emotion des Turns (Eintrag `[0]`) für den Spreading-Lesepfad (§3.3), nur CG — nachgetragen am 22.10.2026, am Code geprüft (`graph/nodes/enricher.py::_enrich_character`) |
 
 ### Geschrieben
 
@@ -320,6 +339,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle. Feld je Ziel seit Chat 126 `aktivierungs_staerke` (vorher `gravitation`); das Ziel-Embedding bleibt **draußen** — es trägt die Verschiebung ~~und hat im State keinen Leser~~ → seit dem 15.10.2026 reist es unter eigenem Schlüssel (nächste Zeile); diese Liste bleibt vektorfrei, auch in ihrer Ablage in Redis |
 | `state["ziel_vektoren"]` | dict[int, list[float]] | n.a. | **Seit 15.10.2026.** Vektor je `ziel_id` der aktivierten Ziele, aus den schon geladenen Zielen gebaut (`_ziel_vektoren`, kein Datenbankzugriff). Leser: der Neugier-Boost der Wissenslücken je Kandidat (`ei/wissensluecken.py::_neugier_boosts`). Ein aktiviertes Ziel ohne Embedding fehlt hier und wird als Fehler gemeldet |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term, **normiert auf [0, 1]** seit dem 09.09.2026 |
+| `state["zielsog_roh"]` | float | n.a. | Die stärkste **ungetorte** Zielstärke des Turns (`similarity × motivation`, ohne Gravitationsschwelle); Zug der Salienz-Formel. Getrennt von `aktivierte_ziele`, damit eine Zahl nicht zwei Wirkungen hat — nachgetragen am 22.10.2026, am Code geprüft (`graph/state.py`, `graph/nodes/enricher.py::_enrich_human`) |
 
 **CharacterGraph (`_enrich_character`):**
 
@@ -332,6 +352,11 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle, Feld `aktivierungs_staerke` (siehe HG-Tabelle) |
 | `state["ziel_vektoren"]` | dict[int, list[float]] | n.a. | Wie HG, seit 15.10.2026 |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term, **normiert auf [0, 1]** seit dem 09.09.2026 |
+| `state["zielsog_roh"]` | float | n.a. | Wie HG — nachgetragen am 22.10.2026 |
+| `state["suchtext"]` | str | n.a. | Der eingebettete Text des Suchschlüssels: seit dem 20.08.2026 das Ergebnis des Query Rewritings, sonst die rohe Äußerung. Nur in einem Turn mit Gedächtnissuche — nachgetragen am 22.10.2026 |
+| `state["suchtext_herkunft"]` | str | n.a. | `rewrite` oder der benannte Rückfall (Abschnitt *Query Rewriting*) — nachgetragen am 22.10.2026 |
+| `state["such_vektor"]` | list[float] | n.a. | Der Suchschlüssel nach der Wahrnehmungs-Gravitation (§3.3a); KZG, LZG, Bibliothek und Dateienindex suchen damit, die NMCP-Dienste `wissen` und `dateien` bekommen ihn als Bedarf. Nur in einem Turn mit Gedächtnissuche — nachgetragen am 22.10.2026 |
+| `state["aufzeichnungen"]` | list | n.a. | Treffer des Dateienindex (§3.1a), eigener Kanal neben `memory_entries`; leer, wenn nichts gefunden wird oder die Quelle ausfällt — nachgetragen am 22.10.2026, am Code geprüft (`graph/nodes/enricher.py::_enrich_character`, `graph/state.py`) |
 | `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | Scan ueber **KZG und LZG** auf Eintraege mit Emotion (`ei/gravitation.py`). ~~hoch-arousal~~ — **einen Arousal-Filter gibt es nicht:** §5.7 des Konzepts verlangt „Emotion ≠ neutral und Arousal ueber Schwelle", der Code liest `arousal`, fuehrt es mit und loggt es, vergleicht es aber nie. Offener Punkt, kein Defekt (Backlog-Epic). Verbraucher: Node `emotionale_gravitation` |
 | `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
 | `state["lzg_resonanz"]` | dict | n.a. | Spreading-Lesepfad (§3.3): Kontext-Rahmen (Anker-Anzahl, Sprung-Tiefe, Cluster, Nova-Sektor) + Erinnerungen mit Pfad; Transport zum Formatter via Reducer-Durchreiche |
@@ -346,13 +371,13 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 
 > **Entdeckt in Chat 8:** Edge Case „Alles scheiße!" nach positiver Phase → Vektor zeigte `stabilisierung` statt `absturz`. Ursache: Aktuelle Emotion war für die EI-Berechnung unsichtbar. Fix: Turn 0 aus Perzeption.
 
-**Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call). Das macht ihn schnell, reproduzierbar und testbar.
+~~**Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call). Das macht ihn schnell, reproduzierbar und testbar.~~ → **Ein Modellaufruf seit dem 20.08.2026:** das Query Rewriting (`_suchtext_bauen`), Frist 20 s, jeder Rückfall laut und mit der rohen Äußerung. Alles andere sind Datenbankabfragen und Embedding-Erzeugung (berichtigt am 22.10.2026; Abschnitt *Query Rewriting*).
 
 **Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt Session-Turns aus Redis, erzeugt Embeddings via Ollama-Embed-Modell, liest aktivierte Ziele aus Postgres (`ziele`-Tabelle). Punkt. → **Seit dem 15.10.2026 schreibt er an einer Stelle zurück:** Ein aktiviertes mittelfristiges Ziel beginnt seine Vergessenskurve neu, der Anker bleibt (`_ziele_verstaerken_und_melden` → `memory/ziele.py::ziele_bei_begegnung_verstaerken`). Der Ort ist der Enricher, weil nur er die geladenen Zeilen samt Anker hält; der Dispatcher sieht nur die vektor- und ankerfreien Dicts. Ein gescheiterter Schreibvorgang wird mit Spur geloggt und reißt den Turn nicht; je Turn mit Verstärkung ein Eintrag `ziele_verstaerkung` im `pipeline_log`. Der Ausgabe-Eintrag des Knotens im `pipeline_log` trägt in beiden Pfaden neben `aktivierte_ziele_count` die Aktivierungen je Horizont (`aktiviert_je_horizont`, `ueber_schwelle_je_horizont`). Beschrieben in `novaberg-thinking-drive_t.md` §7.1.
 
 **Das gilt auch nach P10.** Die Wahrnehmungs-Gravitation (§3.3a) rechnet in `ei/gravitation.py`; im Node steht der Aufruf und die Entscheidung, welchen Schlüssel die Suche bekommt.
 
-**Der GV-Cluster kommt immer aus dem Vorturn (Chat 126).** Der `gv_node` läuft in **beiden** Graphen nach dem Enricher (§2) — der Cluster des aktuellen Turns existiert zum Zeitpunkt der Suche noch nicht. `_vorturn_cluster_lesen()` holt ihn aus `gv:detail:{user_id}:{character_id}` in Redis, mit `paradox` als Rückfall. Das Synapsen-Konzept §8.5.2 behauptete für den CharacterGraph das Gegenteil; die Kantenliste in `graph/character_graph.py` widerlegt es, und beide Messturns vom 02.08. lasen den Cluster aus Redis.
+**Der GV-Cluster kommt immer aus dem Vorturn (Chat 126).** Der `gv_node` läuft ~~in **beiden** Graphen~~ → nur im CharacterGraph, dort nach dem Enricher; der HumanGraph hat keinen (`graph/human_graph.py`: `perzeption → enricher → ei_calc → salience → dispatcher`), und `_enrich_human` führt keine Vektorsuche und liest keinen Cluster (§2; am Code geprüft am 22.10.2026) — der Cluster des aktuellen Turns existiert zum Zeitpunkt der Suche noch nicht. `_vorturn_cluster_lesen()` holt ihn aus `gv:detail:{user_id}:{character_id}` in Redis, mit `paradox` als Rückfall. Das Synapsen-Konzept §8.5.2 behauptete für den CharacterGraph das Gegenteil; die Kantenliste in `graph/character_graph.py` widerlegt es, und beide Messturns vom 02.08. lasen den Cluster aus Redis.
 
 **Ziele je Beziehung (seit Chat 125):** Der Enricher liest die Ziele des Paares, nicht alle Ziele Novas. Beide Pfade — `_enrich_human` und `_enrich_character` — reichen ihr Turn-Paar an `ziel_paar_bestimmen()` weiter, weil sie es in verschiedener Reihenfolge führen: `(mensch, nova)` gegen `(nova, mensch)`. Wer das Turn-Paar direkt als Ziel-Paar verwendet, liest auf einem der beiden Pfade nichts.
 

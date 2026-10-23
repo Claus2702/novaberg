@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Überblick — welche Dienste es gibt, wie sie erreicht werden, und wie weit sie der NMCP-Konvention entsprechen
-**Stand:** 18. August 2026
+**Stand:** 22. Oktober 2026 (gegen den Code berichtigt: `fakten` ist ein passiver Dienst ohne Aushang, nicht über den Empfang gewählt — §1.1, §4, §5, §6, §7; ergänzt um 22:43 UTC (`date -u`): §3 die Tabelle als Stand vom 17./18.08.2026 gekennzeichnet, fünf Agenten fehlen darin). Davor 20. Oktober 2026 (§5: `fakten` ein Dienst, ohne eigenen Stand-Eintrag). Davor 18. August 2026
 **Pfad:** novaberg/docs/novaberg-agenten-uebersicht.md
 **Typ:** Überblick (Zustandsdokument)
 **Regelwerk:** `novaberg-convention-nmcp.md` · `novaberg-convention-planner-needs.md`
@@ -29,7 +29,7 @@ Die Namen, die im Gespräch fallen — *Fakten*, *Notizen*, *Gedächtnis*, *Date
 
 | Name | Ebene | Stand am 17.08.2026 |
 |---|---|---|
-| **Fakten** | Anbieter, **kein Dienst** | Aushang 346 Zeichen, über den Empfang erreichbar. Keine vier Ausgänge, keine Semantik-Prüfung, keine Rücknahme — er führt aus, was ihn erreicht |
+| **Fakten** | Anbieter, **kein Dienst** | Aushang 346 Zeichen, über den Empfang erreichbar. Keine vier Ausgänge, keine Semantik-Prüfung, keine Rücknahme — er führt aus, was ihn erreicht. → **Seit dem 20.10.2026 ein passiver Dienst** ohne Aushang, nicht mehr über den Empfang erreichbar (§5) |
 | **Notizen** | Dienst **und** Anbieter | vollständig umgestellt: Aushang, 3 Negativfälle, 3 Grenzen, Quote 25 %, vierter Ausgang |
 | **Gedächtnis** | **kein einzelner Baustein** — vier Schichten auf drei Ebenen, siehe §4 | teils Dienst, teils Anbieter, teils reiner Lesepfad |
 | **Dateien** | **Werkzeug** (`tools/dateien/`) | kein Dienst, kein Anbieter, über den Empfang **nicht erreichbar**. Nur `schreiben.py` gebaut; der Lesepfad fehlt |
@@ -56,6 +56,8 @@ Ein Dienst entspricht der NMCP-Konvention, wenn er sechs Angaben trägt und vier
 ---
 
 ## 3. Der Stand der sechzehn Dienste
+
+> **Stand der Tabelle: 17./18.08.2026, nicht nachgezogen** (am Code geprüft am 22.10.2026). Die Auto-Discovery (`agents/__init__.py::discover_agents`) registriert heute 21 Agenten, je Ordner unter `server/agents/` eine Unterklasse von `BaseAgent`. In der Tabelle fehlt `fakten` (seit dem 20.10.2026, Zustellart Queue, der Auftrag kommt vom Dispatcher, §5), ebenso `dateien`, `qualitaet_profil`, `wissen` und `wissen_rueckweg`; ihre Spalten sind nicht erhoben. Die Zahl *sechzehn* in Überschrift und Text gilt für den 18.08.2026.
 
 **Erhoben am 17.08.2026 am laufenden Bestand; die Zeile `dateien_wurzeln` am 18.08.2026 ergänzt.** `Aus` = Aushang vorhanden, `Neg`/`Grz`/`Bed` = Anzahl der Einträge, `4.Ausg` = bedient die begründete Ablehnung.
 
@@ -113,7 +115,7 @@ Bei allen zehn steht genau **ein** Mangel: der fehlende vierte Ausgang. Aushang,
 
 > **`wissen` hat keinen Aushang, und das ist kein Defekt.** Der Manager ist ein Lesepfad des Enrichers, kein Ziel einer Zustellung. Die NMCP-Konvention nimmt den Lesepfad ausdrücklich aus (§11): Mehrere Lesequellen laufen parallel ohne Datenfluss untereinander; sie brauchen keine Vorbedingung, nur eine Quelle.
 
-**Was daraus für die Einschätzung folgt:** Eine Frage nach Erinnertem wird **nicht** an einen Gedächtnis-Dienst zugestellt. Sie wird beantwortet aus dem, was der Enricher in den Prompt gelegt hat. Findet der Enricher nichts, sagt die Antwort *„ich weiß nichts davon"* — und das ist von einer richtigen Auskunft nicht zu unterscheiden. Nur die drei Fachgedächtnisse mit eigenem Dienst (`timeline`, `notizen`, `direktiven`) und der Anbieter `fakten` werden wirklich **gefragt**.
+**Was daraus für die Einschätzung folgt:** Eine Frage nach Erinnertem wird **nicht** an einen Gedächtnis-Dienst zugestellt. Sie wird beantwortet aus dem, was der Enricher in den Prompt gelegt hat. Findet der Enricher nichts, sagt die Antwort *„ich weiß nichts davon"* — und das ist von einer richtigen Auskunft nicht zu unterscheiden. Nur die drei Fachgedächtnisse mit eigenem Dienst (`timeline`, `notizen`, `direktiven`) ~~und der Anbieter `fakten`~~ werden wirklich **gefragt**. Den Dienst `fakten` fragt niemand: Seit dem 20.10.2026 bekommt er seine Aufträge vom Dispatcher, nie vom Router oder Planner (§5; berichtigt am 22.10.2026).
 
 ---
 
@@ -121,10 +123,10 @@ Bei allen zehn steht genau **ein** Mangel: der fehlende vierte Ausgang. Aushang,
 
 | Anbieter | Aushang | Lage |
 |---|---|---|
-| ~~**fakten**~~ | ~~346 Zeichen~~ | ~~über den Empfang erreichbar, **ohne** vier Ausgänge. Bekommt keine Zweifelsfälle; die Zweifelsregel ist an seinem Zettel zurückgenommen~~ → **seit dem 20.10.2026 ein Dienst** (`agents/fakten/`, vier Ausgänge, ohne Objekt-Merkmal); sein Zettel trägt die Negativfälle des Agenten, die Zweifelsregel ist nicht mehr zurückgenommen. Erreichbar ist er über den Empfang noch nicht: der Aushang setzt als Ziel den Namen der Entität, nicht `fakten` (`novaberg-memory-fakten_b.md` §6, Schritt 4) |
+| ~~**fakten**~~ | ~~346 Zeichen~~ | ~~über den Empfang erreichbar, **ohne** vier Ausgänge. Bekommt keine Zweifelsfälle; die Zweifelsregel ist an seinem Zettel zurückgenommen~~ → **seit dem 20.10.2026 ein Dienst** (`agents/fakten/`, vier Ausgänge, ohne Objekt-Merkmal); ~~sein Zettel trägt die Negativfälle des Agenten, die Zweifelsregel ist nicht mehr zurückgenommen. Erreichbar ist er über den Empfang noch nicht: der Aushang setzt als Ziel den Namen der Entität, nicht `fakten` (`novaberg-memory-fakten_b.md` §6, Schritt 4)~~ → **seit dem Abend des 20.10.2026 passiv:** Zustellart `queue`, kein Aushang und keine Quote; der Auftrag kommt vom Dispatcher, nie vom Router oder Planner. Das Plugin mit dem Zettel ist am 21.10.2026 gelöscht. Die Negativfälle stehen im Dienst selbst und im Prompt seiner Klassifikation (berichtigt am 22.10.2026; am Code geprüft: `agents/fakten/agent.py::FactsAgent`, `zustellart` und `negativfaelle`) |
 | **wissen** | keiner | kein Dispatch-Ziel, sondern Kontextquelle des Enrichers (§4) |
 
-**`fakten` ist der Kandidat, an dem die nächste Umstellung am meisten brächte.** Er trägt das Faktengedächtnis, wird über den Empfang gewählt, und kann einen unsinnigen Auftrag weder prüfen noch begründet ablehnen — er führt ihn aus.
+~~**`fakten` ist der Kandidat, an dem die nächste Umstellung am meisten brächte.** Er trägt das Faktengedächtnis, wird über den Empfang gewählt, und kann einen unsinnigen Auftrag weder prüfen noch begründet ablehnen — er führt ihn aus.~~ → **Berichtigt am 22.10.2026:** `fakten` wird nicht über den Empfang gewählt. Er trägt das Faktengedächtnis als passiver Dienst mit vier Ausgängen; jedes Tripel, das die Klassifikation des Turns besteht, läuft einzeln durch seinen Graphen (`validieren → suchen → ausfuehren → bestaetigen`).
 
 ---
 
@@ -134,7 +136,7 @@ Vier Sätze, jeder mit seiner Zahl:
 
 **Die Anmeldung steht.** Sechzehn Dienste geprüft, sechzehn eingebunden, null verweigert (18.08.2026). Der Handshake läuft bei jedem Start; eine fehlerhafte Anmeldung würde den Dienst ausschließen und nicht das System.
 
-**Die Auswahl liest die Zettel der Dienste.** Sechs Aushänge stehen am Brett — fünf von Diensten, einer vom Anbieter `fakten` —, dazu fünf Negativblöcke und eine Rücknahme der Zweifelsregel.
+**Die Auswahl liest die Zettel der Dienste.** Sechs Aushänge stehen am Brett — fünf von Diensten, einer vom Anbieter `fakten` —, dazu fünf Negativblöcke und eine Rücknahme der Zweifelsregel (Stand 18.08.2026). → Den Aushang von `fakten` und die Rücknahme gibt es seit dem 20.10.2026 nicht mehr; der Dienst ist passiv (§5, berichtigt am 22.10.2026).
 
 **Die Ablehnung ist gebaut und wirkt.** Fünf Dienste bedienen den vierten Ausgang; am 17.08.2026 hat er zweimal live gefeuert, und der Vorschlag erreichte den Antwortpfad.
 
@@ -147,7 +149,7 @@ Vier Sätze, jeder mit seiner Zahl:
 Nach Wirkung geordnet, jede Zeile mit ihrer Begründung:
 
 1. **Die Zustellquote messen, bis sie urteilt.** Der Abgleich braucht 30 Äußerungen für ein Fehlerurteil und 100 für eine Warnung; die Zähler werden bei jedem Neustart genullt. Solange sie das tun, bleibt die Instabilität aus §6 unbeziffert.
-2. **`fakten` einen Dienst geben** oder ihn ausdrücklich als urteilslos führen. Heute führt er aus, was ihn erreicht.
+2. ~~**`fakten` einen Dienst geben** oder ihn ausdrücklich als urteilslos führen. Heute führt er aus, was ihn erreicht.~~ → **Erledigt am 20.10.2026:** `fakten` ist ein passiver Dienst mit vier Ausgängen, beauftragt vom Dispatcher (§5).
 3. **Den vierten Ausgang auf die Hintergrunddienste ausdehnen** — damit ein unsinniger Auftrag als Urteil statt als Störung erscheint.
 4. **Die Unabhängigkeit der Zettel-Beurteilung prüfen** (`novaberg-convention-nmcp.md` §3.6a). Sie ist heute eine Anweisung im Prompt und keine Eigenschaft des Aufbaus.
 

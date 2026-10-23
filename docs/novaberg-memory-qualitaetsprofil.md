@@ -1,8 +1,8 @@
 # Novaberg — Die abstrakte Schicht: Qualitätsprofile
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`
-**Stand:** 13. Oktober 2026, 22:41 UTC (`date -u`; §9: vier der fehlenden Punkte sind seit dem 05.09. gebaut, markiert). Davor 11. September 2026, 06:40 UTC (`date -u`; **§4a neu — die Frische steht vor der Gesamtlesespur**: Die Faszination meldete in **74,1 %** von 363 Turns `werte: {}`, und von 42 gelesenen Trägern ohne Profil standen **22 als offene Kandidaten in der Warteschlange** — richtig eingereiht und nicht an der Reihe. Bei 1497 offenen Kandidaten und 20 je Tag sind das 75 Tage. Betriebsbeleg am selben Tag: **9 neue Profile, davon 7 für Träger der laufenden Reihe** gegen vorher 0 von 20). Davor 6. September 2026, 21:00 UTC (`date -u`; **der Längenfilter ist entschieden** — `QUALITAET_LAENGE_MIN` 400 → 100, weil die Länge Sachaussage (271) und Sprechakt-Vermerk (281) nicht trennt und die Warteschlange 0 von 95 gelesenen Trägern enthielt; die Faszination rechnet seither im Turn). Davor 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
+**Dokument:** Moduldokument — `memory/quality_profile.py` (Prompt, Annahme der Modellantwort, gedeckelter Lauf), `memory/repositories/quality_profile_repository.py` (Speicher), `ei/fascination.py` (Merkmalszug); ~~der Aufrufer ist der achte Schritt des Tageslaufs in `agents/synapsen_decay/agent.py`~~ → der Aufrufer ist seit dem 06.09.2026 der eigene Agent `agents/qualitaet_profil/` (täglich, `PIXIE_QUALITAET_INTERVALL_SEKUNDEN = 86_400`; am Code geprüft am 22.10.2026, §2)
+**Stand:** 22. Oktober 2026, 22:24 UTC (`date -u`; am Code geprüft und berichtigt — der Aufrufer ist der eigene Agent, der Tageslauf hat zehn Schritte, Längenschwelle und Sortierung in §4, 52 Zeugen in §8, §6d als überholt markiert). Davor 13. Oktober 2026, 22:41 UTC (`date -u`; §9: vier der fehlenden Punkte sind seit dem 05.09. gebaut, markiert). Davor 11. September 2026, 06:40 UTC (`date -u`; **§4a neu — die Frische steht vor der Gesamtlesespur**: Die Faszination meldete in **74,1 %** von 363 Turns `werte: {}`, und von 42 gelesenen Trägern ohne Profil standen **22 als offene Kandidaten in der Warteschlange** — richtig eingereiht und nicht an der Reihe. Bei 1497 offenen Kandidaten und 20 je Tag sind das 75 Tage. Betriebsbeleg am selben Tag: **9 neue Profile, davon 7 für Träger der laufenden Reihe** gegen vorher 0 von 20). Davor 6. September 2026, 21:00 UTC (`date -u`; **der Längenfilter ist entschieden** — `QUALITAET_LAENGE_MIN` 400 → 100, weil die Länge Sachaussage (271) und Sprechakt-Vermerk (281) nicht trennt und die Warteschlange 0 von 95 gelesenen Trägern enthielt; die Faszination rechnet seither im Turn). Davor 6. September 2026, 12:45 UTC (`date -u`; **§2 — der Erzeuger ist aus dem Tageslauf ausgezogen**: Er stand dort in der `cpu`-Spur, in der das Sprachmodell verriegelt ist, und hat in drei Tagen **keinen einzigen Träger profiliert** (zwei Läufe, beide `0 von 20`). Eigener Agent `agents/qualitaet_profil/`, Takt täglich; im Betrieb **20 von 20** gegen vorher 0 von 20). Davor 5. September 2026, 14:19 UTC (`date -u`; **§4a/§4b neu — die Abgrenzung Sachtext gegen Sprechakt ist gemessen und nicht gebaut**: Die Themen trennen nicht (bestes häufiges Thema 29,2 % bei 106 Vorkommen), die **Eröffnungsformel** schon (Frageform 0 von 115 lang, Einsichtsformel 56,7 % von 409). Der Längenfilter kostet **177 Einsichten** unter 400 Zeichen. Dabei die vorgelagerte Frage aufgeworfen, **ob überhaupt vorab gefiltert werden soll**: 49 von 50 Trägern schlagen voll aus, **keine gemessene Null im Bestand** — die Gegenprobe zum Vorbehalt aus §6b fehlt deshalb. Drei Wege benannt, keiner entschieden). Davor 5. September 2026, 10:20 UTC (`date -u`; **die Auswahl folgt der Lesespur** statt `haeufigkeit` — in zwei Anläufen berichtigt, weil auch die Brücke die falsche Größe zählt (Entstehung statt Lektüre); **ein Totalausfall ist seither ein Fehler** (20 versucht, 0 profiliert, `error: None`), und der Lauf ist über `POST /admin/qualitaet/lauf` anstoßbar. **Bestand 50 Träger, 300 Kanten.** Offen bleibt der Längenfilter: nur 7 von 36 gelesenen Knoten passieren ihn.). Davor 3. September 2026, 21:38 UTC (`date -u`; **Scheibe 1 gebaut und gegen den Bestand gemessen** — **28 Träger, 168 Kanten**, 6,5–8,1 s je Träger. **Die Dominanz kollabiert auf `komplexitaet`: 23 von 25**, was der Handmessung des Konzepts §6.2 widerspricht; die Gegenprobe schließt die Textlänge als Ursache aus. Ein Defekt dabei gefunden und behoben)
 **Pfad:** novaberg/docs/novaberg-memory-qualitaetsprofil.md
 **Konzept:** `novaberg-thinking-faszination_k.md` §4 (der Träger), §5 (das gesetzte Vokabular), §6 (die sechs Dimensionen), §10.1 (der Merkmalszug)
 **Zustand:** 🟠 gebaut, läuft, **und sein Ergebnis steht unter einem Vorbehalt** — Speicher, Erzeuger und Leser stehen, aber vier der sechs Dimensionen sind an keinem einzigen Träger die stärkste
@@ -49,12 +49,20 @@ Der Erzeuger sitzt **nicht** im Turn, sondern in einem **eigenen Pixie-Agenten**
 > **Beleg:** 05.09. im Tageslauf `0 von 20`; 06.09. 11:28 im eigenen Agenten **20 von 20**.
 > Bestand 50 → **72 Träger / 432 Kanten**, offene Kandidaten 350 → **328**.
 
-Der Tageslauf trägt seither neun Schritte, Nummer 8 bleibt als benannte Lücke stehen:
+~~Der Tageslauf trägt seither neun Schritte, Nummer 8 bleibt als benannte Lücke stehen:~~ → Der Tageslauf trug danach, bis zum 18.10.2026, neun Schritte; Nummer 8 bleibt als benannte Lücke stehen:
 
 ```
 Knoten-Decay → pipeline_log-TTL → Queue-Verfall → Prägungs-Faltung
   → Strang-Nachzug → Strang-Richtungen → Einfärbung → (8: ausgezogen)
   → Trägerseite der Faszination → Preiswächter
+```
+
+→ **Seit dem 18.10.2026 sind es zehn:** Der Verfall der Fakten-Kanten läuft als Schritt 11 vor dem Preiswächter, der seine Nummer 10 behält (am Code geprüft am 22.10.2026, `agents/synapsen_decay/agent.py`, `_fakten_verfall`):
+
+```
+Knoten-Decay → pipeline_log-TTL → Queue-Verfall → Prägungs-Faltung
+  → Strang-Nachzug → Strang-Richtungen → Einfärbung → (8: ausgezogen)
+  → Trägerseite der Faszination → Fakten-Verfall (11) → Preiswächter (10)
 ```
 
 **Der Grund ist die Sorte der Größe.** Ein Profil beschreibt den Gegenstand und ändert sich
@@ -111,11 +119,15 @@ kontext, emotion, …) und darunter ausgerechnet den Wert `werte` — **161 Zeil
 
 ## 4. Die Kandidaten
 
-`candidates_load`: `aktiv` **und** `haeufigkeit >= 2` **und** `length(inhalt) >= 400` **und**
-noch keine Kante. ~~Die häufigsten zuerst.~~ → **Berichtigt am 05.09.2026, in zwei Anläufen.**
+`candidates_load`: `aktiv` **und** `haeufigkeit >= 2` **und** ~~`length(inhalt) >= 400`~~ →
+`length(inhalt) >= QUALITAET_LAENGE_MIN` (100 seit dem 06.09.2026, §4b) **und** noch keine Kante. ~~Die häufigsten zuerst.~~ → **Berichtigt am 05.09.2026, in zwei Anläufen.**
 
-**Sortiert wird nach der Lesespur** — wie oft ein Knoten in den `lzg_resonanz_ids` des Enrichers
-vorkam —, danach nach Brücken-Turns, zuletzt nach `haeufigkeit`.
+~~**Sortiert wird nach der Lesespur** — wie oft ein Knoten in den `lzg_resonanz_ids` des Enrichers
+vorkam —, danach nach Brücken-Turns, zuletzt nach `haeufigkeit`.~~ → **Seit dem 11.09.2026 steht die
+Frische davor** (§4a): Sortiert wird zuerst nach der Lesezahl der letzten `QUALITAET_FRISCHE_TAGE` (7)
+Tage, dann nach der Lesespur — wie oft ein Knoten in den `lzg_resonanz_ids` des Enrichers vorkam —,
+nach den Brücken-Turns, nach `haeufigkeit` und nach `id` (am Code geprüft am 22.10.2026,
+`memory/repositories/quality_profile_repository.py`, `candidates_load`).
 
 **Der erste Anlauf am selben Tag war schon eine Berichtigung und traf trotzdem daneben.** Er
 sortierte nach der Zahl verschiedener Turns aus `verbindung`, weil `haeufigkeit` Wiederholung misst
@@ -248,8 +260,8 @@ ausgefilterter Knoten ist kein Träger mit Faszination 0, sondern gar kein Träg
 und *nicht faszinierend* sind an dieser Stelle nicht unterscheidbar.
 
 **Die Dämpfung steht ohnehin an anderer Stelle.** `QUALITAET_PROFIL_JE_LAUF` deckelt auf 20
-Profile je Lauf (seit 06.09.2026 je Agentenlauf, täglich — Setzung des Eigentümers), und `candidates_load` sortiert nach Lesespur, Brücken-Turns und
-`haeufigkeit`. **Eine Reihenfolge verzögert, ein Filter schließt aus.** Bei hartem Tagesdeckel
+Profile je Lauf (seit 06.09.2026 je Agentenlauf, täglich — Setzung des Eigentümers), und `candidates_load` sortiert nach ~~Lesespur, Brücken-Turns und
+`haeufigkeit`~~ → Frische (seit dem 11.09.2026, §4a), Lesespur, Brücken-Turns, `haeufigkeit` und `id`. **Eine Reihenfolge verzögert, ein Filter schließt aus.** Bei hartem Tagesdeckel
 leistet die Reihenfolge dieselbe Dämpfung, ohne die Menge dauerhaft zu beschneiden; der Preis ist
 Zeit — 1598 statt 395 Kandidaten, bei 20 je Lauf rund 80 statt 20 Tage bis zur Sättigung, und die
 ersten 20 Tage füllen dieselben Träger, weil die Sortierung sie zuerst nimmt.
@@ -411,6 +423,11 @@ gegen das echte Schema. **Die Dominanz bleibt: 26 von 28 `komplexitaet`.**
 > Damit ist die Verdrahtung **bezeugt** (`test_invoke_ruft_den_profillauf`) und **nicht im
 > Betrieb belegt** — genau die Trennung, die an dieser Schicht schon dreimal der Befund war.
 
+→ **Überholt am 06.09.2026** (§2): Im Tageslauf hat der achte Schritt nie einen Träger profiliert.
+Seither ruft der eigene Agent `agents/qualitaet_profil/` den Profillauf, im Betrieb belegt mit 20 von
+20, und `test_invoke_ruft_den_profillauf` bezeugt diesen Agenten (am Code geprüft am 22.10.2026,
+`tests/test_quality_profile.py`, `DerProfilAgentRuftDenErzeugerTest`).
+
 ## 7. Die Annahme der Modellantwort
 
 Die Antwort eines Sprachmodells ist die unzuverlässigste Quelle im System. Fünf Prüfungen,
@@ -431,7 +448,9 @@ die Aussage, dass das Modell drei Stufen benutzt und nicht heimlich eine eigene.
 
 ## 8. Die Zeugen
 
-`tests/test_quality_profile_schema.py` (6) · `tests/test_quality_profile.py` (32).
+`tests/test_quality_profile_schema.py` (6) · `tests/test_quality_profile.py` (~~32~~ → 52, gezählt am
+22.10.2026 gegen `7c16bf5` mit `grep -cE '^    def test_|^def test_'`, gegengezählt mit
+`grep -cE 'def test\w*\('`; der Schematest trägt mit beiden Mustern 6).
 
 Der Schematest ist **der Zünder** und importiert nichts aus dem Bauteil — die rote
 Phase war 6 von 6, `relation "abstrakt_knoten" does not exist`.

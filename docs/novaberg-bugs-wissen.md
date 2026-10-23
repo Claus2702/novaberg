@@ -1,9 +1,51 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → 30 Eintraege (22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → 32 Eintraege (22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 22.10.2026 — am Code geprüft: die Doku der Timeline gegen den Code
+
+Zwei Kennungen aus dem Abgleich von `novaberg-agent-timeline.md` mit dem Code, am Code geprüft am 22.10.2026; beide am Code gelesen, nicht gelaufen. Das Soll steht dort unverändert, mit einem Vermerk, der die Kennung nennt (§7.3, §7.4, §10).
+
+### `TIMELINE-CLIPBOARD-OHNE-ID` — nach einem Schreibauftrag setzt der Timeline-Agent `timeline_id` nicht, weil er die Kennung im letzten Schritt sucht
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, und es schreibt: Die Erinnerung des KZG aus einem Turn, in dem ein Termin angelegt wurde, verweist nicht auf diesen Termin, sondern auf einen Erinnerungs-Anker für denselben Tag, den der Magnet-Pfad dann findet oder anlegt — eine zweite Zeile in der Timeline des Paares —, oder auf keinen. Keine Fehlerzeile. Wie oft, ist nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+
+**Zustand:** offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`, nicht gelaufen.
+
+**Befund** `[Code]`: `server/agents/timeline/dispatch.py::_build_return` liest die Kennung für das Clipboard aus `result.schritte[-1]` (`termin_id`, `neuer_id` oder `id`; Z. 258–266). Der Graph des Agenten geht nach jeder Ausführung `ausfuehren → bestaetigen → END` (`server/agents/timeline/agent.py`, Z. 128–129), und `bestaetigen` hängt `{"node": "bestaetigen", "ergebnis": "ok"}` an, ohne Kennung (`server/agents/timeline/bestaetigung.py`, Z. 28–31). Die Kennungen stehen im Schritt davor, dem von `ausfuehren` (`server/agents/timeline/crud.py`: `termin_id` Z. 225 beim Anlegen, `neuer_id` Z. 421 beim Verschieben). Endet ein Auftrag schon in `suchen` (Lesen, Duplikat), trägt auch dessen letzter Schritt keine Kennung. `dispatch_timeline` setzt `timeline_id` damit nie. Das Soll beschreiben `novaberg-convention-planner-needs.md` §3, `novaberg-agent-timeline.md` §10 (*Clipboard-Schreibvorgang*) und der Kommentar über der Stelle; die Zusage im Katalog lautet *„ID des im SELBEN Durchlauf angelegten Timeline-Eintrags. NICHT die ID eines gefundenen oder gesuchten Eintrags.“* (`server/agents/nmcp.py`, Z. 47–55), der Kommentar sagt dagegen *„angelegt/gefunden“*.
+
+**Wirkung.** Der Magnet-Pfad des KZG findet im Clipboard nie eine Kennung (`server/agents/kzg/magnete.py::_timeline_aufloesen`, Pfad 1) und geht über den Zeitausdruck zum Erinnerungs-Anker des Tages (Pfad 2 und 3): neben dem eben angelegten Termin eine Anker-Zeile, und der spätere LZG-Knoten trägt in `timeline_id` den Anker statt des Termins. Ohne erkannten Zeitausdruck trägt die Erinnerung keinen Bezug. Genau diese Dublette soll das Clipboard verhindern (`novaberg-agenten-uebersicht.md` §3.2).
+
+**Vorhergesagter Zeuge** (nicht gelaufen): `dispatch_timeline` mit dem echten Graphen des `TimelineAgent` für ein `create` mit eindeutigem Ziel; das Repository ist ein Doppel und gibt bei `insert` die Kennung 42 zurück. Am HEAD fehlt `timeline_id` im Rückgabewert, obwohl `status` `abgeschlossen` ist. Zwilling: Ein `create` mit Duplikat endet `abgeschlossen` ohne Schreiben und setzt `timeline_id` nicht.
+
+**Geschlossen, wenn** nach einem erfolgreichen Anlegen im selben Durchlauf `timeline_id` die Kennung der geschriebenen Zeile trägt und ein Auftrag ohne Schreiben sie nicht setzt — bezeugt mit dem Zeugen oben und seinem Zwilling. Welche Schreibaufträge außer dem Anlegen die Kennung setzen (Verschieben), entscheidet der Bau nach der Zusage im Katalog.
+
+**Zusammenhang:** [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §10; *TimelineAgent* und *KZG-Magnetfelder* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
+
+---
+
+### `TIMELINE-KONFIDENZ-OHNE-LESER` — die Konfidenz der Klassifikation wird berechnet und von keinem Weg gelesen; eine unsichere Klassifikation führt ohne Rückfrage aus
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, und es schreibt: Läuft die Klassifikation des Agenten (ein Auftrag ohne Aktion), geht auch eine Klassifikation, bei der kein Hinweis die Aktion stützt (`niedrig`) oder Hinweis und Modell sich widersprechen (`konflikt`), ohne Rückfrage in Suche und Ausführung; ein falsch erkanntes `update` oder `delete` kann einen Termin ändern oder ablegen, ohne dass der Mensch gefragt wurde. Wie oft die Konfidenz `niedrig` oder `konflikt` ist, ist nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+
+**Zustand:** offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`.
+
+**Befund** `[Code]`: `server/agents/timeline/klassifikation.py::klassifizieren` berechnet die Konfidenz mit `konfidenz_berechnen` (Z. 224; `server/agents/crud_validation.py`, Z. 138: `hoch`, `mittel`, `niedrig`, `konflikt`), schreibt sie ins Log und legt sie unter `parameter["konfidenz"]` ab (Z. 240). Kein Weg liest sie: Eine Suche nach `["konfidenz"]` und `get("konfidenz")` unter `server/` (ohne Tests) trifft nur die Spalte `konfidenz` der Tabelle `verb_mappings` in `crud_validation.py` (Z. 121, 157, 185). Nach der Klassifikation geht jeder Auftrag, der nicht mit `fehler` oder `rejected` endet, nach `suchen` (`server/agents/timeline/agent.py::_nach_klassifikation`, Z. 145–148), und kein Knoten fragt wegen der Konfidenz zurück. Das Soll beschreiben `novaberg-agent-timeline.md` §7.3, §7.4 und §10 (*„Rückfrage nur bei niedriger Konfidenz oder Konflikt“*) und das Muster `novaberg-pattern-crud-hardening.md` §7. Dieselbe Rechnung ohne Leser steht in den Klassifikationen von Notizen, Direktiven und Charakter-Identität; dieser Eintrag gilt der Timeline.
+
+**Wirkung.** Die Rückfrage, die die Doku als Schutz vor einer unsicheren Klassifikation beschreibt, gibt es nicht; die Konfidenz ist eine Protokollzahl.
+
+**Vorhergesagter Zeuge** (nicht gelaufen): die Klassifikation des Timeline-Agenten mit einem Modell-Doppel, das eine Aktion liefert, die keinem Hinweis entspricht (`konflikt`); am HEAD geht der Graph nach `suchen` und `ausfuehren`, ohne Rückfrage. Zwilling: Hinweis und Modell stimmen überein (`hoch`), und der Graph führt ohne Rückfrage aus.
+
+**Geschlossen, wenn** eine Klassifikation mit der Konfidenz `niedrig` oder `konflikt` vor jedem Schreiben zu einer Rückfrage führt und eine mit `hoch` nicht — bezeugt mit dem Zeugen oben und seinem Zwilling.
+
+**Zusammenhang:** [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §7.2–§7.4, §10; *TimelineAgent* und *Verb-Mapping lernen* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
 
 ---
 

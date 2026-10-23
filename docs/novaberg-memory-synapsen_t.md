@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS lzg_knoten (
     gedaechtnistyp          VARCHAR(20),
     entitaet_ids            INTEGER[] NOT NULL DEFAULT '{}',
     timeline_id             INTEGER REFERENCES timeline(id) ON DELETE SET NULL,
+    -- → im Code nicht inline: siehe die letzte Erläuterung unter dem Block
     
     -- Emotionale Intelligenz (volle Kopie aus KZG, unverändert)
     emotion                 TEXT NOT NULL DEFAULT '',
@@ -77,6 +78,7 @@ CREATE INDEX idx_lzg_knoten_user_id
 - `gewicht_roh` ist der kumulative Wert (frei wachsend). `gewicht_absolut` ist der gedämpfte Wert nach Sinus-Dämpfung (Cap 10) — die Anker-Stärke des Knotens. `gewicht_decay` ist der zeitlich abgewertete Präsenz-Wert, den Pixie täglich nachzieht. Lesepfad sortiert nach `gewicht_decay`, Kanten-Cache berechnet sich aus `gewicht_absolut`. Details siehe Punkt 5.
 - `emotions_vektor` kehrt zurück. In Chat 83 entfernt wegen Trajektorie-Inkonsistenz mit verdichteten Punkten — diese Begründung entfällt, weil Knoten erhaltene Einzeleinträge sind, keine verdichteten Punkte.
 - Magnet-Felder (`entitaet_ids`, `timeline_id`, `themen`, `gedaechtnistyp`) müssen ab dem Umbau vom KZG-Schreibpfad befüllt werden (M5 wird Voraussetzung).
+- → **Der Fremdschlüssel auf `timeline` steht im Code nicht inline** (am Code geprüft am 22.10.2026): `db/init.sql` legt `timeline_id` als nackte `INTEGER`-Spalte an; den Fremdschlüssel `lzg_knoten_timeline_id_fkey` (`REFERENCES timeline(id) ON DELETE SET NULL`) setzt erst `server/agents/timeline/init.sql` nachträglich. Spalten und Indizes sind sonst deckungsgleich.
 
 #### Was die Skala [0 … 10] bedeutet — sie misst nicht Wichtigkeit, sondern Dauer
 
@@ -209,8 +211,8 @@ CREATE INDEX idx_lzg_kanten_verbindungs_gruende
 - **`gewicht_roh` und `gewicht_absolut` sind Cache** der aktuellen Knoten-Stärken-Konstellation und der eingefrorenen Schicht-Werte. Namensgleichheit mit den Knoten-Feldern ist Absicht — die Berechnungs-Logik ist konsistent. Die Kante hat *kein* `gewicht_decay`, weil sie keinem eigenen Decay unterliegt.
 - **Cache-Aktualisierung** geschieht bei drei Triggern:
   1. *Knoten-Anlage* — die Kante entsteht und wird einmalig berechnet.
-  2. *Knoten-Aktivierung* — wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung, nicht Decay), werden alle Kanten von und zu diesem Knoten neu berechnet.
-  3. *Schicht-Daten-Änderung* — wenn ein Wert ändert, der in die Tiefe-Faktor-Berechnung eingeht (Entität-Merge, Timeline-Verschiebung, Timeline-Präzisions-Änderung), werden alle Kanten neu berechnet, die diese Daten in ihren Schicht-Werten tragen. Themen und Embedding eines Knotens sind nach der Promotion eingefroren — sie lösen keine Schicht-Daten-Trigger aus.
+  2. *Knoten-Aktivierung* — wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung, nicht Decay), werden alle Kanten von und zu diesem Knoten neu berechnet. → Am Code geprüft am 22.10.2026: heute nur im Verstärkungspfad der Promotion; nach einer Verstärkung über die Verwendung bleiben die Kanten auf dem alten Anker (`LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`, §7.9.2).
+  3. *Schicht-Daten-Änderung* — wenn ein Wert ändert, der in die Tiefe-Faktor-Berechnung eingeht (Entität-Merge, Timeline-Verschiebung, Timeline-Präzisions-Änderung), werden alle Kanten neu berechnet, die diese Daten in ihren Schicht-Werten tragen. Themen und Embedding eines Knotens sind nach der Promotion eingefroren — sie lösen keine Schicht-Daten-Trigger aus. → Am Code geprüft am 22.10.2026: entworfen, nicht gebaut (§7.9.2).
   
   Konkrete Trigger-Quellen entstehen mit den Entity-CRUD- und Timeline-CRUD-Pfaden und werden in Punkt 9 (Implementierungs-Phasen) ausgeführt.
 - Gerichtete Kanten: A→B und B→A sind zwei separate Datensätze mit eigenen Stärken. Phänomenologisch sinnvoll, weil Assoziationen asymmetrisch sein können („Anna erinnert mich an Schokolade, aber Schokolade erinnert mich nicht zwingend an Anna").
@@ -308,7 +310,7 @@ Der Schritt 5 (Dämpfung von `gewicht_roh` auf `gewicht`) wirkt erst nach allen 
 
 ## 6. Konstanten
 
-Alle Werte gehen so in `config.py`. Jeder Wert ist als Stellschraube zu verstehen — die unten gezeigten Initial-Werte sind die kalibrierte Ausgangslage, nicht die Endwerte.
+Alle Werte gehen so in `config.py`. → Am Code geprüft am 22.10.2026: Zwei Werte stehen dort anders, und fünf der sieben Timeline-Toleranzen haben keinen Leser — der Vermerk steht unter dem Block. Jeder Wert ist als Stellschraube zu verstehen — die unten gezeigten Initial-Werte sind die kalibrierte Ausgangslage, nicht die Endwerte.
 
 ```python
 # ============================================================================
@@ -339,6 +341,7 @@ LZG_KNOTEN_MIN_GEWICHT             = 0.1
 LZG_KNOTEN_REINFORCEMENT_BOOST     = 0.5
 # Additiver Boost auf gewicht_roh, wenn ein Knoten extern reaktiviert
 # wird (neue Co-Aktivierung im Schreibpfad, nicht im Lesepfad).
+# → widerlegt: config.py setzt 0.1 (seit 24.05.2026), Vermerk unter dem Block.
 
 # ============================================================================
 # Kanten-Stärke (Cache-Parameter)
@@ -417,6 +420,7 @@ LZG_EMBEDDING_SCHWELLWERT          = 0.85
 # Wert: keine Embedding-Schicht. Darüber: Tiefe-Faktor wächst linear bis
 # 1.0 bei Cosine 1.0. Stellschraube — kann auf 0.80 oder 0.75 abgesenkt
 # werden, wenn die Schicht zu selten greift.
+# → widerlegt: config.py setzt 0.55 (seit 12.07.2026), Vermerk unter dem Block.
 
 # Timeline-Schicht — Toleranzen pro Präzisions-Stufe, jeweils ± in
 # eigener Einheit. Distanz innerhalb der Toleranz erzeugt einen Tiefe-
@@ -431,6 +435,7 @@ LZG_TIMELINE_TOLERANZ_WOCHE        = 8     # Wochen
 LZG_TIMELINE_TOLERANZ_MONAT        = 6     # Monate
 LZG_TIMELINE_TOLERANZ_QUARTAL      = 4     # Quartale
 LZG_TIMELINE_TOLERANZ_JAHR         = 2     # Jahre
+# → gelesen werden nur MINUTE und TAG, Vermerk unter dem Block.
 
 # ============================================================================
 # Pipeline-Log
@@ -452,15 +457,21 @@ LZG_PIPELINE_LOG_FLUSH_SEKUNDEN    = 10
 
 Initiale Kalibrierung. Sollten sich Knoten oder Kanten im Live-Betrieb anders verhalten als erwartet, sind das die Stellschrauben.
 
+> **Am Code geprüft am 22.10.2026 (`server/config.py`, `memory/lzg_kanten.py`) — drei Stellen des Blocks gelten so nicht.**
+>
+> - `LZG_KNOTEN_REINFORCEMENT_BOOST` ist ~~`0.5`~~ → **`0.1`**, wie §4.1 und die Festlegung K10 es sagen (`_e` Abschnitt G; Befund B3 in `_e` Abschnitt E). Der Kommentar in `config.py`: *„Wert 0.1 vom KZG-Boost uebernommen (war exemplarisch 0.5)“*.
+> - `LZG_EMBEDDING_SCHWELLWERT` ist ~~`0.85`~~ → **`0.55`**, seit dem 12.07.2026 kalibriert auf das Embedding-Modell `nomic-embed-text-v2-moe` (p99 der Nähe zwischen Knoten); 0.85 war im casing-blinden Raum funktionslos (`novaberg-embedding-casing-blind_k.md`; Befund B4). Beispiel 2 in §7.5 ist an diesem Wert neu gerechnet.
+> - Von den sieben Timeline-Toleranzen liest der Code nur `LZG_TIMELINE_TOLERANZ_MINUTE` und `LZG_TIMELINE_TOLERANZ_TAG` (`TIMELINE_TOLERANZ_TAGE` in `memory/lzg_kanten.py`); die Konstanten für Stunde, Woche, Monat, Quartal und Jahr stehen in `config.py` ohne Leser (§7.6.2).
+
 ---
 
 ## 7. Schreibpfad-Sicht
 
-Der Schreibpfad ist der Moment, in dem ein KZG-Eintrag den Sprung ins Langzeitgedächtnis macht. Im Synapsen-Modell wird daraus ein eigenständiger LZG-Knoten — und in genau diesem Moment werden die Kanten zu bestehenden Knoten gezogen. Hier wächst das Netz. Alle späteren Mechaniken (Lesepfad, Decay, Charakter-Destillation) setzen auf den Verbindungen auf, die hier entstehen.
+Der Schreibpfad ist der Moment, in dem ein KZG-Eintrag den Sprung ins Langzeitgedächtnis macht. Im Synapsen-Modell wird daraus ein eigenständiger LZG-Knoten (→ am Code geprüft am 22.10.2026: sofern kein Knoten des Paares ihm mit Cosine ≥ 0,82 gleicht, `LZG_KNOTEN_MATCH_SCHWELLE`; sonst entsteht kein Knoten, und der Eintrag geht im Treffer auf, §7.2) — und in genau diesem Moment werden die Kanten zu bestehenden Knoten gezogen. Hier wächst das Netz. Alle späteren Mechaniken (Lesepfad, Decay, Charakter-Destillation) setzen auf den Verbindungen auf, die hier entstehen.
 
 ### 7.1 Auslösungs-Bedingung — externer Anstoß ist Pflicht
 
-Kanten entstehen ausschließlich beim Anlegen eines neuen Knotens, und nur dann. Der Knoten-Anlage-Akt ist immer der Promotion-Schritt aus dem KZG ins LZG. Der zu promotende KZG-Eintrag hat zwei zulässige Quellen:
+Kanten entstehen ausschließlich beim Anlegen eines neuen Knotens, und nur dann (→ am Code geprüft am 22.10.2026: im Betrieb; außerdem beim vollständigen Neuaufbau durch das Re-Embedding-Werkzeug, `tools/reembed_all.py` → `kanten_alle_loeschen` und `kanten_alle_neu_aufbauen` in `memory/lzg_kanten.py`). Der Knoten-Anlage-Akt ist immer der Promotion-Schritt aus dem KZG ins LZG. Der zu promotende KZG-Eintrag hat zwei zulässige Quellen:
 
 - **Beobachtungsturn** aus dem HumanGraph oder CharacterGraph — also User-Eingabe oder Nova-Antwort, jeweils mit eigenem Beobachter-Marker im Paar-Schema.
 - **Pixie-Aktivitäts-Output** — RechercheAgent, später Träumen und Vertiefen. Auch das sind externe Anstöße im phänomenologischen Sinn: Sie sind das aktive Tun eines Beobachters, nicht das Verarbeiten eingehender Eindrücke.
@@ -476,6 +487,8 @@ Schreibpfad.** Beide Sperren haben denselben Grund — selbstverstärkendes Verw
 greifen an verschiedenen Stellen, und die zweite fehlte.
 
 > **Verstärkt wird ausschließlich, was Nova in ihrer Antwort tatsächlich hergenommen hat.**
+
+> **Am Code geprüft am 22.10.2026 — heute verstärken zwei Wege, und die Regel ist nur am ersten gebaut.** Die Verwendung in der Antwort verstärkt über den Dispatcher (`memory/usage_reinforcement.py`, `reinforce_used` → `knoten_verstaerken`, seit dem 04.09.2026). Daneben verstärkt die Promotion weiter bei jedem Embedding-Treffer mit Cosine ≥ 0,82 (`agents/synapsen_promotion/agent.py`, Reinforcement-Pfad → `knoten_verstaerken` und Trigger 2). **Diese Regel und die Festlegung K10 (`_e` Abschnitt G) widersprechen sich darin:** §7.1a sperrt die bloße Nachbarschaft im Schreibpfad, K10 sieht bei einem Treffer die Verstärkung samt Trigger 2 vor. **Offen, nicht entschieden.** Der Selbsttreffer eines stehengebliebenen KZG-Eintrags (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7) ist ein Teil dieses Wegs, nicht der ganze.
 
 Der Ablauf, in vier Schritten:
 
@@ -499,8 +512,8 @@ Er hat beide Eingänge bereits:
 | `state["antwort_inhalt"]` | Verfasser | die fertige Antwort |
 | `state["lzg_resonanz"]["erinnerungen"]` | Enricher | das gelesene Material mit Pfad |
 
-**Was fehlt, ist der Abgleich zwischen beiden** — und der Aufruf von `knoten_verstaerken` auf
-seinem Ergebnis.
+~~**Was fehlt, ist der Abgleich zwischen beiden** — und der Aufruf von `knoten_verstaerken` auf
+seinem Ergebnis.~~ → **Gebaut seit dem 04.09.2026:** `memory/usage_reinforcement.py::reinforce_used`, vom Dispatcher gerufen, gleicht die Antwort über die Embedding-Nähe mit dem gelesenen Material ab und ruft `knoten_verstaerken` für jeden Treffer über der Schwelle (am Code geprüft am 22.10.2026).
 
 #### Woran „hergenommen" erkannt wird — entschieden am 04.09.2026
 
@@ -627,11 +640,13 @@ Pixie arbeitet seine Aufgaben sequenziell ab. Es gibt keinen zweiten Promotion-A
 Schrittfolge eines Promotion-Vorgangs:
 
 1. `INSERT INTO lzg_knoten ... RETURNING id` — der neue Knoten existiert.
-2. Kandidaten-Knoten ermitteln: alle aktiven Knoten der gleichen Paar-Partition (`user_id`, `character_id`).
+2. Kandidaten-Knoten ermitteln: ~~alle aktiven Knoten der gleichen Paar-Partition~~ → alle Knoten der gleichen Paar-Partition, auch deaktivierte, geladen **vor** Schritt 1 (Vermerk unten) (`user_id`, `character_id`).
 3. Pro Kandidat: vier Schichten prüfen (siehe 7.3), greifende Schichten zählen, Stärke berechnen (siehe 7.4 und 7.5), bei mindestens einer greifenden Schicht zwei `INSERT INTO lzg_kanten` (A→B und B→A).
-4. KZG-Eintrag aus Redis entfernen (siehe 7.7).
+4. KZG-Eintrag aus Redis entfernen (siehe 7.7). → Heute nicht gebaut (Vermerk unten).
 
 Wenn Schritt 3 für einen Kandidaten scheitert, bleibt der Knoten erhalten. Ein Knoten ohne Kanten ist phänomenologisch nicht falsch — eine frische Erinnerung, die noch keine Resonanz gefunden hat. Schritt 4 wird trotzdem ausgeführt, weil der KZG-Eintrag inhaltlich vollständig im Knoten angekommen ist.
+
+> **Am Code geprüft am 22.10.2026 (`agents/synapsen_promotion/agent.py`, `_eintrag_verarbeiten`) — die Promotion läuft in anderer Folge.** Die Kandidaten werden **vor** der Anlage geladen, und es sind alle Knoten des Paares, **auch deaktivierte** (`kandidaten_mit_cosine_laden(…, include_inactive=True)`). Dieselbe Liste dient zuerst dem Treffer (`match_pruefen`, Cosine ≥ 0,82, `LZG_KNOTEN_MATCH_SCHWELLE`): Mit Treffer entsteht **kein** Knoten — der Eintrag verstärkt den getroffenen Knoten samt Trigger 2 oder halbreaktiviert ihn, wenn er deaktiviert ist (§9.3). Nur ohne Treffer folgen Schritt 1 und Schritt 3, gegen dieselbe Liste; `kanten_fuer_neuen_knoten_bilden` filtert nicht nach `aktiv`, ein neuer Knoten bildet also auch Kanten zu deaktivierten Knoten. **Schritt 4 ist nicht gebaut:** Der KZG-Hash bleibt stehen und verfällt über seine TTL (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7).
 
 ### 7.3 Schicht-Auslösung
 
@@ -718,19 +733,21 @@ Phänomenologisch: Die Gewinner-Schicht setzt den Maßstab in jeder Hinsicht (We
 
 Eine reine Timeline-Verbindung zwischen einem schwachen und einem starken Knoten bleibt zurückhaltend — was passt, weil zeitliche Nähe allein keine starke biographische Bindung ist.
 
-**Beispiel 2 — Timeline und Embedding greifen** (A = 0.7, B = 5.0, Cosine 0.90 bei Schwellwert 0.85):
+**Beispiel 2 — Timeline und Embedding greifen** (A = 0.7, B = 5.0, Cosine 0.90 bei Schwellwert ~~0.85~~ → 0.55):
 
 | Schritt | Wert |
 |---------|------|
 | Gewinner | Embedding (Faktor 0.8) |
-| Tiefe | (0.90 − 0.85) / (1.0 − 0.85) = 0.333 |
+| Tiefe | ~~(0.90 − 0.85) / (1.0 − 0.85) = 0.333~~ → (0.90 − 0.55) / (1.0 − 0.55) = 0.778 |
 | Bonus | 0.1 × (2 − 1) = 0.1 |
 | A' = 0.7 × 0.8 + 0.1 | 0.660 |
 | B' = 5.0 × 0.8 + 0.1 | 4.100 |
 | sinus_A→B = 0.66 + (4.1 − 0.66) × 0.444 | 2.187 |
 | sinus_B→A = 4.1 − (4.1 − 0.66) × 0.297 | 3.078 |
-| **kante_A→B** = 0.66 + (2.187 − 0.66) × 0.333 | **1.169** |
-| **kante_B→A** = 0.66 + (3.078 − 0.66) × 0.333 | **1.466** |
+| **kante_A→B** = 0.66 + (2.187 − 0.66) × ~~0.333~~ → 0.778 | ~~**1.169**~~ → **1.848** |
+| **kante_B→A** = 0.66 + (3.078 − 0.66) × ~~0.333~~ → 0.778 | ~~**1.466**~~ → **2.541** |
+
+> **Neu gerechnet am 22.10.2026** am geltenden Schwellwert `LZG_EMBEDDING_SCHWELLWERT = 0.55` (`server/config.py`, Vermerk unter §6); die durchgestrichene Rechnung ist die am alten Wert 0.85. Bei 0.55 greift die Embedding-Schicht tiefer, die Kante liegt deutlich höher. Der Zeuge `tests/test_synapsen_kanten.py` (`test_beispiel_2_timeline_und_embedding`) reproduziert weiter die alte Rechnung mit 0.85 als Fixture.
 
 Embedding gewinnt mit höherem Faktor (0.8 statt 0.4) und bringt zusätzlich einen höheren Anker. Die Timeline trägt nur über den Bonus bei (`+0.1`), ihre Tiefe spielt keine Rolle, weil sie nicht die Gewinner-Schicht ist.
 
@@ -772,6 +789,8 @@ Wenn solche Knoten dennoch zusammenhängen, geschieht das über andere Schichten
 | Quartal | ± 4 Quartale | Quartale |
 | Jahr | ± 2 Jahre | Jahre |
 
+> **Am Code geprüft am 22.10.2026 — von den sieben Stufen greifen zwei.** Die Timeline-Schicht kennt heute nur Minute und Tag (`TIMELINE_TOLERANZ_TAGE` in `memory/lzg_kanten.py`); für jede andere Stufe greift sie nicht (`timeline_tiefe`). Die Toleranzen für Stunde, Woche, Monat, Quartal und Jahr stehen in `config.py`, werden aber nicht gelesen.
+
 Sub-Tages-Präzisionen (Minute, Stunde) rechnen in Tagen — sieben Tage Vor- und Nachlauf fangen typischen Vorbereitungs- und Nachbereitungs-Kontext eines Termins (Konzert-Vorfreude, Arzt-Nachgespräch). Tages-Präzision deckt mit 21 Tagen benachbarte Geburtstage und kurz aufeinanderfolgende Anlässe in derselben Familie ab, ohne in den Folgemonat zu rutschen. Gröbere Präzisionen wachsen proportional.
 
 Bei groben Präzisionen ergeben sich naturgemäß wenige Distanz-Stufen (Jahr: 0, 1 oder 2; Quartal: 0 bis 4). Das ist die Eigenschaft der Stufe, nicht ein Mangel der Mechanik. Erinnerungen, die nur jahresgenau verortet sind, werden auch grob zueinander assoziiert.
@@ -792,17 +811,19 @@ Begründung: Der LZG-Knoten ist eine vollständige, eins-zu-eins-Übernahme des 
 
 Das macht den Schritt 4 der Promotion einfach: `DEL kzg:{user}:{char}:{id}`.
 
+> **Am Code geprüft am 22.10.2026 — Schritt 4 ist nicht gebaut.** Der KZG-Hash bleibt nach der Promotion stehen und verfällt über seine TTL (`agents/synapsen_promotion/agent.py`, Modul-Docstring: *„Der KZG-Hash wird wie im alten Pfad NICHT geloescht — er verfaellt ueber seine TTL“*; in der Datei löscht nichts den KZG-Schlüssel, nur Zähler der Warteschlange). Bis er abläuft, kann er erneut promotet werden und trifft dann den Knoten, der aus ihm entstand. Das Soll oben bleibt; der Defekt trägt die Kennung `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`.
+
 ### 7.8 Verhältnis zur Zwei-Call-Promotion
 
 Der zweite LLM-Call der heutigen Promotion (Fakten-Extraktion / Destillation) entfällt im Synapsen-Modell vollständig. Es wird nichts mehr aggregiert oder verdichtet — der KZG-Inhalt wandert unverändert in den Knoten. Damit fällt die destillierende Pixie-Logik (`PROMO-DESTILL-DEAD`, `PROMO-INTENTIONEN-FORMAT-DRIFT`, Cluster-Aggregation) ohnehin weg.
 
-Der erste Call (Klassifikation: „gehört dieser KZG-Eintrag promotet?") bleibt grundsätzlich erhalten, weil die Promotion-Entscheidung weiter LLM-basiert sein wird. Form und Inhalt dieses Calls können sich im neuen Modell verändern; die Details klären wir bei Punkt 9 (Implementierungs-Phasen), wenn der konkrete Promotion-Agent neu geschrieben wird.
+~~Der erste Call (Klassifikation: „gehört dieser KZG-Eintrag promotet?") bleibt grundsätzlich erhalten, weil die Promotion-Entscheidung weiter LLM-basiert sein wird. Form und Inhalt dieses Calls können sich im neuen Modell verändern; die Details klären wir bei Punkt 9 (Implementierungs-Phasen), wenn der konkrete Promotion-Agent neu geschrieben wird.~~ → **Auch der erste Call ist entfallen, seit dem Bau von P4 am 24.05.2026:** Die Promotion ruft kein Sprachmodell; reif ist ein Eintrag über seine Salienz (Festlegungen K1 und K3, `_e` Abschnitt G; Befund B7 in `_e` Abschnitt E). Am Code geprüft am 22.10.2026: `agents/synapsen_promotion/agent.py`, Modul-Docstring *„Keine LLM-Calls“*.
 
-**Vorgesehene spätere Erweiterung:** Themen-Normalisierung. Heute sehen wir „Annas Geburtstag", „Geburtstag von Anna" und „Geburtstag" als drei verschiedene Themen, obwohl sie semantisch dasselbe meinen. Entsprechende Bug-Einträge existieren. In der neuen Topologie wird dieser Effekt besonders sichtbar, weil Themen die Themen-Schicht direkt tragen. Eine LLM-basierte Standardisierung von Themen vor dem Knoten-Insert ist denkbar — wir rüsten sie nach, wenn das Phänomen in der neuen Topologie ein praktisches Problem darstellt. Vorher bleibt der Schreibpfad bei einem einzigen LLM-Call.
+**Vorgesehene spätere Erweiterung:** Themen-Normalisierung. Heute sehen wir „Annas Geburtstag", „Geburtstag von Anna" und „Geburtstag" als drei verschiedene Themen, obwohl sie semantisch dasselbe meinen. Entsprechende Bug-Einträge existieren. In der neuen Topologie wird dieser Effekt besonders sichtbar, weil Themen die Themen-Schicht direkt tragen. Eine LLM-basierte Standardisierung von Themen vor dem Knoten-Insert ist denkbar — wir rüsten sie nach, wenn das Phänomen in der neuen Topologie ein praktisches Problem darstellt. Vorher bleibt der Schreibpfad bei ~~einem einzigen LLM-Call~~ → keinem LLM-Call (am Code geprüft am 22.10.2026).
 
 ### 7.9 Kanten als abgeleiteter Cache — drei Trigger zur Neuberechnung
 
-Die Kante hat **keine eigene Substanz**. Erinnerung steckt im Knoten, die Kante ist die strukturelle Assoziation. Sie hat keine eigene Aktivierungs-Historie, kein eigenes Decay, kein eigenes Reinforcement. Daraus folgt: `gewicht_roh` und `gewicht` an der Kante sind *abgeleitete Werte*, gecachet aus den aktuellen Knoten-Stärken und den eingefrorenen Schicht-Werten. Bei jeder Änderung der Eingaben werden sie neu berechnet — strikt vorwärts, keine Rückrechnung.
+Die Kante hat **keine eigene Substanz**. Erinnerung steckt im Knoten, die Kante ist die strukturelle Assoziation. Sie hat keine eigene Aktivierungs-Historie, kein eigenes Decay, kein eigenes Reinforcement. Daraus folgt: `gewicht_roh` und ~~`gewicht`~~ → `gewicht_absolut` an der Kante sind *abgeleitete Werte*, gecachet aus den aktuellen Knoten-Stärken und den eingefrorenen Schicht-Werten. Bei jeder Änderung der Eingaben werden sie neu berechnet — strikt vorwärts, keine Rückrechnung.
 
 Die Kante bezieht sich dabei auf `gewicht_absolut` der Knoten (die Anker-Stärke), *nicht* auf `gewicht_decay`. Decay-Änderungen lösen keinen Kanten-Cache-Update aus. Phänomenologisch: Die Kante bewahrt, wie stark die Verbindung *war*, als sie zuletzt aktiviert wurde. Der Decay-Effekt im Lesepfad kommt nicht über die Kante, sondern über das Sortier-Gewicht des Knotens (siehe 8.3.1).
 
@@ -834,11 +855,13 @@ Keine Inversion, keine Rückrechnung. Wenn sich `A.gewicht_absolut` von 2.0 auf 
 
 #### 7.9.2 Drei Trigger
 
-Die Sequenz wird in drei Situationen ausgeführt:
+~~Die Sequenz wird in drei Situationen ausgeführt:~~ → Die Sequenz ist für drei Situationen entworfen; gebaut sind Trigger 1 und Trigger 2, und Trigger 2 nur in der Promotion (am Code geprüft am 22.10.2026, Vermerke unten):
 
 **Trigger 1 — Knoten-Anlage.** Beim Anlegen eines neuen LZG-Knotens entstehen Kanten zu den Kandidaten-Knoten. Die Sequenz läuft einmal pro neuer Kante.
 
 **Trigger 2 — Knoten-Aktivierung.** Wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung im Schreibpfad — neuer KZG-Eintrag betrifft denselben Knoten erneut), werden alle Kanten von und zu diesem Knoten neu berechnet. Suche: `WHERE knoten_a_id = X OR knoten_b_id = X`. Effizient durch die Indizes auf den beiden Knoten-Spalten.
+
+> **Am Code geprüft am 22.10.2026 — Trigger 2 läuft nur in der Promotion.** `kanten_neuberechnen_fuer_knoten` (`memory/lzg_kanten.py`) ruft der Verstärkungspfad der Promotion (`agents/synapsen_promotion/agent.py`), sonst nur das Re-Embedding-Werkzeug über `embedding_cosine_alle_aktualisieren`. Die Verstärkung über die Verwendung (`memory/usage_reinforcement.py`, `reinforce_used` → `knoten_verstaerken`, §7.1a) ändert `gewicht_absolut` ebenso, rechnet die Kanten aber nicht neu: Sie bleiben auf dem alten Anker. Das Soll oben bleibt; der Defekt im Code trägt die Kennung `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`.
 
 Wichtig: Eine Änderung des Felds `gewicht_decay` durch den Pixie-Decay-Lauf löst **keinen** Trigger aus. Decay wirkt nur auf den Lesepfad (Sortier-Gewicht), nicht auf den Kanten-Cache. Phänomenologisch: Eine Verbindung verblasst nicht von selbst, weil die Erinnerung an einem Ende verblasst — sie bleibt strukturell bestehen, bis die Erinnerung an einem Ende durch externen Anstoß wieder verändert wird.
 
@@ -849,6 +872,8 @@ Konkret im LZG nur zwei Quellen für Schicht-Daten-Änderungen:
 - **Entität-Änderung:** Entitäten-Merge (zwei Entitäten werden zu einer zusammengeführt), Entität-Löschung. Betroffene Kanten: `WHERE X = ANY(geteilte_entitaet_ids)`. Effizient durch GIN-Index.
 - **Timeline-Änderung:** Termin-Verschiebung (Datum/Zeit ändert sich), Präzisions-Änderung, Termin-Löschung. Die Knoten, die diese Timeline-ID referenzieren, sind über `lzg_knoten.timeline_id` zu finden. Kanten zwischen diesen Knoten werden neu berechnet.
 
+> **Am Code geprüft am 22.10.2026 — Trigger 3 ist entworfen, nicht gebaut.** Kein Pfad rechnet Kanten nach einem Merge oder Löschen einer Entität oder nach einer Änderung der Timeline neu: Eine Suche nach `ANY(geteilte_entitaet_ids)` unter `server/` (ohne Tests) findet nichts, und in `lzg_kanten` schreibt außer `memory/lzg_kanten.py` niemand. Ein Merge von Entitäten oder eine Verschiebung eines Termins lässt die Kanten unverändert.
+
 Themen und Embedding eines Knotens sind nach der Promotion eingefroren — sie können keinen Schicht-Daten-Trigger auslösen. Falls Themen-Normalisierung später als nachträglicher Eingriff eingebaut wird (offene Liste 7.11), kommt sie als vierte Quelle hinzu.
 
 Konkrete Implementierungs-Pfade für die Trigger-Quellen (Entity-CRUD, Timeline-CRUD) werden in Punkt 9 (Implementierungs-Phasen) ausgeführt.
@@ -857,7 +882,7 @@ Konkrete Implementierungs-Pfade für die Trigger-Quellen (Entity-CRUD, Timeline-
 
 Beim Anlegen eines neuen Knotens werden ausschließlich Kanten gebildet, die *zu diesem neuen Knoten* führen oder von ihm ausgehen. Bestehende Kanten *zwischen alten Knoten* bleiben unberührt.
 
-Begründung: Der externe Anstoß betrifft den neuen Knoten. Die Beziehungen alter Knoten zueinander sind durch ihre eigenen Bildungsmomente bereits festgelegt. Sie verändern sich nur durch Trigger 2 (eine Stärke-Änderung eines der beteiligten Knoten) oder Trigger 3 (eine Schicht-Daten-Änderung, die ihre eingefrorenen Werte betrifft). Würde man sie beim Anlegen eines neuen Knotens mit anfassen, hätte man im Effekt eine versteckte Co-Aktivierungs-Verstärkung — und damit das selbstverstärkende Verwachsen, das wir mit 7.1 ausgeschlossen haben.
+Begründung: Der externe Anstoß betrifft den neuen Knoten. Die Beziehungen alter Knoten zueinander sind durch ihre eigenen Bildungsmomente bereits festgelegt. Sie verändern sich nur durch Trigger 2 (eine Stärke-Änderung eines der beteiligten Knoten) oder Trigger 3 (eine Schicht-Daten-Änderung, die ihre eingefrorenen Werte betrifft). → Am Code geprüft am 22.10.2026: Trigger 3 ist nicht gebaut, und Trigger 2 läuft nur nach einer Verstärkung in der Promotion (§7.9.2). Würde man sie beim Anlegen eines neuen Knotens mit anfassen, hätte man im Effekt eine versteckte Co-Aktivierungs-Verstärkung — und damit das selbstverstärkende Verwachsen, das wir mit 7.1 ausgeschlossen haben.
 
 > **Hinweis zur Aufteilung (19.09.2026):** §7.11 *Offene Detail-Punkte zum Schreibpfad* steht in [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md).
 
@@ -867,7 +892,7 @@ Begründung: Der externe Anstoß betrifft den neuen Knoten. Die Beziehungen alte
 
 Der Lesepfad zieht aus dem Synapsen-Netz die Erinnerungen, die für die aktuelle Antwort relevant sind. Im Synapsen-Modell ist das nicht mehr „die Top-N pgvector-Treffer", sondern eine zweistufige Mechanik: ein Initial-Retrieval über Embedding-Ähnlichkeit liefert Anker-Knoten, von denen aus Spreading-Activation entlang der Kanten in die Tiefe geht. Wie weit und wie breit das Schweifen ausfällt, bestimmt Novas aktueller Gesprächsraum.
 
-Das Retrieval ist *passiv*. Es schreibt nichts in das Netz zurück (siehe 7.1). Knoten-Stärken und Kanten-Stärken werden für die Sortierung nur *gewichtet betrachtet*, nicht verändert. Der ursprünglich in Punkt 4 angedachte Co-Aktivierungs-Boost im Lesepfad entfällt damit komplett.
+Das Retrieval ist *passiv*. Es schreibt nichts in das Netz zurück (siehe 7.1). ~~Knoten-Stärken und Kanten-Stärken werden für die Sortierung nur *gewichtet betrachtet*, nicht verändert.~~ → Knoten-Stärken und Kanten-Stärken werden nur gelesen, nicht verändert — und sie wirken an verschiedenen Stellen: Die Kantenstärke entscheidet, welche Nachbarn erreicht werden (die Top K je Knoten, §8.2.2); die Rangfolge der Erinnerungen bestimmen nur die Präsenz des Zielknotens, die Schale und die emotionale Nähe (§8.3.1). Am Code geprüft am 22.10.2026: `_sortier_gewicht` und `_kanten_nachbarn` in `memory/lzg_knoten.py`. Der ursprünglich in Punkt 4 angedachte Co-Aktivierungs-Boost im Lesepfad entfällt damit komplett.
 
 ### 8.1 Initial-Retrieval
 
@@ -900,18 +925,20 @@ Neue Konstante `CLUSTER_ENRICHER_SPRUENGE` in `ei/dreischicht.py`, strukturell p
 | Glut | 3 | Die Zigarette danach, freie Assoziation. |
 | Feuerwerk | 3 | Alles auf Maximum, sie darf intensiv sein. |
 
-**HumanGraph-Sonderfall:** Im HumanGraph (User-Turn, GV ist noch nicht gelaufen) wird der Cluster aus dem vorigen Turn übernommen. Konversationen sind träge — der Modus wechselt selten abrupt. Bei abruptem Wechsel ist die erste Antwort minimal off, beim nächsten Turn passt sich Nova an.
+~~**HumanGraph-Sonderfall:** Im HumanGraph (User-Turn, GV ist noch nicht gelaufen) wird der Cluster aus dem vorigen Turn übernommen. Konversationen sind träge — der Modus wechselt selten abrupt. Bei abruptem Wechsel ist die erste Antwort minimal off, beim nächsten Turn passt sich Nova an.~~ → **Überholt, festgestellt am 02.08.2026 (§8.5.2):** Der GV-Node läuft in beiden Graphen nach dem Enricher, der Cluster des vorigen Turns ist also kein Sonderfall, sondern der einzige Pfad (`_vorturn_cluster_lesen`). Und der HumanGraph liest das Langzeitgedächtnis gar nicht: `spreading_lesen` hat genau einen Aufrufer, `_enrich_character` in `graph/nodes/enricher.py` (am Code geprüft am 22.10.2026).
 
 #### 8.2.2 Pool-Aufbau
 
-Pro Sprung-Schale werden pro Anker die **Top K ausgehenden Kanten** verfolgt, sortiert nach `kante.gewicht`. Die Wahl von K hängt von der Gesamt-Sprungtiefe ab und steuert die Breite des Schweifens:
+Pro Sprung-Schale werden ~~pro Anker~~ → pro Knoten der vorigen Schale die **Top K ausgehenden Kanten** verfolgt, sortiert nach ~~`kante.gewicht`~~ → `gewicht_absolut` der Kante. ~~Die Wahl von K hängt von der Gesamt-Sprungtiefe ab~~ → K hängt von der Schale ab — 3 in Schale 1, 2 in den Schalen 2 und 3 (`K_PRO_TIEFE` in `memory/lzg_knoten.py`) — und steuert die Breite des Schweifens:
 
 | Gesamt-Sprünge | K (Kanten pro Knoten) | Pool-Größe (max) |
 |---------------:|----------------------:|-----------------:|
 | 0 | — | 3 (nur Anker) |
 | 1 | 3 | 3 + 9 = 12 |
-| 2 | 2 | 3 + 6 + 6 = 15 |
-| 3 | 2 | 3 + 6 + 6 + 6 = 21 |
+| 2 | ~~2~~ → 3, dann 2 | ~~3 + 6 + 6 = 15~~ → 3 + 9 + 18 = 30 |
+| 3 | ~~2~~ → 3, dann 2, dann 2 | ~~3 + 6 + 6 + 6 = 21~~ → 3 + 9 + 18 + 36 = 66 |
+
+> **Am Code geprüft am 22.10.2026 (`spreading_lesen`, `K_PRO_TIEFE` in `memory/lzg_knoten.py`).** K gilt je Knoten der vorigen Schale, nicht je Anker, und hängt von der Schale ab, nicht von der Gesamttiefe. Die Pool-Größen sind die größten möglichen, vor der Dedup (§8.3.2); weniger sind es, wenn weniger als drei Anker die Schwelle 0,40 erreichen (`anker_retrieval`) oder ein Knoten weniger ausgehende Kanten hat. Die durchgestrichenen Zeilen rechneten mit K = 2 schon in Schale 1 und je Anker statt je Knoten.
 
 Bei tieferen Sprüngen wird K reduziert, damit das Wachstum nicht exponentiell explodiert. Drei Sprünge mit K=3 wären 3 + 9 + 27 + 81 = 120 Knoten — zu breit für sinnvolle Sortierung.
 
@@ -977,6 +1004,8 @@ Die Top 3 Knoten werden nicht als isolierte Inhalte an den Responder übergeben,
 Der Enricher führt den Lesepfad aus 8.1–8.3 vollständig aus und legt das Ergebnis als **Rohdaten** in den State. Sortierung des Prompt-Blocks und Deduplizierung gegen andere Memory-Quellen sind nicht Aufgabe des Enrichers. Sie wandern an den Reducer, der zwischen GV und Responder sitzt und alle Memory-Quellen für den Responder-Prompt aufbereitet.
 
 Diese Arbeitsteilung folgt dem Prinzip „Daten vollständig transportieren, Formatierung am Konsumenten" aus Chat 30 — der Enricher liefert, der Reducer formatiert. Das Sortier-Gewicht aus 8.3 (`knoten.gewicht_decay × schalen_faktor × sektor_faktor`) hat der Enricher *intern* zur Top-3-Auswahl berechnet; es wird mit in die Rohdaten geschrieben, damit der Reducer beim Mischen mit anderen Memory-Quellen einen Vergleichswert hat.
+
+> **Am Code geprüft am 22.10.2026 — die Arbeitsteilung ist anders gebaut.** Der Reducer (`graph/nodes/reducer.py`) dedupliziert nur `memory_entries` und reicht `lzg_resonanz` unverändert an den Formatter weiter (`graph/format/memory_context.py`, `format_memory_entries`). Der Formatter hängt den Resonanz-Block ohne Abgleich mit anderen Quellen ans Ende und ordnet ihn nach `sortier_gewicht` aufsteigend (`_format_lzg_resonanz`). Ein Mischen mit den Gewichten anderer Quellen gibt es nicht; `sortier_gewicht` dient nur dieser Reihenfolge (§8.4.3).
 
 #### 8.4.2 State-Struktur `lzg_resonanz`
 
@@ -1050,9 +1079,10 @@ state["lzg_resonanz"] = {
 
 **Feldweise Bedeutung:**
 
-- `anker_anzahl`, `sprung_tiefe`, `cluster`, `nova_sektor` — Kontext der Abfrage. Hilft beim Debugging und beim Gesprächs- und Node-Log (Punkt 6 im offenen Teil).
+- `anker_anzahl`, `sprung_tiefe`, `cluster`, `nova_sektor` — Kontext der Abfrage. Hilft beim Debugging und beim Gesprächs- und Node-Log (Punkt 6 im offenen Teil). → Am Code geprüft am 22.10.2026: `nova_sektor` trägt nicht den Plutchik-Sektor, wie der Kommentar im Beispiel sagt, sondern das Emotions-Label von Novas stärkster Emotion des Turns (`nova_emotions_verlauf`, `_enrich_character` in `graph/nodes/enricher.py`); den Sektor bildet erst `_sektor_faktor` beim Sortieren.
 - `rang` — Position im sortierten Pool, wie vom Enricher ermittelt. Stabile Identität auch nach Reducer-Umordnung.
-- `knoten_id`, `inhalt`, `themen`, `entitaet_ids`, `emotion`, `erstellt_am`, `gewicht_decay` — alle Daten des LZG-Knotens, die der Responder oder andere Konsumenten brauchen könnten. Nicht enthalten ist `kzg_quell_key`, weil der referenzierte KZG-Eintrag bei Promotion aus Redis gelöscht wurde.
+- `knoten_id`, `inhalt`, `themen`, `entitaet_ids`, `emotion`, `erstellt_am`, `gewicht_decay` — alle Daten des LZG-Knotens, die der Responder oder andere Konsumenten brauchen könnten. Nicht enthalten ist `kzg_quell_key`, ~~weil der referenzierte KZG-Eintrag bei Promotion aus Redis gelöscht wurde~~ → die Begründung trägt heute nicht: Der KZG-Eintrag bleibt nach der Promotion stehen, bis seine TTL abläuft (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7; am Code geprüft am 22.10.2026).
+- → `beobachter` — der Sprecher der Erinnerung (`user` oder `assistant`). Jede Erinnerung trägt ihn seit dem 29.08.2026 (`spreading_lesen` in `memory/lzg_knoten.py`, §8.4.4); das Beispiel oben zeigt ihn nicht (am Code geprüft am 22.10.2026).
 - `schale` — Sprung-Distanz vom Initial-Anker (0 = direkter Cosine-Treffer, 1 = erste Spreading-Schale, usw.).
 - `sortier_gewicht` — das errechnete Gewicht aus 8.3.1, mit dem der Enricher seine Top-3-Auswahl getroffen hat. Reducer kann es als Vergleichswert beim Mischen mit anderen Memory-Quellen nutzen.
 - `pfad` — Liste der Kanten-Schritte vom Anker (Schale 0) bis zum Ziel-Knoten. Leer bei Schale 0. Bei Schale N enthält die Liste N Einträge. Jeder Schritt nennt `von_knoten_id` (der Knoten, *von dem* die Kante ausging), `kante_id` (die Kante selbst), `verbindungs_gruende` (welche Schichten griffen), `geteilte_entitaet_ids` und `geteilte_themen` (die konkreten geteilten Werte).
@@ -1063,13 +1093,15 @@ Die Pfade werden vollständig ausgeschrieben, nicht zusammengefasst. Bei Sprung-
 
 Der Reducer übernimmt drei Schritte für die LZG-Resonanz:
 
-1. **Deduplizieren gegen andere Memory-Quellen.** Andere Quellen im State (KZG-Treffer, Charakter-Hash-Auszüge, später Fakten und Timeline) können Knoten oder Inhalte enthalten, die im LZG-Resonanz-Block ebenfalls auftauchen. Doppelungen werden entfernt; der ranghöhere oder informationsreichere Eintrag bleibt.
-2. **Sortieren.** Innerhalb des LZG-Resonanz-Blocks kann der Reducer die Reihenfolge anpassen — entweder am Enricher-Rang festhalten, oder neu sortieren, etwa nach `sortier_gewicht` gegen die Gewichte anderer Quellen. Für die Prompt-Reihenfolge gilt das Recency-Prinzip: stärkste Erinnerung steht unten.
-3. **`[GEDAECHTNIS]`-Block bauen.** Aus der bereinigten und sortierten Liste rendert der Reducer den Textblock für den Responder-Prompt.
+1. ~~**Deduplizieren gegen andere Memory-Quellen.** Andere Quellen im State (KZG-Treffer, Charakter-Hash-Auszüge, später Fakten und Timeline) können Knoten oder Inhalte enthalten, die im LZG-Resonanz-Block ebenfalls auftauchen. Doppelungen werden entfernt; der ranghöhere oder informationsreichere Eintrag bleibt.~~ → **Nicht gebaut:** Die Resonanz wird nicht gegen andere Quellen dedupliziert.
+2. **Sortieren.** Innerhalb des LZG-Resonanz-Blocks kann der Reducer die Reihenfolge anpassen — entweder am Enricher-Rang festhalten, oder neu sortieren, etwa nach `sortier_gewicht` gegen die Gewichte anderer Quellen. Für die Prompt-Reihenfolge gilt das Recency-Prinzip: stärkste Erinnerung steht unten. → **Gebaut im Formatter, nicht im Reducer:** aufsteigend nach `sortier_gewicht`, ohne die Gewichte anderer Quellen.
+3. **`[GEDAECHTNIS]`-Block bauen.** Aus der bereinigten und sortierten Liste rendert der Reducer den Textblock für den Responder-Prompt. → **Den Block rendert der Formatter**, den der Reducer aufruft; die Überschrift `[GEDAECHTNIS]` setzt die Vorlage `prompts/default/responder.gedaechtnis.txt`, nicht der Block.
+
+> **Am Code geprüft am 22.10.2026:** `graph/nodes/reducer.py` (dedupliziert nur `memory_entries`, reicht `lzg_resonanz` durch), `graph/format/memory_context.py` (`format_memory_entries` hängt den Block ans Ende, `_format_lzg_resonanz` ordnet und rendert ihn).
 
 #### 8.4.4 Beispiel-Prompt-Block
 
-Der Reducer erzeugt aus dem oben dargestellten State einen Block etwa dieser Form:
+~~Der Reducer erzeugt~~ → Der Formatter erzeugt, vom Reducer aufgerufen (§8.4.3), aus dem oben dargestellten State einen Block etwa dieser Form; die erste Zeile `[GEDAECHTNIS]` kommt aus der Vorlage, nicht aus dem Block:
 
 ```
 [GEDAECHTNIS]
@@ -1130,12 +1162,12 @@ e_nova = e_anfrage × (1 − faktor) + sum(e_ziel × aktivierungs_staerke) × fa
 
 Notation:
 
-- `e_anfrage` — rohes Embedding des User-Turns (heute im State als `prompt_embedding`)
-- `e_ziel` — Embeddings der aktivierten Drive-Ziele aus der PostgreSQL-Tabelle `ziele`, Spalte `embedding` (heute geladen über `memory/ziele.py`, aber im State-Dict `aktivierte_ziele` nicht enthalten)
-- `aktivierungs_staerke` — Aktivierungs-Stärke eines Ziels, im Code-Bestand bisher unter dem Namen `gravitation` im `aktivierte_ziele`-Dict (Wert: `similarity × motivation` pro Ziel, berechnet in `ei/gravitation.py`)
+- `e_anfrage` — ~~rohes Embedding des User-Turns (heute im State als `prompt_embedding`)~~ → das Embedding des Suchtexts: der aus dem Verlauf umgeschriebene Turn, wenn das Rewrite greift (`suchtext_herkunft == "rewrite"`, seit dem 20.08.2026), sonst die rohe Äußerung (`prompt_embedding`). Am Code geprüft am 22.10.2026: `such_embedding` und `_suchtext_bauen` in `graph/nodes/enricher.py`
+- `e_ziel` — Embeddings der aktivierten Drive-Ziele aus der PostgreSQL-Tabelle `ziele`, Spalte `embedding` (~~heute geladen über `memory/ziele.py`, aber im State-Dict `aktivierte_ziele` nicht enthalten~~ → überholt am 02.08.2026: Sie reisen im Feld `embedding` von `ActivatedGoal` (`ei/gravitation.py`), das `wahrnehmung_verschieben` direkt liest; im State-Dict `aktivierte_ziele` stehen sie bewusst nicht, `_b` §8.5.5)
+- `aktivierungs_staerke` — Aktivierungs-Stärke eines Ziels, ~~im Code-Bestand bisher unter dem Namen `gravitation` im `aktivierte_ziele`-Dict~~ → seit dem 02.08.2026 auch im Code unter diesem Namen, am Dataclass `ActivatedGoal` wie im `aktivierte_ziele`-Dict (Wert: `similarity × motivation` pro Ziel, berechnet in `ei/gravitation.py`)
 - `faktor` — globaler Cluster-Mischungs-Anteil pro Turn, Werte 0.05 bis 0.30 abhängig vom GV-Cluster
 
-**Begriffsabgrenzung:** Im Code-Bestand heißt das Feld pro Ziel heute `gravitation`. Konzeptuell ist das die *Aktivierungs-Stärke eines einzelnen Ziels* — eine Größe pro Ziel. Der Cluster-Faktor in der Formel oben ist eine andere Größe — ein globaler Wert pro Turn, der den Mischungs-Anteil zwischen rohem und ziel-gerichtetem Embedding bestimmt. Wenn diese Begriffe in der Implementierung zusammentreffen, ist eine Umbenennung des Feld-Namens `gravitation` zu `aktivierungs_staerke` sinnvoll. Konsumenten-arm: heute ein einziger Lese-Punkt (`dispatcher.py:113`).
+**Begriffsabgrenzung:** ~~Im Code-Bestand heißt das Feld pro Ziel heute `gravitation`.~~ → Im Code-Bestand heißt das Feld pro Ziel seit dem 02.08.2026 `aktivierungs_staerke` (unten). Konzeptuell ist das die *Aktivierungs-Stärke eines einzelnen Ziels* — eine Größe pro Ziel. Der Cluster-Faktor in der Formel oben ist eine andere Größe — ein globaler Wert pro Turn, der den Mischungs-Anteil zwischen rohem und ziel-gerichtetem Embedding bestimmt. ~~Wenn diese Begriffe in der Implementierung zusammentreffen, ist eine Umbenennung des Feld-Namens `gravitation` zu `aktivierungs_staerke` sinnvoll. Konsumenten-arm: heute ein einziger Lese-Punkt (`dispatcher.py:113`).~~ → **Überholt am 02.08.2026:** Die Umbenennung zu `aktivierungs_staerke` ist mit P10 durchgeführt (`_b` §8.5.5). Am Code geprüft am 22.10.2026: gelesen wird das Feld in `ei/gravitation.py`, im Enricher (`graph/nodes/enricher.py`) und im Dispatcher (`_persist_short_term_drive` in `graph/nodes/dispatcher.py`).
 
 Cluster-Faktor-Tabelle und phänomenologische Begründung pro Cluster siehe `novaberg-memory.md` Kapitel 11.4. Die Werte werden im Synapsen-Lesepfad unverändert übernommen — keine eigene Kalibrierung für die neue Topologie.
 
@@ -1151,7 +1183,7 @@ Im HumanGraph (User-Turn) ist der GV-Node noch nicht gelaufen — ein aktueller 
 
 **Und der HumanGraph verschiebt gar nichts.** `_enrich_human` führt seit dem Umbau der Pfade keine Vektorsuche mehr — es gibt dort keinen Suchschlüssel. Der Abschnitt beschreibt damit einen Fall, den es im Code nicht gibt; die Sache selbst gilt unverändert, nur im CharacterGraph.
 
-**Zugriffsweg auf den vorigen Cluster:** Der GV-Cluster wird heute in Redis unter `gv:detail:{user_id}:{character_id}` als JSON-Payload persistiert (geschrieben in `dispatcher.py:_persist_gv_detail()`). Dieser Key trägt immer den letzten verifizierten Cluster und ist der natürliche Zugriffspunkt für den HumanGraph-Fallback. Im aktuellen Code-Bestand liest der Enricher diesen Key noch nicht — das wird mit der Verschiebungs-Implementierung mitgemacht.
+**Zugriffsweg auf den vorigen Cluster:** Der GV-Cluster wird heute in Redis unter `gv:detail:{user_id}:{character_id}` als JSON-Payload persistiert (geschrieben in `dispatcher.py:_persist_gv_detail()`). Dieser Key trägt immer den letzten verifizierten Cluster und ist der natürliche Zugriffspunkt für den HumanGraph-Fallback. ~~Im aktuellen Code-Bestand liest der Enricher diesen Key noch nicht — das wird mit der Verschiebungs-Implementierung mitgemacht.~~ → **Überholt, festgestellt am 02.08.2026:** Der Enricher liest den Key über `_vorturn_cluster_lesen` (`graph/nodes/enricher.py`), für die Sprung-Tiefe und für die Verschiebung — im CharacterGraph, denn der HumanGraph sucht nicht (oben). Am Code geprüft am 22.10.2026.
 
 #### 8.5.3 Imperativ-Override
 
@@ -1201,8 +1233,10 @@ Im Schema 4.1 hat der Knoten drei Stärke-Werte und zwei Zeitstempel:
 | `gewicht_absolut` | gedämpfter Wert nach Sinus-Dämpfung (Cap 10) | Anlage, Aktivierung |
 | `gewicht_decay` | aktueller Präsenz-Wert nach Decay | Anlage, Aktivierung, Pixie-Decay-Lauf |
 | `verstaerkt_am` | Zeitstempel letzte Aktivierung | Anlage, Aktivierung |
-| `decay_am` | Zeitstempel letzter Pixie-Decay-Lauf | Anlage, Aktivierung, Pixie-Decay-Lauf |
-| `aktiv` | im Lesepfad sichtbar | Pixie-Decay-Lauf (→FALSE), Aktivierung (→TRUE) |
+| `decay_am` | Zeitstempel letzter Pixie-Decay-Lauf | Anlage, ~~Aktivierung~~ → Halbreaktivierung, Pixie-Decay-Lauf |
+| `aktiv` | im Lesepfad sichtbar | Pixie-Decay-Lauf (→FALSE), ~~Aktivierung (→TRUE)~~ → Halbreaktivierung (→TRUE) |
+
+→ Am Code geprüft am 22.10.2026 (`knoten_verstaerken`, `reactivate_node`, `run_node_decay` in `memory/lzg_knoten.py`): Eine Verstärkung setzt weder `decay_am` noch `aktiv`; beide setzt die Halbreaktivierung (§9.3), `decay_am` außerdem die Anlage (Vorgabe `NOW()`) und der Decay-Lauf.
 
 **Trennung der Verantwortungen:**
 
@@ -1214,6 +1248,8 @@ Im Schema 4.1 hat der Knoten drei Stärke-Werte und zwei Zeitstempel:
 **Bei Anlage und bei Aktivierung** (echte Verstärkung im Schreibpfad — neuer KZG-Eintrag betrifft denselben Knoten erneut):
 
 > **Der Klammersatz ist seit dem 04.09.2026 zu eng gefasst und wird durch §7.1a verschärft.** *„Betrifft denselben Knoten erneut"* liest der Code heute als Embedding-Match — und dabei matcht ein KZG-Eintrag den Knoten, der aus ihm selbst entstanden ist (`cosine = 1.0000` in 95,2 % aller Verstärkungen). **Verstärkung setzt Verwendung in der Antwort voraus**, nicht Nachbarschaft; der Ort ist der Dispatcher.
+>
+> → Am Code geprüft am 22.10.2026: Heute verstärken beide Wege — die Verwendung über den Dispatcher und weiterhin der Embedding-Treffer der Promotion. Der Widerspruch zwischen §7.1a und der Festlegung K10 ist offen (Vermerk unter der Regel in §7.1a).
 
 ```
 gewicht_roh      = gewicht_roh + LZG_KNOTEN_REINFORCEMENT_BOOST
@@ -1225,9 +1261,11 @@ aktiv            = TRUE
 haeufigkeit      = haeufigkeit + 1
 ```
 
-`gewicht_absolut` und `gewicht_decay` werden synchron auf das gleiche Niveau gesetzt. Decay-Wirkung beginnt erst ab dem nächsten Pixie-Lauf, ab `decay_am`.
+`gewicht_absolut` und `gewicht_decay` werden synchron auf das gleiche Niveau gesetzt. Decay-Wirkung beginnt erst ab dem nächsten Pixie-Lauf, ~~ab `decay_am`~~ → gerechnet ab `verstaerkt_am`.
 
-**Beim Pixie-Decay-Lauf** (einmal täglich, alle Knoten der Paar-Partition):
+> **Am Code geprüft am 22.10.2026 (`knoten_verstaerken` in `memory/lzg_knoten.py`):** Eine Verstärkung setzt `gewicht_roh`, `gewicht_absolut`, `gewicht_decay`, `haeufigkeit` und `verstaerkt_am`, aber nicht `decay_am = now()` und nicht `aktiv = TRUE`, die der Block oben führt. Für den Verfall ist das folgenlos, weil der Lauf aus `verstaerkt_am` rechnet. Und `aktiv` steht dabei schon auf `TRUE`: Die Promotion verstärkt nur einen aktiven Treffer (einen deaktivierten weckt sie über die Halbreaktivierung, §9.3), die Verwendung nur gelesene Knoten, und gelesen werden nur aktive.
+
+**Beim Pixie-Decay-Lauf** (einmal täglich, ~~alle Knoten der Paar-Partition~~ → global über alle aktiven Knoten aller Paare, `run_node_decay`):
 
 ```
 tage_seit_verstaerkung = (now() - verstaerkt_am).total_seconds() / 86400
@@ -1257,6 +1295,8 @@ aktiv            = TRUE
 Phänomenologisch: Eine lange vergessene Erinnerung ist wieder da, aber sie braucht Zeit und weitere Anstöße, um wieder voll präsent zu werden. Das schützt vor falschen Reaktivierungs-Spitzen — ein einzelnes Schlagwort kann eine alte Erinnerung wieder ins Spiel bringen, aber nicht sofort an die Spitze des Netzes katapultieren.
 
 **Konkretes Beispiel** (`LZG_KNOTEN_MIN_GEWICHT = 0.10`): Knoten hatte `gewicht_absolut = 4.0`, wurde durch Decay auf `gewicht_decay = 0.08` heruntergebracht, dort deaktiviert. Externer Anstoß bringt ihn wieder ins Spiel: `gewicht_decay` springt auf `(4.0 + 0.10) / 2 = 2.05`. Klar oberhalb der Schwelle, deutlich unter dem alten Anker. Mit jeder weiteren echten Aktivierung würde sich der Knoten wieder seinem alten Niveau annähern — aber nicht beim ersten Treffer.
+
+> **Am Code geprüft am 22.10.2026 — der halbe Wert hält heute nur bis zum nächsten Tageslauf.** `reactivate_node` setzt `gewicht_decay` auf den Halbwert und dabei `verstaerkt_am = NOW()` (`memory/lzg_knoten.py`). Der nächste `run_node_decay` rechnet `gewicht_decay` aber aus `gewicht_absolut × exp(−LZG_KNOTEN_DECAY_RATE × Tage seit verstaerkt_am)` neu — im Beispiel oben einen Tag später 4,0 × e^(−0,0015) ≈ 3,99 statt 2,05, also fast der volle Anker. Das Soll oben bleibt; der Defekt im Code trägt die Kennung `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG`.
 
 Halbreaktivierung passiert **nur**, wenn der Knoten deaktiviert war. Ein noch aktiver Knoten, der erneut aktiviert wird, durchläuft den normalen Aktivierungs-Pfad aus 9.2 (Anlage/Aktivierung).
 
