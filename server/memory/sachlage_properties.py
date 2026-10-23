@@ -356,22 +356,51 @@ def turn_candidates(
     return kandidaten
 
 
-def active_properties(
+def active_properties(  # noqa: PLR0913 — Paar, Namen, Grenze und die Regel (c) benannt
     postgres_url: str,
     user_id:      str,
     character_id: str,
     name_keys:    list[str],
     limit:        int,
+    *,
+    hidden_source:  str = "",
+    hidden_for:     tuple[str, ...] = (),
+    hidden_origins: tuple[str, ...] = (),
 ) -> list[dict]:
     """Die aktiven Eigenschaften der genannten Objekte des Paares, juengste zuerst.
 
-    Vorbedingung: `name_keys` aus `text_key`; `limit` > 0.
+    Teil H, Regel (c): Eine Eigenschaft fehlt, wenn ihr Objekt in
+    `hidden_for` steht, ihre Quelle `hidden_source` ist und ihre Herkunft
+    unter `hidden_origins` — der Fakt, aus dem sie stammt, steht selbst im
+    Angebot. Steht er dort nicht, bleibt sie. Ausgelassen wird schon in der
+    Auswahl, damit sie keinen Platz unter `limit` belegt, den der Aufrufer
+    danach verwirft.
+
+    Vorbedingung: `name_keys` und `hidden_for` aus `text_key`; `limit` > 0;
+        `hidden_for` und `hidden_origins` nur mit `hidden_source`, jede
+        Herkunft der Form `<hidden_source>#<id>`.
     Nachbedingung: Hoechstens `limit` dicts mit objekt_id, name, eigenschaft,
-        wert, sprecher, turn_id, id; leer ohne Namen.
-    Fehlerfaelle: DB-Fehler — `logger.exception`, leere Liste.
+        wert, sprecher, turn_id, id und quelle (die Gedaechtnis-Quelle einer
+        Deckung als dict, sonst None); leer ohne Namen. Keine Zeile eines
+        Objekts aus `hidden_for` traegt die Quelle `hidden_source` mit einer
+        Herkunft aus `hidden_origins`.
+    Fehlerfaelle: `hidden_for` oder `hidden_origins` ohne `hidden_source`,
+        oder eine Herkunft einer anderen Quelle, wirft `ValueError`. Eine
+        verborgene Zeile in der Ausgabe wirft `RuntimeError`. DB-Fehler —
+        `logger.exception`, leere Liste.
     """
+    # ── Eingabe-Validierung ─────────────────────
+    if (hidden_for or hidden_origins) and not hidden_source:
+        msg: str = "Eigenschaftsgedaechtnis: Regel (c) ohne die Quelle"
+        raise ValueError(msg)
+    fremd: list[str] = [h for h in hidden_origins if not h.startswith(f"{hidden_source}#")]
+    if fremd:
+        msg = f"Eigenschaftsgedaechtnis: Regel (c) mit Herkunft nicht aus {hidden_source}: {fremd}"
+        raise ValueError(msg)
     if not name_keys or limit <= 0 or not user_id or not character_id:
         return []
+
+    # ── Verarbeitung ────────────────────────────
     try:
         conn = psycopg2.connect(postgres_url)
         try:
@@ -379,22 +408,92 @@ def active_properties(
                 cur.execute(
                     f"""
                     SELECT e.id, e.objekt_id, o.name, e.eigenschaft, e.wert,
-                           e.sprecher, e.turn_id
+                           e.sprecher, e.turn_id, e.quelle
                     FROM {PROPERTY_TABLE} e
                     JOIN {OBJECT_TABLE} o ON o.id = e.objekt_id
                     WHERE o.user_id = %s AND o.character_id = %s
                       AND o.name_schluessel = ANY(%s) AND e.aktiv
+                      AND NOT (o.name_schluessel = ANY(%s)
+                               AND COALESCE(e.quelle->>'quelle', '') = %s
+                               AND COALESCE(e.quelle->>'herkunft', '') = ANY(%s))
                     ORDER BY e.last_touched DESC
                     LIMIT %s
                     """,  # noqa: S608
-                    (user_id, character_id, list(name_keys), limit),
+                    (user_id, character_id, list(name_keys), list(hidden_for),
+                     hidden_source, list(hidden_origins), limit),
                 )
-                return [dict(z) for z in cur.fetchall()]
+                rows: list[dict] = [dict(z) for z in cur.fetchall()]
         finally:
             conn.close()
     except psycopg2.Error:
         logger.exception("Eigenschaftsgedaechtnis: aktive Eigenschaften nicht lesbar")
         return []
+
+    # ── Ausgabe-Verifikation ────────────────────
+    hidden: list[int] = [
+        r["id"] for r in rows
+        if text_key(r.get("name")) in hidden_for
+        and isinstance(r.get("quelle"), dict) and r["quelle"].get("quelle") == hidden_source
+        and r["quelle"].get("herkunft") in hidden_origins
+    ]
+    if hidden:
+        msg = f"Eigenschaftsgedaechtnis: Regel (c) verletzt, Zeilen {hidden}"
+        raise RuntimeError(msg)
+    return rows
+
+
+def bound_entities(
+    postgres_url: str,
+    user_id:      str,
+    character_id: str,
+    name_keys:    list[str],
+) -> dict[str, int] | None:
+    """Die Entitaeten, an die die genannten Objekte des Paares gebunden sind.
+
+    Teil H: Ob ein Objekt gebunden ist, steht nur in `sachlage_objekt`, nicht
+    in der Blase. Ein Objekt ohne Entitaet fehlt im Ergebnis.
+
+    Vorbedingung: Das Paar ist vollstaendig; `name_keys` aus `text_key`.
+    Nachbedingung: `name_schluessel` → `entitaet_id`, nur fuer gebundene
+        Objekte aus `name_keys`; `{}`, wenn keines gebunden ist oder keine
+        Namen kamen. **Nie `{}` bei einem Lesefehler.**
+    Fehlerfaelle: ein unvollstaendiges Paar wirft `ValueError`. DB-Fehler —
+        `logger.exception`, `None`: Der Aufrufer muss *nicht gebunden* von
+        *nicht lesbar* unterscheiden koennen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        msg: str = "Eigenschaftsgedaechtnis: gebundene Entitaeten ohne vollstaendiges Paar"
+        raise ValueError(msg)
+    if not name_keys:
+        return {}
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"""
+                    SELECT name_schluessel, entitaet_id FROM {OBJECT_TABLE}
+                    WHERE user_id = %s AND character_id = %s
+                      AND name_schluessel = ANY(%s) AND entitaet_id IS NOT NULL
+                    """,  # noqa: S608
+                    (user_id, character_id, list(name_keys)),
+                )
+                bound: dict[str, int] = {str(r[0]): int(r[1]) for r in cur.fetchall()}
+        finally:
+            conn.close()
+    except psycopg2.Error:
+        logger.exception("Eigenschaftsgedaechtnis: gebundene Entitaeten nicht lesbar")
+        return None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    foreign: list[str] = [k for k in bound if k not in name_keys]
+    if foreign:
+        msg = f"Eigenschaftsgedaechtnis: Bindungen zu nicht erfragten Objekten {foreign}"
+        raise RuntimeError(msg)
+    return bound
 
 
 def property_history(postgres_url: str, objekt_id: int, eigenschaft: str) -> list[dict]:

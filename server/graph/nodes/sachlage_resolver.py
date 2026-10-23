@@ -23,16 +23,19 @@ Angebot, und seine Antwort wird **gegen das Angebot gehalten**: Nur eine
 Referenz, die angeboten war, deckt — und dann traegt das Objekt die Quelle
 in `quellen`. Er laeuft nur, wenn es Angebot und offene Eigenschaften gibt.
 
-**Was nicht befragt wird:** Der Fakten-Graph des Pipeline-Konzepts traegt
-fuer das Paar 0 Zeilen (28.08.2026); Notizen nicht, weil der einzige Leser
-mit Treffersemantik `last_touched` schreibt.
+**Was nicht befragt wird:** Notizen, weil der einzige Leser mit
+Treffersemantik `last_touched` schreibt.
 
 **Die Reihenfolge des Angebots ist je Quelle fest, nicht ueber Quellen
-sortiert:** Kalender (aus dem Zeitbezug des Objekts — ein Zeitraum wie
-*November* oder ein Termin-Titel, `sachlage_zeitbezug.py` —, gelesen ueber den
-Leseweg der Termine; ohne Zeitbezug kein Kalender), dann der Pool nach Gewicht, dann die
-Aufzeichnungen nach Kosinus. Eine Rangfolge ueber drei Skalen waere eine
-Rangfolge aus Skalen statt aus Bedeutungen (`plugins/wissen_manager`).
+sortiert, und jede Quelle hat ihre eigene Grenze** (Teil H): die Fakten aus
+der Mappe der gebundenen, akuten Objekte (`fact_hits`), dann die gespeicherten
+Eigenschaften (`property_hits`), dann der Kalender (aus dem Zeitbezug des
+Objekts — ein Zeitraum wie *November* oder ein Termin-Titel,
+`sachlage_zeitbezug.py` —, gelesen ueber den Leseweg der Termine; ohne
+Zeitbezug kein Kalender), dann der Pool nach Gewicht, dann die Aufzeichnungen
+nach Kosinus; Pool und Aufzeichnungen teilen eine Grenze. So verdraengt keine
+Quelle eine andere. Eine Rangfolge ueber drei Skalen waere eine Rangfolge aus
+Skalen statt aus Bedeutungen (`plugins/wissen_manager`).
 
 **Was hier nicht liegt:** die Suche je offener Eigenschaft (der Pool ist mit
 dem Reiz gesucht, nicht mit der Luecke), das Frame-Lager, die Kritikalitaet
@@ -46,8 +49,10 @@ from datetime import datetime
 from config import (
     POSTGRES_URL,
     SACHLAGE_BESTAND_KALENDER_LIMIT,
+    SACHLAGE_BESTAND_KALENDER_MAX,
     SACHLAGE_BESTAND_MAX_EINTRAEGE,
     SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX,
+    SACHLAGE_FAKTEN_ANGEBOT_MAX,
     get_node_config,
 )
 from graph.appointments import (
@@ -60,7 +65,9 @@ from graph.appointments import (
 from graph.format.appointments import appointment_line
 from graph.nodes.sachlage_form import covered_value
 from graph.nodes.sachlage_zeitbezug import time_reference_window
-from memory.sachlage_properties import active_properties, text_key
+from memory.fakten_mappe import Mappe, load_mappe
+from memory.repositories.fakten_repository import EntityNotFoundError
+from memory.sachlage_properties import active_properties, bound_entities, text_key
 from memory.timeline_reading import read_appointments
 from services.model_services import model_service
 from services.model_services.types import ChatRequest
@@ -70,13 +77,18 @@ logger = logging.getLogger("ki_server.sachlage.resolver")
 
 # Die Quellen, die ein Angebotseintrag tragen kann. `kzg`, `lzg` und
 # `plugin_wissen` sind die `quelle`-Marken des ContextEntry-Pools
-# (`graph/context_entry.py`); die beiden anderen vergibt dieses Modul.
+# (`graph/context_entry.py`); die uebrigen vergibt dieses Modul.
 SOURCE_KZG:      str = "kzg"
 SOURCE_LZG:      str = "lzg"
 SOURCE_LIBRARY:  str = "plugin_wissen"
 SOURCE_RECORDS:  str = "aufzeichnung"
 SOURCE_CALENDAR: str = "timeline"
 SOURCE_PROPERTIES: str = "eigenschaft"
+# Teil H: ein Fakt aus der Mappe einer gebundenen Entitaet. Deckt er eine
+# Eigenschaft, steht diese Marke in deren `quelle` (Regel (b)), und an einem
+# gebundenen Objekt wird eine solche Eigenschaft nicht mehr angeboten, solange
+# ihr Fakt im Angebot steht (Regel (c)).
+SOURCE_FACTS: str = "fakten"
 
 # Welche Pool-Quellen ins Angebot duerfen. Charakter-Hash und
 # Gespraechs-Zusammenfassung sagen nichts ueber eine Sache.
@@ -91,6 +103,7 @@ SOURCE_LABELS: dict[str, str] = {
     SOURCE_RECORDS:  "aus Unterlagen",
     SOURCE_CALENDAR: "aus dem Kalender",
     SOURCE_PROPERTIES: "aus frueheren Gespraechen ueber diese Sache",
+    SOURCE_FACTS:    "aus ihrem gespeicherten Wissen",
 }
 
 # Wie viel von einem Eintrag das Angebot zeigt. Bibliothekszeilen sind im
@@ -274,25 +287,42 @@ def _calendar_hits(
 def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     """Das Angebot dieses Turns: was Novas Gedaechtnis zur Sache haelt.
 
+    Teil H: Jede Gruppe hat ihre eigene Grenze. Der Kalender ist auf
+    `SACHLAGE_BESTAND_KALENDER_MAX` Zeilen gekappt, in der Ordnung des
+    Lesewegs der Termine; `SACHLAGE_BESTAND_MAX_EINTRAEGE` gilt nur fuer Pool
+    und Aufzeichnungen zusammen. Ein Zeitraum ist je Objekt nicht gekappt
+    (`_calendar_hits`) — ohne die eigene Grenze verdraengte ein voller Monat
+    Pool und Aufzeichnungen. Den ganzen Zeitraum traegt der Block [TERMINE].
+
     Vorbedingung: `state` traegt, was der Enricher abgelegt hat —
         `memory_entries` (ContextEntry-Pool) und `aufzeichnungen`; beide
-        duerfen fehlen.
-    Nachbedingung: Hoechstens `SACHLAGE_BESTAND_MAX_EINTRAEGE` Eintraege,
-        durchnummeriert G1 … Gn, Kalender zuerst, dann Pool nach Gewicht,
-        dann Aufzeichnungen nach Kosinus; jeder Text gekuerzt. Die Groessen
-        stehen im Log, bevor gekappt wird (F-LOG-3).
-    Fehlerfaelle: keine — ein leerer Pool ist ein regulaerer Fall.
+        duerfen fehlen. Beide Grenzen sind ab 1.
+    Nachbedingung: Hoechstens `SACHLAGE_BESTAND_KALENDER_MAX` Kalenderzeilen
+        und dahinter hoechstens `SACHLAGE_BESTAND_MAX_EINTRAEGE` Eintraege aus
+        Pool und Aufzeichnungen, durchnummeriert G1 … Gn, Kalender zuerst,
+        dann Pool nach Gewicht, dann Aufzeichnungen nach Kosinus; jeder Text
+        gekuerzt. Die Groessen stehen im Log, auch die gelesenen und die
+        weggelassenen Kalenderzeilen (F-LOG-3).
+    Fehlerfaelle: eine Grenze unter 1 wirft `ValueError` — sie leerte eine
+        Quelle still. Ein leerer Pool ist ein regulaerer Fall.
     """
     # ── Eingabe-Validierung ─────────────────────
+    if SACHLAGE_BESTAND_KALENDER_MAX < 1 or SACHLAGE_BESTAND_MAX_EINTRAEGE < 1:
+        msg: str = (
+            f"Sachlage-Aufloeser: Grenze des Angebots unter 1 (Kalender "
+            f"{SACHLAGE_BESTAND_KALENDER_MAX}, Pool {SACHLAGE_BESTAND_MAX_EINTRAEGE})"
+        )
+        raise ValueError(msg)
     entries: list = state.get("memory_entries") or []
     records: list = state.get("aufzeichnungen") or []
 
     # ── Verarbeitung ────────────────────────────
-    candidates: list[tuple[str, str, str]]
+    calendar: list[tuple[str, str, str]]
     windows: int
     acute: int
-    candidates, windows, acute = _calendar_hits(state, previous, now_local())
-    kalender: int = len(candidates)
+    calendar, windows, acute = _calendar_hits(state, previous, now_local())
+    kalender: int = len(calendar)
+    candidates: list[tuple[str, str, str]] = []
 
     pool: list[tuple[float, str, str, str]] = []
     for entry in entries:
@@ -325,11 +355,14 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
     unterlagen.sort(key=lambda u: u[0], reverse=True)
     candidates.extend((s, o, c) for _, s, o, c in unterlagen)
 
+    kept_calendar: list[tuple[str, str, str]] = calendar[:SACHLAGE_BESTAND_KALENDER_MAX]
     logger.info(
-        f"Sachlage-Aufloeser: Angebot aus Kalender {kalender} (Fenster aus dem "
-        f"Zeitbezug {windows} von {acute} akuten Objekten), Pool {len(pool)} "
-        f"(von {len(entries)}), Aufzeichnungen {len(unterlagen)} — "
-        f"gekappt auf {SACHLAGE_BESTAND_MAX_EINTRAEGE}"
+        f"Sachlage-Aufloeser: Angebot aus Kalender {kalender} gelesen, "
+        f"{kalender - len(kept_calendar)} weggelassen (gekappt auf "
+        f"{SACHLAGE_BESTAND_KALENDER_MAX}; Fenster aus dem Zeitbezug {windows} von "
+        f"{acute} akuten Objekten), Pool {len(pool)} (von {len(entries)}), "
+        f"Aufzeichnungen {len(unterlagen)} — Pool und Aufzeichnungen gekappt auf "
+        f"{SACHLAGE_BESTAND_MAX_EINTRAEGE}"
     )
     hits: list[MemoryHit] = [
         MemoryHit(
@@ -339,17 +372,201 @@ def memory_offer(state: dict, previous: dict | None) -> list[MemoryHit]:
             content = content[:ENTRY_MAX_CHARS],
         )
         for nummer, (source, origin, content)
-        in enumerate(candidates[:SACHLAGE_BESTAND_MAX_EINTRAEGE], start=1)
+        in enumerate(
+            kept_calendar + candidates[:SACHLAGE_BESTAND_MAX_EINTRAEGE], start=1,
+        )
     ]
 
     # ── Ausgabe-Verifikation ────────────────────
     if len({h.key for h in hits}) != len(hits):
         raise ValueError("Sachlage-Aufloeser: Angebot mit doppelter Nummer")
+    offered_calendar: int = sum(h.source == SOURCE_CALENDAR for h in hits)
+    if offered_calendar > SACHLAGE_BESTAND_KALENDER_MAX or (
+        len(hits) - offered_calendar > SACHLAGE_BESTAND_MAX_EINTRAEGE
+    ):
+        msg = (
+            f"Sachlage-Aufloeser: Angebot ueber der Grenze (Kalender {offered_calendar}, "
+            f"uebrige {len(hits) - offered_calendar})"
+        )
+        raise RuntimeError(msg)
+    return hits
+
+
+def _acute_open_objects(artifact: dict) -> dict[str, dict]:
+    """Die akuten Objekte mit offener Eigenschaft, nach `text_key` ihres Namens.
+
+    Die Schluessel sind die der Datenbank (`text_key`, casefold) — mit dem
+    lower-Schluessel dieses Moduls fand der Rueckweg kein Objekt mit ß.
+
+    Vorbedingung: `artifact` ist gegen die Form gehalten — jedes Objekt traegt
+        einen Namen (`_validate_objects`).
+    Nachbedingung: in der Ordnung des Artefakts; leer ohne solche Objekte.
+    Fehlerfaelle: ein Artefakt, das kein dict ist, wirft `TypeError`; ein
+        akutes Objekt ohne Namen `RuntimeError` — die Form wurde umgangen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(artifact, dict):
+        msg: str = f"Sachlage-Aufloeser: Artefakt ist {type(artifact).__name__}"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    objekte: dict[str, dict] = {
+        text_key(o.get("name", "")): o
+        for o in artifact.get("objekte") or []
+        if isinstance(o, dict) and o.get("akut") and o.get("offen")
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if "" in objekte:
+        msg = "Sachlage-Aufloeser: akutes Objekt ohne Namen — die Form wurde umgangen"
+        raise RuntimeError(msg)
+    return objekte
+
+
+def bound_objects(artifact: dict, user_id: str, character_id: str) -> dict[str, int] | None:
+    """Teil H: die Entitaeten der akuten Objekte mit offener Eigenschaft.
+
+    Einmal je Turn gelesen und an `fact_hits` und `property_hits` gereicht —
+    beide muessen dieselbe Antwort auf *gebunden?* sehen, sonst stuende ein
+    Fakt neben seiner Eigenschaft.
+
+    Vorbedingung: `artifact` ist gegen die Form gehalten.
+    Nachbedingung: `text_key` → `entitaet_id` der gebundenen Objekte; `{}`
+        ohne Paar oder ohne akutes, offenes Objekt.
+    Fehlerfaelle: `None`, wenn die Bindungen nicht lesbar sind
+        (`bound_entities` meldet es laut).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        return {}
+    keys: list[str] = sorted(_acute_open_objects(artifact))
+    if not keys:
+        return {}
+
+    # ── Verarbeitung ────────────────────────────
+    bound: dict[str, int] | None = bound_entities(POSTGRES_URL, user_id, character_id, keys)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if bound is not None and not set(bound) <= set(keys):
+        msg: str = f"Sachlage-Aufloeser: Bindungen ausserhalb der Objekte {sorted(bound)}"
+        raise RuntimeError(msg)
+    return bound
+
+
+def _mappe_or_none(
+    user_id: str, character_id: str, entity_id: int, counts: dict[str, int],
+) -> Mappe | None:
+    """Die Mappe einer Entitaet, oder None mit gezaehltem Grund.
+
+    Vorbedingung: das Paar ist vollstaendig; `counts` traegt `unbekannt`
+        und `ausfall`.
+    Nachbedingung: die Mappe, oder None und einer der zwei Zaehler um 1 erhoeht.
+    Fehlerfaelle: `EntityNotFoundError` heisst *unbekannt* (Warnung) — die
+        Entitaet ist fort oder gehoert einem anderen Menschen; jede andere
+        Ausnahme ist ein Ausfall, laut mit Stacktrace. Der Turn laeuft weiter.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not {"unbekannt", "ausfall"} <= set(counts):
+        msg: str = f"Sachlage-Aufloeser: Zaehler der Mappe unvollstaendig {sorted(counts)}"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        mappe: Mappe = load_mappe(POSTGRES_URL, user_id, character_id, entity_id)
+    except EntityNotFoundError:
+        counts["unbekannt"] += 1
+        logger.warning(
+            f"Sachlage-Aufloeser: gebundene Entitaet {entity_id} unbekannt — "
+            f"ohne ihre Fakten im Angebot"
+        )
+        return None
+    except Exception:  # noqa: BLE001 — der Turn geht vor
+        counts["ausfall"] += 1
+        logger.exception(
+            f"Sachlage-Aufloeser: Mappe der Entitaet {entity_id} ausgefallen — "
+            f"ohne ihre Fakten im Angebot"
+        )
+        return None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if mappe.entity_id != entity_id:
+        msg = f"Sachlage-Aufloeser: Mappe {mappe.entity_id} statt {entity_id}"
+        raise RuntimeError(msg)
+    return mappe
+
+
+def fact_hits(
+    artifact: dict, user_id: str, character_id: str, bound: dict[str, int] | None,
+) -> list[tuple[str, str, str, str, str]]:
+    """Teil H: die Fakten der gebundenen, akuten Objekte mit offener Eigenschaft.
+
+    Je Entitaet eines solchen Objekts die Mappe (`load_mappe`), einmal je
+    Entitaet; je Fakt ein Eintrag, jeder Fakt einmal, auch wenn ihn zwei
+    Mappen tragen. Der Fakt tritt vor die Eigenschaft (Regel (c), `_e` A
+    Nr. 13): Bei einem gebundenen Objekt geht das gespeicherte Wissen vor dem
+    Bild der Sachlage.
+
+    Vorbedingung: `artifact` ist gegen die Form gehalten; `bound` aus
+        `bound_objects`.
+    Nachbedingung: (Quelle `fakten`, Herkunft `fakten#<id>`, Text des Fakts,
+        Objekt oder Wert, Beziehung), hoechstens `SACHLAGE_FAKTEN_ANGEBOT_MAX`,
+        in der Ordnung der Objekte und der Mappe; leer ohne Paar, ohne
+        gebundenes Objekt oder ohne Fakten. Die Zaehlung steht im Log.
+    Fehlerfaelle: `bound` None — laut, leer. Eine unbekannte Entitaet wird
+        uebersprungen und als `unbekannt` gezaehlt, jeder andere Fehler der
+        Mappe als `ausfall`, laut; der Turn laeuft weiter. Eine Grenze unter 1
+        wirft `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if SACHLAGE_FAKTEN_ANGEBOT_MAX < 1:
+        msg: str = f"Sachlage-Aufloeser: Grenze der Fakten {SACHLAGE_FAKTEN_ANGEBOT_MAX} unter 1"
+        raise ValueError(msg)
+    if bound is None:
+        logger.error(
+            "Sachlage-Aufloeser: Bindungen nicht lesbar — das Angebot bleibt ohne Fakten"
+        )
+        return []
+    if not user_id or not character_id or not bound:
+        return []
+    objekte: dict[str, dict] = _acute_open_objects(artifact)
+    entities: list[int] = list(dict.fromkeys(bound[k] for k in objekte if k in bound))
+
+    # ── Verarbeitung ────────────────────────────
+    counts: dict[str, int] = {"unbekannt": 0, "ausfall": 0}
+    mappen: list[Mappe] = [
+        m for m in (_mappe_or_none(user_id, character_id, e, counts) for e in entities)
+        if m is not None
+    ]
+    hits: list[tuple[str, str, str, str, str]] = []
+    for entry in (e for m in mappen for e in m.entries):
+        origin: str = f"{SOURCE_FACTS}#{entry.fact_id}"
+        if any(h[1] == origin for h in hits):
+            continue
+        hits.append((
+            SOURCE_FACTS, origin, entry.text,
+            str(entry.object_name or entry.object_value or ""), entry.relation,
+        ))
+    logger.info(
+        f"Sachlage-Aufloeser: Fakten zu {len(entities)} Entitaeten von {len(bound)} "
+        f"gebundenen Objekten — {len(hits)} gelesen, "
+        f"{max(len(hits) - SACHLAGE_FAKTEN_ANGEBOT_MAX, 0)} weggelassen (gekappt auf "
+        f"{SACHLAGE_FAKTEN_ANGEBOT_MAX}), unbekannt {counts['unbekannt']}, "
+        f"ausfall {counts['ausfall']}"
+    )
+    hits = hits[:SACHLAGE_FAKTEN_ANGEBOT_MAX]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    empty: list[str] = [h[1] for h in hits if not h[2].strip()]
+    if empty:
+        msg = f"Sachlage-Aufloeser: Fakten ohne Text {empty}"
+        raise RuntimeError(msg)
     return hits
 
 
 def property_hits(
     artifact: dict, user_id: str, character_id: str,
+    bound: dict[str, int] | None = None,
+    offered_facts: tuple[str, ...] = (),
 ) -> list[tuple[str, str, str, str, str]]:
     """Scheibe 11: die gespeicherten Werte der akuten Objekte, die noch Luecken haben.
 
@@ -358,26 +575,38 @@ def property_hits(
     Quelle **vor** den Pool — es betrifft die Sache selbst, der Pool nur den
     Reiz. Geurteilt wird wie bei jeder anderen Quelle im Aufloeser-Call.
 
-    Vorbedingung: `artifact` ist gegen die Form gehalten.
+    Teil H, Regel (c): An einem gebundenen Objekt (`bound`) fehlt eine
+    Eigenschaft aus einem Fakt nur, wenn genau dieser Fakt im Angebot steht
+    (`offered_facts`, die Herkuenfte aus `fact_hits` desselben Turns). Ist er
+    nicht darin — Mappe leer, ausgefallen, unbekannt, hinter der Grenze —,
+    bleibt sie. Ausgelassen wird schon in der Auswahl (`active_properties`),
+    damit sie keinen Platz belegt. An einem ungebundenen Objekt bleibt sie.
+
+    Vorbedingung: `artifact` ist gegen die Form gehalten; `bound` aus
+        `bound_objects`, None oder ohne Angabe: kein Objekt gilt als gebunden;
+        `offered_facts` der Form `fakten#<id>`, leer ohne Fakten im Angebot.
     Nachbedingung: (Quelle, Herkunft, Text, Wert, Eigenschaft), hoechstens
         `SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX`; nur fuer akute Objekte mit offener
-        Eigenschaft, und nie ein Wert, dessen Eigenschaft schon gedeckt ist.
-        Ohne Paar leer.
-    Fehlerfaelle: keine — das Repository meldet DB-Fehler und liefert leer.
+        Eigenschaft, nie ein Wert, dessen Eigenschaft schon gedeckt ist, und
+        an einem gebundenen Objekt keiner, dessen Fakt angeboten ist. Ohne
+        Paar leer.
+    Fehlerfaelle: ein Artefakt, das kein dict ist, wirft `TypeError`, ein
+        akutes Objekt ohne Namen `RuntimeError` (`_acute_open_objects`); eine
+        Herkunft in `offered_facts`, die nicht aus `fakten` stammt, wirft
+        `ValueError`, eine verborgene Zeile in der Auswahl `RuntimeError`
+        (`active_properties`). Ein DB-Fehler ist dort laut und liefert hier
+        leer.
     """
     if not user_id or not character_id:
         return []
-    # Die Schluessel sind die der Datenbank (`text_key`, casefold) — mit dem
-    # lower-Schluessel dieses Moduls fand der Rueckweg kein Objekt mit ß.
-    objekte: dict[str, dict] = {
-        text_key(o.get("name", "")): o
-        for o in artifact.get("objekte") or []
-        if isinstance(o, dict) and o.get("akut") and o.get("offen")
-    }
+    objekte: dict[str, dict] = _acute_open_objects(artifact)
     if not objekte:
         return []
     gespeichert: list[dict] = active_properties(
         POSTGRES_URL, user_id, character_id, sorted(objekte), SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX * 3,
+        hidden_source=SOURCE_FACTS,
+        hidden_for=tuple(sorted(k for k in objekte if k in (bound or {}))),
+        hidden_origins=offered_facts,
     )
     hits: list[tuple[str, str, str, str, str]] = []
     for zeile in gespeichert:

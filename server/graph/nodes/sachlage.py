@@ -115,8 +115,10 @@ from graph.nodes.sachlage_resolver import (
     SOURCE_LABELS,
     MemoryHit,
     apply_memory_coverage,
+    bound_objects,
     carry_sources,
     combine_offer,
+    fact_hits,
     memory_offer,
     open_properties,
     property_hits,
@@ -904,8 +906,18 @@ def _derive(
     # Scheibe 11: was das Eigenschaftsgedaechtnis zu den akuten Objekten
     # haelt, tritt vor den Pool — der Aufloeser urteilt darueber wie ueber
     # jede andere Quelle.
+    # Teil H: bei einem gebundenen Objekt die Fakten seiner Mappe vor der
+    # Eigenschaft, und eine Eigenschaft aus einem Fakt nicht noch einmal (c) —
+    # nur, wenn genau dieser Fakt angeboten ist; daher erst die Fakten.
     if pair and offen:
-        angebot = combine_offer(property_hits(artefakt, pair[0], pair[1]), angebot)
+        gebunden: dict[str, int] | None = bound_objects(artefakt, pair[0], pair[1])
+        fakten: list[tuple[str, ...]] = fact_hits(artefakt, pair[0], pair[1], gebunden)
+        angebot = combine_offer(
+            fakten + property_hits(
+                artefakt, pair[0], pair[1], gebunden, tuple(f[1] for f in fakten),
+            ),
+            angebot,
+        )
     claims: dict = (
         resolve_open_properties(offen, angebot) if angebot and offen else {}
     )

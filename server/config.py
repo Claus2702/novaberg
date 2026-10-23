@@ -3432,8 +3432,9 @@ OBJEKT_NAEHE_UNTERGRENZE: float = float(
 OBJEKT_NAEHE_FRIST_S: float = float(
     os.getenv("OBJEKT_NAEHE_FRIST_S", "10.0"))
 # Scheibe 6 (28.08.2026), der Frame-Aufloeser: Wie viele Eintraege des
-# Gedaechtnis-Pools dieses Turns (KZG, LZG, Bibliothek, Aufzeichnungen,
-# Kalender) der Sachlage-Call als nummeriertes Angebot sieht. Der Pool traegt
+# Gedaechtnis-Pools dieses Turns (KZG, LZG, Bibliothek, Aufzeichnungen; seit
+# Teil H ohne den Kalender, der eine eigene Grenze hat) der Sachlage-Call als
+# nummeriertes Angebot sieht. Der Pool traegt
 # im Betrieb um 20 Eintraege (28.08.2026: 19 + 3 Aufzeichnungen); jeder kostet
 # Prompt-Zeichen, und eine Sektion hat schon einmal eine Nebensache aus dem
 # Artefakt gedrueckt (Scheibe 5). ⚠ Wachposten: Startwert, nicht gemessen.
@@ -3462,6 +3463,19 @@ SACHLAGE_BINDUNG_TURN_FENSTER: int = int(
 # selbst betreffen. ⚠ Startwert, nicht gemessen.
 SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX: int = int(
     os.getenv("SACHLAGE_EIGENSCHAFT_ANGEBOT_MAX", "4"))
+# Teil H (22.10.2026): Wie viele Fakten aus der Mappe der gebundenen, akuten
+# Objekte der Aufloeser angeboten bekommt — vor der Eigenschaft, eine eigene
+# Grenze, damit keine Quelle eine andere verdraengt. ⚠ Wachposten: Startwert,
+# nicht gemessen.
+SACHLAGE_FAKTEN_ANGEBOT_MAX: int = int(
+    os.getenv("SACHLAGE_FAKTEN_ANGEBOT_MAX", "8"))
+# Teil H: Wie viele Kalenderzeilen das Angebot traegt, in der Ordnung des
+# Lesewegs der Termine. Ein Zeitraum ist je Objekt nicht gekappt; ohne diese
+# Grenze fuellte ein voller Monat alle Plaetze von Pool und Aufzeichnungen.
+# Den ganzen Zeitraum traegt der Block [TERMINE]. ⚠ Wachposten: Startwert,
+# nicht gemessen.
+SACHLAGE_BESTAND_KALENDER_MAX: int = int(
+    os.getenv("SACHLAGE_BESTAND_KALENDER_MAX", "5"))
 
 # --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
 # Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein
