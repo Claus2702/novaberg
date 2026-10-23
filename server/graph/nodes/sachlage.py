@@ -135,6 +135,7 @@ from memory.sachlage_history import (
     history_read_turn,
     history_write,
 )
+from memory.sachlage_properties import bound_entities, text_key
 from memory.session import SESSION_HISTORY_BUDGET_CHARS, Verlaufsbeitrag, budget_wahren
 from services.model_services import EmbedRequest, model_service
 from services.model_services.types import ChatRequest
@@ -1525,13 +1526,77 @@ def build_event_order(state: dict, verlauf_id: int, stored: bool) -> dict | None
     return order
 
 
+def object_entities(sachlage: dict, user_id: str, character_id: str) -> list[dict] | None:
+    """Die gebundenen Entitaeten der akuten Objekte — der Kanal `objekt_entitaeten`.
+
+    Ob ein Objekt an eine Entitaet gebunden ist, steht nur im
+    Eigenschaftsgedaechtnis (`bound_entities`), nicht in der Blase. Gelesen
+    werden die Schluessel aller akuten Objekte, auch ohne offene Eigenschaft:
+    Die Erinnerungen an eine Person gehoeren zu ihr, nicht zu einer Luecke.
+    Ein nur erwaehntes Objekt (nicht akut) steht nicht im Kanal.
+
+    Vorbedingung: `sachlage` ist das Artefakt dieses Turns, auf welchem Weg
+        auch immer es entstand.
+    Nachbedingung: `{"name", "entitaet_id"}` je gebundener Entitaet, einmal je
+        Entitaet (der Name des ersten Objekts), in der Ordnung der akuten
+        Objekte; `[]` ohne akutes oder ohne gebundenes Objekt.
+    Fehlerfaelle: `None`, laut, wenn die Bindungen nicht lesbar sind — auch
+        ohne vollstaendiges Paar, denn dann laesst sich nichts lesen. Ein
+        akutes Objekt ohne Namen wird laut uebergangen; es kann nicht gebunden
+        sein. Ein Artefakt, das kein dict ist, wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(sachlage, dict):
+        raise TypeError(f"Sachlage-Anker: Artefakt ist {type(sachlage).__name__}")  # noqa: TRY003
+    acute: list[tuple[str, str]] = [
+        (str(o.get("name", "")), text_key(o.get("name", "")))
+        for o in sachlage.get("objekte") or []
+        if isinstance(o, dict) and o.get("akut")
+    ]
+    if any(not key for _, key in acute):
+        logger.error("Sachlage-Anker: akutes Objekt ohne Namen — es fehlt im Kanal")
+        acute = [(name, key) for name, key in acute if key]
+    if not acute:
+        return []
+    if not user_id or not character_id:
+        logger.error("Sachlage-Anker: kein vollstaendiges Paar — Kanal objekt_entitaeten ist None")
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    bound: dict[str, int] | None = bound_entities(
+        POSTGRES_URL, user_id, character_id, sorted({key for _, key in acute}),
+    )
+    if bound is None:
+        logger.error(
+            "Sachlage-Anker: Bindungen nicht lesbar — Kanal objekt_entitaeten ist None"
+        )
+        return None
+    channel: list[dict] = []
+    for name, key in acute:
+        entity_id: int | None = bound.get(key)
+        if entity_id is not None and entity_id not in {e["entitaet_id"] for e in channel}:
+            channel.append({"name": name, "entitaet_id": entity_id})
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if {e["entitaet_id"] for e in channel} != set(bound.values()):
+        raise RuntimeError(  # noqa: TRY003
+            f"Sachlage-Anker: Kanal {channel} deckt die Bindungen {bound} nicht"
+        )
+    logger.info(
+        f"Sachlage-Anker: {len(channel)} Entitaeten aus {len(acute)} akuten Objekten "
+        f"({len(bound)} gebunden)"
+    )
+    return channel
+
+
 def sachlage_assess(state: dict) -> dict:
     """Der Knoten: laedt, schreibt fort, protokolliert.
 
     Vorbedingung: `state` traegt `user_id`, `character_id`, `turn_id`.
     Nachbedingung: `state["sachlage"]` ist ein dict mit `herkunft` — auf
         jedem Weg, auch bei Ausfall (F-LOG-3: der Rueckkehrpfad setzt das
-        Protokollfeld).
+        Protokollfeld). `state["objekt_entitaeten"]` traegt auf jedem Weg die
+        gebundenen Entitaeten der akuten Objekte (`object_entities`).
     Fehlerfaelle: Ein Ausfall des Calls uebernimmt den Vorgaenger und
         markiert das; ohne Vorgaenger steht ein leeres Artefakt mit Marke.
     """
@@ -1623,6 +1688,9 @@ def sachlage_assess(state: dict) -> dict:
         else:
             sachlage = dict(vorige or {})
             sachlage["herkunft"] = HERKUNFT_AUSFALL
+    # Auf jedem Weg, nach dem Ablegen und dem Schreibauftrag: die Entitaeten
+    # der akuten Objekte, aus denen der Erinnerungsanker sucht.
+    objekt_entitaeten: list[dict] | None = object_entities(sachlage, user_id, character_id)
 
     # ── Ausgabe-Verifikation ────────────────────
     if "herkunft" not in sachlage:
@@ -1643,6 +1711,7 @@ def sachlage_assess(state: dict) -> dict:
         )
     state["sachlage"] = sachlage
     state["sachlage_bruecke"] = bruecke
+    state["objekt_entitaeten"] = objekt_entitaeten
     if bruecke:
         logger.info(
             f"Sachlage-Bruecke [{bruecke['weg']}]: Ausloeser turn="

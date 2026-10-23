@@ -240,6 +240,11 @@ class ConversationState(TypedDict):
     # Embedding-Rueckfall), sonst leer. Deklariert, weil LangGraph
     # Undeklariertes lautlos verwirft.
     sachlage_bruecke: dict
+    # Die gebundenen Entitaeten der akuten Objekte ({"name", "entitaet_id"}),
+    # einmal je Entitaet, in der Ordnung der Objekte — geschrieben am Ende der
+    # Sachlage auf jedem ihrer Wege. `[]` heisst *nichts gebunden*, `None`
+    # *nicht lesbar*. Deklariert, weil LangGraph Undeklariertes verwirft.
+    objekt_entitaeten: list[dict] | None
     # Das Urteil der Objekt-Naehe (Scheibe 12 C2/D1, agents/object_nearness.py):
     # je akutem Objekt die Dienste, deren Merkmal es erreicht. Geschrieben vom
     # Router, gelesen vom Planner fuer die Reihenfolge der Dienste.

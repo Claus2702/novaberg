@@ -35,6 +35,7 @@ from config import (
     LZG_KNOTEN_MIN_GEWICHT,
     LZG_KNOTEN_REINFORCEMENT_BOOST,
 )
+from memory.lzg_kanten import SCHICHT_ENTITAET
 
 logger = logging.getLogger(__name__)
 
@@ -1139,4 +1140,114 @@ def spreading_lesen(
         logger.info("  Top-%d knoten=%s schale=%d sortier_gewicht=%.4f",
                     eintrag["rang"], eintrag["knoten_id"],
                     eintrag["schale"], eintrag["sortier_gewicht"])
+    return ergebnis
+
+
+def knoten_zu_entitaeten(  # noqa: PLR0913, PLR0917 — Paar, Kennungen, Stimmung, Grenze je Aufruf
+    postgres_url: str,
+    user_id: str,
+    character_id: str,
+    entitaet_ids: list[int],
+    nova_emotion: str,
+    limit: int,
+) -> list[dict] | None:
+    """Die Erinnerungen des Paares an gebundene Entitaeten (Erinnerungsanker).
+
+    Sucht nicht nach Aehnlichkeit, sondern nach Gegenstand: jeder aktive
+    Knoten des Paares, dessen `entitaet_ids` eine der Kennungen traegt. Die
+    Elemente haben die Form von `spreading_lesen` — Formatter,
+    Gespraechsvektor und Praegung lesen dieselbe Liste —, erreicht in
+    Schale 1 ueber die Schicht `entitaet`.
+
+    Vorbedingung: das Paar ist vollstaendig; `entitaet_ids` ganze Zahlen;
+        `nova_emotion` ein Text (leer = ungefaerbt); `limit` mindestens 1.
+    Nachbedingung: hoechstens `limit` Erinnerungen, nach `gewicht_decay` und
+        dann `id` absteigend, `rang` ab 1. `pfad` ist ein Schritt mit
+        `verbindungs_gruende == ["entitaet"]` und `geteilte_entitaet_ids`
+        als Menge (sortiert, jede Kennung einmal, auch wenn der Knoten sie
+        doppelt fuehrt). `[]` ohne Kennungen oder ohne Treffer.
+    Fehlerfaelle: ein unvollstaendiges Paar, eine Kennung, die keine ganze
+        Zahl ist, oder eine Grenze unter 1 werfen `ValueError`; eine Stimmung,
+        die kein Text ist, `TypeError`. DB-Fehler — `logger.exception`,
+        `None`, **nie `[]`**: Der Leser muss *nichts gefunden* von *nicht
+        lesbar* unterscheiden koennen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        raise ValueError("LZG-Anker: Suche ohne vollstaendiges Paar")  # noqa: TRY003
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+        raise ValueError(f"LZG-Anker: Grenze {limit!r} ist keine ganze Zahl ab 1")  # noqa: TRY003
+    if any(isinstance(e, bool) or not isinstance(e, int) for e in entitaet_ids):
+        raise ValueError(f"LZG-Anker: Kennungen {entitaet_ids!r} sind nicht ganzzahlig")  # noqa: TRY003
+    if not isinstance(nova_emotion, str):
+        raise TypeError(f"LZG-Anker: Stimmung ist {type(nova_emotion).__name__}")  # noqa: TRY003
+    gesucht: set[int] = set(entitaet_ids)
+    if not gesucht:
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(
+                    """
+                    SELECT id, inhalt, themen, entitaet_ids, emotion, beobachter,
+                           erstellt_am, gewicht_decay
+                    FROM lzg_knoten
+                    WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
+                      AND entitaet_ids && %s::int[]
+                    ORDER BY gewicht_decay DESC, id DESC
+                    LIMIT %s
+                    """,
+                    (user_id, character_id, sorted(gesucht), limit),
+                )
+                zeilen: list[dict] = [dict(z) for z in cur.fetchall()]
+        finally:
+            conn.close()
+    except psycopg2.Error:
+        logger.exception(
+            "LZG-Anker: Knoten zu Entitaeten %s nicht lesbar paar=%s/%s",
+            sorted(gesucht), user_id, character_id,
+        )
+        return None
+    ergebnis: list[dict] = []
+    for rang, zeile in enumerate(zeilen, start=1):
+        emotion: str = zeile.get("emotion") or ""
+        gewicht: float = zeile.get("gewicht_decay") or 0.0
+        ergebnis.append({
+            "rang":            rang,
+            "knoten_id":       zeile["id"],
+            "inhalt":          zeile.get("inhalt"),
+            "themen":          zeile.get("themen"),
+            "entitaet_ids":    zeile.get("entitaet_ids"),
+            "emotion":         emotion,
+            "beobachter":      zeile.get("beobachter") or "",
+            "erstellt_am":     zeile.get("erstellt_am"),
+            "gewicht_decay":   gewicht,
+            "schale":          1,
+            "sortier_gewicht": _sortier_gewicht(gewicht, 1, nova_emotion, emotion),
+            "pfad": [{
+                "von_knoten_id":         None,
+                "kante_id":              None,
+                "verbindungs_gruende":   [SCHICHT_ENTITAET],
+                "geteilte_entitaet_ids": sorted(set(zeile.get("entitaet_ids") or []) & gesucht),
+                "geteilte_themen":       [],
+            }],
+        })
+
+    # ── Ausgabe-Verifikation ────────────────────
+    ohne_bezug: list[int] = [
+        e["knoten_id"] for e in ergebnis if not e["pfad"][0]["geteilte_entitaet_ids"]
+    ]
+    if ohne_bezug or len(ergebnis) > limit:
+        msg: str = (
+            f"LZG-Anker: {len(ergebnis)} Knoten bei Grenze {limit}, "
+            f"ohne gesuchte Entitaet {ohne_bezug}"
+        )
+        raise RuntimeError(msg)
+    logger.info(
+        "LZG-Anker: paar=%s/%s entitaeten=%s -> %d Knoten",
+        user_id, character_id, sorted(gesucht), len(ergebnis),
+    )
     return ergebnis
