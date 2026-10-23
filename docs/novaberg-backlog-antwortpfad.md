@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Antwortpfad — Gespraechsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~50~~ → 68 Eintraege (22.10.2026: `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` und `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` neu — die Zahl ist die des Findemittels, das schon vorher 66 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~50~~ → ~~68~~ → 69 Eintraege (23.10.2026: `SACHLAGE-FAKTEN-PERSON-IM-OBJEKTNAMEN` neu, nach einer Entscheidung; 22.10.2026: `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` und `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` neu — die Zahl ist die des Findemittels, das schon vorher 66 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1279,3 +1279,23 @@ Der Eigentümer schrieb die Anrede fünfmal; Nova trägt sie seit Anfang Septemb
 **Was fertig wäre:** Beide Grenzen sind an einer Messung gesetzt — am Modell des Betriebs die Länge der Angebots-Sektion mit und ohne Fakten und die Urteile des Auflösers bei voller Grenze, im Betrieb die Verteilung der gelesenen und weggelassenen Einträge über die Turns mit gebundener Person oder mit einer Frage nach einem Zeitraum —, oder die begründete Feststellung, dass die Startwerte tragen.
 
 **Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (*Das Angebot der Sachlage*) · `novaberg-thinking-lage_b.md` Scheibe 6, Scheibe 13 · `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` (Gedächtnis) · `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN`
+
+---
+
+## Feature: SACHLAGE-FAKTEN-PERSON-IM-OBJEKTNAMEN — die Fakten einer gebundenen Person auch anbieten, wenn sie nur im Namen eines akuten Objekts steckt (23.10.2026)
+
+**Kategorie:** [ANT] ANTWORTPFAD
+
+**Rang:** mittel — die Absicht steht, der Weg nicht: Das Angebot der Fakten erreicht den Frame-Auflöser heute nur, wenn die erfragte Person selbst akut ist, am Modell in 43 von 92 Läufen. Im Betrieb wirkt es erst, wenn `fakten` Zeilen trägt (am 22.10.2026 leer).
+
+**Zustand:** ⬜ offen — entschieden am 23.10.2026 (`novaberg-memory-fakten_e.md` A Nr. 45), nicht gebaut.
+
+**Entscheidung:** Die Fakten werden auch für eine gebundene Person angeboten, die nur im Namen eines akuten Objekts steckt — synthetisch *„Lennas Beruf“*, *„Paket an Lena“* (23.10.2026, Wortlaut: *„Beide wie empfohlen“*; vorgelegt am 22.10.2026 mit der Empfehlung *ja*).
+
+**Beleg, gemessen** am Modell des Betriebs am 22.10.2026, vor dem Commit von Teil H (Code-Tree `04f823e`; `labor/2026-10-22_h_c5a_messung_ergebnis.md`; 23 synthetische Äußerungen × 4 Läufe, Bindungen und Mappe als Doppel): Die erfragte Person ist nur in **43 von 92** Läufen akut — direkte Frage 12 von 20, Beziehungsform (*„meine Schwester“*) **4 von 20**, Kosename 5 von 20, zwei Personen 22 von 32. Eines der drei Muster dahinter: Die erfragte Eigenschaft wandert an ein Objekt, das die Person nur im Namen trägt und selbst nicht gebunden ist (*„Paket an Lena“* mit offener *Adresse*, *„Lennas Beruf“* mit offener *Berufsbezeichnung*, *„Besuch bei Jonas“* mit offenem *Ort*). `graph/nodes/sachlage_resolver.py::fact_hits` bietet nur die Fakten akuter Objekte mit offener Eigenschaft an, die selbst gebunden sind; für diese Objekte bleibt das Angebot leer. Unbedingt gerechnet stand der passende Fakt deshalb in 18 von 56 Läufen im Angebot, obwohl der Auflöser ihn dann 18 von 18 Mal wählte und nie fehlgriff.
+
+**Vor dem Bau ein Architektur-Entwurf:** Sachlage-Prompt oder Tor — ob die Sachlage die erfragte Person selbst als akutes Objekt führt (Prompt) oder `fact_hits` eine gebundene Person im Namen eines akuten Objekts erkennt und deren Fakten anbietet (Tor). In den Entwurf gehört auch, wie die Person im Namen gefunden wird (Genitiv, Schreibvarianten wie *Lennas*) und wie Regel (c) dann gilt: Nach der Umsetzungsentscheidung zu Nr. 44 wirkt sie nur an einem gebundenen Objekt, und das Objekt, das die Person im Namen trägt, ist es nicht.
+
+**Was fertig wäre:** Trägt ein akutes Objekt mit offener Eigenschaft eine gebundene Person im Namen, stehen ihre Fakten im Angebot des Auflösers — bezeugt mit Zwilling (eine nur erwähnte Person bekommt kein Angebot) und an derselben Reihe am Modell gemessen: mehr als 18 von 56 Läufen mit passendem Fakt im Angebot, weiter kein Fehlgriff, eine nur erwähnte Person weiter ohne Angebot (16 von 16).
+
+**Zusammenhang:** `novaberg-memory-fakten_e.md` A Nr. 45 und Nr. 44 (Regel (c)) · `novaberg-memory-fakten_b.md` §6 (*Das Angebot der Sachlage*) · `novaberg-thinking-lage_m.md` Scheibe 13 · `SACHLAGE-PLATZHALTER-ALS-WERT` (ein zweites Muster derselben Messung) · `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN`

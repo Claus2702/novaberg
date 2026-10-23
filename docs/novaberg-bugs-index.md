@@ -1,19 +1,19 @@
 # Novaberg — Bugs, Findemittel
 
-**Inhalt:** eine Zeile je Kennung, offen und abgeschlossen, ueber alle Teile — 436 Zeilen: 177 offen, 0 ohne Zustandsangabe, 259 abgeschlossen (davon 72 nur als Kurzeintrag).
+**Inhalt:** eine Zeile je Kennung, offen und abgeschlossen, ueber alle Teile — 437 Zeilen: 177 offen, 0 ohne Zustandsangabe, 260 abgeschlossen (davon 72 nur als Kurzeintrag).
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) fuer die offenen, [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) fuer die abgeschlossenen — dort stehen auch die Kurzeintraege der alten Tabelle.
 **Gerechnet, nicht geschrieben** — aus allen Teilen. Eine Aenderung hier gilt bis zum naechsten Lauf.
 
 | Datei | Gegenstand | Eintraege | kB |
 |---|---|---|---|
-| [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md) | Gedächtnis (`GED`) | 17 | 50 |
-| [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md) | Hintergrund (`HGR`) | 19 | 42 |
+| [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md) | Gedächtnis (`GED`) | 18 | 58 |
+| [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md) | Hintergrund (`HGR`) | 18 | 39 |
 | [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md) | Charakter (`CHA`) | 30 | 116 |
 | [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md) | Antwortpfad (`ANT`) | 52 | 140 |
 | [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md) | Wissen (`WIS`) | 32 | 78 |
 | [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md) | Bauart (`BAU`) | 27 | 54 |
 | [`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md) | Gedächtnis (`GED`) | 29 | 84 |
-| [`novaberg-bugs-archiv-hintergrund.md`](novaberg-bugs-archiv-hintergrund.md) | Hintergrund (`HGR`) | 24 | 53 |
+| [`novaberg-bugs-archiv-hintergrund.md`](novaberg-bugs-archiv-hintergrund.md) | Hintergrund (`HGR`) | 25 | 57 |
 | [`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md) | Charakter (`CHA`) | 30 | 75 |
 | [`novaberg-bugs-archiv-antwortpfad.md`](novaberg-bugs-archiv-antwortpfad.md) | Antwortpfad (`ANT`) | 54 | 158 |
 | [`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md) | Wissen (`WIS`) | 32 | 97 |
@@ -32,7 +32,7 @@
 | `AGENT-SCHEMA-OHNE-SPERRFRIST` | BAU | offen | [novaberg-bugs-bauart.md:59](novaberg-bugs-bauart.md) |
 | `AGENT-SCHEMA-STILL-VERLOREN` | BAU | offen | [novaberg-bugs-bauart.md:42](novaberg-bugs-bauart.md) |
 | `AGENT-SETUP-IGNORIERT-URL` | BAU | offen | [novaberg-bugs-bauart.md:72](novaberg-bugs-bauart.md) |
-| `AGENTGRAPH-REIZPLATZ-FALSCH` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:169](novaberg-bugs-archiv-hintergrund.md) |
+| `AGENTGRAPH-REIZPLATZ-FALSCH` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:194](novaberg-bugs-archiv-hintergrund.md) |
 | `AGENTINPUT-NIE-EXISTIERT` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:267](novaberg-bugs-archiv-bauart.md) |
 | `AGT-FIX1` | — | abgeschlossen | [novaberg-bugs-archiv.md:88](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `AGT-FIX2` | — | abgeschlossen | [novaberg-bugs-archiv.md:89](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -52,10 +52,10 @@
 | `ARCHIVDATEI-OHNE-ETIKETT` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:353](novaberg-bugs-archiv-wissen.md) |
 | `AROUSAL-330` | — | abgeschlossen | [novaberg-bugs-archiv.md:138](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `AROUSAL-367` | — | abgeschlossen | [novaberg-bugs-archiv.md:140](novaberg-bugs-archiv.md) (Kurzeintrag) |
-| `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` | GED | offen | [novaberg-bugs-gedaechtnis.md:69](novaberg-bugs-gedaechtnis.md) |
+| `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` | GED | offen | [novaberg-bugs-gedaechtnis.md:98](novaberg-bugs-gedaechtnis.md) |
 | `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:370](novaberg-bugs-archiv-antwortpfad.md) |
-| `AUSSCHLUSSRIEGEL-TRIFFT-SACHWORT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:190](novaberg-bugs-archiv-hintergrund.md) |
-| `BATCH-ZAEHLER-ZAEHLEN-AUFRUFE` | GED | offen | [novaberg-bugs-gedaechtnis.md:358](novaberg-bugs-gedaechtnis.md) |
+| `AUSSCHLUSSRIEGEL-TRIFFT-SACHWORT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:215](novaberg-bugs-archiv-hintergrund.md) |
+| `BATCH-ZAEHLER-ZAEHLEN-AUFRUFE` | GED | offen | [novaberg-bugs-gedaechtnis.md:391](novaberg-bugs-gedaechtnis.md) |
 | `BEANTWORTETE-ABSICHT-STEHT-OFFEN` | BAU | offen | [novaberg-bugs-bauart.md:224](novaberg-bugs-bauart.md) |
 | `BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:80](novaberg-bugs-archiv-bauart.md) |
 | `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` | BAU | offen | [novaberg-bugs-bauart.md:25](novaberg-bugs-bauart.md) |
@@ -65,7 +65,7 @@
 | `BIBLIOTHEKSSCHWELLE-SORTIERT-FALSCH` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:424](novaberg-bugs-archiv-wissen.md) |
 | `BLOCKKARTE-STILL-HALBIERT` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:448](novaberg-bugs-archiv-wissen.md) |
 | `BROADCAST-VERSCHLUCKT-FEHLER` | ANT | offen | [novaberg-bugs-antwortpfad.md:1010](novaberg-bugs-antwortpfad.md) |
-| `BUG3` | GED | offen | [novaberg-bugs-gedaechtnis.md:290](novaberg-bugs-gedaechtnis.md) |
+| `BUG3` | GED | offen | [novaberg-bugs-gedaechtnis.md:323](novaberg-bugs-gedaechtnis.md) |
 | `BUTLER1` | ANT | offen | [novaberg-bugs-antwortpfad.md:731](novaberg-bugs-antwortpfad.md) |
 | `CAIRO-PHANTOM` | — | abgeschlossen | [novaberg-bugs-archiv.md:135](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `CHAR-BEZ-STALE` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:522](novaberg-bugs-archiv-charakter.md) |
@@ -74,7 +74,7 @@
 | `CHAR-ID4-ORPHAN` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:624](novaberg-bugs-archiv-charakter.md) |
 | `CHAR-LZG-LEAK` | — | abgeschlossen | [novaberg-bugs-archiv.md:145](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `CHARAKTER-KONTEXT-VERWECHSELT-SEITE` | ANT | offen | [novaberg-bugs-antwortpfad.md:648](novaberg-bugs-antwortpfad.md) |
-| `CHARAKTERAGENT-AUSGEHUNGERT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:507](novaberg-bugs-archiv-hintergrund.md) |
+| `CHARAKTERAGENT-AUSGEHUNGERT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:532](novaberg-bugs-archiv-hintergrund.md) |
 | `CHARHASH-RESET-TRIGGER-FEHLT` | CHA | offen | [novaberg-bugs-charakter.md:793](novaberg-bugs-charakter.md) |
 | `CHAT-NAME-OHNE-ERZEUGER` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:687](novaberg-bugs-archiv-antwortpfad.md) |
 | `CLASSIFY-CONFIRM` | — | abgeschlossen | [novaberg-bugs-archiv.md:124](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -82,7 +82,7 @@
 | `CLIENT-OFFENE-FRAGE-UNSICHTBAR` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:1553](novaberg-bugs-archiv-antwortpfad.md) |
 | `CLIENT-STUFEN-OHNE-TURN-KENNUNG` | ANT | offen | [novaberg-bugs-antwortpfad.md:682](novaberg-bugs-antwortpfad.md) |
 | `CLIPBOARD-BEGRIFF-DOPPELT` | BAU | offen | [novaberg-bugs-bauart.md:368](novaberg-bugs-bauart.md) |
-| `CLUSTER-META-CONTAMINATION` | GED | offen | [novaberg-bugs-gedaechtnis.md:306](novaberg-bugs-gedaechtnis.md) |
+| `CLUSTER-META-CONTAMINATION` | GED | offen | [novaberg-bugs-gedaechtnis.md:339](novaberg-bugs-gedaechtnis.md) |
 | `CLUSTER-THEMEN-DEDUP` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:88](novaberg-bugs-archiv-gedaechtnis.md) |
 | `CRUD-DESTILL-SUBTRAKT` | CHA | offen | [novaberg-bugs-charakter.md:634](novaberg-bugs-charakter.md) |
 | `CRUD-REACTIVATE-COEXIST` | CHA | offen | [novaberg-bugs-charakter.md:617](novaberg-bugs-charakter.md) |
@@ -94,11 +94,11 @@
 | `DELEG-REG` | — | abgeschlossen | [novaberg-bugs-archiv.md:121](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `DESTILLAT-BEHAUPTETE-HANDLUNG` | CHA | offen | [novaberg-bugs-charakter.md:898](novaberg-bugs-charakter.md) |
 | `DESTILLATION-LEERE-UEBERSCHRIFT` | CHA | offen | [novaberg-bugs-charakter.md:959](novaberg-bugs-charakter.md) |
-| `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION` | HGR | offen | [novaberg-bugs-hintergrund.md:52](novaberg-bugs-hintergrund.md) |
+| `DIENST-MELDET-ABGESCHLOSSEN-OHNE-VERIFIKATION` | HGR | offen | [novaberg-bugs-hintergrund.md:29](novaberg-bugs-hintergrund.md) |
 | `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` | CHA | offen | [novaberg-bugs-charakter.md:40](novaberg-bugs-charakter.md) |
-| `DISPATCH-ABSCHLUSS-UNVOLLSTAENDIG` | HGR | offen | [novaberg-bugs-hintergrund.md:181](novaberg-bugs-hintergrund.md) |
+| `DISPATCH-ABSCHLUSS-UNVOLLSTAENDIG` | HGR | offen | [novaberg-bugs-hintergrund.md:158](novaberg-bugs-hintergrund.md) |
 | `DISPATCH-DELEGATION-RUECKGABE-VERWORFEN` | ANT | offen | [novaberg-bugs-antwortpfad.md:1029](novaberg-bugs-antwortpfad.md) |
-| `DISPATCH-SALIENZ-DEFAULT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:496](novaberg-bugs-archiv-hintergrund.md) |
+| `DISPATCH-SALIENZ-DEFAULT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:521](novaberg-bugs-archiv-hintergrund.md) |
 | `DOPPEL-GEDAECHTNIS-HEADER` | — | abgeschlossen | [novaberg-bugs-archiv.md:152](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `E.1 KZG-INDEX` | — | abgeschlossen | [novaberg-bugs-archiv.md:128](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `E.2 KZG-VERST` | — | abgeschlossen | [novaberg-bugs-archiv.md:129](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -115,8 +115,8 @@
 | `ENRICH-NULLTERM-IST-EINE-ZAHL` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:238](novaberg-bugs-archiv-antwortpfad.md) |
 | `ENRICHER-DUP` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:897](novaberg-bugs-archiv-wissen.md) |
 | `ENRICHERPROMPT-LEERE-HUELLE` | BAU | offen | [novaberg-bugs-bauart.md:381](novaberg-bugs-bauart.md) |
-| `ENTITAETEN-OHNE-EMBEDDING` | GED | offen | [novaberg-bugs-gedaechtnis.md:216](novaberg-bugs-gedaechtnis.md) |
-| `ENTITAETIDS-MIT-DUBLETTEN` | GED | offen | [novaberg-bugs-gedaechtnis.md:143](novaberg-bugs-gedaechtnis.md) |
+| `ENTITAETEN-OHNE-EMBEDDING` | GED | offen | [novaberg-bugs-gedaechtnis.md:249](novaberg-bugs-gedaechtnis.md) |
+| `ENTITAETIDS-MIT-DUBLETTEN` | GED | offen | [novaberg-bugs-gedaechtnis.md:176](novaberg-bugs-gedaechtnis.md) |
 | `EREIGNIS-KANDIDAT-OHNE-SPRECHER` | WIS | offen | [novaberg-bugs-wissen.md:54](novaberg-bugs-wissen.md) |
 | `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:16](novaberg-bugs-archiv-wissen.md) |
 | `ERSCHLIESSUNG-VERSTUEMMELT-STICHWORT` | WIS | offen | [novaberg-bugs-wissen.md:291](novaberg-bugs-wissen.md) |
@@ -133,11 +133,11 @@
 | `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` | WIS | offen | [novaberg-bugs-wissen.md:90](novaberg-bugs-wissen.md) |
 | `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` | WIS | offen | [novaberg-bugs-wissen.md:178](novaberg-bugs-wissen.md) |
 | `FAKTENPLUGIN-OHNE-KAPPUNG` | WIS | offen | [novaberg-bugs-wissen.md:326](novaberg-bugs-wissen.md) |
-| `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` | GED | offen | [novaberg-bugs-gedaechtnis.md:162](novaberg-bugs-gedaechtnis.md) |
+| `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` | GED | offen | [novaberg-bugs-gedaechtnis.md:195](novaberg-bugs-gedaechtnis.md) |
 | `FALTUNG-OHNE-AUFRUFER` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:220](novaberg-bugs-archiv-charakter.md) |
 | `FARBTON-ERREICHT-RESPONDER-NICHT` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:537](novaberg-bugs-archiv-antwortpfad.md) |
 | `FASZINATION-TURN-SIEBEN-VON-NEUN` | CHA | offen | [novaberg-bugs-charakter.md:975](novaberg-bugs-charakter.md) |
-| `FEHLVERSUCHSPFAD-LOESCHT-HART` | HGR | offen | [novaberg-bugs-hintergrund.md:105](novaberg-bugs-hintergrund.md) |
+| `FEHLVERSUCHSPFAD-LOESCHT-HART` | HGR | offen | [novaberg-bugs-hintergrund.md:82](novaberg-bugs-hintergrund.md) |
 | `FRAGEN-ZEILE-OHNE-BEDINGUNG` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:487](novaberg-bugs-archiv-antwortpfad.md) |
 | `FRISTANGABE-WIDERSPRICHT-SICH` | BAU | offen | [novaberg-bugs-bauart.md:237](novaberg-bugs-bauart.md) |
 | `FUEHRUNGSMASS-AUF-FALSCHER-EBENE` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:342](novaberg-bugs-archiv-charakter.md) |
@@ -147,7 +147,7 @@
 | `GRAVITATION-DOPPELTER-VERFALL` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:499](novaberg-bugs-archiv-gedaechtnis.md) |
 | `GRAVITATION-FAERBT-EIGENE-GEDANKEN` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:470](novaberg-bugs-archiv-gedaechtnis.md) |
 | `GRAVITATION-FAKTOR-SESSION-TOT` | BAU | offen | [novaberg-bugs-bauart.md:119](novaberg-bugs-bauart.md) |
-| `GRAVITATION-KLEMME-FEHLT` | GED | offen | [novaberg-bugs-gedaechtnis.md:235](novaberg-bugs-gedaechtnis.md) |
+| `GRAVITATION-KLEMME-FEHLT` | GED | offen | [novaberg-bugs-gedaechtnis.md:268](novaberg-bugs-gedaechtnis.md) |
 | `GRAVITATIONSTERM-OHNE-OBERGRENZE` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:159](novaberg-bugs-archiv-gedaechtnis.md) |
 | `GRUND-NENNT-FALSCHE-URSACHE` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:363](novaberg-bugs-archiv-charakter.md) |
 | `GV-ABSICHT-OHNE-KORRIDOR` | ANT | offen | [novaberg-bugs-antwortpfad.md:1194](novaberg-bugs-antwortpfad.md) |
@@ -183,8 +183,8 @@
 | `HASH-DIRTY-WAISENKEYS` | CHA | offen | [novaberg-bugs-charakter.md:928](novaberg-bugs-charakter.md) |
 | `HASH1` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:159](novaberg-bugs-archiv-charakter.md) |
 | `IMPORTE-UEBERSPRINGEN-SCHICHT` | BAU | offen | [novaberg-bugs-bauart.md:312](novaberg-bugs-bauart.md) |
-| `IMPULS-BEZIEHUNGSRECHERCHE` | HGR | offen | [novaberg-bugs-hintergrund.md:355](novaberg-bugs-hintergrund.md) |
-| `IMPULS-DOPPELTE-SPUR` | GED | offen | [novaberg-bugs-gedaechtnis.md:410](novaberg-bugs-gedaechtnis.md) |
+| `IMPULS-BEZIEHUNGSRECHERCHE` | HGR | offen | [novaberg-bugs-hintergrund.md:332](novaberg-bugs-hintergrund.md) |
+| `IMPULS-DOPPELTE-SPUR` | GED | offen | [novaberg-bugs-gedaechtnis.md:443](novaberg-bugs-gedaechtnis.md) |
 | `IMPULS-FAELLT-AUS-DEM-VERLAUF` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:1052](novaberg-bugs-archiv-antwortpfad.md) |
 | `IMPULS-ICH-PERSPEKTIVE-TEILWEISE` | ANT | offen | [novaberg-bugs-antwortpfad.md:1143](novaberg-bugs-antwortpfad.md) |
 | `IMPULS-KOPIE` | — | abgeschlossen | [novaberg-bugs-archiv.md:143](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -197,7 +197,7 @@
 | `JSON-LEAK` | — | abgeschlossen | [novaberg-bugs-archiv.md:106](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `KALIBRIER-INTENTIONEN-UNGEPARST` | — | abgeschlossen | [novaberg-bugs-archiv.md:78](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `KALIBRIERUNG-STICHPROBE-IST-PRAEFIX` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:488](novaberg-bugs-archiv-bauart.md) |
-| `KANDIDATEN-PRIORITAET-STILLE-NULL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:287](novaberg-bugs-archiv-hintergrund.md) |
+| `KANDIDATEN-PRIORITAET-STILLE-NULL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:312](novaberg-bugs-archiv-hintergrund.md) |
 | `KANON-FELDER-NEHMEN-FREMDWERTE` | CHA | offen | [novaberg-bugs-charakter.md:530](novaberg-bugs-charakter.md) |
 | `KERN-HASH-USER-STATT-NOVA` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:148](novaberg-bugs-archiv-charakter.md) |
 | `KERNHASH-LIEST-TURNWORTLAUT` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:433](novaberg-bugs-archiv-charakter.md) |
@@ -210,22 +210,23 @@
 | `KORREKTUR-ERFINDET-WUNSCH` | ANT | offen | [novaberg-bugs-antwortpfad.md:99](novaberg-bugs-antwortpfad.md) |
 | `KOSTENSPALTE-MISCHT-PREISGENERATIONEN` | BAU | offen | [novaberg-bugs-bauart.md:286](novaberg-bugs-bauart.md) |
 | `KZG-DEDUP` | — | abgeschlossen | [novaberg-bugs-archiv.md:132](novaberg-bugs-archiv.md) (Kurzeintrag) |
-| `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` | GED | offen | [novaberg-bugs-gedaechtnis.md:86](novaberg-bugs-gedaechtnis.md) |
+| `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` | GED | offen | [novaberg-bugs-gedaechtnis.md:115](novaberg-bugs-gedaechtnis.md) |
 | `KZG-KERN-BLIND` | — | abgeschlossen | [novaberg-bugs-archiv.md:131](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `KZG-REDIS1` | — | abgeschlossen | [novaberg-bugs-archiv.md:104](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `KZG-SALIENZ-GESAETTIGT` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:392](novaberg-bugs-archiv-gedaechtnis.md) |
 | `KZG-SEGMENT-DUPLIKAT` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:765](novaberg-bugs-archiv-gedaechtnis.md) |
-| `KZG-THEMA-VERSTAERKT-NACHBARN` | GED | offen | [novaberg-bugs-gedaechtnis.md:114](novaberg-bugs-gedaechtnis.md) |
+| `KZG-THEMA-VERSTAERKT-NACHBARN` | GED | offen | [novaberg-bugs-gedaechtnis.md:145](novaberg-bugs-gedaechtnis.md) |
 | `LAGE-FORMPRUEFUNG-UNVOLLSTAENDIG` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:287](novaberg-bugs-archiv-antwortpfad.md) |
 | `LAGEBILD-IMPULS-ALS-NUTZEREINGABE` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:459](novaberg-bugs-archiv-gedaechtnis.md) |
 | `LANDSCHAFT-SCHLAGSEITE-HEITER` | CHA | offen | [novaberg-bugs-charakter.md:561](novaberg-bugs-charakter.md) |
 | `LEAK3` | ANT | offen | [novaberg-bugs-antwortpfad.md:761](novaberg-bugs-antwortpfad.md) |
 | `LIFESPAN-EMBED-BLOCK` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:538](novaberg-bugs-archiv-bauart.md) |
 | `LOESCHREGELN-DREIGETEILT` | BAU | offen | [novaberg-bugs-bauart.md:353](novaberg-bugs-bauart.md) |
-| `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` | GED | offen | [novaberg-bugs-gedaechtnis.md:14](novaberg-bugs-gedaechtnis.md) |
-| `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` | GED | offen | [novaberg-bugs-gedaechtnis.md:33](novaberg-bugs-gedaechtnis.md) |
+| `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` | GED | offen | [novaberg-bugs-gedaechtnis.md:43](novaberg-bugs-gedaechtnis.md) |
+| `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` | GED | offen | [novaberg-bugs-gedaechtnis.md:62](novaberg-bugs-gedaechtnis.md) |
+| `LZG-PROMOTION-TREFFER-VERSTAERKT` | GED | offen | [novaberg-bugs-gedaechtnis.md:14](novaberg-bugs-gedaechtnis.md) |
 | `LZG-RESONANZ-STATE-DEKL` | — | abgeschlossen | [novaberg-bugs-archiv.md:151](novaberg-bugs-archiv.md) (Kurzeintrag) |
-| `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` | GED | offen | [novaberg-bugs-gedaechtnis.md:54](novaberg-bugs-gedaechtnis.md) |
+| `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` | GED | offen | [novaberg-bugs-gedaechtnis.md:83](novaberg-bugs-gedaechtnis.md) |
 | `MENGENANGABE-BINDET-NUR-UNTEN` | ANT | offen | [novaberg-bugs-antwortpfad.md:359](novaberg-bugs-antwortpfad.md) |
 | `MIGRATION-AGENTGRAPH-PAIR` | — | abgeschlossen | [novaberg-bugs-archiv.md:147](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `MIGRATION-PIX-PAIR` | — | abgeschlossen | [novaberg-bugs-archiv.md:146](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -274,14 +275,14 @@
 | `PFAD1-TIMEOUT-TURNVERLUST` | BAU | offen | [novaberg-bugs-bauart.md:449](novaberg-bugs-bauart.md) |
 | `PFAD2-EMO-MIX` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:57](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PIPELINE-QUELLE-ZWEI-SCHREIBWEISEN` | BAU | offen | [novaberg-bugs-bauart.md:436](novaberg-bugs-bauart.md) |
-| `PIX1` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:108](novaberg-bugs-archiv-hintergrund.md) |
-| `PIXIE-AGENT-MISSING` | HGR | offen | [novaberg-bugs-hintergrund.md:267](novaberg-bugs-hintergrund.md) |
-| `PIXIE-DISPATCH-STILLER-VERWURF` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:546](novaberg-bugs-archiv-hintergrund.md) |
-| `PIXIE-GHOST` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:348](novaberg-bugs-archiv-hintergrund.md) |
+| `PIX1` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:133](novaberg-bugs-archiv-hintergrund.md) |
+| `PIXIE-AGENT-MISSING` | HGR | offen | [novaberg-bugs-hintergrund.md:244](novaberg-bugs-hintergrund.md) |
+| `PIXIE-DISPATCH-STILLER-VERWURF` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:571](novaberg-bugs-archiv-hintergrund.md) |
+| `PIXIE-GHOST` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:373](novaberg-bugs-archiv-hintergrund.md) |
 | `PIXIE-NACHFRAGEN-FEHLT-IM-INDEX` | BAU | offen | [novaberg-bugs-bauart.md:394](novaberg-bugs-bauart.md) |
-| `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:120](novaberg-bugs-archiv-hintergrund.md) |
-| `PIXIE-PAUSE-STILL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:16](novaberg-bugs-archiv-hintergrund.md) |
-| `PIXIE-QUEUE-LAUF-DISSENS` | HGR | offen | [novaberg-bugs-hintergrund.md:379](novaberg-bugs-hintergrund.md) |
+| `PIXIE-PAUSE-OHNE-ZUSTELLRIEGEL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:145](novaberg-bugs-archiv-hintergrund.md) |
+| `PIXIE-PAUSE-STILL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:41](novaberg-bugs-archiv-hintergrund.md) |
+| `PIXIE-QUEUE-LAUF-DISSENS` | HGR | offen | [novaberg-bugs-hintergrund.md:356](novaberg-bugs-hintergrund.md) |
 | `PLANNER-WARN` | ANT | offen | [novaberg-bugs-antwortpfad.md:848](novaberg-bugs-antwortpfad.md) |
 | `PLANNER-ZEITWORT-UEBERSTIMMT-DIENSTWAHL` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:260](novaberg-bugs-archiv-antwortpfad.md) |
 | `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` | ANT | offen | [novaberg-bugs-antwortpfad.md:857](novaberg-bugs-antwortpfad.md) |
@@ -295,21 +296,21 @@
 | `PROMO-DUAL-IMPL` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:562](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMO-FAKT-LEER` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:118](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMO-INHALT-FALLBACK-UNSICHER` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:537](novaberg-bugs-archiv-gedaechtnis.md) |
-| `PROMO-LAUF-ZAEHLT-VERWORFENE` | GED | offen | [novaberg-bugs-gedaechtnis.md:436](novaberg-bugs-gedaechtnis.md) |
+| `PROMO-LAUF-ZAEHLT-VERWORFENE` | GED | offen | [novaberg-bugs-gedaechtnis.md:469](novaberg-bugs-gedaechtnis.md) |
 | `PROMO-QUEUE-DEADBRANCH` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:846](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMO-QUEUE-DUBLETTEN` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:805](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMO-QUEUE-USER-MISMATCH` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:852](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMO-VERSTAERKT-BLIND` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:838](novaberg-bugs-archiv-gedaechtnis.md) |
-| `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:319](novaberg-bugs-archiv-hintergrund.md) |
+| `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:344](novaberg-bugs-archiv-hintergrund.md) |
 | `PROMOTION-LOG-ALTE-SKALA` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:42](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMOTION-NUR-EIN-PAAR` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:270](novaberg-bugs-archiv-gedaechtnis.md) |
 | `PROMPT-CONSUMER-OHNE-ABRAEUMEN` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:146](novaberg-bugs-archiv-bauart.md) |
 | `PROMPT1` | — | abgeschlossen | [novaberg-bugs-archiv.md:105](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `PROMPT2` | — | abgeschlossen | [novaberg-bugs-archiv.md:102](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `PROMPT3` | ANT | offen | [novaberg-bugs-antwortpfad.md:833](novaberg-bugs-antwortpfad.md) |
-| `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:42](novaberg-bugs-archiv-hintergrund.md) |
+| `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:67](novaberg-bugs-archiv-hintergrund.md) |
 | `PRUEFER-OHNE-LESESTAND` | ANT | offen | [novaberg-bugs-antwortpfad.md:65](novaberg-bugs-antwortpfad.md) |
-| `QUEUE-PUSH-OHNE-PRIORITAET` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:485](novaberg-bugs-archiv-hintergrund.md) |
+| `QUEUE-PUSH-OHNE-PRIORITAET` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:510](novaberg-bugs-archiv-hintergrund.md) |
 | `RAD-AELTER-ALS-PROFIL` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:488](novaberg-bugs-archiv-charakter.md) |
 | `RAD-GESPEICHERT-NICHT-REPRODUZIERBAR` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:127](novaberg-bugs-archiv-charakter.md) |
 | `RAD-MEDIAN-SCHUETZT-FALSCHE-QUELLE` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:97](novaberg-bugs-archiv-charakter.md) |
@@ -317,12 +318,12 @@
 | `RADSPEICHEN-MESSEN-PROFILTEXT` | CHA | offen | [novaberg-bugs-charakter.md:264](novaberg-bugs-charakter.md) |
 | `READ-NACH-UPDATE-ALTER-WERT` | WIS | offen | [novaberg-bugs-wissen.md:506](novaberg-bugs-wissen.md) |
 | `RECH1` | — | abgeschlossen | [novaberg-bugs-archiv.md:112](novaberg-bugs-archiv.md) (Kurzeintrag) |
-| `RECH2` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:336](novaberg-bugs-archiv-hintergrund.md) |
-| `RECHERCHE-KZG-INHALT-LEER` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:436](novaberg-bugs-archiv-hintergrund.md) |
-| `RECHERCHE-LEER-GLEICH-AUSFALL` | HGR | offen | [novaberg-bugs-hintergrund.md:192](novaberg-bugs-hintergrund.md) |
-| `RECHERCHE-OHNE-AUDIT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:93](novaberg-bugs-archiv-hintergrund.md) |
-| `RECHERCHE-RELEVANZ-UNGEPRUEFT` | HGR | offen | [novaberg-bugs-hintergrund.md:203](novaberg-bugs-hintergrund.md) |
-| `RECHERCHE-SALIENZ-KONSTANT` | HGR | offen | [novaberg-bugs-hintergrund.md:235](novaberg-bugs-hintergrund.md) |
+| `RECH2` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:361](novaberg-bugs-archiv-hintergrund.md) |
+| `RECHERCHE-KZG-INHALT-LEER` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:461](novaberg-bugs-archiv-hintergrund.md) |
+| `RECHERCHE-LEER-GLEICH-AUSFALL` | HGR | offen | [novaberg-bugs-hintergrund.md:169](novaberg-bugs-hintergrund.md) |
+| `RECHERCHE-OHNE-AUDIT` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:118](novaberg-bugs-archiv-hintergrund.md) |
+| `RECHERCHE-RELEVANZ-UNGEPRUEFT` | HGR | offen | [novaberg-bugs-hintergrund.md:180](novaberg-bugs-hintergrund.md) |
+| `RECHERCHE-SALIENZ-KONSTANT` | HGR | offen | [novaberg-bugs-hintergrund.md:212](novaberg-bugs-hintergrund.md) |
 | `RECHERCHE-WISSEN-ERREICHT-LZG-NIE` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:580](novaberg-bugs-archiv-gedaechtnis.md) |
 | `REDIS-KEY-ASYMMETRY` | BAU | offen | [novaberg-bugs-bauart.md:505](novaberg-bugs-bauart.md) |
 | `REDIS-PERSIST` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:525](novaberg-bugs-archiv-bauart.md) · auch Kurzeintrag [novaberg-bugs-archiv.md:117](novaberg-bugs-archiv.md) |
@@ -352,34 +353,34 @@
 | `ROUTE1` | — | abgeschlossen | [novaberg-bugs-archiv.md:97](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `ROUTE2` | — | abgeschlossen | [novaberg-bugs-archiv.md:98](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `ROUTE3` | ANT | offen | [novaberg-bugs-antwortpfad.md:820](novaberg-bugs-antwortpfad.md) |
-| `ROUTER-MISS-OHNE-ABSCHLUSS` | HGR | offen | [novaberg-bugs-hintergrund.md:170](novaberg-bugs-hintergrund.md) |
+| `ROUTER-MISS-OHNE-ABSCHLUSS` | HGR | offen | [novaberg-bugs-hintergrund.md:147](novaberg-bugs-hintergrund.md) |
 | `ROUTERPROMPT-ZWEIFEL-WIDERSPRUCH` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:461](novaberg-bugs-archiv-antwortpfad.md) |
-| `RUECKWEG-OHNE-IDEMPOTENZ` | HGR | offen | [novaberg-bugs-hintergrund.md:92](novaberg-bugs-hintergrund.md) |
+| `RUECKWEG-OHNE-IDEMPOTENZ` | HGR | offen | [novaberg-bugs-hintergrund.md:69](novaberg-bugs-hintergrund.md) |
 | `RUECKWEG-SETZT-KOPIE-NEBEN-ORIGINAL` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:792](novaberg-bugs-archiv-wissen.md) |
 | `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` | ANT | offen | [novaberg-bugs-antwortpfad.md:29](novaberg-bugs-antwortpfad.md) |
 | `SACHLAGE-KALENDER-VERFEHLT-OBJEKTNAMEN` | ANT | offen | [novaberg-bugs-antwortpfad.md:147](novaberg-bugs-antwortpfad.md) |
 | `SACHLAGE-OBJEKT-OHNE-NAMEN` | ANT | offen | [novaberg-bugs-antwortpfad.md:126](novaberg-bugs-antwortpfad.md) |
 | `SACHLAGE-PLATZHALTER-ALS-WERT` | ANT | offen | [novaberg-bugs-antwortpfad.md:14](novaberg-bugs-antwortpfad.md) |
-| `SALIENZ-JSON-BRICHT-AN-LATEX` | GED | offen | [novaberg-bugs-gedaechtnis.md:271](novaberg-bugs-gedaechtnis.md) |
+| `SALIENZ-JSON-BRICHT-AN-LATEX` | GED | offen | [novaberg-bugs-gedaechtnis.md:304](novaberg-bugs-gedaechtnis.md) |
 | `SALIENZ-OHNE-PIPELINE-LOG` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:618](novaberg-bugs-archiv-gedaechtnis.md) |
 | `SALIENZ-PROMPT-NUTZER-SCHABLONE` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:651](novaberg-bugs-archiv-gedaechtnis.md) |
 | `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:440](novaberg-bugs-archiv-gedaechtnis.md) |
 | `SALIENZ-WERT-UNGEPRUEFT-FORMATIERT` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:702](novaberg-bugs-archiv-gedaechtnis.md) |
 | `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` | ANT | offen | [novaberg-bugs-antwortpfad.md:48](novaberg-bugs-antwortpfad.md) |
-| `SALIENZ-ZEITFELD-FAELLT-AM-LIMIT-ZUERST` | GED | offen | [novaberg-bugs-gedaechtnis.md:252](novaberg-bugs-gedaechtnis.md) |
+| `SALIENZ-ZEITFELD-FAELLT-AM-LIMIT-ZUERST` | GED | offen | [novaberg-bugs-gedaechtnis.md:285](novaberg-bugs-gedaechtnis.md) |
 | `SCHEMA-VON-NULL-SCHEITERT` | BAU | abgeschlossen | [novaberg-bugs-archiv-bauart.md:16](novaberg-bugs-archiv-bauart.md) |
 | `SEARX1` | — | abgeschlossen | [novaberg-bugs-archiv.md:127](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `SETEXT-UNTERSCHRIFT-IM-BLOCK` | WIS | offen | [novaberg-bugs-wissen.md:252](novaberg-bugs-wissen.md) |
-| `SHADOW-DELIVERY-BLOCKING-INVOKE` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:383](novaberg-bugs-archiv-hintergrund.md) |
-| `SHADOW-DELIVERY-DATENVERLUST` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:520](novaberg-bugs-archiv-hintergrund.md) |
-| `SHADOW-DELIVERY-SILENT-EMBED` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:421](novaberg-bugs-archiv-hintergrund.md) |
-| `SHADOW-STACK-THEMA-LEER` | HGR | offen | [novaberg-bugs-hintergrund.md:246](novaberg-bugs-hintergrund.md) |
+| `SHADOW-DELIVERY-BLOCKING-INVOKE` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:408](novaberg-bugs-archiv-hintergrund.md) |
+| `SHADOW-DELIVERY-DATENVERLUST` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:545](novaberg-bugs-archiv-hintergrund.md) |
+| `SHADOW-DELIVERY-SILENT-EMBED` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:446](novaberg-bugs-archiv-hintergrund.md) |
+| `SHADOW-STACK-THEMA-LEER` | HGR | offen | [novaberg-bugs-hintergrund.md:223](novaberg-bugs-hintergrund.md) |
 | `SIEZ1` | — | abgeschlossen | [novaberg-bugs-archiv.md:108](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `SIEZ2` | ANT | offen | [novaberg-bugs-antwortpfad.md:746](novaberg-bugs-antwortpfad.md) |
 | `SNAPSHOT1` | — | abgeschlossen | [novaberg-bugs-archiv.md:107](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `SPEICHENWERT-NICHT-MEDIAN` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:397](novaberg-bugs-archiv-charakter.md) |
 | `SPRACHSTIL-ZWEI-VERFAHREN-UNEINIG` | CHA | offen | [novaberg-bugs-charakter.md:327](novaberg-bugs-charakter.md) |
-| `STACK-PUSH-SILENT-EMBED` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:408](novaberg-bugs-archiv-hintergrund.md) |
+| `STACK-PUSH-SILENT-EMBED` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:433](novaberg-bugs-archiv-hintergrund.md) |
 | `STATE1` | — | abgeschlossen | [novaberg-bugs-archiv.md:87](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `STREAM1` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:744](novaberg-bugs-archiv-antwortpfad.md) · auch Kurzeintrag [novaberg-bugs-archiv.md:114](novaberg-bugs-archiv.md) |
 | `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` | BAU | offen | [novaberg-bugs-bauart.md:417](novaberg-bugs-bauart.md) |
@@ -387,10 +388,10 @@
 | `SYS1` | — | abgeschlossen | [novaberg-bugs-archiv.md:86](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `TAG-LEAK2` | — | abgeschlossen | [novaberg-bugs-archiv.md:111](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `TAG-LEAK3` | ANT | offen | [novaberg-bugs-antwortpfad.md:790](novaberg-bugs-antwortpfad.md) |
-| `TAGESLAUF-DOCSTRING-SECHS-AUFGABEN` | HGR | offen | [novaberg-bugs-hintergrund.md:35](novaberg-bugs-hintergrund.md) |
+| `TAGESLAUF-DOCSTRING-SECHS-AUFGABEN` | HGR | offen | [novaberg-bugs-hintergrund.md:12](novaberg-bugs-hintergrund.md) |
 | `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:1585](novaberg-bugs-archiv-antwortpfad.md) |
 | `TELEGRAM-SHADOW-TYP-TOT` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:423](novaberg-bugs-archiv-antwortpfad.md) |
-| `THEMENEMBEDDING-TRAEGT-DESTILLAT` | HGR | offen | [novaberg-bugs-hintergrund.md:79](novaberg-bugs-hintergrund.md) |
+| `THEMENEMBEDDING-TRAEGT-DESTILLAT` | HGR | offen | [novaberg-bugs-hintergrund.md:56](novaberg-bugs-hintergrund.md) |
 | `THEMENZEILEN-NUR-IM-INSERT-ZWEIG` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:246](novaberg-bugs-archiv-wissen.md) |
 | `THER1` | ANT | offen | [novaberg-bugs-antwortpfad.md:716](novaberg-bugs-antwortpfad.md) |
 | `THINK-MEM-CONFLICT` | — | abgeschlossen | [novaberg-bugs-archiv.md:144](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -417,7 +418,7 @@
 | `UMFANGSREGLER-BINDET-NICHT` | ANT | offen | [novaberg-bugs-antwortpfad.md:225](novaberg-bugs-antwortpfad.md) |
 | `UNBEKANNTE-AKTION-FAELLT-DURCH` | WIS | offen | [novaberg-bugs-wissen.md:412](novaberg-bugs-wissen.md) |
 | `UNFERTIGE-ANTWORT-GILT-ALS-FERTIG` | BAU | offen | [novaberg-bugs-bauart.md:173](novaberg-bugs-bauart.md) |
-| `UNREGISTRIERTER-AGENT-GEWINNT` | HGR | offen | [novaberg-bugs-hintergrund.md:153](novaberg-bugs-hintergrund.md) |
+| `UNREGISTRIERTER-AGENT-GEWINNT` | HGR | offen | [novaberg-bugs-hintergrund.md:130](novaberg-bugs-hintergrund.md) |
 | `urllib3-RETRY` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:825](novaberg-bugs-archiv-antwortpfad.md) · auch Kurzeintrag [novaberg-bugs-archiv.md:142](novaberg-bugs-archiv.md) |
 | `VEKTOR-INTENSITAET-NAMENSMENGE` | — | abgeschlossen | [novaberg-bugs-archiv.md:73](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `VEKTOR-LEER` | — | abgeschlossen | [novaberg-bugs-archiv.md:137](novaberg-bugs-archiv.md) (Kurzeintrag) |
@@ -430,16 +431,16 @@
 | `VERSCHWUNDEN-DURCH-FILTERWECHSEL` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:315](novaberg-bugs-archiv-wissen.md) |
 | `VERSIONSSTEMPEL-FRISST-LEERZEILE` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:294](novaberg-bugs-archiv-wissen.md) |
 | `VERSTAERKUNG-OHNE-VERWENDUNG` | GED | abgeschlossen | [novaberg-bugs-archiv-gedaechtnis.md:239](novaberg-bugs-archiv-gedaechtnis.md) |
-| `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:465](novaberg-bugs-archiv-hintergrund.md) |
-| `VERWEIS-OHNE-WISSEN` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:229](novaberg-bugs-archiv-hintergrund.md) |
+| `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:490](novaberg-bugs-archiv-hintergrund.md) |
+| `VERWEIS-OHNE-WISSEN` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:254](novaberg-bugs-archiv-hintergrund.md) |
 | `VERWEISWEG-LEHNT-BESTEN-FALL-AB` | WIS | abgeschlossen | [novaberg-bugs-archiv-wissen.md:435](novaberg-bugs-archiv-wissen.md) |
 | `VORHER-ZUSTAND-OHNE-SPUR` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:314](novaberg-bugs-archiv-charakter.md) |
-| `VORWISSEN-LIEST-LEERE-TABELLE` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:270](novaberg-bugs-archiv-hintergrund.md) |
+| `VORWISSEN-LIEST-LEERE-TABELLE` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:295](novaberg-bugs-archiv-hintergrund.md) |
 | `WAHRNEHMUNG-RUECKFALL-UNMARKIERT` | ANT | offen | [novaberg-bugs-antwortpfad.md:185](novaberg-bugs-antwortpfad.md) |
 | `WEBSOCKET-OHNE-KEEPALIVE` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:581](novaberg-bugs-archiv-antwortpfad.md) |
-| `WIEDERVORLAGE-SATZ-STATT-MATERIAL` | HGR | offen | [novaberg-bugs-hintergrund.md:224](novaberg-bugs-hintergrund.md) |
-| `WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG` | HGR | offen | [novaberg-bugs-hintergrund.md:305](novaberg-bugs-hintergrund.md) |
-| `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` | HGR | offen | [novaberg-bugs-hintergrund.md:14](novaberg-bugs-hintergrund.md) |
+| `WIEDERVORLAGE-SATZ-STATT-MATERIAL` | HGR | offen | [novaberg-bugs-hintergrund.md:201](novaberg-bugs-hintergrund.md) |
+| `WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG` | HGR | offen | [novaberg-bugs-hintergrund.md:282](novaberg-bugs-hintergrund.md) |
+| `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:16](novaberg-bugs-archiv-hintergrund.md) |
 | `WISSENSLUECKEN-FELDER-LEER` | ANT | offen | [novaberg-bugs-antwortpfad.md:620](novaberg-bugs-antwortpfad.md) |
 | `WS-SINGLE` | — | abgeschlossen | [novaberg-bugs-archiv.md:134](novaberg-bugs-archiv.md) (Kurzeintrag) |
 | `WURZELN-ABLEHNUNG-UNGELESEN` | CHA | offen | [novaberg-bugs-charakter.md:25](novaberg-bugs-charakter.md) |
@@ -454,11 +455,11 @@
 | `ZEUGE-NENNT-URL-DES-BETRIEBS` | BAU | offen | [novaberg-bugs-bauart.md:85](novaberg-bugs-bauart.md) |
 | `ZEUGE-TAGESLAUF-FAEHRT-ECHT` | BAU | offen | [novaberg-bugs-bauart.md:12](novaberg-bugs-bauart.md) |
 | `ZIEL-LABEL-LEER` | — | abgeschlossen | [novaberg-bugs-archiv.md:139](novaberg-bugs-archiv.md) (Kurzeintrag) |
-| `ZIEL-VERFALLEN-BLEIBT-AKTIV` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:65](novaberg-bugs-archiv-hintergrund.md) |
+| `ZIEL-VERFALLEN-BLEIBT-AKTIV` | HGR | abgeschlossen | [novaberg-bugs-archiv-hintergrund.md:90](novaberg-bugs-archiv-hintergrund.md) |
 | `ZIELE-AUS-ZERRBILD` | CHA | offen | [novaberg-bugs-charakter.md:835](novaberg-bugs-charakter.md) |
 | `ZIELE-PAIR-MISSING` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:643](novaberg-bugs-archiv-charakter.md) |
 | `ZUG-ZWISCHEN-090-097-ABGESCHALTET` | CHA | offen | [novaberg-bugs-charakter.md:432](novaberg-bugs-charakter.md) |
 | `ZUORDNUNG-ANDERER-ABSENDER-FREMD` | ANT | abgeschlossen | [novaberg-bugs-archiv-antwortpfad.md:347](novaberg-bugs-archiv-antwortpfad.md) |
 | `ZUORDNUNG-NENNT-LISTENPOSITION` | WIS | offen | [novaberg-bugs-wissen.md:278](novaberg-bugs-wissen.md) |
 | `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` | CHA | abgeschlossen | [novaberg-bugs-archiv-charakter.md:16](novaberg-bugs-archiv-charakter.md) |
-| `ZWEI-FRISTEN-7200-VERSCHIEDEN` | HGR | offen | [novaberg-bugs-hintergrund.md:130](novaberg-bugs-hintergrund.md) |
+| `ZWEI-FRISTEN-7200-VERSCHIEDEN` | HGR | offen | [novaberg-bugs-hintergrund.md:107](novaberg-bugs-hintergrund.md) |

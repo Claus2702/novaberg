@@ -1,9 +1,34 @@
 # Novaberg — Bugs, Archiv: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, 24 Eintraege, je mit `HGR` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~24~~ → 25 Eintraege (23.10.2026: `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` aus dem offenen Teil, behoben und im Betrieb gemessen), je mit `HGR` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 23.10.2026 — behoben und im Betrieb gemessen
+
+**Dieser Eintrag ist mit dem Commit `5c00a98` und einer Messung im Betrieb geschlossen** — die Zustandszeile nennt Commit, Zeugen und Messung. Im offenen Register stand er im Abschnitt *22.10.2026 — am Code geprüft: die Doku der Timeline gegen den Code*: eine Kennung aus dem Abgleich von `novaberg-agent-timeline.md` mit dem Code, gefunden am Leser der Timeline, nicht in ihrer Doku; am Code gelesen, nicht gelaufen.
+
+---
+
+### `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` — die Wiedervorlage liest aus einer Zeile der Timeline `titel` und `beschreibung`, die Tabelle hat `title` und `details` ✅
+**Kategorie:** HGR
+
+**Rang:** **mittel** — still: Jede fällige Wiedervorlage eines Termins geht mit leerem Titel und leeren Details an das Modell, das daraus die Erinnerung formulieren soll; was auf den Stapel kommt, nennt den Termin nicht oder erfindet ihn, und die Fälligkeit wird danach um die Schlummerfrist verschoben. Keine Fehlerzeile. Wie viele fällige Termine es gibt, ist nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+
+**Zustand:** **geschlossen am 23.10.2026 — behoben mit `5c00a98`, gemessen im Betrieb am 23.10.2026, 05:50 UTC.** `_faellige_sammeln` liest aus einer fälligen Zeile der Timeline `title` und `details`; leere Details nehmen den Titel; eine Zeile ohne `title` oder mit leerem wird mit einer Fehlerzeile gemeldet und übersprungen, statt eine Nachfrage mit leerem Thema aufzunehmen (`server/agents/wiedervorlage/agent.py`, `_faellige_sammeln`). Zeugen in `server/tests/test_wiedervorlage_timeline.py`, fünf Testmethoden: Titel und Details aus den Spalten; leere Details nehmen den Titel (der Zwilling des Baus); eine Zeile ohne und eine mit leerem `title` laut verworfen; eine heile Zeile neben einer defekten bleibt. Der vorhergesagte Zwilling über eine Notiz-Zeile ist nicht gebaut — den Zweig der Notizen berührt der Bau nicht. **Gemessen im Betrieb:** ein Prüf-Nutzer, eine Zeile der Timeline gesät; die Sammlung der fälligen Einträge liefert 1 Eintrag mit richtigem Titel und richtigen Details; danach gelöscht, Rest 0. Damit ist die Schließbedingung erfüllt. Offen bleibt `WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG`: Eine leere Antwort des Modells verschiebt die Fälligkeit weiter, ohne dass erinnert wurde. ~~offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`.~~
+
+**Befund** `[Code]`: `server/agents/wiedervorlage/agent.py::_faellige_sammeln` baut den Eintrag einer Timeline-Zeile mit `row.get("titel", "")` und `row.get("beschreibung", "") or row.get("titel", "")` (Z. 217–218). `TimelineRepository.find_wiedervorlage_faellig` liefert `SELECT * FROM timeline` (`server/memory/repositories/timeline_repository.py`, Z. 808), und die Tabelle hat die Spalten `title` und `details` (`server/agents/timeline/init.sql`, Z. 14–15); `titel` und `beschreibung` gibt es dort nicht, und `_rows_to_local` benennt nichts um. Beide Werte sind damit leer. `_nachfrage_formulieren` gibt sie als *Titel:* und *Details:* in den Prompt (Z. 242–256), und `stack_push` bekommt `thema=""` (Z. 150). Die Zweige für Entitäten, Fakten und Notizen lesen die Spalten ihrer Tabelle (`name` und `zusammenfassung`, `attribut` und `fakt_text`).
+
+**Wirkung.** Eine fällige Erinnerung an einen Termin erreicht den Menschen ohne den Termin: Das Modell formuliert aus *„Typ: ein Termin/Ereignis, Titel: , Details: “* — leer oder erfunden. Die Fälligkeit wird danach verschoben, als wäre erinnert worden (dazu `WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG`).
+
+**Vorhergesagter Zeuge** (nicht gelaufen): `_faellige_sammeln` mit einem Repository-Doppel, das eine Timeline-Zeile mit `title` *Zahnarzt* und `details` *Kontrolle* liefert; am HEAD trägt der Eintrag `titel` und `details` leer. Zwilling: Eine Notiz-Zeile mit `name` und `zusammenfassung` kommt mit beiden Werten an.
+
+**Geschlossen, wenn** der Eintrag einer fälligen Timeline-Zeile Titel und Details aus `title` und `details` trägt — bezeugt mit dem Zeugen oben und seinem Zwilling.
+
+**Zusammenhang:** [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §9 (das Schema); *WiedervorlageAgent* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
 
 ---
 

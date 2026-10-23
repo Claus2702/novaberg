@@ -1,16 +1,16 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 474 Eintraege mit Kennung — 388 offen, 86 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 475 Eintraege mit Kennung — 389 offen, 86 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 471 von 474 Eintraegen zugeordnet.
+**Kategorie:** 472 von 475 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 82 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 68 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 76 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 104 |
 
@@ -320,7 +320,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | `GED` | GEDAECHTNIS | 83 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 74 |
-| `ANT` | ANTWORTPFAD | 68 |
+| `ANT` | ANTWORTPFAD | 69 |
 | `WIS` | WISSEN | 76 |
 | `BAU` | BAUART | 104 |
 
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 474 Eintraege
+## Alle 475 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -630,6 +630,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | ANT | 1224 | offen | `ANTWORT-MUSTER-ECHO` | [Befund: ANTWORT-MUSTER-ECHO — Nova übernimmt Form un](novaberg-backlog-antwortpfad.md) |
 | ANT | 1253 | offen | `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` | [Befund: SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL — `prope](novaberg-backlog-antwortpfad.md) |
 | ANT | 1269 | offen | `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` | [Befund: SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN — Die Gr](novaberg-backlog-antwortpfad.md) |
+| ANT | 1285 | offen | `SACHLAGE-FAKTEN-PERSON-IM-OBJEKTNAMEN` | [Feature: SACHLAGE-FAKTEN-PERSON-IM-OBJEKTNAMEN — die](novaberg-backlog-antwortpfad.md) |
 | WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
 | WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
 | WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |

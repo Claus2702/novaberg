@@ -446,6 +446,8 @@ mit `agent.py` und `AGENT.md`. Endgültiger Pfad bei Sprint-Planung.
 - Trigger 2 (Re-Cache) bei Reinforcement
 - Embed-Aufruf über Microservice-Queue
 
+`[entschieden 23.10.2026]` Der *Reinforcement-Pfad* und *Trigger 2 bei Reinforcement* sind überholt: Ein Embedding-Treffer verhindert nur die Dublette und verstärkt nicht; verstärkt wird allein über die Verwendung in der Antwort ([`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md) A, E7; [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.1a). Gebaut ist der Pfad wie oben; der Defekt trägt die Kennung `LZG-PROMOTION-TREFFER-VERSTAERKT`.
+
 **Stilllegung alter Pfad:** `PromotionAgent` (alt) bleibt im Repository
 hinter `SYNAPSEN_PROMOTION_AKTIV=True`, vollständige Entfernung in P9.
 

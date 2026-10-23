@@ -16,8 +16,9 @@ Die Entscheidungen stehen in dem Abschnitt, den sie tragen, und bleiben dort. Hi
 | **E4** | Abschnitt G unten, K8 | Ob das Anfangsgewicht neuer Knoten umgerechnet wird, wird erst gemessen — *„Erst messen“* | 19.09.2026 |
 | **E6** | Abschnitt G unten, K8 | Das Anfangsgewicht wird **nicht** umgerechnet: Der Einstiegspunkt ist so gewünscht, nach oben bedient die Verstärkung die Skala | 20.09.2026 |
 | **E5** | Abschnitt G unten, *Abschlussstand* | P4 schließt mit `SYNAPSEN-LIVE-VERIFY` und `KZG-ERSTELLT-AM-PARSE-HÄRTE`, die übrigen fünf Folgeeinträge laufen ohne P4-Bindung — *„Zwei, Rest lösen“* | 19.09.2026 |
+| **E7** | `_t` §7.1a, Vermerk unter der Regel; Abschnitt G unten, K10 | **Ein Embedding-Treffer der Promotion verstärkt nicht — es gilt §7.1a.** Die Frage, vorgelegt am 22.10.2026 (B): *Soll ein Embedding-Treffer in der Promotion einen bestehenden LZG-Knoten weiter verstärken?* Zwei Stellen widersprachen sich: die Regel §7.1a, *„Verstärkt wird ausschließlich, was Nova in ihrer Antwort tatsächlich hergenommen hat“*, und die Festlegung K10, nach der ein Treffer ab Kosinus 0,82 den bestehenden Knoten samt Trigger 2 verstärkt — so ist es gebaut (`agents/synapsen_promotion/agent.py`, Verstärkungspfad). Vorgelegt waren **(a)**, empfohlen: *Es gilt §7.1a — ein Treffer verhindert nur die Dublette und verstärkt nicht*; die Folge: Kommt ein Thema im Gespräch wieder, ohne dass Nova es verwendet, wird es im Langzeitgedächtnis nicht stärker. **(b)**: *K10 gilt.* **Entschieden: (a)** (23.10.2026, 05:41 UTC, Wortlaut der Antwort, die zugleich eine Frage des Faktengedächtnisses beantwortete — [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A Nr. 45: *„Beide wie empfohlen“*). Grund: Ein Treffer ist Nachbarschaft, keine Verwendung — genau die zweite Sperre, die §7.1a im Schreibpfad setzt; gemessen am 04.09.2026 trugen 95,2 % der Verstärkungen über den Treffer `cosine = 1.0000`, waren also Selbsttreffer eines stehengebliebenen KZG-Eintrags (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`). **K10 ist damit überholt, soweit es die Verstärkung beim Treffer betrifft** — samt Trigger 2 in diesem Pfad. Nicht berührt sind der Vorfilter (nach E3 überholt), die Schwelle 0,82 (nach E3) und der Schutz vor der Dublette. Der Code verstärkt weiter: `LZG-PROMOTION-TREFFER-VERSTAERKT` | 23.10.2026 |
 
-Der Wortlaut von E1 und E2 steht in keinem der beiden Abschnitte; beide geben sie als Ergebnis wieder. E3 bis E5 stehen wörtlich am Punkt.
+Der Wortlaut von E1 und E2 steht in keinem der beiden Abschnitte; beide geben sie als Ergebnis wieder. E3 bis E5 stehen wörtlich am Punkt. E7 steht wörtlich in seiner Zeile und unter K10.
 
 **Im Text als entschieden geführt, ohne dass ein Urheber genannt ist — nicht gezählt:**
 
@@ -32,9 +33,9 @@ Die Festlegungen K1 bis K10 für Sprint P4 stehen in Abschnitt G unten, mit dem 
 
 ## B. Offen beim Meister
 
-~~Keine. Das Konzept stellt keine Frage an den Meister.~~ → Eine, offen seit dem 22.10.2026 (am Code geprüft):
+~~Keine. Das Konzept stellt keine Frage an den Meister.~~ → ~~Eine, offen seit dem 22.10.2026 (am Code geprüft):~~ → Keine. Die eine vom 22.10.2026 ist am 23.10.2026 entschieden (A, E7):
 
-- **§7.1a gegen K10 — verstärkt der Embedding-Treffer der Promotion einen bestehenden Knoten?** `_t` §7.1a sperrt die bloße Nachbarschaft im Schreibpfad: Verstärkt wird nur, was die Antwort hergenommen hat. K10 (Abschnitt G) sieht bei einem Treffer der Promotion (Kosinus ≥ 0,82) die Verstärkung samt Trigger 2 vor, und der Code führt sie aus (`agents/synapsen_promotion/agent.py`, Verstärkungspfad). Gebaut ist die Regel §7.1a nur am Weg der Verwendung (`memory/usage_reinforcement.py`). Bis zur Entscheidung verstärken beide Wege (Vermerke in `_t` §7.1a und unter K10).
+- ~~**§7.1a gegen K10 — verstärkt der Embedding-Treffer der Promotion einen bestehenden Knoten?** `_t` §7.1a sperrt die bloße Nachbarschaft im Schreibpfad: Verstärkt wird nur, was die Antwort hergenommen hat. K10 (Abschnitt G) sieht bei einem Treffer der Promotion (Kosinus ≥ 0,82) die Verstärkung samt Trigger 2 vor, und der Code führt sie aus (`agents/synapsen_promotion/agent.py`, Verstärkungspfad). Gebaut ist die Regel §7.1a nur am Weg der Verwendung (`memory/usage_reinforcement.py`). Bis zur Entscheidung verstärken beide Wege (Vermerke in `_t` §7.1a und unter K10).~~ → **Entschieden am 23.10.2026: (a), es gilt §7.1a** — ein Treffer der Promotion verhindert nur die Dublette und verstärkt nicht (A, E7). Der Code verstärkt weiter; der Defekt trägt die Kennung `LZG-PROMOTION-TREFFER-VERSTAERKT`.
 
 **Offen ohne Frage an den Meister** — Beobachtungen und Messungen, die das Konzept selbst als offen führt:
 
@@ -63,6 +64,7 @@ Die verworfenen und überholten Fassungen stehen an ihrer Stelle, durchgestriche
 - `_b` §11 — die selektive Migration; gegenstandslos seit dem 27.07.2026 (E2).
 - `_b` §12.3, *TE* — der Pfad *Enricher schreibt abgerufene IDs, Pixie verstärkt*; existiert nicht mehr (04.09.2026).
 - `_b` §13.12, Abnahme-Test 3 — der HumanGraph-Rückfall; nicht erfüllbar, geprüft im CharacterGraph.
+- Abschnitt G, K10, *Auf Match — Reinforcement-Pfad*, und `_b` §13.6, Notiz §5 — die Verstärkung eines bestehenden Knotens beim Embedding-Treffer der Promotion, samt Trigger 2; überholt am 23.10.2026, weil ein Treffer Nachbarschaft ist und keine Verwendung (E7). Der Code führt sie weiter aus (`LZG-PROMOTION-TREFFER-VERSTAERKT`).
 - `_k` §14.2 und §14.3 — bewusst nicht übernommene Modelle der Forschung (ungerichtete Kanten, RDF-Tripel, eigenständige Kantenstärken, Multi-Timescale-Konsolidierung, Edge-Embeddings, STDP), je mit Grund.
 
 ---
@@ -270,7 +272,7 @@ Chronik-Konzept.
    höchsten Treffer auswählen.
 3. **Schwellwert:** `LZG_KNOTEN_MATCH_SCHWELLE = 0.85`.
 
-**Auf Match — Reinforcement-Pfad:**
+**Auf Match — Reinforcement-Pfad:** → *überholt am 23.10.2026 (E7, Vermerk unten): Ein Treffer verstärkt nicht.*
 - `gewicht_roh += LZG_KNOTEN_REINFORCEMENT_BOOST` (= 0.1)
 - `gewicht_absolut` neu berechnen via Sinus-Dämpfung
 - `haeufigkeit += 1`
@@ -288,7 +290,9 @@ Chronik-Konzept.
 
 `[entschieden 19.09.2026]` Der Code gilt, die Festlegung ist überholt — für den Vorfilter, die Schwelle und die Halbreaktivierung. Der Meister: *„Code gilt“*.
 
-→ *Steht in* `_t` §7.1a, §7.9.2 und §9.3 (Vermerke vom 22.10.2026, am Code geprüft): Die Verstärkung beim Treffer, die K10 vorsieht und der Code ausführt, widerspricht der Regel §7.1a — offen, nicht entschieden. Trigger 2 läuft nur in diesem Pfad, nicht nach einer Verstärkung über die Verwendung (`LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`). Der halbe Wert der Halbreaktivierung hält nur bis zum nächsten Tageslauf (`LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG`).
+→ *Steht in* `_t` §7.1a, §7.9.2 und §9.3 (Vermerke vom 22.10.2026, am Code geprüft): Die Verstärkung beim Treffer, die K10 vorsieht und der Code ausführt, widerspricht der Regel §7.1a — ~~offen, nicht entschieden~~ → entschieden am 23.10.2026 für §7.1a (E7, unten). Trigger 2 läuft nur in diesem Pfad, nicht nach einer Verstärkung über die Verwendung (`LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`). Der halbe Wert der Halbreaktivierung hält nur bis zum nächsten Tageslauf (`LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG`).
+
+`[entschieden 23.10.2026]` (E7) **Die Verstärkung beim Treffer ist überholt; es gilt §7.1a.** Wortlaut der Antwort auf die Frage vom 22.10.2026, ob ein Embedding-Treffer der Promotion einen bestehenden Knoten weiter verstärkt — (a) *es gilt §7.1a, ein Treffer verhindert nur die Dublette und verstärkt nicht*, empfohlen; (b) *K10 gilt*: *„Beide wie empfohlen“* (23.10.2026, 05:41 UTC; die Antwort galt zwei Fragen). Ein Treffer ab `LZG_KNOTEN_MATCH_SCHWELLE` (0,82) legt weiter keinen neuen Knoten an — das ist der Schutz vor der Dublette, und er bleibt —, aber er ändert `gewicht_roh`, `gewicht_absolut`, `haeufigkeit` und `verstaerkt_am` nicht, und Trigger 2 entfällt in diesem Pfad. Verstärkt wird allein über die Verwendung in der Antwort (`_t` §7.1a). Der Code verstärkt beim Treffer weiter (`agents/synapsen_promotion/agent.py`, Zweig *Reinforcement-Pfad (K10)*); der Defekt trägt die Kennung `LZG-PROMOTION-TREFFER-VERSTAERKT`. Die Halbreaktivierung eines deaktivierten Knotens beim Treffer (`_t` §9.3) war nicht Gegenstand der Frage.
 
 ### Abschlussstand
 

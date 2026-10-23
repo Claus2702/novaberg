@@ -104,6 +104,9 @@ diesen Bereich auf **3,25 bis 3,96** ab.
 sie bei 3–4 und wandert nach unten, solange ihn niemand berührt — oder nach oben, wenn er
 wiederkehrt (`LZG_KNOTEN_REINFORCEMENT_BOOST = 0.1` je Verstärkung auf `gewicht_roh`, das
 frei über 10 hinauswachsen darf; im Bestand bis 12,50 bei 116 Verstärkungen).
+→ *Wiederkehren* heißt seit dem 23.10.2026: in einer Antwort verwendet werden (§7.1a); ein
+Embedding-Treffer der Promotion verstärkt nicht (`_e` A, E7). Die Zahlen des Bestands enthalten
+die Verstärkungen über den Treffer (`LZG-PROMOTION-TREFFER-VERSTAERKT`).
 
 **In Jahren gerechnet** (`LZG_KNOTEN_DECAY_RATE = 0.0015` täglich, Ruheschwelle
 `LZG_KNOTEN_MIN_GEWICHT = 0.1`):
@@ -467,7 +470,7 @@ Initiale Kalibrierung. Sollten sich Knoten oder Kanten im Live-Betrieb anders ve
 
 ## 7. Schreibpfad-Sicht
 
-Der Schreibpfad ist der Moment, in dem ein KZG-Eintrag den Sprung ins Langzeitgedächtnis macht. Im Synapsen-Modell wird daraus ein eigenständiger LZG-Knoten (→ am Code geprüft am 22.10.2026: sofern kein Knoten des Paares ihm mit Cosine ≥ 0,82 gleicht, `LZG_KNOTEN_MATCH_SCHWELLE`; sonst entsteht kein Knoten, und der Eintrag geht im Treffer auf, §7.2) — und in genau diesem Moment werden die Kanten zu bestehenden Knoten gezogen. Hier wächst das Netz. Alle späteren Mechaniken (Lesepfad, Decay, Charakter-Destillation) setzen auf den Verbindungen auf, die hier entstehen.
+Der Schreibpfad ist der Moment, in dem ein KZG-Eintrag den Sprung ins Langzeitgedächtnis macht. Im Synapsen-Modell wird daraus ein eigenständiger LZG-Knoten (→ am Code geprüft am 22.10.2026: sofern kein Knoten des Paares ihm mit Cosine ≥ 0,82 gleicht, `LZG_KNOTEN_MATCH_SCHWELLE`; sonst entsteht kein Knoten, und der Eintrag geht im Treffer auf, §7.2; der Treffer verstärkt dabei nach der Entscheidung vom 23.10.2026 nicht, §7.1a) — und in genau diesem Moment werden die Kanten zu bestehenden Knoten gezogen. Hier wächst das Netz. Alle späteren Mechaniken (Lesepfad, Decay, Charakter-Destillation) setzen auf den Verbindungen auf, die hier entstehen.
 
 ### 7.1 Auslösungs-Bedingung — externer Anstoß ist Pflicht
 
@@ -488,7 +491,7 @@ greifen an verschiedenen Stellen, und die zweite fehlte.
 
 > **Verstärkt wird ausschließlich, was Nova in ihrer Antwort tatsächlich hergenommen hat.**
 
-> **Am Code geprüft am 22.10.2026 — heute verstärken zwei Wege, und die Regel ist nur am ersten gebaut.** Die Verwendung in der Antwort verstärkt über den Dispatcher (`memory/usage_reinforcement.py`, `reinforce_used` → `knoten_verstaerken`, seit dem 04.09.2026). Daneben verstärkt die Promotion weiter bei jedem Embedding-Treffer mit Cosine ≥ 0,82 (`agents/synapsen_promotion/agent.py`, Reinforcement-Pfad → `knoten_verstaerken` und Trigger 2). **Diese Regel und die Festlegung K10 (`_e` Abschnitt G) widersprechen sich darin:** §7.1a sperrt die bloße Nachbarschaft im Schreibpfad, K10 sieht bei einem Treffer die Verstärkung samt Trigger 2 vor. **Offen, nicht entschieden.** Der Selbsttreffer eines stehengebliebenen KZG-Eintrags (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7) ist ein Teil dieses Wegs, nicht der ganze.
+> **Am Code geprüft am 22.10.2026 — heute verstärken zwei Wege, und die Regel ist nur am ersten gebaut.** Die Verwendung in der Antwort verstärkt über den Dispatcher (`memory/usage_reinforcement.py`, `reinforce_used` → `knoten_verstaerken`, seit dem 04.09.2026). Daneben verstärkt die Promotion weiter bei jedem Embedding-Treffer mit Cosine ≥ 0,82 (`agents/synapsen_promotion/agent.py`, Reinforcement-Pfad → `knoten_verstaerken` und Trigger 2). **Diese Regel und die Festlegung K10 (`_e` Abschnitt G) widersprechen sich darin:** §7.1a sperrt die bloße Nachbarschaft im Schreibpfad, K10 sieht bei einem Treffer die Verstärkung samt Trigger 2 vor. ~~**Offen, nicht entschieden.**~~ → **Entschieden am 23.10.2026: Die Regel gilt** (`_e` A, E7; Wortlaut *„Beide wie empfohlen“*, auf die Empfehlung *ein Treffer verhindert nur die Dublette und verstärkt nicht*). Ein Embedding-Treffer der Promotion verstärkt nicht; K10 ist darin überholt. **Der Code weicht ab:** Der Verstärkungspfad der Promotion besteht weiter (`agents/synapsen_promotion/agent.py`, Zweig *Reinforcement-Pfad (K10)*); der Defekt trägt die Kennung `LZG-PROMOTION-TREFFER-VERSTAERKT`. Der Selbsttreffer eines stehengebliebenen KZG-Eintrags (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7) ist ein Teil dieses Wegs, nicht der ganze.
 
 Der Ablauf, in vier Schritten:
 
@@ -646,7 +649,7 @@ Schrittfolge eines Promotion-Vorgangs:
 
 Wenn Schritt 3 für einen Kandidaten scheitert, bleibt der Knoten erhalten. Ein Knoten ohne Kanten ist phänomenologisch nicht falsch — eine frische Erinnerung, die noch keine Resonanz gefunden hat. Schritt 4 wird trotzdem ausgeführt, weil der KZG-Eintrag inhaltlich vollständig im Knoten angekommen ist.
 
-> **Am Code geprüft am 22.10.2026 (`agents/synapsen_promotion/agent.py`, `_eintrag_verarbeiten`) — die Promotion läuft in anderer Folge.** Die Kandidaten werden **vor** der Anlage geladen, und es sind alle Knoten des Paares, **auch deaktivierte** (`kandidaten_mit_cosine_laden(…, include_inactive=True)`). Dieselbe Liste dient zuerst dem Treffer (`match_pruefen`, Cosine ≥ 0,82, `LZG_KNOTEN_MATCH_SCHWELLE`): Mit Treffer entsteht **kein** Knoten — der Eintrag verstärkt den getroffenen Knoten samt Trigger 2 oder halbreaktiviert ihn, wenn er deaktiviert ist (§9.3). Nur ohne Treffer folgen Schritt 1 und Schritt 3, gegen dieselbe Liste; `kanten_fuer_neuen_knoten_bilden` filtert nicht nach `aktiv`, ein neuer Knoten bildet also auch Kanten zu deaktivierten Knoten. **Schritt 4 ist nicht gebaut:** Der KZG-Hash bleibt stehen und verfällt über seine TTL (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7).
+> **Am Code geprüft am 22.10.2026 (`agents/synapsen_promotion/agent.py`, `_eintrag_verarbeiten`) — die Promotion läuft in anderer Folge.** Die Kandidaten werden **vor** der Anlage geladen, und es sind alle Knoten des Paares, **auch deaktivierte** (`kandidaten_mit_cosine_laden(…, include_inactive=True)`). Dieselbe Liste dient zuerst dem Treffer (`match_pruefen`, Cosine ≥ 0,82, `LZG_KNOTEN_MATCH_SCHWELLE`): Mit Treffer entsteht **kein** Knoten — der Eintrag verstärkt den getroffenen Knoten samt Trigger 2 oder halbreaktiviert ihn, wenn er deaktiviert ist (§9.3). → Die Verstärkung beim Treffer ist seit dem 23.10.2026 nicht mehr Soll (§7.1a; `_e` A, E7); sie besteht im Code als Defekt `LZG-PROMOTION-TREFFER-VERSTAERKT`. Nur ohne Treffer folgen Schritt 1 und Schritt 3, gegen dieselbe Liste; `kanten_fuer_neuen_knoten_bilden` filtert nicht nach `aktiv`, ein neuer Knoten bildet also auch Kanten zu deaktivierten Knoten. **Schritt 4 ist nicht gebaut:** Der KZG-Hash bleibt stehen und verfällt über seine TTL (`KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, §7.7).
 
 ### 7.3 Schicht-Auslösung
 
@@ -859,9 +862,11 @@ Keine Inversion, keine Rückrechnung. Wenn sich `A.gewicht_absolut` von 2.0 auf 
 
 **Trigger 1 — Knoten-Anlage.** Beim Anlegen eines neuen LZG-Knotens entstehen Kanten zu den Kandidaten-Knoten. Die Sequenz läuft einmal pro neuer Kante.
 
-**Trigger 2 — Knoten-Aktivierung.** Wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung im Schreibpfad — neuer KZG-Eintrag betrifft denselben Knoten erneut), werden alle Kanten von und zu diesem Knoten neu berechnet. Suche: `WHERE knoten_a_id = X OR knoten_b_id = X`. Effizient durch die Indizes auf den beiden Knoten-Spalten.
+**Trigger 2 — Knoten-Aktivierung.** Wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung im Schreibpfad — ~~neuer KZG-Eintrag betrifft denselben Knoten erneut~~ → seit dem 23.10.2026 allein die Verwendung in einer Antwort, §7.1a; ein Embedding-Treffer der Promotion verstärkt nicht, `_e` A, E7), werden alle Kanten von und zu diesem Knoten neu berechnet. Suche: `WHERE knoten_a_id = X OR knoten_b_id = X`. Effizient durch die Indizes auf den beiden Knoten-Spalten.
 
 > **Am Code geprüft am 22.10.2026 — Trigger 2 läuft nur in der Promotion.** `kanten_neuberechnen_fuer_knoten` (`memory/lzg_kanten.py`) ruft der Verstärkungspfad der Promotion (`agents/synapsen_promotion/agent.py`), sonst nur das Re-Embedding-Werkzeug über `embedding_cosine_alle_aktualisieren`. Die Verstärkung über die Verwendung (`memory/usage_reinforcement.py`, `reinforce_used` → `knoten_verstaerken`, §7.1a) ändert `gewicht_absolut` ebenso, rechnet die Kanten aber nicht neu: Sie bleiben auf dem alten Anker. Das Soll oben bleibt; der Defekt im Code trägt die Kennung `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`.
+>
+> → Seit dem 23.10.2026 ist der Verstärkungspfad der Promotion selbst ein Defekt (`LZG-PROMOTION-TREFFER-VERSTAERKT`; `_e` A, E7). Wird er zurückgebaut, entfällt der einzige Aufrufer von Trigger 2 im Betrieb; die Kanten folgen einer Verstärkung dann erst, wenn `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben ist.
 
 Wichtig: Eine Änderung des Felds `gewicht_decay` durch den Pixie-Decay-Lauf löst **keinen** Trigger aus. Decay wirkt nur auf den Lesepfad (Sortier-Gewicht), nicht auf den Kanten-Cache. Phänomenologisch: Eine Verbindung verblasst nicht von selbst, weil die Erinnerung an einem Ende verblasst — sie bleibt strukturell bestehen, bis die Erinnerung an einem Ende durch externen Anstoß wieder verändert wird.
 
@@ -1249,7 +1254,7 @@ Im Schema 4.1 hat der Knoten drei Stärke-Werte und zwei Zeitstempel:
 
 > **Der Klammersatz ist seit dem 04.09.2026 zu eng gefasst und wird durch §7.1a verschärft.** *„Betrifft denselben Knoten erneut"* liest der Code heute als Embedding-Match — und dabei matcht ein KZG-Eintrag den Knoten, der aus ihm selbst entstanden ist (`cosine = 1.0000` in 95,2 % aller Verstärkungen). **Verstärkung setzt Verwendung in der Antwort voraus**, nicht Nachbarschaft; der Ort ist der Dispatcher.
 >
-> → Am Code geprüft am 22.10.2026: Heute verstärken beide Wege — die Verwendung über den Dispatcher und weiterhin der Embedding-Treffer der Promotion. Der Widerspruch zwischen §7.1a und der Festlegung K10 ist offen (Vermerk unter der Regel in §7.1a).
+> → Am Code geprüft am 22.10.2026: Heute verstärken beide Wege — die Verwendung über den Dispatcher und weiterhin der Embedding-Treffer der Promotion. Der Widerspruch zwischen §7.1a und der Festlegung K10 ist ~~offen~~ → entschieden am 23.10.2026 für §7.1a: Ein Treffer verstärkt nicht (`_e` A, E7; Vermerk unter der Regel in §7.1a). Der Code verstärkt beim Treffer weiter — `LZG-PROMOTION-TREFFER-VERSTAERKT`.
 
 ```
 gewicht_roh      = gewicht_roh + LZG_KNOTEN_REINFORCEMENT_BOOST

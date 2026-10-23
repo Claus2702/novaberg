@@ -147,7 +147,7 @@ Drei Zusicherungen des ZIELs sind damit belegt: Die beiden Segmente erhalten **v
 
 | | |
 |---|---|
-| **ZIEL** | Ein Eintrag, der zu einem neuen LZG-Knoten geführt hat, existiert danach nicht mehr im KZG. Ein Eintrag, der nur einen bestehenden Knoten verstärkt oder reaktiviert hat, bleibt. |
+| **ZIEL** | Ein Eintrag, der zu einem neuen LZG-Knoten geführt hat, existiert danach nicht mehr im KZG. Ein Eintrag, der nur einen bestehenden Knoten ~~verstärkt~~ → getroffen (seit dem 23.10.2026 verstärkt ein Treffer der Promotion nicht, `novaberg-memory-synapsen_e.md` A, E7; der Code noch: `LZG-PROMOTION-TREFFER-VERSTAERKT`) oder reaktiviert hat, bleibt. |
 | **TEST** | Nach einem Promotions-Lauf über den Neuanlage-Pfad: `exists(kzg_key)` ist falsch. Positiver Zwilling: derselbe Test vor dem Lauf ist wahr, und nach dem Reinforcement-Pfad bleibt der Key bestehen. Fehlerpfad mit `assertLogs`: Scheitert `knoten_anlegen`, wird nicht gelöscht und die Fehlerzeile erscheint. |
 | **Gegenprobe** | Den Löschschritt entfernen — beide Zusicherungen müssen rot werden. |
 | **MESSUNG** | Vollabgleich aller Keys der Partition gegen `lzg_knoten.kzg_quell_key`. Die Schnittmenge muss leer sein. Vorher die Spalte per `\d` verifizieren, nicht aus Log-Zeilen übernehmen. Dieselbe Messung beantwortet `PROMOTION-ENTFERNT-KZG-NICHT` und liefert die Datenbasis für `KZG-TTL-UNSTERBLICH`. |

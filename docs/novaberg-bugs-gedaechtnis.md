@@ -1,9 +1,38 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → 17 Eintraege (22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → 18 Eintraege (23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 23.10.2026 — eine Entscheidung macht einen gebauten Weg zum Defekt
+
+Eine Kennung aus der Entscheidung vom 23.10.2026 zu §7.1a gegen K10 (`novaberg-memory-synapsen_e.md` A, E7): Es gilt §7.1a, ein Embedding-Treffer der Promotion verhindert nur die Dublette und verstärkt nicht. Gebaut ist der Weg nach K10; am Code gelesen, nicht gelaufen.
+
+### `LZG-PROMOTION-TREFFER-VERSTAERKT` — ein Embedding-Treffer der Promotion verstärkt den getroffenen Knoten, verstärken darf nur die Verwendung
+**Kategorie:** GED
+
+**Rang:** **mittel** — still, verfälscht den Bestand: Jeder Treffer hebt `gewicht_roh`, `gewicht_absolut`, `gewicht_decay` und `haeufigkeit` des getroffenen Knotens und setzt seine Verfallsuhr (`verstaerkt_am`) zurück, auch wenn Nova die Erinnerung nie verwendet hat; ein Knoten, dessen Thema oft wiederkommt, verfällt nicht und rückt im Lesepfad nach vorn. Wie oft das heute geschieht, ist seit dem 04.09.2026 nicht gemessen. Vergeben am 23.10.2026 gegen HEAD `5c00a98`.
+
+**Zustand:** offen — seit der Entscheidung vom 23.10.2026 ein Defekt; am Code gelesen am 23.10.2026 gegen `5c00a98`, nichts gebaut.
+
+**Ist** `[Code]`: `server/agents/synapsen_promotion/agent.py::_eintrag_verarbeiten` lädt die Knoten des Paares samt Kosinus zum neuen Eintrag (`lzg_knoten.kandidaten_mit_cosine_laden`, auch deaktivierte, Z. 503–506) und prüft den besten mit `lzg_knoten.match_pruefen` gegen `LZG_KNOTEN_MATCH_SCHWELLE` = 0,82 (`server/memory/lzg_knoten.py`, Z. 527–545). Ist der getroffene Knoten aktiv, läuft der Zweig *Reinforcement-Pfad (K10)* (`agent.py`, Z. 538–544): `lzg_knoten.knoten_verstaerken` setzt `gewicht_roh` + `LZG_KNOTEN_REINFORCEMENT_BOOST` (0,1), `gewicht_absolut` und `gewicht_decay` neu, `haeufigkeit` + 1 und `verstaerkt_am = NOW()` (`lzg_knoten.py`, Z. 549–573); danach rechnet `lzg_kanten.kanten_neuberechnen_fuer_knoten` alle Kanten des Knotens neu (Trigger 2, `agent.py` Z. 541). Der Modul-Docstring beschreibt es so (`agent.py`, Z. 21–23).
+
+**Soll:** `novaberg-memory-synapsen_t.md` §7.1a — *„Verstärkt wird ausschließlich, was Nova in ihrer Antwort tatsächlich hergenommen hat“* —, entschieden am 23.10.2026 gegen die Festlegung K10 (`novaberg-memory-synapsen_e.md` A, E7, Wortlaut *„Beide wie empfohlen“*): Ein Treffer ab der Schwelle legt keinen neuen Knoten an — das ist der Schutz vor der Dublette, und er bleibt — und verändert den getroffenen Knoten nicht: kein Boost, keine neue `haeufigkeit`, kein neues `verstaerkt_am`, kein Trigger 2 in diesem Pfad. Verstärkt wird allein über die Verwendung in der Antwort (`server/memory/usage_reinforcement.py::reinforce_used`, vom Dispatcher gerufen).
+
+**Wirkung.** Wiederkehr im Gespräch zählt als Verwendung: Kommt ein Thema oft wieder, ohne dass Nova die Erinnerung je hernimmt, wird sie im Langzeitgedächtnis stärker, und ihr Verfall beginnt bei jedem Treffer von vorn; `haeufigkeit` misst Wiederholung statt Verwendung. Mit `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` wird daraus der Selbsttreffer: Der stehengebliebene KZG-Eintrag trifft den Knoten, der aus ihm entstand — `[gemessen 04.09.2026]` 14.947 Verstärkungen auf 1.538 Knoten, 95,2 % mit `cosine = 1.0000`, bis zu 91 je Turn (Tabelle dort).
+
+**Vorgeschichte.** `VERSTAERKUNG-OHNE-VERWENDUNG` ([`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md)) nannte am 04.09.2026 den Verstärkungspfad der Promotion als einzigen Aufrufer von `knoten_verstaerken` und verlangte die Verstärkung im Dispatcher; er ist mit dem Bau des Wegs der Verwendung am selben Tag geschlossen. Den Weg der Promotion zurückzunehmen war nicht Teil davon, und bis zum 23.10.2026 stand K10 dagegen.
+
+**Vorhergesagter Zeuge** (nicht gelaufen): `_eintrag_verarbeiten` mit einem aktiven Kandidaten, `cosine` 0,95, Embedding und Datenbank als Doppel; am HEAD werden für ihn `knoten_verstaerken` und `kanten_neuberechnen_fuer_knoten` gerufen. Soll: kein neuer Knoten, kein Aufruf von `knoten_verstaerken` und keiner von `kanten_neuberechnen_fuer_knoten`. Zwilling: Ohne Treffer (`cosine` 0,5) entsteht ein neuer Knoten mit seinen Kanten (Trigger 1).
+
+**Geschlossen, wenn** ein Treffer der Promotion ab `LZG_KNOTEN_MATCH_SCHWELLE` keinen Knoten anlegt und den getroffenen nicht verändert — bezeugt mit dem Zeugen oben und seinem Zwilling — und im Betrieb nach dem Bau an den Treffern der Promotion gemessen ist, dass `gewicht_roh`, `haeufigkeit` und `verstaerkt_am` der getroffenen Knoten unverändert bleiben.
+
+**Nicht Teil dieses Eintrags:** die Halbreaktivierung eines deaktivierten Knotens beim Treffer (`novaberg-memory-synapsen_t.md` §9.3, `reactivate_node`). Sie ist dort ausdrücklich keine Verstärkung — `gewicht_roh` und `gewicht_absolut` bleiben — und war nicht Gegenstand der Frage; ob ein Treffer einen deaktivierten Knoten weiter wecken soll, ist nicht entschieden. **Beim Bau zu beachten:** Der Zweig ist heute der einzige Aufrufer von Trigger 2 im Betrieb; ohne ihn folgen die Kanten einer Verstärkung erst, wenn `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben ist.
+
+**Zusammenhang:** [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.1a, §7.2, §7.9.2; [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md) A (E7) und G (K10); `KZG-EINTRAG-BLEIBT-NACH-PROMOTION`, `KZG-THEMA-VERSTAERKT-NACHBARN`, `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`; *Synapsen-Modell* in [`novaberg-featureliste.md`](novaberg-featureliste.md).
 
 ---
 
@@ -14,7 +43,7 @@ Zwei Kennungen aus dem Abgleich von `novaberg-memory-synapsen_{k,t,b,e}.md` mit 
 ### `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` — der halbe Wert eines geweckten Knotens hält nur bis zum nächsten Tageslauf
 **Kategorie:** GED
 
-**Rang:** **mittel** — still: Ein geweckter Knoten steht nach dem nächsten Verfallslauf fast wieder bei seinem vollen Anker und rückt im Lesepfad nach vorn, gegen die Absicht von §9.3; geschrieben wird dabei nur `gewicht_decay`, der Anker `gewicht_absolut` bleibt unberührt. Wie oft halbreaktiviert wird, ist nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+**Rang:** ~~**mittel**~~ → **niedrig** (23.10.2026, am Bestand gemessen: heute tritt der Fall nicht ein — von 4571 Knoten ist **keiner** inaktiv, das kleinste `gewicht_absolut` ist 3,248, und mit `LZG_KNOTEN_DECAY_RATE` 0,0015 fällt der schwächste Knoten erst nach ln(3,248/0,1)/0,0015 ≈ 2320 Tagen unter `LZG_KNOTEN_MIN_GEWICHT`; `pipeline_log` trägt keine Halbreaktivierung). Davor: still: Ein geweckter Knoten steht nach dem nächsten Verfallslauf fast wieder bei seinem vollen Anker und rückt im Lesepfad nach vorn, gegen die Absicht von §9.3; geschrieben wird dabei nur `gewicht_decay`, der Anker `gewicht_absolut` bleibt unberührt. Wie oft halbreaktiviert wird, ist nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
 
 **Zustand:** offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`.
 
@@ -33,7 +62,7 @@ Zwei Kennungen aus dem Abgleich von `novaberg-memory-synapsen_{k,t,b,e}.md` mit 
 ### `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` — nach einer Verstärkung über die Verwendung werden die Kanten des Knotens nicht neu berechnet
 **Kategorie:** GED
 
-**Rang:** **niedrig** — still, aber klein: Die Kanten eines verstärkten Knotens bleiben auf dem Anker vor der Verstärkung (je Verstärkung `LZG_KNOTEN_REINFORCEMENT_BOOST` = 0,1 auf `gewicht_roh`, danach gedämpft); im Lesepfad wählt die Kantenstärke nur die Nachbarn je Schale aus und geht nicht in die Rangfolge ein. Der Verstärkungspfad der Promotion rechnet die Kanten desselben Knotens beim nächsten Treffer nach. Nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`.
+**Rang:** **niedrig** — still, aber klein: Die Kanten eines verstärkten Knotens bleiben auf dem Anker vor der Verstärkung (je Verstärkung `LZG_KNOTEN_REINFORCEMENT_BOOST` = 0,1 auf `gewicht_roh`, danach gedämpft); im Lesepfad wählt die Kantenstärke nur die Nachbarn je Schale aus und geht nicht in die Rangfolge ein. Der Verstärkungspfad der Promotion rechnet die Kanten desselben Knotens beim nächsten Treffer nach. Nicht gemessen. Vergeben am 22.10.2026 gegen HEAD `7c16bf5`. → 23.10.2026: Dieser Ausgleich fällt weg, sobald `LZG-PROMOTION-TREFFER-VERSTAERKT` behoben ist — nach der Entscheidung vom 23.10.2026 verstärkt ein Treffer nicht mehr, und der Pfad ist heute der einzige Aufrufer von Trigger 2 im Betrieb (`novaberg-memory-synapsen_e.md` A, E7). Der Rang ist dann neu zu prüfen.
 
 **Zustand:** offen — am Code gelesen am 22.10.2026 gegen `7c16bf5`.
 
@@ -90,6 +119,8 @@ Drei Kennungen aus einer Frage des Eigentuemers: *„EI-Calc ist lesend. Lesend 
 
 **Zustand:** offen — am Bestand gemessen am 04.09.2026.
 
+**Nachtrag 23.10.2026, nach einer Entscheidung:** Die Verfälschung im Langzeitgedächtnis läuft über die Verstärkung beim Treffer, und die ist seit dem 23.10.2026 selbst ein Defekt — es gilt §7.1a, ein Treffer der Promotion verstärkt nicht (`novaberg-memory-synapsen_e.md` A, E7; `LZG-PROMOTION-TREFFER-VERSTAERKT`). Ist jener behoben, trifft ein stehengebliebener Eintrag seinen Knoten weiter, ändert ihn aber nicht mehr; was bleibt, ist die wiederholte Promotion desselben Eintrags (ein Embedding je Lauf) und das Soll von §7.7, den Eintrag zu löschen. Der Rang ist dann neu zu prüfen.
+
 **Symptom.** `novaberg-memory-synapsen_k.md` §7.7 verlangt woertlich: *„Der KZG-Eintrag wird nach erfolgreicher Promotion vollstaendig aus Redis geloescht. […] Das macht den Schritt 4 der Promotion einfach: `DEL kzg:{user}:{char}:{id}`."*
 
 **Der Code sagt ausdruecklich das Gegenteil.** `agents/synapsen_promotion/agent.py`, Modul-Docstring: *„Der KZG-Hash wird wie im alten Pfad NICHT geloescht — er verfaellt ueber seine TTL."* Ein Grep ueber die Datei findet kein `DEL` auf den KZG-Schluessel; geloescht werden nur die Queue-Listen.
@@ -114,9 +145,11 @@ Ein Knoten steht bei `haeufigkeit` 92 aus **einem einzigen** Turn; sein `gewicht
 ### `KZG-THEMA-VERSTAERKT-NACHBARN` — ein geteiltes Thema genuegt
 **Kategorie:** GED
 
-**Rang:** **hoch** — still, verfälscht den Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Wegen, `_thematisch_verstaerken` (`server/agents/kzg/speicher.py:152-264`) und der ältere in `server/memory/kzg.py:486-560`; ~~gebaut ist nur die LZG-Seite von §7.1a.~~ → Von der LZG-Seite von §7.1a ist nur der Weg der Verwendung gebaut (`server/memory/usage_reinforcement.py`, seit dem 04.09.2026); der Embedding-Treffer der Promotion verstärkt weiter (`server/agents/synapsen_promotion/agent.py`, Verstärkungspfad) — offen, §7.1a gegen K10 (`novaberg-memory-synapsen_e.md` B; am Code geprüft am 22.10.2026).
+**Rang:** **hoch** — still, verfälscht den Bestand. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Wegen, `_thematisch_verstaerken` (`server/agents/kzg/speicher.py:152-264`) und der ältere in `server/memory/kzg.py:486-560`; ~~gebaut ist nur die LZG-Seite von §7.1a.~~ → Von der LZG-Seite von §7.1a ist nur der Weg der Verwendung gebaut (`server/memory/usage_reinforcement.py`, seit dem 04.09.2026); der Embedding-Treffer der Promotion verstärkt weiter (`server/agents/synapsen_promotion/agent.py`, Verstärkungspfad) — ~~offen, §7.1a gegen K10 (`novaberg-memory-synapsen_e.md` B; am Code geprüft am 22.10.2026)~~ → entschieden am 23.10.2026 für §7.1a: Ein Treffer der Promotion verstärkt nicht (`novaberg-memory-synapsen_e.md` A, E7); der Weg der Promotion ist damit ein eigener Defekt, `LZG-PROMOTION-TREFFER-VERSTAERKT`.
 
 **Zustand:** offen — am Bestand gemessen am 04.09.2026.
+
+**Nachtrag 23.10.2026, nach einer Entscheidung:** Die Entscheidung gilt der LZG-Seite von §7.1a, nicht der thematischen Verstärkung im KZG; dieser Eintrag bleibt, wie er ist. Sie berührt ihn an der Schleife: Ist `LZG-PROMOTION-TREFFER-VERSTAERKT` behoben, liefert ein Eintrag, den die thematische Verstärkung am Leben hält, der Promotion weiter Futter, aber keine Verstärkung im Langzeitgedächtnis mehr. Die Schleife mit `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` ist dann auf der LZG-Seite offen; im KZG wirkt sie weiter (Salienz, `haeufigkeit`, TTL).
 
 **Symptom.** `memory/kzg.py:486` scannt bei **jedem** `kzg_store` die ganze Paar-Partition (`redis_client.keys(prefix*)`) und verstaerkt **jeden** Eintrag, der mindestens **ein einziges Thema** teilt: `haeufigkeit` +1, Salienz neu gerechnet, **und die TTL neu gesetzt**.
 
