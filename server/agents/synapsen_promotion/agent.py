@@ -26,15 +26,27 @@ Jedes Promotion-Event wird in beide Gedaechtnis-Spuren geschrieben (K5):
 hintergrund_log (Pixie-Arbeitsgedaechtnis, via _audit_log) und pipeline_log
 (Novas Selbstreflexion, via Span + log_db_write).
 
-Der KZG-Hash wird wie im alten Pfad NICHT geloescht — er verfaellt ueber seine
-TTL. Der Queue-Task wird seit dem 09.08.2026 nicht mehr per `lpop` konsumiert,
-sondern per `LMOVE` in eine Arbeitsliste verschoben und erst nach gruenem
-Ergebnis daraus entfernt; siehe `invoke`.
+Der KZG-Hash wird nach einer gelungenen Neuanlage geloescht (Konzept §7.7,
+Schritt 4 aus §7.2): Der Eintrag ist vollstaendig in den neuen Knoten
+umgezogen und laesst nichts zurueck. Bis zum 23.10.2026 blieb er bis zu seiner
+TTL stehen, ging erneut in die Promotion und traf den Knoten, der aus ihm
+selbst entstanden war — gemessen am 04.09.2026: 95,2 % von 14.947
+Verstaerkungen mit Cosine 1,0000. Nach einem Treffer (aktiver oder geweckter
+Knoten) bleibt der Hash bis zu seiner TTL stehen: Dort wird kein Knoten
+angelegt, Inhalt, EI-Felder, Magnete und Erstellzeit des Eintrags kommen im
+LZG nicht an, und ein Loeschen waere ein Datenverlust. Nach einem Fehlschlag
+bleibt er ebenso stehen. Der Queue-Task wird seit dem
+09.08.2026 nicht mehr per `lpop` konsumiert, sondern per `LMOVE` in eine
+Arbeitsliste verschoben und erst nach gruenem Ergebnis daraus entfernt; siehe
+`invoke`.
 """
 
 import json
 import logging
 import math
+import uuid
+
+import redis
 
 from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.wissen_rueckweg.herkunft import material_waehlen
@@ -413,7 +425,8 @@ class SynapsenPromotionAgent(BaseAgent):
         if not redis_client.exists(kzg_key):
             self._fehler(
                 user_id, aufgabe, kzg_key, span_id,
-                f"KZG-Key '{kzg_key}' nicht mehr vorhanden (TTL abgelaufen) — verworfen",
+                f"KZG-Key '{kzg_key}' nicht mehr vorhanden (TTL abgelaufen oder "
+                f"schon promotet und geloescht) — verworfen",
             )
             return
 
@@ -505,6 +518,9 @@ class SynapsenPromotionAgent(BaseAgent):
             include_inactive=True,
         )
         match: dict | None = lzg_knoten.match_pruefen(kandidaten)
+        # Nur die Neuanlage traegt den Eintrag ganz ins LZG; nur nach ihr wird
+        # sein Hash geloescht (Schritt 4, unten).
+        neu_angelegt: bool = False
 
         if match is not None and match["aktiv"] is False:
             # ── Halbreaktivierungs-Pfad (§9.3) ──────
@@ -570,6 +586,7 @@ class SynapsenPromotionAgent(BaseAgent):
             )
             knoten_id = neue_id
             aktion = "neuanlage"
+            neu_angelegt = True
             info = f"knoten={knoten_id} kanten_paare={paare}"
 
         # ── verbindung: lzg_id nachtragen (§11.2) ──────
@@ -608,8 +625,23 @@ class SynapsenPromotionAgent(BaseAgent):
             turn_id=_hget("turn_id"),
         )
 
+        # ── Schritt 4: der KZG-Eintrag zieht um (§7.2, §7.7) ──────
+        # Erst hier: Bis zur Zeile darueber liest dieser Lauf den Hash
+        # (Felder, `turn_id` fuer den Rueckweg). Die Bruecke `verbindung`
+        # liest ihn nicht, sie traegt nur den Schluessel. Nur nach einer
+        # Neuanlage: Ein Treffer legt keinen Knoten an, der Inhalt des
+        # Eintrags kaeme nirgends an — sein Hash verfaellt ueber die TTL.
+        kzg_geloescht: bool = False
+        if neu_angelegt:
+            kzg_geloescht = self._kzg_eintrag_loeschen(
+                kzg_key, user_id, character_id, span_id,
+            )
+
         # ── Ausgabe: beide Gedaechtnis-Spuren (K5) ──────
-        ausgabe_zsf: str = f"aktion={aktion}, {info}, gewicht_roh={salienz:.3f}"
+        ausgabe_zsf: str = (
+            f"aktion={aktion}, {info}, gewicht_roh={salienz:.3f}, "
+            f"kzg_geloescht={'ja' if kzg_geloescht else 'nein'}"
+        )
         logger.info(f"Synapsen-Promotion: erledigt — {ausgabe_zsf}")
         self._audit_log(user_id, aufgabe, "erledigt", ausgabe_zsf)
         pipeline_log.log_db_write(
@@ -617,6 +649,7 @@ class SynapsenPromotionAgent(BaseAgent):
             inhalt={
                 "aktion": aktion, "knoten_id": knoten_id, "info": info,
                 "paar": f"{user_id}:{character_id}", "gewicht_roh": salienz,
+                "kzg_geloescht": kzg_geloescht,
             },
             user_id=user_id, character_id=character_id,
         )
@@ -750,6 +783,75 @@ class SynapsenPromotionAgent(BaseAgent):
             )
 
         return geaendert
+
+    def _kzg_eintrag_loeschen(
+        self, kzg_key: str, user_id: str, character_id: str, span_id: uuid.UUID,
+    ) -> bool:
+        """Loescht den KZG-Hash eines Eintrags, der als neuer Knoten angelegt ist (§7.7).
+
+        Der Eintrag ist vollstaendig in den neuen Knoten umgezogen; bliebe sein
+        Hash stehen, ginge er erneut in die Promotion und traefe den Knoten, der
+        aus ihm entstand.
+
+        Vorbedingung: `knoten_anlegen` hat fuer diesen Eintrag eine Knoten-ID
+        geliefert, und nichts in diesem Lauf liest den Hash danach noch.
+        Nachbedingung: Der Schluessel steht nicht mehr in Redis; das Ergebnis
+        steht im Log und im `pipeline_log`.
+        Fehlerfaelle: ein Schluessel ohne Praefix `kzg:` (das `DEL` traefe
+        sonst, was immer der Auftrag nennt), ein Redis-Fehler oder ein Schluessel,
+        der nach dem `DEL` noch steht — laut im Log und als Fehlerzeile im
+        `pipeline_log`, Rueckgabe False. **Die Methode wirft dabei nicht:**
+        Knoten und Kanten sind geschrieben, der Rueckweg ist eingereiht; ein
+        Wurf liesse den Auftrag in der Arbeitsliste, und der naechste Lauf
+        reihte denselben Rueckweg ein zweites Mal ein. Der Hash verfaellt dann
+        wie bisher ueber seine TTL.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        grund: str = ""
+        if not kzg_key.startswith("kzg:"):
+            grund = f"kein KZG-Schluessel: '{kzg_key}' — nicht geloescht"
+
+        # ── Verarbeitung ────────────────────────────
+        entfernt: int = 0
+        noch_da: int = 0
+        if not grund:
+            try:
+                entfernt = redis_client.delete(kzg_key)
+                noch_da = redis_client.exists(kzg_key)
+            except redis.RedisError as ex:
+                grund = (
+                    f"DEL auf '{kzg_key}' fehlgeschlagen ({type(ex).__name__}: {ex}) — "
+                    f"der Hash verfaellt ueber seine TTL"
+                )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if not grund and noch_da:
+            grund = f"KZG-Hash '{kzg_key}' steht nach dem DEL noch (entfernt={entfernt})"
+        if grund:
+            # Den Span schliesst diese Zeile nicht, anders als `_fehler`: Die
+            # Promotion selbst ist gelungen und endet regulaer mit `erledigt`.
+            logger.error(f"Synapsen-Promotion: {grund}")
+            pipeline_log.log_fehler(
+                turn_id=kzg_key or "?", node=NODE, quelle=QUELLE, span_id=span_id,
+                inhalt={"grund": grund, "schritt": "kzg_loeschen"},
+                user_id=user_id, character_id=character_id,
+            )
+            return False
+        if entfernt != 1:
+            # Der Schluessel war zwischen Vorbedingung 2 und hier schon fort —
+            # die Nachbedingung gilt trotzdem, aber das ist kein Regelfall.
+            logger.warning(
+                f"Synapsen-Promotion: KZG-Hash '{kzg_key}' war vor dem DEL schon "
+                f"fort (entfernt={entfernt})"
+            )
+        else:
+            logger.info(f"Synapsen-Promotion: KZG-Hash '{kzg_key}' geloescht — umgezogen")
+        pipeline_log.log_db_write(
+            turn_id=kzg_key, node=NODE, quelle=QUELLE, span_id=span_id,
+            inhalt={"aktion": "kzg_geloescht", "entfernt": entfernt},
+            user_id=user_id, character_id=character_id,
+        )
+        return True
 
     def _fehler(self, user_id: str, aufgabe: str, kzg_key: str, span_id, grund: str) -> None:
         """Einheitlicher Fehler-Abschluss: Log, hintergrund_log, pipeline_log, Span-Ende."""

@@ -56,7 +56,7 @@ class FakeRedis:
         """Set up the queue of the pair and the KZG hash of the entry."""
         self.lists: dict[str, list[str]] = {"queue:meister": list(queue)}
         self.counters: dict[str, dict[str, int]] = {}
-        self.kzg_hash: dict[str, str] = dict(kzg_hash)
+        self.kzg_hash: dict[str, str] | None = dict(kzg_hash)
 
     def lmove(self, source: str, target: str, where_from: str, where_to: str) -> str | None:
         """Move one entry atomically."""
@@ -99,13 +99,20 @@ class FakeRedis:
 
     def exists(self, key: str) -> int:
         """Report the KZG entry as existing for as long as its hash does."""
-        return 1 if key == KZG_KEY else 0
+        return 1 if key == KZG_KEY and self.kzg_hash is not None else 0
 
     def hget(self, key: str, field: str) -> str | None:
         """Return one field of the KZG hash, None when it is missing."""
-        if key != KZG_KEY:
+        if key != KZG_KEY or self.kzg_hash is None:
             return None
         return self.kzg_hash.get(field)
+
+    def delete(self, key: str) -> int:
+        """Delete the KZG hash; a promoted entry moves into its node."""
+        if key != KZG_KEY or self.kzg_hash is None:
+            return 0
+        self.kzg_hash = None
+        return 1
 
     def set(self, key: str, value: str) -> bool:
         """Accept `hash_dirty` and ignore it."""
