@@ -211,11 +211,21 @@ class WiedervorlageAgent(BaseAgent):
             for row in TimelineRepository.find_wiedervorlage_faellig(
                 POSTGRES_URL, user_id, ASSISTANT_USER_ID
             ):
+                # Die Spalten heissen `title` und `details`; `title` ist NOT NULL.
+                # Fehlt er oder ist er leer, ist der Leseweg defekt: laut melden
+                # und keine Nachfrage mit leerem Thema aufnehmen.
+                titel: str = row.get("title") or ""
+                if not titel.strip():
+                    logger.error(
+                        f"WiedervorlageAgent: Timeline-Zeile {row.get('id')} ohne title "
+                        f"— uebersprungen, keine Nachfrage mit leerem Thema"
+                    )
+                    continue
                 faellige.append({
                     "tabelle": "timeline",
                     "id":      row["id"],
-                    "titel":   row.get("titel", ""),
-                    "details": row.get("beschreibung", "") or row.get("titel", ""),
+                    "titel":   titel,
+                    "details": row.get("details") or titel,
                 })
         except Exception as fehler:
             logger.warning(f"WiedervorlageAgent: Timeline-Wiedervorlage fehlgeschlagen — {fehler}")
