@@ -3476,6 +3476,14 @@ SACHLAGE_FAKTEN_ANGEBOT_MAX: int = int(
 # nicht gemessen.
 SACHLAGE_BESTAND_KALENDER_MAX: int = int(
     os.getenv("SACHLAGE_BESTAND_KALENDER_MAX", "5"))
+# Der Erinnerungsanker (graph/nodes/erinnerungsanker.py): Fuer wie viele
+# gebundene Entitaeten der akuten Objekte er je Turn die Mappe liest und
+# sucht, in der Ordnung der Objekte. ⚠ Wachposten: Startwert, nicht gemessen.
+ANKER_MAX_ENTITAETEN: int = int(os.getenv("ANKER_MAX_ENTITAETEN", "3"))
+# Wie viele Erinnerungen der Anker der Resonanz hoechstens hinzufuegt —
+# gekappt wie die Resonanz des Enrichers selbst (drei). ⚠ Wachposten:
+# Startwert, nicht gemessen.
+ANKER_MAX_ERINNERUNGEN: int = int(os.getenv("ANKER_MAX_ERINNERUNGEN", "3"))
 
 # --- Das kurzfristige Ziel (novaberg-thinking-lage_k.md §4, Scheibe 2) ---
 # Zwei Lagen derselben Blase mit demselben akuten Objekt erzeugen ein

@@ -509,14 +509,15 @@ class DieVerdrahtungStehtTest(unittest.TestCase):
     """Der Knoten haengt im Graphen, der Verfasser liest ihn."""
 
     def test_der_graph_traegt_die_kante(self) -> None:
-        """reducer -> sachlage_node -> router, im Quelltext des Graphen."""
+        """Die Kette reducer -> sachlage_node -> erinnerungsanker -> router im Quelltext."""
         import inspect
 
         from graph import character_graph
         quelle: str = inspect.getsource(character_graph)
 
         self.assertIn('graph.add_edge("reducer",    "sachlage_node")', quelle)
-        self.assertIn('graph.add_edge("sachlage_node", "router")', quelle)
+        self.assertIn('graph.add_edge("sachlage_node", "erinnerungsanker")', quelle)
+        self.assertIn('graph.add_edge("erinnerungsanker", "router")', quelle)
 
     def test_der_stream_kennt_den_knoten(self) -> None:
         """Fund der zweiten Kontrolle (28.08.2026): 21 Knoten, 20 Labels.

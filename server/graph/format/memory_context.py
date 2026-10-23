@@ -109,11 +109,14 @@ def format_memory_entries(
     Reihenfolge:
         1. summary  — alle, in Eingangsreihenfolge
         2. charakter — alle, in Eingangsreihenfolge
-        3. kzg + lzg — gemeinsam, nach gewicht absteigend (stabil)
-        4. plugin_*  — alle, in Eingangsreihenfolge
-        5. unbekannte Quellen — am Ende, in Eingangsreihenfolge,
+        3. fakten    — die Mappen gebundener Personen und Sachen (vom
+           Erinnerungsanker), in Eingangsreihenfolge, vor dem, was erinnert
+           wird: Das gespeicherte Wissen steht vor der Erinnerung daran
+        4. kzg + lzg — gemeinsam, nach gewicht absteigend (stabil)
+        5. plugin_*  — alle, in Eingangsreihenfolge
+        6. unbekannte Quellen — am Ende, in Eingangsreihenfolge,
            mit Logging-Warnung pro Eintrag (kein Crash)
-        6. LZG-Resonanz — optionaler [GEDAECHTNIS]-Block ganz am Ende
+        7. LZG-Resonanz — optionaler [GEDAECHTNIS]-Block ganz am Ende
            (assoziative Spreading-Erinnerungen mit Pfad-Begruendung, §8.4.4)
 
     Args:
@@ -140,6 +143,7 @@ def format_memory_entries(
     # ── Buckets nach Quelle ──────────────────
     summary_group:   list[ContextEntry] = []
     charakter_group: list[ContextEntry] = []
+    fakten_group:    list[ContextEntry] = []
     memory_group:    list[ContextEntry] = []   # kzg + lzg, sortiert nach gewicht
     plugin_group:    list[ContextEntry] = []
     unknown_group:   list[ContextEntry] = []
@@ -150,6 +154,8 @@ def format_memory_entries(
             summary_group.append(entry)
         elif quelle == "charakter":
             charakter_group.append(entry)
+        elif quelle == QUELLE_FAKTEN:
+            fakten_group.append(entry)
         elif quelle in ("kzg", "lzg"):
             memory_group.append(entry)
         elif quelle.startswith("plugin_"):
@@ -179,6 +185,8 @@ def format_memory_entries(
 
     for entry in charakter_group:
         blocks.append(_format_charakter(entry))
+
+    blocks.extend(format_fakten(entry) for entry in fakten_group)
 
     for entry in memory_group:
         if entry.get("quelle") == "kzg":
@@ -219,6 +227,44 @@ def _format_charakter(entry: ContextEntry) -> str:
     """
     inhalt: str = entry.get("inhalt", "")
     return f"[Charakter] {inhalt}"
+
+
+#: Die Quelle der Mappe einer gebundenen Person oder Sache im Gedaechtnisblock.
+QUELLE_FAKTEN: str = "fakten"
+
+
+def format_fakten(entry: ContextEntry) -> str:
+    """Der Block der Fakten zu einer Person oder Sache: Kopfzeile, darunter je Fakt eine Zeile.
+
+    Vorbedingung: `entry` hat die Quelle `fakten`, `subtyp` den Namen der
+        Person oder Sache, `inhalt` die Zeilen der Fakten.
+    Nachbedingung: `[Fakten zu <Name>]`, darunter der Inhalt unveraendert;
+        genau eine Kopfzeile.
+    Fehlerfaelle: eine andere Quelle, ein leerer Name oder ein leerer Inhalt
+        werfen `ValueError` — ein Block ohne Namen oder ohne Fakten saehe aus
+        wie Wissen und truege keins. Eine zweite Kopfzeile im Inhalt wirft
+        `RuntimeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    name: str = str(entry.get("subtyp") or "").strip()
+    inhalt: str = str(entry.get("inhalt") or "").strip()
+    if entry.get("quelle") != QUELLE_FAKTEN or not name or not inhalt:
+        msg: str = (
+            f"format_fakten: Eintrag ohne Quelle {QUELLE_FAKTEN!r}, Namen oder Inhalt "
+            f"(quelle={entry.get('quelle')!r}, subtyp={name!r}, {len(inhalt)} Zeichen)"
+        )
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    block: str = f"[Fakten zu {name}]\n{inhalt}"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Genau eine Kopfzeile: Traegt der Inhalt selbst eine, laesen sich die
+    # Fakten einer Person als die einer zweiten.
+    if block.count("[Fakten zu ") != 1:
+        msg = f"format_fakten: der Block zu {name} traegt mehr als eine Kopfzeile"
+        raise RuntimeError(msg)
+    return block
 
 
 # Der Sprecher eines Gedaechtniseintrags, in Worten. `beobachter` ist der

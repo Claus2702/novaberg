@@ -296,6 +296,10 @@ class GraphBase(ABC):
         from graph.nodes.sachlage import sachlage_assess
         return sachlage_assess(state)
 
+    def _node_erinnerungsanker(self, state: ConversationState) -> ConversationState:
+        from graph.nodes.erinnerungsanker import erinnerungsanker
+        return erinnerungsanker(state, self.postgres_url)
+
     # Gesprächsvektor
     def _node_gespraechsvektor(self, state: ConversationState) -> ConversationState:
         from graph.nodes.gespraechsvektor import gespraechsvektor as _gv_fn

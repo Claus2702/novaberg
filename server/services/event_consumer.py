@@ -40,6 +40,7 @@ CHARACTER_NODE_LABELS: dict[str, str] = {
     "emotionale_gravitation": "Gravitation — Erinnerungen färben",
     "reducer":              "Reducer — Kontext kürzen",
     "sachlage_node":        "Sachlage — Verstehen des Gesprächs",
+    "erinnerungsanker":     "Erinnerungsanker — Fakten und Erinnerungen zu Personen",
     "ei_calc_persist":      "EI-Persist — Nova-Zustand sichern",
     "enricher":             "Enricher — Kontext laden",
     "ei_calc":              "EI-Calc — Emotionale Intelligenz",
