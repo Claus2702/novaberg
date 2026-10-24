@@ -234,8 +234,18 @@ def _update(state: AgentState) -> dict:
 
     Wird sowohl fuer action='update' als auch action='reschedule' aufgerufen.
     Geschrieben wird nur, wenn die Lesung und die Positivform des Rohtexts
-    dieselbe neue Uhrzeit ergeben (`_raw_form_agrees`); sonst endet der
-    Auftrag mit der Rueckfrage, ohne `verschieben`.
+    dieselbe neue Uhrzeit ergeben, ein anderer Tag als der des Termins nur,
+    wenn eine Form ihn nennt (`_raw_form_agrees`, sonst Ausgang
+    `keine_eindeutige_zeit`), und wenn diese Uhrzeit ihre Tageshaelfte
+    traegt: Eine Stunde von 1 bis 12 ohne Tageszeit an ihr ("auf 4 Uhr")
+    endet in der Rueckfrage nach morgens oder nachmittags
+    (`_open_half_of_day`, Ausgang `tageshaelfte_offen`). Sonst endet der
+    Auftrag mit der Rueckfrage, ohne `verschieben`. Mit "morgens" an der
+    Stunde ("4 Uhr morgens", "morgens um 4") sieht `zeit_parsen_vektor` den
+    Tag "morgen" (`tag_erkannt`): Ohne Datum endet der Auftrag in
+    `kein_datum`; mit einem Datum, das nicht der Tag des Termins ist, in
+    `keine_eindeutige_zeit`; faellt das Datum des Parsers auf den Tag des
+    Termins, wird dort die Uhrzeit der Form geschrieben.
 
     Das Schreiben ist ein Aufruf: `TimelineRepository.verschieben` legt die
     neue Zeile mit Paar, Typ, Merkmalen und `entitaet_ids` der alten an und
@@ -372,6 +382,18 @@ def _update(state: AgentState) -> dict:
                        f"Wann soll '{termin.get('title', '')}' stattfinden?"),
             "schritte": state["schritte"] + [
                 {"node": "ausfuehren", "ergebnis": "keine_eindeutige_zeit"},
+            ],
+        }
+
+    # "auf 4 Uhr" kann 04:00 oder 16:00 meinen: nicht raten, sondern fragen.
+    open_clock: time | None = _open_half_of_day((raw_expression, raw_prompt), title)
+    if open_clock is not None:
+        logger.info(f"_update: Tageshaelfte zu {open_clock.strftime('%H:%M')} offen — Rueckfrage")
+        return {
+            "status": "fehler",
+            "fehler": _half_of_day_question(open_clock, title),
+            "schritte": state["schritte"] + [
+                {"node": "ausfuehren", "ergebnis": "tageshaelfte_offen"},
             ],
         }
 
@@ -588,19 +610,31 @@ def _raw_form_agrees(
     zwei Lagen:
     1. Kein Text liegt ausserhalb der Formen, die Formen nennen zusammen
        genau eine Uhrzeit, und sie ist die Uhrzeit der Lesung und die von
-       `new_time` ("auf 11 Uhr", "von 10 auf 11:30", "auf Freitag um 11").
+       `new_time` ("auf 16 Uhr", "von 10 auf 15:30", "auf Freitag um 4 Uhr
+       nachmittags"). Eine Tageszeit an der Uhrzeit rechnet die Form mit
+       ("4 Uhr nachmittags" ist 16:00). Wahr heisst hier noch nicht
+       schreiben: Nennt eine Form eine Stunde von 1 bis 12 ohne Tageszeit
+       ("auf 11 Uhr", "von 10 auf 11:30", "auf Freitag um 11"), fragt
+       `_update` danach nach der Tageshaelfte (`_open_half_of_day`).
     2. Kein Text liegt ausserhalb der Formen und keine Form nennt eine
        Uhrzeit ("auf Freitag", "Freitag"): Dann nennt auch die Lesung keine,
        und `new_time` traegt die Uhrzeit von `old_time`.
+    In beiden Lagen gilt fuer den Tag: Nennt keine Form einen Tag
+    (`RawTimeForm.day_named`), muss `new_time` am Tag von `old_time` liegen.
+    Der Zeitparser liest einen Tag auch dort, wo der Satz keinen nennt —
+    "morgens" enthaelt "morgen" —, und "4 Uhr morgens" schriebe sonst still
+    den Tag nach dem Termin oder nach heute.
     Sonst falsch, also die Rueckfrage: ein Text ausserhalb der Formen ("auf
     11h", "vom Vormittag auf den Nachmittag", "auf halb elf", "auf Fr. um 11
     Uhr", ein unbekanntes Wort), zwei
-    verschiedene Uhrzeiten in Zeitausdruck und Aeusserung, oder Form und
-    Lesung uneins. Den Tag vergleicht die Pruefung nicht.
+    verschiedene Uhrzeiten in Zeitausdruck und Aeusserung, Form und Lesung
+    uneins, oder ein anderer Tag als der des Termins, den keine Form nennt.
+    Ob der genannte Tag der geschriebene ist, vergleicht die Pruefung nicht.
 
     Vorbedingung: `texts` sind die Rohtexte, `title` ein Text (leer erlaubt);
         `new_time` und `old_time` in Ortszeit mit Zone.
-    Nachbedingung: wahr genau in den zwei Lagen oben, verglichen auf die Minute.
+    Nachbedingung: wahr genau in den zwei Lagen oben, verglichen auf die
+        Minute, und ohne genannten Tag am Tag von `old_time`.
     Fehlerfaelle: ein Text oder Titel, der keiner ist, wirft `TypeError`;
         eine Zeit ohne Zone `ValueError`.
     """
@@ -623,7 +657,10 @@ def _raw_form_agrees(
         agrees: bool = False
     else:
         named: set[time] = {form.clock for form in forms if form.clock is not None}
-        agrees = (
+        day_allowed: bool = (
+            any(form.day_named for form in forms) or new_time.date() == old_time.date()
+        )
+        agrees = day_allowed and (
             named == {written} and reading_clock == written
             if named
             else reading_clock is None and written == time(old_time.hour, old_time.minute)
@@ -631,6 +668,106 @@ def _raw_form_agrees(
 
     # ── Ausgabe ─────────────────────────────────
     return agrees
+
+
+#: Die Woerter der Rueckfrage nach der Tageshaelfte: (erste Stunde, letzte
+#: Stunde, Tageszeit der Lesart bis Mittag, Tageszeit der Lesart danach), fuer
+#: jede Stunde von 1 bis 12 genau eine Zeile. Jedes Wort ist ein Schluessel der
+#: Tageszeiten des Zeitparsers (`TIME_VOCABULARY.dayparts`).
+_HALF_OF_DAY_WORDS: tuple[tuple[int, int, str, str], ...] = (
+    (1, 5, "morgens", "nachmittags"),
+    (6, 10, "morgens", "abends"),
+    (11, 11, "vormittags", "abends"),
+    (12, 12, "mittags", "nachts"),
+)
+
+
+def _open_half_of_day(texts: tuple[str, ...], title: str) -> time | None:
+    """Die neue Uhrzeit, deren Tageshaelfte der Auftrag offen laesst — oder None.
+
+    Nennt eine Positivform eine Stunde von 1 bis 12 ohne Tageszeit an ihr
+    ("auf 4 Uhr", "auf 4:30", "auf Freitag um 11"), ist offen, ob morgens
+    oder nachmittags gemeint ist; `_update` schreibt dann nicht, sondern
+    fragt. Das gilt unabhaengig von der Uhrzeit des Termins. Gelesen werden
+    dieselben Rohtexte wie in `_raw_form_agrees`, also auch der Zeitausdruck
+    des Modells: Laesst er die Tageszeit weg, die der Satz nennt, fragt
+    `_update` lieber einmal zu oft. Eine Tageszeit nur im Titel
+    ("Nachmittagskaffee") oder ohne Stunde zaehlt nicht.
+
+    Vorbedingung: `texts` sind die Rohtexte, `title` der Titel; fuer beide
+        hat `_raw_form_agrees` wahr ergeben.
+    Nachbedingung: die Uhrzeit der ersten Form mit offener Tageshaelfte
+        (`RawTimeForm.half_of_day_open`), sonst None.
+    Fehlerfaelle: ein Text oder Titel, der keiner ist, wirft `TypeError`; ein
+        Text ohne Positivform `ValueError` — dann waere die Funktion vor
+        `_raw_form_agrees` gerufen worden.
+    """
+    from agents.timeline.positive_form import raw_time_form
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not all(isinstance(text, str) for text in (*texts, title)):
+        msg: str = f"_open_half_of_day: kein Text unter {texts!r}, {title!r}"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    forms: list["RawTimeForm | None"] = [
+        raw_time_form(text, title) for text in texts if text.strip()
+    ]
+    if any(form is None for form in forms):
+        msg = f"_open_half_of_day: ein Text ohne Positivform unter {texts!r}"
+        raise ValueError(msg)
+    open_clocks: list[time] = [
+        form.clock for form in forms
+        if form is not None and form.clock is not None and form.half_of_day_open()
+    ]
+
+    # ── Ausgabe ─────────────────────────────────
+    return open_clocks[0] if open_clocks else None
+
+
+def _half_of_day_question(clock: time, title: str) -> str:
+    """Die Rueckfrage nach der Tageshaelfte einer Uhrzeit von 1 bis 12 Uhr.
+
+    Der Satz nennt den Titel, die Stunde und beide Lesarten mit Tageszeit und
+    Uhrzeit: "Soll 'Kaffee' um 4 Uhr morgens (04:00) oder um 4 Uhr
+    nachmittags (16:00) stattfinden?"; mit Minuten "um 4:30 Uhr morgens
+    (04:30)". Die Woerter je Stunde stehen in `_HALF_OF_DAY_WORDS`; an der
+    12 sind es "mittags" (12:00) und "nachts" (00:00).
+
+    Vorbedingung: `clock` hat eine Stunde in 1..12, `title` ist ein Text.
+    Nachbedingung: ein Fragesatz mit beiden Lesarten, die zweite zwoelf
+        Stunden nach der ersten.
+    Fehlerfaelle: eine Uhrzeit ausserhalb 1..12 Uhr wirft `ValueError`, ein
+        Titel, der kein Text ist, `TypeError`; ein Wort, das nicht in
+        `TIME_VOCABULARY.dayparts` steht, `ValueError`.
+    """
+    from utils.zeitparser import TIME_VOCABULARY
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(clock, time) or not 1 <= clock.hour <= 12:
+        msg: str = f"_half_of_day_question: keine Uhrzeit von 1 bis 12 Uhr ({clock!r})"
+        raise ValueError(msg)
+    if not isinstance(title, str):
+        msg = f"_half_of_day_question: kein Titel ({title!r})"
+        raise TypeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    first_word, second_word = next(
+        (first, second) for low, high, first, second in _HALF_OF_DAY_WORDS
+        if low <= clock.hour <= high
+    )
+    other: time = time((clock.hour + 12) % 24, clock.minute)
+    spoken: str = f"{clock.hour}:{clock.minute:02d}" if clock.minute else str(clock.hour)
+    question: str = (
+        f"Soll '{title}' um {spoken} Uhr {first_word} ({clock.strftime('%H:%M')}) "
+        f"oder um {spoken} Uhr {second_word} ({other.strftime('%H:%M')}) stattfinden?"
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not {first_word, second_word} <= TIME_VOCABULARY.dayparts.keys():
+        msg = f"_half_of_day_question: Tageszeit ohne Schluessel ({first_word}, {second_word})"
+        raise ValueError(msg)
+    return question
 
 
 def _on_day_of(reading: "TimeReading", old_time: datetime) -> datetime:

@@ -1,7 +1,9 @@
 """Tests: Ein Termin laesst sich mit einer neuen Uhrzeit allein verschieben.
 
-Ziel: *„Verschieb den Zahnarzt bitte auf 11 Uhr."* verschiebt den Termin am
-selben Tag auf 11:00 Ortszeit. Bis dahin endete der Satz in der Rueckfrage
+Ziel: *„Verschieb den Zahnarzt bitte auf 15 Uhr."* verschiebt den Termin am
+selben Tag auf 15:00 Ortszeit. Eine Stunde von 1 bis 12 ohne Tageszeit
+(*„auf 11 Uhr"*) fuehrt dagegen zur Rueckfrage nach der Tageshaelfte
+(`HalfOfDayTest`). Bis dahin endete der Satz in der Rueckfrage
 nach dem Datum: Der Zeitparser las die Uhrzeit (`uhrzeit_erkannt`), lieferte
 aber kein Datum, und `_update` brach bei `datum is None` ab — der Zweig
 „Uhrzeit neu, Tag vom alten Termin" stand dahinter und wurde nie erreicht.
@@ -56,6 +58,12 @@ SENTENCE_CLOCK_ONLY: str = "Verschieb den Zahnarzt bitte auf 11 Uhr."
 
 #: Alte und neue Uhrzeit in einem Satz; die hinter "auf" ist die neue.
 SENTENCE_FROM_TO: str = "Verschieb den Zahnarzt von 10 Uhr auf 11 Uhr."
+
+#: Die beiden Saetze oben mit einer Stunde, die ihre Tageshaelfte traegt: Eine
+#: Stunde von 1 bis 12 ohne Tageszeit fuehrt beim Verschieben zur Rueckfrage
+#: (`HalfOfDayTest`), die Saetze oben schreiben also nicht mehr.
+SENTENCE_CLOCK_ONLY_AFTERNOON: str = "Verschieb den Zahnarzt bitte auf 15 Uhr."
+SENTENCE_FROM_TO_AFTERNOON: str = "Verschieb den Zahnarzt von 10 Uhr auf 15 Uhr."
 
 #: Der Text, mit dem `_update` ohne Datum endet; synthetischer Titel.
 AGENT_ERROR: str = "Konnte das neue Datum nicht erkennen. Wann soll 'Wartung' stattfinden?"
@@ -115,8 +123,22 @@ class _RescheduleCase(unittest.TestCase):
             p.start()
             self.addCleanup(p.stop)
 
+    def _reset_doubles(self) -> None:
+        """Setzt jeden Zaehler der Doppel zurueck, bevor `_update` faehrt.
+
+        Jeder Aufruf von `_update` in dieser Datei geht durch `_new_time` oder
+        `_assert_error`; beide rufen dies zuerst. So prueft jeder Unterfall nur
+        die Aufrufe, die er selbst ausgeloest hat — ein roter Unterfall, der
+        schrieb, faerbt die folgenden derselben Methode nicht mit.
+        """
+        doubles: tuple[MagicMock, ...] = (self.move, self.insert, self.invalidate)
+        for double in doubles:
+            double.reset_mock()
+        self.assertEqual([double.call_count for double in doubles], [0, 0, 0])
+
     def _new_time(self, state: dict) -> datetime:
         """Faehrt `_update` und liefert die Zeit, mit der der neue Termin entsteht."""
+        self._reset_doubles()
         result: dict = timeline_crud._update(state)
         self.assertEqual(result["status"], "abgeschlossen", result)
         self.move.assert_called_once()
@@ -126,6 +148,7 @@ class _RescheduleCase(unittest.TestCase):
 
     def _assert_error(self, state: dict) -> dict:
         """Faehrt `_update` und prueft: Fehler, kein Schreiben."""
+        self._reset_doubles()
         result: dict = timeline_crud._update(state)
         self.assertEqual(result["status"], "fehler", result)
         self.move.assert_not_called()
@@ -152,7 +175,7 @@ class ThePairStaysTest(_RescheduleCase):
         Dass `verschieben` die Figur der alten Zeile uebernimmt, bezeugt
         `test_timeline_successor.py` an der Datenbank.
         """
-        self._new_time(_state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10))
+        self._new_time(_state(SENTENCE_CLOCK_ONLY_AFTERNOON, "", FRIDAY_10))
 
         self.assertEqual(self.move.call_args.args[1], 41)
 
@@ -162,37 +185,38 @@ class ClockTimeOnlyTest(_RescheduleCase):
 
     def test_clock_time_alone_moves_on_the_same_day(self) -> None:
         """Der Ausgangsfall: kein Zeitausdruck, die Uhrzeit nur im Satz."""
-        new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY, "", FRIDAY_10))
+        new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY_AFTERNOON, "", FRIDAY_10))
 
-        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
         self.assertEqual(self.move.call_args.kwargs["precision"], "minute")
 
     def test_every_form_of_the_time_expression_gives_the_same_time(self) -> None:
         """Mit Zeitausdruck lief schon ein anderer Zweig — er muss dasselbe ergeben."""
-        for expression in ("", "11 Uhr", "auf 11 Uhr"):
+        for expression in ("", "15 Uhr", "auf 15 Uhr"):
             with self.subTest(zeitausdruck=expression):
-                self.move.reset_mock()
                 new_time: datetime = self._new_time(
-                    _state(SENTENCE_CLOCK_ONLY, expression, FRIDAY_10)
+                    _state(SENTENCE_CLOCK_ONLY_AFTERNOON, expression, FRIDAY_10)
                 )
                 self.assertEqual(new_time.astimezone(TZ),
-                                 datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+                                 datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
 
     def test_the_clock_time_is_local_time_not_utc(self) -> None:
-        """Ein Termin, der in UTC ankommt: 11 Uhr heisst 11 Uhr hier, nicht 11:00Z."""
+        """Ein Termin, der in UTC ankommt: 15 Uhr heisst 15 Uhr hier, nicht 15:00Z."""
         in_utc: datetime = FRIDAY_10.astimezone(timezone.utc)
 
-        new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY, "", in_utc))
+        new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY_AFTERNOON, "", in_utc))
 
-        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
 
     def test_an_appointment_without_time_keeps_its_local_day(self) -> None:
         """Mitternacht Ortszeit ist in UTC der Vortag — der Tag kommt aus der Ortszeit."""
         midnight_utc: datetime = datetime(2026, 10, 16, 0, 0, tzinfo=TZ).astimezone(timezone.utc)
 
-        new_time: datetime = self._new_time(_state(SENTENCE_CLOCK_ONLY, "", midnight_utc))
+        new_time: datetime = self._new_time(
+            _state(SENTENCE_CLOCK_ONLY_AFTERNOON, "", midnight_utc)
+        )
 
-        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
         self.assertEqual(self.move.call_args.kwargs["precision"], "minute")
 
 
@@ -235,7 +259,6 @@ class DayOnlyTest(_RescheduleCase):
         moved: dict = {}
         for expression in ("", "Freitag"):
             with self.subTest(zeitausdruck=expression):
-                self.move.reset_mock()
                 moved[expression] = self._new_time(
                     _state("Verschieb den Zahnarzt auf Freitag.", expression, monday_26)
                 ).astimezone(TZ)
@@ -278,23 +301,22 @@ class FromToTest(_RescheduleCase):
 
     def test_the_time_after_auf_or_nach_is_the_new_one(self) -> None:
         for sentence, expression in (
-            (SENTENCE_FROM_TO, ""),
-            (SENTENCE_FROM_TO, "von 10 Uhr auf 11 Uhr"),
-            ("Verschieb den Zahnarzt von 10 Uhr nach 11 Uhr.", ""),
+            (SENTENCE_FROM_TO_AFTERNOON, ""),
+            (SENTENCE_FROM_TO_AFTERNOON, "von 10 Uhr auf 15 Uhr"),
+            ("Verschieb den Zahnarzt von 10 Uhr nach 15 Uhr.", ""),
         ):
             with self.subTest(satz=sentence, zeitausdruck=expression):
-                self.move.reset_mock()
                 new_time: datetime = self._new_time(_state(sentence, expression, FRIDAY_10))
                 self.assertEqual(new_time.astimezone(TZ),
-                                 datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+                                 datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
 
-    def test_from_ten_to_half_past_eleven(self) -> None:
+    def test_from_ten_to_a_time_with_minutes(self) -> None:
         """Die alte Zeit ohne "Uhr", die neue mit Minuten."""
         new_time: datetime = self._new_time(
-            _state("Verschieb den Zahnarzt von 10 auf 11:30.", "", FRIDAY_10)
+            _state("Verschieb den Zahnarzt von 10 auf 15:30.", "", FRIDAY_10)
         )
 
-        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 30, tzinfo=TZ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 15, 30, tzinfo=TZ))
 
     def test_two_times_without_auf_or_nach_ask_back(self) -> None:
         """Zwilling der beiden oben: Ohne "auf"/"nach" waere die Wahl geraten."""
@@ -322,16 +344,15 @@ class FromToTest(_RescheduleCase):
     def test_one_hour_or_one_after_auf_is_written(self) -> None:
         """Zwilling: Genau eine Stunde, oder genau eine hinter "auf" — geschrieben wird sie."""
         for phrase, expression, expected in (
-            ("auf 11 Uhr", "auf 11 Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von 10 auf 11 Uhr", "von 10 auf 11 Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von 10 auf 11:30", "von 10 auf 11:30", datetime(2026, 10, 16, 11, 30, tzinfo=TZ)),
-            ("auf den 20. um 11 Uhr", "auf den 20. um 11 Uhr",
-             datetime(2026, 10, 20, 11, 0, tzinfo=TZ)),
+            ("auf 15 Uhr", "auf 15 Uhr", datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("von 10 auf 15 Uhr", "von 10 auf 15 Uhr", datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("von 10 auf 15:30", "von 10 auf 15:30", datetime(2026, 10, 16, 15, 30, tzinfo=TZ)),
+            ("auf den 20. um 15 Uhr", "auf den 20. um 15 Uhr",
+             datetime(2026, 10, 20, 15, 0, tzinfo=TZ)),
             ("auf Freitag", "Freitag", datetime(2026, 10, 23, 10, 0, tzinfo=TZ)),
         ):
             for given in ("", expression):
                 with self.subTest(satz=phrase, zeitausdruck=given):
-                    self.move.reset_mock()
                     new_time: datetime = self._new_time(
                         _state(f"Verschieb den Zahnarzt {phrase}.", given, FRIDAY_10)
                     )
@@ -391,15 +412,18 @@ class FromToTest(_RescheduleCase):
                     )
 
     def test_one_spelled_hour_or_an_ordinal_day_is_written(self) -> None:
-        """Zwilling: Ein Zahlwort allein ist die neue Stunde, eine Ordinalzahl ist ein Tag."""
+        """Zwilling: Ein Zahlwort allein ist die neue Stunde, eine Ordinalzahl ist ein Tag.
+
+        Das Zahlwort traegt seine Tageszeit ("elf Uhr vormittags"), sonst bliebe
+        die Tageshaelfte offen.
+        """
         for phrase, expected in (
-            ("auf elf Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von zehn auf elf Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("auf den zehnten um 11 Uhr", datetime(2026, 11, 10, 11, 0, tzinfo=TZ)),
+            ("auf elf Uhr vormittags", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+            ("von zehn auf elf Uhr vormittags", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+            ("auf den zehnten um 15 Uhr", datetime(2026, 11, 10, 15, 0, tzinfo=TZ)),
         ):
             for expression in ("", phrase):
                 with self.subTest(satz=phrase, zeitausdruck=expression):
-                    self.move.reset_mock()
                     new_time: datetime = self._new_time(
                         _state(f"Verschieb den Zahnarzt {phrase}.", expression, FRIDAY_10)
                     )
@@ -424,15 +448,14 @@ class FromToTest(_RescheduleCase):
     def test_one_hour_in_the_range_after_auf_is_still_written(self) -> None:
         """Zwilling der Rueckfragen oben: eine Stunde, oder genau "von X auf/nach Y"."""
         for phrase, expected in (
-            ("auf 11 Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von 10 auf 11 Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von 10 nach 11 Uhr", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von 10 auf 11:30", datetime(2026, 10, 16, 11, 30, tzinfo=TZ)),
-            ("auf den 20. um 11 Uhr", datetime(2026, 10, 20, 11, 0, tzinfo=TZ)),
+            ("auf 15 Uhr", datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("von 10 auf 15 Uhr", datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("von 10 nach 15 Uhr", datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("von 10 auf 15:30", datetime(2026, 10, 16, 15, 30, tzinfo=TZ)),
+            ("auf den 20. um 15 Uhr", datetime(2026, 10, 20, 15, 0, tzinfo=TZ)),
             ("auf Freitag", datetime(2026, 10, 23, 10, 0, tzinfo=TZ)),
         ):
             with self.subTest(satz=phrase):
-                self.move.reset_mock()
                 new_time: datetime = self._new_time(
                     _state(f"Verschieb den Zahnarzt {phrase}.", "", FRIDAY_10)
                 )
@@ -443,9 +466,11 @@ class FromToTest(_RescheduleCase):
         guess = ZeitVektor(datum=datetime(2026, 10, 15, 10, 0, tzinfo=TZ), tag_erkannt=False,
                            uhrzeit_erkannt=True, referenz_modus="relativ")
         with patch.object(zeitparser, "zeit_parsen_vektor", return_value=guess):
-            new_time: datetime = self._new_time(_state(SENTENCE_FROM_TO, "", FRIDAY_10))
+            new_time: datetime = self._new_time(
+                _state(SENTENCE_FROM_TO_AFTERNOON, "", FRIDAY_10)
+            )
 
-        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
 
     def test_a_dated_guess_without_a_clear_time_asks_back(self) -> None:
         """Zwilling: Dasselbe Datum bei unklarer Lesung wird nicht still geschrieben."""
@@ -457,13 +482,13 @@ class FromToTest(_RescheduleCase):
             )
 
     def test_a_named_day_with_two_times_takes_the_one_after_auf(self) -> None:
-        """Ein Tag vom Parser, die Uhrzeit aus der Lesung: Freitag 11:00, nicht 10:00."""
+        """Ein Tag vom Parser, die Uhrzeit aus der Lesung: Freitag 15:00, nicht 10:00."""
         new_time: datetime = self._new_time(_state(
-            "Verschieb den Zahnarzt auf Freitag von 10 auf 11 Uhr.", "", datetime(
+            "Verschieb den Zahnarzt auf Freitag von 10 auf 15 Uhr.", "", datetime(
                 2026, 10, 15, 18, 0, tzinfo=TZ),
         ))
 
-        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 11, 0, tzinfo=TZ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 15, 0, tzinfo=TZ))
 
 
 class ReadTimeTest(_RescheduleCase):
@@ -947,24 +972,24 @@ class RawFormTest(_RescheduleCase):
         """Zwilling der Rueckfragen: jede der fuenf Formen, mit Satz und mit Zeitausdruck."""
         thursday_18: datetime = datetime(2026, 10, 15, 18, 0, tzinfo=TZ)
         for phrase, expression, old_time, expected in (
-            ("auf 11 Uhr", "auf 11 Uhr", FRIDAY_10, datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("auf 11.30", "auf 11.30", FRIDAY_10, datetime(2026, 10, 16, 11, 30, tzinfo=TZ)),
-            ("auf elf Uhr", "elf Uhr", FRIDAY_10, datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von 10 auf 11 Uhr", "von 10 auf 11 Uhr", FRIDAY_10,
+            ("auf 15 Uhr", "auf 15 Uhr", FRIDAY_10, datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("auf 15.30", "auf 15.30", FRIDAY_10, datetime(2026, 10, 16, 15, 30, tzinfo=TZ)),
+            ("auf elf Uhr vormittags", "elf Uhr vormittags", FRIDAY_10,
              datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("von zehn auf elf Uhr", "von zehn auf elf Uhr", FRIDAY_10,
+            ("von 10 auf 15 Uhr", "von 10 auf 15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("von zehn auf elf Uhr vormittags", "von zehn auf elf Uhr vormittags", FRIDAY_10,
              datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("auf den 20. um 11 Uhr", "auf den 20. um 11 Uhr", FRIDAY_10,
-             datetime(2026, 10, 20, 11, 0, tzinfo=TZ)),
+            ("auf den 20. um 15 Uhr", "auf den 20. um 15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 20, 15, 0, tzinfo=TZ)),
             ("auf Freitag", "Freitag", FRIDAY_10, datetime(2026, 10, 23, 10, 0, tzinfo=TZ)),
-            ("auf Freitag um 11", "Freitag um 11", thursday_18,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("auf Freitag von 10 auf 11 Uhr", "Freitag", thursday_18,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+            ("auf Freitag um 15", "Freitag um 15", thursday_18,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("auf Freitag von 10 auf 15 Uhr", "Freitag", thursday_18,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
         ):
             for given in ("", expression):
                 with self.subTest(satz=phrase, zeitausdruck=given):
-                    self.move.reset_mock()
                     new_time: datetime = self._new_time(
                         _state(f"Verschieb den Zahnarzt {phrase}.", given, old_time)
                     )
@@ -973,6 +998,11 @@ class RawFormTest(_RescheduleCase):
     def test_raw_time_form(self) -> None:
         """Die Form auf dem Rohtext: Uhrzeit, keine Uhrzeit, oder None — je mit Zwilling."""
         no_clock = positive_form.RawTimeForm()
+        # Die Formen mit <Tag> nennen ihn (`day_named`), die uebrigen nicht.
+        with_day: frozenset[str] = frozenset({
+            "auf den 20. um 11 Uhr", "auf den zehnten um 11 Uhr", "Freitag um 11",
+            "auf Freitag von 10 auf 11 Uhr",
+        })
         for text, expected in (
             ("Verschieb den Zahnarzt auf 11 Uhr.", time(11, 0)),
             ("Verschieb den Zahnarzt auf 11h.", None),
@@ -1001,8 +1031,14 @@ class RawFormTest(_RescheduleCase):
                 if expected is None:
                     self.assertIsNone(form)
                 else:
-                    self.assertEqual(form, positive_form.RawTimeForm(clock=expected))
-        for text in ("Verschieb den Zahnarzt auf Freitag.", "Freitag", "auf morgen", "", "bitte"):
+                    self.assertEqual(form, positive_form.RawTimeForm(
+                        clock=expected, day_named=text in with_day,
+                    ))
+        for text in ("Verschieb den Zahnarzt auf Freitag.", "Freitag", "auf morgen"):
+            with self.subTest(text=text):
+                self.assertEqual(positive_form.raw_time_form(text, "Zahnarzt"),
+                                 positive_form.RawTimeForm(day_named=True))
+        for text in ("", "bitte"):
             with self.subTest(text=text):
                 self.assertEqual(positive_form.raw_time_form(text, "Zahnarzt"), no_clock)
         with self.assertRaises(TypeError):
@@ -1143,24 +1179,23 @@ class RawFormTest(_RescheduleCase):
         """Zwilling: Bitte, Pronomen, Titel im Wort, anderes Verb — geschrieben."""
         thursday_18: datetime = datetime(2026, 10, 15, 18, 0, tzinfo=TZ)
         for sentence, expression, old_time, expected in (
-            ("Verschieb den Zahnarzt auf 11 Uhr.", "auf 11 Uhr", FRIDAY_10,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("Kannst du den Zahnarzt bitte auf 11 Uhr verschieben?", "11 Uhr", FRIDAY_10,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("Verschieb meinen Zahnarzttermin auf 11 Uhr.", "auf 11 Uhr", FRIDAY_10,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("Leg den Termin beim Zahnarzt auf Freitag um 11.", "Freitag um 11", thursday_18,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("Verschieb den Zahnarzt von 10 auf 11 Uhr.", "von 10 auf 11 Uhr", FRIDAY_10,
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+            ("Verschieb den Zahnarzt auf 15 Uhr.", "auf 15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("Kannst du den Zahnarzt bitte auf 15 Uhr verschieben?", "15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("Verschieb meinen Zahnarzttermin auf 15 Uhr.", "auf 15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("Leg den Termin beim Zahnarzt auf Freitag um 15.", "Freitag um 15", thursday_18,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("Verschieb den Zahnarzt von 10 auf 15 Uhr.", "von 10 auf 15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
             ("Verschieb den Zahnarzt auf Freitag.", "Freitag", FRIDAY_10,
              datetime(2026, 10, 23, 10, 0, tzinfo=TZ)),
-            ("Verschieb den Zahnarzt auf den 20. um 11 Uhr.", "auf den 20. um 11 Uhr", FRIDAY_10,
-             datetime(2026, 10, 20, 11, 0, tzinfo=TZ)),
+            ("Verschieb den Zahnarzt auf den 20. um 15 Uhr.", "auf den 20. um 15 Uhr", FRIDAY_10,
+             datetime(2026, 10, 20, 15, 0, tzinfo=TZ)),
         ):
             for given in ("", expression):
                 with self.subTest(satz=sentence, zeitausdruck=given):
-                    self.move.reset_mock()
                     new_time: datetime = self._new_time(_state(sentence, given, old_time))
                     self.assertEqual(new_time.astimezone(TZ), expected)
 
@@ -1185,16 +1220,15 @@ class RawFormTest(_RescheduleCase):
     def test_a_whole_content_word_of_the_title_is_written(self) -> None:
         """Zwilling: ein ganzes Inhaltswort des Titels und sein Kompositum auf "termin"."""
         for title, sentence, expression, expected in (
-            ("Zahnarzt", "Verschieb meinen Zahnarzttermin auf 11 Uhr.", "auf 11 Uhr",
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("Zahnarzt Dr. Berger", "Verschieb meinen Zahnarzttermin auf 11 Uhr.", "auf 11 Uhr",
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+            ("Zahnarzt", "Verschieb meinen Zahnarzttermin auf 15 Uhr.", "auf 15 Uhr",
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("Zahnarzt Dr. Berger", "Verschieb meinen Zahnarzttermin auf 15 Uhr.", "auf 15 Uhr",
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
             ("Fahrt nach Hause", "Leg die Fahrt auf 15 Uhr.", "auf 15 Uhr",
              datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
         ):
             for given in ("", expression):
                 with self.subTest(titel=title, satz=sentence, zeitausdruck=given):
-                    self.move.reset_mock()
                     state: dict = _state(sentence, given, FRIDAY_10)
                     state["parameter"]["termin"]["title"] = title
                     new_time: datetime = self._new_time(state)
@@ -1222,16 +1256,15 @@ class RawFormTest(_RescheduleCase):
     def test_a_compound_with_or_without_joint_s_is_written(self) -> None:
         """Zwilling: Kompositum mit und ohne Fugen-s, ein Inhaltswort neben einem Funktionswort."""
         for title, sentence, expression, expected in (
-            ("Zahnarzt", "Verschieb meinen Zahnarzttermin auf 11 Uhr.", "auf 11 Uhr",
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
-            ("Zahnarzt", "Verschieb den Zahnarztstermin auf 11 Uhr", "auf 11 Uhr",
-             datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+            ("Zahnarzt", "Verschieb meinen Zahnarzttermin auf 15 Uhr.", "auf 15 Uhr",
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
+            ("Zahnarzt", "Verschieb den Zahnarztstermin auf 15 Uhr", "auf 15 Uhr",
+             datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
             ("Kaffee mit Ilva", "Verschieb den Kaffee auf 15 Uhr.", "auf 15 Uhr",
              datetime(2026, 10, 16, 15, 0, tzinfo=TZ)),
         ):
             for given in ("", expression):
                 with self.subTest(titel=title, satz=sentence, zeitausdruck=given):
-                    self.move.reset_mock()
                     state: dict = _state(sentence, given, FRIDAY_10)
                     state["parameter"]["termin"]["title"] = title
                     new_time: datetime = self._new_time(state)
@@ -1262,7 +1295,10 @@ class RawFormTest(_RescheduleCase):
             for form in (word, zeitparser._ascii_umschrift(word))
         ]
         for name, word, form in cases:
-            text: str = f"Verschieb den Zahnarzt auf 11 Uhr {form}"
+            # Eine Tageszeit direkt an der Stunde gehoert zur Form ("11 Uhr abends",
+            # `HalfOfDayTest`); "bitte" dazwischen stellt sie hinter die Form.
+            gap: str = " bitte" if form.lower() in positive_form._RAW_DAYPARTS else ""
+            text: str = f"Verschieb den Zahnarzt auf 11 Uhr{gap} {form}"
             with self.subTest(liste=name, wort=form):
                 if form.lower() in positive_form._RAW_ADMITTED_WORDS:
                     # Nur der Artikel "ein": zugelassen, und keine Zeit.
@@ -1276,8 +1312,9 @@ class RawFormTest(_RescheduleCase):
     def test_a_prefixed_weekday_is_a_day_a_week_is_not(self) -> None:
         """Ein Wochentag mit Praefix ist ein <Tag> der Form, "naechste Woche" nicht."""
         for text, expected in (
-            ("auf nächsten Freitag", positive_form.RawTimeForm()),
-            ("auf naechsten Freitag um 11", positive_form.RawTimeForm(clock=time(11, 0))),
+            ("auf nächsten Freitag", positive_form.RawTimeForm(day_named=True)),
+            ("auf naechsten Freitag um 11",
+             positive_form.RawTimeForm(clock=time(11, 0), day_named=True)),
             ("auf nächste Woche", None),
             ("auf Freitag in drei Tagen", None),
             ("auf 11 Uhr, Geburtstag", None),
@@ -1346,6 +1383,427 @@ class RawFormTest(_RescheduleCase):
             timeline_crud._raw_form_agrees((None,), "Zahnarzt", time(11, 0), eleven, FRIDAY_10)
         with self.assertRaises(TypeError):
             timeline_crud._raw_form_agrees(("auf 11 Uhr",), None, time(11, 0), eleven, FRIDAY_10)
+
+
+class HalfOfDayTest(_RescheduleCase):
+    """Eine Stunde von 1 bis 12 ohne Tageszeit fuehrt beim Verschieben zur Rueckfrage.
+
+    Vorher schrieb "Verschieb den Nachmittagskaffee auf 4 Uhr" bei einem Termin
+    um 15:30 still 04:00: Lesung und Positivform waren sich einig. Jetzt
+    schreibt eine solche Stunde nur mit einer Tageszeit an ihr ("4 Uhr
+    nachmittags"); 0 und 13 bis 23 tragen ihre Tageshaelfte selbst.
+    """
+
+    #: Freitag, 16.10.2026, 15:30 und 09:00 Ortszeit.
+    FRIDAY_1530: datetime = datetime(2026, 10, 16, 15, 30, tzinfo=TZ)
+    FRIDAY_9: datetime = datetime(2026, 10, 16, 9, 0, tzinfo=TZ)
+
+    #: Dienstag, 20.10.2026, 15:30: weder "morgen" ab der Uhr (16.10.) noch ab
+    #: dem Termin (21.10.) faellt auf seinen Tag.
+    TUESDAY_1530: datetime = datetime(2026, 10, 20, 15, 30, tzinfo=TZ)
+
+    def _coffee(self, sentence: str, expression: str, old_time: datetime,
+                title: str = "Kaffee") -> dict:
+        """Ein Auftrag `reschedule` fuer einen Termin mit dem Titel `title`."""
+        state: dict = _state(sentence, expression, old_time)
+        state["parameter"]["termin"]["title"] = title
+        return state
+
+    def _assert_half_open(self, state: dict) -> dict:
+        """Faehrt `_update`: Rueckfrage mit eigenem Ausgang, nichts geschrieben."""
+        result: dict = self._assert_error(state)
+        self.assertEqual(result["schritte"][-1]["ergebnis"], "tageshaelfte_offen", result)
+        return result
+
+    def test_a_bare_hour_asks_back_and_writes_nothing(self) -> None:
+        """Die Schliessbedingung: "auf 4 Uhr" beim Termin um 15:30 — Rueckfrage, kein 04:00."""
+        for expression in ("", "4 Uhr", "auf 4 Uhr"):
+            with self.subTest(zeitausdruck=expression):
+                self._assert_half_open(
+                    self._coffee("Verschieb den Kaffee auf 4 Uhr.", expression, self.FRIDAY_1530)
+                )
+
+    def test_twin_with_a_daypart_or_an_hour_from_13_it_is_written(self) -> None:
+        """Zwilling: Tageszeit an der Stunde, davor oder dahinter, oder 0 und 13 bis 23."""
+        for sentence, expression, expected in (
+            ("Verschieb den Kaffee auf 4 Uhr nachmittags.", "auf 4 Uhr nachmittags",
+             datetime(2026, 10, 16, 16, 0, tzinfo=TZ)),
+            ("Verschieb den Kaffee nachmittags um 4.", "nachmittags um 4",
+             datetime(2026, 10, 16, 16, 0, tzinfo=TZ)),
+            ("Verschieb den Kaffee auf 12 Uhr mittags.", "auf 12 Uhr mittags",
+             datetime(2026, 10, 16, 12, 0, tzinfo=TZ)),
+            ("Verschieb den Kaffee auf 16 Uhr.", "auf 16 Uhr",
+             datetime(2026, 10, 16, 16, 0, tzinfo=TZ)),
+            ("Verschieb den Kaffee auf 16:30.", "auf 16:30",
+             datetime(2026, 10, 16, 16, 30, tzinfo=TZ)),
+            ("Verschieb den Kaffee auf 0 Uhr.", "auf 0 Uhr",
+             datetime(2026, 10, 16, 0, 0, tzinfo=TZ)),
+        ):
+            for given in ("", expression):
+                with self.subTest(satz=sentence, zeitausdruck=given):
+                    new_time: datetime = self._new_time(
+                        self._coffee(sentence, given, self.FRIDAY_1530)
+                    )
+                    self.assertEqual(new_time.astimezone(TZ), expected)
+
+    def test_a_daypart_at_the_hour_is_read_as_a_daypart_not_as_a_day(self) -> None:
+        """"früh" und "abends" schreiben am Tag des Termins; "nachts" an 1–11 bleibt offen.
+
+        Haette der Weg das Wort als Tag gelesen, endete der Satz in `kein_datum`
+        statt im Schreiben oder in `keine_eindeutige_zeit` — der Ausgang trennt beides.
+        """
+        for sentence, expression, expected in (
+            ("Verschieb den Kaffee auf 6 Uhr früh.", "auf 6 Uhr früh",
+             datetime(2026, 10, 16, 6, 0, tzinfo=TZ)),
+            ("Verschieb den Kaffee auf 8 Uhr abends.", "auf 8 Uhr abends",
+             datetime(2026, 10, 16, 20, 0, tzinfo=TZ)),
+        ):
+            for given in ("", expression):
+                with self.subTest(satz=sentence, zeitausdruck=given):
+                    new_time: datetime = self._new_time(
+                        self._coffee(sentence, given, self.FRIDAY_1530)
+                    )
+                    self.assertEqual(new_time.astimezone(TZ), expected)
+        for given in ("", "auf 2 Uhr nachts"):
+            with self.subTest(satz="nachts", zeitausdruck=given):
+                result: dict = self._assert_error(self._coffee(
+                    "Verschieb den Kaffee auf 2 Uhr nachts.", given, self.FRIDAY_1530,
+                ))
+                self.assertEqual(result["schritte"][-1]["ergebnis"], "keine_eindeutige_zeit")
+
+    def test_morgens_at_the_hour_asks_back_because_the_parser_reads_a_day(self) -> None:
+        """"auf 4 Uhr morgens" schreibt nicht, auch nicht 04:00: Rueckfrage ohne Datum.
+
+        `zeit_parsen_vektor` erkennt in "morgens" den Tag "morgen" (`tag_erkannt`
+        ueber eine Teilzeichenfolge), `day_phrase` findet keinen Tag, und ohne
+        Datum endet `_update` in `kein_datum`. Das haelt den heutigen Weg fest;
+        liest der Parser "morgens" einmal nur als Tageszeit, wird dieser Zeuge
+        rot, und "auf 4 Uhr morgens" gehoert dann zu den Saetzen, die 04:00 am
+        Tag des Termins schreiben.
+        """
+        for given in ("", "auf 4 Uhr morgens"):
+            with self.subTest(zeitausdruck=given):
+                result: dict = self._assert_error(self._coffee(
+                    "Verschieb den Kaffee auf 4 Uhr morgens.", given, self.FRIDAY_1530,
+                ))
+                self.assertEqual(result["schritte"][-1]["ergebnis"], "kein_datum")
+        self.assertTrue(zeit_parsen_vektor("Verschieb den Kaffee auf 4 Uhr morgens.").tag_erkannt)
+        self.assertFalse(
+            zeit_parsen_vektor("Verschieb den Kaffee auf 4 Uhr nachmittags.").tag_erkannt
+        )
+
+    def test_a_day_the_sentence_does_not_name_is_not_written(self) -> None:
+        """"morgens" an der Stunde, mit und ohne "auf", davor und dahinter: nie ein anderer Tag.
+
+        `zeit_parsen_vektor` liest in "morgens" den Tag "morgen". Mit dem
+        Zeitausdruck "4 Uhr morgens" rechnet er ein Datum, und ohne den
+        Tagesvergleich in `_raw_form_agrees` schrieb der Weg den Tag nach dem
+        Termin (Review). Der Ausgang haengt daran, ob der Parser ein Datum
+        liefert: ohne `kein_datum`, mit `keine_eindeutige_zeit` — beides eine
+        Rueckfrage, geschrieben wird nichts.
+        """
+        for sentence, expressions in (
+            ("Verschieb den Kaffee auf 4 Uhr morgens.",
+             ("", "4 Uhr morgens", "auf 4 Uhr morgens")),
+            ("Verschieb den Kaffee morgens um 4.", ("", "morgens um 4")),
+        ):
+            for given in expressions:
+                with self.subTest(satz=sentence, zeitausdruck=given):
+                    result: dict = self._assert_error(
+                        self._coffee(sentence, given, self.TUESDAY_1530)
+                    )
+                    self.assertIn(result["schritte"][-1]["ergebnis"],
+                                  ("kein_datum", "keine_eindeutige_zeit"), result)
+
+    def test_twin_other_dayparts_write_on_the_day_of_the_appointment(self) -> None:
+        """Zwilling: "früh", "vormittags", "abends", "nachmittags" schreiben am 20.10.
+
+        Mit und ohne "auf", Tageszeit davor und dahinter, Zeitausdruck leer
+        oder ohne "auf"; zugesichert auf Tag und Uhrzeit. "nachts" an 1–11
+        legt die Tageshaelfte nicht fest und bleibt `keine_eindeutige_zeit`.
+        """
+        for sentence, expressions, expected in (
+            ("Verschieb den Kaffee auf 6 Uhr früh.", ("", "6 Uhr früh"), time(6, 0)),
+            ("Verschieb den Kaffee früh um 6.", ("", "früh um 6"), time(6, 0)),
+            ("Verschieb den Kaffee auf 11 Uhr vormittags.", ("", "11 Uhr vormittags"),
+             time(11, 0)),
+            ("Verschieb den Kaffee vormittags um 11.", ("", "vormittags um 11"), time(11, 0)),
+            ("Verschieb den Kaffee auf 8 Uhr abends.", ("", "8 Uhr abends"), time(20, 0)),
+            ("Verschieb den Kaffee abends um 8.", ("", "abends um 8"), time(20, 0)),
+            ("Verschieb den Kaffee auf 4 Uhr nachmittags.", ("", "4 Uhr nachmittags"),
+             time(16, 0)),
+        ):
+            for given in expressions:
+                with self.subTest(satz=sentence, zeitausdruck=given):
+                    new_time: datetime = self._new_time(
+                        self._coffee(sentence, given, self.TUESDAY_1530)
+                    )
+                    self.assertEqual(new_time.astimezone(TZ),
+                                     datetime.combine(date(2026, 10, 20), expected, tzinfo=TZ))
+        result: dict = self._assert_error(self._coffee(
+            "Verschieb den Kaffee auf 2 Uhr nachts.", "2 Uhr nachts", self.TUESDAY_1530,
+        ))
+        self.assertEqual(result["schritte"][-1]["ergebnis"], "keine_eindeutige_zeit")
+
+    def test_raw_form_agrees_compares_the_day(self) -> None:
+        """Ohne genannten Tag nur der Tag des Termins; mit genanntem Tag auch ein anderer."""
+        old_time: datetime = self.FRIDAY_1530
+        same_day: datetime = datetime(2026, 10, 16, 4, 0, tzinfo=TZ)
+        next_day: datetime = datetime(2026, 10, 17, 4, 0, tzinfo=TZ)
+        morning: tuple[str, str] = ("4 Uhr morgens", "Verschieb den Kaffee auf 4 Uhr morgens.")
+        for texts, reading_clock, new_time, expected in (
+            (morning, time(4, 0), next_day, False),
+            (morning, time(4, 0), same_day, True),
+            (("", "auf 16 Uhr"), time(16, 0), next_day.replace(hour=16), False),
+            (("", "auf 16 Uhr"), time(16, 0), same_day.replace(hour=16), True),
+            (("", "auf morgen um 16 Uhr"), time(16, 0), next_day.replace(hour=16), True),
+            (("Freitag", "auf Freitag"), None,
+             datetime(2026, 10, 23, 15, 30, tzinfo=TZ), True),
+            (("", "Verschieb den Kaffee."), None, next_day.replace(hour=15, minute=30), False),
+        ):
+            with self.subTest(texte=texts, neu=new_time):
+                self.assertIs(
+                    timeline_crud._raw_form_agrees(
+                        texts, "Kaffee", reading_clock, new_time, old_time,
+                    ),
+                    expected,
+                )
+
+    def test_raw_time_form_names_the_day(self) -> None:
+        """`day_named` nur bei <Tag> in der Form; eine Tageszeit ist kein Tag."""
+        form = positive_form.RawTimeForm
+        for text, expected in (
+            ("auf 4 Uhr morgens", form(time(4, 0), "morgens")),
+            ("morgens um 4", form(time(4, 0), "morgens")),
+            ("auf 16 Uhr", form(time(16, 0))),
+            ("auf morgen um 16 Uhr", form(time(16, 0), day_named=True)),
+            ("auf den 20. um 16 Uhr", form(time(16, 0), day_named=True)),
+            ("auf Freitag", form(day_named=True)),
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(positive_form.raw_time_form(text, "Kaffee"), expected)
+        with self.assertRaises(TypeError):
+            form(time(16, 0), day_named="ja")
+
+    def test_the_rule_does_not_hang_on_the_time_of_the_appointment(self) -> None:
+        """"auf 11 Uhr" fragt beim Termin am Morgen wie am Nachmittag."""
+        for old_time in (self.FRIDAY_9, self.FRIDAY_1530):
+            for expression in ("", "auf 11 Uhr"):
+                with self.subTest(termin=old_time, zeitausdruck=expression):
+                    self._assert_half_open(
+                        self._coffee("Verschieb den Kaffee auf 11 Uhr.", expression, old_time)
+                    )
+
+    def test_twelve_one_and_minutes_and_every_form_ask_back(self) -> None:
+        """Die Grenzen 1 und 12, mit Minuten, mit Zahlwort, und jede Form mit Stunde.
+
+        Der Termin am Donnerstag um 18:00: "auf Freitag" ist dann der naechste Tag.
+        """
+        thursday_18: datetime = datetime(2026, 10, 15, 18, 0, tzinfo=TZ)
+        for phrase in (
+            "auf 12 Uhr", "auf 1 Uhr", "auf 4:30", "auf vier Uhr", "von 10 auf 11:30",
+            "auf Freitag um 11", "auf den 20. um 11 Uhr",
+        ):
+            for expression in ("", phrase):
+                with self.subTest(satz=phrase, zeitausdruck=expression):
+                    self._assert_half_open(self._coffee(
+                        f"Verschieb den Kaffee {phrase} bitte.", expression, thursday_18,
+                    ))
+
+    def test_a_daypart_in_the_title_does_not_count(self) -> None:
+        """"Nachmittagskaffee" nennt keine Tageszeit an der Uhrzeit; Zwilling mit Tageszeit."""
+        for expression in ("", "auf 4 Uhr"):
+            with self.subTest(zeitausdruck=expression):
+                self._assert_half_open(self._coffee(
+                    "Verschieb den Nachmittagskaffee auf 4 Uhr.", expression, self.FRIDAY_1530,
+                    title="Nachmittagskaffee",
+                ))
+        new_time: datetime = self._new_time(self._coffee(
+            "Verschieb den Nachmittagskaffee auf 4 Uhr nachmittags.", "", self.FRIDAY_1530,
+            title="Nachmittagskaffee",
+        ))
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 16, 16, 0, tzinfo=TZ))
+
+    def test_an_expression_without_the_daypart_of_the_sentence_asks_back(self) -> None:
+        """Die Regel liest auch den Zeitausdruck: Fehlt ihm die Tageszeit des Satzes, wird gefragt.
+
+        Die Tageszeiten mit Versatz 0 ("früh", "vormittags") lassen Form und
+        Lesung bei derselben Uhrzeit, also kommt der Auftrag an `_raw_form_agrees`
+        vorbei bis zur Regel. Laese sie nur die Aeusserung, schriebe "6 Uhr" neben
+        "... auf 6 Uhr früh." 06:00. Zwilling: Zeitausdruck leer oder mit Tageszeit.
+        """
+        for sentence, bare, full, expected in (
+            ("Verschieb den Kaffee auf 6 Uhr früh.", ("6 Uhr", "auf 6 Uhr"), "auf 6 Uhr früh",
+             datetime(2026, 10, 16, 6, 0, tzinfo=TZ)),
+            ("Verschieb den Kaffee auf 11 Uhr vormittags.", ("11 Uhr", "auf 11 Uhr"),
+             "auf 11 Uhr vormittags", datetime(2026, 10, 16, 11, 0, tzinfo=TZ)),
+        ):
+            for given in bare:
+                with self.subTest(satz=sentence, zeitausdruck=given):
+                    self._assert_half_open(self._coffee(sentence, given, self.FRIDAY_1530))
+            for given in ("", full):
+                with self.subTest(satz=sentence, zeitausdruck=given):
+                    new_time: datetime = self._new_time(
+                        self._coffee(sentence, given, self.FRIDAY_1530)
+                    )
+                    self.assertEqual(new_time.astimezone(TZ), expected)
+
+    def test_a_day_alone_is_written_and_a_daypart_alone_asks_back_as_before(self) -> None:
+        """Unveraendert: "auf Freitag" behaelt 15:30, "auf Freitag nachmittag" fragt."""
+        new_time: datetime = self._new_time(
+            self._coffee("Verschieb den Kaffee auf Freitag.", "Freitag", self.FRIDAY_1530)
+        )
+        self.assertEqual(new_time.astimezone(TZ), datetime(2026, 10, 23, 15, 30, tzinfo=TZ))
+        for expression in ("", "Freitag nachmittag"):
+            with self.subTest(zeitausdruck=expression):
+                result: dict = self._assert_error(self._coffee(
+                    "Verschieb den Kaffee auf Freitag nachmittag.", expression, self.FRIDAY_1530,
+                ))
+                self.assertNotEqual(result["schritte"][-1]["ergebnis"], "tageshaelfte_offen")
+
+    def test_the_question_names_the_hour_both_readings_and_the_title(self) -> None:
+        result: dict = self._assert_half_open(
+            self._coffee("Verschieb den Kaffee auf 4 Uhr.", "", self.FRIDAY_1530)
+        )
+        self.assertEqual(
+            result["fehler"],
+            "Soll 'Kaffee' um 4 Uhr morgens (04:00) oder um 4 Uhr nachmittags (16:00) stattfinden?",
+        )
+
+    def test_half_of_day_question(self) -> None:
+        """Die Woerter je Stunde, die Minuten, die 12, und jede Abweisung."""
+        for clock, expected in (
+            (time(1, 0), "um 1 Uhr morgens (01:00) oder um 1 Uhr nachmittags (13:00)"),
+            (time(4, 30), "um 4:30 Uhr morgens (04:30) oder um 4:30 Uhr nachmittags (16:30)"),
+            (time(8, 0), "um 8 Uhr morgens (08:00) oder um 8 Uhr abends (20:00)"),
+            (time(11, 5), "um 11:05 Uhr vormittags (11:05) oder um 11:05 Uhr abends (23:05)"),
+            (time(12, 0), "um 12 Uhr mittags (12:00) oder um 12 Uhr nachts (00:00)"),
+        ):
+            with self.subTest(uhrzeit=clock):
+                self.assertEqual(timeline_crud._half_of_day_question(clock, "Kaffee"),
+                                 f"Soll 'Kaffee' {expected} stattfinden?")
+        hours: list[int] = [
+            hour for low, high, _first, _second in timeline_crud._HALF_OF_DAY_WORDS
+            for hour in range(low, high + 1)
+        ]
+        self.assertEqual(hours, list(range(1, 13)))
+        for clock in (time(0, 0), time(13, 0), None):
+            with self.subTest(uhrzeit=clock), self.assertRaises(ValueError):
+                timeline_crud._half_of_day_question(clock, "Kaffee")
+        with self.assertRaises(TypeError):
+            timeline_crud._half_of_day_question(time(4, 0), None)
+
+    def test_open_half_of_day(self) -> None:
+        """Offen bei einer Stunde 1–12 ohne Tageszeit in irgendeinem Text, sonst None."""
+        for texts, expected in (
+            (("", "auf 4 Uhr"), time(4, 0)),
+            (("4:30", "auf 4:30"), time(4, 30)),
+            (("4 Uhr", "auf 4 Uhr morgens"), time(4, 0)),
+            (("", "auf 4 Uhr nachmittags"), None),
+            (("16 Uhr", "auf 16 Uhr"), None),
+            (("", "auf 0 Uhr"), None),
+            (("Freitag", "auf Freitag"), None),
+        ):
+            with self.subTest(texte=texts):
+                self.assertEqual(timeline_crud._open_half_of_day(texts, "Kaffee"), expected)
+        with self.assertRaises(ValueError):
+            timeline_crud._open_half_of_day(("", "auf 11h"), "Kaffee")
+        with self.assertRaises(TypeError):
+            timeline_crud._open_half_of_day((None,), "Kaffee")
+        with self.assertRaises(TypeError):
+            timeline_crud._open_half_of_day(("auf 4 Uhr",), None)
+
+    def test_raw_time_form_with_a_daypart(self) -> None:
+        """Die Tageszeit an der neuen Stunde gehoert zur Form; jede strittige: None."""
+        form = positive_form.RawTimeForm
+        for text, expected in (
+            ("Verschieb den Kaffee auf 4 Uhr nachmittags.", form(time(16, 0), "nachmittags")),
+            ("Verschieb den Kaffee nachmittags um 4.", form(time(16, 0), "nachmittags")),
+            ("um 8 abends", form(time(20, 0), "abends")),
+            ("auf Freitag nachmittags um 4", form(time(16, 0), "nachmittags", day_named=True)),
+            ("auf Freitag um 4 Uhr nachmittags", form(time(16, 0), "nachmittags", day_named=True)),
+            ("von 10 auf 4 Uhr nachmittags", form(time(16, 0), "nachmittags")),
+            ("auf vier Uhr nachmittags", form(time(16, 0), "nachmittags")),
+            ("auf 4 Uhr Nachmittags", form(time(16, 0), "nachmittags")),
+            ("auf 4 Uhr nachmıttags", form(time(16, 0), "nachmittags")),
+            ("auf 4 Uhr frueh", form(time(4, 0), "früh")),
+            ("auf 12 Uhr nachts", form(time(0, 0), "nachts")),
+            ("auf 4 Uhr", form(time(4, 0))),
+            ("nachmittags um 4 abends", None),
+            ("auf 11 Uhr nachts", None),
+            ("auf 1 Uhr mittags", None),
+            ("auf 16 Uhr morgens", None),
+            ("auf 12 Uhr abends", None),
+            ("auf Freitag nachmittag", None),
+            ("auf nachmittags", None),
+            ("auf 4 Uhr bitte nachmittags", None),
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(positive_form.raw_time_form(text, "Kaffee"), expected)
+        for name in positive_form._RAW_NEW_HOUR_GROUPS:
+            with self.subTest(gruppe=name):
+                self.assertIn(positive_form._RAW_HOUR_IN_DAYPART.format(n=name),
+                              positive_form._RAW_TIME_FORM.pattern)
+
+    def test_raw_hour_in_daypart(self) -> None:
+        """Jeder Zweig: 1–11 mit Versatz, beide Haelften, die 12, 0 und 13–23."""
+        for hour, daypart, expected in (
+            ((4, 0), "nachmittags", (16, 0)),
+            ((4, 30), "morgens", (4, 30)),
+            ((4, 0), "früh", (4, 0)),
+            ((11, 0), "abends", (23, 0)),
+            ((11, 0), "nachts", None),
+            ((1, 0), "mittags", None),
+            ((12, 0), "mittags", (12, 0)),
+            ((12, 15), "nachts", (0, 15)),
+            ((12, 0), "abends", None),
+            ((12, 0), "morgens", None),
+            ((16, 0), "morgens", None),
+            ((16, 0), "nachmittags", (16, 0)),
+            ((0, 0), "morgens", (0, 0)),
+            ((0, 0), "abends", None),
+            ((0, 0), "nachts", (0, 0)),
+            ((23, 0), "nachts", (23, 0)),
+        ):
+            with self.subTest(stunde=hour, tageszeit=daypart):
+                self.assertEqual(positive_form._raw_hour_in_daypart(hour, daypart), expected)
+        for hour, daypart in (((24, 0), "abends"), ((4, 60), "abends"), ((4, 0), "nacht")):
+            with self.subTest(stunde=hour, tageszeit=daypart), self.assertRaises(ValueError):
+                positive_form._raw_hour_in_daypart(hour, daypart)
+
+    def test_raw_dayparts_and_the_daypart_lists(self) -> None:
+        """Die Schluessel an der Stunde; die Listen kommen aus `_TAGESZEITEN`, keine zweite."""
+        for text, expected in (
+            ("nachmittags um 4", frozenset({"nachmittags"})),
+            ("auf 4 Uhr Abends", frozenset({"abends"})),
+            ("auf 4 Uhr", frozenset()),
+        ):
+            with self.subTest(text=text):
+                found = positive_form._RAW_TIME_FORM.search(text)
+                self.assertEqual(positive_form._raw_dayparts(found), expected)
+        with self.assertRaises(ValueError):
+            positive_form._raw_dayparts(None)
+        with self.assertRaises(ValueError):
+            positive_form._raw_dayparts(zeitparser._BARE_NUMBER.search("auf 11"))
+        self.assertEqual(set(positive_form._RAW_DAYPARTS.values()), set(zeitparser._TAGESZEITEN))
+        self.assertLessEqual(positive_form._RAW_DAYPARTS_BOTH_HALVES,
+                             zeitparser._TAGESZEITEN.keys())
+
+    def test_half_of_day_open_and_the_daypart_of_the_form(self) -> None:
+        """Offen nur bei 1–12 ohne Tageszeit; eine Tageszeit nur als Schluessel und mit Uhrzeit."""
+        form = positive_form.RawTimeForm
+        for raw, expected in (
+            (form(time(1, 0)), True), (form(time(4, 30)), True), (form(time(12, 0)), True),
+            (form(time(0, 0)), False), (form(time(13, 0)), False),
+            (form(time(4, 0), "morgens"), False), (form(time(16, 0), "nachmittags"), False),
+            (form(), False),
+        ):
+            with self.subTest(form=raw):
+                self.assertIs(raw.half_of_day_open(), expected)
+        with self.assertRaises(ValueError):
+            form(time(4, 0), "nacht")
+        with self.assertRaises(ValueError):
+            form(daypart="abends")
 
 
 class ErrorReachesTheAnswerTest(unittest.TestCase):

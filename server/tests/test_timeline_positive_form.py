@@ -44,6 +44,14 @@ MOVED_NAMES: frozenset[str] = frozenset({
     "_RAW_TITLE_COMPOUND_END", "_RAW_TITLE_COMPOUND_JOINTS", "_RAW_FUNCTION_WORDS",
 })
 
+#: Die Namen, mit denen die Positivform seit dem Umzug eine Tageszeit an der neuen
+#: Stunde liest (Rueckfrage nach der Tageshaelfte) — ausdruecklich genannt, neben
+#: `MOVED_NAMES` und nicht darin: Diese Namen standen nie im Parser.
+HALF_OF_DAY_NAMES: frozenset[str] = frozenset({
+    "_RAW_DAYPARTS", "_RAW_DAYPARTS_BOTH_HALVES", "_RAW_HOUR_IN_DAYPART", "_raw_dayparts",
+    "_raw_hour_in_daypart",
+})
+
 
 def _bound_names(source: str) -> set[str]:
     """Jeder Name, den `source` auf Modulebene bindet: Klasse, Funktion, Zuweisung."""
@@ -102,11 +110,13 @@ class PlaceTest(unittest.TestCase):
                 self.assertIn(kept, names, "die Pruefung sah den Parser nicht")
 
     def test_twin_the_new_module_binds_every_name_of_the_form(self) -> None:
-        """Der Zwilling: Jeder umgezogene Name steht im neuen Modul."""
+        """Der Zwilling: Jeder umgezogene Name steht im neuen Modul, dazu die der Tageshaelfte."""
         names: set[str] = _bound_names(FORM_FILE.read_text(encoding="utf-8"))
 
         self.assertEqual(MOVED_NAMES - names, set())
-        self.assertEqual(_form_names(names), set(MOVED_NAMES))
+        self.assertEqual(HALF_OF_DAY_NAMES - names, set())
+        self.assertEqual(MOVED_NAMES & HALF_OF_DAY_NAMES, set())
+        self.assertEqual(_form_names(names), set(MOVED_NAMES | HALF_OF_DAY_NAMES))
 
     def test_twin_a_form_name_in_a_source_is_found(self) -> None:
         """Dieselbe Pruefung findet einen zurueckgelassenen Namen, auch einen neuen `_RAW_*`."""
@@ -168,6 +178,17 @@ class VocabularyTest(unittest.TestCase):
         self.assertEqual(vocabulary.hour_words["zwoelf"], 12)
         self.assertNotIn("ein", vocabulary.hour_words)
 
+    def test_the_dayparts_are_those_of_the_parser_and_immutable(self) -> None:
+        """`dayparts` traegt `_TAGESZEITEN` mit ihrem Versatz, ohne Schreibzugriff."""
+        dayparts = zeitparser.TIME_VOCABULARY.dayparts
+
+        self.assertIsInstance(dayparts, MappingProxyType)
+        self.assertEqual(dict(dayparts), zeitparser._TAGESZEITEN)
+        self.assertEqual(dayparts["nachmittags"], 12)
+        self.assertEqual(dayparts["morgens"], 0)
+        with self.assertRaises(TypeError):
+            dayparts["abends"] = 0
+
     def test_the_vocabulary_holds_the_lists_of_the_parser(self) -> None:
         """Abgeleitet, nicht abgeschrieben: Jede Liste steht vollstaendig darin."""
         vocabulary: zeitparser.TimeVocabulary = zeitparser.TIME_VOCABULARY
@@ -187,13 +208,16 @@ class VocabularyTest(unittest.TestCase):
         good: dict = {
             "words": ("freitag",), "hour_words": MappingProxyType({"elf": 11}),
             "ordinal_days": ("zehnten",), "relative_prefixes": ("nächste",),
-            "weekdays": ("freitag",),
+            "weekdays": ("freitag",), "dayparts": MappingProxyType({"abends": 12, "früh": 0}),
         }
         self.assertEqual(zeitparser.TimeVocabulary(**good).words, ("freitag",))
         for name, value in (
             ("words", ()), ("words", ("freitag", "")), ("weekdays", ()),
             ("hour_words", MappingProxyType({})), ("hour_words", MappingProxyType({"elf": 25})),
             ("hour_words", MappingProxyType({"elf": "11"})),
+            ("dayparts", MappingProxyType({})), ("dayparts", MappingProxyType({"": 12})),
+            ("dayparts", MappingProxyType({"abends": 18})),
+            ("dayparts", MappingProxyType({"abends": "12"})),
         ):
             with self.subTest(feld=name, wert=value):
                 with self.assertRaises(ValueError):

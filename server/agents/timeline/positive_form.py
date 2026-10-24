@@ -5,9 +5,10 @@ Lesung des Zeitparsers (`utils.zeitparser.read_time`): Sie liest den Text vor
 jeder Normalisierung und kennt nur wenige Formen. Einziger Aufrufer ist
 `agents.timeline.crud._raw_form_agrees`.
 
-Vom Zeitparser nimmt sie nur sein Vokabular (`TIME_VOCABULARY`), keine
-Normalisierung und keine Stundenlogik: Was der Parser als Zeitbezug fuehrt,
-darf ausserhalb der Form nicht stehen.
+Vom Zeitparser nimmt sie nur sein Vokabular (`TIME_VOCABULARY`), darin seine
+Tageszeiten (`TIME_VOCABULARY.dayparts`), keine Normalisierung: Was der Parser als
+Zeitbezug fuehrt, darf ausserhalb der Form nicht stehen, und eine Tageszeit
+gehoert nur als eigenes Wort an der neuen Uhrzeit zur Form.
 """
 
 import re
@@ -24,12 +25,54 @@ class RawTimeForm:
 
     Die zweite Pruefung neben der Lesung (`read_time`): Sie liest den Text vor
     jeder Normalisierung und kennt nur wenige Formen. `clock` ist die neue
-    Uhrzeit der Form ("auf 11 Uhr" -> 11:00, "von 10 auf 11:30" -> 11:30);
-    None, wenn die Form keine nennt ("auf Freitag") oder der Text keinen
-    Zeitteil hat.
+    Uhrzeit der Form ("auf 16 Uhr" -> 16:00, "von 10 auf 4 Uhr nachmittags"
+    -> 16:00); None, wenn die Form keine nennt ("auf Freitag") oder der Text
+    keinen Zeitteil hat. `daypart` ist der Schluessel aus
+    `TIME_VOCABULARY.dayparts`, den die Form an der Uhrzeit nennt ("4 Uhr
+    nachmittags" -> "nachmittags"), sonst None. `day_named` ist wahr, wenn
+    die Form einen Tag nennt ("auf Freitag", "auf morgen um 16 Uhr", "auf den
+    20."); eine Tageszeit ist kein Tag ("auf 4 Uhr morgens" -> falsch).
+
+    Fehlerfaelle: eine Tageszeit, die nicht in `TIME_VOCABULARY.dayparts`
+    steht, oder eine Tageszeit ohne Uhrzeit wirft `ValueError` — die Form
+    nennt eine Tageszeit nur an einer Stunde; ein `day_named`, das kein
+    Wahrheitswert ist, wirft `TypeError`.
     """
 
     clock: Optional[time] = None
+    daypart: Optional[str] = None
+    day_named: bool = False
+
+    def __post_init__(self) -> None:
+        """Prueft die Tageszeit (Schluessel des Parsers, nur mit Uhrzeit) und `day_named`."""
+        # ── Eingabe-Validierung ─────────────────────
+        if not isinstance(self.day_named, bool):
+            msg: str = f"RawTimeForm: day_named ist kein Wahrheitswert ({self.day_named!r})"
+            raise TypeError(msg)
+        if self.daypart is not None and (
+            self.daypart not in TIME_VOCABULARY.dayparts or self.clock is None
+        ):
+            msg = f"RawTimeForm: Tageszeit {self.daypart!r} ohne Schluessel oder Uhrzeit"
+            raise ValueError(msg)
+
+    def half_of_day_open(self) -> bool:
+        """Ob die Form eine Stunde von 1 bis 12 ohne Tageszeit nennt.
+
+        Dann ist offen, ob die Stunde morgens oder nachmittags gemeint ist
+        ("auf 4 Uhr", "auf 4:30", "auf 12 Uhr"); das Verschieben fragt zurueck,
+        statt zu raten. Die Stunden 0 und 13 bis 23 tragen ihre Tageshaelfte
+        selbst.
+
+        Nachbedingung: wahr genau dann, wenn `clock` gesetzt ist, ihre Stunde
+            in 1..12 liegt und `daypart` None ist.
+        """
+        # ── Verarbeitung ────────────────────────────
+        open_half: bool = (
+            self.clock is not None and self.daypart is None and 1 <= self.clock.hour <= 12
+        )
+
+        # ── Ausgabe ─────────────────────────────────
+        return open_half
 
 
 def _alternation(*words: str) -> str:
@@ -68,6 +111,29 @@ _RAW_HOUR: str = (
     + r")\b)(?:\s+uhr\b)?"
 )
 
+#: Jede Form einer Tageszeit aus `TIME_VOCABULARY.dayparts`, auch mit
+#: ASCII-Umschrift ("frueh"), auf ihren Schluessel dort.
+_RAW_DAYPARTS: dict[str, str] = {
+    form: key
+    for key in TIME_VOCABULARY.dayparts
+    for form in (key, TIME_VOCABULARY.ascii_form(key))
+}
+
+#: Die Tageszeiten, die an einer Stunde von 1 bis 11 keine Tageshaelfte
+#: festlegen: "1 Uhr mittags" kann 13 Uhr meinen, "11 Uhr mittags" 11 Uhr;
+#: "2 Uhr nachts" ist 2 Uhr, "11 Uhr nachts" 23 Uhr. Der Zeitparser rechnet
+#: hier mit einem festen Versatz, der in einer der beiden Lagen falsch ist.
+_RAW_DAYPARTS_BOTH_HALVES: frozenset[str] = frozenset({"mittags", "nachts"})
+
+#: Eine neue Stunde T mit wahlweise einer Tageszeit als eigenem Wort an ihr:
+#: davor mit "um" ("nachmittags um 4") oder dahinter ("4 Uhr nachmittags",
+#: "um 8 abends"). Nur die neue Stunde traegt eine Tageszeit; eine Tageszeit
+#: ohne Stunde gehoert nicht zur Form ("auf Freitag nachmittag").
+_RAW_HOUR_IN_DAYPART: str = (
+    r"(?:\b(?P<{n}_db>" + _alternation(*_RAW_DAYPARTS) + r")\s+um\s+)?" + _RAW_HOUR
+    + r"(?:\s+(?P<{n}_da>" + _alternation(*_RAW_DAYPARTS) + r")\b)?"
+)
+
 #: Ein Tag <Tag>: ein Wochentag, wahlweise mit relativem Praefix ("naechsten
 #: Freitag" — `tag_erkannt` liest den Wochentag), "heute", "morgen",
 #: "uebermorgen", ein Datum mit Punkt ("20.", "20.10.", "20.10.2026") oder eine
@@ -87,13 +153,16 @@ _RAW_DAY: str = (
 
 #: Die Positivform, genau eine der fuenf Formen: "[auf|um|nach|gegen] T",
 #: "von T auf|nach T", "auf <Tag>", "auf <Tag> [um] T", "auf <Tag> von T
-#: auf|nach T". Die neue Stunde steht in der Gruppe y2, t2, y1 oder t1.
+#: auf|nach T". Die neue Stunde steht in der Gruppe y2, t2, y1 oder t1, mit
+#: wahlweise einer Tageszeit an ihr (`_RAW_HOUR_IN_DAYPART`).
 _RAW_TIME_FORM = re.compile(
     r"(?P<day>" + _RAW_DAY + r")"
     r"(?:\s+(?:von\s+" + _RAW_HOUR.format(n="x2") + r"\s+(?:auf|nach)\s+"
-    + _RAW_HOUR.format(n="y2") + r"|(?:um\s+)?" + _RAW_HOUR.format(n="t2") + r"))?"
-    r"|\bvon\s+" + _RAW_HOUR.format(n="x1") + r"\s+(?:auf|nach)\s+" + _RAW_HOUR.format(n="y1")
-    + r"|(?:\b(?:auf|um|nach|gegen)\s+)?" + _RAW_HOUR.format(n="t1"),
+    + _RAW_HOUR_IN_DAYPART.format(n="y2") + r"|(?:um\s+)?"
+    + _RAW_HOUR_IN_DAYPART.format(n="t2") + r"))?"
+    r"|\bvon\s+" + _RAW_HOUR.format(n="x1") + r"\s+(?:auf|nach)\s+"
+    + _RAW_HOUR_IN_DAYPART.format(n="y1")
+    + r"|(?:\b(?:auf|um|nach|gegen)\s+)?" + _RAW_HOUR_IN_DAYPART.format(n="t1"),
     re.IGNORECASE,
 )
 
@@ -232,7 +301,14 @@ def raw_time_form(text: str, title: str) -> Optional[RawTimeForm]:
     "[auf|um|nach|gegen] T", "von T auf|nach T", "auf <Tag>", "auf <Tag> [um]
     T" oder "auf <Tag> von T auf|nach T". T ist eine Ziffernstunde ("11",
     "11:30", "11.30") oder ein Zahlwort "eins" bis "vierundzwanzig" ("ein" nur
-    vor "Uhr"), je wahlweise mit "Uhr"; <Tag> ein Wochentag (auch mit
+    vor "Uhr"), je wahlweise mit "Uhr"; die neue Stunde wahlweise mit einer
+    Tageszeit des Parsers (`TIME_VOCABULARY.dayparts`) als eigenem Wort an ihr
+    ("4 Uhr nachmittags",
+    "nachmittags um 4", "um 8 abends"), die sie in ihre Tageshaelfte rechnet
+    (`_raw_hour_in_daypart`). Die Form allein entscheidet nicht ueber das
+    Schreiben: Eine Stunde von 1 bis 12 ohne Tageszeit laesst die Tageshaelfte
+    offen (`RawTimeForm.half_of_day_open`), und das Verschieben fragt dann
+    zurueck. <Tag> ist ein Wochentag (auch mit
     relativem Praefix, "naechsten Freitag"), "heute", "morgen", "uebermorgen",
     ein Datum mit Punkt oder eine Ordinalzahl — "naechste Woche" nicht. Das
     "auf" vor <Tag> ist wahlweise: Der Zeitausdruck der Klassifikation lautet
@@ -248,13 +324,19 @@ def raw_time_form(text: str, title: str) -> Optional[RawTimeForm]:
 
     Vorbedingung: `text` und `title` sind Texte, leer erlaubt.
     Nachbedingung: eine `RawTimeForm` mit der neuen Uhrzeit der Form (Lage
-        "von T auf T": die zweite), oder ohne Uhrzeit fuer "auf <Tag>" und
-        einen Text ohne Zeitteil.
+        "von T auf T": die zweite) und ihrer Tageszeit, oder ohne Uhrzeit fuer
+        "auf <Tag>" und einen Text ohne Zeitteil; `day_named` wahr genau
+        dann, wenn die Form <Tag> traegt. Das Verschieben schreibt einen
+        anderen Tag als den des Termins nur, wenn eine Form ihn nennt
+        (`_raw_form_agrees` im Timeline-Agenten).
     Fehlerfaelle: kein Text wirft `TypeError`. None — also die Rueckfrage —
         ergibt ausserhalb der Form jedes Wort, das nicht zugelassen ist,
         auch ein unbekanntes ("Fr.", "vorm.", "flimmerig"), jede Ziffer und
-        jedes Wort aus `_RAW_OTHER_TIME`; ebenso eine Stunde ueber 23 oder
-        Minuten ueber 59.
+        jedes Wort aus `_RAW_OTHER_TIME`, darunter jede Tageszeit ohne
+        Stunde; ebenso eine Stunde ueber 23 oder Minuten ueber 59, zwei
+        verschiedene Tageszeiten an der Stunde und eine Tageszeit, die die
+        Tageshaelfte der Stunde nicht festlegt oder ihr widerspricht ("11 Uhr
+        nachts", "16 Uhr morgens", `_raw_hour_in_daypart`).
     """
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(text, str) or not isinstance(title, str):
@@ -267,11 +349,19 @@ def raw_time_form(text: str, title: str) -> Optional[RawTimeForm]:
     if _RAW_OTHER_TIME.search(outside) or not _raw_outside_admitted(outside, title):
         return None
     hour: Optional[tuple[int, int]] = _raw_new_hour(found) if found else None
+    dayparts: frozenset[str] = _raw_dayparts(found) if found else frozenset()
+    day_named: bool = found is not None and found.group("day") is not None
+    if hour is None or hour[0] > 23 or hour[1] > 59 or len(dayparts) > 1:
+        return RawTimeForm(day_named=day_named) if hour is None and not dayparts else None
+    daypart: Optional[str] = next(iter(dayparts), None)
+    shifted: Optional[tuple[int, int]] = (
+        _raw_hour_in_daypart(hour, daypart) if daypart is not None else hour
+    )
 
     # ── Ausgabe-Verifikation ────────────────────
-    if hour is not None and (hour[0] > 23 or hour[1] > 59):
+    if shifted is None:
         return None
-    return RawTimeForm(clock=time(*hour) if hour is not None else None)
+    return RawTimeForm(clock=time(*shifted), daypart=daypart, day_named=day_named)
 
 
 def _raw_outside_admitted(outside: str, title: str) -> bool:
@@ -355,3 +445,84 @@ def _raw_new_hour(found: re.Match[str]) -> Optional[tuple[int, int]]:
         msg = f"_raw_new_hour: mehr als eine neue Stunde ({hours}, {found.group(0)!r})"
         raise ValueError(msg)
     return hours[0] if hours else None
+
+
+def _raw_dayparts(found: re.Match[str]) -> frozenset[str]:
+    """Die Tageszeiten an der neuen Stunde eines Treffers von `_RAW_TIME_FORM`.
+
+    Aufgeloest wird mit derselben Faltung, mit der das Muster traf
+    (`re.IGNORECASE`): Sie reicht weiter als `str.lower()` ("nachmıttags" mit
+    `ı` trifft "nachmittags").
+
+    Vorbedingung: `found` ist ein Treffer von `_RAW_TIME_FORM`.
+    Nachbedingung: die Schluessel aus `TIME_VOCABULARY.dayparts` der Woerter
+        vor und hinter der neuen Stunde; leer ohne Tageszeit.
+    Fehlerfaelle: kein Treffer der Form wirft `ValueError`, ebenso ein
+        getroffenes Wort ohne Schluessel — das Muster und `_RAW_DAYPARTS`
+        waeren auseinandergelaufen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(found, re.Match) or "t1_da" not in found.re.groupindex:
+        msg: str = f"_raw_dayparts: kein Treffer der Positivform ({found!r})"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    words: list[str] = [
+        word
+        for name in _RAW_NEW_HOUR_GROUPS for side in ("db", "da")
+        if (word := found.group(f"{name}_{side}"))
+    ]
+    keys: list[Optional[str]] = [
+        next((key for form, key in _RAW_DAYPARTS.items()
+              if re.fullmatch(re.escape(form), word, re.IGNORECASE)), None)
+        for word in words
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if None in keys:
+        msg = f"_raw_dayparts: Tageszeit ohne Schluessel unter {words!r}"
+        raise ValueError(msg)
+    return frozenset(key for key in keys if key is not None)
+
+
+def _raw_hour_in_daypart(hour: tuple[int, int], daypart: str) -> Optional[tuple[int, int]]:
+    """Die Stunde in der Tageshaelfte ihrer Tageszeit — oder None, wenn sie offen bleibt.
+
+    Fuer 1 bis 11 gilt der Versatz aus `TIME_VOCABULARY.dayparts` ("4 Uhr
+    nachmittags" -> 16, "4 Uhr morgens" -> 4). Strenger als der Zeitparser, weil hier ueber
+    das Schreiben entschieden wird: "mittags" und "nachts" legen an 1 bis 11
+    keine Tageshaelfte fest (`_RAW_DAYPARTS_BOTH_HALVES`); an der 12 ist
+    "mittags" 12 und "nachts" 0, jede andere Tageszeit an der 12 bleibt
+    offen ("12 Uhr abends"). 0 und 13 bis 23 tragen ihre Tageshaelfte selbst
+    und bleiben, wenn die Tageszeit sie nicht bestreitet ("16 Uhr morgens").
+
+    Vorbedingung: `hour` ist (Stunde, Minute) in 0..23 und 0..59, `daypart`
+        ein Schluessel aus `TIME_VOCABULARY.dayparts`.
+    Nachbedingung: (Stunde, Minute) mit derselben Minute und einer Stunde in
+        0..23, oder None — dann fragt das Verschieben zurueck.
+    Fehlerfaelle: eine Stunde oder Minute ausserhalb des Bereichs und eine
+        Tageszeit ohne Schluessel werfen `ValueError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not (0 <= hour[0] <= 23 and 0 <= hour[1] <= 59) or (
+        daypart not in TIME_VOCABULARY.dayparts
+    ):
+        msg: str = f"_raw_hour_in_daypart: Stunde {hour!r} oder Tageszeit {daypart!r} ungueltig"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    offset: int = TIME_VOCABULARY.dayparts[daypart]
+    both: bool = daypart in _RAW_DAYPARTS_BOTH_HALVES
+    if hour[0] == 12:
+        # "mittags" hat den Versatz 12, "nachts" den Versatz 0: genau ihre Stunde.
+        shifted: Optional[int] = offset if both else None
+    elif 1 <= hour[0] <= 11:
+        shifted = None if both else hour[0] + offset
+    else:
+        shifted = hour[0] if both or (hour[0] >= 13) == (offset == 12) else None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if shifted is not None and not 0 <= shifted <= 23:
+        msg = f"_raw_hour_in_daypart: Stunde {shifted} aus {hour!r} und {daypart!r}"
+        raise ValueError(msg)
+    return (shifted, hour[1]) if shifted is not None else None

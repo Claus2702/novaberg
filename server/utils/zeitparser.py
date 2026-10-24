@@ -154,13 +154,15 @@ class TimeVocabulary:
     Tageswoerter, Tageszeiten, Zeiteinheiten, relative Praefixe, geschuetzte
     Woerter, Zahlwoerter, Stunden als Zahlwort, Ordinaltage, "mittag",
     "nacht"); `hour_words`: Stunde als Zahlwort mit ihrem Wert, ohne "ein";
-    `ordinal_days`, `relative_prefixes`, `weekdays`: die Formen je Liste.
+    `ordinal_days`, `relative_prefixes`, `weekdays`: die Formen je Liste;
+    `dayparts`: jede Tageszeit mit dem Versatz, mit dem der Parser eine Stunde
+    an ihr rechnet (0 oder 12, "nachmittags" -> 12).
 
     Vorbedingung: jede Folge nicht leer und nur aus nicht leeren Texten, jede
-        Stunde 0..24.
+        Stunde 0..24, jeder Versatz 0 oder 12.
     Nachbedingung: ein unveraenderliches Vokabular.
-    Fehlerfaelle: eine leere Folge, ein leeres Wort oder eine Stunde
-        ausserhalb 0..24 wirft `ValueError`.
+    Fehlerfaelle: eine leere Folge, ein leeres Wort, eine Stunde ausserhalb
+        0..24 oder ein anderer Versatz wirft `ValueError`.
     """
 
     words: tuple[str, ...]
@@ -168,17 +170,23 @@ class TimeVocabulary:
     ordinal_days: tuple[str, ...]
     relative_prefixes: tuple[str, ...]
     weekdays: tuple[str, ...]
+    dayparts: Mapping[str, int]
 
     def __post_init__(self) -> None:
         """Prueft die Vorbedingung der Klasse; wirft `ValueError`, wenn sie verletzt ist."""
         # ── Eingabe-Validierung ─────────────────────
-        for name in ("words", "hour_words", "ordinal_days", "relative_prefixes", "weekdays"):
+        for name in ("words", "hour_words", "ordinal_days", "relative_prefixes", "weekdays",
+                     "dayparts"):
             values: object = getattr(self, name)
             if not values or not all(isinstance(word, str) and word for word in values):
                 msg: str = f"TimeVocabulary: {name} leer oder mit leerem Wort ({values!r})"
                 raise ValueError(msg)
         if not all(isinstance(hour, int) and 0 <= hour <= 24 for hour in self.hour_words.values()):
             msg = f"TimeVocabulary: Stunde ausserhalb 0..24 ({dict(self.hour_words)!r})"
+            raise ValueError(msg)
+        if not all(isinstance(offset, int) and offset in (0, 12)
+                   for offset in self.dayparts.values()):
+            msg = f"TimeVocabulary: Versatz nicht 0 oder 12 ({dict(self.dayparts)!r})"
             raise ValueError(msg)
 
     def ascii_form(self, text: str) -> str:
@@ -915,7 +923,9 @@ _OTHER_DAY_WORD = re.compile(
 #: Tageszeiten (auch die der Rueckfall-Uhrzeiten), Zeiteinheiten, relative
 #: Praefixe, die geschuetzten Woerter der Fuzzy-Korrektur, Zahlwoerter,
 #: Stunden als Zahlwort und Ordinaltage; dazu "mittag" und "nacht" wie in
-#: `_OTHER_DAY_WORD`. Aendert sich eine Liste, aendert sich das Vokabular mit.
+#: `_OTHER_DAY_WORD`. `dayparts` sind die Tageszeiten aus `_TAGESZEITEN` mit
+#: ihrem Versatz, unveraenderlich; der Parser selbst liest weiter
+#: `_TAGESZEITEN`. Aendert sich eine Liste, aendert sich das Vokabular mit.
 TIME_VOCABULARY: TimeVocabulary = TimeVocabulary(
     words=(
         *_WOCHENTAGE, *_MONATE, *_MONTHS_AFTER_UM.split("|"), *_RELATIVE, *_RELATIVE_DAYS,
@@ -926,6 +936,7 @@ TIME_VOCABULARY: TimeVocabulary = TimeVocabulary(
     ordinal_days=tuple(_ORDINAL_DAYS),
     relative_prefixes=_RELATIVE_PRAEFIXE,
     weekdays=tuple(_WOCHENTAGE),
+    dayparts=MappingProxyType(dict(_TAGESZEITEN)),
 )
 
 #: Eine Uhrzeit mit Punkt, die kein Datum sein kann: Minuten 13..59, also kein
