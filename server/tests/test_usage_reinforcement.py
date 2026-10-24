@@ -17,8 +17,11 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
+import psycopg2
+import psycopg2.extras
+
 from config import POSTGRES_URL, VERWENDUNG_MAX_JE_TURN, VERWENDUNG_NAEHE_SCHWELLE
-from memory import usage_reinforcement
+from memory import lzg_kanten, usage_reinforcement
 
 MODUL:  str = "memory.usage_reinforcement"
 AGENT:  str = "graph.nodes.dispatcher"
@@ -151,7 +154,9 @@ class DerLaufFuehrtBuchTest(unittest.TestCase):
             naehen_alle={11: 0.72, 12: 0.61, 13: 0.30},
         )
         with patch(f"{MODUL}.used_memories_find", return_value=befund), \
-             patch(f"{MODUL}.lzg_knoten.knoten_verstaerken", return_value=1.0) as v:
+             patch(f"{MODUL}.lzg_knoten.knoten_verstaerken", return_value=1.0) as v, \
+             patch(f"{MODUL}.lzg_kanten.kanten_neuberechnen_mit_befund",
+                   return_value=4) as kanten:
             ergebnis = usage_reinforcement.reinforce_used(POSTGRES_URL, "A", [11, 12, 13])
         self.assertEqual(3, ergebnis["geprueft"])
         self.assertEqual(2, ergebnis["verwendet"])
@@ -159,6 +164,11 @@ class DerLaufFuehrtBuchTest(unittest.TestCase):
         self.assertEqual([0.72, 0.61], ergebnis["naehen"])
         self.assertIsNone(ergebnis["error"])
         self.assertEqual(2, v.call_count)
+        self.assertEqual([(POSTGRES_URL, 11), (POSTGRES_URL, 12)],
+                         [c.args for c in kanten.call_args_list])
+        self.assertEqual(8, ergebnis["kanten_neu"])
+        self.assertEqual([], ergebnis["kanten_fehler"])
+        self.assertGreaterEqual(ergebnis["kanten_dauer_ms"], 0.0)
 
     def test_ein_gescheiterter_schreibvorgang_wird_gemeldet(self) -> None:
         """Sonst waere *hergenommen und nicht verstaerkt* unsichtbar."""
@@ -167,11 +177,34 @@ class DerLaufFuehrtBuchTest(unittest.TestCase):
             naehen_alle={11: 0.72, 12: 0.61},
         )
         with patch(f"{MODUL}.used_memories_find", return_value=befund), \
-             patch(f"{MODUL}.lzg_knoten.knoten_verstaerken", side_effect=[1.0, None]):
+             patch(f"{MODUL}.lzg_knoten.knoten_verstaerken", side_effect=[1.0, None]), \
+             patch(f"{MODUL}.lzg_kanten.kanten_neuberechnen_mit_befund",
+                   return_value=0) as kanten:
             ergebnis = usage_reinforcement.reinforce_used(POSTGRES_URL, "A", [11, 12])
         self.assertEqual(2, ergebnis["verwendet"])
         self.assertEqual(1, ergebnis["verstaerkt"])
         self.assertIsNotNone(ergebnis["error"])
+        # Nur der gelungene Knoten rechnet seine Kanten nach: auf einem
+        # Gewicht, das nie geschrieben wurde, duerfte keine Kante stehen.
+        kanten.assert_called_once_with(POSTGRES_URL, 11)
+
+    def test_die_dauer_ist_die_gemessene_zeit_der_neuberechnungen(self) -> None:
+        """Eine Konstante oder eine ungemessene Zeit waere hier nicht 750,0."""
+        befund = usage_reinforcement.Verwendungsbefund(
+            treffer=[(11, 0.72), (12, 0.61)],
+            naehen_alle={11: 0.72, 12: 0.61},
+        )
+        # Je Knoten zwei Ablesungen (davor, danach): 0,25 s und 0,5 s. Das Modul
+        # `time` ist ersetzt, damit kein anderer Leser die Uhr verbraucht.
+        uhr = MagicMock()
+        uhr.monotonic.side_effect = [10.0, 10.25, 20.0, 20.5]
+        with patch(f"{MODUL}.used_memories_find", return_value=befund), \
+             patch(f"{MODUL}.lzg_knoten.knoten_verstaerken", return_value=1.0), \
+             patch(f"{MODUL}.lzg_kanten.kanten_neuberechnen_mit_befund", return_value=1), \
+             patch(f"{MODUL}.time", uhr):
+            ergebnis = usage_reinforcement.reinforce_used(POSTGRES_URL, "A", [11, 12])
+        self.assertEqual(750.0, ergebnis["kanten_dauer_ms"])
+        self.assertEqual(4, uhr.monotonic.call_count)
 
 
 class DerDispatcherRuftDieVerstaerkungTest(unittest.TestCase):
@@ -189,16 +222,42 @@ class DerDispatcherRuftDieVerstaerkungTest(unittest.TestCase):
         from graph.nodes.dispatcher import _verwendung_verstaerken
 
         leer: dict = {"geprueft": 2, "verwendet": 1, "verstaerkt": 1,
+                      "kanten_neu": 6, "kanten_fehler": [], "kanten_dauer_ms": 12.5,
                       "naehen": [0.72], "naehen_alle": {11: 0.72, 12: 0.30},
                       "knappster_verworfener": 0.30, "schwelle": 0.55,
                       "deckel": 3, "ausgang": usage_reinforcement.AUSGANG_GERECHNET,
                       "error": None}
         with patch(f"{AGENT}.usage_reinforcement.reinforce_used",
                    return_value=leer) as gerufen, \
-             patch(f"{AGENT}.log_db_write"):
+             patch(f"{AGENT}.log_db_write") as geschrieben:
             _verwendung_verstaerken(dict(self.ZUSTAND), POSTGRES_URL)
         gerufen.assert_called_once()
         self.assertEqual([11, 12], gerufen.call_args[0][2])
+        # Die Buchfuehrung von Trigger 2 erreicht das Protokoll.
+        inhalt: dict = geschrieben.call_args.kwargs["inhalt"]
+        self.assertEqual(6, inhalt["kanten_neu"])
+        self.assertEqual([], inhalt["kanten_fehler"])
+        self.assertEqual(12.5, inhalt["kanten_dauer_ms"])
+
+    def test_der_dispatcher_reicht_eine_gescheiterte_neuberechnung_weiter(self) -> None:
+        """Das Protokoll nennt den Knoten und den Grund, nicht nur eine Zahl."""
+        from graph.nodes.dispatcher import _verwendung_verstaerken
+
+        ergebnis: dict = {"geprueft": 2, "verwendet": 1, "verstaerkt": 1,
+                          "kanten_neu": 0, "kanten_fehler": [11],
+                          "kanten_dauer_ms": 3.5, "naehen": [0.72],
+                          "naehen_alle": {11: 0.72}, "knappster_verworfener": None,
+                          "schwelle": 0.55, "deckel": 3,
+                          "ausgang": usage_reinforcement.AUSGANG_GERECHNET,
+                          "error": "Kanten der Knoten [11] nicht neu berechnet"}
+        with patch(f"{AGENT}.usage_reinforcement.reinforce_used",
+                   return_value=ergebnis), \
+             patch(f"{AGENT}.log_db_write") as geschrieben:
+            _verwendung_verstaerken(dict(self.ZUSTAND), POSTGRES_URL)
+        inhalt: dict = geschrieben.call_args.kwargs["inhalt"]
+        self.assertEqual([11], inhalt["kanten_fehler"])
+        self.assertEqual(3.5, inhalt["kanten_dauer_ms"])
+        self.assertEqual(ergebnis["error"], inhalt["error"])
 
     def test_dispatch_ruft_die_verstaerkung(self) -> None:
         """Die Frage, die keiner der Zeugen darueber stellt.
@@ -396,6 +455,7 @@ class DieProtokollzeileTraegtDieEntscheidungTest(unittest.TestCase):
 
         ergebnis: dict = {
             "geprueft": 3, "verwendet": 0, "verstaerkt": 0, "naehen": [],
+            "kanten_neu": 0, "kanten_fehler": [], "kanten_dauer_ms": 0.0,
             "naehen_alle": {11: 0.5412, 12: 0.12, 13: 0.09},
             "knappster_verworfener": 0.5412,
             "schwelle": 0.55, "deckel": 3,
@@ -416,6 +476,247 @@ class DieProtokollzeileTraegtDieEntscheidungTest(unittest.TestCase):
             )
         self.assertEqual(0.5412, inhalt["knappster_verworfener"])
         self.assertEqual(0.55, inhalt["schwelle"])
+
+
+_USER: str = "test_kanten_verwendung_mensch"
+_CHAR: str = "test_kanten_verwendung_nova"
+
+
+def _vektor(stelle: int) -> str:
+    """Ein Einheitsvektor: gleiche Stelle ergibt Naehe 1,0, verschiedene 0,0."""
+    werte: list[str] = ["1" if n == stelle else "0" for n in range(768)]
+    return "[" + ",".join(werte) + "]"
+
+
+class _KantenFixture(unittest.TestCase):
+    """Knoten und Kanten des Paares in der Testdatenbank; abgeraeumt nach jedem Zeugen."""
+
+    # Der Wert, auf dem die Kante vor der Verstaerkung steht — weit weg von jeder
+    # berechneten Staerke, damit "unveraendert" und "neu berechnet" nicht
+    # zufaellig zusammenfallen.
+    ALT_ROH: float = 0.0123
+    ALT_ABSOLUT: float = 0.0456
+
+    def setUp(self) -> None:
+        self.conn = psycopg2.connect(POSTGRES_URL)
+        # Autocommit: eine offene Lesetransaktion haelt sonst die Migration auf.
+        self.conn.autocommit = True
+        self._clean()
+        self.addCleanup(self.conn.close)
+        self.addCleanup(self._clean)
+        self._serial: int = 0
+
+    def _clean(self) -> None:
+        # Die Kanten fallen mit ihren Knoten (ON DELETE CASCADE).
+        with self.conn.cursor() as cur:
+            cur.execute("DELETE FROM lzg_knoten WHERE user_id = %s", (_USER,))
+
+    def _knoten(self, gewicht_roh: float, stelle: int) -> int:
+        """Ein aktiver Knoten mit Einheitsvektor an `stelle`; seine id."""
+        self._serial += 1
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO lzg_knoten
+                    (user_id, character_id, beobachter, inhalt, dimension, embedding,
+                     gewicht_roh, gewicht_absolut, gewicht_decay,
+                     kzg_quell_key, kzg_erstellt_am, aktiv)
+                VALUES (%s, %s, 'user', %s, 'fakt', %s::vector, %s, %s, %s,
+                        %s, NOW(), TRUE)
+                RETURNING id
+                """,
+                (_USER, _CHAR, f"Knoten {self._serial}", _vektor(stelle),
+                 gewicht_roh, gewicht_roh, gewicht_roh,
+                 f"test-kanten-verwendung-{self._serial}"),
+            )
+            return int(cur.fetchone()[0])
+
+    def _kante(self, von: int, nach: int) -> None:
+        """Eine gerichtete Kante der Entitaets-Schicht auf dem alten Gewicht."""
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO lzg_kanten
+                    (knoten_a_id, knoten_b_id, gewicht_roh, gewicht_absolut,
+                     verbindungs_gruende, anzahl_schichten)
+                VALUES (%s, %s, %s, %s, ARRAY['entitaet'], 1)
+                """,
+                (von, nach, self.ALT_ROH, self.ALT_ABSOLUT),
+            )
+
+    def _kanten_lesen(self, *knoten: int) -> dict[tuple[int, int], tuple[float, float]]:
+        """(von, nach) -> (gewicht_roh, gewicht_absolut) aller Kanten zwischen den Knoten."""
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "SELECT knoten_a_id, knoten_b_id, gewicht_roh, gewicht_absolut "
+                "FROM lzg_kanten WHERE knoten_a_id = ANY(%s) AND knoten_b_id = ANY(%s)",
+                (list(knoten), list(knoten)),
+            )
+            return {(a, b): (roh, absolut) for a, b, roh, absolut in cur.fetchall()}
+
+    def _absolut(self, knoten: int) -> float:
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT gewicht_absolut FROM lzg_knoten WHERE id = %s", (knoten,))
+            return float(cur.fetchone()[0])
+
+    def _reinforce(self, antwort_stelle: int, knoten_ids: list[int]) -> dict:
+        """Ein Lauf von `reinforce_used`, die Antwort ist der Einheitsvektor `antwort_stelle`."""
+        vektor: list[float] = [1.0 if n == antwort_stelle else 0.0 for n in range(768)]
+        with patch(f"{MODUL}.model_service", _embed(vektor)):
+            return usage_reinforcement.reinforce_used(POSTGRES_URL, "eine Antwort", knoten_ids)
+
+
+class DieKantenStehenNachDerVerwendungAufDemNeuenGewichtTest(_KantenFixture):
+    """Trigger 2 an der Verwendung — gegen die Kantengewichte, nicht gegen einen Aufruf."""
+
+    def test_die_kanten_des_verstaerkten_knotens_stehen_auf_dem_neuen_gewicht(self) -> None:
+        verwendet: int = self._knoten(0.5, stelle=0)
+        andere: int = self._knoten(0.9, stelle=1)
+        self._kante(verwendet, andere)
+        self._kante(andere, verwendet)
+        vorher: float = self._absolut(verwendet)
+
+        ergebnis: dict = self._reinforce(antwort_stelle=0, knoten_ids=[verwendet, andere])
+
+        self.assertEqual(1, ergebnis["verstaerkt"], ergebnis)
+        nachher: float = self._absolut(verwendet)
+        self.assertGreater(nachher, vorher, "Die Verstaerkung hat das Gewicht nicht bewegt")
+        roh_ab, roh_ba = lzg_kanten.kanten_staerke_berechnen(
+            nachher, self._absolut(andere), {"entitaet": 1.0},
+        )
+        kanten = self._kanten_lesen(verwendet, andere)
+        for schluessel, roh in (((verwendet, andere), roh_ab), ((andere, verwendet), roh_ba)):
+            self.assertAlmostEqual(roh, kanten[schluessel][0], places=9)
+            self.assertAlmostEqual(
+                lzg_kanten.kante_daempfen(roh), kanten[schluessel][1], places=9,
+            )
+            self.assertNotAlmostEqual(self.ALT_ROH, kanten[schluessel][0], places=3)
+        self.assertEqual(2, ergebnis["kanten_neu"])
+        self.assertEqual([], ergebnis["kanten_fehler"])
+        self.assertIsNone(ergebnis["error"])
+
+    def test_twin_nicht_verwendet_laesst_die_kanten_unveraendert(self) -> None:
+        erster: int = self._knoten(0.5, stelle=1)
+        zweiter: int = self._knoten(0.9, stelle=2)
+        self._kante(erster, zweiter)
+        self._kante(zweiter, erster)
+
+        # Die Antwort liegt auf Stelle 0 — beide Erinnerungen stehen bei Naehe 0,0.
+        ergebnis: dict = self._reinforce(antwort_stelle=0, knoten_ids=[erster, zweiter])
+
+        self.assertEqual(0, ergebnis["verwendet"], ergebnis)
+        for kante in self._kanten_lesen(erster, zweiter).values():
+            self.assertEqual((self.ALT_ROH, self.ALT_ABSOLUT), kante)
+        self.assertEqual(0, ergebnis["kanten_neu"])
+
+    def test_twin_eine_fremde_kante_bleibt_unveraendert(self) -> None:
+        verwendet: int = self._knoten(0.5, stelle=0)
+        andere: int = self._knoten(0.9, stelle=1)
+        links: int = self._knoten(0.4, stelle=2)
+        rechts: int = self._knoten(0.8, stelle=3)
+        self._kante(verwendet, andere)
+        self._kante(links, rechts)
+        self._kante(rechts, links)
+
+        ergebnis: dict = self._reinforce(antwort_stelle=0, knoten_ids=[verwendet, andere])
+
+        self.assertEqual(1, ergebnis["verstaerkt"], ergebnis)
+        fremd = self._kanten_lesen(links, rechts)
+        self.assertEqual(2, len(fremd))
+        for kante in fremd.values():
+            self.assertEqual((self.ALT_ROH, self.ALT_ABSOLUT), kante)
+        eigene = self._kanten_lesen(verwendet, andere)[(verwendet, andere)]
+        self.assertNotEqual(
+            (self.ALT_ROH, self.ALT_ABSOLUT), eigene,
+            "Die eigene Kante wurde nicht neu berechnet — der Zwilling prueft sonst nichts",
+        )
+
+    def test_ein_knoten_ohne_kanten_ist_kein_fehler(self) -> None:
+        verwendet: int = self._knoten(0.5, stelle=0)
+
+        ergebnis: dict = self._reinforce(antwort_stelle=0, knoten_ids=[verwendet])
+
+        self.assertEqual(1, ergebnis["verstaerkt"], ergebnis)
+        self.assertEqual(0, ergebnis["kanten_neu"])
+        self.assertEqual([], ergebnis["kanten_fehler"])
+        self.assertIsNone(ergebnis["error"])
+
+    def test_eine_gescheiterte_neuberechnung_ist_laut(self) -> None:
+        verwendet: int = self._knoten(0.5, stelle=0)
+        andere: int = self._knoten(0.9, stelle=1)
+        self._kante(verwendet, andere)
+        # Nur die Neuberechnung verliert die Datenbank; `knoten_verstaerken`
+        # und die Naehepruefung laufen auf dem echten Modul.
+        kaputt = MagicMock()
+        kaputt.Error = psycopg2.Error
+        kaputt.extras = psycopg2.extras
+        kaputt.connect.return_value.cursor.side_effect = psycopg2.OperationalError("weg")
+
+        with patch.object(lzg_kanten, "psycopg2", kaputt), \
+             self.assertLogs("ki_server.memory.usage_reinforcement", level="ERROR") as log:
+            ergebnis: dict = self._reinforce(antwort_stelle=0, knoten_ids=[verwendet, andere])
+
+        self.assertEqual(1, ergebnis["verstaerkt"], ergebnis)
+        self.assertEqual([verwendet], ergebnis["kanten_fehler"])
+        self.assertEqual(0, ergebnis["kanten_neu"])
+        self.assertIn(f"[{verwendet}]", ergebnis["error"])
+        self.assertIn(f"[{verwendet}]", "\n".join(log.output))
+        eigene = self._kanten_lesen(verwendet, andere)[(verwendet, andere)]
+        self.assertEqual((self.ALT_ROH, self.ALT_ABSOLUT), eigene)
+
+    def test_ein_verbindungsfehler_haelt_den_zweiten_treffer_nicht_auf(self) -> None:
+        # Beide Knoten stehen auf der Stelle der Antwort: zwei Treffer, die
+        # Reihenfolge ist nicht festgelegt — der Zeuge liest den ersten aus dem Ergebnis.
+        erster: int = self._knoten(0.5, stelle=0)
+        zweiter: int = self._knoten(0.9, stelle=0)
+        self._kante(erster, zweiter)
+        self._kante(zweiter, erster)
+        # `connect` liegt in `kanten_neuberechnen_mit_befund` vor dem eigenen
+        # `try`: scheitert schon die Verbindung, faengt nur `reinforce_used`.
+        wirft = psycopg2.OperationalError("keine Verbindung")
+        kaputt = MagicMock()
+        kaputt.Error = psycopg2.Error
+        kaputt.extras = psycopg2.extras
+        echte = psycopg2.connect(POSTGRES_URL)
+        self.addCleanup(echte.close)
+        kaputt.connect.side_effect = [wirft, echte]
+
+        with patch.object(lzg_kanten, "psycopg2", kaputt), \
+             self.assertLogs("ki_server.memory.usage_reinforcement", level="ERROR") as log:
+            ergebnis: dict = self._reinforce(antwort_stelle=0, knoten_ids=[erster, zweiter])
+
+        self.assertEqual(2, ergebnis["verwendet"], ergebnis)
+        self.assertEqual(2, ergebnis["verstaerkt"], ergebnis)
+        self.assertEqual(1, len(ergebnis["kanten_fehler"]), ergebnis)
+        gescheitert: int = ergebnis["kanten_fehler"][0]
+        self.assertIn(f"[{gescheitert}]", ergebnis["error"])
+        self.assertIn(f"[{gescheitert}]", "\n".join(log.output))
+        # Der zweite Treffer rechnete seine Kanten neu: beide Richtungen.
+        self.assertEqual(2, ergebnis["kanten_neu"])
+        for kante in self._kanten_lesen(erster, zweiter).values():
+            self.assertNotEqual((self.ALT_ROH, self.ALT_ABSOLUT), kante)
+
+    def test_twin_eine_misslungene_verstaerkung_rechnet_nichts_nach(self) -> None:
+        befund = usage_reinforcement.Verwendungsbefund(treffer=[(11, 0.72)], naehen_alle={11: 0.72})
+        with patch(f"{MODUL}.used_memories_find", return_value=befund), \
+             patch(f"{MODUL}.lzg_knoten.knoten_verstaerken", return_value=None), \
+             patch(f"{MODUL}.lzg_kanten.kanten_neuberechnen_mit_befund") as kanten:
+            ergebnis: dict = usage_reinforcement.reinforce_used(POSTGRES_URL, "A", [11])
+        kanten.assert_not_called()
+        self.assertEqual(0, ergebnis["kanten_neu"])
+        self.assertIsNotNone(ergebnis["error"])
+
+
+class DieSummenFormBleibtFuerDieAnderenAufruferTest(unittest.TestCase):
+    """`kanten_neuberechnen_fuer_knoten` liefert weiter eine Zahl (Summe im Re-Embedding-Pfad)."""
+
+    def test_ein_fehlschlag_ist_fuer_summenbildner_null(self) -> None:
+        with patch.object(lzg_kanten, "kanten_neuberechnen_mit_befund", return_value=None):
+            self.assertEqual(0, lzg_kanten.kanten_neuberechnen_fuer_knoten(POSTGRES_URL, 1))
+
+    def test_twin_eine_anzahl_wird_durchgereicht(self) -> None:
+        with patch.object(lzg_kanten, "kanten_neuberechnen_mit_befund", return_value=7):
+            self.assertEqual(7, lzg_kanten.kanten_neuberechnen_fuer_knoten(POSTGRES_URL, 1))
 
 
 if __name__ == "__main__":

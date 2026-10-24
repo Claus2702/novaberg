@@ -22,6 +22,7 @@ Der Ort ist der Dispatcher: Der Responder formuliert, er persistiert nicht.
 """
 
 import logging
+import time
 from dataclasses import dataclass, field
 
 import psycopg2
@@ -30,7 +31,7 @@ from config import (
     VERWENDUNG_MAX_JE_TURN,
     VERWENDUNG_NAEHE_SCHWELLE,
 )
-from memory import lzg_knoten
+from memory import lzg_kanten, lzg_knoten
 from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.memory.usage_reinforcement")
@@ -207,11 +208,23 @@ def reinforce_used(
 
     Vorbedingung: keine — ein Turn ohne gelesene Erinnerungen ist der
         Normalfall und kein Fehler.
-    Nachbedingung: {geprueft, verwendet, verstaerkt, naehen, naehen_alle,
-        knappster_verworfener, schwelle, deckel, ausgang, error}. Die
+    Nachbedingung: {geprueft, verwendet, verstaerkt, kanten_neu, kanten_fehler,
+        kanten_dauer_ms, naehen, naehen_alle, knappster_verworfener, schwelle,
+        deckel, ausgang, error}. Die
         Buchfuehrung geht auf: `verwendet` ist die Zahl ueber der Schwelle,
         `verstaerkt` die Zahl der gelungenen Schreibvorgaenge. Weichen sie ab,
         steht der Grund im Log und in `error`.
+
+        **Trigger 2** (`novaberg-memory-synapsen_t.md` §7.9.2): Nach jeder
+        gelungenen Verstaerkung werden die Kanten von und zu dem Knoten neu
+        berechnet. `kanten_neu` zaehlt die gerichteten Kanten (0 fuer einen
+        Knoten ohne Kanten), `kanten_fehler` nennt die Knoten, deren
+        Neuberechnung scheiterte — das steht auch in `error` und im Log —,
+        `kanten_dauer_ms` die Zeit aller Neuberechnungen des Laufs. Eine
+        misslungene Verstaerkung rechnet nichts nach.
+    Fehlerfaelle: eine misslungene Verstaerkung oder Neuberechnung (auch ein
+        Verbindungsfehler beim Oeffnen) bricht den Lauf nicht ab, steht im Log
+        und in `error`; die uebrigen Knoten werden weiter bearbeitet.
 
         **Die letzten fuenf Felder tragen die Entscheidung, nicht ihr
         Ergebnis**: Ohne sie ist `verwendet: 0`
@@ -225,6 +238,12 @@ def reinforce_used(
         "geprueft":   len(knoten_ids or []),
         "verwendet":  len(befund.treffer),
         "verstaerkt": 0,
+        # Trigger 2: neu berechnete gerichtete Kanten (0 = Knoten ohne Kanten,
+        # kein Fehler), die Knoten, deren Neuberechnung scheiterte, und die
+        # Dauer des Ganzen in Millisekunden.
+        "kanten_neu":      0,
+        "kanten_fehler":   [],
+        "kanten_dauer_ms": 0.0,
         "naehen":     [round(n, 4) for _, n in befund.treffer],
         # Die Eingangsgroessen einzeln, der Massstab und die Herkunftsmarke.
         "naehen_alle":           befund.naehen_alle,
@@ -235,18 +254,50 @@ def reinforce_used(
         "error":                 None,
     }
 
+    fehler_kanten: list[int] = []
+    dauer_s: float = 0.0
     for kennung, naehe in befund.treffer:
-        if lzg_knoten.knoten_verstaerken(postgres_url, kennung) is not None:
-            ergebnis["verstaerkt"] += 1
-            logger.info(
-                f"Verwendung: Knoten {kennung} verstaerkt (Naehe {naehe:.4f})"
+        if lzg_knoten.knoten_verstaerken(postgres_url, kennung) is None:
+            continue
+        ergebnis["verstaerkt"] += 1
+        logger.info(
+            f"Verwendung: Knoten {kennung} verstaerkt (Naehe {naehe:.4f})"
+        )
+        # Trigger 2: Das neue Gewicht des Knotens gilt erst, wenn seine Kanten
+        # darauf stehen. Nur nach gelungener Verstaerkung — sonst stuende die
+        # Kante auf einem Gewicht, das der Knoten nie hatte.
+        start: float = time.monotonic()
+        try:
+            kanten: int | None = lzg_kanten.kanten_neuberechnen_mit_befund(
+                postgres_url, kennung
             )
+        except psycopg2.Error:
+            logger.exception(
+                f"Verwendung: Kanten von Knoten {kennung} nicht neu berechnet — "
+                f"Verbindung zur Datenbank fehlgeschlagen"
+            )
+            kanten = None
+        dauer_s += time.monotonic() - start
+        if kanten is None:
+            fehler_kanten.append(kennung)
+        else:
+            ergebnis["kanten_neu"] += kanten
+    ergebnis["kanten_dauer_ms"] = round(dauer_s * 1000, 1)
+    ergebnis["kanten_fehler"] = fehler_kanten
 
     # ── Ausgabe-Verifikation ────────────────────
+    probleme: list[str] = []
     if ergebnis["verstaerkt"] != ergebnis["verwendet"]:
-        ergebnis["error"] = (
+        probleme.append(
             f"{ergebnis['verwendet']} Erinnerungen hergenommen, aber nur "
             f"{ergebnis['verstaerkt']} verstaerkt"
         )
+    if fehler_kanten:
+        probleme.append(
+            f"Kanten der Knoten {fehler_kanten} nicht neu berechnet — sie "
+            f"stehen auf dem alten Gewicht"
+        )
+    if probleme:
+        ergebnis["error"] = "; ".join(probleme)
         logger.error(f"Verwendung: {ergebnis['error']}")
     return ergebnis

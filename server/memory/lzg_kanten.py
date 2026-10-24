@@ -351,13 +351,47 @@ def kanten_fuer_neuen_knoten_bilden(
 
 def kanten_neuberechnen_fuer_knoten(postgres_url: str, knoten_id: int) -> int:
     """
-    Trigger 2 (Konzept §7.9.2): Nach einer Aktivierung (Reinforcement) eines
+    Trigger 2 in der Form fuer Summenbildner: Anzahl neuer Kanten, bei Fehler 0.
+
+    Liefert die Anzahl neu berechneter gerichteter Kanten (Konzept §7.9.2).
+    Wer einen Knoten ohne Kanten von einem gescheiterten Lauf unterscheiden
+    muss, ruft `kanten_neuberechnen_mit_befund`.
+
+    Vorbedingung: `postgres_url` erreicht die Datenbank, `knoten_id` ist die
+        Kennung eines Knotens in `lzg_knoten`.
+    Nachbedingung: ganze Zahl >= 0; die Kanten des Knotens stehen auf der
+        Staerke seiner aktuellen Gewichte.
+    Fehlerfaelle: ein Datenbankfehler im Lauf liefert 0 (der Fehler steht im
+        Log von `kanten_neuberechnen_mit_befund`); ein Verbindungsfehler
+        beim Oeffnen wird nicht gefangen.
+    """
+    anzahl: int | None = kanten_neuberechnen_mit_befund(postgres_url, knoten_id)
+    return 0 if anzahl is None else anzahl
+
+
+def kanten_neuberechnen_mit_befund(postgres_url: str, knoten_id: int) -> int | None:
+    """
+    Trigger 2 (Konzept §7.9.2): Kanten eines Knotens neu berechnen, mit Befund.
+
+    Nach einer Aktivierung (Reinforcement) eines
     Knotens werden alle Kanten von und zu ihm neu berechnet. Eingaben sind die
     aktuellen Anker-Staerken beider Endknoten und die eingefrorenen Schicht-
     Werte der Kante (verbindungs_gruende, embedding_cosine_initial,
     timeline_naehe_tage) plus die Live-Themen/Timeline-Daten der Knoten.
 
-    Liefert die Anzahl neu berechneter gerichteter Kanten.
+    Liefert die Anzahl neu berechneter gerichteter Kanten — 0 fuer einen Knoten
+    ohne Kanten — oder None, wenn die Datenbank den Lauf abgebrochen hat (die
+    Transaktion ist dann zurueckgenommen, keine Kante halb geschrieben).
+
+    Vorbedingung: `postgres_url` erreicht die Datenbank, `knoten_id` ist die
+        Kennung eines Knotens in `lzg_knoten`.
+    Nachbedingung: bei einer Zahl sind alle Kanten von und zu dem Knoten, deren
+        Schicht sich rekonstruieren liess, auf die Staerke aus den aktuellen
+        Gewichten gesetzt und committet; bei None ist nichts geschrieben.
+    Fehlerfaelle: `psycopg2.Error` im Lauf — Rollback, `logger.exception`,
+        Rueckgabe None; eine Kante ohne rekonstruierbare Schicht wird laut
+        uebersprungen und nicht gezaehlt; ein Verbindungsfehler beim Oeffnen
+        wird nicht gefangen, der Aufrufer faengt ihn.
     """
     conn = psycopg2.connect(postgres_url)
     try:
@@ -409,10 +443,10 @@ def kanten_neuberechnen_fuer_knoten(postgres_url: str, knoten_id: int) -> int:
     except psycopg2.Error as exc:
         conn.rollback()
         logger.exception(
-            "%s: kanten_neuberechnen_fuer_knoten fehlgeschlagen knoten=%s",
+            "%s: kanten_neuberechnen_mit_befund fehlgeschlagen knoten=%s",
             type(exc).__name__, knoten_id,
         )
-        return 0
+        return None
     finally:
         conn.close()
 

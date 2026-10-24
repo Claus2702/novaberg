@@ -475,6 +475,13 @@ def _verwendung_verstaerken(state: ConversationState, postgres_url: str) -> None
             "geprueft":   ergebnis["geprueft"],
             "verwendet":  ergebnis["verwendet"],
             "verstaerkt": ergebnis["verstaerkt"],
+            # Trigger 2 an der Verwendung: neu berechnete Kanten, die Knoten
+            # mit gescheiterter Neuberechnung und ihre Dauer (ms) — die Rechnung
+            # laeuft synchron nach der Zustellung, bis 2044 Kanten je Knoten.
+            "kanten_neu":      ergebnis["kanten_neu"],
+            "kanten_fehler":   ergebnis["kanten_fehler"],
+            "kanten_dauer_ms": ergebnis["kanten_dauer_ms"],
+            "error":           ergebnis["error"],
             "naehen":     ergebnis["naehen"],
             # Die Entscheidung, nicht nur ihr Ergebnis.
             # Bis zum 04.09.2026 stand hier nur `verwendet: 0`, und die
@@ -492,7 +499,9 @@ def _verwendung_verstaerken(state: ConversationState, postgres_url: str) -> None
     )
     logger.info(
         f"Dispatcher: {ergebnis['verstaerkt']} von {ergebnis['geprueft']} "
-        f"gelesenen Erinnerungen verstaerkt (Naehen {ergebnis['naehen']}, "
+        f"gelesenen Erinnerungen verstaerkt ({ergebnis['kanten_neu']} Kanten "
+        f"in {ergebnis['kanten_dauer_ms']} ms neu berechnet, "
+        f"Naehen {ergebnis['naehen']}, "
         f"Ausgang {ergebnis['ausgang']}, Schwelle {ergebnis['schwelle']}, "
         f"knappster verworfener {ergebnis['knappster_verworfener']})"
     )
