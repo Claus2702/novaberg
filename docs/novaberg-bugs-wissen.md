@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → 33 Eintraege (24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → 32 Eintraege (24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -239,21 +239,6 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 **Reproduktion.** Eine Lesefrage nach einem Monat, die der Router dem Timeline-Agenten zustellt, mit einem Termin im Monat, der nicht auf dem gelesenen Tag liegt.
 
 **Geschlossen, wenn** dieselbe Frage an einem frischen Prüf-Nutzer den Termin im Monat nennt und eine Frage nach dem Wochenende Samstag und Sonntag liest.
-
-### `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` — „auf 4 Uhr“ schreibt still 04:00
-**Kategorie:** WIS
-
-**Rang:** **hoch** — still: eine geratene Zeit steht im Kalender, und der Mensch verlässt sich darauf. Vergeben am 17.10.2026 gegen HEAD `914217c`.
-
-**Zustand:** offen — **entschieden am 17.10.2026, nicht gebaut.**
-
-**Befund** `[Code]`, beschrieben in `novaberg-agent-timeline.md` §5.2, *Grenzen des Endstands*: Beim Verschieben wird eine nackte Stunde wörtlich gelesen, ohne Tageshälfte. *„Verschieb den Nachmittagskaffee auf 4 Uhr“* bei einem Termin um 15:30 schreibt 04:00 — Lesung und Positivform sind sich einig, also wird geschrieben (Beispiel synthetisch).
-
-**Warum es ein Defekt ist:** Entschieden am 17.10.2026: Eine Stunde von 1 bis 12 ohne Tageszeit führt beim Verschieben zur Rückfrage (*„4 Uhr morgens oder nachmittags?“*), außer der Satz nennt die Tageszeit selbst (*„um 4 Uhr nachmittags“*). Bis dahin war es eine offene Deutungsfrage (Backlog `ZEIT-ZWOELF-STUNDEN-DEUTUNG`); seit sie entschieden ist, weicht der Code davon ab.
-
-**Reproduktion.** Einen Termin am Nachmittag mit *„auf 4 Uhr“* verschieben.
-
-**Geschlossen, wenn** *„auf 4 Uhr“* zur Rückfrage führt, *„auf 4 Uhr nachmittags“* auf 16:00 verschiebt und *„auf 16 Uhr“* ohne Rückfrage schreibt.
 
 ### `TIMELINE-TITEL-MEHRERE-TREFFER-OHNE-TAG` — gleichnamige Termine lassen sich nicht einzeln ändern
 **Kategorie:** WIS
