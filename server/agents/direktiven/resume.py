@@ -6,12 +6,13 @@ ausgefuehrt wird:
 
   - **Ablehnung** (zuerst geprueft, sie gewinnt): nichts wird ausgefuehrt,
     der Lauf endet mit einem Satz, dass nichts geaendert wurde.
-  - **Zustimmung**: der Lauf geht weiter zu `ausfuehren`, mit der Aktion,
-    nach der gefragt wurde.
-  - **unklar**: dieselbe Frage noch einmal; den Pending-Zustand erneuert
-    `dispatch._handle_resume`. Unklar ist auch eine Antwort, die etwas
-    zurueckhaelt: ein `?` an irgendeiner Stelle oder ein Wort des Wartens
-    (*„Ja? :)“*, *„Sekunde, bitte“*, *„Bitte warten“*).
+  - **Zustimmung**, nur wenn die Antwort aus nichts als Zustimmung besteht
+    (`_consists_of_consent`): der Lauf geht weiter zu `ausfuehren`, mit der
+    Aktion, nach der gefragt wurde.
+  - **unklar**, alles andere: dieselbe Frage noch einmal; den Pending-Zustand
+    erneuert `dispatch._handle_resume`. Unklar ist damit jede Antwort, die
+    etwas zurueckhaelt, aufschiebt oder ein unbekanntes Wort traegt
+    (*„Ja? :)“*, *„Sekündchen, bitte“*, *„ja, aber erst morgen“*).
 
 Eine Auswahlfrage (*„Welche soll ich ...?“*) ist keine Ja/Nein-Frage: Eine
 Ablehnung beendet sie, jede andere Antwort stellt sie erneut -- keine Antwort
@@ -46,15 +47,70 @@ CONSENT_WORDS: tuple[str, ...] = (
     "auf jeden", "logo", "passt",
 )
 
-# Hier weicht die Kopie von `agents/notizen/resume.py` ab: Ein Zustimmungswort
-# in einer Antwort, die etwas zurueckhaelt, ist keine Zustimmung. Zurueck
-# haelt ein `?` an irgendeiner Stelle (*„Wie bitte?!“*, *„Ja? :)“*) und ein
-# Wort des Wartens, gesucht als Stamm wie die Ablehnung: `wart` trifft
-# *warte*, *warten*, *wartet*, ohne dass jede Form einzeln dasteht. Eine
-# solche Antwort ist unklar und kostet eine zweite Frage; als Zustimmung
-# gelesen, loeschte sie. Zu weit ist die sichere Richtung: *„Ja? Ja!“*,
-# *„dann halt“* und *momentan* fragen ein zweites Mal.
-WAIT_STEMS: tuple[str, ...] = ("wart", "moment", "augenblick", "sekunde", "halt")
+# Kopie in den vier Ja/Nein-Deutungen (`direktiven`, `notizen`,
+# `charakter_identitaet`, `dateien_wurzeln`), bewusst kein gemeinsames Modul.
+# **Hier wird geschlossen angenommen:** Zugestimmt hat nur, wer nichts als
+# Zustimmung sagt -- jedes Wort steht in `CONSENT_WORDS` oder hier. Was
+# zurueckhaelt, ablehnt oder aufschiebt, ist eine offene Klasse; jede Liste
+# davon liess die naechste Form durch (*„Sekündchen, bitte“*, *„wait, ok“*,
+# *„ja, aber erst morgen“* loeschten). Die Zustimmung ist geschlossen, und ein
+# Wort, das hier fehlt, kostet eine zweite Frage, nie eine Ausfuehrung.
+# Die Regel der Menge: Artikel, Pronomen, das Hilfsverb *ist*, Partikeln, die
+# nicht zoegern, und *danke*. Nie darin: ein Verb, ein Nomen, eine Zahl, ein
+# Fragewort (*wie*, *was*), eine Partikel des Zoegerns (*na*, *nun*, *also*
+# -- *„na ja“* ist keine Zustimmung), ein Wort der Einschraenkung oder des
+# Aufschubs (*aber*, *sondern*, *statt*, *erst*, *nur*, *noch*, *lieber*,
+# *spaeter*, *morgen*) oder ein Wort mit einem Stamm aus `REFUSAL_STEMS`.
+# Abgeloest wird diese Deutung mit den Klaerfaellen (`KLA-KLAERFALL-AM-OBJEKT`,
+# Schritte 5 und 6).
+FILLER_WORDS: frozenset[str] = frozenset({
+    "der", "die", "das", "den", "dem", "des", "ein",
+    "ich", "du", "er", "sie", "es", "wir", "ihr", "mich", "dich", "sich", "uns", "euch",
+    "mir", "dir", "ihm", "ihn", "man",
+    "dies", "diese", "dieses", "diesen", "dieser", "diesem",
+    "ist",
+    "mal", "doch", "ruhig", "sehr",
+    "danke",
+})
+
+# Das Apostroph faellt ohne Luecke weg (*mach's* ist *machs*).
+_APOSTROPHES: str = "['’‘`´]"
+
+# **Auch die Zeichen werden geschlossen angenommen:** Ausser Buchstaben,
+# Ziffern und dem Apostroph darf in einer Zustimmung nur stehen, was hier
+# steht -- ASCII-Leerraum und die Satzzeichen, mit denen *„Ja!“* und
+# *„Ja :)“* zustimmen. Jedes andere Zeichen macht die Antwort unklar: jedes
+# Fragezeichen jeder Schrift (*„ja？“*, *„ja¿“*, *„ja ❓“*), jedes Emoji
+# (*„ja 👎“*, *„ja 🤔“*), jedes Symbol. Eine Liste der Zeichen, die
+# zurueckhalten, liesse wie jede Liste der Woerter das naechste durch; ein
+# Zeichen, das hier fehlt, kostet eine zweite Frage. `?` steht nie darin.
+DROPPED_SIGNS: frozenset[str] = frozenset(" \t\n\r\f\v.,!;:-()")
+
+# **Die Frage ohne `?` wird an der Wortstellung erkannt:** Eine deutsche
+# Ja/Nein-Frage stellt das finite Verb vor sein Subjekt (*„ist das ok“*,
+# *„passt es“*), die Aussage stellt es dahinter (*„das ist ok“*, *„es
+# passt“*). In der geschlossenen Menge ist die Wortstellung das einzige
+# Merkmal, das eine Frage ohne `?` traegt; Fragewoerter kennt die Menge nicht.
+# Eine Antwort mit einem Verb aus `ASKING_VERBS` und dahinter, im selben
+# Satzteil, einem Wort aus `SUBJECT_WORDS` ist deshalb unklar.
+# Fragend sind die Verben der Zustimmungs- und Fuellwoerter, die finit und
+# kein Imperativ sind: *ist*, *passt*. Nicht darin: der Imperativ der
+# Zustimmung (*mach*, *machs*, *mache* -- *„mach das“* stimmt zu, *„mach
+# ich“* bleibt Selbstaussage) und die Formel *danke*.
+ASKING_VERBS: frozenset[str] = frozenset({"ist", "passt"})
+# Die Fuellwoerter, die Subjekt sein koennen -- im Nominativ stehen koennen.
+# Nicht darin: was nur Dativ, Akkusativ oder Genitiv ist (*den*, *dem*,
+# *des*, *mich*, *mir*, *ihn*, *uns*, *diesen* ...).
+SUBJECT_WORDS: frozenset[str] = frozenset({
+    "der", "die", "das", "ein",
+    "ich", "du", "er", "sie", "es", "wir", "ihr", "man",
+    "dies", "diese", "dieses", "dieser",
+})
+# Die Zeichen, an denen ein Satzteil endet: Ein Subjekt gehoert zum Satz
+# seines Verbs, *„passt, mach das“* stimmt zu. `- ( )` und Leerraum trennen
+# nicht -- *„ist - das ok“* und *„ist (das) ok“* fragen. Ein Zeichen mehr
+# hier liesse eine Frage als zwei Satzteile durch.
+CLAUSE_SEPARATORS: frozenset[str] = frozenset(",.!;:")
 
 # Die drei Ja/Nein-Fragen aus `crud.validieren_gegen_db`, erkannt am Wortlaut,
 # den der Mensch gesehen hat: Pflicht-Rueckfrage, Duplikat, Auto-Korrektur.
@@ -158,33 +214,98 @@ def _without_words(text: str, words: Sequence[str]) -> str:
     return rest
 
 
-def _holds_back(lowered: str) -> bool:
-    """Prueft, ob die Antwort zurueckfragt oder aufhaelt, statt zuzustimmen.
+def _asks_by_word_order(joined: str) -> bool:
+    """Prueft, ob die Antwort durch ihre Wortstellung fragt -- finites Verb vor seinem Subjekt.
 
-    Vorbedingung: `lowered` ist ein kleingeschriebener String (auch leer).
-    Nachbedingung: True, wenn die Antwort an irgendeiner Stelle ein `?`
-    traegt oder einen Stamm aus `WAIT_STEMS` enthaelt, auch mitten im Wort.
-    Fehlerfaelle: ein Text mit Grossbuchstaben wirft `ValueError`. Steckt
-    ein Stamm des Wartens nur in einem Zustimmungswort, widersprechen sich
-    die Listen -- dieses Wort hielte jede Zustimmung auf, in der es steht --,
-    und es wird `RuntimeError` geworfen.
+    Vorbedingung: `joined` ist kleingeschrieben, das Apostroph ist entfernt.
+    Nachbedingung: True, wenn in einem Satzteil (getrennt an den Zeichen
+    aus `CLAUSE_SEPARATORS`) ein Wort aus `ASKING_VERBS` steht und irgendwo
+    dahinter ein Wort aus `SUBJECT_WORDS` -- *„ist das ok“*, *„passt es“*,
+    *„passt dir das“*, *„ist - das ok“*. *„das ist ok“*, *„es passt“* und
+    *„passt, mach das“* fragen nicht.
+    Fehlerfaelle: ein Text mit Grossbuchstaben wirft `ValueError`. Steht ein
+    fragendes Verb nicht unter den Zustimmungs- und Fuellwoertern, ein
+    Subjekt nicht unter den Fuellwoertern oder ein Trennzeichen nicht unter
+    `DROPPED_SIGNS`, kann es in keiner Zustimmung stehen -- die Listen
+    widersprechen sich, es wird `RuntimeError` geworfen; ebenso bei leeren
+    Trennzeichen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if joined != joined.lower():
+        msg: str = f"_asks_by_word_order: Text nicht kleingeschrieben: {joined!r}"
+        raise ValueError(msg)
+    if not ASKING_VERBS <= set(CONSENT_WORDS) | FILLER_WORDS or not SUBJECT_WORDS <= FILLER_WORDS:
+        msg = "_asks_by_word_order: fragendes Verb oder Subjekt ausserhalb der Zustimmung"
+        raise RuntimeError(msg)
+    if not CLAUSE_SEPARATORS or not CLAUSE_SEPARATORS <= DROPPED_SIGNS:
+        msg = f"_asks_by_word_order: Trennzeichen ungueltig: {sorted(CLAUSE_SEPARATORS)!r}"
+        raise RuntimeError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    separators: str = re.escape("".join(sorted(CLAUSE_SEPARATORS)))
+    clauses: list[list[str]] = [
+        re.findall(r"\w+", clause) for clause in re.split(rf"[{separators}]", joined)
+    ]
+    asks: bool = any(
+        word in ASKING_VERBS and not SUBJECT_WORDS.isdisjoint(words[index + 1:])
+        for words in clauses
+        for index, word in enumerate(words)
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Eine Frage nach der Wortstellung braucht ein fragendes Verb und ein
+    # Subjekt, also mindestens zwei Woerter.
+    words_of_answer: list[str] = re.findall(r"\w+", joined)
+    if asks and (ASKING_VERBS.isdisjoint(words_of_answer) or len(words_of_answer) < 2):
+        msg = f"_asks_by_word_order: Frage ohne fragendes Verb und Subjekt in {joined!r}"
+        raise RuntimeError(msg)
+    return asks
+
+
+def _consists_of_consent(lowered: str) -> bool:
+    """Prueft, ob die Antwort aus nichts als Zustimmung besteht -- die geschlossene Annahme.
+
+    Vorbedingung: `lowered` ist ein kleingeschriebener String (auch leer);
+    die Ablehnung prueft der Aufrufer vorher.
+    Nachbedingung: True nur, wenn (a) jedes Zeichen ausser Buchstaben,
+    Ziffern und Apostroph in `DROPPED_SIGNS` steht -- kein `?`, kein
+    Fragezeichen einer anderen Schrift, kein Emoji, kein Symbol --, (b)
+    mindestens ein Wort aus `CONSENT_WORDS` dasteht, (c) jedes andere Wort
+    in `FILLER_WORDS` steht und (d) die Wortstellung nicht fragt
+    (`_asks_by_word_order`: kein fragendes Verb vor einem Subjekt). Das
+    Apostroph faellt ohne Luecke weg: *„Ja :)“*, *„Ja, bitte!“*,
+    *„mach's“* und *„das ist ok“* stimmen zu, *„Wie bitte?“*, *„ja？“*,
+    *„ja 👎“*, *„na ja“*, *„Moment, bitte“*, *„ist das ok“* und
+    *„ok, ich überleg noch“* nicht.
+    Fehlerfaelle: ein Text mit Grossbuchstaben wirft `ValueError`. Traegt
+    eine Zustimmung ein `?` (dann traegt es `DROPPED_SIGNS`) oder ausserhalb
+    der Zustimmungswoerter einen Ablehnungsstamm (dann steht er in einem
+    Fuellwort) -- die Listen widersprechen sich --, wird `RuntimeError`
+    geworfen.
     """
     # ── Eingabe-Validierung ─────────────────────
     if lowered != lowered.lower():
-        msg: str = f"_holds_back: Text nicht kleingeschrieben: {lowered!r}"
+        msg: str = f"_consists_of_consent: Text nicht kleingeschrieben: {lowered!r}"
         raise ValueError(msg)
 
     # ── Verarbeitung ────────────────────────────
-    asks: bool = "?" in lowered
-    waits: bool = _has_stem(lowered, WAIT_STEMS)
+    joined: str = re.sub(_APOSTROPHES, "", lowered)
+    rest: str = _without_words(joined, CONSENT_WORDS)
+    consents: bool = (
+        all(sign in DROPPED_SIGNS for sign in re.sub(r"\w", "", joined))
+        and _has_word(joined, CONSENT_WORDS)
+        and all(word in FILLER_WORDS for word in re.findall(r"\w+", rest))
+        and not _asks_by_word_order(joined)
+    )
 
     # ── Ausgabe-Verifikation ────────────────────
-    # Der Stamm muss auch ausserhalb der Zustimmungswoerter stehen; sonst
-    # traegt ein Wort aus `CONSENT_WORDS` ihn, und die Listen sind defekt.
-    if waits and not _has_stem(_without_words(lowered, CONSENT_WORDS), WAIT_STEMS):
-        msg = f"_holds_back: Stamm des Wartens nur in einem Zustimmungswort: {lowered!r}"
+    if consents and "?" in joined:
+        msg = f"_consists_of_consent: `?` in einer Zustimmung: {lowered!r}"
         raise RuntimeError(msg)
-    return asks or waits
+    if consents and _has_stem(rest, REFUSAL_STEMS):
+        msg = f"_consists_of_consent: Fuellwort mit Ablehnungsstamm in {lowered!r}"
+        raise RuntimeError(msg)
+    return consents
 
 
 def _reading(answer: str) -> str:
@@ -196,10 +317,13 @@ def _reading(answer: str) -> str:
     treffen (*„nein, bitte nicht“*): Eine faelschlich unterbliebene Aenderung
     kostet eine Nachfrage, eine faelschlich ausgefuehrte schreibt gegen den
     Willen des Menschen. Die Ablehnung sucht Staemme im Text ohne die
-    Zustimmungswoerter, die Zustimmung zaehlt nur ganze Woerter. Eine Antwort,
-    die etwas zurueckhaelt (`_holds_back`: ein `?` an irgendeiner Stelle oder
-    ein Stamm des Wartens), ist keine Zustimmung, sondern unklar
-    (*„Wie bitte?!“*, *„Ja? :)“*, *„Bitte warten“*).
+    Zustimmungswoerter. **Die Zustimmung wird geschlossen angenommen**
+    (`_consists_of_consent`): nur eine Antwort aus Zustimmungs- und
+    Fuellwoertern, ohne ein Zeichen ausserhalb von `DROPPED_SIGNS` (kein
+    Fragezeichen, kein Emoji) und ohne die Wortstellung einer Frage (kein
+    finites Verb vor seinem Subjekt). Alles andere ist unklar -- auch
+    *„Wie bitte!“*, *„Sekündchen, bitte“*, *„wait, ok“*, *„ja？“*,
+    *„ja 🤔“*, *„passt es“* und *„ja, vergiss es“*.
     Fehlerfaelle: kein String wirft `TypeError`.
     """
     # ── Eingabe-Validierung ─────────────────────
@@ -212,9 +336,7 @@ def _reading(answer: str) -> str:
     reading: str = "unclear"
     if _has_stem(_without_words(lowered, CONSENT_WORDS), REFUSAL_STEMS):
         reading = "refusal"
-    elif _holds_back(lowered):
-        reading = "unclear"
-    elif _has_word(lowered, CONSENT_WORDS):
+    elif _consists_of_consent(lowered):
         reading = "consent"
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -323,14 +445,13 @@ def read_answer(state: AgentState) -> dict:
         }
 
     # ── Ausgabe-Verifikation ────────────────────
-    # Weiter nach `ausfuehren` geht es nur mit einem Zustimmungswort, ohne
-    # Ablehnungsstamm und ohne etwas, das zurueckhaelt (`?`, Stamm des
-    # Wartens) -- unabhaengig davon, welcher Zweig oben gewaehlt hat.
+    # Weiter nach `ausfuehren` geht es nur ohne Ablehnungsstamm und mit einer
+    # Antwort, die aus nichts als Zustimmung besteht -- unabhaengig davon,
+    # welcher Zweig oben gewaehlt hat.
     lowered: str = answer.lower()
     if result["status"] == "laufend" and (
         _has_stem(_without_words(lowered, CONSENT_WORDS), REFUSAL_STEMS)
-        or _holds_back(lowered)
-        or not _has_word(lowered, CONSENT_WORDS)
+        or not _consists_of_consent(lowered)
     ):
         msg: str = f"read_answer: Ausfuehrung ohne Zustimmung auf {answer[:80]!r}"
         raise RuntimeError(msg)

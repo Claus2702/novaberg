@@ -29,14 +29,31 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import shutil
 import tempfile
+import unicodedata
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from agents.base import AgentState
 from agents.dateien_wurzeln import aussenrand, crud
+from agents.dateien_wurzeln import resume as resume_mod
 from agents.dateien_wurzeln.agent import DateienWurzelnAgent
-from agents.dateien_wurzeln.resume import ABLEHNUNG, BESTAETIGUNG, UNKLAR, _antwort_deuten, resume
+from agents.dateien_wurzeln.resume import (
+    ABLEHNUNG,
+    ABLEHNUNGS_WOERTER,
+    ASKING_VERBS,
+    BESTAETIGUNG,
+    BESTAETIGUNGS_WOERTER,
+    CLAUSE_SEPARATORS,
+    DROPPED_SIGNS,
+    FILLER_WORDS,
+    SUBJECT_WORDS,
+    UNKLAR,
+    _antwort_deuten,
+    _asks_by_word_order,
+    _consists_of_consent,
+    resume,
+)
 
 PAAR_USER: str = "meister"
 PAAR_FIGUR: str = "nova"
@@ -558,6 +575,363 @@ class RueckwegTest(unittest.TestCase):
         ):
             with self.subTest(antwort=antwort):
                 self.assertEqual(_antwort_deuten(antwort), erwartet)
+
+
+def _freigabe_beantworten(antwort: str) -> dict:
+    """Der Einstieg `resume` auf die Torfrage zu create, mit der Antwort des Menschen."""
+    return resume(_state({
+        "action": "create", "resume": True,
+        "user_answer": antwort, "original_rueckfrage": "Freigeben?",
+    }))
+
+
+class GeschlosseneZustimmungTest(unittest.TestCase):
+    """Freigegeben wird nur auf eine Antwort aus nichts als Zustimmung — je mit Zwilling."""
+
+    def test_zurueckhaltung_ist_unklar_und_ihr_zwilling_stimmt_zu(self) -> None:
+        """Rueckfrage, Warten und Aufschub sind unklar; ohne das Zurueckhaltende Zustimmung."""
+        for unklar, zustimmung in (
+            ("Wie bitte?", "Bitte"), ("Ja?", "Ja"), ("Moment, bitte", "Bitte"),
+            ("Sekündchen, bitte", "Bitte"), ("wait, ok", "ok"),
+            ("ja, aber erst morgen", "ja"), ("ok, ich überleg noch", "ok"),
+        ):
+            with self.subTest(unklar=unklar, zustimmung=zustimmung):
+                self.assertEqual(_antwort_deuten(unklar), UNKLAR)
+                self.assertEqual(_antwort_deuten(zustimmung), BESTAETIGUNG)
+
+    def test_reine_zustimmung_stimmt_zu(self) -> None:
+        """Die Zwillinge des Auftrags, dazu Fuellwoerter und das Apostroph."""
+        for antwort in (
+            "ja", "Ja, bitte!", "Ja :)", "ok", "ja, gerne", "Ja, mach das", "Mach's",
+            "ok, danke", "genau",
+        ):
+            with self.subTest(antwort=antwort):
+                self.assertEqual(_antwort_deuten(antwort), BESTAETIGUNG)
+
+    def test_ablehnung_ohne_ganzes_wort_gibt_nichts_frei(self) -> None:
+        """Die Saetze von *Ablehnung ungelesen*: unklar statt Zustimmung, je mit Zwilling."""
+        for unklar, zustimmung in (
+            ("ja, bitte nichts", "ja, bitte"), ("ok, keinesfalls", "ok"),
+            ("ja, ablehnen", "ja"),
+        ):
+            with self.subTest(unklar=unklar, zustimmung=zustimmung):
+                self.assertEqual(_antwort_deuten(unklar), UNKLAR)
+                self.assertEqual(_antwort_deuten(zustimmung), BESTAETIGUNG)
+
+    def test_ein_wort_ausserhalb_der_fuellwoerter_ist_unklar(self) -> None:
+        """Je eine Wortart ausserhalb der Menge neben 'ja' — Verb, Nomen, Zahl, 'aber'."""
+        for wort in ("kommt", "Kaffee", "3", "aber"):
+            with self.subTest(wort=wort):
+                self.assertNotIn(wort.lower(), FILLER_WORDS)
+                self.assertEqual(_antwort_deuten(f"ja, {wort}"), UNKLAR)
+                self.assertEqual(_antwort_deuten("ja, das"), BESTAETIGUNG)
+
+    def test_ablehnung_gewinnt_weiter(self) -> None:
+        """'nein, bitte nicht' und 'ja, aber lieber nicht' lehnen ab wie bisher."""
+        for antwort in ("nein, bitte nicht", "ja, aber lieber nicht"):
+            with self.subTest(antwort=antwort):
+                self.assertEqual(_antwort_deuten(antwort), ABLEHNUNG)
+
+    def test_resume_fuehrt_nur_auf_reine_zustimmung_weiter(self) -> None:
+        """Ueber `resume`: *„Wie bitte?“* und die Bug-Saetze fragen erneut, 'ja' gibt frei.
+
+        Nur `laufend` fuehrt zur Ausfuehrung und damit zur Freigabe.
+        """
+        for antwort in (
+            "Wie bitte?", "ja, bitte nichts", "ok, keinesfalls", "ja, ablehnen", "Moment, bitte",
+        ):
+            with self.subTest(antwort=antwort):
+                ergebnis: dict = _freigabe_beantworten(antwort)
+                self.assertEqual(ergebnis["status"], "rueckfrage")
+                self.assertEqual(ergebnis["rueckfrage"], "Freigeben?")
+                self.assertNotIn("parameter", ergebnis)
+        zugestimmt: dict = _freigabe_beantworten("ja")
+        self.assertEqual(zugestimmt["status"], "laufend")
+        self.assertFalse(zugestimmt["parameter"]["resume"])
+
+    def test_zustimmung_nur_ohne_fragezeichen_und_fremdes_wort(self) -> None:
+        self.assertFalse(_consists_of_consent("ja? "))
+        self.assertFalse(_consists_of_consent("ja? :)"))
+        self.assertFalse(_consists_of_consent("das ist es"))
+        self.assertTrue(_consists_of_consent("ja, bitte."))
+        self.assertTrue(_consists_of_consent("mach's"))
+        with self.assertRaises(ValueError):
+            _consists_of_consent("Ja")
+
+    def test_ablehnungswort_in_einer_zustimmung_wirft(self) -> None:
+        """Ein Fuellwort aus `ABLEHNUNGS_WOERTER` ist ein Defekt der Listen, keine Zustimmung.
+
+        Zwilling: Dieselbe Antwort ohne dieses Wort stimmt zu, ohne zu werfen.
+        """
+        with patch.object(resume_mod, "FILLER_WORDS", FILLER_WORDS | {"nicht"}):
+            with self.assertRaises(RuntimeError):
+                _consists_of_consent("ja, nicht")
+            self.assertTrue(_consists_of_consent("ja"))
+
+    def test_die_listen_widersprechen_sich_nicht(self) -> None:
+        """Kein Fuellwort lehnt ab oder stimmt zu."""
+        for wort in FILLER_WORDS:
+            with self.subTest(wort=wort):
+                self.assertNotIn(wort, ABLEHNUNGS_WOERTER)
+                self.assertNotIn(wort, BESTAETIGUNGS_WOERTER)
+
+
+#: Die Antworten der Nachprobe zur geschlossenen Annahme, je mit dem Zwilling,
+#: der sich nur im Zeichen oder im zoegernden Wort unterscheidet und zustimmt.
+#: Bis die Zeichen geschlossen waren, fiel jedes Zeichen ohne Buchstaben und
+#: Ziffern ausser dem ASCII-`?` weg, und *na*, *nun*, *also* waren
+#: Fuellwoerter: Alle diese Antworten gaben ein Verzeichnis frei.
+_ZEICHEN_PAARE: tuple[tuple[str, str], ...] = (
+    ("ja？", "ja!"), ("ok？", "ok!"), ("ja¿", "ja!"), ("ja‽", "ja!"),
+    ("ja ❓", "ja :)"), ("ok ❔", "ok :)"), ("ja 👎", "ja :)"), ("ok ❌", "ok :)"),
+    ("ja 🛑", "ja :)"), ("ja 🤔", "ja :)"), ("ja 🙄", "ja :)"),
+    ("na ja", "ja ja"), ("nun ja", "ja ja"), ("also ja", "ja ja"),
+)
+#: Zeichen, die vor der Pruefung ohne Luecke wegfallen (das Apostroph).
+_APOSTROPHE: str = "'’‘`´"
+#: Die feste Menge der Zeichen, die wegfallen — ASCII-Leerraum und
+#: `. , ! ; : - ( )` —, als eigenes Literal und nicht aus `DROPPED_SIGNS`
+#: gerechnet: Ein Zeichen, das dort hinzukommt, fällt sonst aus der Prüfung
+#: heraus, statt sie rot zu machen.
+_ERLAUBTE_ZEICHEN: str = " \t\n\r\f\v.,!;:-()"
+
+
+def _zeichen_einer_kategorie() -> list[str]:
+    """Jedes Satz-, Symbol- und Trennzeichen (Unicode-Kategorien P, S, Z) bis zu den Emoji.
+
+    Ausgenommen sind `_ERLAUBTE_ZEICHEN` und die Apostrophe — alles andere muss
+    eine Zustimmung unklar machen.
+    """
+    return [
+        zeichen for zeichen in map(chr, range(0x21, 0x1FB00))
+        if unicodedata.category(zeichen)[0] in "PSZ"
+        and zeichen not in _ERLAUBTE_ZEICHEN and zeichen not in _APOSTROPHE
+    ]
+
+
+class GeschlosseneZeichenTest(unittest.TestCase):
+    """Auch die Zeichen sind geschlossen: nur `DROPPED_SIGNS` fallen weg — je mit Zwilling."""
+
+    def test_zeichenpaare_sind_unklar_und_ihr_zwilling_stimmt_zu(self) -> None:
+        """Fragezeichen anderer Schriften, Emoji, *na*/*nun*/*also* sind unklar."""
+        for unklar, zustimmung in _ZEICHEN_PAARE:
+            with self.subTest(unklar=unklar, zustimmung=zustimmung):
+                self.assertEqual(_antwort_deuten(unklar), UNKLAR)
+                self.assertEqual(_antwort_deuten(zustimmung), BESTAETIGUNG)
+
+    def test_dropped_signs_sind_genau_die_feste_menge(self) -> None:
+        """`DROPPED_SIGNS` ist genau `_ERLAUBTE_ZEICHEN` — kein Zeichen mehr, keins weniger."""
+        self.assertEqual(DROPPED_SIGNS, frozenset(_ERLAUBTE_ZEICHEN))
+
+    def test_jedes_zeichen_ausserhalb_der_menge_ist_unklar(self) -> None:
+        """Jedes Zeichen der Kategorien P, S und Z ausserhalb des Literals macht 'ja' unklar.
+
+        Zwilling: jedes Zeichen des Literals neben 'ja' stimmt zu.
+        """
+        zeichen_liste: list[str] = _zeichen_einer_kategorie()
+        self.assertGreater(len(zeichen_liste), 5000)
+        zustimmend: list[str] = [
+            zeichen for zeichen in zeichen_liste
+            if _consists_of_consent(f"ja {zeichen}".lower())
+        ]
+        self.assertEqual(zustimmend, [])
+        for zeichen in _ERLAUBTE_ZEICHEN:
+            with self.subTest(zeichen=zeichen):
+                self.assertTrue(_consists_of_consent(f"ja{zeichen}"))
+
+    def test_fragezeichen_in_der_menge_wirft(self) -> None:
+        """Traegt die Menge ein `?`, ist das ein Defekt der Listen — 'ja!' wirft nicht."""
+        with patch.object(resume_mod, "DROPPED_SIGNS", DROPPED_SIGNS | {"?"}):
+            with self.assertRaises(RuntimeError):
+                _consists_of_consent("ja?")
+            self.assertTrue(_consists_of_consent("ja!"))
+
+    def test_resume_gibt_auf_eine_zeichenantwort_nichts_frei(self) -> None:
+        """Ueber `resume`: *„ja？“*, *„ja 👎“*, *„na ja“* fragen erneut, *„ja!“* gibt frei."""
+        for antwort in ("ja？", "ja 👎", "na ja"):
+            with self.subTest(antwort=antwort):
+                ergebnis: dict = _freigabe_beantworten(antwort)
+                self.assertEqual(ergebnis["status"], "rueckfrage")
+                self.assertEqual(ergebnis["rueckfrage"], "Freigeben?")
+                self.assertNotIn("parameter", ergebnis)
+        self.assertEqual(_freigabe_beantworten("ja!")["status"], "laufend")
+
+
+#: Antworten, die beide Zweige erreichen: Die Ablehnung liest den Text mit dem
+#: Apostroph und findet *ne* als ganzes Wort, die Zustimmung liest ihn ohne
+#: und findet *gerne*. Je mit dem Zwilling ohne Apostroph, der nur die
+#: Zustimmung erreicht.
+_BEIDE_ZWEIGE: tuple[tuple[str, str], ...] = (
+    ("ger'ne", "gerne"), ("Ger’ne!", "Gerne!"), ("ja, ger`ne", "ja, gerne"),
+)
+#: Die Woerter, die nach der Regel von `FILLER_WORDS` nie darin stehen: die
+#: der Einschraenkung oder des Aufschubs und die Partikeln des Zoegerns.
+_AUSGESCHLOSSENE_WOERTER: tuple[str, ...] = (
+    "aber", "sondern", "statt", "erst", "nur", "noch", "lieber", "später", "spaeter",
+    "morgen", "na", "nun", "also",
+)
+
+
+class AblehnungZuerstTest(unittest.TestCase):
+    """Die Ablehnung wird vor der Zustimmung geprueft — an einer Antwort, die beide erreicht."""
+
+    def test_antwort_in_beiden_zweigen_ist_ablehnung(self) -> None:
+        """*„ger'ne“* traegt *ne* fuer die Ablehnung und *gerne* fuer die Zustimmung.
+
+        Zwilling: *„gerne“* ohne Apostroph erreicht nur die Zustimmung.
+        """
+        for beide, zustimmung in _BEIDE_ZWEIGE:
+            with self.subTest(beide=beide, zustimmung=zustimmung):
+                self.assertTrue(_consists_of_consent(beide.lower()))
+                self.assertEqual(_antwort_deuten(beide), ABLEHNUNG)
+                self.assertEqual(_antwort_deuten(zustimmung), BESTAETIGUNG)
+
+    def test_resume_gibt_auf_eine_antwort_in_beiden_zweigen_nichts_frei(self) -> None:
+        """Ueber `resume`: *„ger'ne“* wird zu `dismissed`, *„gerne“* gibt frei."""
+        abgelehnt: dict = _freigabe_beantworten("ger'ne")
+        self.assertEqual(abgelehnt["status"], "dismissed")
+        self.assertNotIn("parameter", abgelehnt)
+        self.assertEqual(_freigabe_beantworten("gerne")["status"], "laufend")
+
+
+class AusgeschlosseneWoerterTest(unittest.TestCase):
+    """Die Regel der Fuellwoerter: kein Wort des Aufschubs, der Einschraenkung, des Zoegerns."""
+
+    def test_kein_ausgeschlossenes_wort_ist_fuellwort(self) -> None:
+        """Keines der ausgeschlossenen Woerter steht in `FILLER_WORDS`; die Menge ist nicht leer."""
+        self.assertIn("das", FILLER_WORDS)
+        for wort in _AUSGESCHLOSSENE_WOERTER:
+            with self.subTest(wort=wort):
+                self.assertNotIn(wort, FILLER_WORDS)
+
+    def test_jedes_ausgeschlossene_wort_neben_ja_ist_unklar(self) -> None:
+        """Jedes davon allein neben 'ja' ist unklar; Zwilling 'ja das' stimmt zu."""
+        self.assertEqual(_antwort_deuten("ja das"), BESTAETIGUNG)
+        for wort in _AUSGESCHLOSSENE_WOERTER:
+            with self.subTest(wort=wort):
+                self.assertEqual(_antwort_deuten(f"ja {wort}"), UNKLAR)
+                self.assertEqual(_antwort_deuten(f"{wort}, ja"), UNKLAR)
+
+
+#: Die fragenden Verben — finit, kein Imperativ — unter den Zustimmungs- und
+#: Fuellwoertern des Dienstes, als eigenes Literal und nicht aus
+#: `ASKING_VERBS` gerechnet: Ein Verb, das dort fehlt, faellt sonst aus der
+#: Pruefung heraus, statt sie rot zu machen. *passt* steht hier in keiner der
+#: beiden Listen.
+_FRAGENDE_VERBEN: frozenset[str] = frozenset({"ist"})
+#: Die Fuellwoerter, die Subjekt sein koennen, ebenso als eigenes Literal.
+_SUBJEKTWOERTER: frozenset[str] = frozenset({
+    "der", "die", "das", "ein", "ich", "du", "er", "sie", "es", "wir", "ihr", "man",
+    "dies", "diese", "dieses", "dieser",
+})
+#: Fragen ohne `?`, die nur ihre Wortstellung zur Frage macht, je mit dem
+#: Zwilling in der Wortstellung der Aussage. Bis zur Regel der Wortstellung
+#: gaben alle frei: *ist* ist Fuellwort, *sicher* Zustimmungswort.
+_WORTSTELLUNG_PAARE: tuple[tuple[str, str], ...] = (
+    ("ist das ok", "das ist ok"), ("ist es ok", "es ist ok"),
+    ("ist das sicher", "das ist sicher"),
+)
+
+
+class WortstellungTest(unittest.TestCase):
+    """Die Frage ohne `?`: ein finites Verb vor seinem Subjekt ist unklar — je mit Zwilling."""
+
+    def test_wortstellung_paare_sind_unklar_und_ihr_zwilling_stimmt_zu(self) -> None:
+        """*„ist das ok“*, *„ist das sicher“* ... sind unklar; die Aussage stimmt zu."""
+        for unklar, zustimmung in _WORTSTELLUNG_PAARE:
+            with self.subTest(unklar=unklar, zustimmung=zustimmung):
+                self.assertEqual(_antwort_deuten(unklar), UNKLAR)
+                self.assertEqual(_antwort_deuten(zustimmung), BESTAETIGUNG)
+
+    def test_fragende_verben_und_subjekte_sind_genau_die_festen_mengen(self) -> None:
+        """`ASKING_VERBS` und `SUBJECT_WORDS` sind genau die Literale, in beide Richtungen."""
+        self.assertEqual(ASKING_VERBS, _FRAGENDE_VERBEN)
+        self.assertEqual(SUBJECT_WORDS, _SUBJEKTWOERTER)
+
+    def test_jedes_fragende_verb_vor_jedem_subjekt_ist_unklar(self) -> None:
+        """Jedes Verb des Literals vor jedem Subjekt neben 'ok' ist unklar, dahinter Zustimmung."""
+        for verb in sorted(_FRAGENDE_VERBEN):
+            for subjekt in sorted(_SUBJEKTWOERTER):
+                with self.subTest(verb=verb, subjekt=subjekt):
+                    self.assertEqual(_antwort_deuten(f"{verb} {subjekt} ok"), UNKLAR)
+                    self.assertEqual(_antwort_deuten(f"{subjekt} {verb} ok"), BESTAETIGUNG)
+
+    def test_der_imperativ_der_zustimmung_stimmt_zu(self) -> None:
+        """*„mach das“*, *„Ja, mach das“* geben weiter frei — der Imperativ fragt nicht."""
+        for antwort in ("mach das", "Ja, mach das", "mach es", "machs", "mach ich"):
+            with self.subTest(antwort=antwort):
+                self.assertEqual(_antwort_deuten(antwort), BESTAETIGUNG)
+
+    def test_ein_subjekt_in_einem_anderen_satzteil_fragt_nicht(self) -> None:
+        """'ist ok, mach das' stimmt zu — 'das' steht hinter dem Komma; ohne Komma unklar."""
+        self.assertEqual(_antwort_deuten("ist ok, mach das"), BESTAETIGUNG)
+        self.assertEqual(_antwort_deuten("ist ok mach das"), UNKLAR)
+
+    def test_fragendes_verb_ausserhalb_der_zustimmung_wirft(self) -> None:
+        """Ein fragendes Verb, das in keiner Zustimmung stehen kann, ist ein Defekt der Listen."""
+        self.assertTrue(_asks_by_word_order("ist das ok"))
+        with patch.object(resume_mod, "ASKING_VERBS", ASKING_VERBS | {"fragt"}):
+            with self.assertRaises(RuntimeError):
+                _asks_by_word_order("ist das ok")
+
+    def test_resume_gibt_auf_eine_frage_der_wortstellung_nichts_frei(self) -> None:
+        """Ueber `resume`: *„ist das ok“* fragt erneut, *„das ist ok“* gibt frei."""
+        ergebnis: dict = _freigabe_beantworten("ist das ok")
+        self.assertEqual(ergebnis["status"], "rueckfrage")
+        self.assertEqual(ergebnis["rueckfrage"], "Freigeben?")
+        self.assertNotIn("parameter", ergebnis)
+        self.assertEqual(_freigabe_beantworten("das ist ok")["status"], "laufend")
+
+
+#: Die Zeichen, an denen ein Satzteil endet — `, . ! ; :` —, als eigenes
+#: Literal und nicht aus `CLAUSE_SEPARATORS` gerechnet: Ein Trennzeichen, das
+#: dort hinzukommt, teilte eine Frage in zwei Satzteile, ohne dass ein Zeuge
+#: es merkt.
+_TRENNZEICHEN: str = ",.!;:"
+#: Fragen, deren Verb und Subjekt ein Zeichen trennt, das keinen Satzteil
+#: beendet, je mit dem Zwilling, der nur am Trennzeichen freigibt.
+_TRENNZEICHEN_PAARE: tuple[tuple[str, str], ...] = (
+    ("ist - das ok", "ist, das ok"), ("ist (das) ok", "ist, (das) ok"),
+    ("ist) das ok", "ist), das ok"), ("ist - das sicher", "ist, das sicher"),
+)
+
+
+class TrennzeichenTest(unittest.TestCase):
+    """Die Trennzeichen der Satzteile sind fest: `- ( )` und Leerraum trennen nicht."""
+
+    def test_trennzeichen_sind_genau_die_feste_menge(self) -> None:
+        """`CLAUSE_SEPARATORS` ist genau das Literal, in beide Richtungen."""
+        self.assertEqual(CLAUSE_SEPARATORS, frozenset(_TRENNZEICHEN))
+
+    def test_trennzeichen_paare_sind_unklar_und_ihr_zwilling_stimmt_zu(self) -> None:
+        """*„ist - das ok“*, *„ist (das) ok“* sind unklar; mit Komma stimmen sie zu."""
+        for unklar, zustimmung in _TRENNZEICHEN_PAARE:
+            with self.subTest(unklar=unklar, zustimmung=zustimmung):
+                self.assertEqual(_antwort_deuten(unklar), UNKLAR)
+                self.assertEqual(_antwort_deuten(zustimmung), BESTAETIGUNG)
+
+    def test_jedes_andere_erlaubte_zeichen_haelt_den_satzteil(self) -> None:
+        """Jedes erlaubte Zeichen ausser den Trennzeichen zwischen Verb und Subjekt ist unklar.
+
+        Zwilling: jedes Trennzeichen des Literals an derselben Stelle stimmt zu.
+        """
+        haltend: list[str] = sorted(set(_ERLAUBTE_ZEICHEN) - set(_TRENNZEICHEN))
+        self.assertIn(" ", haltend)
+        for zeichen in haltend:
+            with self.subTest(zeichen=zeichen):
+                self.assertEqual(_antwort_deuten(f"ist {zeichen} das ok"), UNKLAR)
+        for trennzeichen in _TRENNZEICHEN:
+            with self.subTest(trennzeichen=trennzeichen):
+                self.assertEqual(_antwort_deuten(f"ist {trennzeichen} das ok"), BESTAETIGUNG)
+
+    def test_trennzeichen_ausserhalb_der_menge_wirft(self) -> None:
+        """Ein Trennzeichen, das in keiner Zustimmung stehen kann, oder keines ist ein Defekt."""
+        self.assertTrue(_asks_by_word_order("ist das ok"))
+        for trennzeichen in (CLAUSE_SEPARATORS | {"?"}, frozenset()):
+            with self.subTest(trennzeichen=sorted(trennzeichen)):
+                gepatcht = patch.object(resume_mod, "CLAUSE_SEPARATORS", trennzeichen)
+                with gepatcht, self.assertRaises(RuntimeError):
+                    _asks_by_word_order("ist das ok")
 
 
 class AnmeldungTest(unittest.TestCase):

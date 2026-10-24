@@ -11,11 +11,14 @@ Die Zusicherungen:
      zaehlt als Stamm auch mitten im Wort (*keinesfalls*), aber nicht in einem
      Zustimmungswort (*gerne*, *meinetwegen*). Liest die Deutung trotzdem
      falsch, wirft die Ausgabe-Verifikation von `read_answer`.
-  3. **Was keine Seite trifft, fuehrt zur erneuten Frage**, und der
-     Pending-Zustand wird erneuert. Ebenso eine Antwort, die etwas
-     zurueckhaelt -- ein `?` an irgendeiner Stelle oder ein Stamm des Wartens
-     (*„Ja? :)“*, *„Bitte warten“*, *„Sekunde, bitte“*) --, jede mit einem
-     Zwilling, der sich nur darin unterscheidet und zustimmt.
+  3. **Zugestimmt hat nur, wer nichts als Zustimmung sagt** (geschlossene
+     Annahme): Alles andere fuehrt zur erneuten Frage, und der
+     Pending-Zustand wird erneuert -- ein `?` an irgendeiner Stelle, ein
+     Wort des Wartens, des Aufschubs oder ein unbekanntes Wort
+     (*„Ja? :)“*, *„Sekündchen, bitte“*, *„ja, aber erst morgen“*), jede
+     mit einem Zwilling, der sich nur darin unterscheidet und zustimmt.
+     Auch die Zeichen sind geschlossen: jedes Zeichen ausserhalb von
+     `DROPPED_SIGNS` (*„ja？“*, *„ja 👎“*) macht unklar.
   4. **Keine Antwort auf eine Auswahlfrage fuehrt eine Wiederherstellung aus.**
 
 Die Zeugen fahren den Subgraphen des Dienstes mit `resume`; der Speicher ist
@@ -23,6 +26,7 @@ gedoppelt (`crud.db_manager`, `dispatch.redis_manager`), kein Zeuge oeffnet
 eine Datenbank, Redis oder ein Netz.
 """
 
+import unicodedata
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -33,13 +37,18 @@ from agents.direktiven import dispatch as direktiven_dispatch
 from agents.direktiven import resume as direktiven_resume
 from agents.direktiven.agent import DirektivenAgent
 from agents.direktiven.resume import (
+    ASKING_VERBS,
+    CLAUSE_SEPARATORS,
     CONSENT_WORDS,
+    DROPPED_SIGNS,
+    FILLER_WORDS,
     REFUSAL_STEMS,
     REFUSED_TEXT,
-    WAIT_STEMS,
+    SUBJECT_WORDS,
+    _asks_by_word_order,
+    _consists_of_consent,
     _has_stem,
     _has_word,
-    _holds_back,
     _question_kind,
     _reading,
     _without_words,
@@ -48,16 +57,93 @@ from agents.direktiven.resume import (
 
 _USER: str = "pruef-nutzer"
 _INSTRUCTION: str = "Erklaere Physik mit einem Beispiel"
-# Ein Zustimmungswort neben einem `?` an irgendeiner Stelle oder einem Wort des Wartens.
+# Ein Zustimmungswort neben einem `?`, einem Wort des Wartens oder des
+# Aufschubs. *„Wie bitte!“* und *„Kurz, bitte“* standen bis zur geschlossenen
+# Annahme unter den Zwillingen und loeschten: Eine Rueckfrage ohne `?` und
+# *kurz* traf keinen Stamm. Beide halten zurueck und sind jetzt unklar.
 _HESITANT_ANSWERS: tuple[str, ...] = (
     "Wie bitte?", "was meinst du, ja?", "Ja?", "Moment, bitte", "ja, warte mal",
     "Bitte warten", "Kurz warten, bitte", "Sekunde, bitte", "Augenblick, bitte",
-    "Wie bitte?!", "Ja?!", "Ja? :)",
+    "Wie bitte?!", "Ja?!", "Ja? :)", "Wie bitte!", "Kurz, bitte",
+    "Sekündchen, bitte", "wait, ok", "ja, aber erst morgen", "ok, ich überleg noch",
+    "ja？", "ja 👎", "ok ❌", "na ja",
 )
-# Die Zwillinge: jede zoegernde Antwort ohne ihren zurueckhaltenden Teil.
+# Die Zwillinge: Antworten, die aus nichts als Zustimmung bestehen.
 _CONSENT_TWINS: tuple[str, ...] = (
-    "Ja, bitte.", "ja", "Bitte", "Kurz, bitte", "Okay, bitte", "Wie bitte!", "Ja!", "Ja :)",
+    "Ja, bitte.", "ja", "Bitte", "Okay, bitte", "Ja!", "Ja :)",
+    "Ja, bitte!", "ok", "ja, gerne", "Ja, mach das", "ja ja",
 )
+# Die Antworten der Nachprobe zur geschlossenen Annahme, je mit dem Zwilling,
+# der sich nur im Zeichen oder im zoegernden Wort unterscheidet und zustimmt.
+# Bis die Zeichen geschlossen waren, fiel jedes Zeichen ohne Buchstaben und
+# Ziffern ausser dem ASCII-`?` weg, und *na*, *nun*, *also* waren Fuellwoerter:
+# Alle diese Antworten stimmten zu.
+_SIGN_PAIRS: tuple[tuple[str, str], ...] = (
+    ("ja？", "ja!"), ("ok？", "ok!"), ("ja¿", "ja!"), ("ja‽", "ja!"),
+    ("ja ❓", "ja :)"), ("ok ❔", "ok :)"), ("ja 👎", "ja :)"), ("ok ❌", "ok :)"),
+    ("ja 🛑", "ja :)"), ("ja 🤔", "ja :)"), ("ja 🙄", "ja :)"),
+    ("na ja", "ja ja"), ("nun ja", "ja ja"), ("also ja", "ja ja"),
+)
+# Zeichen, die vor der Pruefung ohne Luecke wegfallen (das Apostroph).
+_APOSTROPHE_SIGNS: str = "'’‘`´"
+# Die feste Menge der Zeichen, die wegfallen -- ASCII-Leerraum und
+# `. , ! ; : - ( )` --, als eigenes Literal und nicht aus `DROPPED_SIGNS`
+# gerechnet: Ein Zeichen, das dort hinzukommt, faellt sonst aus der Pruefung
+# heraus, statt sie rot zu machen.
+_ALLOWED_SIGNS: str = " \t\n\r\f\v.,!;:-()"
+# Antworten, die beide Zweige erreichen: Die Ablehnung liest den Text mit dem
+# Apostroph und findet *ne*, die Zustimmung liest ihn ohne und findet *gerne*.
+# Je mit dem Zwilling ohne Apostroph, der nur die Zustimmung erreicht.
+_BOTH_BRANCHES: tuple[tuple[str, str], ...] = (
+    ("ger'ne", "gerne"), ("Ger’ne!", "Gerne!"), ("meinet'wegen", "meinetwegen"),
+)
+# Die Woerter, die nach der Regel von `FILLER_WORDS` nie darin stehen: die der
+# Einschraenkung oder des Aufschubs und die Partikeln des Zoegerns.
+_EXCLUDED_WORDS: tuple[str, ...] = (
+    "aber", "sondern", "statt", "erst", "nur", "noch", "lieber", "später", "spaeter",
+    "morgen", "na", "nun", "also",
+)
+# Die fragenden Verben -- finit, kein Imperativ -- unter den Zustimmungs- und
+# Fuellwoertern des Dienstes, als eigenes Literal und nicht aus `ASKING_VERBS`
+# gerechnet: Ein Verb, das dort fehlt, faellt sonst aus der Pruefung heraus,
+# statt sie rot zu machen.
+_ASKING_VERBS: frozenset[str] = frozenset({"ist", "passt"})
+# Die Fuellwoerter, die Subjekt sein koennen, ebenso als eigenes Literal.
+_SUBJECT_WORDS: frozenset[str] = frozenset({
+    "der", "die", "das", "ein", "ich", "du", "er", "sie", "es", "wir", "ihr", "man",
+    "dies", "diese", "dieses", "dieser",
+})
+# Fragen ohne `?`, die nur ihre Wortstellung zur Frage macht, je mit dem
+# Zwilling in der Wortstellung der Aussage. Bis zur Regel der Wortstellung
+# stimmten alle zu: *ist* ist Fuellwort, *passt* Zustimmungswort.
+_WORD_ORDER_PAIRS: tuple[tuple[str, str], ...] = (
+    ("ist das ok", "das ist ok"), ("ist es ok", "es ist ok"),
+    ("passt es", "es passt"), ("passt das", "das passt"),
+)
+# Die Zeichen, an denen ein Satzteil endet -- `, . ! ; :` --, als eigenes
+# Literal und nicht aus `CLAUSE_SEPARATORS` gerechnet: Ein Trennzeichen, das
+# dort hinzukommt, teilte eine Frage in zwei Satzteile, ohne dass ein Zeuge
+# es merkt.
+_CLAUSE_SEPARATORS: str = ",.!;:"
+# Fragen, deren Verb und Subjekt ein Zeichen trennt, das keinen Satzteil
+# beendet, je mit dem Zwilling, der nur am Trennzeichen zustimmt.
+_SEPARATOR_PAIRS: tuple[tuple[str, str], ...] = (
+    ("ist - das ok", "ist, das ok"), ("ist (das) ok", "ist, (das) ok"),
+    ("ist) das ok", "ist), das ok"), ("passt - es", "passt, es"),
+)
+
+
+def _signs_of_a_category() -> list[str]:
+    """Jedes Satz-, Symbol- und Trennzeichen (Unicode-Kategorien P, S, Z) bis zu den Emoji.
+
+    Ausgenommen sind `_ALLOWED_SIGNS` und die Apostrophe -- alles andere muss
+    eine Zustimmung unklar machen.
+    """
+    return [
+        sign for sign in map(chr, range(0x21, 0x1FB00))
+        if unicodedata.category(sign)[0] in "PSZ"
+        and sign not in _ALLOWED_SIGNS and sign not in _APOSTROPHE_SIGNS
+    ]
 
 
 def _db() -> MagicMock:
@@ -373,7 +459,7 @@ class UnclearAnswerTest(unittest.TestCase):
                 self.assertEqual(returned["management_result"], REFUSED_TEXT)
 
     def test_question_or_waiting_asks_again_and_executes_nothing(self) -> None:
-        """Ein Zustimmungswort neben einem '?' oder einem Wort des Wartens loescht nicht."""
+        """Ein Zustimmungswort neben einem '?', Warten oder Aufschub loescht nicht."""
         question: str = _question(_delete_parameter())
         for answer in _HESITANT_ANSWERS:
             with self.subTest(answer=answer):
@@ -397,7 +483,7 @@ class UnclearAnswerTest(unittest.TestCase):
                 self.assertEqual(returned["management_result"], _question(_delete_parameter()))
 
     def test_plain_consent_executes(self) -> None:
-        """Zwilling: 'Ja!', 'Ja :)', 'Okay, bitte' ... loeschen -- ohne '?' und Warten."""
+        """Zwilling: 'Ja!', 'Ja :)', 'Ja, mach das' ... loeschen -- nichts als Zustimmung."""
         question: str = _question(_delete_parameter())
         for answer in _CONSENT_TWINS:
             with self.subTest(answer=answer):
@@ -409,26 +495,41 @@ class UnclearAnswerTest(unittest.TestCase):
 
 
 class HesitationReadingTest(unittest.TestCase):
-    """Die Deutung von '?' an jeder Stelle und den Staemmen des Wartens, je mit Zwilling."""
+    """Die geschlossene Annahme: '?' an jeder Stelle und jedes fremde Wort, je mit Zwilling."""
 
     def test_minimal_pairs(self) -> None:
-        """Jede unklare Antwort hat einen Zwilling, nur im '?' oder Wort des Wartens anders."""
+        """Jede unklare Antwort hat einen Zwilling, nur im zurueckhaltenden Teil anders.
+
+        Umgedreht mit der geschlossenen Annahme: *„Wie bitte“* und
+        *„was meinst du, ja“* standen hier als Zwilling *Zustimmung* -- ohne
+        `?` traf sie keine Zurueckhaltung, und sie loeschten. Beide fragen
+        zurueck; ihre Zwillinge sind jetzt *„Bitte“* und *„ja“*. Ebenso
+        *„Kurz, bitte“* und *„gut, ja“*: *kurz* und *gut* sind keine
+        Fuellwoerter, die Zwillinge sind *„Bitte“* und *„ja“*. Die Zwillinge
+        von *„wart, ja“* und *„halt, ja“* hiessen *„also, ja“*; seit die
+        Partikeln des Zoegerns keine Fuellwoerter mehr sind, ist das selbst
+        unklar, und der Zwilling ist *„ja“*.
+        """
         pairs: tuple[tuple[str, str], ...] = (
-            ("Wie bitte?", "Wie bitte"),
-            ("was meinst du, ja?", "was meinst du, ja"),
+            ("Wie bitte?", "Bitte"),
+            ("Wie bitte", "Bitte"),
+            ("was meinst du, ja?", "ja"),
+            ("was meinst du, ja", "ja"),
             ("Ja?", "Ja"),
             ("ja?  ", "ja  "),
             ("Ja, bitte?", "Ja, bitte."),
             ("Moment, bitte", "Okay, bitte"),
             ("ja, warte mal", "ja, mach mal"),
-            ("wart, ja", "gut, ja"),
-            ("halt, ja", "gut, ja"),
+            ("wart, ja", "ja"),
+            ("halt, ja", "ja"),
             ("Bitte warten", "Bitte"),
-            ("Kurz warten, bitte", "Kurz, bitte"),
+            ("Kurz warten, bitte", "Bitte"),
+            ("Kurz, bitte", "Bitte"),
             ("Sekunde, bitte", "Okay, bitte"),
             ("Augenblick, bitte", "Okay, bitte"),
-            ("ja, wartet", "ja, gut"),
-            ("Wie bitte?!", "Wie bitte!"),
+            ("ja, wartet", "ja, danke"),
+            ("Wie bitte?!", "Bitte!"),
+            ("Wie bitte!", "Bitte!"),
             ("Ja?!", "Ja!"),
             ("Ja? :)", "Ja :)"),
             ("Ja? Ja!", "Ja. Ja!"),
@@ -438,21 +539,300 @@ class HesitationReadingTest(unittest.TestCase):
                 self.assertEqual(_reading(unclear), "unclear")
                 self.assertEqual(_reading(consent), "consent")
 
-    def test_waiting_counts_as_a_stem_and_refusal_still_wins(self) -> None:
+    def test_waiting_is_unclear_without_a_stem_and_refusal_still_wins(self) -> None:
         """'momentan passt es' und 'ja, dann halt' halten auf; 'nein?' bleibt Ablehnung.
 
-        Bis zum Stamm hielt 'momentan passt es' als Zustimmung; die Regel ist
-        absichtlich zu weit, der Zwilling 'passt es' stimmt zu.
+        Bis zur geschlossenen Annahme hielt hier ein Stamm des Wartens auf
+        (`WAIT_STEMS`); er ist entfallen, weil jedes Wort ausserhalb der
+        Zustimmungs- und Fuellwoerter ohnehin unklar ist. Dieselben Antworten
+        bleiben unklar, und die Formen, die kein Stamm traf, ebenso.
         """
         self.assertEqual(_reading("Moment, ja"), "unclear")
         self.assertEqual(_reading("momentan passt es"), "unclear")
-        self.assertEqual(_reading("passt es"), "consent")
+        # Umgedreht mit der Regel der Wortstellung: *„passt es“* stand hier
+        # als Zustimmung, ist aber eine Frage ohne `?` -- das finite Verb
+        # steht vor seinem Subjekt. Zwilling in der Wortstellung der Aussage.
+        self.assertEqual(_reading("passt es"), "unclear")
+        self.assertEqual(_reading("es passt"), "consent")
         self.assertEqual(_reading("ja, dann halt"), "unclear")
+        self.assertEqual(_reading("Sek, bitte"), "unclear")
+        self.assertEqual(_reading("hold on, ok"), "unclear")
+        self.assertEqual(_reading("Ja, später"), "unclear")
+        self.assertEqual(_reading("Nochmal, bitte"), "unclear")
         self.assertEqual(_reading("nein?"), "refusal")
         self.assertEqual(_reading("nein, warte"), "refusal")
         self.assertEqual(_reading("stopp, bitte"), "refusal")
-        for stem in ("wart", "moment", "augenblick", "sekunde", "halt"):
-            self.assertIn(stem, WAIT_STEMS)
+
+
+class ClosedConsentTest(unittest.TestCase):
+    """Die Schliessbedingung, die Saetze der Bugs, die Fuellwoerter -- je mit Zwilling."""
+
+    def test_holding_back_is_unclear_and_its_twin_consents(self) -> None:
+        """Rueckfrage, Warten und Aufschub sind unklar; ohne das Zurueckhaltende Zustimmung."""
+        for unclear, consent in (
+            ("Wie bitte?", "Bitte"), ("Ja?", "Ja"), ("Moment, bitte", "Bitte"),
+            ("Sekündchen, bitte", "Bitte"), ("wait, ok", "ok"),
+            ("ja, aber erst morgen", "ja"), ("ok, ich überleg noch", "ok"),
+        ):
+            with self.subTest(unclear=unclear, consent=consent):
+                self.assertEqual(_reading(unclear), "unclear")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_pure_consent_consents(self) -> None:
+        """Die Zwillinge des Auftrags, dazu Fuellwoerter und das Apostroph.
+
+        *„ja, das ist er“* stand hier bis zur Regel der Wortstellung; es traegt
+        hinter *ist* das Subjektwort *er* und ist jetzt unklar
+        (`WordOrderTest.test_a_subject_word_after_ist_is_unclear`).
+        """
+        for answer in (
+            "ja", "Ja, bitte!", "Ja :)", "ok", "ja, gerne", "Ja, mach das",
+            "Mach's", "ja, das ist ok", "ok, danke", "auf jeden",
+        ):
+            with self.subTest(answer=answer):
+                self.assertEqual(_reading(answer), "consent")
+
+    def test_a_hesitating_particle_is_no_filler(self) -> None:
+        """*na*, *nun*, *also* neben 'klar' oder 'ja' sind unklar; Zwilling ohne sie stimmt zu.
+
+        Umgedreht mit den geschlossenen Zeichen: *„na klar“* stand oben als
+        Zustimmung. *na* ist eine Partikel des Zoegerns (*„na ja“*) und kein
+        Fuellwort mehr; *„na klar“* fragt deshalb ein zweites Mal -- der Preis
+        in der sicheren Richtung.
+        """
+        for unclear, consent in (("na klar", "klar"), ("nun ja", "ja"), ("also, ok", "ok")):
+            with self.subTest(unclear=unclear, consent=consent):
+                self.assertNotIn(unclear.split()[0].strip(","), FILLER_WORDS)
+                self.assertEqual(_reading(unclear), "unclear")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_refusal_without_a_stem_is_no_consent(self) -> None:
+        """Die Saetze von *Ablehnung ohne Stamm*: unklar statt Zustimmung, je mit Zwilling."""
+        for unclear, consent in (
+            ("ja, vergiss es", "ja"), ("ok nö", "ok"), ("bitte niemals", "bitte"),
+        ):
+            with self.subTest(unclear=unclear, consent=consent):
+                self.assertEqual(_reading(unclear), "unclear")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_a_word_outside_the_fillers_is_unclear(self) -> None:
+        """Je eine Wortart ausserhalb der Menge neben 'ja' -- Verb, Nomen, Zahl, 'aber'."""
+        for word in ("kommt", "Kaffee", "3", "aber"):
+            with self.subTest(word=word):
+                self.assertNotIn(word.lower(), FILLER_WORDS)
+                self.assertEqual(_reading(f"ja, {word}"), "unclear")
+                self.assertEqual(_reading("ja, das"), "consent")
+
+    def test_refusal_still_wins(self) -> None:
+        """'nein, bitte nicht' und 'ja, aber lieber nicht' lehnen ab wie bisher."""
+        for answer in ("nein, bitte nicht", "ja, aber lieber nicht"):
+            with self.subTest(answer=answer):
+                self.assertEqual(_reading(answer), "refusal")
+
+    def test_bug_sentences_delete_nothing(self) -> None:
+        """Ueber den Graphen: die Saetze der Bugs fragen erneut, nichts geloescht."""
+        question: str = _question(_delete_parameter())
+        for answer in ("ja, vergiss es", "ok nö", "bitte niemals", "ja, kommt"):
+            with self.subTest(answer=answer):
+                db: MagicMock = _db()
+                result: dict = _run(_delete_parameter(), question, answer, db)
+                self.assertFalse(_wrote(db))
+                self.assertEqual(_last_step(result)["ergebnis"], "unklar")
+
+
+class ClosedSignsTest(unittest.TestCase):
+    """Auch die Zeichen sind geschlossen: nur `DROPPED_SIGNS` fallen weg -- je mit Zwilling."""
+
+    def test_sign_pairs_are_unclear_and_their_twins_consent(self) -> None:
+        """Fragezeichen anderer Schriften, Emoji, *na*/*nun*/*also* sind unklar."""
+        for unclear, consent in _SIGN_PAIRS:
+            with self.subTest(unclear=unclear, consent=consent):
+                self.assertEqual(_reading(unclear), "unclear")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_dropped_signs_are_exactly_the_fixed_set(self) -> None:
+        """`DROPPED_SIGNS` ist genau `_ALLOWED_SIGNS` -- kein Zeichen mehr, keins weniger."""
+        self.assertEqual(DROPPED_SIGNS, frozenset(_ALLOWED_SIGNS))
+
+    def test_every_sign_outside_the_fixed_set_is_unclear(self) -> None:
+        """Jedes Zeichen der Kategorien P, S und Z ausserhalb des Literals macht 'ja' unklar.
+
+        Zwilling: jedes Zeichen des Literals neben 'ja' stimmt zu.
+        """
+        signs: list[str] = _signs_of_a_category()
+        self.assertGreater(len(signs), 5000)
+        consenting: list[str] = [
+            sign for sign in signs if _consists_of_consent(f"ja {sign}".lower())
+        ]
+        self.assertEqual(consenting, [])
+        for sign in _ALLOWED_SIGNS:
+            with self.subTest(sign=sign):
+                self.assertTrue(_consists_of_consent(f"ja{sign}"))
+
+    def test_question_mark_in_the_signs_raises(self) -> None:
+        """Traegt die Menge ein `?`, ist das ein Defekt der Listen -- 'ja!' wirft nicht."""
+        with patch.object(direktiven_resume, "DROPPED_SIGNS", DROPPED_SIGNS | {"?"}):
+            with self.assertRaises(RuntimeError):
+                _consists_of_consent("ja?")
+            self.assertTrue(_consists_of_consent("ja!"))
+
+    def test_sign_answers_delete_nothing(self) -> None:
+        """Ueber den Graphen: *„ja？“*, *„ja 👎“*, *„na ja“* loeschen nicht, *„ja!“* schon."""
+        question: str = _question(_delete_parameter())
+        for answer in ("ja？", "ja 👎", "na ja"):
+            with self.subTest(answer=answer):
+                db: MagicMock = _db()
+                result: dict = _run(_delete_parameter(), question, answer, db)
+                self.assertFalse(_wrote(db))
+                self.assertEqual(_last_step(result)["ergebnis"], "unklar")
+        db = _db()
+        _run(_delete_parameter(), question, "ja!", db)
+        db.execute.assert_called_once()
+
+
+class RefusalFirstTest(unittest.TestCase):
+    """Die Ablehnung wird vor der Zustimmung geprueft -- an einer Antwort, die beide erreicht."""
+
+    def test_an_answer_reaching_both_branches_is_a_refusal(self) -> None:
+        """*„ger'ne“* traegt *ne* fuer die Ablehnung und *gerne* fuer die Zustimmung.
+
+        Zwilling: *„gerne“* ohne Apostroph erreicht nur die Zustimmung.
+        """
+        for both, consent in _BOTH_BRANCHES:
+            with self.subTest(both=both, consent=consent):
+                self.assertTrue(_consists_of_consent(both.lower()))
+                self.assertEqual(_reading(both), "refusal")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_an_answer_reaching_both_branches_deletes_nothing(self) -> None:
+        """Ueber den Graphen: *„ger'ne“* lehnt ab und loescht nicht, *„gerne“* loescht."""
+        question: str = _question(_delete_parameter())
+        db: MagicMock = _db()
+        result: dict = _run(_delete_parameter(), question, "ger'ne", db)
+        self.assertFalse(_wrote(db))
+        self.assertEqual(_last_step(result)["ergebnis"], "abgelehnt")
+        db = _db()
+        _run(_delete_parameter(), question, "gerne", db)
+        db.execute.assert_called_once()
+
+
+class ExcludedWordsTest(unittest.TestCase):
+    """Die Regel der Fuellwoerter: kein Wort des Aufschubs, der Einschraenkung, des Zoegerns."""
+
+    def test_no_excluded_word_is_a_filler(self) -> None:
+        """Keines der ausgeschlossenen Woerter steht in `FILLER_WORDS`; die Menge ist nicht leer."""
+        self.assertIn("das", FILLER_WORDS)
+        for word in _EXCLUDED_WORDS:
+            with self.subTest(word=word):
+                self.assertNotIn(word, FILLER_WORDS)
+
+    def test_each_excluded_word_beside_ja_is_unclear(self) -> None:
+        """Jedes davon allein neben 'ja' ist unklar; Zwilling 'ja das' stimmt zu."""
+        self.assertEqual(_reading("ja das"), "consent")
+        for word in _EXCLUDED_WORDS:
+            with self.subTest(word=word):
+                self.assertEqual(_reading(f"ja {word}"), "unclear")
+                self.assertEqual(_reading(f"{word}, ja"), "unclear")
+
+
+class WordOrderTest(unittest.TestCase):
+    """Die Frage ohne `?`: ein finites Verb vor seinem Subjekt ist unklar -- je mit Zwilling."""
+
+    def test_word_order_pairs_are_unclear_and_their_twins_consent(self) -> None:
+        """*„ist das ok“*, *„passt es“* ... sind unklar; die Aussage stimmt zu."""
+        for unclear, consent in _WORD_ORDER_PAIRS:
+            with self.subTest(unclear=unclear, consent=consent):
+                self.assertEqual(_reading(unclear), "unclear")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_asking_verbs_and_subjects_are_exactly_the_fixed_sets(self) -> None:
+        """`ASKING_VERBS` und `SUBJECT_WORDS` sind genau die Literale, in beide Richtungen."""
+        self.assertEqual(ASKING_VERBS, _ASKING_VERBS)
+        self.assertEqual(SUBJECT_WORDS, _SUBJECT_WORDS)
+
+    def test_every_asking_verb_before_every_subject_is_unclear(self) -> None:
+        """Jedes Verb des Literals vor jedem Subjekt neben 'ok' ist unklar, dahinter Zustimmung."""
+        for verb in sorted(_ASKING_VERBS):
+            for subject in sorted(_SUBJECT_WORDS):
+                with self.subTest(verb=verb, subject=subject):
+                    self.assertEqual(_reading(f"{verb} {subject} ok"), "unclear")
+                    self.assertEqual(_reading(f"{subject} {verb} ok"), "consent")
+
+    def test_the_imperative_of_consent_consents(self) -> None:
+        """*„mach das“*, *„Ja, mach das“* fuehren weiter aus -- der Imperativ fragt nicht."""
+        for answer in ("mach das", "Ja, mach das", "mach es", "mache das", "mach ich"):
+            with self.subTest(answer=answer):
+                self.assertEqual(_reading(answer), "consent")
+
+    def test_a_subject_in_another_clause_does_not_ask(self) -> None:
+        """'passt, mach das' stimmt zu -- 'das' steht hinter dem Komma; ohne Komma unklar."""
+        self.assertEqual(_reading("passt, mach das"), "consent")
+        self.assertEqual(_reading("passt mach das"), "unclear")
+
+    def test_a_subject_word_after_ist_is_unclear(self) -> None:
+        """*„ja, das ist er“* ist unklar: *er* kann Subjekt sein und steht hinter *ist*.
+
+        Der Preis der Regel in der sicheren Richtung -- eine zweite Frage.
+        Zwilling: *„ja, das ist ok“* traegt hinter *ist* kein Subjektwort.
+        """
+        self.assertEqual(_reading("ja, das ist er"), "unclear")
+        self.assertEqual(_reading("ja, das ist ok"), "consent")
+
+    def test_an_asking_verb_outside_the_consent_raises(self) -> None:
+        """Ein fragendes Verb, das in keiner Zustimmung stehen kann, ist ein Defekt der Listen."""
+        self.assertTrue(_asks_by_word_order("ist das ok"))
+        with patch.object(direktiven_resume, "ASKING_VERBS", ASKING_VERBS | {"fragt"}):
+            with self.assertRaises(RuntimeError):
+                _asks_by_word_order("ist das ok")
+
+    def test_a_word_order_question_deletes_nothing(self) -> None:
+        """Ueber den Graphen: *„ist das ok“* loescht nicht, *„das ist ok“* loescht."""
+        question: str = _question(_delete_parameter())
+        db: MagicMock = _db()
+        result: dict = _run(_delete_parameter(), question, "ist das ok", db)
+        self.assertFalse(_wrote(db))
+        self.assertEqual(_last_step(result)["ergebnis"], "unklar")
+        db = _db()
+        _run(_delete_parameter(), question, "das ist ok", db)
+        db.execute.assert_called_once()
+
+
+class ClauseSeparatorsTest(unittest.TestCase):
+    """Die Trennzeichen der Satzteile sind fest: `- ( )` und Leerraum trennen nicht."""
+
+    def test_clause_separators_are_exactly_the_fixed_set(self) -> None:
+        """`CLAUSE_SEPARATORS` ist genau das Literal, in beide Richtungen."""
+        self.assertEqual(CLAUSE_SEPARATORS, frozenset(_CLAUSE_SEPARATORS))
+
+    def test_separator_pairs_are_unclear_and_their_twins_consent(self) -> None:
+        """*„ist - das ok“*, *„ist (das) ok“* sind unklar; mit Komma stimmen sie zu."""
+        for unclear, consent in _SEPARATOR_PAIRS:
+            with self.subTest(unclear=unclear, consent=consent):
+                self.assertEqual(_reading(unclear), "unclear")
+                self.assertEqual(_reading(consent), "consent")
+
+    def test_every_other_dropped_sign_keeps_the_clause(self) -> None:
+        """Jedes erlaubte Zeichen ausser den Trennzeichen zwischen Verb und Subjekt ist unklar.
+
+        Zwilling: jedes Trennzeichen des Literals an derselben Stelle stimmt zu.
+        """
+        keeping: list[str] = sorted(set(_ALLOWED_SIGNS) - set(_CLAUSE_SEPARATORS))
+        self.assertIn(" ", keeping)
+        for sign in keeping:
+            with self.subTest(sign=sign):
+                self.assertEqual(_reading(f"ist {sign} das ok"), "unclear")
+        for separator in _CLAUSE_SEPARATORS:
+            with self.subTest(separator=separator):
+                self.assertEqual(_reading(f"ist {separator} das ok"), "consent")
+
+    def test_a_separator_outside_the_dropped_signs_raises(self) -> None:
+        """Ein Trennzeichen, das in keiner Zustimmung stehen kann, oder keines ist ein Defekt."""
+        self.assertTrue(_asks_by_word_order("ist das ok"))
+        for separators in (CLAUSE_SEPARATORS | {"?"}, frozenset()):
+            with self.subTest(separators=sorted(separators)):
+                patched = patch.object(direktiven_resume, "CLAUSE_SEPARATORS", separators)
+                with patched, self.assertRaises(RuntimeError):
+                    _asks_by_word_order("ist das ok")
 
 
 class ChoiceQuestionTest(unittest.TestCase):
@@ -554,7 +934,8 @@ class OutputVerificationTest(unittest.TestCase):
         """Ablehnung, gemischte, unklare und zoegernde Antwort, als Zustimmung gelesen, werfen."""
         for answer in (
             "nein", "ja, aber lieber nicht", "Was meinst du damit?", "Ja?", "Moment, bitte",
-            "Ja? :)", "Bitte warten",
+            "Ja? :)", "Bitte warten", "Sekündchen, bitte", "wait, ok", "ja, vergiss es",
+            "ja？", "ja 👎", "na ja",
         ):
             with self.subTest(answer=answer):
                 with self.assertRaises(RuntimeError) as caught:
@@ -606,25 +987,33 @@ class HelpersTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             _without_words("ja", ())
 
-    def test_holds_back_on_question_mark_or_waiting(self) -> None:
-        self.assertTrue(_holds_back("ja? "))
-        self.assertTrue(_holds_back("ja? :)"))
-        self.assertTrue(_holds_back("moment, bitte"))
-        self.assertTrue(_holds_back("bitte warten"))
-        self.assertFalse(_holds_back("ja, bitte."))
-        self.assertFalse(_holds_back("ja :)"))
+    def test_consists_of_consent_only_without_question_mark_and_foreign_words(self) -> None:
+        self.assertFalse(_consists_of_consent("ja? "))
+        self.assertFalse(_consists_of_consent("ja? :)"))
+        self.assertFalse(_consists_of_consent("moment, bitte"))
+        self.assertFalse(_consists_of_consent("das ist es"))
+        self.assertTrue(_consists_of_consent("ja, bitte."))
+        self.assertTrue(_consists_of_consent("ja :)"))
+        self.assertTrue(_consists_of_consent("mach's"))
         with self.assertRaises(ValueError):
-            _holds_back("Ja?")
+            _consists_of_consent("Ja")
 
-    def test_holds_back_raises_when_a_consent_word_carries_a_wait_stem(self) -> None:
-        """Ein Zustimmungswort mit Stamm des Wartens ist ein Defekt der Listen, kein Zoegern.
+    def test_consists_of_consent_raises_when_a_filler_carries_a_refusal_stem(self) -> None:
+        """Ein Fuellwort mit Ablehnungsstamm ist ein Defekt der Listen, keine Zustimmung.
 
-        Zwilling: Derselbe Stamm ausserhalb des Zustimmungsworts haelt auf, ohne zu werfen.
+        Zwilling: Dieselbe Antwort ohne dieses Wort stimmt zu, ohne zu werfen.
         """
-        with patch.object(direktiven_resume, "CONSENT_WORDS", (*CONSENT_WORDS, "momentchen")):
+        with patch.object(direktiven_resume, "FILLER_WORDS", FILLER_WORDS | {"keinesfalls"}):
             with self.assertRaises(RuntimeError):
-                _holds_back("momentchen")
-            self.assertTrue(_holds_back("momentchen, moment"))
+                _consists_of_consent("ja, keinesfalls")
+            self.assertTrue(_consists_of_consent("ja"))
+
+    def test_no_filler_carries_a_refusal_stem_or_is_a_consent_word(self) -> None:
+        """Die Listen widersprechen sich nicht: kein Fuellwort lehnt ab oder stimmt zu."""
+        for word in FILLER_WORDS:
+            with self.subTest(word=word):
+                self.assertFalse(_has_stem(word, REFUSAL_STEMS))
+                self.assertNotIn(word, CONSENT_WORDS)
 
     def test_reading_rejects_a_non_string(self) -> None:
         with self.assertRaises(TypeError):
