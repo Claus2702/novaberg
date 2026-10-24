@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Gedaechtnis — KZG, LZG, Promotion, Entitaeten, Salienz, Verfall
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → ~~81~~ → 82 Eintraege (22.10.2026: `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` neu; 21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → ~~81~~ → ~~82~~ → 83 Eintraege (24.10.2026: `VERSTAERKUNG-KANTEN-NUR-ALS-SUMME` neu aus der Klassifizierung der Funde vom 24.10.2026; 22.10.2026: `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` neu; 21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -2204,3 +2204,21 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 **Was fertig wäre:** Beide Grenzen sind an einer Messung im Betrieb gesetzt — wie oft mehr als drei Entitäten gebunden sind, wie viele Knoten die Suche findet und wie viele davon neu sind, wie stark die Länge des Kontexts wächst —, oder die begründete Feststellung, dass die Startwerte tragen.
 
 **Zusammenhang:** `novaberg-memory-fakten_b.md` §6 (*Der Erinnerungsanker*) · `novaberg-graph-rechenkette.md` S14b · `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` (Antwortpfad)
+
+---
+
+## Befund: VERSTAERKUNG-KANTEN-NUR-ALS-SUMME — Kantenzahl und Dauer der Neuberechnung stehen nur als Summe je Lauf im Protokoll (24.10.2026)
+
+**Kategorie:** [GED] GEDAECHTNIS
+
+**Rang:** niedrig — laut, und nichts ist falsch: Es fehlt eine Aufschlüsselung, die erst gebraucht wird, wenn die Dauer der Neuberechnung im Betrieb zur Frage wird. Vergeben am 24.10.2026 gegen HEAD `2702d94`.
+
+**Zustand:** ⬜ offen — am Code gelesen am 24.10.2026 gegen `2702d94`, nichts gebaut.
+
+**Befund, am Code:** `server/memory/usage_reinforcement.py::reinforce_used` (Z. 201–300) addiert `kanten_neu` je verstärktem Knoten (Z. 284); `kanten_dauer_ms` ist die Summe der gemessenen Zeit aller Neuberechnungen des Laufs (Z. 269–285). Ein Lauf hat höchstens `VERWENDUNG_MAX_JE_TURN` = 3 Treffer (`server/config.py`, Z. 2751; gekappt in `usage_reinforcement.py`, Z. 184–190). Der Dispatcher schreibt beide Summen in die Zeile `verwendung_verstaerkung` (`server/graph/nodes/dispatcher.py`, Z. 469–499); je Treffer stehen dort nur die Nähen (`naehen`), keine Knotenkennung und keine Kantenzahl. Der Docstring nennt die Summe (Z. 218–224), ein Widerspruch zum Vertrag ist es also nicht. Die Messung im Betrieb vom 24.10.2026 hatte zwei Treffer (224 + 820 = 1044 Kanten, 188,1 ms) und trennte sie nur über eine eigene Abfrage am Bestand (`labor/2026-10-24_kanten_betrieb_ergebnis.md`).
+
+**Was fertig wäre:** Die Dauer der Neuberechnung lässt sich aus dem `pipeline_log` einem Knoten und seiner Kantenzahl zuordnen — über eine Aufschlüsselung je Treffer in der Zeile, oder über die begründete Feststellung, dass eine Auswertung der Turns mit genau einem Treffer genügt.
+
+**Offen:** ob die Dauer der Neuberechnung im Betrieb überhaupt beobachtet werden soll.
+
+**Zusammenhang:** `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` (Archiv, `novaberg-bugs-archiv-gedaechtnis.md`) — verlangte nur, dass die Dauer im `pipeline_log` steht · [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.1a, *Die Protokollzeile* · [`novaberg-node-dispatcher.md`](novaberg-node-dispatcher.md) §3.1, Schritt 9 · der Kommentar über diesen Feldern im Dispatcher nennt eine Zahl des Bestands ohne Datum (Fundliste, 24.10.2026)

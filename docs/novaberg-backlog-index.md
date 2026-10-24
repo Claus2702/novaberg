@@ -1,17 +1,17 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 475 Eintraege mit Kennung — 388 offen, 87 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 477 Eintraege mit Kennung — 390 offen, 87 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 472 von 475 Eintraegen zugeordnet.
+**Kategorie:** 474 von 477 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 82 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
 | Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 76 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 104 |
 
 ---
@@ -317,11 +317,11 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 | Kuerzel | Kategorie | zugeordnet |
 |---|---|---|
-| `GED` | GEDAECHTNIS | 83 |
+| `GED` | GEDAECHTNIS | 84 |
 | `HGR` | HINTERGRUND | 66 |
 | `CHA` | CHARAKTER | 74 |
 | `ANT` | ANTWORTPFAD | 69 |
-| `WIS` | WISSEN | 76 |
+| `WIS` | WISSEN | 77 |
 | `BAU` | BAUART | 104 |
 
 | Zeile | Art | Kennung | Kapitel |
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 475 Eintraege
+## Alle 477 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -418,6 +418,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | GED | 2154 | offen | `SALIENZ-TRAEGT-NAEHE-NICHT` | [Befund: SALIENZ-TRAEGT-NAEHE-NICHT — Die Salienz trä](novaberg-backlog-gedaechtnis.md) |
 | GED | 2178 | offen | `ENTITAETEN-ZUSAMMENLEGEN` | [Befund: ENTITAETEN-ZUSAMMENLEGEN — zwei Akten dersel](novaberg-backlog-gedaechtnis.md) |
 | GED | 2194 | offen | `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` | [Befund: ERINNERUNGSANKER-GRENZEN-UNGEMESSEN — Die zw](novaberg-backlog-gedaechtnis.md) |
+| GED | 2210 | offen | `VERSTAERKUNG-KANTEN-NUR-ALS-SUMME` | [Befund: VERSTAERKUNG-KANTEN-NUR-ALS-SUMME — Kantenza](novaberg-backlog-gedaechtnis.md) |
 | HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
 | HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
 | HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
@@ -707,6 +708,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 1115 | offen | `TIMELINE-TYPEN-AN-DREI-STELLEN` | [Befund: TIMELINE-TYPEN-AN-DREI-STELLEN — Die Typen d](novaberg-backlog-wissen.md) |
 | WIS | 1135 | offen | `FAKTEN-KANON-LUECKEN` | [Befund: FAKTEN-KANON-LUECKEN — der Kanon des Fakten-](novaberg-backlog-wissen.md) |
 | WIS | 1149 | offen | `FAKTEN-LESER-OHNE-AUFRUFER` | [Befund: FAKTEN-LESER-OHNE-AUFRUFER — sechs Lesefunkt](novaberg-backlog-wissen.md) |
+| WIS | 1167 | offen | `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN` | [Befund: VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN — bei](novaberg-backlog-wissen.md) |
 | BAU | 25 | offen | `NMCP-KONVENTION-MCP-2026-07-28` | [Block 19.09.2026 — die NMCP-Konvention gegen die Pro](novaberg-backlog-bauart.md) |
 | BAU | 35 | offen | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
 | BAU | 48 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |

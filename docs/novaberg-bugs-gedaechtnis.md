@@ -1,9 +1,43 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → ~~18~~ → ~~16~~ → ~~18~~ → 17 Eintraege (24.10.2026, 13:43 UTC: `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben und im Betrieb gemessen, ins Archiv; 24.10.2026: `LZG-TREFFER-MELDET-REINFORCEMENT` und `MAGNET-ANKER-VERGANGENES-WIRD-KOMMEND` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026, abends: `LZG-PROMOTION-TREFFER-VERSTAERKT` und `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` behoben und im Betrieb gemessen, ins Archiv; 23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → ~~18~~ → ~~16~~ → ~~18~~ → ~~17~~ → 18 Eintraege (24.10.2026, später: `LZG-KANTEN-BESTAND-AUF-ALTEM-KNOTENGEWICHT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:43 UTC: `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben und im Betrieb gemessen, ins Archiv; 24.10.2026: `LZG-TREFFER-MELDET-REINFORCEMENT` und `MAGNET-ANKER-VERGANGENES-WIRD-KOMMEND` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026, abends: `LZG-PROMOTION-TREFFER-VERSTAERKT` und `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` behoben und im Betrieb gemessen, ins Archiv; 23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 24.10.2026 — aus der Klassifizierung der Funde vom 24.10.2026
+
+Eine Kennung aus den Funden vom 24.10.2026 zu den Kanten des Langzeitgedächtnisses (Fundliste, *Umgezogen — 24.10.2026, aus der Klassifizierung der Funde vom 24.10.2026*), am Code gelesen gegen HEAD `2702d94`. Die Summen je Lauf der Verstärkung stehen als Backlog `VERSTAERKUNG-KANTEN-NUR-ALS-SUMME` in [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md); die übrigen Bugs derselben Klassifizierung stehen in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md) und [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md).
+
+### `LZG-KANTEN-BESTAND-AUF-ALTEM-KNOTENGEWICHT` — ein Viertel der Kanten des Langzeitgedächtnisses steht nicht auf der Stärke, die Trigger 2 aus den heutigen Knotengewichten rechnet
+
+**Kategorie:** GED
+
+**Rang:** **mittel**, wartet auf eine Absicht — still, und es betrifft den Bestand: ein Viertel der Kanten. Begrenzt, weil die Stärke im Lesepfad nur die Nachbarn je Schale auswählt und jede Verstärkung die Kanten ihres Knotens nachzieht. Vergeben am 24.10.2026 gegen HEAD `2702d94`.
+
+**Zustand:** offen — gemessen am 24.10.2026 am Bestand, nur lesend; am Code gelesen gegen `2702d94`. Die Ursache ist lesend eingegrenzt, am Bestand nicht geprüft; nichts ist nachgerechnet.
+
+**Befund** `[gemessen 24.10.2026]`, am Bestand, nur lesend — je Kante dieselbe Rechnung wie Trigger 2, ohne Schreiben (`labor/2026-10-24_kanten_nulllinie.{py,out}`; [`novaberg-memory-synapsen_m.md`](novaberg-memory-synapsen_m.md), *Aus §7.9.2*): **155.998 von 639.734** Kanten weichen ab, die größte um 1,35. Davon hängen 16.266 an Knoten mit `verstaerkt_am` ab dem 04.09.2026 (3,7 % von deren 441.418 Kanten) und **139.732** an den übrigen (70,5 % von 198.316).
+
+**Am Code** `[Code]`:
+
+- **Die Rechnung des Werkzeugs ist die von Trigger 2.** Sie folgt `kanten_neuberechnen_mit_befund` (`server/memory/lzg_kanten.py`, Z. 372–451): `_schicht_tiefen_aus_frozen` (Z. 646–676), `kanten_staerke_berechnen` (Z. 219–264) und `kante_daempfen` (Z. 78–86), mit dem heutigen `gewicht_absolut` beider Knoten. Eine Neuberechnung nach einer Verstärkung zieht alle Kanten von und zu dem Knoten nach (Z. 418).
+- **Die Rechnung hat sich nicht geändert** — anders, als die Fundzeile vermutete. Die vier Funktionen sind seit `140b7598` (24.05.2026) unverändert (`git log -L`), ihre Konstanten in `server/config.py` seit `2ac816c1` (15.05.2026); `LZG_EMBEDDING_SCHWELLWERT` änderte sich zuletzt mit `3adc682f` am 12.07.2026, vor dem Nullpunkt vom 27.07.2026. Ob eine Umgebungsvariable des Betriebs eine Konstante überschreibt, ist nicht nachgesehen.
+- **Verschoben haben sich die Eingänge.** `lzg_knoten.gewicht_absolut` schreiben am Code drei Wege: `knoten_anlegen`, `knoten_verstaerken` (`server/memory/lzg_knoten.py`, Z. 549–590) und der Reset `knoten_gewichte_zuruecksetzen` (Z. 225), nur über `tools/reembed_all.py`, der dabei alle Kanten löscht. Themen, `timeline_id` und `entitaet_ids` eines Knotens schreibt nach der Anlage niemand (geprüft sind alle `UPDATE lzg_knoten` in `server/`, Tests ausgenommen).
+- **`verstaerkt_am` steht bei der Anlage auf `NOW()`** (`db/init.sql`, Tabelle `lzg_knoten`): Die Gruppe *ab dem 04.09.2026* enthält jeden seither angelegten Knoten; *die übrigen* sind Kanten zwischen Knoten, die vor dem 04.09.2026 angelegt und seither nicht verstärkt wurden.
+- **Wofür die Stärke gelesen wird:** Im Lesepfad wählt sie nur die Nachbarn je Schale aus (`lzg_knoten.py::_kanten_nachbarn`, Z. 878–939, `ORDER BY gewicht_absolut DESC LIMIT top_k`; gerufen in Z. 1061); die Rangfolge danach trägt `gewicht_decay` des Knotens.
+
+**Spur zur Ursache, lesend eingegrenzt** — am Bestand *unbelegt*: Der Wartungslauf der Salienz am 24.08.2026 um 12:38 UTC schrieb `gewicht_roh` und `gewicht_absolut` von **2448** LZG-Knoten per `UPDATE` (`labor/2026-08-24_salienz_wartungslauf.py`, Z. 284–291; Chronik [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md), Eintrag 24.08.2026, 12:45 UTC; Archiv `KZG-SALIENZ-GESAETTIGT`). Er änderte `verstaerkt_am` nicht und rechnete die Kanten nicht neu: Das Werkzeug ruft `lzg_kanten` nicht, und weder Chronik noch Archiv nennen Kanten. Kanten zwischen zwei solchen Knoten stehen damit seither auf den Gewichten von vor dem Lauf, bis einer der beiden durch einen Weg mit Trigger 2 ging — bis zum 23.10.2026 die Promotion, seit dem 24.10.2026 die Verwendung. Das passt zur Lage der Abweichung (3,7 % gegen 70,5 %); die 16.266 an verstärkten Knoten passen zum geschlossenen `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`, denn vom 04.09. bis zum 24.10.2026 verstärkte die Verwendung ohne Trigger 2. Die größte Abweichung (1,35) ordnet das Werkzeug keiner Gruppe zu. **Prüfbar, nur lesend:** Eine abweichende Kante der übrigen hat zwei Endknoten mit `erstellt_am` vor dem 24.08.2026, 12:38 UTC, die beide zu den 2448 umgerechneten gehören; eine Kante mit einem danach angelegten Endknoten weicht nicht ab; mit den Gewichten aus der Sicherung vor dem Lauf (`backups/salienz-vor-wartungslauf-20260824T122815Z/`) gerechnet, verschwindet ihre Abweichung.
+
+**Wirkung.** Bei einem Viertel der Kanten folgt die Auswahl der Nachbarn je Schale einer Stärke, die die heutige Rechnung nicht ergibt; welche Nachbarn dadurch fehlen oder hinzukommen, ist nicht gemessen.
+
+**Geschlossen, wenn** die Kanten des Bestands auf der Stärke stehen, die Trigger 2 aus den heutigen Knotengewichten rechnet — gemessen mit derselben Rechnung wie die Nulllinie, 0 abweichend bis auf eine begründete Menge —, oder entschieden ist, den Bestand stehen zu lassen, und der Eintrag das mit Grund sagt.
+
+**Offen:** die **Absicht**, wie mit dem Bestand verfahren wird — nachrechnen; erst die Ursache am Bestand lesend prüfen und dann mit Sicherung nachrechnen; oder stehen lassen. Das Material oben gehört zum zweiten Weg. Dazu, ob der Wartungslauf die Ursache ist (die Prüfung oben), wie groß die Abweichung je Gruppe ist, und ob eine Umgebungsvariable eine Konstante überschreibt.
+
+**Zusammenhang:** `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` (Archiv, [`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md)) deckt nur die Verstärkung über die Verwendung; [`novaberg-memory-synapsen_m.md`](novaberg-memory-synapsen_m.md), *Aus §7.9.2*: *„Der Bau rechnet den Bestand nicht nach“*; [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.9.2.
 
 ---
 

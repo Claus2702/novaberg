@@ -1,9 +1,85 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → 32 Eintraege (24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → ~~32~~ → 35 Eintraege (24.10.2026, später: `VERSCHIEBEN-TAGESZEIT-WIDERSPRICHT-STUNDE`, `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` und `ZEIT-TAG-AN-TEILWORT-ERKANNT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 24.10.2026 — aus der Klassifizierung der Funde vom 24.10.2026
+
+Drei Kennungen aus den Funden vom 24.10.2026 zum Verschieben und zum Zeitparser (Fundliste, *Umgezogen — 24.10.2026, aus der Klassifizierung der Funde vom 24.10.2026*), am Code gelesen gegen HEAD `2702d94`. **Nachgestellt** heißt hier: `server/agents/timeline/crud.py::_update` außerhalb des Servers geladen, Konfiguration, Basisklasse und `TimelineRepository.verschieben` gedoppelt, nichts geschrieben; die Uhr des Zeitparsers auf Sa 24.10.2026, 10:00 UTC, der Termin *Kaffee* am Di 20.10.2026 um 15:30 Ortszeit, die Zeitausdrücke des Modells gesetzt, nicht am Modell erhoben; gelaufen ist `dateparser` 1.3.0; ob der Server dieselbe Fassung nutzt, ist nicht nachgesehen (`server/requirements.txt` pinnt sie nicht). Die übrigen Funde derselben Klassifizierung zu diesem Gegenstand stehen im Backlog ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md): `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN` neu, zwei Nachträge an `KLA-KLAERFALL-AM-OBJEKT`); die Bugs der Ja/Nein-Tore stehen in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md), der Bug der Kanten in [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md).
+
+### `VERSCHIEBEN-TAGESZEIT-WIDERSPRICHT-STUNDE` — ein Paar aus Stunde und Tageszeit, das nicht zusammenpasst, wird beim Verschieben geschrieben
+
+**Kategorie:** WIS
+
+**Rang:** **niedrig**, wartet auf eine Absicht — still und schreibend: Der Kalender trägt eine Uhrzeit, die der Satz so nicht meint. Er tritt aber nur bei einem Satz auf, der sich selbst widerspricht, ist im Betrieb nicht beobachtet, und der Ergebnissatz nennt die geschriebene Uhrzeit. Kehrt er im Betrieb wieder, wäre er mittel. Vergeben am 24.10.2026 gegen HEAD `2702d94`.
+
+**Zustand:** offen — **die Absicht ist offen:** welche Stunden zu welcher Tageszeit passen, und ob ein unstimmiges Paar fragt. Am Code gelesen und nachgestellt am 24.10.2026 gegen `2702d94`.
+
+**Befund** `[Code]`: `server/agents/timeline/positive_form.py::_raw_hour_in_daypart` (Z. 488–528) addiert an 1 bis 11 den Versatz der Tageszeit ungeprüft (Z. 519–520); offen bleiben dort nur *mittags* und *nachts* (`_RAW_DAYPARTS_BOTH_HALVES`, Z. 126), und einen Widerspruch prüft nur der Zweig für 0 und 13 bis 23 (Z. 522). Die Lesung rechnet ebenso: `server/utils/zeitparser.py::_shift_hour_by_daypart` (Z. 973–1003) addiert 12 zu jeder Stunde unter 12, deren Tageszeit ab Mittag liegt (Z. 994). Form und Lesung sind sich einig, und `crud.py::_update` (Z. 232–446, von `ausfuehren` für `update` und `reschedule` gerufen) schreibt. `[gemessen 24.10.2026]`, nachgestellt, Satz und Zeitausdruck gleich: *„Verschieb den Kaffee auf 1 Uhr abends.“* → `verschoben`, 20.10. 13:00; *„… auf 11 Uhr nachmittags.“* → 23:00; *„… auf 4 Uhr vormittags.“* → 04:00; Gegenprobe *„… auf 16 Uhr morgens.“* → `keine_eindeutige_zeit`, nichts geschrieben. Kein Zeuge hält ein solches Paar: `test_raw_hour_in_daypart` und `test_raw_time_form_with_a_daypart` (`server/tests/test_timeline_reschedule.py`, Z. 1716–1772) prüfen an 1 bis 11 nur stimmige Paare und die beiden offenen Tageszeiten.
+
+**Material zur Absicht:** Die Rückfrage nach der Tageshälfte legt selbst Paare fest (`crud.py::_HALF_OF_DAY_WORDS`, Z. 677–682): 1–5 *morgens*/*nachmittags*, 6–10 *morgens*/*abends*, 11 *vormittags*/*abends*. Daran gemessen sind *1 Uhr abends* und *11 Uhr nachmittags* unstimmig. *4 Uhr vormittags* bietet die Rückfrage nicht an, es schreibt aber dieselbe Tageshälfte wie *4 Uhr morgens*.
+
+**Wirkung.** Ein Satz, der sich widerspricht, verschiebt still auf eine seiner beiden Lesarten. Der Ergebnissatz nennt die geschriebene Zeit (*„Termin 'Kaffee' verschoben auf 20.10.2026 13:00“*, `crud.py`, Z. 436–437); ob die Antwort sie wiederholt, ist *unbelegt*.
+
+**Geschlossen, wenn** die Absicht entschieden ist und `_update` ihr folgt — bezeugt über `_update` mit einem unstimmigen Paar (*„1 Uhr abends“*) und einem stimmigen Zwilling (*„1 Uhr nachmittags“*).
+
+**Offen:** die Absicht (oben); ob `_create` und der Ereignis-Weg dieselbe Rechnung zeigen — der Parser rechnet dort ebenso, nachgestellt ist es nicht.
+
+**Zusammenhang:** `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` (Archiv, [`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)) — sein Bau prüft den Widerspruch an 0 und 13 bis 23; `ZEIT-ZWOELF-STUNDEN-DEUTUNG` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) — die Stunde **ohne** Tageszeit; `_shift_hour_by_daypart` rechnet für jeden Aufrufer des Parsers so; [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.2.
+
+---
+
+### `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` — die Rückfragen `keine_eindeutige_zeit` und `kein_datum` des Verschiebens nennen einen Grund, der nicht zutrifft, und keine Lesarten
+
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — laut: Es kommt eine Rückfrage, und nichts wird geschrieben; falsch ist nur der Text, und der Mensch kann mit einer genaueren Angabe antworten. Vergeben am 24.10.2026 gegen HEAD `2702d94`.
+
+**Zustand:** offen — am Code gelesen und nachgestellt am 24.10.2026 gegen `2702d94`.
+
+**Befund** `[Code]`: Bei jeder Ablehnung durch `_raw_form_agrees` (Z. 599–669) schreibt `server/agents/timeline/crud.py::_update` in Z. 379–386 *„Konnte die neue Uhrzeit nicht eindeutig erkennen. Wann soll '…' stattfinden?“* (Ausgang `keine_eindeutige_zeit`). Seit dem Tagesvergleich `day_allowed` (Z. 660–662, mit `408eebb`) ist eine dieser Ablehnungen ein Tag, den keine Form nennt. Der Satz von `kein_datum` (Z. 301–306) lautet *„Konnte das neue Datum nicht erkennen“*. Beide erreichen die Antwort über den Aufgabenblock (`server/graph/nodes/planner.py::_build_task_error`, Z. 222; `responder.aufgabe_fehler`). `[gemessen 24.10.2026]`, nachgestellt:
+
+- *„Verschieb den Kaffee auf 4 Uhr morgens.“* mit dem Zeitausdruck *„4 Uhr morgens“* ergibt `keine_eindeutige_zeit`, ebenso *„4 Uhr morgens“* allein, mit und ohne Zeitausdruck. Die Uhrzeit ist dort eindeutig — Form und Lesung sagen beide 04:00 —, strittig ist der Tag, den der Parser aus *morgens* liest (`ZEIT-TAG-AN-TEILWORT-ERKANNT`, in dieser Datei).
+- Ohne Zeitausdruck endet derselbe Satz in `kein_datum`; er nennt kein Datum und braucht keines.
+- **Lässt der Zeitausdruck des Modells die Tageszeit des Satzes weg**, endet der Weg bei einer Tageszeit mit Versatz 12 nicht in `keine_eindeutige_zeit`, sondern schon vorher in `kein_datum`: Die Lesung rechnet die Tageszeit des Satzes mit (`_shift_hour_by_daypart`), die des Zeitausdrucks ohne Tageszeit nicht; zwei verschiedene neue Stunden machen die Lesung unklar (`TimeReading.clock_time`/`unclear`, `server/utils/zeitparser.py`, Z. 92–141), und `_no_new_time` (Z. 513–566) bricht ab. *„… auf 4 Uhr nachmittags.“* mit dem Zeitausdruck *„4 Uhr“* und *„… auf 6 Uhr abends.“* mit *„6 Uhr“* ergeben `kein_datum`. Bei Versatz 0 (*früh*, *vormittags*) endet er in `tageshaelfte_offen`, der beide Lesarten nennt (Zeuge `test_an_expression_without_the_daypart_of_the_sentence_asks_back`, `server/tests/test_timeline_reschedule.py`, Z. 1627).
+
+**Wirkung.** Der Mensch liest, die Uhrzeit oder das Datum sei nicht erkannt, wo der Tag strittig ist oder zwei Lesarten der Stunde vorliegen, und keine Lesart wird ihm genannt; er muss raten, was er genauer sagen soll.
+
+**Geschlossen, wenn** jeder Ausgang des Verschiebens, der nicht schreibt, einen Grund nennt, der zutrifft — ein strittiger Tag als Tag, zwei Lesarten der Stunde mit beiden Lesarten —, bezeugt über `_update` mit *„4 Uhr morgens“* und mit einem Zeitausdruck ohne die Tageszeit des Satzes (*„auf 4 Uhr nachmittags“* mit *„4 Uhr“*). Welcher Satz zu welchem Ausgang gehört, entscheidet der Bau.
+
+**Offen:** eine **Auslegung** der Entscheidung vom 17.10.2026 — ob ein Satz, der die Tageszeit nennt, dessen Zeitausdruck des Modells sie aber weglässt, unter ihre Ausnahme fällt und geschrieben werden soll. Heute fragt er, so beim Bau gewählt (Archiv, `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE`: *„lässt der Zeitausdruck des Modells die Tageszeit des Satzes weg, fragt der Weg“*); in der Messung am Modell vom 24.10.2026 kam der Fall in 0 von 38 Sätzen vor. Dazu, ob die Rückfrage bei einem strittigen Tag die Lesarten nennen soll, etwa den Tag des Termins.
+
+**Zusammenhang:** `ZEIT-TAG-AN-TEILWORT-ERKANNT` (in dieser Datei) — die Ursache des strittigen Tags bei *morgens*; `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` (Archiv, [`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)) nannte den Satz von `keine_eindeutige_zeit` als Rest; [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.2.
+
+---
+
+### `ZEIT-TAG-AN-TEILWORT-ERKANNT` — der Zeitparser erkennt einen Tag an einer Teilzeichenfolge: *morgen* in *morgens*, *Montag* in *Montagsmeeting*
+
+**Kategorie:** WIS
+
+**Rang:** **mittel** — im Verschieben laut: Es kommen Rückfragen, und nichts wird falsch geschrieben. Der Fehler macht aber die Lesart *morgens* der entschiedenen Rückfrage nach der Tageshälfte für jede Stunde von 1 bis 10 unschreibbar, kostet bei Titeln mit Tageswort Rückfragen, wenn das Modell keinen Zeitausdruck liefert, und vier weitere Leser des Felds sind ungeprüft, einer davon im schreibenden Ereignis-Weg. Bleibt deren Wirkung aus, wäre er niedrig. Vergeben am 24.10.2026 gegen HEAD `2702d94`.
+
+**Zustand:** offen — am Code gelesen am 24.10.2026 gegen `2702d94`, an `zeit_parsen_vektor` und `_update` nachgestellt; im Betrieb nicht beobachtet.
+
+**Befund** `[Code]`: `server/utils/zeitparser.py::zeit_parsen_vektor` setzt `tag_erkannt`, wenn ein Wochentag, *heute*, *morgen*, *übermorgen*, *gestern* oder *vorgestern* irgendwo im kleingeschriebenen, korrigierten Text steckt (Z. 2550–2557, `in` statt Wortgrenze). `[gemessen 24.10.2026]`, nachgestellt: `zeit_parsen_vektor("Morgenrunde um 10 Uhr")` und `zeit_parsen_vektor("Montagsmeeting um 10 Uhr")` ergeben je `tag_erkannt` wahr und `datum` None; `"4 Uhr morgens"` ergibt `tag_erkannt` wahr mit dem heutigen Datum.
+
+**Wirkung im Verschieben** `[gemessen 24.10.2026]`, nachgestellt (Termin Di 20.10., 15:30):
+
+- *„Verschieb die Morgenrunde auf 19 Uhr.“* schreibt mit dem Zeitausdruck *„19 Uhr“* 19:00 am Tag des Termins; ohne Zeitausdruck und mit dem Zeitausdruck *„Morgenrunde 19 Uhr“* endet er in `kein_datum`; *„Montagsmeeting“* mit 15 Uhr ebenso. Abgefangen hat in keinem Fall der Tagesvergleich in `_raw_form_agrees`, sondern `_no_new_time` (`crud.py`, Z. 513–566): Der Parser erkennt einen Tag, liefert aber kein Datum. Mit einem sauberen Zeitausdruck kommt der Titel nicht in den Vektor; falsch geschrieben wird nichts.
+- Die Antwort *„4 Uhr morgens“* — die Lesart, die die Rückfrage nach der Tageshälfte für 1 bis 10 Uhr anbietet — endet als neuer Auftrag in `keine_eindeutige_zeit` oder `kein_datum`: `tag_erkannt` greift *morgen*, `_update` nimmt den Zweig *Tag vom Parser* (Z. 362–370), und der Tagesvergleich lehnt ab (Z. 660–662) oder `_no_new_time` meldet einen Tag ohne Datum (Z. 557–562). Am Modell gemessen am 24.10.2026 endete *„… 6 Uhr morgens“* 4 von 4 so (`labor/2026-10-24_stunde_messung_ergebnis.md`). Der Zeuge `test_morgens_at_the_hour_asks_back_because_the_parser_reads_a_day` (`server/tests/test_timeline_reschedule.py`, Z. 1474) hält das fest; er wird mit der Behebung rot, wie sein Docstring sagt.
+- Beim Anlegen liest `_create` (Z. 115–231) `tag_erkannt` nicht, nur `datum` und `uhrzeit_erkannt`.
+
+**Weitere Leser von `tag_erkannt`**, an ihrer Wirkung *ungeprüft*: `server/agents/timeline/ereignis.py:344` — die Zeit eines Ereignisses gilt dort nur mit `tag_erkannt`, ein Ausdruck wie *„4 Uhr morgens“* gälte damit als datierte Ereigniszeit; `server/graph/nodes/sachlage.py:688` (das aufgelöste Datum einer Zeit-Eigenschaft); `server/graph/nodes/sachlage_memory.py:167` (der Zeitbezug für die Bindung); `server/utils/storage_inventory.py:155`.
+
+**Geschlossen, wenn** `tag_erkannt` einen Tag nur an einem ganzen Wort erkennt — *„4 Uhr morgens“*, *„Morgenrunde“* und *„Montagsmeeting“* tragen keinen, *„morgen um 4“* und *„am Montag“* einen —, bezeugt am Parser und über `_update` mit einem Tageswort im Titel samt Zwilling, und die Wirkung an den vier weiteren Lesern geprüft ist.
+
+**Offen:** die Wirkung an den vier weiteren Lesern, zuerst am Ereignis-Weg; beim Bau abzugrenzen, ob *montags* oder *heutig* einen Tag nennen.
+
+**Zusammenhang:** `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` (in dieser Datei); `KLA-KLAERFALL-AM-OBJEKT` Schritt 3, der Leser der Antwort auf die Rückfrage, und `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN`, dessen Zeuge mit diesem Bau entsteht (beide [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)); [`novaberg-tool-timeparser.md`](novaberg-tool-timeparser.md) §10.3 nennt die Teilzeichenfolge.
 
 ---
 

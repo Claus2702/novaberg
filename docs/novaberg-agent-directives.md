@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** DirektivenAgent (Verhaltensanweisungen, Arbeitsvertrag)
-**Stand:** 24. Oktober 2026, 14:20 UTC (`date -u`; §3, §6.1 und §10: ein Knoten `read_answer` deutet die Antwort auf jede Rückfrage, bevor etwas ausgeführt wird — Ablehnung zuerst, eine zurückhaltende Antwort ist unklar, eine Auswahlfrage führt nie aus; gebaut im Code-Tree `2457549`, Kennung wird nachgetragen, im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin). Davor 18. Oktober 2026, 01:01 UTC (`date -u`; §3 und §6.1: die Antwort auf die Pflicht-Rückfrage wird nicht gedeutet, auch ein Nein führt aus — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, am Code gelesen). Davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 24. Oktober 2026, 16:50 UTC (`date -u`; §3 und §6.1: die Commit-Kennung des Knotens `read_answer` nachgetragen — Code-Tree `2457549` ist `6846120`). Davor 24. Oktober 2026, 14:20 UTC (`date -u`; §3, §6.1 und §10: ein Knoten `read_answer` deutet die Antwort auf jede Rückfrage, bevor etwas ausgeführt wird — Ablehnung zuerst, eine zurückhaltende Antwort ist unklar, eine Auswahlfrage führt nie aus; gebaut im Code-Tree `2457549`, Kennung wird nachgetragen, im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin). Davor 18. Oktober 2026, 01:01 UTC (`date -u`; §3 und §6.1: die Antwort auf die Pflicht-Rückfrage wird nicht gedeutet, auch ein Nein führt aus — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, am Code gelesen). Davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-agent-directives.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -70,7 +70,7 @@ validieren --+--> ausfuehren (bei resume=True)
 
 > **Die Antwort wird dabei nicht gedeutet** — am Code gelesen am 18.10.2026, HEAD `ae05667`: `_nach_validierung` geht mit `resume` nach `ausfuehren` (`agent.py`, Z. 109–110), und `ausfuehren` liest `user_answer` nicht. **Auch ein Nein führt aus:** Wer *„Soll ich das ausfuehren? …“* verneint, löst die Aktion aus, nach der gefragt wurde. Offen als `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` (`novaberg-bugs-charakter.md`, Rang hoch).
 >
-> → **Seit dem Code-Tree `2457549` (24.10.2026, Kennung wird nachgetragen; im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin)** **deutet ein eigener Knoten die Antwort, bevor etwas ausgeführt wird:** `read_answer` (`agents/direktiven/resume.py`) steht zwischen `validieren` und `ausfuehren`; `_nach_deutung` geht nur bei `status` `laufend` — einer Zustimmung auf eine Ja/Nein-Frage — nach `ausfuehren`, sonst nach `END`.
+> → **Seit dem Code-Tree `2457549` (24.10.2026, Kennung wird nachgetragen → committet als `6846120`; im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin)** **deutet ein eigener Knoten die Antwort, bevor etwas ausgeführt wird:** `read_answer` (`agents/direktiven/resume.py`) steht zwischen `validieren` und `ausfuehren`; `_nach_deutung` geht nur bei `status` `laufend` — einer Zustimmung auf eine Ja/Nein-Frage — nach `ausfuehren`, sonst nach `END`.
 >
 > ```
 > validieren --+--> read_answer (bei resume=True) --+--> ausfuehren --> END   (Zustimmung)
@@ -178,7 +178,7 @@ User: "Ja"
 Nova: [fuehrt aus]
 ```
 
-~~**Auf ein „Nein“ führt der Dienst ebenso aus** (am Code gelesen am 18.10.2026, §3): Die Rückfrage stellt er, ihre Antwort liest er nicht — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, offen. Dasselbe gilt für *„… Trotzdem anlegen?“* (§6.2) und für die Frage nach dem Wiederherstellen (§6.3).~~ → **Seit dem Code-Tree `2457549` (24.10.2026, Kennung wird nachgetragen; im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin)**: Auf alle drei Ja/Nein-Fragen führt nur eine Zustimmung aus; eine Ablehnung ändert nichts und sagt es, eine unklare oder zurückhaltende Antwort stellt dieselbe Frage erneut — auch auf *„… Trotzdem anlegen?“* (§6.2) und auf die Frage nach dem Wiederherstellen (§6.3), wo ein Nein auch keine neue anlegt (§3, *Die Deutung*). Die Rückfrage nennt bei `delete` und `update` ohne Kennung *„(ID None)“* (Fundliste, 24.10.2026).
+~~**Auf ein „Nein“ führt der Dienst ebenso aus** (am Code gelesen am 18.10.2026, §3): Die Rückfrage stellt er, ihre Antwort liest er nicht — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, offen. Dasselbe gilt für *„… Trotzdem anlegen?“* (§6.2) und für die Frage nach dem Wiederherstellen (§6.3).~~ → **Seit dem Code-Tree `2457549` (24.10.2026, Kennung wird nachgetragen → committet als `6846120`; im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin)**: Auf alle drei Ja/Nein-Fragen führt nur eine Zustimmung aus; eine Ablehnung ändert nichts und sagt es, eine unklare oder zurückhaltende Antwort stellt dieselbe Frage erneut — auch auf *„… Trotzdem anlegen?“* (§6.2) und auf die Frage nach dem Wiederherstellen (§6.3), wo ein Nein auch keine neue anlegt (§3, *Die Deutung*). Die Rückfrage nennt bei `delete` und `update` ohne Kennung *„(ID None)“* (Fundliste, 24.10.2026).
 
 Technisch ueber den bestehenden `interrupt()`/Resume-Flow. Ziel: Pflicht-Rueckfrage wieder entfernen, sobald die Validierung stabil genug ist.
 
