@@ -214,7 +214,7 @@ CREATE INDEX idx_lzg_kanten_verbindungs_gruende
 - **`gewicht_roh` und `gewicht_absolut` sind Cache** der aktuellen Knoten-Stärken-Konstellation und der eingefrorenen Schicht-Werte. Namensgleichheit mit den Knoten-Feldern ist Absicht — die Berechnungs-Logik ist konsistent. Die Kante hat *kein* `gewicht_decay`, weil sie keinem eigenen Decay unterliegt.
 - **Cache-Aktualisierung** geschieht bei drei Triggern:
   1. *Knoten-Anlage* — die Kante entsteht und wird einmalig berechnet.
-  2. *Knoten-Aktivierung* — wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung, nicht Decay), werden alle Kanten von und zu diesem Knoten neu berechnet. → Am Code geprüft am 22.10.2026: heute nur im Verstärkungspfad der Promotion; nach einer Verstärkung über die Verwendung bleiben die Kanten auf dem alten Anker (`LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`, §7.9.2). → Seit dem Code-Tree `5342a6a` (23.10.2026) ruft ihn im Betrieb kein Weg mehr: Der Verstärkungspfad der Promotion ist zurückgebaut (§7.1a).
+  2. *Knoten-Aktivierung* — wenn `lzg_knoten.gewicht_absolut` eines Endknotens sich ändert (echte Aktivierung, nicht Decay), werden alle Kanten von und zu diesem Knoten neu berechnet. → Am Code geprüft am 22.10.2026: heute nur im Verstärkungspfad der Promotion; nach einer Verstärkung über die Verwendung bleiben die Kanten auf dem alten Anker (`LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT`, §7.9.2). → Seit dem Code-Tree `5342a6a` (23.10.2026) ruft ihn im Betrieb kein Weg mehr: Der Verstärkungspfad der Promotion ist zurückgebaut (§7.1a). → Behoben im Code-Tree `3a5ccab` (24.10.2026, Kennung wird nachgetragen): Nach jeder gelungenen Verstärkung über die Verwendung ruft `reinforce_used` Trigger 2 für den Knoten (§7.9.2); im Betrieb nicht gemessen, `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` offen bis dahin.
   3. *Schicht-Daten-Änderung* — wenn ein Wert ändert, der in die Tiefe-Faktor-Berechnung eingeht (Entität-Merge, Timeline-Verschiebung, Timeline-Präzisions-Änderung), werden alle Kanten neu berechnet, die diese Daten in ihren Schicht-Werten tragen. Themen und Embedding eines Knotens sind nach der Promotion eingefroren — sie lösen keine Schicht-Daten-Trigger aus. → Am Code geprüft am 22.10.2026: entworfen, nicht gebaut (§7.9.2).
   
   Konkrete Trigger-Quellen entstehen mit den Entity-CRUD- und Timeline-CRUD-Pfaden und werden in Punkt 9 (Implementierungs-Phasen) ausgeführt.
@@ -518,7 +518,7 @@ Er hat beide Eingänge bereits:
 | `state["lzg_resonanz"]["erinnerungen"]` | Enricher | das gelesene Material mit Pfad |
 
 ~~**Was fehlt, ist der Abgleich zwischen beiden** — und der Aufruf von `knoten_verstaerken` auf
-seinem Ergebnis.~~ → **Gebaut seit dem 04.09.2026:** `memory/usage_reinforcement.py::reinforce_used`, vom Dispatcher gerufen, gleicht die Antwort über die Embedding-Nähe mit dem gelesenen Material ab und ruft `knoten_verstaerken` für jeden Treffer über der Schwelle (am Code geprüft am 22.10.2026).
+seinem Ergebnis.~~ → **Gebaut seit dem 04.09.2026:** `memory/usage_reinforcement.py::reinforce_used`, vom Dispatcher gerufen, gleicht die Antwort über die Embedding-Nähe mit dem gelesenen Material ab und ruft `knoten_verstaerken` für jeden Treffer über der Schwelle (am Code geprüft am 22.10.2026). → Seit dem Code-Tree `3a5ccab` (24.10.2026, Kennung wird nachgetragen) folgt jeder gelungenen Verstärkung Trigger 2 für den Knoten (§7.9.2).
 
 #### Woran „hergenommen" erkannt wird — entschieden am 04.09.2026
 
@@ -623,6 +623,8 @@ Seit dem 04.09.2026 trägt die Zeile deshalb die Größen, aus denen die Entsche
 > **Ohne `naehen_alle` ist ein Nullbefund nicht von einer zu hohen Schwelle zu unterscheiden.** Das
 > ist derselbe Satz wie bei der Nulllinie eine Ebene tiefer: Wer nur die Treffer protokolliert,
 > kann die Trennschärfe seines eigenen Kriteriums nie nachprüfen.
+
+> → Seit dem Code-Tree `3a5ccab` (24.10.2026, Kennung wird nachgetragen) trägt die Zeile dazu Trigger 2 (§7.9.2): `kanten_neu` (die neu berechneten gerichteten Kanten des Laufs, 0 für Knoten ohne Kanten), `kanten_fehler` (die Knoten, deren Neuberechnung scheiterte) und `kanten_dauer_ms` (die Zeit aller Neuberechnungen des Laufs), dazu `error`. Kantenzahl und Dauer sind Summen je Lauf, nicht je Knoten (Fundliste, 24.10.2026).
 
 **Die Reparatur wirkt nur nach vorn.** Für die zwei Zeilen davor ist
 die Zahl einmalig nachgerechnet worden, aus `turn_roh` und den `lzg_resonanz_ids` des Enrichers
@@ -866,7 +868,7 @@ Keine Inversion, keine Rückrechnung. Wenn sich `A.gewicht_absolut` von 2.0 auf 
 
 #### 7.9.2 Drei Trigger
 
-~~Die Sequenz wird in drei Situationen ausgeführt:~~ → Die Sequenz ist für drei Situationen entworfen; gebaut sind Trigger 1 und Trigger 2, und Trigger 2 nur in der Promotion (am Code geprüft am 22.10.2026, Vermerke unten):
+~~Die Sequenz wird in drei Situationen ausgeführt:~~ → Die Sequenz ist für drei Situationen entworfen; gebaut sind Trigger 1 und Trigger 2, und Trigger 2 nur in der Promotion (am Code geprüft am 22.10.2026, Vermerke unten) → seit dem 23.10.2026 an keinem Weg im Betrieb, seit dem Code-Tree `3a5ccab` (24.10.2026) an der Verwendung:
 
 **Trigger 1 — Knoten-Anlage.** Beim Anlegen eines neuen LZG-Knotens entstehen Kanten zu den Kandidaten-Knoten. Die Sequenz läuft einmal pro neuer Kante.
 
@@ -877,6 +879,8 @@ Keine Inversion, keine Rückrechnung. Wenn sich `A.gewicht_absolut` von 2.0 auf 
 > → Seit dem 23.10.2026 ist der Verstärkungspfad der Promotion selbst ein Defekt (`LZG-PROMOTION-TREFFER-VERSTAERKT`; `_e` A, E7). Wird er zurückgebaut, entfällt der einzige Aufrufer von Trigger 2 im Betrieb; die Kanten folgen einer Verstärkung dann erst, wenn `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben ist.
 >
 > → **Zurückgebaut am 23.10.2026, im Code-Tree `5342a6a`** (committet als `782274c`; im Betrieb nicht gemessen — die Messung der Dublette am 23.10.2026 galt dem Knoten, nicht seinen Kanten): Trigger 2 hat im Betrieb keinen Aufrufer mehr; `kanten_neuberechnen_fuer_knoten` ruft nur noch das Werkzeug `tools/reembed_all.py` über `embedding_cosine_alle_aktualisieren`. Der Rang von `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` ist deshalb auf *mittel* gesetzt.
+>
+> → **Behoben im Code-Tree `3a5ccab` (24.10.2026, Kennung wird nachgetragen; im Betrieb nicht gemessen): Trigger 2 läuft an der Verwendung.** `memory/usage_reinforcement.py::reinforce_used` ruft nach jeder gelungenen Verstärkung `kanten_neuberechnen_mit_befund` (`memory/lzg_kanten.py`) für den Knoten — dieselbe Rechnung wie bisher. Sie liefert die Zahl der neu berechneten Kanten oder `None`, wenn die Datenbank den Lauf abbrach; `kanten_neuberechnen_fuer_knoten` bleibt als Hülle mit 0 bei einem Fehler für das Re-Embedding-Werkzeug. Eine misslungene Verstärkung rechnet nichts nach, eine gescheiterte Neuberechnung steht in `error` und im Log (§7.1a, *Die Protokollzeile*); eine Kante ohne rekonstruierbare Schicht wird wie bisher laut übersprungen und bleibt auf dem alten Gewicht. Der Bestand ist nicht nachgerechnet: Am 24.10.2026 standen 155.998 von 639.734 Kanten nicht auf der Stärke, die Trigger 2 heute rechnet (`_m`, *Aus §7.9.2*). `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` bleibt offen bis zur Messung im Betrieb.
 
 Wichtig: Eine Änderung des Felds `gewicht_decay` durch den Pixie-Decay-Lauf löst **keinen** Trigger aus. Decay wirkt nur auf den Lesepfad (Sortier-Gewicht), nicht auf den Kanten-Cache. Phänomenologisch: Eine Verbindung verblasst nicht von selbst, weil die Erinnerung an einem Ende verblasst — sie bleibt strukturell bestehen, bis die Erinnerung an einem Ende durch externen Anstoß wieder verändert wird.
 
@@ -897,7 +901,7 @@ Konkrete Implementierungs-Pfade für die Trigger-Quellen (Entity-CRUD, Timeline-
 
 Beim Anlegen eines neuen Knotens werden ausschließlich Kanten gebildet, die *zu diesem neuen Knoten* führen oder von ihm ausgehen. Bestehende Kanten *zwischen alten Knoten* bleiben unberührt.
 
-Begründung: Der externe Anstoß betrifft den neuen Knoten. Die Beziehungen alter Knoten zueinander sind durch ihre eigenen Bildungsmomente bereits festgelegt. Sie verändern sich nur durch Trigger 2 (eine Stärke-Änderung eines der beteiligten Knoten) oder Trigger 3 (eine Schicht-Daten-Änderung, die ihre eingefrorenen Werte betrifft). → Am Code geprüft am 22.10.2026: Trigger 3 ist nicht gebaut, und Trigger 2 läuft nur nach einer Verstärkung in der Promotion (§7.9.2). Würde man sie beim Anlegen eines neuen Knotens mit anfassen, hätte man im Effekt eine versteckte Co-Aktivierungs-Verstärkung — und damit das selbstverstärkende Verwachsen, das wir mit 7.1 ausgeschlossen haben.
+Begründung: Der externe Anstoß betrifft den neuen Knoten. Die Beziehungen alter Knoten zueinander sind durch ihre eigenen Bildungsmomente bereits festgelegt. Sie verändern sich nur durch Trigger 2 (eine Stärke-Änderung eines der beteiligten Knoten) oder Trigger 3 (eine Schicht-Daten-Änderung, die ihre eingefrorenen Werte betrifft). → Am Code geprüft am 22.10.2026: Trigger 3 ist nicht gebaut, und Trigger 2 läuft nur nach einer Verstärkung in der Promotion (§7.9.2). → Seit dem Code-Tree `3a5ccab` (24.10.2026) läuft Trigger 2 nach einer Verstärkung über die Verwendung; die Promotion verstärkt seit dem 23.10.2026 nicht mehr. Würde man sie beim Anlegen eines neuen Knotens mit anfassen, hätte man im Effekt eine versteckte Co-Aktivierungs-Verstärkung — und damit das selbstverstärkende Verwachsen, das wir mit 7.1 ausgeschlossen haben.
 
 > **Hinweis zur Aufteilung (19.09.2026):** §7.11 *Offene Detail-Punkte zum Schreibpfad* steht in [`novaberg-memory-synapsen_e.md`](novaberg-memory-synapsen_e.md).
 

@@ -507,7 +507,9 @@ Folgende Punkte aus den K-Klärungen sind nicht P4-Scope und gehören in
 
 - **Trigger 2 Re-Cache-Konzept-Lücke** — Was ist „echte Aktivierung"
   im 1:1-Umzug? Konzept-Klärung in eigener Welle, Trigger 2 ist
-  faktisch P6+.
+  faktisch P6+. → Entschieden am 23.10.2026: echte Aktivierung ist allein
+  die Verwendung in einer Antwort (`_e` A, E7); dort läuft Trigger 2 seit
+  dem Code-Tree `3a5ccab` (24.10.2026, `_t` §7.9.2).
 
 - **`fakten`-Tabelle-Konsistenz und Entity-Merge** — Explizit außerhalb
   P4-Scope, eigenes Faktengedächtnis-Konzept (Konzept §3.2).

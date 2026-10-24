@@ -77,6 +77,24 @@ fallen die Träger mit Wiederkehr ≥ 2 von **1.250 auf 106**, das Mittel von 2,
 
 ---
 
+## Aus §7.9.2 — Trigger 2: die Kanten am Bestand, bevor er an der Verwendung lief
+
+Regel und Bau stehen in [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.9.2. Hier steht die Nulllinie, gemessen vor dem Commit des Baus, der Trigger 2 an die Verwendung legt (Code-Tree `3a5ccab`).
+
+`[gemessen]` 24.10.2026 am Bestand des Betriebs, nur lesend (`labor/2026-10-24_kanten_nulllinie.{py,out}`): je Kante die gespeicherte Stärke gegen die Rechnung von Trigger 2 aus den heutigen Knotengewichten und den eingefrorenen Schichtwerten (`kanten_staerke_berechnen`, `kante_daempfen`, `_schicht_tiefen_aus_frozen`), ohne Schreiben, Toleranz 10⁻⁶. Keine Kante war ohne rekonstruierbare Schicht.
+
+| Kanten | gesamt | davon abweichend |
+|---|---:|---:|
+| alle | 639.734 | **155.998** (24,4 %) |
+| an einem Knoten mit `verstaerkt_am` ab dem 04.09.2026 | 441.418 | 16.266 (3,7 %) |
+| an den übrigen | 198.316 | **139.732** (70,5 %) |
+
+Die größte Abweichung beträgt 1,35.
+
+**Die Abweichung sitzt überwiegend dort, wo seit dem 04.09.2026 nichts verstärkt wurde.** Was die Messung belegen sollte — die Kanten der Verstärkungen über die Verwendung stehen auf dem alten Gewicht —, ist darin enthalten, aber nicht die Hauptmasse. `verstaerkt_am` trennt die Verwendung nicht von der Promotion, die bis zum 23.10.2026 ebenfalls verstärkte und dabei Trigger 2 rief. Die Ursache der Abweichung an nicht verstärkten Knoten ist nicht nachgesehen (Fundliste, 24.10.2026); naheliegend ist eine geänderte Rechnung, ohne dass der Bestand nachgerechnet wurde. Der Bau rechnet den Bestand nicht nach — die erste Neuberechnung nach einer Verstärkung zieht die Kanten des Knotens auf die heutige Rechnung.
+
+---
+
 ## Aus §8.5 — Wahrnehmungs-Gravitation
 
 Die Mechanik steht in [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §8.5, was für die Umsetzung ausstand und wie es erledigt wurde, in [`novaberg-memory-synapsen_b.md`](novaberg-memory-synapsen_b.md) §8.5.5.
