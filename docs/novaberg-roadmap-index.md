@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 983 Abschnitte in 7 Dateien — 471 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 985 Abschnitte in 7 Dateien — 473 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 65 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 67 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 983 Marken, 983 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 985 Marken, 985 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,8 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-23 | laufend | ## | [23.10.2026, 22:31 UTC — Im Betrieb gemessen: das Clipboard, das Löschen nach einer Neuanlage und die Dublette, drei Bugs im Archiv; die Ereignis-Wege in acht Messturns](novaberg-roadmap.md#23102026-2231-utc--im-betrieb-gemessen-das-clipboard-das-löschen-nach-einer-neuanlage-und-die-dublette-drei-bugs-im-archiv-die-ereignis-wege-in-acht-messturns) |
+| 2026-10-23 | laufend | ## | [23.10.2026, 22:31 UTC — Ein Platzhalter in `gedeckt` ist kein Wert](novaberg-roadmap.md#23102026-2231-utc--ein-platzhalter-in-gedeckt-ist-kein-wert) |
 | 2026-10-23 | laufend | ## | [23.10.2026, 21:18 UTC — Das Clipboard trägt die Kennung des geschriebenen Termins; ein neu angelegter Eintrag verlässt das KZG, und ein Treffer der Promotion ist eine Dublette](novaberg-roadmap.md#23102026-2118-utc--das-clipboard-trägt-die-kennung-des-geschriebenen-termins-ein-neu-angelegter-eintrag-verlässt-das-kzg-und-ein-treffer-der-promotion-ist-eine-dublette) |
 | 2026-10-23 | laufend | ## | [23.10.2026, 20:11 UTC — Die Wiedervorlage nennt den Termin wieder, im Betrieb gemessen; ein Treffer der Promotion verstärkt nicht; die Fakten auch für eine Person im Namen eines Objekts](novaberg-roadmap.md#23102026-2011-utc--die-wiedervorlage-nennt-den-termin-wieder-im-betrieb-gemessen-ein-treffer-der-promotion-verstärkt-nicht-die-fakten-auch-für-eine-person-im-namen-eines-objekts) |
 | 2026-10-22 | laufend | ## | [22.10.2026, 22:47 UTC — Die Doku des Gedächtnisses ist gegen den Code geprüft und berichtigt, und fünf Defekte im Code haben eine Kennung](novaberg-roadmap.md#22102026-2247-utc--die-doku-des-gedächtnisses-ist-gegen-den-code-geprüft-und-berichtigt-und-fünf-defekte-im-code-haben-eine-kennung) |

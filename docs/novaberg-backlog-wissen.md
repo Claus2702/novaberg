@@ -1087,7 +1087,7 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 | # | Beobachtung | Schicksal nach P9 |
 |---|---|---|
-| FAKTEN-TABELLE-ENTITY-MERGE | `fakten`-Tabellen-Konsistenz bei Entity-Merge — `entitaeten.id` wird sowohl in `lzg_knoten.entitaet_ids` als auch in `fakten`-Tripeln referenziert, aber Konsistenz-Pflege bei Merge nur für `lzg_kanten` definiert. | [WIS] Eigenes Faktengedächtnis-Konzept — ⬜ **offen** — nachgesehen am 25.08.2026. Gegenstandslos, solange `fakten` 0 Zeilen traegt. |
+| FAKTEN-TABELLE-ENTITY-MERGE | `fakten`-Tabellen-Konsistenz bei Entity-Merge — `entitaeten.id` wird sowohl in `lzg_knoten.entitaet_ids` als auch in `fakten`-Tripeln referenziert, aber Konsistenz-Pflege bei Merge nur für `lzg_kanten` definiert. | [WIS] Eigenes Faktengedächtnis-Konzept — ⬜ **offen** — nachgesehen am 25.08.2026. Gegenstandslos, solange `fakten` 0 Zeilen traegt. → 23.10.2026: `fakten` trägt Zeilen — der Fakten-Agent schrieb in Messturns im Betrieb an einem Prüf-Nutzer 3 Fakten. |
 | TIMELINE-FK-DOKU-DRIFT | Konzept §4.1 listet `timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL`, Live `init.sql` hat bare INTEGER ohne FK (FK lebt in `agents/timeline/init.sql`). Funktional gleichwertig, dokumentarisch abweichend. | [WIS] Doku-Sync mit TIMELINE-IN-KERN — ⬜ **offen** — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen. |
 
 **Empfehlung:** Liste als Beobachtungs-Anker erhalten. Sechs der sieben Punkte sind entweder mit P9-Löschung erledigt oder in Folge-Sprints (P5, Faktengedächtnis, TIMELINE-IN-KERN) integriert. `REFAC-MAGNETE-AUDIT` als eigenständiger kleiner Sprint übrig.
