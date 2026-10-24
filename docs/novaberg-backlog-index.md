@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 475 Eintraege mit Kennung — 389 offen, 86 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 475 Eintraege mit Kennung — 388 offen, 87 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 472 von 475 Eintraegen zugeordnet.
 
@@ -376,7 +376,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | GED | 1361 | offen | `EMOTIONS-VEKTOR-LEER` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
 | GED | 1362 | abgeschlossen | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
 | GED | 1363 | abgeschlossen | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
-| GED | 1364 | offen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1364 | abgeschlossen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
 | GED | 1365 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
 | GED | 1372 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
 | GED | 1393 | abgeschlossen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: ~~SYNAPSEN-LIVE-VERIFY — Entitäts- und Timel](novaberg-backlog-gedaechtnis.md) |

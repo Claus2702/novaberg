@@ -79,7 +79,7 @@ fallen die Träger mit Wiederkehr ≥ 2 von **1.250 auf 106**, das Mittel von 2,
 
 ## Aus §7.9.2 — Trigger 2: die Kanten am Bestand, bevor er an der Verwendung lief
 
-Regel und Bau stehen in [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.9.2. Hier steht die Nulllinie, gemessen vor dem Commit des Baus, der Trigger 2 an die Verwendung legt (Code-Tree `3a5ccab`).
+Regel und Bau stehen in [`novaberg-memory-synapsen_t.md`](novaberg-memory-synapsen_t.md) §7.9.2. Hier steht die Nulllinie, gemessen vor dem Commit des Baus, der Trigger 2 an die Verwendung legt (Code-Tree `3a5ccab`). → Dazu seit dem 24.10.2026 die Messung im Betrieb nach dem Commit (`570cdda`), unten unter *Teil 2*.
 
 `[gemessen]` 24.10.2026 am Bestand des Betriebs, nur lesend (`labor/2026-10-24_kanten_nulllinie.{py,out}`): je Kante die gespeicherte Stärke gegen die Rechnung von Trigger 2 aus den heutigen Knotengewichten und den eingefrorenen Schichtwerten (`kanten_staerke_berechnen`, `kante_daempfen`, `_schicht_tiefen_aus_frozen`), ohne Schreiben, Toleranz 10⁻⁶. Keine Kante war ohne rekonstruierbare Schicht.
 
@@ -92,6 +92,19 @@ Regel und Bau stehen in [`novaberg-memory-synapsen_t.md`](novaberg-memory-synaps
 Die größte Abweichung beträgt 1,35.
 
 **Die Abweichung sitzt überwiegend dort, wo seit dem 04.09.2026 nichts verstärkt wurde.** Was die Messung belegen sollte — die Kanten der Verstärkungen über die Verwendung stehen auf dem alten Gewicht —, ist darin enthalten, aber nicht die Hauptmasse. `verstaerkt_am` trennt die Verwendung nicht von der Promotion, die bis zum 23.10.2026 ebenfalls verstärkte und dabei Trigger 2 rief. Die Ursache der Abweichung an nicht verstärkten Knoten ist nicht nachgesehen (Fundliste, 24.10.2026); naheliegend ist eine geänderte Rechnung, ohne dass der Bestand nachgerechnet wurde. Der Bau rechnet den Bestand nicht nach — die erste Neuberechnung nach einer Verstärkung zieht die Kanten des Knotens auf die heutige Rechnung.
+
+**Teil 2 — im Betrieb, nach dem Commit.** `[gemessen]` 24.10.2026, 13:23–13:26 UTC, am Code von `570cdda`, ein Messturn mit einem Wissenschaftsthema (`labor/2026-10-24_kanten_betrieb.{py,out}`, Auswertung `labor/2026-10-24_kanten_betrieb_ergebnis.md`). Vorher und nachher je Knoten `gewicht_absolut` und je Kante die gespeicherte Stärke, nur lesend; abweichend heißt wie in der Nulllinie: gespeicherte Stärke gegen `kanten_staerke_berechnen` aus den heutigen Knotengewichten und den eingefrorenen Schichtwerten, Toleranz 10⁻⁶.
+
+Die Zeile `verwendung_verstaerkung` des Turns im `pipeline_log`: `geprueft` 3, `verwendet` 2, `verstaerkt` 2, **`kanten_neu` 1044**, `kanten_fehler` leer, **`kanten_dauer_ms` 188,1**, `error` leer, `ausgang` `gerechnet`.
+
+| Knoten | `gewicht_absolut` vorher → nachher | Kanten | Stärke geändert | abweichend von Trigger 2 |
+|---|---|---:|---:|---:|
+| 1169 | 7,4096 → 7,4972 | 224 | 224 | **0** |
+| 1744 | 9,6425 → 9,6718 | 820 | 819 | **0** |
+
+224 + 820 = 1044 = `kanten_neu`; keine Kante ohne rekonstruierbare Schicht. Eine der 820 Kanten von Knoten 1744 änderte ihre Stärke um weniger als die Toleranz und steht trotzdem auf der Rechnung; warum, ist nicht nachgesehen.
+
+**Nach der Verstärkung über die Verwendung stehen alle Kanten der verstärkten Knoten auf der berechneten Stärke, und die Dauer steht im `pipeline_log`: 188 ms für 1044 Kanten.** Seiteneffekte 0 — Termine, Notizen und Fakten des Nutzers unverändert. Im Serverlog, nur gezählt: eine Zeile der Verstärkung, keine *„nicht neu berechnet“*; die Fehlerzeilen des Laufs kommen aus einem Ausfall der Sachlage an kaputtem JSON des Modells, ohne Bezug zu den Kanten (Fundliste, 24.10.2026). Damit ist die Schließbedingung von `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` erfüllt; der Eintrag steht im Archiv.
 
 ---
 
