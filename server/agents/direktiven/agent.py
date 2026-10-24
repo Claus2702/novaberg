@@ -8,6 +8,7 @@ Erweitert in Chat 42 (CRUD-Haertung):
 Graph-Aufbau und Routing-Logik. Die Business-Logik liegt in:
   klassifikation.py -- Aktionsklassifikation + Kontext-Aufloesung per LLM
   crud.py           -- Create, Read, Update, Delete, Reactivate + Validierung + Verifikation
+  resume.py         -- Deutung der Antwort auf eine Rueckfrage (Tor vor `ausfuehren`)
 """
 
 import logging
@@ -17,6 +18,7 @@ from langgraph.graph import END, StateGraph
 from agents.base import AgentState, BaseAgent
 from agents.direktiven.crud import ausfuehren, validieren_gegen_db
 from agents.direktiven.klassifikation import klassifizieren
+from agents.direktiven.resume import read_answer
 
 logger = logging.getLogger("ki_server.agents.direktiven")
 
@@ -90,12 +92,14 @@ class DirektivenAgent(BaseAgent):
         graph.add_node("validieren",      self._validieren)
         graph.add_node("klassifizieren",  klassifizieren)
         graph.add_node("db_validieren",   self._db_validieren)
+        graph.add_node("read_answer",     read_answer)
         graph.add_node("ausfuehren",      ausfuehren)
 
         graph.set_entry_point("validieren")
         graph.add_conditional_edges("validieren",      self._nach_validierung)
         graph.add_conditional_edges("klassifizieren",  self._nach_klassifikation)
         graph.add_conditional_edges("db_validieren",   self._nach_db_validierung)
+        graph.add_conditional_edges("read_answer",     self._nach_deutung)
         graph.add_edge("ausfuehren", END)
 
         return graph.compile()
@@ -103,11 +107,19 @@ class DirektivenAgent(BaseAgent):
     # --- Routing ---
 
     def _nach_validierung(self, state: AgentState) -> str:
+        """Waehlt den Knoten nach der Eingabepruefung.
+
+        Vorbedingung: `state` hat `status` und `parameter`.
+        Nachbedingung: `END` bei Fehler; `read_answer`, wenn eine Antwort auf
+        eine Rueckfrage zurueckkommt (`resume`) -- sie wird gedeutet, bevor
+        etwas ausgefuehrt wird, nie direkt nach `ausfuehren`;
+        `db_validieren` bei bekannter Aktion, sonst `klassifizieren`.
+        """
         action = state["parameter"].get("action", "")
         if state["status"] == "fehler":
             return END
         if state["parameter"].get("resume"):
-            return "ausfuehren"
+            return "read_answer"
         if action in ("create", "read", "update", "delete", "reactivate"):
             return "db_validieren"
         return "klassifizieren"
@@ -123,6 +135,18 @@ class DirektivenAgent(BaseAgent):
         if state["status"] == "rueckfrage":
             return END
         return "ausfuehren"
+
+    def _nach_deutung(self, state: AgentState) -> str:
+        """Waehlt den Knoten nach der Deutung der Antwort.
+
+        Vorbedingung: `read_answer` hat `status` gesetzt.
+        Nachbedingung: `ausfuehren` nur bei `laufend` -- der Zustimmung auf eine
+        Ja/Nein-Frage; Ablehnung (`abgeschlossen`), unklare Antwort
+        (`rueckfrage`) und Fehler enden ohne Ausfuehrung.
+        """
+        if state["status"] == "laufend":
+            return "ausfuehren"
+        return END
 
     # --- Input-Validierung ---
 
