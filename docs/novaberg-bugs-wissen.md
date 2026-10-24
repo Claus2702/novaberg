@@ -1,9 +1,57 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → 31 Eintraege (23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → 33 Eintraege (24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 24.10.2026 — aus der Klassifizierung der Funde vom 23.10.2026
+
+Zwei Kennungen aus den Funden vom 23.10.2026 (Fundliste, *Umgezogen — 24.10.2026*), beide beobachtet in Messturns im Betrieb und am Code gelesen gegen HEAD `6b37234`, nicht gelaufen. Die übrigen fünf Bugs derselben Klassifizierung stehen in [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md) und [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md).
+
+### `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` — der Fakten-Agent schrieb ein Tripel mit einem Ort als Subjekt; keine Stufe der Prüfung kennt die Art des Subjekts
+
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, und es schreibt: Der falsche Fakt steht in der Mappe des Ortes und erreicht den Prompt, sobald der Ort gebunden ist. Begrenzt, weil er einer von drei Fakten einer einzigen Reihe war und `hat_hobby` mehrwertig ist, also nichts ablöst; kehrt er wieder, ist der Rang hoch. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — **die Absicht ist offen:** welche Beziehungen eine Person oder ICH als Subjekt verlangen; ohne sie ist die Prüfung nicht baubar. Beobachtet am 23.10.2026 in Messturns im Betrieb (aus der Fundliste übernommen; Satz und Tripel des Falls nicht nachgelesen), am Code gelesen am 24.10.2026 gegen `6b37234`.
+
+**Befund** `[Code]`: `server/agents/fakten/klassifikation.py::vet_triple` (Z. 278–332) prüft Form, Kandidat, Sprecher, Vorprüfung und Kanon, dazu `figur` und `vorliebe`, und mit `check_answer` (Z. 412–457), ob jeder Name in der Äußerung steht und ob die Richtung zum Besitzer stimmt. Die **Art** des Subjekts prüft keine dieser Stufen: `Relation` (`server/agents/fakten/beziehungen.py`, Z. 27–54) kennt nur `objekt_typ` und keinen Typ des Subjekts, und `server/agents/fakten/suche.py` legt ein neues Subjekt als `TYP_SONSTIGES` an (Z. 117) oder bindet den einen Treffer gleich welchen Typs (Z. 98–104, 171–188). Ein Ort, der im Satz als Name steht, besteht damit als Subjekt von `hat_hobby` jede Prüfung.
+
+**Symptom** (Fundliste, 23.10.2026): Aus einem Satz über eine Tagung schrieb der Agent ein Tripel der Form *Ort `hat_hobby` Thema* statt der Person; einer von 3 geschriebenen Fakten.
+
+**Wirkung.** Ein falscher Fakt über einen Ort steht im Faktengedächtnis. Ob dabei der eigentliche Fakt des Menschen (ICH …) ausfiel, ist nicht geprüft.
+
+**Geschlossen, wenn** ein Tripel, dessen Beziehung eine Person oder ICH als Subjekt verlangt, mit einem Ort als Subjekt abgelehnt wird und eine Beziehung, für die ein Ort ein rechtmäßiges Subjekt ist, ihn weiter annimmt — die Prüfung gilt je Beziehung; bezeugt mit Zeuge und Zwilling, nachdem die Absicht entschieden ist.
+
+**Offen:** ob der Ort über die Bindung der Sachlage (`binding_for`, `suche.py`, Z. 29–66) oder über den Namen Subjekt wurde; ob er als Entität vom Typ `ort` schon bestand.
+
+**Zusammenhang:** `FAKTEN-HEISST-ICH-AUSGENOMMEN` (in dieser Datei) — dieselbe Prüfung, eine andere Lücke; Backlog `FAKTEN-KANON-LUECKEN` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) — ein Ort ist für andere Beziehungen ein rechtmäßiges Subjekt (*liegt in*), deshalb gilt eine Prüfung je Beziehung; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6.
+
+---
+
+### `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` — die `timeline_id` eines Ereignisses hängt an jedem Tripel seines Kandidaten, auch an einem Beziehungsfakt
+
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, und es schreibt: Der Verweis wird gespeichert, und die Mappe zeigt *ab <Ereignis>* an einer Beziehung. Begrenzt, weil der Fakt selbst stimmt; falsch ist nur die Angabe seines Beginns. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — beobachtet am 23.10.2026 in Messturns im Betrieb (aus der Fundliste übernommen), am Code gelesen am 24.10.2026 gegen `6b37234`. Dass das Tripel auf den Kandidaten des Ereignisses zeigte, ist ein Schluss am Code, am Fall nicht belegt.
+
+**Befund** `[Code]`: `server/agents/fakten/klassifikation.py::link_event` (Z. 336–365) hängt die Zeile des Ereignisses an **jedes** geprüfte Tripel, dessen Kandidaten-Nummer in `events` steht (Z. 351), gleich welche Beziehung es trägt; gerufen wird es für jedes Tripel der Antwort (`server/agents/fakten/dispatch.py`, Z. 263–266). Der Prompt verlangt für einen solchen Kandidaten nur *„das Tripel des ERGEBNISSES“* (`server/prompts/default/classify_fakten.task.txt`, Z. 29–36), und der Code prüft das nicht. Eine andere Quelle für `fakten.timeline_id` gibt es nicht (`server/agents/fakten/crud.py` übernimmt sie aus den Parametern). Das Soll: Ein Fakt, der durch ein Ereignis entsteht, gilt ab dem Ereignis und verweist auf den Eintrag der Timeline ([`novaberg-memory-fakten_k.md`](novaberg-memory-fakten_k.md) §2.3); ein Kandidat mit eingetragenem Ereignis *„ergibt das Tripel des Ergebnisses; der Fakt trägt `timeline_id`“* ([`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6, *Die angenommene Bauart*). Ein Beziehungsfakt wie `hat_schwester` entsteht nicht durch das Ereignis und trägt nach diesem Soll keinen Verweis.
+
+**Symptom** (Fundliste, 23.10.2026): Ein Fakt `hat_schwester` trug den Verweis auf die Ereignis-Zeile, nicht der Fakt des Ereignisses.
+
+**Wirkung.** `server/memory/fakten_mappe.py::_with_reference` setzt an jeden Fakt mit Verweis *„ab <Titel>, <Monat|Datum>“*; die Beziehung erscheint in der Mappe, als begänne sie mit dem Ereignis.
+
+**Geschlossen, wenn** nur das Tripel des Ergebnisses eines Ereignisses `timeline_id` trägt und ein anderes Tripel desselben Kandidaten — etwa die Beziehung zur Person — keine; bezeugt mit beiden in einer Antwort.
+
+**Offen:** die **Absicht**, was als Ergebnis eines Ereignisses gilt — eine feste Liste im Code oder das Urteil des Modells; und ob im beobachteten Turn auch das Tripel des Ergebnisses entstand und den Verweis trug.
+
+**Zusammenhang:** `TIMELINE-VERWEIS-VERALTET-BEIM-VERSCHIEBEN` (in dieser Datei) behandelt das Verschieben — für diesen Verweis gewollt, die Mappe folgt ihm über `aktive_zeile` —, nicht, welcher Fakt den Verweis trägt; [`novaberg-agent-timeline.md`](novaberg-agent-timeline.md) §5.5.
 
 ---
 

@@ -1,9 +1,79 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → 51 Eintraege (23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → 54 Eintraege (24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 24.10.2026 — aus der Klassifizierung der Funde vom 23.10.2026
+
+Drei Kennungen aus den Funden vom 23.10.2026 (Fundliste, *Umgezogen — 24.10.2026*), am Code gelesen gegen HEAD `6b37234`, nicht gelaufen. Ein vierter Fund derselben Klassifizierung ist keine neue Kennung, sondern ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL` (in dieser Datei). Die übrigen vier Bugs stehen in [`novaberg-bugs-gedaechtnis.md`](novaberg-bugs-gedaechtnis.md) und [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md).
+
+### `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN` — ein Termin-Thema wurde in späteren Turns erneut im Web gesucht; am Code wiederholt nur die Recherche der Sachlage eine Suche über Turns
+
+**Kategorie:** ANT
+
+**Rang:** **mittel** — still, im Log stehen nur INFO und WARNUNG. Ein Treffer stünde als *„Nachgeschlagen zu …“* neben `[TERMINE]` im Prompt, und genau diesen Fall nennt das Modul als Grund seiner Sperre. Begrenzt, weil die Beobachtung 0 Treffer hatte und `relevant_hits` Rauschen ohne ein Wort des Objektnamens verwirft. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — beobachtet am 23.10.2026 in Messturns im Betrieb (aus der Fundliste übernommen); der Mechanismus am Code gelesen am 24.10.2026 gegen `6b37234`. Welcher Weg im beobachteten Turn suchte, ist nicht nachgesehen.
+
+**Befund** `[Code]`: Im Turn suchen zwei Wege im Web, ein dritter im Hintergrund:
+
+- die Recherche der Sachlage (`server/graph/nodes/sachlage.py`, Z. 938–947, → `server/graph/nodes/sachlage_research.py::research_open_property`), deterministisch, einmal je Turn für die erste offene Eigenschaft eines akuten Objekts mit dem Träger `nachschlagen` (`lookup_target`);
+- das Werkzeug `web_search` des Thinkers (`server/graph/nodes/thinker.py`), nach Urteil des Modells, erzwungen bei `needs_web`;
+- die Recherche im Hintergrund (`server/agents/recherche/suche.py`), nicht im Turn.
+
+Eine Suche über Turns wiederholt am Code nur der erste Weg. Nichts merkt sich eine frühere Suche, auch keine gescheiterte: Nach einem Ausfall aller Anbieter gibt `server/tools/web/search.py` eine leere Liste zurück, oder die Sachlage meldet eine Warnung und lässt `recherche` leer. Der Träger `nachschlagen` wird über `carry_holders` geerbt (`sachlage.py`, Z. 601–633), die Blase lebt `SACHLAGE_VERFALL_SEKUNDEN` = 14400 s, und die Sperre für den eigenen Bestand prüft nur die Äußerung des laufenden Turns (`own_records_cue(aeusserung)`, `sachlage.py`, Z. 944). Ein späterer Turn, der nicht nach dem eigenen Bestand fragt, sucht deshalb zum Termin-Objekt erneut — gegen die Regel des Moduls selbst (Docstring von `sachlage_research.py`: *„Keine Suche zum eigenen Bestand des Nutzers“*).
+
+**Symptom** (Fundliste, 23.10.2026): In Messturns im Betrieb wurde ein Termin-Thema aus einem früheren Turn in drei späteren Turns erneut im Web gesucht; der Anbieter antwortete mit einem HTTP-Fehler, 0 Treffer.
+
+**Wirkung.** Ein Thema aus dem eigenen Bestand des Menschen geht Turn um Turn als Suchanfrage hinaus, und ein Treffer stünde im Prompt wie Wissen über diesen Bestand. Ob das Objekt in den drei späteren Turns akut blieb, entscheidet das Modell je Turn neu; unbelegt.
+
+**Geschlossen, wenn** ein Objekt, zu dem ein Turn die Suche wegen des eigenen Bestands zurückgehalten hat (`withhold_research`), auch in den folgenden Turns nicht gesucht wird, die selbst nicht nach dem Bestand fragen — bezeugt mit einer Folge von zwei Turns und dem Zwilling, in dem ein Objekt ohne Bezug zum Bestand weiter gesucht wird.
+
+**Offen:** welcher Weg im beobachteten Turn feuerte — zu trennen am Serverlog, eng nach Logger: `ki_server.sachlage.research` mit *„Sachlage-Recherche:“* gegen `ki_server.thinker` mit *„Thinker-Tool: web_search“*; ob das Objekt akut blieb; und die **Absicht**, ob schon die ausgehende Anfrage zum eigenen Bestand ein Defekt ist — nach einem Kommentar in `server/tools/web/search.py` geht sie zuerst an einen externen Anbieter, die lokale Metasuche ist der Rückfall (unbelegt, nur aus dem Kommentar).
+
+**Zusammenhang:** [`novaberg-thinking-lage_b.md`](novaberg-thinking-lage_b.md) Scheibe 8 (die Recherche der Sachlage); die `RECHERCHE-*`-Einträge im Backlog betreffen den Recherche-Agenten im Hintergrund, nicht diesen Weg.
+
+---
+
+### `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` — die Warnung *„… ohne Wert — nach offen“* nennt bei einem latenten Objekt ein Ziel, das nicht gilt, und im Hauptpfad leert die Sachlage `offen` ohne Logzeile
+
+**Kategorie:** ANT
+
+**Rang:** **niedrig** — laut, und das Ergebnis, die Leerung am latenten Objekt, ist gewollt (Smalltalk-Schranke); falsch ist der Text, der ein Ziel nennt, das nicht gilt, und im Hauptpfad fehlt die Meldung der Leerung. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — am Code gelesen am 24.10.2026 gegen `6b37234`; gefunden am 23.10.2026 beim Bau der Prüfung auf Platzhalter.
+
+**Befund** `[Code]`: `server/graph/nodes/sachlage_form.py::_split_covered` meldet *„… in 'gedeckt' ohne Wert — nach offen: …“* (Z. 228–232 für ein dict, Z. 237–242 für alles andere), bevor das Ziel feststeht. Der Aufrufer `normalize_object_form` (Z. 462–491) übernimmt einen Namen nicht nach `offen`, wenn er schon gedeckt ist, und leert mit `gate=True` `offen` eines latenten Objekts mit der INFO-Zeile *„geleert (Smalltalk-Schranke)“* (Z. 483–488). Der Hauptpfad der Sachlage ruft aber mit `gate=False` (`server/graph/nodes/sachlage.py`, Z. 475); dort leert `merge_same_name_objects` `offen` eines latenten Objekts ohne Logzeile (`sachlage_form.py`, Z. 390). Im Hauptpfad bleibt die Warnung damit unberichtigt stehen.
+
+**Wirkung.** Wer das Log liest, hält eine Eigenschaft für offen, die weggefallen ist. Seit der Prüfung auf Platzhalter (`_is_placeholder`) schlägt die Warnung häufiger an. Am Ergebnis ändert sich nichts.
+
+**Geschlossen, wenn** die Warnung *nach offen* nur sagt, wenn die Eigenschaft in `offen` ankommt, und das Leeren an einem latenten Objekt auch im Hauptpfad (`merge_same_name_objects`) eine Logzeile schreibt — bezeugt mit einem latenten Objekt und dem Zwilling, einem akuten.
+
+**Zusammenhang:** `SACHLAGE-PLATZHALTER-ALS-WERT` (Archiv, [`novaberg-bugs-archiv-antwortpfad.md`](novaberg-bugs-archiv-antwortpfad.md)), seit dessen Bau die Warnung häufiger anschlägt; `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` (in dieser Datei); [`novaberg-thinking-lage_t.md`](novaberg-thinking-lage_t.md) §3.
+
+---
+
+### `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` — ein Symbol als ganzer Wert (`∞`, `€`, `%`) gilt in `gedeckt` als Platzhalter
+
+**Kategorie:** ANT
+
+**Rang:** **niedrig** — laut (Warnung *„ohne Wert — nach offen“*) und nicht beobachtet. Im ungünstigsten Fall wird ein echter Wert nicht abgelegt, und die Eigenschaft wird erneut gefragt oder nachgeschlagen. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — am Code gelesen am 24.10.2026 gegen `6b37234`, nur der reguläre Ausdruck nachgestellt, nicht das Modul; ungemessen, kein Zeuge. Gefunden am 23.10.2026 beim Bau der Prüfung auf Platzhalter.
+
+**Befund** `[Code]`: `server/graph/nodes/sachlage_form.py::_is_placeholder` (Z. 107–127) normalisiert mit `re.sub(r"[\W_]+", " ", …)` (Z. 117) und gibt bei leerem Rest `True` zurück (Fall (a), Z. 119–120). `∞`, `€`, `%` und `°` sind keine Wortzeichen und werden leer, gelten also als Platzhalter; `½` und `²` bleiben (Unicode-Ziffern), `5 €` bleibt. Der Docstring sagt *„Ob ein Text nur sagt, dass der Wert fehlt“* — ein Symbol sagt das nicht. Die Folge am Code: `_as_covered_value` liefert `None`, und der Name geht mit Warnung nach `offen` (Z. 221–232); dasselbe gilt für Ansprüche des Auflösers über `covered_value`. Dass der Wert dann nicht abgelegt wird, weil `remember_objects` nur aus `gedeckt` ablegt, steht im Archiveintrag `SACHLAGE-PLATZHALTER-ALS-WERT` und ist hier nicht nachgelesen.
+
+**Wirkung.** Ein Wert, der nur aus einem Symbol besteht, gilt als fehlend: Die Eigenschaft geht nach `offen` oder fällt am latenten Objekt weg, und der Wert wird nicht abgelegt. Ob das Modell je ein einzelnes Symbol als Wert schreibt, ist nicht gezählt.
+
+**Geschlossen, wenn** ein Symbol, das allein ein Wert ist, in `gedeckt` als Wert gilt und die Platzhalter des Falls (a) (*„?“*, *„-“*, *„…“*) weiter nicht — bezeugt mit Zeuge und Zwilling.
+
+**Offen:** die **Absicht**, welche Zeichen allein ein Wert sind (`∞`, `€`, `%`) und welche ein Platzhalter (`?`, `-`, `…`); in Frage kommen eine Liste der Platzhalterzeichen oder eine Liste der Wertsymbole. Dazu ungezählt, ob das Modell je ein einzelnes Symbol als Wert schreibt (Bestand von `gedeckt` bzw. `sachlage_eigenschaft`).
+
+**Zusammenhang:** `SACHLAGE-PLATZHALTER-ALS-WERT` (Archiv, [`novaberg-bugs-archiv-antwortpfad.md`](novaberg-bugs-archiv-antwortpfad.md)) — seine Schließbedingung nannte *„?“*, *„unbekannt“* und *„offen“*, Symbole als Werte waren nicht Teil davon; `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` (in dieser Datei); [`novaberg-thinking-lage_t.md`](novaberg-thinking-lage_t.md) §3.
 
 ---
 
@@ -294,7 +364,7 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 
 **Nachtrag, 17.10.2026 — Simulation `simnachher4`:** An einem frischen Prüf-Nutzer mit denselben 24 Sätzen (`labor/2026-10-15_sim_timeline_notizen/simnachher4/`, auf `a26b2cd`) lief der Leseschritt hinter dem Router in 24 von 24 Turns. Der Router setzte in **16 von 16** Terminsätzen eine gezielte Anfrage (`range` oder `search`), in den 8 Notizsätzen keine; in `simnachher3` war es ebenso. In der Friseurfrage suchte er `search` *Friseur* `backward`, der Leseweg im Turn fand den Termin, und der Entwurf nannte ihn richtig. Falsch wurde die Auskunft erst im Thinker, der den Lesestand des Turns nicht sieht — in `simnachher3` zu *„keinen früheren Termin gefunden“*, in `simnachher4` zu einem falschen Datum. **Die Vermutung oben ist damit widerlegt:** Gelesen wurde; verdorben hat es die Prüfung danach, jetzt geführt als `PRUEFER-OHNE-LESESTAND` (oben in dieser Datei). Die Instabilität sitzt damit hinter dem Router, nicht in ihm. Rang und Zustand bleiben, wie sie stehen.
 
-**Was die Messung nach dem Commit zeigen muss:** ob der Router bei einer Terminfrage eine gezielte Anfrage setzt — ob gezielt gelesen wird, hängt weiter an seinem Urteil; ohne Anfrage steht das proaktive Fenster da, mit seinem Zeitraum in der Kopfzeile. Und auf dem Aufgabenpfad — der Router stellt die Frage dem Timeline-Agenten zu — läuft der Verfasser nicht; dann erreicht `[TERMINE]` die Antwort nicht, und es gelten die Lesezeilen des Agenten (ohne Anker, ~~ohne Bezug zu heute~~ → seit dem 17.10.2026 dieselben Zeilen wie der Block, mit Bezug zu heute — gebaut, noch nicht committet). Ob eine Lesefrage diesen Weg nimmt, ist nicht gemessen. → **In der Simulation an einem Prüf-Nutzer vom 17.10.2026 nahm ihn eine Frage nach den Terminen eines Monats** — und der Agent las nur einen Tag (`ZEITRAUM-LIEST-EINEN-TAG`, novaberg-bugs-wissen.md). → **23.10.2026, Messturns im Betrieb** (am Code von `3f2aa17`, ein frischer Prüf-Nutzer, acht synthetische Turns): Die Frage nach den Terminen im November zeigte im Block `[TERMINE]` das Ereignis einer anderen Person am 14.11.2026 unter eigener Kopfzeile, nicht als Termin des Menschen. In einem anderen Turn mit einer Terminfrage lieferte der Router das Zeitfenster nicht in ISO (`TT.MM hh:mm`), `graph/appointments.py` meldete die Anfrage als nicht lesbar, und der Block fehlte in diesem Turn (Fundliste, 23.10.2026). Rang und Zustand bleiben.
+**Was die Messung nach dem Commit zeigen muss:** ob der Router bei einer Terminfrage eine gezielte Anfrage setzt — ob gezielt gelesen wird, hängt weiter an seinem Urteil; ohne Anfrage steht das proaktive Fenster da, mit seinem Zeitraum in der Kopfzeile. Und auf dem Aufgabenpfad — der Router stellt die Frage dem Timeline-Agenten zu — läuft der Verfasser nicht; dann erreicht `[TERMINE]` die Antwort nicht, und es gelten die Lesezeilen des Agenten (ohne Anker, ~~ohne Bezug zu heute~~ → seit dem 17.10.2026 dieselben Zeilen wie der Block, mit Bezug zu heute — gebaut, noch nicht committet). Ob eine Lesefrage diesen Weg nimmt, ist nicht gemessen. → **In der Simulation an einem Prüf-Nutzer vom 17.10.2026 nahm ihn eine Frage nach den Terminen eines Monats** — und der Agent las nur einen Tag (`ZEITRAUM-LIEST-EINEN-TAG`, novaberg-bugs-wissen.md). → **23.10.2026, Messturns im Betrieb** (am Code von `3f2aa17`, ein frischer Prüf-Nutzer, acht synthetische Turns): Die Frage nach den Terminen im November zeigte im Block `[TERMINE]` das Ereignis einer anderen Person am 14.11.2026 unter eigener Kopfzeile, nicht als Termin des Menschen. In einem anderen Turn mit einer Terminfrage lieferte der Router das Zeitfenster nicht in ISO (`TT.MM hh:mm`), `graph/appointments.py` meldete die Anfrage als nicht lesbar, und der Block fehlte in diesem Turn (Fundliste, 23.10.2026). Rang und Zustand bleiben. → **24.10.2026, am Code gelesen gegen HEAD `6b37234`** (aus der Klassifizierung der Funde vom 23.10.2026): **Beleg — das Zeitfenster des Routers stand nicht in ISO.** Die Vorgabe des Routers (`server/prompts/default/router.task.txt`) verlangt `"YYYY-MM-DD HH:MM"`; `server/graph/appointments.py::parse_local_moment` liest mit `datetime.fromisoformat`, und eine Form `TT.MM hh:mm` wirft `ValueError`. `appointment_window` fängt das, meldet mit ERROR *„Anfrage des Routers nicht lesbar“* und gibt das proaktive Fenster zurück (`proactive_window(now, unusable_query=True)`) — wie im Docstring beschrieben. Dass das Modell die Vorgabe verfehlte, steht nur in der Fundliste; ob die deutsche Datumsform im Prompt des Routers (`Datum: {today}`, gesetzt in `server/graph/nodes/router.py` als `"%d.%m.%Y, %H:%M Uhr"`) das begünstigt, ist unbelegt. **Berichtigung des Nachtrags vom 23.10.2026: Die unlesbare Anfrage entfernt den Block `[TERMINE]` am Code nicht** — das proaktive Fenster greift. `read_after_route` (`server/graph/nodes/route_reading.py`) setzt `appointment_reading` immer, und `_node_route` (`server/graph/base.py`) wirft, wenn es fehlt; `_appointments_block` im Verfasser baut den Block aus jedem Leseergebnis, auch aus dem proaktiven Fenster mit `unusable_query`, und seine Kopfzeile (`server/graph/format/appointments.py::header_line`) sagt dann, dass sich die Frage keinem Zeitraum zuordnen ließ. Ohne `[TERMINE]` läuft am Code nur der Kontext-Schnitt, der Aufgabenpfad oben: Bei `task_context_cut` überspringt der Graph den Verfasser (`server/graph/character_graph.py::_after_haltung`), gesetzt vom Planner (`_build_task_block`) bei Ablehnung, Fehler, *dismissed* oder Erfolg eines Agenten. **Offen, warum der Block in diesem Turn fehlte** — ob der Turn diesen Weg nahm, ist unbelegt; erkennbar wäre es im Serverlog an der Zeile *„Graph: Kontext-Schnitt aktiv — Verfasser übersprungen“* und am Fehlen der INFO-Zeile *„Verfasser: [TERMINE] art=…“*. Ein Turn mit unlesbarer Anfrage bekommt keine eigene Kennung, weil der Code ihn laut meldet und das proaktive Fenster liest; kehrt er wieder, wird er ein eigener Bug. Rang und Zustand bleiben.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Lesepfad zur Timeline ist instabil, nicht geschlossen.** Dieselbe Klasse Frage wird einmal zugestellt und einmal nicht: *„Wann ist mein Meeting mit dem Chef?"* (35 Zeichen) erzeugte um 16:50 einen Dispatch an `timeline`; die Fragen des Menschen nach bestehenden Terminen im Fenster 14:00–15:53 erzeugten keinen — im ganzen Fenster steht ein einziger Timeline-Dispatch (15:52, `abgelehnt` auf eine vorwurfsvolle Feststellung). Auf die Frage nach Terminen dieser Woche antwortete Nova mit *nein*, waehrend ein Eintrag fuer Mittwoch aktiv in der Tabelle stand. **Eine ausgebliebene Zustellung ist von einer richtigen Auskunft nicht zu unterscheiden** — es gibt keinen Fehler, keinen Log-Eintrag und kein leeres Ergebnis, sondern nur eine Antwort ohne Grundlage.
 

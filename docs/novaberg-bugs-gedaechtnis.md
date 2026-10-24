@@ -1,9 +1,53 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → ~~18~~ → 16 Eintraege (23.10.2026, abends: `LZG-PROMOTION-TREFFER-VERSTAERKT` und `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` behoben und im Betrieb gemessen, ins Archiv; 23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → ~~18~~ → ~~16~~ → 18 Eintraege (24.10.2026: `LZG-TREFFER-MELDET-REINFORCEMENT` und `MAGNET-ANKER-VERGANGENES-WIRD-KOMMEND` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026, abends: `LZG-PROMOTION-TREFFER-VERSTAERKT` und `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` behoben und im Betrieb gemessen, ins Archiv; 23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 24.10.2026 — aus der Klassifizierung der Funde vom 23.10.2026
+
+Zwei Kennungen aus den Funden vom 23.10.2026 (Fundliste, *Umgezogen — 24.10.2026*), am Code gelesen gegen HEAD `6b37234`, nicht gelaufen. Die übrigen fünf Bugs derselben Klassifizierung stehen in [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md) und [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md).
+
+### `LZG-TREFFER-MELDET-REINFORCEMENT` — beim Treffer meldet `match_pruefen` weiter *„-> Reinforcement“*, obwohl kein Zweig danach verstärkt
+
+**Kategorie:** GED
+
+**Rang:** **niedrig** — laut und nur im Text: Der Zweig danach schreibt die richtige `aktion` (`dublette` oder `halbreaktivierung`) in `pipeline_log` und Audit; ein falsches Ergebnis entsteht nicht. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — am Code gelesen am 24.10.2026 gegen `6b37234`; gefunden am 23.10.2026 bei der Messung der Promotion im Betrieb.
+
+**Befund** `[Code]`: `server/memory/lzg_knoten.py::match_pruefen` (Z. 540–541) schreibt für jeden besten Kandidaten ab `LZG_KNOTEN_MATCH_SCHWELLE` (0,82, `server/config.py`) die Zeile `Match erkannt: … -> Reinforcement` ins Log, bevor feststeht, ob der Knoten aktiv ist. Ihr einziger Aufrufer, `server/agents/synapsen_promotion/agent.py` (Z. 525), verzweigt danach in die Halbreaktivierung (inaktiver Knoten) oder in die Dublette (aktiver Knoten, seit `782274c`: *„kein `knoten_verstaerken`“*); keiner der beiden Zweige verstärkt. Zwei Docstrings sind ebenso veraltet: der von `match_pruefen` (*„nur echte Identitaet verstaerkt“*) und der von `knoten_verstaerken` (*„Reinforcement-Pfad bei Match (K10)“*) — dessen einziger Aufrufer außerhalb der Tests ist heute die Verstärkung über die Verwendung (`server/memory/usage_reinforcement.py`, Z. 239).
+
+**Wirkung.** Wer das Serverlog liest, sieht bei jeder Dublette und jeder Halbreaktivierung eine Verstärkung, die nicht stattfindet. Ob eine Auswertung die Zeile *„-> Reinforcement“* zählt, ist nicht geprüft.
+
+**Geschlossen, wenn** die Logzeile von `match_pruefen` keine Verstärkung mehr ankündigt und die beiden Docstrings sagen, was der Code tut: Der Treffer verhindert eine Dublette, verstärkt wird nur über die Verwendung.
+
+**Zusammenhang:** `LZG-PROMOTION-TREFFER-VERSTAERKT` (Archiv, [`novaberg-bugs-archiv-gedaechtnis.md`](novaberg-bugs-archiv-gedaechtnis.md)), dessen Bau diese Zeile stehen ließ; das Backlog `PIPELINE-LOG-MERGE-BLIND` ([`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md)) behandelt das Protokoll der Dublette in `pipeline_log`, nicht diese Zeile; [`novaberg-node-synapsen-promotion.md`](novaberg-node-synapsen-promotion.md).
+
+---
+
+### `MAGNET-ANKER-VERGANGENES-WIRD-KOMMEND` — der Erinnerungs-Anker eines berichteten vergangenen Monats liegt im kommenden Jahr
+
+**Kategorie:** GED
+
+**Rang:** **mittel** — still, und es schreibt: Die Anker-Zeile steht im falschen Jahr, die `timeline_id` von KZG-Eintrag und LZG-Knoten zeigt auf sie, und spätere Nennungen desselben Tages nehmen sie wieder. Begrenzt, weil die Zeit des Ankers am Code nur die Kantenbildung liest (`server/memory/lzg_knoten.py`, Z. 398–404 und 806–812, als `timeline_event_time` an `server/memory/lzg_kanten.py::timeline_tiefe`). Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** offen — beobachtet am 23.10.2026 in Messturns im Betrieb (aus der Fundliste übernommen), am Code gelesen am 24.10.2026 gegen `6b37234`; am Code folgerichtig, nicht nachgerechnet. Wie oft es vorkommt, ist nicht gezählt.
+
+**Befund** `[Code]`: `server/agents/kzg/magnete.py::_timeline_aufloesen` ruft `zeit_parsen_vektor(zeitausdruck_roh)` (Z. 321) ohne Zeitlage und mit dem Vorgabewert `zukunft_bevorzugt=True` (`server/utils/zeitparser.py`, Z. 2496). Daraus wird `PREFER_DATES_FROM = "future"`, es sei denn, der Ausdruck trägt eine Rückwärtsmarke (`befund.rueckwaerts`, `zeitparser.py`, Z. 2305–2310). *„im September“* trägt keine: Die Zeitlage steht im Verb, und das Verb gehört nicht zu `zeitausdruck_roh`; die Salienz liefert dem Magnet-Pfad nur diesen Ausdruck (`magnete.py`, Z. 89). Der Anker wird gespeichert (`TimelineRepository.insert`), und über die Idempotenz (`find_by_date`) nehmen spätere Nennungen desselben Tages ihn wieder. Der Ereignis-Dienst setzt das Jahr dagegen aus der Zeitlage, die das Modell nennt (`server/agents/timeline/ereignis.py::event_time_of` über `_year_by_tense`); der Magnet-Pfad hat kein solches Feld.
+
+**Symptom** (Fundliste, 23.10.2026): Für einen berichteten Satz *im September* lag der Anker des Magnet-Pfads auf dem 01.09.2027, während das Ereignis desselben Turns richtig im September 2026 liegt.
+
+**Wirkung.** Die Kantenbildung rechnet die zeitliche Nähe gegen ein Datum, das ein Jahr daneben liegt, und jede spätere Nennung desselben Tages bindet sich an dieselbe falsche Zeile. Als Termin liest den Anker kein Weg (ein Erinnerungs-Anker ist in keinem Leseweg ein Termin, `TIMELINE-LESEPFAD-INSTABIL`; hier nicht nachgelesen).
+
+**Geschlossen, wenn** der Anker eines berichteten Satzes über einen vergangenen Monat in der Vergangenheit liegt und der eines angekündigten in der Zukunft — bezeugt mit beiden Richtungen. Wie die Zeitlage den Magnet-Pfad erreicht, entscheidet der Bau; ein Feld der Salienz wäre ein Feld einer Modellausgabe und braucht vor dem Commit eine Messung am Modell.
+
+**Offen:** welche Leser die `timeline_id` im KZG-Hash außer der Promotion hat; nicht geprüft.
+
+**Zusammenhang:** `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` (Archiv, [`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)) — der Spiegelfall im Ereignis-Dienst; `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` (Archiv, ebenda) — die Richtung für Ausdrücke **mit** Marke; `ZEIT-EXTRAKTION-UNSCHARF` ([`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)) — die Extraktion von `zeitausdruck_roh`, ein anderer Gegenstand; `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` (in dieser Datei) — derselbe Pfad; [`novaberg-convention-magneten.md`](novaberg-convention-magneten.md).
 
 ---
 
