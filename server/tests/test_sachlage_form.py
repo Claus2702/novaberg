@@ -26,9 +26,14 @@ from graph.nodes.sachlage import (
     sachlage_block,
     sachlage_load,
 )
-from graph.nodes.sachlage_form import normalize_object_form, plain_object_name
+from graph.nodes.sachlage_form import covered_value, normalize_object_form, plain_object_name
 from graph.nodes.sachlage_plausibility import _render_objects
-from graph.nodes.sachlage_resolver import apply_memory_coverage, carry_sources
+from graph.nodes.sachlage_resolver import (
+    SOURCE_LIBRARY,
+    MemoryHit,
+    apply_memory_coverage,
+    carry_sources,
+)
 
 
 def _artifact(**objekt: object) -> dict:
@@ -127,6 +132,87 @@ class CoveredNeedsAValueTest(unittest.TestCase):
     def test_missing_covered_is_an_empty_dict(self) -> None:
         objekt = _object(_validate_artifact(_artifact(offen=["wann"])))
         self.assertEqual(objekt["gedeckt"], {})
+
+
+class APlaceholderIsNoValueTest(unittest.TestCase):
+    """`[gemessen 22.10.2026]` Das Modell schrieb `"Geburtstag": "?"` nach `gedeckt`."""
+
+    def test_a_placeholder_is_no_value(self) -> None:
+        for platzhalter in ("?", "-", "…", "???", "unbekannt", "Unbekannt", " offen ",
+                            "unklar", "k. A.", "keine Angabe", "Unbekannt."):
+            with self.subTest(platzhalter=platzhalter):
+                self.assertIsNone(covered_value(platzhalter))
+
+    def test_case_a_punctuation_alone_is_no_value(self) -> None:
+        """Fall (a): kein Wort bleibt — haengt an keinem Wort der Menge."""
+        for platzhalter in ("?", "-", "…", "???", "_", "?!"):
+            with self.subTest(platzhalter=platzhalter):
+                self.assertIsNone(covered_value(platzhalter))
+
+    def test_case_b_a_multi_word_form_is_no_value(self) -> None:
+        """Fall (b): nur der ganze Text steht in der Menge, kein Wort fuer sich."""
+        for platzhalter in ("keine Angabe", "Keine  Angabe.", "k. A.", "n/a", "nicht bekannt"):
+            with self.subTest(platzhalter=platzhalter):
+                self.assertIsNone(covered_value(platzhalter))
+
+    def test_case_c_a_row_of_placeholder_words_is_no_value(self) -> None:
+        """Fall (c): jedes Wort steht einzeln in der Menge, der ganze Text nicht."""
+        for platzhalter in ("unbekannt / offen", "offen, unklar", "Unbekannt; unklar."):
+            with self.subTest(platzhalter=platzhalter):
+                self.assertIsNone(covered_value(platzhalter))
+
+    def test_twin_a_real_value_that_resembles_a_placeholder_stays(self) -> None:
+        for echt in ("12", "Offenbach", "unbekannter Absender", "?! Hebamme",
+                     "3,5 Mio. km", "offen für alles", 0):
+            with self.subTest(echt=echt):
+                self.assertEqual(covered_value(echt), str(echt).strip())
+
+    def test_a_placeholder_in_gedeckt_is_open_and_logged(self) -> None:
+        """Objekt und Eigenschaft heissen verschieden: Die Warnung muss die Eigenschaft nennen."""
+        with self.assertLogs("ki_server.sachlage", level="WARNING") as log:
+            objekt = _object(_validate_artifact(_artifact(
+                name="Anna", gedeckt={"Geburtstag": "?"}, offen=[],
+            )))
+        self.assertEqual(objekt["gedeckt"], {})
+        self.assertEqual(objekt["offen"], ["Geburtstag"])
+        self.assertIn("nach offen: ['Geburtstag']", "\n".join(log.output))
+
+    def test_twin_a_real_value_in_gedeckt_stays_covered(self) -> None:
+        objekt = _object(_validate_artifact(_artifact(
+            gedeckt={"Geburtstag": "3. März"}, offen=[],
+        )))
+        self.assertEqual(objekt["gedeckt"], {"Geburtstag": "3. März"})
+        self.assertEqual(objekt["offen"], [])
+
+    def test_a_placeholder_under_offen_stays_open(self) -> None:
+        """Auch der Weg `offen` als dict nimmt den Platzhalter nicht nach `gedeckt`."""
+        objekt = _object(_validate_artifact(_artifact(
+            gedeckt={}, offen={"Wohnort": "unbekannt", "Alter": "10"},
+        )))
+        self.assertEqual(objekt["gedeckt"], {"Alter": "10"})
+        self.assertEqual(objekt["offen"], ["Wohnort"])
+
+    def test_a_claim_with_a_placeholder_covers_nothing(self) -> None:
+        angebot = [MemoryHit("G1", SOURCE_LIBRARY, "wissen/personen.md", "Anna feiert gern.")]
+        artefakt = _artifact(name="Anna", gedeckt={}, offen=["Geburtstag"])
+        with self.assertLogs("ki_server.sachlage.resolver", level="WARNING") as log:
+            objekt = _object(apply_memory_coverage(
+                artefakt, angebot,
+                {"Anna": {"Geburtstag": {"eintrag": "G1", "inhalt": "unbekannt"}}},
+            ))
+        self.assertEqual(objekt["gedeckt"], {})
+        self.assertEqual(objekt["offen"], ["Geburtstag"])
+        self.assertIn("Deckung von 'Geburtstag' an 'Anna'", "\n".join(log.output))
+
+    def test_twin_a_claim_with_a_real_value_covers(self) -> None:
+        angebot = [MemoryHit("G1", SOURCE_LIBRARY, "wissen/personen.md", "Anna feiert gern.")]
+        artefakt = _artifact(gedeckt={}, offen=["Geburtstag"])
+        objekt = _object(apply_memory_coverage(
+            artefakt, angebot,
+            {"Geburtstag": {"Geburtstag": {"eintrag": "G1", "inhalt": "3. März"}}},
+        ))
+        self.assertEqual(objekt["gedeckt"], {"Geburtstag": "3. März"})
+        self.assertEqual(objekt["offen"], [])
 
 
 class TheNoValueWordsAreTheCanonsTest(unittest.TestCase):

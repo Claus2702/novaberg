@@ -50,6 +50,20 @@ NO_VALUE_WORDS: frozenset[str] = frozenset({
     "nutzer", "welt", "nachschlagen", "kritisch", "unkritisch", "nova",
 })
 
+# Die Woerter, die das Fehlen eines Werts selbst benennen. Ein anderer Grund als
+# bei `NO_VALUE_WORDS`: Dort ist ein Feld an die falsche Stelle geraten, hier
+# steht der Platzhalter fuer den Wert, den das Modell nicht hat. Verglichen wird
+# der ganze Text (Satzzeichen wie Leerraum, casefold) oder jedes Wort einzeln
+# (»unbekannt / offen«); ein Teiltreffer wie »unbekannter Absender« bleibt ein
+# Wert, und Text ganz ohne Wort (»?«) faengt `_is_placeholder` vor dieser Menge
+# ab. `[gemessen]` 22.10.2026, Modell:
+# `"Geburtstag": "?"`, `"Befinden/Zustand": "unbekannt"`, `"Befinden/Gesundheit": "offen"`
+# standen in `gedeckt`.
+MISSING_VALUE_WORDS: frozenset[str] = frozenset({
+    "unbekannt", "offen", "unklar", "ungeklaert", "ungeklärt",
+    "keine angabe", "k a", "n a", "nicht bekannt", "nicht angegeben",
+})
+
 # Die Woerter, die als Sprecher taugen (SPRECHER_KANON in sachlage.py).
 SPEAKER_WORDS: frozenset[str] = frozenset({"nutzer", "nova"})
 
@@ -90,21 +104,47 @@ def covered_value(roh: object) -> str | None:
     return _as_covered_value(roh)
 
 
-def _as_covered_value(roh: object) -> str | None:
-    """Ein Wert fuer `gedeckt`: ein Wert, der nicht nur aus Kanonwoertern besteht.
+def _is_placeholder(wert: str) -> bool:
+    """Ob ein Text nur sagt, dass der Wert fehlt.
 
-    `[gemessen 13.09.2026]` Im Bestand von 1771 gedeckten Werten waren 579 ein
-    Kanonwort (»nutzer«, »nova«) und 86 die Vorlage des Prompts (»nutzer|nova«).
+    Vorbedingung: `wert` ist getrimmter, nicht leerer Text.
+    Nachbedingung: True in genau drei Faellen, jeder fuer sich tragend, nach der
+        Normalisierung (casefold, jedes Zeichen ausser Buchstaben und Ziffern
+        ist Trenner): (a) es bleibt kein Wort (»?«, »-«, »…«); (b) der ganze Text
+        steht in `MISSING_VALUE_WORDS` (auch die Mehrwortformen »keine angabe«,
+        »k a«); (c) jedes Wort steht einzeln darin (»unbekannt / offen«). Sonst False.
+    """
+    norm: str = " ".join(re.sub(r"[\W_]+", " ", wert.casefold()).split())
+    teile: list[str] = norm.split()
+    if not teile:
+        return True
+    if norm in MISSING_VALUE_WORDS:
+        return True
+    if teile and all(t in MISSING_VALUE_WORDS for t in teile):
+        return True
+    return False
+
+
+def _as_covered_value(roh: object) -> str | None:
+    """Ein Wert fuer `gedeckt`: ein Wert, der nicht nur ein Kanonwort oder ein Platzhalter ist.
+
+    Zwei Gruende, zwei Mengen. `[gemessen 13.09.2026]` Im Bestand von 1771
+    gedeckten Werten waren 579 ein Kanonwort (»nutzer«, »nova«) und 86 die
+    Vorlage des Prompts (»nutzer|nova«) — ein Feld an der falschen Stelle.
+    `[gemessen 22.10.2026]` Das Modell schrieb »?«, »unbekannt«, »offen« als Wert
+    — der Platzhalter fuer einen Wert, den es nicht hat.
 
     Vorbedingung: keine.
     Nachbedingung: Wie `_as_value`, und None, wenn der Text nur aus Woertern
-        von `NO_VALUE_WORDS` besteht.
+        von `NO_VALUE_WORDS` besteht oder ein Platzhalter ist (`_is_placeholder`).
     """
     wert: str | None = _as_value(roh)
     if wert is None:
         return None
     teile: list[str] = [t for t in re.split(r"[\s|/,;]+", wert.casefold()) if t]
     if teile and all(t in NO_VALUE_WORDS for t in teile):
+        return None
+    if _is_placeholder(wert):
         return None
     return wert
 
