@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** DirektivenAgent (Verhaltensanweisungen, Arbeitsvertrag)
-**Stand:** 18. Oktober 2026, 01:01 UTC (`date -u`; §3 und §6.1: die Antwort auf die Pflicht-Rückfrage wird nicht gedeutet, auch ein Nein führt aus — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, am Code gelesen). Davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 24. Oktober 2026, 14:20 UTC (`date -u`; §3, §6.1 und §10: ein Knoten `read_answer` deutet die Antwort auf jede Rückfrage, bevor etwas ausgeführt wird — Ablehnung zuerst, eine zurückhaltende Antwort ist unklar, eine Auswahlfrage führt nie aus; gebaut im Code-Tree `2457549`, Kennung wird nachgetragen, im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin). Davor 18. Oktober 2026, 01:01 UTC (`date -u`; §3 und §6.1: die Antwort auf die Pflicht-Rückfrage wird nicht gedeutet, auch ein Nein führt aus — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, am Code gelesen). Davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-agent-directives.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -54,7 +54,7 @@ Der `[CHARAKTER]`-Block existiert seit Chat 45 nicht mehr als eigener Block — 
 
 ## 3. Architektur -- Subgraph mit HITL-Gate
 
-Der DirektivenAgent folgt dem etablierten NotizenAgent/TimelineAgent-Muster, erweitert um eine Validierungsphase mit Pflicht-Rueckfrage. Der tatsaechliche LangGraph-Subgraph (Entry-Point `validieren`):
+Der DirektivenAgent folgt dem etablierten NotizenAgent/TimelineAgent-Muster, erweitert um eine Validierungsphase mit Pflicht-Rueckfrage. Der LangGraph-Subgraph ~~(Entry-Point `validieren`)~~ → bis zum 24.10.2026 (Entry-Point `validieren`; seither mit dem Knoten `read_answer`, Vermerk unten):
 
 ```
 validieren --+--> ausfuehren (bei resume=True)
@@ -66,9 +66,27 @@ validieren --+--> ausfuehren (bei resume=True)
                                                       +--> END (Rueckfrage/Fehler)
 ```
 
-`validieren` routet nach drei Kriterien: bei `resume=True` → direkt `ausfuehren` (kein eigener Resume-Node wie beim CharakterIdentitaetAgent — der Direktiven-Agent rehydriert die Aktion aus Redis-Pending und spielt die Ausfuehrung sofort ab); bei bereits gueltiger `action` → `db_validieren`; sonst → `klassifizieren`. Verifikation und Confirm liegen inline in `ausfuehren` (kein eigener Node).
+`validieren` routet nach drei Kriterien: bei `resume=True` → ~~direkt `ausfuehren` (kein eigener Resume-Node wie beim CharakterIdentitaetAgent — der Direktiven-Agent rehydriert die Aktion aus Redis-Pending und spielt die Ausfuehrung sofort ab)~~ → `read_answer`, der die Antwort deutet (unten); bei bereits gueltiger `action` → `db_validieren`; sonst → `klassifizieren`. Verifikation und Confirm liegen inline in `ausfuehren` (kein eigener Node).
 
 > **Die Antwort wird dabei nicht gedeutet** — am Code gelesen am 18.10.2026, HEAD `ae05667`: `_nach_validierung` geht mit `resume` nach `ausfuehren` (`agent.py`, Z. 109–110), und `ausfuehren` liest `user_answer` nicht. **Auch ein Nein führt aus:** Wer *„Soll ich das ausfuehren? …“* verneint, löst die Aktion aus, nach der gefragt wurde. Offen als `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` (`novaberg-bugs-charakter.md`, Rang hoch).
+>
+> → **Seit dem Code-Tree `2457549` (24.10.2026, Kennung wird nachgetragen; im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin)** **deutet ein eigener Knoten die Antwort, bevor etwas ausgeführt wird:** `read_answer` (`agents/direktiven/resume.py`) steht zwischen `validieren` und `ausfuehren`; `_nach_deutung` geht nur bei `status` `laufend` — einer Zustimmung auf eine Ja/Nein-Frage — nach `ausfuehren`, sonst nach `END`.
+>
+> ```
+> validieren --+--> read_answer (bei resume=True) --+--> ausfuehren --> END   (Zustimmung)
+>              |                                    +--> END                  (Ablehnung, unklar, Auswahl, Fehler)
+>              +--> klassifizieren / db_validieren wie oben
+> ```
+>
+> **Die Deutung** (`_reading`), in dieser Reihenfolge:
+>
+> 1. **Ablehnung** zuerst, und sie gewinnt: ein Stamm aus `REFUSAL_STEMS` (`nein`, `ne`, `nee`, `nicht`, `kein`, `lass`, `abbruch`, `abbrech`, `stopp`, `stop`) als Teilzeichenkette, gesucht im Text **ohne** die Zustimmungswörter — *gerne* und *meinetwegen* stimmen zu, *„ja, aber lieber nicht“* lehnt ab. Ergebnis: `status` `abgeschlossen`, *„Gut, dann lasse ich es. An deinen Direktiven ist nichts geaendert.“*, Schritt `abgelehnt`, nichts ausgeführt.
+> 2. **Unklar**, wenn die Antwort etwas zurückhält (`_holds_back`): ein `?` an irgendeiner Stelle (*„Wie bitte?!“*, *„Ja? :)“*) oder ein Stamm des Wartens aus `WAIT_STEMS` (`wart`, `moment`, `augenblick`, `sekunde`, `halt`, auch mitten im Wort: *„Bitte warten“*, *„Sekunde, bitte“*). Ergebnis: dieselbe Frage noch einmal, `status` `rueckfrage`, Schritt `unklar`; `dispatch._handle_resume` erneuert den Pending-Zustand. Absichtlich zu weit: *„Ja? Ja!“*, *„dann halt“*, *momentan* fragen ein zweites Mal — eine zweite Frage kostet weniger als ein falsches Löschen.
+> 3. **Zustimmung** sonst, als ganzes Wort aus `CONSENT_WORDS` (*ja* trifft *Jahr* nicht): Die Aktion, nach der gefragt wurde, wird ausgeführt wie bisher. Was keines davon trägt, ist unklar.
+>
+> Das gilt für alle drei Ja/Nein-Fragen (§6.1–§6.3). **Eine Auswahlfrage** (*„… Welche soll ich wiederherstellen?“*, *„… Welche soll ich entfernen?“*) **führt nie aus:** Eine Ablehnung beendet sie, jede andere Antwort stellt sie erneut (Schritt `auswahl_offen`), weil die Wahl aus der Antwort nicht gelesen wird. Die Art der Frage erkennt `_question_kind` am Wortlaut, den der Mensch gesehen hat (`parameter["original_rueckfrage"]`); eine Frage keiner bekannten Form ergibt `fehler`, laut im Log, und führt nichts aus. **Die Ausgabe-Verifikation** von `read_answer` prüft unabhängig vom gewählten Zweig: Weiter nach `ausfuehren` geht es nur mit einem Zustimmungswort, ohne Ablehnungsstamm und ohne Zurückhaltung, sonst `RuntimeError`.
+>
+> Die Wortlisten und Helfer (`_has_word`, `_has_stem`, `_without_words`) sind Kopien aus `agents/notizen/resume.py`, bewusst ohne gemeinsames Modul; **die Zurückhaltung gibt es nur hier** (`novaberg-agent-notes.md` §7). Zeugen: `tests/agents/direktiven/test_resume.py`, 35 Testmethoden, 18 über den Graphen; Server-Suite `Ran 5244 tests` grün. Grenzen: Formen der Zurückhaltung, die kein Stamm trifft (*„Sekündchen, bitte“*, *„wait, ok“*, *„Ja, später“*, *„Wie bitte!“* ohne `?`), führen aus, ebenso eine Ablehnung ohne Stamm neben einer Zustimmung (*„ja, vergiss es“*, `ABLEHNUNG-OHNE-STAMM-BESTAETIGT`) — Fundliste, 24.10.2026.
 
 Der Classify-Node kann zusaetzlich zur Tabelle in §4 den Output `rejected` liefern (z.B. bei Kompliment/rhetorischer Frage statt echtem Direktiven-Auftrag) — dann bricht der Agent mit `status="rejected"` ab, ohne DB-Zugriff.
 
@@ -78,6 +96,7 @@ agents/direktiven/
 +-- agent.py            # DirektivenAgent(BaseAgent)
 +-- klassifikation.py   # Classify-Node
 +-- crud.py             # DB-Operationen mit Vorher/Nachher-Snapshot + validieren_gegen_db()
++-- resume.py           # seit 24.10.2026: read_answer, die Deutung der Antwort auf eine Rueckfrage
 +-- dispatch.py         # Backend-Dispatch: Baut AgentState, startet den Agenten-Subgraph, verarbeitet das Ergebnis
 +-- init.sql            # Schema
 +-- AGENT.md            # Beschreibung + Router-Prompt
@@ -159,7 +178,7 @@ User: "Ja"
 Nova: [fuehrt aus]
 ```
 
-**Auf ein „Nein“ führt der Dienst ebenso aus** (am Code gelesen am 18.10.2026, §3): Die Rückfrage stellt er, ihre Antwort liest er nicht — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, offen. Dasselbe gilt für *„… Trotzdem anlegen?“* (§6.2) und für die Frage nach dem Wiederherstellen (§6.3).
+~~**Auf ein „Nein“ führt der Dienst ebenso aus** (am Code gelesen am 18.10.2026, §3): Die Rückfrage stellt er, ihre Antwort liest er nicht — `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS`, offen. Dasselbe gilt für *„… Trotzdem anlegen?“* (§6.2) und für die Frage nach dem Wiederherstellen (§6.3).~~ → **Seit dem Code-Tree `2457549` (24.10.2026, Kennung wird nachgetragen; im Betrieb nicht gemessen, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` offen bis dahin)**: Auf alle drei Ja/Nein-Fragen führt nur eine Zustimmung aus; eine Ablehnung ändert nichts und sagt es, eine unklare oder zurückhaltende Antwort stellt dieselbe Frage erneut — auch auf *„… Trotzdem anlegen?“* (§6.2) und auf die Frage nach dem Wiederherstellen (§6.3), wo ein Nein auch keine neue anlegt (§3, *Die Deutung*). Die Rückfrage nennt bei `delete` und `update` ohne Kennung *„(ID None)“* (Fundliste, 24.10.2026).
 
 Technisch ueber den bestehenden `interrupt()`/Resume-Flow. Ziel: Pflicht-Rueckfrage wieder entfernen, sobald die Validierung stabil genug ist.
 
@@ -270,7 +289,7 @@ CREATE INDEX IF NOT EXISTS idx_direktiven_user_aktiv
 
 ## 10. Konfiguration
 
-**Dateien:** `agents/direktiven/agent.py`, `agents/direktiven/klassifikation.py`, `agents/direktiven/crud.py` (enthaelt `validieren_gegen_db`), `agents/direktiven/dispatch.py`, `agents/direktiven/init.sql`, `agents/direktiven/AGENT.md`
+**Dateien:** `agents/direktiven/agent.py`, `agents/direktiven/klassifikation.py`, `agents/direktiven/crud.py` (enthaelt `validieren_gegen_db`), `agents/direktiven/resume.py` (seit 24.10.2026, `read_answer`), `agents/direktiven/dispatch.py`, `agents/direktiven/init.sql`, `agents/direktiven/AGENT.md`
 
 **Plugin:** `plugins/direktiven_manager/` (liefert Router-Prompt; das Laden der aktiven Direktiven erfolgt im db_zugriff-Node am CG-Eingang, der Einbau in den Prompt im Responder)
 
