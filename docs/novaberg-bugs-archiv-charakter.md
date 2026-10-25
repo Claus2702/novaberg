@@ -1,9 +1,43 @@
 # Novaberg — Bugs, Archiv: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~29~~ → 30 Eintraege (18.10.2026: `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` aus dem offenen Teil), je mit `CHA` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~29~~ → ~~30~~ → 32 Eintraege (25.10.2026: `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` aus dem offenen Teil; 18.10.2026: `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` aus dem offenen Teil), je mit `CHA` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 25.10.2026 — behoben mit Zeugen, im Betrieb teils gemessen
+
+**Diese Einträge sind mit einem Bau geschlossen, dessen Schließbedingung Zeugen verlangt, keine Messung im Betrieb.** Ob die Dienste im Betrieb halten, steht in der Zustandszeile je Eintrag und in `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG` ([`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md)).
+
+---
+
+### `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` — eine Ablehnung ohne Stamm aus der Liste bestätigt neben einem Zustimmungswort
+**Kategorie:** CHA
+
+**Rang:** **mittel** — still, und es schreibt gegen den Willen; die Sätze sind selten. Vergeben am 20.10.2026 gegen HEAD `b52e919`; beide Dateien sind seit `2c64856` unverändert.
+
+**Zustand:** **geschlossen am 25.10.2026 — behoben mit `e1e0724`** (Code-Tree `f901e08`, die Doku dazu `d2d6ec8`): *„ja, vergiss es“*, *„ok nö“* und *„bitte niemals“* bestehen nicht aus Zustimmungs- und Füllwörtern und sind unklar, ohne dass die Liste der Ablehnungsstämme wächst. **Belege:** Zeugen je Dienst — `ClosedConsentTest`, `ClosedSignsTest`, `RefusalFirstTest`, `ExcludedWordsTest`, `WordOrderTest` und `ClauseSeparatorsTest` in `server/tests/agents/{direktiven,notizen,charakter_identitaet}/test_resume.py`, in `server/tests/test_dateien_wurzeln.py` als `GeschlosseneZustimmungTest`, `GeschlosseneZeichenTest`, `AblehnungZuerstTest`, `AusgeschlosseneWoerterTest`, `WortstellungTest` und `TrennzeichenTest`; Server-Suite am Code-Tree `Ran 5394 tests` · `OK (expected failures=2)` (vorher 5276); MESSUNG vor dem Commit `[gemessen 24.10.2026]` an 305 ungezeigten Antworten durch die vier Deutungen, ohne GPU und Datenbank: 0 Fehlausführungen in allen vier Diensten (am Stand davor 33 bis 50 je Dienst), Nachprobe der Wortstellung 14 von 14 unklar. **Warum geschlossen:** Die Schließbedingung verlangt Zeugen, keine Messung im Betrieb; sie ist erfüllt. Die drei Sätze sind je Dienst bezeugt (`ClosedConsentTest` in `server/tests/agents/{direktiven,notizen,charakter_identitaet}/test_resume.py`), Suite `Ran 5394 tests` · `OK (expected failures=2)`. Im Betrieb ist das Tor der Direktiven mit gesetzter Rückfrage gemessen (24.10.2026, 4 von 4) und das der Notizen über den echten Weg; Charakter-Identität ist im Betrieb nicht gemessen. Der Rest der Klasse, die Zurückhaltung, bleibt offen in `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`. **Davor:** offen — gemessen am 18.10.2026 an den Deutungsfunktionen, aufgerufen ohne Datenbank, gefunden beim Nachzug zu `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`.
+
+**Befund** `[gemessen 18.10.2026]`: In `charakter_identitaet` (`resume.py::_standard_interpretieren`) und `notizen` (`resume.py::_resume_nicht_gefunden`) kennt die Ablehnung nur die Stämme aus `REFUSAL_STEMS` (`nein`, `ne`, `nee`, `nicht`, `kein`, `lass`, `abbruch`, `abbrech`, `stopp`, `stop`). *„vergiss es“*, *nö* und *niemals* trägt keiner davon. Allein bleiben sie unklar, und es wird erneut gefragt; neben einem Zustimmungswort bestätigen sie: *„ja, vergiss es“*, *„ok nö“* und *„bitte niemals“* ergeben Zustimmung bzw. Anlegen, in beiden Diensten.
+
+**Nachtrag, 24.10.2026 — derselbe Befund am Tor der Direktiven** `[Code]`: Die Deutung, die mit dem Code-Tree `2457549` für `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` gebaut ist (`server/agents/direktiven/resume.py::_reading`), kopiert `REFUSAL_STEMS` und `CONSENT_WORDS` aus `notizen`. *„ja, vergiss es“*, *„ok nö“* und *„bitte niemals“* auf *„Soll ich das ausfuehren? Direktive loeschen (ID …)“* tragen keinen Ablehnungsstamm, kein `?` und keinen Stamm des Wartens und werden als Zustimmung gelesen — **die Direktive wird gelöscht.** Am Code gelesen, nicht gelaufen. Die Listen sind dort bewusst nicht erweitert: Die Kopie folgt dem Muster der beiden Dienste.
+
+**Geschlossen, wenn** in ~~beiden Diensten~~ → den drei Diensten (seit dem 24.10.2026 auch `direktiven`) eine Ablehnung neben einem Zustimmungswort nicht als Zustimmung gelesen wird, auch ohne Stamm aus `REFUSAL_STEMS` — bezeugt mit den drei Sätzen. Mit `KLA-KLAERFALL-AM-OBJEKT` Schritt 5 und 6 löst ein geschlossener Leser im Code diese Deutung ab.
+
+---
+
+### `WURZELN-ABLEHNUNG-UNGELESEN` — am Tor der Dateien-Wurzeln lesen sich *nichts*, *keinesfalls* und *ablehnen* nicht als Ablehnung
+**Kategorie:** CHA
+
+**Rang:** **mittel** — still, an einem Tor, das Lesezugriff auf ein Verzeichnis des Menschen freigibt; die Sätze sind selten. Vergeben am 20.10.2026 gegen HEAD `b52e919`; die Datei ist seit `04491c6` unverändert.
+
+**Zustand:** **geschlossen am 25.10.2026 — behoben mit `e1e0724`** (Code-Tree `f901e08`, die Doku dazu `d2d6ec8`): *„ja, bitte nichts“*, *„ok, keinesfalls“* und *„ja, ablehnen“* bestehen nicht aus Zustimmungs- und Füllwörtern und sind unklar; der Docstring von `_traegt` sagt den heutigen Stand. **Belege:** Zeugen je Dienst — `ClosedConsentTest`, `ClosedSignsTest`, `RefusalFirstTest`, `ExcludedWordsTest`, `WordOrderTest` und `ClauseSeparatorsTest` in `server/tests/agents/{direktiven,notizen,charakter_identitaet}/test_resume.py`, in `server/tests/test_dateien_wurzeln.py` als `GeschlosseneZustimmungTest`, `GeschlosseneZeichenTest`, `AblehnungZuerstTest`, `AusgeschlosseneWoerterTest`, `WortstellungTest` und `TrennzeichenTest`; Server-Suite am Code-Tree `Ran 5394 tests` · `OK (expected failures=2)` (vorher 5276); MESSUNG vor dem Commit `[gemessen 24.10.2026]` an 305 ungezeigten Antworten durch die vier Deutungen, ohne GPU und Datenbank: 0 Fehlausführungen in allen vier Diensten (am Stand davor 33 bis 50 je Dienst), Nachprobe der Wortstellung 14 von 14 unklar. **Warum geschlossen:** Die Schließbedingung verlangt Zeugen, keine Messung im Betrieb; sie ist erfüllt. Die drei Sätze (*„ja, bitte nichts“*, *„ok, keinesfalls“*, *„ja, ablehnen“*) sind unklar bezeugt (`GeschlosseneZustimmungTest` in `server/tests/test_dateien_wurzeln.py`), Suite `Ran 5394 tests` · `OK (expected failures=2)`, und der Docstring von `_traegt` sagt den heutigen Stand. Im Betrieb ist dieses Tor nicht gemessen. **Davor:** offen — gemessen am 18.10.2026 an `_antwort_deuten`.
+
+**Befund** `[gemessen 18.10.2026]`: `server/agents/dateien_wurzeln/resume.py::_antwort_deuten` sucht `ABLEHNUNGS_WOERTER` als ganze Wörter (`_traegt`): *nichts* ist nicht *nicht*, *keinesfalls* nicht *kein* oder *keine*, und *ablehnen* steht nicht in der Liste. Allein bleibt die Antwort unklar; neben einem Zustimmungswort wird sie Zustimmung — *„ja, bitte nichts“*, *„ok, keinesfalls“*, *„ja, ablehnen“*. **In derselben Datei:** Der Docstring von `_traegt` nennt die Teilzeichenketten-Deutung in `charakter_identitaet/resume.py` als offenen Fund; sie ist seit dem 18.10.2026 behoben (`novaberg-bugs-archiv-charakter.md`).
+
+**Geschlossen, wenn** neben einem Zustimmungswort keine Ablehnung als Zustimmung gelesen wird, auch *nichts*, *keinesfalls* und *ablehnen*, und der Docstring von `_traegt` den heutigen Stand sagt.
 
 ---
 
