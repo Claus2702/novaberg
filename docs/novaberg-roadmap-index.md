@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 994 Abschnitte in 7 Dateien — 482 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 995 Abschnitte in 7 Dateien — 483 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 76 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 77 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 994 Marken, 994 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 995 Marken, 995 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-26 | laufend | ## | [26.10.2026, 08:25 UTC — Die Klassifikation von Direktiven, Charakter-Identität, Notizen und Timeline liest die Antwort des Modells geprüft: `null` gilt als nicht genannt, ein falscher Typ endet laut; `KLASSIFIKATION-NULL-FELD-WIRFT` angelegt und geschlossen](novaberg-roadmap.md#26102026-0825-utc--die-klassifikation-von-direktiven-charakter-identität-notizen-und-timeline-liest-die-antwort-des-modells-geprüft-null-gilt-als-nicht-genannt-ein-falscher-typ-endet-laut-klassifikation-null-feld-wirft-angelegt-und-geschlossen) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 08:17 UTC — Die Schreibwege von Notizen und Dateien-Wurzeln binden jede Kennung an den Menschen, und ein Schreibweg, der nicht genau eine Zeile trifft, endet laut; `SCHREIBWEG-KENNUNG-OHNE-MENSCH` im Archiv](novaberg-roadmap.md#26102026-0817-utc--die-schreibwege-von-notizen-und-dateien-wurzeln-binden-jede-kennung-an-den-menschen-und-ein-schreibweg-der-nicht-genau-eine-zeile-trifft-endet-laut-schreibweg-kennung-ohne-mensch-im-archiv) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 07:51 UTC — Im Betrieb gemessen: Die Kennung aus der Modellausgabe erreicht das Tor der Direktiven, und das Tor hält über den echten Weg; vier Bugs der Ja/Nein-Tore und der Auflösung und fünf des Faktengedächtnisses im Archiv](novaberg-roadmap.md#26102026-0751-utc--im-betrieb-gemessen-die-kennung-aus-der-modellausgabe-erreicht-das-tor-der-direktiven-und-das-tor-hält-über-den-echten-weg-vier-bugs-der-janein-tore-und-der-auflösung-und-fünf-des-faktengedächtnisses-im-archiv) |
 | 2026-10-25 | laufend | ## | [25.10.2026, 22:06 UTC — Der Fakten-Agent kennt den Typ des Subjekts: Ein Tripel, dessen Subjekt für die Beziehung nicht zulässig ist, wird laut abgewiesen; `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` im Archiv](novaberg-roadmap.md#25102026-2206-utc--der-fakten-agent-kennt-den-typ-des-subjekts-ein-tripel-dessen-subjekt-für-die-beziehung-nicht-zulässig-ist-wird-laut-abgewiesen-fakten-ort-als-subjekt-durchgelassen-im-archiv) |
