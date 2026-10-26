@@ -9,6 +9,11 @@ fragt, was ersetzt wurde, hat keine Quelle.
 Diese Zeugen fahren die sechs Schreibpfade und pruefen den `schritte`-Eintrag.
 Sie werden rot, sobald `vorher` aus der Spur verschwindet oder den Inhalt nicht
 mehr traegt.
+
+Seit dem 25.10.2026 endet ein Schreibweg laut, wenn sein `UPDATE` nicht genau
+eine Zeile dieses Menschen trifft; der gedoppelte Speicher meldet deshalb
+`execute` -> 1 (eine getroffene Zeile). Bis dahin gab `execute` ein
+`MagicMock` zurueck, das niemand las.
 """
 import unittest
 from unittest.mock import MagicMock, patch
@@ -42,6 +47,7 @@ class DirektivenSpurTest(unittest.TestCase):
         }
         self.db = MagicMock()
         self.db.select_one.return_value = self.datensatz
+        self.db.execute.return_value = 1
         self.db.execute_returning.return_value = {"id": 8}
         self.db.select.return_value = []
         patcher = patch.object(direktiven_crud, "db_manager", self.db)
@@ -90,6 +96,7 @@ class CharakterIdentitaetSpurTest(unittest.TestCase):
             "id": 3, "anweisung": ALTE_ANWEISUNG,
             "aktiv": True, "erstellt_am": None, "geaendert_am": None,
         }
+        self.db.execute.return_value = 1
         self.db.execute_returning.return_value = {"id": 4}
         self.db.select.return_value = []
         patcher = patch.object(charakter_crud, "db_manager", self.db)

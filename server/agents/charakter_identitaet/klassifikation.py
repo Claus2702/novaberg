@@ -12,6 +12,7 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 
 import json
 import logging
+import re
 
 from agents.base import AgentState
 from agents.charakter_identitaet.crud import _read_aktive, _read_inaktive
@@ -39,6 +40,60 @@ GUELTIGE_AKTIONEN: set[str] = {
     "konsolidieren",
     "rejected",
 }
+
+# Die Schreibweisen, in denen die Listen des Prompts eine Kennung zeigen:
+# `[13]` (Aufbau der Listen in `klassifizieren`) und ihre Ziffern `13` — genau
+# `f"[{n}]"` und `str(n)` fuer eine Ganzzahl `n > 0`. Die Liste schreibt die
+# Ganzzahl der Spalte, also nie eine fuehrende Null: `"013"` ist keine ihrer
+# Schreibweisen. Nur ASCII-Ziffern — `str.isdigit` naehme auch `²` oder `١٣` an.
+_LIST_FORM: re.Pattern[str] = re.compile(r"\[([1-9][0-9]*)\]|([1-9][0-9]*)")
+
+
+def _read_target_id(roh: object) -> tuple[int | None, str | None]:
+    """Liest die Kennung aus der Modellangabe — als Nummer, als keine oder als Fehler.
+
+    Die Modellausgabe ist die unzuverlaessigste Quelle im System, und die
+    Liste zeigt die Kennung in einer anderen Form (`[13]`) als die Spalte
+    (`13`): Das Modell gibt zurueck, was es gesehen hat. Bis zum 25.10.2026
+    ging der Wert ungeprueft an SQL — dieselbe Liste wie bei den Direktiven,
+    die dort mit `invalid input syntax for type integer: "[13]"` endete.
+    Vorbild ist `dateien_wurzeln/klassifikation.py::_ziffer_oder_nichts` —
+    hier mit dem Unterschied, dass ein unbrauchbarer Wert nicht zu `None`
+    wird: `None` hiesse hier *keine Kennung* und fuehrte bei `delete` zum
+    Loeschen aller Anweisungen. Eine Kopie je Dienst, kein gemeinsames Modul.
+
+    Vorbedingung: `roh` ist, was das Sprachmodell unter `target_id` geliefert
+    hat — beliebigen Typs.
+    Nachbedingung: `(kennung, None)` mit einer Ganzzahl > 0 bei einer JSON-Zahl
+    oder einer Schreibweise der Liste (`"[13]"`, `"13"`, Leerraum aussen
+    erlaubt); `(None, None)`, wenn das Modell keine nannte (`null`);
+    `(None, grund)` bei jedem anderen Wert.
+    Fehlerfaelle: Wahrheitswert, Kommazahl, Zahl <= 0, Wort, leerer Text,
+    zwei Kennungen, Liste, fuehrende Null, andere Klammer, Vorsilbe — alles
+    mit Grund, nichts geraten.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if roh is None:
+        return None, None
+    if isinstance(roh, bool):
+        # bool ist eine Unterklasse von int — True waere sonst Anweisung 1.
+        return None, f"target_id ist ein Wahrheitswert: {roh!r}"
+
+    # ── Verarbeitung ────────────────────────────
+    kennung: int | None = None
+    if isinstance(roh, int):
+        kennung = roh
+    elif isinstance(roh, str):
+        treffer: re.Match[str] | None = _LIST_FORM.fullmatch(roh.strip())
+        if treffer:
+            kennung = int(treffer.group(1) or treffer.group(2))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if kennung is None:
+        return None, f"target_id ist keine Kennung der Liste: {roh!r} ({type(roh).__name__})"
+    if kennung <= 0:
+        return None, f"target_id ist keine gueltige Kennung: {roh!r}"
+    return kennung, None
 
 
 def _build_classify_prompt(
@@ -160,8 +215,21 @@ def klassifizieren(state: AgentState) -> dict:
             }
 
         anweisung = ergebnis.get("anweisung", "")
-        target_id = ergebnis.get("target_id")
+        target_id, kennung_fehler = _read_target_id(ergebnis.get("target_id"))
         normalisiert = ergebnis.get("normalisiert", "")
+
+        if kennung_fehler:
+            logger.error(
+                f"klassifizieren: {kennung_fehler} — kein Lesen, kein Schreiben, keine Frage"
+            )
+            return {
+                "status": "fehler",
+                "fehler": f"Klassifikation unbrauchbar: {kennung_fehler}",
+                "schritte": state["schritte"] + [{
+                    "node": "klassifizieren",
+                    "ergebnis": "kennung_unlesbar",
+                }],
+            }
 
         if action not in GUELTIGE_AKTIONEN:
             logger.warning(f"klassifizieren: Ungueltige Aktion '{action}' — Fallback 'read'")

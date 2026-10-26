@@ -147,9 +147,15 @@ def _signs_of_a_category() -> list[str]:
 
 
 def _db() -> MagicMock:
-    """Ein gedoppelter Speicher; Schreibwege sind `execute` und `execute_returning`."""
+    """Ein gedoppelter Speicher; Schreibwege sind `execute` und `execute_returning`.
+
+    `execute` meldet eine getroffene Zeile: Seit dem 25.10.2026 endet ein
+    Schreibweg laut, wenn sein `UPDATE` nicht genau eine Zeile dieses Menschen
+    trifft.
+    """
     db: MagicMock = MagicMock()
     db.select.return_value = []
+    db.execute.return_value = 1
     db.select_one.return_value = {"id": 7, "aktiv": True, "anweisung": _INSTRUCTION}
     db.execute_returning.return_value = {"id": 9}
     return db
@@ -250,14 +256,21 @@ class MandatoryQuestionTest(unittest.TestCase):
                 self.assertEqual(_last_step(result)["ergebnis"], "abgelehnt")
 
     def test_yes_on_delete_deletes(self) -> None:
-        """Zwilling: 'Ja' loescht wie bisher -- das UPDATE auf aktiv = FALSE fuer ID 7."""
+        """Zwilling: 'Ja' loescht wie bisher -- das UPDATE auf aktiv = FALSE fuer ID 7.
+
+        Umgedreht am 25.10.2026: Bis dahin hielt der Zeuge `args == (7,)` fest --
+        ein UPDATE nur ueber die Kennung, die aus der Modellausgabe kommt; eine
+        falsche Zahl traf die Zeile eines anderen Menschen. Jetzt traegt die
+        Bedingung die `user_id`.
+        """
         db: MagicMock = _db()
         question: str = _question(_delete_parameter())
         result: dict = _run(_delete_parameter(), question, "Ja", db)
         db.execute.assert_called_once()
         sql, args = db.execute.call_args.args
         self.assertIn("aktiv = FALSE", sql)
-        self.assertEqual(args, (7,))
+        self.assertIn("user_id = %s", sql)
+        self.assertEqual(args, (7, _USER))
         self.assertEqual(result["status"], "abgeschlossen")
         self.assertEqual(_last_step(result)["ergebnis"], "geloescht")
 
@@ -324,7 +337,11 @@ class AutoCorrectionQuestionTest(unittest.TestCase):
                 self.assertEqual(_last_step(result)["ergebnis"], "abgelehnt")
 
     def test_yes_restores(self) -> None:
-        """Zwilling: 'ja' stellt die eine passende wieder her und legt nichts an."""
+        """Zwilling: 'ja' stellt die eine passende wieder her und legt nichts an.
+
+        Umgedreht am 25.10.2026: `args == (4,)` hielt ein UPDATE ohne Bindung
+        an den Menschen fest; jetzt traegt die Bedingung die `user_id`.
+        """
         db: MagicMock = _db()
         db.select.return_value = [{"id": 4, "anweisung": _INSTRUCTION}]
         question: str = _question(_duplicate_parameter(), _autocorrect_select())
@@ -332,7 +349,7 @@ class AutoCorrectionQuestionTest(unittest.TestCase):
         db.execute.assert_called_once()
         sql, args = db.execute.call_args.args
         self.assertIn("aktiv = TRUE", sql)
-        self.assertEqual(args, (4,))
+        self.assertEqual(args, (4, _USER))
         db.execute_returning.assert_not_called()
         self.assertEqual(_last_step(result)["ergebnis"], "reaktiviert")
 
@@ -490,7 +507,8 @@ class UnclearAnswerTest(unittest.TestCase):
                 db: MagicMock = _db()
                 result: dict = _run(_delete_parameter(), question, answer, db)
                 db.execute.assert_called_once()
-                self.assertEqual(db.execute.call_args.args[1], (7,))
+                # Umgedreht am 25.10.2026: bis dahin `(7,)`, ohne Bindung an den Menschen.
+                self.assertEqual(db.execute.call_args.args[1], (7, _USER))
                 self.assertEqual(_last_step(result)["ergebnis"], "geloescht")
 
 
