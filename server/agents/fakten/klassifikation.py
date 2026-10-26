@@ -12,10 +12,12 @@ im Prompt aus (`NEGATIVE_CASES`).
 **Jedes Tripel wird geprüft, bevor es schreibt** (`vet_triple`): Seine
 Nummer zeigt auf einen Kandidaten des Turns, und zwar einen des Menschen
 — die Herkunft kommt aus dem Sprecher des Kandidaten (`SPEAKER_ORIGIN`),
-nie aus der Antwort; die Beziehung steht im Kanon; das Tripel spricht nicht
-über die Figur (`figur`) und legt keine Vorliebe auf ein Hobby (`vorliebe`);
-Namen und Richtung trägt die Äußerung. Was das verfehlt, ist
-`verworfen:<grund>`.
+nie aus der Antwort; die Beziehung steht im Kanon; der Typ des Subjekts,
+den die Antwort je Tripel nennt (`typ`), steht in `ENTITY_TYPES` und ist
+einer, den die Beziehung erlaubt, oder `sonstiges` (`typ_form`,
+`subjekt_typ`); das Tripel spricht nicht über die Figur (`figur`) und legt
+keine Vorliebe auf ein Hobby (`vorliebe`); Namen und Richtung trägt die
+Äußerung. Was das verfehlt, ist `verworfen:<grund>`.
 
 **Die Antwort wird gegen den Wortlaut der Äußerung gehalten** (`check_answer`).
 `X hat_chef Y` heißt *Y ist Xs Chef*. Was das Modell an Richtung und Namen
@@ -41,7 +43,14 @@ import logging
 import re
 from typing import NamedTuple
 
-from agents.fakten.beziehungen import KANON, Relation, find_relation
+from agents.fakten.beziehungen import (
+    ENTITY_TYPES,
+    KANON,
+    TYP_PERSON,
+    TYP_SONSTIGES,
+    Relation,
+    find_relation,
+)
 from config import ASSISTANT_NAME, PROMPTS, get_node_config
 from services.model_services import ChatRequest, model_service
 
@@ -85,9 +94,15 @@ REJECT_UTTERANCE:  str = "aeusserung"
 REJECT_FIGURE:     str = "figur"
 REJECT_TASTE:      str = "vorliebe"
 REJECT_NO_EVENT:   str = "ereignis_fehlt"
+# Das Feld `typ` fehlt oder nennt keinen Wert aus `ENTITY_TYPES` — ein Ausfall
+# der Antwort, nie `sonstiges`.
+REJECT_TYPE_FORM:  str = "typ_form"
+# Der Typ des Subjekts steht in der Liste, aber die Beziehung erlaubt ihn nicht.
+REJECT_TYPE:       str = "subjekt_typ"
 REJECT_REASONS: frozenset[str] = frozenset({
     REJECT_FORM, REJECT_CANDIDATE, REJECT_SPEAKER, REJECT_PRECHECK, REJECT_CANON,
     REJECT_UTTERANCE, REJECT_FIGURE, REJECT_TASTE, REJECT_NO_EVENT,
+    REJECT_TYPE_FORM, REJECT_TYPE,
 })
 
 # Die Marke eines Kandidaten, dessen Ereignis in diesem Turn in der Timeline
@@ -157,26 +172,29 @@ def build_classify_prompt() -> str:
     """Baut den System-Prompt der Klassifikation aus den drei Bausteinen.
 
     Vorbedingung: Die Bausteine `classify_fakten.identity`, `.task` und
-        `.rules` sind geladen; `.task` trägt die Platzhalter `{beziehungen}`
-        und `{negativfaelle}`.
+        `.rules` sind geladen; `.task` trägt die Platzhalter `{beziehungen}`,
+        `{negativfaelle}` und `{typen}`.
     Nachbedingung: Der Prompt nennt jede Beziehung des Kanons genau so, wie
-        der Kanon sie schreibt, und jeden Negativfall aus `NEGATIVE_CASES`.
+        der Kanon sie schreibt, jeden Negativfall aus `NEGATIVE_CASES` und
+        jeden Typ aus `ENTITY_TYPES`.
     Fehlerfälle: KeyError, wenn ein Baustein fehlt; RuntimeError, wenn eine
-        Beziehung oder ein Negativfall im fertigen Prompt fehlt.
+        Beziehung, ein Negativfall oder ein Typ im fertigen Prompt fehlt.
     """
     # ── Verarbeitung ────────────────────────────
     beziehungen: str = "\n".join(f"  - {attribut}" for attribut in sorted(KANON))
     negativfaelle: str = "\n".join(f"  - {fall}" for fall in NEGATIVE_CASES)
+    typen: str = "\n".join(f"  - {typ}" for typ in ENTITY_TYPES)
     prompt: str = "\n\n".join([
         PROMPTS["classify_fakten.identity"],
         PROMPTS["classify_fakten.task"].format(beziehungen=beziehungen,
-                                               negativfaelle=negativfaelle),
+                                               negativfaelle=negativfaelle, typen=typen),
         PROMPTS["classify_fakten.rules"],
     ])
 
     # ── Ausgabe-Verifikation ────────────────────
     fehlend: list[str] = [a for a in KANON if f"  - {a}\n" not in f"{prompt}\n"]
     fehlend += [f for f in NEGATIVE_CASES if f"  - {f}\n" not in f"{prompt}\n"]
+    fehlend += [t for t in ENTITY_TYPES if f"  - {t}\n" not in f"{prompt}\n"]
     if fehlend:
         raise RuntimeError(f"Klassifikation Fakten: Prompt ohne {fehlend}")
     return prompt
@@ -283,9 +301,10 @@ def vet_triple(triple: object, candidates: dict[int, dict], utterance: str,
     Nummer zeigt auf einen Kandidaten des Turns; sein Sprecher hat eine
     Herkunft (`SPEAKER_ORIGIN`); die Vorprüfung bejahte eine dauerhafte
     Aussage; die Beziehung steht im Kanon; Subjekt und Objekt sind nicht
-    leer; Tripel und Kandidat sprechen nicht über die Figur, keine Vorliebe
-    liegt auf einem Hobby, und `check_answer` besteht gegen die Äußerung
-    (`_against_utterance`).
+    leer; der Typ des Subjekts steht in der Liste und die Beziehung erlaubt
+    ihn (`_check_subject_type`); Tripel und Kandidat sprechen nicht über die
+    Figur, keine Vorliebe liegt auf einem Hobby, und `check_answer` besteht
+    gegen die Äußerung (`_against_utterance`).
 
     Vorbedingung: `candidates` sind **alle** Kandidaten des Turns, nummeriert
         wie in der Eingabe des Modells — auch die anderer Sprecher, damit
@@ -321,8 +340,10 @@ def vet_triple(triple: object, candidates: dict[int, dict], utterance: str,
     objekt: str = _as_self(str(triple.get("objekt") or "").strip())
     if not subjekt or not objekt:
         return Verdict(None, REJECT_FORM, "Subjekt oder Objekt fehlt")
-    verfehlt: tuple[str, str] | None = _against_utterance(utterance, subjekt, beziehung,
-                                                          objekt, kandidat)
+    verfehlt: tuple[str, str] | None = (
+        _check_subject_type(triple.get("typ"), subjekt, beziehung)
+        or _against_utterance(utterance, subjekt, beziehung, objekt, kandidat)
+    )
 
     # ── Ausgabe-Verifikation ────────────────────
     if verfehlt is not None:
@@ -363,6 +384,49 @@ def link_event(verdict: Verdict, events: dict[int, int | None]) -> Verdict:
     if not isinstance(zeile, int) or isinstance(zeile, bool) or zeile <= 0:
         raise ValueError(f"link_event: Timeline-Zeile {zeile!r} ungültig")  # noqa: TRY003
     return Verdict({**verdict.tripel, "timeline_id": zeile}, "", "")
+
+
+def _check_subject_type(typ: object, subjekt: str,
+                        beziehung: Relation) -> tuple[str, str] | None:
+    """Hält den Typ des Subjekts, den das Modell nennt, gegen die Liste und die Beziehung.
+
+    **ICH ist der Mensch und gilt als Person**: Nennt das Modell bei ICH
+    einen anderen Typ der Liste, hat es ein anderes Subjekt gemeint (*mein
+    Hund wohnt in Ostheim* als ICH `wohnt_in` mit `tier`), und das Tripel
+    schreibt nicht — auch wo die Beziehung den Typ erlaubt. `sonstiges` geht
+    durch, auch bei ICH: Das Modell ordnet nicht ein, und ohne Einordnung
+    gilt jede Entität als `sonstiges`.
+
+    Vorbedingung: `subjekt` nicht leer und schon als `SELF` geschrieben,
+        `beziehung` aus dem Kanon; `typ` ist das Feld der Antwort, ungeprüft.
+    Nachbedingung: None, wenn der Typ `sonstiges` ist oder die Beziehung ihn
+        erlaubt (bei ICH: `person`); sonst (Grund aus `REJECT_REASONS`, Anlass).
+    Fehlerfälle: ein fehlendes, leeres oder nicht-textliches Feld und ein Wert
+        außerhalb von `ENTITY_TYPES` ergeben `REJECT_TYPE_FORM`, ein Typ, den
+        die Beziehung nicht erlaubt, `REJECT_TYPE` — laut macht beide
+        `vet_triple` mit `logger.error`, einmal je Tripel wie bei
+        `_against_utterance`. ValueError bei leerem Subjekt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not subjekt:
+        raise ValueError("_check_subject_type: leeres Subjekt")  # noqa: TRY003
+    gelesen: str | None = typ.strip().lower() if isinstance(typ, str) else None
+    if gelesen not in ENTITY_TYPES:
+        return REJECT_TYPE_FORM, f"Typ des Subjekts {typ!r:.60} nicht in {list(ENTITY_TYPES)}"
+
+    # ── Verarbeitung ────────────────────────────
+    erlaubt: frozenset[str] = (frozenset({TYP_PERSON}) if subjekt == SELF
+                               else beziehung.subjekt_typen)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if gelesen == TYP_SONSTIGES:
+        logger.info("klassifizieren: Typ des Subjekts sonstiges — durchgelassen (%s %s)",
+                    subjekt, beziehung.attribut)
+        return None
+    if gelesen not in erlaubt:
+        return REJECT_TYPE, (f"Subjekt {subjekt!r} mit Typ {gelesen} — {beziehung.attribut} "
+                             f"erlaubt {sorted(erlaubt)}")
+    return None
 
 
 def _against_utterance(utterance: str, subjekt: str, beziehung: Relation, objekt: str,

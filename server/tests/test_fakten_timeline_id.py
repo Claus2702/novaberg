@@ -69,7 +69,8 @@ class FactOfAnEventTest(unittest.TestCase):
         self.modell = MagicMock()
         self.modell.chat.submit_sync.return_value.parsed = {
             "dauerhafte_aussage": True, "grund": "Probe", "tripel": [
-                {"kandidat": 1, "subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim"},
+                {"kandidat": 1, "subjekt": "Ilva", "typ": "person", "beziehung": "wohnt_in",
+                 "objekt": "Ostheim"},
             ]}
         einbettung = MagicMock()
         einbettung.embed.submit_sync.return_value.embedding = VEKTOR

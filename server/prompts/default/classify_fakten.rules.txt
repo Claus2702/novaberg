@@ -1,30 +1,32 @@
 [REGELN]
 Beispiele fuer DAUERHAFTE AUSSAGEN (mit Bitte und ohne):
 - "Ilva ist uebrigens nach Ostheim gezogen", Kandidat [1] Ilva | Wohnort | Ostheim
-  → dauerhafte_aussage true, tripel [{"kandidat": 1, "subjekt": "Ilva", "beziehung": "wohnt_in", "objekt": "Ostheim"}]
+  → dauerhafte_aussage true, tripel [{"kandidat": 1, "subjekt": "Ilva", "typ": "person", "beziehung": "wohnt_in", "objekt": "Ostheim"}]
 - "Merk dir, dass Ilva in Ostheim wohnt", Kandidat [1] Ilva | Wohnort | Ostheim
-  → kandidat 1, subjekt "Ilva", beziehung "wohnt_in", objekt "Ostheim"
+  → kandidat 1, subjekt "Ilva", beziehung "wohnt_in", objekt "Ostheim", typ "person"
 - "Mein Hund heisst Rufus", Kandidat [1] Hund | Name | Rufus
-  → kandidat 1, subjekt "ICH", beziehung "hat_haustier", objekt "Rufus"
+  → kandidat 1, subjekt "ICH", beziehung "hat_haustier", objekt "Rufus", typ "person"
   (nicht subjekt "ICH", beziehung "heisst" — Rufus ist der Name des Hundes, nicht deiner)
 - "Ich heisse Merten", Kandidat [1] Mensch | Name | Merten
-  → kandidat 1, subjekt "ICH", beziehung "heisst", objekt "Merten"
+  → kandidat 1, subjekt "ICH", beziehung "heisst", objekt "Merten", typ "person"
 - "Merten arbeitet als Tischler", Kandidat [2] Merten | Beruf | Tischler
-  → kandidat 2, subjekt "Merten", beziehung "arbeitet_als", objekt "Tischler"
+  → kandidat 2, subjekt "Merten", beziehung "arbeitet_als", objekt "Tischler", typ "person"
 - "Ilva ist meine Schwester", Kandidat [1] Ilva | Verwandtschaft | Schwester
-  → kandidat 1, subjekt "ICH", beziehung "hat_schwester", objekt "Ilva"
+  → kandidat 1, subjekt "ICH", beziehung "hat_schwester", objekt "Ilva", typ "person"
+- "Unser Kater Rufus ist in Ostheim geboren", Kandidat [1] Rufus | Geburtsort | Ostheim
+  → kandidat 1, subjekt "Rufus", beziehung "geboren_in", objekt "Ostheim", typ "tier"
 
 Beispiele fuer RICHTUNG und GRUNDFORM:
-- "Ilvas Kollege heisst Merten" → subjekt "Ilva", beziehung "hat_kollege", objekt "Merten"
+- "Ilvas Kollege heisst Merten" → subjekt "Ilva", beziehung "hat_kollege", objekt "Merten", typ "person"
   (nicht subjekt "Merten", objekt "Ilva" — Merten ist der Kollege, Ilva hat ihn)
-- "Merten ist der Freund von Ilva" → subjekt "Ilva", beziehung "hat_freund", objekt "Merten"
-- "Ilvas Hund heisst Rufus" → subjekt "Ilva", beziehung "hat_haustier", objekt "Rufus"
+- "Merten ist der Freund von Ilva" → subjekt "Ilva", beziehung "hat_freund", objekt "Merten", typ "person"
+- "Ilvas Hund heisst Rufus" → subjekt "Ilva", beziehung "hat_haustier", objekt "Rufus", typ "person"
   (nicht subjekt "Ilvas" — das ist der Genitiv)
-- "Mein Kollege heisst Merten" → subjekt "ICH", beziehung "hat_kollege", objekt "Merten"
+- "Mein Kollege heisst Merten" → subjekt "ICH", beziehung "hat_kollege", objekt "Merten", typ "person"
   (nicht objekt "Merten heisst")
-- "Der Bruder von Ilva heisst Merten" → subjekt "Ilva", beziehung "hat_bruder", objekt "Merten"
+- "Der Bruder von Ilva heisst Merten" → subjekt "Ilva", beziehung "hat_bruder", objekt "Merten", typ "person"
   (nicht subjekt "Ilvas Bruder", beziehung "heisst")
-- "Ilva ist die Mutter von Merten" → subjekt "Merten", beziehung "hat_mutter", objekt "Ilva"
+- "Ilva ist die Mutter von Merten" → subjekt "Merten", beziehung "hat_mutter", objekt "Ilva", typ "person"
   (nicht "Ilva hat_sohn Merten" — ob Sohn oder Tochter, sagt der Satz nicht)
 
 Beispiele OHNE Tripel:
@@ -40,7 +42,10 @@ Beispiele OHNE Tripel:
 - "Merten findet Jazz viel schoener als Techno", Kandidat [1] Merten | Musik | Jazz
   → eine Vorliebe, kein Hobby: tripel []
   (nicht subjekt "Merten", beziehung "hat_hobby", objekt "Jazz")
+- "In Ostheim treffen sich jeden Herbst die Imker", Kandidat [1] Ostheim | Treffen | Imker
+  → ein Satz ueber einen Ort, nicht ueber einen Menschen: tripel []
+  (nicht subjekt "Ostheim", beziehung "hat_hobby", objekt "Imkerei", typ "ort" — ein Ort hat kein Hobby)
 - "Unser Kater ist Rufus", Kandidat [1] Kater | Name | Rufus
-  → kandidat 1, subjekt "ICH", beziehung "hat_haustier", objekt "Rufus"
+  → kandidat 1, subjekt "ICH", beziehung "hat_haustier", objekt "Rufus", typ "person"
 
 Antworte NUR mit dem JSON-Objekt.

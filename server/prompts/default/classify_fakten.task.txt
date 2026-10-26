@@ -12,6 +12,7 @@ Antwortformat:
         {{
             "kandidat": Nummer des Kandidaten, aus dem das Tripel stammt,
             "subjekt": "Name in Grundform, wessen Beziehung es ist, oder ICH",
+            "typ": "was das SUBJEKT ist, genau ein Wert aus der Liste TYP DES SUBJEKTS",
             "beziehung": "genau eine Beziehung aus der Liste unten",
             "objekt": "Name in Grundform oder Wert, der zur Beziehung gehoert"
         }}
@@ -59,6 +60,13 @@ SUBJEKT:
   Spricht der Mensch ueber sich selbst ("ich", "mein", "meine", auch "unser", "unsere")
   → subjekt: "ICH".
   Sonst der Name, so wie er in der Aeusserung steht, in seiner Grundform.
+
+TYP DES SUBJEKTS (genau einer dieser Werte, so geschrieben):
+{typen}
+  Der Typ sagt, was das SUBJEKT ist: ein Mensch, ein Ort, eine Organisation oder
+  Einrichtung, ein Tier oder ein Gegenstand. ICH ist ein Mensch → typ: "person".
+  Nenne, was das Subjekt wirklich ist, auch wenn dann keine Beziehung passt.
+  Weisst du es nicht → typ: "sonstiges".
 
 OBJEKT:
   Der Name der Person, des Ortes oder des Tieres, oder der Wert (Beruf, Hobby, Name).

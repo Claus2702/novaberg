@@ -117,9 +117,14 @@ def _kandidat(objekt: str, eigenschaft: str, wert: str, **felder: object) -> dic
 
 
 def _antwort(*tripel: tuple, dauerhaft: bool = True) -> dict:
-    """Eine Antwort des Modells: je Tripel (kandidat, subjekt, beziehung, objekt)."""
+    """Eine Antwort des Modells: je Tripel (kandidat, subjekt, beziehung, objekt).
+
+    Jedes Subjekt dieser Zeugen ist eine Person oder ICH; der Typ des Subjekts
+    steht deshalb als `person` in jedem Tripel.
+    """
     return {"dauerhafte_aussage": dauerhaft, "grund": "Probe", "tripel": [
-        {"kandidat": k, "subjekt": s, "beziehung": b, "objekt": o} for k, s, b, o in tripel
+        {"kandidat": k, "subjekt": s, "typ": "person", "beziehung": b, "objekt": o}
+        for k, s, b, o in tripel
     ]}
 
 
@@ -694,8 +699,9 @@ class FigureAndTasteTest(unittest.TestCase):
 
     def _urteil(self, aeusserung: str, kandidat: dict, subjekt: str, beziehung: str,
                 objekt: str) -> tuple[str, dict | None]:
-        urteil = vet_triple({"kandidat": 1, "subjekt": subjekt, "beziehung": beziehung,
-                             "objekt": objekt}, {1: kandidat}, aeusserung, True)
+        urteil = vet_triple({"kandidat": 1, "subjekt": subjekt, "typ": "person",
+                             "beziehung": beziehung, "objekt": objekt},
+                            {1: kandidat}, aeusserung, True)
         return urteil.grund, urteil.tripel
 
     def test_a_triple_about_the_figure_is_rejected(self) -> None:
