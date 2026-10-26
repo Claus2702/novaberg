@@ -41,14 +41,129 @@ def _zusammenfassung_generieren(
     return " ".join(woerter[:max_woerter]) + "..."
 
 
-def _verifizieren_notiz(notiz_id: int, erwartung: dict) -> bool:
-    """Prueft ob die DB-Operation den erwarteten Effekt hatte."""
+def _datenbank() -> object:
+    """Der eine Zugang dieses Dienstes zur Datenbank, aufgeloest zur Aufrufzeit.
+
+    Lese- und Schreibweg ueber eine Kennung holen die Datenbank hier, damit der
+    Dienst bei dem einen lokalen Import bleibt, den er schon hatte, und kein
+    zweiter Import der Infrastruktur in den Ablauf kommt.
+    Vorbedingung: keine.
+    Nachbedingung: Das Objekt hinter `tools.db_manager.db_manager` zur Zeit des
+    Aufrufs, mit aufrufbarem `select_one` und `execute`.
+    Fehlerfaelle: Fehlt eines davon, wirft die Funktion `TypeError`.
+    """
+    # ── Verarbeitung ────────────────────────────
     from tools.db_manager import db_manager
 
-    eintrag = db_manager.select_one(
-        "SELECT id, text, aktiv, status FROM notizen WHERE id = %s",
-        (notiz_id,),
+    # ── Ausgabe-Verifikation ────────────────────
+    for methode in ("select_one", "execute"):
+        if not callable(getattr(db_manager, methode, None)):
+            msg: str = f"_datenbank: db_manager ohne aufrufbares {methode!r}"
+            raise TypeError(msg)
+    return db_manager
+
+
+def _read_by_id(notiz_id: int, user_id: str) -> dict | None:
+    """Liest eine einzelne Notiz per ID — nur eine Zeile dieses Menschen.
+
+    Die Kennung kommt heute aus der eigenen Suche (`suche.py`, gebunden an
+    `user_id`) oder aus der Kandidatenliste einer Rueckfrage. Die Bindung
+    steht trotzdem hier in der Bedingung: Ein kuenftiger Weg darf die Kennung
+    anders beschaffen, und der Schutz darf nicht an der Suche allein haengen.
+    Dieselbe Bindung tragen die Direktiven (`direktiven/crud.py`, `_read_by_id`).
+    Vorbedingung: `notiz_id` ist eine Ganzzahl, `user_id` die des Menschen.
+    Nachbedingung: Die Zeile, wenn sie diesem Menschen gehoert, sonst `None`.
+    """
+    return _datenbank().select_one(
+        "SELECT id, name, text, aktiv, status FROM notizen WHERE id = %s AND user_id = %s",
+        (notiz_id, user_id),
     )
+
+
+#: Die Schreibungen dieses Dienstes ueber eine Kennung, je als ganze Abfrage,
+#: jede an den Menschen gebunden (Grund wie bei `_read_by_id`). Geschlossen,
+#: damit keine Spalte und keine Bedingung aus einer Eingabe in die Abfrage
+#: gelangt. `inhalt` setzt dieselben Spalten wie `NotizenRepository.update`
+#: mit Text und Zusammenfassung; die Abfrage steht hier, weil jene Abfrage
+#: die Zeile allein ueber die Kennung trifft.
+_SCHREIBUNGEN: dict[str, str] = {
+    "inhalt": (
+        "UPDATE notizen SET last_touched = NOW(), updated_at = NOW(), text = %s, "
+        "zusammenfassung = %s, suchtext = to_tsvector('german', "
+        "COALESCE(name, '') || ' ' || COALESCE(zusammenfassung, '')) "
+        "WHERE id = %s AND user_id = %s"
+    ),
+    "archiv": (
+        "UPDATE notizen SET aktiv = FALSE, status = 'archiviert', updated_at = NOW() "
+        "WHERE id = %s AND user_id = %s"
+    ),
+    "name": "UPDATE notizen SET name = %s, updated_at = NOW() WHERE id = %s AND user_id = %s",
+}
+
+
+def _notiz_schreiben(art: str, werte: tuple, notiz_id: int, user_id: str) -> int:
+    """Der eine Schreibweg ueber eine Kennung — nur an der Zeile dieses Menschen.
+
+    Vorbedingung: `art` ist ein Schluessel von `_SCHREIBUNGEN`, `werte` traegt
+    genau die Werte ihrer SET-Klausel, `notiz_id` ist eine Ganzzahl > 0,
+    `user_id` nicht leer.
+    Nachbedingung: Die Zahl der getroffenen Zeilen — `0` bei einer fremden
+    oder fehlenden Kennung, denn die Bedingung traegt die `user_id`.
+    Fehlerfaelle: Eine verletzte Vorbedingung ist ein Programmierfehler des
+    Aufrufers und wirft `ValueError`, bevor etwas geschrieben wird; eine
+    Rueckgabe, die keine Zeilenzahl ist, wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ist_kennung: bool = (
+        isinstance(notiz_id, int) and not isinstance(notiz_id, bool) and notiz_id > 0
+    )
+    if not ist_kennung or not user_id:
+        msg: str = f"_notiz_schreiben: Kennung {notiz_id!r} / user_id {user_id!r} unbrauchbar"
+        raise ValueError(msg)
+    if art not in _SCHREIBUNGEN:
+        msg = f"_notiz_schreiben: keine Schreibung {art!r}"
+        raise ValueError(msg)
+    sql: str = _SCHREIBUNGEN[art]
+    if len(werte) != sql.count("%s") - 2:
+        msg = f"_notiz_schreiben: {len(werte)} Werte fuer die Schreibung {art!r}"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    betroffen: object = _datenbank().execute(sql, (*werte, notiz_id, user_id))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(betroffen, int) or isinstance(betroffen, bool) or betroffen < 0:
+        msg = f"_notiz_schreiben: execute lieferte keine Zeilenzahl: {betroffen!r}"
+        raise TypeError(msg)
+    return betroffen
+
+
+def _keine_zeile_getroffen(state: AgentState, notiz_id: int, user_id: str, betroffen: int) -> dict:
+    """Der laute Ausgang eines Schreibwegs, der nicht genau eine Zeile dieses Menschen traf.
+
+    Vorbedingung: `betroffen` ist die Rueckgabe von `_notiz_schreiben` und nicht 1.
+    Nachbedingung: Status `fehler` mit Grund, geloggt; kein Erfolgssatz.
+    Fehlerfaelle: `betroffen == 1` ist ein Programmierfehler des Aufrufers
+    (`ValueError`) — ein Erfolg darf nicht als Fehler gemeldet werden.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if betroffen == 1:
+        msg: str = "_keine_zeile_getroffen: genau eine Zeile getroffen — kein Fehlerfall"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    grund: str = f"Notiz ID {notiz_id}: {betroffen} Zeilen getroffen statt einer"
+    logger.error(f"ausfuehren: {grund} (user_id='{user_id}') — kein Erfolg gemeldet")
+    return {
+        "status": "fehler",
+        "fehler": grund,
+        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "keine_zeile"}],
+    }
+
+
+def _verifizieren_notiz(notiz_id: int, user_id: str, erwartung: dict) -> bool:
+    """Prueft ob die DB-Operation den erwarteten Effekt hatte — an der Zeile dieses Menschen."""
+    eintrag = _read_by_id(notiz_id, user_id)
     if not eintrag:
         logger.error(f"Verifikation: Notiz ID {notiz_id} nicht gefunden")
         return False
@@ -400,7 +515,7 @@ def _create(state: AgentState) -> dict:
     )
 
     verifiziert = (
-        _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True})
+        _verifizieren_notiz(notiz_id, user_id, {"aktiv": True, "text_nicht_leer": True})
         if notiz_id
         else False
     )
@@ -427,10 +542,10 @@ def _update(state: AgentState) -> dict:
 
     Wird auch fuer add_content und remove_content verwendet.
     """
-    from config import POSTGRES_URL, get_node_config
-    from memory.repositories.notizen_repository import NotizenRepository
+    from config import get_node_config
     from services.model_services import ChatRequest, model_service
 
+    user_id: str = state["kontext"].get("user_id", "")
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")
     aktueller_text = notiz.get("text", "")
@@ -491,14 +606,13 @@ def _update(state: AgentState) -> dict:
     neuer_text = response.text.strip()
     zusammenfassung = _zusammenfassung_generieren(neuer_text)
 
-    NotizenRepository.update(
-        postgres_url=POSTGRES_URL,
-        notiz_id=notiz_id,
-        text=neuer_text,
-        zusammenfassung=zusammenfassung,
-    )
+    betroffen: int = _notiz_schreiben("inhalt", (neuer_text, zusammenfassung), notiz_id, user_id)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, notiz_id, user_id, betroffen)
 
-    verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True})
+    verifiziert = _verifizieren_notiz(
+        notiz_id, user_id, {"aktiv": True, "text_nicht_leer": True}
+    )
 
     logger.info(
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) {action}, verifiziert={verifiziert}"
@@ -514,8 +628,7 @@ def _update(state: AgentState) -> dict:
 
 def _delete(state: AgentState) -> dict:
     """Notiz archivieren (Soft-Delete)."""
-    from tools.db_manager import db_manager
-
+    user_id: str = state["kontext"].get("user_id", "")
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")
     notiz_name = notiz.get("name", "")
@@ -527,12 +640,11 @@ def _delete(state: AgentState) -> dict:
             "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "keine_id"}],
         }
 
-    db_manager.execute(
-        "UPDATE notizen SET aktiv = FALSE, status = 'archiviert', updated_at = NOW() WHERE id = %s",
-        (notiz_id,)
-    )
+    betroffen: int = _notiz_schreiben("archiv", (), notiz_id, user_id)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, notiz_id, user_id, betroffen)
 
-    verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": False})
+    verifiziert = _verifizieren_notiz(notiz_id, user_id, {"aktiv": False})
 
     logger.info(
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) archiviert, verifiziert={verifiziert}"
@@ -548,9 +660,7 @@ def _delete(state: AgentState) -> dict:
 
 def _append(state: AgentState) -> dict:
     """Text an bestehende Notiz anhaengen."""
-    from config import POSTGRES_URL
-    from memory.repositories.notizen_repository import NotizenRepository
-
+    user_id: str = state["kontext"].get("user_id", "")
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")
     notiz_name = notiz.get("name", "")
@@ -567,14 +677,13 @@ def _append(state: AgentState) -> dict:
     kombiniert = aktueller_text + "\n" + prompt
     zusammenfassung = _zusammenfassung_generieren(kombiniert)
 
-    NotizenRepository.update(
-        postgres_url=POSTGRES_URL,
-        notiz_id=notiz_id,
-        text=kombiniert,
-        zusammenfassung=zusammenfassung,
-    )
+    betroffen: int = _notiz_schreiben("inhalt", (kombiniert, zusammenfassung), notiz_id, user_id)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, notiz_id, user_id, betroffen)
 
-    verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_nicht_leer": True})
+    verifiziert = _verifizieren_notiz(
+        notiz_id, user_id, {"aktiv": True, "text_nicht_leer": True}
+    )
 
     logger.info(
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) ergaenzt, verifiziert={verifiziert}"
@@ -593,9 +702,7 @@ def _clear_content(state: AgentState) -> dict:
 
     Die Notiz bleibt bestehen, nur text und zusammenfassung werden geleert.
     """
-    from config import POSTGRES_URL
-    from memory.repositories.notizen_repository import NotizenRepository
-
+    user_id: str = state["kontext"].get("user_id", "")
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")
     notiz_name = notiz.get("name", "")
@@ -607,14 +714,11 @@ def _clear_content(state: AgentState) -> dict:
             "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "keine_id"}],
         }
 
-    NotizenRepository.update(
-        postgres_url=POSTGRES_URL,
-        notiz_id=notiz_id,
-        text="",
-        zusammenfassung="(leer)",
-    )
+    betroffen: int = _notiz_schreiben("inhalt", ("", "(leer)"), notiz_id, user_id)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, notiz_id, user_id, betroffen)
 
-    verifiziert = _verifizieren_notiz(notiz_id, {"aktiv": True, "text_leer": True})
+    verifiziert = _verifizieren_notiz(notiz_id, user_id, {"aktiv": True, "text_leer": True})
 
     logger.info(
         f"NotizenAgent: Notiz '{notiz_name}' (ID {notiz_id}) geleert, verifiziert={verifiziert}"
@@ -630,8 +734,7 @@ def _clear_content(state: AgentState) -> dict:
 
 def _rename(state: AgentState) -> dict:
     """Notiz umbenennen."""
-    from tools.db_manager import db_manager
-
+    user_id: str = state["kontext"].get("user_id", "")
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")
     alter_name = notiz.get("name", "")
@@ -651,14 +754,13 @@ def _rename(state: AgentState) -> dict:
             "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "kein_name"}],
         }
 
-    db_manager.execute(
-        "UPDATE notizen SET name = %s, updated_at = NOW() WHERE id = %s",
-        (neuer_name, notiz_id),
-    )
+    betroffen: int = _notiz_schreiben("name", (neuer_name,), notiz_id, user_id)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, notiz_id, user_id, betroffen)
 
     # Dieselbe Pflicht wie jede andere Schreibung (zweite Kontrolle 18.09.2026:
     # der einzige Schreibpfad, der ohne Pruefung `abgeschlossen` meldete).
-    zeile: dict | None = db_manager.select_one("SELECT name FROM notizen WHERE id = %s", (notiz_id,))
+    zeile: dict | None = _read_by_id(notiz_id, user_id)
     verifiziert: bool = bool(zeile) and zeile.get("name") == neuer_name
 
     logger.info(f"NotizenAgent: Notiz '{alter_name}' → '{neuer_name}' (ID {notiz_id}), verifiziert={verifiziert}")

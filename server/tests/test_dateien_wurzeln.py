@@ -115,9 +115,22 @@ class Bank:
         raise AssertionError(f"Bank: unbekannte SELECT-Abfrage: {query}")
 
     def select_one(self, query: str, params: tuple = ()) -> dict | None:
-        """Beantwortet die Einzelabfragen; eine unbekannte wirft statt zu schweigen."""
-        if "WHERE id = %s" in query:
-            return next((z for z in self.zeilen if z["id"] == params[0]), None)
+        """Beantwortet die Einzelabfragen; eine unbekannte wirft statt zu schweigen.
+
+        Bis zum 25.10.2026 beantwortete die Bank `WHERE id = %s` allein ueber
+        die Kennung, weil der Dienst so las; die Pruefung des Paares stand nur
+        danach. Seitdem bindet der Dienst die Kennung in der Bedingung an das
+        Paar — eine Abfrage ueber die Kennung ohne Paar wirft hier.
+        """
+        if "WHERE id = %s AND user_id = %s AND character_id = %s" in query:
+            zeilen_id, user_id, character_id = params
+            return next(
+                (z for z in self.zeilen
+                 if z["id"] == zeilen_id
+                 and z["user_id"] == user_id
+                 and z["character_id"] == character_id),
+                None,
+            )
         if "AND pfad = %s" in query:
             user_id, character_id, pfad = params
             return next(
@@ -132,24 +145,26 @@ class Bank:
     # --- Schreiben ---
 
     def execute(self, query: str, params: tuple = ()) -> int:
-        """Fuehrt UPDATE aus — oder laesst es wirkungslos, fuer die Verifikation."""
+        """Fuehrt UPDATE aus — oder laesst es wirkungslos, fuer die Verifikation.
+
+        Wie `select_one` trifft ein UPDATE seit dem 25.10.2026 nur die Zeile
+        des Paares; eines ohne Paar in der Bedingung wirft.
+        """
         self.schreibvorgaenge.append((query, params))
+        if "WHERE id = %s AND user_id = %s AND character_id = %s" not in query:
+            raise AssertionError(f"Bank: UPDATE ohne Paar in der Bedingung: {query}")
         if self.schreiben_wirkungslos:
             return 0
-        if "SET aktiv = %s" in query:
-            aktiv, zeilen_id = params
-            for zeile in self.zeilen:
-                if zeile["id"] == zeilen_id:
-                    zeile["aktiv"] = aktiv
-                    return 1
-            return 0
-        if "SET bezeichnung = %s" in query:
-            bezeichnung, zeilen_id = params
-            for zeile in self.zeilen:
-                if zeile["id"] == zeilen_id:
-                    zeile["bezeichnung"] = bezeichnung
-                    return 1
-            return 0
+        for spalte in ("aktiv", "bezeichnung"):
+            if f"SET {spalte} = %s" in query:
+                wert, zeilen_id, user_id, character_id = params
+                for zeile in self.zeilen:
+                    if (zeile["id"], zeile["user_id"], zeile["character_id"]) == (
+                        zeilen_id, user_id, character_id,
+                    ):
+                        zeile[spalte] = wert
+                        return 1
+                return 0
         raise AssertionError(f"Bank: unbekannte UPDATE-Abfrage: {query}")
 
     def execute_returning(self, query: str, params: tuple = ()) -> dict | None:

@@ -95,12 +95,23 @@ def _read_inaktive(paar: Paar) -> list[dict]:
     )
 
 
-def _read_by_id(wurzel_id: int) -> dict | None:
-    """Liest eine einzelne Freigabe per ID."""
+def _read_by_id(wurzel_id: int, paar: Paar) -> dict | None:
+    """Liest eine einzelne Freigabe per ID — nur eine Zeile dieses Paares.
+
+    Die Bindung steht in der Bedingung und nicht nur in der Pruefung danach
+    (`_ziel_aufloesen`): Die Kennung kann kuenftig aus einem anderen Weg
+    kommen, etwa aus der Fortsetzung nach einer Rueckfrage, und der Schutz
+    darf nicht an einer einzigen Pruefung haengen. Dieselbe Bindung tragen
+    die Direktiven (`direktiven/crud.py`, `_read_by_id`).
+    Vorbedingung: `wurzel_id` ist eine Ganzzahl, `paar` das Paar des Auftrags.
+    Nachbedingung: Die Zeile, wenn sie diesem Paar gehoert, sonst `None` —
+    eine fremde Zeile ist von einer fehlenden nicht zu unterscheiden.
+    """
     return db_manager.select_one(
         "SELECT id, user_id, character_id, pfad, bezeichnung, aktiv, "
-        "erstellt_am, geaendert_am FROM dateien_wurzeln WHERE id = %s",
-        (wurzel_id,),
+        "erstellt_am, geaendert_am FROM dateien_wurzeln "
+        "WHERE id = %s AND user_id = %s AND character_id = %s",
+        (wurzel_id, paar.user_id, paar.character_id),
     )
 
 
@@ -362,8 +373,13 @@ def _ziel_aufloesen(
     einer Auswahl — welche Freigabe gemeint ist, weiss der Mensch.
     """
     if target_id:
-        eintrag: dict | None = _read_by_id(target_id)
+        eintrag: dict | None = _read_by_id(target_id, paar)
         if not eintrag:
+            logger.error(
+                "dateien_wurzeln: Freigabe ID %s gibt es fuer (%s x %s) nicht — "
+                "fremd oder fehlend, abgewiesen",
+                target_id, paar.user_id, paar.character_id,
+            )
             return None, _ablehnung(
                 befund=f"Freigabe mit der Nummer {target_id} gibt es nicht.",
                 beleg="Unter dieser Nummer steht keine Zeile.",
@@ -426,19 +442,23 @@ def _ziel_aufloesen(
 # Verifikation — der DB-Read nach dem Write
 # ============================================================
 
-def _verifizieren(action: str, wurzel_id: int | None, aktiv_erwartet: bool) -> bool:
+def _verifizieren(
+    action: str, wurzel_id: int | None, paar: Paar, aktiv_erwartet: bool,
+) -> bool:
     """Prueft, ob die Operation den erwarteten Effekt hatte.
 
-    Vorbedingung: `action` liegt in AKTIONEN_KANON.
-    Nachbedingung: True nur, wenn die Zeile existiert und ihr `aktiv` dem
-    erwarteten Zustand entspricht. Ein gelungener Aufruf ist nicht dasselbe
-    wie eine geschriebene Zeile.
+    Vorbedingung: `action` liegt in AKTIONEN_KANON, `paar` ist das Paar des
+    Auftrags.
+    Nachbedingung: True nur, wenn die Zeile dieses Paares existiert und ihr
+    `aktiv` dem erwarteten Zustand entspricht. Ein gelungener Aufruf ist
+    nicht dasselbe wie eine geschriebene Zeile — und die Zeile eines anderen
+    Paares bestaetigt nichts.
     """
     if wurzel_id is None:
         logger.error("dateien_wurzeln: Verifikation ohne ID nach '%s'", action)
         return False
 
-    eintrag: dict | None = _read_by_id(wurzel_id)
+    eintrag: dict | None = _read_by_id(wurzel_id, paar)
     if not eintrag:
         logger.error(
             "dateien_wurzeln: Verifikation — Zeile ID %d nach '%s' nicht "
@@ -582,7 +602,7 @@ def _create(state: AgentState) -> dict:
     wurzel_id = ergebnis_zeile["id"] if ergebnis_zeile else None
 
     # ── Ausgabe-Verifikation ────────────────────
-    verifiziert: bool = _verifizieren("create", wurzel_id, aktiv_erwartet=True)
+    verifiziert: bool = _verifizieren("create", wurzel_id, paar, aktiv_erwartet=True)
     logger.info(
         "dateien_wurzeln: Freigabe angelegt (ID %s) auf '%s' fuer (%s x %s), "
         "eigentum='%s', %s, verifiziert=%s",
@@ -660,13 +680,13 @@ def _update(state: AgentState) -> dict:
             ],
         }
 
-    db_manager.execute(
-        "UPDATE dateien_wurzeln SET bezeichnung = %s, geaendert_am = NOW() WHERE id = %s",
-        (bezeichnung, wurzel_id),
-    )
+    paar: Paar = Paar.aus_state(state)
+    betroffen: int = _zeile_schreiben(wurzel_id, paar, "bezeichnung", bezeichnung)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, wurzel_id, paar, betroffen)
 
     # ── Ausgabe-Verifikation ────────────────────
-    nachher: dict | None = _read_by_id(wurzel_id)
+    nachher: dict | None = _read_by_id(wurzel_id, paar)
     if not nachher or nachher.get("bezeichnung") != bezeichnung:
         logger.error(
             "dateien_wurzeln: Verifikation — Zeile ID %s traegt Bezeichnung "
@@ -709,7 +729,7 @@ def _reactivate(state: AgentState) -> dict:
     if fehler is not None:
         return fehler
 
-    eintrag: dict | None = _read_by_id(wurzel_id)
+    eintrag: dict | None = _read_by_id(wurzel_id, Paar.aus_state(state))
     if eintrag is None:
         logger.error("dateien_wurzeln: reactivate — Zeile ID %s verschwunden", wurzel_id)
         return {
@@ -741,14 +761,14 @@ def _zustand_setzen(state: AgentState, aktiv_neu: bool, vorab_id: int | None = N
         if fehler is not None:
             return fehler
 
-    db_manager.execute(
-        "UPDATE dateien_wurzeln SET aktiv = %s, geaendert_am = NOW() WHERE id = %s",
-        (aktiv_neu, wurzel_id),
-    )
+    paar: Paar = Paar.aus_state(state)
+    betroffen: int = _zeile_schreiben(wurzel_id, paar, "aktiv", aktiv_neu)
+    if betroffen != 1:
+        return _keine_zeile_getroffen(state, wurzel_id, paar, betroffen)
 
     # ── Ausgabe-Verifikation ────────────────────
     vorgang: str = "reactivate" if aktiv_neu else "delete"
-    verifiziert: bool = _verifizieren(vorgang, wurzel_id, aktiv_erwartet=aktiv_neu)
+    verifiziert: bool = _verifizieren(vorgang, wurzel_id, paar, aktiv_erwartet=aktiv_neu)
     if not verifiziert:
         return {
             "status": "fehler",
@@ -758,7 +778,7 @@ def _zustand_setzen(state: AgentState, aktiv_neu: bool, vorab_id: int | None = N
             ],
         }
 
-    nachher: dict | None = _read_by_id(wurzel_id)
+    nachher: dict | None = _read_by_id(wurzel_id, paar)
     pfad: str = nachher["pfad"] if nachher else "?"
     logger.info(
         "dateien_wurzeln: Freigabe ID %s auf '%s' %s",
@@ -778,6 +798,90 @@ def _zustand_setzen(state: AgentState, aktiv_neu: bool, vorab_id: int | None = N
             "ergebnis": "wieder_aufgenommen" if aktiv_neu else "zurueckgenommen",
             "id": wurzel_id, "verifiziert": True,
         }],
+    }
+
+
+#: Die Schreibungen dieses Dienstes ueber eine Kennung, je als ganze Abfrage.
+#: Jede bindet die Kennung an das Paar in der Bedingung — aus demselben Grund
+#: wie `_read_by_id`: Der Schutz darf nicht an der Pruefung in
+#: `_ziel_aufloesen` allein haengen. Geschlossen, damit keine Spalte und
+#: keine Bedingung aus einer Eingabe in die Abfrage gelangt.
+_SCHREIBUNGEN: dict[str, str] = {
+    "aktiv": (
+        "UPDATE dateien_wurzeln SET aktiv = %s, geaendert_am = NOW() "
+        "WHERE id = %s AND user_id = %s AND character_id = %s"
+    ),
+    "bezeichnung": (
+        "UPDATE dateien_wurzeln SET bezeichnung = %s, geaendert_am = NOW() "
+        "WHERE id = %s AND user_id = %s AND character_id = %s"
+    ),
+}
+
+
+def _zeile_schreiben(wurzel_id: int, paar: Paar, spalte: str, wert: object) -> int:
+    """Der eine Schreibweg ueber eine Kennung — nur an der Zeile dieses Paares.
+
+    Vorbedingung: `wurzel_id` ist eine Ganzzahl > 0, beide Haelften des
+    Paares sind gesetzt, `spalte` ist ein Schluessel von `_SCHREIBUNGEN`.
+    Nachbedingung: Die Zahl der getroffenen Zeilen — `0` bei einer fremden
+    oder fehlenden Kennung, denn die Bedingung traegt das Paar.
+    Fehlerfaelle: Eine verletzte Vorbedingung ist ein Programmierfehler des
+    Aufrufers und wirft `ValueError`, bevor etwas geschrieben wird; eine
+    Rueckgabe, die keine Zeilenzahl ist, wirft `TypeError`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ist_kennung: bool = (
+        isinstance(wurzel_id, int) and not isinstance(wurzel_id, bool) and wurzel_id > 0
+    )
+    if not ist_kennung or not paar.user_id or not paar.character_id:
+        msg: str = f"_zeile_schreiben: Kennung {wurzel_id!r} / Paar {paar!r} unbrauchbar"
+        raise ValueError(msg)
+    if spalte not in _SCHREIBUNGEN:
+        msg = f"_zeile_schreiben: keine Schreibung fuer Spalte {spalte!r}"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    betroffen: object = db_manager.execute(
+        _SCHREIBUNGEN[spalte], (wert, wurzel_id, paar.user_id, paar.character_id),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not isinstance(betroffen, int) or isinstance(betroffen, bool) or betroffen < 0:
+        msg = f"_zeile_schreiben: execute lieferte keine Zeilenzahl: {betroffen!r}"
+        raise TypeError(msg)
+    return betroffen
+
+
+def _keine_zeile_getroffen(
+    state: AgentState, wurzel_id: int, paar: Paar, betroffen: int,
+) -> dict:
+    """Der laute Ausgang eines Schreibwegs, der nicht genau eine Zeile dieses Paares traf.
+
+    Vorbedingung: `betroffen` ist die Rueckgabe von `_zeile_schreiben` und nicht 1.
+    Nachbedingung: Status `fehler` mit Grund, geloggt; kein Erfolgssatz.
+    Fehlerfaelle: `betroffen == 1` ist ein Programmierfehler des Aufrufers
+    (`ValueError`) — ein Erfolg darf nicht als Fehler gemeldet werden.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if betroffen == 1:
+        msg: str = "_keine_zeile_getroffen: genau eine Zeile getroffen — kein Fehlerfall"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    grund: str = (
+        f"Die Aenderung an der Freigabe ist nicht angekommen: ID {wurzel_id} "
+        f"traf {betroffen} Zeilen statt einer."
+    )
+    logger.error(
+        "dateien_wurzeln: %s (%s x %s) — kein Erfolg gemeldet",
+        grund, paar.user_id, paar.character_id,
+    )
+    return {
+        "status": "fehler",
+        "fehler": grund,
+        "schritte": state["schritte"] + [
+            {"node": "ausfuehren", "ergebnis": "keine_zeile", "id": wurzel_id}
+        ],
     }
 
 

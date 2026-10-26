@@ -140,12 +140,16 @@ def _notes_update() -> AgentResult:
             "action": "update",
             "notiz": {"id": 7, "name": "Einkaufsliste", "text": "Brot"},
         },
+        "kontext": {"user_id": USER},
         "schritte": [],
     }
     model = MagicMock()
     model.chat.submit_sync.return_value = SimpleNamespace(text="Brot\nMilch")
+    # Seit dem 25.10.2026 schreibt `_update` ueber den gebundenen Schreibweg
+    # der Notizen (`_notiz_schreiben`) statt ueber `NotizenRepository.update`;
+    # er meldet die eine getroffene Zeile.
     with patch("services.model_services.model_service", model), \
-            patch("memory.repositories.notizen_repository.NotizenRepository.update"), \
+            patch.object(notes_crud, "_notiz_schreiben", return_value=1), \
             patch.object(notes_crud, "_zusammenfassung_generieren", return_value="Brot, Milch"), \
             patch.object(notes_crud, "_verifizieren_notiz", return_value=True):
         return _as_result("notizen", notes_crud._update(state))

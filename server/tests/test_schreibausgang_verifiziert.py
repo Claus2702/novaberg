@@ -74,8 +74,11 @@ class NotizUmbenennenTest(unittest.TestCase):
     """Zweite Kontrolle 18.09.2026: der einzige Schreibpfad ohne Pruefung."""
 
     def _umbenennen(self, gelesen: str) -> dict:
+        # Seit dem 25.10.2026 schreibt und liest `_rename` nur an der Zeile des
+        # Menschen; der Auftrag traegt deshalb `kontext.user_id`.
         from agents.notizen import crud as notizen_crud
-        state = {"parameter": {"notiz": {"id": 7, "name": "Alt"}, "target": "Neu"}, "schritte": []}
+        state = {"parameter": {"notiz": {"id": 7, "name": "Alt"}, "target": "Neu"},
+                 "kontext": {"user_id": "pruef-nutzer"}, "schritte": []}
         with patch("tools.db_manager.db_manager.execute", return_value=1), \
              patch("tools.db_manager.db_manager.select_one", return_value={"name": gelesen}):
             return notizen_crud._rename(state)
