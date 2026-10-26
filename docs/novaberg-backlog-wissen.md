@@ -1142,6 +1142,8 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 **Befund:** `server/agents/fakten/beziehungen.py::KANON` übernimmt die 23 Beziehungen des alten Plugins; eine Beziehung zwischen Orten (*liegt in*) fehlt. *„Kassel liegt in Deutschland“* — das Beispiel aus `novaberg-memory-fakten_k.md` §1 — wird abgelehnt, gemessen an *„Ostheim liegt an der Werra“*. Ebenso fehlt eine Beziehung für Unverträglichkeiten (*„Lena verträgt keine Nüsse“*).
 
+**Nachtrag 25.10.2026:** Seit der Prüfung des Subjekttyps (`_e` A Nr. 46, Code-Tree `47256bf`) trägt jede Beziehung `subjekt_typen` (`beziehungen.py`), und `_subject_types` gibt für jede dort nicht genannte Beziehung nur `person`. Eine Beziehung zwischen Orten (*liegt in*) braucht deshalb beim Aufnehmen einen Eintrag dort, der `ort` zulässt, sonst weist `vet_triple` sie wegen des Subjekts ab (`subjekt_typ`).
+
 **Was fertig wäre:** Jedes Beispiel des Konzepts (`_k` §1, §2) lässt sich als Fakt mit einer Beziehung des Kanons schreiben; welche Beziehungen dazukommen und wie sie heißen, wählt der Bau. Eine Beziehung zwischen Orten wird in M2 mitgemessen.
 
 **Zusammenhang:** `novaberg-memory-fakten_k.md` §1 · `novaberg-memory-fakten_b.md` §6 (M2) · `novaberg-memory-fakten_e.md` A, Nr. 14 (*Beziehungen bleiben exakt*)

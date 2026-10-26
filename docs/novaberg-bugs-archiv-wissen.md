@@ -1,9 +1,43 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → ~~31~~ → ~~32~~ → ~~33~~ → 34 Eintraege (24.10.2026 `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE`, behoben und am Modell gemessen; 17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen; am selben Tag `EREIGNIS-KOMMENDES-WIRD-VERGANGEN`, behoben und am Modell gemessen; 23.10.2026 `TIMELINE-CLIPBOARD-OHNE-ID`, behoben und im Betrieb gemessen), je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → ~~31~~ → ~~32~~ → ~~33~~ → ~~34~~ → 35 Eintraege (25.10.2026 `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN`, behoben und am Modell gemessen; 24.10.2026 `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE`, behoben und am Modell gemessen; 17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen; am selben Tag `EREIGNIS-KOMMENDES-WIRD-VERGANGEN`, behoben und am Modell gemessen; 23.10.2026 `TIMELINE-CLIPBOARD-OHNE-ID`, behoben und im Betrieb gemessen), je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 25.10.2026 — behoben und am Modell gemessen
+
+**Dieser Eintrag ist mit dem Bau des Subjekttyps im Fakten-Agenten geschlossen** — seine Schließbedingung verlangte Zeuge und Zwilling, nachdem die Absicht entschieden ist; bezeugt ist es, gemessen am Modell vor dem Commit, keine Messung im Betrieb; beides steht in der Zustandszeile, die Commit-Kennung wird nachgetragen. Im offenen Register stand er im Abschnitt *24.10.2026 — aus der Klassifizierung der Funde vom 23.10.2026*, dessen Überschrift dort stehen bleibt.
+
+---
+
+### `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` — der Fakten-Agent schrieb ein Tripel mit einem Ort als Subjekt; keine Stufe der Prüfung kennt die Art des Subjekts ✅
+
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, und es schreibt: Der falsche Fakt steht in der Mappe des Ortes und erreicht den Prompt, sobald der Ort gebunden ist. Begrenzt, weil er einer von drei Fakten einer einzigen Reihe war und `hat_hobby` mehrwertig ist, also nichts ablöst; kehrt er wieder, ist der Rang hoch. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
+
+**Zustand:** **geschlossen am 25.10.2026 — behoben im Code-Tree `47256bf` (auf `042ab20`; die Kennung des Commits wird nachgetragen), bezeugt mit Zeuge und Zwilling, am Modell gemessen vor dem Commit (25.10.2026), im Betrieb nicht gemessen.** ~~offen — **die Absicht ist offen:** welche Beziehungen eine Person oder ICH als Subjekt verlangen; ohne sie ist die Prüfung nicht baubar.~~ → **Die Absicht ist entschieden am 25.10.2026** (`novaberg-memory-fakten_e.md` A Nr. 46) **und gebaut:** `server/agents/fakten/beziehungen.py` trägt `ENTITY_TYPES` (`person`, `ort`, `organisation`, `tier`, `objekt`, `sonstiges`) und je Beziehung `subjekt_typen` — `person` für jede Beziehung, `heisst` dazu jeden Typ außer `sonstiges`, `wohnt_in` und `geboren_in` dazu `tier`. `vet_triple` liest das Feld `typ` je Tripel (der Typ des Subjekts) nach Kanon und Subjekt/Objekt, vor der Prüfung gegen die Äußerung: Fehlt es oder liegt es außerhalb der Liste, ist das Tripel verworfen (`typ_form`); nennt es einen Typ, den die Beziehung nicht erlaubt, ist es verworfen (`subjekt_typ`); `sonstiges` geht durch, mit einer Logzeile; ICH gilt als `person`, bei ICH sind nur `person` und `sonstiges` zulässig. Der Prompt (`server/prompts/default/classify_fakten.task.txt` und `.rules.txt`) fragt `typ` ab, die Liste kommt aus `ENTITY_TYPES`. Kein Typ-Fakt wird geschrieben (F7 bleibt offen), `entitaeten.typ` ist unverändert.
+
+**Zeugen** `[Test]`: `server/tests/test_fakten_subject_type.py` (neu), angepasst `test_fakten_agent.py` und `test_fakten_timeline_id.py`. Server-Suite am Code-Tree `Ran 5428 tests` · `OK (expected failures=2)`.
+
+**Gemessen vor dem Bau** `[gemessen 25.10.2026]`, lesend in der Datenbank des Betriebs: `entitaeten` trägt 1095 × `sonstiges`, 57 × `user`, kein `ort` und kein `person`. Der Fall des Bugs ist ein Fakt mit einem Ort (Typ `sonstiges`) als Subjekt von `hat_hobby` — eine Prüfung gegen `entitaeten.typ` hätte ihn nie gefangen; deshalb nennt das Modell den Typ des Subjekts je Tripel.
+
+**MESSUNG vor dem Commit** `[gemessen 25.10.2026]`, am Modell: 20 Fälle × 2, dem Bau nicht gezeigt, Nulllinie am Stand davor. Das Feld `typ`: 0 fehlt, 0 außerhalb der Liste, es trifft den Typ des Subjekts in 28 von 30 Fällen (die 2: eine Sternwarte bei `heisst` als `objekt` statt `organisation`, zulässig); bei ICH 12 von 12 `person`; `sonstiges` 0. Verworfen wegen des Typs: 3, alle zu Recht (ein Tier an `hat_hobby` ×2, ein Ort an `wohnt_in` ×1), 0 zu Unrecht; kein Fakt, den die Nulllinie schrieb, geht verloren. **Grenze der Messung:** Der Fall des Bugs selbst (Orte, Einrichtungen, Objekte als Subjekt einer Personenbeziehung) lieferte in dieser Reihe in keinem der beiden Stände ein Tripel; die Abweisung eines Ortes ist am Modell nur an `wohnt_in` gesehen, an `hat_hobby` bezeugen sie die Zeugen.
+
+**Befund** `[Code]`: `server/agents/fakten/klassifikation.py::vet_triple` (Z. 278–332) prüft Form, Kandidat, Sprecher, Vorprüfung und Kanon, dazu `figur` und `vorliebe`, und mit `check_answer` (Z. 412–457), ob jeder Name in der Äußerung steht und ob die Richtung zum Besitzer stimmt. Die **Art** des Subjekts prüft keine dieser Stufen: `Relation` (`server/agents/fakten/beziehungen.py`, Z. 27–54) kennt nur `objekt_typ` und keinen Typ des Subjekts, und `server/agents/fakten/suche.py` legt ein neues Subjekt als `TYP_SONSTIGES` an (Z. 117) oder bindet den einen Treffer gleich welchen Typs (Z. 98–104, 171–188). Ein Ort, der im Satz als Name steht, besteht damit als Subjekt von `hat_hobby` jede Prüfung.
+
+**Symptom** (Fundliste, 23.10.2026): Aus einem Satz über eine Tagung schrieb der Agent ein Tripel der Form *Ort `hat_hobby` Thema* statt der Person; einer von 3 geschriebenen Fakten.
+
+**Wirkung.** Ein falscher Fakt über einen Ort steht im Faktengedächtnis. Ob dabei der eigentliche Fakt des Menschen (ICH …) ausfiel, ist nicht geprüft.
+
+**Geschlossen, wenn** ein Tripel, dessen Beziehung eine Person oder ICH als Subjekt verlangt, mit einem Ort als Subjekt abgelehnt wird und eine Beziehung, für die ein Ort ein rechtmäßiges Subjekt ist, ihn weiter annimmt — die Prüfung gilt je Beziehung; bezeugt mit Zeuge und Zwilling, nachdem die Absicht entschieden ist.
+
+**Offen, jetzt beantwortet:** Ob der Ort über die Bindung der Sachlage oder über den Namen Subjekt wurde, ist für die Prüfung gleichgültig — sie gilt am Tripel. Als Entität vom Typ `ort` bestand er nicht: `entitaeten` trägt keinen. **Was bleibt:** Nennt das Modell für einen Ort `sonstiges`, geht das Tripel durch (A Nr. 46, Frage 3); die Messung zählt es (0 von 30).
+
+**Zusammenhang:** `FAKTEN-HEISST-ICH-AUSGENOMMEN` (offen, in [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)) — dieselbe Prüfung, eine andere Lücke; Backlog `FAKTEN-KANON-LUECKEN` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) — ein Ort ist für andere Beziehungen ein rechtmäßiges Subjekt (*liegt in*), deshalb gilt eine Prüfung je Beziehung; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6.
 
 ---
 
