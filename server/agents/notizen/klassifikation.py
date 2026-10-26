@@ -33,6 +33,139 @@ GUELTIGE_AKTIONEN: set[str] = {
     "rejected",
 }
 
+# Die Textfelder der Antwort, die `klassifizieren` liest, mit dem Wert, der
+# gilt, wenn das Modell nichts nennt: `grund` bei `rejected`, sonst die
+# uebrigen. Gelesen in `_read_answer` ueber `_read_text_fields`.
+_REASON_FIELDS: dict[str, str] = {"grund": "kein Grund angegeben"}
+_TEXT_FIELDS: dict[str, str] = {"target": "", "target_typ": "titel", "normalisiert": ""}
+
+
+def _read_text_fields(
+    ergebnis: dict, vorgaben: dict[str, str],
+) -> tuple[dict[str, str], str | None]:
+    """Liest Textfelder der Modellantwort geprueft — als Text, als nicht genannt oder als Fehler.
+
+    Bis zum 25.10.2026 las `klassifizieren` jedes Feld mit `ergebnis.get(feld, "")`.
+    Der Vorgabewert greift nur beim fehlenden Schluessel: Lieferte das Modell
+    `"normalisiert": null`, kam `None` zurueck, und `len(normalisiert)` warf
+    `TypeError` — die Bitte brach erst im Dispatch ab; `null` in `target` und
+    `target_typ` ging still als `None` in die Parameter. Vorbild ist
+    `dateien/klassifikation.py::klassifizieren`, das jedes Feld geprueft liest —
+    hier mit dem Unterschied, dass ein Wert falschen Typs nicht zu `""` wird:
+    Leer hiesse *das Modell nannte nichts*, und eine defekte Antwort saehe aus
+    wie eine gueltige. Eine Kopie je Dienst, kein gemeinsames Modul.
+
+    Vorbedingung: `ergebnis` ist das Objekt der Modellantwort; `vorgaben` nennt
+    je Feld den Wert, der gilt, wenn das Modell nichts nannte.
+    Nachbedingung: `(felder, None)` mit einem Text je Feld aus `vorgaben` — dem
+    gelieferten, oder der Vorgabe bei fehlendem Schluessel und bei `null`;
+    `({}, grund)` beim ersten Feld, das weder Text noch `null` ist.
+    Fehlerfaelle: Zahl, Wahrheitswert, Liste, Objekt — mit Grund, nichts ersetzt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(ergebnis, dict):
+        msg: str = f"_read_text_fields: Antwort ist {type(ergebnis).__name__} statt dict"
+        raise TypeError(msg)
+    if not vorgaben:
+        msg = "_read_text_fields: kein Feld genannt"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    felder: dict[str, str] = {}
+    for feld, vorgabe in vorgaben.items():
+        roh: object = ergebnis.get(feld)
+        if roh is None:
+            felder[feld] = vorgabe
+        elif isinstance(roh, str):
+            felder[feld] = roh
+        else:
+            return {}, f"{feld} ist {type(roh).__name__} statt Text: {repr(roh)[:60]}"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if felder.keys() != vorgaben.keys():
+        msg = f"_read_text_fields: gelesen {sorted(felder)}, verlangt {sorted(vorgaben)}"
+        raise RuntimeError(msg)
+    return felder, None
+
+
+def _unusable_answer(state: AgentState, grund: str, schritt: str) -> dict:
+    """Beendet `klassifizieren` laut an einer Modellantwort, die nicht lesbar ist.
+
+    Vorbedingung: `grund` und `schritt` sind nicht leer.
+    Nachbedingung: eine `ERROR`-Zeile; das Ergebnis traegt `status: fehler`, den
+    Grund und `schritt` als letzten Schritt — kein Lesen, kein Schreiben, keine Frage.
+    Fehlerfaelle: ein leerer Grund oder Schritt wirft `ValueError` (Programmierfehler).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not grund or not schritt:
+        msg: str = f"_unusable_answer: Grund {grund!r} oder Schritt {schritt!r} leer"
+        raise ValueError(msg)
+
+    # ── Verarbeitung ────────────────────────────
+    logger.error(f"klassifizieren: {grund} — kein Lesen, kein Schreiben, keine Frage")
+    abbruch: dict = {
+        "status": "fehler",
+        "fehler": f"Klassifikation unbrauchbar: {grund}",
+        "schritte": state["schritte"] + [{"node": "klassifizieren", "ergebnis": schritt}],
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(abbruch["schritte"]) != len(state["schritte"]) + 1:
+        msg = "_unusable_answer: Schritt nicht angehaengt"
+        raise RuntimeError(msg)
+    return abbruch
+
+
+def _read_answer(
+    state: AgentState, ergebnis: object,
+) -> tuple[object, dict[str, str], dict | None]:
+    """Liest die Modellantwort geprueft: Aktion und Textfelder — oder das Ende des Knotens.
+
+    Zieht die Objektpruefung, das Lesen der Textfelder und den Ausgang `rejected`
+    aus `klassifizieren` heraus: Dort endet jede Antwort, die keinen Auftrag
+    traegt, an einer einzigen Stelle, und die Pruefungen machen `klassifizieren`
+    nicht verzweigter. `action` bleibt ungeprueft wie bisher.
+
+    Vorbedingung: `ergebnis` ist die Modellantwort, wie sie kam (`response.parsed`).
+    Nachbedingung: `(action, felder, None)` mit einem Text je Feld aus `_TEXT_FIELDS`;
+    sonst `(action, {}, ende)`, und `ende` ist das Ergebnis von `klassifizieren`:
+    `rejected/<grund>`, oder laut `kein_objekt` bzw. `feld_falscher_typ`.
+    Fehlerfaelle: kein Objekt, ein Feld weder Text noch `null` — beide laut ueber
+    `_unusable_answer`, nichts ersetzt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(ergebnis, dict):
+        return "", {}, _unusable_answer(
+            state, f"Modellantwort ist {type(ergebnis).__name__} statt Objekt", "kein_objekt",
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    action: object = ergebnis.get("action", "")
+    felder, feld_fehler = _read_text_fields(
+        ergebnis, _REASON_FIELDS if action == "rejected" else _TEXT_FIELDS,
+    )
+    if feld_fehler:
+        return action, {}, _unusable_answer(state, feld_fehler, "feld_falscher_typ")
+
+    # --- REJECTED: Classify hat Prompt als Nicht-Auftrag erkannt ---
+    if action == "rejected":
+        grund: str = felder["grund"]
+        logger.info(f"klassifizieren: REJECTED — {grund}")
+        return action, {}, {
+            "parameter": {**state["parameter"], "action": "rejected"},
+            "status": "rejected",
+            "schritte": state["schritte"] + [{
+                "node": "klassifizieren",
+                "ergebnis": f"rejected/{grund}",
+            }],
+        }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if felder.keys() != _TEXT_FIELDS.keys():
+        msg: str = f"_read_answer: gelesen {sorted(felder)}, verlangt {sorted(_TEXT_FIELDS)}"
+        raise RuntimeError(msg)
+    return action, felder, None
+
 
 def _build_classify_prompt(
     erkennungshilfe: str | None = None,
@@ -143,25 +276,15 @@ def klassifizieren(state: AgentState) -> dict:
     # ── JSON parsen ──
     try:
         response = model_service.chat.submit_sync(chat_request)
-        ergebnis: dict = response.parsed
-        action = ergebnis.get("action", "")
+        ergebnis: object = response.parsed
+        # Kein Objekt, ein Feld falschen Typs und `rejected` enden in `_read_answer`.
+        action, felder, ende = _read_answer(state, ergebnis)
+        if ende is not None:
+            return ende
 
-        # --- REJECTED: Classify hat Prompt als Nicht-Auftrag erkannt ---
-        if action == "rejected":
-            grund = ergebnis.get("grund", "kein Grund angegeben")
-            logger.info(f"klassifizieren: REJECTED — {grund}")
-            return {
-                "parameter": {**state["parameter"], "action": "rejected"},
-                "status": "rejected",
-                "schritte": state["schritte"] + [{
-                    "node": "klassifizieren",
-                    "ergebnis": f"rejected/{grund}",
-                }],
-            }
-
-        target = ergebnis.get("target", "")
-        target_typ = ergebnis.get("target_typ", "titel")
-        normalisiert = ergebnis.get("normalisiert", "")
+        target: str = felder["target"]
+        target_typ: str = felder["target_typ"]
+        normalisiert: str = felder["normalisiert"]
 
         # Die Zustimmung bindet — deterministisch (E1c): Bei einer blanken
         # Zustimmung nennt die Aeusserung nichts; das Ziel ist die angebotene
