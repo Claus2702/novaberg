@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 985 Abschnitte in 7 Dateien — 473 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 993 Abschnitte in 7 Dateien — 481 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 67 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 75 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 985 Marken, 985 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 993 Marken, 993 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,14 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-26 | laufend | ## | [26.10.2026, 07:51 UTC — Im Betrieb gemessen: Die Kennung aus der Modellausgabe erreicht das Tor der Direktiven, und das Tor hält über den echten Weg; vier Bugs der Ja/Nein-Tore und der Auflösung und fünf des Faktengedächtnisses im Archiv](novaberg-roadmap.md#26102026-0751-utc--im-betrieb-gemessen-die-kennung-aus-der-modellausgabe-erreicht-das-tor-der-direktiven-und-das-tor-hält-über-den-echten-weg-vier-bugs-der-janein-tore-und-der-auflösung-und-fünf-des-faktengedächtnisses-im-archiv) |
+| 2026-10-25 | laufend | ## | [25.10.2026, 22:06 UTC — Der Fakten-Agent kennt den Typ des Subjekts: Ein Tripel, dessen Subjekt für die Beziehung nicht zulässig ist, wird laut abgewiesen; `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` im Archiv](novaberg-roadmap.md#25102026-2206-utc--der-fakten-agent-kennt-den-typ-des-subjekts-ein-tripel-dessen-subjekt-für-die-beziehung-nicht-zulässig-ist-wird-laut-abgewiesen-fakten-ort-als-subjekt-durchgelassen-im-archiv) |
+| 2026-10-25 | laufend | ## | [25.10.2026, 21:59 UTC — Die Kennung aus der Modellausgabe wird geprüft gelesen und an den Menschen gebunden: Direktiven und Charakter-Identität](novaberg-roadmap.md#25102026-2159-utc--die-kennung-aus-der-modellausgabe-wird-geprüft-gelesen-und-an-den-menschen-gebunden-direktiven-und-charakter-identität) |
+| 2026-10-24 | laufend | ## | [24.10.2026, 21:35 UTC — An den vier Ja/Nein-Toren führt nur eine Antwort aus, die aus Zustimmung besteht: Wörter, Zeichen und Wortstellung sind geschlossen](novaberg-roadmap.md#24102026-2135-utc--an-den-vier-janein-toren-führt-nur-eine-antwort-aus-die-aus-zustimmung-besteht-wörter-zeichen-und-wortstellung-sind-geschlossen) |
+| 2026-10-24 | laufend | ## | [24.10.2026, 14:20 UTC — Am Tor der Direktiven wird die Antwort gedeutet: Eine Ablehnung führt nichts aus, eine zurückhaltende Antwort fragt erneut](novaberg-roadmap.md#24102026-1420-utc--am-tor-der-direktiven-wird-die-antwort-gedeutet-eine-ablehnung-führt-nichts-aus-eine-zurückhaltende-antwort-fragt-erneut) |
+| 2026-10-24 | laufend | ## | [24.10.2026, 13:58 UTC — Beim Verschieben fragt eine Stunde von 1 bis 12 ohne Tageszeit nach der Tageshälfte; am Modell gemessen, `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` im Archiv](novaberg-roadmap.md#24102026-1358-utc--beim-verschieben-fragt-eine-stunde-von-1-bis-12-ohne-tageszeit-nach-der-tageshälfte-am-modell-gemessen-verschieben-nackte-stunde-ohne-tageshaelfte-im-archiv) |
+| 2026-10-24 | laufend | ## | [24.10.2026, 13:43 UTC — Im Betrieb gemessen: Nach einer Verstärkung über die Verwendung stehen alle Kanten des Knotens auf der berechneten Stärke, `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` im Archiv](novaberg-roadmap.md#24102026-1343-utc--im-betrieb-gemessen-nach-einer-verstärkung-über-die-verwendung-stehen-alle-kanten-des-knotens-auf-der-berechneten-stärke-lzg-kanten-nach-verwendung-unveraendert-im-archiv) |
+| 2026-10-24 | laufend | ## | [24.10.2026, 11:07 UTC — Nach einer Verstärkung über die Verwendung stehen die Kanten des Knotens auf seinem neuen Gewicht: Trigger 2 an der Verwendung](novaberg-roadmap.md#24102026-1107-utc--nach-einer-verstärkung-über-die-verwendung-stehen-die-kanten-des-knotens-auf-seinem-neuen-gewicht-trigger-2-an-der-verwendung) |
 | 2026-10-23 | laufend | ## | [23.10.2026, 22:31 UTC — Im Betrieb gemessen: das Clipboard, das Löschen nach einer Neuanlage und die Dublette, drei Bugs im Archiv; die Ereignis-Wege in acht Messturns](novaberg-roadmap.md#23102026-2231-utc--im-betrieb-gemessen-das-clipboard-das-löschen-nach-einer-neuanlage-und-die-dublette-drei-bugs-im-archiv-die-ereignis-wege-in-acht-messturns) |
 | 2026-10-23 | laufend | ## | [23.10.2026, 22:31 UTC — Ein Platzhalter in `gedeckt` ist kein Wert](novaberg-roadmap.md#23102026-2231-utc--ein-platzhalter-in-gedeckt-ist-kein-wert) |
 | 2026-10-23 | laufend | ## | [23.10.2026, 21:18 UTC — Das Clipboard trägt die Kennung des geschriebenen Termins; ein neu angelegter Eintrag verlässt das KZG, und ein Treffer der Promotion ist eine Dublette](novaberg-roadmap.md#23102026-2118-utc--das-clipboard-trägt-die-kennung-des-geschriebenen-termins-ein-neu-angelegter-eintrag-verlässt-das-kzg-und-ein-treffer-der-promotion-ist-eine-dublette) |

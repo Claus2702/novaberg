@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands (25.10.2026, 22:05 UTC: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` behoben und am Modell gemessen, ins Archiv — 35 Eintraege; davor 25.10.2026, später: `SCHREIBWEG-KENNUNG-OHNE-MENSCH` neu aus dem Fund vom 25.10.2026, niedrig; davor zählte die Datei 35 Eintraege), ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → ~~32~~ → ~~35~~ → ~~36~~ → 35 Eintraege (24.10.2026, später: `VERSCHIEBEN-TAGESZEIT-WIDERSPRICHT-STUNDE`, `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` und `ZEIT-TAG-AN-TEILWORT-ERKANNT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands (26.10.2026: `FAKTEN-HEISST-ICH-AUSGENOMMEN`, `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` und `FAKTEN-PAIR-IGNORED` behoben, `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` und `FAKTENPLUGIN-OHNE-KAPPUNG` gegenstandslos, alle fünf mit ihrem Commit geschlossen und ins Archiv — 30 Eintraege; davor 25.10.2026, 22:05 UTC: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` behoben und am Modell gemessen, ins Archiv — 35 Eintraege; davor 25.10.2026, später: `SCHREIBWEG-KENNUNG-OHNE-MENSCH` neu aus dem Fund vom 25.10.2026, niedrig; davor zählte die Datei 35 Eintraege), ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → ~~32~~ → ~~35~~ → ~~36~~ → ~~35~~ → 30 Eintraege (26.10.2026, siehe vorn; 24.10.2026, später: `VERSCHIEBEN-TAGESZEIT-WIDERSPRICHT-STUNDE`, `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` und `ZEIT-TAG-AN-TEILWORT-ERKANNT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -9,7 +9,7 @@
 
 ## 25.10.2026 — aus der Klassifizierung des Fundes vom 25.10.2026
 
-Eine Kennung aus dem Fund vom 25.10.2026 zu den Schreibwegen von `dateien_wurzeln` und `notizen` (Fundliste, *Umgezogen — 25.10.2026*), am Code gelesen gegen den Code-Tree `2876b85`, nicht gelaufen. Sie entstand bei der Klassifizierung von `DIREKTIVEN-KENNUNG-UNGEPRUEFT` (`novaberg-bugs-charakter.md`), dessen Bau dasselbe Muster in `direktiven` und `charakter_identitaet` schließt.
+Eine Kennung aus dem Fund vom 25.10.2026 zu den Schreibwegen von `dateien_wurzeln` und `notizen` (Fundliste, *Umgezogen — 25.10.2026*), am Code gelesen gegen den Code-Tree `2876b85` (committet als `236edec`), nicht gelaufen. Sie entstand bei der Klassifizierung von `DIREKTIVEN-KENNUNG-UNGEPRUEFT` (`novaberg-bugs-charakter.md` → seit dem 26.10.2026 geschlossen, im Archiv `novaberg-bugs-archiv-charakter.md`), dessen Bau dasselbe Muster in `direktiven` und `charakter_identitaet` schließt.
 
 ### `SCHREIBWEG-KENNUNG-OHNE-MENSCH` — die Schreibwege von `dateien_wurzeln` und `notizen` binden eine Kennung nicht an den Menschen
 
@@ -27,7 +27,7 @@ Eine Kennung aus dem Fund vom 25.10.2026 zu den Schreibwegen von `dateien_wurzel
 
 **Offen:** ob die Kennung in `dateien_wurzeln` und `notizen` irgendwo aus einer Modellausgabe kommt (die der Wurzeln liest `klassifikation.py::_ziffer_oder_nichts` schon geprüft; die der Notizen ist nicht nachgesehen).
 
-**Zusammenhang:** `DIREKTIVEN-KENNUNG-UNGEPRUEFT` (`novaberg-bugs-charakter.md`) — dort derselbe Mangel in `direktiven` und `charakter_identitaet`, im Code-Tree `2876b85` behoben; das Vorbild der Bindung an `user_id` steht in `server/agents/direktiven/crud.py::_zustand_setzen`.
+**Zusammenhang:** `DIREKTIVEN-KENNUNG-UNGEPRUEFT` (~~`novaberg-bugs-charakter.md`~~ → Archiv, [`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md)) — dort derselbe Mangel in `direktiven` und `charakter_identitaet`, im Code-Tree `2876b85` behoben, committet als `236edec`, im Betrieb gemessen und geschlossen am 26.10.2026; das Vorbild der Bindung an `user_id` steht in `server/agents/direktiven/crud.py::_zustand_setzen`.
 
 ---
 
@@ -181,32 +181,6 @@ Zwei Kennungen aus dem Abgleich von `novaberg-agent-timeline.md` mit dem Code, a
 
 ## 20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026
 
-### `FAKTEN-HEISST-ICH-AUSGENOMMEN` — bei `heisst` lässt die Prüfung der Antwort *ICH* als Subjekt durch
-**Kategorie:** WIS
-
-**Rang:** **niedrig** — offen, aber nicht beobachtet: am Modell 9 von 9 Sätzen dieser Form richtig klassifiziert (20.10.2026). Träte es auf, löste es still den Namen des Menschen ab, weil `heisst` einwertig ist. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
-
-**Zustand:** offen — **behoben im Tree, nicht committet** (20.10.2026, der dritte Bau des passiven Fakten-Agenten; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt). Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 20.10.2026, beim Bau des Fakten-Agenten (Schritt 4).
-
-**Befund** `[Code]`: `server/agents/fakten/klassifikation.py::check_answer` prüft bei `heisst`, dass ein benanntes Subjekt nicht Besitzer ist, und nimmt `ICH` davon aus. Eine Antwort `ICH heisst Rufus` auf *„Mein Hund heißt Rufus“* ginge durch.
-
-**Geschlossen, wenn** eine Antwort, die bei `heisst` den Menschen statt seines Besitzes benennt, abgelehnt wird — bezeugt mit `ICH` als Subjekt.
-
----
-
-### `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` — die Suche des Fakten-Agenten ruft eine private Methode der Auflösung, deren Text immer von zwei Personen spricht
-**Kategorie:** WIS
-
-**Rang:** **niedrig** — laut falsch im Text, nicht still: Bei zwei Treffern zu einem Ort oder Tier fragt der Agent nach *„zwei Personen namens …“*. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
-
-**Zustand:** offen — **behoben im Tree, nicht committet** (20.10.2026, der dritte Bau des passiven Fakten-Agenten; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt). Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 20.10.2026.
-
-**Befund** `[Code]`: `server/agents/fakten/suche.py` ruft `EntityResolutionService._build_klärungsfrage` (Z. 74), eine private Methode eines anderen Bausteins; ihr Text lautet bei zwei Kandidaten immer *„Ich kenne zwei Personen namens …“* (`server/memory/services/entity_resolution.py`, Z. 376).
-
-**Geschlossen, wenn** die Suche keine private Methode der Auflösung ruft und keine Rückfrage die Art der Entität verfälscht.
-
----
-
 ### `FAKTEN-OHNE-EMBEDDING` — die Fakten des Agenten tragen kein Embedding
 **Kategorie:** WIS
 
@@ -263,7 +237,7 @@ Ein Befund aus einer Simulation an einem frischen Prüf-Nutzer (`labor/2026-10-1
 
 ## 17.10.2026 — aus dem Entwurf der Bauart des Faktengedächtnisses
 
-Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen und gegen HEAD `7b65297` nachgeprüft. Einer wirkt im Betrieb (die Timeline), drei sind latent, weil die Tabelle `fakten` stillgelegt ist (entschieden am 06.10.2026) und keinen Erzeuger hat.
+Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen und gegen HEAD `7b65297` nachgeprüft. Einer wirkt im Betrieb (die Timeline), drei sind latent, weil die Tabelle `fakten` stillgelegt ist (entschieden am 06.10.2026) und keinen Erzeuger hat. → 26.10.2026: `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` ist gegenstandslos und im Archiv ([`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)); hier steht noch `TIMELINE-VERWEIS-VERALTET-BEIM-VERSCHIEBEN`.
 
 ### `TIMELINE-VERWEIS-VERALTET-BEIM-VERSCHIEBEN` — ein Verweis auf einen Termin bleibt beim Verschieben an der alten Zeile
 **Kategorie:** WIS
@@ -281,19 +255,6 @@ Vier Befunde, beim Entwurf der Bauart des Faktengedächtnisses am Code gelesen u
 **Reproduktion.** Einen Termin anlegen, auf den eine Eigenschaft der Sachlage oder ein Knoten verweist, ihn verschieben und danach `timeline.aktiv` der verwiesenen Zeile lesen.
 
 **Geschlossen, wenn** ein Verweis nach dem Verschieben zur aktiven Zeile führt, für alle drei Spalten. Vorgeschlagen ist eine Spalte `timeline.nachfolger_id`, der ein Leser bis zur aktiven Zeile folgt. ~~Entschieden ist die Bauart nicht;~~ → **Im Grundsatz entschieden am 17.10.2026, ~~nicht gebaut~~** → die Spalte und der Weg über die Kette gebaut im Tree am 21.10.2026 (Zustand oben), als Schemaänderung S5 des Faktengedächtnisses ([`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) A, Nr. 20; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6); geschlossen ist der Eintrag erst, wenn jeder der drei Verweise der Kette folgt. Eine neue Spalte ist DDL und wird vor ihrem Bau einzeln angekündigt.
-
-### `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` — ein ungeklärtes Objekt wird still ein Wert
-**Kategorie:** WIS
-
-**Rang:** **niedrig** — latent im abgeschalteten Plugin: `fakten_verarbeiten` bekommt keinen Auftrag. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
-
-**Zustand:** offen — **gegenstandslos im Tree, nicht committet** (21.10.2026): Das Plugin `fakten_manager` ist gelöscht (`_e` A Nr. 28); gelesen wird über die Mappe, die kappt, geschrieben über den Fakten-Agenten. Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
-
-**Befund** `[Code]`: Lässt sich in `plugins/fakten_manager/manager.py::fakten_verarbeiten` das Objekt eines Fakts nicht zu einer Entität auflösen, wird sein Name ohne Meldung als Wert gespeichert (Z. 493–495, Kommentar *„Objekt nicht aufgelöst → als Wert behandeln“*). Aus einer Beziehung zwischen zwei Entitäten wird so eine Beziehung zu einer Zeichenkette. Kein Log und kein Ausgang sagt es; ein nicht aufgelöstes Subjekt dagegen wird gemeldet und übersprungen (Z. 481–485). Einziger Aufrufer ist `FaktenManager.execute` (Z. 318, 342). Ihm liefert der Planner keinen Schreibauftrag, denn `FaktenManager` hat kein `plan` und erbt das leere aus `plugins/base.py`.
-
-**Wirkung.** Würde der Weg wieder benutzt, verschwänden Beziehungen zwischen Entitäten still in Wert-Fakten. Eine Mappe, die über Entitäten geht, fände sie in der Objekt-Richtung nicht, und der zweite Grad bräche an ihnen ab.
-
-**Geschlossen, wenn** ein nicht aufgelöstes Objekt zu einer Klärung oder einem lauten Ausgang führt statt zu einem Wert. Der Eintrag entfällt mit dem Umbau des Plugins zum Fakten-Agenten, sobald `fakten_verarbeiten` nicht mehr existiert.
 
 ---
 
@@ -412,19 +373,6 @@ id | pfad                               | bezeichnung
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Die Fundstelle im Prompt trägt den absoluten Behälterpfad, weil die einzige Freigabe keine Bezeichnung hat.** Der `[AUFZEICHNUNGEN]`-Block nennt je Eintrag `<Ort>/<Pfad>`; als Ort steht die `bezeichnung` der Wurzel und, wenn sie fehlt, deren `pfad`. **Gemessen am laufenden Bestand:** `SELECT id, pfad, bezeichnung FROM dateien_wurzeln` → eine Zeile, `/files`, **Bezeichnung leer** — im Messturn stand deshalb `/files/novaberg-papers.md` im Prompt. Das ist der vorgesehene Rückfall und kein Defekt, aber es steht quer zu der Begründung, mit der die Indexzeile ihren Pfad **relativ** führt (`novaberg-agent-dateien_k.md` §4: *„absolut wäre ein Umgebungsdetail und nicht verschiebbar"*) — genau dieses Umgebungsdetail erreicht jetzt das Modell. **Zwei Auswege, und die Wahl ist eine Absicht:** Das Tor der Freigabe verlangt eine Bezeichnung, oder der Rückfall nimmt den Basisnamen der Wurzel statt ihres vollen Pfades. Heute nur eine Wurzel, also billig zu ändern — bei zehn nicht mehr.
 
 **Geschlossen, wenn** Die Freigabe traegt eine Bezeichnung, und die Fundstelle nennt sie statt des Behaelterpfads.
-
----
-
-### `FAKTENPLUGIN-OHNE-KAPPUNG` — weder Kappung noch Schwelle
-**Kategorie:** WIS
-
-**Rang:** **niedrig** — heute ohne Wirkung, das Plugin ist abgeschaltet (`server/graph/nodes/enricher.py:1074`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt bei Reaktivierung (`server/plugins/fakten_manager/manager.py:163-175`, Abfragen ohne LIMIT).
-
-**Zustand:** offen — **gegenstandslos im Tree, nicht committet** (21.10.2026): Das Plugin `fakten_manager` ist gelöscht (`_e` A Nr. 28); gelesen wird über die Mappe, die kappt, geschrieben über den Fakten-Agenten. Geschlossen mit dem Commit. Davor: offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert und im Kontextpfad nachgesehen: `enrich_entries` (`plugins/fakten_manager/manager.py:130`) laeuft ueber `EntitaetenRepository.find_by_user` und je Entitaet ueber `FaktenRepository.find_by_subjekt` — **kein `LIMIT`, keine Schwelle, kein Aehnlichkeitsvergleich** an einer der beiden Stellen. Die Menge ist weiterhin allein durch den Bestand begrenzt.
-
-**Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Fakten-Plugin hat weder Kappung noch Schwelle — das ist der Grund für seine 130+ Einträge, nicht die Datenqualität.** `enricher.py` schaltet ihn seit Chat 71 ab mit dem Vermerk *„Fakten-Enrichment produziert 130+ Rausch-Eintraege — wird reaktiviert nach Fakten-Bereinigung"*. Gezählt über die sieben Kontextquellen: `wissen_manager`, `notizen_manager` und `timeline_manager` tragen ein `LIMIT`, **`fakten_manager` trägt keins** — und auch keinen Ähnlichkeitsvergleich. Die Diagnose lautete *Bereinigung*, aber eine Quelle ohne Obergrenze liefert unabhängig von der Datenqualität so viele Einträge, wie der Bestand hergibt. **Die Abhilfe ist eine Zeile und wurde nie versucht**; solange sie fehlt, ist die Wiederinbetriebnahme an eine Bedingung geknüpft, die nicht die wirksame ist. Aufgefallen beim Entwurf des Dateien-Plugins, das dieselbe Stelle besetzt und dieselbe Falle hätte.
-
-**Geschlossen, wenn** Das Fakten-Plugin kappt und schwellt wie die uebrigen Quellen.
 
 ---
 
@@ -628,30 +576,6 @@ if self.now > dateobj - tz_offset:
 **Lösung:** Gemeinsamer Migrations-Sprint mit Timeline und Fakten. Bei Notizen einfach (1 Bestandseintrag, alle bekommen `character_id='nova'`).
 
 **Ausführliche Beschreibung und Eingruppierung:** novaberg-backlog.md → Bug NOTIZEN-PAIR-MISSING (Chat 80).
-
-#### FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `character_id` ⚠️
-**Kategorie:** WIS
-
-**Rang:** **niedrig**; ~~wartet auf eine Absicht: bleibt `fakten` ein lebender Speicher (dann Paar-Schema), oder wird er stillgelegt?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Tabelle ist leer und hat keinen Erzeuger; das Repository nennt `character_id` nicht.
-
-**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: `fakten` wird **stillgelegt**, bis ein Fakten-Agent gebaut wird; das Paar-Schema entfällt bis dahin. Ein Entfernen der Tabelle wäre DDL und wird vorher angekündigt.
-
-**Zustand:** offen im Code, **Begruendungszahl verfallen** — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. Die Spalte `character_id` steht in `fakten`; `fakten_repository.py` nennt sie **0 mal**, der Befund gilt also unveraendert. Die *171 Live-Eintraege*, die ihn als Severity Hoch begruendeten, sind **0 Zeilen** — die Tabelle ist leer. Was bleibt, ist die Repository-Luecke ohne Datenmigration.
-**Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
-
-**Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte, Severity Hoch — 171 Live-Einträge betroffen
-
-**Symptom:** `fakten` hat die Spalte `character_id` mit Default `'nova'`. INSERTs in `fakten_repository.py` setzen die Spalte nicht (DB-Default greift). SELECTs filtern nur `WHERE user_id = %s`, ignorieren `character_id` komplett.
-
-**Im Repository geschlossen am 18.10.2026** (Tree `00c7b4c`, Schema und Repository des Faktengedächtnisses): Jede Abfrage von `memory/repositories/fakten_repository.py` filtert nach `user_id` und `character_id`, `insert` schreibt `character_id` ausdrücklich, ein unvollständiges Paar wird abgewiesen. Das Plugin nimmt das Gegenüber aus dem Write (`daten["character_id"]`) und aus dem State und verwirft einen Write ohne es mit einer Fehlerzeile; die Wiedervorlage liest im Paar (`user_id`, `ASSISTANT_USER_ID`). Zeuge: `server/tests/test_fakten_repository.py::EveryQueryFiltersByThePairTest`. **Offen bleiben die zwei Stellen am Repository vorbei** (unten) — der Eintrag bleibt deshalb hier.
-
-**Weitere Stellen, gegen HEAD `7b65297` gelesen am 17.10.2026.** Am Repository vorbei lesen zwei Stellen `fakten` mit eigenem SQL, und auch sie filtern nur `user_id`, nie `character_id`: `api/gedaechtnis.py::fakten_abrufen` (Endpunkt `GET /fakten/{user_id}`, Z. 373–379) und `graph/nodes/gespraechsvektor.py::_entity_kontext_laden` (Z. 435 und 454; diese Funktion hat keinen Aufrufer). Geschlossen ist der Eintrag erst, wenn jede Stelle nach dem Paar liest oder über die eine Lesefunktion des Faktengedächtnisses (Bauteil F1, `novaberg-memory-fakten_b.md`). → **Die Bauart dazu ist am 17.10.2026 angenommen, nicht gebaut:** Das Repository nimmt das Paar in jede Abfrage, `fakten_abrufen` liest über die Mappe, und `_entity_kontext_laden` entfällt, weil es keinen Aufrufer hat (`novaberg-memory-fakten_b.md` §6, *Die angenommene Bauart*, F1 und F2).
-
-**Komplikation:** 171 Bestandseinträge unter `user_id='nova'` (Pre-Paar-Schema-Logik) repräsentieren *"Nova-Sicht auf Meister"* und gehören semantisch zu `(user_id='meister', character_id='nova', beobachter='assistant')` — nicht trivial pauschal umsattelbar.
-
-**Lösung:** Konzept-Dokument vor Sprint. Klärt Spalten-Migration, Repository-Anpassung, Daten-Migration mit ASSISTANT_USER_ID-Umsattelung.
-
-**Ausführliche Beschreibung und Eingruppierung:** novaberg-backlog.md → Bug FAKTEN-PAIR-IGNORED (Chat 80).
 
 ### Chat 80 — Live-Test-Befunde (NOTIZEN-VOR-TURN-BEZUG-Smoke-Test)
 

@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 477 Eintraege mit Kennung — 390 offen, 87 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 477 Eintraege mit Kennung — 389 offen, 88 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Kategorie:** 474 von 477 Eintraegen zugeordnet.
 
@@ -696,7 +696,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 841 | abgeschlossen | `SPRINT-M25A-TIMELINE-CLEANUP` | [SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent ver](novaberg-backlog-wissen.md) |
 | WIS | 884 | abgeschlossen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
 | WIS | 915 | offen | `NOTIZEN-PAIR-MISSING` | [Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `ch](novaberg-backlog-wissen.md) |
-| WIS | 934 | offen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
+| WIS | 934 | abgeschlossen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
 | WIS | 957 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
 | WIS | 976 | offen | `NOTIZEN-KONTEXT-REKONSTRUKTION` | [Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Re](novaberg-backlog-wissen.md) |
 | WIS | 1004 | offen | `NOTIZEN-CONTAINER-WECHSEL` | [Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel](novaberg-backlog-wissen.md) |
@@ -707,8 +707,8 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | WIS | 1097 | offen | `AUFGRIFF-SCHWELLE-UNGEEICHT` | [Befund: AUFGRIFF-SCHWELLE-UNGEEICHT — Die Schwelle d](novaberg-backlog-wissen.md) |
 | WIS | 1115 | offen | `TIMELINE-TYPEN-AN-DREI-STELLEN` | [Befund: TIMELINE-TYPEN-AN-DREI-STELLEN — Die Typen d](novaberg-backlog-wissen.md) |
 | WIS | 1135 | offen | `FAKTEN-KANON-LUECKEN` | [Befund: FAKTEN-KANON-LUECKEN — der Kanon des Fakten-](novaberg-backlog-wissen.md) |
-| WIS | 1149 | offen | `FAKTEN-LESER-OHNE-AUFRUFER` | [Befund: FAKTEN-LESER-OHNE-AUFRUFER — sechs Lesefunkt](novaberg-backlog-wissen.md) |
-| WIS | 1167 | offen | `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN` | [Befund: VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN — bei](novaberg-backlog-wissen.md) |
+| WIS | 1151 | offen | `FAKTEN-LESER-OHNE-AUFRUFER` | [Befund: FAKTEN-LESER-OHNE-AUFRUFER — sechs Lesefunkt](novaberg-backlog-wissen.md) |
+| WIS | 1169 | offen | `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN` | [Befund: VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN — bei](novaberg-backlog-wissen.md) |
 | BAU | 25 | offen | `NMCP-KONVENTION-MCP-2026-07-28` | [Block 19.09.2026 — die NMCP-Konvention gegen die Pro](novaberg-backlog-bauart.md) |
 | BAU | 35 | offen | `PROTOKOLLPFLICHT-OHNE-GATE` | [Block 25.08.2026 — das Gate, das die Protokollpflich](novaberg-backlog-bauart.md) |
 | BAU | 48 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |

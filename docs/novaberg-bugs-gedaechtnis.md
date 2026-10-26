@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Gedächtnis — KZG, LZG, Promotion, Entitäten, Salienz, Verfall
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → ~~18~~ → ~~16~~ → ~~18~~ → ~~17~~ → 18 Eintraege (24.10.2026, später: `LZG-KANTEN-BESTAND-AUF-ALTEM-KNOTENGEWICHT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:43 UTC: `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben und im Betrieb gemessen, ins Archiv; 24.10.2026: `LZG-TREFFER-MELDET-REINFORCEMENT` und `MAGNET-ANKER-VERGANGENES-WIRD-KOMMEND` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026, abends: `LZG-PROMOTION-TREFFER-VERSTAERKT` und `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` behoben und im Betrieb gemessen, ins Archiv; 23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~13~~ → ~~14~~ → ~~15~~ → ~~17~~ → ~~18~~ → ~~16~~ → ~~18~~ → ~~17~~ → ~~18~~ → 17 Eintraege (26.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` im Betrieb gemessen (25.10.2026), geschlossen und ins Archiv; 24.10.2026, später: `LZG-KANTEN-BESTAND-AUF-ALTEM-KNOTENGEWICHT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:43 UTC: `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` behoben und im Betrieb gemessen, ins Archiv; 24.10.2026: `LZG-TREFFER-MELDET-REINFORCEMENT` und `MAGNET-ANKER-VERGANGENES-WIRD-KOMMEND` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026, abends: `LZG-PROMOTION-TREFFER-VERSTAERKT` und `KZG-EINTRAG-BLEIBT-NACH-PROMOTION` behoben und im Betrieb gemessen, ins Archiv; 23.10.2026: `LZG-PROMOTION-TREFFER-VERSTAERKT` neu nach einer Entscheidung; 22.10.2026: `LZG-HALBREAKTIVIERUNG-HAELT-EINEN-TAG` und `LZG-KANTEN-NACH-VERWENDUNG-UNVERAENDERT` neu, am Code geprüft; 21.10.2026: `MAGNET-RUECKFALL-BINDET-AEHNLICHEN-NAMEN` neu nach einer Entscheidung; 20.10.2026: `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` neu aus der Fundliste), je mit `**Kategorie:** GED`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -122,19 +122,6 @@ Zwei Kennungen aus dem Abgleich von `novaberg-memory-synapsen_{k,t,b,e}.md` mit 
 **Befund** `[Code]`: `server/agents/kzg/magnete.py` löst über `EntityResolutionService.resolve_batch` auf; findet die Namenssuche nichts, bindet der Rückfall auf Embeddings einen einzelnen Treffer, wenn der Name *plausibel* ist — gleicher Anfangsbuchstabe und höchstens drei Zeichen Längenunterschied (`memory/services/entity_resolution.py::_name_ist_plausibel`): *Lena* wird *Lea*. Fakten und Sachlage lösen seit dem 20. bzw. 17.10.2026 ohne diesen Rückfall auf.
 
 **Geschlossen, wenn** der Magnet-Pfad nur über den Namen auflöst und ein Name ohne Treffer eine neue Entität wird, bezeugt mit einem ähnlichen Namen (Zwilling: der gleiche Name bindet).
-
----
-
-### `AUFLOESUNG-AUSFALL-WIRD-NEUE-ENTITAET` — ein Ausfall der Suche in der Auflösung geht als *kein Treffer* weiter und legt eine neue Entität an
-**Kategorie:** GED
-
-**Rang:** **mittel** — still, und es schreibt: ein Duplikat der Entität, an das danach Magnete binden; selten, nur bei einem Ausfall der Datenbank oder des Embeddings. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
-
-**Zustand:** offen — **behoben, ~~im Tree, nicht committet~~ → committet** (21.10.2026): Die Suche wirft, der Magnet-Pfad fängt je Name und meldet; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt. Geschlossen mit dem Commit und der Messung im Betrieb. Davor: offen — am Code gelesen am 20.10.2026 gegen HEAD `b52e919`, nicht gemessen.
-
-**Befund** `[Code]`: `server/memory/services/entity_resolution.py::_search_by_name` fängt jeden Fehler der Datenbank, schreibt ihn ins Log und gibt `[]` zurück (Z. 274–278); `_search_by_embedding` tut dasselbe mit einer Warnung (Z. 352–354). `resolve_batch` liest `[]` als *kein Treffer* und geht über den Rückfall auf Embeddings bis zu *neue Entität* (Z. 161–187). Aufrufer sind `server/agents/kzg/magnete.py` (`resolve_batch`, danach `create_new_entity`) und das Plugin `fakten_manager`, das mit dem Bauteil F1 entfällt (`novaberg-memory-fakten_e.md` A, Nr. 28). Der Schreibweg des Fakten-Agenten löst seit dem 20.10.2026 über `resolve_by_name` auf und nimmt diesen Pfad nicht.
-
-**Geschlossen, wenn** kein Ausfall einer Suche dieses Pfads als *kein Treffer* weitergeht: Er wird geworfen oder als Ausfall gemeldet, und es entsteht keine Entität.
 
 ---
 

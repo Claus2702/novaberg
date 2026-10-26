@@ -1,15 +1,111 @@
 # Novaberg — Bugs, Archiv: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → ~~31~~ → ~~32~~ → ~~33~~ → ~~34~~ → 35 Eintraege (25.10.2026 `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN`, behoben und am Modell gemessen; 24.10.2026 `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE`, behoben und am Modell gemessen; 17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen; am selben Tag `EREIGNIS-KOMMENDES-WIRD-VERGANGEN`, behoben und am Modell gemessen; 23.10.2026 `TIMELINE-CLIPBOARD-OHNE-ID`, behoben und im Betrieb gemessen), je mit `WIS` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~27~~ → ~~28~~ → ~~30~~ → ~~31~~ → ~~32~~ → ~~33~~ → ~~34~~ → ~~35~~ → 40 Eintraege (26.10.2026 fünf Einträge des Faktengedächtnisses mit ihrem Commit, zwei davon gegenstandslos; 25.10.2026 `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN`, behoben und am Modell gemessen; 24.10.2026 `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE`, behoben und am Modell gemessen; 17.10.2026; 18.10.2026 zwei aus dem Bau des Faktengedächtnisses; 22.10.2026 `TIMELINE-PAIR-MISSING`, behoben und am Betrieb gemessen; am selben Tag `EREIGNIS-KOMMENDES-WIRD-VERGANGEN`, behoben und am Modell gemessen; 23.10.2026 `TIMELINE-CLIPBOARD-OHNE-ID`, behoben und im Betrieb gemessen), je mit `WIS` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 ---
 
+## 26.10.2026 — mit dem Commit geschlossen, zwei davon gegenstandslos
+
+**Diese fünf Einträge sind geschlossen, weil ihr Fix oder der Wegfall ihres Gegenstands seit dem 21.10.2026 committet ist** — ihre Zustandszeilen banden den Abschluss an den Commit, und ihre Schließbedingungen verlangen Zeugen oder den Wegfall, keine Messung im Betrieb; geprüft am Code von `277879b`. Behoben sind `FAKTEN-HEISST-ICH-AUSGENOMMEN`, `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` und, in drei Schritten, `FAKTEN-PAIR-IGNORED`; gegenstandslos mit dem Löschen des Plugins `fakten_manager` sind `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` und `FAKTENPLUGIN-OHNE-KAPPUNG`. Im offenen Register standen sie in den Abschnitten *20.10.2026 — aus der Klassifizierung der Funde vom 18. bis 20.10.2026*, *17.10.2026 — aus dem Entwurf der Bauart des Faktengedächtnisses* und *Einzelbefunde ohne eigenen Datumsabschnitt* und in der Gruppe der Paar-Inventur unter *Offene Bugs*; deren Überschriften bleiben dort stehen.
+
+---
+
+### `FAKTEN-HEISST-ICH-AUSGENOMMEN` — bei `heisst` lässt die Prüfung der Antwort *ICH* als Subjekt durch ✅
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — offen, aber nicht beobachtet: am Modell 9 von 9 Sätzen dieser Form richtig klassifiziert (20.10.2026). Träte es auf, löste es still den Namen des Menschen ab, weil `heisst` einwertig ist. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** **geschlossen am 26.10.2026 — behoben mit `6f3b463`** (21.10.2026): `check_answer` nimmt `ICH` bei `heisst` nicht mehr aus; `server/tests/test_fakten_agent.py` hält *„Mein Hund heißt Rufus.“* mit `ICH heisst Rufus` als abgelehnt, die Zwillinge *„Ich heiße …“* und *„Mein Name ist …“* als angenommen (am Code von `277879b` gelesen). **Warum geschlossen:** Die Schließbedingung verlangt einen Zeugen mit `ICH` als Subjekt, keine Messung; der Zustand unten band den Abschluss an den Commit, und er liegt vor. Im Betrieb nicht gemessen. **Verwandt, als Fund:** `ICH heisst <Name>` wird auch dann abgelehnt, wenn ein Possessiv der ersten Person an anderer Stelle der Äußerung steht (Fundliste, 26.10.2026).
+
+*Zustand bis 26.10.2026:* offen — **behoben im Tree, ~~nicht committet~~ → committet als `6f3b463`, 21.10.2026** (20.10.2026, der dritte Bau des passiven Fakten-Agenten; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt). Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 20.10.2026, beim Bau des Fakten-Agenten (Schritt 4).
+
+**Befund** `[Code]`: `server/agents/fakten/klassifikation.py::check_answer` prüft bei `heisst`, dass ein benanntes Subjekt nicht Besitzer ist, und nimmt `ICH` davon aus. Eine Antwort `ICH heisst Rufus` auf *„Mein Hund heißt Rufus“* ginge durch.
+
+**Geschlossen, wenn** eine Antwort, die bei `heisst` den Menschen statt seines Besitzes benennt, abgelehnt wird — bezeugt mit `ICH` als Subjekt.
+
+---
+
+### `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` — die Suche des Fakten-Agenten ruft eine private Methode der Auflösung, deren Text immer von zwei Personen spricht ✅
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — laut falsch im Text, nicht still: Bei zwei Treffern zu einem Ort oder Tier fragt der Agent nach *„zwei Personen namens …“*. Vergeben am 20.10.2026 gegen HEAD `b52e919`.
+
+**Zustand:** **geschlossen am 26.10.2026 — behoben mit `103777e`** (21.10.2026): `server/agents/fakten/suche.py` ruft keine private Methode der Auflösung mehr und baut bei zwei oder mehr Treffern keinen Text — der Ausgang ist `mehrdeutig`, geschrieben und gebunden wird nichts (Docstring des Moduls); `_build_klärungsfrage` ruft außerhalb von `server/memory/services/entity_resolution.py` niemand (am Code von `277879b` gelesen). **Warum geschlossen:** Die Schließbedingung — keine private Methode der Auflösung, keine Rückfrage, die die Art der Entität verfälscht — ist erfüllt: Der Agent stellt keine Rückfrage. Der Zustand unten band den Abschluss an den Commit. Im Betrieb nicht gemessen.
+
+*Zustand bis 26.10.2026:* offen — **behoben im Tree, ~~nicht committet~~ → committet als `103777e`, 21.10.2026** (20.10.2026, der dritte Bau des passiven Fakten-Agenten; Zeugen mit Zwilling, Gegenprobe rot wie vorhergesagt). Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 20.10.2026.
+
+**Befund** `[Code]`: `server/agents/fakten/suche.py` ruft `EntityResolutionService._build_klärungsfrage` (Z. 74), eine private Methode eines anderen Bausteins; ihr Text lautet bei zwei Kandidaten immer *„Ich kenne zwei Personen namens …“* (`server/memory/services/entity_resolution.py`, Z. 376).
+
+**Geschlossen, wenn** die Suche keine private Methode der Auflösung ruft und keine Rückfrage die Art der Entität verfälscht.
+
+---
+
+### `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` — ein ungeklärtes Objekt wird still ein Wert ✅
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — latent im abgeschalteten Plugin: `fakten_verarbeiten` bekommt keinen Auftrag. Vergeben am 17.10.2026 gegen HEAD `7b65297`.
+
+**Zustand:** **gegenstandslos seit `bbf6c27`** (21.10.2026), geschlossen am 26.10.2026: Das Plugin `plugins/fakten_manager/` ist gelöscht, `fakten_verarbeiten` steht im Serverbaum nicht mehr (am Code von `277879b` gelesen); gelesen wird über die Mappe, geschrieben über den Fakten-Agenten. **Warum geschlossen:** Die Schließbedingung sagt selbst, dass der Eintrag entfällt, sobald `fakten_verarbeiten` nicht mehr existiert; der Zustand unten band den Abschluss an den Commit, und er liegt vor.
+
+*Zustand bis 26.10.2026:* offen — **gegenstandslos im Tree, ~~nicht committet~~ → committet als `bbf6c27`, 21.10.2026** (21.10.2026): Das Plugin `fakten_manager` ist gelöscht (`_e` A Nr. 28); gelesen wird über die Mappe, die kappt, geschrieben über den Fakten-Agenten. Geschlossen mit dem Commit. Davor: offen — am Code gelesen am 17.10.2026 gegen HEAD `7b65297`.
+
+**Befund** `[Code]`: Lässt sich in `plugins/fakten_manager/manager.py::fakten_verarbeiten` das Objekt eines Fakts nicht zu einer Entität auflösen, wird sein Name ohne Meldung als Wert gespeichert (Z. 493–495, Kommentar *„Objekt nicht aufgelöst → als Wert behandeln“*). Aus einer Beziehung zwischen zwei Entitäten wird so eine Beziehung zu einer Zeichenkette. Kein Log und kein Ausgang sagt es; ein nicht aufgelöstes Subjekt dagegen wird gemeldet und übersprungen (Z. 481–485). Einziger Aufrufer ist `FaktenManager.execute` (Z. 318, 342). Ihm liefert der Planner keinen Schreibauftrag, denn `FaktenManager` hat kein `plan` und erbt das leere aus `plugins/base.py`.
+
+**Wirkung.** Würde der Weg wieder benutzt, verschwänden Beziehungen zwischen Entitäten still in Wert-Fakten. Eine Mappe, die über Entitäten geht, fände sie in der Objekt-Richtung nicht, und der zweite Grad bräche an ihnen ab.
+
+**Geschlossen, wenn** ein nicht aufgelöstes Objekt zu einer Klärung oder einem lauten Ausgang führt statt zu einem Wert. Der Eintrag entfällt mit dem Umbau des Plugins zum Fakten-Agenten, sobald `fakten_verarbeiten` nicht mehr existiert.
+
+---
+
+### `FAKTENPLUGIN-OHNE-KAPPUNG` — weder Kappung noch Schwelle ✅
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — heute ohne Wirkung, das Plugin ist abgeschaltet (`server/graph/nodes/enricher.py:1074`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt bei Reaktivierung (`server/plugins/fakten_manager/manager.py:163-175`, Abfragen ohne LIMIT).
+
+**Zustand:** **gegenstandslos seit `bbf6c27`** (21.10.2026), geschlossen am 26.10.2026: Das Plugin `plugins/fakten_manager/` ist gelöscht; der Kontext liest Fakten seither über die Mappe (`memory/fakten_mappe.py::load_mappe` über `FaktenRepository.find_umgebung`, seit `6056316`), die nach Zeichen kappt und unter der Ruheschwelle nichts liest (am Code von `277879b` gelesen). **Warum geschlossen:** Die Schließbedingung — das Fakten-Plugin kappt und schwellt wie die übrigen Quellen — hat keinen Gegenstand mehr; der Leser an seiner Stelle kappt. Der Zustand unten band den Abschluss an den Commit, und er liegt vor.
+
+*Zustand bis 26.10.2026:* offen — **gegenstandslos im Tree, ~~nicht committet~~ → committet als `bbf6c27`, 21.10.2026** (21.10.2026): Das Plugin `fakten_manager` ist gelöscht (`_e` A Nr. 28); gelesen wird über die Mappe, die kappt, geschrieben über den Fakten-Agenten. Geschlossen mit dem Commit. Davor: offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert und im Kontextpfad nachgesehen: `enrich_entries` (`plugins/fakten_manager/manager.py:130`) laeuft ueber `EntitaetenRepository.find_by_user` und je Entitaet ueber `FaktenRepository.find_by_subjekt` — **kein `LIMIT`, keine Schwelle, kein Aehnlichkeitsvergleich** an einer der beiden Stellen. Die Menge ist weiterhin allein durch den Bestand begrenzt.
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Fakten-Plugin hat weder Kappung noch Schwelle — das ist der Grund für seine 130+ Einträge, nicht die Datenqualität.** `enricher.py` schaltet ihn seit Chat 71 ab mit dem Vermerk *„Fakten-Enrichment produziert 130+ Rausch-Eintraege — wird reaktiviert nach Fakten-Bereinigung"*. Gezählt über die sieben Kontextquellen: `wissen_manager`, `notizen_manager` und `timeline_manager` tragen ein `LIMIT`, **`fakten_manager` trägt keins** — und auch keinen Ähnlichkeitsvergleich. Die Diagnose lautete *Bereinigung*, aber eine Quelle ohne Obergrenze liefert unabhängig von der Datenqualität so viele Einträge, wie der Bestand hergibt. **Die Abhilfe ist eine Zeile und wurde nie versucht**; solange sie fehlt, ist die Wiederinbetriebnahme an eine Bedingung geknüpft, die nicht die wirksame ist. Aufgefallen beim Entwurf des Dateien-Plugins, das dieselbe Stelle besetzt und dieselbe Falle hätte.
+
+**Geschlossen, wenn** Das Fakten-Plugin kappt und schwellt wie die uebrigen Quellen.
+
+---
+
+### `FAKTEN-PAIR-IGNORED` — Fakten-Repository ignoriert `character_id` ✅
+**Kategorie:** WIS
+
+**Rang:** **niedrig**; ~~wartet auf eine Absicht: bleibt `fakten` ein lebender Speicher (dann Paar-Schema), oder wird er stillgelegt?~~ → **entschieden am 06.10.2026** (unten). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: die Tabelle ist leer und hat keinen Erzeuger; das Repository nennt `character_id` nicht.
+
+**Entschieden am 06.10.2026** vom Eigentümer — *„Alle wie empfohlen“*, über 23 offene Absichtsfragen des Registers zugleich. Für diesen Eintrag: `fakten` wird **stillgelegt**, bis ein Fakten-Agent gebaut wird; das Paar-Schema entfällt bis dahin. Ein Entfernen der Tabelle wäre DDL und wird vorher angekündigt.
+
+**Zustand:** **geschlossen am 26.10.2026 — behoben in drei Commits:** das Repository im Paar mit `fda6b75` (18.10.2026; jede Abfrage von `memory/repositories/fakten_repository.py` filtert nach `user_id` und `character_id`, Zeuge `server/tests/test_fakten_repository.py::EveryQueryFiltersByThePairTest`), die zwei Stellen am Repository vorbei entfernt mit `de3e5b4` (`api/gedaechtnis.py::fakten_abrufen` liest keine Fakten mehr, die Mappe hat einen eigenen Weg) und `4cfa39e` (`graph/nodes/gespraechsvektor.py::_entity_kontext_laden` entfernt), beide 21.10.2026. Außerhalb von `fakten_repository.py` liest heute nur `server/tools/reembed_all.py` die Tabelle — über alle Zeilen, ein Werkzeug der Wartung, das Embeddings neu rechnet und nichts an einen Menschen gibt (am Code von `277879b` gezählt). **Warum geschlossen:** Die Schließbedingung — jede Stelle liest nach dem Paar oder über die eine Lesefunktion des Faktengedächtnisses — ist für jeden Leser im Betrieb erfüllt. Im Betrieb nicht gemessen; die Schließbedingung verlangt keine Messung. Dieselbe Kennung führt das Backlog ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)); dort ist sie am 26.10.2026 als abgeschlossen vermerkt.
+
+*Zustand bis 26.10.2026:* offen im Code, **Begruendungszahl verfallen** — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. Die Spalte `character_id` steht in `fakten`; `fakten_repository.py` nennt sie **0 mal**, der Befund gilt also unveraendert. Die *171 Live-Eintraege*, die ihn als Severity Hoch begruendeten, sind **0 Zeilen** — die Tabelle ist leer. Was bleibt, ist die Repository-Luecke ohne Datenmigration.
+**Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
+
+**Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte, Severity Hoch — 171 Live-Einträge betroffen
+
+**Symptom:** `fakten` hat die Spalte `character_id` mit Default `'nova'`. INSERTs in `fakten_repository.py` setzen die Spalte nicht (DB-Default greift). SELECTs filtern nur `WHERE user_id = %s`, ignorieren `character_id` komplett.
+
+**Im Repository geschlossen am 18.10.2026** (Tree `00c7b4c`, Schema und Repository des Faktengedächtnisses): Jede Abfrage von `memory/repositories/fakten_repository.py` filtert nach `user_id` und `character_id`, `insert` schreibt `character_id` ausdrücklich, ein unvollständiges Paar wird abgewiesen. Das Plugin nimmt das Gegenüber aus dem Write (`daten["character_id"]`) und aus dem State und verwirft einen Write ohne es mit einer Fehlerzeile; die Wiedervorlage liest im Paar (`user_id`, `ASSISTANT_USER_ID`). Zeuge: `server/tests/test_fakten_repository.py::EveryQueryFiltersByThePairTest`. **Offen bleiben die zwei Stellen am Repository vorbei** (unten) — der Eintrag bleibt deshalb hier.
+
+**Weitere Stellen, gegen HEAD `7b65297` gelesen am 17.10.2026.** Am Repository vorbei lesen zwei Stellen `fakten` mit eigenem SQL, und auch sie filtern nur `user_id`, nie `character_id`: `api/gedaechtnis.py::fakten_abrufen` (Endpunkt `GET /fakten/{user_id}`, Z. 373–379) und `graph/nodes/gespraechsvektor.py::_entity_kontext_laden` (Z. 435 und 454; diese Funktion hat keinen Aufrufer). Geschlossen ist der Eintrag erst, wenn jede Stelle nach dem Paar liest oder über die eine Lesefunktion des Faktengedächtnisses (Bauteil F1, `novaberg-memory-fakten_b.md`). → **Die Bauart dazu ist am 17.10.2026 angenommen, nicht gebaut:** Das Repository nimmt das Paar in jede Abfrage, `fakten_abrufen` liest über die Mappe, und `_entity_kontext_laden` entfällt, weil es keinen Aufrufer hat (`novaberg-memory-fakten_b.md` §6, *Die angenommene Bauart*, F1 und F2).
+
+**Komplikation:** 171 Bestandseinträge unter `user_id='nova'` (Pre-Paar-Schema-Logik) repräsentieren *"Nova-Sicht auf Meister"* und gehören semantisch zu `(user_id='meister', character_id='nova', beobachter='assistant')` — nicht trivial pauschal umsattelbar.
+
+**Lösung:** Konzept-Dokument vor Sprint. Klärt Spalten-Migration, Repository-Anpassung, Daten-Migration mit ASSISTANT_USER_ID-Umsattelung.
+
+**Ausführliche Beschreibung und Eingruppierung:** novaberg-backlog.md → Bug FAKTEN-PAIR-IGNORED (Chat 80). → Heute [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md), abgeschlossen am 26.10.2026.
+
+---
+
 ## 25.10.2026 — behoben und am Modell gemessen
 
-**Dieser Eintrag ist mit dem Bau des Subjekttyps im Fakten-Agenten geschlossen** — seine Schließbedingung verlangte Zeuge und Zwilling, nachdem die Absicht entschieden ist; bezeugt ist es, gemessen am Modell vor dem Commit, keine Messung im Betrieb; beides steht in der Zustandszeile, die Commit-Kennung wird nachgetragen. Im offenen Register stand er im Abschnitt *24.10.2026 — aus der Klassifizierung der Funde vom 23.10.2026*, dessen Überschrift dort stehen bleibt.
+**Dieser Eintrag ist mit dem Bau des Subjekttyps im Fakten-Agenten geschlossen** — seine Schließbedingung verlangte Zeuge und Zwilling, nachdem die Absicht entschieden ist; bezeugt ist es, gemessen am Modell vor dem Commit, keine Messung im Betrieb; beides steht in der Zustandszeile, die Commit-Kennung wird nachgetragen. → Committet am 26.10.2026 als `a4997ac`, die Doku dazu als `277879b`. Im offenen Register stand er im Abschnitt *24.10.2026 — aus der Klassifizierung der Funde vom 23.10.2026*, dessen Überschrift dort stehen bleibt.
 
 ---
 
@@ -19,7 +115,7 @@
 
 **Rang:** **mittel** — still, und es schreibt: Der falsche Fakt steht in der Mappe des Ortes und erreicht den Prompt, sobald der Ort gebunden ist. Begrenzt, weil er einer von drei Fakten einer einzigen Reihe war und `hat_hobby` mehrwertig ist, also nichts ablöst; kehrt er wieder, ist der Rang hoch. Vergeben am 24.10.2026 gegen HEAD `6b37234`.
 
-**Zustand:** **geschlossen am 25.10.2026 — behoben im Code-Tree `47256bf` (auf `042ab20`; die Kennung des Commits wird nachgetragen), bezeugt mit Zeuge und Zwilling, am Modell gemessen vor dem Commit (25.10.2026), im Betrieb nicht gemessen.** ~~offen — **die Absicht ist offen:** welche Beziehungen eine Person oder ICH als Subjekt verlangen; ohne sie ist die Prüfung nicht baubar.~~ → **Die Absicht ist entschieden am 25.10.2026** (`novaberg-memory-fakten_e.md` A Nr. 46) **und gebaut:** `server/agents/fakten/beziehungen.py` trägt `ENTITY_TYPES` (`person`, `ort`, `organisation`, `tier`, `objekt`, `sonstiges`) und je Beziehung `subjekt_typen` — `person` für jede Beziehung, `heisst` dazu jeden Typ außer `sonstiges`, `wohnt_in` und `geboren_in` dazu `tier`. `vet_triple` liest das Feld `typ` je Tripel (der Typ des Subjekts) nach Kanon und Subjekt/Objekt, vor der Prüfung gegen die Äußerung: Fehlt es oder liegt es außerhalb der Liste, ist das Tripel verworfen (`typ_form`); nennt es einen Typ, den die Beziehung nicht erlaubt, ist es verworfen (`subjekt_typ`); `sonstiges` geht durch, mit einer Logzeile; ICH gilt als `person`, bei ICH sind nur `person` und `sonstiges` zulässig. Der Prompt (`server/prompts/default/classify_fakten.task.txt` und `.rules.txt`) fragt `typ` ab, die Liste kommt aus `ENTITY_TYPES`. Kein Typ-Fakt wird geschrieben (F7 bleibt offen), `entitaeten.typ` ist unverändert.
+**Zustand:** **geschlossen am 25.10.2026 — behoben im Code-Tree `47256bf` (auf `042ab20`; die Kennung des Commits wird nachgetragen → committet als `a4997ac`, die Doku dazu als `277879b`), bezeugt mit Zeuge und Zwilling, am Modell gemessen vor dem Commit (25.10.2026), im Betrieb nicht gemessen.** ~~offen — **die Absicht ist offen:** welche Beziehungen eine Person oder ICH als Subjekt verlangen; ohne sie ist die Prüfung nicht baubar.~~ → **Die Absicht ist entschieden am 25.10.2026** (`novaberg-memory-fakten_e.md` A Nr. 46) **und gebaut:** `server/agents/fakten/beziehungen.py` trägt `ENTITY_TYPES` (`person`, `ort`, `organisation`, `tier`, `objekt`, `sonstiges`) und je Beziehung `subjekt_typen` — `person` für jede Beziehung, `heisst` dazu jeden Typ außer `sonstiges`, `wohnt_in` und `geboren_in` dazu `tier`. `vet_triple` liest das Feld `typ` je Tripel (der Typ des Subjekts) nach Kanon und Subjekt/Objekt, vor der Prüfung gegen die Äußerung: Fehlt es oder liegt es außerhalb der Liste, ist das Tripel verworfen (`typ_form`); nennt es einen Typ, den die Beziehung nicht erlaubt, ist es verworfen (`subjekt_typ`); `sonstiges` geht durch, mit einer Logzeile; ICH gilt als `person`, bei ICH sind nur `person` und `sonstiges` zulässig. Der Prompt (`server/prompts/default/classify_fakten.task.txt` und `.rules.txt`) fragt `typ` ab, die Liste kommt aus `ENTITY_TYPES`. Kein Typ-Fakt wird geschrieben (F7 bleibt offen), `entitaeten.typ` ist unverändert.
 
 **Zeugen** `[Test]`: `server/tests/test_fakten_subject_type.py` (neu), angepasst `test_fakten_agent.py` und `test_fakten_timeline_id.py`. Server-Suite am Code-Tree `Ran 5428 tests` · `OK (expected failures=2)`.
 
@@ -37,7 +133,7 @@
 
 **Offen, jetzt beantwortet:** Ob der Ort über die Bindung der Sachlage oder über den Namen Subjekt wurde, ist für die Prüfung gleichgültig — sie gilt am Tripel. Als Entität vom Typ `ort` bestand er nicht: `entitaeten` trägt keinen. **Was bleibt:** Nennt das Modell für einen Ort `sonstiges`, geht das Tripel durch (A Nr. 46, Frage 3); die Messung zählt es (0 von 30).
 
-**Zusammenhang:** `FAKTEN-HEISST-ICH-AUSGENOMMEN` (offen, in [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)) — dieselbe Prüfung, eine andere Lücke; Backlog `FAKTEN-KANON-LUECKEN` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) — ein Ort ist für andere Beziehungen ein rechtmäßiges Subjekt (*liegt in*), deshalb gilt eine Prüfung je Beziehung; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6.
+**Zusammenhang:** `FAKTEN-HEISST-ICH-AUSGENOMMEN` (~~offen, in [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md)~~ → geschlossen am 26.10.2026, in dieser Datei) — dieselbe Prüfung, eine andere Lücke; Backlog `FAKTEN-KANON-LUECKEN` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) — ein Ort ist für andere Beziehungen ein rechtmäßiges Subjekt (*liegt in*), deshalb gilt eine Prüfung je Beziehung; [`novaberg-memory-fakten_b.md`](novaberg-memory-fakten_b.md) §6.
 
 ---
 
