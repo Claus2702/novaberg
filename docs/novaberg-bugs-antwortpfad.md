@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → 54 Eintraege (24.10.2026, später, unverändert 54: ein Nachtrag an `SACHLAGE-OBJEKT-OHNE-NAMEN` aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → ~~54~~ → 53 Eintraege (26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS` behoben, bezeugt und vor dem Commit an den protokollierten Ausfällen gemessen, mit dem Commit des Code-Trees `3806695` geschlossen und ins Archiv, im Betrieb nicht gemessen; 24.10.2026, später, unverändert 54: ein Nachtrag an `SACHLAGE-OBJEKT-OHNE-NAMEN` aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -373,32 +373,6 @@ Streuung bei **identischer** Vorgabe (Gruppen ab 4 Turns): **9,19 · 10,67 · 3,
 **Geschlossen, wenn** Der Lesepfad zur Timeline liefert bei gleicher Eingabe dasselbe.
 
 ---
-
-### `VERFASSER-KOPFBLOCK-FAELLT-AUS` — in mehr als der Haelfte der Turns
-**Kategorie:** ANT
-
-**Rang:** **hoch** — laut im Log, aber niemand handelt danach, und die Ausbausperre fällt aus. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: der Umlaut-Fehler ist behoben, **eine zweite Ursache steht**: `_kopf_deuten` verlangt das nackte *ja*/*nein* (`server/graph/einwand.py:237`), der Prompt formuliert die Zeile als Frage (`:114`), und das Modell schreibt sie hinter den Wert. **Gezählt am 05.10.2026** im Serverlog seit 03.10.2026: 47 Zeilen *„kein lesbares Urteil im Kopfblock“* gegen 74 erzeugte Antworten. Die Zeugen prüfen nur die glatte Form.
-
-**Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026; am Code unveraendert seit `1330045`. **Die Rate ist weiterhin unbelegt, und sie ist es jetzt ohne Hindernis:** Der Auszug traegt seit dem 22.08. 500 Zeichen statt 120, die Messung, die daran haengt, ist noch nicht gelaufen. Eine **hinreichende** Ursache ist belegt und behoben: `_kopf_deuten` verwarf das ganze Urteil, wenn ein Feldname einen Umlaut trug — der Prompt schreibt `GEPRUEFT` und `STAERKE` vor, das Modell schreibt `GEPRÜFT` und `STÄRKE`. Derselbe vollstaendige Kopfblock ist vorher `geliefert=False`, nachher `True`. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung (`graph/einwand.py`), vier neue Zeugen, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2087 tests — OK`.
-
-**Datenpunkt 28.08.2026, 20:45 UTC** (Betriebszeuge der Scheibe 5, ein Turn): `kein lesbares Urteil im Kopfblock` — Rohantwort beginnt mit `EINWAND: nein — widerspric…`, 705 Zeichen. **1 von 1.**
-
-**Datenpunkt 28.08.2026, 15:30–16:06 UTC** (Betriebsmessung der Sachlage, fuenf Turns, Auszug 500 Zeichen): `kein lesbares Urteil im Kopfblock` in **3 von 5** Turns (2, 4, 5). Alle drei Kopfbloecke beginnen laut Auszug mit `EINWAND: nein — …`, und der Deuter meldet sie als unlesbar. Kein eigener Auftrag; die Rate steht damit erstmals mit dem langen Auszug belegt. **Nachgezählt über den Rest des Tages:** in **4 von 4** weiteren echten Turns (17:15, 17:24, 18:46, 18:47 UTC) — zusammen **7 von 9**, alle mit einem Kopfblock, der mit `EINWAND: nein — …` beginnt.
-
-> **Dass es die Ursache der gemessenen Faelle war, ist damit NICHT belegt** — und der Grund dafuer ist ein zweiter Befund: Der Logauszug des Ausfalls war bei **120 Zeichen** gekappt und endete mitten im zweiten von fuenf Feldern. Gegen die fuenf echten Ausfaelle des Bestandes gehalten, blieben **0 von 5** lesbar, weil der Auszug drei Felder gar nicht enthaelt. Gezaehlt ist nur eine Korrelation: **4 von 5** trugen `GEPRÜFT` mit Umlaut.
->
-> **Der Auszug traegt jetzt 500 Zeichen und die Gesamtlaenge** (`graph/nodes/verfasser.py`). Damit ist die naechste Messung moeglich; die heutige war es nicht.
->
-> **Die Ausfallrate ist ebenfalls offen.** Der Zaehllauf vom 22.08.2026 ergab 55 Ausfaelle in 36 Stunden — **50 davon aus Suite-Laeufen**, deren Zeugentexte im selben kumulativen Log stehen. Aus dem Betrieb stammen **5 Ausfaelle und 1 gefaelltes Urteil**; das ist zu wenig fuer eine Rate und nicht mit den 54 % vom 13.08.2026 vergleichbar.
-
-**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Kopfblock des Verfasser-Urteils faellt weiter aus.** Messturn `065a5d5f` um 19:15 UTC: `Verfasser: Urteil AUSGEFALLEN`, die Rohantwort beginnt mit `EINWAND: nein — widerspricht PERSON B nichts.` — das Modell schreibt den Kopfblock, aber nicht in der Form, die `urteil_lesen` erkennt. Ein Datenpunkt zu den 14 von 26 vom 13.08., und ein Hinweis auf die Ursache: nicht *kein* Kopfblock, sondern ein nicht parsbarer.
-
-**Geschlossen, wenn** Der Kopfblock des Verfasser-Urteils steht in jedem Turn, oder sein Ausbleiben ist ein benannter Zustand.
-
----
-
-
-**Nachtrag vom 14.08.2026, aus der Fundliste uebernommen.** **Der Kopfblock des Verfasser-Urteils fällt in mehr als der Hälfte der Turns aus.** Gemessen am 13.08.2026 über einen Tag: **12 Urteile gefällt, 14 ausgefallen** von 26 Verfasser-Läufen (54 %). Der Ausfall wird laut protokolliert (`Verfasser: Urteil AUSGEFALLEN`) und kostet nur das Urteil, nicht die Antwort — die Bauart hält also. Aber die Ausbausperre B1 greift in mehr als jedem zweiten Turn nicht, und `novaberg-node-verfasser_k.md` hält bisher nur fest, dass die **Wirkung** des Kopfblocks auf die Kapitulationsrate null ist; dass er zur Hälfte gar nicht erst zustande kommt, steht nirgends. Beide Aussagen zusammen stellen die Frage, ob der Block bleibt.
 
 ### `GESPRAECHSVEKTOR-HYPOTHESE-DREIFACH` — dieselbe Hypothese dreimal im Block
 **Kategorie:** ANT

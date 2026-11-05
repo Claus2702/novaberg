@@ -35,7 +35,7 @@ Der Wortlaut der Entscheidung steht nicht im Abschnitt; er gibt sie als Ergebnis
 - `_t` §2.2b, Kasten *„Nicht enthalten: eine Zahl für den Umfang“* — *„die nächstliegende offene Frage“* (dazu Befund B5).
 - `_m`, *Aus §2.2a-3*: die Gegenrichtung (*nah genug, kein Block*) ist nicht belegt, weil der Fall keine Protokollzeile schreibt.
 - `_m`, *Aus §7*: ob die ausgesetzte Zeile die falschen Erfolgsmeldungen verhindert hätte, *„ist nicht gemessen“*.
-- `_b`, Nachtrag zum Kopfblock des Urteils (22.08.2026): ob der Umlaut die Ursache der gemessenen Ausfälle war, *„ist offen“*.
+- `_b`, Nachtrag zum Kopfblock des Urteils (22.08.2026): ob der Umlaut die Ursache der gemessenen Ausfälle war, *„ist offen“*. → Für die Ausfälle danach beantwortet am 26.10.2026: Sie hatten eine zweite Ursache, den Wert mit einer Erläuterung dahinter; behoben und gemessen vor dem Commit (`_b`, Nachtrag vom 26.10.2026). Für die fünf Ausfälle davor bleibt die Frage offen, ihr Auszug trägt drei Felder nicht.
 - `_k` §4: ob die Inhaltsstufe später ein anderes Modell verdient, *„ist eine eigene Frage“*.
 
 ---
