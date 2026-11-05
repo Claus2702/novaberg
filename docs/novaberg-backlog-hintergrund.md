@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 67 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 67 Eintraege (26.10.2026: Nachtrag an `INTENTION-AUFGABE-MAP-DOPPELT` — die drei Kopien von `_kanon_felder_pruefen`).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -227,6 +227,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Befund (2026-08-05).** **`_INTENTION_AUFGABE_MAP` steht doppelt und ist bereits auseinandergelaufen.** Dieselbe Tabelle Intention → Shadow-Aufgabe liegt in `memory/kzg.py` und in `agents/kzg/queues.py`, je als eigenes Literal. Sie stimmen bis auf einen Schlüssel überein: einmal `bestätigung`, einmal `bestaetigung` — beide auf `""`, also heute folgenlos, aber genau die Drift, die eine doppelte Wahrheit erzeugt. Wer eine Zuordnung ändert, muss beide finden.
 
 **Was fertig waere.** Eine Quelle, ein Literal — die zweite Kopie liest die erste.
+
+**Nachtrag 26.10.2026 — dieselbe Bauart ein zweites Mal, dreifach.** Seit dem Bau zu `PERZEPTIONSFELDER-OHNE-KANON` und `KANON-FELDER-NEHMEN-FREMDWERTE` (Code-Tree `6feb70a`, Kennung wird nachgetragen) steht `_kanon_felder_pruefen` wortgleich in `memory/kzg.py`, `agents/kzg/speicher.py` und `agents/kzg/queues.py` — so vorgegeben, je Verwendungsstelle eine Prüfung. Ein Zeuge hält die drei an denselben Eingaben und derselben Erwartung zusammen (`server/tests/test_kanon_usage.py`, `TheThreeCopiesAgreeTest`), die Kopien selbst bleiben drei. **Zusammenlegen braucht keine neue Importrichtung:** `agents/kzg/speicher.py` liest schon aus `memory.kzg` (`_kzg_key`, `salienz_berechnen`); für `agents/kzg/queues.py` käme eine Kante in dieselbe Richtung hinzu. Die Bedingung oben — eine Quelle, die Kopie liest die erste — gilt seither für Tabelle und Prüfung.
 
 **Prioritaet:** mittel.
 

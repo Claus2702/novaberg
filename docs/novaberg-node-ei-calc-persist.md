@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `ei_calc_persist` (Konsolidierung und Persistierung der Nova-EI)
-**Stand:** 15. August 2026, Chat 140 (dreizehn Felder: die neun EI-Dimensionen, die beiden Raum-Achsen aus Chat 114 und die beiden Uhren der Eigenzeit)
+**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §3 Schritt 1: ein Wert außerhalb einer Faktortabelle des EI-Gates bekommt den neutralen Faktor mit Fehlerzeile, vor dem Commit an 1817 gespeicherten Turns gemessen — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 15. August 2026, Chat 140 (dreizehn Felder: die neun EI-Dimensionen, die beiden Raum-Achsen aus Chat 114 und die beiden Uhren der Eigenzeit)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc-persist.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/ei_calc_persist.py`
@@ -77,6 +77,8 @@ korrigierter_stil = _stil_plausibilitaet(
 )
 internal.emotion.language_style = korrigierter_stil
 ```
+
+**Ein Wert außerhalb einer Faktortabelle des EI-Gates (seit 26.10.2026)** bekommt in `_ei_arousal_berechnen` den neutralen Faktor der Tabelle mit einer ERROR-Zeile, nicht mehr 1.0 (`novaberg-node-ei-calc.md` §1, Punkt 3). **Gemessen vor dem Commit** an den 1817 Turns, deren Eingaben dieser Knoten im `pipeline_log` (Schritt `ei_arousal`) gespeichert hat, 27.07. bis 26.10.2026, nur gezählt `[gemessen 26.10.2026]`: Der Stand davor reproduziert das protokollierte `arousal_ei` in 1817 von 1817; der Bau senkt es in 262 (14,4 %), im Mittel um 0,063, höchstens um 0,186, und hebt es in keinem. Außerhalb ihrer Tabelle lagen `intent` 90-mal und `tone` 176-mal, die Dynamik einmal. 29-mal quert der Wert dabei die Schwelle 0,4 und 13-mal die Schwelle 0,7 von `_modus_plausibilitaet`; ob sich die Korrektur nach `emotional` dort umkehrt, hängt an der Emotionsgruppe des Turns und ist nicht gemessen. **Im Betrieb nicht gemessen:** die Fehlerzeilen je Feld gegen die beendeten Turns, nach Ort und Turn gezählt.
 
 Die Plausibilitäts-Funktionen sind beschrieben in `novaberg-ei.md`. Sie sind nicht-überschreibend: bei stimmiger Perzeption greifen sie nicht ein, bei widersprüchlichen Werten wählen sie den robusteren.
 

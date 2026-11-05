@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offenen Defekte dieses Gegenstands (25.10.2026, später: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Code-Tree `2876b85` behoben → committet als `236edec`, offen bis zur MESSUNG im Betrieb; Zählung an `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` nachgetragen), ~~28~~ → ~~30~~ → ~~34~~ → ~~33~~ → 30 Eintraege (26.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` und `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Betrieb gemessen, geschlossen und ins Archiv; 25.10.2026: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` neu aus dem Fund vom 24.10.2026, `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` behoben und ins Archiv; 24.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-AUSWAHLFRAGE-OHNE-LESER`, `TOR-ABLEHNUNG-MELDET-ABGESCHLOSSEN` und `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` neu aus der Klassifizierung der Funde vom 24.10.2026; 20.10.2026: `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` neu aus der Fundliste; 18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
+**Inhalt:** die offenen Defekte dieses Gegenstands (25.10.2026, später: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Code-Tree `2876b85` behoben → committet als `236edec`, offen bis zur MESSUNG im Betrieb; Zählung an `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` nachgetragen), ~~28~~ → ~~30~~ → ~~34~~ → ~~33~~ → ~~30~~ → 28 Eintraege (26.10.2026, abends: `PERZEPTIONSFELDER-OHNE-KANON` und `KANON-FELDER-NEHMEN-FREMDWERTE` mit dem Code-Tree `6feb70a` behoben, bezeugt, vor dem Commit an gespeicherten Modellausgaben gemessen, geschlossen und ins Archiv, Kennung wird nachgetragen, im Betrieb nicht gemessen; 26.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` und `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Betrieb gemessen, geschlossen und ins Archiv; 25.10.2026: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` neu aus dem Fund vom 24.10.2026, `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` behoben und ins Archiv; 24.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-AUSWAHLFRAGE-OHNE-LESER`, `TOR-ABLEHNUNG-MELDET-ABGESCHLOSSEN` und `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` neu aus der Klassifizierung der Funde vom 24.10.2026; 20.10.2026: `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` neu aus der Fundliste; 18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -364,21 +364,6 @@ nicht aus einer Erhebung.
 
 ---
 
-### `PERZEPTIONSFELDER-OHNE-KANON` — drei Felder ohne Riegel, Default am Maximum
-**Kategorie:** CHA
-
-**Rang:** **hoch** — still, der Wert wird gespeichert: Ein Intent außerhalb des Kanons bekommt den Faktor 1,0, den höchsten (`server/ei/berechnung.py:854-855`). Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; es gibt nur die Spur `kanon_ausreisser`, keinen Riegel.
-
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `ei/berechnung.py:820-821` liest `intent` und `tone` weiter ueber `.get(wert, 1.0)`.
-
-**Befund (18.08.2026), aus der Fundliste uebernommen.** **Drei Felder der Perzeption haben keinen Kanon-Riegel, und der Vorgabewert des Intent ist der höchste Wert seiner Tabelle.** `emotion` bekommt bei einem unbekannten Wert einen Error-Log (`enricher`), `modus` läuft durch `modus_pruefen` — **`sprach_stil`, `intent` und `tone` haben nichts davon.** Alle drei werden über `.get(wert, 1.0)` gelesen, und beim Intent ist 1.0 zugleich der **Maximalwert** der Tabelle (`EI_INTENT_FAKTOREN`: personal 1.0 … knowledge/meta/task 0.3): Ein Wert außerhalb des Kanons wird damit nicht gedämpft, sondern maximal verstärkt — genau die Klasse aus `22_STILLE_FEHLER.md` §7, nur ohne Begleitfeld. Beim Tone liegt der Vorgabewert 1.0 zwischen `sachlich` 0.3 und `empathisch` 1.3, also ebenfalls im oberen Drittel. **Belegt an einem Perzeptionslauf über 49 Turns eines echten Dialogs (16.08.2026, Produktivmodell, gemessen 18.08.2026):** 8 Feldwerte in 7 Turns (14,3 %) liegen außerhalb ihres Kanons — `tone` 5 mal (`nachdenklich` 3×, `spielerisch`, `locker`), `intent` 2 mal, und beide Male mit **`philosophischer_austausch`, einem Wert aus der Modus-Liste**, die im selben Prompt direkt darüber steht; `sprach_stil` einmal (`nachdenklich`). Wirkung auf das EI-Gate, je Turn nachgerechnet: `ei_arousal` liegt um **+0,070 bis +0,122** höher, als der niedrigste kanonische Wert ergäbe. **Warum es niemandem auffiel:** Der Wert ist plausibel — `nachdenklich` als Tonfall liest sich richtig —, und die Rechnung liefert eine Zahl, die niemand als Vorgabewert erkennt. Verwandt mit `PERZEPTION-EMOTION-AUSSER-KANON`, aber eigenständig: Dort gibt es die Meldung und sie wird überhört, hier gibt es sie nicht.
-
-**Entschieden am 15.10.2026, vor dem Bau:** Der Riegel sitzt an der **Verwendungsstelle**, nicht in der Perzeption — sie zieht weiter Schreibvarianten auf den Kanon und lässt einen unbekannten Wert durch, damit er stromabwärts gemeldet wird (Docstring von `_kanonisch`). Die EI-Rechnung nimmt für einen unbekannten Wert einen **neutralen** Faktor, nie den höchsten, mit Fehlerzeile. Gemeinsam mit `KANON-FELDER-NEHMEN-FREMDWERTE`.
-
-**Geschlossen, wenn** Jedes Perzeptionsfeld hat einen Kanon-Riegel, und kein Vorgabewert ist der hoechste Wert seiner Tabelle.
-
----
-
 ### `TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT` — die Antwort existiert, ihre Spur nicht
 **Kategorie:** CHA
 
@@ -552,20 +537,7 @@ Derselbe Fehlertyp hat in diesem Register bereits eine Spur: `CHAR-HASH-FILTER` 
 
 Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselbe Bauplan:** ein Vorgabewert an einer Stelle, an der ein Ausfall gehoert — beim Queue-Push, beim Dispatch, am Spalten-Default des Rades, bei zwei Kanon-Feldern, in der fehlenden Klemme und beim Suchdienst, dessen Ausfall wie ein leeres Ergebnis aussieht.
 
-#### KANON-FELDER-NEHMEN-FREMDWERTE 🔧 offen
-**Kategorie:** CHA
-
-**Rang:** **hoch** — still, schreibt ins Gedächtnis. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an beiden Feldern; `modus` und `intentionen` gehen ohne Kanonprüfung in den KZG (`server/graph/nodes/salience.py:733-734`, `:770`, `server/memory/kzg.py:344`, `:394`); `MODUS_KANON` und `INTENT_KANON` prüft dort niemand.
-
-**Zustand:** offen, **verschaerft** — am Bestand nachgemessen am 25.08.2026. Der Befund nannte 34 von 399 Werten ausserhalb des Kanons, also 9 %. Heute ueber `shadow_auftrag` gezaehlt: **99 von 464 mit Modus (21,3 %)** — der Anteil hat sich mehr als verdoppelt. Der Kanon zaehlt zehn Werte; im Bestand stehen unter anderem `Informationsabfrage / Lernmodus`, `Spielerisch-emotional` und `Philosophisch-spielerischer Austausch mit hoher metaphorischer Dichte`. **Eine als geduldet gefuehrte Zahl ist keine Konstante.**
-
-**Befund (2026-07-29).** Zwei Kanon-Felder nehmen Werte außerhalb ihres Kanons stillschweigend an, und die Lücke sitzt **nur auf Novas Seite**. Gemessen über 493 KZG-Einträge: Beim `modus` liefert der Nutzer-Pfad **94 von 94** Kanon-Werten, der Assistant-Pfad **365 von 399** — **34 Einträge (9 %) tragen LLM-Freitext** statt eines der zehn Labels, darunter `'Kein Modus etabliert'`, `'theoretische_spezifikation'`, `'Wissensabfrage und fachliche Aufklärung'`; 32 verschiedene Werte insgesamt. Bei `intentionen` dasselbe Muster, kleiner: 2 von 874 Nennungen außerhalb des 16er-Kanons (`philosophischer_austausch`, `spielerisch_interagieren` — beides Modus-Werte im Intentionsfeld, beide von Nova). Die Asymmetrie ist lokalisierbar: `perzeption.task.txt` bindet, `perzeption.assistant_task.txt` nicht. `modus_pruefen` wurde in Chat 114 genau dafür gebaut und meldet `error` — sitzt aber im GV-Pfad; der KZG-Verdichtungs-Pfad, aus dem diese Einträge stammen, ruft es nicht. Der Chat-114-Fund ist damit halb geschlossen. **Verzerrung beachten:** Die Freitexte beschreiben überwiegend Registerwechsel in Prosa — also genau die Fälle, die eine Messung des Registerwegs braucht.
-
-**Was fertig waere.** Ein Wert ausserhalb des Kanons wird laut abgelehnt, auf beiden Seiten.
-
-**Entschieden am 15.10.2026, vor dem Bau:** abgelehnt wird an der **Verwendungsstelle** — ein `modus` ausserhalb von `MODUS_KANON` geht leer in den KZG, eine Intention ausserhalb von `INTENT_KANON` wird verworfen, beides mit Fehlerzeile; nie Freitext in den Bestand. Die Perzeption bleibt durchlaessig und meldet. Gemeinsam mit `PERZEPTIONSFELDER-OHNE-KANON`.
-
-**Prioritaet:** hoch.
+*`KANON-FELDER-NEHMEN-FREMDWERTE`, der einzige Eintrag dieses Gegenstands in diesem Abschnitt, ist am 26.10.2026 geschlossen und steht in [`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md). Der Abschnitt bleibt stehen, weil Überschrift und Text in jedem empfangenden Teil stehen.*
 
 ### Chat 133 — aus der Fundliste klassifiziert, Block 01.08. (08.08.2026)
 

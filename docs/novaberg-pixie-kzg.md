@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 15. Oktober 2026, 01:33 UTC (`date -u`; Intentionstabelle: `bestaetigung` in der Schreibweise des Kanons). Davor 19. September 2026, 13:12 UTC (eine Ablehnung als Nicht-Auftrag geht nicht in `[TATSAECHLICHER AUSGANG]`, `968c56b`). Davor 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
+**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §5 und §6: `modus` und `intentionen` werden beim Speichern und beim Schatten-Auftrag gegen ihren Kanon geprüft — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 15. Oktober 2026, 01:33 UTC (`date -u`; Intentionstabelle: `bestaetigung` in der Schreibweise des Kanons). Davor 19. September 2026, 13:12 UTC (eine Ablehnung als Nicht-Auftrag geht nicht in `[TATSAECHLICHER AUSGANG]`, `968c56b`). Davor 17. September 2026, 10:58 UTC — eine Ablehnung, nach der ein anderer Dienst abschloss, ist eine Weitergabe und steht nicht im Ausgangsblock (Scheibe 12 D1). Davor 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -111,6 +111,8 @@ Der einzige LLM-Call im KZG-Agent. Erzeugt den `kern`:
 
 **Eigenständiger Eintrag (immer):** Jeder Turn oberhalb der Salienz-Schwelle wird als neuer Eintrag in Redis abgelegt. Hash mit `inhalt` (kern), `themen`, `salienz`, `haeufigkeit` (1), `gedaechtnistyp`, `dimension`, `intentionen`, `emotion`, `modus`, `arousal`, `emotions_vektor`, `embedding`, `erstellt_am`. TTL nach Salienz-Stufe (siehe §7 Konfiguration und novaberg-mem-kzg.md §2a).
 
+**`modus` und `intentionen` werden geprüft (seit 26.10.2026):** `_neu_anlegen` schreibt sie über `_kanon_felder_pruefen` — ein Modus außerhalb von `MODUS_KANON` leer, eine Intention außerhalb von `INTENT_KANON` verworfen, je mit einer ERROR-Zeile (`KZG-Speicher: …`). `queues_befuellen` prüft dieselben Felder ein zweites Mal, erst im Zweig, der einen Schatten-Auftrag schreibt (`KZG-Queues: …`); ein fremder Modus über `KZG_SALIENZ_HIGH` ergibt auf diesem Weg also zwei Zeilen im selben Turn. Einzelheiten und Messung: `novaberg-mem-kzg.md` §2.
+
 Seit Chat 64 entfällt die Schreibzeit-Deduplizierung. Jeder Kern bleibt exakt erhalten — Zusammenführung passiert erst bei der Cluster-Promotion ins LZG.
 
 **Thematische Verstärkung (verwandte Bestandseinträge):** Direkt nach dem Schreiben durchsucht `_thematisch_verstaerken()` die gesamte Paar-Partition (`kzg:{user_id}:{character_id}:*`) nach Einträgen mit Themen-String-Overlap (case-insensitive, exakter Match auf den `themen`-Tags). Treffer bekommen einen gedämpften Salienz-Boost und TTL-Auffrischung — der `inhalt` und das `embedding` bleiben unangetastet.
@@ -164,6 +166,8 @@ Intention aus der Salienz wird auf eine Pixie-Aufgabe gemappt:
 | `smalltalk`, ~~`bestätigung`~~ `bestaetigung` (Schreibweise des Kanons, in `memory/kzg.py` berichtigt am 15.10.2026), `abschluss`, `humor`, ... | Keine Aufgabe |
 
 Bei Verstärkung mit Häufigkeit >= 3 und Salienz >= 0.7 → `vertiefen`.
+
+Die Intentionen, die hier ankommen, sind seit dem 26.10.2026 nur Kanon-Werte (§5); eine verworfene fällt aus der Zuordnung. Gemessen vor dem Commit an 2785 gespeicherten Aufträgen: Keiner verlöre seine Aufgabe `[gemessen 26.10.2026]`.
 
 ### Promotion-Queue Push (bei Salienz >= KZG_SALIENZ_HIGH)
 

@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 996 Abschnitte in 7 Dateien — 484 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 997 Abschnitte in 7 Dateien — 485 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 78 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 79 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 996 Marken, 996 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 997 Marken, 997 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-10-26 | laufend | ## | [26.10.2026, 19:50 UTC — Ein Wert außerhalb des Kanons bekommt an jeder Faktortabelle einen neutralen Faktor statt des Maximums und erreicht den KZG nie als Freitext; `PERZEPTIONSFELDER-OHNE-KANON` und `KANON-FELDER-NEHMEN-FREMDWERTE` im Archiv](novaberg-roadmap.md#26102026-1950-utc--ein-wert-außerhalb-des-kanons-bekommt-an-jeder-faktortabelle-einen-neutralen-faktor-statt-des-maximums-und-erreicht-den-kzg-nie-als-freitext-perzeptionsfelder-ohne-kanon-und-kanon-felder-nehmen-fremdwerte-im-archiv) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 19:03 UTC — Der Verfasser liest den Kopfblock seines Urteils über das erste Wort je Feld, ein Feld mit zwei Werten ist mehrdeutig, und jeder Ausfall trägt seinen Grund; `VERFASSER-KOPFBLOCK-FAELLT-AUS` im Archiv](novaberg-roadmap.md#26102026-1903-utc--der-verfasser-liest-den-kopfblock-seines-urteils-über-das-erste-wort-je-feld-ein-feld-mit-zwei-werten-ist-mehrdeutig-und-jeder-ausfall-trägt-seinen-grund-verfasser-kopfblock-faellt-aus-im-archiv) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 08:25 UTC — Die Klassifikation von Direktiven, Charakter-Identität, Notizen und Timeline liest die Antwort des Modells geprüft: `null` gilt als nicht genannt, ein falscher Typ endet laut; `KLASSIFIKATION-NULL-FELD-WIRFT` angelegt und geschlossen](novaberg-roadmap.md#26102026-0825-utc--die-klassifikation-von-direktiven-charakter-identität-notizen-und-timeline-liest-die-antwort-des-modells-geprüft-null-gilt-als-nicht-genannt-ein-falscher-typ-endet-laut-klassifikation-null-feld-wirft-angelegt-und-geschlossen) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 08:17 UTC — Die Schreibwege von Notizen und Dateien-Wurzeln binden jede Kennung an den Menschen, und ein Schreibweg, der nicht genau eine Zeile trifft, endet laut; `SCHREIBWEG-KENNUNG-OHNE-MENSCH` im Archiv](novaberg-roadmap.md#26102026-0817-utc--die-schreibwege-von-notizen-und-dateien-wurzeln-binden-jede-kennung-an-den-menschen-und-ein-schreibweg-der-nicht-genau-eine-zeile-trifft-endet-laut-schreibweg-kennung-ohne-mensch-im-archiv) |

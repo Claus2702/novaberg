@@ -747,6 +747,7 @@ stumm ein Faktor 1,0, und der ist von einem gemessenen neutralen Wert nicht zu u
 | `FASZ_VERLAUF_FAKTOREN` | 9 Werte, 0,80…1,25 | §10.5 nennt fünf, vier sind nach derselben Achse ergänzt (**Bewegung**, nicht Richtung) |
 | `FASZ_INTENT_FAKTOREN` | 6 Werte, 0,85…1,20 | §10.5 nennt fünf, `smalltalk` ergänzt |
 | `FASZ_MODUS_FAKTOREN` | 10 Werte, 0,90…1,15 | §10.5 nennt vier, sechs nach derselben Frage ergänzt: *wird hier ein Gegenstand vertieft?* |
+| `FASZ_INTENT_NEUTRAL` · `FASZ_MODUS_NEUTRAL` | 1,000 · 1,020 | seit 26.10.2026; das arithmetische Mittel der Tabelle, als Literal — der Faktor eines Werts außerhalb des Kanons und eines leeren Felds |
 | `FASZ_ANLAGE_MIN` · `FASZ_ANLAGE_MAX` | 0,75 · 1,30 | §10.5, aus `charakter_rad_messung` |
 | `FASZ_STRANGZUG_HUB` | 0,60 | dieselbe Spanne wie `PRAEGUNG_ZUG_HUB` (§10.3a) |
 | `FASZ_STRANGZUG_HALBSTRECKE_FAEDEN` | 3 | Setzung; größter Strang trägt 7 Fäden, Median 2 |
@@ -759,9 +760,17 @@ stumm ein Faktor 1,0, und der ist von einem gemessenen neutralen Wert nicht zu u
 
 > **Die drei Tabellen sind vollständig gegen ihren Kanon**, und ein Zeuge hält beide Seiten
 > zusammen. Ein fehlender Schlüssel fände stumm den neutralen Faktor 1,0 — und ein Vorgabewert in
-> einem Produkt ist von einem gesetzten nicht zu unterscheiden. Trifft trotzdem ein Wert außerhalb
-> des Kanons ein, wird 1,0 zurückgegeben **und gemeldet**: `[gemessen 04.09.2026]` trägt der Bestand
-> in `intent` 28-mal `philosophischer_austausch`, einen Modus-Wert.
+> einem Produkt ist von einem gesetzten nicht zu unterscheiden. ~~Trifft trotzdem ein Wert außerhalb
+> des Kanons ein, wird 1,0 zurückgegeben **und gemeldet**~~ → **Seit dem 26.10.2026** bekommt ein
+> Wert außerhalb des Kanons in `f_intent` und `f_modus` den neutralen Faktor der Tabelle, ihr Mittel
+> (`FASZ_INTENT_NEUTRAL`, `FASZ_MODUS_NEUTRAL`), und eine **ERROR**-Zeile statt der Warnung; ein
+> neutraler Faktor außerhalb der Spanne seiner Tabelle oder auf ihrem Maximum wirft. Ein leeres Feld
+> bekommt denselben Faktor, still wie vorher — bei `mode` 1,020 statt 1,0. `f_verlauf` behält 1,0: Der
+> Verlauf ist kein Feld der Perzeption, sondern aus der Emotionsfolge gerechnet. Der Anlass:
+> `[gemessen 04.09.2026]` trägt der Bestand in `intent` 28-mal `philosophischer_austausch`, einen
+> Modus-Wert. An 1778 gespeicherten Turns ändert die Umstellung keinen Faktor — außerhalb des Kanons
+> lag nur `intent`, 46-mal, und dort ist das Mittel 1,000; leere Felder gab es keine
+> `[gemessen 26.10.2026]`.
 
 **Keine dieser Zahlen ist gemessen.** Sie sind Setzungen mit Herkunft, und ihre Kalibrierung braucht
 die Reihe des Bestandslaufs über Tage — der Bestand erreicht heute den Wirkungsbereich von Deckel

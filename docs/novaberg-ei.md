@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Emotionale Intelligenz (Übersicht)
-**Stand:** 31. August 2026 (Mechanismus 4 — die Reizstärke; Cap 4.0, Turn-Beitrag erregungsabhängig, Filterschwelle 0.04, alle drei aus Messreihen hergeleitet: §Reizstärke). Davor: 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
+**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §9 EI-Plausibilitaets-Gate: Tabellen und Formel gegen den Code nachgezogen, ein Wert außerhalb einer Faktortabelle bekommt den neutralen Faktor mit Fehlerzeile — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 31. August 2026 (Mechanismus 4 — die Reizstärke; Cap 4.0, Turn-Beitrag erregungsabhängig, Filterschwelle 0.04, alle drei aus Messreihen hergeleitet: §Reizstärke). Davor: 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
 **Pfad:** novaberg/docs/novaberg-ei.md
 **Quellen:** nova-04-k.md (EI-Konzept)
 
@@ -371,11 +371,13 @@ Das LLM liefert die Rohdaten (Emotion, Arousal, Beziehungsdynamik pro Turn via P
 
 Die Perzeption erkennt Emotion und Arousal zuverlaessig, verwechselt aber Inhalt mit Stil. Das EI-Plausibilitaets-Gate im EI-Calc korrigiert das mit drei Faktor-Tabellen:
 
-- **Beziehungsdynamik-Faktor:** vertrauen=1.0, distanz=0.3, angriff=0.8, hilfesuchend=1.0, dankbar=0.5
-- **Intent-Faktor:** emotionaler_ausdruck=1.0, hilferuf=1.0, information_erfragen=0.3, ...
-- **Tone-Faktor:** empathisch=1.0, sachlich=0.3, kreativ=0.5, direkt=0.7
+- ~~**Beziehungsdynamik-Faktor:** vertrauen=1.0, distanz=0.3, angriff=0.8, hilfesuchend=1.0, dankbar=0.5~~ → `EI_DYNAMIK_FAKTOREN`: hilfesuchend 1.5, angriff 1.3, dankbar 1.2, vertrauen 1.1, neutral 1.0, distanz 0.7
+- ~~**Intent-Faktor:** emotionaler_ausdruck=1.0, hilferuf=1.0, information_erfragen=0.3, ...~~ → `EI_INTENT_FAKTOREN` über die sechs Intents der Perzeption: personal 1.0, creative 0.8, smalltalk 0.5, task, knowledge und meta je 0.3
+- ~~**Tone-Faktor:** empathisch=1.0, sachlich=0.3, kreativ=0.5, direkt=0.7~~ → `EI_TONE_FAKTOREN`: empathisch 1.3, kreativ 0.8, direkt 0.5, sachlich 0.3
 
-Ergebnis: `ei_arousal = arousal * dynamik_faktor * intent_faktor * tone_faktor`
+~~Ergebnis: `ei_arousal = arousal * dynamik_faktor * intent_faktor * tone_faktor`~~ → `ei_arousal = min(1.0, arousal × (0.40 · dynamik + 0.35 · intent + 0.25 · tone))` — ein gewichtetes Mittel der drei Faktoren (`EI_GEWICHTE`), kein Produkt. Nachgezogen am 26.10.2026 gegen `config.py` und `ei/berechnung.py::_ei_arousal_berechnen`; seit wann Tabellen und Formel so stehen, ist hier nicht nachgesehen.
+
+**Ein Wert außerhalb seiner Tabelle (seit 26.10.2026).** Die Perzeption lässt ihn durch, damit er hier gemeldet wird. `_ei_faktor_lesen` gibt ihm den neutralen Faktor der Tabelle — ihren Eintrag `neutral`, wo sie einen trägt (Dynamik 1.0), sonst das arithmetische Mittel ihrer Werte (Intent 0.533, Ton 0.725), beides als Literal neben der Tabelle — und schreibt eine ERROR-Zeile mit Feld und Wert. Ein neutraler Faktor, der nicht unter dem Maximum seiner Tabelle liegt, wirft. Bis dahin galt 1.0, und beim Intent ist das der höchste Wert: Ein fremder Wert wurde nicht gedämpft, sondern maximal verstärkt. Gemessen vor dem Commit an den 1817 Turns, deren Eingaben Novas EI-Gate gespeichert hat `[gemessen 26.10.2026]`: Der EI-Arousal sinkt in 262, im Mittel um 0.063, und steigt in keinem; im Betrieb nicht gemessen (`novaberg-node-ei-calc-persist.md` §3).
 
 Der berechnete `ei_arousal` wird gegen eine Matrix geprueft. Alles Python, kein LLM-Call — deterministisch und nachvollziehbar.
 

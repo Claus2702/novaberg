@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz EI-Calc (Emotionale Intelligenz — Berechnungsschicht)
-**Stand:** 28. Juli 2026, Chat 114 (Raumzug als zweite Kraft neben der Empathie)
+**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §1 Punkt 3: ein Wert außerhalb einer Faktortabelle des EI-Gates bekommt den neutralen Faktor mit Fehlerzeile — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 28. Juli 2026, Chat 114 (Raumzug als zweite Kraft neben der Empathie)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc.md
 **Quellen:** Chat 58 (Konzept-Split), Chat 59 (Implementierung)
 **Datei:** `graph/nodes/ei_calc.py`
@@ -86,6 +86,7 @@ Die bisherigen Enricher-Berechnungen sind vollständig nach EI-Calc gewandert (C
 
 3. **EI-Arousal** — `_ei_arousal_berechnen(current_arousal, beziehungs_dynamik, intent, tone)`
    Gewichteter Kombinationsfaktor (Dynamik 0.40, Intent 0.35, Tone 0.25) verstärkt/dämpft den Roh-Arousal.
+   **Seit dem 26.10.2026** liest jede der drei Tabellen über `_ei_faktor_lesen`: Ein Wert außerhalb bekommt den neutralen Faktor der Tabelle — ihren Eintrag `neutral` (Dynamik 1.0), sonst ihr Mittel (Intent 0.533, Ton 0.725) — und eine ERROR-Zeile mit Feld und Wert; vorher 1.0, beim Intent der höchste Wert der Tabelle (`novaberg-ei.md` §9). Dieselbe Rechnung läuft für Nova in `ei_calc_persist`, je Turn also zweimal mit verschiedenen Werten; die Messung steht dort (`novaberg-node-ei-calc-persist.md` §3).
 
 4. **Modus-Plausibilität** — `_modus_plausibilitaet(current_emotion, ei_arousal, perzeption_modus)`
    Matrix-Lookup korrigiert den Perzeption-Modus. Negative Emotion + hoher EI-Arousal → `emotional` erzwungen. Neutrale Emotion → `emotional` blockiert.
