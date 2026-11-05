@@ -858,12 +858,13 @@ def verfassen(state: ConversationState) -> ConversationState:
         # zweiten von fuenf Feldern. Ein Auszug, aus dem sich die Ursache
         # nicht bestimmen laesst, macht den Ausfall zwar sichtbar, aber nicht
         # untersuchbar — fuenf protokollierte Faelle liessen offen, woran sie
-        # scheiterten.
+        # scheiterten. Der Grund steht vor dem Auszug, damit die Zeilen nach
+        # Ursache zaehlbar sind, ohne den Auszug zu lesen.
         logger.error(
-            "Verfasser: kein lesbares Urteil im Kopfblock — die Ausbausperre "
-            "greift in diesem Turn nicht. Kopfblock der Rohantwort (%d Zeichen "
-            "gesamt): %r",
-            len(roh), roh[:500],
+            "Verfasser: kein lesbares Urteil im Kopfblock (Grund: %s) — die "
+            "Ausbausperre greift in diesem Turn nicht. Kopfblock der Rohantwort "
+            "(%d Zeichen gesamt): %r",
+            urteil.ausfall, len(roh), roh[:500],
         )
 
     state["antwort_inhalt"] = inhalt
@@ -910,9 +911,11 @@ def verfassen(state: ConversationState) -> ConversationState:
     # hat — und die Anlaufquote von B1 waere so wenig messbar wie die des
     # Thinkers vor B-1.
     logger.info(
-        "Verfasser: Urteil %s (Einwand=%s, Bewertung=%s, Staerke=%s, Quelle=%s) — %s",
+        "Verfasser: Urteil %s (Einwand=%s, Bewertung=%s, Staerke=%s, Quelle=%s, "
+        "Ausfall=%s) — %s",
         "gefaellt" if urteil.geliefert else "AUSGEFALLEN",
         urteil.vorhanden, urteil.bewertung, urteil.staerke, urteil.quelle,
+        urteil.ausfall,
         (urteil.geprueft or "—")[:160],
     )
 

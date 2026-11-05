@@ -303,6 +303,74 @@ class TestDerAusfallSiehtNichtWieEineAntwortAus(unittest.TestCase):
         self.assertEqual(_Voll.text, ergebnis["antwort_inhalt"])
 
 
+class TestDerAusfallNenntSeinenGrund(unittest.TestCase):
+    """Die Ausfallzeile des Kopfblocks traegt den Grund aus `urteil_lesen`.
+
+    Geprueft am Knoten, nicht am Leser: Ein Grund, der im Urteil steht und
+    nicht ins Log kommt, laesst die Ausfaelle so unzaehlbar wie vorher.
+    """
+
+    def _lauf(self, text: str) -> list[str]:
+        """Faehrt den Verfasser mit `text` als Modellantwort und liefert das Log.
+
+        Vorbedingung: keine.
+        Nachbedingung: alle Zeilen ab INFO aus dem Logger des Verfassers.
+        Fehlerfaelle: keine.
+        """
+        class _Antwort:
+            token_total = 30
+
+        _Antwort.text = text
+        with patch.object(verf_mod.model_service.chat, "submit_sync",
+                          return_value=_Antwort()), \
+             self.assertLogs("ki_server.verfasser", level="INFO") as log:
+            verf_mod.verfassen(_state())
+        return log.output
+
+    def test_wert_ausserhalb_steht_in_der_ausfallzeile(self) -> None:
+        """Ein erfundener Einwandswert erscheint als benannter Grund."""
+        protokoll: str = "\n".join(self._lauf(
+            "EINWAND: vielleicht\nGEPRUEFT: Nichts.\nBEWERTUNG: trifft_zu\n"
+            "STAERKE: 0.1\nQUELLE: fakt\n---\nEin Gammablitz ist hell."
+        ))
+        self.assertIn("kein lesbares Urteil im Kopfblock (Grund: wert_ausserhalb:EINWAND)",
+                      protokoll)
+        self.assertIn("Ausfall=wert_ausserhalb:EINWAND", protokoll)
+
+    def test_die_ausfallzeile_steht_als_error(self) -> None:
+        """Die Ausfallzeile hat die Stufe ERROR — eine Zaehlung nach Stufe sieht sie.
+
+        Geprueft am Praefix der Logzeile (`STUFE:logger:Text`); als WARNING
+        stuende sie mit demselben Text da und fiele aus jeder Zaehlung nach ERROR.
+        """
+        zeilen: list[str] = self._lauf("Ein Gammablitz ist hell.")
+        ausfall: list[str] = [z for z in zeilen if "kein lesbares Urteil" in z]
+        self.assertEqual(1, len(ausfall), zeilen)
+        self.assertTrue(
+            ausfall[0].startswith(
+                "ERROR:ki_server.verfasser:Verfasser: kein lesbares Urteil im Kopfblock "
+                "(Grund: trenner_fehlt)"
+            ),
+            ausfall[0],
+        )
+
+    def test_trenner_fehlt_steht_in_der_ausfallzeile(self) -> None:
+        """Eine Antwort ganz ohne Kopfblock nennt den fehlenden Trenner."""
+        protokoll: str = "\n".join(self._lauf("Ein Gammablitz ist hell."))
+        self.assertIn("(Grund: trenner_fehlt)", protokoll)
+
+    def test_gefaelltes_urteil_ohne_ausfallzeile(self) -> None:
+        """Zwilling: Wert mit Erlaeuterung wird gelesen, keine Ausfallzeile."""
+        protokoll: str = "\n".join(self._lauf(
+            "EINWAND: nein — widerspricht PERSON B nichts.\nGEPRUEFT: Nichts.\n"
+            "BEWERTUNG: trifft_zu\nSTAERKE: 0.1\nQUELLE: fakt\n---\n"
+            "Ein Gammablitz ist hell."
+        ))
+        self.assertNotIn("kein lesbares Urteil", protokoll)
+        self.assertIn("Urteil gefaellt", protokoll)
+        self.assertIn("Ausfall=None", protokoll)
+
+
 class TestDerKontextSchnittUmgehtDenVerfasser(unittest.TestCase):
     """Bei Agent-Erfolg bleibt der schmale Kontext schmal.
 

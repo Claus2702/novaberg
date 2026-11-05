@@ -51,6 +51,22 @@ QUELLEN: tuple[str, ...] = ("fakt", "haltung", "beides")
 
 _TRENNER: str = "---"
 
+#: Die Gruende, aus denen `urteil_lesen` kein Urteil liefert. Benannt, damit
+#: jeder Ausfall im Log eine Ursache traegt und nicht nur eine Sammelzeile —
+#: aus einer Sammelzeile laesst sich nicht zaehlen, woran der Kopfblock
+#: scheitert. Die drei Feldgruende tragen den Feldnamen hinter einem
+#: Doppelpunkt (`wert_ausserhalb:EINWAND`).
+AUSFALLGRUENDE: tuple[str, ...] = (
+    "antwort_leer",          # die Modellantwort ist leer
+    "trenner_fehlt",         # keine Zeile, die nur die Trennlinie traegt
+    "feld_fehlt",            # ein Feld des Kopfblocks fehlt, mit Feldnamen
+    "wert_ausserhalb",       # das erste Wort ist kein Wert der Menge, mit Feldnamen
+    "mehrdeutig",            # mehr als ein Wert der Menge im Feld, gleich wo, mit Feldnamen
+    "staerke_keine_zahl",    # STAERKE beginnt nicht mit einer Zahl
+    "staerke_ausserhalb",    # STAERKE liegt nicht zwischen 0.0 und 1.0
+    "prosa_fehlt",           # nach der Trennlinie steht nichts
+)
+
 
 @dataclass
 class Einwandsurteil:
@@ -93,6 +109,12 @@ class Einwandsurteil:
 
     quelle: str | None = None
     # Einer aus QUELLEN. None = nicht geliefert oder unbekannter Wert.
+
+    ausfall: str | None = None
+    # Warum kein Urteil geliefert wurde: ein Grund aus AUSFALLGRUENDE, bei
+    # den Feldgruenden mit `:<FELD>`. Gesetzt bei jedem `geliefert=False` aus
+    # `urteil_lesen`; None bei einem gefaellten Urteil und bei der
+    # Vorbelegung, die nie gelesen wurde.
 
 
 def kopf_anweisung() -> str:
@@ -140,37 +162,40 @@ def urteil_lesen(roh: str) -> tuple[Einwandsurteil, str]:
         Nutzer lesen soll — auch wenn der Kopfblock fehlt oder unbrauchbar
         ist. **Ein misslungener Kopfblock kostet das Urteil, nicht die
         Antwort.**
-    Fehlerfaelle: Fehlender Trenner, fehlende Felder oder ein Wert ausserhalb
-        der Wertemenge fuehren zu `geliefert=False`; der Aufrufer meldet das
-        laut. Kein Vorgabewert auf eine gueltige Bewertung: Ein geratenes
-        Urteil waere von einem gefaellten nicht zu unterscheiden und wuerde in
-        der Fallenbatterie als Messwert gezaehlt.
+    Fehlerfaelle: Fehlender Trenner, fehlende Felder, ein erstes Wort
+        ausserhalb der Wertemenge, eine wiederholte Wertliste oder eine
+        unbrauchbare Staerke fuehren zu
+        `geliefert=False` mit einem Grund aus `AUSFALLGRUENDE` in `ausfall`;
+        der Aufrufer meldet das laut. Kein Vorgabewert auf eine gueltige
+        Bewertung: Ein geratenes Urteil waere von einem gefaellten nicht zu
+        unterscheiden und wuerde in der Fallenbatterie als Messwert gezaehlt.
 
     Returns:
-        (Einwandsurteil, Prosa). Bei Fehlschlag ein leeres Urteil und `roh`.
+        (Einwandsurteil, Prosa). Bei Fehlschlag ein leeres Urteil mit Grund
+        und `roh`.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not roh or not roh.strip():
-        return Einwandsurteil(), ""
+        return _ausfall("antwort_leer"), ""
 
     # ── Verarbeitung ────────────────────────────
     # Der Trenner steht allein auf seiner Zeile. Ein `---` mitten in der Prosa
     # (Gedankenstrich, Tabelle) trifft das Muster deshalb nicht.
     teilung = re.split(rf"^\s*{re.escape(_TRENNER)}\s*$", roh, maxsplit=1, flags=re.M)
     if len(teilung) != 2:
-        return Einwandsurteil(), roh.strip()
+        return _ausfall("trenner_fehlt"), roh.strip()
 
     kopf, prosa = teilung[0], teilung[1].strip()
 
-    urteil: Einwandsurteil | None = _kopf_deuten(kopf)
-    if urteil is None:
-        return Einwandsurteil(), prosa or roh.strip()
+    urteil: Einwandsurteil = _kopf_deuten(kopf)
+    if not urteil.geliefert:
+        return urteil, prosa or roh.strip()
 
     # ── Ausgabe-Verifikation ────────────────────
     # Ohne Prosa ist der Turn ohne Antwort. Das ist ein Ausfall, kein Urteil:
     # Ein Kopfblock allein ist nichts, was der Nutzer lesen kann.
     if not prosa:
-        return Einwandsurteil(), ""
+        return _ausfall("prosa_fehlt"), ""
 
     return urteil, prosa
 
@@ -210,40 +235,187 @@ def _feldname(roh: str) -> str:
     return roh.upper().translate(_UMLAUTE)
 
 
-def _kopf_deuten(kopf: str) -> Einwandsurteil | None:
+#: Die fuenf Feldnamen in der Reihenfolge des Prompts. Danach richtet sich,
+#: welcher Ausfall gemeldet wird, wenn mehrere Felder unbrauchbar sind.
+_FELDREIHENFOLGE: tuple[str, ...] = ("EINWAND", "GEPRUEFT", "BEWERTUNG", "STAERKE", "QUELLE")
+
+#: Die Werte von EINWAND. Der Prompt schreibt sie als „ja oder nein“ aus.
+_EINWAND_WERTE: tuple[str, ...] = ("ja", "nein")
+
+#: Das erste Wort eines Feldwerts: fuehrende Satzzeichen, Gedankenstriche und
+#: Anfuehrungszeichen fallen weg, dann zaehlt die Folge von Wortzeichen. Der
+#: Unterstrich gehoert zum Wort, sonst zerfiele `trifft_zu` in zwei.
+_ERSTES_WORT: re.Pattern[str] = re.compile(r"^\W*(\w+)")
+
+#: Die Zahl am Anfang von STAERKE. Fuehrend nur Leerraum und
+#: Anfuehrungszeichen — ein Minus wird nicht abgeschnitten, sonst wuerde -0.3
+#: als 0.3 gelesen. Dahinter darf kein Wortzeichen und keine weitere
+#: Dezimalstelle folgen (`0.3abc`, `0.3.5`, `1e-1` sind keine Zahl).
+_STAERKE_ZAHL: re.Pattern[str] = re.compile(
+    r"^[\s\"'„“”‚‘’»«*]*([+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+))(?!\w|[.,]\d)"
+)
+
+
+def _ausfall(grund: str, feld: str | None = None) -> Einwandsurteil:
+    """Baut das leere Urteil eines Ausfalls mit seinem benannten Grund.
+
+    Vorbedingung: `grund` steht in `AUSFALLGRUENDE`; `feld` ist ein Feldname
+        des Kopfblocks oder eine Komma-Liste davon, oder None.
+    Nachbedingung: `geliefert=False`, alle Urteilsfelder unbesetzt, `ausfall`
+        traegt `grund` oder `grund:feld`.
+    Fehlerfaelle: Ein Grund ausserhalb der Menge ist ein Programmierfehler und
+        wirft — ein unbenannter Grund waere die Sammelzeile, die er ersetzt.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if grund not in AUSFALLGRUENDE:
+        raise ValueError(f"Einwandsurteil: unbenannter Ausfallgrund {grund!r}")  # noqa: TRY003
+
+    # ── Verarbeitung ────────────────────────────
+    urteil: Einwandsurteil = Einwandsurteil(ausfall=f"{grund}:{feld}" if feld else grund)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Ein Ausfall, der als geliefert gilt, saehe gefaellt aus.
+    if urteil.geliefert:
+        raise ValueError(f"Einwandsurteil: Ausfall {grund!r} gilt als geliefert")  # noqa: TRY003
+    return urteil
+
+
+def _aufzaehlung_lesen(wert: str, menge: tuple[str, ...]) -> tuple[str | None, str | None]:
+    """Liest das erste Wort eines Aufzaehlungsfelds und prueft es gegen seine Menge.
+
+    **Warum nur das erste Wort.** Der Prompt formuliert EINWAND als Frage, und
+    das Modell schreibt die Erlaeuterung hinter den Wert: `nein — widerspricht
+    PERSON B nichts.` Verlangt war bis dahin der nackte Wert, und das ganze
+    Urteil fiel aus. Gelesen wird der Rest der Zeile nicht — ein Wert, der
+    erst in der Mitte steht, ist keine Antwort auf das Feld. Gezaehlt wird er
+    (unten).
+
+    **Warum zwei Werte keine Antwort sind.** Nennt das Feld mehr als einen
+    verschiedenen Wert seiner Menge — meist, weil das Modell die Vorlage
+    wiederholt (`ja oder nein — …`, `fakt / haltung / beides`) —, ist das
+    erste Wort zwar ein Wert, aber keine Entscheidung: Es steht nur vorn, weil
+    die Vorlage es vorn fuehrt. Gelesen gaebe es ein Urteil aus einer
+    Nicht-Antwort. Gezaehlt wird deshalb die Menge, nicht der Trenner:
+    `ja oder nein`, `ja/nein`, `**ja** oder **nein**` und `nein — oder ja?`
+    sind gleich mehrdeutig; jede Aufzaehlung von Trennern liesse den naechsten
+    durch. Ein Wert zaehlt als ganzes Wort, ohne Gross- und Kleinschreibung —
+    `abweichender` ist nicht `abweichend`. Derselbe Wert zweimal (`ja oder
+    ja`) ist ein Wert.
+
+    **Warum die Mehrdeutigkeit vor dem ersten Wort geprueft wird.** Sie
+    beschreibt das ganze Feld, das erste Wort nur seinen Anfang: Bei
+    `entweder ja oder nein` ist die Ursache das Echo, nicht das Wort
+    `entweder`, und der Grund soll die Ursache nennen.
+
+    Vorbedingung: `wert` ist der Text rechts vom Doppelpunkt; `menge` ist die
+        nicht leere Wertemenge des Felds, kleingeschrieben.
+    Nachbedingung: (Wert, None) mit einem Wert aus `menge`, sonst (None, Grund)
+        mit `mehrdeutig` oder `wert_ausserhalb`. `neinsagen` ist nicht `nein` —
+        ein Wort, das einen Wert nur enthaelt, ist nicht der Wert. Ein Wert
+        einer anderen Menge (`nein oder fakt` bei EINWAND) zaehlt nicht.
+    Fehlerfaelle: als Grund zurueckgegeben, nie geworfen — ein unbrauchbarer
+        Wert ist eine erwartete Modellausgabe. Ein Feldwert, der kein Text
+        ist, oder eine leere Menge ist ein Programmierfehler und wirft; ebenso
+        ein gelesenes erstes Wort, das die Zaehlung nicht findet.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(wert, str):
+        raise TypeError(f"Einwandsurteil: Feldwert {type(wert).__name__}")  # noqa: TRY003
+    if not menge:
+        raise ValueError("Einwandsurteil: leere Wertemenge")  # noqa: TRY003
+
+    # ── Verarbeitung ────────────────────────────
+    treffer: re.Match[str] | None = _ERSTES_WORT.match(wert)
+    wort: str = treffer.group(1).lower() if treffer else ""
+    genannt: set[str] = {
+        kandidat for kandidat in menge
+        if re.search(rf"(?<!\w){re.escape(kandidat)}(?!\w)", wert, re.IGNORECASE)
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(genannt) > 1:
+        return None, "mehrdeutig"
+    if wort not in menge:
+        return None, "wert_ausserhalb"
+    # Das erste Wort ist ein ganzes Wort; fehlt es in der Zaehlung, lesen
+    # beide Wege nach verschiedenen Regeln.
+    if wort not in genannt:
+        raise RuntimeError(f"Einwandsurteil: {wort!r} gelesen, aber nicht gezaehlt")  # noqa: TRY003
+    return wort, None
+
+
+def _staerke_lesen(wert: str) -> tuple[float | None, str | None]:
+    """Liest die Zahl am Anfang von STAERKE und prueft sie gegen 0.0 bis 1.0.
+
+    **Dasselbe Kriterium wie bei den Aufzaehlungsfeldern.** Der Prompt erklaert
+    auch STAERKE hinter einem Gedankenstrich; schreibt das Modell `0.3 — leise`,
+    zaehlt die Zahl, der Rest wird verworfen. Streng bleibt die Zahl selbst:
+    Komma oder Punkt als Dezimaltrenner, kein Exponent, nichts ausserhalb der
+    Spanne.
+
+    Vorbedingung: `wert` ist der Text rechts vom Doppelpunkt.
+    Nachbedingung: (Staerke, None) bei einer Zahl in [0.0, 1.0], sonst
+        (None, Grund) mit `staerke_keine_zahl` oder `staerke_ausserhalb`.
+    Fehlerfaelle: als Grund zurueckgegeben, nie geworfen — eine unbrauchbare
+        Staerke ist eine erwartete Modellausgabe.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    treffer: re.Match[str] | None = _STAERKE_ZAHL.match(wert)
+    if treffer is None:
+        return None, "staerke_keine_zahl"
+
+    # ── Verarbeitung ────────────────────────────
+    staerke: float = float(treffer.group(1).replace(",", "."))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not 0.0 <= staerke <= 1.0:
+        return None, "staerke_ausserhalb"
+    return staerke, None
+
+
+def _kopf_deuten(kopf: str) -> Einwandsurteil:
     """Liest die fuenf Felder aus dem Kopfblock und prueft sie gegen ihre Menge.
 
+    Gelesen wird je Aufzaehlungsfeld das erste Wort (`_aufzaehlung_lesen`),
+    bei STAERKE die erste Zahl (`_staerke_lesen`); die Erlaeuterung dahinter
+    zaehlt nicht, ein Feld mit mehr als einem Wert seiner Menge ist ein Ausfall.
+
     Vorbedingung: `kopf` ist der Text vor der Trennlinie.
-    Nachbedingung: Ein vollstaendiges Urteil, oder None, wenn ein Feld fehlt
-        oder einen Wert ausserhalb seiner Menge traegt.
-    Fehlerfaelle: None statt eines teilweise gefuellten Urteils. Ein halbes
+    Nachbedingung: Ein vollstaendiges Urteil ohne `ausfall`, oder ein Ausfall
+        mit dem Grund des ersten unbrauchbaren Felds in Prompt-Reihenfolge.
+    Fehlerfaelle: Ausfall statt eines teilweise gefuellten Urteils. Ein halbes
         Urteil waere schlimmer als keines — es saehe gefaellt aus.
     """
+    # ── Eingabe-Validierung ─────────────────────
     felder: dict[str, str] = {}
     for zeile in kopf.splitlines():
         treffer = re.match(r"^\s*([A-ZÄÖÜa-zäöü]+)\s*:\s*(.*)$", zeile.strip())
-        if treffer:
-            name: str = _feldname(treffer.group(1))
-            if name in _KOPFFELDER:
-                felder[name] = treffer.group(2).strip()
+        if treffer and _feldname(treffer.group(1)) in _KOPFFELDER:
+            felder[_feldname(treffer.group(1))] = treffer.group(2).strip()
 
-    if set(felder) != _KOPFFELDER:
-        return None
+    fehlend: list[str] = [name for name in _FELDREIHENFOLGE if name not in felder]
+    if fehlend:
+        return _ausfall("feld_fehlt", ",".join(fehlend))
 
-    bewertung: str = felder["BEWERTUNG"].lower()
-    quelle:    str = felder["QUELLE"].lower()
-    einwand:   str = felder["EINWAND"].lower()
-    if bewertung not in BEWERTUNGEN or quelle not in QUELLEN:
-        return None
-    if einwand not in ("ja", "nein"):
-        return None
+    # ── Verarbeitung ────────────────────────────
+    einwand, einwand_grund = _aufzaehlung_lesen(felder["EINWAND"], _EINWAND_WERTE)
+    bewertung, bewertung_grund = _aufzaehlung_lesen(felder["BEWERTUNG"], BEWERTUNGEN)
+    staerke, staerke_grund = _staerke_lesen(felder["STAERKE"])
+    quelle, quelle_grund = _aufzaehlung_lesen(felder["QUELLE"], QUELLEN)
 
-    try:
-        staerke: float = float(felder["STAERKE"].replace(",", "."))
-    except ValueError:
-        return None
-    if not 0.0 <= staerke <= 1.0:
-        return None
+    # ── Ausgabe-Verifikation ────────────────────
+    # Jedes Feld traegt das Urteil mit; ein einziges unbrauchbares verwirft es
+    # ganz. Gemeldet wird das erste in Prompt-Reihenfolge, gleich, in welcher
+    # Lage das Modell die Zeilen schrieb.
+    gruende: tuple[tuple[str | None, str | None], ...] = (
+        (einwand_grund,   "EINWAND"),
+        (bewertung_grund, "BEWERTUNG"),
+        (staerke_grund,   None),
+        (quelle_grund,    "QUELLE"),
+    )
+    for grund, feld in gruende:
+        if grund is not None:
+            return _ausfall(grund, feld)
 
     return Einwandsurteil(
         geliefert = True,
