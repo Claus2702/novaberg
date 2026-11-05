@@ -12,9 +12,12 @@ from config import (
     EMOTION_SEKTOR_MAP,
     GV_AUFNAHMEBEREITSCHAFT_CAP,
     GV_AUFNAHMEBEREITSCHAFT_DYNAMIK,
+    GV_AUFNAHMEBEREITSCHAFT_DYNAMIK_NEUTRAL,
     GV_AUFNAHMEBEREITSCHAFT_EMOTION,
     GV_AUFNAHMEBEREITSCHAFT_MODUS,
+    GV_AUFNAHMEBEREITSCHAFT_MODUS_NEUTRAL,
     GV_AUFNAHMEBEREITSCHAFT_STIL,
+    GV_AUFNAHMEBEREITSCHAFT_STIL_NEUTRAL,
     GV_AUFNAHMEBEREITSCHAFT_STIMMUNG,
     GV_REGISTER_OFFEN_EMOTIONAL,
     GV_REGISTER_SACHLICH_EMOTIONAL,
@@ -33,6 +36,48 @@ def sektor_distanz(sektor_a: int, sektor_b: int) -> int:
     """Kuerzeste Distanz auf dem Plutchik-Oktagon (0-4)."""
     d: int = abs(sektor_a - sektor_b)
     return min(d, 8 - d)
+
+
+def _neugier_faktor_lesen(
+    tabelle: dict[str, float],
+    neutral: float,
+    wert:    str,
+    feld:    str,
+) -> float:
+    """Liest den Faktor einer Neugier-Saeule aus einem Kanon-Feld der Perzeption.
+
+    Vorbedingung: `tabelle` ist die Faktortabelle der Saeule, `neutral` ihr
+    neutraler Faktor; `wert` ist der Feldwert, wie er im Zustand steht.
+    Nachbedingung: der Faktor der Tabelle, oder `neutral` fuer einen Wert,
+    den die Tabelle nicht kennt (auch den leeren).
+    Fehlerfaelle: ein Wert ausserhalb der Tabelle — Fehlerzeile mit Feld und
+    Wert, die Rechnung laeuft mit dem neutralen Faktor weiter. Ein neutraler
+    Faktor, der nicht unter dem Maximum der Tabelle liegt, ist ein
+    Programmierfehler und wird geworfen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not neutral < max(tabelle.values()):
+        raise ValueError(  # noqa: TRY003 — Faktor und Feld gehoeren in die Meldung
+            f"GV4-Neugier: neutraler Faktor {neutral} fuer `{feld}` liegt nicht "
+            f"unter dem Maximum seiner Tabelle"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    if isinstance(wert, str) and wert in tabelle:
+        faktor: float = tabelle[wert]
+    else:
+        logger.error(
+            f"GV4-Neugier: `{feld}` traegt '{wert}' ausserhalb seines Kanons — "
+            f"neutraler Faktor {neutral}"
+        )
+        faktor = neutral
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not min(tabelle.values()) <= faktor <= max(tabelle.values()):
+        raise ValueError(  # noqa: TRY003 — Faktor und Feld gehoeren in die Meldung
+            f"GV4-Neugier: Faktor {faktor} fuer `{feld}` liegt ausserhalb der Tabelle"
+        )
+    return faktor
 
 
 def aufnahmebereitschaft_berechnen(state: ConversationState) -> float:
@@ -99,10 +144,19 @@ def aufnahmebereitschaft_berechnen(state: ConversationState) -> float:
         faktor_a = 0.85
 
     # ── V, M, D, S: Lookup ──
+    # M, D und S lesen Kanon-Felder der Perzeption: Ein fremder Wert bekommt
+    # den neutralen Faktor der Tabelle und eine Fehlerzeile.
     faktor_v: float = GV_AUFNAHMEBEREITSCHAFT_STIMMUNG.get(vektor, 1.0)
-    faktor_m: float = GV_AUFNAHMEBEREITSCHAFT_MODUS.get(modus, 1.0)
-    faktor_d: float = GV_AUFNAHMEBEREITSCHAFT_DYNAMIK.get(dynamik, 1.0)
-    faktor_s: float = GV_AUFNAHMEBEREITSCHAFT_STIL.get(stil, 1.0)
+    faktor_m: float = _neugier_faktor_lesen(
+        GV_AUFNAHMEBEREITSCHAFT_MODUS, GV_AUFNAHMEBEREITSCHAFT_MODUS_NEUTRAL, modus, "modus",
+    )
+    faktor_d: float = _neugier_faktor_lesen(
+        GV_AUFNAHMEBEREITSCHAFT_DYNAMIK, GV_AUFNAHMEBEREITSCHAFT_DYNAMIK_NEUTRAL, dynamik,
+        "beziehungs_dynamik",
+    )
+    faktor_s: float = _neugier_faktor_lesen(
+        GV_AUFNAHMEBEREITSCHAFT_STIL, GV_AUFNAHMEBEREITSCHAFT_STIL_NEUTRAL, stil, "sprach_stil",
+    )
 
     # ── Rohwert → sin^0.5 → [0, 1] ──
     produkt: float = faktor_e * faktor_a * faktor_v * faktor_m * faktor_d * faktor_s

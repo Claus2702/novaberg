@@ -11,11 +11,13 @@ import numpy as np
 
 from agents.base import AgentState
 from config import (
+    INTENT_KANON,
     KZG_SALIENZ_HIGH,
     KZG_SALIENZ_MID,
     KZG_TTL_HIGH_SEKUNDEN,
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
+    MODUS_KANON,
     redis_client,
 )
 from memory.kzg import _kzg_key, salienz_berechnen
@@ -264,6 +266,47 @@ def _thematisch_verstaerken(
     return verstaerkte
 
 
+def _kanon_felder_pruefen(salienz_obj: dict, ort: str) -> tuple[str, list[str]]:
+    """Laesst von `modus` und `intentionen` der Salienz nur Kanon-Werte in den Hash.
+
+    Vorbedingung: `salienz_obj` ist die Bewertung der Salienz; `ort` benennt
+    den Schreiber fuer die Fehlerzeile.
+    Nachbedingung: `modus` ist ein Wert aus `MODUS_KANON` oder leer; die
+    Intentionen sind die aus `INTENT_KANON`, in ihrer Reihenfolge — die
+    uebrigen sind verworfen. Nie geht Freitext in den Bestand; die
+    Perzeption und die Salienz bleiben durchlaessig, abgelehnt wird hier.
+    Fehlerfaelle: ein Modus ausserhalb des Kanons, jede fremde Intention und
+    ein Intentionsfeld, das keine Liste ist — je eine Fehlerzeile mit Feld
+    und Wert. Ein leerer Modus ist kein Fehler.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    modus_roh: object = salienz_obj.get("modus", "")
+    intentionen_roh: object = salienz_obj.get("intentionen", []) or []
+    if not isinstance(intentionen_roh, list):
+        logger.error(f"{ort}: `intentionen` ist keine Liste ({intentionen_roh!r}) — verworfen")
+        intentionen_roh = []
+
+    # ── Verarbeitung ────────────────────────────
+    modus: str = modus_roh if isinstance(modus_roh, str) and modus_roh in MODUS_KANON else ""
+    if modus_roh and not modus:
+        logger.error(
+            f"{ort}: `modus` traegt '{modus_roh}' ausserhalb von MODUS_KANON — leer gespeichert"
+        )
+    intentionen: list[str] = []
+    for intention in intentionen_roh:
+        if isinstance(intention, str) and intention in INTENT_KANON:
+            intentionen.append(intention)
+        else:
+            logger.error(
+                f"{ort}: `intentionen` traegt '{intention}' ausserhalb von INTENT_KANON — verworfen"
+            )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(intentionen) > len(intentionen_roh):
+        raise RuntimeError(f"{ort}: mehr Intentionen nach der Pruefung als davor")  # noqa: TRY003
+    return modus, intentionen
+
+
 def _neu_anlegen(
     rc,
     user_id:      str,
@@ -305,6 +348,7 @@ def _neu_anlegen(
     dimension:  str = salienz_obj.get("dimension", "kontext")
 
     entitaet_ids_str: str = ",".join(str(eid) for eid in (entitaet_ids or []))
+    modus, intentionen = _kanon_felder_pruefen(salienz_obj, "KZG-Speicher")
 
     mapping: dict = {
         "user_id":            user_id,
@@ -322,9 +366,9 @@ def _neu_anlegen(
         "haeufigkeit":        str(1),
         "gedaechtnistyp":     salienz_obj.get("gedaechtnistyp", "kurz"),
         "dimension":          dimension,
-        "intentionen":        json.dumps(salienz_obj.get("intentionen", [])),
+        "intentionen":        json.dumps(intentionen),
         "emotion":            salienz_obj.get("emotion", "neutral"),
-        "modus":              salienz_obj.get("modus", ""),
+        "modus":              modus,
         "arousal":            str(salienz_obj.get("arousal", 0.5)),
         "emotions_vektor":    salienz_obj.get("emotions_vektor", ""),
         "sprach_stil":        salienz_obj.get("sprach_stil", "neutral"),

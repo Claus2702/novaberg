@@ -20,10 +20,13 @@ from config import (
     EI_AROUSAL_DOMINANZ,
     EI_AROUSAL_PERSISTENCE,
     EI_DYNAMIK_FAKTOREN,
+    EI_DYNAMIK_NEUTRAL,
     EI_GEWICHTE,
     EI_INTENT_FAKTOREN,
+    EI_INTENT_NEUTRAL,
     EI_PASSIV_NEGATIVE,
     EI_TONE_FAKTOREN,
+    EI_TONE_NEUTRAL,
     EMOTION_AROUSAL_DECAY,
     EMOTION_DECAY_BASE,
     EMOTION_DECAY_FACTOR,
@@ -834,6 +837,50 @@ def _sprach_stil_erkennen(
     return session_stil
 
 
+def _ei_faktor_lesen(
+    tabelle: dict[str, float],
+    neutral: float,
+    wert:    str,
+    feld:    str,
+) -> float:
+    """Liest den Faktor eines Perzeptionswerts aus seiner Tabelle des EI-Gates.
+
+    Vorbedingung: `tabelle` ist eine Faktortabelle eines Kanon-Felds der
+    Perzeption, `neutral` ihr neutraler Faktor; `wert` ist der Feldwert,
+    wie die Perzeption ihn geliefert hat — sie laesst einen unbekannten Wert
+    absichtlich durch, damit er hier gemeldet wird.
+    Nachbedingung: der Faktor der Tabelle, oder `neutral` fuer einen Wert,
+    den die Tabelle nicht kennt (auch den leeren).
+    Fehlerfaelle: ein Wert ausserhalb der Tabelle — Fehlerzeile mit Feld und
+    Wert, die Rechnung laeuft mit dem neutralen Faktor weiter. Ein neutraler
+    Faktor, der nicht unter dem Maximum der Tabelle liegt, ist ein
+    Programmierfehler und wird geworfen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not neutral < max(tabelle.values()):
+        raise ValueError(  # noqa: TRY003 — Faktor und Feld gehoeren in die Meldung
+            f"EI-Gate: neutraler Faktor {neutral} fuer `{feld}` liegt nicht unter "
+            f"dem Maximum seiner Tabelle — er verstaerkte jeden fremden Wert"
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    if isinstance(wert, str) and wert in tabelle:
+        faktor: float = tabelle[wert]
+    else:
+        logger.error(
+            f"EI-Gate: `{feld}` traegt '{wert}' ausserhalb seines Kanons — "
+            f"neutraler Faktor {neutral}"
+        )
+        faktor = neutral
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not min(tabelle.values()) <= faktor <= max(tabelle.values()):
+        raise ValueError(  # noqa: TRY003 — Faktor und Feld gehoeren in die Meldung
+            f"EI-Gate: Faktor {faktor} fuer `{feld}` liegt ausserhalb der Tabelle"
+        )
+    return faktor
+
+
 def _ei_arousal_berechnen(
     current_arousal:    float,
     beziehungs_dynamik: str,
@@ -847,12 +894,19 @@ def _ei_arousal_berechnen(
     der den Roh-Arousal verstärkt oder dämpft. Ergebnis bestimmt,
     ob der Gesprächsmodus "emotional" sein darf/muss.
 
+    Ein Wert, den seine Tabelle nicht kennt, bekommt den neutralen Faktor
+    der Tabelle (`EI_*_NEUTRAL`: ihr Eintrag `neutral`, sonst ihr Mittel)
+    und eine Fehlerzeile — nie den
+    hoechsten Wert, der ihn still verstaerkte.
+
     Returns:
         Float zwischen 0.0 und 1.0
     """
-    dynamik_f: float = EI_DYNAMIK_FAKTOREN.get(beziehungs_dynamik, 1.0)
-    intent_f:  float = EI_INTENT_FAKTOREN.get(intent, 1.0)
-    tone_f:    float = EI_TONE_FAKTOREN.get(tone, 1.0)
+    dynamik_f: float = _ei_faktor_lesen(
+        EI_DYNAMIK_FAKTOREN, EI_DYNAMIK_NEUTRAL, beziehungs_dynamik, "beziehungs_dynamik",
+    )
+    intent_f:  float = _ei_faktor_lesen(EI_INTENT_FAKTOREN, EI_INTENT_NEUTRAL, intent, "intent")
+    tone_f:    float = _ei_faktor_lesen(EI_TONE_FAKTOREN, EI_TONE_NEUTRAL, tone, "tone")
 
     combined: float = (
         EI_GEWICHTE["dynamik"] * dynamik_f

@@ -1567,6 +1567,19 @@ EI_DYNAMIK_FAKTOREN: dict[str, float] = {
     "distanz":      0.7,    # Will sachliche Behandlung
 }
 
+# **Der neutrale Faktor je Tabelle** bekommt ein Wert, den die Tabelle nicht
+# kennt — mit Fehlerzeile. Traegt die Tabelle einen Eintrag fuer den
+# Kanon-Wert `neutral` ("Kein Signal"), ist es dessen Wert: Ein Fremdwert wirkt
+# nicht staerker als das, was die Tabelle selbst neutral nennt. Sonst ist es
+# das arithmetische Mittel ihrer Werte. Beides als Literal eingetragen, nicht
+# zur Laufzeit gerechnet. Bis zum 26.10.2026 war der Vorgabewert 1.0, und beim
+# Intent ist 1.0 der hoechste Wert der Tabelle: Ein Wert ausserhalb des Kanons
+# wurde nicht gedaempft, sondern maximal verstaerkt
+# (`[gemessen 10.09.2026 ueber 2694 Perzeptionen]` `philosophischer_austausch`
+# 108-mal in `intent`, `begeisterung` 59-mal in `tone`). Wer eine Tabelle
+# aendert, prueft ihren neutralen Faktor neu; ein Zeuge haelt beide zusammen.
+EI_DYNAMIK_NEUTRAL: float = 1.0     # der Eintrag `neutral`
+
 EI_INTENT_FAKTOREN: dict[str, float] = {
     "personal":     1.0,    # Persönliches Thema, neutrale Basis
     "creative":     0.8,    # Kreativ, leicht emotional
@@ -1575,6 +1588,7 @@ EI_INTENT_FAKTOREN: dict[str, float] = {
     "knowledge":    0.3,    # Wissensfrage, sachlich
     "meta":         0.3,    # Über Nova, sachlich
 }
+EI_INTENT_NEUTRAL: float = 0.533    # 3.2 / 6
 
 EI_TONE_FAKTOREN: dict[str, float] = {
     "empathisch":   1.3,    # Perzeption sieht Empathie-Bedarf
@@ -1582,6 +1596,7 @@ EI_TONE_FAKTOREN: dict[str, float] = {
     "direkt":       0.5,    # Auf den Punkt, nicht emotional
     "sachlich":     0.3,    # Nüchtern
 }
+EI_TONE_NEUTRAL: float = 0.725      # 2.9 / 4
 
 # Gewichtung der drei Faktor-Gruppen (Summe = 1.0)
 EI_GEWICHTE: dict[str, float] = {
@@ -2519,6 +2534,9 @@ FASZ_INTENT_FAKTOREN: dict[str, float] = {
     "meta":       0.85,   # [gemessen] 83
     "smalltalk":  0.85,   # Setzung: am wenigsten an einen Gegenstand gebunden
 }
+# Der neutrale Faktor fuer einen Wert ausserhalb des Kanons: das Mittel der
+# Tabelle, als Literal (dieselbe Regel wie bei `EI_INTENT_NEUTRAL`).
+FASZ_INTENT_NEUTRAL: float = 1.000   # 6.0 / 6
 
 # f_modus — Spanne 0.90 … 1.15 ueber `MODUS_KANON` (10 Werte).
 # Aus dem Konzept: `lernmodus`/`philosophischer_austausch` 1.15,
@@ -2540,6 +2558,7 @@ FASZ_MODUS_FAKTOREN: dict[str, float] = {
     "arbeitsmodus":              0.90,   # [gemessen] 57
     "berichtend":                0.90,   # [gemessen] 53
 }
+FASZ_MODUS_NEUTRAL: float = 1.020    # 10.2 / 10 — das Mittel der Tabelle
 
 # f_anlage — Spanne 0.75 … 1.30, aus `charakter_rad_messung`.
 # Die eine der zwoelf Radspeichen, die die Zuwendung zum **Gegenstand**
@@ -3322,6 +3341,11 @@ GV_AUFNAHMEBEREITSCHAFT_MODUS: dict[str, float] = {
     "berichtend":               0.95,   # Wiedergabe, nicht Erkundung
     "emotional":                0.70,
 }
+# Die neutralen Faktoren der drei Saeulen aus Kanon-Feldern der Perzeption,
+# als Literal (dieselbe Regel wie bei `EI_DYNAMIK_NEUTRAL`): der Eintrag
+# `neutral`, wo die Tabelle einen traegt, sonst ihr Mittel. Ihn bekommt ein
+# Wert, den die Tabelle nicht kennt.
+GV_AUFNAHMEBEREITSCHAFT_MODUS_NEUTRAL: float = 1.140     # 11.4 / 10
 
 GV_AUFNAHMEBEREITSCHAFT_DYNAMIK: dict[str, float] = {
     "vertrauen":      1.30,
@@ -3331,6 +3355,7 @@ GV_AUFNAHMEBEREITSCHAFT_DYNAMIK: dict[str, float] = {
     "distanz":        0.85,
     "angriff":        0.60,
 }
+GV_AUFNAHMEBEREITSCHAFT_DYNAMIK_NEUTRAL: float = 1.0     # der Eintrag `neutral`
 
 GV_AUFNAHMEBEREITSCHAFT_STIL: dict[str, float] = {
     "locker":         1.20,
@@ -3340,6 +3365,7 @@ GV_AUFNAHMEBEREITSCHAFT_STIL: dict[str, float] = {
     "emotional":      0.90,
     "formell":        0.90,
 }
+GV_AUFNAHMEBEREITSCHAFT_STIL_NEUTRAL: float = 1.0        # der Eintrag `neutral`
 
 # Register-Kompatibilitaet: Passt die emotionale Ladung der Luecke zum Gespraechsregister?
 GV_REGISTER_SACHLICH_EMOTIONAL:  float = 0.60   # Hoch-emotional in sachlichem Register

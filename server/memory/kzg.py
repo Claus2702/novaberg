@@ -22,6 +22,7 @@ from redis.commands.search.query import Query
 
 from config import (
     ASSISTANT_USER_ID,
+    INTENT_KANON,
     KZG_RETRIEVAL_SCHWELLE,
     KZG_SALIENZ_BOOST,
     KZG_SALIENZ_CAP,
@@ -33,6 +34,7 @@ from config import (
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
     MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
+    MODUS_KANON,
     PIXIE_AKTIV,
 )
 from graph.context_entry import ContextEntry
@@ -100,6 +102,47 @@ _INTENTION_AUFGABE_MAP: dict[str, str] = {
     "humor":                "",
     "widerspruch":          "",
 }
+
+
+def _kanon_felder_pruefen(salienz_obj: dict, ort: str) -> tuple[str, list[str]]:
+    """Laesst von `modus` und `intentionen` der Salienz nur Kanon-Werte in den Bestand.
+
+    Vorbedingung: `salienz_obj` ist die Bewertung der Salienz; `ort` benennt
+    den Schreiber fuer die Fehlerzeile.
+    Nachbedingung: `modus` ist ein Wert aus `MODUS_KANON` oder leer; die
+    Intentionen sind die aus `INTENT_KANON`, in ihrer Reihenfolge — die
+    uebrigen sind verworfen. Nie geht Freitext in den Bestand; die
+    Perzeption und die Salienz bleiben durchlaessig, abgelehnt wird hier.
+    Fehlerfaelle: ein Modus ausserhalb des Kanons, jede fremde Intention und
+    ein Intentionsfeld, das keine Liste ist — je eine Fehlerzeile mit Feld
+    und Wert. Ein leerer Modus ist kein Fehler.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    modus_roh: object = salienz_obj.get("modus", "")
+    intentionen_roh: object = salienz_obj.get("intentionen", []) or []
+    if not isinstance(intentionen_roh, list):
+        logger.error(f"{ort}: `intentionen` ist keine Liste ({intentionen_roh!r}) — verworfen")
+        intentionen_roh = []
+
+    # ── Verarbeitung ────────────────────────────
+    modus: str = modus_roh if isinstance(modus_roh, str) and modus_roh in MODUS_KANON else ""
+    if modus_roh and not modus:
+        logger.error(
+            f"{ort}: `modus` traegt '{modus_roh}' ausserhalb von MODUS_KANON — leer gespeichert"
+        )
+    intentionen: list[str] = []
+    for intention in intentionen_roh:
+        if isinstance(intention, str) and intention in INTENT_KANON:
+            intentionen.append(intention)
+        else:
+            logger.error(
+                f"{ort}: `intentionen` traegt '{intention}' ausserhalb von INTENT_KANON — verworfen"
+            )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(intentionen) > len(intentionen_roh):
+        raise RuntimeError(f"{ort}: mehr Intentionen nach der Pruefung als davor")  # noqa: TRY003
+    return modus, intentionen
 
 
 def _aufgabe_aus_intention(intentionen: list) -> str:
@@ -338,10 +381,10 @@ def kzg_store(
         )
         return "ignoriert"
 
-    # Meta-Daten aus Salienz-Analyse (Intentions-Schicht)
-    intentionen: list = salienz_obj.get("intentionen", [])
+    # Meta-Daten aus Salienz-Analyse (Intentions-Schicht). `modus` und
+    # `intentionen` gehen nur als Kanon-Werte in den Bestand — Hash und Auftrag.
+    modus, intentionen = _kanon_felder_pruefen(salienz_obj, "KZG-Store")
     emotion:     str  = salienz_obj.get("emotion", "neutral")
-    modus:       str  = salienz_obj.get("modus", "")
 
     # Thematisch verwandte Einträge verstärken (kein Merge, nur Boost)
     neue_themen: set[str] = set(

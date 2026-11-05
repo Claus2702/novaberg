@@ -37,8 +37,10 @@ from config import (
     FASZ_BESETZUNG_NEUTRAL,
     FASZ_BESETZUNG_SEKTOR,
     FASZ_INTENT_FAKTOREN,
+    FASZ_INTENT_NEUTRAL,
     FASZ_MAXIMUM,
     FASZ_MODUS_FAKTOREN,
+    FASZ_MODUS_NEUTRAL,
     FASZ_STRANGZUG_HALBSTRECKE_FAEDEN,
     FASZ_STRANGZUG_HUB,
     FASZ_VERLAUF_FAKTOREN,
@@ -253,8 +255,10 @@ def f_verlauf(emotions_vector: str) -> float:
     Rein. Nachbedingung: ein Faktor aus `FASZ_VERLAUF_FAKTOREN`, oder 1.0
         bei einem Wert ausserhalb des Kanons — dann mit Meldung.
     """
+    # 1.0 und nicht das Mittel: Der Verlauf ist kein Feld der Perzeption,
+    # sondern wird aus der Emotionsfolge gerechnet; 1.0 liegt in der Spanne.
     return _aus_tabelle(
-        emotions_vector, FASZ_VERLAUF_FAKTOREN, "emotions_vector",
+        emotions_vector, FASZ_VERLAUF_FAKTOREN, 1.0, "emotions_vector",
     )
 
 
@@ -265,19 +269,21 @@ def f_intent(intent: str) -> float:
     verhandeln; `task` und `meta` am wenigsten, weil sie den Ablauf
     verhandeln.
 
-    Rein. Nachbedingung: ein Faktor aus `FASZ_INTENT_FAKTOREN`, oder 1.0 bei
-        einem Wert ausserhalb des Kanons — dann mit Meldung.
+    Rein. Nachbedingung: ein Faktor aus `FASZ_INTENT_FAKTOREN`, oder
+        `FASZ_INTENT_NEUTRAL` bei einem Wert ausserhalb des Kanons — dann mit
+        Fehlerzeile.
     """
-    return _aus_tabelle(intent, FASZ_INTENT_FAKTOREN, "intent")
+    return _aus_tabelle(intent, FASZ_INTENT_FAKTOREN, FASZ_INTENT_NEUTRAL, "intent")
 
 
 def f_modus(mode: str) -> float:
     """Der Modus-Modulator — wird in dieser Gespraechsform vertieft?
 
-    Rein. Nachbedingung: ein Faktor aus `FASZ_MODUS_FAKTOREN`, oder 1.0 bei
-        einem Wert ausserhalb des Kanons — dann mit Meldung.
+    Rein. Nachbedingung: ein Faktor aus `FASZ_MODUS_FAKTOREN`, oder
+        `FASZ_MODUS_NEUTRAL` bei einem Wert ausserhalb des Kanons — dann mit
+        Fehlerzeile.
     """
-    return _aus_tabelle(mode, FASZ_MODUS_FAKTOREN, "mode")
+    return _aus_tabelle(mode, FASZ_MODUS_FAKTOREN, FASZ_MODUS_NEUTRAL, "mode")
 
 
 def f_anlage(wissbegier: float | None) -> float:
@@ -307,23 +313,44 @@ def f_anlage(wissbegier: float | None) -> float:
     return _in_spanne(faktor, FASZ_ANLAGE_MIN, FASZ_ANLAGE_MAX, "f_anlage")
 
 
-def _aus_tabelle(wert: str, tabelle: dict[str, float], feld: str) -> float:
+def _aus_tabelle(
+    wert: str, tabelle: dict[str, float], neutral: float, feld: str,
+) -> float:
     """Ein Faktor aus einer Kanon-Tabelle — ein Fehltreffer wird gemeldet.
 
-    Der neutrale Rueckfall 1.0 ist richtig (er verzerrt das Produkt nicht)
-    und darf trotzdem nicht stumm sein: Ein Wert ausserhalb des Kanons ist
-    ein Befund ueber die Perzeption, und stumm faende ihn niemand.
+    Vorbedingung: `neutral` liegt in der Spanne der Tabelle und unter ihrem
+    Maximum — ein Fehltreffer darf das Produkt nicht verstaerken.
+    Nachbedingung: der Faktor der Tabelle; `neutral` fuer einen leeren Wert
+    (still: ein Turn ohne Urteil) und fuer einen unbekannten (mit
+    Fehlerzeile: ein Befund ueber die Perzeption, den stumm niemand faende).
+    Fehlerfaelle: ein neutraler Faktor ausserhalb dieser Lage ist ein
+    Programmierfehler und wird geworfen.
     """
+    # ── Eingabe-Validierung ─────────────────────
+    if not min(tabelle.values()) <= neutral < max(tabelle.values()):
+        raise ValueError(  # noqa: TRY003 — Faktor und Feld gehoeren in die Meldung
+            f"Faszination: neutraler Faktor {neutral} fuer `{feld}` liegt nicht "
+            f"in der Spanne seiner Tabelle unter ihrem Maximum"
+        )
+
+    # ── Verarbeitung ────────────────────────────
     name: str = (wert or "").strip().lower()
     if not name:
-        return 1.0
+        return neutral
     if name not in tabelle:
-        logger.warning(
+        logger.error(
             f"Faszination: `{feld}` traegt den Wert '{name}', den der Kanon "
-            f"nicht kennt — Faktor 1.0, und der Kanon ist zu pruefen"
+            f"nicht kennt — neutraler Faktor {neutral}"
         )
-        return 1.0
-    return tabelle[name]
+        return neutral
+
+    # ── Ausgabe-Verifikation ────────────────────
+    faktor: float = tabelle[name]
+    if faktor <= 0.0:
+        raise ValueError(  # noqa: TRY003 — Feld, Wert und Faktor gehoeren in die Meldung
+            f"Faszination: `{feld}`/{name} traegt den Faktor {faktor}"
+        )
+    return faktor
 
 
 def _in_spanne(wert: float, unten: float, oben: float, name: str) -> float:
