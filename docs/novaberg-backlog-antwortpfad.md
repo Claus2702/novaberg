@@ -1,18 +1,18 @@
 # Novaberg — Backlog: Antwortpfad — Gespraechsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~50~~ → ~~68~~ → 69 Eintraege (23.10.2026: `SACHLAGE-FAKTEN-PERSON-IM-OBJEKTNAMEN` neu, nach einer Entscheidung; 22.10.2026: `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` und `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` neu — die Zahl ist die des Findemittels, das schon vorher 66 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~50~~ → ~~68~~ → 69 Eintraege (06.11.2026: die Tabelle unten trägt die Zahlen des Findemittels; 23.10.2026: `SACHLAGE-FAKTEN-PERSON-IM-OBJEKTNAMEN` neu, nach einer Entscheidung; 22.10.2026: `SACHLAGE-GEDECKT-HINTER-DER-AUSWAHL` und `SACHLAGE-ANGEBOT-GRENZEN-UNGEMESSEN` neu — die Zahl ist die des Findemittels, das schon vorher 66 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 76 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 106 |
 
 ---
 

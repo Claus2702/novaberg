@@ -1,18 +1,18 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 477 Eintraege mit Kennung — 389 offen, 88 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 480 Eintraege mit Kennung — 392 offen, 88 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 474 von 477 Eintraegen zugeordnet.
+**Kategorie:** 477 von 480 Eintraegen zugeordnet.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
 | Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
 | Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 75 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 76 |
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 104 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 106 |
 
 ---
 
@@ -319,10 +319,10 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 |---|---|---|
 | `GED` | GEDAECHTNIS | 84 |
 | `HGR` | HINTERGRUND | 66 |
-| `CHA` | CHARAKTER | 74 |
+| `CHA` | CHARAKTER | 75 |
 | `ANT` | ANTWORTPFAD | 69 |
 | `WIS` | WISSEN | 77 |
-| `BAU` | BAUART | 104 |
+| `BAU` | BAUART | 106 |
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
@@ -332,7 +332,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 
 ---
 
-## Alle 477 Eintraege
+## Alle 480 Eintraege
 
 | Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
 |---|---|---|---|---|
@@ -563,6 +563,7 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | CHA | 999 | offen | `TURN-ROH-HG-SKIP` | [Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn](novaberg-backlog-charakter.md) |
 | CHA | 1018 | offen | `DESTILLAT-SUBJEKT-SCHABLONE` | [Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter er](novaberg-backlog-charakter.md) |
 | CHA | 1047 | offen | `FASZINATION-ZWILLING-ERBT-NICHT` | [Befund: FASZINATION-ZWILLING-ERBT-NICHT — Ein profil](novaberg-backlog-charakter.md) |
+| CHA | 1069 | offen | `RAUM-TABELLEN-OHNE-RIEGEL` | [Befund: RAUM-TABELLEN-OHNE-RIEGEL — Die Ziel- und De](novaberg-backlog-charakter.md) |
 | ANT | 25 | offen | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-antwortpfad.md) |
 | ANT | 41 | offen | `INTERNE-PROMPTS-SPRACHGEBRAUCH` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
 | ANT | 54 | offen | `RESPONDER-BRAUCHT-FRAGEN-DRAENGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
@@ -813,3 +814,5 @@ die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen.
 | BAU | 1742 | offen | `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` | [Befund: THINKER-IMPORTIERT-AUS-TIMELINE-AGENT — Der ](novaberg-backlog-bauart.md) |
 | BAU | 1761 | offen | `SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE` | [Befund: SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE — Die Z](novaberg-backlog-bauart.md) |
 | BAU | 1777 | offen | `NMCP-ZUSAGE-LZG-RESONANZ-VERALTET` | [Befund: NMCP-ZUSAGE-LZG-RESONANZ-VERALTET — Die Zusa](novaberg-backlog-bauart.md) |
+| BAU | 1793 | offen | `SUCHZEUGE-SIEHT-NUR-BEKANNTE-FORMEN` | [Befund: SUCHZEUGE-SIEHT-NUR-BEKANNTE-FORMEN — Suchze](novaberg-backlog-bauart.md) |
+| BAU | 1813 | offen | `GEGENPROBE-BLINDE-ZEUGEN` | [Befund: GEGENPROBE-BLINDE-ZEUGEN — Zeugenlücken, die](novaberg-backlog-bauart.md) |

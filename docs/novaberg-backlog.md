@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 25. August 2026, 10:05 UTC (`FAKTEN-IN-KERN` als erledigt festgestellt; zwei Zeilenangaben nachgezogen, die Befunde selbst stehen). Davor: 24. August 2026, 13:35 UTC (der Matrix-Epic loest seine Abschaltbedingung ein — Telegram ist aus). Davor: 23. August 2026, 21:55 UTC (zwei Stellen zum Fehlversuchspfad markiert — er legt seit heute still statt zu loeschen; die Auswahl nach hoher Salienz bleibt)
+**Stand:** 6. November 2026, 20:43 UTC (`date -u`; die Tabelle unten trägt die Zahlen des Findemittels, sie stand auf dem 25.08.2026; drei Einträge neu aus der Klassifizierung der Funde vom 25. und 26.10.2026: `RAUM-TABELLEN-OHNE-RIEGEL`, `SUCHZEUGE-SIEHT-NUR-BEKANNTE-FORMEN`, `GEGENPROBE-BLINDE-ZEUGEN`). Davor: 25. August 2026, 10:05 UTC (`FAKTEN-IN-KERN` als erledigt festgestellt; zwei Zeilenangaben nachgezogen, die Befunde selbst stehen). Davor: 24. August 2026, 13:35 UTC (der Matrix-Epic loest seine Abschaltbedingung ein — Telegram ist aus). Davor: 23. August 2026, 21:55 UTC (zwei Stellen zum Fehlversuchspfad markiert — er legt seit heute still statt zu loeschen; die Auswahl nach hoher Salienz bleibt)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 38 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
@@ -11,12 +11,12 @@
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 76 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 106 |
 
 ### Die Frage, in drei zerlegt
 

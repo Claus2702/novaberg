@@ -1,9 +1,71 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → ~~25~~ → 27 Eintraege (20.10.2026: `ZEUGE-TAGESLAUF-FAEHRT-ECHT` und `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` neu aus der Fundliste; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → ~~25~~ → ~~27~~ → 29 Eintraege (06.11.2026: `MODELLFELD-UNGEPRUEFT-GELESEN` und `KLASSIFIKATION-UNBEKANNTE-AKTION-WIRD-READ` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 20.10.2026: `ZEUGE-TAGESLAUF-FAEHRT-ECHT` und `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` neu aus der Fundliste; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.11.2026 — aus der Klassifizierung der Funde vom 25. und 26.10.2026
+
+Zwei Kennungen aus den 43 Funden vom 25. und 26.10.2026 (Fundliste, *Umgezogen — 06.11.2026*), am Code gelesen gegen HEAD `7b35557`; reine Funktionen sind ohne Server nachgerechnet, Datenbank, Modell und Serverlog sind nicht berührt. **Unbelegt** heißt in diesem Abschnitt: nicht selbst gelesen oder gemessen, sondern aus der Fundzeile oder einem Eintrag übernommen oder geschlossen. Die übrigen Kennungen stehen in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md), [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md), [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md) und [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md).
+
+### `MODELLFELD-UNGEPRUEFT-GELESEN` — Felder einer Modellantwort werden außerhalb der vier Klassifikationen ungeprüft gelesen, und `reasoning: null` reißt das Tribunal
+
+**Kategorie:** BAU
+
+**Rang:** **mittel** — `reasoning: null` reißt `evaluate` im Tribunal, das in jedem Turn mit Antwort läuft; das hebt den Eintrag. Der Großteil der übrigen Stellen ist laut oder endet im Log. Wie oft ein Tribunal-Modell `null` liefert, ist **unbelegt**. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen, nicht am Laufweg geprüft.
+
+**Befund** `[Code]`: `.get(<feld>, "")` greift nur bei einem fehlenden Schlüssel. Ein gesetztes `null` kommt als `None` an, eine Antwort, die kein Objekt ist, wirft an `.get`, und mit `str(…)` darum wird aus `null` der Text `"None"`. Die Stellen, je mit ihrer Wirkung:
+
+| Stelle | `null` oder falscher Typ | Wirkung |
+|---|---|---|
+| `server/graph/nodes/tribunal.py::_agent_vote`, Z. 200 | `reasoning: null` wird `None` | **`evaluate`, Z. 565, wirft `TypeError`** (`vote['reasoning'][:80]`), kein `try` darum |
+| dieselbe, Z. 206–209 | `vote: null` ohne `score` | `derived_vote = None`, zählt in Z. 478–487 still wie *ok* |
+| dieselbe, Z. 211 | `score` als Liste | `TypeError`, nicht im `except` (Z. 229); eine Antwort, die kein Objekt ist, wirft dort `AttributeError` |
+| `server/agents/notizen/crud.py::_create`, Z. 464–483 | kein Objekt | `AttributeError` hinter dem `try` (Z. 462–465); leeres `text` endet laut in Z. 485 |
+| `server/agents/recherche/agent.py`, Z. 586–588 | `ziel: null` | nur Log; **`queries: null` wirft in Z. 591** (`len`) |
+| `server/agents/recherche/planung.py`, Z. 95 | `user_mehrwert: null` | im Prompt steht *„None“* |
+| `server/agents/recherche/gate.py`, Z. 113 | `status: null` | wird `"None"`, laut abgewiesen |
+| dieselbe, Z. 124 | `begruendung: null` | wird `"None"`, still im Bericht, die Prüfung Z. 125 greift nicht |
+| `server/agents/wissen_rueckweg/einarbeitung.py`, Z. 305 | `begruendung: null` | nur Log |
+| `server/agents/dateien/klassifikation.py`, Z. 263–267 | `0`, `False`, `[]`, `{}` | still `""`; `7` oder `["x"]` wirft `AttributeError` an `.strip()` |
+| `server/agents/wissen_rueckweg/zuordnung.py`, Z. 218–219; `einarbeitung.py`, Z. 446, 448 | wie darüber | wie darüber |
+
+**Wirkung.** Das Tribunal läuft in jedem Turn mit Antwort, die übrigen Stellen außer `notizen` und `dateien` nur hinter Pixie, die pausiert. Reißt `evaluate`, greift der Abbruchweg in `server/services/event_consumer.py` (Z. 406–414), hinter dem Perzeption, Salienz und Dispatcher des Turns fehlen. Ob die Antwort dabei hinausgeht, ist **unbelegt**.
+
+**Reproduktion.** Am Code: `_agent_vote` mit einer Antwort `{"reasoning": null}`, danach `evaluate`: `vote['reasoning'][:80]` wirft `TypeError`.
+
+**Geschlossen, wenn** jedes Feld einer Modellantwort an diesen Stellen geprüft gelesen wird wie in den vier Klassifikationen — `null` wie ein fehlender Schlüssel, ein falscher Typ und eine Antwort ohne Objekt laut —, je bezeugt mit einem Zwilling. Die Stelle im Tribunal gehört als erste gebaut; zuerst wird gezählt, ob es im Betrieb vorkommt.
+
+**Offen:** ob das Tribunal getrennt geführt wird, dann in der Kategorie ANT.
+
+**Zusammenhang:** `KLASSIFIKATION-NULL-FELD-WIRFT` ([`novaberg-bugs-archiv-bauart.md`](novaberg-bugs-archiv-bauart.md)) ist die Vorlage, ihr *Zusammenhang* erwähnt die Form ohne Eintrag. `KLASSIFIKATION-UNBEKANNTE-AKTION-WIRD-READ` (in dieser Datei) passt in einen Zug.
+
+### `KLASSIFIKATION-UNBEKANNTE-AKTION-WIRD-READ` — eine unbekannte `action` der Modellantwort fällt in vier Agenten still auf `read` zurück, eine Liste oder ein Objekt wirft
+
+**Kategorie:** BAU
+
+**Rang:** **niedrig** — nur eine WARNING, aus einem Schreibauftrag wird ein Lesen; geschrieben wird nichts Falsches. Wie oft es vorkommt, ist **unbelegt**. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, der Mengenvergleich ohne Server nachgerechnet.
+
+**Befund** `[Code]`: In allen vier Klassifikationen je gleich (`server/agents/direktiven/klassifikation.py`, Z. 346–348; `charakter_identitaet`, Z. 356–358; `notizen`, Z. 308–310; `timeline`, Z. 336–338): Ein Wert außerhalb von `GUELTIGE_AKTIONEN` (`null`, eine Zahl, `""`) wird mit nur einer WARNING zu `read`. `[]` und `{}` werfen `TypeError` am Mengenvergleich; der steht im `try`, das nur `JSONDecodeError` und `KeyError` fängt (`direktiven`, Z. 377). Laut landet das im Agent-Dispatch.
+
+**Das Gegenbild steht im selben Verbund:** `dateien` (Z. 236–250) und `dateien_wurzeln` (Z. 207–218) enden bei einer unbekannten Aktion mit `fehler`, *„verworfen statt ersetzt“*.
+
+**Wirkung.** Wer um eine Schreibung bittet, bekommt ein Lesen, und nur eine WARNING sagt es.
+
+**Reproduktion.** `klassifizieren` mit einer Modellantwort `{"action": null}`: `read`. Mit `{"action": []}`: `TypeError` im Dispatch.
+
+**Geschlossen, wenn** eine unbekannte `action` in allen vier Diensten laut endet wie in `dateien` und `dateien_wurzeln` — bezeugt je Dienst mit `null`, einer Zahl, `[]` und `{}` und einem Zwilling mit gültiger Aktion.
+
+**Offen:** keine Absicht, das Vorbild steht. Klein, passt in einen Zug mit `MODELLFELD-UNGEPRUEFT-GELESEN`.
+
+**Zusammenhang:** `KLASSIFIKATION-NULL-FELD-WIRFT` ([`novaberg-bugs-archiv-bauart.md`](novaberg-bugs-archiv-bauart.md)) nennt den Fund unter *Nicht Gegenstand*.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** WiedervorlageAgent — Fällige Erinnerungen formulieren
-**Stand:** 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 6. November 2026, 20:43 UTC (`date -u`; §3: `FAKTEN-WIEDERVORLAGE-OHNE-ERZEUGER` genannt). Davor 18. September 2026 (Audit: der Dienst belegt seinen Lauf selbst). Davor 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-pixie-reminder.md
 **Quellen:** nova-05-m-a.md
 
@@ -37,6 +37,8 @@ Der Agent scannt vier PostgreSQL-Tabellen nach fälligen Wiedervorlagen:
 | `fakten` | `wiedervorlage_am <= NOW()` |
 | `timeline` | `wiedervorlage_am <= NOW()` |
 | `notizen` | `wiedervorlage_am <= NOW()` |
+
+**`fakten` liefert heute nichts** (am Code gelesen am 06.11.2026): Die Spalte hat außer dem Zurückstellen keinen Erzeuger, und zurückgestellt wird nur ein Eintrag, der schon fällig war — `FAKTEN-WIEDERVORLAGE-OHNE-ERZEUGER` ([`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md)), niedrig, offen.
 
 ---
 

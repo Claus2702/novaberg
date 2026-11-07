@@ -1,18 +1,18 @@
 # Novaberg — Backlog: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~72~~ → ~~74~~ → ~~75~~ → ~~76~~ → 77 Eintraege (26.10.2026: `FAKTEN-PAIR-IGNORED` abgeschlossen mit dem Eintrag im Defektregister, Nachträge an `KLA-KLAERFALL-AM-OBJEKT` und `FAKTEN-KANON-LUECKEN`; 24.10.2026: `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN` neu aus der Klassifizierung der Funde vom 24.10.2026, dazu zwei Nachträge an `KLA-KLAERFALL-AM-OBJEKT` und ein dritter am selben Tag, später, zur geschlossenen Annahme in den vier Kopien der Ja/Nein-Deutung; 21.10.2026: `FAKTEN-LESER-OHNE-AUFRUFER` neu; 20.10.2026: `FAKTEN-KANON-LUECKEN` neu aus der Fundliste; 17.10.2026: `TIMELINE-TYPEN-AN-DREI-STELLEN` neu — die Zahl ist die des Findemittels, das schon vorher 73 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~72~~ → ~~74~~ → ~~75~~ → ~~76~~ → 77 Eintraege (06.11.2026: die Tabelle unten trägt die Zahlen des Findemittels; 26.10.2026: `FAKTEN-PAIR-IGNORED` abgeschlossen mit dem Eintrag im Defektregister, Nachträge an `KLA-KLAERFALL-AM-OBJEKT` und `FAKTEN-KANON-LUECKEN`; 24.10.2026: `VERSCHIEBEN-GENANNTER-TAG-UNVERGLICHEN` neu aus der Klassifizierung der Funde vom 24.10.2026, dazu zwei Nachträge an `KLA-KLAERFALL-AM-OBJEKT` und ein dritter am selben Tag, später, zur geschlossenen Annahme in den vier Kopien der Ja/Nein-Deutung; 21.10.2026: `FAKTEN-LESER-OHNE-AUFRUFER` neu; 20.10.2026: `FAKTEN-KANON-LUECKEN` neu aus der Fundliste; 17.10.2026: `TIMELINE-TYPEN-AN-DREI-STELLEN` neu — die Zahl ist die des Findemittels, das schon vorher 73 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 76 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 106 |
 
 ---
 

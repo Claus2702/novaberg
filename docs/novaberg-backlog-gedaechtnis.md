@@ -1,18 +1,18 @@
 # Novaberg — Backlog: Gedaechtnis — KZG, LZG, Promotion, Entitaeten, Salienz, Verfall
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → ~~81~~ → ~~82~~ → 83 Eintraege (24.10.2026: `VERSTAERKUNG-KANTEN-NUR-ALS-SUMME` neu aus der Klassifizierung der Funde vom 24.10.2026; 22.10.2026: `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` neu; 21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~77~~ → ~~80~~ → ~~81~~ → ~~82~~ → 83 Eintraege (06.11.2026: die Tabelle unten trägt die Zahlen des Findemittels; 24.10.2026: `VERSTAERKUNG-KANTEN-NUR-ALS-SUMME` neu aus der Klassifizierung der Funde vom 24.10.2026; 22.10.2026: `ERINNERUNGSANKER-GRENZEN-UNGEMESSEN` neu; 21.10.2026: `ENTITAETEN-ZUSAMMENLEGEN` neu; 19.09.2026: `SYNAPSEN-K8-SKALA` neu; 17.10.2026: `SALIENZ-TRAEGT-NAEHE-NICHT` neu — die Zahl ist die des Findemittels, das schon vorher 79 nannte).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 76 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 106 |
 
 ---
 

@@ -1,9 +1,47 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → ~~54~~ → 53 Eintraege (26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS` behoben, bezeugt und vor dem Commit an den protokollierten Ausfällen gemessen, mit dem Commit des Code-Trees `3806695` (`a6e46c2`, die Doku dazu `b87cc49`) geschlossen und ins Archiv, im Betrieb nicht gemessen; 24.10.2026, später, unverändert 54: ein Nachtrag an `SACHLAGE-OBJEKT-OHNE-NAMEN` aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → ~~54~~ → ~~53~~ → 54 Eintraege (06.11.2026: `EINWAND-KOPFBLOCK-LIEST-KEINE-WAHL` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS` behoben, bezeugt und vor dem Commit an den protokollierten Ausfällen gemessen, mit dem Commit des Code-Trees `3806695` (`a6e46c2`, die Doku dazu `b87cc49`) geschlossen und ins Archiv, im Betrieb nicht gemessen; 24.10.2026, später, unverändert 54: ein Nachtrag an `SACHLAGE-OBJEKT-OHNE-NAMEN` aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.11.2026 — aus der Klassifizierung der Funde vom 25. und 26.10.2026
+
+Eine Kennung aus den 43 Funden vom 25. und 26.10.2026 (Fundliste, *Umgezogen — 06.11.2026*), am Code gelesen gegen HEAD `7b35557`, an `server/graph/einwand.py` ohne Server nachgerechnet; Datenbank, Modell und Serverlog sind nicht berührt. **Unbelegt** heißt in diesem Abschnitt: nicht selbst gelesen oder gemessen, sondern aus der Fundzeile oder einem Eintrag übernommen oder geschlossen. Sieben Funde stehen in diesem einen Eintrag. Die übrigen Kennungen stehen in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md), [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md), [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md) und [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md).
+
+### `EINWAND-KOPFBLOCK-LIEST-KEINE-WAHL` — der Kopfblock des Verfassers liest eine Nicht-Wahl als Wahl
+
+**Kategorie:** ANT
+
+**Rang:** **niedrig**, eine Frage wartet auf eine Absicht — still, aber nur in der Spur, und keine Form kam in den 22 protokollierten Ausfällen vor (**unbelegt**, Fundzeilen). Gelesene Urteile tragen keine Rohantwort im Log, die Rate ist also nicht messbar. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557` und an `server/graph/einwand.py` ohne Server nachgerechnet.
+
+**Befund** `[Code]`, der Leser stammt aus dem Code-Tree `3806695` (`a6e46c2`):
+
+| Feldinhalt | Ergebnis |
+|---|---|
+| `ja oder _nein_`, `ja oder __nein__` | gelesen als `ja`, still: Der Unterstrich ist in der Zählung ein Wortzeichen (`_aufzaehlung_lesen`, Z. 332) |
+| `EINWAND: ja oder`, Folgezeile `nein — x` | `geliefert=True`, `vorhanden=True`, still: `_kopf_deuten` liest zeilenweise (Z. 391), und die Vorlage des Prompts bricht `EINWAND` selbst um (`kopf_anweisung`, Z. 136–137) |
+| zweimal `EINWAND`, `ja` und `nein` | die letzte gilt, `vorhanden=False`, still: `_kopf_deuten` schreibt jedes Feld in ein Wörterbuch (Z. 394) |
+| `trifft_zu / trifft nicht zu`; `STAERKE: 0.0 bis 1.0` | `trifft_zu`; `0.0`, still |
+| leeres `GEPRUEFT:` | `geliefert=True`, `geprueft=""` (Z. 423), gegen den Kommentar *„Leer = nicht geliefert“* (Z. 96) |
+
+**Ein benannter Preis in der Gegenrichtung:** `nein — das ist ja bekannt`, `trifft_zu — nicht abweichend` und `fakt, keine Haltung` ergeben den Ausfall `mehrdeutig`, laut, obwohl das erste Wort eine Wahl ist. Die Commit-Meldung von `a6e46c2` führt das (*„now fails loudly; it occurs 0 times among the 22“*).
+
+**Der Spiegel im Test:** `_FORMEN` in `server/tests/test_einwandsurteil.py` trägt 14 Trenner, darunter keiner aus der Fundzeile; `ja,nein`, `Ja / Nein` und `_nein_` kommen in der Testdatei nicht vor.
+
+**Wirkung.** Eng, und das setzt den Rang. Gelesen wird das Urteil nur von `vorzeichen_pruefen` (`bewertung == abweichend`, forensisch, *„Zählt, ohne zu ändern“*, `server/graph/nodes/verfasser.py`, Z. 872), sonst nur ins Log. `vorhanden`, `geprueft`, `staerke` und `quelle` steuern nichts. Eine Fehllesung kostet höchstens eine Zählung der Vorzeichenprüfung. Der Zustand `einwandsurteil` hat außerhalb von `verfasser.py` keinen Leser (grep: `state.py`, `builder.py`, `base.py`, `verfasser.py`); der Docstring der Klasse nennt die *Vorzeichenregel des Responders (B3)* als Leser, am Code liest der Responder ihn nicht.
+
+**Reproduktion.** `urteil_lesen` mit den Feldinhalten der Tabelle, ohne Server.
+
+**Geschlossen, wenn** ein Feld, das keine Wahl trifft, nicht als gefälltes Urteil gilt — bezeugt mit jeder Zeile der Tabelle; die Lücken am Kriterium `mehrdeutig` bezeugt sind (ein anderes Zeichen direkt vor dem zweiten Wert wie in `ja,nein`, `ja-nein`, `ja (nein)`, der zweite Wert hinter `;`, `:`, `!` oder `?`, hinter dem fünften Wort oder in Titelschreibung, der Unterstrich als Wortzeichen); und der Docstring von `urteil_lesen` (`einwand.py`, Z. 166) das heutige Kriterium nennt statt *„eine wiederholte Wertliste“*.
+
+**Offen:** die **Absicht** zum leeren `GEPRUEFT`: ob es ein Ausfall ist. Der Prompt setzt die Prüfung ausdrücklich vor das Urteil, der Kommentar spricht dafür. Zur Abhilfe: erst die Messung im Betrieb aus `VERFASSER-KOPFBLOCK-FAELLT-AUS` abwarten, sie zählt die Ausfälle nach Grund.
+
+**Zusammenhang:** `VERFASSER-KOPFBLOCK-FAELLT-AUS` ([`novaberg-bugs-archiv-antwortpfad.md`](novaberg-bugs-archiv-antwortpfad.md)) nennt alle diese Funde unter *Was der Bau nicht schließt*.
 
 ---
 

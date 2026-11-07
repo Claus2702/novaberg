@@ -1,9 +1,129 @@
 # Novaberg — Bugs: Wissen — Bibliothek, Dateien, Notizen, Timeline, Fakten
 
-**Inhalt:** die offenen Defekte dieses Gegenstands (26.10.2026, später: `SCHREIBWEG-KENNUNG-OHNE-MENSCH` behoben, bezeugt und mit dem Commit des Code-Trees `30b81af` (`89bcba8`, die Doku dazu `64ba8dd`) geschlossen, ins Archiv — 29 Eintraege; sein Abschnitt *25.10.2026 — aus der Klassifizierung des Fundes vom 25.10.2026* entfällt mit ihm; davor 26.10.2026: `FAKTEN-HEISST-ICH-AUSGENOMMEN`, `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` und `FAKTEN-PAIR-IGNORED` behoben, `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` und `FAKTENPLUGIN-OHNE-KAPPUNG` gegenstandslos, alle fünf mit ihrem Commit geschlossen und ins Archiv — 30 Eintraege; davor 25.10.2026, 22:05 UTC: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` behoben und am Modell gemessen, ins Archiv — 35 Eintraege; davor 25.10.2026, später: `SCHREIBWEG-KENNUNG-OHNE-MENSCH` neu aus dem Fund vom 25.10.2026, niedrig; davor zählte die Datei 35 Eintraege), ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → ~~32~~ → ~~35~~ → ~~36~~ → ~~35~~ → ~~30~~ → 29 Eintraege (26.10.2026, siehe vorn; 24.10.2026, später: `VERSCHIEBEN-TAGESZEIT-WIDERSPRICHT-STUNDE`, `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` und `ZEIT-TAG-AN-TEILWORT-ERKANNT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
+**Inhalt:** die offenen Defekte dieses Gegenstands (26.10.2026, später: `SCHREIBWEG-KENNUNG-OHNE-MENSCH` behoben, bezeugt und mit dem Commit des Code-Trees `30b81af` (`89bcba8`, die Doku dazu `64ba8dd`) geschlossen, ins Archiv — 29 Eintraege; sein Abschnitt *25.10.2026 — aus der Klassifizierung des Fundes vom 25.10.2026* entfällt mit ihm; davor 26.10.2026: `FAKTEN-HEISST-ICH-AUSGENOMMEN`, `FAKTEN-SUCHE-PRIVATE-KLAERUNGSFRAGE` und `FAKTEN-PAIR-IGNORED` behoben, `FAKTEN-UNAUFGELOESTES-OBJEKT-WIRD-WERT` und `FAKTENPLUGIN-OHNE-KAPPUNG` gegenstandslos, alle fünf mit ihrem Commit geschlossen und ins Archiv — 30 Eintraege; davor 25.10.2026, 22:05 UTC: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` behoben und am Modell gemessen, ins Archiv — 35 Eintraege; davor 25.10.2026, später: `SCHREIBWEG-KENNUNG-OHNE-MENSCH` neu aus dem Fund vom 25.10.2026, niedrig; davor zählte die Datei 35 Eintraege), ~~21~~ → ~~23~~ → ~~27~~ → ~~28~~ → ~~26~~ → ~~30~~ → ~~32~~ → ~~31~~ → ~~33~~ → ~~32~~ → ~~35~~ → ~~36~~ → ~~35~~ → ~~30~~ → ~~29~~ → 33 Eintraege (06.11.2026: `NOTIZ-SUCHTEXT-HINKT-NACH`, `REPOSITORY-KENNUNG-OHNE-MENSCH`, `FAKTEN-SUBJEKT-VERLIERT-TITEL` und `FAKTEN-NAME-AM-POSSESSIV-VERWORFEN` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 26.10.2026, siehe vorn; 24.10.2026, später: `VERSCHIEBEN-TAGESZEIT-WIDERSPRICHT-STUNDE`, `VERSCHIEBEN-RUECKFRAGE-NENNT-FALSCHEN-GRUND` und `ZEIT-TAG-AN-TEILWORT-ERKANNT` neu aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026, 13:58 UTC: `VERSCHIEBEN-NACKTE-STUNDE-OHNE-TAGESHAELFTE` behoben und am Modell gemessen, ins Archiv; 24.10.2026: `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` und `FAKTEN-EREIGNISVERWEIS-AM-BEZIEHUNGSFAKT` neu aus der Klassifizierung der Funde vom 23.10.2026; 23.10.2026: `TIMELINE-CLIPBOARD-OHNE-ID` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026, am Code geprüft: `TIMELINE-CLIPBOARD-OHNE-ID` und `TIMELINE-KONFIDENZ-OHNE-LESER` neu; 22.10.2026, später, unverändert 30: `EREIGNIS-KANDIDAT-OHNE-SPRECHER` neu, `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` ins Archiv; 22.10.2026 unverändert 30: `EREIGNIS-KOMMENDES-WIRD-VERGANGEN` neu, `TIMELINE-PAIR-MISSING` ins Archiv; 20.10.2026: vier neu aus der Klassifizierung der Fundliste; 17.10.2026: drei neu, `NOTIZ-BEFEHL-ALS-TITEL` ins Archiv; später am selben Tag vier neu aus dem Entwurf der Bauart des Faktengedächtnisses und einer aus der Simulation `simnachher4`; 18.10.2026: `FAKTEN-LESEN-SCHREIBT-LAST-TOUCHED` und `FAKTEN-ABLOESEN-OHNE-TRANSAKTION` ins Archiv), je mit `**Kategorie:** WIS`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.11.2026 — aus der Klassifizierung der Funde vom 25. und 26.10.2026
+
+Vier Kennungen aus den 43 Funden vom 25. und 26.10.2026 (Fundliste, *Umgezogen — 06.11.2026*), am Code gelesen gegen HEAD `7b35557`; reine Funktionen sind ohne Server nachgerechnet, Datenbank, Modell und Serverlog sind nicht berührt. **Unbelegt** heißt in diesem Abschnitt: nicht selbst gelesen oder gemessen, sondern aus der Fundzeile oder einem Eintrag übernommen oder geschlossen. Die übrigen Kennungen stehen in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md), [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md), [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md) und [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md).
+
+### `NOTIZ-SUCHTEXT-HINKT-NACH` — `suchtext` einer Notiz trägt die vorige Zusammenfassung, und ein neuer Name fehlt bis zur nächsten Schreibung des Inhalts
+
+**Kategorie:** WIS
+
+**Rang:** **mittel** — still, verfälscht einen Bestand, und der Mensch hört *„keine Notiz“*, wo eine steht, oder wird zum Anlegen einer Dublette gefragt. Begrenzt, weil es die dritte Stufe der Suche ist. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen. Dass rechts der `SET`-Liste die alte Zeile gelesen wird, ist die dokumentierte Semantik von PostgreSQL. Der Stand reicht bis in die ältesten Zeilen zurück (`git log -S`: erster Upload).
+
+**Befund** `[Code]`:
+
+- **Die Zusammenfassung:** `_SCHREIBUNGEN["inhalt"]` (`server/agents/notizen/crud.py`, Z. 90–95) und `NotizenRepository.update` (`server/memory/repositories/notizen_repository.py`, Z. 200–230) setzen `zusammenfassung` und im selben `UPDATE` `suchtext` aus der Spalte. `suchtext` trägt danach den Stand der vorigen Schreibung. Betroffen sind `_update`, `_append`, `_clear_content` (Z. 609, 680, 717) und `server/plugins/notizen_manager/manager.py`, Z. 759 und 802 (zu Z. 802 siehe `REPOSITORY-KENNUNG-OHNE-MENSCH`). Beim Anlegen stimmt die Spalte: `insert` bildet den Text vorher.
+- **Der Name:** `_SCHREIBUNGEN["name"]` (Z. 100) setzt `suchtext` gar nicht; der Name in `suchtext` wird erst bei der nächsten Inhaltsschreibung neu gerechnet, und auch dann nur mit der alten Zusammenfassung.
+- **Kein Trigger:** In den Schemadateien (`db/`, `agents/*/init.sql`) steht kein `CREATE TRIGGER`; die laufende Datenbank ist nicht gelesen.
+- **Kein Zeuge** prüft `suchtext` der Notizen (grep über `server/tests`).
+
+**Wirkung.** Gelesen wird die Spalte von `find_by_volltext` (Repository, Z. 111–136), der dritten Stufe in `server/agents/notizen/suche.py` (Z. 126–129), nach der gewichteten Suche und dem Stichwort. Findet sie nichts, endet der Dienst mit *„Keine Notiz …“* oder fragt bei `add_content` und `remove_content`, ob er anlegen soll (Z. 136–163). Ein Wort aus der neuen Zusammenfassung trifft nicht, ein gestrichenes trifft noch. Wie oft die dritte Stufe im Betrieb greift, ist **unbelegt**.
+
+**Reproduktion.** Gegen die Wegwerf-Datenbank der Suite, denn `to_tsvector` lässt sich nicht doppeln: eine Notiz anlegen, zweimal ändern, `suchtext` lesen; umbenennen, `find_by_volltext` mit dem neuen Namen.
+
+**Geschlossen, wenn** nach jeder Schreibung die Volltextsuche eine Notiz unter ihrem neuen Namen und ihrer neuen Zusammenfassung findet und nicht mehr unter der alten — bezeugt je Weg (`inhalt`, `name`, `NotizenRepository.update`): neues Wort trifft, altes nicht, rot am heutigen Stand; gemessen an einem Prüf-Nutzer mit einer Notiz über ein Wissenschaftsthema, zweimal geändert, Abfrage auf `suchtext`.
+
+**Offen:** keine Absicht. Zu entscheiden ist nur, ob der Bestand nachgerechnet wird. Das ist kein DDL, aber eine Schreibung auf Betriebsdaten; ohne den Eigentümer geschieht sie nicht.
+
+**Zusammenhang:** `NOTIZEN-INDIZES-NACHTRAG` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) betrifft nur den Index.
+
+### `REPOSITORY-KENNUNG-OHNE-MENSCH` — die Repositories von Timeline und Notizen treffen eine Zeile allein über die Kennung
+
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — dieselbe Wertung wie `SCHREIBWEG-KENNUNG-OHNE-MENSCH`: heute kein offener Weg, der Schutz hängt aber allein an der Suche. Ein Weg, der eine Kennung anders bekommt, schriebe still in eine fremde Zeile. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen. Ein fremder Weg ist nicht gefunden.
+
+**Befund, Timeline** `[Code]`: `_verifizieren_termin` (`server/agents/timeline/crud.py`, Z. 31–59) liest *nach* einer Schreibung `id` und `aktiv` und liefert einen Wahrheitswert. Die Kennungen seiner Aufrufer:
+
+- Z. 206: aus `insert`, an das Paar gebunden (`_check_pair`).
+- Z. 426: aus `verschieben`.
+- Z. 425 und 867: aus `parameter["termin"]`, das nur `suche.py` setzt (Z. 494, 518), aus Treffern, die am Paar hängen.
+- `resume.py` setzt keinen Termin: `resume_clarification` wirft sogar, wenn einer da ist (Z. 49–51), die Antwort auf eine Auswahl schreibt nie. Eine Kennung aus einer Modellausgabe gibt es in der Timeline nicht (grep auf `target_id`).
+
+**Der Kern liegt in den Schreibwegen daneben**, die die Fundzeile nicht nennt (`server/memory/repositories/timeline_repository.py`): `TimelineRepository.invalidate` (Z. 620–635, ohne `rowcount`, gerufen aus `_delete` ohne Prüfung), `verschieben` über `_lock_active_row` (Z. 303) und `_retire_row` (Z. 331–335), `set_wiedervorlage` (Z. 783–787), dazu die Leser `find_by_id` (Z. 431–436) und `aktive_zeile` (Z. 745–751). `update` (Z. 612) hat außerhalb der Tests keinen Aufrufer. Eine Bindung nur im Leser brächte nichts: Die Schreibung wäre schon geschehen, die Verifikation meldete danach nur `False`. Der Bau gehört in die Schreibwege, der Leser folgt mit, und die Timeline braucht das Paar, nicht nur `user_id` (`TIMELINE-PAIR-MISSING`). `_verifizieren_termin` ist in sieben Testdateien ersetzt, seine Abfrage bezeugt keiner.
+
+**Befund, Notizen** `[Code]`: `NotizenRepository.find_by_id`, `update`, `invalidate` und `set_wiedervorlage` (`server/memory/repositories/notizen_repository.py`, Z. 76, 238, 257, 276) lesen `WHERE id = %s` ohne `user_id`. Die offene Frage der Fundzeile ist beantwortet:
+
+- `find_by_id` (Z. 76) hat außerhalb der Tests **keinen Aufrufer**.
+- `invalidate` (`server/plugins/notizen_manager/manager.py`, Z. 485) und `update` (Z. 802) hängen an `notiz_id` in `daten`. **Kein Erzeuger setzt das Feld:** `plan()` baut `daten` ohne `notiz_id` (Z. 340, 382, 392, 401). Beide Wege sind tot.
+- `update` (Z. 759) nimmt die Kennung aus `find_by_stichwort` mit `user_id`.
+- `set_wiedervorlage` (`server/agents/wiedervorlage/agent.py`, Z. 311) nimmt sie aus `find_wiedervorlage_faellig` mit `user_id`.
+
+Alle lebenden Wege binden die Kennung also vorher an den Menschen. `FaktenRepository.set_wiedervorlage` ist das Gegenstück mit Paar (`wiedervorlage/agent.py`, Z. 305).
+
+**Wirkung.** Heute keine: Es gibt keinen offenen Weg. Der Schutz liegt aber nicht an der Schreibstelle, sondern allein in der Suche davor.
+
+**Reproduktion.** Am Code: die genannten Abfragen tragen `WHERE id = %s` ohne Menschen; die Aufrufer sind oben je Weg benannt. Ein Lauf ist nicht möglich, solange kein fremder Weg existiert.
+
+**Geschlossen, wenn** die lebenden Schreibwege der Timeline das Paar und die lebenden Wege von `NotizenRepository` den Menschen in der Bedingung tragen, die Leser folgen und die toten Wege entschieden sind — bezeugt je Weg mit einer fremden Kennung und einem Zwilling.
+
+**Offen:**
+
+- ob die toten Wege (`find_by_id`, `update` der Timeline, `manager.py`, Z. 485 und 802) wegfallen oder gebunden werden. Löschen ist eine eigene Entscheidung, `server/tests/test_notizen_execute.py` pinnt die Zweige;
+- `EntitaetenRepository.set_wiedervorlage` trifft ebenfalls allein über die Kennung (`server/memory/repositories/entitaeten_repository.py`, Z. 327), Kennung aus der gebundenen Fälligkeitsliste. Nicht in der Fundzeile.
+
+**Zusammenhang:** `SCHREIBWEG-KENNUNG-OHNE-MENSCH` ([`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)) ist derselbe Befund für `notizen/crud.py` und `dateien_wurzeln/crud.py` und nennt `NotizenRepository` im *Zusammenhang*. `IMPORTE-UEBERSPRINGEN-SCHICHT` ([`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md)) führt `_verifizieren_termin` wegen seines Imports von `tools.db_manager`; ein Bau trifft dieselbe Zeile.
+
+### `FAKTEN-SUBJEKT-VERLIERT-TITEL` — ein Personenname, der zugleich ein Ortsname ist, verliert im Subjekt seinen Titel
+
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — still und schreibend, aber selten, und der Fakt selbst stimmt. Mittel, wenn die Bindung an den Ort sich bestätigt. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — gelesen am Ergebnis `labor/2026-10-25_fakten_subjekt_messung_ergebnis.md`, Fall E2 (*„der Name gekürzt, ein Ortsname als Personenname“*), in beiden Trees gleich; die Reihe nennt 20 Fälle, zwei Läufe, *„eine Stichprobe, keine Rate“*.
+
+**Befund:** Aus dem Satz der Rückhaltereihe (synthetisch) *„Frau Jena aus dem Institut arbeitet als Astrophysikerin.“* klassifiziert das Modell das Subjekt als `Jena` statt `Frau Jena`. **Die Stelle, die die Fundzeile offenließ** `[Code]`: Es ist die Modellausgabe, kein Code kürzt. `check_answer` (`server/agents/fakten/klassifikation.py`) lässt `Jena` durch, weil das Wort großgeschrieben in der Äußerung steht. Die Prompts `classify_fakten.*` sagen zu Titel und Anrede nichts (grep auf *Titel*, *Anrede*, *Frau*, *Herr*: kein Treffer).
+
+**Wirkung.** Der Fakt stimmt, er steht aber unter einem gekürzten Namen. Ob `Jena` dann an eine bestehende Ort-Entität bindet, ist **unbelegt**.
+
+**Reproduktion.** Fall E2 aus `labor/2026-10-25_fakten_subjekt_reihe.jsonl` am Modell, über `classify_candidates` und `vet_triple`.
+
+**Geschlossen, wenn** ein Name mit Titel ungekürzt ins Subjekt kommt — am Modell gemessen an Fall E2 und einem Zwilling, dessen Name kein Ortsname ist.
+
+**Offen:** Eine Abhilfe im Prompt braucht eine Messung am Modell.
+
+**Zusammenhang:** `FAKTEN-ORT-ALS-SUBJEKT-DURCHGELASSEN` ([`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)) ist die Nachbarklasse, ihr Riegel greift hier nicht: Der Typ ist `person`.
+
+### `FAKTEN-NAME-AM-POSSESSIV-VERWORFEN` — `ICH heisst <Name>` fällt an jedem Possessiv der ersten Person in der Äußerung
+
+**Kategorie:** WIS
+
+**Rang:** **niedrig** — laut (ERROR, *„Tripel verworfen“*), ein Fakt geht verloren, kein Bestand wird verfälscht. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557` und an `check_answer` ohne Server nachgerechnet.
+
+**Befund** `[Code]`: `_place_in_request` (`server/agents/fakten/klassifikation.py`, Z. 567–574) setzt *Besitzer*, sobald irgendwo ein Possessiv steht, dem nicht *Name* folgt; `_SUBJECT_NEVER_POSSESSOR` verwirft dann `heisst` (Z. 518–520). Nachgerechnet, die Sätze sind synthetisch und tragen die Beispielnamen des Projekts:
+
+| Äußerung | Ergebnis |
+|---|---|
+| *„Ich heiße Merten.“* | geht durch |
+| *„Mein Name ist Merten.“* | geht durch |
+| *„Mein Hund heißt Rufus.“* | verworfen, richtig |
+| *„Ich heiße Merten und mein Hund bellt.“* | **verworfen, falsch** |
+| *„Ich heisse Merten, das ist meine Schwester Ilva.“* | **verworfen, falsch** |
+
+Das ist der Preis von `FAKTEN-HEISST-ICH-AUSGENOMMEN` (`6f3b463`), dessen Zwillinge nur Sätze ohne zweites Possessiv fahren.
+
+**Wirkung.** Der eigene Name geht verloren, wenn im selben Satz ein Possessiv steht. Falsch geschrieben wird nichts.
+
+**Reproduktion.** `check_answer` mit den Sätzen der Tabelle, ohne Server.
+
+**Geschlossen, wenn** `ICH heisst <Name>` neben einem Possessiv, das nicht zum Namen gehört, durchgeht und *„Mein Hund heißt Rufus“* verworfen bleibt — bezeugt mit den Sätzen der Tabelle.
+
+**Offen:** keine Absicht.
+
+**Zusammenhang:** `FAKTEN-HEISST-ICH-AUSGENOMMEN` ([`novaberg-bugs-archiv-wissen.md`](novaberg-bugs-archiv-wissen.md)); der Rest eines geschlossenen Eintrags bekommt eine eigene Kennung.
 
 ---
 

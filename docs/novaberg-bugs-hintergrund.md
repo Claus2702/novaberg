@@ -1,9 +1,35 @@
 # Novaberg — Bugs: Hintergrund — Pixie, Queue, Agenten, Recherche, Zustellung
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~17~~ → ~~18~~ → ~~19~~ → 18 Eintraege (23.10.2026: `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026: `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` neu, am Code geprüft; 20.10.2026: `TAGESLAUF-DOCSTRING-SECHS-AUFGABEN` neu aus der Fundliste), je mit `**Kategorie:** HGR`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~17~~ → ~~18~~ → ~~19~~ → ~~18~~ → 19 Eintraege (06.11.2026: `FAKTEN-WIEDERVORLAGE-OHNE-ERZEUGER` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 23.10.2026: `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` behoben und im Betrieb gemessen, ins Archiv; 22.10.2026: `WIEDERVORLAGE-TIMELINE-OHNE-TITEL` neu, am Code geprüft; 20.10.2026: `TAGESLAUF-DOCSTRING-SECHS-AUFGABEN` neu aus der Fundliste), je mit `**Kategorie:** HGR`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.11.2026 — aus der Klassifizierung der Funde vom 25. und 26.10.2026
+
+Eine Kennung aus den 43 Funden vom 25. und 26.10.2026 (Fundliste, *Umgezogen — 06.11.2026*), am Code gelesen gegen HEAD `7b35557`; Datenbank, Modell und Serverlog sind nicht berührt. **Unbelegt** heißt in diesem Abschnitt: nicht selbst gelesen oder gemessen, sondern aus der Fundzeile oder einem Eintrag übernommen oder geschlossen. Die übrigen Kennungen stehen in [`novaberg-bugs-charakter.md`](novaberg-bugs-charakter.md), [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md), [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md) und [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md).
+
+### `FAKTEN-WIEDERVORLAGE-OHNE-ERZEUGER` — `fakten.wiedervorlage_am` hat keinen Erzeuger, kein Fakt wird je fällig
+
+**Kategorie:** HGR
+
+**Rang:** **niedrig**, wartet auf eine Absicht — still, aber es fehlt nur ein Vorgang, solange Pixie pausiert. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen. Ob der Bestand Zeilen mit gesetztem Wert trägt, ist **unbelegt**.
+
+**Befund** `[Code]`: Der Kreis ist geschlossen. `FaktenRepository.insert` setzt die Spalte nicht, die Spalte hat keinen Vorgabewert (`db/init.sql`, Z. 454). `set_wiedervorlage` ruft nur `_wiedervorlage_verschieben` für einen Eintrag aus `find_wiedervorlage_faellig`, und der liest nur gesetzte Zeilen (`server/memory/repositories/fakten_repository.py`, Z. 943–944). Nur der Zeuge setzt die Spalte von Hand (`server/tests/test_fakten_repository.py`, Z. 305). [`novaberg-pixie-reminder.md`](novaberg-pixie-reminder.md) führt `fakten` als Quelle. Notizen bekommen dagegen 30 Tage beim Anlegen (`server/memory/repositories/notizen_repository.py`, Z. 48), Termine `resubmission_at`.
+
+**Wirkung.** Die Doku nennt eine Quelle, die nie etwas liefert, und kein Fakt wird wiedervorgelegt. Die Wiedervorlage läuft ohnehin nicht, solange Pixie pausiert.
+
+**Reproduktion.** Am Code: `insert` ohne die Spalte, `find_wiedervorlage_faellig` mit `wiedervorlage_am <= NOW()`; ein neu geschriebener Fakt trägt `NULL` und wird nie gefunden.
+
+**Geschlossen, wenn** entschieden ist, ob ein Fakt wiedervorgelegt wird: Entweder setzt ein Erzeuger die Spalte, bezeugt mit einem neu geschriebenen Fakt, der fällig wird, oder die Quelle fällt aus Agent und Doku.
+
+**Offen:** die **Absicht**: Soll ein Fakt überhaupt wiedervorgelegt werden, und wann? Sonst fällt die Quelle aus Agent und Doku.
+
+**Zusammenhang:** [`novaberg-memory-fakten_e.md`](novaberg-memory-fakten_e.md) Nr. 29 regelt nur das Lesen, `WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG` (in dieser Datei) die Verschiebung, nicht den Erzeuger.
 
 ---
 

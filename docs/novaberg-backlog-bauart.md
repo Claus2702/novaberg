@@ -1,18 +1,18 @@
 # Novaberg — Backlog: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~99~~ → ~~100~~ → 104 Eintraege (22.10.2026: `SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE` und `NMCP-ZUSAGE-LZG-RESONANZ-VERALTET` neu — die Zahl ist die des Findemittels, das schon vorher 102 nannte; 17.10.2026: `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` neu).
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, ~~99~~ → ~~100~~ → ~~104~~ → 106 Eintraege (06.11.2026: `SUCHZEUGE-SIEHT-NUR-BEKANNTE-FORMEN` und `GEGENPROBE-BLINDE-ZEUGEN` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026, die Tabelle unten trägt die Zahlen des Findemittels; 22.10.2026: `SACHLAGE-ZEUGEN-DOPPEL-STATT-ABFRAGE` und `NMCP-ZUSAGE-LZG-RESONANZ-VERALTET` neu — die Zahl ist die des Findemittels, das schon vorher 102 nannte; 17.10.2026: `THINKER-IMPORTIERT-AUS-TIMELINE-AGENT` neu).
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
 
 | Gegenstand | Datei | Eintraege |
 |---|---|---|
-| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
-| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
-| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
-| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
-| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
-| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 83 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 69 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 76 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 69 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 77 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 106 |
 
 ---
 
@@ -1787,5 +1787,46 @@ Ein Zeuge, der den Bestand liest, prüft das Gedächtnis von heute, nicht den Co
 **Was fertig wäre:** Die Zusage nennt jeden Leser des Kanals und den zweiten Schreiber, oder sie nennt keine Leser und verweist auf eine Stelle, an der sie gerechnet werden.
 
 **Zusammenhang:** `novaberg-convention-nmcp.md` · `novaberg-memory-fakten_b.md` §6 (*Der Erinnerungsanker*)
+
+---
+
+## Befund: SUCHZEUGE-SIEHT-NUR-BEKANNTE-FORMEN — Suchzeugen sehen nur die Formen, die sie kennen (06.11.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** niedrig — kein Verhalten ist falsch, eine Zeugenklasse hat eine bekannte Grenze. Ein vollständiger Suchzeuge ist nicht erreichbar; der Eintrag hält fest, wofür man ihnen nicht trauen darf. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** ⬜ offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nichts gebaut. Die Formen stehen heute nicht im Baum (**unbelegt**, Fundzeilen, an den Gegenproben gemessen).
+
+**Befund, am Code:** Dreimal derselbe Satz.
+
+- `server/tests/test_kanon_usage.py`: Die Docstrings von `EveryReaderUsesTheCheckTest` und `EveryWriterUsesTheCheckTest` nennen die Grenzen selbst, außer dem Aufruf mit Schlüsselwortargumenten; `_arg_name` liest tatsächlich nur Positionsargumente.
+- `server/tests/test_classification_null_field.py`: `_is_answer` beginnt am Attribut `parsed`. Dass die Suche keine Gültigkeitsbereiche unterscheidet, ist Absicht: Der Docstring von `_answer_loads` sagt es (*„gilt in der ganzen Funktion als die Antwort“*), streng und laut, im Betrieb ohne Folge.
+- `server/tests/test_write_path_binding.py`: `_ID_COMPARISON` findet nur `[tabelle.]id = <Platzhalter>`.
+
+**Was fertig wäre:** Die Grenze jedes Zeugen steht in seinem Docstring. Für `test_kanon_usage.py` fehlt ein Satz, für die beiden anderen ist es zu prüfen. Ob der Eintrag damit je geschlossen werden kann, ist offen; dies ist der Vorschlag dafür.
+
+**Zusammenhang:** `KANDIDATENABFRAGE-OHNE-DB-ZEUGEN` ([`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md)) ist im Muster verwandt.
+
+---
+
+## Befund: GEGENPROBE-BLINDE-ZEUGEN — Zeugenlücken, die Gegenproben gezeigt haben (06.11.2026)
+
+**Kategorie:** [BAU] BAUART
+
+**Rang:** niedrig — kein Verhalten ist falsch. Alles sind wenige Zeilen im Test, jeder Bau an der jeweiligen Stelle kann sie mitnehmen. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** ⬜ offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nichts gebaut.
+
+**Befund, am Code:**
+
+- **Die Säulen der Neugier:** `aufnahmebereitschaft_berechnen` wird nur in `server/tests/test_kanon_usage.py` gefahren. Am Ergebnis gehen E, A, M über 1,0 und V, D, S darunter oder auf 1,0 (Z. 211–237). Der Zweig Krise (`server/ei/neugier.py`, Z. 120–122) hat dort keinen Zeugen.
+- **Der Zwilling der Faszination:** `test_a_canon_mode_acts_as_before` (dieselbe Datei) prüft nur 1,15, die Zwillinge der Geschwister prüfen auch `errors`.
+- **Der Zeuge der drei Kopien:** `_agree` (dieselbe Datei) prüft Feld und Wert, nicht den Ort; es gibt kein Element, das kein Text ist.
+- **`_read_target_id`:** `_CRITERION_ALPHABET` (`"[]()013.,# "`, `server/tests/test_target_id_ownership.py`) enthält weder Buchstaben noch fremde Ziffern. `"13a"`, `"١٣"`, `"１３"` werden abgewiesen (nachgerechnet), kein Zeuge würde rot, wenn sich das änderte.
+
+**Was fertig wäre:** Je Stelle ein Zeuge, der den Eingriff aus der Gegenprobe rot macht: beide Richtungen je Säule und die Krise am Ergebnis, `errors` im Zwilling der Faszination, der Ort der Zeile und ein Element ohne Text bei den drei Kopien, die Werte außerhalb des Alphabets.
+
+**Zusammenhang:** `KANON-FELDER-NEHMEN-FREMDWERTE` ([`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md)) · `DIREKTIVEN-KENNUNG-UNGEPRUEFT` (ebenda).
 
 ---

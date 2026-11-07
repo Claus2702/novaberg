@@ -1,9 +1,91 @@
 # Novaberg — Bugs: Charakter — Profile, Räder, Haltung, Emotion, Destillation
 
-**Inhalt:** die offenen Defekte dieses Gegenstands (25.10.2026, später: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Code-Tree `2876b85` behoben → committet als `236edec`, offen bis zur MESSUNG im Betrieb; Zählung an `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` nachgetragen), ~~28~~ → ~~30~~ → ~~34~~ → ~~33~~ → ~~30~~ → 28 Eintraege (26.10.2026, abends: `PERZEPTIONSFELDER-OHNE-KANON` und `KANON-FELDER-NEHMEN-FREMDWERTE` mit dem Code-Tree `6feb70a` behoben, bezeugt, vor dem Commit an gespeicherten Modellausgaben gemessen, geschlossen und ins Archiv, Kennung wird nachgetragen → committet als `e71df6b`, die Doku dazu als `7b35557`, im Betrieb nicht gemessen; 26.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` und `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Betrieb gemessen, geschlossen und ins Archiv; 25.10.2026: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` neu aus dem Fund vom 24.10.2026, `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` behoben und ins Archiv; 24.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-AUSWAHLFRAGE-OHNE-LESER`, `TOR-ABLEHNUNG-MELDET-ABGESCHLOSSEN` und `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` neu aus der Klassifizierung der Funde vom 24.10.2026; 20.10.2026: `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` neu aus der Fundliste; 18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
+**Inhalt:** die offenen Defekte dieses Gegenstands (25.10.2026, später: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Code-Tree `2876b85` behoben → committet als `236edec`, offen bis zur MESSUNG im Betrieb; Zählung an `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` nachgetragen), ~~28~~ → ~~30~~ → ~~34~~ → ~~33~~ → ~~30~~ → ~~28~~ → 31 Eintraege (06.11.2026: `CHARAKTER-LOESCHEN-OHNE-ZIEL-TRIFFT-ALLE`, `KZG-KANON-SCHREIBWEISE-GEHT-LEER` und `DELEGATION-AKTE-OHNE-KANON` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026, dazu vier Nachträge; 26.10.2026, abends: `PERZEPTIONSFELDER-OHNE-KANON` und `KANON-FELDER-NEHMEN-FREMDWERTE` mit dem Code-Tree `6feb70a` behoben, bezeugt, vor dem Commit an gespeicherten Modellausgaben gemessen, geschlossen und ins Archiv, Kennung wird nachgetragen → committet als `e71df6b`, die Doku dazu als `7b35557`, im Betrieb nicht gemessen; 26.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` und `DIREKTIVEN-KENNUNG-UNGEPRUEFT` im Betrieb gemessen, geschlossen und ins Archiv; 25.10.2026: `DIREKTIVEN-KENNUNG-UNGEPRUEFT` neu aus dem Fund vom 24.10.2026, `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` behoben und ins Archiv; 24.10.2026: `ZURUECKHALTUNG-GILT-ALS-ZUSTIMMUNG`, `DIREKTIVEN-AUSWAHLFRAGE-OHNE-LESER`, `TOR-ABLEHNUNG-MELDET-ABGESCHLOSSEN` und `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` neu aus der Klassifizierung der Funde vom 24.10.2026; 20.10.2026: `ABLEHNUNG-OHNE-STAMM-BESTAETIGT` und `WURZELN-ABLEHNUNG-UNGELESEN` neu aus der Fundliste; 18.10.2026: `DIREKTIVEN-FUEHRT-JEDE-ANTWORT-AUS` neu, `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` behoben und ins Archiv), je mit `**Kategorie:** CHA`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 06.11.2026 — aus der Klassifizierung der Funde vom 25. und 26.10.2026
+
+Drei Kennungen aus den 43 Funden vom 25. und 26.10.2026 (Fundliste, *Umgezogen — 06.11.2026*), am Code gelesen gegen HEAD `7b35557`; reine Funktionen sind ohne Server nachgerechnet, Datenbank, Modell und Serverlog sind nicht berührt. **Unbelegt** heißt in diesem Abschnitt: nicht selbst gelesen oder gemessen, sondern aus der Fundzeile oder einem Eintrag übernommen oder geschlossen. Vier Funde derselben Klassifizierung sind Nachträge in dieser Datei: zwei an `PERZEPTION-WERTE-VERRUTSCHEN-DIE-SPALTE`, je einer an `TURN-ROH-FEHLT-BEI-ERZEUGTER-ANTWORT` und `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL`. Die übrigen Kennungen stehen in [`novaberg-bugs-wissen.md`](novaberg-bugs-wissen.md), [`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md), [`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md) und [`novaberg-bugs-hintergrund.md`](novaberg-bugs-hintergrund.md), die drei Einträge der Arbeit in [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) und [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md).
+
+### `CHARAKTER-LOESCHEN-OHNE-ZIEL-TRIFFT-ALLE` — ein Löschen ohne erkanntes Ziel fragt nach *alle*, und ein *„ja“* deaktiviert jede Charakter-Anweisung
+
+**Kategorie:** CHA
+
+**Rang:** **hoch**, wartet auf eine Absicht — eine Bitte um eine einzelne Sache endet mit einem *„ja“* in der breitesten Schreibung des Dienstes, gegen den ganzen Bestand der Identität, am Modell 2 von 2. Begrenzt ist es, weil das Löschen weich ist und die Frage *„(alle)“* trägt. Der Responder soll den Inhalt nicht verändern (`responder.aufgabe_rueckfrage.txt`); ob *„(alle)“* im Wortlaut ankommt, ist **unbelegt**, und kommt es verlässlich an, wäre mittel vertretbar. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen. Die 2 von 2 am Modell und das *„ja“*, das alle deaktivierte, sind aus der Fundzeile übernommen, **unbelegt**: Die Reihe ist bei der Klassifizierung nicht gelesen.
+
+**Befund** `[Code]`: Der Weg öffnet sich bei jedem `delete` ohne Kennung, auch bei einer vorhandenen Anweisung, die das Modell nicht zuordnet; die Fundzeile nannte nur die Bitte über eine nicht vorhandene.
+
+- Der Prompt verlangt `target_id` nur *„falls erkennbar“* (`server/prompts/default/classify_charakter.task.txt`, Z. 5) und führt `delete` als *„Einzelne oder alle“* (Z. 39; `classify_charakter.rules.txt`, Z. 3).
+- `server/agents/charakter_identitaet/crud.py::validieren_gegen_db` prüft nur mit Kennung (Z. 143) und baut dann *„Charakter-Anweisung loeschen (alle)“* (Z. 199–200).
+- Nach der Zustimmung ruft `_delete` ohne Kennung `_delete_alle` (Z. 461–462). *Keine Kennung* heißt damit *alle*; der Docstring von `_read_target_id` nennt das (`klassifikation.py`, Z. 67–69).
+- Der Weg läuft auch bei null aktiven Anweisungen in die Frage; eine Prüfung der Anzahl gibt es nicht.
+- Die Spur nennt nur `anzahl`, keine Kennungen (`_delete_alle`). Zurück geht es einzeln über `reactivate`.
+
+**Eine Falle für den naheliegenden Bau** `[Code]`: Die Aktion `delete_alle` gibt es in `agent.py` (Z. 119, 165), `crud.py` (Z. 321) und in [`novaberg-agent-character.md`](novaberg-agent-character.md) §5. Die Klassifikation kann sie aber nicht liefern, sie fehlt in `GUELTIGE_AKTIONEN` (`klassifikation.py`, Z. 33–40). Und sie fehlt in der Liste der Pflicht-Rückfrage (`crud.py`, Z. 196): `delete_alle` fiele durch bis `ok=True, grund="Leseoperation"` (Z. 214) und liefe ohne Frage. Wer sie erreichbar macht, muss sie dort eintragen. Ob der Router sie oder ein nacktes `delete` als `management_action` liefern kann (`dispatch.py`, Z. 50, dann ohne Klassifikation), ist **unbelegt**.
+
+**Wirkung.** Wer um eine einzelne Sache bittet und auf die Pflicht-Rückfrage *„ja“* sagt, deaktiviert jede aktive Charakter-Anweisung. Dort, wo die Direktiven eine Frage ohne Ziel stellen (`DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL`), ist das Ziel unbestimmt, hier ist es das Größte.
+
+**Reproduktion.** Am Code: `validieren_gegen_db` mit `action = "delete"` und ohne `target_id` ergibt die Frage *„(alle)“*, nach der Zustimmung ruft `_delete` `_delete_alle`. Am Modell: eine Bitte über eine nicht vorhandene Anweisung an einem Prüf-Nutzer, dann *„ja“*.
+
+**Geschlossen, wenn** eine Bitte ohne erkanntes Ziel nicht mehr mit einem *„ja“* jede Anweisung deaktiviert, ohne dass der Mensch die Breite gesehen hat, und bei null aktiven Anweisungen keine Frage kommt — bezeugt mit einem `delete` ohne Kennung bei vorhandener Anweisung, bei null aktiven Anweisungen und einem Zwilling mit Kennung; ist `delete_alle` erreichbar, steht es in der Liste der Pflicht-Rückfrage.
+
+**Offen:** die **Absicht**, wie *alle* von *nicht erkannt* zu trennen ist.
+
+- **a)** Die Klassifikation liefert `delete_alle` als eigene Aktion, `delete` ohne Kennung fragt nach der Anweisung. Das ändert den Prompt und braucht eine Messung am Modell.
+- **b)** `delete` ohne Kennung sucht per Stichwort wie die Direktiven. Das liest `anweisung`; was das Modell dort bei *„Vergiss den Charakter“* liefert, ist **unbelegt**.
+- **c)** Ohne Modell: Die Frage nennt jede betroffene Anweisung im Wortlaut, bei null aktiven kommt keine Frage. Das macht die Entscheidung sichtbar, verhindert sie aber nicht.
+
+Vorgeschlagen ist c) sofort, a) danach; entschieden ist nichts.
+
+**Zusammenhang:** `DIREKTIVEN-RUECKFRAGE-OHNE-ZIEL` (in dieser Datei).
+
+### `KZG-KANON-SCHREIBWEISE-GEHT-LEER` — eine andere Schreibweise eines Kanon-Werts geht im KZG leer hinein, während die Perzeption sie auf den Kanon zieht
+
+**Kategorie:** CHA
+
+**Rang:** **niedrig**, wartet auf eine Absicht — laut, je eine ERROR-Zeile, verloren geht nur eine Marke. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen. Wie viele reine Schreibvarianten im Bestand ankommen, ist nicht gezählt.
+
+**Befund** `[Code]`: Alle drei Kopien von `_kanon_felder_pruefen` vergleichen roh (`server/memory/kzg.py`, Z. 128, 135; gleich in `server/agents/kzg/speicher.py` und `server/agents/kzg/queues.py`). Die Salienz normalisiert nicht (`server/graph/nodes/salience.py`, Z. 690–711). `to_canonical` gibt es in `server/utils/canon.py`, die Perzeption nutzt es. `_aus_tabelle` zieht klein (`server/ei/fascination.py`, `.strip().lower()`), `alltag` trägt dort 0,95. Ein `modus` *„Alltag“* wird deshalb leer gespeichert und eine Intention *„Smalltalk“* verworfen, je mit Fehlerzeile, in allen drei Kopien gleich; `f_modus("Alltag")` ergibt 0,95 (Fundzeile). Kein Zeuge hält das Verhalten in einer Richtung fest.
+
+**Leser des leeren Werts:** `server/agents/synapsen_promotion/agent.py`, Z. 474, das Suchfeld `modus` des KZG (`server/memory/kzg.py`, Z. 186), der Schatten-Auftrag.
+
+**Wirkung.** Verloren geht eine Marke, und die Zeile ist laut. Der gemessene Fremdanteil steht im Archiv (32 von 1048 Aufträgen seit dem 10.09.2026, **unbelegt**, bei der Klassifizierung nicht gelesen), die Beispiele dort sind aber keine Schreibvarianten. **Wie viele reine Varianten darunter sind, ist nicht gezählt, und davon hängt die Sache ab.**
+
+**Reproduktion.** `_kanon_felder_pruefen` in jeder der drei Kopien mit `modus = "Alltag"`: leerer Wert und eine ERROR-Zeile. `f_modus("Alltag")` in der Faszination: 0,95 ohne Zeile.
+
+**Geschlossen, wenn** entschieden ist, ob eine Schreibvariante im KZG gezogen oder leer gespeichert wird, und ein Zeuge das Verhalten in dieser Richtung hält — in allen drei Kopien gleich, mit einem Zwilling aus dem Kanon.
+
+**Offen:** die **Absicht**. Die Entscheidung vom 15.10.2026 sagt *„außerhalb des Kanons: leer“* und *„die Perzeption zieht Schreibvarianten“*; zu einer Variante im KZG sagt sie nichts. Die Zählung am Bestand vorher kostet eine Abfrage.
+
+**Zusammenhang:** `KANON-FELDER-NEHMEN-FREMDWERTE` ([`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md)) nennt den Fund unter *Was der Bau nicht schließt*.
+
+### `DELEGATION-AKTE-OHNE-KANON` — die Delegationsakte schreibt Kanon-Felder ungeprüft in Spalten, die niemand liest
+
+**Kategorie:** CHA
+
+**Rang:** **niedrig** — still und im Bestand, aber niemand liest und handelt danach. Vergeben am 06.11.2026 gegen HEAD `7b35557`.
+
+**Zustand:** offen — am Code gelesen am 06.11.2026 gegen `7b35557`, nicht gelaufen.
+
+**Befund** `[Code]`: `server/agents/delegation/akte.py::_seiten_dict` liest `user_intentionen` und `gespraechs_modus` aus den Parametern (Z. 81–82), `akte_erstellen` (Z. 159–160) und `akte_anreichern` (Z. 304–305) schreiben sie so in `delegations_seiten`, ohne Abgleich mit `INTENT_KANON` und `MODUS_KANON`. Weiter als die Fundzeile: `sprach_stil`, `beziehungs_dynamik` und `tone` gehen ebenso hinein (Z. 83–85), es sind fünf Felder. Die Werte kommen aus `external.emotion.*` und `state["user_intentionen"]` (`dispatch.py`, Z. 72–78), Letzteres ohne Kanonabgleich (`_intentionen_human_ermitteln`, Docstring *„ungeprueft“*).
+
+**Einen Leser dieser Spalten gibt es nicht:** `delegations_seiten` kommt in `server/` nur in `init.sql` und in `akte.py` vor, und dort wird außer `arousal` (Z. 245) nur geschrieben.
+
+**Wirkung.** Der Bestand trägt Werte außerhalb des Kanons, und niemand handelt danach. Es ist ein anderer Bestand als der KZG, den `KANON-FELDER-NEHMEN-FREMDWERTE` meinte.
+
+**Reproduktion.** Am Code: `_seiten_dict` mit einem Wert außerhalb von `MODUS_KANON` gibt ihn unverändert an beide Schreibwege weiter.
+
+**Geschlossen, wenn** die fünf Felder vor dem Schreiben gegen ihren Kanon gehalten werden, in `akte_erstellen` und in `akte_anreichern` — bezeugt mit einem Fremdwert und einem Zwilling aus dem Kanon.
+
+**Zusammenhang:** `KANON-FELDER-NEHMEN-FREMDWERTE` ([`novaberg-bugs-archiv-charakter.md`](novaberg-bugs-archiv-charakter.md)), das Geschwister, nennt den Fund unter *Was der Bau nicht schließt*; deshalb CHA, HGR wäre vertretbar.
 
 ---
 
@@ -75,6 +157,8 @@ Die Kennung kommt aus der Klassifikation (`klassifikation.py`, Z. 153, `ergebnis
 
 **Offen:** die **Absicht** — ob die Frage die Direktive im Wortlaut nennen soll, die Stichwortsuche also vor der Frage läuft (der Mensch kennt keine Kennungen), und ob eine Frage ohne lösbares Ziel gar nicht gestellt wird; wie oft eine Kennung fehlt.
 
+**Nachtrag 06.11.2026 — aus dem Fund vom 25.10.2026: Ziel heißt Wortlaut.** Eine Bitte über eine nicht vorhandene Regel ergab die Kennung der einzigen inaktiven Direktive, 2 von 2 am Modell (**unbelegt**, Fundzeile); die Pflicht-Rückfrage nennt nur die Kennung, nicht den Wortlaut. `[Code]` gegen `7b35557`: Mit Kennung lautet die Frage *„Direktive wiederherstellen (ID n)“* (`server/agents/direktiven/crud.py`, Z. 212), `_ziel_pruefen` lässt eine eigene inaktive Zeile durch (Z. 180–185). In `charakter_identitaet` trägt dieselbe Frage nicht einmal die Kennung (`crud.py`, Z. 203). Die Schließbedingung oben sagt *„nennt ihr Ziel“*, ihre Zeugen fahren *„je ohne Kennung, mit einem Zwilling mit Kennung“*; eine Kennung genügte ihr dem Wortlaut nach. **Geschärft: Ziel heißt Wortlaut** — eine Kennung allein schließt den Eintrag nicht, der Mensch kennt keine Kennungen. Die Absicht dazu steht unter *Offen* schon offen. Mit dem Fund wird Rang mittel diskutabel; gezählt ist die Klassifikation weiter nicht, der Rang bleibt niedrig.
+
 **Zusammenhang:** `DIREKTIVEN-AUSWAHLFRAGE-OHNE-LESER` (in dieser Datei); [`novaberg-agent-directives.md`](novaberg-agent-directives.md) §6.1 nennt den Fund.
 
 ---
@@ -119,6 +203,16 @@ was da ist, und nicht mehr behaupten, als sie gesehen hat.
 **Belege:** `labor/werkzeug/perzeption_prompt_probe.py` (im Server: `tools/`), `labor/messreihen/2026-09-10_perzeption_erwartung.md`.
 
 **Geschlossen, wenn** die Ausreisserquote ueber einen gemessenen Zeitraum unter einem gesetzten Wert liegt — und der Wert ist gesetzt, nicht geraten.
+
+**Nachtrag 06.11.2026 — aus den Funden vom 26.10.2026: `tone` steht im Prompt an der falschen Stelle, und die Fehlerzeile steht im Regelfall.**
+
+- **Die Rate seither** (Fundzeile, **unbelegt**): `tone` lag an den gespeicherten Eingaben des EI-Gates seit dem 10.09.2026 in 50 von 491 Turns außerhalb seines Kanons (10,2 %), davor in 126 von 1326 (9,5 %); 122 der 176 fremden Werte stammen aus einem anderen Kanon. Der Anteil sinkt nicht.
+- **Die Stelle im Prompt** `[Code]` gegen `7b35557`: In `perzeption.task.txt` (Z. 29) und `perzeption.assistant_task.txt` (Z. 30) steht `tone` als letzter Punkt unter *Rationale Ebene — intent*, ohne Werte. Die vier Werte stehen nur in der Vorlage (Z. 8). Das Modell ist dazu nicht befragt.
+- **Mehrere ERROR-Zeilen je Turn** `[Code]` gegen `7b35557`: Das EI-Gate meldet je Seite und Feld (`server/ei/berechnung.py`, Z. 905–909). Für einen fremden `modus` sind es mehr Stellen, als die Fundzeile nennt: `modus_pruefen` auch in `server/graph/nodes/gespraechsvektor.py`, Z. 186, `server/ei/raum.py`, Z. 171, `server/ei/dreischicht.py`, Z. 631, `server/ei/initiative.py`, Z. 319–320. Der Regelfall kommt aber allein von `tone`, und dort sind es höchstens zwei Zeilen je Turn; `modus` lag außerhalb in 0,0 % (oben). Eine Fehlerzeile, die im Regelfall steht, wird überlesen; eine Messung im Betrieb zählt nach Ort und Turn, nicht nach Zeilen.
+- **Warum Nachtrag:** Beides ist dieselbe Sache. Die Ursache der Fehlerzeile im Regelfall ist die Quote, die dieser Eintrag senken soll. Sinkt sie unter die Schwelle, ist die Zeile kein Regelfall mehr.
+- **Zur Entscheidung vom 06.10.2026:** Sie lautet *Synonymkarte je Dimension*. **Gebaut ist sie nur für `modus`** (`_FELDER_SYNONYME`, `server/graph/nodes/perzeption.py`, Z. 125–127). Für verrutschte Werte hilft sie nach dem Befund oben nicht. Der Fund aus dem Prompt widerspricht dem Weg *„im Code“* nicht, stellt ihn aber in Frage.
+
+**Offen:** die **Absicht**, ob der Weg *„im Code“* vom 06.10.2026 trägt, wenn die Mehrzahl verrutschte Werte sind und die Stelle im Prompt liegt. Ein Eingriff im Prompt braucht eine Messung am Modell.
 
 ---
 
@@ -392,6 +486,8 @@ nicht aus einer Erhebung.
 - **Mitbetroffen:** Ohne Dispatcher geht der vermerkte Ausgang am Turn nicht ans Gedächtnis — Punkt 2 der Entscheidung in `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` (novaberg-bugs-gedaechtnis.md).
 
 Der Rang bleibt **mittel**, der Zustand bleibt **offen**: Die Schließbedingung unten verlangt, dass ein Turn mit erzeugter Antwort seine `turn_roh`-Zeile auch dann bekommt, wenn hinter dem Responder etwas ausfällt.
+
+**Nachtrag 06.11.2026 — aus dem Fund vom 26.10.2026: `GraphRecursionError` im Turn *„Wie bitte?“*.** In der Messung im Betrieb zu den Ja/Nein-Toren meldete `event_consumer` bei wartender Rückfrage der Notizen den Abbruch an der Rekursionsgrenze, in 1 von 9 Turns; der Stand bis dahin wurde ausgeliefert, und der Zustand stimmte (Fundzeile, **unbelegt**). `[Code]` gegen `7b35557`: Es ist derselbe Abbruchweg (`server/services/event_consumer.py`, Z. 406–414). Der Lauf nennt keine Grenze (`compiled_character.stream(state)`, Z. 434), also gilt die Vorgabe; eine Konfiguration gibt es unter `server/` nicht. Der Schleifenschutz im Planner greift (`_agent_bereits_gelaufen`, Z. 624). Warum ein Turn mit erneuter Frage die 25 Schritte erreicht, ist **unbelegt**: Das Serverlog ist bei der Klassifizierung nicht gelesen, und ob dem Turn dabei Spuren hinter dem Responder fehlen, ist nicht geprüft. **Neu für den Eintrag:** Ein Abbruch ohne zwei Korrekturrunden *wäre* eine neue Beobachtung; ob Korrekturrunden liefen, sagt die Fundzeile nicht.
 
 **Der urspruengliche Befund, unveraendert:**
 

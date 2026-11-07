@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 998 Abschnitte in 7 Dateien — 486 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 999 Abschnitte in 7 Dateien — 487 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 80 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 81 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
@@ -21,7 +21,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 998 Marken, 998 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 999 Marken, 999 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -38,6 +38,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-11-06 | laufend | ## | [06.11.2026, 20:43 UTC — Die 43 Funde vom 25. und 26.10.2026 sind klassifiziert: elf neue Bugs, drei Backlog-Einträge, vier Nachträge](novaberg-roadmap.md#06112026-2043-utc--die-43-funde-vom-25-und-26102026-sind-klassifiziert-elf-neue-bugs-drei-backlog-einträge-vier-nachträge) |
 | 2026-11-06 | laufend | ## | [06.11.2026, 20:12 UTC — Die Kennungen der Commits vom 05.11.2026 nachgetragen](novaberg-roadmap.md#06112026-2012-utc--die-kennungen-der-commits-vom-05112026-nachgetragen) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 19:50 UTC — Ein Wert außerhalb des Kanons bekommt an jeder Faktortabelle einen neutralen Faktor statt des Maximums und erreicht den KZG nie als Freitext; `PERZEPTIONSFELDER-OHNE-KANON` und `KANON-FELDER-NEHMEN-FREMDWERTE` im Archiv](novaberg-roadmap.md#26102026-1950-utc--ein-wert-außerhalb-des-kanons-bekommt-an-jeder-faktortabelle-einen-neutralen-faktor-statt-des-maximums-und-erreicht-den-kzg-nie-als-freitext-perzeptionsfelder-ohne-kanon-und-kanon-felder-nehmen-fremdwerte-im-archiv) |
 | 2026-10-26 | laufend | ## | [26.10.2026, 19:03 UTC — Der Verfasser liest den Kopfblock seines Urteils über das erste Wort je Feld, ein Feld mit zwei Werten ist mehrdeutig, und jeder Ausfall trägt seinen Grund; `VERFASSER-KOPFBLOCK-FAELLT-AUS` im Archiv](novaberg-roadmap.md#26102026-1903-utc--der-verfasser-liest-den-kopfblock-seines-urteils-über-das-erste-wort-je-feld-ein-feld-mit-zwei-werten-ist-mehrdeutig-und-jeder-ausfall-trägt-seinen-grund-verfasser-kopfblock-faellt-aus-im-archiv) |
