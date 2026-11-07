@@ -333,6 +333,27 @@ OLLAMA_CONNECTORS: dict = {
         "analyse_model":   "qwen36-cpu",
         "analyse_num_ctx": 262144,
     },
+    # **Qwen 3.8 im Gespraech, angelegt am 07.11.2026, um es in echten Turns
+    # zu pruefen.** Anders als unter `qwen36` antwortet hier wirklich Qwen: Der
+    # Name folgt dem GPU-Modell. Gegenueber `gemma4a4b` aendert sich **eine**
+    # Zeile, das GPU-Modell; Fenster und Hintergrund bleiben, damit der
+    # Wechsel nur eine Groesse bewegt.
+    #
+    # `[gemessen 07.11.2026]` gegen `gemma4-a4b-gpu`: Das Fenster 32768 steht
+    # zu 100 % auf der GPU, auch neben dem Embedding-Runner. Gefuellt lief es
+    # nur gestuft, am Stueck brach der Lauf zweimal ab. Freier Text laeuft mit
+    # 35,6 gegen 100,3 tps. Turns liefen dabei keine, ueber das Verhalten im
+    # Gespraech sagt die Messung nichts.
+    #
+    # **Zurueck geht es ohne Code-Aenderung:** `OLLAMA_CONNECTOR=gemma4a4b`.
+    "qwen38": {
+        "gpu_model":       "qwen3.8:27b",
+        "gpu_num_ctx":     32768,
+        "cpu_model":       "qwen36-cpu",
+        "cpu_num_ctx":     262144,
+        "analyse_model":   "qwen36-cpu",
+        "analyse_num_ctx": 262144,
+    },
 }
 
 # Aktiver Connector → bestehende Variablen auflösen

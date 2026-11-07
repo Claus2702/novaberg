@@ -144,7 +144,9 @@ class ThinkSplitNormalizer(ThinkingNormalizer):
 # der qwen36-Connector faehrt im CharacterGraph gemma4-gpu auf der GPU und
 # zeigt den Split, obwohl der Connector nicht "gemma4" heisst. Substring,
 # damit "gemma4-gpu" UND "gemma4-cpu" greifen.
-_MODELLE_MIT_SPLIT: tuple[str, ...] = ("gemma4",)
+# `qwen3.8` ist am Modell nicht gemessen (Stand 07.11.2026) und gesetzt, weil
+# der Abfang ohne Split nichts tut.
+_MODELLE_MIT_SPLIT: tuple[str, ...] = ("gemma4", "qwen3.8")
 
 
 def get_thinking_normalizer() -> ThinkingNormalizer:
