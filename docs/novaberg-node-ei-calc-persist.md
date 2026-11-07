@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `ei_calc_persist` (Konsolidierung und Persistierung der Nova-EI)
-**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §3 Schritt 1: ein Wert außerhalb einer Faktortabelle des EI-Gates bekommt den neutralen Faktor mit Fehlerzeile, vor dem Commit an 1817 gespeicherten Turns gemessen — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 15. August 2026, Chat 140 (dreizehn Felder: die neun EI-Dimensionen, die beiden Raum-Achsen aus Chat 114 und die beiden Uhren der Eigenzeit)
+**Stand:** 6. November 2026, 20:12 UTC (`date -u`; die Commit-Kennung nachgetragen — Code-Tree `6feb70a` ist `e71df6b`, die Doku dazu `7b35557`). Davor 26. Oktober 2026, 19:50 UTC (`date -u`; §3 Schritt 1: ein Wert außerhalb einer Faktortabelle des EI-Gates bekommt den neutralen Faktor mit Fehlerzeile, vor dem Commit an 1817 gespeicherten Turns gemessen — Code-Tree `6feb70a`, Kennung wird nachgetragen → committet als `e71df6b`, die Doku dazu als `7b35557`). Davor 15. August 2026, Chat 140 (dreizehn Felder: die neun EI-Dimensionen, die beiden Raum-Achsen aus Chat 114 und die beiden Uhren der Eigenzeit)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc-persist.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/ei_calc_persist.py`

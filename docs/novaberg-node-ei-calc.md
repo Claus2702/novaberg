@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz EI-Calc (Emotionale Intelligenz — Berechnungsschicht)
-**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §1 Punkt 3: ein Wert außerhalb einer Faktortabelle des EI-Gates bekommt den neutralen Faktor mit Fehlerzeile — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 28. Juli 2026, Chat 114 (Raumzug als zweite Kraft neben der Empathie)
+**Stand:** 6. November 2026, 20:12 UTC (`date -u`; die Commit-Kennung nachgetragen — Code-Tree `6feb70a` ist `e71df6b`, die Doku dazu `7b35557`). Davor 26. Oktober 2026, 19:50 UTC (`date -u`; §1 Punkt 3: ein Wert außerhalb einer Faktortabelle des EI-Gates bekommt den neutralen Faktor mit Fehlerzeile — Code-Tree `6feb70a`, Kennung wird nachgetragen → committet als `e71df6b`, die Doku dazu als `7b35557`). Davor 28. Juli 2026, Chat 114 (Raumzug als zweite Kraft neben der Empathie)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc.md
 **Quellen:** Chat 58 (Konzept-Split), Chat 59 (Implementierung)
 **Datei:** `graph/nodes/ei_calc.py`

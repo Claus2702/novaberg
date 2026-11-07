@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Emotionale Intelligenz (Übersicht)
-**Stand:** 26. Oktober 2026, 19:50 UTC (`date -u`; §9 EI-Plausibilitaets-Gate: Tabellen und Formel gegen den Code nachgezogen, ein Wert außerhalb einer Faktortabelle bekommt den neutralen Faktor mit Fehlerzeile — Code-Tree `6feb70a`, Kennung wird nachgetragen). Davor 31. August 2026 (Mechanismus 4 — die Reizstärke; Cap 4.0, Turn-Beitrag erregungsabhängig, Filterschwelle 0.04, alle drei aus Messreihen hergeleitet: §Reizstärke). Davor: 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
+**Stand:** 6. November 2026, 20:12 UTC (`date -u`; die Commit-Kennung nachgetragen — Code-Tree `6feb70a` ist `e71df6b`, die Doku dazu `7b35557`). Davor 26. Oktober 2026, 19:50 UTC (`date -u`; §9 EI-Plausibilitaets-Gate: Tabellen und Formel gegen den Code nachgezogen, ein Wert außerhalb einer Faktortabelle bekommt den neutralen Faktor mit Fehlerzeile — Code-Tree `6feb70a`, Kennung wird nachgetragen → committet als `e71df6b`, die Doku dazu als `7b35557`). Davor 31. August 2026 (Mechanismus 4 — die Reizstärke; Cap 4.0, Turn-Beitrag erregungsabhängig, Filterschwelle 0.04, alle drei aus Messreihen hergeleitet: §Reizstärke). Davor: 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
 **Pfad:** novaberg/docs/novaberg-ei.md
 **Quellen:** nova-04-k.md (EI-Konzept)
 
