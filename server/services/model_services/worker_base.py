@@ -12,7 +12,10 @@ Konkrete Worker leiten von dieser Klasse ab und implementieren `_call_model`.
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
+import threading
+from types import FrameType
 from typing import Generic, TypeVar
 
 from services.model_services.spur import sprachmodell_erlaubt
@@ -170,10 +173,15 @@ class ModelWorker(Generic[TRequest, TResponse]):
             Die Response des Workers.
 
         Raises:
-            RuntimeError: Wenn der Worker noch nicht via start() gestartet wurde.
+            RuntimeError: Wenn der Worker noch nicht via start() gestartet wurde,
+                oder sofort, wenn der Aufruf auf der Schleife des Workers selbst
+                läuft: Sie müsste die Antwort zustellen und stünde bis zur Frist.
+                Die Meldung nennt Worker und Aufrufer und steht auch im Log, weil
+                viele Aufrufer `Exception` fangen.
             concurrent.futures.TimeoutError: Bei Überschreitung des Timeouts.
             Beliebige Exception aus dem Modell-Call (über die Future propagiert).
         """
+        # ── Eingabe-Validierung ─────────────────────
         if self._name != "embed":
             sprachmodell_erlaubt(self._name)
 
@@ -183,15 +191,69 @@ class ModelWorker(Generic[TRequest, TResponse]):
                 f"submit_sync() vor start() aufgerufen oder Worker bereits beendet"
             )
 
+        # Kein laufender Loop ist der Normalfall: ein Arbeits-Thread. Eine fremde
+        # Schleife ist erlaubt, sie blockiert nur sich selbst, die des Workers läuft.
+        try:
+            running_loop: asyncio.AbstractEventLoop | None = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
+
+        if running_loop is self._loop:
+            refusal: str = (
+                f"ModelWorker '{self._name}': submit_sync aus "
+                f"{self._call_site(inspect.currentframe())} läuft auf der Schleife des "
+                f"Workers und hätte bis zur Frist ({timeout:.1f}s) blockiert — "
+                f"dort `await submit()` nehmen oder über asyncio.to_thread rufen"
+            )
+            logger.error(refusal)
+            raise RuntimeError(refusal)
+
+        # ── Verarbeitung ────────────────────────────
         logger.debug(
-            "ModelWorker '%s': submit_sync aus Worker-Thread (Timeout: %.1fs)",
+            "ModelWorker '%s': submit_sync auf Thread '%s', fremde Schleife: %s "
+            "(Timeout: %.1fs)",
             self._name,
+            threading.current_thread().name,
+            "ja" if running_loop is not None else "nein",
             timeout,
         )
 
         coro = self.submit(request)
         concurrent_future = asyncio.run_coroutine_threadsafe(coro, self._loop)
         return concurrent_future.result(timeout=timeout)
+
+    def _call_site(self, frame: FrameType | None) -> str:
+        """
+        Nennt die Stelle, die `submit_sync` dieses Workers gerufen hat.
+
+        Übergeht die `submit_sync`-Rahmen dieses Workers, damit eine Unterklasse
+        mit eigener Brücke (`BackgroundWorker`) nicht als Aufrufer erscheint.
+
+        Vorbedingung: `frame` ist ein Rahmen innerhalb von `submit_sync`, oder None,
+            wenn die Laufzeit keine Rahmen liefert.
+        Nachbedingung: `<modul>:<funktion>:<zeile>` des ersten fremden Rahmens.
+        Fehlerfälle: Kein fremder Rahmen — der Text sagt das; die Meldung, in der
+            er steht, darf daran nicht scheitern.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if frame is None:
+            return "unbekanntem Aufrufer (keine Rahmen verfügbar)"
+
+        # ── Verarbeitung ────────────────────────────
+        caller: FrameType | None = frame
+        while (
+            caller is not None
+            and caller.f_code.co_name == "submit_sync"
+            and caller.f_locals.get("self") is self
+        ):
+            caller = caller.f_back
+
+        # ── Ausgabe-Verifikation ────────────────────
+        if caller is None:
+            return "unbekanntem Aufrufer (kein fremder Rahmen)"
+
+        module: str = caller.f_globals.get("__name__", "?")
+        return f"{module}:{caller.f_code.co_qualname}:{caller.f_lineno}"
 
     async def _run(self) -> None:
         """
