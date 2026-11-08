@@ -1,9 +1,41 @@
 # Novaberg — Bugs, Archiv: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~17~~ → ~~18~~ → 19 Eintraege (26.10.2026: `KLASSIFIKATION-NULL-FELD-WIRFT`, angelegt und im selben Zug geschlossen, vor dem Commit am Modell gemessen; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` aus dem offenen Teil), je mit `BAU` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~17~~ → ~~18~~ → ~~19~~ → 20 Eintraege (08.11.2026: `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` aus dem offenen Teil; 26.10.2026: `KLASSIFIKATION-NULL-FELD-WIRFT`, angelegt und im selben Zug geschlossen, vor dem Commit am Modell gemessen; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` aus dem offenen Teil), je mit `BAU` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 08.11.2026 — behoben und vor dem Commit über den echten Startweg gemessen
+
+**Dieser Eintrag stand seit dem 08.08.2026 im offenen Register** (Abschnitt *aus der Fundliste klassifiziert, Block 30.–27.07.*). Gebaut, bezeugt, gegengeprüft und vor dem Commit gemessen am 07.11.2026; er ist mit dem Doku-Zug zu seinem Bau geschlossen, die Commit-Kennung wird nachgetragen.
+
+---
+
+### `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` — `submit_sync` behauptete einen Worker-Thread und prüfte ihn nicht ✅
+
+**Kategorie:** BAU
+
+**Rang:** **mittel** — laut, aber der Fehler zeigt auf das Modell statt auf den Aufrufer. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `submit_sync` prüft keinen laufenden Loop (`server/services/model_services/worker_base.py:151`, `:187`, `:194`).
+
+**Zustand:** **geschlossen mit dem Commit des Code-Trees `8dd9ac9` (Kennung wird nachgetragen)** — gebaut, bezeugt, gegengeprüft und gemessen am 07.11.2026; `server/` ist gleich dem Tree `0bb57fe` auf `b32a37a`, an dem Suite, Gegenprobe und Messung liefen; im Betrieb nicht gemessen. **Gebaut** `[Code]` in `server/services/model_services/worker_base.py`: `ModelWorker.submit_sync` fragt am Eingang `asyncio.get_running_loop()`. Ist die laufende Schleife die des Workers — die Schleife, die die Antwort zustellen müsste —, wirft es sofort `RuntimeError` mit Worker, Aufrufstelle und Frist und schreibt dieselbe Meldung vorher als `error` ins Log: Viele Aufrufer fangen `Exception`, ohne eigene Zeile bliebe ein verdeckter Aufrufer unsichtbar. Kein laufender Loop (ein Arbeits-Thread) und eine fremde Schleife laufen wie bisher. Die Aufrufstelle nennt `_call_site` als `<modul>:<funktion>:<zeile>` und überspringt dabei die `submit_sync`-Rahmen desselben Workers, damit die Brücke des `BackgroundWorker` nicht als Aufrufer erscheint. Die Prüfung steht hinter dem Spur-Riegel und hinter *nicht gestartet*: Ein gestoppter Worker behält seine eigene Meldung, und ein nie gestarteter ohne Schleife ergäbe sonst `None is None`. Die Debug-Zeile nennt statt *„aus Worker-Thread“* den gemessenen Thread und ob dort eine fremde Schleife läuft. Frist und Warteschlange sind unverändert.
+
+**Zeugen** `[Test]`: `server/tests/services/model_services/test_submit_sync_loop_thread.py`, 9 Zeugen — die Abweisung auf der Schleife des Workers in unter 0,1 s, mit Worker und Aufrufer, leerer Warteschlange und ohne Modellaufruf; genau eine `error`-Zeile, wortgleich mit der Ausnahme; ein Aufruf über eine sync-Zwischenfunktion nennt diese Funktion; am echten `BackgroundWorker` der echte Aufrufer; die Zwillinge aus `asyncio.to_thread` und von einer fremden Schleife mit Ergebnis; der gestoppte Worker mit seiner eigenen Meldung; die Debug-Zeile mit und ohne fremde Schleife. Am Code davor 6 rot, 3 grün. Server-Suite am Tree `0bb57fe` **`Ran 5631 tests` · `OK (expected failures=2)`** `[gemessen 07.11.2026, labor/2026-11-07_submitsync_gegenprobe.txt]`.
+
+**Gegenprobe** `[gemessen 07.11.2026]`: 7 Eingriffe des Baus, je vorher vorhergesagt — **6 genau, 1 abweichend**: Die Prüfung vor *nicht gestartet* macht 2 statt 1 Zeugen rot, weil ein nie gestarteter Worker ohne Schleife `None is None` ergibt; kein Defekt, ein zweiter Grund für die Reihenfolge. Vier weitere Eingriffe: einer genau, **drei blind** — die Schleife außerhalb des Hauptthreads, nur Threads von `asyncio` erlaubt, ein Neustart auf neuer Schleife. Der Code ist an allen dreien richtig, eine Probe neben der Suite fuhr sie (Fundliste, 07.11.2026).
+
+**MESSUNG vor dem Commit** `[gemessen 07.11.2026, labor/2026-11-07_submitsync_gegenprobe.txt]`: der echte `main.lifespan` mit Doppeln für die Modelle, ohne GPU; zwei Ereignisse über `POST /chat` und `/chat/stream` bis zum Ende des CharacterGraph, danach 24 Herzschläge der Eigenzeit mit laufenden Agenten. **0 Zeilen der neuen Meldung bei 95 Aufrufen** von `submit_sync` aus 25 verschiedenen Aufrufer-Funktionen — 93 aus dem Thread-Pool von `asyncio.to_thread`, 2 aus dem Thread-Pool von FastAPI —, keiner auf der Schleife des Workers. Die Positivkontrolle danach auf derselben Schleife: 1 Zeile, `RuntimeError` nach 0,000 s. Die Debug-Zeile sagt in 0 von 95 *„aus Worker-Thread“*. Dazu eine Lage über den Syntaxbaum, von jedem der 40 `async def` vorwärts: 353 Funktionen sind synchron auf der Schleife erreichbar, keine davon ruft `submit_sync`; Positivkontrolle 4 von 4 gepflanzten Pfaden. Gelaufen sind 25 der 74 Funktionen mit einer Aufrufstelle, den Rest deckt die Lage.
+
+*Zustand bis 08.11.2026:* offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `services/model_services/worker_base.py:151` traegt weiterhin keinen `asyncio.get_running_loop()`-Versuch, und die Debug-Zeile in `:187` schreibt weiter woertlich *„submit_sync aus Worker-Thread"* — eine Behauptung, die an keiner Stelle geprueft wird. Die Pruefung waere weiterhin eine Zeile.
+
+**Befund (2026-07-29).** `submit_sync` behauptet in seiner Logzeile, aus einem Worker-Thread gerufen zu werden, und prüft es nicht. `services/model_services/worker_base.py`, `submit_sync`: Der Docstring nennt als Verwendung ausdrücklich „Konsumenten in sync-Kontexten (LangGraph-Nodes in `asyncio.to_thread`-Worker-Threads)", die Debug-Zeile schreibt wörtlich „submit_sync aus Worker-Thread" — beides ohne Prüfung. Wird die Funktion aus dem Event-Loop-Thread gerufen, blockiert sie den Loop, der die Antwort zustellen müsste, und läuft in den Timeout: gemessen am 29.07.2026 **33 Fehlschläge zu je 60 Sekunden hintereinander**, während dieselbe Ollama-Instanz direkt in 0,142 s antwortete. Die Fehlermeldung nennt dabei nur `TimeoutError` mit leerem Text und weist auf das Modell statt auf den Aufrufer. Die Prüfung wäre eine Zeile — ein `asyncio.get_running_loop()` in `try/except`: Gibt es im aufrufenden Thread einen laufenden Loop, ist der Aufruf falsch. Dieselbe Klasse wie `novaberg-lesson_l_log-behauptet-was-es-weiss.md`; Kontext in `novaberg-lesson_l_async-bruecken.md`.
+
+**Was fertig waere.** Der Aufruf prueft, ob er im Event-Loop-Thread laeuft, und scheitert dort laut statt in einen Timeout.
+
+**Warum geschlossen:** Die Bedingung *Was fertig waere* ist erfüllt — der Aufruf prüft am Eingang, ob er auf der Schleife des Workers läuft, und scheitert dort sofort und laut, mit Worker und Aufrufer, statt nach 60 s in einem leeren `TimeoutError` zu enden. Sie verlangt keine Messung im Betrieb; gemessen ist vor dem Commit über den echten Startweg. **Nicht Teil der Bedingung und offen:** (B) von `PFAD1-TIMEOUT-TURNVERLUST` — nach der Frist wird ein verspätetes Ergebnis verworfen — sitzt in derselben Funktion und ist nicht angefasst ([`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md)); `broadcast_threadsafe` wartet auf der Schleife, auf der es steht, dieselbe Defektklasse an anderer Stelle (Fundliste, 07.11.2026).
+
+**Prioritaet:** hoch.
 
 ---
 

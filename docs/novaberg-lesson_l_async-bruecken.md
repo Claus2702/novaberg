@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Ein async-Service braucht zwei Aufruf-Brücken für gemischte Konsumenten
-**Stand:** 20. Mai 2026, Chat 92
+**Stand:** 8. November 2026, 14:15 UTC (`date -u`; §5, Fall 2: `submit_sync` auf der Schleife des Workers scheitert seither sofort). Davor 20. Mai 2026, Chat 92
 **Pfad:** novaberg/docs/novaberg-lesson_l_async-bruecken.md
 **Kategorie:** Architektur — asyncio-Integration in gemischten sync/async-Codebases
 **Schwester-Lessons:** `novaberg-lesson_l_pattern-vor-namen-suche.md`, `novaberg-lesson_l_loop-binding.md` (beide aus demselben Block-1-Sprint)
@@ -82,7 +82,7 @@ Wer einen async-Service baut, der von gemischten Konsumenten gerufen wird, baut 
 Die Entscheidung, welche Methode ein Konsument benutzt, hängt einzig vom Aufruf-Kontext ab — nicht von Bequemlichkeit. Drei Fälle:
 
 1. **Konsument läuft in einem Worker-Thread** (eigener Thread, kein Loop) → `submit_sync`. Die Brücke reicht die Coroutine sicher an den Haupt-Loop.
-2. **Konsument läuft im Haupt-Loop** (async-Funktion oder direkt im Lifespan/Loop) → `submit` mit `await`. `submit_sync` würde hier deadlocken.
+2. **Konsument läuft im Haupt-Loop** (async-Funktion oder direkt im Lifespan/Loop) → `submit` mit `await`. ~~`submit_sync` würde hier deadlocken.~~ → Es blockierte die Schleife bis zur Frist und endete in einem leeren `TimeoutError`; seit dem Code-Tree `8dd9ac9` (Kennung wird nachgetragen) scheitert es hier sofort mit `RuntimeError`, das Worker und Aufrufer nennt (`SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD`, Archiv).
 3. **Konsument läuft sync im Haupt-Loop** (sync-Funktion, direkt aus dem Loop gerufen) → das ist ein verstecktes Problem, kein API-Fall. Die Funktion wird async-isiert (Fall 2), und nebenbei verschwindet ein Main-Loop-Blocker.
 
 Vor jeder Konsumenten-Migration steht deshalb die Frage: In welchem Kontext läuft dieser Aufruf? Sync-Thread, async-Loop, oder sync-im-Loop? Die Antwort bestimmt die Brücke. Im Block-1-Sprint hat Brudi diese Frage in jeder Migrations-Gruppe als Inventur-Tabelle vor dem Edit beantwortet — sie war die Entscheidungs-Grundlage, kein Bürokratismus.

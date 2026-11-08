@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → ~~25~~ → ~~27~~ → 29 Eintraege (06.11.2026: `MODELLFELD-UNGEPRUEFT-GELESEN` und `KLASSIFIKATION-UNBEKANNTE-AKTION-WIRD-READ` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 20.10.2026: `ZEUGE-TAGESLAUF-FAEHRT-ECHT` und `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` neu aus der Fundliste; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~26~~ → ~~25~~ → ~~27~~ → ~~29~~ → 28 Eintraege (08.11.2026: `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` behoben, ins Archiv; 06.11.2026: `MODELLFELD-UNGEPRUEFT-GELESEN` und `KLASSIFIKATION-UNBEKANNTE-AKTION-WIRD-READ` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 20.10.2026: `ZEUGE-TAGESLAUF-FAEHRT-ECHT` und `BEREINIGUNG-ZERSCHNEIDET-KURZES-KENNWORT` neu aus der Fundliste; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` behoben, ins Archiv), je mit `**Kategorie:** BAU`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -478,18 +478,7 @@ Geliefert hat ihn der **Ollama-Server** (GPU-Instanz, Port 11434) im Antwortkoer
 
 Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselbe Bauplan:** ein Vorgabewert an einer Stelle, an der ein Ausfall gehoert — beim Queue-Push, beim Dispatch, am Spalten-Default des Rades, bei zwei Kanon-Feldern, in der fehlenden Klemme und beim Suchdienst, dessen Ausfall wie ein leeres Ergebnis aussieht.
 
-#### SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD 🔧 offen
-**Kategorie:** BAU
-
-**Rang:** **mittel** — laut, aber der Fehler zeigt auf das Modell statt auf den Aufrufer. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt; `submit_sync` prüft keinen laufenden Loop (`server/services/model_services/worker_base.py:151`, `:187`, `:194`).
-
-**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `services/model_services/worker_base.py:151` traegt weiterhin keinen `asyncio.get_running_loop()`-Versuch, und die Debug-Zeile in `:187` schreibt weiter woertlich *„submit_sync aus Worker-Thread"* — eine Behauptung, die an keiner Stelle geprueft wird. Die Pruefung waere weiterhin eine Zeile.
-
-**Befund (2026-07-29).** `submit_sync` behauptet in seiner Logzeile, aus einem Worker-Thread gerufen zu werden, und prüft es nicht. `services/model_services/worker_base.py`, `submit_sync`: Der Docstring nennt als Verwendung ausdrücklich „Konsumenten in sync-Kontexten (LangGraph-Nodes in `asyncio.to_thread`-Worker-Threads)", die Debug-Zeile schreibt wörtlich „submit_sync aus Worker-Thread" — beides ohne Prüfung. Wird die Funktion aus dem Event-Loop-Thread gerufen, blockiert sie den Loop, der die Antwort zustellen müsste, und läuft in den Timeout: gemessen am 29.07.2026 **33 Fehlschläge zu je 60 Sekunden hintereinander**, während dieselbe Ollama-Instanz direkt in 0,142 s antwortete. Die Fehlermeldung nennt dabei nur `TimeoutError` mit leerem Text und weist auf das Modell statt auf den Aufrufer. Die Prüfung wäre eine Zeile — ein `asyncio.get_running_loop()` in `try/except`: Gibt es im aufrufenden Thread einen laufenden Loop, ist der Aufruf falsch. Dieselbe Klasse wie `novaberg-lesson_l_log-behauptet-was-es-weiss.md`; Kontext in `novaberg-lesson_l_async-bruecken.md`.
-
-**Was fertig waere.** Der Aufruf prueft, ob er im Event-Loop-Thread laeuft, und scheitert dort laut statt in einen Timeout.
-
-**Prioritaet:** hoch.
+*Der Eintrag dieses Abschnitts in der Bauart, `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD`, steht seit dem 08.11.2026 im Archiv ([`novaberg-bugs-archiv-bauart.md`](novaberg-bugs-archiv-bauart.md)).*
 
 ### Chat 133 — aus der Fundliste klassifiziert, Block 31.07. (08.08.2026)
 
@@ -523,7 +512,7 @@ Beide Endpunkte bauen die Nutzlast jetzt an **einer** Stelle. Der streamende bra
 
 **Offen bleiben (A) und (B):** der Aussetzer selbst — Ursache im Modell-Backend, nicht ermittelt — und der harte Timeout, der ein 6 ms später eintreffendes Ergebnis verwirft. Beide sind seit (C) folgenlos für den Turn: Er überlebt, und der Ausfall ist am Ereignis erkennbar.
 
-**Gegen HEAD `9bcd214` nachgesehen am 24.08.2026:** unverändert. `submit_sync` gibt weiterhin nach `timeout` Sekunden auf (Default 60,0) und verwirft das Ergebnis; einen Zweig, der ein knapp verspätetes Ergebnis noch annimmt, gibt es nicht. **(B) und `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` sitzen in derselben Funktion** — wer die eine anfasst, liest die andere mit.
+**Gegen HEAD `9bcd214` nachgesehen am 24.08.2026:** unverändert. `submit_sync` gibt weiterhin nach `timeout` Sekunden auf (Default 60,0) und verwirft das Ergebnis; einen Zweig, der ein knapp verspätetes Ergebnis noch annimmt, gibt es nicht. **(B) und `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` sitzen in derselben Funktion** — wer die eine anfasst, liest die andere mit. → **08.11.2026:** `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` ist mit dem Code-Tree `8dd9ac9` geschlossen (Kennung wird nachgetragen; Archiv). (B) ist dabei gelesen und nicht angefasst: `concurrent_future.result(timeout=timeout)` verwirft ein verspätetes Ergebnis weiter, und ob (B) gebaut wird, ist nicht entschieden.
 
 **Entdeckt:** Chat 119, live am Client. **Drei Defekte in einer Kette** — sie stehen zusammen, weil keiner von ihnen allein den beobachteten Schaden erklärt und weil die Reihenfolge der Behebung von der Kette abhängt.
 
