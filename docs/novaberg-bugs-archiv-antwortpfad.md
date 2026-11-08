@@ -1,9 +1,51 @@
 # Novaberg — Bugs, Archiv: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~53~~ → ~~54~~ → ~~55~~ → 56 Eintraege (06.11.2026, unverändert 56: `VERFASSER-KOPFBLOCK-FAELLT-AUS`, der Tag der Schließung in der Zustandszeile berichtigt, der Commit ist vom 05.11.2026; 26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS`, bezeugt, vor dem Commit an den protokollierten Ausfällen gemessen und mit dem Commit des Code-Trees `3806695` (`a6e46c2`, die Doku dazu `b87cc49`) geschlossen, im Betrieb nicht gemessen; 17.10.2026: `NOTIZAUFTRAG-GEHT-AN-TIMELINE` aus dem offenen Teil; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT`, behoben und am Modell gemessen), je mit `ANT` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~53~~ → ~~54~~ → ~~55~~ → ~~56~~ → 57 Eintraege (08.11.2026: `GV4-QUELLEN-SILENT-SKIP` aus dem offenen Teil, bezeugt, vor dem Commit gegen eine Wegwerf-Datenbank gemessen und mit dem Commit des Code-Trees `9ef9a4e` geschlossen, Kennung wird nachgetragen, im Betrieb nicht gemessen; 06.11.2026, unverändert 56: `VERFASSER-KOPFBLOCK-FAELLT-AUS`, der Tag der Schließung in der Zustandszeile berichtigt, der Commit ist vom 05.11.2026; 26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS`, bezeugt, vor dem Commit an den protokollierten Ausfällen gemessen und mit dem Commit des Code-Trees `3806695` (`a6e46c2`, die Doku dazu `b87cc49`) geschlossen, im Betrieb nicht gemessen; 17.10.2026: `NOTIZAUFTRAG-GEHT-AN-TIMELINE` aus dem offenen Teil; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT`, behoben und am Modell gemessen), je mit `ANT` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 08.11.2026 — bezeugt, vor dem Commit gegen eine Wegwerf-Datenbank gemessen und mit dem Commit geschlossen, im Betrieb nicht gemessen
+
+**Dieser Eintrag stand seit dem 28.07.2026 im offenen Register** (Abschnitt *GV-Vollaudit*, dort bleibt ein Verweis hierher). Gebaut, bezeugt, gegengeprüft und vor dem Commit gemessen am 07.11.2026; er ist mit dem Doku-Zug zu seinem Bau geschlossen, die Commit-Kennung wird nachgetragen.
+
+---
+
+### `GV4-QUELLEN-SILENT-SKIP` — die zwei Wissenslücken-Suchen tragen das Muster, das den Entity-Hop vier Monate versteckt hat ✅
+
+**Kategorie:** ANT
+
+**Rang:** **mittel** — still, ein Ausfall der Quelle sieht aus wie ein Gespräch ohne Lücken. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an drei Stellen (`server/ei/wissensluecken.py:125-126`, `:202-203`, `:532-533`), je `warning` und leere Liste.
+
+**Zustand:** **geschlossen mit dem Commit des Code-Trees `9ef9a4e` (Kennung wird nachgetragen)** — die zwei Dateien des Baus sind blobgleich mit denen des Trees `f121c55` auf `b32a37a`, an dem die Suite lief —, bezeugt, gegengeprüft, vor dem Commit gegen eine Wegwerf-Datenbank und einen Wegwerf-Redis gemessen, **im Betrieb nicht gemessen**. **Gebaut** `[Code]` in `server/ei/wissensluecken.py`: `lzg_kandidaten_suchen` und `kzg_kandidaten_suchen` fangen nichts mehr. `wissensluecken_finden` fängt je Quelle (`_search_sources`) und an der Einbettung; `_report_outage` schreibt die Fehlerzeile *„GV4: Quelle … ausgefallen (…) — das ist kein leerer Bestand“* mit Fehlerart und Traceback und gibt an `log_fehler` `grund` `gv4_quelle_ausgefallen`, `ausgefallen` (`lzg`, `kzg` oder `einbettung`), `fehler_typ` und `fehler`; die Suche der anderen Quelle läuft weiter. **Gefangen wird, was nicht der eigene Code ist:** an der LZG-Suche `psycopg2.Error`, an der KZG-Suche `redis.RedisError` und `ValueError` (ein unlesbarer Eintrag), an der Einbettung jede `Exception` außer `TypeError`, `AttributeError` und `NameError`, dazu ein leerer Vektor. Ein Fehler im eigenen Code läuft durch; über dem Knoten fängt ihn nur der Graphlauf, und der Turn endet ohne Antwort. *„GV4: Keine Knoten gefunden“* meldet nur noch ein Lauf ohne Ausfall; ein Lauf mit Ausfall und ohne Kandidaten trägt die Fehlerzeile *„GV4: Keine Luecken in diesem Turn — ausgefallen: …, Bestand unbekannt“*. Die Verbindung der LZG-Suche schließt auch nach einem Fehler (`finally`).
+
+**Zeugen** `[Test]`: `server/tests/test_gv4_source_outage.py`, 40 Zeugen in 10 Klassen, ersetzt an der Speichergrenze (`psycopg2.connect`, `redis_client_bytes.execute_command`), damit eine Suche, die wieder selbst fängt, rot wird — je Quelle der Ausfall neben einer liefernden und neben einer leeren anderen Quelle, beide aus, die Einbettung mit fünf Fehlerarten von Worker und Client, einer Antwort, die kein JSON ist, einer Antwort falscher Form, einer abgewiesenen Anfrage und einem leeren Vektor, die echte Paarung über die Schleife, die geschlossene Verbindung, eine abgewiesene Abfrage und ein unlesbarer Eintrag als Ausfall; Zwillinge: beide leer ohne Fehler (`info`, kein Eintrag), beide liefernd, und je Fangstelle ein Fehler im eigenen Code, der durchläuft. Server-Suite am Tree `f121c55` **`Ran 5662 tests` · `OK (expected failures=2)`**.
+
+**Gegenprobe** `[gemessen 07.11.2026, labor/2026-11-07_gv4q_gegenprobe.txt]`, an der zweiten Fassung des Baus (`6c3c260`): 67 Eingriffe, je vorher vorhergesagt — gegen die Vorhersagen des Baus 17 von 17 genau, gegen die eigenen **53 genau rot, 14 blind**, alle 14 vorhergesagt, 0 abweichend. Drei blinde lagen in der teuren Richtung: das Paar in der neuen Schleife vertauscht — gegen echte Speicher 0 Lücken, 0 Einträge und *„Keine Knoten gefunden“*, der Defekt dieses Eintrags selbst —, ein KZG-Ausfall neben leerem LZG mit derselben Schlusszeile, und `psycopg2.DataError` nicht gefangen. Für alle drei stehen seither Zeugen, ebenso für `AttributeError` und `NameError` an der Einbettung; die Eingriffe dazu sind vorhergesagt und am Tree nicht gezählt (Fundliste, 08.11.2026).
+
+**MESSUNG vor dem Commit** `[gemessen 07.11.2026, labor/2026-11-07_gv4q_messung.txt]`, am Tree `6c3c260`, zweimal, beide Male wie vorhergesagt: `wissensluecken_finden` gegen eine Wegwerf-Datenbank und einen Wegwerf-Redis, mit gesätem LZG-Knoten und KZG-Eintrag und dem echten Schreiber des `pipeline_log`, ohne Modell. Gesund 0 Einträge `fehler`, Lücken aus beiden Quellen; die Datenbank-URL der Suche auf einem unerreichbaren Port 1 Eintrag (`lzg`, `OperationalError`), Lücken aus dem KZG; Redis gestoppt bei warmem Zwischenspeicher 1 Eintrag (`kzg`, `ConnectionError`), Lücken aus dem LZG; wieder gesund 0. Kein Turn endete. Dazu ein fehlender Index `idx:kzg` 1 Eintrag (`ResponseError`) und eine falsche Vektorlänge 2 (`DataException`, `ResponseError`). Die späteren Fassungen ändern die Suchen nicht: Die dritte bringt nur Zeugen, die vierte die Einbettung, die ohne Modell nicht lief, und Texte.
+
+**Grenzen, gemessen und benannt, nicht gebaut** (dieselbe Messung, zweimal): Die Suche der anderen Quelle läuft weiter, **ihr Ergebnis zählt aber nur bei warmem Zwischenspeicher der Gewichte** (`GV_GEWICHT_VERTEILUNG_TTL_S`, 600 s): Die Gewichtsverteilung liest für beide Quellen beide Speicher, und kalt endet der Lauf ohne Lücken mit der Fehlerzeile aus `_rank_weights` — Redis aus ergab warm Lücken aus dem LZG, kalt keine. **Beim echten Datenbankausfall steht der Fehler nur im Log:** Das `pipeline_log` liegt in derselben Datenbank, und sein Schreiber verwirft den Stapel (*„Batch-Insert fehlgeschlagen — 3 Eintraege verloren“*, 0 Einträge). Beides steht im Docstring von `wissensluecken_finden`, in der Nachbedingung von `_report_outage` und im Kopf der Zeugendatei; die Zeugen bilden es nicht ab, weil sie Gewichte und `log_fehler` ersetzen.
+
+*Zustand bis 08.11.2026:* offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `ei/wissensluecken.py:110` und `:178` fangen `Exception`, loggen `warning` und geben die leere Kandidatenliste zurueck. Eine **dritte** Stelle derselben Bauart kam hinzu, die der Eintrag nicht nennt: `:229` (Embedding).
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** `lzg_kandidaten_suchen` und `kzg_kandidaten_suchen` fangen `Exception`, loggen
+`logger.warning` und geben eine leere Liste zurück. Der Aufrufer meldet daraufhin
+`GV4: Keine Kandidaten gefunden` auf `info` — nicht unterscheidbar von einem echten Leerfall.
+
+**Auswirkung:** Ein Defekt in einer der beiden Quellen sieht aus wie ein Gespräch ohne
+Wissenslücken. Der Entity-Hop im selben Node ist seit Chat 107 gehärtet (`logger.error`
+plus `log_fehler`); diese beiden sind es nicht.
+
+**Lösungsrichtung:** Dasselbe Muster wie `_entity_kontext_laden` — spezifische Exception,
+`logger.error`, Forensik-Eintrag.
+
+**Nachtrag 12.09.2026 — beim Umbau der Suchen gegen den Eintrag gehalten: unveraendert.** Beide Suchen liefern seit heute Knoten mit Themen statt Kandidaten und fragen nur `beobachter = 'assistant'`; ihr Fehlerpfad ist derselbe (`except Exception` → `warning` → leere Liste). Nicht im Vorbeigehen behoben. **Neu daneben, und anders gebaut:** Faellt die Einbettung der Themen oder der Themenbestand des Nutzers aus, meldet der Pfad einen **Fehler** und liefert keine Luecken (`ei/wissensluecken.py`, Schritte 3b und 3c).
+
+**Warum geschlossen:** Der Eintrag trägt keine Zeile *Geschlossen, wenn*; Maßstab sind sein Symptom und seine Lösungsrichtung. Das Symptom — *„Ein Defekt in einer der beiden Quellen sieht aus wie ein Gespräch ohne Wissenslücken“* — tritt nicht mehr auf: Jeder Ausfall schreibt eine Fehlerzeile, und *keine Knoten* meldet nur ein Lauf ohne Ausfall, auch kalt und beim Datenbankausfall. Die Lösungsrichtung — *„spezifische Exception, `logger.error`, Forensik-Eintrag“* — ist an allen drei Stellen gebaut, die der Eintrag und sein Zustand nennen: beide Suchen und die Einbettung. Eine Messung im Betrieb verlangt er nicht. **Nicht Teil des Eintrags und offen** (Fundliste, 07.11.2026): Gewichte, Themenbestand, Kern- und Themen-Einbettung derselben Funktion schreiben einen Fehler nur ins Log, nicht ins Pipeline-Protokoll; eine Kennung mit Bindestrich oder `@` bricht die Tag-Abfrage des KZG; nach einem Neustart der Datenbank verliert der nächste Turn Lücken und Protokoll.
 
 ---
 

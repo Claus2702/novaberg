@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 1004 Abschnitte in 8 Dateien — 492 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 1005 Abschnitte in 8 Dateien — 493 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 8 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 9 |
 | 2026-10 | [`novaberg-roadmap-2026-10.md`](novaberg-roadmap-2026-10.md) | 78 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
@@ -22,7 +22,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 1004 Marken, 1004 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 1005 Marken, 1005 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -39,6 +39,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-11-08 | laufend | ## | [08.11.2026, 14:45 UTC — Fällt eine Quelle von GV4 oder die Einbettung aus, ist das von *keine Knoten gefunden* unterscheidbar; `GV4-QUELLEN-SILENT-SKIP` im Archiv](novaberg-roadmap.md#08112026-1445-utc--fällt-eine-quelle-von-gv4-oder-die-einbettung-aus-ist-das-von-keine-knoten-gefunden-unterscheidbar-gv4-quellen-silent-skip-im-archiv) |
 | 2026-11-08 | laufend | ## | [08.11.2026, 14:34 UTC — Ein Nein am Tor der Direktiven und der Notizen endet als `dismissed`; `TOR-ABLEHNUNG-MELDET-ABGESCHLOSSEN` im Archiv](novaberg-roadmap.md#08112026-1434-utc--ein-nein-am-tor-der-direktiven-und-der-notizen-endet-als-dismissed-tor-ablehnung-meldet-abgeschlossen-im-archiv) |
 | 2026-11-08 | laufend | ## | [08.11.2026, 14:17 UTC — Ein Turn schreibt jede Entität höchstens einmal in `entitaet_ids`; `ENTITAETIDS-MIT-DUBLETTEN` bleibt offen für den Bestand](novaberg-roadmap.md#08112026-1417-utc--ein-turn-schreibt-jede-entität-höchstens-einmal-in-entitaetids-entitaetids-mit-dubletten-bleibt-offen-für-den-bestand) |
 | 2026-11-08 | laufend | ## | [08.11.2026, 14:15 UTC — `submit_sync` auf der Schleife des Workers scheitert sofort und laut; `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` im Archiv](novaberg-roadmap.md#08112026-1415-utc--submitsync-auf-der-schleife-des-workers-scheitert-sofort-und-laut-submit-sync-behauptet-worker-thread-im-archiv) |

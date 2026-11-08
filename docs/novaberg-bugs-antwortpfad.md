@@ -1,6 +1,6 @@
 # Novaberg — Bugs: Antwortpfad — Gesprächsvektor, Responder, Verfasser, Prompts
 
-**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → ~~54~~ → ~~53~~ → 54 Eintraege (06.11.2026: `EINWAND-KOPFBLOCK-LIEST-KEINE-WAHL` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS` behoben, bezeugt und vor dem Commit an den protokollierten Ausfällen gemessen, mit dem Commit des Code-Trees `3806695` (`a6e46c2`, die Doku dazu `b87cc49`) geschlossen und ins Archiv, im Betrieb nicht gemessen; 24.10.2026, später, unverändert 54: ein Nachtrag an `SACHLAGE-OBJEKT-OHNE-NAMEN` aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
+**Inhalt:** die offenen Defekte dieses Gegenstands, ~~46~~ → ~~48~~ → ~~50~~ → ~~52~~ → ~~51~~ → ~~54~~ → ~~53~~ → ~~54~~ → 53 Eintraege (08.11.2026: `GV4-QUELLEN-SILENT-SKIP` behoben, bezeugt, vor dem Commit gegen eine Wegwerf-Datenbank gemessen, geschlossen und ins Archiv, Code-Tree `9ef9a4e`, Kennung wird nachgetragen, im Betrieb nicht gemessen; 06.11.2026: `EINWAND-KOPFBLOCK-LIEST-KEINE-WAHL` neu aus der Klassifizierung der Funde vom 25. und 26.10.2026; 26.10.2026: `VERFASSER-KOPFBLOCK-FAELLT-AUS` behoben, bezeugt und vor dem Commit an den protokollierten Ausfällen gemessen, mit dem Commit des Code-Trees `3806695` (`a6e46c2`, die Doku dazu `b87cc49`) geschlossen und ins Archiv, im Betrieb nicht gemessen; 24.10.2026, später, unverändert 54: ein Nachtrag an `SACHLAGE-OBJEKT-OHNE-NAMEN` aus der Klassifizierung der Funde vom 24.10.2026; 24.10.2026: `SACHLAGE-RECHERCHE-WIEDERHOLT-IM-FOLGETURN`, `SACHLAGE-WARNUNG-NACH-OFFEN-AM-LATENTEN-OBJEKT` und `SACHLAGE-SYMBOL-GILT-ALS-PLATZHALTER` neu aus der Klassifizierung der Funde vom 23.10.2026, dazu ein Nachtrag an `TIMELINE-LESEPFAD-INSTABIL`; 23.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` behoben und am Modell gemessen, ins Archiv; 22.10.2026: `SACHLAGE-PLATZHALTER-ALS-WERT` und `SACHLAGE-FAKT-DECKT-MIT-UMSCHREIBUNG` neu aus der Messung am Modell; 20.10.2026: `PLANNER-ZIEL-FUEHRT-ZU-DIENST-OHNE-EMPFANG` und `SALIENZ-ZAEHLT-FAKTEN-AUFTRAG` neu — die Zahl ist die des Findemittels; 17.10.2026: drei neu aus der Simulation `simnachher4`, `NOTIZAUFTRAG-GEHT-AN-TIMELINE` ins Archiv), je mit `**Kategorie:** ANT`.
 **Wegweiser:** [`novaberg-bugs.md`](novaberg-bugs.md) — Kopf, Form eines Eintrags, Rangfolge, Verlauf. **Findemittel ueber alle Teile:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Register** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -1239,26 +1239,7 @@ Messturns mit Wissenschaftsthemen; Seiteneffekte der Messreihe: `timeline` 0, `n
 Repertoire-Matrix Feld für Feld mit §7, die sieben Strategie-Beschreibungstexte wörtlich
 mit §9.3. Die Konstanten entsprechen §10.2 und Anhang A.3/A.4.
 
-#### GV4-QUELLEN-SILENT-SKIP — die zwei Wissenslücken-Suchen tragen das Muster, das den Entity-Hop vier Monate versteckt hat ⚠️
-**Kategorie:** ANT
-
-**Rang:** **mittel** — still, ein Ausfall der Quelle sieht aus wie ein Gespräch ohne Lücken. Durchsicht 05.10.2026, gegen HEAD `17bf86e`: gilt an drei Stellen (`server/ei/wissensluecken.py:125-126`, `:202-203`, `:532-533`), je `warning` und leere Liste.
-
-**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `ei/wissensluecken.py:110` und `:178` fangen `Exception`, loggen `warning` und geben die leere Kandidatenliste zurueck. Eine **dritte** Stelle derselben Bauart kam hinzu, die der Eintrag nicht nennt: `:229` (Embedding).
-**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
-
-**Symptom:** `lzg_kandidaten_suchen` und `kzg_kandidaten_suchen` fangen `Exception`, loggen
-`logger.warning` und geben eine leere Liste zurück. Der Aufrufer meldet daraufhin
-`GV4: Keine Kandidaten gefunden` auf `info` — nicht unterscheidbar von einem echten Leerfall.
-
-**Auswirkung:** Ein Defekt in einer der beiden Quellen sieht aus wie ein Gespräch ohne
-Wissenslücken. Der Entity-Hop im selben Node ist seit Chat 107 gehärtet (`logger.error`
-plus `log_fehler`); diese beiden sind es nicht.
-
-**Lösungsrichtung:** Dasselbe Muster wie `_entity_kontext_laden` — spezifische Exception,
-`logger.error`, Forensik-Eintrag.
-
-**Nachtrag 12.09.2026 — beim Umbau der Suchen gegen den Eintrag gehalten: unveraendert.** Beide Suchen liefern seit heute Knoten mit Themen statt Kandidaten und fragen nur `beobachter = 'assistant'`; ihr Fehlerpfad ist derselbe (`except Exception` → `warning` → leere Liste). Nicht im Vorbeigehen behoben. **Neu daneben, und anders gebaut:** Faellt die Einbettung der Themen oder der Themenbestand des Nutzers aus, meldet der Pfad einen **Fehler** und liefert keine Luecken (`ei/wissensluecken.py`, Schritte 3b und 3c).
+*Der Eintrag `GV4-QUELLEN-SILENT-SKIP` dieses Abschnitts steht seit dem 08.11.2026 im Archiv ([`novaberg-bugs-archiv-antwortpfad.md`](novaberg-bugs-archiv-antwortpfad.md)).*
 
 #### GV-ABSICHT-OHNE-KORRIDOR — alle vier Absichten werden in jedem Cluster angeboten ⚠️
 **Kategorie:** ANT
