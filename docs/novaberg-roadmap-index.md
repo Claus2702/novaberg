@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 1000 Abschnitte in 8 Dateien — 488 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 1001 Abschnitte in 8 Dateien — 489 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 4 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 5 |
 | 2026-10 | [`novaberg-roadmap-2026-10.md`](novaberg-roadmap-2026-10.md) | 78 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
@@ -22,7 +22,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 1000 Marken, 1000 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 1001 Marken, 1001 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -39,6 +39,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-11-08 | laufend | ## | [08.11.2026, 14:10 UTC — Qwen 3.8 antwortet im Gespräch: der Connector `qwen38`, seit dem 07.11.2026 im Betrieb, und die Entscheidung, dass er bleibt](novaberg-roadmap.md#08112026-1410-utc--qwen-38-antwortet-im-gespräch-der-connector-qwen38-seit-dem-07112026-im-betrieb-und-die-entscheidung-dass-er-bleibt) |
 | 2026-11-06 | laufend | ## | [06.11.2026, 20:46 UTC — Der Oktober zieht in seine eigene Datei; drei Zustandszeilen nennen den Tag des Commits, acht ältere Zusätze ihre Kennung](novaberg-roadmap.md#06112026-2046-utc--der-oktober-zieht-in-seine-eigene-datei-drei-zustandszeilen-nennen-den-tag-des-commits-acht-ältere-zusätze-ihre-kennung) |
 | 2026-11-06 | laufend | ## | [06.11.2026, 20:43 UTC — Die 43 Funde vom 25. und 26.10.2026 sind klassifiziert: elf neue Bugs, drei Backlog-Einträge, vier Nachträge](novaberg-roadmap.md#06112026-2043-utc--die-43-funde-vom-25-und-26102026-sind-klassifiziert-elf-neue-bugs-drei-backlog-einträge-vier-nachträge) |
 | 2026-11-06 | laufend | ## | [06.11.2026, 20:12 UTC — Die Kennungen der Commits vom 05.11.2026 nachgetragen](novaberg-roadmap.md#06112026-2012-utc--die-kennungen-der-commits-vom-05112026-nachgetragen) |

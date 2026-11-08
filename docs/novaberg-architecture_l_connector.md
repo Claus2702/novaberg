@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Connector-Segregation
-**Stand:** 5. September 2026, 20:28 UTC (§7 neu — die Modellebene haengt seither am **antwortenden** Modell, nicht mehr am konfigurierten GPU-Modell, und ein Modellname mit Schraegstrich wird flach gemacht). Davor 23. August 2026 (die Prompt-Segregation hat eine Modellebene bekommen — ~~der Gespraechspfad haengt am GPU-Modell~~, siehe §7; davor: 15. April 2026)
+**Stand:** 8. November 2026, 14:10 UTC (`date -u`; §12 neu — Qwen 3.8 antwortet im Gespräch über den Connector `qwen38`, und er bleibt; §9 mit Vermerk). Davor 5. September 2026, 20:28 UTC (§7 neu — die Modellebene haengt seither am **antwortenden** Modell, nicht mehr am konfigurierten GPU-Modell, und ein Modellname mit Schraegstrich wird flach gemacht). Davor 23. August 2026 (die Prompt-Segregation hat eine Modellebene bekommen — ~~der Gespraechspfad haengt am GPU-Modell~~, siehe §7; davor: 15. April 2026)
 **Pfad:** novaberg/docs/novaberg-architecture_l_connector.md
 **Kontext:** Migration von Mistral Small 3.2 auf Google Gemma 4 26B MoE
 
@@ -183,6 +183,10 @@ hochgerechnet **rund 2 tps**, und ein `pixie/hash`-Lauf ginge von 22 s auf etwa 
 MoE-Variante desselben Hauses (Flash-Next, 512 Experten, 10 aktiv) traegt die richtige
 Bauart und **103 GB** — bei 61 GB Arbeitsspeicher ausser Reichweite.
 
+> **Vermerk vom 08.11.2026:** Die Rechnung gilt für die CPU und bleibt. Auf der **GPU** antwortet
+> `qwen3.8:27b` seit dem 07.11.2026 im Gespräch (§12) — in freiem Text mit **35,6 tps** gegen
+> 100,3 tps bei `gemma4-a4b-gpu` (`labor/2026-11-07_qwen_ergebnis.md`, T3).
+
 > **Der Ort fuer ein klugeres und langsameres Modell ist `analyse_model`**, das der Connector
 > ohnehin getrennt fuehrt. Die Destillation laeuft taeglich, nicht je Turn; dort sind 200 s
 > belanglos — und dort sitzen die Defekte, die ein besseres Modell beheben wuerde
@@ -236,3 +240,40 @@ Slots. Sie verdraengen einander.
 jeder haelt einen weiteren Prefix, aber jeder wird kleiner — oder ein **gemeinsamer stabiler
 Prompt-Kopf** ueber alle Aufrufer, der von allen geteilt wird. **Die Zahlen dafuer stehen
 jetzt im Bestand**; vorher waere die Entscheidung geraten worden.
+
+## 12. Qwen 3.8 im Gespräch — der Connector `qwen38` (07./08.11.2026)
+
+**Seit dem 07.11.2026, 11:06 UTC antwortet `qwen3.8:27b`.** Der Connector `qwen38` (committet als `b32a37a`) unterscheidet sich von `gemma4a4b` in einer Zeile, dem GPU-Modell; Fenster (32768), CPU- und Analysemodell (`qwen36-cpu`, 262144) bleiben. Der Wechsel bewegt damit eine Größe, und der Vergleich der beiden bleibt trennbar.
+
+> **Der Name folgt hier dem Modell, das antwortet** — anders als bei `qwen36`, das nach seinem CPU-Modell heißt und im Gespräch `gemma4-gpu` fährt (§2 und der Kommentar über `OLLAMA_CONNECTORS`). Wer `qwen38` setzt, bekommt Qwen; wer `qwen36` setzt, bekommt Gemma.
+
+| Wo | Wert |
+|---|---|
+| Betrieb, Umgebung des Servers | `OLLAMA_CONNECTOR=qwen38`, seit 07.11.2026, 11:06 UTC |
+| Rückweg | `OLLAMA_CONNECTOR=gemma4a4b`, ohne Code-Änderung |
+| Vorgabe im Code (`config.py`) | `qwen36` — **nicht umgestellt**; ohne Umgebungsvariable antwortet `gemma4-gpu` |
+| Vorlage `docker-compose.template.yml` | `qwen36` |
+
+**Ob die Vorgabe im Code auf `qwen38` geht, ist offen.**
+
+**Was mitzog und was nicht:**
+
+- **Die Prompt-Ebenen** (§2, §7): Für `qwen3.8:27b` gibt es weder ein Verzeichnis der Modell- noch eines der Connector-Ebene; es gelten die Defaults, wie schon unter `gemma4-a4b-gpu`. Die sieben Blöcke unter `gemma4-gpu/` greifen nur, wenn `gemma4-gpu` antwortet `[Code]`.
+- **Der Split-Abfang des Thinkers** (`tools/thinking_normalizer.py`, `_MODELLE_MIT_SPLIT`): Die Stämme sind seit `b32a37a` `gemma4` und `qwen3.8`. Ob `qwen3.8:27b` unter `think=True` den Split zeigt, ist **nicht gemessen**; gesetzt ist der Abfang, weil er nur bei leerem Inhalt mit gefülltem Denken handelt und sonst nichts tut. Der kürzere Stamm `qwen3` träfe `qwen36-cpu` und `qwen3-32b-cpu` mit.
+- **Die Kosten:** `LOKALE_MODELLE` wird aus der Connector-Tabelle abgeleitet; `qwen3.8:27b` kostet null, ohne eigene Zeile.
+- **Die Zeugen:** 14 in `tests/test_qwen38_connector.py` halten den Eintrag, die Kosten, den Weg von der Umgebung zum antwortenden Modell in beide Richtungen und die Wahl des Abfangs fest.
+
+**Die Gründe — die Reihe vom 07.11.2026**, 08:49–09:48 UTC, direkt am Modell, ohne Server und ohne Turn (`labor/2026-11-07_qwen_ergebnis.md`):
+
+| Reihe | `gemma4-a4b-gpu` | `qwen3.8:27b` |
+|---|---|---|
+| T1 — Fehlalarme mit Eintrag (Reihe E) | 2 von 4 | 0 von 4 |
+| T1 — Tor-Treffer, Reihen (a) mit 28 und 32 Sätzen | 26 von 28, 30 von 32 | 28 von 28, 32 von 32 |
+| T1 — Ausfälle der Sachlage, 65 Sätze | 2 | 0 |
+| T2 — Feldwerte der Perzeption außerhalb des Kanons | 5 von 96 | 0 von 96 |
+| T3 — Durchsatz in freiem Text | 100,3 tps | 35,6 tps |
+| T0 — Fenster 32768 mit Embedding-Runner auf der GPU | 100 % | 100 %, gefüllt nur gestuft |
+
+**Die Sollwerte der Reihe sind erfüllt; der Preis stand nicht im Soll.** Qwen schreibt freien Text knapp dreimal langsamer, liest einen vollen Prompt rund 3,6-mal langsamer und läuft wärmer. Über das Verhalten im Gespräch sagt die Reihe nichts — kein Turn, kein Systemprompt in T3.
+
+**Entschieden am 08.11.2026, vom Meister:** *„Ich denke, Qwen bleibt, Gemma ist von der Leistung einfach viel zu veraltet“*. `qwen38` bleibt im Betrieb, `gemma4a4b` der Rückweg.
