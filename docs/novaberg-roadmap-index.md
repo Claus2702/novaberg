@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 1006 Abschnitte in 8 Dateien — 494 mit eigenem Datum, 511 geerbt, 1 ohne.
+**Umfang:** 1007 Abschnitte in 8 Dateien — 495 mit eigenem Datum, 511 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 10 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 11 |
 | 2026-10 | [`novaberg-roadmap-2026-10.md`](novaberg-roadmap-2026-10.md) | 78 |
 | 2026-09 | [`novaberg-roadmap-2026-09.md`](novaberg-roadmap-2026-09.md) | 293 |
 | 2026-08 | [`novaberg-roadmap-2026-08.md`](novaberg-roadmap-2026-08.md) | 362 |
@@ -22,7 +22,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 1006 Marken, 1006 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 1007 Marken, 1007 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -39,6 +39,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-11-08 | laufend | ## | [08.11.2026, 14:58 UTC — Das Warten eines Ereignisses auf `graph_run_lock` hält die Event-Schleife nicht mehr an; `EVENT-LOCK-HAELT-SCHLEIFE` angelegt und im Archiv](novaberg-roadmap.md#08112026-1458-utc--das-warten-eines-ereignisses-auf-graphrunlock-hält-die-event-schleife-nicht-mehr-an-event-lock-haelt-schleife-angelegt-und-im-archiv) |
 | 2026-11-08 | laufend | ## | [08.11.2026, 14:54 UTC — Eine Äußerung erreicht die anderen Clients, ohne die Event-Schleife anzuhalten; `BROADCAST-WARTET-AUF-EIGENER-SCHLEIFE` angelegt und im Archiv](novaberg-roadmap.md#08112026-1454-utc--eine-äußerung-erreicht-die-anderen-clients-ohne-die-event-schleife-anzuhalten-broadcast-wartet-auf-eigener-schleife-angelegt-und-im-archiv) |
 | 2026-11-08 | laufend | ## | [08.11.2026, 14:45 UTC — Fällt eine Quelle von GV4 oder die Einbettung aus, ist das von *keine Knoten gefunden* unterscheidbar; `GV4-QUELLEN-SILENT-SKIP` im Archiv](novaberg-roadmap.md#08112026-1445-utc--fällt-eine-quelle-von-gv4-oder-die-einbettung-aus-ist-das-von-keine-knoten-gefunden-unterscheidbar-gv4-quellen-silent-skip-im-archiv) |
 | 2026-11-08 | laufend | ## | [08.11.2026, 14:34 UTC — Ein Nein am Tor der Direktiven und der Notizen endet als `dismissed`; `TOR-ABLEHNUNG-MELDET-ABGESCHLOSSEN` im Archiv](novaberg-roadmap.md#08112026-1434-utc--ein-nein-am-tor-der-direktiven-und-der-notizen-endet-als-dismissed-tor-ablehnung-meldet-abgeschlossen-im-archiv) |
