@@ -11,6 +11,7 @@ import logging
 
 import numpy as np
 import psycopg2
+import redis
 
 from config import (
     GV_CHARAKTER_RESONANZ_SCHWELLE,
@@ -29,10 +30,30 @@ from ei.source_weights import SOURCES, load_weight_distributions, weight_rank
 from ei.utils import cosine_similarity
 from graph.reiz import reiz_text
 from graph.state import ConversationState, pipeline_quelle
-from memory.pipeline_log import log_berechnung
+from memory.pipeline_log import log_berechnung, log_fehler
 from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.ei.wissensluecken")
+
+# **Der Turn hat Vorrang vor der Quelle.** GV4 ist ein Nebenweg: Eine Luecke weniger
+# kostet wenig, ein verlorener Turn viel. Ueber dem Knoten faengt nur der Graphlauf
+# (`services/event_consumer.py`, `except Exception` um den Lauf), und der rettet den
+# Turn nicht: Er endet ohne Antwort. Als Ausfall zaehlt deshalb alles, was die Quelle
+# selbst meldet, auch eine abgewiesene Abfrage; `ValueError` ist der unlesbare
+# KZG-Eintrag (`float`, und ueber `UnicodeDecodeError` das Dekodieren). Unterscheidbar
+# bleibt es ueber `fehler_typ`.
+_LZG_OUTAGES: tuple[type[Exception], ...] = (psycopg2.Error,)
+_KZG_OUTAGES: tuple[type[Exception], ...] = (redis.RedisError, ValueError)
+
+# **Ein Fehler im eigenen Code ist kein Ausfall:** Diese drei gehen an beiden Suchen
+# und an der Einbettung durch. An der Einbettung ist die Menge ein Kriterium, keine
+# Liste: Was Worker, Client und Antwortmodell werfen, ist nicht abschliessend
+# aufzaehlbar (`RuntimeError`, `OSError`, `httpx.HTTPError`, `ollama.ResponseError`
+# und `ollama.RequestError`, `json.JSONDecodeError` und `pydantic.ValidationError`
+# beim Lesen der Antwort). Gefangen wird deshalb jede `Exception` ausser diesen drei.
+_OWN_CODE_ERRORS: tuple[type[Exception], ...] = (TypeError, AttributeError, NameError)
+
+_OUTAGE_SOURCES: tuple[str, ...] = ("lzg", "kzg", "einbettung")
 
 
 def ist_bereits_erwaehnt(inhalt: str, session_turns: list[dict]) -> bool:
@@ -75,13 +96,19 @@ def lzg_kandidaten_suchen(
     **Nur `beobachter = 'assistant'`**: Die Luecke beim Nutzer ist ein Thema, das
     Nova kennt. Themen aus Nutzer-Knoten waeren nach Definition beruehrt.
 
+    Nachbedingung: Die Verbindung ist geschlossen, auch nach einer Ausnahme.
+
+    Fehlerfaelle: Die Suche faengt nichts. Eine leere Liste heisst *keine Knoten*;
+        ein Ausfall ist eine Ausnahme, und was aus ihr wird, entscheidet
+        `wissensluecken_finden`, wo die andere Quelle weiterlaufen kann.
+
     Returns:
         Liste von Dicts mit konzept, similarity, gewicht, gap_arousal, themen, quelle.
     """
     kandidaten: list[dict] = []
 
+    conn = psycopg2.connect(POSTGRES_URL)
     try:
-        conn = psycopg2.connect(POSTGRES_URL)
         cursor = conn.cursor()
 
         embedding_str: str = "[" + ",".join(str(v) for v in turn_embedding) + "]"
@@ -118,12 +145,10 @@ def lzg_kandidaten_suchen(
                     "themen":     list(themen or []),
                     "quelle":     "lzg",
                 })
-
+    finally:
         conn.close()
-        logger.info(f"GV4-LZG: {len(kandidaten)} Knoten gefunden")
 
-    except Exception as fehler:
-        logger.warning(f"GV4-LZG-Suche fehlgeschlagen: {fehler}")
+    logger.info(f"GV4-LZG: {len(kandidaten)} Knoten gefunden")
 
     return kandidaten
 
@@ -144,63 +169,63 @@ def kzg_kandidaten_suchen(
     ein spaeter wieder mitgeholtes Byte-Feld die Suche nicht lautlos leert
     (12.09.2026: 0 Kandidaten bei 3544 Schluesseln, weil ein Blob durch UTF-8 lief).
 
+    Fehlerfaelle: Die Suche faengt nichts — wie `lzg_kandidaten_suchen`. Seit sie
+        nichts mehr faengt, wirft auch der Blob von damals, statt die Suche zu leeren;
+        `wissensluecken_finden` meldet ihn als Ausfall des KZG.
+
     Returns:
         Liste von Dicts mit konzept, similarity, gewicht (=salienz), gap_arousal, themen, quelle.
     """
     kandidaten: list[dict] = []
 
-    try:
-        query_blob: bytes = np.array(turn_embedding, dtype=np.float32).tobytes()
+    query_blob: bytes = np.array(turn_embedding, dtype=np.float32).tobytes()
 
-        ergebnis = redis_client_bytes.execute_command(
-            "FT.SEARCH", "idx:kzg",
-            f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}} @beobachter:{{assistant}})"
-            f"=>[KNN 10 @embedding $vec AS score]",
-            "PARAMS", "2", "vec", query_blob,
-            "SORTBY", "score",
-            "LIMIT", "0", "10",
-            "RETURN", "5", "inhalt", "salienz", "arousal", "score", "themen",
-            "DIALECT", "2",
-        )
+    ergebnis = redis_client_bytes.execute_command(
+        "FT.SEARCH", "idx:kzg",
+        f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}} @beobachter:{{assistant}})"
+        f"=>[KNN 10 @embedding $vec AS score]",
+        "PARAMS", "2", "vec", query_blob,
+        "SORTBY", "score",
+        "LIMIT", "0", "10",
+        "RETURN", "5", "inhalt", "salienz", "arousal", "score", "themen",
+        "DIALECT", "2",
+    )
 
-        if ergebnis and isinstance(ergebnis, list) and len(ergebnis) > 1:
-            idx: int = 1
-            while idx < len(ergebnis) - 1:
-                felder = ergebnis[idx + 1]
-                idx += 2
+    if ergebnis and isinstance(ergebnis, list) and len(ergebnis) > 1:
+        idx: int = 1
+        while idx < len(ergebnis) - 1:
+            felder = ergebnis[idx + 1]
+            idx += 2
 
-                feld_dict: dict = {}
-                for i in range(0, len(felder), 2):
-                    k = felder[i].decode("utf-8") if isinstance(felder[i], bytes) else felder[i]
-                    v = (
-                        felder[i + 1].decode("utf-8")
-                        if isinstance(felder[i + 1], bytes)
-                        else felder[i + 1]
-                    )
-                    feld_dict[k] = v
+            feld_dict: dict = {}
+            for i in range(0, len(felder), 2):
+                k = felder[i].decode("utf-8") if isinstance(felder[i], bytes) else felder[i]
+                v = (
+                    felder[i + 1].decode("utf-8")
+                    if isinstance(felder[i + 1], bytes)
+                    else felder[i + 1]
+                )
+                feld_dict[k] = v
 
-                inhalt:  str   = feld_dict.get("inhalt", "")
-                salienz: float = float(feld_dict.get("salienz", "0.5"))
-                arousal: float = float(feld_dict.get("arousal", "0.3"))
-                score:   float = float(feld_dict.get("score", "1.0"))
-                similarity: float = 1.0 - score
+            inhalt:  str   = feld_dict.get("inhalt", "")
+            salienz: float = float(feld_dict.get("salienz", "0.5"))
+            arousal: float = float(feld_dict.get("arousal", "0.3"))
+            score:   float = float(feld_dict.get("score", "1.0"))
+            similarity: float = 1.0 - score
 
-                # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher
-                # 0.1 — filterte nichts. 0.20 knapp ueber Grundrauschen 0.16.
-                if inhalt and similarity > 0.20:
-                    kandidaten.append({
-                        "konzept":     inhalt,
-                        "similarity":  similarity,
-                        "gewicht":     salienz,
-                        "gap_arousal": arousal,
-                        "themen":      feld_dict.get("themen", ""),
-                        "quelle":      "kzg",
-                    })
+            # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher
+            # 0.1 — filterte nichts. 0.20 knapp ueber Grundrauschen 0.16.
+            if inhalt and similarity > 0.20:
+                kandidaten.append({
+                    "konzept":     inhalt,
+                    "similarity":  similarity,
+                    "gewicht":     salienz,
+                    "gap_arousal": arousal,
+                    "themen":      feld_dict.get("themen", ""),
+                    "quelle":      "kzg",
+                })
 
-        logger.info(f"GV4-KZG: {len(kandidaten)} Eintraege gefunden")
-
-    except Exception as fehler:
-        logger.warning(f"GV4-KZG-Suche fehlgeschlagen: {fehler}")
+    logger.info(f"GV4-KZG: {len(kandidaten)} Eintraege gefunden")
 
     return kandidaten
 
@@ -569,6 +594,97 @@ def _neugier_boost_melden(
     )
 
 
+def _report_outage(
+    source: str, error: Exception, state: ConversationState, user_id: str, character_id: str,
+) -> None:
+    """Meldet den Ausfall einer GV4-Quelle in Log und Pipeline-Protokoll.
+
+    Ein Ausfall darf nicht aussehen wie ein Turn ohne Kandidaten; deshalb steht er
+    an beiden Orten und nennt die Art des Fehlers.
+
+    Vorbedingung: `source` steht in `_OUTAGE_SOURCES`.
+    Nachbedingung: genau eine Fehlerzeile im Log mit Quelle und Art des Fehlers, und
+        `log_fehler` ist gerufen. Ob der Eintrag im Pipeline-Protokoll ankommt, haengt
+        an der Datenbank: Beim echten Datenbankausfall kann das Protokoll nicht
+        schreiben, und der Fehler steht nur im Log.
+    Fehlerfaelle: Ein unbekanntes `source` ist ein Aufruffehler (`ValueError`).
+
+    Args:
+        source: was ausfiel.
+        error: die gefangene Ausnahme.
+        state: der Zustand des Turns.
+        user_id: der Mensch des Paares.
+        character_id: die Figur des Paares.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if source not in _OUTAGE_SOURCES:
+        raise ValueError(source)
+
+    # ── Verarbeitung ────────────────────────────
+    error_type: str = type(error).__name__
+    logger.error(
+        "GV4: Quelle %s ausgefallen (%s: %s) — das ist kein leerer Bestand",
+        source, error_type, error, exc_info=error,
+    )
+    log_fehler(
+        turn_id = state.get("turn_id", "unbekannt"),
+        node    = "wissensluecken",
+        quelle  = pipeline_quelle(state),
+        inhalt  = {
+            "grund":       "gv4_quelle_ausgefallen",
+            "ausgefallen": source,
+            "fehler_typ":  error_type,
+            "fehler":      str(error),
+        },
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
+
+def _search_sources(
+    turn_embedding: list[float], state: ConversationState, user_id: str, character_id: str,
+) -> tuple[list[dict], list[str]]:
+    """Fragt LZG und KZG, jede fuer sich: Faellt eine aus, liefert die andere trotzdem.
+
+    Vorbedingung: `turn_embedding` ist nicht leer.
+    Nachbedingung: Die Knoten stammen nur aus Quellen, die geantwortet haben; jede
+        ausgefallene Quelle steht in der zweiten Liste und ist gemeldet.
+    Fehlerfaelle: Gefangen wird nur der Ausfall der jeweiligen Quelle, auch eine
+        abgewiesene Abfrage oder ein unlesbarer Eintrag. Ein Fehler im eigenen Code
+        geht durch. Ein leerer Vektor ist ein Aufruffehler (`ValueError`).
+
+    Args:
+        turn_embedding: der Vektor des Turns.
+        state: der Zustand des Turns.
+        user_id: der Mensch des Paares.
+        character_id: die Figur des Paares.
+
+    Returns:
+        Die Knoten beider Quellen und die Namen der ausgefallenen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not turn_embedding:
+        raise ValueError(user_id)
+
+    # ── Verarbeitung ────────────────────────────
+    knoten: list[dict] = []
+    ausgefallen: list[str] = []
+    for source, search, outages in (
+        ("lzg", lzg_kandidaten_suchen, _LZG_OUTAGES),
+        ("kzg", kzg_kandidaten_suchen, _KZG_OUTAGES),
+    ):
+        try:
+            knoten += search(turn_embedding, user_id, character_id)
+        except outages as fehler:
+            ausgefallen.append(source)
+            _report_outage(source, fehler, state, user_id, character_id)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if {k["quelle"] for k in knoten} & set(ausgefallen):
+        raise RuntimeError(ausgefallen)
+    return knoten, ausgefallen
+
+
 def wissensluecken_finden(
     state:             ConversationState,
     aufnahmebereitschaft: float,
@@ -586,6 +702,21 @@ def wissensluecken_finden(
       4. Neugier         — aufnahmebereitschaft (6 Saeulen, sin^0.5)
       5. Register        — register_kompatibilitaet (sachlich/offen)
       6. Charakter       — kern_hash Cosine >= Schwelle
+
+    Fehlerfaelle: Faellt eine Quelle aus, laeuft die Suche der anderen weiter; ihr
+        Ergebnis zaehlt aber nur bei warmem Zwischenspeicher der Gewichte (Frist
+        `GV_GEWICHT_VERTEILUNG_TTL_S`, 600 s); kalt sind die Gewichte nicht
+        ladbar, und der Lauf endet mit der Fehlerzeile aus `_rank_weights` ohne
+        Luecken. Faellt die Einbettung aus oder
+        liefert sie einen leeren Vektor, gibt es keine Luecken. Jeder Ausfall steht
+        als Fehler im Log und wird an das Pipeline-Protokoll gegeben; beim echten
+        Datenbankausfall kann das Protokoll nicht schreiben, dann steht er nur im
+        Log. Nur ein Lauf ohne Ausfall meldet *keine Knoten*. Eine abgewiesene
+        Abfrage, ein unlesbarer Eintrag oder eine unbrauchbare Antwort der
+        Einbettung zaehlt als Ausfall und beendet den Turn nicht. Ein Fehler im
+        eigenen Code (`TypeError`, `AttributeError`, `NameError`) wird nicht
+        gefangen; ueber dem Knoten faengt ihn der Graphlauf, und der Turn endet
+        ohne Antwort.
 
     Returns:
         Top GV_LUECKEN_MAX Luecken sortiert nach Relevanz,
@@ -625,8 +756,20 @@ def wissensluecken_finden(
                 len(turn_embedding),
                 embed_response.duration_seconds,
             )
-        except Exception as fehler:
-            logger.warning(f"GV4: Embedding fehlgeschlagen: {fehler}")
+        except _OWN_CODE_ERRORS:
+            raise
+        except Exception as fehler:  # noqa: BLE001 — Kriterium, der eigene Code geht oben durch
+            # Der Turn hat Vorrang: Was nicht der eigene Code verschuldet, ist ein
+            # Ausfall der Einbettung (Kommentar ueber `_OWN_CODE_ERRORS`).
+            _report_outage("einbettung", fehler, state, user_id, character_id)
+            return []
+        if not turn_embedding:
+            # Ein leerer Vektor ist keine Antwort: `_search_sources` weist ihn als
+            # Aufruffehler ab, ausserhalb jeder Fangstelle, und der Turn endete.
+            _report_outage(
+                "einbettung", ValueError("Einbettung lieferte einen leeren Vektor"),
+                state, user_id, character_id,
+            )
             return []
 
     # ── 1b. Kern-Embedding ──
@@ -657,12 +800,15 @@ def wissensluecken_finden(
         )
 
     # ── 2. Knoten aus Novas Bestand, nahe am Turn ──
-    alle_knoten: list[dict] = (
-        lzg_kandidaten_suchen(turn_embedding, user_id, character_id)
-        + kzg_kandidaten_suchen(turn_embedding, user_id, character_id)
-    )
+    alle_knoten, ausgefallen = _search_sources(turn_embedding, state, user_id, character_id)
     if not alle_knoten:
-        logger.info("GV4: Keine Knoten gefunden")
+        if ausgefallen:
+            logger.error(
+                "GV4: Keine Luecken in diesem Turn — ausgefallen: %s, Bestand unbekannt",
+                ", ".join(ausgefallen),
+            )
+        else:
+            logger.info("GV4: Keine Knoten gefunden")
         return []
 
     # ── 3. Das Gewicht auf die gemeinsame Skala ──
