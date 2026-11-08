@@ -15,6 +15,9 @@ Was diese Datei zusichert:
     bestehenden Entität nur ähnelt, wird eine neue Entität, auch wenn der
     Embedding-Rückfall die ähnliche fände; *ICH* ohne Entität des Menschen
     fällt aus, statt eine Entität *ICH* anzulegen.
+  * **Der Magnet-Knoten liefert jede Entität höchstens einmal**, in der
+    Reihenfolge der ersten Nennung: Zwei Namen derselben Entität ergeben einen
+    Magneten, verschiedene Entitäten behalten ihre Reihenfolge.
 
 Die Suite läuft gegen eine Wegwerf-Datenbank aus den Schemadateien des Baums.
 Jedes Fixture bringt einen eigenen Menschen mit und räumt in tearDown ab. Kein
@@ -381,6 +384,63 @@ class MagnetNamesAreNormalizedTest(_MagnetFixture):
         ids, _ = magnete._entitaeten_aufloesen(["Lena"], self.user, "t-laut")
         self.assertEqual(ids, self._ids_namens("Lena"))
         self.assertEqual(self._namen(), ["Ilva", "Lena"])
+
+
+class EachEntityOnceTest(_MagnetFixture):
+    """Jede Entität höchstens einmal, in der Reihenfolge der ersten Nennung.
+
+    Die Kennungen wachsen mit dem Anlegen: Der Mensch und Bert stehen nach Ilva,
+    und jede Eingabe mit mehreren Entitäten nennt Ilva nach einer höheren
+    Kennung — eine sortierte Liste fiele deshalb auf.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.mensch = self._entitaet("Sam", typ="user")
+        self.bert = self._entitaet("Bert")
+
+    def test_two_names_of_one_entity_and_a_third_give_two_ids(self) -> None:
+        ids, ausgefallen = magnete._entitaeten_aufloesen(
+            ["ICH", "Sam", "Ilva"], self.user, "t-laut",
+        )
+        self.assertEqual((ids, ausgefallen), ([self.mensch, self.ilva], []))
+
+    def test_a_repeat_after_another_entity_stays_at_its_first_place(self) -> None:
+        ids, ausgefallen = magnete._entitaeten_aufloesen(
+            ["ICH", "Ilva", "Sam"], self.user, "t-laut",
+        )
+        self.assertEqual((ids, ausgefallen), ([self.mensch, self.ilva], []))
+
+    def test_three_different_entities_keep_their_order(self) -> None:
+        ids, ausgefallen = magnete._entitaeten_aufloesen(
+            ["Bert", "Ilva", "Sam"], self.user, "t-laut",
+        )
+        self.assertEqual((ids, ausgefallen), ([self.bert, self.ilva, self.mensch], []))
+
+    def test_a_new_name_said_twice_is_one_entity_and_one_id(self) -> None:
+        ids, ausgefallen = magnete._entitaeten_aufloesen(
+            ["Lena", " Lena "], self.user, "t-laut",
+        )
+        self.assertEqual((ids, ausgefallen), (self._ids_namens("Lena"), []))
+        self.assertEqual(len(ids), 1)
+
+    def test_a_failing_name_between_two_of_one_entity_is_still_named(self) -> None:
+        with self._namenssuche_faellt_aus_fuer("Bert"), \
+             self.assertLogs(LOGGER_MAGNETE, "ERROR"):
+            ids, ausgefallen = magnete._entitaeten_aufloesen(
+                ["ICH", "Bert", "Sam", "Ilva"], self.user, "t-laut",
+            )
+        self.assertEqual((ids, ausgefallen), ([self.mensch, self.ilva], ["Bert"]))
+
+    def test_the_store_and_the_step_get_each_entity_once(self) -> None:
+        schritt, gespeichert = self._lauf(["ICH", "Sam", "Ilva"])
+        self.assertEqual(gespeichert, [self.mensch, self.ilva])
+        self.assertEqual(schritt["entitaet_ids"], [self.mensch, self.ilva])
+
+    def test_the_store_keeps_three_different_entities_in_order(self) -> None:
+        schritt, gespeichert = self._lauf(["Bert", "Ilva", "Sam"])
+        self.assertEqual(gespeichert, [self.bert, self.ilva, self.mensch])
+        self.assertEqual(schritt["entitaet_ids"], [self.bert, self.ilva, self.mensch])
 
 
 if __name__ == "__main__":

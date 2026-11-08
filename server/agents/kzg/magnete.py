@@ -148,7 +148,10 @@ def _entitaeten_aufloesen(
 
     Vorbedingung: user_id ist nicht leer (geprüft im Knoten).
     Nachbedingung: Die erste Liste trägt die IDs der aufgelösten oder neu
-        angelegten Namen in der Reihenfolge der Eingabe; die zweite nennt die
+        angelegten Namen, jede ID höchstens einmal, in der Reihenfolge ihrer
+        ersten Nennung — zwei Namen derselben Entität (*ICH* und der Name des
+        Menschen) ergeben einen Magneten, denn ein zweites Vorkommen bedeutet
+        auf dieser Achse nichts; die zweite nennt die
         Namen, deren Suche oder Anlegen ausfiel — für sie wurde keine Entität
         angelegt, und je Name stehen eine Zeile `error` und ein Eintrag
         `fehler` im Pipeline-Log. Leere und mehrdeutige Namen stehen in
@@ -198,7 +201,8 @@ def _entitaeten_aufloesen(
             ausgefallen.append(roh)
             continue
 
-        entitaet_ids.append(entitaet_id)
+        if entitaet_id not in entitaet_ids:
+            entitaet_ids.append(entitaet_id)
 
     # ── Ausgabe-Verifikation ────────────────────
     if len(entitaet_ids) + len(ausgefallen) > len(roh_namen):
