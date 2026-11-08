@@ -178,13 +178,43 @@ def broadcast_threadsafe(
     Thread → Event-Loop. Filtert optional nach character_id und
     schließt den Absender-Client aus.
 
+    Vorbedingung: Der Aufrufer läuft nicht auf `loop`. Die Zustellung läuft auf
+        genau dieser Schleife, und das Warten auf sie hielte sie an: Die
+        Coroutine käme erst dran, wenn die Frist abgelaufen ist. Eine fremde
+        laufende Schleife ist erlaubt, sie blockiert nur sich selbst.
+    Nachbedingung: Jede passende Verbindung hat die Nachricht bekommen, oder
+        ihr Ausgang ist gemeldet; eine wirklich kaputte ist verworfen.
+    Fehlerfälle: Ein Aufruf auf `loop` wird am Eingang abgewiesen, auch ohne
+        Verbindung — sonst fiele der falsche Aufrufer erst auf, wenn ein zweiter
+        Client verbunden ist.
+
     Args:
         user_id: User-ID.
         nachricht: JSON-String zum Senden.
         loop: Referenz auf den asyncio Event-Loop.
         character_id: Wenn gesetzt, nur an Clients mit diesem aktiven Chat.
         exclude_client: Wenn gesetzt, Client mit dieser ID überspringen.
+
+    Raises:
+        RuntimeError: Der Aufruf läuft auf `loop`.
     """
+    # ── Eingabe-Validierung ─────────────────────
+    # Kein laufender Loop ist der Normalfall: ein Worker-Thread.
+    try:
+        running_loop: asyncio.AbstractEventLoop | None = asyncio.get_running_loop()
+    except RuntimeError:
+        running_loop = None
+
+    if running_loop is loop:
+        refusal: str = (
+            f"broadcast_threadsafe für '{user_id}' läuft auf der Schleife, in die es "
+            f"zustellt, und hätte sie bis zur Frist ({SEND_TIMEOUT} s) angehalten — "
+            f"dort `await broadcast()` nehmen oder über asyncio.to_thread rufen"
+        )
+        logger.error(refusal)
+        raise RuntimeError(refusal)
+
+    # ── Verarbeitung ────────────────────────────
     verbindungen = aktive_verbindungen.get(user_id, [])
 
     if not verbindungen:

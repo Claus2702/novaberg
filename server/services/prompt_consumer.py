@@ -233,6 +233,14 @@ async def _block_verarbeiten(
         # offen, bis eine Antwort sie nennt.
         nutzlast["nachrichten_ids"] = kennungen
 
+        # **Ueber einen Thread, und vor dem Ereignis.** Die Zustellung laeuft auf
+        # dem Loop und wartet auf ihn — von hier aus stuende er bis zur Frist.
+        # Das Ereignis erst danach: Der Event-Consumer laeuft auf demselben Loop,
+        # und sobald der frei ist, koennte die Antwort die Aeusserung ueberholen.
+        await asyncio.to_thread(
+            _nutzer_nachricht_verteilen, block, prompt, kopf, loop,
+        )
+
         event_erzeugen(
             redis_client = redis_client,
             user_id      = user_id,
@@ -241,8 +249,6 @@ async def _block_verarbeiten(
             typ          = "message",
             payload      = nutzlast,
         )
-
-        _nutzer_nachricht_verteilen(block, prompt, kopf, loop)
 
         redis_client.set(
             f"momentum:{user_id}", letzter.get("momentum", "mid"), ex=300,
@@ -280,6 +286,9 @@ def _nutzer_nachricht_verteilen(
     Aeusserungen von demselben Client kamen. Kamen sie von verschiedenen, gibt
     es keinen gemeinsamen Absender, den man ausschliessen koennte; dann sehen
     alle den Block.
+
+    Laeuft in einem eigenen Thread (`asyncio.to_thread`) — die Zustellung wartet
+    auf den Loop, den sie braucht, und auf ihm selbst wird sie abgewiesen.
     """
     # ── Eingabe-Validierung ─────────────────────
     user_id, character_id = kopf
