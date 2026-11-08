@@ -1,9 +1,43 @@
 # Novaberg — Bugs, Archiv: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~17~~ → ~~18~~ → ~~19~~ → 20 Eintraege (08.11.2026: `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` aus dem offenen Teil; 26.10.2026: `KLASSIFIKATION-NULL-FELD-WIRFT`, angelegt und im selben Zug geschlossen, vor dem Commit am Modell gemessen; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` aus dem offenen Teil), je mit `BAU` als Kategorie.
+**Inhalt:** die abgeschlossenen Defekte dieses Gegenstands, ~~17~~ → ~~18~~ → ~~19~~ → ~~20~~ → 21 Eintraege (08.11.2026, später: `BROADCAST-WARTET-AUF-EIGENER-SCHLEIFE`, angelegt aus dem Fund vom 07.11.2026 und im selben Zug geschlossen, vor dem Commit über den echten Startweg gemessen, Code-Tree `737bff3`, Kennung wird nachgetragen; 08.11.2026: `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` aus dem offenen Teil; 26.10.2026: `KLASSIFIKATION-NULL-FELD-WIRFT`, angelegt und im selben Zug geschlossen, vor dem Commit am Modell gemessen; 17.10.2026: `SCHEMA-VON-NULL-SCHEITERT` aus dem offenen Teil), je mit `BAU` als Kategorie.
 **Wegweiser:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — Kopf, Formregel und die Kurzeintraege der alten Tabelle. **Findemittel ueber alle Bugs:** [`novaberg-bugs-index.md`](novaberg-bugs-index.md). **Offenes Register:** [`novaberg-bugs.md`](novaberg-bugs.md).
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Archiv** (geteilt am 19.09.2026) und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
+
+---
+
+## 08.11.2026, später — angelegt, behoben, vor dem Commit über den echten Startweg gemessen und mit dem Commit geschlossen
+
+**Dieser Eintrag stand nie im offenen Register.** Klassifiziert am 07.11.2026 aus dem Fund vom selben Tag (Fundliste, *Umgezogen — 08.11.2026*), gebaut, bezeugt, gegengeprüft und vor dem Commit über den echten Startweg gemessen am 07.11.2026; er erscheint mit dem Doku-Zug zu seinem Bau und ist darin zugleich geschlossen. Seine Schließbedingung ist eine Eigenschaft des Codes und verlangt keine Messung im Betrieb; die Commit-Kennung wird nachgetragen.
+
+---
+
+### `BROADCAST-WARTET-AUF-EIGENER-SCHLEIFE` — die Äußerung an die anderen Clients hielt die Event-Schleife 5 s an, `broadcast_threadsafe` wartete auf der Schleife, auf der es lief ✅
+
+**Kategorie:** BAU
+
+**Rang:** **hoch** — die ganze Schleife steht, je Äußerung und weiterem Client 5 s: kein Herzschlag, kein Consumer, keine Sendung; im Betrieb belegt. Dieselbe Defektklasse wie `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD`, deshalb Bauart. Vergeben am 07.11.2026 gegen `b32a37a`.
+
+**Zustand:** **geschlossen mit dem Commit des Code-Trees `737bff3` (Kennung wird nachgetragen)** — die drei Dateien des Baus sind blobgleich mit denen des Trees `7430130` auf `b32a37a`, an dem Suite, Gegenprobe und Messung liefen —, bezeugt, gegengeprüft, vor dem Commit über den echten `main.lifespan` gemessen, **im Betrieb nicht gemessen**. **Gebaut** `[Code]`: `_block_verarbeiten` (`server/services/prompt_consumer.py`) verteilt die Äußerung mit `await asyncio.to_thread(_nutzer_nachricht_verteilen, …)`, in der Art des Aufrufs für Pfad 1, und **vor** `event_erzeugen`: Ohne Ereignis gibt es keine Antwort, die die Äußerung überholen könnte. `broadcast_threadsafe` (`server/api/websocket.py`) prüft am Eingang, vor dem Blick in die Verbindungsliste, ob es auf der Schleife `loop` läuft, und weist den Aufruf dann mit `logger.error` und `RuntimeError` ab, statt bis `SEND_TIMEOUT` zu warten; ein Worker-Thread und eine fremde Schleife sind erlaubt. `SEND_TIMEOUT` und der Ablauf im Worker-Thread sind unverändert. Von den vier Aufrufern über den Baum lief nur `_nutzer_nachricht_verteilen` auf der Schleife; `_stufe_senden`, `_knoten_streamen` und `_bei_freigabe` laufen über `asyncio.to_thread`.
+
+**Zeugen** `[Test]`: `server/tests/test_broadcast_self_wait.py`, 9 Zeugen mit echter Schleife und echtem `broadcast_threadsafe`, ersetzt nur Socket und Umgebung des Blocks — die Abweisung auf der eigenen Schleife in unter 0,1 s, nichts gesendet, auch ohne Verbindung; die Zwillinge aus `asyncio.to_thread`, von einer fremden Schleife und das Warten im Worker-Thread, das weiter in der Warnung endet; an `_block_verarbeiten` mit dem echten Pfad 1 eine parallele Coroutine, die je 50 ms tickt — keine Lücke über 500 ms, der zweite Client hat die Äußerung, keine Fristzeile —, die Äußerung vor dem Ereignis, ohne zweiten Client keine Zustellung, und ein Fehler der Zustellung kostet den Turn nicht. Am Code davor 4 rot, 5 grün. Server-Suite am Tree `7430130` **`Ran 5631 tests` · `OK (expected failures=2)`**.
+
+**Gegenprobe** `[gemessen 07.11.2026, labor/2026-11-07_broadcast_gegenprobe.txt]`: 8 Eingriffe des Baus und 11 eigene, je vorher vorhergesagt — **19 genau**, davon 2 blind wie vorhergesagt, auch unter der ganzen Suite: eine eigene Schleife außerhalb des Hauptthreads und ein Aufrufer von `_graph_streamen` direkt auf der Schleife (Fundliste, 07.11.2026). Den Stillstand selbst zeigt erst das Wegnehmen von `to_thread` und Prüfung zusammen: Lücke 5,0017 s. **Die Reihenfolge hielt vorher nicht der Stillstand:** Ein schnellerer Verbraucher als der echte überholte die Äußerung an den Eltern in 7 von 18 Läufen, am Tree in 0 von 45; im Betrieb hielt sie der Debounce des Event-Consumers von 2 s, auch in der alten Reihenfolge mit `to_thread`. Die neue Reihenfolge ist strenger und gilt durch den Bau.
+
+**MESSUNG vor dem Commit** `[gemessen 07.11.2026, labor/2026-11-07_broadcast_gegenprobe.txt]`: der echte `main.lifespan` unter uvicorn mit Doppeln für die Modelle, Wegwerf-Datenbank und Wegwerf-Redis, zwei echte WebSocket-Clients, eine Äußerung über `POST /chat`, zwei Coroutinen, die auf der Schleife ticken. **Am Tree in 5 Läufen 0 Fristzeilen, größte Lücke 0,072–0,074 s, keine über 0,5 s**, kein Aufruf auf der Schleife, die Kontrolle auf der Schleife `RuntimeError` nach 0,000 s; **an den Eltern 1 Fristzeile und 5,06 s Lücke** (bei leerer `client_id` 2 und 10,07 s), der Stapel des Stillstands führt über `broadcast_threadsafe` und `_nutzer_nachricht_verteilen` in `_block_verarbeiten`. Je Turn 28 Aufrufe von `broadcast_threadsafe`, alle im Thread-Pool von `asyncio`. Grenzen: eine Äußerung je Lauf, zwei Clients im selben Prozess, kein hängender echter Client.
+
+*Zustand bis 08.11.2026:* nicht als Bug geführt — der Befund stand vom 07.11.2026 an als Fund in der Fundliste und ist mit seinem Bau klassifiziert.
+
+**Befund** `[gemessen 07.11.2026]`: `server/services/prompt_consumer.py:245` rief auf der Schleife `_nutzer_nachricht_verteilen` und damit `broadcast_threadsafe`, das mit `future.result(timeout=5.0)` (`server/api/websocket.py:207`) auf eben diese Schleife wartete: Die Coroutine, die zustellen sollte, konnte erst laufen, wenn das Warten endete. Gemessen an der echten Funktion mit einem zweiten verbundenen Client: Die Schleife stand 5,00 s, die Zustellung kam erst danach, dazu die Warnung *„Zustellung laeuft im Event-Loop weiter“*. Im Betrieb belegt: im Serverlog vom 07.11.2026 vier Zeilen *„nicht innerhalb von 5.0 s bestätigt“* in vier Turns, dazu Aussetzer des Herzschlags. Der Docstring nannte einen Aufruf *„aus einem Worker-Thread“*. Gefunden bei der Gegenprobe zu `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` (`labor/2026-11-07_submitsync_gegenprobe.txt`).
+
+**Wirkung.** Je Äußerung und weiterem Client des Menschen stand die Schleife 5 s: kein Herzschlag, kein Consumer, keine Sendung an einen Client.
+
+**Geschlossen, wenn** eine Äußerung die anderen Clients desselben Menschen erreicht, ohne dass die Event-Schleife stehen bleibt, und ein Aufruf von `broadcast_threadsafe` auf der eigenen Schleife sofort und laut scheitert — bezeugt mit einer tickenden Coroutine und einem zweiten Client, mit den Zwillingen aus einem Worker-Thread und ohne zweiten Client.
+
+**Warum geschlossen:** Die Bedingung ist eine Eigenschaft des Codes und erfüllt — bezeugt und vor dem Commit über den echten Startweg gemessen, am Eltern-Stand gegengemessen. Eine Messung im Betrieb verlangt sie nicht; der Lauf mit zwei Clients im Betrieb, an dem die Fristzeile ausbleiben soll, steht aus. **Nicht Teil der Bedingung und offen:** `_event_verarbeiten` erwirbt `graph_run_lock` blockierend auf der Schleife, und das neue `await` steht unter dem gehaltenen Riegel (Fundliste, 04.10.2026); seit die Zustellung vor dem Ereignis steht, kostet ein Abbruch während der Zustellung das Ereignis, und `asyncio.to_thread` braucht dort einen Platz im Standard-Pool (Fundliste, 07.11.2026).
+
+**Zusammenhang:** `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` (in dieser Datei) — dieselbe Klasse, dort am Eingang von `submit_sync`; `BROADCAST-VERSCHLUCKT-FEHLER` ([`novaberg-bugs-antwortpfad.md`](novaberg-bugs-antwortpfad.md)) betrifft das Ergebnis der Zustellung, nicht diesen Fall; [`novaberg-lesson_l_async-bruecken.md`](novaberg-lesson_l_async-bruecken.md) §3.
 
 ---
 
@@ -33,7 +67,7 @@
 
 **Was fertig waere.** Der Aufruf prueft, ob er im Event-Loop-Thread laeuft, und scheitert dort laut statt in einen Timeout.
 
-**Warum geschlossen:** Die Bedingung *Was fertig waere* ist erfüllt — der Aufruf prüft am Eingang, ob er auf der Schleife des Workers läuft, und scheitert dort sofort und laut, mit Worker und Aufrufer, statt nach 60 s in einem leeren `TimeoutError` zu enden. Sie verlangt keine Messung im Betrieb; gemessen ist vor dem Commit über den echten Startweg. **Nicht Teil der Bedingung und offen:** (B) von `PFAD1-TIMEOUT-TURNVERLUST` — nach der Frist wird ein verspätetes Ergebnis verworfen — sitzt in derselben Funktion und ist nicht angefasst ([`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md)); `broadcast_threadsafe` wartet auf der Schleife, auf der es steht, dieselbe Defektklasse an anderer Stelle (Fundliste, 07.11.2026).
+**Warum geschlossen:** Die Bedingung *Was fertig waere* ist erfüllt — der Aufruf prüft am Eingang, ob er auf der Schleife des Workers läuft, und scheitert dort sofort und laut, mit Worker und Aufrufer, statt nach 60 s in einem leeren `TimeoutError` zu enden. Sie verlangt keine Messung im Betrieb; gemessen ist vor dem Commit über den echten Startweg. **Nicht Teil der Bedingung und offen:** (B) von `PFAD1-TIMEOUT-TURNVERLUST` — nach der Frist wird ein verspätetes Ergebnis verworfen — sitzt in derselben Funktion und ist nicht angefasst ([`novaberg-bugs-bauart.md`](novaberg-bugs-bauart.md)); `broadcast_threadsafe` wartet auf der Schleife, auf der es steht, dieselbe Defektklasse an anderer Stelle (Fundliste, 07.11.2026). → 08.11.2026: klassifiziert als `BROADCAST-WARTET-AUF-EIGENER-SCHLEIFE`, behoben und geschlossen (in dieser Datei).
 
 **Prioritaet:** hoch.
 

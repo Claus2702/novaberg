@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Ein async-Service braucht zwei Aufruf-Brücken für gemischte Konsumenten
-**Stand:** 8. November 2026, 14:15 UTC (`date -u`; §5, Fall 2: `submit_sync` auf der Schleife des Workers scheitert seither sofort). Davor 20. Mai 2026, Chat 92
+**Stand:** 8. November 2026, 14:54 UTC (`date -u`; §3: `broadcast_threadsafe` auf der Ziel-Schleife scheitert seither sofort). Davor 8. November 2026, 14:15 UTC (`date -u`; §5, Fall 2: `submit_sync` auf der Schleife des Workers scheitert seither sofort). Davor 20. Mai 2026, Chat 92
 **Pfad:** novaberg/docs/novaberg-lesson_l_async-bruecken.md
 **Kategorie:** Architektur — asyncio-Integration in gemischten sync/async-Codebases
 **Schwester-Lessons:** `novaberg-lesson_l_pattern-vor-namen-suche.md`, `novaberg-lesson_l_loop-binding.md` (beide aus demselben Block-1-Sprint)
@@ -32,7 +32,7 @@ Bevor die richtige Lösung gefunden war, lagen zwei naheliegende Auswege auf dem
 
 ## 3. Die richtige Brücke
 
-Die saubere Lösung war ein Pattern, das schon im Codebase lebte: `asyncio.run_coroutine_threadsafe(coro, main_loop).result(timeout=...)`. Es war kein neues Konstrukt — `api/websocket.py:broadcast_threadsafe` benutzte es bereits, der WebSocket-Send aus dem Graph-Stream-Thread läuft genau so (`event_consumer.py:275`).
+Die saubere Lösung war ein Pattern, das schon im Codebase lebte: `asyncio.run_coroutine_threadsafe(coro, main_loop).result(timeout=...)`. Es war kein neues Konstrukt — `api/websocket.py:broadcast_threadsafe` benutzte es bereits, der WebSocket-Send aus dem Graph-Stream-Thread läuft genau so (`event_consumer.py:275`). → **08.11.2026:** Dieselbe Brücke stand an einer Stelle auf der falschen Seite: `prompt_consumer._block_verarbeiten` rief `broadcast_threadsafe` auf der Schleife, in die es zustellen sollte, und `.result(timeout=5.0)` hielt sie je weiterem Client 5 s an — das Muster blockiert genau dann, wenn der Aufrufer selbst auf der Ziel-Schleife steht. Seit dem Code-Tree `737bff3` weist `broadcast_threadsafe` einen solchen Aufruf am Eingang ab, und der Consumer stellt aus einem Worker-Thread zu (`BROADCAST-WARTET-AUF-EIGENER-SCHLEIFE`, Archiv).
 
 Der Worker bekam einen Loop-Capture in `start()` (der Worker wird im Haupt-Loop gestartet, also ist `asyncio.get_running_loop()` zu diesem Zeitpunkt der richtige Loop), und eine zweite API-Methode:
 
