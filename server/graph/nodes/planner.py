@@ -174,8 +174,11 @@ def _build_task_success(results: list) -> str:
 
 def _build_task_dismissed(results: list) -> str:
     """[AUFGABE] fuer abgelehnte Aktionen (User hat Nein gesagt)."""
+    # Ohne das Wort "Agent": Der Block steht im Prompt der Figur, und dort
+    # ist eine benannte Instanz eine dritte Person neben ihr.
+    # Dieselbe Aenderung wie in `format_success_lines` (20.08.2026).
     ergebnis_texte: str = "\n".join(
-        f"- Agent '{r.agent_name}': {r.ergebnis}" for r in results
+        f"- {r.agent_name}: {r.ergebnis}" for r in results
     )
     return PROMPTS["responder.aufgabe_verworfen"].format(
         ergebnis_texte=ergebnis_texte

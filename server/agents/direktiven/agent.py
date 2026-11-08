@@ -141,7 +141,7 @@ class DirektivenAgent(BaseAgent):
 
         Vorbedingung: `read_answer` hat `status` gesetzt.
         Nachbedingung: `ausfuehren` nur bei `laufend` -- der Zustimmung auf eine
-        Ja/Nein-Frage; Ablehnung (`abgeschlossen`), unklare Antwort
+        Ja/Nein-Frage; Ablehnung (`dismissed`), unklare Antwort
         (`rueckfrage`) und Fehler enden ohne Ausfuehrung.
         """
         if state["status"] == "laufend":

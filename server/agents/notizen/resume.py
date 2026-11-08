@@ -440,7 +440,8 @@ def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> d
     Annahme, fuer Woerter, Zeichen und die Wortstellung einer Frage). Alles
     andere -- *„Wie bitte?“*, *„ja？“*, *„ja 👎“*, *„Moment, bitte“*,
     *„ist das ok“*, *„passt es“*, *„ja, vergiss es“* -- stellt die Frage
-    erneut.
+    erneut. Die Ablehnung endet als `dismissed`: Es wurde nichts geschrieben,
+    also ist sie kein Erfolg.
     """
     user_lower = user_answer.lower()
     target = info.get("target", "")
@@ -460,7 +461,7 @@ def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> d
     if _has_stem(_without_words(user_lower, CONSENT_WORDS), REFUSAL_STEMS):
         logger.info("_resume_nicht_gefunden: User lehnt ab")
         return {
-            "status": "abgeschlossen",
+            "status": "dismissed",
             "ergebnis": f"Okay, '{target}' wird nicht angelegt.",
             "schritte": state["schritte"] + [{
                 "node": "resume",

@@ -240,7 +240,7 @@ class NotFoundConsentTest(unittest.TestCase):
         ):
             with self.subTest(answer=answer):
                 result: dict = _not_found(answer)
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertNotIn("parameter", result)
 
     def test_every_ne_refuses_also_as_article(self) -> None:
@@ -256,7 +256,7 @@ class NotFoundConsentTest(unittest.TestCase):
         ):
             with self.subTest(answer=answer):
                 result: dict = _not_found(answer)
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertNotIn("parameter", result)
 
     def test_ne_inside_a_refusing_word_refuses_next_to_a_consent_word(self) -> None:
@@ -267,7 +267,7 @@ class NotFoundConsentTest(unittest.TestCase):
         ):
             with self.subTest(answer=answer):
                 result: dict = _not_found(answer)
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertNotIn("parameter", result)
 
     def test_nichts_and_kein_refuse_next_to_a_consent_word(self) -> None:
@@ -279,7 +279,7 @@ class NotFoundConsentTest(unittest.TestCase):
         ):
             with self.subTest(answer=answer):
                 result: dict = _not_found(answer)
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertNotIn("parameter", result)
         for answer in ("ja, gerne", "meinetwegen"):
             with self.subTest(answer=answer):
@@ -305,7 +305,7 @@ class NotFoundConsentTest(unittest.TestCase):
                 with self.subTest(stem=stem, answer=answer):
                     self.assertIn(stem, answer.lower())
                     result: dict = _not_found(answer)
-                    self.assertEqual(result["status"], "abgeschlossen")
+                    self.assertEqual(result["status"], "dismissed")
                     self.assertNotIn("parameter", result)
                     rest: dict = _not_found(_without_stem_word(answer, stem))
                     expected: str = "rueckfrage" if answer in _REST_KEEPS_A_WORD else "laufend"
@@ -330,7 +330,7 @@ class NotFoundConsentTest(unittest.TestCase):
                 result: dict = _not_found(answer)
                 if _stem_outside_consent(text):
                     refused += 1
-                    self.assertEqual(result["status"], "abgeschlossen")
+                    self.assertEqual(result["status"], "dismissed")
                     self.assertNotIn("parameter", result)
                 else:
                     confirmed += 1
@@ -343,7 +343,7 @@ class NotFoundConsentTest(unittest.TestCase):
         """'nene' ist nie der Artikel — auch nicht neben 'mach'."""
         for answer in ("nene, ich mach das selber", "ok nene"):
             with self.subTest(answer=answer):
-                self.assertEqual(_not_found(answer)["status"], "abgeschlossen")
+                self.assertEqual(_not_found(answer)["status"], "dismissed")
 
     def test_word_inside_another_word_is_no_consent(self) -> None:
         """'Jahr' traegt 'ja', 'vielleicht' kein bekanntes Wort — beides fragt erneut.
@@ -364,7 +364,7 @@ class NotFoundConsentTest(unittest.TestCase):
             user_answer="nein, bitte nicht", original_rueckfrage=rueckfrage,
         ))
         confirmed: dict = resume(_state(user_answer="ja, gerne", original_rueckfrage=rueckfrage))
-        self.assertEqual(refused["status"], "abgeschlossen")
+        self.assertEqual(refused["status"], "dismissed")
         self.assertEqual(confirmed["status"], "laufend")
 
 
@@ -423,7 +423,7 @@ class ClosedConsentTest(unittest.TestCase):
         for answer in ("nein, bitte nicht", "ja, aber lieber nicht"):
             with self.subTest(answer=answer):
                 result: dict = _not_found(answer)
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertNotIn("parameter", result)
 
     def test_resume_creates_only_on_pure_consent(self) -> None:
@@ -522,7 +522,7 @@ class RefusalFirstTest(unittest.TestCase):
             with self.subTest(both=both, consent=consent):
                 self.assertTrue(_consists_of_consent(both.lower()))
                 result: dict = _not_found(both)
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertNotIn("parameter", result)
                 self.assertTrue(_creates(_not_found(consent)))
 
@@ -530,7 +530,7 @@ class RefusalFirstTest(unittest.TestCase):
         """Ueber `resume`: *„ger'ne“* legt nichts an, *„gerne“* schon."""
         rueckfrage: str = json.dumps(_NOT_FOUND)
         refused: dict = resume(_state(user_answer="ger'ne", original_rueckfrage=rueckfrage))
-        self.assertEqual(refused["status"], "abgeschlossen")
+        self.assertEqual(refused["status"], "dismissed")
         self.assertNotIn("parameter", refused)
         confirmed: dict = resume(_state(user_answer="gerne", original_rueckfrage=rueckfrage))
         self.assertTrue(_creates(confirmed))

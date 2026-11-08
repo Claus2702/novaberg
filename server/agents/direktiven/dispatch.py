@@ -214,6 +214,9 @@ def _build_return(state: dict, result: AgentResult) -> dict:
     elif result.status == "rueckfrage" and result.rueckfrage:
         management_result = result.rueckfrage
         management_detail = "Rueckfrage: Disambiguierung erforderlich"
+    elif result.status == "dismissed" and result.ergebnis:
+        management_result = str(result.ergebnis)
+        management_detail = "Der Mensch hat am Tor abgelehnt"
     elif result.status == "fehler" and result.fehler:
         management_result = f"Fehler: {result.fehler}"
         management_detail = result.fehler

@@ -162,7 +162,10 @@ class NotizenAgent(BaseAgent):
 
     def _nach_resume(self, state: AgentState) -> str:
         status = state["status"]
-        if status in ("fehler", "rueckfrage", "abgeschlossen"):
+        # Ohne `dismissed` liefe das Nein nach `suchen`: Die Frage kaeme erneut,
+        # und angelegt wuerde nichts (gemessen am 07.11.2026).
+        # `abgeschlossen` steht hier nicht: `resume` setzt es nie.
+        if status in ("fehler", "rueckfrage", "dismissed"):
             return END
         action = state["parameter"].get("action", "")
         if action in (

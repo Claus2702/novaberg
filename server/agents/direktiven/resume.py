@@ -129,7 +129,7 @@ CHOICE_SUFFIXES: tuple[str, ...] = (
 REFUSED_TEXT: str = "Gut, dann lasse ich es. An deinen Direktiven ist nichts geaendert."
 
 _READINGS: frozenset[str] = frozenset({"refusal", "consent", "unclear"})
-_STATUSES: frozenset[str] = frozenset({"laufend", "abgeschlossen", "rueckfrage", "fehler"})
+_STATUSES: frozenset[str] = frozenset({"laufend", "dismissed", "rueckfrage", "fehler"})
 
 
 def _has_word(text: str, words: Sequence[str]) -> bool:
@@ -382,8 +382,9 @@ def read_answer(state: AgentState) -> dict:
 
     Vorbedingung: `state["parameter"]` traegt `user_answer` (String) und
     `original_rueckfrage` (die gestellte Frage, nicht leer).
-    Nachbedingung: Bei Ablehnung `status` `abgeschlossen` mit `REFUSED_TEXT`
-    und dem Schritt `abgelehnt` -- nichts ausgefuehrt. Bei Zustimmung auf
+    Nachbedingung: Bei Ablehnung `status` `dismissed` mit `REFUSED_TEXT`
+    und dem Schritt `abgelehnt` -- nichts ausgefuehrt, und ein Erfolg ist es
+    nicht: `abgeschlossen` setzt nur `ausfuehren`. Bei Zustimmung auf
     eine Ja/Nein-Frage `status` `laufend` und der Schritt `zugestimmt`; der
     Router geht nach `ausfuehren`. Sonst `status` `rueckfrage` mit derselben
     Frage (Schritt `unklar` oder `auswahl_offen`).
@@ -424,7 +425,7 @@ def read_answer(state: AgentState) -> dict:
     logger.info(f"read_answer: action='{action}', frage={kind}, deutung={reading}")
     if reading == "refusal":
         result: dict = {
-            "status": "abgeschlossen",
+            "status": "dismissed",
             "ergebnis": REFUSED_TEXT,
             "schritte": state["schritte"]
             + [{"node": "read_answer", "ergebnis": "abgelehnt", "action": action}],

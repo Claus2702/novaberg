@@ -250,7 +250,7 @@ class MandatoryQuestionTest(unittest.TestCase):
                 db: MagicMock = _db()
                 result: dict = _run(_delete_parameter(), question, answer, db)
                 self.assertFalse(_wrote(db))
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertEqual(result["ergebnis"], REFUSED_TEXT)
                 self.assertEqual(_last_step(result)["node"], "read_answer")
                 self.assertEqual(_last_step(result)["ergebnis"], "abgelehnt")
@@ -333,7 +333,7 @@ class AutoCorrectionQuestionTest(unittest.TestCase):
                 db.select.return_value = [{"id": 4, "anweisung": _INSTRUCTION}]
                 result: dict = _run(self._parameter(), question, answer, db)
                 self.assertFalse(_wrote(db))
-                self.assertEqual(result["status"], "abgeschlossen")
+                self.assertEqual(result["status"], "dismissed")
                 self.assertEqual(_last_step(result)["ergebnis"], "abgelehnt")
 
     def test_yes_restores(self) -> None:
@@ -473,7 +473,17 @@ class UnclearAnswerTest(unittest.TestCase):
                 returned: dict = self._handle_resume(answer, db, redis)
                 self.assertFalse(_wrote(db))
                 redis.set_json.assert_not_called()
+                self.assertEqual(returned["agent_results"][-1].status, "dismissed")
                 self.assertEqual(returned["management_result"], REFUSED_TEXT)
+                self.assertEqual(returned["management_detail"], "Der Mensch hat am Tor abgelehnt")
+
+    def test_consent_ends_finished_with_its_own_text(self) -> None:
+        """Zwilling: 'Ja' loescht und endet `abgeschlossen`, nicht mit dem Satz der Ablehnung."""
+        db: MagicMock = _db()
+        returned: dict = self._handle_resume("Ja", db, MagicMock())
+        self.assertTrue(_wrote(db))
+        self.assertEqual(returned["agent_results"][-1].status, "abgeschlossen")
+        self.assertNotEqual(returned["management_result"], REFUSED_TEXT)
 
     def test_question_or_waiting_asks_again_and_executes_nothing(self) -> None:
         """Ein Zustimmungswort neben einem '?', Warten oder Aufschub loescht nicht."""
@@ -977,7 +987,8 @@ class RoutingTest(unittest.TestCase):
     def test_only_running_goes_on(self) -> None:
         agent: DirektivenAgent = DirektivenAgent()
         for status, target in (
-            ("laufend", "ausfuehren"), ("abgeschlossen", END), ("rueckfrage", END), ("fehler", END),
+            ("laufend", "ausfuehren"), ("dismissed", END), ("abgeschlossen", END),
+            ("rueckfrage", END), ("fehler", END),
         ):
             with self.subTest(status=status):
                 self.assertEqual(agent._nach_deutung({"status": status}), target)
