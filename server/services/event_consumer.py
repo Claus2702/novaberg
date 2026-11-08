@@ -12,6 +12,7 @@ Pfad 2: Enricher → EI-Calc → Router → [Planner ⇄ Agent] →
 import asyncio
 import json
 import logging
+import threading
 
 from api.websocket import broadcast, broadcast_threadsafe
 from config import POSTGRES_URL, PREIS_BEFUND_KEY, redis_client, shutdown_event
@@ -33,6 +34,8 @@ logger = logging.getLogger("ki_server.event_consumer")
 # ─────────────────────────────────────────────
 POLL_INTERVAL:  float = 1.0     # Sekunden zwischen Queue-Checks
 DEBOUNCE_DELAY: float = 2.0     # Sekunden warten nach User-Event (Tippen abwarten)
+LOCK_WAIT_TIMEOUT:   float = 60.0   # Sekunden, die ein Event auf den graph_run_lock wartet
+LOCK_RETRY_INTERVAL: float = 0.05   # Sekunden zwischen zwei Versuchen, den Lock zu nehmen
 
 # Node-Labels für CharacterGraph (Pfad 2) — angezeigt als Stage im Client.
 CHARACTER_NODE_LABELS: dict[str, str] = {
@@ -753,6 +756,54 @@ def _antwort_nutzlast_bauen(
     return json.dumps(nutzlast, ensure_ascii=False)
 
 
+async def _graph_lock_acquire(
+    graph_run_lock: threading.Lock,
+    timeout: float,
+    retry_interval: float,
+) -> bool:
+    """Nimmt den Graph-Lock, ohne die Event-Schleife anzuhalten.
+
+    Ein `threading.Lock`, blockierend in einer Koroutine genommen, haelt die
+    ganze Schleife an: Herzschlag, Clients, Zustellung — und auch einen Halter,
+    der an einem `await` haengt und den Lock sonst freigaebe. Deshalb geht jeder
+    Versuch nicht blockierend, und dazwischen gibt die Koroutine die Schleife ab.
+
+    Das Warten bleibt in der Koroutine und geht nicht ueber `asyncio.to_thread`:
+    Nach einem Abbruch wartete der Thread weiter, naehme den Lock spaeter, und
+    niemand gaebe ihn frei. Das stuende als stiller Stillstand aller Turns da.
+
+    Vorbedingung: `timeout` und `retry_interval` sind positiv, in Sekunden.
+    Nachbedingung: Bei `True` haelt der Aufrufer den Lock. Bei `False` und bei
+    einem Abbruch haelt er ihn nicht. Ein freier Lock kostet keine Wartezeit.
+
+    Raises:
+        ValueError: Eine der Zeiten ist nicht positiv.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not (timeout > 0 and retry_interval > 0):
+        meldung: str = (
+            f"Event-Consumer: Frist und Abstand muessen positiv sein "
+            f"(timeout={timeout}, retry_interval={retry_interval})"
+        )
+        raise ValueError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
+    deadline: float = loop.time() + timeout
+
+    while not graph_run_lock.acquire(blocking=False):
+        remaining: float = deadline - loop.time()
+
+        if remaining <= 0:
+            return False
+
+        await asyncio.sleep(min(retry_interval, remaining))
+
+    # Keine Ausgabe-Verifikation: Das Ergebnis ist die Antwort von `acquire`
+    # selbst, und zu pruefen bliebe nur dieselbe Antwort noch einmal.
+    return True
+
+
 async def _event_verarbeiten(
     event: dict,
     user_id: str,
@@ -859,17 +910,10 @@ async def _event_verarbeiten(
     # ── Event-Loop-Referenz für threadsichere WebSocket-Sends ──
     loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
-    # ── Prüfe ob WebSocket-Clients verbunden sind ──
-    hat_clients: bool = bool(websocket_map.get(user_id))
-
-    if not hat_clients:
-        logger.warning(
-            f"Event-Consumer: Kein WebSocket für '{user_id}' — "
-            f"Stages und Antwort nur in Session"
-        )
-
     # ── Graph-Durchlauf mit Streaming (GPU, braucht Lock) ──
-    acquired: bool = graph_run_lock.acquire(blocking=True, timeout=60)
+    acquired: bool = await _graph_lock_acquire(
+        graph_run_lock, LOCK_WAIT_TIMEOUT, LOCK_RETRY_INTERVAL,
+    )
 
     if not acquired:
         logger.warning(
@@ -877,6 +921,20 @@ async def _event_verarbeiten(
             f"Event verworfen ({user_id}:{character_id})"
         )
         return
+
+    # ── Prüfe ob WebSocket-Clients verbunden sind ──
+    # Erst nach dem Warten: Waehrend des Wartens laeuft die Schleife weiter, und
+    # ein Client kann sich verbinden. Vorher bestimmt, stuende hier, dass die
+    # Antwort nur in der Session bleibt, und sie ginge doch hinaus.
+    # Kein `await` zwischen dem Erwerb und dem `try` unten: Ein Abbruch dort
+    # liesse den Lock belegt.
+    hat_clients: bool = bool(websocket_map.get(user_id))
+
+    if not hat_clients:
+        logger.warning(
+            f"Event-Consumer: Kein WebSocket für '{user_id}' — "
+            f"Stages und Antwort nur in Session"
+        )
 
     # **Die Auslieferung haengt an der Freigabe, nicht am Ende des Laufs.**
     # `bereits_gesendet` traegt die Auskunft aus dem Arbeitsthread zurueck —
